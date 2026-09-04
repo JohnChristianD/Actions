@@ -31,7 +31,7 @@ run.call('swift-oracle', swift_bin)
 
 run.call('haskell-oracle', 'runhaskell', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.hs'))
 run.call('rails-bundle', 'bundle', 'check')
-run.call('rails-oracle', 'bundle', 'exec', 'ruby', File.join(ROOT, 'oracles', 'QClosurePredictive_v147_rails.rb'))
+run.call('rails-framework-smoke', 'bundle', 'exec', 'ruby', File.join(ROOT, 'oracles', 'QClosurePredictive_v147_rails.rb'))
 
 scala_src = File.join(ROOT, 'oracles', 'QClosurePredictive_v147_scala.scala')
 scala_out = File.join(ROOT, 'oracles', 'scala-out')
@@ -49,4 +49,6 @@ run.call('sympy-oracle', 'python3', File.join(ROOT, 'tools', 'sympy_solver_v147.
 puts 'closure-all-bridges-bounded=PASS'
 puts 'closure-all-algebraic-theorems-bounded=PASS'
 puts 'closure-all-algebraic-conjectures-bounded-falsification=PASS'
-puts 'ten-way-algebraic-gate=PASS'
+puts 'independent-language-oracles=9'
+puts 'rails-framework-smoke=PASS'
+puts 'nine-way-independent-algebraic-gate=PASS'
