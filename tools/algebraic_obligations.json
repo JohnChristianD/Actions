@@ -1,0 +1,14 @@
+{
+  "version": "v147",
+  "mode": "finite-algebraic",
+  "obligations": [
+    {"id":"q_num_remove","expr":"(n-y) + y - n","requires":["ring"]},
+    {"id":"q_den_remove","expr":"(d-z) + z - d","requires":["ring"]},
+    {"id":"q_quotient_deletion","expr":"(n-y)/(d-z) - n/d - (n*z-y*d)/(d*(d-z))","requires":["d>0","d-z>0"]},
+    {"id":"q_projection_retraction","rule":"feasible-and-nonnegative-candidate"},
+    {"id":"q_terminal_multiplier_uniqueness","rule":"positive-common-denominator"},
+    {"id":"q_terminal_projection_confluence","rule":"same-alpha-same-x-and-derived-unique-multiplier"},
+    {"id":"tbptt_forward_append","rule":"finite-LSTM-state-fold-append"},
+    {"id":"tbptt_reverse_append","rule":"finite-local-VJP-chain-append"}
+  ]
+}
