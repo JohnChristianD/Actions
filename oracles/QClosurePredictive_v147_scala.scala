@@ -45,7 +45,7 @@ object QClosurePredictiveV147 extends App {
   for (n <- 1 to 4; a <- vectors(n); x <- vectors(n); b <- (0 to 4).map(Q(_))) {
     val (mu, active, steps) = run((0 until n).toList, a, x, b)
     assert(steps <= n)
-    active.foreach(i => assert(a(i) - mu * sq(x(i)) >= zero))
+    active.foreach(i => assert(!(a(i) - mu * sq(x(i)) < zero)))
     (0 until n).filterNot(active.contains).foreach(i => assert(a(i) - mu * sq(x(i)) <= zero))
   }
   println("scala-q-finite-fuel=PASS")
