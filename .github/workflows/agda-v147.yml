@@ -1,0 +1,50 @@
+name: Agda v147 safe kernel
+
+on:
+  push:
+    branches: ["main", "v147-q-chad-agda-safe"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  agda-safe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Cabal toolchain
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: 'latest'
+          cabal-version: 'latest'
+          cabal-update: true
+
+      - name: Install Agda through Cabal
+        run: cabal install Agda --overwrite-policy=always --installdir="$HOME/.local/bin"
+
+      - name: Verify Agda executable
+        run: agda --version
+
+      - name: Source hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          AG=Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          test -f "$AG"
+          ! grep -nE '\b(postulate|TODO|FIXME|placeholder|skeleton)\b|\{!!\}' "$AG"
+          grep -q '^module Exotic\.ERL\.FullCoupled\.CompleteSafe_v147 where$' "$AG"
+          for required in \
+            qProjectionRetraction_v147 \
+            qRunTerminalKKT_v147 \
+            qTerminalMultiplierUnique_v147 \
+            qTerminalProjectionUnique_v147 \
+            EfficientCHADLSTMTBPTT_v147 \
+            coupledQOneStepInvariant_v147
+          do
+            grep -q "^$required" "$AG"
+          done
+
+      - name: Agda safe kernel check
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
