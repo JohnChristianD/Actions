@@ -56,7 +56,7 @@ jobs:
       - name: Install Rails dependencies
         run: bundle install --jobs 4 --retry 3
 
-      - name: Ten-way algebraic closure gate
+      - name: Nine-language algebraic closure gate plus Rails smoke lane
         run: ruby tools/solve_v147_algebra.rb
 
   agda:
