@@ -22,8 +22,8 @@ def vectors(n)
   return [[]] if n.zero?
   vectors(n - 1).flat_map { |p| [0, 1, 2].map { |a| p + [Q.new(a)] } }
 end
-def num(mask, a, x, b) = mask.sum { |i| a[i] * sq(x[i]) } - b
-def den(mask, x) = mask.sum { |i| fourth(x[i]) }
+def num(mask, a, x, b) = mask.sum(ZERO) { |i| a[i] * sq(x[i]) } - b
+def den(mask, x) = mask.sum(ZERO) { |i| fourth(x[i]) }
 def first_negative(mask, a, x, mu)
   mask.find { |i| a[i] - mu * sq(x[i]) < ZERO }
 end
