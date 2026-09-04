@@ -1,4 +1,5 @@
-q <- function(n,d=1) { stopifnot(d != 0); g <- max(1, Reduce(function(a,b) if (b==0) abs(a) else Recall(b, a %% b), list(abs(n), abs(d)))); s <- if (d < 0) -1 else 1; c(n=s*n/g, d=s*d/g) }
+gcd_i128 <- function(a,b) { a <- abs(a); b <- abs(b); while(b != 0) { t <- a %% b; a <- b; b <- t }; max(a,1) }
+q <- function(n,d=1) { stopifnot(d != 0); g <- gcd_i128(n,d); s <- if (d < 0) -1 else 1; list(n=s*n/g,d=s*d/g) }
 add <- function(a,b) q(a$n*b$d+b$n*a$d,a$d*b$d)
 sub <- function(a,b) q(a$n*b$d-b$n*a$d,a$d*b$d)
 mul <- function(a,b) q(a$n*b$n,a$d*b$d)
