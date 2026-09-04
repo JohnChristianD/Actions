@@ -1,14 +1,27 @@
 {
   "version": "v147",
   "mode": "finite-algebraic",
-  "obligations": [
+  "bridges": [
+    {"id":"bridge_meta_sign_to_alpha_order","rule":"beta-update-sign-transports-through-exp"},
+    {"id":"bridge_alpha_order_to_q_budget","rule":"positive-weight-exposure-monotonicity"},
+    {"id":"bridge_q_projection_to_coupled_l2","rule":"projection-is-precondition-for-primal-update"},
+    {"id":"bridge_coupled_l2_to_sign","rule":"delta-theta=-alpha*(gradient+lambda*theta)"},
+    {"id":"bridge_tbptt_to_efficient_chad","rule":"finite-state-fold-and-local-vjp-chain-append"}
+  ],
+  "theorems": [
     {"id":"q_num_remove","expr":"(n-y) + y - n","requires":["ring"]},
     {"id":"q_den_remove","expr":"(d-z) + z - d","requires":["ring"]},
     {"id":"q_quotient_deletion","expr":"(n-y)/(d-z) - n/d - (n*z-y*d)/(d*(d-z))","requires":["d>0","d-z>0"]},
     {"id":"q_projection_retraction","rule":"feasible-and-nonnegative-candidate"},
     {"id":"q_terminal_multiplier_uniqueness","rule":"positive-common-denominator"},
-    {"id":"q_terminal_projection_confluence","rule":"same-alpha-same-x-and-derived-unique-multiplier"},
+    {"id":"q_terminal_projection_confluence","rule":"derived-unique-terminal-multiplier"},
     {"id":"tbptt_forward_append","rule":"finite-LSTM-state-fold-append"},
     {"id":"tbptt_reverse_append","rule":"finite-local-VJP-chain-append"}
+  ],
+  "conjectures": [
+    {"id":"conj_q_arbitrary_deletion_order_confluence","test":"bounded-exhaustive-active-set-orders"},
+    {"id":"conj_coupled_one_step_invariant_closure","test":"bounded-symbolic-state-falsification"},
+    {"id":"conj_non_diagonal_newton_invariant_cone","test":"bounded-rational-cone-falsification"},
+    {"id":"conj_finite_chad_reverse_append_generalization","test":"bounded-finite-chain-falsification"}
   ]
 }
