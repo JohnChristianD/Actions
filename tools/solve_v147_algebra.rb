@@ -30,7 +30,6 @@ run.call('swift-compile', 'swiftc', '-warnings-as-errors', '-O', swift, '-o', sw
 run.call('swift-oracle', swift_bin)
 
 run.call('haskell-oracle', 'runhaskell', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.hs'))
-
 run.call('rails-bundle', 'bundle', 'check')
 run.call('rails-oracle', 'bundle', 'exec', 'ruby', File.join(ROOT, 'oracles', 'QClosurePredictive_v147_rails.rb'))
 
@@ -42,13 +41,12 @@ run.call('scala-oracle', 'scala', '-cp', scala_out, 'QClosurePredictiveV147')
 
 run.call('rust-compile', 'rustc', '--edition=2021', '-C', 'opt-level=2', '-D', 'warnings', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.rs'), '-o', File.join(ROOT, 'oracles', 'qclosure-rust'))
 run.call('rust-oracle', File.join(ROOT, 'oracles', 'qclosure-rust'))
-
 run.call('elixir-oracle', 'elixir', File.join(ROOT, 'oracles', 'q_closure_predictive_v147.exs'))
 run.call('r-oracle', 'Rscript', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.R'))
 run.call('clojure-oracle', 'clojure', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.clj'))
 run.call('sympy-oracle', 'python3', File.join(ROOT, 'tools', 'sympy_solver_v147.py'))
 
-puts 'closure-all-bridges=PASS'
-puts 'closure-all-algebraic-theorems=PASS'
-puts 'closure-all-algebraic-conjectures-bounded=PASS'
+puts 'closure-all-bridges-bounded=PASS'
+puts 'closure-all-algebraic-theorems-bounded=PASS'
+puts 'closure-all-algebraic-conjectures-bounded-falsification=PASS'
 puts 'ten-way-algebraic-gate=PASS'
