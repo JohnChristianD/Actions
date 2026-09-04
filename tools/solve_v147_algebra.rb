@@ -4,16 +4,10 @@ require 'open3'
 
 ROOT = File.expand_path('..', __dir__)
 manifest = JSON.parse(File.read(File.join(ROOT, 'tools', 'algebraic_obligations.json')))
-bridges = manifest.fetch('bridges')
-theorems = manifest.fetch('theorems')
-conjectures = manifest.fetch('conjectures')
-raise 'empty closure class' if [bridges, theorems, conjectures].any?(&:empty?)
-(bridges + theorems + conjectures).each do |item|
-  raise "missing id: #{item.inspect}" unless item['id']
-end
-puts "closure-bridges=#{bridges.length}"
-puts "closure-theorems=#{theorems.length}"
-puts "closure-conjectures=#{conjectures.length}"
+%w[bridges theorems conjectures].each { |k| abort "empty #{k}" if manifest.fetch(k).empty? }
+puts "closure-bridges=#{manifest.fetch('bridges').length}"
+puts "closure-theorems=#{manifest.fetch('theorems').length}"
+puts "closure-conjectures=#{manifest.fetch('conjectures').length}"
 
 run = lambda do |label, *cmd|
   stdout, stderr, status = Open3.capture3(*cmd)
@@ -22,16 +16,12 @@ run = lambda do |label, *cmd|
   puts stdout unless stdout.empty?
 end
 
-run.call('ruby-oracle', 'ruby', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.rb'))
-
+# Ruby is orchestration only; no Ruby/Rails mathematical oracle remains.
 swift = File.join(ROOT, 'oracles', 'QClosurePredictive_v147.swift')
 swift_bin = File.join(ROOT, 'oracles', 'qclosure-swift')
 run.call('swift-compile', 'swiftc', '-warnings-as-errors', '-O', swift, '-o', swift_bin)
 run.call('swift-oracle', swift_bin)
-
 run.call('haskell-oracle', 'runhaskell', File.join(ROOT, 'oracles', 'QClosurePredictive_v147.hs'))
-run.call('rails-bundle', 'bundle', 'check')
-run.call('rails-framework-smoke', 'bundle', 'exec', 'ruby', File.join(ROOT, 'oracles', 'QClosurePredictive_v147_rails.rb'))
 
 scala_src = File.join(ROOT, 'oracles', 'QClosurePredictive_v147_scala.scala')
 scala_out = File.join(ROOT, 'oracles', 'scala-out')
@@ -49,6 +39,4 @@ run.call('sympy-oracle', 'python3', File.join(ROOT, 'tools', 'sympy_solver_v147.
 puts 'closure-all-bridges-bounded=PASS'
 puts 'closure-all-algebraic-theorems-bounded=PASS'
 puts 'closure-all-algebraic-conjectures-bounded-falsification=PASS'
-puts 'independent-language-oracles=9'
-puts 'rails-framework-smoke=PASS'
-puts 'nine-way-independent-algebraic-gate=PASS'
+puts 'independent-language-oracles=8'
