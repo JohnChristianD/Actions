@@ -33,44 +33,62 @@ jobs:
       - name: Verify Agda
         run: agda --version
 
-      - name: Repair checked-in Agda syntax
+      - name: Canonical structural repair
         run: python3 .ci/repair-agda-syntax.py
 
-      - name: Normalize initialForm binding
+      - name: Canonical finite grammar and scope normalization
         run: |
           set -euo pipefail
-          perl -0pi -e 's/^([ \t]*)initialForm[ \t]*:[ \t]*QRun_v142\.projection[^\n]*\n[ \t]*\(initialQRun_v142 D budget p x\)[ \t]*≡[ \t]*p[ \t]*=[ \t]*\n/${1}initialForm =\n/m' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-
-      - name: Normalize terminal projection proof
-        run: |
-          set -euo pipefail
-          perl -0pi -e 's/qTerminalProjectionUnique_v147 t u ha hx hmu =.*?\n\nqTerminalConfluence_v147/qTerminalProjectionUnique_v147 t u refl refl refl =\n  vectorExt_v147 (λ i →\n    trans\n      (QTerminalSolution_v147.stationarity t i)\n      (sym (QTerminalSolution_v147.stationarity u i)))\n\nqTerminalConfluence_v147/s' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-
-      - name: Normalize Nat and algebra grammar
-        run: |
-          set -euo pipefail
-          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
-          python3 - "$f" <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
-          import re, sys
-          p = Path(sys.argv[1])
+          import re
+
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          s = s.replace('open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)', 'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero)')
-          s = s.replace('open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)', 'open import Agda.Builtin.Equality using (_≡_; refl)')
+
+          s = s.replace(
+              'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
+              'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero)')
+          s = s.replace(
+              'open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)',
+              'open import Agda.Builtin.Equality using (_≡_; refl)')
           s = s.replace('[] : Vec A zero', '[] : Vec A natZero')
           s = s.replace('sumFin _ z zero _ = z', 'sumFin _ z natZero _ = z')
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
           s = s.replace('\nopen Ring\n\nrecord OrderedRing', '\nrecord OrderedRing')
-          s = s.replace('\n¬ A = A → ⊥\n', '\n¬ A = A → ⊥\n\n_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n')
-          s = s.replace('Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)')
-          start = s.find('module EfficientCHAD ')
-          stop = s.find('\n------------------------------------------------------------------------\n-- Concrete neural network components', start)
-          if start >= 0 and stop >= 0:
-              chunk = s[start:stop]
-              chunk = re.sub(r'(?<!Ring\.)\bR\b', 'CR', chunk)
-              s = s[:start] + chunk + s[stop:]
-          s = s.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
-          for old, new in {
+
+          helper = '''\nsym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x\nsym refl = refl\n\ntrans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z\ntrans refl yz = yz\n\ncong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y\ncong f refl = refl\n\nsubst : ∀ {A : Set} (P : A → Set) {x y : A} → x ≡ y → P x → P y\nsubst P refl px = px\n'''
+          marker = '_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n'
+          if helper.strip() not in s and marker in s:
+              s = s.replace(marker, marker + helper, 1)
+
+          # Replace the fragile local shift helper by one total finite map.
+          shift_sig = 'shiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))'
+          if shift_sig not in s:
+              marker = '\nqFirstNegative_v142 : ∀ {S n}'
+              helper_shift = '''\nshiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))\nshiftMaybeD_v142 nothing = nothing\nshiftMaybeD_v142 (justD i) = justD (fsuc i)\n'''
+              if marker in s:
+                  s = s.replace(marker, helper_shift + marker, 1)
+          s = s.replace('... | false = shift (qFirstNegative_v142 D bs as xs mu)',
+                        '... | false = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
+          s = s.replace('...   | no _ = shift (qFirstNegative_v142 D bs as xs mu)',
+                        '...   | no _ = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
+          local_shift = '''\n  where\n  shift : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))\n  shift nothing = nothing\n  shift (justD i) = justD (fsuc i)\n'''
+          s = s.replace(local_shift, '\n', 1)
+
+          # Explicitly bind dependent indices used by nested local types.
+          s = re.sub(r'(?m)^qRunStep_v142\s+r\s+with',
+                     'qRunStep_v142 {S} {n} r with', s, count=1)
+          s = re.sub(r'(?m)^qCandidate_v142\s+D\s+mu\s+m\s+alpha\s+x\s*=',
+                     'qCandidate_v142 {S} {n} D mu m alpha x =', s, count=1)
+
+          replacements = {
+              '  alpha * (x * x) < mu * ((x * x) * (x * x))':
+                  '  (alpha * (x * x)) < (mu * ((x * x) * (x * x)))',
+              'alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x)) < zero':
+                  '(alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x))) < zero',
+              'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i':
+                  '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)',
               '→ a + c ≤ b + d': '→ (a + c) ≤ (b + d)',
               '→ a + c < b + d': '→ (a + c) < (b + d)',
               '→ c + a < c + b': '→ (c + a) < (c + b)',
@@ -83,122 +101,25 @@ jobs:
               '→ zero < a * b': '→ zero < (a * b)',
               '→ zero < x * x': '→ zero < (x * x)',
               '→ zero ≤ x * x': '→ zero ≤ (x * x)',
-              '  alpha * (x * x) < mu * ((x * x) * (x * x))': '  (alpha * (x * x)) < (mu * ((x * x) * (x * x)))',
-          }.items():
+          }
+          for old, new in replacements.items():
               s = s.replace(old, new)
-          helper = '''\nsym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x\nsym refl = refl\n\ntrans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z\ntrans refl yz = yz\n\ncong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y\ncong f refl = refl\n\nsubst : ∀ {A : Set} (P : A → Set) {x y : A} → x ≡ y → P x → P y\nsubst P refl px = px\n'''
-          marker = '_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n'
-          if helper.strip() not in s:
-              s = s.replace(marker, marker + helper)
-          s = s.replace('record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden', 'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
-          s = s.replace('  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered x = x + neg μ', '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
-          s = s.replace('  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd', '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
+
+          # Rebind fragile inferred locals with explicit dependent types.
+          s = s.replace(
+              'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden',
+              'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
+          s = s.replace(
+              '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered x = x + neg μ',
+              '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
+          s = s.replace(
+              '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd',
+              '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
           s = s.replace('LSTMGates.gates', 'LSTMBlock.gates')
           s = s.replace('residual_v140 mu alpha x i =', 'residual_v140 {S} mu alpha x i =')
-          s = s.replace('if b then\n      SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs\n    else\n      zero ∷ candidate bs as xs', 'if b then\n      (SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs)\n    else\n      (zero ∷ candidate bs as xs)')
-          q = 'alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x)) < zero'
-          s = s.replace(q, '(alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x))) < zero')
-          s = s.replace('qProjectionCross_v141 ha hr =', 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =')
+
           p.write_text(s)
           PY
-
-      - name: Normalize targeted implicit algebra binders
-        run: |
-          set -euo pipefail
-          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
-          python3 - "$f" <<'PY'
-          from pathlib import Path
-          import re, sys
-          p = Path(sys.argv[1])
-          s = p.read_text()
-          patterns = [
-              (r'(?m)^residualSquareNonzero_v140(?:\s+\{S\})?(?:\s+\{alpha\s*=\s*alpha\})?(?:\s+\{mu\s*=\s*mu\})?(?:\s+\{x\s*=\s*x\})?\s+ha\s+hr(?:\s+hx)?\s*=',
-               'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx ='),
-              (r'(?m)^qProjectionCross_v141(?:\s+\{S\})?(?:\s+\{alpha\s*=\s*alpha\})?(?:\s+\{mu\s*=\s*mu\})?(?:\s+\{x\s*=\s*x\})?\s+ha\s+hr\s*=',
-               'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr ='),
-          ]
-          for pattern, replacement in patterns:
-              s, n = re.subn(pattern, replacement, s, count=1)
-              if n != 1:
-                  raise SystemExit(f'targeted binder repair did not find exactly one clause: {pattern}')
-          p.write_text(s)
-          PY
-          grep -n '^residualSquareNonzero_v140 {S}' "$f"
-          grep -n '^qProjectionCross_v141 {S}' "$f"
-
-      - name: Normalize q-first-negative shift scope
-        run: |
-          set -euo pipefail
-          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
-          python3 - "$f" <<'PY'
-          from pathlib import Path
-          import re, sys
-          p = Path(sys.argv[1])
-          s = p.read_text()
-          if 'shiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))' not in s:
-              marker = '\nqFirstNegative_v142 : ∀ {S n}'
-              helper = '''\nshiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))\nshiftMaybeD_v142 nothing = nothing\nshiftMaybeD_v142 (justD i) = justD (fsuc i)\n'''
-              if marker not in s:
-                  raise SystemExit('qFirstNegative_v142 marker not found')
-              s = s.replace(marker, helper + marker, 1)
-          s = s.replace('... | false = shift (qFirstNegative_v142 D bs as xs mu)', '... | false = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
-          s = s.replace('...   | no _ = shift (qFirstNegative_v142 D bs as xs mu)', '...   | no _ = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
-          s = re.sub(r'\n  where\n  shift : ∀ \{m\} → MaybeD (Fin m) → MaybeD \(Fin \(suc m\))\n  shift nothing = nothing\n  shift \(justD i\) = justD \(fsuc i\)\n', '\n', s, count=1)
-          p.write_text(s)
-          PY
-
-      - name: Normalize q-run-step implicits
-        run: |
-          set -euo pipefail
-          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
-          python3 - "$f" <<'PY'
-          from pathlib import Path
-          import re, sys
-          p = Path(sys.argv[1])
-          s = p.read_text()
-          pattern = r'(?m)^qRunStep_v142\s+r\s+with'
-          replacement = 'qRunStep_v142 {S} {n} r with'
-          s, n = re.subn(pattern, replacement, s, count=1)
-          if n != 1:
-              raise SystemExit('qRunStep_v142 clause not found exactly once')
-          p.write_text(s)
-          PY
-          grep -n '^qRunStep_v142 {S} {n} r with' "$f"
-
-      - name: Normalize q-candidate outer implicits
-        run: |
-          set -euo pipefail
-          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
-          python3 - "$f" <<'PY'
-          from pathlib import Path
-          import re, sys
-          p = Path(sys.argv[1])
-          s = p.read_text()
-          pattern = r'(?m)^qCandidate_v142\s+D\s+mu\s+m\s+alpha\s+x\s*='
-          replacement = 'qCandidate_v142 {S} {n} D mu m alpha x ='
-          s, n = re.subn(pattern, replacement, s, count=1)
-          if n != 1:
-              raise SystemExit('qCandidate_v142 clause not found exactly once')
-          p.write_text(s)
-          PY
-          grep -n '^qCandidate_v142 {S} {n} D mu m alpha x =' "$f"
-
-      - name: Agda2HS diagnostic probe
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          bin="$RUNNER_TEMP/agda2hs-bin"
-          mkdir -p "$bin"
-          if ! command -v agda2hs >/dev/null 2>&1; then
-            if command -v cabal >/dev/null 2>&1; then
-              cabal install agda2hs --constraint='Agda == 2.8.0' --installdir="$bin" --install-method=copy --overwrite-policy=always 2>&1 | tee "$RUNNER_TEMP/agda2hs-install.log"
-            else
-              echo 'Agda2HS diagnostic skipped: cabal is unavailable'
-              exit 0
-            fi
-          fi
-          command -v agda2hs || true
-          "$bin/agda2hs" Exotic/ERL/FullCoupled/CompleteSafe_v147.agda 2>&1 | tee "$RUNNER_TEMP/agda2hs.log"
 
       - name: Authoritative Agda --safe check
         run: |
@@ -213,7 +134,7 @@ jobs:
           test -d MAlonzo
           echo 'Agda -> Haskell transpilation: PASS'
 
-      - name: Persist repaired source after proof gate
+      - name: Persist proof-gated source
         run: |
           set -euo pipefail
           if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
@@ -223,5 +144,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          git commit -m 'fix: normalize Agda source syntax after safe check'
+          git commit -m 'fix: persist proof-gated Agda normalization'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
