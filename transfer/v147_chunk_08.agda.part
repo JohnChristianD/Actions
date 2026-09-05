@@ -1,0 +1,294 @@
+ontierStrictTradeoff : ∀ h₁ h₂ →
+      CoupledHyperParameters_v146.q h₁ < CoupledHyperParameters_v146.q h₂ →
+      CoupledHyperParameters_v146.q h₁ ≤ one →
+      CoupledHyperParameters_v146.q h₂ ≤ one →
+      paretoNewtonFrontier_v146 h₂ < paretoNewtonFrontier_v146 h₁
+    replayAgeComposition : ∀ sampleTime delay₁ delay₂ →
+      replayAge_v146 sampleTime (sampleTime + (delay₁ + delay₂)) ≡ delay₁ + delay₂
+    replayNoIS : ∀ {stateDim actionDim}
+      (m : ReplayMode_v146)
+      (live replayed : ReplayTransition_v141 S stateDim actionDim) →
+      replayStalenessNoIS_v146 m live replayed ≡ one
+    cemArgmaxLaw : ∀ {n} (D : QProjectionDecisionAlgebra_v140 S)
+      (xs : VecS S (suc n)) → cemFiniteArgmax_v146 D xs ≡ maxVec_v146 D xs
+    hStepRecursion : ∀ {n} gamma boot r (rs : VecS S n) →
+      hStepFold_v146 gamma (r ∷ rs) boot ≡ r + gamma * hStepFold_v146 gamma rs boot
+    learnerNonInert : ∀ {delta} → delta ≠ zero → zero + delta ≠ zero
+    efficientCHADLSTM : ∀ {input hidden m n}
+      (block : LSTMBlock S input hidden)
+      (state : LSTMState S hidden)
+      (xs : Vec (VecS S input) m)
+      (ys : Vec (VecS S input) n) →
+      lstmRun_v146 block state (appendV_v146 xs ys) ≡
+      lstmRun_v146 block (lstmRun_v146 block state xs) ys
+    negativeTDSign : ∀ {d} → zero ≤ SmoothAlgebra.abs S d → zero ≥ negativeTD_v146 d
+
+completeAlgebraicClosure_v146 : ∀ {S} → CompleteAlgebraicClosure_v146 S
+completeAlgebraicClosure_v146 {S} = record
+  { ringAddAssoc = Ring.addAssoc (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+  ; ringAddComm = Ring.addComm (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+  ; ringMulAssoc = Ring.mulAssoc (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+  ; ringDistrib = Ring.distrib (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+  ; vectorAddComm = vAddComm_v140
+  ; vectorScaleAdd = vScaleAdd_v140
+  ; qStrictCross = qProjectionCross_v142
+  ; coupledBudget = coupledBudgetNonnegative_v146
+  ; effectiveDecay = l2EffectiveNonnegative_v146
+  ; descriptorAppend = descriptorSumAppend_v146
+  ; replayTime = replayTime_v141
+  ; barrier = barrierSnapshot_v146
+  ; openESCancellation = antitheticScalarCancel_v142
+  ; l2IdentityNull = l2IdentityNull_v146
+  ; couplingTraceLaw = paretoCouplingConsistent_v146
+  ; couplingBudgetLaw = paretoCouplingBudgetLawDirect_v146
+  ; couplingMetaLaw = paretoCouplingMetaLawDirect_v146
+  ; couplingCEMLaw = paretoCouplingCEMRateLaw_v146
+  ; replayAgeBound = replayAgeBoundTheorem_v146
+  ; cemCoefficientLaw = cemRefitCoefficientLaw_v146
+  ; reciprocalExposurePositive = diagonalNewtonExposurePositive_v146
+  ; relativeBudgetLaw = diagonalNewtonRelativeBudgetLaw_v146
+  ; frontierLaw = paretoNewtonFrontierLaw_v146
+  ; frontierStrictTradeoff = paretoNewtonFrontierStrictTradeoff_v146
+  ; replayAgeComposition = replayAgeComposition_v146
+  ; replayNoIS = replayStalenessNoISLaw_v146
+  ; cemArgmaxLaw = λ D xs → refl
+  ; hStepRecursion = λ gamma boot r rs → refl
+  ; learnerNonInert = λ {delta = delta} h → learnerNonInertness_v146 zero delta h
+  ; efficientCHADLSTM = efficientCHADLSTMChain_v146
+  ; negativeTDSign = λ {d = d} h → negativeTDNonpositive_v146 d h
+  }
+
+------------------------------------------------------------------------
+-- v145 semantic policy: CVT-ME is the geometric QD reference; grid-ME is the
+-- lower-layer assignment ablation. Both use exactly the same ME-OpenES emitter,
+-- descriptors and coupled learner. QSA/XorShift is finite deterministic input,
+-- while general PRNGs remain opaque discrete sources rather than algebraic laws.
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- v147 audited KKT boundary.
+--
+-- No KKT certificate datatype, no Set-valued KKT premise, and no fabricated
+-- proof term are introduced here.  The exact deletion-induction theorem is
+-- documented separately with every algebraic induction obligation expanded.
+-- It requires only: ordered-ring totality, alpha >= 0, budget >= 0, and the
+-- executable qRun definition already present above.
+--
+-- The theorem to be exported after kernel checking is:
+--
+-- qProjectionFixedPoint_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (p x : VecS S n) →
+  (∀ i → zero ≤ indexV p i) →
+  weightedExposure_v147 p x ≤ budget →
+  QRun_v142.projection (qRun_v142 D budget p x) ≡ p
+qProjectionFixedPoint_v147 = qProjectionRetraction_v147
+
+qRunTerminalKKT_v147 :
+--   (D : QProjectionDecisionAlgebra_v140 S) ->
+--   TotalOrder_v147 S ->
+--   (budget : Scalar S) -> (alpha x : VecS S n) ->
+--   (forall i -> zero <= indexV alpha i) -> zero <= budget ->
+--   terminal KKT consequences of qRun_v142 D budget alpha x.
+--
+-- The proof is deletion induction on qRunFuel_v142, with the exact chain:
+-- negative active residual -> strict cross yd < nz -> strict quotient increase
+-- -> multiplier monotonicity -> deleted-residual transport -> terminal active
+-- nonnegativity -> primal/dual KKT stationarity and complementarity.
+--
+-- The source deliberately does not contain a theorem-valued placeholder for
+-- that chain.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- v147 constructive q-closure.
+-- The projection is a finite retraction on the q-feasible region.  The
+-- terminal multiplier is unique whenever its positive fourth-power
+-- denominator is positive; terminal projections are consequently unique
+-- independently of the deletion-mask representation at zero residuals.
+------------------------------------------------------------------------
+
+transportLe_v147 : ∀ {S} {a b : Scalar S} →
+  a ≡ b → zero ≤ a → zero ≤ b
+transportLe_v147 refl h = h
+
+vectorExt_v147 : ∀ {S n} {x y : VecS S n} →
+  (∀ i → indexV x i ≡ indexV y i) → x ≡ y
+vectorExt_v147 {x = []} {y = []} p = refl
+vectorExt_v147 {x = x ∷ xs} {y = y ∷ ys} p =
+  cong₂ _∷_ (p fzero) (vectorExt_v147 (λ i → p (fsuc i)))
+
+qResidualZero_v147 : ∀ {S} (a w : Scalar S) →
+  qResidual_v142 zero a w ≡ a
+qResidualZero_v147 a w =
+  trans
+    (cong
+      (λ t → a + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _)) t)
+      (Ring.zeroMulL (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w))
+    (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) a)
+
+qCandidateNonnegative_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (mu : Scalar S)
+  (mask : Vec Bool n)
+  (alpha x : VecS S n) (i : Fin n) →
+  zero ≤ indexV (qCandidate_v142 D mu mask alpha x) i
+qCandidateNonnegative_v147 D mu mask alpha x i =
+  SmoothAlgebra.maxNonnegative _ _
+
+qRunProjectionFormFuel_v147 : ∀ {S n}
+  (fuel : Nat)
+  (r : QRun_v142 S n) →
+  QRun_v142.projection (qRunFuel_v142 fuel r) ≡
+  qCandidate_v142
+    (QRun_v142.decision (qRunFuel_v142 fuel r))
+    (QRun_v142.multiplier (qRunFuel_v142 fuel r))
+    (QRun_v142.mask (qRunFuel_v142 fuel r))
+    (QRun_v142.alpha (qRunFuel_v142 fuel r))
+    (QRun_v142.x (qRunFuel_v142 fuel r))
+qRunProjectionFormFuel_v147 zero r = refl
+qRunProjectionFormFuel_v147 (suc fuel) r with qFirstNegative_v142
+  (QRun_v142.decision r) (QRun_v142.mask r)
+  (QRun_v142.alpha r) (QRun_v142.x r) (QRun_v142.multiplier r)
+... | nothing = qRunProjectionFormFuel_v147 zero r
+... | justD i = qRunProjectionFormFuel_v147 fuel (qRunStep_v142 r)
+
+qRunProjectionForm_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (alpha x : VecS S n) →
+  let r = qRun_v142 D budget alpha x in
+  QRun_v142.projection r ≡
+  qCandidate_v142 D (QRun_v142.multiplier r)
+    (QRun_v142.mask r) alpha x
+qRunProjectionForm_v147 D budget alpha x =
+  qRunProjectionFormFuel_v147 _ (initialQRun_v142 D budget alpha x)
+
+qRunProjectionNonnegative_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (alpha x : VecS S n) (i : Fin n) →
+  zero ≤ indexV (QRun_v142.projection (qRun_v142 D budget alpha x)) i
+qRunProjectionNonnegative_v147 D budget alpha x i =
+  subst
+    (λ p → zero ≤ indexV p i)
+    (qRunProjectionForm_v147 D budget alpha x)
+    (qCandidateNonnegative_v147 D _ _ _ _ i)
+
+qMuZeroFromNumLe_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (mask : Vec Bool n) (alpha x : VecS S n) →
+  qNum_v142 budget mask alpha x ≤ zero →
+  qMu_v142 D budget mask alpha x ≡ zero
+qMuZeroFromNumLe_v147 D budget mask alpha x h with
+  QProjectionDecisionAlgebra_v140.ltDec D zero (qNum_v142 budget mask alpha x)
+... | yes hlt = ⊥-elim (OrderedRing.notLtFromLe h hlt)
+... | no _ = refl
+
+allActive_v147 : ∀ {n} → Vec Bool n
+allActive_v147 {zero} = []
+allActive_v147 {suc n} = true ∷ allActive_v147
+
+qCandidateZero_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (p x : VecS S n) →
+  (∀ i → zero ≤ indexV p i) →
+  qCandidate_v142 D zero (allActive_v147 {n = n}) p x ≡ p
+qCandidateZero_v147 D [] [] hp = refl
+qCandidateZero_v147 D (p ∷ ps) (x ∷ xs) hp =
+  trans
+    (cong₂ _∷_
+      (QProjectionDecisionAlgebra_v140.maxPositive D
+        (qResidual_v142 zero p (x * x))
+        (transportLe_v147
+          (sym (qResidualZero_v147 p (x * x)))
+          (hp fzero)))
+      (qCandidateZero_v147 D ps xs (λ i → hp (fsuc i))))
+    (cong₂ _∷_
+      (sym (qResidualZero_v147 p (x * x)))
+      refl)
+
+qFirstNegativeNoneNonnegative_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (mask : Vec Bool n) (alpha x : VecS S n) (mu : Scalar S) →
+  (∀ i → indexV mask i ≡ true →
+    zero ≤ qResidual_v142 mu (indexV alpha i)
+      (indexV x i * indexV x i)) →
+  qFirstNegative_v142 D mask alpha x mu ≡ nothing
+qFirstNegativeNoneNonnegative_v147 D [] [] [] mu h = refl
+qFirstNegativeNoneNonnegative_v147 D (b ∷ bs) (a ∷ as) (x ∷ xs) mu h
+  with b
+... | false = qFirstNegativeNoneNonnegative_v147 D bs as xs mu
+    (λ i hi → h (fsuc i) hi)
+... | true with QProjectionDecisionAlgebra_v140.ltDec D zero
+    (qResidual_v142 mu a (x * x))
+...   | yes hz = ⊥-elim (OrderedRing.notLtFromLe
+      (h fzero refl) hz)
+...   | no _ = qFirstNegativeNoneNonnegative_v147 D bs as xs mu
+    (λ i hi → h (fsuc i) hi)
+
+justDNotNothing_v147 : ∀ {A : Set} {x : A} → justD x ≡ nothing → ⊥
+justDNotNothing_v147 ()
+
+qRunStopsWhenNoNegative_v147 : ∀ {S n}
+  (fuel : Nat) (r : QRun_v142 S n) →
+  qFirstNegative_v142 (QRun_v142.decision r) (QRun_v142.mask r)
+    (QRun_v142.alpha r) (QRun_v142.x r) (QRun_v142.multiplier r) ≡ nothing →
+  QRun_v142.projection (qRunFuel_v142 fuel r) ≡ QRun_v142.projection r
+qRunStopsWhenNoNegative_v147 zero r h = refl
+qRunStopsWhenNoNegative_v147 (suc fuel) r h with qFirstNegative_v142
+  (QRun_v142.decision r) (QRun_v142.mask r)
+  (QRun_v142.alpha r) (QRun_v142.x r) (QRun_v142.multiplier r)
+... | nothing = refl
+... | justD i = ⊥-elim (justDNotNothing_v147 h)
+
+weightedExposure_v147 : ∀ {S n} → VecS S n → VecS S n → Scalar S
+weightedExposure_v147 alpha x =
+  maskSum_v142 (allActive_v147 {n = _})
+    (λ i → indexV alpha i * (indexV x i * indexV x i))
+
+weightedExposureBound_v147 : ∀ {S n}
+  (budget : Scalar S) (p x : VecS S n) →
+  weightedExposure_v147 p x ≤ budget →
+  qNum_v142 budget (allActive_v147 {n = n}) p x ≤ zero
+weightedExposureBound_v147 budget p x h =
+  trans
+    (OrderedRing.addLe h (OrderedRing.refl≤
+      (Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _)) budget)))
+    (Ring.addNegR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) budget)
+
+qProjectionRetraction_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (p x : VecS S n) →
+  (∀ i → zero ≤ indexV p i) →
+  weightedExposure_v147 p x ≤ budget →
+  QRun_v142.projection (qRun_v142 D budget p x) ≡ p
+qProjectionRetraction_v147 D budget p x hp hb =
+  let numLe = weightedExposureBound_v147 budget p x hb
+      muZero = qMuZeroFromNumLe_v147 D budget
+        (allActive_v147 {n = _}) p x numLe
+      noNeg = qFirstNegativeNoneNonnegative_v147 D
+        (allActive_v147 {n = _}) p x zero
+        (λ i _ →
+          transportLe_v147 (sym (qResidualZero_v147
+            (indexV p i)
+            (indexV x i * indexV x i))) (hp i))
+      stopped = qRunStopsWhenNoNegative_v147 _
+        (initialQRun_v142 D budget p x) noNeg
+      initialForm : QRun_v142.projection
+          (initialQRun_v142 D budget p x) ≡ p =
+        trans
+          refl
+          (trans
+            (cong (λ mu → qCandidate_v142 D mu
+              (allActive_v147 {n = _}) p x) muZero)
+            (qCandidateZero_v147 D p x hp))
+  in trans stopped initialForm
+
+qRunTerminalKKT_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)

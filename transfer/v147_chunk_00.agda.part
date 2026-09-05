@@ -1,0 +1,726 @@
+{-# OPTIONS --safe #-}
+module Exotic.ERL.FullCoupled.CompleteSafe_v147 where
+
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)
+open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
+open import Agda.Builtin.Unit using (⊤; tt)
+
+
+data _⊎_ (A B : Set) : Set where
+  inj₁ : A → A ⊎ B
+  inj₂ : B → A ⊎ B
+
+data ⊥ : Set where
+
+¬_ : Set → Set
+¬ A = A → ⊥
+
+⊥-elim : {A : Set} → ⊥ → A
+⊥-elim ()
+
+data Dec (P : Set) : Set where
+  yes : P → Dec P
+  no  : ¬ P → Dec P
+
+data Bool : Set where
+  false true : Bool
+
+if_then_else_ : {A : Set} → Bool → A → A → A
+if true then x else y = x
+if false then x else y = y
+
+notB : Bool → Bool
+notB true = false
+notB false = true
+
+record Maybe (A : Set) : Set where
+  constructor just
+  field value : A
+
+data MaybeD (A : Set) : Set where
+  nothing : MaybeD A
+  justD : A → MaybeD A
+
+cong₂ :
+  {A B C : Set} →
+  (f : A → B → C) →
+  {x x' : A} →
+  {y y' : B} →
+  x ≡ x' →
+  y ≡ y' →
+  f x y ≡ f x' y'
+cong₂ f refl refl = refl
+
+------------------------------------------------------------------------
+-- Finite data
+------------------------------------------------------------------------
+
+data Fin : Nat → Set where
+  fzero : {n : Nat} → Fin (suc n)
+  fsuc  : {n : Nat} → Fin n → Fin (suc n)
+
+data Vec (A : Set) : Nat → Set where
+  [] : Vec A zero
+  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+
+indexV : ∀ {A n} → Vec A n → Fin n → A
+indexV [] ()
+indexV (x ∷ xs) fzero = x
+indexV (x ∷ xs) (fsuc i) = indexV xs i
+
+finDecEq : ∀ {n} → (i j : Fin n) → Dec (i ≡ j)
+finDecEq fzero fzero = yes refl
+finDecEq fzero (fsuc _) = no (λ ())
+finDecEq (fsuc _) fzero = no (λ ())
+finDecEq (fsuc i) (fsuc j) with finDecEq i j
+... | yes refl = yes refl
+... | no h = no (λ { refl → h refl })
+
+mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
+mapV _ [] = []
+mapV f (x ∷ xs) = f x ∷ mapV f xs
+
+zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
+zipWithV _ [] [] = []
+zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
+
+zipWith3V : ∀ {A B C D n} → (A → B → C → D) → Vec A n → Vec B n → Vec C n → Vec D n
+zipWith3V _ [] [] [] = []
+zipWith3V f (a ∷ as) (b ∷ bs) (c ∷ cs) = f a b c ∷ zipWith3V f as bs cs
+
+
+sumFin : ∀ {A : Set} → (A → A → A) → A → ∀ n → (Fin n → A) → A
+sumFin _ z zero _ = z
+sumFin op z (suc n) f = op (f fzero) (sumFin op z n (λ i → f (fsuc i)))
+
+------------------------------------------------------------------------
+-- Algebraic scalar model
+------------------------------------------------------------------------
+
+record Ring : Set₁ where
+  field
+    R : Set
+    zero one : R
+    _+_ _*_ : R → R → R
+    neg : R → R
+    addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+    addComm : ∀ x y → x + y ≡ y + x
+    addZeroL : ∀ x → zero + x ≡ x
+    addZeroR : ∀ x → x + zero ≡ x
+    addNegL : ∀ x → neg x + x ≡ zero
+    addNegR : ∀ x → x + neg x ≡ zero
+    mulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
+    mulComm : ∀ x y → x * y ≡ y * x
+    mulOneL : ∀ x → one * x ≡ x
+    mulOneR : ∀ x → x * one ≡ x
+    distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
+    zeroMulL : ∀ x → zero * x ≡ zero
+    zeroMulR : ∀ x → x * zero ≡ zero
+    negDistrib : ∀ x y → neg (x + y) ≡ neg x + neg y
+    negScale : ∀ x y → neg (x * y) ≡ x * neg y
+    negNeg : ∀ x → neg (neg x) ≡ x
+
+open Ring
+
+record OrderedRing : Set₁ where
+  field
+    ring : Ring
+  open Ring ring public
+  field
+    _≤_ _<_ : R → R → Set
+    refl≤ : ∀ x → x ≤ x
+    trans≤ : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+    antisym≤ : ∀ {x y} → x ≤ y → y ≤ x → x ≡ y
+    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d
+    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ a * b
+    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b
+    ltLe : ∀ {x y} → x < y → x ≤ y
+    leLt : ∀ {x y z} → x ≤ y → y < z → x < z
+    ltTrans : ∀ {x y z} → x < y → y < z → x < z
+    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d
+    addLtLeft : ∀ {a b c} → a < b → c + a < c + b
+    negLt : ∀ {a b} → a < b → neg b < neg a
+    negLe : ∀ {a b} → a ≤ b → neg b ≤ neg a
+    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b
+    mulLtPosCancelLeft : ∀ {a b c} → c * a < c * b → zero < c → a < b
+    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b
+    notLtFromLe : ∀ {a b} → a ≤ b → ¬ (b < a)
+    subLtZero : ∀ {a b} → a + neg b < zero → a < b
+    squarePositive : ∀ {x} → x ≠ zero → zero < x * x
+    squareNonnegative : ∀ x → zero ≤ x * x
+    zeroLtOne : zero < one
+    abs : R → R
+    absNonneg : ∀ x → zero ≤ abs x
+    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y
+    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y
+
+open OrderedRing
+
+record SmoothAlgebra : Set₁ where
+  field
+    orderedRing : OrderedRing
+  open OrderedRing orderedRing public
+  field
+    exp log tanh sigmoid : R → R
+    dexp dlog dtanh dsigmoid : R → R
+    sqrt recip max min : R → R
+    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b
+    pi : R
+    fromNat : Nat → R
+    sqrtZero : sqrt zero ≡ zero
+    recipZero : recip zero ≡ zero
+    fromNatZero : fromNat zero ≡ zero
+    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one
+    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one
+
+open SmoothAlgebra
+
+Scalar : SmoothAlgebra → Set
+Scalar S = Ring.R (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+
+VecS : SmoothAlgebra → Nat → Set
+VecS S n = Vec (Scalar S) n
+
+MatS : SmoothAlgebra → Nat → Nat → Set
+MatS S m n = Fin m → Fin n → Scalar S
+
+vAdd : ∀ {S n} → VecS S n → VecS S n → VecS S n
+vAdd {S} = zipWithV (Ring._+_ Rg)
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+vSub : ∀ {S n} → VecS S n → VecS S n → VecS S n
+vSub {S} = zipWithV minus
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  minus x y = Ring._+_ Rg x (Ring.neg Rg y)
+
+vScale : ∀ {S n} → Scalar S → VecS S n → VecS S n
+vScale {S} a = mapV (Ring._*_ Rg a)
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+vHadamard : ∀ {S n} → VecS S n → VecS S n → VecS S n
+vHadamard {S} = zipWithV (Ring._*_ Rg)
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+vDot : ∀ {S n} → VecS S n → VecS S n → Scalar S
+vDot {S} {n} x y =
+  sumFin (Ring._+_ Rg) (Ring.zero Rg) n (λ i → Ring._*_ Rg (indexV x i) (indexV y i))
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+vSum : ∀ {S n} → VecS S n → Scalar S
+vSum {S} {n} x = sumFin (Ring._+_ Rg) (Ring.zero Rg) n (λ i → indexV x i)
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+tabulateV : ∀ {A n} → (Fin n → A) → Vec A n
+tabulateV {zero} f = []
+tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))
+
+matVec : ∀ {S m n} → MatS S m n → VecS S n → VecS S m
+matVec {S} {m} {n} A x =
+  tabulateV (λ i → sumFin (Ring._+_ Rg) (Ring.zero Rg) n
+    (λ j → Ring._*_ Rg (A i j) (indexV x j)))
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+matMul : ∀ {S a b c} → MatS S a b → MatS S b c → MatS S a c
+matMul {S} {a} {b} {c} A B =
+  λ i k → sumFin (Ring._+_ Rg) (Ring.zero Rg) b
+    (λ j → Ring._*_ Rg (A i j) (B j k))
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+------------------------------------------------------------------------
+-- Seven coupled parameter blocks and finite parameter indices
+------------------------------------------------------------------------
+
+
+data Block : Set where
+  critic representation actor lstm trace idbd hyper : Block
+
+record SevenBlockSizes : Set where
+  field size : Block → Nat
+
+ParamIndex : SevenBlockSizes → Set
+ParamIndex s = Σ Block (λ b → Fin (SevenBlockSizes.size s b))
+
+blockDecEq : (a b : Block) → Dec (a ≡ b)
+blockDecEq critic critic = yes refl
+blockDecEq critic representation = no (λ ())
+blockDecEq critic actor = no (λ ())
+blockDecEq critic lstm = no (λ ())
+blockDecEq critic trace = no (λ ())
+blockDecEq critic idbd = no (λ ())
+blockDecEq critic hyper = no (λ ())
+blockDecEq representation critic = no (λ ())
+blockDecEq representation representation = yes refl
+blockDecEq representation actor = no (λ ())
+blockDecEq representation lstm = no (λ ())
+blockDecEq representation trace = no (λ ())
+blockDecEq representation idbd = no (λ ())
+blockDecEq representation hyper = no (λ ())
+blockDecEq actor critic = no (λ ())
+blockDecEq actor representation = no (λ ())
+blockDecEq actor actor = yes refl
+blockDecEq actor lstm = no (λ ())
+blockDecEq actor trace = no (λ ())
+blockDecEq actor idbd = no (λ ())
+blockDecEq actor hyper = no (λ ())
+blockDecEq lstm critic = no (λ ())
+blockDecEq lstm representation = no (λ ())
+blockDecEq lstm actor = no (λ ())
+blockDecEq lstm lstm = yes refl
+blockDecEq lstm trace = no (λ ())
+blockDecEq lstm idbd = no (λ ())
+blockDecEq lstm hyper = no (λ ())
+blockDecEq trace critic = no (λ ())
+blockDecEq trace representation = no (λ ())
+blockDecEq trace actor = no (λ ())
+blockDecEq trace lstm = no (λ ())
+blockDecEq trace trace = yes refl
+blockDecEq trace idbd = no (λ ())
+blockDecEq trace hyper = no (λ ())
+blockDecEq idbd critic = no (λ ())
+blockDecEq idbd representation = no (λ ())
+blockDecEq idbd actor = no (λ ())
+blockDecEq idbd lstm = no (λ ())
+blockDecEq idbd trace = no (λ ())
+blockDecEq idbd idbd = yes refl
+blockDecEq idbd hyper = no (λ ())
+blockDecEq hyper critic = no (λ ())
+blockDecEq hyper representation = no (λ ())
+blockDecEq hyper actor = no (λ ())
+blockDecEq hyper lstm = no (λ ())
+blockDecEq hyper trace = no (λ ())
+blockDecEq hyper idbd = no (λ ())
+blockDecEq hyper hyper = yes refl
+
+paramIndexDecEq : (s : SevenBlockSizes) → (i j : ParamIndex s) → Dec (i ≡ j)
+paramIndexDecEq s (b₁ , i₁) (b₂ , i₂) with blockDecEq b₁ b₂
+... | no h = no (λ { refl → h refl })
+... | yes refl with finDecEq i₁ i₂
+...   | no h = no (λ { refl → h refl })
+...   | yes refl = yes refl
+
+------------------------------------------------------------------------
+-- Efficient CHAD core: exact finite reverse pass + local accumulation state.
+-- Only the efficient state-passing reverse layer is retained.
+-- CHAD implementation is recreated.
+------------------------------------------------------------------------
+
+module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
+  open SmoothAlgebra S
+  Rg = OrderedRing.ring orderedRing
+  R = Ring.R Rg
+  Env = Fin n → R
+  Cot = Fin n → R
+
+  basis : Fin n → Cot
+  basis j i with finDecEq i j
+  ... | yes _ = one
+  ... | no _ = zero
+
+  zeroCot : Cot
+  zeroCot _ = zero
+
+  addCot : Cot → Cot → Cot
+  addCot a b i = a i + b i
+
+  scaleCot : R → Cot → Cot
+  scaleCot a v i = a * v i
+
+  negCot : Cot → Cot
+  negCot v i = neg (v i)
+
+  data Expr : Set where
+    const : R → Expr
+    var : Fin n → Expr
+    add : Expr → Expr → Expr
+    mul : Expr → Expr → Expr
+    negE : Expr → Expr
+    expE : Expr → Expr
+    logE : Expr → Expr
+    tanhE : Expr → Expr
+    sigmoidE : Expr → Expr
+
+  eval : Expr → Env → R
+  eval (const c) _ = c
+  eval (var i) ρ = ρ i
+  eval (add x y) ρ = eval x ρ + eval y ρ
+  eval (mul x y) ρ = eval x ρ * eval y ρ
+  eval (negE x) ρ = neg (eval x ρ)
+  eval (expE x) ρ = exp (eval x ρ)
+  eval (logE x) ρ = log (eval x ρ)
+  eval (tanhE x) ρ = tanh (eval x ρ)
+  eval (sigmoidE x) ρ = sigmoid (eval x ρ)
+
+  coeff : Expr → Env → Fin n → R
+  coeff (const _) _ _ = zero
+  coeff (var j) _ i with finDecEq i j
+  ... | yes _ = one
+  ... | no _ = zero
+  coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i
+  coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i
+  coeff (negE x) ρ i = neg (coeff x ρ i)
+  coeff (expE x) ρ i = dexp (eval x ρ) * coeff x ρ i
+  coeff (logE x) ρ i = dlog (eval x ρ) * coeff x ρ i
+  coeff (tanhE x) ρ i = dtanh (eval x ρ) * coeff x ρ i
+  coeff (sigmoidE x) ρ i = dsigmoid (eval x ρ) * coeff x ρ i
+
+  record Pullback : Set where
+    field
+      value : R
+      back : R → Cot
+
+  open Pullback
+
+  pull : Expr → Env → Pullback
+  pull (const c) _ = record { value = c ; back = λ _ → zeroCot }
+  pull (var i) ρ = record { value = ρ i ; back = λ c → scaleCot c (basis i) }
+  pull (add x y) ρ =
+    let px = pull x ρ
+        py = pull y ρ
+    in record
+      { value = value px + value py
+      ; back = λ c → addCot (back px c) (back py c)
+      }
+  pull (mul x y) ρ =
+    let px = pull x ρ
+        py = pull y ρ
+        vx = value px
+        vy = value py
+    in record
+      { value = vx * vy
+      ; back = λ c → addCot (back px (c * vy)) (back py (c * vx))
+      }
+  pull (negE x) ρ =
+    let px = pull x ρ
+    in record { value = neg (value px) ; back = λ c → negCot (back px c) }
+  pull (expE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = exp vx ; back = λ c → back px (c * dexp vx) }
+  pull (logE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = log vx ; back = λ c → back px (c * dlog vx) }
+  pull (tanhE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = tanh vx ; back = λ c → back px (c * dtanh vx) }
+  pull (sigmoidE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = sigmoid vx ; back = λ c → back px (c * dsigmoid vx) }
+
+  primalCorrect : ∀ e ρ → Pullback.value (pull e ρ) ≡ eval e ρ
+  primalCorrect (const _) _ = refl
+  primalCorrect (var _) _ = refl
+  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)
+  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)
+  primalCorrect (negE x) ρ = cong neg (primalCorrect x ρ)
+  primalCorrect (expE x) ρ = cong exp (primalCorrect x ρ)
+  primalCorrect (logE x) ρ = cong log (primalCorrect x ρ)
+  primalCorrect (tanhE x) ρ = cong tanh (primalCorrect x ρ)
+  primalCorrect (sigmoidE x) ρ = cong sigmoid (primalCorrect x ρ)
+
+  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ c * coeff e ρ i
+  vjpCoeff (const _) _ c _ = sym (Ring.zeroMulR Rg c)
+  vjpCoeff (var j) _ c i with finDecEq i j
+  ... | yes _ = sym (Ring.mulOneR Rg c)
+  ... | no _ = sym (Ring.zeroMulR Rg c)
+  vjpCoeff (add x y) ρ c i =
+    trans
+      (cong₂ _+_ (vjpCoeff x ρ c i) (vjpCoeff y ρ c i))
+      (sym (Ring.distrib Rg c (coeff x ρ i) (coeff y ρ i)))
+  vjpCoeff (mul x y) ρ c i =
+    trans
+      (cong₂ _+_
+        (vjpCoeff x ρ (c * eval y ρ) i)
+        (vjpCoeff y ρ (c * eval x ρ) i))
+      (sym (Ring.distrib Rg c (eval y ρ * coeff x ρ i) (eval x ρ * coeff y ρ i)))
+  vjpCoeff (negE x) ρ c i =
+    trans (cong neg (vjpCoeff x ρ c i)) (sym (Ring.negScale Rg c (coeff x ρ i)))
+  vjpCoeff (expE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dexp (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dexp (eval x ρ)) (coeff x ρ i))
+  vjpCoeff (logE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dlog (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dlog (eval x ρ)) (coeff x ρ i))
+  vjpCoeff (tanhE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dtanh (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dtanh (eval x ρ)) (coeff x ρ i))
+  vjpCoeff (sigmoidE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dsigmoid (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dsigmoid (eval x ρ)) (coeff x ρ i))
+
+  data EState : Set where
+    state : Cot → EState
+
+  runState : EState → Cot
+  runState (state c) = c
+
+  accumulate : Fin n → R → EState → EState
+  accumulate i c (state s) = state (λ j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j)
+
+  runBack : ∀ e ρ c → EState → EState
+  runBack e ρ c s =
+    let b = Pullback.back (pull e ρ) c in
+    state (λ i → runState s i + b i)
+
+  runBackZero : ∀ e ρ c i →
+    runState (runBack e ρ c (state zeroCot)) i ≡ c * coeff e ρ i
+  runBackZero e ρ c i =
+    trans (Ring.addZeroL Rg (Pullback.back (pull e ρ) c i))
+      (vjpCoeff e ρ c i)
+
+
+------------------------------------------------------------------------
+-- Concrete neural network components
+------------------------------------------------------------------------
+
+record Affine (S : SmoothAlgebra) (din dout : Nat) : Set where
+  field
+    weight : MatS S dout din
+    bias : VecS S dout
+
+record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
+  field
+    gain shift : VecS S d
+    epsilon : Scalar S
+    epsilonPositive : zero < epsilon
+
+record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where
+  field
+    inputWeight : MatS S hidden input
+    recurrentWeight : MatS S hidden hidden
+    bias : VecS S hidden
+    norm : LayerNorm S hidden
+
+record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where
+  field
+    forgetGate inputGate outputGate candidateGate : RecurrentAffine S input hidden
+
+record LSTMBlock (S : SmoothAlgebra) (input hidden : Nat) : Set where
+  field gates : LSTMGates S input hidden
+
+record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where
+  field hidden cell : VecS S hidden
+
+record Actor (S : SmoothAlgebra) (stateDim actionDim : Nat) : Set where
+  field
+    weight : MatS S actionDim stateDim
+    bias : VecS S actionDim
+
+record Critic (S : SmoothAlgebra) (hiddenDim : Nat) : Set where
+  field
+    weight : VecS S hiddenDim
+    bias : Scalar S
+
+sigmoidV : ∀ {S n} → VecS S n → VecS S n
+sigmoidV {S} = mapV (SmoothAlgebra.sigmoid S)
+
+tanhV : ∀ {S n} → VecS S n → VecS S n
+tanhV {S} = mapV (SmoothAlgebra.tanh S)
+
+squareV : ∀ {S n} → VecS S n → VecS S n
+squareV xs = vHadamard xs xs
+
+layerNormalise : ∀ {S d} → LayerNorm S d → VecS S d → VecS S d
+layerNormalise {S} {d} ln xs =
+  shiftScale (scaleShift (mapV normalise xs) (LayerNorm.gain ln)) (LayerNorm.shift ln)
+  where
+  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)
+  centered x = x + neg μ
+  variance = vSum (squareV (mapV centered xs))
+    * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)
+  invStd = SmoothAlgebra.recip S
+    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))
+  normalise x = centered x * invStd
+  scaleShift : ∀ {m} → VecS S m → VecS S m → VecS S m
+  scaleShift [] [] = []
+  scaleShift (x ∷ xs) (g ∷ gs) =
+    let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S) in
+    (g * normalise x) ∷ scaleShift xs gs
+  shiftScale : ∀ {m} → VecS S m → VecS S m → VecS S m
+  shiftScale [] [] = []
+  shiftScale (x ∷ xs) (b ∷ bs) =
+    let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S) in
+    (x + b) ∷ shiftScale xs bs
+
+
+recurrentAffine : ∀ {S input hidden} →
+  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden
+recurrentAffine layer x h =
+  vAdd
+    (vAdd
+      (matVec (RecurrentAffine.inputWeight layer) x)
+      (matVec (RecurrentAffine.recurrentWeight layer) h))
+    (RecurrentAffine.bias layer)
+
+sigmoidGate : ∀ {S input hidden} →
+  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden
+sigmoidGate layer x h =
+  sigmoidV (layerNormalise (RecurrentAffine.norm layer) (recurrentAffine layer x h))
+
+tanhGate : ∀ {S input hidden} →
+  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden
+tanhGate layer x h =
+  tanhV (layerNormalise (RecurrentAffine.norm layer) (recurrentAffine layer x h))
+
+lstmStep : ∀ {S input hidden} →
+  LSTMBlock S input hidden → LSTMState S hidden → VecS S input → LSTMState S hidden
+lstmStep block old x =
+  let g = LSTMGates.gates (LSTMBlock.gates block)
+      h = LSTMState.hidden old
+      f = sigmoidGate (LSTMGates.forgetGate g) x h
+      i = sigmoidGate (LSTMGates.inputGate g) x h
+      o = sigmoidGate (LSTMGates.outputGate g) x h
+      c = tanhGate (LSTMGates.candidateGate g) x h
+      cell' = vAdd (vHadamard f (LSTMState.cell old)) (vHadamard i c)
+      hidden' = vHadamard o (tanhV cell')
+  in record { hidden = hidden' ; cell = cell' }
+
+actorAction : ∀ {S stateDim actionDim} →
+  Actor S stateDim actionDim → VecS S stateDim → VecS S actionDim
+actorAction a s = tanhV (vAdd (matVec (Actor.weight a) s) (Actor.bias a))
+
+criticValue : ∀ {S hiddenDim} →
+  Critic S hiddenDim → VecS S hiddenDim → Scalar S
+criticValue c h = vDot (Critic.weight c) h + Critic.bias c
+
+appendV_v146 : ∀ {A m n} → Vec A m → Vec A n → Vec A (m + n)
+appendV_v146 [] ys = ys
+appendV_v146 (x ∷ xs) ys = x ∷ appendV_v146 xs ys
+
+lstmRun_v146 : ∀ {S input hidden n}
+  (block : LSTMBlock S input hidden) →
+  LSTMState S hidden → Vec (VecS S input) n → LSTMState S hidden
+lstmRun_v146 block state [] = state
+lstmRun_v146 block state (x ∷ xs) = lstmRun_v146 block (lstmStep block state x) xs
+
+lstmRunAppend_v146 : ∀ {S input hidden m n}
+  (block : LSTMBlock S input hidden)
+  (state : LSTMState S hidden)
+  (xs : Vec (VecS S input) m)
+  (ys : Vec (VecS S input) n) →
+  lstmRun_v146 block state (appendV_v146 xs ys) ≡
+  lstmRun_v146 block (lstmRun_v146 block state xs) ys
+lstmRunAppend_v146 block state [] ys = refl
+lstmRunAppend_v146 block state (x ∷ xs) ys =
+  lstmRunAppend_v146 block (lstmStep block state x) xs ys
+
+record GaussianShaping (S : SmoothAlgebra) (actionDim : Nat) : Set where
+  field
+    sigma : VecS S actionDim
+    sigmaPositive : ∀ i → zero < indexV sigma i
+
+gaussianCoordinateTerm : ∀ {S} → Scalar S → Scalar S → Scalar S → Scalar S
+gaussianCoordinateTerm {S} sigma mu a =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+      d = Ring._+_ Rg a (Ring.neg Rg mu)
+      s2 = Ring._*_ Rg sigma sigma
+      quad = Ring._*_ Rg (Ring._*_ Rg d d)
+        (SmoothAlgebra.recip S s2)
+      normaliser = SmoothAlgebra.log S
+        (Ring._*_ Rg
+          (Ring._*_ Rg (SmoothAlgebra.fromNat S 2) (SmoothAlgebra.pi S)) s2)
+  in Ring._+_ Rg quad normaliser
+
+gaussianLogPiExp : ∀ {S d} →
+  GaussianShaping S d → VecS S d → VecS S d → Scalar S
+gaussianLogPiExp {S} g μ a =
+  Ring.neg Rg
+    (Ring._*_ Rg
+      (SmoothAlgebra.recip S (SmoothAlgebra.fromNat S 2))
+      (sumGaussian (GaussianShaping.sigma g) μ a))
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  sumGaussian : ∀ {m} → VecS S m → VecS S m → VecS S m → Scalar S
+  sumGaussian [] [] [] = Ring.zero Rg
+  sumGaussian (s ∷ ss) (m ∷ ms) (a' ∷ as) =
+    Ring._+_ Rg (gaussianCoordinateTerm s m a')
+      (sumGaussian ss ms as)
+
+
+vNeg_v140 : ∀ {S n} → VecS S n → VecS S n
+vNeg_v140 {S} = mapV (Ring.neg Rg)
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+vZero_v140 : ∀ {S n} → VecS S n
+vZero_v140 {S} {zero} = []
+vZero_v140 {S} {suc n} =
+  Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S)) ∷ vZero_v140
+
+vAddZeroL_v140 : ∀ {S n} (x : VecS S n) → ∀ i →
+  indexV (vAdd (vZero_v140 {S} {n}) x) i ≡ indexV x i
+vAddZeroL_v140 [] ()
+vAddZeroL_v140 (x ∷ xs) fzero = Ring.addZeroL (OrderedRing.ring _) x
+vAddZeroL_v140 (x ∷ xs) (fsuc i) = vAddZeroL_v140 xs i
+
+vAddZeroR_v140 : ∀ {S n} (x : VecS S n) → ∀ i →
+  indexV (vAdd x (vZero_v140 {S} {n})) i ≡ indexV x i
+vAddZeroR_v140 [] ()
+vAddZeroR_v140 (x ∷ xs) fzero = Ring.addZeroR (OrderedRing.ring _) x
+vAddZeroR_v140 (x ∷ xs) (fsuc i) = vAddZeroR_v140 xs i
+
+vAddComm_v140 : ∀ {S n} (x y : VecS S n) → ∀ i →
+  indexV (vAdd x y) i ≡ indexV (vAdd y x) i
+vAddComm_v140 [] [] ()
+vAddComm_v140 (x ∷ xs) (y ∷ ys) fzero = Ring.addComm (OrderedRing.ring _) x y
+vAddComm_v140 (x ∷ xs) (y ∷ ys) (fsuc i) = vAddComm_v140 xs ys i
+
+vAddAssoc_v140 : ∀ {S n} (x y z : VecS S n) → ∀ i →
+  indexV (vAdd (vAdd x y) z) i ≡ indexV (vAdd x (vAdd y z)) i
+vAddAssoc_v140 [] [] [] ()
+vAddAssoc_v140 (x ∷ xs) (y ∷ ys) (z ∷ zs) fzero = Ring.addAssoc (OrderedRing.ring _) x y z
+vAddAssoc_v140 (x ∷ xs) (y ∷ ys) (z ∷ zs) (fsuc i) = vAddAssoc_v140 xs ys zs i
+
+vScaleZero_v140 : ∀ {S n} (x : VecS S n) → ∀ i →
+  indexV (vScale (Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))) x) i ≡
+  Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+vScaleZero_v140 [] ()
+vScaleZero_v140 (x ∷ xs) fzero = Ring.zeroMulL (OrderedRing.ring _) x
+vScaleZero_v140 (x ∷ xs) (fsuc i) = vScaleZero_v140 xs i
+
+vScaleOne_v140 : ∀ {S n} (x : VecS S n) → ∀ i →
+  indexV (vScale (Ring.one (OrderedRing.ring (SmoothAlgebra.orderedRing S))) x) i ≡ indexV x i
+vScaleOne_v140 [] ()
+vScaleOne_v140 (x ∷ xs) fzero = Ring.mulOneL (OrderedRing.ring _) x
+vScaleOne_v140 (x ∷ xs) (fsuc i) = vScaleOne_v140 xs i
+
+vScaleMul_v140 : ∀ {S n} (a b : Scalar S) (x : VecS S n) → ∀ i →
+  indexV (vScale (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)) a b) x) i ≡
+  indexV (vScale a (vScale b x)) i
+vScaleMul_v140 a b [] ()
+vScaleMul_v140 a b (x ∷ xs) fzero = Ring.mulAssoc (OrderedRing.ring _) a b x
+vScaleMul_v140 a b (x ∷ xs) (fsuc i) = vScaleMul_v140 a b xs i
+
+vScaleAdd_v140 : ∀ {S n} (a : Scalar S) (x y : VecS S n) → ∀ i →
+  indexV (vScale a (vAdd x y)) i ≡ indexV (vAdd (vScale a x) (vScale a y)) i
+vScaleAdd_v140 a [] [] ()
+vScaleAdd_v140 a (x ∷ xs) (y ∷ ys) fzero = Ring.distrib (OrderedRing.ring _) a x y
+vScaleAdd_v140 a (x ∷ xs) (y ∷ ys) (fsuc i) = vScaleAdd_v140 a xs ys i
+
+vHadamardComm_v140 : ∀ {S n} (x y : VecS S n) → ∀ i →
+  indexV (vHadamard x y) i ≡ indexV (vHadamard y x) i
+vHadamardComm_v140 [] [] ()
+vHadamardComm_v140 (x ∷ xs) (y ∷ ys) fzero = Ring.mulComm (OrderedRing.ring _) x y
+vHadamardComm_v140 (x ∷ xs) (y ∷ ys) (fsuc i) = vHadamardComm_v140 xs ys i
+
+vDotComm_v140 : ∀ {S n} (x y : VecS S n) → vDot x y ≡ vDot y x
+vDotComm_v140 {S} {zero} [] [] = refl
+vDotComm_v140 {S} {suc n} (x ∷ xs) (y ∷ ys) =
+  trans
+    (cong₂ (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))
+      (Ring.mulComm (OrderedRing.ring (SmoothAlgebra.orderedRing S)) x y)
+      (vDotComm_v140 xs ys))
+    refl

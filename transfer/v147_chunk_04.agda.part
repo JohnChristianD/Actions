@@ -1,0 +1,317 @@
+141.parameter b
+
+barrierSnapshot_v141 : ∀ {S lanes width}
+  (b : RectangularLaneBatch_v141 S lanes width) (i j : Fin lanes) →
+  barrierRead_v141 b i ≡ barrierRead_v141 b j
+barrierSnapshot_v141 b i j = refl
+
+record LaneCommit_v141 (S : SmoothAlgebra) (lanes width : Nat) : Set where
+  field
+    preCommit : VecS S width
+    update : Fin lanes → VecS S width
+
+commitBarrier_v141 : ∀ {S lanes width} → LaneCommit_v141 S (suc lanes) width → VecS S width
+commitBarrier_v141 c = vAdd (LaneCommit_v141.preCommit c) (LaneCommit_v141.update c fzero)
+
+record RectangularBarrier_v146 (S : SmoothAlgebra) (lanes width : Nat) : Set where
+  field
+    parameters : VecS S width
+    laneInput : Fin lanes → VecS S width
+    laneReward : Fin lanes → Scalar S
+
+rectangularBarrierRead_v146 : ∀ {S lanes width}
+  (b : RectangularBarrier_v146 S lanes width) → Fin lanes → VecS S width
+rectangularBarrierRead_v146 b _ = RectangularBarrier_v146.parameters b
+
+barrierSnapshot_v146 : ∀ {S lanes width}
+  (b : RectangularBarrier_v146 S lanes width) (i j : Fin lanes) →
+  rectangularBarrierRead_v146 b i ≡ rectangularBarrierRead_v146 b j
+barrierSnapshot_v146 b i j = refl
+
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Javed Algorithm-3 state carrier.  The canonical v145 transition below is
+-- the only active fast update; it supplies l2 as decay and eta as meta-step.
+------------------------------------------------------------------------
+
+record CoupledIDBDState_v146 (S : SmoothAlgebra) (n : Nat) : Set where
+  field
+    weights beta hOld hTemp zDelta pTrace hTrace zTrace zBar : VecS S n
+    vDeltaOld vOld : Scalar S
+
+vExp_v142 : ∀ {S n} → VecS S n → VecS S n
+vExp_v142 {S} = mapV (SmoothAlgebra.exp S)
+
+vLog_v142 : ∀ {S n} → VecS S n → VecS S n
+vLog_v142 {S} = mapV (SmoothAlgebra.log S)
+
+
+dpgAction_v146 : ∀ {S stateDim actionDim}
+  (a : Actor S stateDim actionDim) (state : VecS S stateDim) → VecS S actionDim
+dpgAction_v146 = actorAction
+
+------------------------------------------------------------------------
+-- Active outer QD = finite fixed-centroid CVT-MAP-Elites + ME-OpenES.
+-- The centroid table is finite input data. QDax's runtime nearest-centroid
+-- rule is reproduced by finite squared-distance comparison; centroid creation
+-- (random sampling/k-means in the reference implementation) is deliberately
+-- not a theorem of this algebraic kernel.
+------------------------------------------------------------------------
+
+record CVTTable_v142 (S : SmoothAlgebra) (d cells : Nat) : Set where
+  field centroids : Vec (VecS S d) cells
+
+squaredDistance_v142 : ∀ {S d} → VecS S d → VecS S d → Scalar S
+squaredDistance_v142 x y = vDot (vSub x y) (vSub x y)
+
+record Nearest_v142 (S : SmoothAlgebra) (cells : Nat) : Set where
+  field
+    index : Fin (suc cells)
+    distance : Scalar S
+
+nearest_v142 : ∀ {S desc cells} → QProjectionDecisionAlgebra_v140 S →
+  Vec (VecS S desc) (suc cells) → VecS S desc → Nearest_v142 S cells
+nearest_v142 D (c ∷ []) x = record
+  { index = fzero
+  ; distance = squaredDistance_v142 x c
+  }
+nearest_v142 D (c ∷ c' ∷ cs) x with nearest_v142 D (c' ∷ cs) x
+... | best with QProjectionDecisionAlgebra_v140.leDec D
+      (squaredDistance_v142 x c)
+      (Nearest_v142.distance best)
+...   | yes _ = record
+        { index = fzero
+        ; distance = squaredDistance_v142 x c
+        }
+...   | no _ = record
+        { index = fsuc (Nearest_v142.index best)
+        ; distance = Nearest_v142.distance best
+        }
+
+record CVTSlot_v142 (S : SmoothAlgebra) : Set where
+  field
+    occupied : Bool
+    fitness : Scalar S
+
+record CVTArchive_v142 (S : SmoothAlgebra) (cells : Nat) : Set where
+  field cell : Fin cells → CVTSlot_v142 S
+
+insertCVT_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
+  CVTArchive_v142 S cells → Fin cells → Scalar S → CVTArchive_v142 S cells
+insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }
+
+record AntitheticSample_v142 (S : SmoothAlgebra) (n : Nat) : Set where
+  field direction : VecS S n
+        plusFitness minusFitness : Scalar S
+
+antitheticSum_v142 : ∀ {S n k} → Vec (AntitheticSample_v142 S n) k → VecS S n
+antitheticSum_v142 [] = vZero_v140
+antitheticSum_v142 (s ∷ ss) =
+  vAdd
+    (vScale (AntitheticSample_v142.plusFitness s + neg (AntitheticSample_v142.minusFitness s))
+      (AntitheticSample_v142.direction s))
+    (antitheticSum_v142 ss)
+
+openESGradient_v142 : ∀ {S n k} → Scalar S → Vec (AntitheticSample_v142 S n) (suc k) → VecS S n
+openESGradient_v142 sigma {k = k} samples =
+  vScale
+    (SmoothAlgebra.recip _ (fromNat _ (suc k) * (one + one) * sigma))
+    (antitheticSum_v142 samples)
+
+openESMeanUpdate_v142 : ∀ {S n} → Scalar S → VecS S n → VecS S n → VecS S n
+openESMeanUpdate_v142 eta mean grad = vAdd mean (vScale eta grad)
+
+antitheticScalarCancel_v142 : ∀ {S n} (z : VecS S n) i →
+  indexV (vAdd z (vNeg_v140 z)) i ≡ zero
+antitheticScalarCancel_v142 z i =
+  trans (Ring.addNegR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) (indexV z i))
+    refl
+
+
+------------------------------------------------------------------------
+-- Scope note: finite deterministic QSA, finite replay, finite CVT assignment,
+-- OpenES estimator algebra, and learner recurrences are all closed here.
+-- General measures, QMC integral convergence, almost-sure recurrence, and
+-- infinite-horizon convergence are not algebraic identities and are therefore
+-- not fabricated as theorems in this single-file algebraic development.
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Constructive KKT theorem fragment: when the finite terminal mask has the
+-- algebraically derived residual sign invariant, the candidate is exactly the
+-- KKT positive-part stationarity solution. Feasibility/complementarity remain
+-- ordinary theorem premises; the result is an algebraic equality, not a data theorem-premise.
+------------------------------------------------------------------------
+
+qProjectionKKTTheorem_v146 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (mu : Scalar S)
+  (alpha x : VecS S n)
+  (mask : Vec Bool n) →
+  (∀ i → indexV mask i ≡ true →
+    zero ≤ qResidual_v142 mu (indexV alpha i)
+      (indexV x i * indexV x i)) →
+  (∀ i → indexV mask i ≡ false →
+    qResidual_v142 mu (indexV alpha i)
+      (indexV x i * indexV x i) ≤ zero) →
+  (∀ i →
+    indexV (qCandidate_v142 D mu mask alpha x) i ≡
+    SmoothAlgebra.max _ zero
+      (qResidual_v142 mu (indexV alpha i)
+        (indexV x i * indexV x i)))
+qProjectionKKTTheorem_v146 D mu alpha x mask activeSign inactiveSign =
+  stationarity
+  where
+  stationarity : ∀ i →
+    indexV (qCandidate_v142 D mu mask alpha x) i ≡
+    SmoothAlgebra.max _ zero
+      (qResidual_v142 mu (indexV alpha i)
+        (indexV x i * indexV x i))
+  stationarity i with indexV mask i
+  ... | true = qProjectionCandidateActive_v140 D mu alpha x mask i refl (activeSign i refl)
+  ... | false =
+    trans
+      (qProjectionCandidateInactive_v140 D mu alpha x mask i refl)
+      (sym (QProjectionDecisionAlgebra_v140.maxZero D _ (inactiveSign i refl)))
+
+------------------------------------------------------------------------
+-- Environment-agnostic descriptors. Exactly three finite algebraic signals:
+-- observation energy, action energy, and alive time.
+------------------------------------------------------------------------
+
+record DescriptorSignals_v146 (S : SmoothAlgebra) : Set where
+  field
+    obsEnergy actionEnergy : Scalar S
+    alive : Bool
+
+record DescriptorScale_v146 (S : SmoothAlgebra) : Set where
+  field
+    obsScale actionScale horizonScale : Scalar S
+    obsScalePositive : zero < obsScale
+    actionScalePositive : zero < actionScale
+    horizonScalePositive : zero < horizonScale
+
+aliveScalar_v146 : ∀ {S} → Bool → Scalar S
+aliveScalar_v146 false = zero
+aliveScalar_v146 true = one
+
+descriptorStepAdd_v146 : ∀ {S}
+  (scale : DescriptorScale_v146 S) → DescriptorSignals_v146 S → VecS S 3
+descriptorStepAdd_v146 sc s =
+  (DescriptorSignals_v146.obsEnergy s *
+   SmoothAlgebra.recip _ (DescriptorScale_v146.obsScale sc))
+  ∷ (DescriptorSignals_v146.actionEnergy s *
+   SmoothAlgebra.recip _ (DescriptorScale_v146.actionScale sc))
+  ∷ (aliveScalar_v146 (DescriptorSignals_v146.alive s) *
+   SmoothAlgebra.recip _ (DescriptorScale_v146.horizonScale sc))
+  ∷ []
+
+descriptorSum_v146 : ∀ {S n}
+  (xs : Vec (DescriptorSignals_v146 S) n) → DescriptorScale_v146 S → VecS S 3
+descriptorSum_v146 [] sc = vZero_v140
+descriptorSum_v146 (x ∷ xs) sc =
+  vAdd (descriptorStepAdd_v146 sc x) (descriptorSum_v146 xs sc)
+
+vecExt_v146 : ∀ {A n} {x y : Vec A n} →
+  (∀ i → indexV x i ≡ indexV y i) → x ≡ y
+vecExt_v146 {n = zero} {x = []} {y = []} p = refl
+vecExt_v146 {n = suc n} {x = x ∷ xs} {y = y ∷ ys} p =
+  cong₂ _∷_ (p fzero) (vecExt_v146 (λ i → p (fsuc i)))
+
+descriptorSumAppend_v146 : ∀ {S m n}
+  (a : Vec (DescriptorSignals_v146 S) m)
+  (b : Vec (DescriptorSignals_v146 S) n)
+  (sc : DescriptorScale_v146 S) →
+  descriptorSum_v146 (appendV_v146 a b) sc ≡
+  vAdd (descriptorSum_v146 a sc) (descriptorSum_v146 b sc)
+descriptorSumAppend_v146 [] b sc = refl
+descriptorSumAppend_v146 (a ∷ as) b sc =
+  trans
+    (cong₂ vAdd refl (descriptorSumAppend_v146 as b sc))
+    (sym (vecExt_v146 (λ i →
+      vAddAssoc_v140
+        (descriptorStepAdd_v146 sc a)
+        (descriptorSum_v146 as sc)
+        (descriptorSum_v146 b sc) i)))
+
+descriptorClosure_v146 : ∀ {S n}
+  (xs : Vec (DescriptorSignals_v146 S) n) → DescriptorScale_v146 S → VecS S 3
+descriptorClosure_v146 = descriptorSum_v146
+
+data RepresentationMode_v146 : Set where
+  LSTMOnly_v146 : RepresentationMode_v146
+  AffineOnly_v146 : RepresentationMode_v146
+
+data ReplayMode_v146 : Set where
+  NoReplay_v146 : ReplayMode_v146
+  OrderedTapeReplay_v146 : ReplayMode_v146
+
+data QDArchiveMode_v146 : Set where
+  CVTME_v146 : QDArchiveMode_v146
+  GridME_v146 : QDArchiveMode_v146
+
+data QSASeedMode_v146 : Set where
+  XorShift64_v146 : QSASeedMode_v146
+  ExternalPRNG_v146 : QSASeedMode_v146
+
+representationForward_v146 : ∀ {S input hidden}
+  → RepresentationMode_v146 → Affine S input hidden →
+    LSTMBlock S input hidden → LSTMState S hidden → VecS S input → VecS S hidden
+representationForward_v146 AffineOnly_v146 affine block state x =
+  vAdd (matVec (Affine.weight affine) x) (Affine.bias affine)
+representationForward_v146 LSTMOnly_v146 affine block state x =
+  LSTMState.hidden (lstmStep block state x)
+
+replayTransitionSelect_v146 : ∀ {S stateDim actionDim}
+  → ReplayMode_v146
+  → ReplayTransition_v141 S stateDim actionDim
+  → ReplayTransition_v141 S stateDim actionDim
+  → ReplayTransition_v141 S stateDim actionDim
+replayTransitionSelect_v146 NoReplay_v146 live _ = live
+replayTransitionSelect_v146 OrderedTapeReplay_v146 _ replayed = replayed
+
+replayTransitionSelectLaw_v146 : ∀ {S stateDim actionDim}
+  (m : ReplayMode_v146)
+  (live replayed : ReplayTransition_v141 S stateDim actionDim) →
+  replayTransitionSelect_v146 m live replayed ≡ replayTransitionSelect_v146 m live replayed
+replayTransitionSelectLaw_v146 _ _ _ = refl
+
+record GridCell_v146 (S : SmoothAlgebra) (cells : Nat) : Set where
+  field index : Fin cells
+
+archiveAssign_v146 : ∀ {S desc cells}
+  → QDArchiveMode_v146
+  → QProjectionDecisionAlgebra_v140 S
+  → Vec (VecS S desc) (suc cells)
+  → VecS S desc
+  → GridCell_v146 S (suc cells)
+  → Fin (suc cells)
+archiveAssign_v146 CVTME_v146 D centroids x grid =
+  Nearest_v142.index (nearest_v142 D centroids x)
+archiveAssign_v146 GridME_v146 D centroids x grid =
+  GridCell_v146.index grid
+
+archiveAssignmentCVTLaw_v146 : ∀ {S desc cells}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (centroids : Vec (VecS S desc) (suc cells))
+  (x : VecS S desc)
+  (grid : GridCell_v146 S (suc cells)) →
+  archiveAssign_v146 CVTME_v146 D centroids x grid ≡
+  Nearest_v142.index (nearest_v142 D centroids x)
+archiveAssignmentCVTLaw_v146 D centroids x grid = refl
+
+------------------------------------------------------------------------
+-- v145 canonical coupling: l2 is decay; eta is the IDBD meta-step.
+-- The decay floor is an explicit algebraic constant/contract and never reuses eta.
+-- Zero l2 remains identity-null; positive l2 is clamped to the declared floor.
+------------------------------------------------------------------------

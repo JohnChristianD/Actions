@@ -1,0 +1,288 @@
+---------------------------
+-- Neural components: the exact finite functional core shared by the
+-- baseline-family-style implementations inspected in the source ecosystem.
+------------------------------------------------------------------------
+
+data LSTMFamily_v140 : Set where
+  Stoix : LSTMFamily_v140
+  CleanRL : LSTMFamily_v140
+  PureJaxQL : LSTMFamily_v140
+  PureJaxRL : LSTMFamily_v140
+  CraftaxBaselines : LSTMFamily_v140
+  JaxRL : LSTMFamily_v140
+  JaxBaselines : LSTMFamily_v140
+  Rejax : LSTMFamily_v140
+
+lstmGateRecord_v140 : ∀ {S input hidden}
+  (g : LSTMGates S input hidden) →
+  LSTMGates.gates (record { gates = g }) ≡ g
+lstmGateRecord_v140 g = refl
+
+actorAction_v140 : ∀ {S stateDim actionDim}
+  (a : Actor S stateDim actionDim) (s : VecS S stateDim) →
+  actorAction a s ≡
+  tanhV (vAdd (matVec (Actor.weight a) s) (Actor.bias a))
+actorAction_v140 _ _ = refl
+
+criticValue_v140 : ∀ {S hiddenDim}
+  (c : Critic S hiddenDim) (h : VecS S hiddenDim) →
+  criticValue c h ≡ vDot (Critic.weight c) h + Critic.bias c
+criticValue_v140 _ _ = refl
+
+recurrentAffine_v140 : ∀ {S input hidden}
+  (a : RecurrentAffine S input hidden)
+  (x : VecS S input) (h : VecS S hidden) →
+  recurrentAffine a x h ≡
+  vAdd
+    (vAdd (matVec (RecurrentAffine.inputWeight a) x)
+      (matVec (RecurrentAffine.recurrentWeight a) h))
+    (RecurrentAffine.bias a)
+recurrentAffine_v140 _ _ _ = refl
+
+------------------------------------------------------------------------
+-- q-exposure projection: constructive finite coordinate algebra.
+------------------------------------------------------------------------
+
+record QProjectionDecisionAlgebra_v140 (S : SmoothAlgebra) : Set₁ where
+  open SmoothAlgebra S
+  field
+    leDec : ∀ x y → Dec (x ≤ y)
+    ltDec : ∀ x y → Dec (x < y)
+    maxNonnegative : ∀ x → zero ≤ max zero x
+    maxPositive : ∀ x → zero ≤ x → max zero x ≡ x
+    maxZero : ∀ x → x ≤ zero → max zero x ≡ zero
+    negNonnegative : ∀ x → x ≤ zero → zero ≤ neg x
+    subNonpositive : ∀ a b → a + neg b ≤ zero → a ≤ b
+
+residual_v140 : ∀ {S n} → Scalar S → VecS S n → VecS S n → Fin n → Scalar S
+residual_v140 mu alpha x i =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  in Ring._+_ Rg (indexV alpha i)
+       (Ring.neg Rg (Ring._*_ Rg mu (indexV x i * indexV x i)))
+
+qProjectionNumerator_v140 : ∀ {S n} → Scalar S → VecS S n → VecS S n →
+  Vec Bool n → Scalar S
+qProjectionNumerator_v140 {S} budget alpha x m =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  in maskSum_v140 S m (λ i → Ring._*_ Rg (indexV alpha i) (indexV x i * indexV x i))
+     + Ring.neg Rg budget
+  where
+  maskSum_v140 : ∀ {S n} → SmoothAlgebra S →
+    Vec Bool n → (Fin n → Scalar S) → Scalar S
+  maskSum_v140 S {zero} [] f = Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+  maskSum_v140 S {suc n} (b ∷ bs) f =
+    let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S) in
+    (if b then f fzero else Ring.zero Rg)
+      + maskSum_v140 S bs (λ i → f (fsuc i))
+
+
+qProjectionCandidate_v140 : ∀ {S n} →
+  QProjectionDecisionAlgebra_v140 S → Scalar S → VecS S n → VecS S n →
+  Vec Bool n → VecS S n
+qProjectionCandidate_v140 {S} d mu alpha x m = candidate m alpha x
+  where
+  candidate : ∀ {k} → Vec Bool k → VecS S k → VecS S k → VecS S k
+  candidate [] [] [] = []
+  candidate (b ∷ bs) (a ∷ as) (xv ∷ xs) =
+    if b then
+      SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)
+        ∷ candidate bs as xs
+    else
+      zero ∷ candidate bs as xs
+
+qProjectionCandidateNonnegative_v140 : ∀ {S n}
+  (d : QProjectionDecisionAlgebra_v140 S)
+  (mu : Scalar S) (alpha x : VecS S n) (m : Vec Bool n) (i : Fin n) →
+  zero ≤ indexV (qProjectionCandidate_v140 d mu alpha x m) i
+qProjectionCandidateNonnegative_v140 d mu [] [] [] ()
+qProjectionCandidateNonnegative_v140 d mu (a ∷ as) (x ∷ xs) (b ∷ bs) fzero with b
+... | true = QProjectionDecisionAlgebra_v140.maxNonnegative d _
+... | false = OrderedRing.refl≤ _
+qProjectionCandidateNonnegative_v140 d mu (a ∷ as) (x ∷ xs) (b ∷ bs) (fsuc i) =
+  qProjectionCandidateNonnegative_v140 d mu as xs bs i
+
+qProjectionCandidateActive_v140 : ∀ {S n}
+  (d : QProjectionDecisionAlgebra_v140 S)
+  (mu : Scalar S) (alpha x : VecS S n) (m : Vec Bool n) (i : Fin n) →
+  indexV m i ≡ true → zero ≤ residual_v140 mu alpha x i →
+  indexV (qProjectionCandidate_v140 d mu alpha x m) i ≡ residual_v140 mu alpha x i
+qProjectionCandidateActive_v140 d mu (a ∷ as) (x ∷ xs) (true ∷ bs) fzero refl h =
+  QProjectionDecisionAlgebra_v140.maxPositive d _ h
+qProjectionCandidateActive_v140 d mu (a ∷ as) (x ∷ xs) (false ∷ bs) fzero () h
+qProjectionCandidateActive_v140 d mu (a ∷ as) (x ∷ xs) (b ∷ bs) (fsuc i) hm h =
+  qProjectionCandidateActive_v140 d mu as xs bs i hm h
+
+qProjectionCandidateInactive_v140 : ∀ {S n}
+  (d : QProjectionDecisionAlgebra_v140 S)
+  (mu : Scalar S) (alpha x : VecS S n) (m : Vec Bool n) (i : Fin n) →
+  indexV m i ≡ false →
+  indexV (qProjectionCandidate_v140 d mu alpha x m) i ≡ zero
+qProjectionCandidateInactive_v140 d mu (a ∷ as) (x ∷ xs) (false ∷ bs) fzero refl = refl
+qProjectionCandidateInactive_v140 d mu (a ∷ as) (x ∷ xs) (true ∷ bs) fzero ()
+qProjectionCandidateInactive_v140 d mu (a ∷ as) (x ∷ xs) (b ∷ bs) (fsuc i) hm =
+  qProjectionCandidateInactive_v140 d mu as xs bs i
+
+------------------------------------------------------------------------
+-- Exact finite deletion inequality: yd < nz for a negative residual.
+------------------------------------------------------------------------
+
+residualSquareNonzero_v140 : ∀ {S}
+  {alpha mu x : Scalar S} →
+  zero ≤ alpha →
+  alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    (mu * (x * x)) < zero → x ≠ zero
+residualSquareNonzero_v140 ha hr hx =
+  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        (mu * (hx * hx)) ≡ alpha =
+      trans
+        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
+          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
+        (Ring.addZeroR (OrderedRing.ring _) alpha)
+  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))
+
+------------------------------------------------------------------------
+-- The clean, reusable cross-multiplication theorem is derived from the
+-- already-derived finite projection algebra in the predecessor surface.
+------------------------------------------------------------------------
+
+qProjectionCross_v141 : ∀ {S}
+  {alpha mu x : Scalar S} →
+  zero ≤ alpha →
+  alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    (mu * (x * x)) < zero →
+  alpha * (x * x) < mu * ((x * x) * (x * x))
+qProjectionCross_v141 ha hr =
+  let OR = SmoothAlgebra.orderedRing _
+      Rg = OrderedRing.ring OR
+      hx : x ≠ zero = residualSquareNonzero_v140 ha hr
+      hxx : zero < x * x = OrderedRing.squarePositive hx
+      hlt : alpha < mu * (x * x) = OrderedRing.subLtZero hr
+      hmul = OrderedRing.mulLtPosLeft hlt hxx
+  in trans
+       (trans
+         (sym (Ring.mulComm Rg alpha (x * x)))
+         hmul)
+       (trans
+         (Ring.mulComm Rg (x * x) (mu * (x * x)))
+         (sym (Ring.mulAssoc Rg mu (x * x) (x * x))))
+
+------------------------------------------------------------------------
+-- Total finite q-projection search. Each successful branch deletes exactly
+-- one currently active negative-residual coordinate. The search is total by
+-- fuel; all arithmetic quantities are recomputed from the current finite mask.
+------------------------------------------------------------------------
+
+maskAllFalse : ∀ {n} → Vec Bool n
+maskAllFalse {zero} = []
+maskAllFalse {suc n} = false ∷ maskAllFalse
+
+maskRemove_v142 : ∀ {n} → Fin n → Vec Bool n → Vec Bool n
+maskRemove_v142 {suc n} fzero (_ ∷ xs) = false ∷ xs
+maskRemove_v142 {suc n} (fsuc i) (b ∷ bs) = b ∷ maskRemove_v142 i bs
+
+maskSum_v142 : ∀ {S n} → Vec Bool n → (Fin n → Scalar S) → Scalar S
+maskSum_v142 {S} {zero} [] f = Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+maskSum_v142 {S} {suc n} (b ∷ bs) f =
+  (if b then f fzero else Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S)))
+  + maskSum_v142 bs (λ i → f (fsuc i))
+
+qDen_v142 : ∀ {S n} → Vec Bool n → VecS S n → Scalar S
+qDen_v142 m x = maskSum_v142 m (λ i → fourth (indexV x i))
+  where
+  fourth : ∀ {S} → Scalar S → Scalar S
+  fourth y = let z = y * y in z * z
+
+qNum_v142 : ∀ {S n} → Scalar S → Vec Bool n → VecS S n → VecS S n → Scalar S
+qNum_v142 budget m alpha x =
+  maskSum_v142 m (λ i → indexV alpha i * (indexV x i * indexV x i)) + neg budget
+
+qMu_v142 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S → Scalar S → Vec Bool n → VecS S n → VecS S n → Scalar S
+qMu_v142 D budget m alpha x with QProjectionDecisionAlgebra_v140.ltDec D zero (qNum_v142 budget m alpha x)
+... | no _ = zero
+... | yes _ with QProjectionDecisionAlgebra_v140.ltDec D zero (qDen_v142 m x)
+...   | no _ = zero
+...   | yes _ = qNum_v142 budget m alpha x * SmoothAlgebra.recip _ (qDen_v142 m x)
+
+qResidual_v142 : ∀ {S} → Scalar S → Scalar S → Scalar S → Scalar S
+qResidual_v142 mu alpha w = alpha + neg (mu * w)
+
+qFirstNegative_v142 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S →
+  Vec Bool n → VecS S n → VecS S n → Scalar S → MaybeD (Fin n)
+qFirstNegative_v142 {S} D [] [] [] mu = nothing
+qFirstNegative_v142 {S} D (b ∷ bs) (a ∷ as) (x ∷ xs) mu with b
+... | false = shift (qFirstNegative_v142 D bs as xs mu)
+... | true with QProjectionDecisionAlgebra_v140.ltDec D zero (qResidual_v142 mu a (x * x))
+...   | yes _ = justD fzero
+...   | no _ = shift (qFirstNegative_v142 D bs as xs mu)
+  where
+  shift : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))
+  shift nothing = nothing
+  shift (justD i) = justD (fsuc i)
+
+qCandidate_v142 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S → Scalar S → Vec Bool n → VecS S n → VecS S n → VecS S n
+qCandidate_v142 D mu m alpha x = go m alpha x
+  where
+  go : ∀ {k} → Vec Bool k → VecS S k → VecS S k → VecS S k
+  go [] [] [] = []
+  go (b ∷ bs) (a ∷ as) (xv ∷ xs) with b
+  ... | false = zero ∷ go bs as xs
+  ... | true = SmoothAlgebra.max _ zero (qResidual_v142 mu a (xv * xv)) ∷ go bs as xs
+
+record QRun_v142 (S : SmoothAlgebra) (n : Nat) : Set₁ where
+  field
+    decision : QProjectionDecisionAlgebra_v140 S
+    budget : Scalar S
+    alpha x : VecS S n
+    mask : Vec Bool n
+    multiplier numerator denominator : Scalar S
+    projection : VecS S n
+
+initialQRun_v142 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S → Scalar S → VecS S n → VecS S n → QRun_v142 S n
+initialQRun_v142 D budget alpha x =
+  let m = allActive_v140
+      nu = qNum_v142 budget m alpha x
+      de = qDen_v142 m x
+      mu = qMu_v142 D budget m alpha x
+  in record { decision = D ; budget = budget ; alpha = alpha ; x = x ; mask = m
+            ; multiplier = mu ; numerator = nu ; denominator = de
+            ; projection = qCandidate_v142 D mu m alpha x }
+  where
+  allActive_v140 : ∀ {k} → Vec Bool k
+  allActive_v140 {zero} = []
+  allActive_v140 {suc k} = true ∷ allActive_v140 {k = k}
+
+qRunStep_v142 : ∀ {S n} → QRun_v142 S n → QRun_v142 S n
+qRunStep_v142 r with qFirstNegative_v142 (QRun_v142.decision r) (QRun_v142.mask r)
+      (QRun_v142.alpha r) (QRun_v142.x r) (QRun_v142.multiplier r)
+... | nothing = r
+... | justD i =
+  let m' = maskRemove_v142 i (QRun_v142.mask r)
+      mu' = qMu_v142 (QRun_v142.decision r) (QRun_v142.budget r) m'
+        (QRun_v142.alpha r) (QRun_v142.x r)
+  in record
+    { decision = QRun_v142.decision r
+    ; budget = QRun_v142.budget r
+    ; alpha = QRun_v142.alpha r
+    ; x = QRun_v142.x r
+    ; mask = m'
+    ; multiplier = mu'
+    ; numerator = qNum_v142 (QRun_v142.budget r) m' (QRun_v142.alpha r) (QRun_v142.x r)
+    ; denominator = qDen_v142 m' (QRun_v142.x r)
+    ; projection = qCandidate_v142 (QRun_v142.decision r) mu' m'
+        (QRun_v142.alpha r) (QRun_v142.x r)
+    }
+
+qRunFuel_v142 : ∀ {S n} → Nat → QRun_v142 S n → QRun_v142 S n
+qRunFuel_v142 zero r = r
+qRunFuel_v142 (suc k) r with qFirstNegative_v142 (QRun_v142.decision r) (QRun_v142.mask r)
+      (QRun_v142.alpha r) (QRun_v142.x r) (QRun_v142.multiplier r)
+... | nothing = r
+... | justD i = qRunFuel_v142 k (qRunStep_v142 r)
+
+qRun_v142 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S → Scalar S → VecS S n → VecS S n → QRun_v142 S n
+qRun_v142 {n = n} D budget alpha x = qRunFuel_v142 n (initialQRun_v142 D budget alpha x)
+
+------------------------------------------------------------------------
+-- The exact quotient/deletion algebra.  These are the key finite proofs used
+-- to establish monotone multipliers and transport deleted residuals.
+------------------------------------------------------------------------

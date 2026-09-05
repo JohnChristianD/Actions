@@ -1,0 +1,201 @@
+name: v147 predictive algebraic gate
+
+on:
+  push:
+    branches: ["main", "v147-q-chad-agda-safe"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  haskell-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+          cabal-version: '3.10'
+      - name: Run Haskell predictive prescription
+        run: runhaskell oracles/QClosurePredictive_v147.hs
+
+  scala-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Scala
+        run: sudo apt-get update && sudo apt-get install -y scala
+      - name: Run Scala predictive prescription
+        run: |
+          mkdir -p /tmp/v147-scala
+          scalac -deprecation -unchecked -d /tmp/v147-scala oracles/QClosurePredictive_v147_scala.scala
+          scala -cp /tmp/v147-scala QClosurePredictiveV147
+
+  swift-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run native Swift predictive prescription
+        run: swift oracles/QClosurePredictive_v147.swift
+
+  elixir-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Elixir/OTP
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '28'
+          elixir-version: '1.19'
+          install-hex: false
+          install-rebar: false
+      - name: Run Elixir predictive prescription
+        run: elixir oracles/q_closure_predictive_v147.exs
+
+  clojure-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@3.7.0
+        with:
+          cli: '1.12.4.1597'
+      - name: Run Clojure predictive prescription
+        run: clojure -M oracles/QClosurePredictive_v147.clj
+
+  rust-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Compile and run Rust predictive prescription
+        run: |
+          rustc --edition=2021 -O oracles/QClosurePredictive_v147.rs -o /tmp/q_closure_predictive_v147
+          /tmp/q_closure_predictive_v147
+
+  r-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run R predictive prescription
+        run: Rscript oracles/QClosurePredictive_v147.R
+
+  sympy-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python and SymPy
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install SymPy
+        run: python -m pip install 'sympy==1.14.0'
+      - name: Run SymPy predictive prescription
+        run: python tools/sympy_solver_v147.py
+
+  agda-safe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Agda from official release
+        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        with:
+          agda-version: '2.8.0'
+      - name: Verify Agda
+        run: agda --version
+      - name: Exact source required
+        run: test -f Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Verify exact v147 source SHA-256
+        run: |
+          test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "1e0036e35b85109a3dc822cda7663b363d5085a8c85869c545dd0c982109ad13"
+      - name: Safe kernel check
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Safe interpolation kernel check
+        run: agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
+
+  oracle-gate:
+    if: always()
+    needs:
+      - haskell-oracle
+      - scala-oracle
+      - swift-oracle
+      - elixir-oracle
+      - clojure-oracle
+      - rust-oracle
+      - r-oracle
+      - sympy-oracle
+      - agda-safe
+      - proof-interpolation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed on any oracle or interpolation check
+        run: |
+          test "${{ needs.haskell-oracle.result }}" = success
+          test "${{ needs.scala-oracle.result }}" = success
+          test "${{ needs.swift-oracle.result }}" = success
+          test "${{ needs.elixir-oracle.result }}" = success
+          test "${{ needs.clojure-oracle.result }}" = success
+          test "${{ needs.rust-oracle.result }}" = success
+          test "${{ needs.r-oracle.result }}" = success
+          test "${{ needs.sympy-oracle.result }}" = success
+          test "${{ needs.agda-safe.result }}" = success
+          test "${{ needs.proof-interpolation.result }}" = success
+          echo 'predictive-prescriptions=agda+haskell+scala+swift+elixir+clojure+rust+r+sympy:PASS'
+          echo 'agda-ci-interpolation=PASS'
+          echo 'ruby-rails-oracle=omitted-nonorthogonal'
+
+  proof-interpolation:
+    if: always()
+    needs:
+      - haskell-oracle
+      - scala-oracle
+      - swift-oracle
+      - elixir-oracle
+      - clojure-oracle
+      - rust-oracle
+      - r-oracle
+      - sympy-oracle
+      - agda-safe
+    runs-on: ubuntu-latest
+    env:
+      ORACLE_HASKELL: ${{ needs.haskell-oracle.result }}
+      ORACLE_SCALA: ${{ needs.scala-oracle.result }}
+      ORACLE_SWIFT: ${{ needs.swift-oracle.result }}
+      ORACLE_ELIXIR: ${{ needs.elixir-oracle.result }}
+      ORACLE_CLOJURE: ${{ needs.clojure-oracle.result }}
+      ORACLE_RUST: ${{ needs.rust-oracle.result }}
+      ORACLE_R: ${{ needs.r-oracle.result }}
+      ORACLE_SYMPY: ${{ needs.sympy-oracle.result }}
+      ORACLE_AGDA: ${{ needs.agda-safe.result }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Agda from official release
+        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        with:
+          agda-version: '2.8.0'
+      - name: Verify Agda
+        run: agda --version
+      - name: Run automated proof interpolation
+        run: python3 tools/proof_interpolate_v147.py
+      - name: Publish interpolation report and proof inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v147-proof-interpolation
+          path: artifacts/
+          if-no-files-found: error
