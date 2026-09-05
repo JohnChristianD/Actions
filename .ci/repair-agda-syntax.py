@@ -222,18 +222,39 @@ def normalize_multiplier_deletion(text: str) -> tuple[str, bool]:
     return replace_between_separators(text, 'multiplierDeletionStrict_v142 n d y z hd he h =', replacement)
 
 
+def normalize_reciprocal_nonnegative(text: str) -> tuple[str, bool]:
+    replacement = '''reciprocalNonnegative_v146 {S} {d} hd with
+  ltDec (SmoothAlgebra.orderedRing S)
+    (SmoothAlgebra.recip S d) zero
+... | yes hneg =
+  ⊥-elim
+    (OrderedRing.notLtFromLe
+      (OrderedRing.ltLe (OrderedRing.zeroLtOne
+        {orderedRing = SmoothAlgebra.orderedRing S}))
+      (trans
+        (sym (SmoothAlgebra.reciprocalLaw S hd))
+        (trans
+          (OrderedRing.mulLtPosLeft hneg hd)
+          (Ring.mulZeroR
+            (OrderedRing.ring (SmoothAlgebra.orderedRing S)) d))))
+... | no h = h
+'''
+    return replace_between_separators(text, 'reciprocalNonnegative_v146 {S} {d} hd with', replacement)
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
     text, did_residual = normalize_residual_theorem(original)
     text, did_q = normalize_q_projection_cross(text)
     text, did_cross = normalize_ordered_field_cross(text)
     text, did_mult = normalize_multiplier_deletion(text)
+    text, did_recip = normalize_reciprocal_nonnegative(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult
+    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
