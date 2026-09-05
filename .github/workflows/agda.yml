@@ -27,5 +27,22 @@ jobs:
       - name: Canonical repair
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize q-retraction declaration
-        run: python3 -c 'from pathlib import Path; p=Path("Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"); s=p.read_text(); s=s.replace("      initialForm : QRun_v142.projection\n", "      initialForm : (QRun_v142.projection\n", 1).replace("(initialQRun_v142 D budget p x) ≡ p =", "(initialQRun_v142 D budget p x) ≡ p) =", 1); p.write_text(s)'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          old = "      initialForm : QRun_v142.projection\n"
+          new = "      initialForm : (QRun_v142.projection\n"
+          if old not in s:
+              raise SystemExit('q-retraction declaration start not found')
+          s = s.replace(old, new, 1)
+          old2 = "(initialQRun_v142 D budget p x) ≡ p ="
+          new2 = "(initialQRun_v142 D budget p x) ≡ p) ="
+          if old2 not in s:
+              raise SystemExit('q-retraction declaration end not found')
+          s = s.replace(old2, new2, 1)
+          p.write_text(s)
+          PY
       - run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
