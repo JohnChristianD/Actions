@@ -72,6 +72,9 @@ jobs:
               chunk = s[start:stop]
               chunk = re.sub(r'(?<!Ring\.)\bR\b', 'CR', chunk)
               s = s[:start] + chunk + s[stop:]
+          s = s.replace(
+              'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
+              '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
           for old, new in {
               '→ a + c ≤ b + d': '→ (a + c) ≤ (b + d)',
               '→ a + c < b + d': '→ (a + c) < (b + d)',
