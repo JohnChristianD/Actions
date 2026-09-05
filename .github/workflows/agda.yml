@@ -78,7 +78,7 @@ jobs:
       - name: Upload closure certificate
         if: ${{ success() && hashFiles('.ci/closure/agda-closure.txt') != '' }}
         uses: actions/upload-artifact@v4
-        with: {name: agda-closure-certificate, path: agda-closure.txt, if-no-files-found: ignore}
+        with: {name: agda-closure-certificate, path: .ci/closure/agda-closure.txt, if-no-files-found: ignore}
   tooling:
     needs: kernel
     if: ${{ success() }}
