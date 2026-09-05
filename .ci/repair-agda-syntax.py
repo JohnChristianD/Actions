@@ -86,25 +86,23 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
     for i, line in enumerate(lines):
         if 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j' not in line:
             continue
-        indent = line[:len(line) - len(line.lstrip())]
         end = i + 1
         while end < len(lines) and (lines[end].lstrip().startswith('... |') or lines[end].lstrip().startswith('...   |') or not lines[end].strip()):
             end += 1
         replacement = [
-            f'{indent}insertCVT_v142 D a i f = record',
-            f'{indent}  {{ cell = insertCVTCell }}',
-            f'{indent}  where',
-            f'{indent}  insertCVTCell : Fin cells → CVTSlot_v142 S',
-            f'{indent}  insertCVTCell j with finDecEq i j',
-            f'{indent}  ... | no _ = CVTArchive_v142.cell a j',
-            f'{indent}  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)',
-            f'{indent}  ...   | false = record',
-            f'{indent}  ...     {{ occupied = true ; fitness = f }}',
-            f'{indent}  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D',
-            f'{indent}        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f',
-            f'{indent}  ...     | yes _ = record',
-            f'{indent}  ...       {{ occupied = true ; fitness = f }}',
-            f'{indent}  ...     | no _ = CVTArchive_v142.cell a j',
+            'insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →',
+            '  CVTArchive_v142 S cells → Fin cells → Scalar S → Fin cells → CVTSlot_v142 S',
+            'insertCVTCell_v142 D a i f j with finDecEq i j',
+            '... | no _ = CVTArchive_v142.cell a j',
+            '... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)',
+            '...   | false = record { occupied = true ; fitness = f }',
+            '...   | true with QProjectionDecisionAlgebra_v140.ltDec D',
+            '        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f',
+            '...     | yes _ = record { occupied = true ; fitness = f }',
+            '...     | no _ = CVTArchive_v142.cell a j',
+            '',
+            'insertCVT_v142 D a i f = record',
+            '  { cell = insertCVTCell_v142 D a i f }',
         ]
         return lines[:i] + replacement + lines[end:], True
     return lines, False
