@@ -18,5 +18,6 @@ for oid in ('q_num_remove', 'q_den_remove', 'q_quotient_deletion'):
         raise SystemExit(f'SymPy failed {oid}: {result}')
     print(f'sympy-{oid}=PASS')
 
-print(f"sympy-obligations={len(manifest['obligations'])}")
+print(f"sympy-theorems={len(manifest['theorems'])}")
+print(f"sympy-conjectures={len(manifest['conjectures'])}")
 print('sympy-symbolic-solver=PASS')
