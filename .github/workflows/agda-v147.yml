@@ -85,3 +85,5 @@ jobs:
           name: v147-agda-kernel-log
           path: agda-v147.out
           if-no-files-found: ignore
+
+# CI restart marker: force a fresh push-triggered kernel attempt.
