@@ -75,6 +75,49 @@ RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx0 =
   hr3 = subst (λ q → q < Ring.zero Rg)
     (Ring.addZeroR Rg alpha) hr2'''
 
+CROSS = '''qProjectionCross_v141 ha hr =
+  let OR = SmoothAlgebra.orderedRing _
+      Rg = OrderedRing.ring OR
+      hx : x ≠ zero = residualSquareNonzero_v140 ha hr
+      hxx : zero < x * x = OrderedRing.squarePositive hx
+      hlt : alpha < mu * (x * x) = OrderedRing.subLtZero hr
+      hmul = OrderedRing.mulLtPosLeft hlt hxx
+  in trans
+       (trans
+         (sym (Ring.mulComm Rg alpha (x * x)))
+         hmul)
+       (trans
+         (Ring.mulComm Rg (x * x) (mu * (x * x)))
+         (sym (Ring.mulAssoc Rg mu (x * x) (x * x))))'''
+CROSS_FIXED = '''qProjectionCross_v141 ha hr =
+  trans
+    (trans
+      (sym (Ring.mulComm Rg alpha (Ring._*_ Rg x x)))
+      hmul)
+    (trans
+      (Ring.mulComm Rg (Ring._*_ Rg x x)
+        (Ring._*_ Rg mu (Ring._*_ Rg x x)))
+      (sym (Ring.mulAssoc Rg mu (Ring._*_ Rg x x) (Ring._*_ Rg x x))))
+  where
+  OR : OrderedRing
+  OR = SmoothAlgebra.orderedRing S
+
+  Rg : Ring
+  Rg = OrderedRing.ring OR
+
+  hx : x ≠ Ring.zero Rg
+  hx = residualSquareNonzero_v140 ha hr
+
+  hxx : Ring.zero Rg < Ring._*_ Rg x x
+  hxx = OrderedRing.squarePositive OR hx
+
+  hlt : x * x < Ring._*_ Rg mu (Ring._*_ Rg x x)
+  hlt = OrderedRing.subLtZero OR hr
+
+  hmul : (Ring._*_ Rg x x) * alpha <
+    (Ring._*_ Rg x x) * (mu * (x * x))
+  hmul = OrderedRing.mulLtPosLeft hlt hxx'''
+
 changed = 0
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
@@ -83,6 +126,7 @@ for path in Path('.').rglob('*.agda'):
     new = text.replace(ACCUMULATE, ACCUMULATE_FIXED, 1)
     new = new.replace(INSERT, INSERT_FIXED, 1)
     new = new.replace(RESIDUAL, RESIDUAL_FIXED, 1)
+    new = new.replace(CROSS, CROSS_FIXED, 1)
     if new != text:
         path.write_text(new)
         changed += 1
