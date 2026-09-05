@@ -14,44 +14,17 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return f'{indent}{name} = {rhs.strip()}', ''
 
 
-def split_multiline_typed_binding_header(lines: list[str], i: int) -> tuple[str, int] | None:
-    line = lines[i]
-    stripped = line.lstrip()
-    indent = line[:len(line) - len(stripped)]
-    match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*$", stripped)
-    if match is None:
-        return None
-    j = i + 1
-    while j < len(lines) and not lines[j].strip():
-        j += 1
-    if j >= len(lines):
-        return None
-    rhs = lines[j].strip()
-    if not rhs or rhs == 'in':
-        return None
-    return f'{indent}{match.group(1)} = {rhs}', j
-
-
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
+    """Only rewrite one-line local typed definitions; preserve multiline algebra."""
     out: list[str] = []
     changed = False
-    i = 0
-    while i < len(lines):
-        split = split_typed_binding(lines[i])
+    for line in lines:
+        split = split_typed_binding(line)
         if split is not None:
             out.append(split[0])
             changed = True
-            i += 1
-            continue
-        multiline = split_multiline_typed_binding_header(lines, i)
-        if multiline is not None:
-            replacement, rhs_index = multiline
-            out.append(replacement)
-            changed = True
-            i = rhs_index + 1
-            continue
-        out.append(lines[i])
-        i += 1
+        else:
+            out.append(line)
     return out, changed
 
 
@@ -118,6 +91,37 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
     return lines, False
 
 
+def normalize_residual_theorem(text: str) -> tuple[str, bool]:
+    start_marker = 'residualSquareNonzero_v140 ha hr hx ='
+    start = text.find(start_marker)
+    if start < 0:
+        return text, False
+    sep = text.find('\n------------------------------------------------------------------------', start)
+    if sep < 0:
+        return text, False
+    replacement = '''residualSquareNonzero_v140 ha hr hx =
+  ⊥-elim
+    (OrderedRing.notLtFromLe
+      ha
+      (subst
+        (λ q → zero ≤ q)
+        (trans
+          (cong
+            (λ q → alpha + Ring.neg
+              (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+              (mu * q))
+            (cong₂
+              (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing _)))
+              hx hx))
+          (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
+        hr))
+'''
+    current = text[start:sep]
+    if current == replacement.rstrip('\n'):
+        return text, False
+    return text[:start] + replacement + text[sep:], True
+
+
 def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
     start_marker = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
     start = text.find(start_marker)
@@ -165,13 +169,14 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
 
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    text, did_cross = normalize_ordered_field_cross(original)
+    text, did_residual = normalize_residual_theorem(original)
+    text, did_cross = normalize_ordered_field_cross(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_cross
+    changed = changed or did_cvt or did_residual or did_cross
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
@@ -214,7 +219,7 @@ for path in Path('.').rglob('*.agda'):
     if re.search(r'_v\d+\b', path.name) or re.search(r'_v\d+\b', path.read_text()):
         versioned.append(str(path))
 
-print('parser-repair=structural-inferred-let-plus-targeted-extended-lambda')
+print('parser-repair=structural-one-line-typed-bindings-plus-targeted-extended-lambda')
 print('algebraic-proof-automation=finite-constructive-surface-audit')
 print('algebraic-theorem-surface-count=' + str(len(ALGEBRAIC_THEOREM_SURFACES)))
 print(f'grammar-repaired-files={changed}')
