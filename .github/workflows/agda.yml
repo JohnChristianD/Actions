@@ -57,7 +57,7 @@ jobs:
           s = p.read_text()
           s = s.replace(
               'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
-              'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero; _+_ to natPlus)')
+              'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero)')
           s = s.replace('[] : Vec A zero', '[] : Vec A natZero')
           s = s.replace('sumFin _ z zero _ = z', 'sumFin _ z natZero _ = z')
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
