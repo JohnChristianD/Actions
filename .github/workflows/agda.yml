@@ -70,6 +70,7 @@ jobs:
               'abs (x + y) ≤ abs x + abs y': 'abs (x + y) ≤ (abs x + abs y)',
               '→ zero ≤ a * b': '→ zero ≤ (a * b)',
               '→ c * a ≤ c * b': '→ (c * a) ≤ (c * b)',
+              '→ c * a < c * b': '→ (c * a) < (c * b)',
           }.items():
               s = s.replace(old, new)
           p.write_text(s)
