@@ -29,11 +29,11 @@ def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
             i += 1
             continue
 
-        # Also collapse a previously repaired `name : Type` / `name = rhs` pair.
+        # Collapse an already-split same-indentation signature + definition.
         if i + 1 < len(lines):
             sig = re.match(r"^(\s*)([A-Za-z_][A-Za-z0-9_']*)\s*:\s*.+$", lines[i])
-            rhs = re.match(r"^(\s*)\2\s*=\s*(.*)$", lines[i + 1]) if sig else None
-            if sig and rhs and sig.group(1) == rhs.group(1):
+            rhs = re.match(r"^(\s*)([A-Za-z_][A-Za-z0-9_']*)\s*=\s*(.*)$", lines[i + 1])
+            if sig and rhs and sig.group(1) == rhs.group(1) and sig.group(2) == rhs.group(2):
                 out.append(lines[i + 1])
                 changed = True
                 i += 2
