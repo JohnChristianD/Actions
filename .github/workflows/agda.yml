@@ -110,16 +110,20 @@ jobs:
           import re, sys
           p = Path(sys.argv[1])
           s = p.read_text()
-          s2, n1 = re.subn(r'(?m)^residualSquareNonzero_v140(?: \{S\} \{alpha = alpha\} \{mu = mu\} \{x = x\})? ha hr hx =$', 'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx =', s)
-          s2, n2 = re.subn(r'(?m)^qProjectionCross_v141(?: \{S\} \{alpha = alpha\} \{mu = mu\} \{x = x\})? ha hr =$', 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =', s2)
-          print(f'residualSquareNonzero_v140-normalized={n1}')
-          print(f'qProjectionCross_v141-normalized={n2}')
-          if n1 != 1 or n2 != 1:
-              raise SystemExit('targeted implicit algebra binders not found exactly once')
-          p.write_text(s2)
+          patterns = [
+              (r'(?m)^residualSquareNonzero_v140(?:\s+\{S\})?(?:\s+\{alpha\s*=\s*alpha\})?(?:\s+\{mu\s*=\s*mu\})?(?:\s+\{x\s*=\s*x\})?\s+ha\s+hr(?:\s+hx)?\s*=',
+               'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx ='),
+              (r'(?m)^qProjectionCross_v141(?:\s+\{S\})?(?:\s+\{alpha\s*=\s*alpha\})?(?:\s+\{mu\s*=\s*mu\})?(?:\s+\{x\s*=\s*x\})?\s+ha\s+hr\s*=',
+               'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr ='),
+          ]
+          for pattern, replacement in patterns:
+              s, n = re.subn(pattern, replacement, s, count=1)
+              if n != 1:
+                  raise SystemExit(f'targeted binder repair did not find exactly one clause: {pattern}')
+          p.write_text(s)
           PY
-          sed -n '/^residualSquareNonzero_v140 /p' "$f"
-          sed -n '/^qProjectionCross_v141 /p' "$f"
+          grep -n '^residualSquareNonzero_v140 {S}' "$f"
+          grep -n '^qProjectionCross_v141 {S}' "$f"
 
       - name: Agda2HS diagnostic probe
         continue-on-error: true
