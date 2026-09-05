@@ -149,7 +149,7 @@ def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
          hmul)
        (trans
          (Ring.mulComm Rg (x * x) (mu * (x * x)))
-         (sym (Ring.mulAssoc Rg mu (x * x) (x * x))))
+         (sym (Ring.mulAssoc Rg mu (x * x) (x * x)))
 '''
     return replace_between_separators(text, 'qProjectionCross_v141 ha hr =', replacement)
 
