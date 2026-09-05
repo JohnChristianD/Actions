@@ -50,19 +50,15 @@ def repair(path: Path) -> bool:
 
     residual_start = 'residualSquareNonzero_v140 ha hr hx =\n'
     residual_end = '\n------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem'
-    residual_fixed = '''residualSquareNonzero_v140 ha hr hx = λ x0 →
-  ⊥-elim (OrderedRing.notLtFromLe (SmoothAlgebra.orderedRing S) ha
-    (subst (λ q → q < zero) hzero hr))
-  where
-  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
-  hzero : alpha + Ring.neg Rg (mu * (x * x)) ≡ alpha
-  hzero = trans
-    (cong (λ q → alpha + Ring.neg Rg q)
-      (cong₂ (Ring._*_ Rg) x0 x0))
-    (trans
-      (cong (λ q → alpha + q)
-        (Ring.negZero Rg))
-      (Ring.addZeroR Rg alpha))'''
+    residual_fixed = '''residualSquareNonzero_v140 ha hr hx =
+  let
+      hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        (mu * (hx * hx)) ≡ alpha
+      hzero = trans
+        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
+          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
+        (Ring.addZeroR (OrderedRing.ring _) alpha)
+  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))'''
     text = replace_between(text, residual_start, residual_end, residual_fixed)
 
     remaining = []
