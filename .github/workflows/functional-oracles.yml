@@ -35,6 +35,7 @@ jobs:
       - uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: '5.3'
+          opam-disable-sandboxing: true
       - name: Compile oracle
         run: ocamlc -o oracle oracles/QClosurePredictive_v147.ml && ./oracle
 
