@@ -85,8 +85,7 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
             continue
         end = i + 1
         while end < len(lines):
-            stripped = lines[end].lstrip()
-            if stripped.startswith('record AntitheticSample_v142 '):
+            if lines[end].lstrip().startswith('record AntitheticSample_v142 '):
                 break
             end += 1
         replacement = [
@@ -117,36 +116,6 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
         ]
         return lines[:i] + replacement + lines[end:], True
     return lines, False
-
-
-def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    start_marker = 'residualSquareNonzero_v140 ha hr hx ='
-    start = text.find(start_marker)
-    if start < 0:
-        return text, False
-    sep = text.find('\n------------------------------------------------------------------------', start)
-    if sep < 0:
-        return text, False
-    replacement = '''residualSquareNonzero_v140 ha hr hx =
-  ⊥-elim
-    (OrderedRing.notLtFromLe ha
-      (subst
-        (λ q → q < zero)
-        (trans
-          (cong
-            (λ q → alpha + Ring.neg
-              (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-              (mu * q))
-            (cong₂
-              (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing _)))
-              hx hx))
-          (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
-        hr))
-'''
-    current = text[start:sep]
-    if current == replacement.rstrip('\n'):
-        return text, False
-    return text[:start] + replacement + text[sep:], True
 
 
 def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
@@ -196,14 +165,13 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
 
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    text, did_residual = normalize_residual_theorem(original)
-    text, did_cross = normalize_ordered_field_cross(text)
+    text, did_cross = normalize_ordered_field_cross(original)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_cross
+    changed = changed or did_cvt or did_cross
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
