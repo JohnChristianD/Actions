@@ -35,7 +35,26 @@ while i < len(lines):
     out.append(line)
     i += 1
 
+text = ''.join(out)
+marker = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
+start = text.find(marker)
+terminal = False
+if start >= 0:
+    sep = text.find('\n------------------------------------------------------------------------', start)
+    if sep >= 0:
+        replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
+  vectorExt_v147 (λ i →
+    trans
+      (QTerminalSolution_v147.stationarity t i)
+      (sym (QTerminalSolution_v147.stationarity u i)))
+'''
+        text = text[:start] + replacement + text[sep:]
+        terminal = True
+
 if not q:
     raise SystemExit('q-retraction multiline declaration not found')
-path.write_text(''.join(out))
-print(f'q-retraction-normalized={q}; accumulate-normalized={acc}')
+if not terminal:
+    raise SystemExit('q-terminal uniqueness declaration not found')
+
+path.write_text(text)
+print(f'q-retraction-normalized={q}; accumulate-normalized={acc}; terminal-uniqueness-normalized={terminal}')
