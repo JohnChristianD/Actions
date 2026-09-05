@@ -16,28 +16,30 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
-    old0 = '  accumulate i c (state s) = state (λ j with finDecEq j i)'
-    old1 = '    ... | yes _ = s j + c'
-    old2 = '    ... | no _ = s j)'
-    new = [
-        '  accumulateAt : Fin n → R → Cot → Fin n → R',
-        '  accumulateAt i c s j with finDecEq j i',
-        '  ... | yes _ = s j + c',
-        '  ... | no _ = s j',
-        '',
-        '  accumulate i c (state s) = state (λ j → accumulateAt i c s j)',
-    ]
     out: list[str] = []
     changed = False
     i = 0
     while i < len(lines):
-        if i + 2 < len(lines) and lines[i] == old0 and lines[i + 1] == old1 and lines[i + 2] == old2:
-            out.extend(new)
-            changed = True
-            i += 3
-        else:
-            out.append(lines[i])
+        line = lines[i]
+        if 'accumulate i c (state s) = state (λ j with finDecEq j i)' in line:
+            indent = line[:len(line) - len(line.lstrip())]
+            out.extend([
+                f'{indent}accumulateAt : Fin n → R → Cot → Fin n → R',
+                f'{indent}accumulateAt i c s j with finDecEq j i',
+                f'{indent}... | yes _ = s j + c',
+                f'{indent}... | no _ = s j',
+                '',
+                f'{indent}accumulate i c (state s) = state (λ j → accumulateAt i c s j)',
+            ])
             i += 1
+            while i < len(lines) and lines[i].lstrip().startswith('... |'):
+                i += 1
+            if i + 1 < len(lines) and lines[i].lstrip().startswith('... |'):
+                i += 2
+            changed = True
+            continue
+        out.append(line)
+        i += 1
     return out, changed
 
 
@@ -74,8 +76,7 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     sep = text.find('\n------------------------------------------------------------------------', start)
     if sep < 0:
         return text, False
-    replacement = marker + ' hx\n'
-    return text[:start] + replacement + text[sep:], True
+    return text[:start] + marker + ' hx\n' + text[sep:], True
 
 
 def repair_file(path: Path) -> bool:
@@ -92,8 +93,8 @@ def repair_file(path: Path) -> bool:
             out.extend(split)
             changed = True
 
-    out, acc_changed = normalize_accumulate(out)
-    changed = changed or acc_changed
+    out, did_acc = normalize_accumulate(out)
+    changed = changed or did_acc
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
 
     for transform in (normalize_cvt, normalize_residual_theorem):
