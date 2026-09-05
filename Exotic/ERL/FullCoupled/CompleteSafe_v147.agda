@@ -1404,14 +1404,18 @@ record CVTArchive_v142 (S : SmoothAlgebra) (cells : Nat) : Set where
 
 insertCVT_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
   CVTArchive_v142 S cells → Fin cells → Scalar S → CVTArchive_v142 S cells
-insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
-  ... | no _ = CVTArchive_v142.cell a j
-  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-  ...   | false = record { occupied = true ; fitness = f }
-  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-  ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }
+insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
+  CVTArchive_v142 S cells → Fin cells → Scalar S → Fin cells → CVTSlot_v142 S
+insertCVTCell_v142 D a i f j with finDecEq i j
+... | no _ = CVTArchive_v142.cell a j
+... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+...   | false = record { occupied = true ; fitness = f }
+...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+      (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+...     | yes _ = record { occupied = true ; fitness = f }
+...     | no _ = CVTArchive_v142.cell a j
+
+insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i f }
 
 record AntitheticSample_v142 (S : SmoothAlgebra) (n : Nat) : Set where
   field direction : VecS S n
