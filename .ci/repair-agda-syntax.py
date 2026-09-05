@@ -57,6 +57,23 @@ REWRITES = [
     ),
     (
         'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      hnz = OrderedRing.negLt h\n'
+        '      base = n * d\n'
+        '      lhs : n * (d + neg z) ≡ base + neg (n * z) =\n',
+        'let\n'
+        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      hnz = OrderedRing.negLt h\n'
+        '      base = n * d\n'
+        '      lhs : n * (d + neg z) ≡ base + neg (n * z)\n'
+        '      lhs =\n',
+    ),
+    (
+        '      rhs : (n + neg y) * d ≡ base + neg (y * d) =\n',
+        '      rhs : (n + neg y) * d ≡ base + neg (y * d)\n'
+        '      rhs =\n',
+    ),
+    (
+        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
         '      e = diagonalNewtonExposure_v146 h\n'
         '      he = diagonalNewtonExposurePositive_v146 h\n'
         '      hb = projectionBudget_v146 h\n'
