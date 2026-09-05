@@ -242,6 +242,26 @@ def normalize_reciprocal_nonnegative(text: str) -> tuple[str, bool]:
     return replace_between_separators(text, 'reciprocalNonnegative_v146 {S} {d} hd with', replacement)
 
 
+def normalize_diagonal_exposure_positive(text: str) -> tuple[str, bool]:
+    replacement = '''diagonalNewtonExposurePositive_v146 h =
+  let OR = SmoothAlgebra.orderedRing _
+      Rg = OrderedRing.ring OR
+      t = SmoothAlgebra.recip _ (traceProduct_v146 h)
+      htrace = OrderedRing.mulPos
+        (CoupledHyperParameters_v146.gammaPositive h)
+        (CoupledHyperParameters_v146.lambdaPositive h)
+      hrec = reciprocalNonnegative_v146 htrace
+      hlt = OrderedRing.addLtLeft
+        (OrderedRing.zeroLtOne {orderedRing = OR}) t
+      hlt' = trans (Ring.addZeroR Rg t) hlt
+      hsum = OrderedRing.leLt hrec hlt'
+  in trans
+       (sym (Ring.addComm Rg t (Ring.one Rg)))
+       hsum
+'''
+    return replace_between_separators(text, 'diagonalNewtonExposurePositive_v146 h =', replacement)
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
     text, did_residual = normalize_residual_theorem(original)
@@ -249,12 +269,13 @@ def repair_file(path: Path) -> bool:
     text, did_cross = normalize_ordered_field_cross(text)
     text, did_mult = normalize_multiplier_deletion(text)
     text, did_recip = normalize_reciprocal_nonnegative(text)
+    text, did_diag = normalize_diagonal_exposure_positive(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip
+    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip or did_diag
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
