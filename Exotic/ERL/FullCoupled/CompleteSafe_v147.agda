@@ -865,14 +865,17 @@ residualSquareNonzero_v140 : ∀ {S}
   zero ≤ alpha →
   alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
     (mu * (x * x)) < zero → x ≠ zero
-residualSquareNonzero_v140 ha hr hx =
-  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-        (mu * (hx * hx)) ≡ alpha =
-      trans
-        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
-          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
-        (Ring.addZeroR (OrderedRing.ring _) alpha)
-  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))
+residualSquareNonzero_v140 ha hr =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hzero : alpha + Ring.neg Rg (mu * (x * x)) ≡ alpha =
+        trans
+          (cong (λ q → alpha + Ring.neg Rg (mu * q))
+            (trans
+              (cong₂ (Ring._*_ Rg) hx hx)
+              (Ring.zeroMulR Rg zero)))
+          (Ring.addZeroR Rg alpha)
+  in ⊥-elim (OrderedRing.notLtFromLe ha
+      (subst (λ q → q < zero) hzero hr))
 
 ------------------------------------------------------------------------
 -- The clean, reusable cross-multiplication theorem is derived from the
