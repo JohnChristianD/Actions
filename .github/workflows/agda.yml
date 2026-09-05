@@ -2,13 +2,9 @@ name: Agda CI, tooling, and closure persistence
 
 on:
   push:
-    paths:
-      - '**/*.agda'
-      - '.github/workflows/agda.yml'
+    paths: ['**/*.agda', '.github/workflows/agda.yml']
   pull_request:
-    paths:
-      - '**/*.agda'
-      - '.github/workflows/agda.yml'
+    paths: ['**/*.agda', '.github/workflows/agda.yml']
   workflow_dispatch:
 
 concurrency:
@@ -28,8 +24,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: {fetch-depth: 0}
 
       - name: Agda Setup Action
         uses: agda/agda-setup-action@v1.0.0
@@ -37,127 +32,61 @@ jobs:
           agda-version: '2.8.0'
 
       - name: Verify Agda executable
-        shell: bash
         run: |
           set -euo pipefail
           command -v agda
-          agda --version | tr -d '\r'
+          agda --version
 
       - name: Cache
         uses: actions/cache@v5.1.0
         continue-on-error: true
         with:
-          path: |
-            .agda
-            .cache/agda
+          path: .agda
           key: agda-${{ runner.os }}-${{ hashFiles('**/*.agda') }}
-          restore-keys: |
-            agda-${{ runner.os }}-
+          restore-keys: agda-${{ runner.os }}-
 
       - name: Discover Agda sources
-        id: sources
-        shell: bash
         run: |
           set -euo pipefail
-          mapfile -d '' SOURCES < <(find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z)
-          ((${#SOURCES[@]} > 0))
-          printf '%s\0' "${SOURCES[@]}" > agda-sources.list
-          printf 'agda-source-count=%s\n' "${#SOURCES[@]}"
-          printf '%s\n' "${SOURCES[@]}"
+          find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z > agda-sources.list
+          test -s agda-sources.list
+          tr '\0' '\n' < agda-sources.list
 
       - name: Repair known Agda extended-lambda syntax
-        shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          replacements = {
-              '''  accumulate i c (state s) = state (λ j with finDecEq j i
-              ... | yes _ = s j + c
-              ... | no _ = s j)''':
-              '''  accumulate i c (state s) = state (λ j → addAt j)
-            where
-            addAt : Fin n → R
-            addAt j with finDecEq j i
-            ... | yes _ = s j + c
-            ... | no _ = s j''',
-              '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
-                ... | no _ = CVTArchive_v142.cell a j
-                ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-                ...   | false = record { occupied = true ; fitness = f }
-                ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-                      (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-                ...     | yes _ = record { occupied = true ; fitness = f }
-                ...     | no _ = CVTArchive_v142.cell a j }''':
-              '''insertCVT_v142 D a i f = record { cell = choose i }
-    where
-    choose : Fin cells → CVTSlot_v142 S
-    choose j with finDecEq i j
-    ... | no _ = CVTArchive_v142.cell a j
-    ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-    ...   | false = record { occupied = true ; fitness = f }
-    ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-          (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-    ...     | yes _ = record { occupied = true ; fitness = f }
-    ...     | no _ = CVTArchive_v142.cell a j'''
-          }
-
-          for path in Path('.').rglob('*.agda'):
-              if '.git' in path.parts:
-                  continue
-              text = path.read_text()
-              updated = text
-              for old, new in replacements.items():
-                  updated = updated.replace(old, new)
-              if updated != text:
-                  path.write_text(updated)
-          PY
-          if grep -RInE 'λ [^\n]* with ' --include='*.agda' --exclude-dir=.git .; then
-            echo 'extended-lambda-syntax=FAIL'
-            exit 1
-          fi
+          python3 -c 'from pathlib import Path; import re; reps=[(r"state \(λ j with finDecEq j i\n    \.\.\. \| yes _ = s j \+ c\n    \.\.\. \| no _ = s j\)","state (λ j → addAt j)\n    where\n    addAt : Fin n → R\n    addAt j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j"),(r"insertCVT_v142 D a i f = record \{ cell = λ j with finDecEq i j\n        ([\\s\\S]*?)\n        \.\.\.     \| no _ = CVTArchive_v142\.cell a j \}","insertCVT_v142 D a i f = record { cell = choose i }\n  where\n  choose : Fin cells → CVTSlot_v142 S\n  choose j with finDecEq i j\n  ... | no _ = CVTArchive_v142.cell a j\n  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)\n  ...   | false = record { occupied = true ; fitness = f }\n  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D\n        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f\n  ...     | yes _ = record { occupied = true ; fitness = f }\n  ...     | no _ = CVTArchive_v142.cell a j")]; [(lambda p:(lambda s:(p.write_text(s2),None)[1])(re.sub(a,b,s,1)),Path(p)) for p in Path(".").rglob("*.agda") if ".git" not in p.parts for s in [p.read_text()] for a,b in reps for s2 in [re.sub(a,b,s,1)] if s2!=s]; if list(Path(".").rglob("*.agda"))]; grep -RInE "λ [^\n]* with " --include="*.agda" --exclude-dir=.git . && exit 1 || true
 
       - name: Authoritative Agda --safe kernel check
-        shell: bash
         run: |
           set -euo pipefail
           : > agda-kernel.out
           while IFS= read -r -d '' AG; do
-            printf '%s\n' "=== agda --safe $AG ===" | tee -a agda-kernel.out
+            echo "=== agda --safe $AG ===" | tee -a agda-kernel.out
             agda --safe "$AG" 2>&1 | tee -a agda-kernel.out
             test "${PIPESTATUS[0]}" -eq 0
           done < agda-sources.list
-          printf '%s\n' 'agda-kernel-check=PASS' | tee -a agda-kernel.out
+          echo agda-kernel-check=PASS | tee -a agda-kernel.out
 
       - name: Persist Agda closure certificate
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        shell: bash
         run: |
           set -euo pipefail
-          OUT=.ci/closure/agda-closure.txt
           mkdir -p .ci/closure
+          OUT=.ci/closure/agda-closure.txt
           {
-            printf '%s\n' 'status=closed'
-            printf 'repository=%s\n' '${{ github.repository }}'
-            printf 'source-commit=%s\n' '${{ github.sha }}'
-            printf 'agda-version=%s\n' "$(agda --version | tr -d '\r')"
-            printf 'source-count=%s\n' "$(tr -cd '\0' < agda-sources.list | wc -c)"
-            printf 'kernel-check=agda --safe PASS\n'
-            printf '%s\n' 'sources='
-            while IFS= read -r -d '' AG; do
-              printf '%s sha256=%s\n' "$AG" "$(sha256sum "$AG" | cut -d' ' -f1)"
-            done < agda-sources.list
+            echo status=closed
+            echo repository=${{ github.repository }}
+            echo source-commit=${{ github.sha }}
+            echo agda-version="$(agda --version)"
+            echo source-count="$(tr -cd '\0' < agda-sources.list | wc -c)"
+            echo kernel-check=agda --safe PASS
+            while IFS= read -r -d '' AG; do echo "$AG sha256=$(sha256sum "$AG" | cut -d' ' -f1)"; done < agda-sources.list
           } > "$OUT"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A Exotic .ci/closure
-          git add "$OUT"
-          if git diff --cached --quiet; then
-            echo 'closure-persistence=no-change'
-            exit 0
-          fi
-          git commit -m 'Persist Agda closure certificate [agda-closure-persist]'
+          git commit -m 'Persist Agda closure certificate [agda-closure-persist]' || true
           git push origin HEAD:main
 
       - name: The Determinate Nix Installer
@@ -167,22 +96,17 @@ jobs:
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v14
         continue-on-error: true
-        with:
-          use-gha-cache: enabled
+        with: {use-gha-cache: enabled}
 
       - name: Restore and save Nix Store
         uses: nix-community/cache-nix-action@v7
         continue-on-error: true
         with:
           primary-key: agda-nix-${{ runner.os }}-${{ hashFiles('**/*.nix', 'flake.lock') }}
-          restore-prefixes-first-match: |
-            agda-nix-${{ runner.os }}-
-          restore-prefixes-all-matches: |
-            agda-nix-
+          restore-prefixes-first-match: agda-nix-${{ runner.os }}-
           nix: true
           save: true
-          paths: |
-            /nix
+          paths: /nix
 
       - name: Transform Agda HTML Documentation
         if: ${{ hashFiles('agda-docs.config.json') != '' }}
