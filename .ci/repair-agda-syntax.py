@@ -87,13 +87,19 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
         while end < len(lines) and (lines[end].lstrip().startswith('... |') or lines[end].lstrip().startswith('...   |') or not lines[end].strip()):
             end += 1
         replacement = [
+            'makeCVTSlot_v142 : ∀ {S} → Scalar S → CVTSlot_v142 S',
+            'makeCVTSlot_v142 f = record',
+            '  { occupied = true',
+            '  ; fitness = f',
+            '  }',
+            '',
             'insertCVTReplacement_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →',
             '  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S',
             'insertCVTReplacement_v142 D slot f with CVTSlot_v142.occupied slot',
-            '... | false = record { occupied = true ; fitness = f }',
+            '... | false = makeCVTSlot_v142 f',
             '... | true with QProjectionDecisionAlgebra_v140.ltDec D',
             '        (CVTSlot_v142.fitness slot) f',
-            '...   | yes _ = record { occupied = true ; fitness = f }',
+            '...   | yes _ = makeCVTSlot_v142 f',
             '...   | no _ = slot',
             '',
             'insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →',
