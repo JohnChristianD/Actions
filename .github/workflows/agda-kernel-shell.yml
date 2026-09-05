@@ -56,8 +56,9 @@ jobs:
 
   accumulate i c (state s) = state (accumulateAt i c s)
 '''
-          if a in s:
-              s = s.replace(a, b, 1)
+          if a not in s:
+              raise SystemExit('finite-state lambda locus not found')
+          s = s.replace(a, b, 1)
           p.write_text(s)
           print(f'q-retraction-header-normalizations={nq}')
           print('finite-state-with-lambda-normalization=applied')
