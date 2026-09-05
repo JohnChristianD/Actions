@@ -1,3 +1,4 @@
+# Action-independent authoritative kernel gate.
 name: Agda kernel shell gate
 on:
   push:
