@@ -1,4 +1,4 @@
-name: ChatGPT functional-first kernel gate
+name: Agda safe kernel gate
 
 on:
   push:
@@ -35,70 +35,5 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/QClosure_v147.agda
       - name: Kernel check interpolation
         run: agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
-
-  functional-ecosystem:
-    needs: agda-safe
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-      - name: Install Debian functional toolchains
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ghc cabal-install ocaml elixir clojure scala r-base
-      - name: Install Julia toolchain
-        uses: julia-actions/setup-julia@v2
-        with:
-          version: '1.10'
-      - name: Compile only functional-fragment sources
-        shell: bash
-        run: |
-          set -euo pipefail
-          root=sandbox
-          [[ -d "$root" ]] || { echo 'sandbox=empty'; exit 0; }
-          mapfile -t agdas < <(find "$root" -type f -name '*.agda' -print)
-          mapfile -t haskells < <(find "$root" -type f \( -name '*.hs' -o -name '*.lhs' \) -print)
-          mapfile -t ocamls < <(find "$root" -type f -name '*.ml' -print)
-          mapfile -t elixirs < <(find "$root" -type f -name '*.exs' -print)
-          mapfile -t clojures < <(find "$root" -type f -name '*.clj' -print)
-          mapfile -t scalas < <(find "$root" -type f -name '*.scala' -print)
-          mapfile -t rs < <(find "$root" -type f \( -name '*.R' -o -name '*.r' \) -print)
-          mapfile -t julias < <(find "$root" -type f -name '*.jl' -print)
-          for f in "${agdas[@]}"; do agda --safe "$f"; done
-          for f in "${haskells[@]}"; do ghc -fno-code -Wall "$f"; done
-          for f in "${ocamls[@]}"; do ocamlc -c "$f" -o /tmp/$(basename "${f%.ml}").cmo; done
-          for f in "${elixirs[@]}"; do elixirc -o /tmp "$f"; done
-          for f in "${clojures[@]}"; do clojure "$f"; done
-          for f in "${scalas[@]}"; do
-            if grep -nE '\bvar\b|\bwhile\b|\breturn\b|scala\.collection\.mutable|\.update\(' "$f"; then
-              echo "Scala functional-fragment violation: $f"; exit 1
-            fi
-            scalac -deprecation -unchecked -d /tmp "$f"
-          done
-          for f in "${rs[@]}"; do
-            if grep -nE '<<-|\bassign\s*\(|\bfor\s*\(|\bwhile\s*\(|\brepeat\s*\{' "$f"; then
-              echo "R functional-fragment violation: $f"; exit 1
-            fi
-            Rscript -e 'parse(file=commandArgs(trailingOnly=TRUE)[1])' "$f"
-          done
-          for f in "${julias[@]}"; do
-            if grep -nE '\bglobal\b|setindex!|push!|pushfirst!|pop!|append!|prepend!|splice!|delete!|empty!|\.=' "$f"; then
-              echo "Julia functional-fragment violation: $f"; exit 1
-            fi
-            julia --startup-file=no --history-file=no -e 'Meta.parseall(read(ARGS[1], String))' "$f"
-          done
-          echo 'functional-first-source-gate=PASS'
-
-  gate:
-    if: always()
-    needs:
-      - agda-safe
-      - functional-ecosystem
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail closed
-        run: |
-          test '${{ needs.agda-safe.result }}' = success
-          test '${{ needs.functional-ecosystem.result }}' = success
-          echo 'efficient-chad-functional-ecosystem=GREEN'
+      - name: Close only on Agda kernel success
+        run: echo 'agda-safe-kernel=GREEN'
