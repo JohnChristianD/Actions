@@ -7,65 +7,136 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  predictive-prescriptions:
+  haskell-oracle:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.6'
           cabal-version: '3.10'
-
-      - name: Set up Python and SymPy
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Set up Scala
-        run: sudo apt-get update && sudo apt-get install -y scala
-
-      - name: Install SymPy
-        run: python -m pip install 'sympy==1.14.0'
-
-      - name: Haskell predictive prescription
+      - name: Run Haskell predictive prescription
         run: runhaskell oracles/QClosurePredictive_v147.hs
 
-      - name: Scala predictive prescription
+  scala-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Scala
+        run: sudo apt-get update && sudo apt-get install -y scala
+      - name: Run Scala predictive prescription
         run: |
           mkdir -p /tmp/v147-scala
           scalac -deprecation -unchecked -d /tmp/v147-scala oracles/QClosurePredictive_v147_scala.scala
           scala -cp /tmp/v147-scala QClosurePredictiveV147
 
-      - name: Swift predictive prescription
+  swift-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run native Swift predictive prescription
         run: swift oracles/QClosurePredictive_v147.swift
 
-      - name: SymPy predictive prescription
-        run: python tools/sympy_solver_v147.py
+  elixir-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Elixir/OTP
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '28'
+          elixir-version: '1.19'
+          install-hex: false
+          install-rebar: false
+      - name: Run Elixir predictive prescription
+        run: elixir oracles/q_closure_predictive_v147.exs
 
-      - name: Fast predictive gate
+  clojure-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@3.7.0
+        with:
+          cli: '1.12.4.1597'
+      - name: Run Clojure predictive prescription
+        run: clojure -M oracles/QClosurePredictive_v147.clj
+
+  rust-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Compile and run Rust predictive prescription
         run: |
-          echo 'predictive-prescriptions=haskell+scala+swift+sympy:PASS'
-          echo 'ruby-rails-oracles=removed'
-          echo 'remaining-oracle-sources=retained-for-full-suite'
+          rustc --edition=2021 -O oracles/QClosurePredictive_v147.rs -o /tmp/q_closure_predictive_v147
+          /tmp/q_closure_predictive_v147
+
+  sympy-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python and SymPy
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install SymPy
+        run: python -m pip install 'sympy==1.14.0'
+      - name: Run SymPy predictive prescription
+        run: python tools/sympy_solver_v147.py
 
   agda-safe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Cabal
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.6'
-          cabal-version: '3.10'
-          cabal-update: true
-      - name: Install Agda through Cabal
-        run: cabal install Agda --overwrite-policy=always --installdir="$HOME/.local/bin"
-      - name: Verify Agda executable
+      - name: Verify preinstalled Agda
         run: agda --version
       - name: Exact source required
         run: test -f Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Verify exact v147 source SHA-256
+        run: |
+          test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "1e0036e35b85109a3dc822cda7663b363d5085a8c85869c545dd0c982109ad13"
       - name: Safe kernel check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+
+  oracle-gate:
+    if: always()
+    needs:
+      - haskell-oracle
+      - scala-oracle
+      - swift-oracle
+      - elixir-oracle
+      - clojure-oracle
+      - rust-oracle
+      - sympy-oracle
+      - agda-safe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed on any oracle
+        run: |
+          test "${{ needs.haskell-oracle.result }}" = success
+          test "${{ needs.scala-oracle.result }}" = success
+          test "${{ needs.swift-oracle.result }}" = success
+          test "${{ needs.elixir-oracle.result }}" = success
+          test "${{ needs.clojure-oracle.result }}" = success
+          test "${{ needs.rust-oracle.result }}" = success
+          test "${{ needs.sympy-oracle.result }}" = success
+          test "${{ needs.agda-safe.result }}" = success
+          echo 'predictive-prescriptions=agda+haskell+scala+swift+elixir+clojure+rust+sympy:PASS'
+          echo 'ruby-rails-oracle=omitted-nonorthogonal'
