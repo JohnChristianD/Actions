@@ -156,7 +156,9 @@ jobs:
           import re, sys
           p = Path(sys.argv[1])
           s = p.read_text()
-          s, n = re.subn(r'(?m)^qRunStep_v142 r with$', 'qRunStep_v142 {S} {n} r with', s, count=1)
+          pattern = r'(?m)^qRunStep_v142(?:\s+\{[^\n]+\})*\s+r\s+with$'
+          replacement = 'qRunStep_v142 {S} {n} r with'
+          s, n = re.subn(pattern, replacement, s, count=1)
           if n != 1:
               raise SystemExit('qRunStep_v142 clause not found exactly once')
           p.write_text(s)
