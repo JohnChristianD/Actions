@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: v147-q-chad-agda-safe
+          ref: ${{ github.sha }}
       - name: Install Agda
         run: |
           sudo apt-get update
@@ -41,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: Install functional toolchains
         run: |
           sudo apt-get update
