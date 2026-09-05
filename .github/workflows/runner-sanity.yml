@@ -12,7 +12,7 @@ jobs:
       - run: git clone --depth=1 https://github.com/JohnChristianD/Actions.git work
       - run: curl -fsSL https://github.com/agda/agda/releases/download/v2.8.0/Agda-v2.8.0-linux.tar.xz -o agda.tar.xz && tar xf agda.tar.xz && mkdir -p "$HOME/.local/bin" && mv agda "$HOME/.local/bin/agda" && echo "$HOME/.local/bin" >> "$GITHUB_PATH" && agda --version
       - run: cd work && python3 .ci/repair-agda-syntax.py
-      - name: Normalize q-retraction multiline header
+      - name: Normalize fragile finite-state syntax
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -20,14 +20,28 @@ jobs:
           import re
           p = Path('work/Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          pattern = re.compile(
+          q = re.compile(
               r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n'
-              r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
+              r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*=',
           )
-          s, n = pattern.subn(r'\1initialForm =', s, count=1)
-          if n != 1:
-              raise SystemExit('q-retraction multiline header not found exactly once')
+          s, nq = q.subn(r'\1initialForm =', s, count=1)
+          if nq != 1:
+              raise SystemExit(f'q-retraction header match count={nq}, expected 1')
+          a = '''  accumulate i c (state s) = state (λ j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j)
+'''
+          b = '''  accumulateAt : Fin n → R → Cot → Cot
+  accumulateAt i c s j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j
+
+  accumulate i c (state s) = state (accumulateAt i c s)
+'''
+          if a in s:
+              s = s.replace(a, b, 1)
           p.write_text(s)
-          print('q-retraction-header-normalization=applied')
+          print(f'q-retraction-header-normalizations={nq}')
+          print('finite-state-with-lambda-normalization=applied')
           PY
       - run: cd work && agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
