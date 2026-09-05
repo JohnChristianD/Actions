@@ -15,7 +15,6 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    """Only rewrite one-line local typed definitions; preserve multiline algebra."""
     out: list[str] = []
     changed = False
     for line in lines:
@@ -91,14 +90,21 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
     return lines, False
 
 
-def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    start_marker = 'residualSquareNonzero_v140 ha hr hx ='
-    start = text.find(start_marker)
+def replace_between_separators(text: str, marker: str, replacement: str) -> tuple[str, bool]:
+    start = text.find(marker)
     if start < 0:
         return text, False
     sep = text.find('\n------------------------------------------------------------------------', start)
     if sep < 0:
         return text, False
+    old = text[start:sep]
+    new = replacement.rstrip('\n')
+    if old == new:
+        return text, False
+    return text[:start] + replacement + text[sep:], True
+
+
+def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     replacement = '''residualSquareNonzero_v140 ha hr hx =
   ⊥-elim
     (OrderedRing.notLtFromLe
@@ -116,48 +122,32 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
           (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
         hr))
 '''
-    current = text[start:sep]
-    if current == replacement.rstrip('\n'):
-        return text, False
-    return text[:start] + replacement + text[sep:], True
+    return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr hx =', replacement)
 
 
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
-    start_marker = 'qProjectionCross_v141 ha hr ='
-    start = text.find(start_marker)
-    if start < 0:
-        return text, False
-    sep = text.find('\n------------------------------------------------------------------------', start)
-    if sep < 0:
-        return text, False
     replacement = '''qProjectionCross_v141 ha hr =
   trans
     (trans
       (sym (Ring.mulComm
-        (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha (_ * _)))
+        (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha (x * x)))
       (OrderedRing.mulLtPosLeft
         (OrderedRing.subLtZero hr)
         (OrderedRing.squarePositive (residualSquareNonzero_v140 ha hr))))
     (trans
       (Ring.mulComm
         (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-        (_ * _)
-        (_ * (_ * _)))
+        (x * x)
+        (mu * (x * x)))
       (sym
         (Ring.mulAssoc
-          (OrderedRing.ring (SmoothAlgebra.orderedRing _)) _ _ _)))
+          (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+          mu (x * x) (x * x))))
 '''
-    return text[:start] + replacement + text[sep:], True
+    return replace_between_separators(text, 'qProjectionCross_v141 ha hr =', replacement)
 
 
 def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
-    start_marker = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
-    start = text.find(start_marker)
-    if start < 0:
-        return text, False
-    sep = text.find('\n------------------------------------------------------------------------', start)
-    if sep < 0:
-        return text, False
     replacement = '''orderedFieldCrossStrict_v142 a b d e hd he h =
   OrderedRing.mulLtPosCancelLeft
     (transportLt_v142
@@ -189,10 +179,7 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
       h)
     (OrderedRing.mulPos hd he)
 '''
-    current = text[start:sep]
-    if current == replacement.rstrip('\n'):
-        return text, False
-    return text[:start] + replacement + text[sep:], True
+    return replace_between_separators(text, 'orderedFieldCrossStrict_v142 a b d e hd he h =', replacement)
 
 
 def repair_file(path: Path) -> bool:
