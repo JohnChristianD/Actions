@@ -61,9 +61,7 @@ jobs:
           mapfile -t ocamls < <(find "$root" -type f -name '*.ml' -print)
           mapfile -t elixirs < <(find "$root" -type f -name '*.exs' -print)
           mapfile -t clojures < <(find "$root" -type f -name '*.clj' -print)
-          for f in "${agdas[@]}"; do
-            agda --safe "$f"
-          done
+          for f in "${agdas[@]}"; do agda --safe "$f"; done
           for f in "${haskells[@]}"; do
             tmp=$(mktemp -d)
             cp "$f" "$tmp/Main.hs"
@@ -87,12 +85,8 @@ jobs:
             ocamlc -c "$f" -o "$tmp/$(basename "${f%.ml}").cmo"
             rm -rf "$tmp"
           done
-          for f in "${elixirs[@]}"; do
-            elixir "$f"
-          done
-          for f in "${clojures[@]}"; do
-            clojure "$f"
-          done
+          for f in "${elixirs[@]}"; do elixir "$f"; done
+          for f in "${clojures[@]}"; do clojure "$f"; done
           echo 'functional-source-compilation=PASS'
 
   gate:
