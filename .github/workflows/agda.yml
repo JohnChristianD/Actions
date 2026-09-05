@@ -37,13 +37,15 @@ jobs:
           test -s agda-sources.list
       - name: Repair known Agda extended-lambda syntax
         run: python3 .ci/repair-agda-syntax.py
-      - name: Show repaired residual context
+      - name: Show repaired diagnostic contexts
         run: |
           set -euo pipefail
           awk 'NR>=850 && NR<=930 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- q-cross failure context ---'
-          awk 'NR>=1068 && NR<=1090 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- repaired CVT context; kernel authority below ---'
+          echo '--- closure diagnostic context ---'
+          awk 'NR>=2510 && NR<=2565 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          echo '--- all trans proof sites in closure region ---'
+          grep -n 'trans' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | awk -F: '$1>=2480 && $1<=2580 {print}'
+          echo '--- repaired CVT context ---'
           awk 'NR>=1430 && NR<=1470 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Authoritative Agda --safe kernel check
         run: |
