@@ -1,25 +1,14 @@
 from pathlib import Path
 import re
 
-ACCUMULATE = '''  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)'''
-ACCUMULATE_FIXED = '''  accumulate i c (state s) = state (λ j → addAt j)
+replacements = [
+    (re.compile(r'  accumulate i c \(state s\) = state \(λ j with finDecEq j i\n    \.\.\. \| yes _ = s j \+ c\n    \.\.\. \| no _ = s j\)'), '''  accumulate i c (state s) = state (λ j → addAt j)
     where
     addAt : Fin n → R
     addAt j with finDecEq j i
     ... | yes _ = s j + c
-    ... | no _ = s j'''
-
-INSERT = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
-  ... | no _ = CVTArchive_v142.cell a j
-  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-  ...   | false = record { occupied = true ; fitness = f }
-  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-  ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }'''
-INSERT_FIXED = '''insertCVT_v142 D a i f = record { cell = choose i }
+    ... | no _ = s j'''),
+    (re.compile(r'insertCVT_v142 D a i f = record \{ cell = λ j with finDecEq i j\n.*?\.\.\.\s*\| no _ = CVTArchive_v142\.cell a j \}', re.S), '''insertCVT_v142 D a i f = record { cell = choose i }
   where
   choose : Fin cells → CVTSlot_v142 S
   choose j with finDecEq i j
@@ -29,17 +18,8 @@ INSERT_FIXED = '''insertCVT_v142 D a i f = record { cell = choose i }
   ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
         (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
   ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }'''
-
-RESIDUAL = '''residualSquareNonzero_v140 ha hr hx =
-  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-        (mu * (hx * hx)) ≡ alpha =
-      trans
-        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
-          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
-        (Ring.addZeroR (OrderedRing.ring _) alpha)
-  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))'''
-RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx0 =
+  ...     | no _ = CVTArchive_v142.cell a j }'''),
+    (re.compile(r'residualSquareNonzero_v140 ha hr \(hx0\) =\n.*?(?=\n------------------------------------------------------------------------\n)', re.S), '''residualSquareNonzero_v140 ha hr hx0 =
   ⊥-elim (OrderedRing.notLtFromLe (SmoothAlgebra.orderedRing S) ha) hr3
   where
   Rg : Ring
@@ -73,84 +53,16 @@ RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx0 =
 
   hr3 : alpha < Ring.zero Rg
   hr3 = subst (λ q → q < Ring.zero Rg)
-    (Ring.addZeroR Rg alpha) hr2'''
-
-CROSS = '''qProjectionCross_v141 ha hr =
-  let OR = SmoothAlgebra.orderedRing _
-      Rg = OrderedRing.ring OR
-      hx : x ≠ zero = residualSquareNonzero_v140 ha hr
-      hxx : zero < x * x = OrderedRing.squarePositive hx
-      hlt : alpha < mu * (x * x) = OrderedRing.subLtZero hr
-      hmul = OrderedRing.mulLtPosLeft hlt hxx
-  in trans
-       (trans
-         (sym (Ring.mulComm Rg alpha (x * x)))
-         hmul)
-       (trans
-         (Ring.mulComm Rg (x * x) (mu * (x * x)))
-         (sym (Ring.mulAssoc Rg mu (x * x) (x * x))))'''
-CROSS_FIXED = '''qProjectionCross_v141 ha hr =
-  trans
-    (trans
-      (sym (Ring.mulComm Rg alpha (Ring._*_ Rg x x)))
-      hmul)
-    (trans
-      (Ring.mulComm Rg (Ring._*_ Rg x x)
-        (Ring._*_ Rg mu (Ring._*_ Rg x x)))
-      (sym (Ring.mulAssoc Rg mu (Ring._*_ Rg x x) (Ring._*_ Rg x x))))
-  where
-  OR : OrderedRing
-  OR = SmoothAlgebra.orderedRing S
-
-  Rg : Ring
-  Rg = OrderedRing.ring OR
-
-  hx : x ≠ Ring.zero Rg
-  hx = residualSquareNonzero_v140 ha hr
-
-  hxx : Ring.zero Rg < Ring._*_ Rg x x
-  hxx = OrderedRing.squarePositive OR hx
-
-  hlt : x * x < Ring._*_ Rg mu (Ring._*_ Rg x x)
-  hlt = OrderedRing.subLtZero OR hr
-
-  hmul : (Ring._*_ Rg x x) * alpha <
-    (Ring._*_ Rg x x) * (mu * (x * x))
-  hmul = OrderedRing.mulLtPosLeft hlt hxx'''
-
-ORDERED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
-  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-      c = d * e
-      hc = OrderedRing.mulPos hd he
-      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =
-        trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
-          (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
-            (trans (cong (λ q → a * q)
-              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
-                (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
-                  (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
-                    (Ring.mulOneL Rg e))))) refl)
-      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =
-        trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
-          (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
-            (trans (cong (λ q → b * q)
-              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
-                (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
-                  (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
-                    (Ring.mulOneL Rg d))))) refl)
-  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc'''
-ORDERED_FIXED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+    (Ring.addZeroR Rg alpha) hr2'''),
+    (re.compile(r'orderedFieldCrossStrict_v142 a b d e hd he h =\n.*?(?=\n------------------------------------------------------------------------\n)', re.S), '''orderedFieldCrossStrict_v142 a b d e hd he h =
   OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
   where
   Rg : Ring
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
-
   c : Scalar S
   c = d * e
-
   hc : zero < c
   hc = OrderedRing.mulPos hd he
-
   leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e
   leftNorm = trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
     (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
@@ -159,7 +71,6 @@ ORDERED_FIXED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
           (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
             (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
               (Ring.mulOneL Rg e))))) refl))
-
   rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d
   rightNorm = trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
     (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
@@ -167,33 +78,12 @@ ORDERED_FIXED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
         (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
           (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
             (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
-              (Ring.mulOneL Rg d))))) refl))'''
-
-MULT = '''multiplierDeletionStrict_v142 n d y z hd he h =
-  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-      hnz = OrderedRing.negLt h
-      base = n * d
-      lhs : n * (d + neg z) ≡ base + neg (n * z) =
-        trans (Ring.distrib Rg n d (neg z))
-          (cong₂ _+_ refl (sym (Ring.negScale Rg n z)))
-      rhs : (n + neg y) * d ≡ base + neg (y * d) =
-        trans (Ring.distrib Rg d n (neg y))
-          (trans (cong₂ _+_ (Ring.mulComm Rg d n) refl)
-            (cong₂ _+_ refl
-              (trans (Ring.mulComm Rg (neg y) d)
-                (sym (Ring.negScale Rg y d)))))
-      cross = OrderedRing.addLtLeft hnz base
-      cross' : n * (d + neg z) < (n + neg y) * d =
-        transportLt_v142 lhs rhs cross
-  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross' '''
-MULT_FIXED = '''multiplierDeletionStrict_v142 n d y z hd he h =
+              (Ring.mulOneL Rg d))))) refl))'''),
+    (re.compile(r'multiplierDeletionStrict_v142 n d y z hd he h =\n.*?(?=\n------------------------------------------------------------------------\n)', re.S), '''multiplierDeletionStrict_v142 n d y z hd he h =
   orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
   where
   Rg : Ring
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
-
-  hnz : zero < neg y + n
-  hnz = OrderedRing.negLt h
 
   base : Scalar S
   base = n * d
@@ -213,19 +103,17 @@ MULT_FIXED = '''multiplierDeletionStrict_v142 n d y z hd he h =
   cross = OrderedRing.addLtLeft (OrderedRing.negLt h) base
 
   cross' : n * (d + neg z) < (n + neg y) * d
-  cross' = transportLt_v142 lhs rhs cross'''
+  cross' = transportLt_v142 lhs rhs cross''')
+]
 
 changed = 0
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
         continue
     text = path.read_text()
-    new = text.replace(ACCUMULATE, ACCUMULATE_FIXED, 1)
-    new = new.replace(INSERT, INSERT_FIXED, 1)
-    new = new.replace(RESIDUAL, RESIDUAL_FIXED, 1)
-    new = new.replace(CROSS, CROSS_FIXED, 1)
-    new = new.replace(ORDERED, ORDERED_FIXED, 1)
-    new = new.replace(MULT, MULT_FIXED, 1)
+    new = text
+    for pattern, replacement in replacements:
+        new = pattern.sub(replacement, new, count=1)
     if new != text:
         path.write_text(new)
         changed += 1
