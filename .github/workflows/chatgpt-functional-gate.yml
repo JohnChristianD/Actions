@@ -40,6 +40,7 @@ jobs:
           sed -i -E 's/^      rightNorm : (.*) =$/      rightNorm : \1/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i '/^        trans (Ring.mulComm Rg c (b \* SmoothAlgebra.recip _ e))/s/^        /      rightNorm = /' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           test "$(grep -cE '^      [A-Za-z][A-Za-z0-9_]*\s*:\s*[^=[:space:]][^=]*=' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda || true)" = 0
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1045,1065p'
       - name: Kernel check canonical algebra
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check q and CHAD closure
