@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   repair-agda-source:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/v147-q-chad-agda-safe'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -46,7 +45,8 @@ jobs:
         run: |
           test "$(wc -c < Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = "125219"
           test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "a2d18cf24092e21bde90557245e11d71dc77c40e1209bff86cf4e6a8f37b3f52"
-      - name: Commit exact Agda repairs
+      - name: Commit exact Agda repairs on the development branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/v147-q-chad-agda-safe'
         run: |
           if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
             echo 'no Agda source change to commit'
@@ -142,9 +142,12 @@ jobs:
         run: python tools/sympy_solver_v147.py
 
   agda-safe:
+    needs: repair-agda-source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v147-q-chad-agda-safe
       - name: Verify native Agda installation
         run: agda --version
       - name: Exact source required
@@ -179,6 +182,8 @@ jobs:
       ORACLE_AGDA: ${{ needs.agda-safe.result }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v147-q-chad-agda-safe
       - name: Verify native Agda installation
         run: agda --version
       - name: Run automated proof interpolation
