@@ -35,8 +35,27 @@ jobs:
           set -euo pipefail
           find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z > agda-sources.list
           test -s agda-sources.list
-      - name: Repair known Agda extended-lambda syntax
+      - name: Repair known Agda syntax
         run: python3 .ci/repair-agda-syntax.py
+      - name: Normalize remaining multiline local bindings
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          pattern = re.compile(
+              r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n'
+              r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
+          )
+          s2 = pattern.sub(r'\1initialForm =', s)
+          if s2 != s:
+              p.write_text(s2)
+              print('initialForm-multiline-type=removed')
+          else:
+              print('initialForm-multiline-type=not-present')
+          PY
       - name: Show repaired diagnostic contexts
         run: |
           set -euo pipefail
