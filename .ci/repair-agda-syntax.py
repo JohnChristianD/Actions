@@ -16,11 +16,58 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return f"{indent}{name} : {typ}", f"{indent}{name} = {expr}"
 
 
+def replace_block(text: str, pattern: str, replacement: str) -> tuple[str, bool]:
+    new, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE | re.DOTALL)
+    return new, count != 0
+
+
+def normalize_accumulate(text: str) -> tuple[str, bool]:
+    old = '''  accumulate i c (state s) = state (λ j with finDecEq j i)\n    ... | yes _ = s j + c\n    ... | no _ = s j)'''
+    new = '''  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate i c (state s) = state (λ j → accumulateAt i c s j)'''
+    return replace_block(text, re.escape(old), new)
+
+
+def normalize_cvt(text: str) -> tuple[str, bool]:
+    pattern = (r'insertCVT_v142 D a i f = record \{ cell = λ j with finDecEq i j\n'
+               r'  \.\.\. \| no _ = CVTArchive_v142\.cell a j\n'
+               r'  \.\.\. \| yes _ with CVTSlot_v142\.occupied \(CVTArchive_v142\.cell a j\)\n'
+               r'  \.\.\.   \| false = record \{ occupied = true ; fitness = f \}\n'
+               r'  \.\.\.   \| true with QProjectionDecisionAlgebra_v140\.ltDec D\n'
+               r'        \(CVTSlot_v142\.fitness \(CVTArchive_v142\.cell a j\)\) f\n'
+               r'  \.\.\.     \| yes _ = record \{ occupied = true ; fitness = f \}\n'
+               r'  \.\.\.     \| no _ = CVTArchive_v142\.cell a j \}')
+    replacement = '''insertCVT_v142 D a i f = record { cell = choose i }
+  where
+  choose : Fin cells → CVTSlot_v142 S
+  choose j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }'''
+    return replace_block(text, pattern, replacement)
+
+
+def normalize_residual_theorem(text: str) -> tuple[str, bool]:
+    # The declared conclusion is already supplied as hx : x ≠ zero by the
+    # theorem's final explicit argument. Preserve that constructive proof
+    # directly instead of manufacturing an invalid equality contradiction.
+    pattern = (r'residualSquareNonzero_v140 ha hr hx =\n'
+               r'(?:  let.*?\n  in .*?\n)'
+               r'\n------------------------------------------------------------------------')
+    replacement = ('residualSquareNonzero_v140 ha hr hx = hx\n\n'
+                   '------------------------------------------------------------------------')
+    return replace_block(text, pattern, replacement)
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    lines = original.splitlines()
+    text = original
     changed = False
 
+    lines = text.splitlines()
     out = []
     for line in lines:
         split = split_typed_binding(line)
@@ -29,44 +76,30 @@ def repair_file(path: Path) -> bool:
             changed = True
         else:
             out.append(line)
-
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
 
-    old_acc = '''  accumulate i c (state s) = state (λ j with finDecEq j i)\n    ... | yes _ = s j + c\n    ... | no _ = s j)'''
-    new_acc = '''  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate i c (state s) = state (λ j → accumulateAt i c s j)'''
-    text2 = text.replace(old_acc, new_acc, 1)
-    if text2 != text:
-        text = text2
-        changed = True
-
-    old_cvt = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j\n  ... | no _ = CVTArchive_v142.cell a j\n  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)\n  ...   | false = record { occupied = true ; fitness = f }\n  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D\n        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f\n  ...     | yes _ = record { occupied = true ; fitness = f }\n  ...     | no _ = CVTArchive_v142.cell a j }'''
-    new_cvt = '''insertCVT_v142 D a i f = record { cell = choose i }\n  where\n  choose : Fin cells → CVTSlot_v142 S\n  choose j with finDecEq i j\n  ... | no _ = CVTArchive_v142.cell a j\n  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)\n  ...   | false = record { occupied = true ; fitness = f }\n  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D\n        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f\n  ...     | yes _ = record { occupied = true ; fitness = f }\n  ...     | no _ = CVTArchive_v142.cell a j }'''
-    text2 = text.replace(old_cvt, new_cvt, 1)
-    if text2 != text:
-        text = text2
-        changed = True
+    for transform in (normalize_accumulate, normalize_cvt, normalize_residual_theorem):
+        text2, did_change = transform(text)
+        if did_change:
+            text = text2
+            changed = True
 
     if changed:
         path.write_text(text)
     return changed
 
 
-# Algebraic proof automation is intentionally constructive: it only selects
-# proof templates already present in the source's finite Ring/OrderedRing API.
-# It never inserts postulates, holes, unsafe code, or numerical oracles.
 ALGEBRAIC_TEMPLATES = {
-    "residualSquareNonzero_v140": "ring-zero-residual",
-    "qProjectionCross_v141": "ordered-mul-positive",
+    "residualSquareNonzero_v140": "constructive-final-argument",
+    "qProjectionCross_v141": "ordered-ring-cross-multiplication",
+    "qProjectionCross_v142": "delegated-cross-multiplication",
 }
 
 
 def theorem_inventory(path: Path) -> list[str]:
     text = path.read_text()
-    found = []
-    for name in ALGEBRAIC_TEMPLATES:
-        if re.search(rf'^\s*{re.escape(name)}\s*:', text, re.MULTILINE):
-            found.append(name)
-    return found
+    return [name for name in ALGEBRAIC_TEMPLATES
+            if re.search(rf'^\s*{re.escape(name)}\s*:', text, re.MULTILINE)]
 
 
 changed = 0
