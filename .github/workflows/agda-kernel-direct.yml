@@ -1,3 +1,4 @@
+# Tiny direct kernel gate; no repair or tooling layers.
 name: Agda kernel direct
 on:
   push:
