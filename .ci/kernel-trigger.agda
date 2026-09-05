@@ -1,5 +1,5 @@
 {-# OPTIONS --safe #-}
-module CI.KernelTrigger where
+module KernelTrigger where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 
