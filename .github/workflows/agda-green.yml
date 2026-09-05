@@ -1,0 +1,55 @@
+name: Agda kernel green gate
+
+on:
+  push:
+    paths:
+      - '**/*.agda'
+      - '.ci/repair-agda-syntax.py'
+      - '.github/workflows/agda-green.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: agda/agda-setup-action@v1
+        with:
+          agda-version: '2.8.0'
+      - name: Canonical repair
+        run: python3 .ci/repair-agda-syntax.py
+      - name: Canonical diagonal closure normalization
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          start = s.find('diagonalNewtonExposurePositive_v146 h =')
+          stop = s.find('\n------------------------------------------------------------------------', start)
+          if start < 0 or stop < 0:
+              raise SystemExit('diagonal exposure theorem boundaries not found')
+          replacement = '''diagonalNewtonExposurePositive_v146 h =
+  let OR = SmoothAlgebra.orderedRing _
+      Rg = OrderedRing.ring OR
+      t = SmoothAlgebra.recip _ (traceProduct_v146 h)
+      htrace = OrderedRing.mulPos
+        (CoupledHyperParameters_v146.gammaPositive h)
+        (CoupledHyperParameters_v146.lambdaPositive h)
+      hrec = reciprocalNonnegative_v146 htrace
+      hlt : t < t + Ring.one Rg =
+        subst (λ z → z < t + Ring.one Rg)
+          (Ring.addZeroR Rg t)
+          (OrderedRing.addLtLeft (OrderedRing.zeroLtOne {orderedRing = OR}) t)
+      hsum : zero < t + Ring.one Rg = OrderedRing.leLt hrec hlt
+  in subst (λ z → zero < z)
+       (Ring.addComm Rg t (Ring.one Rg))
+       hsum
+'''
+          p.write_text(s[:start] + replacement + s[stop:])
+          PY
+      - name: Authoritative Agda --safe
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
