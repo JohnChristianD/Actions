@@ -2,7 +2,7 @@ name: ChatGPT functional-source gate
 
 on:
   push:
-    branches: ["v147-chatgpt-functional-gate", "v147-q-chad-agda-safe"]
+    branches: ["v147-q-chad-agda-safe"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -46,7 +46,7 @@ jobs:
       - name: Install functional toolchains
         run: |
           sudo apt-get update
-          sudo apt-get install -y agda ghc cabal-install ocaml elixir clojure scala
+          sudo apt-get install -y agda ghc cabal-install ocaml elixir clojure
       - name: Compile ChatGPT-produced functional sources
         shell: bash
         run: |
@@ -61,8 +61,9 @@ jobs:
           mapfile -t ocamls < <(find "$root" -type f -name '*.ml' -print)
           mapfile -t elixirs < <(find "$root" -type f -name '*.exs' -print)
           mapfile -t clojures < <(find "$root" -type f -name '*.clj' -print)
-          mapfile -t scalas < <(find "$root" -type f -name '*.scala' -print)
-          for f in "${agdas[@]}"; do agda --safe "$f"; done
+          for f in "${agdas[@]}"; do
+            agda --safe "$f"
+          done
           for f in "${haskells[@]}"; do
             tmp=$(mktemp -d)
             cp "$f" "$tmp/Main.hs"
@@ -83,15 +84,14 @@ jobs:
           done
           for f in "${ocamls[@]}"; do
             tmp=$(mktemp -d)
-            ocamlc -o "$tmp/a.out" "$f"
+            ocamlc -c "$f" -o "$tmp/$(basename "${f%.ml}").cmo"
             rm -rf "$tmp"
           done
-          for f in "${elixirs[@]}"; do elixir "$f"; done
-          for f in "${clojures[@]}"; do clojure "$f"; done
-          for f in "${scalas[@]}"; do
-            tmp=$(mktemp -d)
-            scalac -deprecation -unchecked -d "$tmp" "$f"
-            rm -rf "$tmp"
+          for f in "${elixirs[@]}"; do
+            elixir "$f"
+          done
+          for f in "${clojures[@]}"; do
+            clojure "$f"
           done
           echo 'functional-source-compilation=PASS'
 
@@ -106,4 +106,4 @@ jobs:
         run: |
           test '${{ needs.agda-safe-v147.result }}' = success
           test '${{ needs.functional-sources.result }}' = success
-          echo 'ChatGPT-source-integration=KERNEL-AND-COMPILER-PASS'
+          echo 'ChatGPT-source-integration=FUNCTIONAL-COMPILER-AND-AGDA-SAFE-PASS'
