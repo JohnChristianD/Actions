@@ -18,15 +18,26 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return None
 
 
-def normalize_named_one_line_bindings(text: str) -> tuple[str, bool]:
+def normalize_multiline_typed_binding(lines: list[str]) -> tuple[list[str], bool]:
+    out: list[str] = []
     changed = False
-    for name in ('leftNorm', 'rightNorm', 'lhs', 'rhs', 'hzero', 'hone', 'hdef', 'hcancel'):
-        pattern = rf'(?m)^(\s*){name}\s*:\s*(.+?)\s*=\s*$'
-        text2, count = re.subn(pattern, rf'\1{name} : \2\n\1{name} =', text)
-        if count:
-            text = text2
-            changed = True
-    return text, changed
+    for line in lines:
+        stripped = line.lstrip()
+        indent = line[:len(line) - len(stripped)]
+        matched = False
+        for name in ('leftNorm', 'rightNorm', 'lhs', 'rhs', 'hzero', 'hone', 'hdef', 'hcancel'):
+            prefix = name + ' : '
+            if not stripped.startswith(prefix):
+                continue
+            if stripped.rstrip().endswith('='):
+                out.append(f'{indent}{stripped.rstrip()[:-1].rstrip()}')
+                out.append(f'{indent}{name} =')
+                changed = True
+                matched = True
+            break
+        if not matched:
+            out.append(line)
+    return out, changed
 
 
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
@@ -53,22 +64,6 @@ def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
     return out, changed
 
 
-def normalize_cvt(text: str) -> tuple[str, bool]:
-    marker = 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j'
-    if marker not in text:
-        return text, False
-    start = text.find(marker)
-    sep = text.find('\n\n', start)
-    if sep < 0:
-        return text, False
-    block = text[start:sep]
-    lines = block.splitlines()
-    lines[0] = lines[0].replace('record { cell = λ j with finDecEq i j', 'record { cell = choose i', 1)
-    lines.insert(1, '  where')
-    lines.insert(2, '  choose : Fin cells → CVTSlot_v142 S')
-    return text[:start] + '\n'.join(lines) + text[sep:], True
-
-
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     marker = 'residualSquareNonzero_v140 ha hr hx ='
     start = text.find(marker)
@@ -84,6 +79,7 @@ def repair_file(path: Path) -> bool:
     original = path.read_text()
     changed = False
     lines = original.splitlines()
+
     out: list[str] = []
     for line in lines:
         split = split_typed_binding(line)
@@ -93,15 +89,17 @@ def repair_file(path: Path) -> bool:
             out.extend(split)
             changed = True
 
+    out, did_multiline = normalize_multiline_typed_binding(out)
+    changed = changed or did_multiline
+
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
-    text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
 
-    for transform in (normalize_named_one_line_bindings, normalize_cvt, normalize_residual_theorem):
-        text2, did_change = transform(text)
-        if did_change:
-            text = text2
-            changed = True
+    text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
+    text2, did_residual = normalize_residual_theorem(text)
+    if did_residual:
+        text = text2
+        changed = True
 
     if changed:
         path.write_text(text)
