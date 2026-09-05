@@ -1,5 +1,0 @@
-- name: Agda Setup Action
-  uses: agda/agda-setup-action@v1.0.0
-
-- name: Codeball AI Code Review
-  uses: sturdy-dev/codeball-action@v2.6.0
