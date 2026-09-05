@@ -39,12 +39,15 @@ jobs:
           scalac -deprecation -unchecked -d /tmp/v147-scala oracles/QClosurePredictive_v147_scala.scala
           scala -cp /tmp/v147-scala QClosurePredictiveV147
 
+      - name: Swift predictive prescription
+        run: swift oracles/QClosurePredictive_v147.swift
+
       - name: SymPy predictive prescription
         run: python tools/sympy_solver_v147.py
 
       - name: Fast predictive gate
         run: |
-          echo 'predictive-prescriptions=haskell+scala+sympy:PASS'
+          echo 'predictive-prescriptions=haskell+scala+swift+sympy:PASS'
           echo 'ruby-rails-oracles=removed'
           echo 'remaining-oracle-sources=retained-for-full-suite'
 
