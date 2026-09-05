@@ -1,0 +1,272 @@
+6 : Direction_v146 → GridPos_v146 → GridPos_v146
+translateGrid_v146 north_v146 p = record { row_v146 = GridPos_v146.row_v146 p ; col_v146 = GridPos_v146.col_v146 p }
+translateGrid_v146 east_v146 p = record { row_v146 = GridPos_v146.row_v146 p ; col_v146 = suc (GridPos_v146.col_v146 p) }
+translateGrid_v146 south_v146 p = record { row_v146 = suc (GridPos_v146.row_v146 p) ; col_v146 = GridPos_v146.col_v146 p }
+translateGrid_v146 west_v146 p = record { row_v146 = GridPos_v146.row_v146 p ; col_v146 = GridPos_v146.col_v146 p }
+
+pobaxMiniGridStep_v146 :
+  (Nat → Nat → Bool) → Direction_v146 → GridPos_v146 → GridPos_v146
+pobaxMiniGridStep_v146 wall dir p =
+  let q = translateGrid_v146 dir p in
+  if wall (GridPos_v146.row_v146 q) (GridPos_v146.col_v146 q)
+  then p
+  else q
+
+------------------------------------------------------------------------
+-- A concrete one-coordinate learner update is provably non-inert whenever
+-- its supplied update increment is non-zero.
+------------------------------------------------------------------------
+
+nonzeroAddUpdate_v146 : ∀ {S} (w u : Scalar S) → u ≠ zero → w + u ≠ w
+nonzeroAddUpdate_v146 w u hu heq =
+  hu (trans
+    (trans
+      (cong (λ t → t + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w) heq)
+      (trans
+        (Ring.addAssoc (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w u
+          (Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w))
+        (trans
+          (cong (λ t → w + t) (Ring.addNegR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w))
+          (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w)))
+      (Ring.addNegR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) w)))
+
+learnerNonInertness_v146 : ∀ {S} (w delta : Scalar S) →
+  delta ≠ zero → w + delta ≠ w
+learnerNonInertness_v146 = nonzeroAddUpdate_v146
+
+efficientCHADLSTMChain_v146 : ∀ {S input hidden m n}
+  (block : LSTMBlock S input hidden)
+  (state : LSTMState S hidden)
+  (xs : Vec (VecS S input) m)
+  (ys : Vec (VecS S input) n) →
+  lstmRun_v146 block state (appendV_v146 xs ys) ≡
+  lstmRun_v146 block (lstmRun_v146 block state xs) ys
+efficientCHADLSTMChain_v146 = lstmRunAppend_v146
+
+oracleCrossCheckSurface_v146 : Nat
+oracleCrossCheckSurface_v146 = suc (suc (suc zero))
+
+------------------------------------------------------------------------
+-- Genuine temporal staleness algebra.  Age is a timestamp difference,
+-- rather than the prior proxy "length of the replayed vector".
+------------------------------------------------------------------------
+
+data NatLe : Nat → Nat → Set where
+  natLeZero : ∀ {n} → NatLe zero n
+  natLeSuc : ∀ {m n} → NatLe m n → NatLe (suc m) (suc n)
+
+natSub_v146 : Nat → Nat → Nat
+natSub_v146 zero _ = zero
+natSub_v146 (suc m) zero = suc m
+natSub_v146 (suc m) (suc n) = natSub_v146 m n
+
+natSubAddLeft_v146 : ∀ a b → natSub_v146 (a + b) a ≡ b
+natSubAddLeft_v146 zero b = refl
+natSubAddLeft_v146 (suc a) b = natSubAddLeft_v146 a b
+
+replayAge_v146 : Nat → Nat → Nat
+replayAge_v146 sampleTime currentTime = natSub_v146 currentTime sampleTime
+
+replayAgeAdvance_v146 : ∀ sampleTime delay →
+  replayAge_v146 sampleTime (sampleTime + delay) ≡ delay
+replayAgeAdvance_v146 sampleTime delay = natSubAddLeft_v146 sampleTime delay
+
+replayAgeBound_v146 : ∀ sampleTime delay k →
+  NatLe delay k →
+  NatLe (replayAge_v146 sampleTime (sampleTime + delay)) k
+replayAgeBound_v146 sampleTime delay k h =
+  natLeTransportLeft_v146
+    (replayAgeAdvance_v146 sampleTime delay) h
+  where
+  natLeTransportLeft_v146 : ∀ {a b k} → a ≡ b → NatLe b k → NatLe a k
+  natLeTransportLeft_v146 refl h = h
+
+replayAgeComposition_v146 : ∀ sampleTime delay₁ delay₂ →
+  replayAge_v146 sampleTime (sampleTime + (delay₁ + delay₂)) ≡
+  delay₁ + delay₂
+replayAgeComposition_v146 sampleTime delay₁ delay₂ =
+  replayAgeAdvance_v146 sampleTime (delay₁ + delay₂)
+
+------------------------------------------------------------------------
+-- Finite argmax/CEM algebra. CEM is an approximation of the action argmax
+-- because it searches a finite candidate set; when that set exhausts the
+-- action set, this is the actual finite argmax. The refit is separate.
+------------------------------------------------------------------------
+
+max2_v146 : ∀ {S} → QProjectionDecisionAlgebra_v140 S → Scalar S → Scalar S → Scalar S
+max2_v146 D a b with QProjectionDecisionAlgebra_v140.leDec D a b
+... | yes _ = b
+... | no _ = a
+
+max2Right_v146 : ∀ {S} (D : QProjectionDecisionAlgebra_v140 S) (a b : Scalar S) →
+  a ≤ b → max2_v146 D a b ≡ b
+max2Right_v146 D a b h with QProjectionDecisionAlgebra_v140.leDec D a b
+... | yes _ = refl
+... | no hn = ⊥-elim (hn h)
+
+maxVec_v146 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S → VecS S (suc n) → Scalar S
+maxVec_v146 D (x ∷ []) = x
+maxVec_v146 D (x ∷ y ∷ xs) = max2_v146 D x (maxVec_v146 D (y ∷ xs))
+
+cemFiniteArgmax_v146 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S →
+  VecS S (suc n) → Scalar S
+cemFiniteArgmax_v146 = maxVec_v146
+
+coupledHardMaxCandidate_v146 : ∀ {S n} →
+  QProjectionDecisionAlgebra_v140 S →
+  CoupledHyperParameters_v146 S →
+  VecS S (suc n) → Scalar S
+coupledHardMaxCandidate_v146 D h qValues = maxVec_v146 D qValues
+
+cemHardMaxRefit_v146 : ∀ {S n} →
+  CoupledHyperParameters_v146 S →
+  VecS S n → VecS S n → VecS S n
+cemHardMaxRefit_v146 = coupledCEMRefit_v146
+
+------------------------------------------------------------------------
+-- Hard-max h-step bootstrap composition.  The finite candidate argmax is
+-- used at the bootstrap endpoint; CEM only supplies the finite candidate set.
+------------------------------------------------------------------------
+
+hStepFold_v146 : ∀ {S n} → Scalar S → VecS S n → Scalar S → Scalar S
+hStepFold_v146 gamma [] boot = boot
+hStepFold_v146 gamma (r ∷ rs) boot =
+  r + gamma * hStepFold_v146 gamma rs boot
+
+hStepHardBootstrap_v146 : ∀ {S stateDim actionDim n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (L : CoupledLearner_v146 S stateDim actionDim)
+  (rewards : VecS S n)
+  (qTerminal : VecS S (suc actionDim)) → Scalar S
+hStepHardBootstrap_v146 D L rewards qTerminal =
+  hStepFold_v146
+    (CoupledHyperParameters_v146.gamma (CoupledLearner_v146.hyper L))
+    rewards
+    (coupledHardMaxCandidate_v146 D
+      (CoupledLearner_v146.hyper L) qTerminal)
+
+------------------------------------------------------------------------
+-- Canonical QD fitness is negative TD distribution; environment return is a
+-- separate observable.  The two are different algebraic channels.
+------------------------------------------------------------------------
+
+negativeTD_v146 : ∀ {S} → Scalar S → Scalar S
+negativeTD_v146 d = Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+  (SmoothAlgebra.abs S d)
+
+negativeTDNonpositive_v146 : ∀ {S} (d : Scalar S) →
+  zero ≤ SmoothAlgebra.abs S d →
+  negativeTD_v146 d ≤ zero
+negativeTDNonpositive_v146 d h =
+  let OR = SmoothAlgebra.orderedRing _
+      Rg = OrderedRing.ring OR
+  in OrderedRing.negLe h
+
+environmentReturn_v146 : ∀ {S n} → VecS S n → Scalar S
+environmentReturn_v146 = vSum
+
+fitnessChannel_v146 : ∀ {S n} → VecS S n → Scalar S
+fitnessChannel_v146 xs = negativeTD_v146 (vSum xs)
+
+------------------------------------------------------------------------
+-- Efficient-CHAD recurrent chain algebra.  This proves finite reverse
+-- composition for any supplied local LSTM pullbacks; it does not fabricate
+-- analytic derivative laws for abstract exp/log/tanh/sigmoid primitives.
+------------------------------------------------------------------------
+
+record LocalVJP_v146 (S : SmoothAlgebra) (A : Set) : Set where
+  field
+    forward : A → A
+    backward : A → Scalar S → Scalar S
+
+localVJPChain_v146 : ∀ {S A n} →
+  Vec (LocalVJP_v146 S A) n →
+  A → Scalar S → Scalar S
+localVJPChain_v146 [] x c = c
+localVJPChain_v146 (f ∷ fs) x c =
+  LocalVJP_v146.backward f (LocalVJP_v146.forward f x)
+    (localVJPChain_v146 fs (LocalVJP_v146.forward f x) c)
+
+------------------------------------------------------------------------
+-- Source benchmark surface: only finite semantic tasks are admitted to the
+-- algebraic regression suite; non-finite stochastic/grid probes are absent.
+------------------------------------------------------------------------
+
+data PureAlgebraBenchmark_v146 : Set where
+  GymnaxSimpleBanditPure_v146 : PureAlgebraBenchmark_v146
+  GymnaxDiscountingChainPure_v146 : PureAlgebraBenchmark_v146
+  GymnaxMemoryChainPure_v146 : PureAlgebraBenchmark_v146
+  JumanjiGraphColoringPure_v146 : PureAlgebraBenchmark_v146
+  POBAXDMLabMiniGridPure_v146 : PureAlgebraBenchmark_v146
+  POBAXDMLabMiniGrid02Pure_v146 : PureAlgebraBenchmark_v146
+  JumanjiGame2048Pure_v146 : PureAlgebraBenchmark_v146
+  JaxMARLSimpleSpreadBarrier_v146 : PureAlgebraBenchmark_v146
+  BraxInvertedPendulumContinuousAudit_v146 : PureAlgebraBenchmark_v146
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+-- Algebraic closure catalogue: every entry is an actual proof term or a
+-- concrete terminating recursion.
+------------------------------------------------------------------------
+
+record CompleteAlgebraicClosure_v146 (S : SmoothAlgebra) : Set₁ where
+  field
+    ringAddAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+    ringAddComm : ∀ x y → x + y ≡ y + x
+    ringMulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
+    ringDistrib : ∀ x y z → x * (y + z) ≡ x * y + x * z
+    vectorAddComm : ∀ {n} (x y : VecS S n) i → indexV (vAdd x y) i ≡ indexV (vAdd y x) i
+    vectorScaleAdd : ∀ {n} a (x y : VecS S n) i →
+      indexV (vScale a (vAdd x y)) i ≡ indexV (vAdd (vScale a x) (vScale a y)) i
+    qStrictCross : ∀ {alpha mu x} → zero ≤ alpha →
+      qResidual_v142 mu alpha (x * x) < zero →
+      alpha * (x * x) < mu * ((x * x) * (x * x))
+    coupledBudget : ∀ h → zero ≤ projectionBudget_v146 h
+    effectiveDecay : ∀ h → zero ≤ l2Effective_v146 h
+    descriptorAppend : ∀ {m n} (a : Vec (DescriptorSignals_v146 S) m)
+      (b : Vec (DescriptorSignals_v146 S) n) (sc : DescriptorScale_v146 S) →
+      descriptorSum_v146 (appendV_v146 a b) sc ≡
+      vAdd (descriptorSum_v146 a sc) (descriptorSum_v146 b sc)
+    replayTime : ∀ {stateDim actionDim n}
+      (st : ReplayState_v141 S stateDim actionDim)
+      (trs : Vec (ReplayTransition_v141 S stateDim actionDim) n) →
+      ReplayState_v141.time (replayPrefix_v141 st trs) ≡
+      ReplayState_v141.time st + n
+    barrier : ∀ {lanes width} (b : RectangularBarrier_v146 S lanes width)
+      (i j : Fin lanes) →
+      RectangularBarrier_v146.laneInput b i ≡ RectangularBarrier_v146.laneInput b j
+    openESCancellation : ∀ {n} z i → indexV (vAdd z (vNeg_v140 z)) i ≡ zero
+    l2IdentityNull : ∀ h → CoupledHyperParameters_v146.l2ZeroDecision h ≡ yes refl →
+      l2Effective_v146 h ≡ zero
+    couplingTraceLaw : ∀ h →
+      CoupledParetoCoordinates_v146.traceProduct (paretoCouplingMap_v146 h) ≡ traceProduct_v146 h
+    couplingBudgetLaw : ∀ h →
+      CoupledParetoCoordinates_v146.projectionBudget (paretoCouplingMap_v146 h) ≡ projectionBudget_v146 h
+    couplingMetaLaw : ∀ h →
+      CoupledParetoCoordinates_v146.metaStep (paretoCouplingMap_v146 h) ≡ etaMetaStep_v146 h
+    couplingCEMLaw : ∀ h →
+      CoupledParetoCoordinates_v146.cemRate (paretoCouplingMap_v146 h) ≡ CoupledHyperParameters_v146.cemRate h
+    replayAgeBound : ∀ {stateDim actionDim n k}
+      (st : ReplayState_v141 S stateDim actionDim)
+      (trs : Vec (ReplayTransition_v141 S stateDim actionDim) n) →
+      n ≤ k → replayAgeBound_v146 st trs ≤ k
+    cemCoefficientLaw : ∀ rho →
+      (one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) rho) + rho ≡ one
+    replaySelectLaw : ∀ {stateDim actionDim}
+      (m : ReplayMode_v146)
+      (live replayed : ReplayTransition_v141 S stateDim actionDim) →
+      replayTransitionSelect_v146 m live replayed ≡ replayTransitionSelect_v146 m live replayed
+    lstmAppendLaw : ∀ {input hidden m n}
+      (block : LSTMBlock S input hidden)
+      (state : LSTMState S hidden)
+      (xs : Vec (VecS S input) m)
+      (ys : Vec (VecS S input) n) →
+      lstmRun_v146 block state (appendV_v146 xs ys) ≡
+      lstmRun_v146 block (lstmRun_v146 block state xs) ys
+    reciprocalExposurePositive : ∀ h → zero < diagonalNewtonExposure_v146 h
+    relativeBudgetLaw : ∀ h → diagonalNewtonRelativeBudget_v146 h ≡ CoupledHyperParameters_v146.q h
+    frontierLaw : ∀ h → CoupledHyperParameters_v146.q h ≤ one →
+      paretoNewtonFrontier_v146 h ≡
+      one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+        (CoupledHyperParameters_v146.q h)
+    fr
