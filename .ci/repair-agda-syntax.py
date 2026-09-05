@@ -12,10 +12,45 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     indent = line[:len(line) - len(stripped)]
     for name in LOCAL_BINDINGS:
         prefix = name + ' : '
-        if stripped.startswith(prefix) and '=' in stripped:
-            left, right = stripped.rsplit('=', 1)
-            return f'{indent}{left.rstrip()}', f'{indent}{name} = {right.strip()}'
+        if not stripped.startswith(prefix):
+            continue
+        rest = stripped[len(prefix):].rstrip()
+        if rest.endswith('='):
+            return f'{indent}{name} : {rest[:-1].rstrip()}', f'{indent}{name} ='
+        # Handle one-line `name : type = expr` without touching ordinary code.
+        if ' = ' in rest:
+            typ, expr = rest.split(' = ', 1)
+            return f'{indent}{name} : {typ.rstrip()}', f'{indent}{name} = {expr.lstrip()}'
     return None
+
+
+def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
+    out: list[str] = []
+    changed = False
+    pending: tuple[str, str] | None = None
+    for line in lines:
+        stripped = line.lstrip()
+        if pending is not None:
+            indent, name = pending
+            if stripped.startswith('='):
+                out.append(f'{indent}{name} ={stripped[1:]}')
+                pending = None
+                changed = True
+                continue
+            pending = None
+        split = split_typed_binding(line)
+        if split is None:
+            out.append(line)
+            continue
+        decl, assignment = split
+        out.append(decl)
+        if assignment.endswith('='):
+            pending = (line[:len(line) - len(line.lstrip())], assignment.lstrip()[:-1].rstrip())
+            # The declaration has a following RHS line in the source.
+        else:
+            out.append(assignment)
+        changed = True
+    return out, changed
 
 
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
@@ -43,46 +78,28 @@ def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
 
 
 def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
-    out: list[str] = []
-    i = 0
-    changed = False
-    while i < len(lines):
-        line = lines[i]
-        if 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j' in line:
-            indent = line[:len(line) - len(line.lstrip())]
-            out.extend([
-                f'{indent}insertCVTAt : Fin cells → CVTSlot_v142 S',
-                f'{indent}insertCVTAt j with finDecEq i j',
-                f'{indent}... | no _ = CVTArchive_v142.cell a j',
-            ])
-            i += 1
-            while i < len(lines) and (lines[i].lstrip().startswith('... |') or not lines[i].strip()):
-                if lines[i].lstrip().startswith('... | yes _ with CVTSlot_v142.occupied'):
-                    out.append(f'{indent}... | yes _ = chooseOccupied')
-                    i += 1
-                    break
-                i += 1
-            out.extend([
-                f'{indent}chooseOccupied : CVTSlot_v142 S → CVTSlot_v142 S',
-                f'{indent}chooseOccupied slot with CVTSlot_v142.occupied slot',
-                f'{indent}... | false = record {{ occupied = true ; fitness = f }}',
-                f'{indent}... | true with QProjectionDecisionAlgebra_v140.ltDec D',
-                f'{indent}      (CVTSlot_v142.fitness slot) f',
-                f'{indent}...   | yes _ = record {{ occupied = true ; fitness = f }}',
-                f'{indent}...   | no _ = slot',
-                '',
-                f'{indent}insertCVT_v142 D a i f = record {{ cell = mapCells }}',
-                f'{indent}  where',
-                f'{indent}  mapCells : Fin cells → CVTSlot_v142 S',
-                f'{indent}  mapCells j with finDecEq i j',
-                f'{indent}  ... | no _ = CVTArchive_v142.cell a j',
-                f'{indent}  ... | yes _ = chooseOccupied (CVTArchive_v142.cell a j)',
-            ])
-            changed = True
+    for i, line in enumerate(lines):
+        if 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j' not in line:
             continue
-        out.append(line)
-        i += 1
-    return out, changed
+        indent = line[:len(line) - len(line.lstrip())]
+        end = i + 1
+        while end < len(lines) and (lines[end].lstrip().startswith('... |') or not lines[end].strip()):
+            end += 1
+        replacement = [
+            f'{indent}insertCVTAt_v142 : Fin cells → CVTSlot_v142 S',
+            f'{indent}insertCVTAt_v142 j with finDecEq i j',
+            f'{indent}... | no _ = CVTArchive_v142.cell a j',
+            f'{indent}... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)',
+            f'{indent}...   | false = record {{ occupied = true ; fitness = f }}',
+            f'{indent}...   | true with QProjectionDecisionAlgebra_v140.ltDec D',
+            f'{indent}        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f',
+            f'{indent}...     | yes _ = record {{ occupied = true ; fitness = f }}',
+            f'{indent}...     | no _ = CVTArchive_v142.cell a j',
+            '',
+            f'{indent}insertCVT_v142 D a i f = record {{ cell = insertCVTAt_v142 }}',
+        ]
+        return lines[:i] + replacement + lines[end:], True
+    return lines, False
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
@@ -93,33 +110,23 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     sep = text.find('\n------------------------------------------------------------------------', start)
     if sep < 0:
         return text, False
-    return text[:start] + marker + ' hx\n' + text[sep:], True
+    body = text[start:sep]
+    if body.strip() == marker + ' hx':
+        return text, False
+    return text[:start] + marker + ' hx' + text[sep:], True
 
 
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    changed = False
     lines = original.splitlines()
-    out: list[str] = []
-    for line in lines:
-        split = split_typed_binding(line)
-        if split is None:
-            out.append(line)
-        else:
-            out.extend(split)
-            changed = True
-
+    out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
     changed = changed or did_cvt
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
-
-    text2, did_residual = normalize_residual_theorem(text)
-    if did_residual:
-        text = text2
-        changed = True
-
+    text, did_residual = normalize_residual_theorem(text)
+    changed = changed or did_residual
     if changed:
         path.write_text(text)
     return changed
@@ -141,10 +148,12 @@ for path in Path('.').rglob('*.agda'):
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
         continue
-    for n, line in enumerate(path.read_text().splitlines(), 1):
-        if re.search(r'λ\s+[^→\n]+\s+with\b', line):
-            print(f'extended-lambda-needs-normalization={path}:{n}:{line}')
-            raise SystemExit(1)
+    text = path.read_text()
+    if re.search(r'λ\s+[^→\n]+\s+with\b', text):
+        for n, line in enumerate(text.splitlines(), 1):
+            if re.search(r'λ\s+[^→\n]+\s+with\b', line):
+                print(f'extended-lambda-needs-normalization={path}:{n}:{line}')
+        raise SystemExit(1)
 
 print('algebraic-proof-automation=constructive-finite-template-ledger')
 print('algebraic-template-names=' + ','.join(ALGEBRAIC_TEMPLATES))
