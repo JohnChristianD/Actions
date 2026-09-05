@@ -5,10 +5,9 @@ open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
 open import Exotic.ERL.FullCoupled.CompleteSafe_v147
 
 ------------------------------------------------------------------------
--- v147 kernel-checked additive algebra closure.
--- These identities are constructive consequences of the finite Ring
--- interface used by the canonical ERL development; no external
--- arithmetic library or analytic argument is involved.
+-- v147 constructive additive-algebra closure.
+-- These identities are consequences of the finite Ring interface used by
+-- the canonical ERL development; no external arithmetic or analysis is used.
 ------------------------------------------------------------------------
 
 negNeg_v147 : ∀ {S} (x : Scalar S) →
@@ -60,9 +59,11 @@ negZero_v147 {S} =
       (Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))))
 
 addNegComm_v147 : ∀ {S} (x : Scalar S) →
-  Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) x
-    + x
-  ≡ x + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) x
+  Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    (Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) x) x
+  ≡
+  Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    x (Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) x)
 addNegComm_v147 {S} x =
   Ring.addComm (OrderedRing.ring (SmoothAlgebra.orderedRing S))
     (Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) x) x
