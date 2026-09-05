@@ -47,10 +47,22 @@ jobs:
           set -euo pipefail
           perl -0pi -e 's/^([ \t]*)initialForm[ \t]*:[ \t]*QRun_v142\.projection[^\n]*\n[ \t]*\(initialQRun_v142 D budget p x\)[ \t]*≡[ \t]*p[ \t]*=[ \t]*\n/${1}initialForm =\n/m' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
 
-      - name: Normalize terminal projection parenthesis
+      - name: Normalize terminal projection proof
         run: |
           set -euo pipefail
-          perl -0pi -e 's/\(sym \(QTerminalSolution_v147\.stationarity u i\)\)\)\)\)\)\)\n\nqTerminalConfluence_v147/\(sym (QTerminalSolution_v147.stationarity u i)\)\)\)\)\)\n\nqTerminalConfluence_v147/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          start = s.index('qTerminalProjectionUnique_v147 t u ha hx hmu =')
+          end = s.index('\n\nqTerminalConfluence_v147', start)
+          replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
+  vectorExt_v147 (λ i →
+    trans
+      (QTerminalSolution_v147.stationarity t i)
+      (sym (QTerminalSolution_v147.stationarity u i)))'''
+          p.write_text(s[:start] + replacement + s[end:])
+          PY
 
       - name: Authoritative Agda --safe check
         run: |
