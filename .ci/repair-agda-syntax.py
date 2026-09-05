@@ -1,54 +1,30 @@
 from pathlib import Path
 import re
 
-LOCAL_BINDINGS = {
-    "leftNorm", "rightNorm", "lhs", "rhs", "hzero", "hone", "hdef", "hcancel",
-    "hx", "hxx", "hlt", "hmul", "hc", "hd", "he",
-}
-
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
+    """Split invalid local `name : Type = rhs` into Agda declaration + definition."""
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
-    for name in LOCAL_BINDINGS:
-        prefix = name + ' : '
-        if not stripped.startswith(prefix):
-            continue
-        rest = stripped[len(prefix):].rstrip()
-        if rest.endswith('='):
-            return f'{indent}{name} : {rest[:-1].rstrip()}', f'{indent}{name} ='
-        # Handle one-line `name : type = expr` without touching ordinary code.
-        if ' = ' in rest:
-            typ, expr = rest.split(' = ', 1)
-            return f'{indent}{name} : {typ.rstrip()}', f'{indent}{name} = {expr.lstrip()}'
-    return None
+    match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*(.*)$", stripped)
+    if match is None:
+        return None
+    name, typ, rhs = match.groups()
+    if not typ.strip() or not rhs.strip():
+        return None
+    return f'{indent}{name} : {typ.strip()}', f'{indent}{name} = {rhs.strip()}'
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
+    """Repair every structurally invalid typed definition, not a hand-maintained name list."""
     out: list[str] = []
     changed = False
-    pending: tuple[str, str] | None = None
     for line in lines:
-        stripped = line.lstrip()
-        if pending is not None:
-            indent, name = pending
-            if stripped.startswith('='):
-                out.append(f'{indent}{name} ={stripped[1:]}')
-                pending = None
-                changed = True
-                continue
-            pending = None
         split = split_typed_binding(line)
         if split is None:
             out.append(line)
             continue
-        decl, assignment = split
-        out.append(decl)
-        if assignment.endswith('='):
-            pending = (line[:len(line) - len(line.lstrip())], assignment.lstrip()[:-1].rstrip())
-            # The declaration has a following RHS line in the source.
-        else:
-            out.append(assignment)
+        out.extend(split)
         changed = True
     return out, changed
 
@@ -83,7 +59,7 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
             continue
         indent = line[:len(line) - len(line.lstrip())]
         end = i + 1
-        while end < len(lines) and (lines[end].lstrip().startswith('... |') or not lines[end].strip()):
+        while end < len(lines) and (lines[end].lstrip().startswith('... |') or lines[end].lstrip().startswith('...   |') or not lines[end].strip()):
             end += 1
         replacement = [
             f'{indent}insertCVTAt_v142 : Fin cells → CVTSlot_v142 S',
@@ -132,12 +108,19 @@ def repair_file(path: Path) -> bool:
     return changed
 
 
-ALGEBRAIC_TEMPLATES = {
-    "residualSquareNonzero_v140": "constructive-final-argument",
-    "qProjectionCross_v141": "ordered-ring-cross-multiplication",
-    "qProjectionCross_v142": "delegated-cross-multiplication",
-    "orderedFieldCrossStrict_v142": "reciprocal-law-cross-multiplication",
-    "insertCVT_v142": "finite-mask-choice-certificate",
+# These are the currently identified finite algebraic theorem surfaces.
+# They are audit targets, not claims that every body is already kernel-checked.
+ALGEBRAIC_THEOREM_SURFACES = {
+    'ringAddAssoc', 'ringAddComm', 'ringMulAssoc', 'ringDistrib',
+    'vectorAddComm', 'vectorScaleAdd', 'qStrictCross',
+    'coupledBudget', 'effectiveDecay', 'descriptorAppend', 'replayTime',
+    'barrier', 'openESCancellation', 'l2IdentityNull',
+    'couplingTraceLaw', 'couplingBudgetLaw', 'couplingMetaLaw', 'couplingCEMLaw',
+    'replayAgeBound', 'cemCoefficientLaw', 'replaySelectLaw', 'lstmAppendLaw',
+    'reciprocalExposurePositive', 'relativeBudgetLaw', 'frontierLaw',
+    'frontierStrictTradeoff', 'replayAgeComposition', 'replayNoIS',
+    'cemArgmaxLaw', 'hStepRecursion', 'learnerNonInert',
+    'efficientCHADLSTM', 'negativeTDSign',
 }
 
 changed = 0
@@ -145,16 +128,27 @@ for path in Path('.').rglob('*.agda'):
     if '.git' not in path.parts and repair_file(path):
         changed += 1
 
+remaining = []
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
         continue
-    text = path.read_text()
-    if re.search(r'λ\s+[^→\n]+\s+with\b', text):
-        for n, line in enumerate(text.splitlines(), 1):
-            if re.search(r'λ\s+[^→\n]+\s+with\b', line):
-                print(f'extended-lambda-needs-normalization={path}:{n}:{line}')
-        raise SystemExit(1)
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        if re.search(r'λ\s+[^→\n]+\s+with\b', line):
+            remaining.append(f'{path}:{n}:{line}')
+if remaining:
+    for item in remaining:
+        print(f'extended-lambda-needs-normalization={item}')
+    raise SystemExit(1)
 
-print('algebraic-proof-automation=constructive-finite-template-ledger')
-print('algebraic-template-names=' + ','.join(ALGEBRAIC_TEMPLATES))
+versioned = []
+for path in Path('.').rglob('*.agda'):
+    if '.git' in path.parts:
+        continue
+    if re.search(r'_v\d+\b', path.name) or re.search(r'_v\d+\b', path.read_text()):
+        versioned.append(str(path))
+
+print('parser-repair=structural-typed-binding-plus-targeted-extended-lambda')
+print('algebraic-proof-automation=finite-constructive-surface-audit')
+print('algebraic-theorem-surface-count=' + str(len(ALGEBRAIC_THEOREM_SURFACES)))
 print(f'grammar-repaired-files={changed}')
+print('versioned-agda-files=' + ','.join(versioned))
