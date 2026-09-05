@@ -71,6 +71,7 @@ jobs:
               '→ zero ≤ a * b': '→ zero ≤ (a * b)',
               '→ c * a ≤ c * b': '→ (c * a) ≤ (c * b)',
               '→ c * a < c * b': '→ (c * a) < (c * b)',
+              '→ zero < a * b': '→ zero < (a * b)',
           }.items():
               s = s.replace(old, new)
           p.write_text(s)
