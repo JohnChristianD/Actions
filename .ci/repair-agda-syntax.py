@@ -15,7 +15,6 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    """Normalize only one-line local typed definitions inside let blocks."""
     out: list[str] = []
     changed = False
     in_let = False
@@ -111,6 +110,27 @@ def replace_between_separators(text: str, marker: str, replacement: str) -> tupl
     return text[:start] + replacement + text[sep:], True
 
 
+def normalize_residual_theorem(text: str) -> tuple[str, bool]:
+    replacement = '''residualSquareNonzero_v140 ha hr hx =
+  ⊥-elim
+    (OrderedRing.notLtFromLe
+      ha
+      (subst
+        (λ q → q < zero)
+        (trans
+          (cong
+            (λ q → alpha + Ring.neg
+              (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+              (mu * q))
+            (cong₂
+              (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing _)))
+              hx hx))
+          (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
+        hr))
+'''
+    return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr hx =', replacement)
+
+
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
     replacement = '''qProjectionCross_v141 ha hr =
   trans
@@ -170,14 +190,15 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
 
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    text, did_q = normalize_q_projection_cross(original)
+    text, did_residual = normalize_residual_theorem(original)
+    text, did_q = normalize_q_projection_cross(text)
     text, did_cross = normalize_ordered_field_cross(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_q or did_cross
+    changed = changed or did_cvt or did_residual or did_q or did_cross
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
