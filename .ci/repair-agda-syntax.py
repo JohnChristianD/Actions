@@ -91,17 +91,20 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
         while end < len(lines) and (lines[end].lstrip().startswith('... |') or lines[end].lstrip().startswith('...   |') or not lines[end].strip()):
             end += 1
         replacement = [
-            f'{indent}insertCVTAt_v142 : Fin cells → CVTSlot_v142 S',
-            f'{indent}insertCVTAt_v142 j with finDecEq i j',
-            f'{indent}... | no _ = CVTArchive_v142.cell a j',
-            f'{indent}... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)',
-            f'{indent}...   | false = record {{ occupied = true ; fitness = f }}',
-            f'{indent}...   | true with QProjectionDecisionAlgebra_v140.ltDec D',
+            f'{indent}insertCVT_v142 D a i f = record',
+            f'{indent}  {{ cell = insertCVTCell }}',
+            f'{indent}  where',
+            f'{indent}  insertCVTCell : Fin cells → CVTSlot_v142 S',
+            f'{indent}  insertCVTCell j with finDecEq i j',
+            f'{indent}  ... | no _ = CVTArchive_v142.cell a j',
+            f'{indent}  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)',
+            f'{indent}  ...   | false = record',
+            f'{indent}  ...     {{ occupied = true ; fitness = f }}',
+            f'{indent}  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D',
             f'{indent}        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f',
-            f'{indent}...     | yes _ = record {{ occupied = true ; fitness = f }}',
-            f'{indent}...     | no _ = CVTArchive_v142.cell a j',
-            '',
-            f'{indent}insertCVT_v142 D a i f = record {{ cell = insertCVTAt_v142 }}',
+            f'{indent}  ...     | yes _ = record',
+            f'{indent}  ...       {{ occupied = true ; fitness = f }}',
+            f'{indent}  ...     | no _ = CVTArchive_v142.cell a j',
         ]
         return lines[:i] + replacement + lines[end:], True
     return lines, False
@@ -139,7 +142,7 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
 
 
 def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
-    """Inline the two typed local normalization equalities using cancelRecip_v142."""
+    """Replace malformed typed local normalizations with a direct algebraic proof."""
     start_marker = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
     start = text.find(start_marker)
     if start < 0:
@@ -176,7 +179,7 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
           (Ring.mulComm
             (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d b)))
       h)
-    (OrderedRing.mulPos hd he))
+    (OrderedRing.mulPos hd he)
 '''
     current = text[start:sep]
     if current == replacement.rstrip('\n'):
@@ -193,13 +196,11 @@ def repair_file(path: Path) -> bool:
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt
-    changed = changed or did_residual or did_cross
+    changed = changed or did_cvt or did_residual or did_cross
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
     return changed
-
 
 ALGEBRAIC_THEOREM_SURFACES = {
     'ringAddAssoc', 'ringAddComm', 'ringMulAssoc', 'ringDistrib',
