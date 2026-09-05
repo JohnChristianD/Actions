@@ -30,6 +30,10 @@ jobs:
           test -f Exotic/ERL/FullCoupled/QClosure_v147.agda
           test -f Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
           test -f Exotic/ERL/FullCoupled/AlgebraClosure_v147.agda
+      - name: Apply deterministic source repair
+        run: |
+          test "$(grep -c '^residualSquareNonzero_v140 ha hr = ' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 1
+          sed -i 's/^residualSquareNonzero_v140 ha hr = /residualSquareNonzero_v140 ha hr hx = /' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check canonical algebra
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check q and CHAD closure
