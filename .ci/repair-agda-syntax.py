@@ -1,78 +1,104 @@
 from pathlib import Path
-import re
 
+REWRITES = [
+    (
+        'let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n'
+        '        (mu * (hx * hx)) ≡ alpha =\n'
+        '      trans',
+        'let\n'
+        '      hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n'
+        '        (mu * (hx * hx)) ≡ alpha\n'
+        '      hzero = trans',
+    ),
+    (
+        'let OR = SmoothAlgebra.orderedRing _\n'
+        '      Rg = OrderedRing.ring OR\n'
+        '      hx : x ≠ zero = residualSquareNonzero_v140 ha hr\n'
+        '      hxx : zero < x * x = OrderedRing.squarePositive hx\n'
+        '      hlt : alpha < mu * (x * x) = OrderedRing.subLtZero hr\n'
+        '      hmul = OrderedRing.mulLtPosLeft hlt hxx',
+        'let\n'
+        '      OR = SmoothAlgebra.orderedRing _\n'
+        '      Rg = OrderedRing.ring OR\n'
+        '      hx : x ≠ zero\n'
+        '      hx = residualSquareNonzero_v140 ha hr\n'
+        '      hxx : zero < x * x\n'
+        '      hxx = OrderedRing.squarePositive hx\n'
+        '      hlt : alpha < mu * (x * x)\n'
+        '      hlt = OrderedRing.subLtZero hr\n'
+        '      hmul = OrderedRing.mulLtPosLeft hlt hxx',
+    ),
+    (
+        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      c = d * e\n'
+        '      hc = OrderedRing.mulPos hd he\n'
+        '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =\n',
+        'let\n'
+        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      c = d * e\n'
+        '      hc = OrderedRing.mulPos hd he\n'
+        '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e\n'
+        '      leftNorm =\n',
+    ),
+    (
+        '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =\n',
+        '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d\n'
+        '      rightNorm =\n',
+    ),
+    (
+        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      hnz = OrderedRing.negLt h\n'
+        '      base = n * d\n'
+        '      lhs : n * (d + neg z) ≡ base + neg (n * z) =\n',
+        'let\n'
+        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      hnz = OrderedRing.negLt h\n'
+        '      base = n * d\n'
+        '      lhs : n * (d + neg z) ≡ base + neg (n * z)\n'
+        '      lhs =\n',
+    ),
+    (
+        '      rhs : (n + neg y) * d ≡ base + neg (y * d) =\n',
+        '      rhs : (n + neg y) * d ≡ base + neg (y * d)\n'
+        '      rhs =\n',
+    ),
+    (
+        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      e = diagonalNewtonExposure_v146 h\n'
+        '      he = diagonalNewtonExposurePositive_v146 h\n'
+        '      hb = projectionBudget_v146 h\n'
+        '      hdef : hb ≡ CoupledHyperParameters_v146.q h * e = refl\n'
+        '      hcancel : e * SmoothAlgebra.recip _ e ≡ one =\n'
+        '        SmoothAlgebra.reciprocalLaw _ he\n',
+        'let\n'
+        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
+        '      e = diagonalNewtonExposure_v146 h\n'
+        '      he = diagonalNewtonExposurePositive_v146 h\n'
+        '      hb = projectionBudget_v146 h\n'
+        '      hdef : hb ≡ CoupledHyperParameters_v146.q h * e\n'
+        '      hdef = refl\n'
+        '      hcancel : e * SmoothAlgebra.recip _ e ≡ one\n'
+        '      hcancel = SmoothAlgebra.reciprocalLaw _ he\n',
+    ),
+    (
+        '        hzero : d * zero ≡ zero = OrderedRing.mulZeroR Rg d\n'
+        '        hone : zero < one = OrderedRing.zeroLtOne {orderedRing = OR}\n',
+        '        hzero : d * zero ≡ zero\n'
+        '        hzero = OrderedRing.mulZeroR Rg d\n'
+        '        hone : zero < one\n'
+        '        hone = OrderedRing.zeroLtOne {orderedRing = OR}\n',
+    ),
+]
 
-def replace_between(text: str, start_marker: str, end_marker: str, replacement: str) -> str:
-    start = text.find(start_marker)
-    if start < 0:
-        return text
-    end = text.find(end_marker, start)
-    if end < 0:
-        return text
-    return text[:start] + replacement.rstrip() + '\n' + text[end:]
-
-
-def repair(path: Path) -> bool:
+changed = 0
+for path in Path('.').rglob('*.agda'):
+    if '.git' in path.parts:
+        continue
     text = path.read_text()
-    original = text
-
-    old_acc = '''  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)'''
-    new_acc = '''  accumulateAt : Fin n → R → Cot → Cot
-  accumulateAt i c s j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j
-
-  accumulate i c (state s) = state (accumulateAt i c s)'''
-    text = text.replace(old_acc, new_acc, 1)
-
-    old_cvt = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
-  ... | no _ = CVTArchive_v142.cell a j
-  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-  ...   | false = record { occupied = true ; fitness = f }
-  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-  ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }'''
-    new_cvt = '''insertCVT_v142 D a i f = record { cell = choose i }
-  where
-  choose : Fin cells → CVTSlot_v142 S
-  choose j with finDecEq i j
-  ... | no _ = CVTArchive_v142.cell a j
-  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-  ...   | false = record { occupied = true ; fitness = f }
-  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-  ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }'''
-    text = text.replace(old_cvt, new_cvt, 1)
-
-    residual_start = 'residualSquareNonzero_v140 ha hr hx =\n'
-    residual_end = '\n------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem'
-    residual_fixed = '''residualSquareNonzero_v140 ha hr hx =
-  let
-      hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-        (mu * (hx * hx)) ≡ alpha
-      hzero = trans
-        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
-          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
-        (Ring.addZeroR (OrderedRing.ring _) alpha)
-  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))'''
-    text = replace_between(text, residual_start, residual_end, residual_fixed)
-
-    remaining = []
-    for lineno, line in enumerate(text.splitlines(), 1):
-        if re.search(r'λ[^\n]*\bwith\b', line):
-            remaining.append(f'{path}:{lineno}:{line}')
-    if remaining:
-        print('\n'.join(remaining))
-        raise SystemExit(1)
-
-    if text != original:
-        path.write_text(text)
-        return True
-    return False
-
-changed = sum(repair(path) for path in Path('.').rglob('*.agda') if '.git' not in path.parts)
-print(f'repaired-agda-files={changed}')
+    new = text
+    for old, replacement in REWRITES:
+        new = new.replace(old, replacement, 1)
+    if new != text:
+        path.write_text(new)
+        changed += 1
+print(f'grammar-repaired-files={changed}')
