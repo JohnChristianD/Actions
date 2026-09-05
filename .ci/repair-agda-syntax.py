@@ -3,7 +3,6 @@ import re
 
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
-    """Repair invalid one-line local `name : Type = rhs` into inferred `name = rhs`."""
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
     match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*(.*)$", stripped)
@@ -16,7 +15,6 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def split_multiline_typed_binding_header(lines: list[str], i: int) -> tuple[str, int] | None:
-    """Repair `name : Type =` by putting the first RHS token on the same line."""
     line = lines[i]
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
@@ -35,7 +33,6 @@ def split_multiline_typed_binding_header(lines: list[str], i: int) -> tuple[str,
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    """Normalize malformed local typed definitions without touching signatures."""
     out: list[str] = []
     changed = False
     i = 0
@@ -109,7 +106,6 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    """Replace the malformed local-let proof with a direct constructive contradiction."""
     start_marker = 'residualSquareNonzero_v140 ha hr hx ='
     start = text.find(start_marker)
     if start < 0:
@@ -140,7 +136,6 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
 
 
 def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
-    """Replace malformed typed local normalizations with a direct algebraic proof."""
     start_marker = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
     start = text.find(start_marker)
     if start < 0:
@@ -177,7 +172,7 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
           (Ring.mulComm
             (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d b)))
       h)
-    (OrderedRing.mulPos hd he)
+    (OrderedRing.mulPos hd he))
 '''
     current = text[start:sep]
     if current == replacement.rstrip('\n'):
