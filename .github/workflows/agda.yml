@@ -75,6 +75,7 @@ jobs:
               '→ a + c < b + d': '→ (a + c) < (b + d)',
               '→ c + a < c + b': '→ (c + a) < (c + b)',
               '→ a + neg b < zero': '→ (a + neg b) < zero',
+              '→ a + neg b ≤ zero': '→ (a + neg b) ≤ zero',
               'abs (x + y) ≤ abs x + abs y': 'abs (x + y) ≤ (abs x + abs y)',
               '→ zero ≤ a * b': '→ zero ≤ (a * b)',
               '→ c * a ≤ c * b': '→ (c * a) ≤ (c * b)',
