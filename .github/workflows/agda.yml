@@ -143,7 +143,7 @@ jobs:
               s = s.replace(marker, helper + marker, 1)
           s = s.replace('... | false = shift (qFirstNegative_v142 D bs as xs mu)', '... | false = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
           s = s.replace('...   | no _ = shift (qFirstNegative_v142 D bs as xs mu)', '...   | no _ = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
-          s = re.sub(r'\n  where\n  shift : ∀ \{m\} → MaybeD \(Fin m\) → MaybeD \(Fin \(suc m\)\)\n  shift nothing = nothing\n  shift \(justD i\) = justD \(fsuc i\)\n', '\n', s, count=1)
+          s = re.sub(r'\n  where\n  shift : ∀ \{m\} → MaybeD (Fin m) → MaybeD (Fin \(suc m\))\n  shift nothing = nothing\n  shift \(justD i\) = justD \(fsuc i\)\n', '\n', s, count=1)
           p.write_text(s)
           PY
 
@@ -156,7 +156,7 @@ jobs:
           import re, sys
           p = Path(sys.argv[1])
           s = p.read_text()
-          pattern = r'(?m)^qRunStep_v142(?:\s+\{[^\n]+\})*\s+r\s+with$'
+          pattern = r'(?m)^qRunStep_v142\s+r\s+with'
           replacement = 'qRunStep_v142 {S} {n} r with'
           s, n = re.subn(pattern, replacement, s, count=1)
           if n != 1:
