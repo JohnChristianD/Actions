@@ -34,8 +34,8 @@ jobs:
         run: |
           test "$(grep -c '^residualSquareNonzero_v140 ha hr =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 1
           sed -i 's/^residualSquareNonzero_v140 ha hr =/residualSquareNonzero_v140 ha hr hx =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          test "$(grep -c '^      hzero : alpha + Ring.neg Rg (mu \* (x \* x)) ≡ alpha$' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 0
-          sed -i 's/^      hzero : alpha + Ring.neg Rg (mu \* (x \* x)) ≡ alpha =$/      hzero : alpha + Ring.neg Rg (mu * (x * x)) ≡ alpha\n      hzero =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/^(      [A-Za-z][A-Za-z0-9_]*\s*:\s*[^=\n]+)\s*=\s*(.*)$/\1\n      $2/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          test "$(grep -cE '^      [A-Za-z][A-Za-z0-9_]*\s*:\s*[^=[:space:]][^=]*=' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda || true)" = 0
       - name: Kernel check canonical algebra
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check q and CHAD closure
