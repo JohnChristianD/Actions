@@ -126,6 +126,27 @@ jobs:
           grep -n '^residualSquareNonzero_v140 {S}' "$f"
           grep -n '^qProjectionCross_v141 {S}' "$f"
 
+      - name: Normalize q-first-negative shift scope
+        run: |
+          set -euo pipefail
+          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
+          python3 - "$f" <<'PY'
+          from pathlib import Path
+          import re, sys
+          p = Path(sys.argv[1])
+          s = p.read_text()
+          if 'shiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))' not in s:
+              marker = '\nqFirstNegative_v142 : ∀ {S n}'
+              helper = '''\nshiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))\nshiftMaybeD_v142 nothing = nothing\nshiftMaybeD_v142 (justD i) = justD (fsuc i)\n'''
+              if marker not in s:
+                  raise SystemExit('qFirstNegative_v142 marker not found')
+              s = s.replace(marker, helper + marker, 1)
+          s = s.replace('... | false = shift (qFirstNegative_v142 D bs as xs mu)', '... | false = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
+          s = s.replace('...   | no _ = shift (qFirstNegative_v142 D bs as xs mu)', '...   | no _ = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
+          s = re.sub(r'\n  where\n  shift : ∀ \{m\} → MaybeD \(Fin m\) → MaybeD \(Fin \(suc m\)\)\n  shift nothing = nothing\n  shift \(justD i\) = justD \(fsuc i\)\n', '\n', s, count=1)
+          p.write_text(s)
+          PY
+
       - name: Agda2HS diagnostic probe
         continue-on-error: true
         run: |
