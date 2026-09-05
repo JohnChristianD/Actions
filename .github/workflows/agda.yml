@@ -1,12 +1,10 @@
 name: Agda CI, tooling, and closure persistence
-
 on:
   push:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
   pull_request:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
   workflow_dispatch:
-
 concurrency:
   group: agda-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -38,10 +36,10 @@ jobs:
           test -s agda-sources.list
       - name: Repair known Agda extended-lambda syntax
         run: python3 .ci/repair-agda-syntax.py
-      - name: Show repaired source context
+      - name: Show repaired residual context
         run: |
           set -euo pipefail
-          awk 'NR>=1000 && NR<=1150 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          awk 'NR>=882 && NR<=905 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Authoritative Agda --safe kernel check
         run: |
           set -euo pipefail
@@ -76,17 +74,11 @@ jobs:
       - name: Upload Agda kernel log
         if: always()
         uses: actions/upload-artifact@v4
-        with:
-          name: agda-kernel-log
-          path: agda-kernel.out
-          if-no-files-found: ignore
+        with: {name: agda-kernel-log, path: agda-kernel.out, if-no-files-found: ignore}
       - name: Upload closure certificate
         if: ${{ success() && hashFiles('.ci/closure/agda-closure.txt') != '' }}
         uses: actions/upload-artifact@v4
-        with:
-          name: agda-closure-certificate
-          path: .ci/closure/agda-closure.txt
-          if-no-files-found: ignore
+        with: {name: agda-closure-certificate, path: agda-closure.txt, if-no-files-found: ignore}
   tooling:
     needs: kernel
     if: ${{ success() }}
