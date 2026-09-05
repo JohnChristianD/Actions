@@ -62,6 +62,7 @@ jobs:
           s = s.replace('sumFin _ z zero _ = z', 'sumFin _ z natZero _ = z')
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
           s = s.replace('\nopen Ring\n\nrecord OrderedRing', '\nrecord OrderedRing')
+          s = s.replace('\n¬ A = A → ⊥\n', '\n¬ A = A → ⊥\n\n_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n')
           for old, new in {
               '→ a + c ≤ b + d': '→ (a + c) ≤ (b + d)',
               '→ a + c < b + d': '→ (a + c) < (b + d)',
