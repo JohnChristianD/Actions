@@ -97,9 +97,26 @@ jobs:
           s = s.replace('if b then\n      SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs\n    else\n      zero ∷ candidate bs as xs', 'if b then\n      (SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs)\n    else\n      (zero ∷ candidate bs as xs)')
           q = 'alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x)) < zero'
           s = s.replace(q, '(alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x))) < zero')
-          s = s.replace('qProjectionCross_v141 ha hr =', 'qProjectionCross_v141 {alpha = alpha} {mu = mu} {x = x} ha hr =')
+          s = s.replace('qProjectionCross_v141 ha hr =', 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =')
           p.write_text(s)
           PY
+
+      - name: Assert q-cross parameter binding
+        run: |
+          set -euo pipefail
+          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
+          python3 - "$f" <<'PY'
+          from pathlib import Path
+          import re, sys
+          p = Path(sys.argv[1])
+          s = p.read_text()
+          pattern = r'(?m)^qProjectionCross_v141(?: \{[^\n]*\})? ha hr ='
+          s, n = re.subn(pattern, 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =', s, count=1)
+          if n != 1:
+              raise SystemExit(f'qProjectionCross_v141 binding normalization count={n}')
+          p.write_text(s)
+          PY
+          grep -n -A7 '^qProjectionCross_v141' "$f"
 
       - name: Authoritative Agda --safe check
         run: |
