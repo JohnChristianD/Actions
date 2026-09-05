@@ -88,19 +88,20 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
             end += 1
         replacement = [
             'makeCVTSlot_v142 : ∀ {S} → Scalar S → CVTSlot_v142 S',
-            'makeCVTSlot_v142 f = record',
-            '  { occupied = true',
-            '  ; fitness = f',
-            '  }',
+            'makeCVTSlot_v142 f = record { occupied = true ; fitness = f }',
             '',
             'insertCVTReplacement_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →',
             '  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S',
             'insertCVTReplacement_v142 D slot f with CVTSlot_v142.occupied slot',
             '... | false = makeCVTSlot_v142 f',
-            '... | true with QProjectionDecisionAlgebra_v140.ltDec D',
-            '        (CVTSlot_v142.fitness slot) f',
-            '...   | yes _ = makeCVTSlot_v142 f',
-            '...   | no _ = slot',
+            '... | true = insertCVTOccupied_v142 D slot f',
+            '',
+            'insertCVTOccupied_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →',
+            '  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S',
+            'insertCVTOccupied_v142 D slot f with QProjectionDecisionAlgebra_v140.ltDec D',
+            '  (CVTSlot_v142.fitness slot) f',
+            '... | yes _ = makeCVTSlot_v142 f',
+            '... | no _ = slot',
             '',
             'insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →',
             '  CVTArchive_v142 S cells → Fin cells → Scalar S → Fin cells → CVTSlot_v142 S',
@@ -108,8 +109,7 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
             '... | no _ = CVTArchive_v142.cell a j',
             '... | yes _ = insertCVTReplacement_v142 D (CVTArchive_v142.cell a j) f',
             '',
-            'insertCVT_v142 D a i f = record',
-            '  { cell = insertCVTCell_v142 D a i f }',
+            'insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i f }',
         ]
         return lines[:i] + replacement + lines[end:], True
     return lines, False
