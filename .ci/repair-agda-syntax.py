@@ -3,7 +3,7 @@ import re
 
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
-    """Repair invalid one-line `name : Type = rhs` into an inferred definition."""
+    """Repair invalid one-line local `name : Type = rhs` into inferred `name = rhs`."""
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
     match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*(.*)$", stripped)
@@ -16,31 +16,16 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    """Erase local type signatures when the source used invalid inline typed definitions."""
+    """Normalize only malformed inline typed definitions; preserve valid signatures."""
     out: list[str] = []
     changed = False
-    i = 0
-    while i < len(lines):
-        split = split_typed_binding(lines[i])
-        if split is not None:
-            assignment, _ = split
-            out.append(assignment)
+    for line in lines:
+        split = split_typed_binding(line)
+        if split is None:
+            out.append(line)
+        else:
+            out.append(split[0])
             changed = True
-            i += 1
-            continue
-
-        # Collapse an already-split same-indentation signature + definition.
-        if i + 1 < len(lines):
-            sig = re.match(r"^(\s*)([A-Za-z_][A-Za-z0-9_']*)\s*:\s*.+$", lines[i])
-            rhs = re.match(r"^(\s*)([A-Za-z_][A-Za-z0-9_']*)\s*=\s*(.*)$", lines[i + 1])
-            if sig and rhs and sig.group(1) == rhs.group(1) and sig.group(2) == rhs.group(2):
-                out.append(lines[i + 1])
-                changed = True
-                i += 2
-                continue
-
-        out.append(lines[i])
-        i += 1
     return out, changed
 
 
