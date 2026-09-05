@@ -8,7 +8,7 @@ LOCAL_BINDINGS = {
 
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
-    match = re.match(r'^(\s*)([A-Za-z][A-Za-z0-9_′-]*)\s*:\s*(.*?)\s*=\s*(.+)$', line)
+    match = re.match(r'^(\s*)([A-Za-z][A-Za-z0-9_\u2032-]*)\s*:\s*(.*?)\s*=\s*(.+)$', line)
     if match is None or match.group(2) not in LOCAL_BINDINGS:
         return None
     indent, name, typ, expr = match.groups()
@@ -17,11 +17,11 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
     out: list[str] = []
-    changed = False
     i = 0
+    changed = False
     while i < len(lines):
         line = lines[i]
-        if 'accumulate i c (state s) = state (λ j with finDecEq j i)' in line:
+        if 'accumulate i c (state s)' in line and 'with finDecEq' in line and i + 2 < len(lines):
             indent = line[:len(line) - len(line.lstrip())]
             out.extend([
                 f'{indent}accumulateAt : Fin n → R → Cot → Fin n → R',
@@ -31,11 +31,7 @@ def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
                 '',
                 f'{indent}accumulate i c (state s) = state (λ j → accumulateAt i c s j)',
             ])
-            i += 1
-            while i < len(lines) and lines[i].lstrip().startswith('... |'):
-                i += 1
-            if i + 1 < len(lines) and lines[i].lstrip().startswith('... |'):
-                i += 2
+            i += 3
             changed = True
             continue
         out.append(line)
@@ -44,28 +40,19 @@ def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
 
 
 def normalize_cvt(text: str) -> tuple[str, bool]:
-    old = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
-  ... | no _ = CVTArchive_v142.cell a j
-  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-  ...   | false = record { occupied = true ; fitness = f }
-  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-  ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }'''
-    new = '''insertCVT_v142 D a i f = record { cell = choose i }
-  where
-  choose : Fin cells → CVTSlot_v142 S
-  choose j with finDecEq i j
-  ... | no _ = CVTArchive_v142.cell a j
-  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-  ...   | false = record { occupied = true ; fitness = f }
-  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-  ...     | yes _ = record { occupied = true ; fitness = f }
-  ...     | no _ = CVTArchive_v142.cell a j }'''
-    if old in text:
-        return text.replace(old, new, 1), True
-    return text, False
+    marker = 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j'
+    if marker not in text:
+        return text, False
+    start = text.find(marker)
+    end = text.find('\n\n', start)
+    if end < 0:
+        return text, False
+    old = text[start:end]
+    new = old.replace('record { cell = λ j with finDecEq i j', 'record { cell = choose i', 1)
+    body = new.splitlines()
+    body = [body[0], '  where', '  choose : Fin cells → CVTSlot_v142 S'] + body[1:]
+    body = [line.replace('... | no _', '... | no _', 1) for line in body]
+    return text[:start] + '\n'.join(body) + text[end:], True
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
@@ -113,7 +100,6 @@ ALGEBRAIC_TEMPLATES = {
     "qProjectionCross_v141": "ordered-ring-cross-multiplication",
     "qProjectionCross_v142": "delegated-cross-multiplication",
 }
-
 
 changed = 0
 for path in Path('.').rglob('*.agda'):
