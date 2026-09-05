@@ -1,3 +1,4 @@
+# Single-scalar authoritative Agda gate; deliberately avoids YAML block scalars.
 name: Agda kernel one-line
 on:
   push:
