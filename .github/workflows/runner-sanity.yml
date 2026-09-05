@@ -1,0 +1,11 @@
+name: Runner sanity
+on:
+  push:
+    branches: ['main']
+permissions:
+  contents: read
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo runner-sanity-pass
