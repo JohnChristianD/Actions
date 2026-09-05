@@ -125,6 +125,8 @@ jobs:
           test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "1e0036e35b85109a3dc822cda7663b363d5085a8c85869c545dd0c982109ad13"
       - name: Safe kernel check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Safe interpolation kernel check
+        run: agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
 
   oracle-gate:
     if: always()
@@ -138,9 +140,10 @@ jobs:
       - r-oracle
       - sympy-oracle
       - agda-safe
+      - proof-interpolation
     runs-on: ubuntu-latest
     steps:
-      - name: Fail closed on any oracle
+      - name: Fail closed on any oracle or interpolation check
         run: |
           test "${{ needs.haskell-oracle.result }}" = success
           test "${{ needs.scala-oracle.result }}" = success
@@ -151,7 +154,9 @@ jobs:
           test "${{ needs.r-oracle.result }}" = success
           test "${{ needs.sympy-oracle.result }}" = success
           test "${{ needs.agda-safe.result }}" = success
+          test "${{ needs.proof-interpolation.result }}" = success
           echo 'predictive-prescriptions=agda+haskell+scala+swift+elixir+clojure+rust+r+sympy:PASS'
+          echo 'agda-ci-interpolation=PASS'
           echo 'ruby-rails-oracle=omitted-nonorthogonal'
 
   proof-interpolation:
@@ -186,9 +191,8 @@ jobs:
       - name: Verify Agda
         run: agda --version
       - name: Run automated proof interpolation
-        continue-on-error: true
         run: python3 tools/proof_interpolate_v147.py
-      - name: Publish interpolation report and derived proof candidate
+      - name: Publish interpolation report and proof inventory
         if: always()
         uses: actions/upload-artifact@v4
         with:
