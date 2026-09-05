@@ -24,19 +24,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
       - name: Setup Agda 2.8.0
         uses: agda/agda-setup-action@v1
         with:
           agda-version: '2.8.0'
-
       - name: Verify Agda executable
         shell: bash
         run: |
           set -euo pipefail
           command -v agda
           agda --version | tr -d '\r' | grep -Fx 'Agda version 2.8.0'
-
       - name: Apply deterministic v147 local-binding repair
         shell: bash
         run: |
@@ -49,26 +46,19 @@ jobs:
           perl -0pi -e 's/      rightNorm : c \* \(b \* SmoothAlgebra\.recip _ e\) ≡ b \* d =\n/      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d\n      rightNorm =\n/' "$AG"
           perl -0pi -e 's/let Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing _\)\n      hnz = OrderedRing\.negLt h\n      base = n \* d\n      lhs : n \* \(d \+ neg z\) ≡ base \+ neg \(n \* z\) =\n/let\n      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n      hnz = OrderedRing.negLt h\n      base = n * d\n      lhs : n * (d + neg z) ≡ base + neg (n * z)\n      lhs =\n/' "$AG"
           perl -0pi -e 's/      rhs : \(n \+ neg y\) \* d ≡ base \+ neg \(y \* d\) =\n/      rhs : (n + neg y) * d ≡ base + neg (y * d)\n      rhs =\n/' "$AG"
-          perl -0pi -e 's/let Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing _\)\n      e = diagonalNewtonExposure_v146 h\n      he = diagonalNewtonExposurePositive_v146 h\n      hb = projectionBudget_v146 h\n      hdef : hb ≡ CoupledHyperParameters_v146\.q h \* e = refl\n      hcancel : e \* SmoothAlgebra\.recip _ e ≡ one =\n        SmoothAlgebra\.reciprocalLaw _ he\n/let\n      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n      e = diagonalNewtonExposure_v146 h\n      he = diagonalNewtonExposurePositive_v146 h\n      hb = projectionBudget_v146 h\n      hdef : hb ≡ CoupledHyperParameters_v146.q h * e\n      hdef = refl\n      hcancel : e * SmoothAlgebra.recip _ e ≡ one\n      hcancel = SmoothAlgebra.reciprocalLaw _ he\n/' "$AG"
-          perl -0pi -e 's/        hzero : d \* zero ≡ zero = OrderedRing\.mulZeroR Rg d\n        hone : zero < one = OrderedRing\.zeroLtOne \{orderedRing = OR\}\n/        hzero : d * zero ≡ zero\n        hzero = OrderedRing.mulZeroR Rg d\n        hone : zero < one\n        hone = OrderedRing.zeroLtOne {orderedRing = OR}\n/' "$AG"
           if grep -nE '^[[:space:]]+[A-Za-z_][A-Za-z0-9_\x27]*[[:space:]]*:[^=\n]*=[[:space:]]' "$AG"; then
-            echo 'malformed-typed-local-binding=FAIL'
+            echo malformed-typed-local-binding=FAIL
             exit 1
           fi
-          echo 'v147-local-binding-repair=PASS'
-
-      - name: Verify v147 source shape
+          echo v147-local-binding-repair=PASS
+      - name: Verify source shape
         shell: bash
         run: |
           set -euo pipefail
           AG=Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           grep -Fxq '{-# OPTIONS --safe #-}' "$AG"
           grep -Fxq 'module Exotic.ERL.FullCoupled.CompleteSafe_v147 where' "$AG"
-          if grep -nE '^[[:space:]]*postulate[[:space:]]|\{!!\}|(^|[^[:alnum:]_])(TODO|FIXME)([^[:alnum:]_]|$)' "$AG"; then
-            echo 'source-hygiene=FAIL'
-            exit 1
-          fi
-
+          if grep -nE '^[[:space:]]*postulate[[:space:]]|\{!!\}|(^|[^[:alnum:]_])(TODO|FIXME)([^[:alnum:]_]|$)' "$AG"; then exit 1; fi
       - name: Authoritative Agda --safe kernel check
         shell: bash
         run: |
@@ -77,7 +67,6 @@ jobs:
           agda --safe "$AG" 2>&1 | tee agda-v147.out
           test "${PIPESTATUS[0]}" -eq 0
           printf '%s\n' 'agda-kernel-check=PASS'
-
       - name: Upload kernel log
         if: always()
         uses: actions/upload-artifact@v4
@@ -86,4 +75,4 @@ jobs:
           path: agda-v147.out
           if-no-files-found: ignore
 
-# CI restart marker: force a fresh push-triggered kernel attempt.
+# CI restart marker v2
