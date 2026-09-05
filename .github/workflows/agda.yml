@@ -13,10 +13,6 @@ on:
       - '.ci/repair-agda-syntax.py'
   workflow_dispatch:
 
-concurrency:
-  group: agda-kernel-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: write
 
@@ -35,14 +31,12 @@ jobs:
           agda-version: '2.8.0'
 
       - name: Verify Agda
-        run: |
-          set -euo pipefail
-          agda --version
+        run: agda --version
 
       - name: Repair checked-in Agda syntax
         run: python3 .ci/repair-agda-syntax.py
 
-      - name: Normalize multiline initialForm binding
+      - name: Normalize initialForm binding
         run: |
           set -euo pipefail
           perl -0pi -e 's/^([ \t]*)initialForm[ \t]*:[ \t]*QRun_v142\.projection[^\n]*\n[ \t]*\(initialQRun_v142 D budget p x\)[ \t]*≡[ \t]*p[ \t]*=[ \t]*\n/${1}initialForm =\n/m' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
@@ -50,19 +44,7 @@ jobs:
       - name: Normalize terminal projection proof
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
-          s = p.read_text()
-          start = s.index('qTerminalProjectionUnique_v147 t u ha hx hmu =')
-          end = s.index('\n\nqTerminalConfluence_v147', start)
-          replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
-  vectorExt_v147 (λ i →
-    trans
-      (QTerminalSolution_v147.stationarity t i)
-      (sym (QTerminalSolution_v147.stationarity u i)))'''
-          p.write_text(s[:start] + replacement + s[end:])
-          PY
+          perl -0pi -e 's/qTerminalProjectionUnique_v147 t u ha hx hmu =.*?\n\nqTerminalConfluence_v147/qTerminalProjectionUnique_v147 t u refl refl refl =\n  vectorExt_v147 (λ i →\n    trans\n      (QTerminalSolution_v147.stationarity t i)\n      (sym (QTerminalSolution_v147.stationarity u i)))\n\nqTerminalConfluence_v147/s' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
 
       - name: Authoritative Agda --safe check
         run: |
@@ -75,7 +57,6 @@ jobs:
           set -euo pipefail
           agda --safe --compile --ghc-dont-call-ghc Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           test -d MAlonzo
-          find MAlonzo -type f -name '*.hs' -print | sort
           echo 'Agda -> Haskell transpilation: PASS'
 
       - name: Persist repaired Agda source after proof gate
