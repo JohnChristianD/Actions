@@ -24,6 +24,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p Exotic/ERL/FullCoupled
           cat \
             transfer/v147_payload_00.b64 \
             transfer/v147_payload_01.b64 \
