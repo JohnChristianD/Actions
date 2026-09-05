@@ -34,6 +34,7 @@ jobs:
         run: |
           test "$(grep -c '^residualSquareNonzero_v140 ha hr =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 1
           sed -i 's/^residualSquareNonzero_v140 ha hr =/residualSquareNonzero_v140 ha hr hx =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/^(\s*)([A-Za-z][A-Za-z0-9'"'"']*)\s*:\s*(.*?)\s*=\s*\n(\s+)([^\n]*)$/$1$2 : $3\n$1$2 =\n$4$5/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           cat > /tmp/normalize-agda.pl <<'PERL'
           use strict;
           use warnings;
