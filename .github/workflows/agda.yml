@@ -105,6 +105,7 @@ jobs:
           s = s.replace(
               '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd',
               '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
+          s = s.replace('LSTMGates.gates (record { gates = g })', 'LSTMBlock.gates (record { gates = g })')
           p.write_text(s)
           PY
 
