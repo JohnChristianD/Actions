@@ -38,7 +38,7 @@ jobs:
           sed -i '/^        transportLt_v142$/i\      hr'"'"' =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i '/^        OrderedRing.leLt hrec hr'"'"'$/i\      hsum =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i '/^           CoupledHyperParameters_v146.q h \* one =$/s/ =$//' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i '/^        trans$/i\      h1 =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          sed -i '/^      h1 :/,/^  in/{/^        trans$/i\      h1 =}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           perl -0pi -e 's/^(\s*)([^:\n]+?)\s*:\s*([^=\n]+)\s*=\s*(.*)$/\1\2 : \3\n\1\2 = \4/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           perl -0pi -e 's/^(\s*)([^:\n]+?)\s*:\s*([^=\n]+)\s*=\s*\n\s+(.*)$/\1\2 : \3\n\1\2 = \4/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i 's/(Ring.mulOneL Rg e))))) refl)/(Ring.mulOneL Rg e)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
