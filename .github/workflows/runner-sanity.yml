@@ -12,4 +12,22 @@ jobs:
       - run: git clone --depth=1 https://github.com/JohnChristianD/Actions.git work
       - run: curl -fsSL https://github.com/agda/agda/releases/download/v2.8.0/Agda-v2.8.0-linux.tar.xz -o agda.tar.xz && tar xf agda.tar.xz && mkdir -p "$HOME/.local/bin" && mv agda "$HOME/.local/bin/agda" && echo "$HOME/.local/bin" >> "$GITHUB_PATH" && agda --version
       - run: cd work && python3 .ci/repair-agda-syntax.py
+      - name: Normalize q-retraction multiline header
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('work/Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          pattern = re.compile(
+              r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n'
+              r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
+          )
+          s, n = pattern.subn(r'\1initialForm =', s, count=1)
+          if n != 1:
+              raise SystemExit('q-retraction multiline header not found exactly once')
+          p.write_text(s)
+          print('q-retraction-header-normalization=applied')
+          PY
       - run: cd work && agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
