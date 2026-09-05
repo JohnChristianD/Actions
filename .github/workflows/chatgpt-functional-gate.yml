@@ -34,7 +34,8 @@ jobs:
         run: |
           test "$(grep -c '^residualSquareNonzero_v140 ha hr =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 1
           sed -i 's/^residualSquareNonzero_v140 ha hr =/residualSquareNonzero_v140 ha hr hx =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          perl -0pi -e 's/^(\s*)([A-Za-z][A-Za-z0-9'"'"']*)\s*:(.*?)[ \t]+=\n(\s+)(\S)/$1$2 :$3\n$1$2 =\n$4$5/gms' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/^(\s*)([A-Za-z][A-Za-z0-9'"'"']*)\s*:\s*([^=]*?)\s*=\n(\s+)([^\n]*)$/$1$2 : $3\n$1$2 =\n$4$5/gms' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/^(\s*)([^:\n]+?)\s*:\s*([^=\n]+)\s*=\s*(.*)$/\1\2 : \3\n\1\2 = \4/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i 's/(Ring.mulOneL Rg e))))) refl)/(Ring.mulOneL Rg e)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i 's/(Ring.mulOneL Rg d))))) refl)/(Ring.mulOneL Rg d)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check canonical algebra
