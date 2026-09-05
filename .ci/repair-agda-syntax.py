@@ -108,7 +108,7 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    """Replace the old malformed local-let proof with a direct contradiction proof."""
+    """Replace the malformed local-let proof with a direct constructive contradiction."""
     start_marker = 'residualSquareNonzero_v140 ha hr hx ='
     start = text.find(start_marker)
     if start < 0:
@@ -138,16 +138,63 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     return text[:start] + replacement + text[sep:], True
 
 
+def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
+    """Inline the two typed local normalization equalities using cancelRecip_v142."""
+    start_marker = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
+    start = text.find(start_marker)
+    if start < 0:
+        return text, False
+    sep = text.find('\n------------------------------------------------------------------------', start)
+    if sep < 0:
+        return text, False
+    replacement = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+  OrderedRing.mulLtPosCancelLeft
+    (transportLt_v142
+      (trans
+        (cong
+          (λ q → q * (a * SmoothAlgebra.recip _ d))
+          (Ring.mulComm
+            (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d e))
+        (trans
+          (Ring.mulAssoc
+            (OrderedRing.ring (SmoothAlgebra.orderedRing _)) e d
+            (a * SmoothAlgebra.recip _ d))
+          (trans
+            (cong
+              (λ q → e * q)
+              (cancelRecip_v142 a d hd))
+            (Ring.mulComm
+              (OrderedRing.ring (SmoothAlgebra.orderedRing _)) e a)))
+      (trans
+        (Ring.mulAssoc
+          (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d e
+          (b * SmoothAlgebra.recip _ e))
+        (trans
+          (cong
+            (λ q → d * q)
+            (cancelRecip_v142 b e he))
+          (Ring.mulComm
+            (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d b)))
+      h)
+    (OrderedRing.mulPos hd he)
+'''
+    current = text[start:sep]
+    if current == replacement.rstrip('\n'):
+        return text, False
+    return text[:start] + replacement + text[sep:], True
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
     text, did_residual = normalize_residual_theorem(original)
+    text, did_cross = normalize_ordered_field_cross(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
     changed = changed or did_cvt
-    changed = changed or did_residual
+    changed = changed or did_residual or did_cross
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
