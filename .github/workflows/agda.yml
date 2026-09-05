@@ -143,7 +143,7 @@ jobs:
               s = s.replace(marker, helper + marker, 1)
           s = s.replace('... | false = shift (qFirstNegative_v142 D bs as xs mu)', '... | false = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
           s = s.replace('...   | no _ = shift (qFirstNegative_v142 D bs as xs mu)', '...   | no _ = shiftMaybeD_v142 (qFirstNegative_v142 D bs as xs mu)')
-          s = re.sub(r'\n  where\n  shift : ∀ \{m\} → MaybeD (Fin m) → MaybeD (Fin \(suc m\))\n  shift nothing = nothing\n  shift \(justD i\) = justD \(fsuc i\)\n', '\n', s, count=1)
+          s = re.sub(r'\n  where\n  shift : ∀ \{m\} → MaybeD (Fin m) → MaybeD \(Fin \(suc m\))\n  shift nothing = nothing\n  shift \(justD i\) = justD \(fsuc i\)\n', '\n', s, count=1)
           p.write_text(s)
           PY
 
@@ -164,6 +164,24 @@ jobs:
           p.write_text(s)
           PY
           grep -n '^qRunStep_v142 {S} {n} r with' "$f"
+
+      - name: Normalize q-candidate outer implicits
+        run: |
+          set -euo pipefail
+          f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
+          python3 - "$f" <<'PY'
+          from pathlib import Path
+          import re, sys
+          p = Path(sys.argv[1])
+          s = p.read_text()
+          pattern = r'(?m)^qCandidate_v142\s+D\s+mu\s+m\s+alpha\s+x\s*='
+          replacement = 'qCandidate_v142 {S} {n} D mu m alpha x ='
+          s, n = re.subn(pattern, replacement, s, count=1)
+          if n != 1:
+              raise SystemExit('qCandidate_v142 clause not found exactly once')
+          p.write_text(s)
+          PY
+          grep -n '^qCandidate_v142 {S} {n} D mu m alpha x =' "$f"
 
       - name: Agda2HS diagnostic probe
         continue-on-error: true
