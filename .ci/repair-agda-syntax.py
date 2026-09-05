@@ -131,8 +131,9 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
         hlt : alpha < zero = subst (λ q → q < zero) hzero hr
     in OrderedRing.notLtFromLe ha hlt
 '''
-    if 'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =' in text:
-        return text, False
+    if 'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx =' in text:
+        text = re.sub(r'(?m)^residualSquareNonzero_v140 .*$', 'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx =', text, count=1)
+        return text, True
     return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr hx =', replacement)
 
 
@@ -154,7 +155,9 @@ def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
        hright
 '''
     if 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =' in text:
-        return text, False
+        text = re.sub(r'(?m)^qProjectionCross_v141 .*$', 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =', text, count=1)
+        text = text.replace('  alpha * (x * x) < mu * ((x * x) * (x * x))', '  (alpha * (x * x)) < (mu * ((x * x) * (x * x)))')
+        return text, True
     return replace_between_separators(text, 'qProjectionCross_v141 ha hr =', replacement)
 
 
