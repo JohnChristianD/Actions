@@ -63,6 +63,7 @@ jobs:
           p.write_text(s)
           PY
 
+      # retrigger marker: namespace repair is intentionally included in this run
       - name: Authoritative Agda --safe check
         run: |
           set -euo pipefail
