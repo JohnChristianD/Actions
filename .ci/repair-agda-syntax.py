@@ -138,22 +138,18 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
 
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
     replacement = '''qProjectionCross_v141 ha hr =
-  trans
-    (trans
-      (sym (Ring.mulComm
-        (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha (x * x)))
-      (OrderedRing.mulLtPosLeft
-        (OrderedRing.subLtZero hr)
-        (OrderedRing.squarePositive (residualSquareNonzero_v140 ha hr))))
-    (trans
-      (Ring.mulComm
-        (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-        (x * x)
-        (mu * (x * x)))
-      (sym
-        (Ring.mulAssoc
-          (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-          mu (x * x) (x * x)))
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hx = residualSquareNonzero_v140 ha hr
+      hxx = OrderedRing.squarePositive hx
+      hlt = OrderedRing.subLtZero hr
+      hmul = OrderedRing.mulLtPosLeft hlt hxx
+  in trans
+       (trans
+         (sym (Ring.mulComm Rg alpha (x * x)))
+         hmul)
+       (trans
+         (Ring.mulComm Rg (x * x) (mu * (x * x)))
+         (sym (Ring.mulAssoc Rg mu (x * x) (x * x))))
 '''
     return replace_between_separators(text, 'qProjectionCross_v141 ha hr =', replacement)
 
