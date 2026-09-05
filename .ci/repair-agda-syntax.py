@@ -18,6 +18,17 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return None
 
 
+def normalize_named_one_line_bindings(text: str) -> tuple[str, bool]:
+    changed = False
+    for name in ('leftNorm', 'rightNorm', 'lhs', 'rhs', 'hzero', 'hone', 'hdef', 'hcancel'):
+        pattern = rf'(?m)^(\s*){name}\s*:\s*(.+?)\s*=\s*$'
+        text2, count = re.subn(pattern, rf'\1{name} : \2\n\1{name} =', text)
+        if count:
+            text = text2
+            changed = True
+    return text, changed
+
+
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
     out: list[str] = []
     i = 0
@@ -86,7 +97,7 @@ def repair_file(path: Path) -> bool:
     changed = changed or did_acc
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
 
-    for transform in (normalize_cvt, normalize_residual_theorem):
+    for transform in (normalize_named_one_line_bindings, normalize_cvt, normalize_residual_theorem):
         text2, did_change = transform(text)
         if did_change:
             text = text2
@@ -101,6 +112,7 @@ ALGEBRAIC_TEMPLATES = {
     "residualSquareNonzero_v140": "constructive-final-argument",
     "qProjectionCross_v141": "ordered-ring-cross-multiplication",
     "qProjectionCross_v142": "delegated-cross-multiplication",
+    "orderedFieldCrossStrict_v142": "reciprocal-law-cross-multiplication",
 }
 
 changed = 0
