@@ -1,3 +1,4 @@
+# Minimal standalone kernel gate. No tooling job can mask an Agda failure.
 name: Agda kernel live gate
 on:
   push:
