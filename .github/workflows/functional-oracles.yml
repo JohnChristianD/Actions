@@ -1,0 +1,62 @@
+name: Functional oracle gate
+
+on:
+  push:
+    branches: ["v147-q-chad-agda-safe"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  haskell-agda2hs:
+    name: Haskell oracle via Agda2hs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Generate Haskell with Agda2hs
+        run: nix run github:agda/agda2hs -- -i. oracles/QClosurePredictive_v147.agda
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.12.2'
+      - name: Compile generated Haskell oracle
+        run: ghc -fno-code oracles/QClosurePredictive_v147.hs
+
+  ocaml:
+    name: OCaml functional oracle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: '5.3'
+      - name: Compile oracle
+        run: ocamlc -o oracle oracles/QClosurePredictive_v147.ml && ./oracle
+
+  elixir:
+    name: Elixir functional oracle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.18'
+          otp-version: '27'
+      - name: Run oracle
+        run: elixir oracles/q_closure_predictive_v147.exs
+
+  clojure:
+    name: Clojure functional oracle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: '1.11.1.1435'
+      - name: Run oracle
+        run: clojure -M oracles/q_closure_predictive_v147.clj
