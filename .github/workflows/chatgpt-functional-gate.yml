@@ -34,11 +34,9 @@ jobs:
         run: |
           test "$(grep -c '^residualSquareNonzero_v140 ha hr =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 1
           sed -i 's/^residualSquareNonzero_v140 ha hr =/residualSquareNonzero_v140 ha hr hx =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i '/^            SmoothAlgebra.recip S (traceProduct_v146 h) + Ring.one Rg =$/s/ =$//' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i '/^        transportLt_v142$/i\      hr'"'"' =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i '/^        OrderedRing.leLt hrec hr'"'"'$/i\      hsum =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i '/^           CoupledHyperParameters_v146.q h \* one =$/s/ =$//' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i '/^      h1 :/,/^  in/{/^        trans$/i\      h1 =}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/(^\s*hr'"'"' :.*?)( =\n\s*transportLt_v142)/$1\n      hr'"'"' =\n        transportLt_v142/ms' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/(^\s*hsum :.*?)( =\n\s*OrderedRing\.leLt)/$1\n      hsum =\n        OrderedRing.leLt/ms' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          perl -0pi -e 's/(^\s*h1 :.*?)( =\n\s*trans)/$1\n      h1 =\n        trans/ms' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           perl -0pi -e 's/^(\s*)([^:\n]+?)\s*:\s*([^=\n]+)\s*=\s*(.*)$/\1\2 : \3\n\1\2 = \4/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           perl -0pi -e 's/^(\s*)([^:\n]+?)\s*:\s*([^=\n]+)\s*=\s*\n\s+(.*)$/\1\2 : \3\n\1\2 = \4/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i 's/(Ring.mulOneL Rg e))))) refl)/(Ring.mulOneL Rg e)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
