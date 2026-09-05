@@ -16,12 +16,7 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def split_multiline_typed_binding_header(lines: list[str], i: int) -> tuple[str, int] | None:
-    """Repair `name : Type =` by putting the first RHS token on the same line.
-
-    Agda accepts inferred local definitions with a nonempty RHS after `=`. Keeping
-    the first RHS line attached avoids turning a typed local binding into the
-    parser-sensitive `name =` newline form.
-    """
+    """Repair `name : Type =` by putting the first RHS token on the same line."""
     line = lines[i]
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
@@ -112,14 +107,47 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
     return lines, False
 
 
+def normalize_residual_theorem(text: str) -> tuple[str, bool]:
+    """Replace the old malformed local-let proof with a direct contradiction proof."""
+    start_marker = 'residualSquareNonzero_v140 ha hr hx ='
+    start = text.find(start_marker)
+    if start < 0:
+        return text, False
+    sep = text.find('\n------------------------------------------------------------------------', start)
+    if sep < 0:
+        return text, False
+    replacement = '''residualSquareNonzero_v140 ha hr hx =
+  ⊥-elim
+    (OrderedRing.notLtFromLe ha
+      (subst
+        (λ q → q < zero)
+        (trans
+          (cong
+            (λ q → alpha + Ring.neg
+              (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+              (mu * q))
+            (cong₂
+              (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing _)))
+              hx hx))
+          (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
+        hr))
+'''
+    current = text[start:sep]
+    if current == replacement.rstrip('\n'):
+        return text, False
+    return text[:start] + replacement + text[sep:], True
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    lines = original.splitlines()
+    text, did_residual = normalize_residual_theorem(original)
+    lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
     changed = changed or did_cvt
+    changed = changed or did_residual
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
