@@ -18,28 +18,6 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return None
 
 
-def normalize_multiline_typed_binding(lines: list[str]) -> tuple[list[str], bool]:
-    out: list[str] = []
-    changed = False
-    for line in lines:
-        stripped = line.lstrip()
-        indent = line[:len(line) - len(stripped)]
-        matched = False
-        for name in ('leftNorm', 'rightNorm', 'lhs', 'rhs', 'hzero', 'hone', 'hdef', 'hcancel'):
-            prefix = name + ' : '
-            if not stripped.startswith(prefix):
-                continue
-            if stripped.rstrip().endswith('='):
-                out.append(f'{indent}{stripped.rstrip()[:-1].rstrip()}')
-                out.append(f'{indent}{name} =')
-                changed = True
-                matched = True
-            break
-        if not matched:
-            out.append(line)
-    return out, changed
-
-
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
     out: list[str] = []
     i = 0
@@ -64,6 +42,49 @@ def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
     return out, changed
 
 
+def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
+    out: list[str] = []
+    i = 0
+    changed = False
+    while i < len(lines):
+        line = lines[i]
+        if 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j' in line:
+            indent = line[:len(line) - len(line.lstrip())]
+            out.extend([
+                f'{indent}insertCVTAt : Fin cells → CVTSlot_v142 S',
+                f'{indent}insertCVTAt j with finDecEq i j',
+                f'{indent}... | no _ = CVTArchive_v142.cell a j',
+            ])
+            i += 1
+            while i < len(lines) and (lines[i].lstrip().startswith('... |') or not lines[i].strip()):
+                if lines[i].lstrip().startswith('... | yes _ with CVTSlot_v142.occupied'):
+                    out.append(f'{indent}... | yes _ = chooseOccupied')
+                    i += 1
+                    break
+                i += 1
+            out.extend([
+                f'{indent}chooseOccupied : CVTSlot_v142 S → CVTSlot_v142 S',
+                f'{indent}chooseOccupied slot with CVTSlot_v142.occupied slot',
+                f'{indent}... | false = record {{ occupied = true ; fitness = f }}',
+                f'{indent}... | true with QProjectionDecisionAlgebra_v140.ltDec D',
+                f'{indent}      (CVTSlot_v142.fitness slot) f',
+                f'{indent}...   | yes _ = record {{ occupied = true ; fitness = f }}',
+                f'{indent}...   | no _ = slot',
+                '',
+                f'{indent}insertCVT_v142 D a i f = record {{ cell = mapCells }}',
+                f'{indent}  where',
+                f'{indent}  mapCells : Fin cells → CVTSlot_v142 S',
+                f'{indent}  mapCells j with finDecEq i j',
+                f'{indent}  ... | no _ = CVTArchive_v142.cell a j',
+                f'{indent}  ... | yes _ = chooseOccupied (CVTArchive_v142.cell a j)',
+            ])
+            changed = True
+            continue
+        out.append(line)
+        i += 1
+    return out, changed
+
+
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     marker = 'residualSquareNonzero_v140 ha hr hx ='
     start = text.find(marker)
@@ -79,7 +100,6 @@ def repair_file(path: Path) -> bool:
     original = path.read_text()
     changed = False
     lines = original.splitlines()
-
     out: list[str] = []
     for line in lines:
         split = split_typed_binding(line)
@@ -89,13 +109,12 @@ def repair_file(path: Path) -> bool:
             out.extend(split)
             changed = True
 
-    out, did_multiline = normalize_multiline_typed_binding(out)
-    changed = changed or did_multiline
-
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
-
+    out, did_cvt = normalize_insert_cvt(out)
+    changed = changed or did_cvt
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
+
     text2, did_residual = normalize_residual_theorem(text)
     if did_residual:
         text = text2
@@ -111,6 +130,7 @@ ALGEBRAIC_TEMPLATES = {
     "qProjectionCross_v141": "ordered-ring-cross-multiplication",
     "qProjectionCross_v142": "delegated-cross-multiplication",
     "orderedFieldCrossStrict_v142": "reciprocal-law-cross-multiplication",
+    "insertCVT_v142": "finite-mask-choice-certificate",
 }
 
 changed = 0
