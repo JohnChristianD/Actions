@@ -133,7 +133,7 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
         ha
         (transportLt_v142 hzero refl hr))
 '''
-    return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr =', replacement)
+    return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr hx =', replacement)
 
 
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
