@@ -62,7 +62,6 @@ jobs:
           if helper.strip() not in s and marker in s:
               s = s.replace(marker, marker + helper, 1)
 
-          # Replace the fragile local shift helper by one total finite map.
           shift_sig = 'shiftMaybeD_v142 : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))'
           if shift_sig not in s:
               marker = '\nqFirstNegative_v142 : ∀ {S n}'
@@ -76,7 +75,6 @@ jobs:
           local_shift = '''\n  where\n  shift : ∀ {m} → MaybeD (Fin m) → MaybeD (Fin (suc m))\n  shift nothing = nothing\n  shift (justD i) = justD (fsuc i)\n'''
           s = s.replace(local_shift, '\n', 1)
 
-          # Explicitly bind dependent indices used by nested local types.
           s = re.sub(r'(?m)^qRunStep_v142\s+r\s+with',
                      'qRunStep_v142 {S} {n} r with', s, count=1)
           s = re.sub(r'(?m)^qCandidate_v142\s+D\s+mu\s+m\s+alpha\s+x\s*=',
@@ -105,7 +103,6 @@ jobs:
           for old, new in replacements.items():
               s = s.replace(old, new)
 
-          # Rebind fragile inferred locals with explicit dependent types.
           s = s.replace(
               'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden',
               'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
@@ -119,6 +116,41 @@ jobs:
           s = s.replace('residual_v140 mu alpha x i =', 'residual_v140 {S} mu alpha x i =')
 
           p.write_text(s)
+          PY
+
+      - name: Normalize diagonal exposure proof
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          start = s.find('diagonalNewtonExposurePositive_v146 :')
+          stop = s.find('\ndiagonalNewtonRelativeBudget_v146 :', start)
+          if start < 0 or stop < 0:
+              raise SystemExit('diagonal exposure theorem boundaries not found')
+          replacement = '''diagonalNewtonExposurePositive_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  zero < diagonalNewtonExposure_v146 h
+diagonalNewtonExposurePositive_v146 {S} h =
+  let OR = SmoothAlgebra.orderedRing S
+      Rg = OrderedRing.ring OR
+      t = traceProduct_v146 h
+      rt = SmoothAlgebra.recip S t
+      htrace = OrderedRing.mulPos
+        (CoupledHyperParameters_v146.gammaPositive h)
+        (CoupledHyperParameters_v146.lambdaPositive h)
+      hrec = reciprocalNonnegative_v146 htrace
+      hlt0 : rt < rt + Ring.one Rg =
+        subst (λ z → z < rt + Ring.one Rg)
+          (Ring.addZeroR Rg rt)
+          (OrderedRing.addLtLeft (OrderedRing.zeroLtOne {orderedRing = OR}) rt)
+      hsum : zero < rt + Ring.one Rg =
+        OrderedRing.leLt hrec hlt0
+  in subst (λ z → zero < z)
+       (Ring.addComm Rg rt (Ring.one Rg))
+       hsum
+'''
+          p.write_text(s[:start] + replacement + s[stop:])
           PY
 
       - name: Authoritative Agda --safe check
