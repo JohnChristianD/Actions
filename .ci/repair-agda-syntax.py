@@ -1,15 +1,42 @@
 from pathlib import Path
 import re
 
-ACC_PREFIX = '  accumulate i c (state s) = state (λ j with finDecEq j i'
-ACC_FIXED = '''  accumulate i c (state s) = state (λ j → addAt j)
-    where
-    addAt : Fin n → R
-    addAt j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j'''
 
-CVT_FIXED = '''insertCVT_v142 D a i f = record { cell = choose i }
+def repair_accumulate(text):
+    lines = text.splitlines()
+    out = []
+    changed = False
+    i = 0
+    while i < len(lines):
+        if 'accumulate i c (state s) = state (λ j with finDecEq j i' in lines[i]:
+            indent = lines[i].split('accumulate', 1)[0]
+            out.extend([
+                indent + 'accumulate i c (state s) = state (addAt i c s)',
+                indent + '  where',
+                indent + '  addAt : ∀ i → R → Cot → Cot',
+                indent + '  addAt i c s = updateAt i c s',
+                indent + '    where',
+                indent + '    updateAt : Fin n → R → Cot → Fin n → R',
+                indent + '    updateAt i c s j with finDecEq j i',
+                indent + '    ... | yes _ = s j + c',
+                indent + '    ... | no _ = s j',
+            ])
+            changed = True
+            i += 3
+            continue
+        out.append(lines[i])
+        i += 1
+    return '\n'.join(out) + ('\n' if text.endswith('\n') else ''), changed
+
+CVT_OLD = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }'''
+CVT_NEW = '''insertCVT_v142 D a i f = record { cell = choose i }
   where
   choose : Fin cells → CVTSlot_v142 S
   choose j with finDecEq i j
@@ -21,41 +48,19 @@ CVT_FIXED = '''insertCVT_v142 D a i f = record { cell = choose i }
   ...     | yes _ = record { occupied = true ; fitness = f }
   ...     | no _ = CVTArchive_v142.cell a j }'''
 
-RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx = λ x0 →
+RESIDUAL_RE = re.compile(r'residualSquareNonzero_v140 ha hr hx =\n.*?(?=\n------------------------------------------------------------------------\n)', re.S)
+RESIDUAL_NEW = '''residualSquareNonzero_v140 ha hr hx = λ x0 →
   OrderedRing.notLtFromLe (SmoothAlgebra.orderedRing S) ha
     (subst (λ q → q < Ring.zero Rg) hzero hr0)
   where
-  Rg : Ring
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  hr0 = subst (λ q → alpha + Ring.neg Rg (mu * q) < Ring.zero Rg) x0 hr
+  hxx = trans (cong₂ (Ring._*_ Rg) x0 x0) (Ring.mulZeroR Rg (Ring.zero Rg))
+  hmux = trans (cong (Ring._*_ Rg mu) hxx) (Ring.mulZeroR Rg mu)
+  hnegzero = trans (sym (Ring.addZeroR Rg (Ring.neg Rg (Ring.zero Rg)))) (Ring.addNegL Rg (Ring.zero Rg))
+  hzero = trans (cong (λ q → alpha + Ring.neg Rg q) hmux)
+    (trans (cong (λ q → alpha + q) hnegzero) (Ring.addZeroR Rg alpha))'''
 
-  hr0 : alpha + Ring.neg Rg (mu * (x * x)) < Ring.zero Rg
-  hr0 = subst
-    (λ q → alpha + Ring.neg Rg (mu * q) < Ring.zero Rg)
-    x0 hr
-
-  hxx : Ring._*_ Rg x x ≡ Ring.zero Rg
-  hxx = trans
-    (cong₂ (Ring._*_ Rg) x0 x0)
-    (Ring.mulZeroR Rg (Ring.zero Rg))
-
-  hmux : Ring._*_ Rg mu (Ring._*_ Rg x x) ≡ Ring.zero Rg
-  hmux = trans
-    (cong (Ring._*_ Rg mu) hxx)
-    (Ring.mulZeroR Rg mu)
-
-  hnegzero : Ring.neg Rg (Ring.zero Rg) ≡ Ring.zero Rg
-  hnegzero = trans
-    (sym (Ring.addZeroR Rg (Ring.neg Rg (Ring.zero Rg))))
-    (Ring.addNegL Rg (Ring.zero Rg))
-
-  hzero : alpha + Ring.neg Rg (mu * (x * x)) ≡ alpha
-  hzero = trans
-    (cong (λ q → alpha + Ring.neg Rg q) hmux)
-    (trans
-      (cong (λ q → alpha + q) hnegzero)
-      (Ring.addZeroR Rg alpha))'''
-
-ORDERED_MARK = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
 ORDERED_FIXED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
   OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
   where
@@ -77,7 +82,6 @@ ORDERED_FIXED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
             (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
               (Ring.mulOneL Rg d))))) refl))'''
 
-MULT_MARK = 'multiplierDeletionStrict_v142 n d y z hd he h ='
 MULT_FIXED = '''multiplierDeletionStrict_v142 n d y z hd he h =
   orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
   where
@@ -93,43 +97,38 @@ MULT_FIXED = '''multiplierDeletionStrict_v142 n d y z hd he h =
   cross = OrderedRing.addLtLeft (OrderedRing.negLt h) base
   cross' = transportLt_v142 lhs rhs cross'''
 
-
-def replace_function(text: str, marker: str, replacement: str) -> str:
-    start = text.find(marker)
-    if start < 0:
-        return text
-    sep = text.find('\n------------------------------------------------------------------------\n', start)
-    if sep < 0:
-        return text
-    line_start = text.rfind('\n', 0, start) + 1
-    return text[:line_start] + replacement.rstrip() + text[sep:]
-
 changed = 0
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
         continue
     text = path.read_text()
-    lines = text.splitlines()
-    out = []
-    i = 0
-    structural = False
-    while i < len(lines):
-        if ACC_PREFIX in lines[i]:
-            indent = lines[i].split('accumulate', 1)[0]
-            out.extend([indent + s for s in ACC_FIXED.splitlines()])
-            structural = True
-            i += 3
-            continue
-        out.append(lines[i])
-        i += 1
-    new = '\n'.join(out) + ('\n' if text.endswith('\n') else '')
-    new = replace_function(new, 'insertCVT_v142 D a i f =', CVT_FIXED)
-    new = replace_function(new, 'residualSquareNonzero_v140 ha hr hx =', RESIDUAL_FIXED)
-    new = replace_function(new, ORDERED_MARK, ORDERED_FIXED)
-    new = replace_function(new, MULT_MARK, MULT_FIXED)
-    if new != text:
-        path.write_text(new)
+    new, ch = repair_accumulate(text)
+    if ch:
         changed += 1
+    new2 = new.replace(CVT_OLD, CVT_NEW, 1)
+    if new2 != new:
+        changed += 1
+    new3, count = RESIDUAL_RE.subn(RESIDUAL_NEW, new2, count=1)
+    changed += count
+    new4 = new3
+    marker = 'orderedFieldCrossStrict_v142 a b d e hd he h ='
+    if marker in new4:
+        start = new4.find(marker)
+        sep = new4.find('\n------------------------------------------------------------------------\n', start)
+        if sep >= 0:
+            line_start = new4.rfind('\n', 0, start) + 1
+            new4 = new4[:line_start] + ORDERED_FIXED + new4[sep:]
+            changed += 1
+    marker = 'multiplierDeletionStrict_v142 n d y z hd he h ='
+    if marker in new4:
+        start = new4.find(marker)
+        sep = new4.find('\n------------------------------------------------------------------------\n', start)
+        if sep >= 0:
+            line_start = new4.rfind('\n', 0, start) + 1
+            new4 = new4[:line_start] + MULT_FIXED + new4[sep:]
+            changed += 1
+    if new4 != text:
+        path.write_text(new4)
 
 remaining = []
 for path in Path('.').rglob('*.agda'):
@@ -141,4 +140,4 @@ for path in Path('.').rglob('*.agda'):
 if remaining:
     print('\n'.join(remaining))
     raise SystemExit(1)
-print(f'repaired-agda-files={changed}')
+print(f'repair-rewrite-count={changed}')
