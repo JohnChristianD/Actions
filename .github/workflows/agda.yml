@@ -65,6 +65,59 @@ jobs:
           printf 'agda-source-count=%s\n' "${#SOURCES[@]}"
           printf '%s\n' "${SOURCES[@]}"
 
+      - name: Repair known Agda extended-lambda syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              '''  accumulate i c (state s) = state (λ j with finDecEq j i
+              ... | yes _ = s j + c
+              ... | no _ = s j)''':
+              '''  accumulate i c (state s) = state (λ j → addAt j)
+            where
+            addAt : Fin n → R
+            addAt j with finDecEq j i
+            ... | yes _ = s j + c
+            ... | no _ = s j''',
+              '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
+                ... | no _ = CVTArchive_v142.cell a j
+                ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+                ...   | false = record { occupied = true ; fitness = f }
+                ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+                      (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+                ...     | yes _ = record { occupied = true ; fitness = f }
+                ...     | no _ = CVTArchive_v142.cell a j }''':
+              '''insertCVT_v142 D a i f = record { cell = choose i }
+    where
+    choose : Fin cells → CVTSlot_v142 S
+    choose j with finDecEq i j
+    ... | no _ = CVTArchive_v142.cell a j
+    ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+    ...   | false = record { occupied = true ; fitness = f }
+    ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+          (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+    ...     | yes _ = record { occupied = true ; fitness = f }
+    ...     | no _ = CVTArchive_v142.cell a j'''
+          }
+
+          for path in Path('.').rglob('*.agda'):
+              if '.git' in path.parts:
+                  continue
+              text = path.read_text()
+              updated = text
+              for old, new in replacements.items():
+                  updated = updated.replace(old, new)
+              if updated != text:
+                  path.write_text(updated)
+          PY
+          if grep -RInE 'λ [^\n]* with ' --include='*.agda' --exclude-dir=.git .; then
+            echo 'extended-lambda-syntax=FAIL'
+            exit 1
+          fi
+
       - name: Authoritative Agda --safe kernel check
         shell: bash
         run: |
@@ -98,6 +151,7 @@ jobs:
           } > "$OUT"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A Exotic .ci/closure
           git add "$OUT"
           if git diff --cached --quiet; then
             echo 'closure-persistence=no-change'
