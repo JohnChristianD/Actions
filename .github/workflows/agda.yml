@@ -95,15 +95,9 @@ jobs:
           s = s.replace('  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd', '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
           s = s.replace('LSTMGates.gates', 'LSTMBlock.gates')
           s = s.replace('residual_v140 mu alpha x i =', 'residual_v140 {S} mu alpha x i =')
-          s = s.replace(
-              'if b then\n      SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs\n    else\n      zero ∷ candidate bs as xs',
-              'if b then\n      (SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs)\n    else\n      (zero ∷ candidate bs as xs)')
-          s = s.replace(
-              'alpha + Ring.neg (OrderedAlgebra.ring (SmoothAlgebra.orderedRing S)) (mu * (x * x)) < zero',
-              '(alpha + Ring.neg (OrderedAlgebra.ring (SmoothAlgebra.orderedRing S)) (mu * (x * x))) < zero')
-          s = s.replace(
-              'alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) (mu * (x * x)) < zero',
-              '(alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S)) (mu * (x * x))) < zero')
+          s = s.replace('if b then\n      SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs\n    else\n      zero ∷ candidate bs as xs', 'if b then\n      (SmoothAlgebra.max S zero (residual_v140 mu (a ∷ as) (xv ∷ xs) fzero)\n        ∷ candidate bs as xs)\n    else\n      (zero ∷ candidate bs as xs)')
+          q = 'alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x)) < zero'
+          s = s.replace(q, '(alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))\n    (mu * (x * x))) < zero')
           p.write_text(s)
           PY
 
