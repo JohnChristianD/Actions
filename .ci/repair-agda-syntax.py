@@ -8,11 +8,14 @@ LOCAL_BINDINGS = {
 
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
-    match = re.match(r'^(\s*)([A-Za-z][A-Za-z0-9_\u2032-]*)\s*:\s*(.*?)\s*=\s*(.+)$', line)
-    if match is None or match.group(2) not in LOCAL_BINDINGS:
-        return None
-    indent, name, typ, expr = match.groups()
-    return f"{indent}{name} : {typ}", f"{indent}{name} = {expr}"
+    stripped = line.lstrip()
+    indent = line[:len(line) - len(stripped)]
+    for name in LOCAL_BINDINGS:
+        prefix = name + ' : '
+        if stripped.startswith(prefix) and '=' in stripped:
+            left, right = stripped.rsplit('=', 1)
+            return f'{indent}{left.rstrip()}', f'{indent}{name} = {right.strip()}'
+    return None
 
 
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
@@ -44,15 +47,15 @@ def normalize_cvt(text: str) -> tuple[str, bool]:
     if marker not in text:
         return text, False
     start = text.find(marker)
-    end = text.find('\n\n', start)
-    if end < 0:
+    sep = text.find('\n\n', start)
+    if sep < 0:
         return text, False
-    old = text[start:end]
-    new = old.replace('record { cell = λ j with finDecEq i j', 'record { cell = choose i', 1)
-    body = new.splitlines()
-    body = [body[0], '  where', '  choose : Fin cells → CVTSlot_v142 S'] + body[1:]
-    body = [line.replace('... | no _', '... | no _', 1) for line in body]
-    return text[:start] + '\n'.join(body) + text[end:], True
+    block = text[start:sep]
+    lines = block.splitlines()
+    lines[0] = lines[0].replace('record { cell = λ j with finDecEq i j', 'record { cell = choose i', 1)
+    lines.insert(1, '  where')
+    lines.insert(2, '  choose : Fin cells → CVTSlot_v142 S')
+    return text[:start] + '\n'.join(lines) + text[sep:], True
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
@@ -68,9 +71,8 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
 
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    lines = original.splitlines()
     changed = False
-
+    lines = original.splitlines()
     out: list[str] = []
     for line in lines:
         split = split_typed_binding(line)
