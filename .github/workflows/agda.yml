@@ -61,6 +61,7 @@ jobs:
           s = s.replace('[] : Vec A zero', '[] : Vec A natZero')
           s = s.replace('sumFin _ z zero _ = z', 'sumFin _ z natZero _ = z')
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
+          s = s.replace('\nopen Ring\n\nrecord OrderedRing', '\nrecord OrderedRing')
           p.write_text(s)
           PY
 
