@@ -176,7 +176,7 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
           (Ring.mulComm
             (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d b)))
       h)
-    (OrderedRing.mulPos hd he)
+    (OrderedRing.mulPos hd he))
 '''
     current = text[start:sep]
     if current == replacement.rstrip('\n'):
