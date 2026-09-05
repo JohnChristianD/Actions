@@ -198,17 +198,42 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
     return replace_between_separators(text, 'orderedFieldCrossStrict_v142 a b d e hd he h =', replacement)
 
 
+def normalize_multiplier_deletion(text: str) -> tuple[str, bool]:
+    replacement = '''multiplierDeletionStrict_v142 n d y z hd he h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hnz = OrderedRing.negLt h
+      base = n * d
+      negMul =
+        trans
+          (sym (Ring.negScale Rg d y))
+          (cong (Ring.neg Rg) (Ring.mulComm Rg d y))
+      lhs =
+        trans
+          (Ring.distrib Rg n d (neg z))
+          (cong₂ _+_ refl (sym (Ring.negScale Rg n z)))
+      rhs =
+        trans
+          (Ring.distrib Rg d n (neg y))
+          (cong₂ _+_ (Ring.mulComm Rg d n) negMul)
+      cross = OrderedRing.addLtLeft hnz base
+      cross' = transportLt_v142 lhs rhs cross
+  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
+'''
+    return replace_between_separators(text, 'multiplierDeletionStrict_v142 n d y z hd he h =', replacement)
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
     text, did_residual = normalize_residual_theorem(original)
     text, did_q = normalize_q_projection_cross(text)
     text, did_cross = normalize_ordered_field_cross(text)
+    text, did_mult = normalize_multiplier_deletion(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_q or did_cross
+    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
