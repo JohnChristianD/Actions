@@ -3,29 +3,44 @@ import re
 
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
-    """Split invalid local `name : Type = rhs` into Agda declaration + definition."""
+    """Repair invalid one-line `name : Type = rhs` into an inferred definition."""
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
     match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*(.*)$", stripped)
     if match is None:
         return None
-    name, typ, rhs = match.groups()
-    if not typ.strip() or not rhs.strip():
+    name, _typ, rhs = match.groups()
+    if not rhs.strip():
         return None
-    return f'{indent}{name} : {typ.strip()}', f'{indent}{name} = {rhs.strip()}'
+    return f'{indent}{name} = {rhs.strip()}', ''
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    """Repair every structurally invalid typed definition, not a hand-maintained name list."""
+    """Erase local type signatures when the source used invalid inline typed definitions."""
     out: list[str] = []
     changed = False
-    for line in lines:
-        split = split_typed_binding(line)
-        if split is None:
-            out.append(line)
+    i = 0
+    while i < len(lines):
+        split = split_typed_binding(lines[i])
+        if split is not None:
+            assignment, _ = split
+            out.append(assignment)
+            changed = True
+            i += 1
             continue
-        out.extend(split)
-        changed = True
+
+        # Also collapse a previously repaired `name : Type` / `name = rhs` pair.
+        if i + 1 < len(lines):
+            sig = re.match(r"^(\s*)([A-Za-z_][A-Za-z0-9_']*)\s*:\s*.+$", lines[i])
+            rhs = re.match(r"^(\s*)\2\s*=\s*(.*)$", lines[i + 1]) if sig else None
+            if sig and rhs and sig.group(1) == rhs.group(1):
+                out.append(lines[i + 1])
+                changed = True
+                i += 2
+                continue
+
+        out.append(lines[i])
+        i += 1
     return out, changed
 
 
@@ -108,8 +123,6 @@ def repair_file(path: Path) -> bool:
     return changed
 
 
-# These are the currently identified finite algebraic theorem surfaces.
-# They are audit targets, not claims that every body is already kernel-checked.
 ALGEBRAIC_THEOREM_SURFACES = {
     'ringAddAssoc', 'ringAddComm', 'ringMulAssoc', 'ringDistrib',
     'vectorAddComm', 'vectorScaleAdd', 'qStrictCross',
@@ -147,7 +160,7 @@ for path in Path('.').rglob('*.agda'):
     if re.search(r'_v\d+\b', path.name) or re.search(r'_v\d+\b', path.read_text()):
         versioned.append(str(path))
 
-print('parser-repair=structural-typed-binding-plus-targeted-extended-lambda')
+print('parser-repair=structural-inferred-let-plus-targeted-extended-lambda')
 print('algebraic-proof-automation=finite-constructive-surface-audit')
 print('algebraic-theorem-surface-count=' + str(len(ALGEBRAIC_THEOREM_SURFACES)))
 print(f'grammar-repaired-files={changed}')
