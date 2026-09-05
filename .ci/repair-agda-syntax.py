@@ -84,17 +84,14 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
         if 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j' not in line:
             continue
         end = i + 1
-        while end < len(lines) and (lines[end].lstrip().startswith('... |') or lines[end].lstrip().startswith('...   |') or not lines[end].strip()):
+        while end < len(lines):
+            stripped = lines[end].lstrip()
+            if stripped.startswith('record AntitheticSample_v142 '):
+                break
             end += 1
         replacement = [
             'makeCVTSlot_v142 : ∀ {S} → Scalar S → CVTSlot_v142 S',
             'makeCVTSlot_v142 f = record { occupied = true ; fitness = f }',
-            '',
-            'insertCVTReplacement_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →',
-            '  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S',
-            'insertCVTReplacement_v142 D slot f with CVTSlot_v142.occupied slot',
-            '... | false = makeCVTSlot_v142 f',
-            '... | true = insertCVTOccupied_v142 D slot f',
             '',
             'insertCVTOccupied_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →',
             '  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S',
@@ -103,6 +100,12 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
             '... | yes _ = makeCVTSlot_v142 f',
             '... | no _ = slot',
             '',
+            'insertCVTReplacement_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →',
+            '  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S',
+            'insertCVTReplacement_v142 D slot f with CVTSlot_v142.occupied slot',
+            '... | false = makeCVTSlot_v142 f',
+            '... | true = insertCVTOccupied_v142 D slot f',
+            '',
             'insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →',
             '  CVTArchive_v142 S cells → Fin cells → Scalar S → Fin cells → CVTSlot_v142 S',
             'insertCVTCell_v142 D a i f j with finDecEq i j',
@@ -110,6 +113,7 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
             '... | yes _ = insertCVTReplacement_v142 D (CVTArchive_v142.cell a j) f',
             '',
             'insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i f }',
+            '',
         ]
         return lines[:i] + replacement + lines[end:], True
     return lines, False
@@ -182,7 +186,7 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
           (Ring.mulComm
             (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d b)))
       h)
-    (OrderedRing.mulPos hd he))
+    (OrderedRing.mulPos hd he)
 '''
     current = text[start:sep]
     if current == replacement.rstrip('\n'):
