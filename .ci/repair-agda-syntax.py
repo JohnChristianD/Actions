@@ -111,7 +111,7 @@ def replace_between_separators(text: str, marker: str, replacement: str) -> tupl
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    replacement = '''residualSquareNonzero_v140 ha hr =
+    replacement = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
   λ hx →
     let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
         hxx0 = trans
@@ -128,16 +128,17 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
         hzero = trans
           (cong (λ q → alpha + q) hneg0)
           (Ring.addZeroR Rg alpha)
-    in ⊥-elim
-      (OrderedRing.notLtFromLe
-        ha
-        (transportLt_v142 hzero refl hr))
+        hlt : alpha < zero = subst (λ q → q < zero) hzero hr
+    in OrderedRing.notLtFromLe ha hlt
 '''
+    if 'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx =' in text:
+        text = re.sub(r'(?m)^residualSquareNonzero_v140 .*$', 'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr hx =', text, count=1)
+        return text, True
     return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr hx =', replacement)
 
 
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
-    replacement = '''qProjectionCross_v141 ha hr =
+    replacement = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
       hx = residualSquareNonzero_v140 ha hr
       hxx = OrderedRing.squarePositive hx
@@ -153,6 +154,10 @@ def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
          hmul)
        hright
 '''
+    if 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =' in text:
+        text = re.sub(r'(?m)^qProjectionCross_v141 .*$', 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =', text, count=1)
+        text = text.replace('  alpha * (x * x) < mu * ((x * x) * (x * x))', '  (alpha * (x * x)) < (mu * ((x * x) * (x * x)))')
+        return text, True
     return replace_between_separators(text, 'qProjectionCross_v141 ha hr =', replacement)
 
 

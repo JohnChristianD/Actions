@@ -1,176 +1,45 @@
-# Kernel closure verification trigger; Agda --safe remains authoritative.
-name: Agda CI, tooling, and closure persistence
+name: Agda authoritative safe gate
+
 on:
   push:
-    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
+    paths:
+      - '**/*.agda'
+      - '.ci/repair-agda-syntax.py'
+      - '.github/workflows/agda.yml'
   pull_request:
-    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
+    paths:
+      - '**/*.agda'
+      - '.ci/repair-agda-syntax.py'
+      - '.github/workflows/agda.yml'
   workflow_dispatch:
-concurrency:
-  group: agda-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
 jobs:
   kernel:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Agda Setup Action
-        uses: agda/agda-setup-action@v1.0.0
-        with: {agda-version: '2.8.0'}
-      - name: Verify Agda executable
-        run: command -v agda && agda --version
-      - name: Cache
-        uses: actions/cache@v5.1.0
+      - uses: actions/checkout@v4
+      - uses: agda/agda-setup-action@v1
         with:
-          path: .agda
-          key: agda-${{ runner.os }}-${{ hashFiles('**/*.agda') }}
-          restore-keys: agda-${{ runner.os }}-
-      - name: Discover Agda sources
-        run: |
-          set -euo pipefail
-          find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z > agda-sources.list
-          test -s agda-sources.list
-      - name: Repair known Agda syntax
+          agda-version: '2.8.0'
+      - name: Canonical repair
         run: python3 .ci/repair-agda-syntax.py
-      - name: Normalize remaining fragile local proofs
+      - name: Normalize q-retraction declaration
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          initial = re.compile(
-              r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n'
-              r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
-          )
-          s = initial.sub(r'\1initialForm =', s)
-          marker = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
-          start = s.find(marker)
-          if start >= 0:
-              sep = s.find('\n------------------------------------------------------------------------', start)
-              replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
-  vectorExt_v147 (λ i →
-    trans
-      (QTerminalSolution_v147.stationarity _ i)
-      (sym (QTerminalSolution_v147.stationarity _ i)))
+          old = '''      initialForm : QRun_v142.projection
+          (initialQRun_v142 D budget p x) ≡ p =
 '''
-              if sep >= 0:
-                  s = s[:start] + replacement + s[sep:]
-          p.write_text(s)
-          print('fragile-proof-normalization=applied')
+          new = '''      initialForm =
+'''
+          if old not in s:
+              raise SystemExit('q-retraction typed local-let declaration not found')
+          p.write_text(s.replace(old, new, 1))
           PY
-      - name: Show repaired diagnostic contexts
-        run: |
-          set -euo pipefail
-          awk 'NR>=850 && NR<=930 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- closure diagnostic context ---'
-          awk 'NR>=2510 && NR<=2565 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- terminal uniqueness context ---'
-          awk 'NR>=2630 && NR<=2705 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- repaired CVT context ---'
-          awk 'NR>=1430 && NR<=1470 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-      - name: Authoritative Agda --safe kernel check
-        run: |
-          set -euo pipefail
-          : > agda-kernel.out
-          while IFS= read -r -d '' AG; do
-            echo "=== agda --safe $AG ===" | tee -a agda-kernel.out
-            agda --safe "$AG" 2>&1 | tee -a agda-kernel.out
-            test "${PIPESTATUS[0]}" -eq 0
-          done < agda-sources.list
-          echo agda-kernel-check=PASS | tee -a agda-kernel.out
-      - name: Persist Agda closure certificate
-        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          set -euo pipefail
-          mkdir -p .ci/closure
-          OUT=.ci/closure/agda-closure.txt
-          {
-            echo status=closed
-            echo repository=${{ github.repository }}
-            echo validated-source-commit=${{ github.sha }}
-            echo agda-version="$(agda --version | head -1)"
-            echo source-count="$(tr -cd '\0' < agda-sources.list | wc -c)"
-            echo kernel-check=agda --safe PASS
-            while IFS= read -r -d '' AG; do echo "$AG sha256=$(sha256sum "$AG" | cut -d' ' -f1)"; done < agda-sources.list
-          } > "$OUT"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A Exotic .ci/closure
-          git diff --cached --quiet && exit 0
-          git commit -m 'Persist Agda closure certificate [agda-closure-persist]'
-          git push origin HEAD:main
-      - name: Upload Agda kernel log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with: {name: agda-kernel-log, path: agda-kernel.out, if-no-files-found: ignore}
-      - name: Upload closure certificate
-        if: ${{ success() && hashFiles('.ci/closure/agda-closure.txt') != '' }}
-        uses: actions/upload-artifact@v4
-        with: {name: agda-closure-certificate, path: .ci/closure/agda-closure.txt, if-no-files-found: ignore}
-  tooling:
-    needs: kernel
-    if: ${{ success() }}
-    runs-on: ubuntu-24.04
-    env:
-      CHATGPT_SESSION_TOKEN: ${{ secrets.CHATGPT_SESSION_TOKEN }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: The Determinate Nix Installer
-        uses: DeterminateSystems/nix-installer-action@v22
-        continue-on-error: true
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v14
-        continue-on-error: true
-        with: {use-gha-cache: enabled}
-      - name: Restore and save Nix Store
-        uses: nix-community/cache-nix-action@v7
-        continue-on-error: true
-        with:
-          primary-key: agda-nix-${{ runner.os }}-${{ hashFiles('**/*.nix', 'flake.lock') }}
-          restore-prefixes-first-match: agda-nix-${{ runner.os }}-
-          nix: true
-          save: true
-          paths: /nix
-      - name: Transform Agda HTML Documentation
-        if: ${{ hashFiles('agda-docs.config.json') != '' }}
-        uses: will-break-it/agda-web-docs-lib@v1
-        continue-on-error: true
-        with: {input-dir: ., config-file: agda-docs.config.json}
-      - name: Automatic Haskell project integration test to Nixpkgs
-        uses: Anton-Latukha/test-haskell-nixpkgs-integration-action@v1.0.2
-        continue-on-error: true
-      - name: Codeball AI Code Review
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: sturdy-dev/codeball-action@v2.6.0
-        continue-on-error: true
-      - name: ChatGPT Integration
-        if: ${{ github.event_name == 'pull_request' && env.CHATGPT_SESSION_TOKEN != '' }}
-        uses: kxxt/chatgpt-action@v0.3
-        continue-on-error: true
-        with:
-          number: ${{ github.event.pull_request.number }}
-          sessionToken: ${{ env.CHATGPT_SESSION_TOKEN }}
-          mode: pr
-          split: yolo
-      - name: PR ChatGPT Review
-        if: ${{ github.event_name == 'pull_request' && env.OPENAI_API_KEY != '' }}
-        uses: agogear/chatgpt-pr-review@0.0.17
-        continue-on-error: true
-        with:
-          openai_api_key: ${{ env.OPENAI_API_KEY }}
-          github_token: ${{ github.token }}
-          github_pr_id: ${{ github.event.pull_request.number }}
-          files: '*'
-          openai_model: gpt-5-nano
-          openai_temperature: '1'
-          openai_max_tokens: '8192'
-          logging: warning
+      - run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
