@@ -101,22 +101,122 @@ jobs:
           p.write_text(s)
           PY
 
-      - name: Assert q-cross parameter binding
+      - name: Audit and normalize all implicit theorem binders
         run: |
           set -euo pipefail
           f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
           python3 - "$f" <<'PY'
           from pathlib import Path
           import re, sys
+
           p = Path(sys.argv[1])
-          s = p.read_text()
-          pattern = r'(?m)^qProjectionCross_v141(?: \{[^\n]*\})? ha hr ='
-          s, n = re.subn(pattern, 'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =', s, count=1)
-          if n != 1:
-              raise SystemExit(f'qProjectionCross_v141 binding normalization count={n}')
-          p.write_text(s)
+          lines = p.read_text().splitlines()
+          ident = r'[A-Za-z_][A-Za-z0-9_\']*'
+          changed = []
+
+          def implicit_names(signature):
+              names = []
+              for body in re.findall(r'\{([^{}]*)\}', signature):
+                  left = body.split(':', 1)[0]
+                  for token in re.findall(ident, left):
+                      if token not in {'Set', 'Set₁'} and token not in names:
+                          names.append(token)
+              return names
+
+          i = 0
+          while i < len(lines):
+              sig = re.match(r'^(' + ident + r')\s*:\s*.*$', lines[i])
+              if sig is None:
+                  i += 1
+                  continue
+              name = sig.group(1)
+              j = i + 1
+              signature_lines = [lines[i]]
+              equation_index = None
+              while j < len(lines):
+                  if re.match(r'^' + ident + r'\s*:\s*', lines[j]) and not lines[j].startswith(' '):
+                      break
+                  eq = re.match(r'^' + re.escape(name) + r'(\s+.*)?\s*=\s*', lines[j])
+                  if eq is not None:
+                      equation_index = j
+                      break
+                  signature_lines.append(lines[j])
+                  j += 1
+              if equation_index is None:
+                  i = j
+                  continue
+
+              names = implicit_names('\n'.join(signature_lines))
+              if names:
+                  line = lines[equation_index]
+                  lhs, rhs = line.split('=', 1)
+                  for n in names:
+                      if not re.search(r'(?<![A-Za-z0-9_\'])' + re.escape(n) + r'(?![A-Za-z0-9_\'])', lhs):
+                          lhs = lhs.rstrip() + ' {' + n + ' = ' + n + '}'
+                  new_line = lhs + '=' + rhs
+                  if new_line != line:
+                      lines[equation_index] = new_line
+                      changed.append(f'{name}:{equation_index + 1}')
+              i = equation_index + 1
+
+          p.write_text('\n'.join(lines) + '\n')
+          print('implicit-binder-normalizations=' + str(len(changed)))
+          print('implicit-binder-sites=' + ','.join(changed))
+
+          # Independent postcondition: no versioned top-level equation may
+          # leave an implicit parameter from its own signature absent from the LHS.
+          remaining = []
+          i = 0
+          while i < len(lines):
+              sig = re.match(r'^(' + ident + r')\s*:\s*.*$', lines[i])
+              if sig is None:
+                  i += 1
+                  continue
+              name = sig.group(1)
+              j = i + 1
+              signature_lines = [lines[i]]
+              equation_index = None
+              while j < len(lines):
+                  if re.match(r'^' + ident + r'\s*:\s*', lines[j]) and not lines[j].startswith(' '):
+                      break
+                  if re.match(r'^' + re.escape(name) + r'(\s+.*)?\s*=\s*', lines[j]):
+                      equation_index = j
+                      break
+                  signature_lines.append(lines[j])
+                  j += 1
+              if equation_index is not None:
+                  names = implicit_names('\n'.join(signature_lines))
+                  lhs = lines[equation_index].split('=', 1)[0]
+                  missing = [n for n in names if not re.search(r'(?<![A-Za-z0-9_\'])' + re.escape(n) + r'(?![A-Za-z0-9_\'])', lhs)]
+                  if missing and '_v' in name:
+                      remaining.append(f'{name}:{equation_index + 1}:missing={"/".join(missing)}')
+                  i = equation_index + 1
+              else:
+                  i = j
+          if remaining:
+              for item in remaining:
+                  print('UNBOUND-IMPLICIT=' + item)
+              raise SystemExit(1)
           PY
-          grep -n -A7 '^qProjectionCross_v141' "$f"
+          grep -n -A5 '^residualSquareNonzero_v140' "$f"
+          grep -n -A5 '^qProjectionCross_v141' "$f"
+
+      - name: Agda2HS diagnostic probe
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          bin="$RUNNER_TEMP/agda2hs-bin"
+          mkdir -p "$bin"
+          if ! command -v agda2hs >/dev/null 2>&1; then
+            if command -v cabal >/dev/null 2>&1; then
+              cabal install agda2hs --constraint='Agda == 2.8.0' --installdir="$bin" --install-method=copy --overwrite-policy=always 2>&1 | tee "$RUNNER_TEMP/agda2hs-install.log"
+            else
+              echo 'Agda2HS diagnostic skipped: cabal is unavailable'
+              exit 0
+            fi
+          fi
+          command -v agda2hs || true
+          "$bin/agda2hs" Exotic/ERL/FullCoupled/CompleteSafe_v147.agda 2>&1 | tee "$RUNNER_TEMP/agda2hs.log"
 
       - name: Authoritative Agda --safe check
         run: |
