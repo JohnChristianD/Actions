@@ -55,29 +55,21 @@ jobs:
           import re, sys
           p = Path(sys.argv[1])
           s = p.read_text()
-          s = s.replace(
-              'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
-              'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero)')
-          s = s.replace(
-              'open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)',
-              'open import Agda.Builtin.Equality using (_≡_; refl)')
+          s = s.replace('open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)', 'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero)')
+          s = s.replace('open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)', 'open import Agda.Builtin.Equality using (_≡_; refl)')
           s = s.replace('[] : Vec A zero', '[] : Vec A natZero')
           s = s.replace('sumFin _ z zero _ = z', 'sumFin _ z natZero _ = z')
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
           s = s.replace('\nopen Ring\n\nrecord OrderedRing', '\nrecord OrderedRing')
           s = s.replace('\n¬ A = A → ⊥\n', '\n¬ A = A → ⊥\n\n_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n')
-          s = s.replace(
-              'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
-              'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)')
+          s = s.replace('Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)')
           start = s.find('module EfficientCHAD ')
           stop = s.find('\n------------------------------------------------------------------------\n-- Concrete neural network components', start)
           if start >= 0 and stop >= 0:
               chunk = s[start:stop]
               chunk = re.sub(r'(?<!Ring\.)\bR\b', 'CR', chunk)
               s = s[:start] + chunk + s[stop:]
-          s = s.replace(
-              'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
-              '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
+          s = s.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
           for old, new in {
               '→ a + c ≤ b + d': '→ (a + c) ≤ (b + d)',
               '→ a + c < b + d': '→ (a + c) < (b + d)',
@@ -96,16 +88,10 @@ jobs:
           marker = '_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n'
           if helper.strip() not in s:
               s = s.replace(marker, marker + helper)
-          s = s.replace(
-              'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden',
-              'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
-          s = s.replace(
-              '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered x = x + neg μ',
-              '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
-          s = s.replace(
-              '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd',
-              '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
-          s = s.replace('LSTMGates.gates (record { gates = g })', 'LSTMBlock.gates (record { gates = g })')
+          s = s.replace('record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden', 'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
+          s = s.replace('  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered x = x + neg μ', '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
+          s = s.replace('  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd', '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
+          s = s.replace('LSTMGates.gates', 'LSTMBlock.gates')
           p.write_text(s)
           PY
 
