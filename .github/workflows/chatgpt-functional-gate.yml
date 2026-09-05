@@ -29,11 +29,14 @@ jobs:
           grep -q '{-# OPTIONS --safe #-}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           test -f Exotic/ERL/FullCoupled/QClosure_v147.agda
           test -f Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
+          test -f Exotic/ERL/FullCoupled/AlgebraClosure_v147.agda
       - name: Kernel check canonical algebra
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check q and CHAD closure
         run: agda --safe Exotic/ERL/FullCoupled/QClosure_v147.agda
       - name: Kernel check interpolation
         run: agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
+      - name: Kernel check new algebra closure
+        run: agda --safe Exotic/ERL/FullCoupled/AlgebraClosure_v147.agda
       - name: Close only on Agda kernel success
         run: echo 'agda-safe-kernel=GREEN'
