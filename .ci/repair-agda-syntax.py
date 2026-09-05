@@ -39,29 +39,41 @@ RESIDUAL = '''residualSquareNonzero_v140 ha hr hx =
           (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
         (Ring.addZeroR (OrderedRing.ring _) alpha)
   in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))'''
-RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx = λ hx0 →
-  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-      xsq : Ring._*_ Rg x x ≡ Ring.zero Rg =
-        trans
-          (cong₂ (Ring._*_ Rg) hx0 hx0)
-          (Ring.zeroMulR Rg (Ring.zero Rg))
-      muxsq : Ring._*_ Rg mu (Ring._*_ Rg x x) ≡ Ring.zero Rg =
-        trans
-          (cong (Ring._*_ Rg mu) xsq)
-          (Ring.zeroMulR Rg mu)
-      hnegzero : Ring.neg Rg (Ring.zero Rg) ≡ Ring.zero Rg =
-        trans
-          (sym (Ring.addZeroR Rg (Ring.neg Rg (Ring.zero Rg))))
-          (Ring.addNegL Rg (Ring.zero Rg))
-      hr0 : alpha + Ring.neg Rg (Ring._*_ Rg mu (Ring._*_ Rg x x)) < zero =
-        subst (λ q → alpha + Ring.neg Rg (Ring._*_ Rg mu q) < zero) xsq hr
-      hr1 : alpha + Ring.neg Rg (Ring.zero Rg) < zero =
-        subst (λ q → alpha + Ring.neg Rg q < zero) muxsq hr0
-      hr2 : alpha + Ring.zero Rg < zero =
-        subst (λ q → alpha + q < zero) hnegzero hr1
-      hr3 : alpha < zero =
-        subst (λ q → q < zero) (Ring.addZeroR Rg alpha) hr2
-  in (OrderedRing.notLtFromLe (SmoothAlgebra.orderedRing _) ha) hr3'''
+RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx0 =
+  ⊥-elim (OrderedRing.notLtFromLe (SmoothAlgebra.orderedRing S) ha) hr3
+  where
+  Rg : Ring
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+  hxx : Ring._*_ Rg x x ≡ Ring.zero Rg
+  hxx = trans (cong₂ (Ring._*_ Rg) hx0 hx0)
+    (Ring.zeroMulR Rg (Ring.zero Rg))
+
+  hmuxx : Ring._*_ Rg mu (Ring._*_ Rg x x) ≡ Ring.zero Rg
+  hmuxx = trans (cong (Ring._*_ Rg mu) hxx)
+    (Ring.zeroMulR Rg mu)
+
+  hnegzero : Ring.neg Rg (Ring.zero Rg) ≡ Ring.zero Rg
+  hnegzero = trans
+    (sym (Ring.addZeroR Rg (Ring.neg Rg (Ring.zero Rg))))
+    (Ring.addNegL Rg (Ring.zero Rg))
+
+  hr0 : alpha + Ring.neg Rg (Ring._*_ Rg mu (Ring._*_ Rg x x)) < Ring.zero Rg
+  hr0 = subst
+    (λ q → alpha + Ring.neg Rg (Ring._*_ Rg mu q) < Ring.zero Rg)
+    hxx hr
+
+  hr1 : alpha + Ring.neg Rg (Ring.zero Rg) < Ring.zero Rg
+  hr1 = subst (λ q → alpha + Ring.neg Rg q < Ring.zero Rg)
+    hmuxx hr0
+
+  hr2 : alpha + Ring.zero Rg < Ring.zero Rg
+  hr2 = subst (λ q → alpha + q < Ring.zero Rg)
+    hnegzero hr1
+
+  hr3 : alpha < Ring.zero Rg
+  hr3 = subst (λ q → q < Ring.zero Rg)
+    (Ring.addZeroR Rg alpha) hr2'''
 
 changed = 0
 for path in Path('.').rglob('*.agda'):
