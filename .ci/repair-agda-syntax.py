@@ -111,7 +111,7 @@ def replace_between_separators(text: str, marker: str, replacement: str) -> tupl
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    replacement = '''residualSquareNonzero_v140 ha hr =
+    replacement = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
   λ hx →
     let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
         hxx0 = trans
@@ -137,7 +137,7 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
 
 
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
-    replacement = '''qProjectionCross_v141 ha hr =
+    replacement = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
       hx = residualSquareNonzero_v140 ha hr
       hxx = OrderedRing.squarePositive hx
