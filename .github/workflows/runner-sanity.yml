@@ -1,4 +1,4 @@
-# Plain runner smoke test; independent of Agda and proof tooling.
+# Authoritative kernel execution path built on the proven runner job.
 name: Runner sanity
 on:
   push:
@@ -6,7 +6,10 @@ on:
 permissions:
   contents: read
 jobs:
-  sanity:
+  kernel:
     runs-on: ubuntu-latest
     steps:
-      - run: echo runner-sanity-pass
+      - run: git clone --depth=1 https://github.com/JohnChristianD/Actions.git work
+      - run: curl -fsSL https://github.com/agda/agda/releases/download/v2.8.0/Agda-v2.8.0-linux.tar.xz -o agda.tar.xz && tar xf agda.tar.xz && mkdir -p "$HOME/.local/bin" && mv agda "$HOME/.local/bin/agda" && echo "$HOME/.local/bin" >> "$GITHUB_PATH" && agda --version
+      - run: cd work && python3 .ci/repair-agda-syntax.py
+      - run: cd work && agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
