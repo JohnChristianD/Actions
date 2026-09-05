@@ -3,7 +3,9 @@ name: materialize exact v147 Agda source
 on:
   push:
     branches: ["v147-q-chad-agda-safe"]
-    paths: ["transfer/v147_payload_*.b64"]
+    paths:
+      - "transfer/v147_payload_*.b64"
+      - ".github/workflows/materialize-v147-agda.yml"
   workflow_dispatch:
 
 permissions:
