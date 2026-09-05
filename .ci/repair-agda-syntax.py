@@ -31,6 +31,38 @@ INSERT_FIXED = '''insertCVT_v142 D a i f = record { cell = choose i }
   ...     | yes _ = record { occupied = true ; fitness = f }
   ...     | no _ = CVTArchive_v142.cell a j }'''
 
+RESIDUAL = '''residualSquareNonzero_v140 ha hr hx =
+  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        (mu * (hx * hx)) ≡ alpha =
+      trans
+        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
+          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
+        (Ring.addZeroR (OrderedRing.ring _) alpha)
+  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))'''
+RESIDUAL_FIXED = '''residualSquareNonzero_v140 ha hr hx = λ hx0 →
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      xsq : Ring._*_ Rg x x ≡ Ring.zero Rg =
+        trans
+          (cong₂ (Ring._*_ Rg) hx0 hx0)
+          (Ring.zeroMulR Rg (Ring.zero Rg))
+      muxsq : Ring._*_ Rg mu (Ring._*_ Rg x x) ≡ Ring.zero Rg =
+        trans
+          (cong (Ring._*_ Rg mu) xsq)
+          (Ring.zeroMulR Rg mu)
+      hnegzero : Ring.neg Rg (Ring.zero Rg) ≡ Ring.zero Rg =
+        trans
+          (sym (Ring.addZeroR Rg (Ring.neg Rg (Ring.zero Rg))))
+          (Ring.addNegL Rg (Ring.zero Rg))
+      hr0 : alpha + Ring.neg Rg (Ring._*_ Rg mu (Ring._*_ Rg x x)) < zero =
+        subst (λ q → alpha + Ring.neg Rg (Ring._*_ Rg mu q) < zero) xsq hr
+      hr1 : alpha + Ring.neg Rg (Ring.zero Rg) < zero =
+        subst (λ q → alpha + Ring.neg Rg q < zero) muxsq hr0
+      hr2 : alpha + Ring.zero Rg < zero =
+        subst (λ q → alpha + q < zero) hnegzero hr1
+      hr3 : alpha < zero =
+        subst (λ q → q < zero) (Ring.addZeroR Rg alpha) hr2
+  in (OrderedRing.notLtFromLe (SmoothAlgebra.orderedRing _) ha) hr3'''
+
 changed = 0
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
@@ -38,6 +70,7 @@ for path in Path('.').rglob('*.agda'):
     text = path.read_text()
     new = text.replace(ACCUMULATE, ACCUMULATE_FIXED, 1)
     new = new.replace(INSERT, INSERT_FIXED, 1)
+    new = new.replace(RESIDUAL, RESIDUAL_FIXED, 1)
     if new != text:
         path.write_text(new)
         changed += 1
