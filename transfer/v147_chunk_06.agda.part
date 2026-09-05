@@ -1,0 +1,304 @@
+L) * nextHardMax +
+  neg value
+
+------------------------------------------------------------------------
+-- POBAX MiniGrid semantic target used by the environment adapter layer.
+------------------------------------------------------------------------
+
+data POBAX-DMLab-MiniGrid : Set where
+  pobaxDMLabMiniGrid_v146 : POBAX-DMLab-MiniGrid
+
+
+------------------------------------------------------------------------
+-- Full v145 generation: every archive/emitter/replay/representation branch
+-- consumes the same coupled hyperparameter snapshot.
+------------------------------------------------------------------------
+
+record FullCoupledGeneration_v146 (S : SmoothAlgebra)
+  (stateDim actionDim parameterDim : Nat) : Set where
+  field
+    learner : CoupledLearner_v146 S stateDim actionDim
+    qRun : QRun_v142 S parameterDim
+    qBudgetLaw : QRun_v142.budget qRun ≡
+      projectionBudget_v146 (CoupledLearner_v146.hyper learner)
+    archiveMode : QDArchiveMode_v146
+    replayMode : ReplayMode_v146
+    representationMode : RepresentationMode_v146
+
+fullGenerationCoupledBudget_v146 : ∀ {S stateDim actionDim parameterDim}
+  (g : FullCoupledGeneration_v146 S stateDim actionDim parameterDim) → Scalar S
+fullGenerationCoupledBudget_v146 g =
+  projectionBudget_v146
+    (CoupledLearner_v146.hyper (FullCoupledGeneration_v146.learner g))
+
+fullGenerationCoupledCEMRefit_v146 : ∀ {S stateDim actionDim parameterDim}
+  (g : FullCoupledGeneration_v146 S stateDim actionDim parameterDim) →
+  VecS S parameterDim → VecS S parameterDim → VecS S parameterDim
+fullGenerationCoupledCEMRefit_v146 g centre elite =
+  coupledCEMRefit_v146
+    (CoupledLearner_v146.hyper (FullCoupledGeneration_v146.learner g))
+    centre elite
+
+data SemanticBenchmark_v146 : Set where
+  GymnaxSimpleBandit_v146 : SemanticBenchmark_v146
+  GymnaxDiscountingChain_v146 : SemanticBenchmark_v146
+  GymnaxMemoryChain_v146 : SemanticBenchmark_v146
+  JumanjiGraphColoring_v146 : SemanticBenchmark_v146
+  JumanjiMaze_v146 : SemanticBenchmark_v146
+  POBAXDMLabMiniGridPure_v146 : SemanticBenchmark_v146
+  JaxMARLSimpleSpread_v146 : SemanticBenchmark_v146
+  BraxInvertedPendulum_v146 : SemanticBenchmark_v146
+
+
+------------------------------------------------------------------------
+-- Finite Jacobian/Hessian closure boundary for QSA: seeds are discrete inputs.
+-- Continuous derivatives therefore hold the seed bank fixed; no derivative of
+-- PRNG state is manufactured. XorShift64 is chosen for the smallest exact
+-- finite recurrence surface.
+------------------------------------------------------------------------
+
+xorshiftBit_v146 : Bool → Bool → Bool
+xorshiftBit_v146 false false = false
+xorshiftBit_v146 false true = true
+xorshiftBit_v146 true false = true
+xorshiftBit_v146 true true = false
+
+xorV_v146 : ∀ {n} → Vec Bool n → Vec Bool n → Vec Bool n
+xorV_v146 [] [] = []
+xorV_v146 (a ∷ as) (b ∷ bs) = xorshiftBit_v146 a b ∷ xorV_v146 as bs
+
+takeV_v146 : ∀ {A n} → Nat → Vec A n → Vec A n
+takeV_v146 zero _ = []
+takeV_v146 (suc k) [] = []
+takeV_v146 (suc k) (x ∷ xs) = x ∷ takeV_v146 k xs
+
+shiftL1_v146 : ∀ {n} → Vec Bool n → Vec Bool n
+shiftL1_v146 [] = []
+shiftL1_v146 (x ∷ xs) = false ∷ takeV_v146 _ xs
+
+snocV_v146 : ∀ {A n} → Vec A n → A → Vec A (suc n)
+snocV_v146 [] a = a ∷ []
+snocV_v146 (x ∷ xs) a = x ∷ snocV_v146 xs a
+
+shiftR1_v146 : ∀ {n} → Vec Bool n → Vec Bool n
+shiftR1_v146 [] = []
+shiftR1_v146 (x ∷ xs) = snocV_v146 xs false
+
+shiftLV_v146 : Nat → ∀ {n} → Vec Bool n → Vec Bool n
+shiftLV_v146 zero xs = xs
+shiftLV_v146 (suc k) xs = shiftL1_v146 (shiftLV_v146 k xs)
+
+shiftRV_v146 : Nat → ∀ {n} → Vec Bool n → Vec Bool n
+shiftRV_v146 zero xs = xs
+shiftRV_v146 (suc k) xs = shiftR1_v146 (shiftRV_v146 k xs)
+
+XorShiftWord_v146 : Set
+XorShiftWord_v146 = Vec Bool 64
+
+xorshift64_v146 : XorShiftWord_v146 → XorShiftWord_v146
+xorshift64_v146 x =
+  let a = xorV_v146 x (shiftLV_v146 13 x)
+      b = xorV_v146 a (shiftRV_v146 7 a)
+  in xorV_v146 b (shiftLV_v146 17 b)
+
+qsaXorShiftDeterministic_v146 : ∀ n → XorShiftWord_v146 → Vec XorShiftWord_v146 n
+qsaXorShiftDeterministic_v146 zero seed = []
+qsaXorShiftDeterministic_v146 (suc n) seed =
+  let s' = xorshift64_v146 seed
+  in s' ∷ qsaXorShiftDeterministic_v146 n s'
+
+qsaSeedRecurrence_v146 : ∀ n seed →
+  qsaXorShiftDeterministic_v146 (suc n) seed ≡
+  xorshift64_v146 seed ∷ qsaXorShiftDeterministic_v146 n (xorshift64_v146 seed)
+qsaSeedRecurrence_v146 n seed = refl
+
+
+------------------------------------------------------------------------
+-- v146 finite diagonal-Newton coupling frontier.
+-- The old v113/v114 artefacts contained an unproved Newton-radius surface.
+-- Here the useful finite frontier is derived directly from the production
+-- coupling normaliser E = 1 + 1/(gamma*lambda):
+--   Q = q E,  Q/E = q,  radius = max(0, 1-q).
+-- For 0 <= q <= 1 this gives the exact trade-off frontier.  No global
+-- stochastic/real-analysis optimality theorem is asserted.
+------------------------------------------------------------------------
+
+diagonalNewtonExposure_v146 : ∀ {S} → CoupledHyperParameters_v146 S → Scalar S
+diagonalNewtonExposure_v146 h =
+  one + SmoothAlgebra.recip _ (traceProduct_v146 h)
+
+diagonalNewtonExposurePositive_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  zero < diagonalNewtonExposure_v146 h
+diagonalNewtonExposurePositive_v146 h =
+  let OR = SmoothAlgebra.orderedRing S
+      Rg = OrderedRing.ring OR
+      htrace = OrderedRing.mulPos
+        (CoupledHyperParameters_v146.gammaPositive h)
+        (CoupledHyperParameters_v146.lambdaPositive h)
+      hr = OrderedRing.addLtLeft
+        (OrderedRing.zeroLtOne {orderedRing = OR})
+        (SmoothAlgebra.recip S (traceProduct_v146 h))
+      hr' : SmoothAlgebra.recip S (traceProduct_v146 h) <
+            SmoothAlgebra.recip S (traceProduct_v146 h) + Ring.one Rg =
+        transportLt_v142
+          (Ring.addZeroR Rg (SmoothAlgebra.recip S (traceProduct_v146 h)))
+          refl hr
+      hrec = reciprocalNonnegative_v146 htrace
+      hsum : zero <
+        SmoothAlgebra.recip S (traceProduct_v146 h) + Ring.one Rg =
+        OrderedRing.leLt hrec hr'
+  in transportLt_v142
+       (sym (Ring.addComm Rg
+         (SmoothAlgebra.recip S (traceProduct_v146 h))
+         (Ring.one Rg)))
+       refl hsum
+
+diagonalNewtonRelativeBudget_v146 : ∀ {S} → CoupledHyperParameters_v146 S → Scalar S
+diagonalNewtonRelativeBudget_v146 h =
+  projectionBudget_v146 h * SmoothAlgebra.recip _ (diagonalNewtonExposure_v146 h)
+
+diagonalNewtonRelativeBudgetLaw_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  diagonalNewtonRelativeBudget_v146 h ≡ CoupledHyperParameters_v146.q h
+
+diagonalNewtonRelativeBudgetLaw_v146 h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      e = diagonalNewtonExposure_v146 h
+      he = diagonalNewtonExposurePositive_v146 h
+      hb = projectionBudget_v146 h
+      hdef : hb ≡ CoupledHyperParameters_v146.q h * e = refl
+      hcancel : e * SmoothAlgebra.recip _ e ≡ one =
+        SmoothAlgebra.reciprocalLaw _ he
+      h1 : (CoupledHyperParameters_v146.q h * e) * SmoothAlgebra.recip _ e ≡
+           CoupledHyperParameters_v146.q h * one =
+        trans
+          (Ring.mulAssoc Rg (CoupledHyperParameters_v146.q h) e
+            (SmoothAlgebra.recip _ e))
+          (cong (λ t → CoupledHyperParameters_v146.q h * t) hcancel)
+  in trans
+       hdef
+       (trans h1 (Ring.mulOneR Rg (CoupledHyperParameters_v146.q h)))
+
+diagonalNewtonRadius_v146 : ∀ {S} → CoupledHyperParameters_v146 S → Scalar S
+diagonalNewtonRadius_v146 h =
+  SmoothAlgebra.max _ zero
+    (one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+      (diagonalNewtonRelativeBudget_v146 h))
+
+diagonalNewtonRadiusLaw_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  diagonalNewtonRadius_v146 h ≡
+  SmoothAlgebra.max _ zero
+    (one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+      (CoupledHyperParameters_v146.q h))
+diagonalNewtonRadiusLaw_v146 _ = refl
+
+diagonalNewtonRadiusUnitLaw_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  CoupledHyperParameters_v146.q h ≤ one →
+  diagonalNewtonRadius_v146 h ≡
+    one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+      (CoupledHyperParameters_v146.q h)
+diagonalNewtonRadiusUnitLaw_v146 h hq =
+  trans
+    (diagonalNewtonRadiusLaw_v146 h)
+    (SmoothAlgebra.maxPositive _ _
+      (let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+           hneg = OrderedRing.negLe hq
+           hsum = OrderedRing.addLe
+             (OrderedRing.refl≤ {a = one}) hneg
+         in trans (Ring.addZeroR Rg one) hsum))
+
+paretoNewtonFrontier_v146 : ∀ {S} → CoupledHyperParameters_v146 S → Scalar S
+paretoNewtonFrontier_v146 = diagonalNewtonRadius_v146
+
+paretoNewtonFrontierLaw_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  CoupledHyperParameters_v146.q h ≤ one →
+  paretoNewtonFrontier_v146 h ≡
+    one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+      (CoupledHyperParameters_v146.q h)
+paretoNewtonFrontierLaw_v146 = diagonalNewtonRadiusUnitLaw_v146
+
+paretoNewtonFrontierStrictTradeoff_v146 : ∀ {S}
+  (h₁ h₂ : CoupledHyperParameters_v146 S) →
+  CoupledHyperParameters_v146.q h₁ < CoupledHyperParameters_v146.q h₂ →
+  CoupledHyperParameters_v146.q h₁ ≤ one →
+  CoupledHyperParameters_v146.q h₂ ≤ one →
+  paretoNewtonFrontier_v146 h₂ < paretoNewtonFrontier_v146 h₁
+paretoNewtonFrontierStrictTradeoff_v146 h₁ h₂ hq hq₁ hq₂ =
+  let OR = SmoothAlgebra.orderedRing _
+      Rg = OrderedRing.ring OR
+      hneg = OrderedRing.negLt hq
+      hsub : one + Ring.neg Rg (CoupledHyperParameters_v146.q h₂) <
+             one + Ring.neg Rg (CoupledHyperParameters_v146.q h₁) =
+        OrderedRing.addLtLeft hneg one
+      hleft = paretoNewtonFrontierLaw_v146 h₂ hq₂
+      hright = paretoNewtonFrontierLaw_v146 h₁ hq₁
+  in transportLt_v142 hleft hright hsub
+
+diagonalNewtonParetoStep_v146 : ∀ {S}
+  (h : CoupledHyperParameters_v146 S) →
+  CoupledHyperParameters_v146.q h ≤ one →
+  CoupledHyperParameters_v146.q h ≡ one →
+  diagonalNewtonRadius_v146 h ≡ zero
+diagonalNewtonParetoStep_v146 h hq hrefl =
+  trans (diagonalNewtonRadiusUnitLaw_v146 h hq)
+    (trans
+      (cong (λ x → one + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _)) x) hrefl)
+      (Ring.addNegR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) one))
+
+
+------------------------------------------------------------------------
+-- Named coupled frontier/theorem surfaces.
+------------------------------------------------------------------------
+
+etaNotDecay_v146 : ∀ {S} (h : CoupledHyperParameters_v146 S) →
+  etaMetaStep_v146 h ≡ CoupledHyperParameters_v146.eta h
+etaNotDecay_v146 _ = refl
+
+------------------------------------------------------------------------
+-- Ordered replay uses unit multiplicity: no importance-sampling correction
+-- exists in this finite max-bootstrap semantics.
+------------------------------------------------------------------------
+
+replayStalenessNoIS_v146 : ∀ {S stateDim actionDim}
+  (m : ReplayMode_v146)
+  (live replayed : ReplayTransition_v141 S stateDim actionDim) → Scalar S
+replayStalenessNoIS_v146 _ _ _ = one
+
+replayStalenessNoISLaw_v146 : ∀ {S stateDim actionDim}
+  (m : ReplayMode_v146)
+  (live replayed : ReplayTransition_v141 S stateDim actionDim) →
+  replayStalenessNoIS_v146 m live replayed ≡ one
+replayStalenessNoISLaw_v146 _ _ _ = refl
+
+------------------------------------------------------------------------
+-- Finite CEM candidate argmax is exact over its candidate set.
+------------------------------------------------------------------------
+
+cemApproxArgmax_v146 : ∀ {S n} → QProjectionDecisionAlgebra_v140 S →
+  VecS S (suc n) → Scalar S
+cemApproxArgmax_v146 = maxVec_v146
+
+cemHardMaxTargetLaw_v146 : ∀ {S n} (D : QProjectionDecisionAlgebra_v140 S)
+  (L : CoupledLearner_v146 S n n)
+  (values : VecS S (suc n)) →
+  coupledHardMaxCandidate_v146 D
+    (CoupledLearner_v146.hyper L) values ≡
+  cemApproxArgmax_v146 D values
+cemHardMaxTargetLaw_v146 D L values = refl
+
+fitnessUsesNegativeTD_v146 : ∀ {S} → Scalar S → Scalar S
+fitnessUsesNegativeTD_v146 = negativeTD_v146
+
+returnIsDiagnostic_v146 : ∀ {S n} → VecS S n → Scalar S
+returnIsDiagnostic_v146 = environmentReturn_v146
+
+------------------------------------------------------------------------
+-- Concrete finite-grid transition adapter used by the POBAX/NaviX source port.
+------------------------------------------------------------------------
+
+data Direction_v146 : Set where
+  north_v146 east_v146 south_v146 west_v146 : Direction_v146
+
+record GridPos_v146 : Set where
+  field row_v146 col_v146 : Nat
+
+translateGrid_v14
