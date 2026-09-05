@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
 from dataclasses import dataclass
@@ -171,6 +172,16 @@ def main() -> int:
     normalized_rc = run(["agda", "--safe", str(NORM)], ROOT, norm_log)
     generated_rc = run(["agda", "--safe", str(generated_path)], ROOT, generated_log)
 
+    oracle_labels = {
+        "haskell": os.environ.get("ORACLE_HASKELL", "unknown"),
+        "scala": os.environ.get("ORACLE_SCALA", "unknown"),
+        "swift": os.environ.get("ORACLE_SWIFT", "unknown"),
+        "elixir": os.environ.get("ORACLE_ELIXIR", "unknown"),
+        "clojure": os.environ.get("ORACLE_CLOJURE", "unknown"),
+        "rust": os.environ.get("ORACLE_RUST", "unknown"),
+        "sympy": os.environ.get("ORACLE_SYMPY", "unknown"),
+    }
+
     obligations = json.loads(OBLIGATIONS.read_text(encoding="utf-8")) if OBLIGATIONS.exists() else {}
     theorem_names = {d.name for d in decls}
     mappings = {
@@ -214,7 +225,11 @@ def main() -> int:
         "",
         "## Oracle evidence",
         "",
-        "The oracle jobs are prerequisites of this interpolation job; their successful CI status is the executable-witness evidence. The script never treats finite oracle enumeration as a kernel proof.",
+        "The oracle jobs are prerequisites of this interpolation job; their CI result is recorded as executable-witness evidence. The script never treats finite oracle enumeration as a kernel proof.",
+        "",
+    ])
+    report.extend(f"- `{k}`: `{v}`" for k, v in oracle_labels.items())
+    report.extend([
         "",
         "## Research grounding",
         "",
