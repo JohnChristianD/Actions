@@ -158,35 +158,42 @@ def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
 
 def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
     replacement = '''orderedFieldCrossStrict_v142 a b d e hd he h =
-  OrderedRing.mulLtPosCancelLeft
-    (transportLt_v142
-      (trans
-        (cong
-          (λ q → q * (a * SmoothAlgebra.recip _ d))
-          (Ring.mulComm
-            (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d e))
-        (trans
-          (Ring.mulAssoc
-            (OrderedRing.ring (SmoothAlgebra.orderedRing _)) e d
-            (a * SmoothAlgebra.recip _ d))
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      c = d * e
+      rd = SmoothAlgebra.recip _ d
+      re = SmoothAlgebra.recip _ e
+      hleft =
+        trans
+          (Ring.mulComm Rg c (a * rd))
           (trans
-            (cong
-              (λ q → e * q)
-              (cancelRecip_v142 a d hd))
-            (Ring.mulComm
-              (OrderedRing.ring (SmoothAlgebra.orderedRing _)) e a)))
-      (trans
-        (Ring.mulAssoc
-          (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d e
-          (b * SmoothAlgebra.recip _ e))
-        (trans
-          (cong
-            (λ q → d * q)
-            (cancelRecip_v142 b e he))
-          (Ring.mulComm
-            (OrderedRing.ring (SmoothAlgebra.orderedRing _)) d b)))
-      h)
-    (OrderedRing.mulPos hd he)
+            (Ring.mulAssoc Rg a rd c)
+            (trans
+              (cong (λ q → a * q)
+                (trans
+                  (sym (Ring.mulAssoc Rg rd d e))
+                  (trans
+                    (cong (λ q → q * e) (Ring.mulComm Rg rd d))
+                    (trans
+                      (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
+                      (Ring.mulOneL Rg e)))))
+              (Ring.mulOneR Rg a)))
+      hright =
+        trans
+          (Ring.mulComm Rg c (b * re))
+          (trans
+            (Ring.mulAssoc Rg b re c)
+            (trans
+              (cong (λ q → b * q)
+                (trans
+                  (sym (Ring.mulAssoc Rg re e d))
+                  (trans
+                    (cong (λ q → q * d) (Ring.mulComm Rg re e))
+                    (trans
+                      (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
+                      (Ring.mulOneL Rg d)))))
+              (Ring.mulOneR Rg b)))
+      hcross = transportLt_v142 hleft hright h
+  in OrderedRing.mulLtPosCancelLeft hcross (OrderedRing.mulPos hd he)
 '''
     return replace_between_separators(text, 'orderedFieldCrossStrict_v142 a b d e hd he h =', replacement)
 
