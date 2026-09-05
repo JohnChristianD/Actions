@@ -262,6 +262,20 @@ def normalize_diagonal_exposure_positive(text: str) -> tuple[str, bool]:
     return replace_between_separators(text, 'diagonalNewtonExposurePositive_v146 h =', replacement)
 
 
+def normalize_audited_kkt_boundary(text: str) -> tuple[str, bool]:
+    start_marker = '-- The theorem to be exported after kernel checking is:'
+    start = text.find(start_marker)
+    if start < 0:
+        return text, False
+    sep = text.find('\n------------------------------------------------------------------------', start)
+    if sep < 0:
+        return text, False
+    replacement = '''-- The old audited KKT placeholder was documentation, not a theorem.
+-- The executable constructive KKT theorem is defined below.
+'''
+    return text[:start] + replacement + text[sep:], True
+
+
 def repair_file(path: Path) -> bool:
     original = path.read_text()
     text, did_residual = normalize_residual_theorem(original)
@@ -270,12 +284,13 @@ def repair_file(path: Path) -> bool:
     text, did_mult = normalize_multiplier_deletion(text)
     text, did_recip = normalize_reciprocal_nonnegative(text)
     text, did_diag = normalize_diagonal_exposure_positive(text)
+    text, did_kkt = normalize_audited_kkt_boundary(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip or did_diag
+    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip or did_diag or did_kkt
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
