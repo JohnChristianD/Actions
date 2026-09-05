@@ -261,7 +261,7 @@ record QTerminalSolution_v147 (S : SmoothAlgebra) (n : Nat) : Set where
       indexV projection i ≡
       SmoothAlgebra.max S zero
         (qResidual_v142 multiplier (indexV alpha i)
-          (indexV x i * indexV x i))
+          (indexV x i * (indexV x i)))
 
 qTerminalMultiplierUnique_v147 : ∀ {S n}
   (a b d n1 n2 : Scalar S) →
@@ -288,7 +288,7 @@ qTerminalProjectionUnique_v147 t u ha hx hmu =
         (cong (λ a → SmoothAlgebra.max _ zero
           (qResidual_v142 (QTerminalSolution_v147.multiplier t) a
             (indexV (QTerminalSolution_v147.x t) i *
-             indexV (QTerminalSolution_v147.x t) i)))
+             (indexV (QTerminalSolution_v147.x t) i))))
           (cong (λ v → indexV v i) ha))
         (trans
           (cong (λ m → SmoothAlgebra.max _ zero
@@ -298,9 +298,8 @@ qTerminalProjectionUnique_v147 t u ha hx hmu =
           (trans
             (cong (λ v → SmoothAlgebra.max _ zero
               (qResidual_v142 (QTerminalSolution_v147.multiplier u)
-                (QTerminalSolution_v147.alpha u |> indexV v i)
-                (indexV (QTerminalSolution_v147.x u) i *
-                 (indexV (QTerminalSolution_v147.x u) i))) hx)
+                (indexV (QTerminalSolution_v147.alpha u) i)
+                (indexV v i * indexV v i))) hx)
             (sym (QTerminalSolution_v147.stationarity u i))))))
 
 qTerminalConfluence_v147 : ∀ {S n}
