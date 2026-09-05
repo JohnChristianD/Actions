@@ -2,6 +2,16 @@ from pathlib import Path
 
 REWRITES = [
     (
+        '  accumulate i c (state s) = state (λ j with finDecEq j i\n'
+        '    ... | yes _ = s j + c\n'
+        '    ... | no _ = s j)',
+        '  accumulateAt : Fin n → R → Cot → Fin n → R\n'
+        '  accumulateAt i c s j with finDecEq j i\n'
+        '  ... | yes _ = s j + c\n'
+        '  ... | no _ = s j\n\n'
+        '  accumulate i c (state s) = state (λ j → accumulateAt i c s j)',
+    ),
+    (
         'let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n'
         '        (mu * (hx * hx)) ≡ alpha =\n'
         '      trans',
@@ -44,23 +54,6 @@ REWRITES = [
         '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =\n',
         '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d\n'
         '      rightNorm =\n',
-    ),
-    (
-        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      hnz = OrderedRing.negLt h\n'
-        '      base = n * d\n'
-        '      lhs : n * (d + neg z) ≡ base + neg (n * z) =\n',
-        'let\n'
-        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      hnz = OrderedRing.negLt h\n'
-        '      base = n * d\n'
-        '      lhs : n * (d + neg z) ≡ base + neg (n * z)\n'
-        '      lhs =\n',
-    ),
-    (
-        '      rhs : (n + neg y) * d ≡ base + neg (y * d) =\n',
-        '      rhs : (n + neg y) * d ≡ base + neg (y * d)\n'
-        '      rhs =\n',
     ),
     (
         'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
