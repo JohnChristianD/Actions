@@ -1,114 +1,80 @@
 from pathlib import Path
+import re
 
-REWRITES = [
-    (
-        '  accumulate i c (state s) = state (λ j with finDecEq j i\n'
-        '    ... | yes _ = s j + c\n'
-        '    ... | no _ = s j)',
-        '  accumulateAt : Fin n → R → Cot → Fin n → R\n'
-        '  accumulateAt i c s j with finDecEq j i\n'
-        '  ... | yes _ = s j + c\n'
-        '  ... | no _ = s j\n\n'
-        '  accumulate i c (state s) = state (λ j → accumulateAt i c s j)',
-    ),
-    (
-        'let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n'
-        '        (mu * (hx * hx)) ≡ alpha =\n'
-        '      trans',
-        'let\n'
-        '      hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n'
-        '        (mu * (hx * hx)) ≡ alpha\n'
-        '      hzero = trans',
-    ),
-    (
-        'let OR = SmoothAlgebra.orderedRing _\n'
-        '      Rg = OrderedRing.ring OR\n'
-        '      hx : x ≠ zero = residualSquareNonzero_v140 ha hr\n'
-        '      hxx : zero < x * x = OrderedRing.squarePositive hx\n'
-        '      hlt : alpha < mu * (x * x) = OrderedRing.subLtZero hr\n'
-        '      hmul = OrderedRing.mulLtPosLeft hlt hxx',
-        'let\n'
-        '      OR = SmoothAlgebra.orderedRing _\n'
-        '      Rg = OrderedRing.ring OR\n'
-        '      hx : x ≠ zero\n'
-        '      hx = residualSquareNonzero_v140 ha hr\n'
-        '      hxx : zero < x * x\n'
-        '      hxx = OrderedRing.squarePositive hx\n'
-        '      hlt : alpha < mu * (x * x)\n'
-        '      hlt = OrderedRing.subLtZero hr\n'
-        '      hmul = OrderedRing.mulLtPosLeft hlt hxx',
-    ),
-    (
-        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      c = d * e\n'
-        '      hc = OrderedRing.mulPos hd he\n'
-        '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =\n',
-        'let\n'
-        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      c = d * e\n'
-        '      hc = OrderedRing.mulPos hd he\n'
-        '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e\n'
-        '      leftNorm =\n',
-    ),
-    (
-        '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =\n',
-        '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d\n'
-        '      rightNorm =\n',
-    ),
-    (
-        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      hnz = OrderedRing.negLt h\n'
-        '      base = n * d\n'
-        '      lhs : n * (d + neg z) ≡ base + neg (n * z) =\n',
-        'let\n'
-        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      hnz = OrderedRing.negLt h\n'
-        '      base = n * d\n'
-        '      lhs : n * (d + neg z) ≡ base + neg (n * z)\n'
-        '      lhs =\n',
-    ),
-    (
-        '      rhs : (n + neg y) * d ≡ base + neg (y * d) =\n',
-        '      rhs : (n + neg y) * d ≡ base + neg (y * d)\n'
-        '      rhs =\n',
-    ),
-    (
-        'let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      e = diagonalNewtonExposure_v146 h\n'
-        '      he = diagonalNewtonExposurePositive_v146 h\n'
-        '      hb = projectionBudget_v146 h\n'
-        '      hdef : hb ≡ CoupledHyperParameters_v146.q h * e = refl\n'
-        '      hcancel : e * SmoothAlgebra.recip _ e ≡ one =\n'
-        '        SmoothAlgebra.reciprocalLaw _ he\n',
-        'let\n'
-        '      Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)\n'
-        '      e = diagonalNewtonExposure_v146 h\n'
-        '      he = diagonalNewtonExposurePositive_v146 h\n'
-        '      hb = projectionBudget_v146 h\n'
-        '      hdef : hb ≡ CoupledHyperParameters_v146.q h * e\n'
-        '      hdef = refl\n'
-        '      hcancel : e * SmoothAlgebra.recip _ e ≡ one\n'
-        '      hcancel = SmoothAlgebra.reciprocalLaw _ he\n',
-    ),
-    (
-        '        hzero : d * zero ≡ zero = OrderedRing.mulZeroR Rg d\n'
-        '        hone : zero < one = OrderedRing.zeroLtOne {orderedRing = OR}\n',
-        '        hzero : d * zero ≡ zero\n'
-        '        hzero = OrderedRing.mulZeroR Rg d\n'
-        '        hone : zero < one\n'
-        '        hone = OrderedRing.zeroLtOne {orderedRing = OR}\n',
-    ),
-]
+
+def repair_file(path: Path) -> bool:
+    lines = path.read_text().splitlines()
+    changed = False
+    out = []
+    for line in lines:
+        m = re.match(r'^(\s*)(leftNorm|rightNorm|lhs|rhs|hzero|hone|hdef|hcancel)(\s*:\s*.*)\s*=\s*$', line)
+        if m:
+            line = m.group(1) + m.group(2) + m.group(3)
+            changed = True
+        out.append(line)
+
+    text = '\n'.join(out) + ('\n' if path.read_text().endswith('\n') else '')
+
+    old_acc = '''  accumulate i c (state s) = state (λ j with finDecEq j i)
+    ... | yes _ = s j + c
+    ... | no _ = s j)'''
+    new_acc = '''  accumulateAt : Fin n → R → Cot → Fin n → R
+  accumulateAt i c s j with finDecEq j i
+  ... | yes _ = s j + c
+  ... | no _ = s j
+
+  accumulate i c (state s) = state (λ j → accumulateAt i c s j)'''
+    text2 = text.replace(old_acc, new_acc, 1)
+    if text2 != text:
+        text = text2
+        changed = True
+
+    old_cvt = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }'''
+    new_cvt = '''insertCVT_v142 D a i f = record { cell = choose i }
+  where
+  choose : Fin cells → CVTSlot_v142 S
+  choose j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }'''
+    text2 = text.replace(old_cvt, new_cvt, 1)
+    if text2 != text:
+        text = text2
+        changed = True
+
+    text2 = re.sub(
+        r'let hzero : alpha \+ Ring\.neg \(OrderedRing\.ring \(SmoothAlgebra\.orderedRing _\)\)\n'
+        r'\s*\(mu \* \(hx \* hx\)\) ≡ alpha =\n\s*trans',
+        'let\n      hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n        (mu * (hx * hx)) ≡ alpha\n      hzero = trans', text, count=1)
+    if text2 != text:
+        text = text2
+        changed = True
+
+    if changed:
+        path.write_text(text)
+    return changed
 
 changed = 0
 for path in Path('.').rglob('*.agda'):
+    if '.git' not in path.parts and repair_file(path):
+        changed += 1
+
+for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
         continue
-    text = path.read_text()
-    new = text
-    for old, replacement in REWRITES:
-        new = new.replace(old, replacement, 1)
-    if new != text:
-        path.write_text(new)
-        changed += 1
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        if ' λ ' in line and 'with' in line:
+            print(f'{path}:{n}:{line}')
+            raise SystemExit(1)
 print(f'grammar-repaired-files={changed}')
