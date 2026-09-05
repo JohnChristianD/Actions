@@ -37,7 +37,7 @@ jobs:
           test -s agda-sources.list
       - name: Repair known Agda syntax
         run: python3 .ci/repair-agda-syntax.py
-      - name: Normalize remaining multiline local bindings
+      - name: Normalize remaining fragile local proofs
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -45,16 +45,46 @@ jobs:
           import re
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          pattern = re.compile(
+          initial = re.compile(
               r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n'
               r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
           )
-          s2 = pattern.sub(r'\1initialForm =', s)
-          if s2 != s:
-              p.write_text(s2)
-              print('initialForm-multiline-type=removed')
-          else:
-              print('initialForm-multiline-type=not-present')
+          s = initial.sub(r'\1initialForm =', s)
+          marker = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
+          start = s.find(marker)
+          if start >= 0:
+              sep = s.find('\n------------------------------------------------------------------------', start)
+              replacement = '''qTerminalProjectionUnique_v147 t u ha hx hmu =
+  vectorExt_v147 (λ i →
+    let f = λ a →
+          SmoothAlgebra.max _ zero
+            (qResidual_v142 (QTerminalSolution_v147.multiplier t) a
+              (indexV (QTerminalSolution_v147.x t) i *
+               indexV (QTerminalSolution_v147.x t) i))
+        g = λ m →
+          SmoothAlgebra.max _ zero
+            (qResidual_v142 m (indexV (QTerminalSolution_v147.alpha u) i)
+              (indexV (QTerminalSolution_v147.x u) i *
+               (indexV (QTerminalSolution_v147.x u) i)))
+        k = λ v →
+          SmoothAlgebra.max _ zero
+            (qResidual_v142 (QTerminalSolution_v147.multiplier u)
+              (indexV (QTerminalSolution_v147.alpha u) i)
+              (indexV v i * indexV v i))
+    in trans
+         (QTerminalSolution_v147.stationarity t i)
+         (trans
+           (cong f (cong (λ v → indexV v i) ha))
+           (trans
+             (cong g hmu)
+             (trans
+               (cong k hx)
+               (sym (QTerminalSolution_v147.stationarity u i)))))
+'''
+              if sep >= 0:
+                  s = s[:start] + replacement + s[sep:]
+          p.write_text(s)
+          print('fragile-proof-normalization=applied')
           PY
       - name: Show repaired diagnostic contexts
         run: |
@@ -62,8 +92,8 @@ jobs:
           awk 'NR>=850 && NR<=930 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           echo '--- closure diagnostic context ---'
           awk 'NR>=2510 && NR<=2565 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- all trans proof sites in closure region ---'
-          grep -n 'trans' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | awk -F: '$1>=2480 && $1<=2580 {print}'
+          echo '--- terminal uniqueness context ---'
+          awk 'NR>=2630 && NR<=2705 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           echo '--- repaired CVT context ---'
           awk 'NR>=1430 && NR<=1470 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Authoritative Agda --safe kernel check
