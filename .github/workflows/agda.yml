@@ -40,6 +40,8 @@ jobs:
         run: |
           set -euo pipefail
           awk 'NR>=882 && NR<=905 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          echo '--- repaired CVT context ---'
+          awk 'NR>=1430 && NR<=1470 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Authoritative Agda --safe kernel check
         run: |
           set -euo pipefail
