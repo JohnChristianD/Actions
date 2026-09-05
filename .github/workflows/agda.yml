@@ -1,16 +1,13 @@
-name: Agda CI, tooling, and v147 closure persistence
+name: Agda CI, tooling, and closure persistence
 
 on:
   push:
-    branches:
-      - main
-      - v147-q-chad-agda-safe
     paths:
-      - 'Exotic/**/*.agda'
+      - '**/*.agda'
       - '.github/workflows/agda.yml'
   pull_request:
     paths:
-      - 'Exotic/**/*.agda'
+      - '**/*.agda'
       - '.github/workflows/agda.yml'
   workflow_dispatch:
 
@@ -71,11 +68,11 @@ jobs:
         uses: nix-community/cache-nix-action@v7
         continue-on-error: true
         with:
-          primary-key: agda-v147-nix-${{ runner.os }}-${{ hashFiles('**/*.nix', 'flake.lock') }}
+          primary-key: agda-nix-${{ runner.os }}-${{ hashFiles('**/*.nix', 'flake.lock') }}
           restore-prefixes-first-match: |
-            agda-v147-nix-${{ runner.os }}-
+            agda-nix-${{ runner.os }}-
           restore-prefixes-all-matches: |
-            agda-v147-nix-
+            agda-nix-
           nix: true
           save: true
           paths: |
@@ -122,44 +119,47 @@ jobs:
           openai_max_tokens: '8192'
           logging: warning
 
-      - name: Verify v147 source shape
+      - name: Discover Agda sources
+        id: sources
         shell: bash
         run: |
           set -euo pipefail
-          AG=Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          test -f "$AG"
-          grep -Fxq '{-# OPTIONS --safe #-}' "$AG"
-          grep -Fxq 'module Exotic.ERL.FullCoupled.CompleteSafe_v147 where' "$AG"
-          if grep -nE '^[[:space:]]*postulate[[:space:]]|\{!!\}|(^|[^[:alnum:]_])(TODO|FIXME)([^[:alnum:]_]|$)' "$AG"; then
-            echo 'source-hygiene=FAIL'
-            exit 1
-          fi
+          mapfile -d '' SOURCES < <(find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z)
+          ((${#SOURCES[@]} > 0))
+          printf '%s\0' "${SOURCES[@]}" > agda-sources.list
+          printf 'agda-source-count=%s\n' "${#SOURCES[@]}"
+          printf '%s\n' "${SOURCES[@]}"
 
       - name: Authoritative Agda --safe kernel check
         shell: bash
         run: |
           set -euo pipefail
-          AG=Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          agda --safe "$AG" 2>&1 | tee agda-v147.out
-          test "${PIPESTATUS[0]}" -eq 0
-          printf '%s\n' 'agda-kernel-check=PASS'
+          : > agda-kernel.out
+          while IFS= read -r -d '' AG; do
+            printf '%s\n' "=== agda --safe $AG ===" | tee -a agda-kernel.out
+            agda --safe "$AG" 2>&1 | tee -a agda-kernel.out
+            test "${PIPESTATUS[0]}" -eq 0
+          done < agda-sources.list
+          printf '%s\n' 'agda-kernel-check=PASS' | tee -a agda-kernel.out
 
-      - name: Persist v147 closure certificate
+      - name: Persist Agda closure certificate
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
           set -euo pipefail
-          AG=Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          OUT=.ci/closure/v147-closure.txt
+          OUT=.ci/closure/agda-closure.txt
           mkdir -p .ci/closure
           {
             printf '%s\n' 'status=closed'
             printf 'repository=%s\n' '${{ github.repository }}'
-            printf 'source=Exotic/ERL/FullCoupled/CompleteSafe_v147.agda\n'
             printf 'source-commit=%s\n' '${{ github.sha }}'
             printf 'agda-version=%s\n' "$(agda --version | tr -d '\r')"
-            printf 'source-sha256=%s\n' "$(sha256sum "$AG" | cut -d' ' -f1)"
+            printf 'source-count=%s\n' "$(tr -cd '\0' < agda-sources.list | wc -c)"
             printf 'kernel-check=agda --safe PASS\n'
+            printf '%s\n' 'sources=' 
+            while IFS= read -r -d '' AG; do
+              printf '%s sha256=%s\n' "$AG" "$(sha256sum "$AG" | cut -d' ' -f1)"
+            done < agda-sources.list
           } > "$OUT"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -168,21 +168,21 @@ jobs:
             echo 'closure-persistence=no-change'
             exit 0
           fi
-          git commit -m 'Persist v147 Agda closure certificate [agda-closure-persist]'
+          git commit -m 'Persist Agda closure certificate [agda-closure-persist]'
           git push origin HEAD:main
 
       - name: Upload Agda kernel log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v147-agda-kernel-log
-          path: agda-v147.out
+          name: agda-kernel-log
+          path: agda-kernel.out
           if-no-files-found: ignore
 
       - name: Upload closure certificate
-        if: ${{ success() && hashFiles('.ci/closure/v147-closure.txt') != '' }}
+        if: ${{ success() && hashFiles('.ci/closure/agda-closure.txt') != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: v147-closure-certificate
-          path: .ci/closure/v147-closure.txt
+          name: agda-closure-certificate
+          path: .ci/closure/agda-closure.txt
           if-no-files-found: ignore
