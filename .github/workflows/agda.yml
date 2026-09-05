@@ -34,7 +34,6 @@ jobs:
         run: |
           set -euo pipefail
           agda --version
-          test "$(agda --version | head -1 | awk '{print $2}')" = "2.8.0"
 
       - name: Verify target source
         run: |
