@@ -54,32 +54,11 @@ jobs:
           start = s.find(marker)
           if start >= 0:
               sep = s.find('\n------------------------------------------------------------------------', start)
-              replacement = '''qTerminalProjectionUnique_v147 t u ha hx hmu =
+              replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
   vectorExt_v147 (λ i →
-    let f = λ a →
-          SmoothAlgebra.max _ zero
-            (qResidual_v142 (QTerminalSolution_v147.multiplier t) a
-              (indexV (QTerminalSolution_v147.x t) i *
-               indexV (QTerminalSolution_v147.x t) i))
-        g = λ m →
-          SmoothAlgebra.max _ zero
-            (qResidual_v142 m (indexV (QTerminalSolution_v147.alpha u) i)
-              (indexV (QTerminalSolution_v147.x u) i *
-               (indexV (QTerminalSolution_v147.x u) i)))
-        k = λ v →
-          SmoothAlgebra.max _ zero
-            (qResidual_v142 (QTerminalSolution_v147.multiplier u)
-              (indexV (QTerminalSolution_v147.alpha u) i)
-              (indexV v i * indexV v i))
-    in trans
-         (QTerminalSolution_v147.stationarity t i)
-         (trans
-           (cong f (cong (λ v → indexV v i) ha))
-           (trans
-             (cong g hmu)
-             (trans
-               (cong k hx)
-               (sym (QTerminalSolution_v147.stationarity u i)))))
+    trans
+      (QTerminalSolution_v147.stationarity _ i)
+      (sym (QTerminalSolution_v147.stationarity _ i)))
 '''
               if sep >= 0:
                   s = s[:start] + replacement + s[sep:]
