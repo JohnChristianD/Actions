@@ -99,6 +99,12 @@ jobs:
           s = s.replace(
               'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden',
               'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
+          s = s.replace(
+              '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered x = x + neg μ',
+              '  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
+          s = s.replace(
+              '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd',
+              '  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
           p.write_text(s)
           PY
 
