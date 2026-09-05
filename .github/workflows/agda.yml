@@ -5,6 +5,8 @@ on:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
   pull_request:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
+  issue_comment:
+    types: [created]
   workflow_dispatch:
 concurrency:
   group: agda-ci-${{ github.workflow }}-${{ github.ref }}
@@ -14,6 +16,7 @@ permissions:
   pull-requests: write
 jobs:
   kernel:
+    if: ${{ github.event_name != 'issue_comment' || github.event.issue.pull_request != null }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
