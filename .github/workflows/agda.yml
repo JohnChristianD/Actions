@@ -1,4 +1,4 @@
-name: Agda kernel and Haskell transpilation
+name: Agda authoritative safe gate
 
 on:
   push:
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   kernel:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
