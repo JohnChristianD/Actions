@@ -14,8 +14,8 @@ INTERPOLATION = ROOT / "Exotic/ERL/FullCoupled/CIInterpolation_v147.agda"
 OBLIGATIONS = ROOT / "tools/algebraic_obligations.json"
 OUT = ROOT / "artifacts"
 REPORT = OUT / "v147_proof_interpolation.md"
-AGDA_SHA256 = "a2d18cf24092e21bde90557245e11d71dc77c40e1209bff86cf4e6a8f37b3f52"
-AGDA_BYTES = 125219
+AGDA_SHA256 = "5a3af336795a730ace81874fb1c6969786d697fc247860802794e45742503a73"
+AGDA_BYTES = 125239
 
 PROOFS = {
     "q_num_remove": "qNumRemove_v147",
