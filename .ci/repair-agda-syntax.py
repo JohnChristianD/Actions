@@ -1,6 +1,8 @@
 from pathlib import Path
 import re
 
+# Kernel-validation trigger: no semantic source change; Agda --safe remains authoritative.
+
 
 def split_typed_binding(line: str) -> tuple[str, str] | None:
     stripped = line.lstrip()
