@@ -83,6 +83,7 @@ jobs:
               '→ zero < a * b': '→ zero < (a * b)',
               '→ zero < x * x': '→ zero < (x * x)',
               '→ zero ≤ x * x': '→ zero ≤ (x * x)',
+              '  alpha * (x * x) < mu * ((x * x) * (x * x))': '  (alpha * (x * x)) < (mu * ((x * x) * (x * x)))',
           }.items():
               s = s.replace(old, new)
           helper = '''\nsym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x\nsym refl = refl\n\ntrans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z\ntrans refl yz = yz\n\ncong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y\ncong f refl = refl\n\nsubst : ∀ {A : Set} (P : A → Set) {x y : A} → x ≡ y → P x → P y\nsubst P refl px = px\n'''
