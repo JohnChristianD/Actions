@@ -54,6 +54,58 @@ jobs:
           restore-keys: |
             agda-${{ runner.os }}-
 
+      - name: Discover Agda sources
+        id: sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' SOURCES < <(find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z)
+          ((${#SOURCES[@]} > 0))
+          printf '%s\0' "${SOURCES[@]}" > agda-sources.list
+          printf 'agda-source-count=%s\n' "${#SOURCES[@]}"
+          printf '%s\n' "${SOURCES[@]}"
+
+      - name: Authoritative Agda --safe kernel check
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > agda-kernel.out
+          while IFS= read -r -d '' AG; do
+            printf '%s\n' "=== agda --safe $AG ===" | tee -a agda-kernel.out
+            agda --safe "$AG" 2>&1 | tee -a agda-kernel.out
+            test "${PIPESTATUS[0]}" -eq 0
+          done < agda-sources.list
+          printf '%s\n' 'agda-kernel-check=PASS' | tee -a agda-kernel.out
+
+      - name: Persist Agda closure certificate
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=.ci/closure/agda-closure.txt
+          mkdir -p .ci/closure
+          {
+            printf '%s\n' 'status=closed'
+            printf 'repository=%s\n' '${{ github.repository }}'
+            printf 'source-commit=%s\n' '${{ github.sha }}'
+            printf 'agda-version=%s\n' "$(agda --version | tr -d '\r')"
+            printf 'source-count=%s\n' "$(tr -cd '\0' < agda-sources.list | wc -c)"
+            printf 'kernel-check=agda --safe PASS\n'
+            printf '%s\n' 'sources='
+            while IFS= read -r -d '' AG; do
+              printf '%s sha256=%s\n' "$AG" "$(sha256sum "$AG" | cut -d' ' -f1)"
+            done < agda-sources.list
+          } > "$OUT"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            echo 'closure-persistence=no-change'
+            exit 0
+          fi
+          git commit -m 'Persist Agda closure certificate [agda-closure-persist]'
+          git push origin HEAD:main
+
       - name: The Determinate Nix Installer
         uses: DeterminateSystems/nix-installer-action@v22
         continue-on-error: true
@@ -118,58 +170,6 @@ jobs:
           openai_temperature: '1'
           openai_max_tokens: '8192'
           logging: warning
-
-      - name: Discover Agda sources
-        id: sources
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -d '' SOURCES < <(find . -type f -name '*.agda' -not -path './.git/*' -print0 | sort -z)
-          ((${#SOURCES[@]} > 0))
-          printf '%s\0' "${SOURCES[@]}" > agda-sources.list
-          printf 'agda-source-count=%s\n' "${#SOURCES[@]}"
-          printf '%s\n' "${SOURCES[@]}"
-
-      - name: Authoritative Agda --safe kernel check
-        shell: bash
-        run: |
-          set -euo pipefail
-          : > agda-kernel.out
-          while IFS= read -r -d '' AG; do
-            printf '%s\n' "=== agda --safe $AG ===" | tee -a agda-kernel.out
-            agda --safe "$AG" 2>&1 | tee -a agda-kernel.out
-            test "${PIPESTATUS[0]}" -eq 0
-          done < agda-sources.list
-          printf '%s\n' 'agda-kernel-check=PASS' | tee -a agda-kernel.out
-
-      - name: Persist Agda closure certificate
-        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUT=.ci/closure/agda-closure.txt
-          mkdir -p .ci/closure
-          {
-            printf '%s\n' 'status=closed'
-            printf 'repository=%s\n' '${{ github.repository }}'
-            printf 'source-commit=%s\n' '${{ github.sha }}'
-            printf 'agda-version=%s\n' "$(agda --version | tr -d '\r')"
-            printf 'source-count=%s\n' "$(tr -cd '\0' < agda-sources.list | wc -c)"
-            printf 'kernel-check=agda --safe PASS\n'
-            printf '%s\n' 'sources=' 
-            while IFS= read -r -d '' AG; do
-              printf '%s sha256=%s\n' "$AG" "$(sha256sum "$AG" | cut -d' ' -f1)"
-            done < agda-sources.list
-          } > "$OUT"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "$OUT"
-          if git diff --cached --quiet; then
-            echo 'closure-persistence=no-change'
-            exit 0
-          fi
-          git commit -m 'Persist Agda closure certificate [agda-closure-persist]'
-          git push origin HEAD:main
 
       - name: Upload Agda kernel log
         if: always()
