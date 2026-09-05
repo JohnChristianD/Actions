@@ -1,3 +1,4 @@
+# Plain runner smoke test; independent of Agda and proof tooling.
 name: Runner sanity
 on:
   push:
