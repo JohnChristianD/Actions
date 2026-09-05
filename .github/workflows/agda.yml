@@ -93,6 +93,9 @@ jobs:
           marker = '_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n'
           if helper.strip() not in s:
               s = s.replace(marker, marker + helper)
+          s = s.replace(
+              'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where\n  field hidden cell : VecS S hidden',
+              'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim')
           p.write_text(s)
           PY
 
