@@ -42,6 +42,11 @@ jobs:
       - name: Repair checked-in Agda syntax
         run: python3 .ci/repair-agda-syntax.py
 
+      - name: Normalize multiline local binding
+        run: |
+          set -euo pipefail
+          python3 -c 'from pathlib import Path; p=Path("Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"); s=p.read_text(); old="      initialForm : QRun_v142.projection\\n          (initialQRun_v142 D budget p x) ≡ p =\\n        trans"; new="      initialForm =\\n        trans"; assert old in s, "multiline initialForm binding not found"; p.write_text(s.replace(old,new,1))'
+
       - name: Authoritative Agda --safe check
         run: |
           set -euo pipefail
