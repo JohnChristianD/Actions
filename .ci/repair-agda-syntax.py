@@ -113,21 +113,25 @@ def replace_between_separators(text: str, marker: str, replacement: str) -> tupl
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     replacement = '''residualSquareNonzero_v140 ha hr =
   λ hx →
-    ⊥-elim
+    let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+        hxx0 = trans
+          (cong₂ (Ring._*_ Rg) hx hx)
+          (Ring.zeroMulL Rg zero)
+        hmu0 = trans
+          (cong (λ q → mu * q) hxx0)
+          (Ring.zeroMulR Rg mu)
+        hneg0 = trans
+          (cong (λ q → Ring.neg Rg q) hmu0)
+          (trans
+            (sym (Ring.addZeroR Rg (Ring.neg Rg zero)))
+            (Ring.addNegL Rg zero))
+        hzero = trans
+          (cong (λ q → alpha + q) hneg0)
+          (Ring.addZeroR Rg alpha)
+    in ⊥-elim
       (OrderedRing.notLtFromLe
         ha
-        (subst
-          (λ q → q < zero)
-          (trans
-            (cong
-              (λ q → alpha + Ring.neg
-                (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-                (mu * q))
-              (cong₂
-                (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing _)))
-                hx hx))
-            (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
-          hr))
+        (transportLt_v142 hzero refl hr))
 '''
     return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr =', replacement)
 
