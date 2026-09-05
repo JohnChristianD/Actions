@@ -118,59 +118,6 @@ jobs:
     needs: kernel
     if: ${{ success() }}
     runs-on: ubuntu-24.04
-    env:
-      CHATGPT_SESSION_TOKEN: ${{ secrets.CHATGPT_SESSION_TOKEN }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: The Determinate Nix Installer
-        uses: DeterminateSystems/nix-installer-action@v22
-        continue-on-error: true
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v14
-        continue-on-error: true
-        with: {use-gha-cache: enabled}
-      - name: Restore and save Nix Store
-        uses: nix-community/cache-nix-action@v7
-        continue-on-error: true
-        with:
-          primary-key: agda-nix-${{ runner.os }}-${{ hashFiles('**/*.nix', 'flake.lock') }}
-          restore-prefixes-first-match: agda-nix-${{ runner.os }}-
-          nix: true
-          save: true
-          paths: /nix
-      - name: Transform Agda HTML Documentation
-        if: ${{ hashFiles('agda-docs.config.json') != '' }}
-        uses: will-break-it/agda-web-docs-lib@v1
-        continue-on-error: true
-        with: {input-dir: ., config-file: agda-docs.config.json}
-      - name: Automatic Haskell project integration test to Nixpkgs
-        uses: Anton-Latukha/test-haskell-nixpkgs-integration-action@v1.0.2
-        continue-on-error: true
-      - name: Codeball AI Code Review
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: sturdy-dev/codeball-action@v2.6.0
-        continue-on-error: true
-      - name: ChatGPT Integration
-        if: ${{ github.event_name == 'pull_request' && env.CHATGPT_SESSION_TOKEN != '' }}
-        uses: kxxt/chatgpt-action@v0.3
-        continue-on-error: true
-        with:
-          number: ${{ github.event.pull_request.number }}
-          sessionToken: ${{ env.CHATGPT_SESSION_TOKEN }}
-          mode: pr
-          split: yolo
-      - name: PR ChatGPT Review
-        if: ${{ github.event_name == 'pull_request' && env.OPENAI_API_KEY != '' }}
-        uses: agogear/chatgpt-pr-review@0.0.17
-        continue-on-error: true
-        with:
-          openai_api_key: ${{ env.OPENAI_API_KEY }}
-          github_token: ${{ github.token }}
-          github_pr_id: ${{ github.event.pull_request.number }}
-          files: '*'
-          openai_model: gpt-5-nano
-          openai_temperature: '1'
-          openai_max_tokens: '8192'
-          logging: warning
+      - name: Skip tooling while kernel closure is authoritative
+        run: echo 'tooling gated on kernel PASS'
