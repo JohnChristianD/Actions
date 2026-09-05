@@ -15,17 +15,32 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return f'{indent}{name} = {rhs.strip()}', ''
 
 
+def split_multiline_typed_binding_header(line: str) -> str | None:
+    """Repair local `name : Type =` headers whose right-hand side continues below."""
+    stripped = line.lstrip()
+    indent = line[:len(line) - len(stripped)]
+    match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*$", stripped)
+    if match is None:
+        return None
+    return f'{indent}{match.group(1)} ='
+
+
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    """Normalize only malformed inline typed definitions; preserve valid signatures."""
+    """Normalize malformed local typed definitions without touching signatures."""
     out: list[str] = []
     changed = False
     for line in lines:
         split = split_typed_binding(line)
-        if split is None:
-            out.append(line)
-        else:
+        if split is not None:
             out.append(split[0])
             changed = True
+            continue
+        multiline = split_multiline_typed_binding_header(line)
+        if multiline is not None:
+            out.append(multiline)
+            changed = True
+            continue
+        out.append(line)
     return out, changed
 
 
@@ -89,7 +104,7 @@ def normalize_residual_theorem(text: str) -> tuple[str, bool]:
     body = text[start:sep]
     if body.strip() == marker + ' hx':
         return text, False
-    return text[:start] + marker + ' hx' + text[sep:], True
+    return text, False
 
 
 def repair_file(path: Path) -> bool:
