@@ -63,6 +63,9 @@ jobs:
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
           s = s.replace('\nopen Ring\n\nrecord OrderedRing', '\nrecord OrderedRing')
           s = s.replace('\n¬ A = A → ⊥\n', '\n¬ A = A → ⊥\n\n_≠_ : {A : Set} → A → A → Set\nx ≠ y = ¬ (x ≡ y)\n')
+          s = s.replace(
+              'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
+              'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)')
           for old, new in {
               '→ a + c ≤ b + d': '→ (a + c) ≤ (b + d)',
               '→ a + c < b + d': '→ (a + c) < (b + d)',
