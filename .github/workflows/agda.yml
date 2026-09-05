@@ -2,9 +2,9 @@ name: Agda CI, tooling, and closure persistence
 
 on:
   push:
-    paths: ['**/*.agda', '.github/workflows/agda.yml']
+    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
   pull_request:
-    paths: ['**/*.agda', '.github/workflows/agda.yml']
+    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
   workflow_dispatch:
 
 concurrency:
@@ -55,7 +55,7 @@ jobs:
       - name: Repair known Agda extended-lambda syntax
         run: |
           set -euo pipefail
-          python3 -c 'from pathlib import Path; import re; reps=[(r"state \(λ j with finDecEq j i\n    \.\.\. \| yes _ = s j \+ c\n    \.\.\. \| no _ = s j\)","state (λ j → addAt j)\n    where\n    addAt : Fin n → R\n    addAt j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j"),(r"insertCVT_v142 D a i f = record \{ cell = λ j with finDecEq i j\n        ([\\s\\S]*?)\n        \.\.\.     \| no _ = CVTArchive_v142\.cell a j \}","insertCVT_v142 D a i f = record { cell = choose i }\n  where\n  choose : Fin cells → CVTSlot_v142 S\n  choose j with finDecEq i j\n  ... | no _ = CVTArchive_v142.cell a j\n  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)\n  ...   | false = record { occupied = true ; fitness = f }\n  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D\n        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f\n  ...     | yes _ = record { occupied = true ; fitness = f }\n  ...     | no _ = CVTArchive_v142.cell a j")]; [(lambda p:(lambda s:(p.write_text(s2),None)[1])(re.sub(a,b,s,1)),Path(p)) for p in Path(".").rglob("*.agda") if ".git" not in p.parts for s in [p.read_text()] for a,b in reps for s2 in [re.sub(a,b,s,1)] if s2!=s]; if list(Path(".").rglob("*.agda"))]; grep -RInE "λ [^\n]* with " --include="*.agda" --exclude-dir=.git . && exit 1 || true
+          python3 .ci/repair-agda-syntax.py
 
       - name: Authoritative Agda --safe kernel check
         run: |
