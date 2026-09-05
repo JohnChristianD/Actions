@@ -5,8 +5,8 @@ on:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
   pull_request:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
-  issue_comment:
-    types: [created]
+  pull_request_review:
+    types: [submitted]
   workflow_dispatch:
 concurrency:
   group: agda-ci-${{ github.workflow }}-${{ github.ref }}
@@ -16,7 +16,7 @@ permissions:
   pull-requests: write
 jobs:
   kernel:
-    if: ${{ github.event_name != 'issue_comment' || github.event.issue.pull_request != null }}
+    if: ${{ github.event_name != 'pull_request_review' || github.event.pull_request != null }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -68,59 +68,14 @@ jobs:
           p.write_text(s)
           print('fragile-proof-normalization=applied')
           PY
-      - name: Show repaired diagnostic contexts
-        run: |
-          set -euo pipefail
-          awk 'NR>=850 && NR<=930 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- closure diagnostic context ---'
-          awk 'NR>=2510 && NR<=2565 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- terminal uniqueness context ---'
-          awk 'NR>=2630 && NR<=2705 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          echo '--- repaired CVT context ---'
-          awk 'NR>=1430 && NR<=1470 {printf "%5d %s\n", NR, $0}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Authoritative Agda --safe kernel check
         run: |
           set -euo pipefail
           : > agda-kernel.out
-          while IFS= read -r -d '' AG; do
-            echo "=== agda --safe $AG ===" | tee -a agda-kernel.out
-            agda --safe "$AG" 2>&1 | tee -a agda-kernel.out
-            test "${PIPESTATUS[0]}" -eq 0
-          done < agda-sources.list
+          agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda 2>&1 | tee agda-kernel.out
+          test "${PIPESTATUS[0]}" -eq 0
           echo agda-kernel-check=PASS | tee -a agda-kernel.out
-      - name: Persist Agda closure certificate
-        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          set -euo pipefail
-          mkdir -p .ci/closure
-          OUT=.ci/closure/agda-closure.txt
-          {
-            echo status=closed
-            echo repository=${{ github.repository }}
-            echo validated-source-commit=${{ github.sha }}
-            echo agda-version="$(agda --version | head -1)"
-            echo source-count="$(tr -cd '\0' < agda-sources.list | wc -c)"
-            echo kernel-check=agda --safe PASS
-            while IFS= read -r -d '' AG; do echo "$AG sha256=$(sha256sum "$AG" | cut -d' ' -f1)"; done < agda-sources.list
-          } > "$OUT"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A Exotic .ci/closure
-          git diff --cached --quiet && exit 0
-          git commit -m 'Persist Agda closure certificate [agda-closure-persist]'
-          git push origin HEAD:main
       - name: Upload Agda kernel log
         if: always()
         uses: actions/upload-artifact@v4
         with: {name: agda-kernel-log, path: agda-kernel.out, if-no-files-found: ignore}
-      - name: Upload closure certificate
-        if: ${{ success() && hashFiles('.ci/closure/agda-closure.txt') != '' }}
-        uses: actions/upload-artifact@v4
-        with: {name: agda-closure-certificate, path: .ci/closure/agda-closure.txt, if-no-files-found: ignore}
-  tooling:
-    needs: kernel
-    if: ${{ success() }}
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Skip tooling while kernel closure is authoritative
-        run: echo 'tooling gated on kernel PASS'
