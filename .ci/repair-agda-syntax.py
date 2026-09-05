@@ -15,32 +15,51 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
     return f'{indent}{name} = {rhs.strip()}', ''
 
 
-def split_multiline_typed_binding_header(line: str) -> str | None:
-    """Repair local `name : Type =` headers whose right-hand side continues below."""
+def split_multiline_typed_binding_header(lines: list[str], i: int) -> tuple[str, int] | None:
+    """Repair `name : Type =` by putting the first RHS token on the same line.
+
+    Agda accepts inferred local definitions with a nonempty RHS after `=`. Keeping
+    the first RHS line attached avoids turning a typed local binding into the
+    parser-sensitive `name =` newline form.
+    """
+    line = lines[i]
     stripped = line.lstrip()
     indent = line[:len(line) - len(stripped)]
     match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*$", stripped)
     if match is None:
         return None
-    return f'{indent}{match.group(1)} ='
+    j = i + 1
+    while j < len(lines) and not lines[j].strip():
+        j += 1
+    if j >= len(lines):
+        return None
+    rhs = lines[j].strip()
+    if not rhs or rhs == 'in':
+        return None
+    return f'{indent}{match.group(1)} = {rhs}', j
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
     """Normalize malformed local typed definitions without touching signatures."""
     out: list[str] = []
     changed = False
-    for line in lines:
-        split = split_typed_binding(line)
+    i = 0
+    while i < len(lines):
+        split = split_typed_binding(lines[i])
         if split is not None:
             out.append(split[0])
             changed = True
+            i += 1
             continue
-        multiline = split_multiline_typed_binding_header(line)
+        multiline = split_multiline_typed_binding_header(lines, i)
         if multiline is not None:
-            out.append(multiline)
+            replacement, rhs_index = multiline
+            out.append(replacement)
             changed = True
+            i = rhs_index + 1
             continue
-        out.append(line)
+        out.append(lines[i])
+        i += 1
     return out, changed
 
 
@@ -93,20 +112,6 @@ def normalize_insert_cvt(lines: list[str]) -> tuple[list[str], bool]:
     return lines, False
 
 
-def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    marker = 'residualSquareNonzero_v140 ha hr hx ='
-    start = text.find(marker)
-    if start < 0:
-        return text, False
-    sep = text.find('\n------------------------------------------------------------------------', start)
-    if sep < 0:
-        return text, False
-    body = text[start:sep]
-    if body.strip() == marker + ' hx':
-        return text, False
-    return text, False
-
-
 def repair_file(path: Path) -> bool:
     original = path.read_text()
     lines = original.splitlines()
@@ -116,8 +121,6 @@ def repair_file(path: Path) -> bool:
     out, did_cvt = normalize_insert_cvt(out)
     changed = changed or did_cvt
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
-    text, did_residual = normalize_residual_theorem(text)
-    changed = changed or did_residual
     if changed:
         path.write_text(text)
     return changed
