@@ -1,3 +1,4 @@
+# Kernel closure verification trigger; Agda --safe remains authoritative.
 name: Agda CI, tooling, and closure persistence
 on:
   push:
