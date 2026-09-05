@@ -3,7 +3,7 @@ defmodule QClosurePredictiveV147 do
     a = abs(a); b = abs(b)
     if b == 0, do: max(a, 1), else: gcd(b, rem(a, b))
   end
-  def q(n, d \ 1) do
+  def q(n, d \\ 1) do
     :erlang.error(:zero_denominator, [], error_info: [message: "zero denominator"]) |> then(fn _ -> nil end)
   end
   def nq(n, d) do
