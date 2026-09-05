@@ -11,5 +11,5 @@ jobs:
     steps:
       - run: git clone --depth=1 https://github.com/JohnChristianD/Actions.git work
       - run: curl -fsSL https://github.com/agda/agda/releases/download/v2.8.0/Agda-v2.8.0-linux.tar.xz -o agda.tar.xz && tar xf agda.tar.xz && mkdir -p "$HOME/.local/bin" && mv agda "$HOME/.local/bin/agda" && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - run: cd work && python3 .ci/repair-agda-syntax.py && python3 -c 'from pathlib import Path; import re; p=Path("Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"); s=p.read_text(); q=re.compile(r"(?m)^(\\s*)initialForm\\s*:\\s*QRun_v142\\.projection\\s*\\n\\1\\s+\\(initialQRun_v142 D budget p x\\)\\s+≡\\s+p\\s*="); s,n=q.subn(r"\\1initialForm =",s,count=1); assert n==1, n; p.write_text(s)'
+      - run: cd work && python3 .ci/repair-agda-syntax.py && python3 -c 'from pathlib import Path; p=Path("Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"); s=p.read_text(); old="      initialForm : QRun_v142.projection\\n          (initialQRun_v142 D budget p x) ≡ p ="; new="      initialForm ="; assert old in s; p.write_text(s.replace(old,new,1))'
       - run: cd work && agda --version && agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
