@@ -18,25 +18,35 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Apply deterministic CI syntax repair to v147 Agda
+      - name: Apply deterministic CI syntax repairs to v147 Agda
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text(encoding='utf-8')
-          old = '''  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j)\n'''
-          new = '''  accumulateAt : Fin n → R → Cot → Cot\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n'''
-          if old in s:
-              p.write_text(s.replace(old, new), encoding='utf-8')
-              print('applied deterministic Agda parser repair')
-          else:
-              print('Agda parser repair already present')
+          repairs = [
+            (
+              '''  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j)\n''',
+              '''  accumulateAt : Fin n → R → Cot → Cot\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n'''
+            ),
+            (
+              '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j\n  ... | no _ = CVTArchive_v142.cell a j\n  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)\n  ...   | false = record { occupied = true ; fitness = f }\n  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D\n        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f\n  ...     | yes _ = record { occupied = true ; fitness = f }\n  ...     | no _ = CVTArchive_v142.cell a j }\n''',
+              '''insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →\n  CVTArchive_v142 S cells → Fin cells → Scalar S → Fin cells → CVTSlot_v142 S\ninsertCVTCell_v142 D a i f j with finDecEq i j\n... | no _ = CVTArchive_v142.cell a j\n... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)\n...   | false = record { occupied = true ; fitness = f }\n...   | true with QProjectionDecisionAlgebra_v140.ltDec D\n      (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f\n...     | yes _ = record { occupied = true ; fitness = f }\n...     | no _ = CVTArchive_v142.cell a j\n\ninsertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i f }\n'''
+            ),
+          ]
+          changed = False
+          for old, new in repairs:
+              if old in s:
+                  s = s.replace(old, new)
+                  changed = True
+          p.write_text(s, encoding='utf-8')
+          print('applied one or more deterministic Agda parser repairs' if changed else 'Agda parser repairs already present')
           PY
       - name: Verify repaired source digest
         run: |
-          test "$(wc -c < Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = "125018"
-          test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "d0e299412ca6db52ee3d7ad42334660d86ba8ad0dc45c8d8a8365111352a4d5b"
-      - name: Commit exact Agda repair
+          test "$(wc -c < Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = "125219"
+          test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "a2d18cf24092e21bde90557245e11d71dc77c40e1209bff86cf4e6a8f37b3f52"
+      - name: Commit exact Agda repairs
         run: |
           if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
             echo 'no Agda source change to commit'
@@ -141,8 +151,8 @@ jobs:
         run: test -f Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Verify repaired v147 source SHA-256
         run: |
-          test "$(wc -c < Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = "125018"
-          test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "d0e299412ca6db52ee3d7ad42334660d86ba8ad0dc45c8d8a8365111352a4d5b"
+          test "$(wc -c < Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = "125219"
+          test "$(sha256sum Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | cut -d' ' -f1)" = "a2d18cf24092e21bde90557245e11d71dc77c40e1209bff86cf4e6a8f37b3f52"
       - name: Safe kernel check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Safe interpolation kernel check
