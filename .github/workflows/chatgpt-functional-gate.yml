@@ -37,8 +37,8 @@ jobs:
           sed -i 's/^-- qProjectionFixedPoint_v147 : ∀ {S n}$/qProjectionFixedPoint_v147 : ∀ {S n}/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i 's/(Ring.mulOneL Rg e))))) refl)/(Ring.mulOneL Rg e)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i 's/(Ring.mulOneL Rg d))))) refl)/(Ring.mulOneL Rg d)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i -E 's/^([[:space:]]*)hzero : (.*) =$/\1hzero : \2\n\1hzero =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i -E 's/^([[:space:]]*)(hx|hxx|hlt) : (.*) =$/\1\2 : \3\n\1\2 =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          sed -i -E 's/^([[:space:]]*)hzero : .*$/\1hzero =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          sed -i -E 's/^([[:space:]]*)(hx|hxx|hlt) : .*$/\1\2 =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check canonical algebra
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check q and CHAD closure
