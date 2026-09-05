@@ -1,0 +1,107 @@
+name: ChatGPT functional-source gate
+
+on:
+  push:
+    branches: ["v147-chatgpt-functional-gate", "v147-q-chad-agda-safe"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  agda-safe-v147:
+    name: Canonical v147 Agda --safe kernel gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v147-q-chad-agda-safe
+      - name: Install Agda
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y agda
+      - name: Verify canonical comprehensive v147 source
+        run: |
+          test -f Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          test "$(sed -n '2p' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 'module Exotic.ERL.FullCoupled.CompleteSafe_v147 where'
+          grep -q '{-# OPTIONS --safe #-}' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          test -f Exotic/ERL/FullCoupled/QClosure_v147.agda
+          test -f Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
+      - name: Safe-check canonical v147 algebra
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Safe-check constructive q and CHAD closure
+        run: agda --safe Exotic/ERL/FullCoupled/QClosure_v147.agda
+      - name: Safe-check CI interpolation surface
+        run: agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
+
+  functional-sources:
+    needs: agda-safe-v147
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install functional toolchains
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y agda ghc cabal-install ocaml elixir clojure scala
+      - name: Compile ChatGPT-produced functional sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=sandbox
+          if [[ ! -d "$root" ]]; then
+            echo 'sandbox=empty'
+            exit 0
+          fi
+          mapfile -t agdas < <(find "$root" -type f -name '*.agda' -print)
+          mapfile -t haskells < <(find "$root" -type f \( -name '*.hs' -o -name '*.lhs' \) -print)
+          mapfile -t ocamls < <(find "$root" -type f -name '*.ml' -print)
+          mapfile -t elixirs < <(find "$root" -type f -name '*.exs' -print)
+          mapfile -t clojures < <(find "$root" -type f -name '*.clj' -print)
+          mapfile -t scalas < <(find "$root" -type f -name '*.scala' -print)
+          for f in "${agdas[@]}"; do agda --safe "$f"; done
+          for f in "${haskells[@]}"; do
+            tmp=$(mktemp -d)
+            cp "$f" "$tmp/Main.hs"
+            cat > "$tmp/sandbox-hs.cabal" <<'EOF'
+          cabal-version: 3.0
+          name: sandbox-hs
+          version: 0.1.0.0
+          build-type: Simple
+
+          executable sandbox-hs
+            main-is: Main.hs
+            hs-source-dirs: .
+            build-depends: base
+            default-language: Haskell2010
+          EOF
+            (cd "$tmp" && cabal run --offline)
+            rm -rf "$tmp"
+          done
+          for f in "${ocamls[@]}"; do
+            tmp=$(mktemp -d)
+            ocamlc -o "$tmp/a.out" "$f"
+            rm -rf "$tmp"
+          done
+          for f in "${elixirs[@]}"; do elixir "$f"; done
+          for f in "${clojures[@]}"; do clojure "$f"; done
+          for f in "${scalas[@]}"; do
+            tmp=$(mktemp -d)
+            scalac -deprecation -unchecked -d "$tmp" "$f"
+            rm -rf "$tmp"
+          done
+          echo 'functional-source-compilation=PASS'
+
+  gate:
+    if: always()
+    needs:
+      - agda-safe-v147
+      - functional-sources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed
+        run: |
+          test '${{ needs.agda-safe-v147.result }}' = success
+          test '${{ needs.functional-sources.result }}' = success
+          echo 'ChatGPT-source-integration=KERNEL-AND-COMPILER-PASS'
