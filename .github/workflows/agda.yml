@@ -42,12 +42,10 @@ jobs:
       - name: Repair checked-in Agda syntax
         run: python3 .ci/repair-agda-syntax.py
 
-      - name: Show post-repair initialForm contexts
+      - name: Normalize multiline initialForm binding
         run: |
           set -euo pipefail
-          grep -n -A14 -B6 'initialForm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda || true
-          echo '--- let/trans contexts ---'
-          grep -n -A10 -B5 '^[[:space:]]*trans$' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | head -120 || true
+          perl -0pi -e 's/^([ \t]*)initialForm[ \t]*:[ \t]*QRun_v142\.projection[^\n]*\n[ \t]*\(initialQRun_v142 D budget p x\)[ \t]*≡[ \t]*p[ \t]*=[ \t]*\n/${1}initialForm =\n/m' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
 
       - name: Authoritative Agda --safe check
         run: |
