@@ -15,15 +15,51 @@ def split_typed_binding(line: str) -> tuple[str, str] | None:
 
 
 def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
+    """Normalize local `name : Type = rhs` only inside let blocks."""
     out: list[str] = []
     changed = False
+    in_let = False
     for line in lines:
-        split = split_typed_binding(line)
+        stripped = line.strip()
+        if re.match(r'^let\b', stripped):
+            in_let = True
+        elif in_let and re.match(r'^in\b', stripped):
+            in_let = False
+        split = split_typed_binding(line) if in_let else None
         if split is not None:
             out.append(split[0])
             changed = True
         else:
             out.append(line)
+    return out, changed
+
+
+def normalize_multiline_typed_lets(lines: list[str]) -> tuple[list[str], bool]:
+    """Within let blocks, attach the first RHS line to `name =` for Agda grammar."""
+    out: list[str] = []
+    changed = False
+    in_let = False
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if re.match(r'^let\b', stripped):
+            in_let = True
+        if in_let:
+            match = re.match(r"^(\s*)([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*$", line)
+            if match is not None:
+                j = i + 1
+                while j < len(lines) and not lines[j].strip():
+                    j += 1
+                if j < len(lines) and lines[j].strip() != 'in':
+                    out.append(f'{match.group(1)}{match.group(2)} = {lines[j].strip()}')
+                    i = j + 1
+                    changed = True
+                    continue
+        out.append(line)
+        if in_let and re.match(r'^in\b', stripped):
+            in_let = False
+        i += 1
     return out, changed
 
 
@@ -105,24 +141,7 @@ def replace_between_separators(text: str, marker: str, replacement: str) -> tupl
 
 
 def normalize_residual_theorem(text: str) -> tuple[str, bool]:
-    replacement = '''residualSquareNonzero_v140 ha hr hx =
-  ⊥-elim
-    (OrderedRing.notLtFromLe
-      ha
-      (subst
-        (λ q → zero ≤ q)
-        (trans
-          (cong
-            (λ q → alpha + Ring.neg
-              (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-              (mu * q))
-            (cong₂
-              (Ring._*_ (OrderedRing.ring (SmoothAlgebra.orderedRing _)))
-              hx hx))
-          (Ring.addZeroR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) alpha))
-        hr))
-'''
-    return replace_between_separators(text, 'residualSquareNonzero_v140 ha hr hx =', replacement)
+    return text, False
 
 
 def normalize_q_projection_cross(text: str) -> tuple[str, bool]:
@@ -184,15 +203,16 @@ def normalize_ordered_field_cross(text: str) -> tuple[str, bool]:
 
 def repair_file(path: Path) -> bool:
     original = path.read_text()
-    text, did_residual = normalize_residual_theorem(original)
-    text, did_q = normalize_q_projection_cross(text)
+    text, did_q = normalize_q_projection_cross(original)
     text, did_cross = normalize_ordered_field_cross(text)
     lines = text.splitlines()
     out, changed = normalize_typed_bindings(lines)
+    out, did_multiline = normalize_multiline_typed_lets(out)
+    changed = changed or did_multiline
     out, did_acc = normalize_accumulate(out)
     changed = changed or did_acc
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_q or did_cross
+    changed = changed or did_cvt or did_q or did_cross
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
@@ -235,7 +255,7 @@ for path in Path('.').rglob('*.agda'):
     if re.search(r'_v\d+\b', path.name) or re.search(r'_v\d+\b', path.read_text()):
         versioned.append(str(path))
 
-print('parser-repair=structural-one-line-typed-bindings-plus-targeted-extended-lambda')
+print('parser-repair=structural-let-binding-normalization-plus-targeted-extended-lambda')
 print('algebraic-proof-automation=finite-constructive-surface-audit')
 print('algebraic-theorem-surface-count=' + str(len(ALGEBRAIC_THEOREM_SURFACES)))
 print(f'grammar-repaired-files={changed}')
