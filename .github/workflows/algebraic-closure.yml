@@ -88,6 +88,13 @@ jobs:
           rustc --edition=2021 -O oracles/QClosurePredictive_v147.rs -o /tmp/q_closure_predictive_v147
           /tmp/q_closure_predictive_v147
 
+  r-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run R predictive prescription
+        run: Rscript oracles/QClosurePredictive_v147.R
+
   sympy-oracle:
     runs-on: ubuntu-latest
     steps:
@@ -124,6 +131,7 @@ jobs:
       - elixir-oracle
       - clojure-oracle
       - rust-oracle
+      - r-oracle
       - sympy-oracle
       - agda-safe
     runs-on: ubuntu-latest
@@ -136,7 +144,46 @@ jobs:
           test "${{ needs.elixir-oracle.result }}" = success
           test "${{ needs.clojure-oracle.result }}" = success
           test "${{ needs.rust-oracle.result }}" = success
+          test "${{ needs.r-oracle.result }}" = success
           test "${{ needs.sympy-oracle.result }}" = success
           test "${{ needs.agda-safe.result }}" = success
-          echo 'predictive-prescriptions=agda+haskell+scala+swift+elixir+clojure+rust+sympy:PASS'
+          echo 'predictive-prescriptions=agda+haskell+scala+swift+elixir+clojure+rust+r+sympy:PASS'
           echo 'ruby-rails-oracle=omitted-nonorthogonal'
+
+  proof-interpolation:
+    if: always()
+    needs:
+      - haskell-oracle
+      - scala-oracle
+      - swift-oracle
+      - elixir-oracle
+      - clojure-oracle
+      - rust-oracle
+      - r-oracle
+      - sympy-oracle
+      - agda-safe
+    runs-on: ubuntu-latest
+    env:
+      ORACLE_HASKELL: ${{ needs.haskell-oracle.result }}
+      ORACLE_SCALA: ${{ needs.scala-oracle.result }}
+      ORACLE_SWIFT: ${{ needs.swift-oracle.result }}
+      ORACLE_ELIXIR: ${{ needs.elixir-oracle.result }}
+      ORACLE_CLOJURE: ${{ needs.clojure-oracle.result }}
+      ORACLE_RUST: ${{ needs.rust-oracle.result }}
+      ORACLE_R: ${{ needs.r-oracle.result }}
+      ORACLE_SYMPY: ${{ needs.sympy-oracle.result }}
+      ORACLE_AGDA: ${{ needs.agda-safe.result }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Agda executable
+        run: agda --version
+      - name: Run automated proof interpolation
+        continue-on-error: true
+        run: python3 tools/proof_interpolate_v147.py
+      - name: Publish interpolation report and derived proof candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v147-proof-interpolation
+          path: artifacts/
+          if-no-files-found: error
