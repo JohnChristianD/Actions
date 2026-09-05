@@ -1,44 +1,50 @@
 from pathlib import Path
 import re
 
-patterns = [
-    ('''  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j)''', '''  accumulate i c (state s) = state (λ j → addAt j)
+ACC_OLD = '''  accumulate i c (state s) = state (λ j with finDecEq j i)
+    ... | yes _ = s j + c
+    ... | no _ = s j)'''
+ACC_NEW = '''  accumulate i c (state s) = state (λ j → addAt j)
     where
     addAt : Fin n → R
     addAt j with finDecEq j i
     ... | yes _ = s j + c
-    ... | no _ = s j''')
-]
+    ... | no _ = s j'''
 
-def replace_named(text, name, body):
-    marker = name + " "
-    start = text.find(marker)
-    if start < 0:
-        return text
-    eq = text.find("=", start)
-    if eq < 0:
-        return text
-    sep = text.find("------------------------------------------------------------------------", eq)
-    if sep < 0:
-        return text
-    return text[:start] + body.rstrip() + "\n" + text[sep:]
+CVT_OLD = '''insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }'''
+CVT_NEW = '''insertCVT_v142 D a i f = record { cell = choose i }
+  where
+  choose : Fin cells → CVTSlot_v142 S
+  choose j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }'''
 
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
         continue
     text = path.read_text()
-    new = text
-    for old, fixed in patterns:
-        new = new.replace(old, fixed, 1)
+    new = text.replace(ACC_OLD, ACC_NEW, 1).replace(CVT_OLD, CVT_NEW, 1)
     if new != text:
         path.write_text(new)
 
 remaining = []
 for path in Path('.').rglob('*.agda'):
     if '.git' not in path.parts:
-        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+        for line_no, line in enumerate(path.read_text().splitlines(), 1):
             if re.search(r'λ[^\n]*\bwith\b', line):
-                remaining.append(f'{path}:{lineno}:{line}')
+                remaining.append(f'{path}:{line_no}:{line}')
 if remaining:
     print('\n'.join(remaining))
     raise SystemExit(1)
