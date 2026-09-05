@@ -5,7 +5,7 @@
 (defn fourth [x] (sq (sq x)))
 (defn num [mask a x b]
   (- (reduce (fn [acc i]
-               (+ acc (* (sq (nth a i)) (sq (nth x i)))))
+               (+ acc (* (nth a i) (sq (nth x i)))))
              0
              mask)
      b))
@@ -26,11 +26,11 @@
             n2 (num r a x b)
             d2 (den r x)
             y (* (nth a bad) (sq (nth x bad)))
-            z (fourth (nth x bad))
-            mu2 (/ n2 d2)]
+            z (fourth (nth x bad))]
         (assert (and (pos? n0) (pos? d0) (pos? d2) (pos? n2) (< (* y d0) (* n0 z))))
-        (assert (< mu mu2))
-        (runq r a x b (inc steps))))))
+        (let [mu2 (/ n2 d2)]
+          (assert (< mu mu2))
+          (runq r a x b (inc steps))))))))
 (defn vectors [n]
   (if (zero? n)
     [[]]
