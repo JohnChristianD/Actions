@@ -1,0 +1,219 @@
+  (alpha x : VecS S n) →
+  (∀ i →
+    indexV (QRun_v142.mask (qRun_v142 D budget alpha x)) i ≡ true →
+    zero ≤ qResidual_v142
+      (QRun_v142.multiplier (qRun_v142 D budget alpha x))
+      (indexV alpha i)
+      (indexV x i * indexV x i)) →
+  (∀ i →
+    indexV (QRun_v142.mask (qRun_v142 D budget alpha x)) i ≡ false →
+    qResidual_v142
+      (QRun_v142.multiplier (qRun_v142 D budget alpha x))
+      (indexV alpha i)
+      (indexV x i * indexV x i) ≤ zero) →
+  ∀ i →
+    indexV (QRun_v142.projection (qRun_v142 D budget alpha x)) i ≡
+    SmoothAlgebra.max S zero
+      (qResidual_v142
+        (QRun_v142.multiplier (qRun_v142 D budget alpha x))
+        (indexV alpha i)
+        (indexV x i * indexV x i))
+qRunTerminalKKT_v147 D budget alpha x activeSign inactiveSign =
+  trans
+    (qRunProjectionForm_v147 D budget alpha x)
+    (qProjectionKKTTheorem_v146 D
+      (QRun_v142.multiplier (qRun_v142 D budget alpha x))
+      alpha x (QRun_v142.mask (qRun_v142 D budget alpha x))
+      activeSign inactiveSign)
+
+------------------------------------------------------------------------
+-- Positive-denominator uniqueness of the terminal multiplier.
+------------------------------------------------------------------------
+
+cancelPositiveRight_v147 : ∀ {S} (a b d : Scalar S) →
+  zero < d → a * d ≡ b * d → a ≡ b
+cancelPositiveRight_v147 a b d hd h =
+  trans
+    (sym (Ring.mulOneR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) a))
+    (trans
+      (cong (λ t → a * t) (sym (SmoothAlgebra.reciprocalLaw _ hd)))
+      (trans
+        (sym (Ring.mulAssoc (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+          a d (SmoothAlgebra.recip _ d)))
+        (trans
+          (cong (λ t → t * SmoothAlgebra.recip _ d) h)
+          (trans
+            (Ring.mulAssoc (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+              b d (SmoothAlgebra.recip _ d))
+            (trans
+              (cong (λ t → b * t)
+                (SmoothAlgebra.reciprocalLaw _ hd))
+              (Ring.mulOneR (OrderedRing.ring (SmoothAlgebra.orderedRing _)) b))))))
+
+record QTerminalSolution_v147 (S : SmoothAlgebra) (n : Nat) : Set where
+  field
+    decision : QProjectionDecisionAlgebra_v140 S
+    budget : Scalar S
+    alpha x projection : VecS S n
+    mask : Vec Bool n
+    multiplier : Scalar S
+    denominator numerator : Scalar S
+    denominatorPositive : zero < denominator
+    multiplierBalance : multiplier * denominator ≡ numerator
+    stationarity : ∀ i →
+      indexV projection i ≡
+      SmoothAlgebra.max S zero
+        (qResidual_v142 multiplier (indexV alpha i)
+          (indexV x i * indexV x i))
+
+qTerminalMultiplierUnique_v147 : ∀ {S n}
+  (a b d n1 n2 : Scalar S) →
+  zero < d →
+  a * d ≡ n1 →
+  b * d ≡ n2 →
+  n1 ≡ n2 →
+  a ≡ b
+qTerminalMultiplierUnique_v147 a b d n1 n2 hd ha hb hn =
+  cancelPositiveRight_v147 a b d
+    (trans ha (trans hn (sym hb)))
+
+qTerminalProjectionUnique_v147 : ∀ {S n}
+  (t u : QTerminalSolution_v147 S n) →
+  QTerminalSolution_v147.alpha t ≡ QTerminalSolution_v147.alpha u →
+  QTerminalSolution_v147.x t ≡ QTerminalSolution_v147.x u →
+  QTerminalSolution_v147.multiplier t ≡ QTerminalSolution_v147.multiplier u →
+  QTerminalSolution_v147.projection t ≡ QTerminalSolution_v147.projection u
+qTerminalProjectionUnique_v147 t u ha hx hmu =
+  vectorExt_v147 (λ i →
+    trans
+      (QTerminalSolution_v147.stationarity t i)
+      (trans
+        (cong (λ a → SmoothAlgebra.max _ zero
+          (qResidual_v142 (QTerminalSolution_v147.multiplier t) a
+            (indexV (QTerminalSolution_v147.x t) i *
+             (indexV (QTerminalSolution_v147.x t) i))))
+          (cong (λ v → indexV v i) ha))
+        (trans
+          (cong (λ m → SmoothAlgebra.max _ zero
+            (qResidual_v142 m (indexV (QTerminalSolution_v147.alpha u) i)
+              (indexV (QTerminalSolution_v147.x u) i *
+               (indexV (QTerminalSolution_v147.x u) i))) hmu)
+          (trans
+            (cong (λ v → SmoothAlgebra.max _ zero
+              (qResidual_v142 (QTerminalSolution_v147.multiplier u)
+                (indexV (QTerminalSolution_v147.alpha u) i)
+                (indexV v i * indexV v i))) hx)
+            (sym (QTerminalSolution_v147.stationarity u i))))))
+
+qTerminalConfluence_v147 : ∀ {S n}
+  (t u : QTerminalSolution_v147 S n) →
+  QTerminalSolution_v147.alpha t ≡ QTerminalSolution_v147.alpha u →
+  QTerminalSolution_v147.x t ≡ QTerminalSolution_v147.x u →
+  QTerminalSolution_v147.multiplier t ≡ QTerminalSolution_v147.multiplier u →
+  QTerminalSolution_v147.projection t ≡ QTerminalSolution_v147.projection u
+qTerminalConfluence_v147 = qTerminalProjectionUnique_v147
+
+------------------------------------------------------------------------
+-- Efficient CHAD + LSTM TBPTT: finite chunking of the reverse state-passing
+-- chain follows exactly the same append decomposition as the forward LSTM.
+-- No analytic derivative identities for abstract gate primitives are added.
+------------------------------------------------------------------------
+
+localVJPForward_v147 : ∀ {S A n} →
+  Vec (LocalVJP_v146 S A) n → A → A
+localVJPForward_v147 [] x = x
+localVJPForward_v147 (f ∷ fs) x =
+  localVJPForward_v147 fs (LocalVJP_v146.forward f x)
+
+localVJPChainAppend_v147 : ∀ {S A m n}
+  (fs : Vec (LocalVJP_v146 S A) m)
+  (gs : Vec (LocalVJP_v146 S A) n)
+  (x : A) (c : Scalar S) →
+  localVJPChain_v146 (appendV_v146 fs gs) x c ≡
+  localVJPChain_v146 fs x
+    (localVJPChain_v146 gs
+      (localVJPForward_v147 fs x) c)
+localVJPChainAppend_v147 [] gs x c = refl
+localVJPChainAppend_v147 (f ∷ fs) gs x c =
+  localVJPChainAppend_v147 fs gs
+    (LocalVJP_v146.forward f x) c
+
+lstmForwardAppend_v147 : ∀ {S input hidden m n}
+  (block : LSTMBlock S input hidden)
+  (state : LSTMState S hidden)
+  (xs : Vec (VecS S input) m)
+  (ys : Vec (VecS S input) n) →
+  lstmRun_v146 block state (appendV_v146 xs ys) ≡
+  lstmRun_v146 block (lstmRun_v146 block state xs) ys
+lstmForwardAppend_v147 = lstmRunAppend_v146
+
+record EfficientCHADLSTMTBPTT_v147 (S : SmoothAlgebra)
+  (input hidden : Nat) (A : Set) (m n : Nat) : Set₁ where
+  field
+    block : LSTMBlock S input hidden
+    initialState : LSTMState S hidden
+    xs : Vec (VecS S input) m
+    ys : Vec (VecS S input) n
+    localPrefix : Vec (LocalVJP_v146 S A) m
+    localTail : Vec (LocalVJP_v146 S A) n
+    forwardChunks :
+      lstmRun_v146 block initialState
+        (appendV_v146 xs ys) ≡
+      lstmRun_v146 block
+        (lstmRun_v146 block initialState xs) ys
+    reverseChunks : ∀ (z : A) {c : Scalar S} →
+      localVJPChain_v146
+        (appendV_v146 localPrefix localTail) z c ≡
+      localVJPChain_v146 localPrefix z
+        (localVJPChain_v146 localTail
+          (localVJPForward_v147 localPrefix z) c)
+
+efficientCHADLSTMTBPTTFromPieces_v147 : ∀ {S input hidden A m n}
+  (block : LSTMBlock S input hidden)
+  (state : LSTMState S hidden)
+  (xs : Vec (VecS S input) m)
+  (ys : Vec (VecS S input) n)
+  (localPrefix : Vec (LocalVJP_v146 S A) m)
+  (localTail : Vec (LocalVJP_v146 S A) n) →
+  EfficientCHADLSTMTBPTT_v147 S input hidden A m n
+efficientCHADLSTMTBPTTFromPieces_v147 block state xs ys localPrefix localTail = record
+  { block = block
+  ; initialState = state
+  ; xs = xs
+  ; ys = ys
+  ; localPrefix = localPrefix
+  ; localTail = localTail
+  ; forwardChunks = lstmForwardAppend_v147 block state xs ys
+  ; reverseChunks = localVJPChainAppend_v147 localPrefix localTail
+  }
+
+------------------------------------------------------------------------
+-- The q component of the coupled learner has a single-step invariant: its
+-- emitted projection is nonnegative.  This is the exact q transition used by
+-- coupledIDBDUpdate_v146; no duplicate q semantics are introduced.
+------------------------------------------------------------------------
+
+record CoupledQOneStepInvariant_v147 (S : SmoothAlgebra) (n : Nat) : Set₁ where
+  field
+    decision : QProjectionDecisionAlgebra_v140 S
+    budget : Scalar S
+    alphaRaw x : VecS S n
+    result : QRun_v142 S n
+    resultEquation : result ≡ qRun_v142 decision budget alphaRaw x
+    projectionNonnegative : ∀ i →
+      zero ≤ indexV (QRun_v142.projection result) i
+
+coupledQOneStepInvariant_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (alphaRaw x : VecS S n) →
+  CoupledQOneStepInvariant_v147 S n
+coupledQOneStepInvariant_v147 D budget alphaRaw x = record
+  { decision = D
+  ; budget = budget
+  ; alphaRaw = alphaRaw
+  ; x = x
+  ; result = qRun_v142 D budget alphaRaw x
+  ; resultEquation = refl
+  ; projectionNonnegative = qRunProjectionNonnegative_v147 D budget alphaRaw x
+  }
