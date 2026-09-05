@@ -1,0 +1,33 @@
+name: Agda kernel shell gate
+on:
+  push:
+    branches: ['main']
+permissions:
+  contents: read
+jobs:
+  kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch repository source
+        run: |
+          set -euo pipefail
+          git init work
+          cd work
+          git remote add origin https://github.com/JohnChristianD/Actions.git
+          git fetch --depth=1 origin main
+          git checkout FETCH_HEAD
+      - name: Install Agda 2.8.0
+        run: |
+          set -euo pipefail
+          curl -fsSL https://github.com/agda/agda/releases/download/v2.8.0/Agda-v2.8.0-linux.tar.xz -o agda.tar.xz
+          tar xf agda.tar.xz
+          mkdir -p "$HOME/.local/bin"
+          mv agda "$HOME/.local/bin/agda"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          agda --version
+      - name: Canonical repair
+        working-directory: work
+        run: python3 .ci/repair-agda-syntax.py
+      - name: Authoritative Agda safe check
+        working-directory: work
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
