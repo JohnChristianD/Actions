@@ -46,24 +46,24 @@ jobs:
           set -euo pipefail
           perl -0pi -e 's/qTerminalProjectionUnique_v147 t u ha hx hmu =.*?\n\nqTerminalConfluence_v147/qTerminalProjectionUnique_v147 t u refl refl refl =\n  vectorExt_v147 (λ i →\n    trans\n      (QTerminalSolution_v147.stationarity t i)\n      (sym (QTerminalSolution_v147.stationarity u i)))\n\nqTerminalConfluence_v147/s' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
 
-      - name: Normalize Nat zero namespace
+      - name: Normalize Nat namespace
         run: |
           set -euo pipefail
           f='Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
           python3 - "$f" <<'PY'
           from pathlib import Path
-          p = Path(__import__('sys').argv[1])
+          import sys
+          p = Path(sys.argv[1])
           s = p.read_text()
           s = s.replace(
               'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
-              'open import Agda.Builtin.Nat using (Nat; suc; _+_) renaming (zero to natZero)')
+              'open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to natZero; _+_ to natPlus)')
           s = s.replace('[] : Vec A zero', '[] : Vec A natZero')
           s = s.replace('sumFin _ z zero _ = z', 'sumFin _ z natZero _ = z')
           s = s.replace('tabulateV {zero} f = []', 'tabulateV {natZero} f = []')
           p.write_text(s)
           PY
 
-      # retrigger marker: namespace repair is intentionally included in this run
       - name: Authoritative Agda --safe check
         run: |
           set -euo pipefail
