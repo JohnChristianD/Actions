@@ -1,4 +1,5 @@
 # Kernel closure verification trigger; Agda --safe remains authoritative.
+# v147 completion CI trigger: source tree unchanged; this PR re-runs the authoritative kernel gate.
 name: Agda CI, tooling, and closure persistence
 on:
   push:
