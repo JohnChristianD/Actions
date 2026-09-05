@@ -14,8 +14,8 @@ INTERPOLATION = ROOT / "Exotic/ERL/FullCoupled/CIInterpolation_v147.agda"
 OBLIGATIONS = ROOT / "tools/algebraic_obligations.json"
 OUT = ROOT / "artifacts"
 REPORT = OUT / "v147_proof_interpolation.md"
-AGDA_SHA256 = "1e0036e35b85109a3dc822cda7663b363d5085a8c85869c545dd0c982109ad13"
-AGDA_BYTES = 124939
+AGDA_SHA256 = "d0e299412ca6db52ee3d7ad42334660d86ba8ad0dc45c8d8a8365111352a4d5b"
+AGDA_BYTES = 125018
 
 PROOFS = {
     "q_num_remove": "qNumRemove_v147",
@@ -75,11 +75,9 @@ def main() -> int:
     oracle_labels = {
         "haskell": os.environ.get("ORACLE_HASKELL", "unknown"),
         "scala": os.environ.get("ORACLE_SCALA", "unknown"),
-        "swift": os.environ.get("ORACLE_SWIFT", "unknown"),
         "elixir": os.environ.get("ORACLE_ELIXIR", "unknown"),
         "clojure": os.environ.get("ORACLE_CLOJURE", "unknown"),
         "rust": os.environ.get("ORACLE_RUST", "unknown"),
-        "r": os.environ.get("ORACLE_R", "unknown"),
         "sympy": os.environ.get("ORACLE_SYMPY", "unknown"),
         "agda": os.environ.get("ORACLE_AGDA", "unknown"),
     }
