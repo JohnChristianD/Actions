@@ -118,6 +118,103 @@ CROSS_FIXED = '''qProjectionCross_v141 ha hr =
     (Ring._*_ Rg x x) * (mu * (x * x))
   hmul = OrderedRing.mulLtPosLeft hlt hxx'''
 
+ORDERED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      c = d * e
+      hc = OrderedRing.mulPos hd he
+      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =
+        trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
+          (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
+            (trans (cong (λ q → a * q)
+              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
+                (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
+                  (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
+                    (Ring.mulOneL Rg e))))) refl)
+      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =
+        trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
+          (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
+            (trans (cong (λ q → b * q)
+              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
+                (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
+                  (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
+                    (Ring.mulOneL Rg d))))) refl)
+  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc'''
+ORDERED_FIXED = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+  OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
+  where
+  Rg : Ring
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+  c : Scalar S
+  c = d * e
+
+  hc : zero < c
+  hc = OrderedRing.mulPos hd he
+
+  leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e
+  leftNorm = trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
+    (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
+      (trans (cong (λ q → a * q)
+        (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
+          (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
+            (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
+              (Ring.mulOneL Rg e))))) refl))
+
+  rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d
+  rightNorm = trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
+    (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
+      (trans (cong (λ q → b * q)
+        (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
+          (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
+            (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
+              (Ring.mulOneL Rg d))))) refl))'''
+
+MULT = '''multiplierDeletionStrict_v142 n d y z hd he h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hnz = OrderedRing.negLt h
+      base = n * d
+      lhs : n * (d + neg z) ≡ base + neg (n * z) =
+        trans (Ring.distrib Rg n d (neg z))
+          (cong₂ _+_ refl (sym (Ring.negScale Rg n z)))
+      rhs : (n + neg y) * d ≡ base + neg (y * d) =
+        trans (Ring.distrib Rg d n (neg y))
+          (trans (cong₂ _+_ (Ring.mulComm Rg d n) refl)
+            (cong₂ _+_ refl
+              (trans (Ring.mulComm Rg (neg y) d)
+                (sym (Ring.negScale Rg y d)))))
+      cross = OrderedRing.addLtLeft hnz base
+      cross' : n * (d + neg z) < (n + neg y) * d =
+        transportLt_v142 lhs rhs cross
+  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross' '''
+MULT_FIXED = '''multiplierDeletionStrict_v142 n d y z hd he h =
+  orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
+  where
+  Rg : Ring
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+
+  hnz : zero < neg y + n
+  hnz = OrderedRing.negLt h
+
+  base : Scalar S
+  base = n * d
+
+  lhs : n * (d + neg z) ≡ base + neg (n * z)
+  lhs = trans (Ring.distrib Rg n d (neg z))
+    (cong₂ _+_ refl (sym (Ring.negScale Rg n z)))
+
+  rhs : (n + neg y) * d ≡ base + neg (y * d)
+  rhs = trans (Ring.distrib Rg d n (neg y))
+    (trans (cong₂ _+_ (Ring.mulComm Rg d n) refl)
+      (cong₂ _+_ refl
+        (trans (Ring.mulComm Rg (neg y) d)
+          (sym (Ring.negScale Rg y d)))))
+
+  cross : base + neg (n * z) < base + neg (y * d)
+  cross = OrderedRing.addLtLeft (OrderedRing.negLt h) base
+
+  cross' : n * (d + neg z) < (n + neg y) * d
+  cross' = transportLt_v142 lhs rhs cross'''
+
 changed = 0
 for path in Path('.').rglob('*.agda'):
     if '.git' in path.parts:
@@ -127,6 +224,8 @@ for path in Path('.').rglob('*.agda'):
     new = new.replace(INSERT, INSERT_FIXED, 1)
     new = new.replace(RESIDUAL, RESIDUAL_FIXED, 1)
     new = new.replace(CROSS, CROSS_FIXED, 1)
+    new = new.replace(ORDERED, ORDERED_FIXED, 1)
+    new = new.replace(MULT, MULT_FIXED, 1)
     if new != text:
         path.write_text(new)
         changed += 1
