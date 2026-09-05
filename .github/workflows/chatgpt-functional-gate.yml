@@ -35,12 +35,11 @@ jobs:
           test "$(grep -c '^residualSquareNonzero_v140 ha hr =' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda)" = 1
           sed -i 's/^residualSquareNonzero_v140 ha hr =/residualSquareNonzero_v140 ha hr hx =/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           perl -0pi -e 's/^(\s{6})([A-Za-z][A-Za-z0-9_]*)\s*:\s*([^=\n]+)\s*=\s*(.*)$/\1\2 : \3\n\1\2 = \4/gm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i 's/(Ring.mulOneL Rg e))))) refl)/(Ring.mulOneL Rg e))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          sed -i 's/(Ring.mulOneL Rg d))))) refl)/(Ring.mulOneL Rg d))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          sed -i 's/(Ring.mulOneL Rg e))))) refl)/(Ring.mulOneL Rg e)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          sed -i 's/(Ring.mulOneL Rg d))))) refl)/(Ring.mulOneL Rg d)))))))/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i -E 's/^      rightNorm : (.*) =$/      rightNorm : \1/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           sed -i '/^        trans (Ring.mulComm Rg c (b \* SmoothAlgebra.recip _ e))/s/^        /      rightNorm = /' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           test "$(grep -cE '^      [A-Za-z][A-Za-z0-9_]*\s*:\s*[^=[:space:]][^=]*=' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda || true)" = 0
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1045,1065p'
       - name: Kernel check canonical algebra
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Kernel check q and CHAD closure
