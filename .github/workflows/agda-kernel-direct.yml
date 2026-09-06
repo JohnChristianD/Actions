@@ -35,8 +35,10 @@ jobs:
           nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '220,236p'
           echo '=== TRANSFORMED OrderedRing ==='
           nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '150,170p'
-          echo '=== GENERATED Stage02 tabulateV ==='
-          nl -ba Exotic/ERL/FullCoupled/CI/Stage02.agda | sed -n '220,236p'
+          echo '=== TRANSFORMED EfficientCHAD VJP ==='
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '428,446p'
+          echo '=== GENERATED Stage03 VJP ==='
+          nl -ba Exotic/ERL/FullCoupled/CI/Stage03.agda | sed -n '438,456p'
       - name: Kernel check — staged dependency prefixes
         shell: bash
         run: |
