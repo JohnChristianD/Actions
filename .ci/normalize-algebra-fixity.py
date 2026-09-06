@@ -31,7 +31,7 @@ text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero}
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
                     'tabulateV {A = A} {n = Nat.suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))', 1)
 
-# Normalize the local EfficientCHAD ring vocabulary against its visible Rg.
+# Normalize the local EfficientCHAD carrier and all of its downstream uses.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
 if start < 0 or end < 0:
@@ -39,6 +39,8 @@ if start < 0 or end < 0:
 region = text[start:end]
 region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
 region = re.sub(r'(?m)^(\s*)R = Ring\.R Rg\s*$', r'\1CR = Ring.R Rg', region)
+# Rename only bare local R tokens; Ring.R and other qualified occurrences remain intact.
+region = re.sub(r'(?<![A-Za-z0-9_.])R(?![A-Za-z0-9_])', 'CR', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
@@ -93,8 +95,7 @@ print(
     'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
-    'EfficientCHAD-orderedRing-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
+    'EfficientCHAD-local-carrier-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
     'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
-    'EfficientCHAD-local-carrier-qualified=True; vector-subtraction-signature=True; '
-    'chad-product-sum-parenthesized=True'
+    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
 )
