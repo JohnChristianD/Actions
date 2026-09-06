@@ -1,9 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Stages.Stage01_FiniteAlgebra where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _≟_)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Agda.Builtin.Bool using (Bool; true; false)
 
 record FiniteAlgebra : Set₁ where
   field
@@ -25,8 +24,3 @@ zeroAdd n = refl
 
 zeroMul : ∀ n → zero * n ≡ zero
 zeroMul n = refl
-
-finiteDecision : ∀ a b → Bool
-finiteDecision a b with a ≟ b
-... | true = true
-... | false = false
