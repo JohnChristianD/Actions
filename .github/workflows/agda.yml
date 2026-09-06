@@ -2,9 +2,9 @@
 name: Agda CI, tooling, and closure persistence
 on:
   push:
-    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
+    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-terminal-uniqueness.py']
   pull_request:
-    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py']
+    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-terminal-uniqueness.py']
   pull_request_review:
     types: [submitted]
   issues:
@@ -31,6 +31,8 @@ jobs:
         run: command -v agda && agda --version
       - name: Repair known Agda syntax
         run: python3 .ci/repair-agda-syntax.py
+      - name: Normalize CompleteSafe Nat/Ring namespaces
+        run: python3 .ci/normalize-completesafe-namespaces.py
       - name: Normalize CompleteSafe initialForm binding
         run: |
           set -euo pipefail
@@ -45,6 +47,8 @@ jobs:
               raise SystemExit(f'expected exactly one initialForm binding, found {count}')
           p.write_text(s2)
           PY
+      - name: Normalize terminal projection uniqueness
+        run: python3 .ci/normalize-terminal-uniqueness.py
       - name: Authoritative Agda --safe kernel check
         run: |
           set -euo pipefail
