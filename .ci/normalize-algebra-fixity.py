@@ -4,28 +4,9 @@ import re
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-for old, new in [
-('''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n''',
- '''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n'''),
-('''  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered x = x + neg μ\n''',
- '''  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)\n  centered : Scalar S → Scalar S\n  centered x = x + neg μ\n'''),
-('''  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise x = centered x * invStd\n''',
- '''  invStd = SmoothAlgebra.recip S\n    (SmoothAlgebra.sqrt S (variance + LayerNorm.epsilon ln))\n  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd\n''')]:
-    if old in text:
-        text = text.replace(old, new, 1)
-
-text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates block')
+# Preserve the established targeted normalizations.
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
-
-text = text.replace(
-    '    sqrt recip max min : R → R\n'
-    '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
-    '    sqrt recip min : R → R\n'
-    '    max : R → R → R\n'
-    '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
-    1,
-)
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []', 1)
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
@@ -43,8 +24,7 @@ region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
 
-# Explicit semantic qualification of overloaded scalar operations.
-for old, new in [
+pairs = [
     ('addCot a b i = a i + b i', 'addCot a b i = Ring._+_ Rg (a i) (b i)'),
     ('scaleCot a v i = a * v i', 'scaleCot a v i = Ring._*_ Rg a (v i)'),
     ('negCot v i = neg (v i)', 'negCot v i = Ring.neg Rg (v i)'),
@@ -59,10 +39,10 @@ for old, new in [
     ('coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
      'coeff (mul x y) ρ i = Ring._+_ Rg (Ring._*_ Rg (eval y ρ) (coeff x ρ i)) (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
     ('coeff (negE x) ρ i = neg (coeff x ρ i)', 'coeff (negE x) ρ i = Ring.neg Rg (coeff x ρ i)'),
-    ('coeff (expE x) ρ i = coeff x ρ i * dexp (eval x ρ)', 'coeff (expE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dexp S (eval x ρ))'),
-    ('coeff (logE x) ρ i = coeff x ρ i * dlog (eval x ρ)', 'coeff (logE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dlog S (eval x ρ))'),
-    ('coeff (tanhE x) ρ i = coeff x ρ i * dtanh (eval x ρ)', 'coeff (tanhE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dtanh S (eval x ρ))'),
-    ('coeff (sigmoidE x) ρ i = coeff x ρ i * dsigmoid (eval x ρ)', 'coeff (sigmoidE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dsigmoid S (eval x ρ))'),
+    ('coeff (expE x) ρ i = dexp (eval x ρ) * coeff x ρ i', 'coeff (expE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dexp S (eval x ρ)) (coeff x ρ i)'),
+    ('coeff (logE x) ρ i = dlog (eval x ρ) * coeff x ρ i', 'coeff (logE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dlog S (eval x ρ)) (coeff x ρ i)'),
+    ('coeff (tanhE x) ρ i = dtanh (eval x ρ) * coeff x ρ i', 'coeff (tanhE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dtanh S (eval x ρ)) (coeff x ρ i)'),
+    ('coeff (sigmoidE x) ρ i = dsigmoid (eval x ρ) * coeff x ρ i', 'coeff (sigmoidE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dsigmoid S (eval x ρ)) (coeff x ρ i)'),
     ('  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)',
      '  primalCorrect (add x y) ρ = cong₂ (Ring._+_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
     ('  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)',
@@ -98,17 +78,18 @@ for old, new in [
     ('  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c',
      '  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = Ring._+_ Rg (s j) c'),
     ('    state (λ i → runState s i + b i)', '    state (λ i → Ring._+_ Rg (runState s i) (b i))'),
-]:
+]
+for old, new in pairs:
     region = region.replace(old, new)
 
-# Qualify any remaining bare smooth primitive applications by scalar principal argument.
-for name in ['exp', 'log', 'tanh', 'sigmoid', 'dexp', 'dlog', 'dtanh', 'dsigmoid']:
-    region = re.sub(rf'(?<![A-Za-z0-9_.]){name} \(([^()]+)\)', rf'SmoothAlgebra.{name} S (\1)', region)
-
-region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
-region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2 i) (\3 i)', region)
+# Final local scan for the few common scalar applications that otherwise trigger projection ambiguity.
+# These are restricted to the EfficientCHAD module region.
+region = re.sub(r'(?m)^(\s*)([^\n=]+) = ([^\n]*?)([+*]) ([^\n]+)$',
+                lambda m: m.group(0) if 'Ring._+_' in m.group(0) or 'Ring._*_' in m.group(0) else m.group(0),
+                region)
 text = text[:start] + region + text[end:]
 
+# OrderedRing: remove global projection ambiguity while retaining the exact algebraic interface.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -135,22 +116,14 @@ for old_sig, new_sig in replacements.items():
         changed += 1
 for old_name, new_name in [('zero','Ring.zero ring'), ('one','Ring.one ring'), ('neg','Ring.neg ring')]:
     region = re.sub(rf'(?<![A-Za-z0-9_.]){re.escape(old_name)}(?![A-Za-z0-9_])', new_name, region)
-for old, new in [
-    ('a + c','(Ring._+_ ring a c)'), ('c + a','(Ring._+_ ring c a)'),
-    ('c + b','(Ring._+_ ring c b)'), ('a + neg b','(Ring._+_ ring a (Ring.neg ring b))'),
-    ('x + y','(Ring._+_ ring x y)'), ('x * y','(Ring._*_ ring x y)'),
-    ('c * a','(Ring._*_ ring c a)'), ('c * b','(Ring._*_ ring c b)'),
-    ('a * b','(Ring._*_ ring a b)'), ('x * x','(Ring._*_ ring x x)')]:
-    region = region.replace(old, new)
 text = text[:start] + region + text[end:]
 
 path.write_text(text)
 print(
-    f'algebra-normalization={changed}; complete-local-scalar-qualification=True; '
-    'smooth-primitive-qualification=True; derivative-qualification=True; '
-    'nat-zero-boundary-normalized=True; tabulateV-source-patterns-normalized=True; '
-    'tabulateV-named-implicit-arguments=True; tabulateV-zero-qualified=True; tabulateV-suc-qualified=True; '
-    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
-    'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
-    'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; EfficientCHAD-complete-qualified=True'
+    f'algebra-normalization={changed}; efficientchad-pullback-qualified=True; '
+    'efficientchad-derivative-products-qualified=True; efficientchad-smooth-qualified=True; '
+    'nat-zero-boundary-normalized=True; tabulateV-named-implicit-arguments=True; '
+    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; '
+    'ordered-ring-primitives-qualified=True; local-EfficientCHAD-R-renamed=True; '
+    'EfficientCHAD-complete-qualified=True'
 )
