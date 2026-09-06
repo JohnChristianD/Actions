@@ -42,8 +42,10 @@ replacements = {
     '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
     '    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y': '    absMul : ∀ x y → abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)',
     '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
+    '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)':
+        '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-Nat-arithmetic-and-OrderedRing-operators')
+print('completesafe-namespace-normalization=qualified-Nat-arithmetic-OrderedRing-operators-and-typed-local-subtraction')
