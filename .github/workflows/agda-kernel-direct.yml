@@ -27,6 +27,8 @@ jobs:
         run: python3 .ci/normalize-vjp-basis.py
       - name: Normalize VJP variable proof
         run: python3 .ci/normalize-vjp-variable-proof.py
+      - name: Normalize VJP unary products
+        run: python3 .ci/normalize-vjp-unary-products.py
       - name: Normalize VJP product transport
         run: python3 .ci/normalize-vjp-product-transport.py
       - name: Normalize hidden aliases
@@ -53,9 +55,9 @@ jobs:
           echo '=== TRANSFORMED OrderedRing ==='
           nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '150,170p'
           echo '=== TRANSFORMED EfficientCHAD VJP ==='
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '428,460p'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '428,475p'
           echo '=== GENERATED Stage03 VJP ==='
-          nl -ba Exotic/ERL/FullCoupled/CI/Stage03.agda | sed -n '438,470p'
+          nl -ba Exotic/ERL/FullCoupled/CI/Stage03.agda | sed -n '438,485p'
       - name: Kernel check — staged dependency prefixes
         shell: bash
         run: |
