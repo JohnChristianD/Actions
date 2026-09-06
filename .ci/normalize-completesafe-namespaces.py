@@ -28,8 +28,10 @@ replacements = {
     'sampleTime + (delay₁ + delay₂)': 'Nat._+_ sampleTime (Nat._+_ delay₁ delay₂)',
     'sampleTime + delay': 'Nat._+_ sampleTime delay',
     'delay₁ + delay₂': 'Nat._+_ delay₁ delay₂',
+    '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d': '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → Ring._+_ ring a c ≤ Ring._+_ ring b d',
+    '    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d': '    ltAdd : ∀ {a b c d} → a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-Nat-zero-and-Nat-arithmetic')
+print('completesafe-namespace-normalization=qualified-Nat-arithmetic-and-OrderedRing-addition')
