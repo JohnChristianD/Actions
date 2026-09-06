@@ -2,37 +2,6 @@ from pathlib import Path
 import re
 
 
-def split_typed_binding(line: str) -> tuple[str, str] | None:
-    stripped = line.lstrip()
-    indent = line[:len(line) - len(stripped)]
-    match = re.match(r"([A-Za-z_][A-Za-z0-9_']*)\s*:\s*(.+?)\s*=\s*(.*)$", stripped)
-    if match is None:
-        return None
-    name, _typ, rhs = match.groups()
-    if not rhs.strip():
-        return None
-    return f'{indent}{name} = {rhs.strip()}', ''
-
-
-def normalize_typed_bindings(lines: list[str]) -> tuple[list[str], bool]:
-    out: list[str] = []
-    changed = False
-    in_let = False
-    for line in lines:
-        stripped = line.strip()
-        if re.match(r'^let\b', stripped):
-            in_let = True
-        split = split_typed_binding(line) if in_let else None
-        if split is not None:
-            out.append(split[0])
-            changed = True
-        else:
-            out.append(line)
-        if in_let and re.match(r'^in\b', stripped):
-            in_let = False
-    return out, changed
-
-
 def normalize_accumulate(lines: list[str]) -> tuple[list[str], bool]:
     out: list[str] = []
     i = 0
@@ -286,11 +255,9 @@ def repair_file(path: Path) -> bool:
     text, did_diag = normalize_diagonal_exposure_positive(text)
     text, did_kkt = normalize_audited_kkt_boundary(text)
     lines = text.splitlines()
-    out, changed = normalize_typed_bindings(lines)
-    out, did_acc = normalize_accumulate(out)
-    changed = changed or did_acc
+    out, did_acc = normalize_accumulate(lines)
     out, did_cvt = normalize_insert_cvt(out)
-    changed = changed or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip or did_diag or did_kkt
+    changed = did_acc or did_cvt or did_residual or did_q or did_cross or did_mult or did_recip or did_diag or did_kkt
     text = '\n'.join(out) + ('\n' if original.endswith('\n') else '')
     if changed:
         path.write_text(text)
@@ -333,7 +300,7 @@ for path in Path('.').rglob('*.agda'):
     if re.search(r'_v\d+\b', path.name) or re.search(r'_v\d+\b', path.read_text()):
         versioned.append(str(path))
 
-print('parser-repair=structural-targeted-no-multiline-rewrite')
+print('parser-repair=structural-targeted-no-typed-let-rewrite')
 print('algebraic-proof-automation=finite-constructive-surface-audit')
 print('algebraic-theorem-surface-count=' + str(len(ALGEBRAIC_THEOREM_SURFACES)))
 print(f'grammar-repaired-files={changed}')
