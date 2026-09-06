@@ -54,7 +54,6 @@ region = text[start:end]
 region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'CR', region)
 region = region.replace('CRg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring orderedRing')
 region = region.replace('Ring.CR Rg', 'Ring.R Rg')
-# Agda source uses equal precedence for + and *. Parenthesize the finite product-sum forms.
 region = region.replace(
     'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
     '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
@@ -101,5 +100,29 @@ for old_sig, new_sig in replacements.items():
     if count:
         region = region.replace(old_sig, new_sig)
         changed += count
-path.write_text(text[:start] + region + text[end:])
-print(f'algebra-normalization={changed}; centered-signature=True; normalise-signature=True; lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; chad-product-sum-parenthesized=True')
+
+# Remove the global Ring.R ambiguity from nested algebra-record scopes by
+# spelling the carrier through the record's concrete Ring witness.
+region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'Ring.R ring', region)
+text = text[:start] + region + text[end:]
+
+start = text.find('record SmoothAlgebra : Set₁ where')
+end = text.find('\nopen SmoothAlgebra', start)
+if start < 0 or end < 0:
+    raise SystemExit('SmoothAlgebra region not found')
+region = text[start:end]
+region = re.sub(
+    r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])',
+    'Ring.R (OrderedRing.ring orderedRing)',
+    region,
+)
+text = text[:start] + region + text[end:]
+
+path.write_text(text)
+print(
+    f'algebra-normalization={changed}; '
+    'nested-ring-carriers-qualified=True; '
+    'centered-signature=True; normalise-signature=True; '
+    'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
+    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
+)
