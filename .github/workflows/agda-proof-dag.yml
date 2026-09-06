@@ -23,6 +23,10 @@ jobs:
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize CompleteSafe Nat/Ring namespaces
         run: python3 .ci/normalize-completesafe-namespaces.py
+      - name: Normalize CompleteSafe typed let bindings
+        run: python3 .ci/normalize-completesafe-let-bindings.py
+      - name: Normalize CompleteSafe initialForm binding
+        run: python3 .ci/normalize-completesafe-initial-form.py
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
       - name: Check Stage 01 finite algebra
