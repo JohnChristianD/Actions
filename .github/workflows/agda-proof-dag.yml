@@ -1,5 +1,6 @@
 name: Agda safe proof DAG
 
+# Fresh checkpoint: source-level normalization is explicit; --safe remains authoritative.
 on:
   push:
     branches: ['ci/agda-v147-kernel-live']
