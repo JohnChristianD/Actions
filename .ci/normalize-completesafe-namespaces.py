@@ -35,7 +35,7 @@ replacements = {
     '    addLtLeft : ∀ {a b c} → a < b → c + a < c + b': '    addLtLeft : ∀ {a b c} → a < b → Ring._+_ ring c a < Ring._+_ ring c b',
     '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b': '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → Ring._*_ ring c a < Ring._*_ ring c b',
     '    mulLtPosCancelLeft : ∀ {a b c} → c * a < c * b → zero < c → a < b': '    mulLtPosCancelLeft : ∀ {a b c} → Ring._*_ ring c a < Ring._*_ ring c b → zero < c → a < b',
-    '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b': '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b',
+    '    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b': '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b',
     '    subLtZero : ∀ {a b} → a + neg b < zero → a < b': '    subLtZero : ∀ {a b} → Ring._+_ ring a (neg b) < zero → a < b',
     '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < Ring._*_ ring x x',
     '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
