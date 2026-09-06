@@ -4,7 +4,7 @@ import re
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-# Close the local subtraction helper explicitly.
+# Close local algebra helpers with explicit scalar types.
 old = '''vSub {S} = zipWithV minus
   where
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
@@ -19,7 +19,6 @@ new = '''vSub {S} = zipWithV minus
 if old in text:
     text = text.replace(old, new, 1)
 
-# Close the layer-normalisation helpers with explicit scalar signatures.
 old = '''  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)
   centered x = x + neg μ
 '''
@@ -42,15 +41,16 @@ new = '''  invStd = SmoothAlgebra.recip S
 if old in text:
     text = text.replace(old, new, 1)
 
-# Repair all occurrences of the invalid nested LSTM gate projection.
+# Repair an invalid nested LSTM gate projection without changing theorem names.
 text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates block')
 
-# Remove the redundant global Ring open. Nested algebra records explicitly
-# open their concrete Ring witnesses, while a global open creates overloaded
-# projections/operators in partial staged modules.
+# Remove redundant global Ring and OrderedRing opens. Their public exports are
+# already available through the concrete algebra records; keeping both global
+# and record-local opens creates overloaded projections in staged modules.
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
+text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
 
-# Alpha-rename the local EfficientCHAD scalar alias to avoid collision with Ring.R.
+# Normalize the finite CHAD local carrier alias.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
 if start < 0 or end < 0:
@@ -67,11 +67,17 @@ region = region.replace(
     '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
-# Normalize mixed arithmetic/comparison precedence only inside OrderedRing.
+# Make the finite ordered-ring interface explicit enough for independent
+# staged checking while retaining exactly the same algebraic propositions.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nopen OrderedRing', start)
-if start < 0 or end < 0:
+if start < 0:
     raise SystemExit('OrderedRing region not found')
+if end < 0:
+    # The global open was removed, so terminate at SmoothAlgebra instead.
+    end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
+if end < 0:
+    raise SystemExit('OrderedRing terminator not found')
 region = text[start:end]
 replacements = {
     'addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d':
@@ -106,15 +112,13 @@ for old_sig, new_sig in replacements.items():
         region = region.replace(old_sig, new_sig)
         changed += count
 
-# Use only the concrete ring witness for primitive ring projections inside
-# OrderedRing. This makes staged dependency prefixes deterministic and avoids
-# overloaded Ring/OrderedRing projections when the later opens are absent.
-primitive_uses = {
+# Explicit ring projections inside OrderedRing keep staged prefixes independent
+# of the order in which public projections become visible.
+for old_name, new_name in {
     'zero': 'Ring.zero ring',
     'one': 'Ring.one ring',
     'neg': 'Ring.neg ring',
-}
-for old_name, new_name in primitive_uses.items():
+}.items():
     region = re.sub(rf'(?<![A-Za-z0-9_.]){re.escape(old_name)}(?![A-Za-z0-9_])', new_name, region)
 region = region.replace('a + c', '(Ring._+_ ring a c)')
 region = region.replace('c + a', '(Ring._+_ ring c a)')
@@ -128,8 +132,8 @@ region = region.replace('a * b', '(Ring._*_ ring a b)')
 region = region.replace('x * x', '(Ring._*_ ring x x)')
 text = text[:start] + region + text[end:]
 
-# SmoothAlgebra inherits OrderedRing projections publicly; qualify its carrier
-# and ring primitives so it remains independently checkable in a prefix.
+# SmoothAlgebra carrier is explicit but its concrete ordered-ring witness still
+# supplies all inherited operations through the record-local public opening.
 start = text.find('record SmoothAlgebra : Set₁ where')
 end = text.find('\nopen SmoothAlgebra', start)
 if start < 0 or end < 0:
@@ -145,9 +149,8 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; '
-    'global-ring-open-removed=True; '
-    'ordered-ring-primitives-qualified=True; '
-    'nested-ring-carriers-qualified=True; '
+    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; '
+    'ordered-ring-primitives-qualified=True; nested-ring-carriers-qualified=True; '
     'centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
