@@ -17,13 +17,11 @@ jobs:
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize Nat namespace
         run: python3 .ci/normalize-nat-namespace.py
-      - name: Normalize algebra fixity
+      - name: Normalize algebra and local aliases
         run: python3 .ci/normalize-algebra-fixity.py
       - name: Normalize q-retraction structure
         run: python3 .ci/normalize-q-retraction.py
       - name: Kernel check
-        id: kernel
-        continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
@@ -34,6 +32,3 @@ jobs:
         with:
           name: agda-kernel-diagnostics
           path: agda-kernel.log
-      - name: Enforce kernel gate
-        if: always()
-        run: test "${{ steps.kernel.outcome }}" = "success"
