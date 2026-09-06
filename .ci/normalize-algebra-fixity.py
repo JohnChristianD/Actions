@@ -43,6 +43,7 @@ region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
 
+# Explicit semantic qualification of overloaded scalar operations.
 for old, new in [
     ('addCot a b i = a i + b i', 'addCot a b i = Ring._+_ Rg (a i) (b i)'),
     ('scaleCot a v i = a * v i', 'scaleCot a v i = Ring._*_ Rg a (v i)'),
@@ -56,12 +57,12 @@ for old, new in [
     ('eval (sigmoidE x) ρ = sigmoid (eval x ρ)', 'eval (sigmoidE x) ρ = SmoothAlgebra.sigmoid S (eval x ρ)'),
     ('coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i', 'coeff (add x y) ρ i = Ring._+_ Rg (coeff x ρ i) (coeff y ρ i)'),
     ('coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
-     'coeff (mul x y) ρ i = (Ring._*_ Rg (eval y ρ) (coeff x ρ i)) + (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
+     'coeff (mul x y) ρ i = Ring._+_ Rg (Ring._*_ Rg (eval y ρ) (coeff x ρ i)) (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
     ('coeff (negE x) ρ i = neg (coeff x ρ i)', 'coeff (negE x) ρ i = Ring.neg Rg (coeff x ρ i)'),
-    ('coeff (expE x) ρ i = coeff x ρ i * dexp (eval x ρ)', 'coeff (expE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dexp (eval x ρ))'),
-    ('coeff (logE x) ρ i = coeff x ρ i * dlog (eval x ρ)', 'coeff (logE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dlog (eval x ρ))'),
-    ('coeff (tanhE x) ρ i = coeff x ρ i * dtanh (eval x ρ)', 'coeff (tanhE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dtanh (eval x ρ))'),
-    ('coeff (sigmoidE x) ρ i = coeff x ρ i * dsigmoid (eval x ρ)', 'coeff (sigmoidE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dsigmoid (eval x ρ))'),
+    ('coeff (expE x) ρ i = coeff x ρ i * dexp (eval x ρ)', 'coeff (expE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dexp S (eval x ρ))'),
+    ('coeff (logE x) ρ i = coeff x ρ i * dlog (eval x ρ)', 'coeff (logE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dlog S (eval x ρ))'),
+    ('coeff (tanhE x) ρ i = coeff x ρ i * dtanh (eval x ρ)', 'coeff (tanhE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dtanh S (eval x ρ))'),
+    ('coeff (sigmoidE x) ρ i = coeff x ρ i * dsigmoid (eval x ρ)', 'coeff (sigmoidE x) ρ i = Ring._*_ Rg (coeff x ρ i) (SmoothAlgebra.dsigmoid S (eval x ρ))'),
     ('  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)',
      '  primalCorrect (add x y) ρ = cong₂ (Ring._+_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
     ('  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)',
@@ -83,13 +84,13 @@ for old, new in [
     ('    in record { value = neg (value px) ; back = λ c → negCot (back px c) }',
      '    in record { value = Ring.neg Rg (value px) ; back = λ c → negCot (back px c) }'),
     ('    in record { value = exp vx ; back = λ c → back px (c * dexp vx) }',
-     '    in record { value = SmoothAlgebra.exp S vx ; back = λ c → back px (Ring._*_ Rg c (dexp vx)) }'),
+     '    in record { value = SmoothAlgebra.exp S vx ; back = λ c → back px (Ring._*_ Rg c (SmoothAlgebra.dexp S vx)) }'),
     ('    in record { value = log vx ; back = λ c → back px (c * dlog vx) }',
-     '    in record { value = SmoothAlgebra.log S vx ; back = λ c → back px (Ring._*_ Rg c (dlog vx)) }'),
+     '    in record { value = SmoothAlgebra.log S vx ; back = λ c → back px (Ring._*_ Rg c (SmoothAlgebra.dlog S vx)) }'),
     ('    in record { value = tanh vx ; back = λ c → back px (c * dtanh vx) }',
-     '    in record { value = SmoothAlgebra.tanh S vx ; back = λ c → back px (Ring._*_ Rg c (dtanh vx)) }'),
+     '    in record { value = SmoothAlgebra.tanh S vx ; back = λ c → back px (Ring._*_ Rg c (SmoothAlgebra.dtanh S vx)) }'),
     ('    in record { value = sigmoid vx ; back = λ c → back px (c * dsigmoid vx) }',
-     '    in record { value = SmoothAlgebra.sigmoid S vx ; back = λ c → back px (Ring._*_ Rg c (dsigmoid vx)) }'),
+     '    in record { value = SmoothAlgebra.sigmoid S vx ; back = λ c → back px (Ring._*_ Rg c (SmoothAlgebra.dsigmoid S vx)) }'),
     ('  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ c * coeff e ρ i',
      '  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ Ring._*_ Rg c (coeff e ρ i)'),
     ('(vjpCoeff x ρ (c * eval y ρ) i)', '(vjpCoeff x ρ (Ring._*_ Rg c (eval y ρ)) i)'),
@@ -100,11 +101,10 @@ for old, new in [
 ]:
     region = region.replace(old, new)
 
-# Remaining smooth-algebra applications whose principal argument is a scalar.
-for name in ['exp', 'log', 'tanh', 'sigmoid']:
+# Qualify any remaining bare smooth primitive applications by scalar principal argument.
+for name in ['exp', 'log', 'tanh', 'sigmoid', 'dexp', 'dlog', 'dtanh', 'dsigmoid']:
     region = re.sub(rf'(?<![A-Za-z0-9_.]){name} \(([^()]+)\)', rf'SmoothAlgebra.{name} S (\1)', region)
 
-# Coordinate scalar arithmetic missed by exact patterns.
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2 i) (\3 i)', region)
 text = text[:start] + region + text[end:]
@@ -147,6 +147,7 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; complete-local-scalar-qualification=True; '
+    'smooth-primitive-qualification=True; derivative-qualification=True; '
     'nat-zero-boundary-normalized=True; tabulateV-source-patterns-normalized=True; '
     'tabulateV-named-implicit-arguments=True; tabulateV-zero-qualified=True; tabulateV-suc-qualified=True; '
     'global-ring-open-removed=True; global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
