@@ -37,25 +37,27 @@ while i < len(lines):
 
 text = ''.join(out)
 
-# The source carries the qProjectionFixedPoint type as a commented header
-# followed by an active continuation. Normalize that malformed split into
-# one ordinary declaration so the kernel sees the intended retraction lemma.
-fixed_marker = '-- qProjectionFixedPoint_v147 : ∀ {S n}'
-fixed_end = 'qProjectionFixedPoint_v147 = qProjectionRetraction_v147'
-fixed_start = text.find(fixed_marker)
-fixed_stop = text.find(fixed_end, fixed_start)
+# Canonical repair removes the old pre-retraction KKT placeholder. Recreate
+# the intended fixed-point theorem only after qProjectionRetraction_v147 has
+# been defined, avoiding a forward dependency.
 fixed = False
-if fixed_start >= 0 and fixed_stop >= fixed_start:
-    fixed_stop += len(fixed_end)
-    replacement = '''qProjectionFixedPoint_v147 : ∀ {S n}
+if 'qProjectionFixedPoint_v147 :' not in text:
+    anchor = '\nqRunTerminalKKT_v147 :'
+    pos = text.find(anchor)
+    if pos >= 0:
+        replacement = '''
+qProjectionFixedPoint_v147 : ∀ {S n}
   (D : QProjectionDecisionAlgebra_v140 S)
   (budget : Scalar S)
   (p x : VecS S n) →
   (∀ i → zero ≤ indexV p i) →
   weightedExposure_v147 p x ≤ budget →
   QRun_v142.projection (qRun_v142 D budget p x) ≡ p
-qProjectionFixedPoint_v147 = qProjectionRetraction_v147'''
-    text = text[:fixed_start] + replacement + text[fixed_stop:]
+qProjectionFixedPoint_v147 = qProjectionRetraction_v147
+'''
+        text = text[:pos] + replacement + text[pos:]
+        fixed = True
+else:
     fixed = True
 
 marker = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
@@ -111,7 +113,7 @@ if not q:
 if not terminal:
     raise SystemExit('q-terminal uniqueness declaration not found')
 if not fixed:
-    raise SystemExit('q fixed-point declaration not found')
+    raise SystemExit('q fixed-point declaration could not be placed after retraction')
 
 path.write_text(text)
 print(f'q-retraction-normalized={q}; accumulate-normalized={acc}; fixed-point-normalized={fixed}; terminal-uniqueness-normalized={terminal}; confluence-restored=True')
