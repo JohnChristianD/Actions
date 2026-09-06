@@ -4,7 +4,6 @@ import re
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-# Explicit local algebra bindings.
 for old, new in [
 ('''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n''',
  '''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n'''),
@@ -28,28 +27,25 @@ text = text.replace(
     1,
 )
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
-
-# The source omits the A pattern and matches n implicitly. Name both
-# binders explicitly so Nat.zero cannot be captured as type A.
 text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []', 1)
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
                     'tabulateV {A = A} {n = Nat.suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))', 1)
 
-# Normalize finite CHAD local carrier/fixity.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
 if start < 0 or end < 0:
     raise SystemExit('EfficientCHAD module region not found')
 region = text[start:end]
-region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'CR', region)
-region = region.replace('CRg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
 region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
+region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
+region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
+region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
+region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'CR', region)
 region = region.replace('Ring.CR Rg', 'Ring.R Rg')
 region = region.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
 region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
-# Normalize OrderedRing fixity and primitive operations only inside the record.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -85,17 +81,6 @@ for old, new in [
     region = region.replace(old, new)
 text = text[:start] + region + text[end:]
 
-# Repair the exact overloaded OrderedRing projection in contexts that have a
-# visible SmoothAlgebra parameter S. Never rewrite the OrderedRing record itself.
-text = re.sub(
-    r'(?m)^(\s*Rg\s*=\s*OrderedRing\.ring\s+)orderedRing\s*$',
-    r'\1(SmoothAlgebra.orderedRing S)',
-    text,
-)
-
-# Keep SmoothAlgebra's own carrier declaration abstract; it lives at the
-# point where `orderedRing` is a record field and therefore needs no S.
-
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
@@ -104,6 +89,6 @@ print(
     'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
-    'EfficientCHAD-orderedRing-qualified=True; context-aware-orderedRing-qualified=True; '
+    'EfficientCHAD-orderedRing-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
 )
