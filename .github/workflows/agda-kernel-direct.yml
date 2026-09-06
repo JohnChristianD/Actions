@@ -1,4 +1,4 @@
-# Tiny direct kernel gate with deterministic in-repo normalization.
+# Authoritative Agda 2.8.0 --safe gate with deterministic normalization and theorem-surface witnesses.
 name: Agda kernel direct
 on:
   push:
@@ -25,14 +25,28 @@ jobs:
         run: python3 .ci/normalize-hidden-aliases.py
       - name: Normalize q-retraction structure
         run: python3 .ci/normalize-q-retraction.py
-      - name: Kernel check
+      - name: Audit safe algebra surface
+        run: python3 .ci/check-agda-safe-surface.py
+      - name: Kernel check — CompleteSafe_v147
         shell: bash
         run: |
           set -o pipefail
           agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda 2>&1 | tee agda-kernel.log
+      - name: Safe witness — finite algebra
+        run: agda --safe Exotic/ERL/FullCoupled/CheckFiniteAlgebra_v147.agda
+      - name: Safe witness — q projection chain
+        run: agda --safe Exotic/ERL/FullCoupled/CheckQProjection_v147.agda
+      - name: Safe witness — q terminal chain
+        run: agda --safe Exotic/ERL/FullCoupled/CheckQTerminal_v147.agda
+      - name: Kernel check — CIInterpolation_v147
+        shell: bash
+        run: |
+          agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda 2>&1 | tee agda-interpolation.log
       - name: Upload kernel diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: agda-kernel-diagnostics
-          path: agda-kernel.log
+          path: |
+            agda-kernel.log
+            agda-interpolation.log
