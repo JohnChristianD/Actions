@@ -39,12 +39,11 @@ if start < 0 or end < 0:
 region = text[start:end]
 region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
 region = re.sub(r'(?m)^(\s*)R = Ring\.R Rg\s*$', r'\1CR = Ring.R Rg', region)
-# Rename only bare local R tokens; Ring.R and other qualified occurrences remain intact.
 region = re.sub(r'(?<![A-Za-z0-9_.])R(?![A-Za-z0-9_])', 'CR', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
-# Qualify the coordinatewise ring operations which remain overloaded after the carrier rename.
+# Explicit local replacements cover the non-whole-line applications in the CHAD core.
 for old, new in [
     ('a i + b i', 'Ring._+_ Rg (a i) (b i)'),
     ('a i * b i', 'Ring._*_ Rg (a i) (b i)'),
@@ -54,14 +53,15 @@ for old, new in [
      '(Ring._*_ Rg (eval y ρ) (coeff x ρ i)) + (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
     ('c * eval y ρ + eval x ρ * c',
      '(Ring._*_ Rg c (eval y ρ)) + (Ring._*_ Rg (eval x ρ) c)'),
+    ('a * b', 'Ring._*_ Rg a b'),
+    ('a + b', 'Ring._+_ Rg a b'),
+    ('c * v i', 'Ring._*_ Rg c (v i)'),
 ]:
     region = region.replace(old, new)
-# Remaining whole-line coordinate arithmetic.
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \+ ([A-Za-z][A-Za-z0-9_]*)$', r'\1Ring._+_ Rg \2 \3', region)
-# The proof congruence operators must also be anchored to this local carrier.
 region = region.replace('cong₂ _+_', 'cong₂ (Ring._+_ Rg)')
 region = region.replace('cong₂ _*_ ', 'cong₂ (Ring._*_ Rg) ')
 region = region.replace('cong₂ _*_)', 'cong₂ (Ring._*_ Rg))')
@@ -114,5 +114,5 @@ print(
     'EfficientCHAD-local-carrier-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
     'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True; '
-    'EfficientCHAD-congruence-operations-qualified=True'
+    'EfficientCHAD-congruence-operations-qualified=True; EfficientCHAD-scalar-operations-qualified=True'
 )
