@@ -21,6 +21,8 @@ jobs:
         run: python3 .ci/normalize-equality-primitives.py
       - name: Normalize algebra and local aliases
         run: python3 .ci/normalize-algebra-fixity.py
+      - name: Normalize residual theorem carrier
+        run: python3 .ci/fix-residual-scope.py
       - name: Normalize EfficientCHAD neg congruence
         run: python3 .ci/fix-efficientchad-neg-cong.py
       - name: Normalize VJP variable basis
