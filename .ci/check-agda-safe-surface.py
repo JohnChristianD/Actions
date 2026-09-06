@@ -47,8 +47,6 @@ for forbidden in (
     if forbidden in text:
         errors.append(f'forbidden unsafe/incomplete marker present: {forbidden!r}')
 
-# Check the intended closure theorem surface structurally, not just by a
-# successful grep for names.
 for family, names in REQUIRED.items():
     missing = [name for name in names if not re.search(rf'(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])', text)]
     if missing:
@@ -56,10 +54,17 @@ for family, names in REQUIRED.items():
     else:
         print(f'safe-surface={family}:ok:{len(names)}')
 
-# Local-binding hygiene known to cause false-looking algebra failures.
-for local in ('minus', 'centered', 'normalise', 'gates'):
-    if not re.search(rf'(?m)^\s*{re.escape(local)}\b', text):
+# Local algebra helpers are checked by declaration form. Record fields are
+# checked separately because `gates` is intentionally a qualified field
+# projection (`LSTMGates.gates`) rather than a local `where` binding.
+for local in ('minus', 'centered', 'normalise'):
+    if not re.search(rf'(?m)^\s*{re.escape(local)}\b.*=', text):
         errors.append(f'local-binding audit: expected local symbol {local!r} not found')
+
+if not re.search(r'(?m)^\s*field\s+.*\bgates\b', text):
+    errors.append('field-namespace audit: expected record field gates not found')
+if not re.search(r'(?m)^\s*LSTMGates\.gates\b', text):
+    errors.append('projection audit: expected LSTMGates.gates projection not found')
 
 print(f'safe-surface-source-bytes={len(text.encode("utf-8"))}')
 if errors:
