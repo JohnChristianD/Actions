@@ -19,6 +19,8 @@ jobs:
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize CompleteSafe Nat/Ring namespaces
         run: python3 .ci/normalize-completesafe-namespaces.py
+      - name: Normalize CompleteSafe typed let bindings
+        run: python3 .ci/normalize-completesafe-let-bindings.py
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
       - name: Authoritative Agda safe check
