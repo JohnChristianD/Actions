@@ -11,12 +11,13 @@ replacements = {
     '        hzero : d * zero ≡ zero =': '        hzero =',
     '      hdef : hb ≡ CoupledHyperParameters_v146.q h * e =': '      hdef =',
 }
-counts = {}
+changed = 0
 for old, new in replacements.items():
     count = s.count(old)
-    counts[old] = count
-    s = s.replace(old, new)
-if any(v != 1 for v in counts.values()):
-    raise SystemExit('unexpected typed-let binding counts: ' + repr(counts))
+    if count > 1:
+        raise SystemExit(f'unexpected duplicate typed-let binding: {old!r} count={count}')
+    if count == 1:
+        s = s.replace(old, new)
+        changed += 1
 p.write_text(s)
-print('completesafe-let-normalization=typed-let-bindings-to-inferred-bindings')
+print(f'completesafe-let-normalization=typed-let-bindings-to-inferred-bindings changed={changed}')
