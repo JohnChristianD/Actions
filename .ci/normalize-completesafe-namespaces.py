@@ -30,7 +30,7 @@ replacements = {
     'sampleTime + delay': 'Nat._+_ sampleTime delay',
     'delay₁ + delay₂': 'Nat._+_ delay₁ delay₂',
     '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d': '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → Ring._+_ ring a c ≤ Ring._+_ ring b d',
-    '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ a * b': '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ Ring._*_ ring a b',
+    '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → a * b': '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → Ring._*_ ring a b',
     '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b': '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → Ring._*_ ring c a ≤ Ring._*_ ring c b',
     '    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d': '    ltAdd : ∀ {a b c d} → a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
     '    addLtLeft : ∀ {a b c} → a < b → c + a < c + b': '    addLtLeft : ∀ {a b c} → a < b → Ring._+_ ring c a < Ring._+_ ring c b',
@@ -49,14 +49,12 @@ replacements = {
 for old, new in replacements.items():
     s = s.replace(old, new)
 
-# EfficientCHAD already provides the complete compositional reverse layer.
-# Rename only its local scalar alias so the constructor field `Ring.R` opened
-# in the surrounding module does not clash with the local declaration `R`.
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
 segment = re.sub(r'\bR\b', 'ScalarR', segment)
+segment = segment.replace('Ring.ScalarR', 'Ring.R')
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-Nat-arithmetic-OrderedRing-operators-and-local-EfficientCHAD-scalar-alias')
+print('completesafe-namespace-normalization=qualified-Nat-arithmetic-OrderedRing-operators-local-EfficientCHAD-alias-preserving-qualified-fields')
