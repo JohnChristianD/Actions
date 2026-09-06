@@ -25,6 +25,8 @@ jobs:
         run: python3 .ci/fix-efficientchad-neg-cong.py
       - name: Normalize VJP variable basis
         run: python3 .ci/normalize-vjp-basis.py
+      - name: Normalize VJP variable proof
+        run: python3 .ci/normalize-vjp-variable-proof.py
       - name: Normalize hidden aliases
         run: python3 .ci/normalize-hidden-aliases.py
       - name: Normalize q-retraction structure
