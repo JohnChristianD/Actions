@@ -30,9 +30,11 @@ text = text.replace(
 )
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 
-# Qualify implicit arguments by name; positional patterns can bind the
-# wrong implicit parameter (A versus n) and shadow Nat.zero.
-text = text.replace('tabulateV {A} {zero} f = []', 'tabulateV {A = A} {n = Nat.zero} f = []', 1)
+# The source omits the A pattern and matches the second implicit binder n.
+# Name both binders explicitly so Nat.zero cannot be mistaken for a type A.
+text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []', 1)
+text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
+                    'tabulateV {A = A} {n = Nat.suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))', 1)
 
 # Normalize finite CHAD local carrier/fixity.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
@@ -95,8 +97,8 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
-    'tabulateV-length-pattern-normalized=True; tabulateV-zero-qualified=True; '
-    'tabulateV-named-implicit-arguments=True; global-ring-open-removed=True; '
+    'tabulateV-source-patterns-normalized=True; tabulateV-named-implicit-arguments=True; '
+    'tabulateV-zero-qualified=True; tabulateV-suc-qualified=True; global-ring-open-removed=True; '
     'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
