@@ -2,9 +2,7 @@ from pathlib import Path
 
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
-old = '(sym (Ring.negScale Rg c (coeff x ρ i)))'
-new = '(Ring.negScale Rg c (coeff x ρ i))'
-if old in text:
-    text = text.replace(old, new, 1)
+text = text.replace('cong Ring.neg Rg', 'cong (Ring.neg Rg)')
+text = text.replace('(sym (Ring.negScale Rg c (coeff x ρ i)))', '(Ring.negScale Rg c (coeff x ρ i))')
 path.write_text(text)
-print(f'efficientchad-negScale-direction-fixed={old in text or new in text}')
+print('efficientchad-neg-cong-parenthesized=True;negScale-direction-fixed=True')
