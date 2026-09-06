@@ -42,6 +42,16 @@ new = '''  invStd = SmoothAlgebra.recip S
 if old in text:
     text = text.replace(old, new, 1)
 
+# Repair the LSTM gate projection: gates belongs to LSTMBlock, not LSTMGates.
+old = '''lstmStep block old x =
+  let g = LSTMGates.gates (LSTMBlock.gates block)
+'''
+new = '''lstmStep block old x =
+  let g = LSTMBlock.gates block
+'''
+if old in text:
+    text = text.replace(old, new, 1)
+
 # Alpha-rename the local EfficientCHAD scalar alias to avoid collision with Ring.R.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
@@ -99,4 +109,4 @@ for old_sig, new_sig in replacements.items():
         region = region.replace(old_sig, new_sig)
         changed += count
 path.write_text(text[:start] + region + text[end:])
-print(f'algebra-normalization={changed}; centered-signature=True; normalise-signature=True; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; chad-product-sum-parenthesized=True')
+print(f'algebra-normalization={changed}; centered-signature=True; normalise-signature=True; lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; chad-product-sum-parenthesized=True')
