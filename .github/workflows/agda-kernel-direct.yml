@@ -21,6 +21,8 @@ jobs:
         run: python3 .ci/normalize-equality-primitives.py
       - name: Normalize algebra and local aliases
         run: python3 .ci/normalize-algebra-fixity.py
+      - name: Normalize EfficientCHAD neg congruence
+        run: python3 .ci/fix-efficientchad-neg-cong.py
       - name: Normalize hidden aliases
         run: python3 .ci/normalize-hidden-aliases.py
       - name: Normalize q-retraction structure
@@ -29,6 +31,15 @@ jobs:
         run: python3 .ci/check-agda-safe-surface.py
       - name: Generate staged safe kernel probes
         run: python3 .ci/generate-agda-safe-stages.py
+      - name: Diagnose non-safe Agda comparison
+        shell: bash
+        run: |
+          set +e
+          agda Exotic/ERL/FullCoupled/CI/Stage03.agda > agda-nonsafe.log 2>&1
+          status=$?
+          echo "non-safe-agda-exit=${status}"
+          sed -n '1,120p' agda-nonsafe.log
+          exit 0
       - name: Diagnose transformed algebra frontier
         run: |
           echo '=== TRANSFORMED tabulateV ==='
@@ -75,3 +86,4 @@ jobs:
             agda-stages.log
             agda-kernel.log
             agda-interpolation.log
+            agda-nonsafe.log
