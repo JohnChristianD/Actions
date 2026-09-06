@@ -19,8 +19,7 @@ new = '''vSub {S} = zipWithV minus
 if old in text:
     text = text.replace(old, new, 1)
 
-# The global `open Ring` exposes Ring.R. Alpha-rename only the local alias
-# in EfficientCHAD so --safe accepts the nested declaration.
+# Alpha-rename the local EfficientCHAD scalar alias to avoid collision with Ring.R.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
 if start < 0 or end < 0:
@@ -29,6 +28,13 @@ region = text[start:end]
 region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'CR', region)
 region = region.replace('CRg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring orderedRing')
 region = region.replace('Ring.CR Rg', 'Ring.R Rg')
+# Agda source uses equal precedence for + and *. Parenthesize the finite product-sum forms.
+region = region.replace(
+    'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
+    '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
+region = region.replace(
+    'c * eval y ρ + eval x ρ * c',
+    '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
 # Normalize mixed arithmetic/comparison precedence only inside OrderedRing.
@@ -70,4 +76,4 @@ for old_sig, new_sig in replacements.items():
         region = region.replace(old_sig, new_sig)
         changed += count
 path.write_text(text[:start] + region + text[end:])
-print(f'algebra-normalization={changed}; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True')
+print(f'algebra-normalization={changed}; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; chad-product-sum-parenthesized=True')
