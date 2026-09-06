@@ -19,6 +19,17 @@ new = '''vSub {S} = zipWithV minus
 if old in text:
     text = text.replace(old, new, 1)
 
+# Close the layer-normalisation helper with an explicit scalar signature.
+old = '''  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)
+  centered x = x + neg μ
+'''
+new = '''  μ = vSum xs * SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)
+  centered : Scalar S → Scalar S
+  centered x = x + neg μ
+'''
+if old in text:
+    text = text.replace(old, new, 1)
+
 # Alpha-rename the local EfficientCHAD scalar alias to avoid collision with Ring.R.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
@@ -76,4 +87,4 @@ for old_sig, new_sig in replacements.items():
         region = region.replace(old_sig, new_sig)
         changed += count
 path.write_text(text[:start] + region + text[end:])
-print(f'algebra-normalization={changed}; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; chad-product-sum-parenthesized=True')
+print(f'algebra-normalization={changed}; centered-signature=True; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; chad-product-sum-parenthesized=True')
