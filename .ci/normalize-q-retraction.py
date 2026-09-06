@@ -36,6 +36,28 @@ while i < len(lines):
     i += 1
 
 text = ''.join(out)
+
+# The source carries the qProjectionFixedPoint type as a commented header
+# followed by an active continuation. Normalize that malformed split into
+# one ordinary declaration so the kernel sees the intended retraction lemma.
+fixed_marker = '-- qProjectionFixedPoint_v147 : ∀ {S n}'
+fixed_end = 'qProjectionFixedPoint_v147 = qProjectionRetraction_v147'
+fixed_start = text.find(fixed_marker)
+fixed_stop = text.find(fixed_end, fixed_start)
+fixed = False
+if fixed_start >= 0 and fixed_stop >= fixed_start:
+    fixed_stop += len(fixed_end)
+    replacement = '''qProjectionFixedPoint_v147 : ∀ {S n}
+  (D : QProjectionDecisionAlgebra_v140 S)
+  (budget : Scalar S)
+  (p x : VecS S n) →
+  (∀ i → zero ≤ indexV p i) →
+  weightedExposure_v147 p x ≤ budget →
+  QRun_v142.projection (qRun_v142 D budget p x) ≡ p
+qProjectionFixedPoint_v147 = qProjectionRetraction_v147'''
+    text = text[:fixed_start] + replacement + text[fixed_stop:]
+    fixed = True
+
 marker = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 start = text.find(marker)
 terminal = False
@@ -53,7 +75,7 @@ if start >= 0:
               (QTerminalSolution_v147.multiplier t)
               (indexV a i)
               (indexV (QTerminalSolution_v147.x t) i *
-               indexV (QTerminalSolution_v147.x t) i)))
+               (indexV (QTerminalSolution_v147.x t) i))))
           (cong (λ v → indexV v i) ha))
         (trans
           (cong
@@ -61,7 +83,7 @@ if start >= 0:
               (qResidual_v142 m
                 (indexV (QTerminalSolution_v147.alpha u) i)
                 (indexV (QTerminalSolution_v147.x t) i *
-                 indexV (QTerminalSolution_v147.x t) i)))
+                 (indexV (QTerminalSolution_v147.x t) i))))
             hmu)
           (trans
             (cong
@@ -72,6 +94,14 @@ if start >= 0:
                   (indexV v i * indexV v i)))
               hx)
             (sym (QTerminalSolution_v147.stationarity u i))))))
+
+qTerminalConfluence_v147 : ∀ {S n}
+  (t u : QTerminalSolution_v147 S n) →
+  QTerminalSolution_v147.alpha t ≡ QTerminalSolution_v147.alpha u →
+  QTerminalSolution_v147.x t ≡ QTerminalSolution_v147.x u →
+  QTerminalSolution_v147.multiplier t ≡ QTerminalSolution_v147.multiplier u →
+  QTerminalSolution_v147.projection t ≡ QTerminalSolution_v147.projection u
+qTerminalConfluence_v147 = qTerminalProjectionUnique_v147
 '''
         text = text[:start] + replacement + text[sep:]
         terminal = True
@@ -80,6 +110,8 @@ if not q:
     raise SystemExit('q-retraction multiline declaration not found')
 if not terminal:
     raise SystemExit('q-terminal uniqueness declaration not found')
+if not fixed:
+    raise SystemExit('q fixed-point declaration not found')
 
 path.write_text(text)
-print(f'q-retraction-normalized={q}; accumulate-normalized={acc}; terminal-uniqueness-normalized={terminal}')
+print(f'q-retraction-normalized={q}; accumulate-normalized={acc}; fixed-point-normalized={fixed}; terminal-uniqueness-normalized={terminal}; confluence-restored=True')
