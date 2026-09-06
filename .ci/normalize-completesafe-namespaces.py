@@ -29,9 +29,17 @@ replacements = {
     'sampleTime + delay': 'Nat._+_ sampleTime delay',
     'delay₁ + delay₂': 'Nat._+_ delay₁ delay₂',
     '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d': '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → Ring._+_ ring a c ≤ Ring._+_ ring b d',
+    '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ a * b': '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ Ring._*_ ring a b',
+    '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b': '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → Ring._*_ ring c a ≤ Ring._*_ ring c b',
     '    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d': '    ltAdd : ∀ {a b c d} → a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
+    '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b': '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → Ring._*_ ring c a < Ring._*_ ring c b',
+    '    mulLtPosCancelLeft : ∀ {a b c} → c * a < c * b → zero < c → a < b': '    mulLtPosCancelLeft : ∀ {a b c} → Ring._*_ ring c a < Ring._*_ ring c b → zero < c → a < b',
+    '    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b': '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b',
+    '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → x ≠ zero → zero < Ring._*_ ring x x',
+    '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
+    '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-Nat-arithmetic-and-OrderedRing-addition')
+print('completesafe-namespace-normalization=qualified-Nat-arithmetic-and-OrderedRing-operators')
