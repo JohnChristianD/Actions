@@ -44,11 +44,27 @@ region = re.sub(r'(?<![A-Za-z0-9_.])R(?![A-Za-z0-9_])', 'CR', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
+# Qualify the coordinatewise ring operations which remain overloaded after the carrier rename.
+for old, new in [
+    ('a i + b i', 'Ring._+_ Rg (a i) (b i)'),
+    ('a i * b i', 'Ring._*_ Rg (a i) (b i)'),
+    ('eval x ρ + eval y ρ', 'Ring._+_ Rg (eval x ρ) (eval y ρ)'),
+    ('eval x ρ * eval y ρ', 'Ring._*_ Rg (eval x ρ) (eval y ρ)'),
+    ('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
+     '(Ring._*_ Rg (eval y ρ) (coeff x ρ i)) + (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
+    ('c * eval y ρ + eval x ρ * c',
+     '(Ring._*_ Rg c (eval y ρ)) + (Ring._*_ Rg (eval x ρ) c)'),
+]:
+    region = region.replace(old, new)
+# Remaining whole-line coordinate arithmetic.
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
+region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \+ ([A-Za-z][A-Za-z0-9_]*)$', r'\1Ring._+_ Rg \2 \3', region)
-region = region.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
-region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
+# The proof congruence operators must also be anchored to this local carrier.
+region = region.replace('cong₂ _+_', 'cong₂ (Ring._+_ Rg)')
+region = region.replace('cong₂ _*_ ', 'cong₂ (Ring._*_ Rg) ')
+region = region.replace('cong₂ _*_)', 'cong₂ (Ring._*_ Rg))')
 text = text[:start] + region + text[end:]
 
 # Normalize OrderedRing fixity and primitive operations only inside the record.
@@ -97,5 +113,6 @@ print(
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'EfficientCHAD-local-carrier-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
     'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
-    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
+    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True; '
+    'EfficientCHAD-congruence-operations-qualified=True'
 )
