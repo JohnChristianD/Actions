@@ -30,9 +30,8 @@ text = text.replace(
 )
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 
-# Correct the implicit argument pattern: the zero constructor belongs to the
-# Nat length parameter, not the element type parameter A.
-text = text.replace('tabulateV {zero} f = []', 'tabulateV {A} {zero} f = []', 1)
+# Correct the implicit argument pattern without shadowing the Nat constructor.
+text = text.replace('tabulateV {A} {zero} f = []', 'tabulateV {A} {Nat.zero} f = []', 1)
 
 # Normalize finite CHAD local carrier/fixity.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
@@ -95,8 +94,8 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
-    'tabulateV-length-pattern-normalized=True; global-ring-open-removed=True; '
-    'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
+    'tabulateV-length-pattern-normalized=True; tabulateV-zero-qualified=True; '
+    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
