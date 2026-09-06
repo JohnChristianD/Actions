@@ -18,5 +18,5 @@ representationBoundary : ∀ {A B : Set} (r : Representation A B) x →
   applyRepresentation r x ≡ Representation.tanh r (Representation.layerNorm r (Representation.affine r x))
 representationBoundary r x = refl
 
-finiteVJP : ∀ {A B : Set} → (A → B) → (B → A) → A → B → A
-finiteVJP forward pullback x dy = pullback x dy
+finiteVJP : ∀ {A B : Set} → (A → B) → (B → A) → B → A
+finiteVJP forward pullback dy = pullback dy
