@@ -41,12 +41,11 @@ region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.r
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
-region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'CR', region)
-region = region.replace('Ring.CR Rg', 'Ring.R Rg')
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2) (\3 i)', region)
-region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
+region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \+ ([A-Za-z][A-Za-z0-9_]*)$', r'\1Ring._+_ Rg \2 \3', region)
 region = region.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '(eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)')
+region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
 # Normalize OrderedRing fixity and primitive operations only inside the record.
@@ -94,5 +93,6 @@ print(
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'EfficientCHAD-orderedRing-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
+    'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
 )
