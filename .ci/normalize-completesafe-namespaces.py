@@ -1,6 +1,7 @@
 from pathlib import Path
 import re
 
+# Canonical safe-closure namespace normalizer: deterministic structural compatibility only.
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
 replacements = {
@@ -49,11 +50,10 @@ replacements = {
 for old, new in replacements.items():
     s = s.replace(old, new)
 
-# These field declarations are parser-sensitive because Ring exports `_+_` and `_*_`.
-# Normalize the complete declaration line after all earlier structural repairs.
+# Final parser-sensitive pass over the declaration lines themselves.
 s = re.sub(
     r'(?m)^    mulNonneg : (.*?) → zero ≤ a \* b$',
-    r'    mulNonneg : \1 → Ring._*_ ring a b',
+    r'    mulNonneg : \1 → zero ≤ Ring._*_ ring a b',
     s,
 )
 s = re.sub(
