@@ -22,28 +22,14 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          old = '''      initialForm : QRun_v142.projection
-          (initialQRun_v142 D budget p x) ≡ p =
-        trans
-          refl
-          (trans
-            (cong (λ mu → qCandidate_v142 D mu
-              (allActive_v147 {n = _}) p x) muZero)
-            (qCandidateZero_v147 D p x hp))
-'''
-          new = '''      initialForm =
-        trans
-          refl
-          (trans
-            (cong (λ mu → qCandidate_v142 D mu
-              (allActive_v147 {n = _}) p x) muZero)
-            (qCandidateZero_v147 D p x hp))
-'''
-          if old not in s:
-              raise SystemExit('expected initialForm binding not found')
-          p.write_text(s.replace(old, new, 1))
+          pattern = r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
+          s2, count = re.subn(pattern, r'\1initialForm =', s, count=1)
+          if count != 1:
+              raise SystemExit(f'expected exactly one initialForm binding, found {count}')
+          p.write_text(s2)
           PY
       - name: Authoritative Agda safe check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
