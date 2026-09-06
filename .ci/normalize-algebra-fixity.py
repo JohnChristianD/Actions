@@ -65,7 +65,7 @@ replacements = {
     'subLtZero : ∀ {a b} → a + neg b < zero → a < b': 'subLtZero : ∀ {a b} → (a + neg b) < zero → a < b',
     'squarePositive : ∀ {x} → x ≠ zero → zero < x * x': 'squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < (x * x)',
     'squareNonnegative : ∀ x → zero ≤ x * x': 'squareNonnegative : ∀ x → zero ≤ (x * x)',
-    'absTriangle : ∀ x y → zero ≤ abs (x + y) → abs (x + y) ≤ abs x + abs y': 'absTriangle : ∀ x y → zero ≤ abs (x + y) → abs (x + y) ≤ (abs x + abs y)',
+    'absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': 'absTriangle : ∀ x y → abs (x + y) ≤ (abs x + abs y)',
 }
 changed = 0
 for old_sig, new_sig in replacements.items():
