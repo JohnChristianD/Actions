@@ -45,6 +45,8 @@ jobs:
         run: agda --safe Exotic/ERL/Stages/Stage07_OuterFinite.agda
       - name: Check Stage 08 integration
         run: agda --safe Exotic/ERL/Stages/Stage08_Integration.agda
+      - name: Check Stage 09 finite local convergence
+        run: agda --safe Exotic/ERL/Stages/Stage09_FiniteLocalConvergence.agda
       - name: Check modular canonical root
         run: agda --safe Exotic/ERL/Stages/ModularCanonical.agda
       - name: Authoritative complete kernel regression
