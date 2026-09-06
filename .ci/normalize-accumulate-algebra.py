@@ -10,6 +10,7 @@ region = text[start:end]
 replacements = {
     's j + c': 'Ring._+_ Rg (s j) c',
     'runState s i + b i': 'Ring._+_ Rg (runState s i) (b i)',
+    'c * coeff e ρ i': 'Ring._*_ Rg c (coeff e ρ i)',
 }
 changed = 0
 for old, new in replacements.items():
@@ -19,4 +20,4 @@ for old, new in replacements.items():
         changed += n
 text = text[:start] + region + text[end:]
 path.write_text(text)
-print(f'accumulate-algebra-qualified={changed}')
+print(f'accumulate-and-vjp-scalar-algebra-qualified={changed}')
