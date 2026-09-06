@@ -20,4 +20,18 @@ jobs:
       - name: Normalize q-retraction structure
         run: python3 .ci/normalize-q-retraction.py
       - name: Kernel check
-        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+        id: kernel
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda 2>&1 | tee agda-kernel.log
+      - name: Upload kernel diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agda-kernel-diagnostics
+          path: agda-kernel.log
+      - name: Enforce kernel gate
+        if: always()
+        run: test "${{ steps.kernel.outcome }}" = "success"
