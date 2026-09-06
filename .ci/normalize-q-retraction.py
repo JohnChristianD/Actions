@@ -42,11 +42,36 @@ terminal = False
 if start >= 0:
     sep = text.find('\n------------------------------------------------------------------------', start)
     if sep >= 0:
-        replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
+        replacement = '''qTerminalProjectionUnique_v147 t u ha hx hmu =
   vectorExt_v147 (λ i →
     trans
       (QTerminalSolution_v147.stationarity t i)
-      (sym (QTerminalSolution_v147.stationarity u i)))
+      (trans
+        (cong
+          (λ a → SmoothAlgebra.max _ zero
+            (qResidual_v142
+              (QTerminalSolution_v147.multiplier t)
+              (indexV a i)
+              (indexV (QTerminalSolution_v147.x t) i *
+               indexV (QTerminalSolution_v147.x t) i)))
+          (cong (λ v → indexV v i) ha))
+        (trans
+          (cong
+            (λ m → SmoothAlgebra.max _ zero
+              (qResidual_v142 m
+                (indexV (QTerminalSolution_v147.alpha u) i)
+                (indexV (QTerminalSolution_v147.x t) i *
+                 indexV (QTerminalSolution_v147.x t) i)))
+            hmu)
+          (trans
+            (cong
+              (λ v → SmoothAlgebra.max _ zero
+                (qResidual_v142
+                  (QTerminalSolution_v147.multiplier u)
+                  (indexV (QTerminalSolution_v147.alpha u) i)
+                  (indexV v i * indexV v i)))
+              hx)
+            (sym (QTerminalSolution_v147.stationarity u i))))))
 '''
         text = text[:start] + replacement + text[sep:]
         terminal = True
