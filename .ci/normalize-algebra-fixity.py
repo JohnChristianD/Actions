@@ -19,7 +19,6 @@ text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates 
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
 
-# SmoothAlgebra max is binary; keep the other analytic primitives unary.
 text = text.replace(
     '    sqrt recip max min : R → R\n'
     '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
@@ -50,10 +49,7 @@ region = region.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '
 region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
-# Catch any remaining exact unqualified projection outside EfficientCHAD too.
-text = text.replace('OrderedRing.ring orderedRing', 'OrderedRing.ring (SmoothAlgebra.orderedRing S)')
-
-# Normalize OrderedRing fixity and primitive operations.
+# Normalize OrderedRing fixity and primitive operations only inside the record.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -89,14 +85,16 @@ for old, new in [
     region = region.replace(old, new)
 text = text[:start] + region + text[end:]
 
-# Keep SmoothAlgebra's carrier tied to its concrete ordered ring.
-start = text.find('record SmoothAlgebra : Set₁ where')
-end = text.find('\nopen SmoothAlgebra', start)
-if start < 0 or end < 0:
-    raise SystemExit('SmoothAlgebra region not found')
-region = text[start:end]
-region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'Ring.R (OrderedRing.ring orderedRing)', region)
-text = text[:start] + region + text[end:]
+# Repair the exact overloaded OrderedRing projection in contexts that have a
+# visible SmoothAlgebra parameter S. Never rewrite the OrderedRing record itself.
+text = re.sub(
+    r'(?m)^(\s*Rg\s*=\s*OrderedRing\.ring\s+)orderedRing\s*$',
+    r'\1(SmoothAlgebra.orderedRing S)',
+    text,
+)
+
+# Keep SmoothAlgebra's own carrier declaration abstract; it lives at the
+# point where `orderedRing` is a record field and therefore needs no S.
 
 path.write_text(text)
 print(
@@ -106,6 +104,6 @@ print(
     'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
-    'EfficientCHAD-orderedRing-qualified=True; global-orderedRing-use-qualified=True; '
+    'EfficientCHAD-orderedRing-qualified=True; context-aware-orderedRing-qualified=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
 )
