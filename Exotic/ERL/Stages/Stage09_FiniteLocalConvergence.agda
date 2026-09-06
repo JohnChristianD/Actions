@@ -22,6 +22,9 @@ data _⊎_ (A B : Set) : Set where
   inj₁ : A → A ⊎ B
   inj₂ : B → A ⊎ B
 
+zeroNotSuc : ∀ {n : Nat} → zero ≡ suc n → ⊥
+zeroNotSuc ()
+
 reachesWithin :
   (terminal : I.Stage08State → Set) →
   (step : I.Stage08State → I.Stage08State) →
@@ -65,6 +68,3 @@ finiteLocalConvergenceByRanking c = go
     (go
       (CoupledRankCertificate.jointStep c s)
       (sucCancel (trans (sym hd) h)))
-
-zeroNotSuc : ∀ {n : Nat} → zero ≡ suc n → ⊥
-zeroNotSuc ()
