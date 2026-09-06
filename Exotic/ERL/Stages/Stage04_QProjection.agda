@@ -2,7 +2,10 @@
 module Exotic.ERL.Stages.Stage04_QProjection where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Builtin.Equality using (_≡_; refl; cong)
+open import Agda.Builtin.Equality using (_≡_; refl)
+
+cong : ∀ {A B : Set} {x y : A} (f : A → B) → x ≡ y → f x ≡ f y
+cong f refl = refl
 
 minNat : Nat → Nat → Nat
 minNat zero _ = zero
