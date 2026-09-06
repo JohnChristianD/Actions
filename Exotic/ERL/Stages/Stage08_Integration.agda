@@ -19,7 +19,7 @@ data OuterMethod : Set where
   openES : OuterMethod
   mr15GA : OuterMethod
 
-record Stage08State : Set where
+record Stage08State : Set₁ where
   constructor stage08
   field
     learner : LL.LinearState
@@ -95,7 +95,7 @@ record CoupledIntegrationCertificate (s : Stage08State) : Set where
       OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
 
     integratedArchive :
-      OF.Archive.best (Stage08State.archive (outerStep s))
+      OF.Archive.best (OF.Archive.best? )
       ≡
       OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
 
