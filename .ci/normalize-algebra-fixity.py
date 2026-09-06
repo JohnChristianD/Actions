@@ -38,6 +38,7 @@ if start < 0 or end < 0:
     raise SystemExit('EfficientCHAD module region not found')
 region = text[start:end]
 region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
+region = re.sub(r'(?m)^(\s*)R = Ring\.R Rg\s*$', r'\1CR = Ring.R Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
@@ -94,5 +95,6 @@ print(
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'EfficientCHAD-orderedRing-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
     'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
-    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
+    'EfficientCHAD-local-carrier-qualified=True; vector-subtraction-signature=True; '
+    'chad-product-sum-parenthesized=True'
 )
