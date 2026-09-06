@@ -35,7 +35,10 @@ jobs:
           set -o pipefail
           for stage in Exotic/ERL/FullCoupled/CI/Stage*.agda; do
             echo "=== SAFE STAGE: ${stage} ==="
-            agda --safe "${stage}" 2>&1 | tee -a agda-stages.log
+            if ! agda --safe "${stage}" 2>&1 | tee -a agda-stages.log; then
+              echo "FIRST_SAFE_STAGE_FAILURE=${stage}" | tee -a agda-stages.log
+              exit 42
+            fi
           done
       - name: Kernel check — CompleteSafe_v147
         shell: bash
