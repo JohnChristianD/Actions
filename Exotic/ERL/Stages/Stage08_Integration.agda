@@ -95,7 +95,7 @@ record CoupledIntegrationCertificate (s : Stage08State) : Set where
       OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
 
     integratedArchive :
-      OF.Archive.best (OF.Archive.best? )
+      OF.Archive.best (Stage08State.archive (outerStep s))
       ≡
       OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
 
