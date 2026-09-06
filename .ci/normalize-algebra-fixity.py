@@ -45,6 +45,11 @@ if old in text:
 # Repair all occurrences of the invalid nested LSTM gate projection.
 text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates block')
 
+# Remove the redundant global Ring open. Nested algebra records explicitly
+# open their concrete Ring witnesses, while a global open creates overloaded
+# projections/operators in partial staged modules.
+text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
+
 # Alpha-rename the local EfficientCHAD scalar alias to avoid collision with Ring.R.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
@@ -101,8 +106,8 @@ for old_sig, new_sig in replacements.items():
         region = region.replace(old_sig, new_sig)
         changed += count
 
-# Remove the global Ring.R ambiguity from nested algebra-record scopes by
-# spelling the carrier through the record's concrete Ring witness.
+# Keep record carriers explicit inside nested algebra scopes. This prevents
+# projection ambiguity even when these declarations are staged independently.
 region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'Ring.R ring', region)
 text = text[:start] + region + text[end:]
 
@@ -121,7 +126,7 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; '
-    'nested-ring-carriers-qualified=True; '
+    'global-ring-open-removed=True; nested-ring-carriers-qualified=True; '
     'centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
