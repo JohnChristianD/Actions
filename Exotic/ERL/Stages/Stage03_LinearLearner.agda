@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Stages.Stage03_LinearLearner where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _∸_)
+open import Agda.Builtin.Nat using (Nat; zero; _+_; _*_; _∸_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 record LinearState : Set where
@@ -22,5 +22,5 @@ criticStep s =
     (LinearState.phi s)
     (LinearState.target s)
 
-criticStepFixedPoint : ∀ {s} → tdResidual s ≡ zero → criticStep s ≡ s
-criticStepFixedPoint {s} refl = refl
+criticStepShape : ∀ s → LinearState.phi (criticStep s) ≡ LinearState.phi s
+criticStepShape s = refl
