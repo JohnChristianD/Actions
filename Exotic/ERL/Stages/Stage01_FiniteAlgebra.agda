@@ -20,10 +20,10 @@ natAlgebra = record
   ; mulA = _*_
   }
 
-zeroAdd : ∀ n → Nat _≡_ n
+zeroAdd : ∀ n → zero + n ≡ n
 zeroAdd n = refl
 
-zeroMul : ∀ n → Nat _≡_ zero
+zeroMul : ∀ n → zero * n ≡ zero
 zeroMul n = refl
 
 finiteDecision : ∀ a b → Bool
