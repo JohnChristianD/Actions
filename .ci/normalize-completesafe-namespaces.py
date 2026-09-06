@@ -28,8 +28,6 @@ replacements = {
     'sampleTime + (delay₁ + delay₂)': 'Nat._+_ sampleTime (Nat._+_ delay₁ delay₂)',
     'sampleTime + delay': 'Nat._+_ sampleTime delay',
     'delay₁ + delay₂': 'Nat._+_ delay₁ delay₂',
-    'a + c ≤ b + d': 'Nat._+_ a c ≤ Nat._+_ b d',
-    'a + c < b + d': 'Nat._+_ a c < Nat._+_ b d',
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
