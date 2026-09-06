@@ -14,8 +14,8 @@ concurrency:
   group: agda-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 jobs:
   kernel:
     if: ${{ github.event_name != 'pull_request_review' || github.event.pull_request != null }}
@@ -31,32 +31,33 @@ jobs:
         run: command -v agda && agda --version
       - name: Repair known Agda syntax
         run: python3 .ci/repair-agda-syntax.py
-      - name: Normalize remaining fragile local proofs
+      - name: Normalize CompleteSafe initialForm binding
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          initial = re.compile(
-              r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n'
-              r'\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
-          )
-          s = initial.sub(r'\1initialForm =', s)
-          marker = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
-          start = s.find(marker)
-          if start >= 0:
-              sep = s.find('\n------------------------------------------------------------------------', start)
-              replacement = '''qTerminalProjectionUnique_v147 t u refl refl refl =
-  vectorExt_v147 (λ i →
-    trans
-      (QTerminalSolution_v147.stationarity _ i)
-      (sym (QTerminalSolution_v147.stationarity _ i)))
+          old = '''      initialForm : QRun_v142.projection
+          (initialQRun_v142 D budget p x) ≡ p =
+        trans
+          refl
+          (trans
+            (cong (λ mu → qCandidate_v142 D mu
+              (allActive_v147 {n = _}) p x) muZero)
+            (qCandidateZero_v147 D p x hp))
 '''
-              if sep >= 0:
-                  s = s[:start] + replacement + s[sep:]
-          p.write_text(s)
+          new = '''      initialForm =
+        trans
+          refl
+          (trans
+            (cong (λ mu → qCandidate_v142 D mu
+              (allActive_v147 {n = _}) p x) muZero)
+            (qCandidateZero_v147 D p x hp))
+'''
+          if old not in s:
+              raise SystemExit('expected initialForm binding not found')
+          p.write_text(s.replace(old, new, 1))
           PY
       - name: Authoritative Agda --safe kernel check
         run: |
