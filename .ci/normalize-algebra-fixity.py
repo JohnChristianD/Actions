@@ -42,15 +42,8 @@ new = '''  invStd = SmoothAlgebra.recip S
 if old in text:
     text = text.replace(old, new, 1)
 
-# Repair the LSTM gate projection: gates belongs to LSTMBlock, not LSTMGates.
-old = '''lstmStep block old x =
-  let g = LSTMGates.gates (LSTMBlock.gates block)
-'''
-new = '''lstmStep block old x =
-  let g = LSTMBlock.gates block
-'''
-if old in text:
-    text = text.replace(old, new, 1)
+# Repair all occurrences of the invalid nested LSTM gate projection.
+text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates block')
 
 # Alpha-rename the local EfficientCHAD scalar alias to avoid collision with Ring.R.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
