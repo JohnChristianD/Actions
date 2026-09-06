@@ -4,7 +4,6 @@ import re
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-# Close local algebra helpers with explicit scalar types.
 for old, new in [
 ('''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n''',
  '''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n'''),
@@ -19,7 +18,7 @@ text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates 
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
 
-# max is binary; the original grouped it accidentally with unary operations.
+# max is binary; sqrt/recip/min remain unary.
 text = text.replace(
     '    sqrt recip max min : R → R\n'
     '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
@@ -28,6 +27,9 @@ text = text.replace(
     '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
     1,
 )
+
+# Nat/scalar boundary: the argument of fromNat is Nat zero, not ring zero.
+text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 
 # Normalize finite CHAD local carrier/fixity.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
@@ -42,7 +44,7 @@ region = region.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '
 region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
-# Normalize OrderedRing arithmetic fixity without altering propositions.
+# Normalize OrderedRing arithmetic fixity without modifying propositions.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -79,7 +81,7 @@ for old, new in [
     region = region.replace(old, new)
 text = text[:start] + region + text[end:]
 
-# Keep SmoothAlgebra's carrier tied to its concrete ring witness.
+# Keep SmoothAlgebra's carrier explicit and leave its scalar zero distinct from Nat.zero.
 start = text.find('record SmoothAlgebra : Set₁ where')
 end = text.find('\nopen SmoothAlgebra', start)
 if start < 0 or end < 0:
@@ -90,7 +92,7 @@ text = text[:start] + region + text[end:]
 
 path.write_text(text)
 print(
-    f'algebra-normalization={changed}; max-arity-normalized=True; '
+    f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
     'global-ring-open-removed=True; global-ordered-ring-open-removed=True; '
     'ordered-ring-primitives-qualified=True; nested-ring-carriers-qualified=True; '
     'centered-signature=True; normalise-signature=True; lstm-gates-projection=True; '
