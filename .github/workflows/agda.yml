@@ -33,20 +33,6 @@ jobs:
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize CompleteSafe Nat/Ring namespaces
         run: python3 .ci/normalize-completesafe-namespaces.py
-      - name: Normalize CompleteSafe initialForm binding
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
-          s = p.read_text()
-          pattern = r'(?m)^(\s*)initialForm\s*:\s*QRun_v142\.projection\s*\n\1\s+\(initialQRun_v142 D budget p x\)\s+≡\s+p\s*='
-          s2, count = re.subn(pattern, r'\1initialForm =', s, count=1)
-          if count != 1:
-              raise SystemExit(f'expected exactly one initialForm binding, found {count}')
-          p.write_text(s2)
-          PY
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
       - name: Authoritative Agda --safe kernel check
