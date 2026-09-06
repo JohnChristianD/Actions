@@ -4,6 +4,7 @@ import re
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
+# Explicit local algebra bindings.
 for old, new in [
 ('''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n''',
  '''vSub {S} = zipWithV minus\n  where\n  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n'''),
@@ -18,7 +19,7 @@ text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates 
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
 
-# max is binary; sqrt/recip/min remain unary.
+# SmoothAlgebra max is binary; keep the other analytic primitives unary.
 text = text.replace(
     '    sqrt recip max min : R → R\n'
     '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
@@ -27,9 +28,11 @@ text = text.replace(
     '    maxNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ max a b\n',
     1,
 )
-
-# Nat/scalar boundary: the argument of fromNat is Nat zero, not ring zero.
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
+
+# Correct the implicit argument pattern: the zero constructor belongs to the
+# Nat length parameter, not the element type parameter A.
+text = text.replace('tabulateV {zero} f = []', 'tabulateV {A} {zero} f = []', 1)
 
 # Normalize finite CHAD local carrier/fixity.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
@@ -44,7 +47,7 @@ region = region.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', '
 region = region.replace('c * eval y ρ + eval x ρ * c', '(c * eval y ρ) + (eval x ρ * c)')
 text = text[:start] + region + text[end:]
 
-# Normalize OrderedRing arithmetic fixity without modifying propositions.
+# Normalize OrderedRing fixity and make primitive ring operations explicit.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -69,7 +72,6 @@ for old_sig, new_sig in replacements.items():
     if old_sig in region:
         region = region.replace(old_sig, new_sig)
         changed += 1
-
 for old_name, new_name in [('zero','Ring.zero ring'), ('one','Ring.one ring'), ('neg','Ring.neg ring')]:
     region = re.sub(rf'(?<![A-Za-z0-9_.]){re.escape(old_name)}(?![A-Za-z0-9_])', new_name, region)
 for old, new in [
@@ -81,7 +83,7 @@ for old, new in [
     region = region.replace(old, new)
 text = text[:start] + region + text[end:]
 
-# Keep SmoothAlgebra's carrier explicit and leave its scalar zero distinct from Nat.zero.
+# Keep SmoothAlgebra's carrier tied to its concrete ordered ring.
 start = text.find('record SmoothAlgebra : Set₁ where')
 end = text.find('\nopen SmoothAlgebra', start)
 if start < 0 or end < 0:
@@ -93,9 +95,9 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
-    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; '
-    'ordered-ring-primitives-qualified=True; nested-ring-carriers-qualified=True; '
-    'centered-signature=True; normalise-signature=True; lstm-gates-projection=True; '
-    'local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True; '
-    'chad-product-sum-parenthesized=True'
+    'tabulateV-length-pattern-normalized=True; global-ring-open-removed=True; '
+    'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
+    'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
+    'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
+    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
 )
