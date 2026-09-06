@@ -2,9 +2,9 @@
 name: Agda CI, tooling, and closure persistence
 on:
   push:
-    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-terminal-uniqueness.py']
+    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-completesafe-let-bindings.py', '.ci/normalize-terminal-uniqueness.py']
   pull_request:
-    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-terminal-uniqueness.py']
+    paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-completesafe-let-bindings.py', '.ci/normalize-terminal-uniqueness.py']
   pull_request_review:
     types: [submitted]
   issues:
@@ -33,6 +33,8 @@ jobs:
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize CompleteSafe Nat/Ring namespaces
         run: python3 .ci/normalize-completesafe-namespaces.py
+      - name: Normalize CompleteSafe typed let bindings
+        run: python3 .ci/normalize-completesafe-let-bindings.py
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
       - name: Authoritative Agda --safe kernel check
