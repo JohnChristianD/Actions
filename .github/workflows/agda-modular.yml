@@ -1,0 +1,40 @@
+name: Agda modular canonical gate
+
+on:
+  push:
+    branches: ['ci/agda-v147-kernel-live']
+    paths:
+      - 'Exotic/ERL/Stages/**'
+      - '.ci/**'
+      - '.github/workflows/agda-modular.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  modular:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: agda/agda-setup-action@v1.0.0
+        with:
+          agda-version: '2.8.0'
+      - name: Check Stage 01 finite algebra
+        run: agda --safe Exotic/ERL/Stages/Stage01_FiniteAlgebra.agda
+      - name: Check Stage 02 CHAD
+        run: agda --safe Exotic/ERL/Stages/Stage02_CHAD.agda
+      - name: Check Stage 03 linear learner
+        run: agda --safe Exotic/ERL/Stages/Stage03_LinearLearner.agda
+      - name: Check Stage 04 q-projection
+        run: agda --safe Exotic/ERL/Stages/Stage04_QProjection.agda
+      - name: Check Stage 05 representation
+        run: agda --safe Exotic/ERL/Stages/Stage05_Representation.agda
+      - name: Check Stage 06 coupled learner
+        run: agda --safe Exotic/ERL/Stages/Stage06_CoupledLearner.agda
+      - name: Check Stage 07 outer finite archive
+        run: agda --safe Exotic/ERL/Stages/Stage07_OuterFinite.agda
+      - name: Check Stage 08 integration
+        run: agda --safe Exotic/ERL/Stages/Stage08_Integration.agda
+      - name: Check modular canonical root
+        run: agda --safe Exotic/ERL/Stages/ModularCanonical.agda
