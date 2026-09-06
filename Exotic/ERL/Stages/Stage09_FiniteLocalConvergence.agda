@@ -54,7 +54,7 @@ finiteLocalConvergenceByRanking :
     (CoupledRankCertificate.jointStep c)
     (CoupledRankCertificate.rank c s)
     s
-finiteLocalConvergenceByRanking c = go
+finiteLocalConvergenceByRanking c s = go s refl
   where
   go : ∀ {n : Nat} (s : I.Stage08State) →
     CoupledRankCertificate.rank c s ≡ n →
