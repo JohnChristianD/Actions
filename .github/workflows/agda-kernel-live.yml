@@ -23,5 +23,18 @@ jobs:
         run: python3 .ci/normalize-completesafe-let-bindings.py
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
+      - name: Diagnose transformed CompleteSafe parser frontier
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          lines = p.read_text().splitlines()
+          for n in range(max(1, 2532), min(len(lines), 2552) + 1):
+              print(f'{n}: {lines[n-1]}')
+          for n, line in enumerate(lines, 1):
+              if re.search(r'^\s+[A-Za-z][A-Za-z0-9_]*\s*:\s*.+\s=', line):
+                  print(f'possible-typed-let={n}:{line}')
+          PY
       - name: Authoritative Agda safe check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
