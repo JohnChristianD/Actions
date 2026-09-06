@@ -8,8 +8,12 @@ replacements = {
     '      hlt : alpha < mu * (x * x) =': '      hlt =',
     '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =': '      leftNorm =',
     '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =': '      rightNorm =',
+    '        lhs : n * (d + neg z) ≡ base + neg (n * z) =': '        lhs =',
+    '        rhs : (n + neg y) * d ≡ base + neg (y * d) =': '        rhs =',
     '        hzero : d * zero ≡ zero =': '        hzero =',
+    '        hone : zero < one =': '        hone =',
     '      hdef : hb ≡ CoupledHyperParameters_v146.q h * e =': '      hdef =',
+    '      hcancel : e * SmoothAlgebra.recip _ e ≡ one =': '      hcancel =',
 }
 changed = 0
 for old, new in replacements.items():
