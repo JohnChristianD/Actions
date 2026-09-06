@@ -17,6 +17,5 @@ record Archive : Set where
 insert : Nat → Archive → Archive
 insert x a = archive (maxNat x (Archive.best a))
 
-insertSelf : ∀ x → insert x (archive x) ≡ archive x
-insertSelf zero = refl
-insertSelf (suc x) = refl
+insertShape : ∀ x a → Archive.best (insert x a) ≡ maxNat x (Archive.best a)
+insertShape x a = refl
