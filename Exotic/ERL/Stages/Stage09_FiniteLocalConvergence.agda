@@ -17,6 +17,9 @@ sucCancel refl = refl
 
 data ⊥ : Set where
 
+⊥-elim : ∀ {A : Set} → ⊥ → A
+⊥-elim ()
+
 infixr 1 _⊎_
 data _⊎_ (A B : Set) : Set where
   inj₁ : A → A ⊎ B
@@ -61,7 +64,8 @@ finiteLocalConvergenceByRanking c = go
       n s
   go {zero} s h with CoupledRankCertificate.terminalOrDrop c s
   ... | inj₁ hs = hs
-  ... | inj₂ hd = zeroNotSuc (trans (sym h) hd)
+  ... | inj₂ hd =
+    ⊥-elim (zeroNotSuc (trans (sym h) hd))
   go {suc n} s h with CoupledRankCertificate.terminalOrDrop c s
   ... | inj₁ hs = inj₁ hs
   ... | inj₂ hd = inj₂
