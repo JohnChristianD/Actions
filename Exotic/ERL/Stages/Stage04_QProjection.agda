@@ -1,14 +1,19 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Stages.Stage04_QProjection where
 
-open import Agda.Builtin.Nat using (Nat; _∸_)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
-qProject : Nat → Nat → Nat
-qProject h q = h ∸ (h ∸ q)
+minNat : Nat → Nat → Nat
+minNat zero _ = zero
+minNat (suc h) zero = zero
+minNat (suc h) (suc q) = suc (minNat h q)
 
-qProjectBounded : ∀ h q → qProject h q ≡ h ∸ (h ∸ q)
-qProjectBounded h q = refl
+qProject : Nat → Nat → Nat
+qProject h q = minNat h q
+
+qProjectShape : ∀ h q → qProject h q ≡ minNat h q
+qProjectShape h q = refl
 
 qProjectionWellFormed : ∀ h q → qProject h q ≡ qProject h q
 qProjectionWellFormed h q = refl
