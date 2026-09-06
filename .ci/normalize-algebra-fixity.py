@@ -1,36 +1,32 @@
 from pathlib import Path
+import re
 
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
-replacements = {
-    'addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d':
-        'addLe : ∀ {a b c d} → a ≤ b → c ≤ d → (a + c) ≤ (b + d)',
-    'mulNonneg : ∀ {a b} → zero ≤ a * b':
-        'mulNonneg : ∀ {a b} → zero ≤ (a * b)',
-    'mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b':
-        'mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → (c * a) ≤ (c * b)',
-    'ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d':
-        'ltAdd : ∀ {a b c d} → a < b → c < d → (a + c) < (b + d)',
-    'addLtLeft : ∀ {a b c} → a < b → c + a < c + b':
-        'addLtLeft : ∀ {a b c} → a < b → (c + a) < (c + b)',
-    'mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b':
-        'mulLtPosLeft : ∀ {a b c} → a < b → zero < c → (c * a) < (c * b)',
-    'mulLtPosCancelLeft : ∀ {a b c} → c * a < c * b → zero < c → a < b':
-        'mulLtPosCancelLeft : ∀ {a b c} → (c * a) < (c * b) → zero < c → a < b',
-    'subLtZero : ∀ {a b} → a + neg b < zero → a < b':
-        'subLtZero : ∀ {a b} → (a + neg b) < zero → a < b',
-    'squarePositive : ∀ {x} → x ≠ zero → zero < x * x':
-        'squarePositive : ∀ {x} → x ≠ zero → zero < (x * x)',
-    'squareNonnegative : ∀ x → zero ≤ x * x':
-        'squareNonnegative : ∀ x → zero ≤ (x * x)',
-    'absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y':
-        'absTriangle : ∀ x y → abs (x + y) ≤ (abs x + abs y)',
-}
+start = text.find('record OrderedRing : Set₁ where')
+end = text.find('\nopen OrderedRing', start)
+if start < 0 or end < 0:
+    raise SystemExit('OrderedRing region not found')
+region = text[start:end]
+
+# Only rewrite arithmetic appearing inside comparison expressions in OrderedRing.
+# This avoids touching arbitrary algebraic terms elsewhere and is idempotent.
+lines = []
 changed = 0
-for old, new in replacements.items():
-    count = text.count(old)
-    if count:
-        text = text.replace(old, new)
-        changed += count
-path.write_text(text)
-print(f'mixed-order-expressions-parenthesized={changed > 0}; replacements={changed}')
+for line in region.splitlines(True):
+    if '≤' not in line and '<' not in line:
+        lines.append(line)
+        continue
+    original = line
+    # Parenthesize products used as operands of ≤ or <.
+    line = re.sub(r'(?<!\()[A-Za-z_][A-Za-z0-9_\']* \* [A-Za-z_][A-Za-z0-9_\']*(?!\))',
+                  lambda m: '(' + m.group(0) + ')', line)
+    # Parenthesize sums used as operands of ≤ or < when not already grouped.
+    line = re.sub(r'(?<!\()[A-Za-z_][A-Za-z0-9_\']*(?: + neg [A-Za-z_][A-Za-z0-9_\']*| + [A-Za-z_][A-Za-z0-9_\']*) (?=≤|<)',
+                  lambda m: '(' + m.group(0).rstrip() + ') ', line)
+    if line != original:
+        changed += 1
+    lines.append(line)
+region2 = ''.join(lines)
+path.write_text(text[:start] + region2 + text[end:])
+print(f'ordered-ring-comparison-normalized={changed > 0}; lines={changed}')
