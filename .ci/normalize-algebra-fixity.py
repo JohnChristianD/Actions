@@ -31,7 +31,6 @@ text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero}
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
                     'tabulateV {A = A} {n = Nat.suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))', 1)
 
-# Normalize the local EfficientCHAD carrier and all of its downstream uses.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
 if start < 0 or end < 0:
@@ -39,46 +38,44 @@ if start < 0 or end < 0:
 region = text[start:end]
 region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
 region = re.sub(r'(?m)^(\s*)R = Ring\.R Rg\s*$', r'\1CR = Ring.R Rg', region)
-# Rename only bare local R tokens; Ring.R and other qualified occurrences remain intact.
 region = re.sub(r'(?<![A-Za-z0-9_.])R(?![A-Za-z0-9_])', 'CR', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
-# Exact scalar and coordinate arithmetic in the EfficientCHAD core. Keep the transformations
-# semantic and local instead of globally rewriting overloaded notation.
+
 for old, new in [
     ('addCot a b i = a i + b i', 'addCot a b i = Ring._+_ Rg (a i) (b i)'),
     ('scaleCot a v i = a * v i', 'scaleCot a v i = Ring._*_ Rg a (v i)'),
     ('negCot v i = neg (v i)', 'negCot v i = Ring.neg Rg (v i)'),
-    ('eval (add x y) ρ = eval x ρ + eval y ρ',
-     'eval (add x y) ρ = Ring._+_ Rg (eval x ρ) (eval y ρ)'),
-    ('eval (mul x y) ρ = eval x ρ * eval y ρ',
-     'eval (mul x y) ρ = Ring._*_ Rg (eval x ρ) (eval y ρ)'),
-    ('eval (negE x) ρ = neg (eval x ρ)',
-     'eval (negE x) ρ = Ring.neg Rg (eval x ρ)'),
-    ('coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i',
-     'coeff (add x y) ρ i = Ring._+_ Rg (coeff x ρ i) (coeff y ρ i)'),
+    ('eval (add x y) ρ = eval x ρ + eval y ρ', 'eval (add x y) ρ = Ring._+_ Rg (eval x ρ) (eval y ρ)'),
+    ('eval (mul x y) ρ = eval x ρ * eval y ρ', 'eval (mul x y) ρ = Ring._*_ Rg (eval x ρ) (eval y ρ)'),
+    ('eval (negE x) ρ = neg (eval x ρ)', 'eval (negE x) ρ = Ring.neg Rg (eval x ρ)'),
+    ('eval (expE x) ρ = exp (eval x ρ)', 'eval (expE x) ρ = SmoothAlgebra.exp S (eval x ρ)'),
+    ('eval (logE x) ρ = log (eval x ρ)', 'eval (logE x) ρ = SmoothAlgebra.log S (eval x ρ)'),
+    ('eval (tanhE x) ρ = tanh (eval x ρ)', 'eval (tanhE x) ρ = SmoothAlgebra.tanh S (eval x ρ)'),
+    ('eval (sigmoidE x) ρ = sigmoid (eval x ρ)', 'eval (sigmoidE x) ρ = SmoothAlgebra.sigmoid S (eval x ρ)'),
+    ('coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i', 'coeff (add x y) ρ i = Ring._+_ Rg (coeff x ρ i) (coeff y ρ i)'),
     ('coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
      'coeff (mul x y) ρ i = (Ring._*_ Rg (eval y ρ) (coeff x ρ i)) + (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
-    ('coeff (negE x) ρ i = neg (coeff x ρ i)',
-     'coeff (negE x) ρ i = Ring.neg Rg (coeff x ρ i)'),
+    ('coeff (negE x) ρ i = neg (coeff x ρ i)', 'coeff (negE x) ρ i = Ring.neg Rg (coeff x ρ i)'),
+    ('coeff (expE x) ρ i = coeff x ρ i * dexp (eval x ρ)', 'coeff (expE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dexp (eval x ρ))'),
+    ('coeff (logE x) ρ i = coeff x ρ i * dlog (eval x ρ)', 'coeff (logE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dlog (eval x ρ))'),
+    ('coeff (tanhE x) ρ i = coeff x ρ i * dtanh (eval x ρ)', 'coeff (tanhE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dtanh (eval x ρ))'),
+    ('coeff (sigmoidE x) ρ i = coeff x ρ i * dsigmoid (eval x ρ)', 'coeff (sigmoidE x) ρ i = Ring._*_ Rg (coeff x ρ i) (dsigmoid (eval x ρ))'),
     ('  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)',
      '  primalCorrect (add x y) ρ = cong₂ (Ring._+_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
     ('  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)',
      '  primalCorrect (mul x y) ρ = cong₂ (Ring._*_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
     ('  primalCorrect (negE x) ρ = cong neg (primalCorrect x ρ)',
      '  primalCorrect (negE x) ρ = cong (Ring.neg Rg) (primalCorrect x ρ)'),
-    ('  runState (runBack s) = runState s', '  runState (runBack s) = runState s'),
-    ('accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c',
-     'accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = Ring._+_ Rg (s j) c'),
-    ('runBack e ρ c s =\n    let b = Pullback.back (pull e ρ) c in\n    state (λ i → runState s i + b i)',
-     'runBack e ρ c s =\n    let b = Pullback.back (pull e ρ) c in\n    state (λ i → Ring._+_ Rg (runState s i) (b i))'),
-    ('  back = λ _ → zeroCot', '  back = λ _ → zeroCot'),
-]:
-    region = region.replace(old, new)
-
-# Pullback and VJP scalar arithmetic.
-for old, new in [
+    ('  primalCorrect (expE x) ρ = cong exp (primalCorrect x ρ)',
+     '  primalCorrect (expE x) ρ = cong (SmoothAlgebra.exp S) (primalCorrect x ρ)'),
+    ('  primalCorrect (logE x) ρ = cong log (primalCorrect x ρ)',
+     '  primalCorrect (logE x) ρ = cong (SmoothAlgebra.log S) (primalCorrect x ρ)'),
+    ('  primalCorrect (tanhE x) ρ = cong tanh (primalCorrect x ρ)',
+     '  primalCorrect (tanhE x) ρ = cong (SmoothAlgebra.tanh S) (primalCorrect x ρ)'),
+    ('  primalCorrect (sigmoidE x) ρ = cong sigmoid (primalCorrect x ρ)',
+     '  primalCorrect (sigmoidE x) ρ = cong (SmoothAlgebra.sigmoid S) (primalCorrect x ρ)'),
     ('      { value = value px + value py', '      { value = Ring._+_ Rg (value px) (value py)'),
     ('      { value = vx * vy', '      { value = Ring._*_ Rg vx vy'),
     ('      ; back = λ c → addCot (back px (c * vy)) (back py (c * vx))',
@@ -86,32 +83,32 @@ for old, new in [
     ('    in record { value = neg (value px) ; back = λ c → negCot (back px c) }',
      '    in record { value = Ring.neg Rg (value px) ; back = λ c → negCot (back px c) }'),
     ('    in record { value = exp vx ; back = λ c → back px (c * dexp vx) }',
-     '    in record { value = exp vx ; back = λ c → back px (Ring._*_ Rg c (dexp vx)) }'),
+     '    in record { value = SmoothAlgebra.exp S vx ; back = λ c → back px (Ring._*_ Rg c (dexp vx)) }'),
     ('    in record { value = log vx ; back = λ c → back px (c * dlog vx) }',
-     '    in record { value = log vx ; back = λ c → back px (Ring._*_ Rg c (dlog vx)) }'),
+     '    in record { value = SmoothAlgebra.log S vx ; back = λ c → back px (Ring._*_ Rg c (dlog vx)) }'),
     ('    in record { value = tanh vx ; back = λ c → back px (c * dtanh vx) }',
-     '    in record { value = tanh vx ; back = λ c → back px (Ring._*_ Rg c (dtanh vx)) }'),
+     '    in record { value = SmoothAlgebra.tanh S vx ; back = λ c → back px (Ring._*_ Rg c (dtanh vx)) }'),
     ('    in record { value = sigmoid vx ; back = λ c → back px (c * dsigmoid vx) }',
-     '    in record { value = sigmoid vx ; back = λ c → back px (Ring._*_ Rg c (dsigmoid vx)) }'),
+     '    in record { value = SmoothAlgebra.sigmoid S vx ; back = λ c → back px (Ring._*_ Rg c (dsigmoid vx)) }'),
     ('  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ c * coeff e ρ i',
      '  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ Ring._*_ Rg c (coeff e ρ i)'),
-    ('        (vjpCoeff x ρ c i) (vjpCoeff y ρ c i))',
-     '        (vjpCoeff x ρ c i) (vjpCoeff y ρ c i))'),
-    ('(vjpCoeff x ρ (c * eval y ρ) i)',
-     '(vjpCoeff x ρ (Ring._*_ Rg c (eval y ρ)) i)'),
-    ('(vjpCoeff y ρ (c * eval x ρ) i)',
-     '(vjpCoeff y ρ (Ring._*_ Rg c (eval x ρ)) i)'),
-    ('      (sym (Ring.distrib Rg c (eval y ρ * coeff x ρ i) (eval x ρ * coeff y ρ i)))',
-     '      (sym (Ring.distrib Rg c (eval y ρ * coeff x ρ i) (eval x ρ * coeff y ρ i)))'),
+    ('(vjpCoeff x ρ (c * eval y ρ) i)', '(vjpCoeff x ρ (Ring._*_ Rg c (eval y ρ)) i)'),
+    ('(vjpCoeff y ρ (c * eval x ρ) i)', '(vjpCoeff y ρ (Ring._*_ Rg c (eval x ρ)) i)'),
+    ('  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c',
+     '  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = Ring._+_ Rg (s j) c'),
+    ('    state (λ i → runState s i + b i)', '    state (λ i → Ring._+_ Rg (runState s i) (b i))'),
 ]:
     region = region.replace(old, new)
 
-# Whole-line fallbacks for remaining simple local arithmetic in this module.
+# Remaining smooth-algebra applications whose principal argument is a scalar.
+for name in ['exp', 'log', 'tanh', 'sigmoid']:
+    region = re.sub(rf'(?<![A-Za-z0-9_.]){name} \(([^()]+)\)', rf'SmoothAlgebra.{name} S (\1)', region)
+
+# Coordinate scalar arithmetic missed by exact patterns.
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2 i) (\3 i)', region)
 text = text[:start] + region + text[end:]
 
-# Normalize OrderedRing fixity and primitive operations only inside the record.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -149,14 +146,10 @@ text = text[:start] + region + text[end:]
 
 path.write_text(text)
 print(
-    f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
-    'tabulateV-source-patterns-normalized=True; tabulateV-named-implicit-arguments=True; '
-    'tabulateV-zero-qualified=True; tabulateV-suc-qualified=True; global-ring-open-removed=True; '
-    'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
+    f'algebra-normalization={changed}; complete-local-scalar-qualification=True; '
+    'nat-zero-boundary-normalized=True; tabulateV-source-patterns-normalized=True; '
+    'tabulateV-named-implicit-arguments=True; tabulateV-zero-qualified=True; tabulateV-suc-qualified=True; '
+    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
-    'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
-    'EfficientCHAD-local-carrier-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
-    'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
-    'vector-subtraction-signature=True; chad-product-sum-parenthesized=True; '
-    'EfficientCHAD-complete-scalar-arithmetic-qualified=True'
+    'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; EfficientCHAD-complete-qualified=True'
 )
