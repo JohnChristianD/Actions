@@ -30,8 +30,9 @@ text = text.replace(
 )
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 
-# Correct the implicit argument pattern without shadowing the Nat constructor.
-text = text.replace('tabulateV {A} {zero} f = []', 'tabulateV {A} {Nat.zero} f = []', 1)
+# Qualify implicit arguments by name; positional patterns can bind the
+# wrong implicit parameter (A versus n) and shadow Nat.zero.
+text = text.replace('tabulateV {A} {zero} f = []', 'tabulateV {A = A} {n = Nat.zero} f = []', 1)
 
 # Normalize finite CHAD local carrier/fixity.
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
@@ -64,7 +65,7 @@ replacements = {
     'subLtZero : ∀ {a b} → a + neg b < zero → a < b': 'subLtZero : ∀ {a b} → (a + neg b) < zero → a < b',
     'squarePositive : ∀ {x} → x ≠ zero → zero < x * x': 'squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < (x * x)',
     'squareNonnegative : ∀ x → zero ≤ x * x': 'squareNonnegative : ∀ x → zero ≤ (x * x)',
-    'absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': 'absTriangle : ∀ x y → abs (x + y) ≤ (abs x + abs y)',
+    'absTriangle : ∀ x y → zero ≤ abs (x + y) → abs (x + y) ≤ abs x + abs y': 'absTriangle : ∀ x y → zero ≤ abs (x + y) → abs (x + y) ≤ (abs x + abs y)',
 }
 changed = 0
 for old_sig, new_sig in replacements.items():
@@ -95,7 +96,8 @@ path.write_text(text)
 print(
     f'algebra-normalization={changed}; max-arity-normalized=True; nat-zero-boundary-normalized=True; '
     'tabulateV-length-pattern-normalized=True; tabulateV-zero-qualified=True; '
-    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
+    'tabulateV-named-implicit-arguments=True; global-ring-open-removed=True; '
+    'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
     'nested-ring-carriers-qualified=True; centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
