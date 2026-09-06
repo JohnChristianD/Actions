@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
@@ -47,5 +48,15 @@ replacements = {
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
+
+# EfficientCHAD already provides the complete compositional reverse layer.
+# Rename only its local scalar alias so the constructor field `Ring.R` opened
+# in the surrounding module does not clash with the local declaration `R`.
+start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
+end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
+segment = s[start:end]
+segment = re.sub(r'\bR\b', 'ScalarR', segment)
+s = s[:start] + segment + s[end:]
+
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-Nat-arithmetic-OrderedRing-operators-and-typed-local-subtraction')
+print('completesafe-namespace-normalization=qualified-Nat-arithmetic-OrderedRing-operators-and-local-EfficientCHAD-scalar-alias')
