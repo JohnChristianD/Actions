@@ -3,6 +3,7 @@ module Exotic.ERL.Stages.Stage08_Integration where
 
 open import Agda.Builtin.Nat using (Nat; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Unit using (⊤; tt)
 
 import Exotic.ERL.Stages.Stage01_FiniteAlgebra as FA
 import Exotic.ERL.Stages.Stage02_CHAD as CH
