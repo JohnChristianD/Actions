@@ -90,5 +90,13 @@ for old, new in {
 for old_name, new_name in [('zero','Ring.zero ring'), ('one','Ring.one ring'), ('neg','Ring.neg ring')]:
     region = re.sub(rf'(?<![A-Za-z0-9_.]){re.escape(old_name)}(?![A-Za-z0-9_])', new_name, region)
 text = text[:start] + region + text[end:]
+
+# Q-decision algebra is an independent algebraic record that opens SmoothAlgebra.
+# Parenthesize mixed +/≤ expressions; same theorem, explicit parser shape.
+text = text.replace(
+    'subNonpositive : ∀ a b → a + neg b ≤ zero → a ≤ b',
+    'subNonpositive : ∀ a b → (a + neg b) ≤ zero → a ≤ b',
+    1,
+)
 path.write_text(text)
-print('algebra-normalization=12; smooth-max-min-binary=True; vsub-minus-signature=True; efficientchad-vjp-universes-pinned=True; efficientchad-congruence-carrier-qualified=True; global-ring-open-removed=True; global-ordered-ring-open-removed=True')
+print('algebra-normalization=13; q-decision-subtraction-parenthesized=True; smooth-max-min-binary=True; vsub-minus-signature=True; efficientchad-vjp-universes-pinned=True; efficientchad-congruence-carrier-qualified=True; global-ring-open-removed=True; global-ordered-ring-open-removed=True')
