@@ -49,6 +49,19 @@ replacements = {
 for old, new in replacements.items():
     s = s.replace(old, new)
 
+# These field declarations are parser-sensitive because Ring exports `_+_` and `_*_`.
+# Normalize the complete declaration line after all earlier structural repairs.
+s = re.sub(
+    r'(?m)^    mulNonneg : (.*?) → zero ≤ a \* b$',
+    r'    mulNonneg : \1 → Ring._*_ ring a b',
+    s,
+)
+s = re.sub(
+    r'(?m)^    mulLeLeft : (.*?) → c \* a ≤ c \* b$',
+    r'    mulLeLeft : \1 → Ring._*_ ring c a ≤ Ring._*_ ring c b',
+    s,
+)
+
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
