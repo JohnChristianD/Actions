@@ -29,6 +29,14 @@ jobs:
         run: python3 .ci/check-agda-safe-surface.py
       - name: Generate staged safe kernel probes
         run: python3 .ci/generate-agda-safe-stages.py
+      - name: Diagnose transformed algebra frontier
+        run: |
+          echo '=== TRANSFORMED tabulateV ==='
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '220,236p'
+          echo '=== TRANSFORMED OrderedRing ==='
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '150,170p'
+          echo '=== GENERATED Stage02 tabulateV ==='
+          nl -ba Exotic/ERL/FullCoupled/CI/Stage02.agda | sed -n '220,236p'
       - name: Kernel check — staged dependency prefixes
         shell: bash
         run: |
