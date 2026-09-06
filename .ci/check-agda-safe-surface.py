@@ -37,19 +37,29 @@ REQUIRED = {
 text = TARGET.read_text()
 errors = []
 
-if '{-# OPTIONS --safe #-}' not in text:
-    errors.append('missing top-level --safe option')
+if not text.startswith('{-# OPTIONS --safe #-}'):
+    errors.append('top-level --safe option must be first declaration')
 
-for forbidden in ('--unsafe', 'primTrustMe', '{!!', '?_'):
+for forbidden in (
+    '--unsafe', '--allow-unsolved-metas', 'primTrustMe', 'postulate',
+    'NON_TERMINATING', 'TERMINATING', '{!!', '?_', 'foreign import',
+):
     if forbidden in text:
         errors.append(f'forbidden unsafe/incomplete marker present: {forbidden!r}')
 
+# Check the intended closure theorem surface structurally, not just by a
+# successful grep for names.
 for family, names in REQUIRED.items():
     missing = [name for name in names if not re.search(rf'(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])', text)]
     if missing:
         errors.append(f'{family}: missing {", ".join(missing)}')
     else:
         print(f'safe-surface={family}:ok:{len(names)}')
+
+# Local-binding hygiene known to cause false-looking algebra failures.
+for local in ('minus', 'centered', 'normalise', 'gates'):
+    if not re.search(rf'(?m)^\s*{re.escape(local)}\b', text):
+        errors.append(f'local-binding audit: expected local symbol {local!r} not found')
 
 print(f'safe-surface-source-bytes={len(text.encode("utf-8"))}')
 if errors:
