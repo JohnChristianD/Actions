@@ -19,11 +19,15 @@ replacement = '''  vjpCoeff (mul x y) ρ c i =
           (cong (λ d → Pullback.back (pull y ρ) d i)
             (cong (λ z → Ring._*_ Rg c z) (primalCorrect x ρ)))
           (vjpCoeff y ρ (Ring._*_ Rg c (eval x ρ)) i)))
-      (sym
-        (Ring.distrib Rg c
-          (Ring._*_ Rg (eval y ρ) (coeff x ρ i))
-          (Ring._*_ Rg (eval x ρ) (coeff y ρ i))))
+      (trans
+        (cong₂ (Ring._+_ Rg)
+          (Ring.mulAssoc Rg c (eval y ρ) (coeff x ρ i))
+          (Ring.mulAssoc Rg c (eval x ρ) (coeff y ρ i)))
+        (sym
+          (Ring.distrib Rg c
+            (Ring._*_ Rg (eval y ρ) (coeff x ρ i))
+            (Ring._*_ Rg (eval x ρ) (coeff y ρ i)))))
 '''
 text = text[:start] + replacement + text[end:]
 path.write_text(text)
-print('vjp-product-primal-transport=True')
+print('vjp-product-primal-transport=True;associativity-before-distributivity=True')
