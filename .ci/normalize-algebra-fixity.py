@@ -1,10 +1,10 @@
 from pathlib import Path
+import re
 
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-# Close the local helper explicitly; Agda --safe does not infer a local
-# function signature from a previous name-only binding here.
+# Close the local subtraction helper explicitly.
 old = '''vSub {S} = zipWithV minus
   where
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
@@ -19,6 +19,19 @@ new = '''vSub {S} = zipWithV minus
 if old in text:
     text = text.replace(old, new, 1)
 
+# The global `open Ring` exposes Ring.R. Alpha-rename only the local alias
+# in EfficientCHAD so --safe accepts the nested declaration.
+start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
+end = text.find('\n------------------------------------------------------------------------', start + 10)
+if start < 0 or end < 0:
+    raise SystemExit('EfficientCHAD module region not found')
+region = text[start:end]
+region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'CR', region)
+region = region.replace('CRg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring orderedRing')
+region = region.replace('Ring.CR Rg', 'Ring.R Rg')
+text = text[:start] + region + text[end:]
+
+# Normalize mixed arithmetic/comparison precedence only inside OrderedRing.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nopen OrderedRing', start)
 if start < 0 or end < 0:
@@ -56,6 +69,5 @@ for old_sig, new_sig in replacements.items():
     if count:
         region = region.replace(old_sig, new_sig)
         changed += count
-
 path.write_text(text[:start] + region + text[end:])
-print(f'ordered-ring-algebra-normalized={changed > 0}; replacements={changed}; vector-subtraction-signature=True')
+print(f'algebra-normalization={changed}; local-EfficientCHAD-R-renamed=True; vector-subtraction-signature=True')
