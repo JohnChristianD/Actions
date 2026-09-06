@@ -3,7 +3,7 @@ import re
 import sys
 
 SOURCE = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
-OUT = Path('.ci/generated-agda-safe')
+OUT = Path('Exotic/ERL/FullCoupled/CI')
 
 text = SOURCE.read_text()
 lines = text.splitlines(keepends=True)
