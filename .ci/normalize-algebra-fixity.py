@@ -4,13 +4,21 @@ import re
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-# Preserve the established targeted normalizations.
+# Global structural cleanup used by the deterministic safe pipeline.
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []', 1)
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
                     'tabulateV {A = A} {n = Nat.suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))', 1)
+
+# Ensure the local subtraction worker introduced by vSub is typed before its body.
+text = re.sub(
+    r'(vSub \{S\} = zipWithV minus\n  where\n  Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n)  minus x y =',
+    r'\1  minus : Scalar S → Scalar S → Scalar S\n  minus x y =',
+    text,
+    count=1,
+)
 
 start = text.find('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = text.find('\n------------------------------------------------------------------------', start + 10)
@@ -82,14 +90,8 @@ pairs = [
 for old, new in pairs:
     region = region.replace(old, new)
 
-# Final local scan for the few common scalar applications that otherwise trigger projection ambiguity.
-# These are restricted to the EfficientCHAD module region.
-region = re.sub(r'(?m)^(\s*)([^\n=]+) = ([^\n]*?)([+*]) ([^\n]+)$',
-                lambda m: m.group(0) if 'Ring._+_' in m.group(0) or 'Ring._*_' in m.group(0) else m.group(0),
-                region)
 text = text[:start] + region + text[end:]
 
-# OrderedRing: remove global projection ambiguity while retaining the exact algebraic interface.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
@@ -120,7 +122,7 @@ text = text[:start] + region + text[end:]
 
 path.write_text(text)
 print(
-    f'algebra-normalization={changed}; efficientchad-pullback-qualified=True; '
+    f'algebra-normalization={changed}; vsub-minus-signature=True; efficientchad-pullback-qualified=True; '
     'efficientchad-derivative-products-qualified=True; efficientchad-smooth-qualified=True; '
     'nat-zero-boundary-normalized=True; tabulateV-named-implicit-arguments=True; '
     'global-ring-open-removed=True; global-ordered-ring-open-removed=True; '
