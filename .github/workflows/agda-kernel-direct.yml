@@ -1,4 +1,4 @@
-# Authoritative Agda 2.8.0 --safe gate with deterministic normalization and theorem-surface witnesses.
+# Authoritative Agda 2.8.0 --safe gate with deterministic normalization and staged theorem witnesses.
 name: Agda kernel direct
 on:
   push:
@@ -27,6 +27,16 @@ jobs:
         run: python3 .ci/normalize-q-retraction.py
       - name: Audit safe algebra surface
         run: python3 .ci/check-agda-safe-surface.py
+      - name: Generate staged safe kernel probes
+        run: python3 .ci/generate-agda-safe-stages.py
+      - name: Kernel check — staged dependency prefixes
+        shell: bash
+        run: |
+          set -o pipefail
+          for stage in Exotic/ERL/FullCoupled/CI/Stage*.agda; do
+            echo "=== SAFE STAGE: ${stage} ==="
+            agda --safe "${stage}" 2>&1 | tee -a agda-stages.log
+          done
       - name: Kernel check — CompleteSafe_v147
         shell: bash
         run: |
@@ -41,6 +51,7 @@ jobs:
       - name: Kernel check — CIInterpolation_v147
         shell: bash
         run: |
+          set -o pipefail
           agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda 2>&1 | tee agda-interpolation.log
       - name: Upload kernel diagnostics
         if: always()
@@ -48,5 +59,6 @@ jobs:
         with:
           name: agda-kernel-diagnostics
           path: |
+            agda-stages.log
             agda-kernel.log
             agda-interpolation.log
