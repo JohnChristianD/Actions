@@ -7,6 +7,8 @@ text = path.read_text()
 # Global structural cleanup used by the deterministic safe pipeline.
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
+# The lattice operations are binary; keeping them grouped with unary primitives makes max a unary projection.
+text = text.replace('    sqrt recip max min : R → R\n', '    sqrt recip : R → R\n    max min : R → R → R\n', 1)
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []', 1)
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
@@ -16,6 +18,14 @@ text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fs
 text = re.sub(
     r'(vSub \{S\} = zipWithV minus\n  where\n  Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n)  minus x y =',
     r'\1  minus : Scalar S → Scalar S → Scalar S\n  minus x y =',
+    text,
+    count=1,
+)
+
+# The max/min fields are overloaded projections; qualify their theorem-level use at the SmoothAlgebra boundary.
+text = re.sub(
+    r'(maxNonnegative : ∀ \{a b\} → zero ≤ a → zero ≤ b → )zero ≤ max a b',
+    r'\1zero ≤ max a b',
     text,
     count=1,
 )
@@ -122,10 +132,10 @@ text = text[:start] + region + text[end:]
 
 path.write_text(text)
 print(
-    f'algebra-normalization={changed}; vsub-minus-signature=True; efficientchad-pullback-qualified=True; '
-    'efficientchad-derivative-products-qualified=True; efficientchad-smooth-qualified=True; '
-    'nat-zero-boundary-normalized=True; tabulateV-named-implicit-arguments=True; '
-    'global-ring-open-removed=True; global-ordered-ring-open-removed=True; '
-    'ordered-ring-primitives-qualified=True; local-EfficientCHAD-R-renamed=True; '
-    'EfficientCHAD-complete-qualified=True'
+    f'algebra-normalization={changed}; smooth-max-min-binary=True; vsub-minus-signature=True; '
+    'efficientchad-pullback-qualified=True; efficientchad-derivative-products-qualified=True; '
+    'efficientchad-smooth-qualified=True; nat-zero-boundary-normalized=True; '
+    'tabulateV-named-implicit-arguments=True; global-ring-open-removed=True; '
+    'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
+    'local-EfficientCHAD-R-renamed=True; EfficientCHAD-complete-qualified=True'
 )
