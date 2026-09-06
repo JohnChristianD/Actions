@@ -14,7 +14,8 @@ if changed:
 text = text.replace('LSTMState.hidden ', 'LSTMState.hiddenState ')
 text = text.replace('LSTMState.hidden\n', 'LSTMState.hiddenState\n')
 text = text.replace('LSTMState.hidden)', 'LSTMState.hiddenState)')
-# LSTMGates owns the four gate records; the enclosing LSTMBlock owns the field `gates`.
+text = text.replace('hidden = hidden\'', 'hiddenState = hidden\'')
+text = text.replace('LSTMGates.gates (LSTMBlock.gates block)', 'LSTMBlock.gates block')
 text = text.replace(
     'LSTMGates.gates (record { gates = g }) ≡ g',
     'LSTMBlock.gates (record { gates = g }) ≡ g',
