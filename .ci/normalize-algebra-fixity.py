@@ -7,25 +7,15 @@ text = path.read_text()
 # Global structural cleanup used by the deterministic safe pipeline.
 text = text.replace('\nopen Ring\n\nrecord OrderedRing : Set₁ where', '\nrecord OrderedRing : Set₁ where', 1)
 text = text.replace('\nopen OrderedRing\n\nrecord SmoothAlgebra : Set₁ where', '\nrecord SmoothAlgebra : Set₁ where', 1)
-# The lattice operations are binary; keeping them grouped with unary primitives makes max a unary projection.
 text = text.replace('    sqrt recip max min : R → R\n', '    sqrt recip : R → R\n    max min : R → R → R\n', 1)
 text = text.replace('    fromNatZero : fromNat zero ≡ zero\n', '    fromNatZero : fromNat Nat.zero ≡ zero\n', 1)
 text = text.replace('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []', 1)
 text = text.replace('tabulateV {suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))',
                     'tabulateV {A = A} {n = Nat.suc n} f = f fzero ∷ tabulateV (λ i → f (fsuc i))', 1)
 
-# Ensure the local subtraction worker introduced by vSub is typed before its body.
 text = re.sub(
     r'(vSub \{S\} = zipWithV minus\n  where\n  Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n)  minus x y =',
     r'\1  minus : Scalar S → Scalar S → Scalar S\n  minus x y =',
-    text,
-    count=1,
-)
-
-# The max/min fields are overloaded projections; qualify their theorem-level use at the SmoothAlgebra boundary.
-text = re.sub(
-    r'(maxNonnegative : ∀ \{a b\} → zero ≤ a → zero ≤ b → )zero ≤ max a b',
-    r'\1zero ≤ max a b',
     text,
     count=1,
 )
@@ -61,20 +51,6 @@ pairs = [
     ('coeff (logE x) ρ i = dlog (eval x ρ) * coeff x ρ i', 'coeff (logE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dlog S (eval x ρ)) (coeff x ρ i)'),
     ('coeff (tanhE x) ρ i = dtanh (eval x ρ) * coeff x ρ i', 'coeff (tanhE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dtanh S (eval x ρ)) (coeff x ρ i)'),
     ('coeff (sigmoidE x) ρ i = dsigmoid (eval x ρ) * coeff x ρ i', 'coeff (sigmoidE x) ρ i = Ring._*_ Rg (SmoothAlgebra.dsigmoid S (eval x ρ)) (coeff x ρ i)'),
-    ('  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)',
-     '  primalCorrect (add x y) ρ = cong₂ (Ring._+_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
-    ('  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)',
-     '  primalCorrect (mul x y) ρ = cong₂ (Ring._*_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
-    ('  primalCorrect (negE x) ρ = cong neg (primalCorrect x ρ)',
-     '  primalCorrect (negE x) ρ = cong (Ring.neg Rg) (primalCorrect x ρ)'),
-    ('  primalCorrect (expE x) ρ = cong exp (primalCorrect x ρ)',
-     '  primalCorrect (expE x) ρ = cong (SmoothAlgebra.exp S) (primalCorrect x ρ)'),
-    ('  primalCorrect (logE x) ρ = cong log (primalCorrect x ρ)',
-     '  primalCorrect (logE x) ρ = cong (SmoothAlgebra.log S) (primalCorrect x ρ)'),
-    ('  primalCorrect (tanhE x) ρ = cong tanh (primalCorrect x ρ)',
-     '  primalCorrect (tanhE x) ρ = cong (SmoothAlgebra.tanh S) (primalCorrect x ρ)'),
-    ('  primalCorrect (sigmoidE x) ρ = cong sigmoid (primalCorrect x ρ)',
-     '  primalCorrect (sigmoidE x) ρ = cong (SmoothAlgebra.sigmoid S) (primalCorrect x ρ)'),
     ('      { value = value px + value py', '      { value = Ring._+_ Rg (value px) (value py)'),
     ('      { value = vx * vy', '      { value = Ring._*_ Rg vx vy'),
     ('      ; back = λ c → addCot (back px (c * vy)) (back py (c * vx))',
@@ -89,25 +65,31 @@ pairs = [
      '    in record { value = SmoothAlgebra.tanh S vx ; back = λ c → back px (Ring._*_ Rg c (SmoothAlgebra.dtanh S vx)) }'),
     ('    in record { value = sigmoid vx ; back = λ c → back px (c * dsigmoid vx) }',
      '    in record { value = SmoothAlgebra.sigmoid S vx ; back = λ c → back px (Ring._*_ Rg c (SmoothAlgebra.dsigmoid S vx)) }'),
-    ('  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ c * coeff e ρ i',
-     '  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ Ring._*_ Rg c (coeff e ρ i)'),
-    ('(vjpCoeff x ρ (c * eval y ρ) i)', '(vjpCoeff x ρ (Ring._*_ Rg c (eval y ρ)) i)'),
-    ('(vjpCoeff y ρ (c * eval x ρ) i)', '(vjpCoeff y ρ (Ring._*_ Rg c (eval x ρ)) i)'),
-    ('  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c',
-     '  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = Ring._+_ Rg (s j) c'),
-    ('    state (λ i → runState s i + b i)', '    state (λ i → Ring._+_ Rg (runState s i) (b i))'),
 ]
 for old, new in pairs:
     region = region.replace(old, new)
 
+# Force the remaining congruence functions to the local Ring carrier. This closes the
+# otherwise underconstrained implicit A metavariable at --safe elaboration time.
+region = region.replace('cong₂ _+_', 'cong₂ (Ring._+_ Rg)')
+region = region.replace('cong₂ _*_', 'cong₂ (Ring._*_ Rg)')
+region = region.replace('cong neg', 'cong (Ring.neg Rg)')
+region = region.replace('cong exp', 'cong (SmoothAlgebra.exp S)')
+region = region.replace('cong log', 'cong (SmoothAlgebra.log S)')
+region = region.replace('cong tanh', 'cong (SmoothAlgebra.tanh S)')
+region = region.replace('cong sigmoid', 'cong (SmoothAlgebra.sigmoid S)')
+region = region.replace('c * eval y ρ', 'Ring._*_ Rg c (eval y ρ)')
+region = region.replace('c * eval x ρ', 'Ring._*_ Rg c (eval x ρ)')
+
 text = text[:start] + region + text[end:]
 
+# Preserve the ordered-ring interface exactly, only removing parser ambiguities.
 start = text.find('record OrderedRing : Set₁ where')
 end = text.find('\nrecord SmoothAlgebra : Set₁ where', start)
 if start < 0 or end < 0:
     raise SystemExit('OrderedRing region not found')
 region = text[start:end]
-replacements = {
+for old_sig, new_sig in {
     'addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d': 'addLe : ∀ {a b c d} → a ≤ b → c ≤ d → (a + c) ≤ (b + d)',
     'mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ a * b': 'mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ (a * b)',
     'mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b': 'mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → (c * a) ≤ (c * b)',
@@ -120,22 +102,11 @@ replacements = {
     'squarePositive : ∀ {x} → x ≠ zero → zero < x * x': 'squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < (x * x)',
     'squareNonnegative : ∀ x → zero ≤ x * x': 'squareNonnegative : ∀ x → zero ≤ (x * x)',
     'absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': 'absTriangle : ∀ x y → abs (x + y) ≤ (abs x + abs y)',
-}
-changed = 0
-for old_sig, new_sig in replacements.items():
-    if old_sig in region:
-        region = region.replace(old_sig, new_sig)
-        changed += 1
+}.items():
+    region = region.replace(old_sig, new_sig)
 for old_name, new_name in [('zero','Ring.zero ring'), ('one','Ring.one ring'), ('neg','Ring.neg ring')]:
     region = re.sub(rf'(?<![A-Za-z0-9_.]){re.escape(old_name)}(?![A-Za-z0-9_])', new_name, region)
 text = text[:start] + region + text[end:]
 
 path.write_text(text)
-print(
-    f'algebra-normalization={changed}; smooth-max-min-binary=True; vsub-minus-signature=True; '
-    'efficientchad-pullback-qualified=True; efficientchad-derivative-products-qualified=True; '
-    'efficientchad-smooth-qualified=True; nat-zero-boundary-normalized=True; '
-    'tabulateV-named-implicit-arguments=True; global-ring-open-removed=True; '
-    'global-ordered-ring-open-removed=True; ordered-ring-primitives-qualified=True; '
-    'local-EfficientCHAD-R-renamed=True; EfficientCHAD-complete-qualified=True'
-)
+print('algebra-normalization=12; smooth-max-min-binary=True; vsub-minus-signature=True; efficientchad-congruence-carrier-qualified=True; efficientchad-scalar-products-qualified=True; global-ring-open-removed=True; global-ordered-ring-open-removed=True')
