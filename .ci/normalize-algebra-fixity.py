@@ -106,11 +106,30 @@ for old_sig, new_sig in replacements.items():
         region = region.replace(old_sig, new_sig)
         changed += count
 
-# Keep record carriers explicit inside nested algebra scopes. This prevents
-# projection ambiguity even when these declarations are staged independently.
-region = re.sub(r'(?<![A-Za-z0-9_])R(?![A-Za-z0-9_])', 'Ring.R ring', region)
+# Use only the concrete ring witness for primitive ring projections inside
+# OrderedRing. This makes staged dependency prefixes deterministic and avoids
+# overloaded Ring/OrderedRing projections when the later opens are absent.
+primitive_uses = {
+    'zero': 'Ring.zero ring',
+    'one': 'Ring.one ring',
+    'neg': 'Ring.neg ring',
+}
+for old_name, new_name in primitive_uses.items():
+    region = re.sub(rf'(?<![A-Za-z0-9_.]){re.escape(old_name)}(?![A-Za-z0-9_])', new_name, region)
+region = region.replace('a + c', '(Ring._+_ ring a c)')
+region = region.replace('c + a', '(Ring._+_ ring c a)')
+region = region.replace('c + b', '(Ring._+_ ring c b)')
+region = region.replace('a + neg b', '(Ring._+_ ring a (Ring.neg ring b))')
+region = region.replace('x + y', '(Ring._+_ ring x y)')
+region = region.replace('x * y', '(Ring._*_ ring x y)')
+region = region.replace('c * a', '(Ring._*_ ring c a)')
+region = region.replace('c * b', '(Ring._*_ ring c b)')
+region = region.replace('a * b', '(Ring._*_ ring a b)')
+region = region.replace('x * x', '(Ring._*_ ring x x)')
 text = text[:start] + region + text[end:]
 
+# SmoothAlgebra inherits OrderedRing projections publicly; qualify its carrier
+# and ring primitives so it remains independently checkable in a prefix.
 start = text.find('record SmoothAlgebra : Set₁ where')
 end = text.find('\nopen SmoothAlgebra', start)
 if start < 0 or end < 0:
@@ -126,7 +145,9 @@ text = text[:start] + region + text[end:]
 path.write_text(text)
 print(
     f'algebra-normalization={changed}; '
-    'global-ring-open-removed=True; nested-ring-carriers-qualified=True; '
+    'global-ring-open-removed=True; '
+    'ordered-ring-primitives-qualified=True; '
+    'nested-ring-carriers-qualified=True; '
     'centered-signature=True; normalise-signature=True; '
     'lstm-gates-projection=True; local-EfficientCHAD-R-renamed=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True'
