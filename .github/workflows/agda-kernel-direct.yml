@@ -17,6 +17,8 @@ jobs:
         run: python3 .ci/repair-agda-syntax.py
       - name: Normalize Nat namespace
         run: python3 .ci/normalize-nat-namespace.py
+      - name: Normalize algebra fixity
+        run: python3 .ci/normalize-algebra-fixity.py
       - name: Normalize q-retraction structure
         run: python3 .ci/normalize-q-retraction.py
       - name: Kernel check
