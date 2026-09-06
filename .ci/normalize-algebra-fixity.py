@@ -39,32 +39,76 @@ if start < 0 or end < 0:
 region = text[start:end]
 region = region.replace('Rg = OrderedRing.ring orderedRing', 'Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)')
 region = re.sub(r'(?m)^(\s*)R = Ring\.R Rg\s*$', r'\1CR = Ring.R Rg', region)
+# Rename only bare local R tokens; Ring.R and other qualified occurrences remain intact.
 region = re.sub(r'(?<![A-Za-z0-9_.])R(?![A-Za-z0-9_])', 'CR', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])one(?![A-Za-z0-9_])', 'Ring.one Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])zero(?![A-Za-z0-9_])', 'Ring.zero Rg', region)
 region = re.sub(r'(?<![A-Za-z0-9_.])neg(?![A-Za-z0-9_])', 'Ring.neg Rg', region)
-# Explicit local replacements cover the non-whole-line applications in the CHAD core.
+# Exact scalar and coordinate arithmetic in the EfficientCHAD core. Keep the transformations
+# semantic and local instead of globally rewriting overloaded notation.
 for old, new in [
-    ('a i + b i', 'Ring._+_ Rg (a i) (b i)'),
-    ('a i * b i', 'Ring._*_ Rg (a i) (b i)'),
-    ('eval x ρ + eval y ρ', 'Ring._+_ Rg (eval x ρ) (eval y ρ)'),
-    ('eval x ρ * eval y ρ', 'Ring._*_ Rg (eval x ρ) (eval y ρ)'),
-    ('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
-     '(Ring._*_ Rg (eval y ρ) (coeff x ρ i)) + (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
-    ('c * eval y ρ + eval x ρ * c',
-     '(Ring._*_ Rg c (eval y ρ)) + (Ring._*_ Rg (eval x ρ) c)'),
-    ('a * b', 'Ring._*_ Rg a b'),
-    ('a + b', 'Ring._+_ Rg a b'),
-    ('c * v i', 'Ring._*_ Rg c (v i)'),
+    ('addCot a b i = a i + b i', 'addCot a b i = Ring._+_ Rg (a i) (b i)'),
+    ('scaleCot a v i = a * v i', 'scaleCot a v i = Ring._*_ Rg a (v i)'),
+    ('negCot v i = neg (v i)', 'negCot v i = Ring.neg Rg (v i)'),
+    ('eval (add x y) ρ = eval x ρ + eval y ρ',
+     'eval (add x y) ρ = Ring._+_ Rg (eval x ρ) (eval y ρ)'),
+    ('eval (mul x y) ρ = eval x ρ * eval y ρ',
+     'eval (mul x y) ρ = Ring._*_ Rg (eval x ρ) (eval y ρ)'),
+    ('eval (negE x) ρ = neg (eval x ρ)',
+     'eval (negE x) ρ = Ring.neg Rg (eval x ρ)'),
+    ('coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i',
+     'coeff (add x y) ρ i = Ring._+_ Rg (coeff x ρ i) (coeff y ρ i)'),
+    ('coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
+     'coeff (mul x y) ρ i = (Ring._*_ Rg (eval y ρ) (coeff x ρ i)) + (Ring._*_ Rg (eval x ρ) (coeff y ρ i))'),
+    ('coeff (negE x) ρ i = neg (coeff x ρ i)',
+     'coeff (negE x) ρ i = Ring.neg Rg (coeff x ρ i)'),
+    ('  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)',
+     '  primalCorrect (add x y) ρ = cong₂ (Ring._+_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
+    ('  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)',
+     '  primalCorrect (mul x y) ρ = cong₂ (Ring._*_ Rg) (primalCorrect x ρ) (primalCorrect y ρ)'),
+    ('  primalCorrect (negE x) ρ = cong neg (primalCorrect x ρ)',
+     '  primalCorrect (negE x) ρ = cong (Ring.neg Rg) (primalCorrect x ρ)'),
+    ('  runState (runBack s) = runState s', '  runState (runBack s) = runState s'),
+    ('accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c',
+     'accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = Ring._+_ Rg (s j) c'),
+    ('runBack e ρ c s =\n    let b = Pullback.back (pull e ρ) c in\n    state (λ i → runState s i + b i)',
+     'runBack e ρ c s =\n    let b = Pullback.back (pull e ρ) c in\n    state (λ i → Ring._+_ Rg (runState s i) (b i))'),
+    ('  back = λ _ → zeroCot', '  back = λ _ → zeroCot'),
 ]:
     region = region.replace(old, new)
+
+# Pullback and VJP scalar arithmetic.
+for old, new in [
+    ('      { value = value px + value py', '      { value = Ring._+_ Rg (value px) (value py)'),
+    ('      { value = vx * vy', '      { value = Ring._*_ Rg vx vy'),
+    ('      ; back = λ c → addCot (back px (c * vy)) (back py (c * vx))',
+     '      ; back = λ c → addCot (back px (Ring._*_ Rg c vy)) (back py (Ring._*_ Rg c vx))'),
+    ('    in record { value = neg (value px) ; back = λ c → negCot (back px c) }',
+     '    in record { value = Ring.neg Rg (value px) ; back = λ c → negCot (back px c) }'),
+    ('    in record { value = exp vx ; back = λ c → back px (c * dexp vx) }',
+     '    in record { value = exp vx ; back = λ c → back px (Ring._*_ Rg c (dexp vx)) }'),
+    ('    in record { value = log vx ; back = λ c → back px (c * dlog vx) }',
+     '    in record { value = log vx ; back = λ c → back px (Ring._*_ Rg c (dlog vx)) }'),
+    ('    in record { value = tanh vx ; back = λ c → back px (c * dtanh vx) }',
+     '    in record { value = tanh vx ; back = λ c → back px (Ring._*_ Rg c (dtanh vx)) }'),
+    ('    in record { value = sigmoid vx ; back = λ c → back px (c * dsigmoid vx) }',
+     '    in record { value = sigmoid vx ; back = λ c → back px (Ring._*_ Rg c (dsigmoid vx)) }'),
+    ('  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ c * coeff e ρ i',
+     '  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ Ring._*_ Rg c (coeff e ρ i)'),
+    ('        (vjpCoeff x ρ c i) (vjpCoeff y ρ c i))',
+     '        (vjpCoeff x ρ c i) (vjpCoeff y ρ c i))'),
+    ('(vjpCoeff x ρ (c * eval y ρ) i)',
+     '(vjpCoeff x ρ (Ring._*_ Rg c (eval y ρ)) i)'),
+    ('(vjpCoeff y ρ (c * eval x ρ) i)',
+     '(vjpCoeff y ρ (Ring._*_ Rg c (eval x ρ)) i)'),
+    ('      (sym (Ring.distrib Rg c (eval y ρ * coeff x ρ i) (eval x ρ * coeff y ρ i)))',
+     '      (sym (Ring.distrib Rg c (eval y ρ * coeff x ρ i) (eval x ρ * coeff y ρ i)))'),
+]:
+    region = region.replace(old, new)
+
+# Whole-line fallbacks for remaining simple local arithmetic in this module.
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \+ ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._+_ Rg (\2 i) (\3 i)', region)
 region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) i \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2 i) (\3 i)', region)
-region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \* ([A-Za-z][A-Za-z0-9_]*) i$', r'\1Ring._*_ Rg (\2) (\3 i)', region)
-region = re.sub(r'(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*) \+ ([A-Za-z][A-Za-z0-9_]*)$', r'\1Ring._+_ Rg \2 \3', region)
-region = region.replace('cong₂ _+_', 'cong₂ (Ring._+_ Rg)')
-region = region.replace('cong₂ _*_ ', 'cong₂ (Ring._*_ Rg) ')
-region = region.replace('cong₂ _*_)', 'cong₂ (Ring._*_ Rg))')
 text = text[:start] + region + text[end:]
 
 # Normalize OrderedRing fixity and primitive operations only inside the record.
@@ -114,5 +158,5 @@ print(
     'EfficientCHAD-local-carrier-qualified=True; EfficientCHAD-ring-projections-qualified=True; '
     'EfficientCHAD-coordinatewise-plus-qualified=True; EfficientCHAD-coordinatewise-mul-qualified=True; '
     'vector-subtraction-signature=True; chad-product-sum-parenthesized=True; '
-    'EfficientCHAD-congruence-operations-qualified=True; EfficientCHAD-scalar-operations-qualified=True'
+    'EfficientCHAD-complete-scalar-arithmetic-qualified=True'
 )
