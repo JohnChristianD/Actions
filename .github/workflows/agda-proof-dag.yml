@@ -39,6 +39,10 @@ jobs:
         run: agda --safe Exotic/ERL/Stages/Stage04_QProjection.agda
       - name: Check Stage 05 representation boundary
         run: agda --safe Exotic/ERL/Stages/Stage05_Representation.agda
+      - name: Check first-class LSTM CHAD node
+        run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
+      - name: Check shared representation/LSTM CHAD network
+        run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Check Stage 06 coupled learner
         run: agda --safe Exotic/ERL/Stages/Stage06_CoupledLearner.agda
       - name: Check Stage 07 outer finite archive
