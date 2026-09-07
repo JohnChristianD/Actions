@@ -1,0 +1,42 @@
+name: Functional LSTM oracle cross-check
+
+on:
+  push:
+    branches: ['ci/agda-v147-lstm-chad-closure']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-crosscheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+
+      - name: Run Haskell LSTM oracle
+        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
+          elixir-version: '1.17'
+          hexpm: true
+          rebar3: false
+
+      - name: Run Elixir LSTM oracle
+        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
+
+      - name: Compare independent functional traces
+        run: |
+          set -euo pipefail
+          diff -u oracle/haskell.csv oracle/elixir.csv
+          echo 'lstm-functional-oracle-cross-check=PASS'
