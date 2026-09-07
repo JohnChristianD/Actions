@@ -2,7 +2,7 @@ name: Functional LSTM oracle cross-check
 
 on:
   push:
-    branches: ['ci/agda-v147-lstm-chad-closure']
+    branches: ['ci/v148-firstclass-lstm-chad']
   pull_request:
     branches: ['main']
   workflow_dispatch:
@@ -16,27 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Haskell
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.6'
+      - name: Native Ruby exact certificate
+        run: ruby oracle/rational_certificate.rb
 
-      - name: Run Haskell LSTM oracle
-        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
-
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: '27'
-          elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
-
-      - name: Run Elixir LSTM oracle
-        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
-
-      - name: Compare independent functional traces
+      - name: Native SymPy exact certificate
         run: |
-          set -euo pipefail
-          diff -u oracle/haskell.csv oracle/elixir.csv
-          echo 'lstm-functional-oracle-cross-check=PASS'
+          python3 -m pip install --disable-pip-version-check --no-cache-dir sympy
+          python3 oracle/sympy_rational_certificate.py
