@@ -49,8 +49,8 @@ compose f g = record
   }
 
 ------------------------------------------------------------------------
--- Finite vector node.  Mapping a single scalar CHAD node constructs both
--- vector primal evaluation and vector reverse accumulation structurally.
+-- Finite vector node. Mapping a scalar CHAD node constructs both vector
+-- primal evaluation and vector reverse accumulation by structural recursion.
 ------------------------------------------------------------------------
 
 mapVec : ∀ {A B : Set} {n : Nat} → (A → B) → Vec A n → Vec B n
@@ -63,23 +63,38 @@ mapVecBack node [] [] = []
 mapVecBack node (x ∷ xs) (dy ∷ dys) =
   pullback node x dy ∷ mapVecBack node xs dys
 
+mapNodeRun : ∀ {A B : Set} {n : Nat}
+  → Node A B
+  → Vec A n
+  → Σ (Vec B n) (λ _ → Vec B n → Vec A n)
+mapNodeRun node [] = [] , (λ _ → [])
+mapNodeRun node (x ∷ xs) =
+  let headRun = run node x
+      tailRun = mapNodeRun node xs
+  in (fst headRun ∷ fst tailRun)
+     , (λ dys → snd headRun (head dys) ∷ snd tailRun (tail dys))
+  where
+  head : ∀ {A : Set} {n : Nat} → Vec A (suc n) → A
+  head (x ∷ _) = x
+
+  tail : ∀ {A : Set} {n : Nat} → Vec A (suc n) → Vec A n
+  tail (_ ∷ xs) = xs
+
 mapNode : ∀ {A B : Set} {n : Nat} → Node A B → Node (Vec A n) (Vec B n)
-mapNode node = record
-  { run = λ xs → mapVec (primal node) xs , (λ dys → mapVecBack node xs dys)
-  }
+mapNode node = record { run = mapNodeRun node }
 
 mapNodeForwardBoundary : ∀ {A B : Set} {n : Nat}
-  (node : Node A B) xs →
+  (node : Node A B) (xs : Vec A n) →
   primal (mapNode node) xs ≡ mapVec (primal node) xs
 mapNodeForwardBoundary node xs = refl
 
 mapNodeReverseBoundary : ∀ {A B : Set} {n : Nat}
-  (node : Node A B) xs dy →
+  (node : Node A B) (xs : Vec A n) (dy : Vec B n) →
   pullback (mapNode node) xs dy ≡ mapVecBack node xs dy
 mapNodeReverseBoundary node xs dy = refl
 
 ------------------------------------------------------------------------
--- Finite state passing.  Repeated composition of the same Node is the
+-- Finite state passing. Repeated composition of the same Node is the
 -- recurrent reverse pass, with finite fuel guaranteeing totality.
 ------------------------------------------------------------------------
 
@@ -103,10 +118,9 @@ record GRUState (H : Set) : Set where
     hidden : H
 
 ------------------------------------------------------------------------
--- A recurrent transition is itself one paired function.  The equations of
--- the concrete LSTM/GRU layer therefore live inside the transition's run
--- definition; any scalar/vector primitives they call use the same Node
--- interface.
+-- A recurrent transition is itself one paired function. The concrete
+-- LSTM/GRU equations therefore live in its run definition and participate
+-- in the same Efficient-CHAD interface as vector primitives.
 ------------------------------------------------------------------------
 
 record RecurrentPrimitives (X H : Set) : Set₁ where
@@ -175,13 +189,13 @@ gruNetworkStep p = gruStepFromRun (recurrent p)
 ------------------------------------------------------------------------
 
 representationForwardBoundary : ∀ {X H Y : Set}
-  (p : NetworkPrimitives X H Y) x →
+  (p : NetworkPrimitives X H Y) (x : X) →
   primal (representation p) x ≡
     primal (layerNorm p) (primal (affine p) x)
 representationForwardBoundary p x = refl
 
 actorForwardBoundary : ∀ {X H Y : Set}
-  (p : NetworkPrimitives X H Y) x →
+  (p : NetworkPrimitives X H Y) (x : X) →
   primal (actorNetwork p) x ≡
     primal (output p) (primal (representation p) x)
 actorForwardBoundary p x = refl
