@@ -12,7 +12,6 @@ replacements = {
 for old, new in replacements.items():
     s = s.replace(old, new)
 
-# Keep the monolith self-contained: Agda.Builtin.Equality here provides only _≡_ and refl.
 if 'cong : ∀ {A B : Set}' not in s:
     marker = 'cong₂ f refl refl = refl\n'
     helper = marker + '''
@@ -32,7 +31,6 @@ subst P refl px = px
         raise SystemExit('expected cong₂ helper marker not found')
     s = s.replace(marker, helper, 1)
 
-# Deterministically qualify known Nat algebra and OrderedRing declaration forms.
 for old, new in {
     '  [] : Vec A zero': '  [] : Vec A Nat.zero',
     'sumFin _ z zero _ = z': 'sumFin _ z Nat.zero _ = z',
@@ -57,24 +55,24 @@ for old, new in {
     'sampleTime + (delay₁ + delay₂)': 'Nat._+_ sampleTime (Nat._+_ delay₁ delay₂)',
     'sampleTime + delay': 'Nat._+_ sampleTime delay',
     'delay₁ + delay₂': 'Nat._+_ delay₁ delay₂',
-    '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d': '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → Ring._+_ ring a c ≤ Ring._+_ ring b d',
-    '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ Ring._*_ ring a b': '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → Ring._*_ ring a b',
-    '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b': '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → Ring._*_ ring c a ≤ Ring._*_ ring c b',
-    '    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d': '    ltAdd : ∀ {a b c d} → a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
-    '    addLtLeft : ∀ {a b c} → a < b → c + a < c + b': '    addLtLeft : ∀ {a b c} → a < b → Ring._+_ ring c a < Ring._+_ ring c b',
-    '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b': '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → Ring._*_ ring c a < Ring._*_ ring c b',
-    '    mulLtPosCancelLeft : ∀ {a b c} → c * a < c * b → zero < c → a < b': '    mulLtPosCancelLeft : ∀ {a b c} → Ring._*_ ring c a < Ring._*_ ring c b → zero < c → a < b',
-    '    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b': '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b',
-    '    subLtZero : ∀ {a b} → a + neg b < zero → a < b': '    subLtZero : ∀ {a b} → Ring._+_ ring a (neg b) < zero → a < b',
-    '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < Ring._*_ ring x x',
-    '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
-    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → zero ≤ abs (Ring._+_ ring x y) → Ring._+_ ring (abs x) (abs y)',
-    '    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y': '    absMul : ∀ x y → abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)',
-    '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
-    '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)':
-        '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
 }.items():
     s = s.replace(old, new)
+
+# The OrderedRing record is the only declaration where overloaded infix
+# multiplication is parser-ambiguous. Qualify only this finite block.
+start = s.index('record OrderedRing')
+end = s.index('record SmoothAlgebra', start)
+block = s[start:end]
+block = block.replace('a * b', 'Ring._*_ ring a b')
+block = block.replace('c * a', 'Ring._*_ ring c a')
+block = block.replace('c * b', 'Ring._*_ ring c b')
+block = block.replace('a + c', 'Ring._+_ ring a c')
+block = block.replace('b + d', 'Ring._+_ ring b d')
+block = block.replace('c + a', 'Ring._+_ ring c a')
+block = block.replace('c + b', 'Ring._+_ ring c b')
+block = block.replace('a + neg b', 'Ring._+_ ring a (Ring.neg ring b)')
+block = block.replace('x * x', 'Ring._*_ ring x x')
+s = s[:start] + block + s[end:]
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
@@ -87,4 +85,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-Nat-arithmetic-OrderedRing-operators-local-EfficientCHAD-alias-preserving-qualified-fields')
+print('completesafe-namespace-normalization=qualified-orderedring-block')
