@@ -131,7 +131,7 @@ lstmAt : ∀ {X hiddenDim : Set}
   → Node (LSTMState hiddenDim) (LSTMState hiddenDim)
 lstmAt ops x = node (λ s →
   let r = run (lstmCell ops) (x , s)
-  in fst r , (λ ds → snd r ds))
+  in fst r , (λ ds → snd (snd r ds)))
 
 lstmUnroll : ∀ {X hiddenDim : Set} {n : Nat}
   → Vec X n
