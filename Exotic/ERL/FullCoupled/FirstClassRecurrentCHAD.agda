@@ -84,7 +84,8 @@ open LSTMGateNodes LSTMPrimitives
 gateNode : ∀ {X hiddenDim : Set}
   → LSTMGateNodes X hiddenDim
   → Node (X × hiddenDim) hiddenDim
-gateNode g = compose (affine g) (compose (layerNorm g) (activation g))
+gateNode g = compose (LSTMGateNodes.affine g)
+  (compose (LSTMGateNodes.layerNorm g) (LSTMGateNodes.activation g))
 
 ------------------------------------------------------------------------
 -- Complete LSTM transition, with forward intermediates and reverse
@@ -99,15 +100,15 @@ lstmCell ops = node (λ input →
       s = snd input
       h = LSTMState.hidden s
       c = LSTMState.cell s
-      rf = run (gateNode (forgetGate ops)) (x , h)
-      ri = run (gateNode (inputGate ops)) (x , h)
-      ro = run (gateNode (outputGate ops)) (x , h)
-      rg = run (gateNode (candidateGate ops)) (x , h)
-      rfc = run (hadamard ops) (fst rf , c)
-      rig = run (hadamard ops) (fst ri , fst rg)
-      rc = run (add ops) (fst rfc , fst rig)
-      rt = run (tanhCell ops) (fst rc)
-      rh = run (hadamard ops) (fst ro , fst rt)
+      rf = run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)
+      ri = run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)
+      ro = run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)
+      rg = run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)
+      rfc = run (LSTMPrimitives.hadamard ops) (fst rf , c)
+      rig = run (LSTMPrimitives.hadamard ops) (fst ri , fst rg)
+      rc = run (LSTMPrimitives.add ops) (fst rfc , fst rig)
+      rt = run (LSTMPrimitives.tanhCell ops) (fst rc)
+      rh = run (LSTMPrimitives.hadamard ops) (fst ro , fst rt)
       y = lstm-state (fst rh) (fst rc)
   in y , λ dy →
     let drh = snd rh (LSTMState.hidden dy)
@@ -120,10 +121,10 @@ lstmCell ops = node (λ input →
         dI = fst drig
         dG = snd drig
         dO = fst drh
-        dFIn = snd (run (gateNode (forgetGate ops)) (x , h)) dF
-        dIIn = snd (run (gateNode (inputGate ops)) (x , h)) dI
-        dOIn = snd (run (gateNode (outputGate ops)) (x , h)) dO
-        dGIn = snd (run (gateNode (candidateGate ops)) (x , h)) dG
+        dFIn = snd (run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)) dF
+        dIIn = snd (run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)) dI
+        dOIn = snd (run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)) dO
+        dGIn = snd (run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)) dG
         dx₁ = fst dFIn
         dx₂ = fst dIIn
         dx₃ = fst dOIn
@@ -132,12 +133,12 @@ lstmCell ops = node (λ input →
         dh₂ = snd dIIn
         dh₃ = snd dOIn
         dh₄ = snd dGIn
-        dx₁₂ = primal (addInputCotangent ops) (dx₁ , dx₂)
-        dx₃₄ = primal (addInputCotangent ops) (dx₃ , dx₄)
-        dx = primal (addInputCotangent ops) (dx₁₂ , dx₃₄)
-        dh₁₂ = primal (addStateCotangent ops) (dh₁ , dh₂)
-        dh₃₄ = primal (addStateCotangent ops) (dh₃ , dh₄)
-        dh = primal (addStateCotangent ops) (dh₁₂ , dh₃₄)
+        dx₁₂ = primal (LSTMPrimitives.addInputCotangent ops) (dx₁ , dx₂)
+        dx₃₄ = primal (LSTMPrimitives.addInputCotangent ops) (dx₃ , dx₄)
+        dx = primal (LSTMPrimitives.addInputCotangent ops) (dx₁₂ , dx₃₄)
+        dh₁₂ = primal (LSTMPrimitives.addStateCotangent ops) (dh₁ , dh₂)
+        dh₃₄ = primal (LSTMPrimitives.addStateCotangent ops) (dh₃ , dh₄)
+        dh = primal (LSTMPrimitives.addStateCotangent ops) (dh₁₂ , dh₃₄)
     in dx , lstm-state dh dC)
 
 ------------------------------------------------------------------------
