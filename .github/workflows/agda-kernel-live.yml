@@ -1,3 +1,7 @@
+name: Agda kernel live gate
+on:
+  push:
+    branches: ['ci/agda-v147-kernel-live']
 # Minimal standalone kernel gate. No tooling job can mask an Agda failure.
 name: Agda kernel live gate
 on:
@@ -18,6 +22,20 @@ jobs:
           agda-version: '2.8.0'
       - name: Repair known syntax
         run: python3 .ci/repair-agda-syntax.py
+      - name: Normalize CompleteSafe Nat/Ring namespaces
+        run: python3 .ci/normalize-completesafe-namespaces.py
+      - name: Normalize CompleteSafe typed let bindings
+        run: python3 .ci/normalize-completesafe-let-bindings.py
+      - name: Normalize CompleteSafe initialForm binding
+        run: python3 .ci/normalize-completesafe-initial-form.py
+      - name: Normalize terminal projection uniqueness
+        run: python3 .ci/normalize-terminal-uniqueness.py
+      - name: Final exact OrderedRing qualification
+        run: python3 .ci/final-qualify-ordered-fields.py
+      - name: Kernel-check shared forward/Efficient-CHAD program
+        run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
+      - name: Kernel-check first-class finite recurrent CHAD program
+        run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
       - name: Normalize q-retraction local declaration
         run: |
           set -euo pipefail

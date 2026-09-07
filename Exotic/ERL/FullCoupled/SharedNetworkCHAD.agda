@@ -7,6 +7,8 @@ open import Exotic.ERL.FullCoupled.FirstClassRecurrentCHAD public
 
 ------------------------------------------------------------------------
 -- One shared network definition. The same Node carries its primal value
+-- and reverse accumulator. The recurrent part is the compositional LSTM
+-- node graph, not a separate recurrent primitive slot.
 -- and reverse accumulator, while recurrent transitions are imported from
 -- the first-class compositional LSTM/GRU construction.
 ------------------------------------------------------------------------
@@ -17,6 +19,7 @@ record NetworkPrimitives (X H Y : Set) : Set₁ where
     layerNorm : Node H H
     tanhHead : Node H H
     output : Node H Y
+    lstm : LSTMNodes X H
     lstm : LSTMCellNodes X H
     gru : GRUCellNodes X H
 
@@ -25,6 +28,7 @@ open NetworkPrimitives
 representation : ∀ {X H Y : Set}
   → NetworkPrimitives X H Y → Node X H
 representation p =
+  compose (compose (affine p) (layerNorm p)) (tanhHead p)
   compose
     (compose (affine p) (layerNorm p))
     (tanhHead p)
@@ -33,6 +37,10 @@ actorNetwork : ∀ {X H Y : Set}
   → NetworkPrimitives X H Y → Node X Y
 actorNetwork p = compose (representation p) (output p)
 
+lstmNetwork : ∀ {X H : Set} {n : Nat}
+  → NetworkPrimitives X H H → Vec X n
+  → Node (LSTMState H) (LSTMState H)
+lstmNetwork p xs = lstmUnroll xs (NetworkPrimitives.lstm p)
 lstmNetwork : ∀ {X H Y : Set} {n : Nat}
   → NetworkPrimitives X H Y
   → Vec X n
@@ -64,6 +72,11 @@ actorForwardBoundary : ∀ {X H Y : Set}
 actorForwardBoundary p x = refl
 
 gateConstructionBoundary : ∀ {X H : Set}
+  (ops : LSTMNodes X H) (g : LSTMGate X H) (x : X) (h : H) →
+  primal (gateSigmoid g ops) (x , h) ≡
+    primal (LSTMNodes.sigmoidH ops)
+      (primal (LSTMGate.layerNorm g)
+        (primal (LSTMGate.affine g) (x , h)))
   (ops : LSTMCellNodes X H) (g : LSTMGateNodes X H) (x : X) (h : H) →
   primal (gateSigmoid g ops) (x , h) ≡
     primal (LSTMCellNodes.sigmoidH ops)
