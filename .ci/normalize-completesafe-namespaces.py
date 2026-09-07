@@ -72,6 +72,7 @@ block = block.replace('c + a', 'Ring._+_ ring c a')
 block = block.replace('c + b', 'Ring._+_ ring c b')
 block = block.replace('a + neg b', 'Ring._+_ ring a (Ring.neg ring b)')
 block = block.replace('x * x', 'Ring._*_ ring x x')
+block = block.replace('x ≠ zero', '¬ (x ≡ zero)')
 s = s[:start] + block + s[end:]
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
