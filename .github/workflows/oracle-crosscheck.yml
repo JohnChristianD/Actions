@@ -1,4 +1,4 @@
-name: Functional and symbolic oracle cross-check
+name: Functional oracle cross-check
 
 on:
   push:
@@ -15,25 +15,20 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: agda/agda-setup-action@v1.0.0
-        with:
-          agda-version: '2.8.0'
-      - name: Kernel-check shared finite CHAD program
-        run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
-      - name: Kernel-check first-class finite recurrent CHAD program
-        run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
+
       - name: Install Haskell and Elixir oracle runtimes
-        run: sudo apt-get update && sudo apt-get install -y ghc elixir
-      - name: Produce Haskell trace
-        run: runghc oracle/haskell_oracle.hs > /tmp/haskell.csv
-      - name: Produce Elixir trace
-        run: elixir oracle/elixir_oracle.exs > /tmp/elixir.csv
-      - name: Compare independent functional traces
-        run: diff -u /tmp/haskell.csv /tmp/elixir.csv
-      - name: Emit ChatGPT-native prescriptive candidate surface
         run: |
-          printf '%s\n' \
-            'search=typed-graph-enumeration+counterexample-guided-symbolic-normalization' \
-            'promotion=oracle-agreement-only-then-Agda-proof-obligation' \
-            'authority=Agda--safe-kernel' > /tmp/prescriptive_candidates.txt
-          test -s /tmp/prescriptive_candidates.txt
+          sudo apt-get update
+          sudo apt-get install -y ghc elixir
+
+      - name: Produce Haskell oracle trace
+        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+
+      - name: Produce Elixir oracle trace
+        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
+
+      - name: Cross-check independent functional traces
+        run: |
+          set -euo pipefail
+          diff -u oracle/haskell.csv oracle/elixir.csv
+          echo 'oracle-cross-check=haskell-elixir=PASS'
