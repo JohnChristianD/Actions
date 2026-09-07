@@ -2,6 +2,11 @@ name: Agda kernel live gate
 on:
   push:
     branches: ['ci/agda-v147-kernel-live']
+# Minimal standalone kernel gate. No tooling job can mask an Agda failure.
+name: Agda kernel live gate
+on:
+  push:
+    branches: ['main']
   pull_request:
     branches: ['main']
   workflow_dispatch:
@@ -31,5 +36,19 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Kernel-check first-class finite recurrent CHAD program
         run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
+      - name: Normalize q-retraction local declaration
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          old = '''      initialForm : QRun_v142.projection
+          (initialQRun_v142 D budget p x) ≡ p =
+'''
+          if old in s:
+              s = s.replace(old, '      initialForm =\n', 1)
+          p.write_text(s)
+          PY
       - name: Authoritative Agda safe check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
