@@ -468,9 +468,12 @@ module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
   runState (state c) = c
 
   accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
+  accumulateAt : Fin n -> R -> Cot -> Cot
+  accumulateAt i c s j with finDecEq j i
     ... | yes _ = s j + c
-    ... | no _ = s j)
+    ... | no _ = s j
+
+  accumulate i c (state s) = state (accumulateAt i c s)
 
   runBack : ∀ e ρ c → EState → EState
   runBack e ρ c s =
