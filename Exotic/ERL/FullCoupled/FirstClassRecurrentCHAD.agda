@@ -66,12 +66,17 @@ gateTanh g p =
   compose (LSTMGate.affine g)
     (compose (LSTMGate.layerNorm g) (tanhH p))
 
+------------------------------------------------------------------------
+-- The complete recurrent forward program and its reverse program are one
+-- first-class Node.  No independent LSTM primitive/VJP theorem is exposed.
+------------------------------------------------------------------------
+
 lstmCell : ∀ {X H : Set}
   → LSTMNodes X H
   → Node (X × LSTMState H) (LSTMState H)
 lstmCell {X} {H} p = node
-  (lambda-q)
-  (reverse-q)
+  lambda-q
+  reverse-q
   where
   lambda-q : X × LSTMState H → LSTMState H
   lambda-q q =
@@ -79,10 +84,10 @@ lstmCell {X} {H} p = node
         s = pairSnd q
         h = LSTMState.hidden s
         c = LSTMState.cell s
-        f = primal (gateSigmoid (LSTMGate.forget p) p) (x , h)
-        i = primal (gateSigmoid (LSTMGate.input p) p) (x , h)
-        o = primal (gateSigmoid (LSTMGate.output p) p) (x , h)
-        g = primal (gateTanh (LSTMGate.candidate p) p) (x , h)
+        f = primal (gateSigmoid (LSTMNodes.forget p) p) (x , h)
+        i = primal (gateSigmoid (LSTMNodes.input p) p) (x , h)
+        o = primal (gateSigmoid (LSTMNodes.output p) p) (x , h)
+        g = primal (gateTanh (LSTMNodes.candidate p) p) (x , h)
         fc = primal (hadamardH p) (f , c)
         ig = primal (hadamardH p) (i , g)
         c' = primal (addH p) (fc , ig)
@@ -96,10 +101,10 @@ lstmCell {X} {H} p = node
         s = pairSnd q
         h = LSTMState.hidden s
         c = LSTMState.cell s
-        fN = gateSigmoid (LSTMGate.forget p) p
-        iN = gateSigmoid (LSTMGate.input p) p
-        oN = gateSigmoid (LSTMGate.output p) p
-        gN = gateTanh (LSTMGate.candidate p) p
+        fN = gateSigmoid (LSTMNodes.forget p) p
+        iN = gateSigmoid (LSTMNodes.input p) p
+        oN = gateSigmoid (LSTMNodes.output p) p
+        gN = gateTanh (LSTMNodes.candidate p) p
         f = primal fN (x , h)
         i = primal iN (x , h)
         o = primal oN (x , h)
@@ -148,8 +153,8 @@ lstmAt : ∀ {X H : Set}
   → X
   → Node (LSTMState H) (LSTMState H)
 lstmAt p x = node
-  (lambda-s)
-  (lambda-b)
+  lambda-s
+  lambda-b
   where
   lambda-s : LSTMState H → LSTMState H
   lambda-s s = primal (lstmCell p) (x , s)
