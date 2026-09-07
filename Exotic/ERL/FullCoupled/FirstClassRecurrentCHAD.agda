@@ -18,11 +18,6 @@ data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
-------------------------------------------------------------------------
--- One shared Efficient-CHAD node: primal and reverse accumulation are
--- fields of exactly the same definition.
-------------------------------------------------------------------------
-
 record Node (A B : Set) : Set₁ where
   constructor node
   field
@@ -39,21 +34,11 @@ compose f g = node
   (λ x → primal g (primal f x))
   (λ x dz → pullback f x (pullback g (primal f x) dz))
 
-------------------------------------------------------------------------
--- Recurrent state. The type parameter is `hiddenDim`; the public field is
--- intentionally still named `hidden`.
-------------------------------------------------------------------------
-
 record LSTMState (hiddenDim : Set) : Set where
   constructor lstm-state
   field
     hidden : hiddenDim
     cell : hiddenDim
-
-------------------------------------------------------------------------
--- First-class LSTM primitive graph. Every gate is affine -> LayerNorm ->
--- activation, and the recurrent transition is composed below.
-------------------------------------------------------------------------
 
 record LSTMGate (X H : Set) : Set₁ where
   constructor lstm-gate
@@ -81,21 +66,10 @@ gateTanh g p =
   compose (LSTMGate.affine g)
     (compose (LSTMGate.layerNorm g) (tanhH p))
 
-------------------------------------------------------------------------
--- Compositional LSTM transition:
--- f = sigma(N_f([x,h])); i = sigma(N_i([x,h]));
--- o = sigma(N_o([x,h])); g = tanh(N_g([x,h]));
--- c' = f * c + i * g; h' = o * tanh(c').
---
--- There is deliberately no `lstmStep` primitive slot: this definition is
--- assembled from the primitive Nodes above, so compose constructs forward
--- and reverse behavior together.
-------------------------------------------------------------------------
-
 lstmCell : ∀ {X H : Set}
   → LSTMNodes X H
   → Node (X × LSTMState H) (LSTMState H)
-lstmCell p = node
+lstmCell {X} {H} p = node
   (lambda-q)
   (reverse-q)
   where
