@@ -41,7 +41,7 @@ replacements = {
     '    subLtZero : ∀ {a b} → a + neg b < zero → a < b': '    subLtZero : ∀ {a b} → Ring._+_ ring a (neg b) < zero → a < b',
     '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < Ring._*_ ring x x',
     '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
-    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
+    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → zero ≤ abs (Ring._+_ ring x y) → Ring._+_ ring (abs x) (abs y)',
     '    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y': '    absMul : ∀ x y → abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)',
     '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
     '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)':
@@ -50,7 +50,16 @@ replacements = {
 for old, new in replacements.items():
     s = s.replace(old, new)
 
-# Final parser-sensitive pass over the declaration lines themselves.
+# Agda.Builtin.Equality only provides _≡_ and refl here; supply the small
+# congruence primitive used by the monolith instead of relying on unavailable
+# library exports.
+if 'cong : ∀ {A B : Set}' not in s:
+    marker = 'cong₂ f refl refl = refl\n'
+    helper = marker + '\ncong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y\ncong f refl = refl\n'
+    if marker not in s:
+        raise SystemExit('expected cong₂ helper marker not found')
+    s = s.replace(marker, helper, 1)
+
 s = re.sub(
     r'(?m)^    mulNonneg : (.*?) → zero ≤ a \* b$',
     r'    mulNonneg : \1 → zero ≤ Ring._*_ ring a b',
@@ -67,8 +76,6 @@ end = s.index('\n---------------------------------------------------------------
 segment = s[start:end]
 segment = re.sub(r'\bR\b', 'ScalarR', segment)
 segment = segment.replace('Ring.ScalarR', 'Ring.R')
-# The CHAD scalar operators remain overloaded after the alias-preserving pass;
-# qualify the reverse product rule and primitive derivative multiplications.
 segment = segment.replace(
     'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
     'Ring._+_ R (Ring._*_ R (eval y ρ) (coeff x ρ i)) (Ring._*_ R (eval x ρ) (coeff y ρ i))',
