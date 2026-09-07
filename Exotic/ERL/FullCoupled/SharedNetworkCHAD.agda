@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.SharedNetworkCHAD where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 
 data _×_ (A B : Set) : Set where
   _,_ : A → B → A × B
@@ -17,34 +18,39 @@ data NodeList (A : Set₁) : Set₁ where
   _∷_ : A → NodeList A → NodeList A
 
 ------------------------------------------------------------------------
--- One shared functional forward/reverse program.
--- The primal evaluator and reverse pullback inhabit one definition.
--- Composition therefore constructs the reverse program definitionally.
+-- Efficient-CHAD node: one function simultaneously produces the primal
+-- value and its reverse accumulator.  There are no parallel primal/VJP
+-- definitions to drift apart.
 ------------------------------------------------------------------------
 
 record Node (A B : Set) : Set₁ where
   field
-    primal : A → B
-    pullback : A → B → A
+    run : A → Σ B (λ _ → B → A)
 
 open Node
 
+primal : ∀ {A B : Set} → Node A B → A → B
+primal n x = fst (run n x)
+
+pullback : ∀ {A B : Set} → Node A B → A → B → A
+pullback n x dy = snd (run n x) dy
+
 identity : ∀ {A : Set} → Node A A
 identity = record
-  { primal = λ x → x
-  ; pullback = λ _ dy → dy
+  { run = λ x → x , (λ dy → dy)
   }
 
 compose : ∀ {A B C : Set} → Node A B → Node B C → Node A C
 compose f g = record
-  { primal = λ x → primal g (primal f x)
-  ; pullback = λ x dz →
-      pullback f x (pullback g (primal f x) dz)
+  { run = λ x →
+      let fx = run f x
+          gx = run g (fst fx)
+      in fst gx , (λ dz → snd fx (snd gx dz))
   }
 
 ------------------------------------------------------------------------
--- First-class finite vector CHAD node.
--- The vector reverse pass is obtained structurally from the scalar Node.
+-- Finite vector node.  Mapping a single scalar CHAD node constructs both
+-- vector primal evaluation and vector reverse accumulation structurally.
 ------------------------------------------------------------------------
 
 mapVec : ∀ {A B : Set} {n : Nat} → (A → B) → Vec A n → Vec B n
@@ -59,8 +65,7 @@ mapVecBack node (x ∷ xs) (dy ∷ dys) =
 
 mapNode : ∀ {A B : Set} {n : Nat} → Node A B → Node (Vec A n) (Vec B n)
 mapNode node = record
-  { primal = mapVec (primal node)
-  ; pullback = mapVecBack node
+  { run = λ xs → mapVec (primal node) xs , (λ dys → mapVecBack node xs dys)
   }
 
 mapNodeForwardBoundary : ∀ {A B : Set} {n : Nat}
@@ -74,37 +79,13 @@ mapNodeReverseBoundary : ∀ {A B : Set} {n : Nat}
 mapNodeReverseBoundary node xs dy = refl
 
 ------------------------------------------------------------------------
--- Finite recurrent unrolling is total recursion over Nat.  This is the
--- ordinary Efficient-CHAD/state-passing case.
+-- Finite state passing.  Repeated composition of the same Node is the
+-- recurrent reverse pass, with finite fuel guaranteeing totality.
 ------------------------------------------------------------------------
 
 iterate : ∀ {A : Set} → Nat → Node A A → Node A A
 iterate zero n = identity
 iterate (suc k) n = compose n (iterate k n)
-
-iterateForwardBoundary : ∀ {A : Set} (k : Nat) (n : Node A A) x →
-  primal (iterate k n) x ≡ primal (iterate k n) x
-iterateForwardBoundary k n x = refl
-
-iterateReverseBoundary : ∀ {A : Set} (k : Nat) (n : Node A A) x dy →
-  pullback (iterate k n) x dy ≡ pullback (iterate k n) x dy
-iterateReverseBoundary k n x dy = refl
-
-------------------------------------------------------------------------
--- Finite multi-layer composition remains ordinary CHAD composition.
-------------------------------------------------------------------------
-
-stack : ∀ {A : Set} → NodeList (Node A A) → Node A A
-stack [] = identity
-stack (n ∷ ns) = compose n (stack ns)
-
-stackForwardBoundary : ∀ {A : Set} (ns : NodeList (Node A A)) x →
-  primal (stack ns) x ≡ primal (stack ns) x
-stackForwardBoundary ns x = refl
-
-stackReverseBoundary : ∀ {A : Set} (ns : NodeList (Node A A)) x dy →
-  pullback (stack ns) x dy ≡ pullback (stack ns) x dy
-stackReverseBoundary ns x dy = refl
 
 ------------------------------------------------------------------------
 -- Functional recurrent-state shapes.
@@ -122,41 +103,30 @@ record GRUState (H : Set) : Set where
     hidden : H
 
 ------------------------------------------------------------------------
--- Primitive blocks are Nodes. There is deliberately no standalone
--- representation-level tanh or sigmoid layer: those nonlinearities belong
--- to the recurrent cell or to whichever explicit output head uses them.
+-- A recurrent transition is itself one paired function.  The equations of
+-- the concrete LSTM/GRU layer therefore live inside the transition's run
+-- definition; any scalar/vector primitives they call use the same Node
+-- interface.
 ------------------------------------------------------------------------
 
-record NetworkPrimitives (X H Y : Set) : Set₁ where
+record RecurrentPrimitives (X H : Set) : Set₁ where
   field
-    affine : Node X H
-    layerNorm : Node H H
-    output : Node H Y
-    lstmStep : Node (X × LSTMState H) (LSTMState H)
-    gruStep : Node (X × GRUState H) (GRUState H)
+    lstmRun : (X × LSTMState H) →
+      Σ (LSTMState H) (λ _ → LSTMState H → X × LSTMState H)
+    gruRun : (X × GRUState H) →
+      Σ (GRUState H) (λ _ → GRUState H → X × GRUState H)
 
-open NetworkPrimitives
+open RecurrentPrimitives
 
-representation : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X H
-representation p = compose (affine p) (layerNorm p)
-
-actorNetwork : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X Y
-actorNetwork p = compose (representation p) (output p)
-
-------------------------------------------------------------------------
--- Recurrent cells already contain their activation structure in their
--- shared state-transition Node.
-------------------------------------------------------------------------
-
-lstmNetworkStep : ∀ {X H Y : Set}
-  → NetworkPrimitives X H Y
+lstmStepFromRun : ∀ {X H : Set}
+  → RecurrentPrimitives X H
   → Node (X × LSTMState H) (LSTMState H)
-lstmNetworkStep p = lstmStep p
+lstmStepFromRun p = record { run = lstmRun p }
 
-gruNetworkStep : ∀ {X H Y : Set}
-  → NetworkPrimitives X H Y
+gruStepFromRun : ∀ {X H : Set}
+  → RecurrentPrimitives X H
   → Node (X × GRUState H) (GRUState H)
-gruNetworkStep p = gruStep p
+gruStepFromRun p = record { run = gruRun p }
 
 lstmUnroll : ∀ {X H : Set}
   → Nat
@@ -169,6 +139,36 @@ gruUnroll : ∀ {X H : Set}
   → Node (X × GRUState H) (X × GRUState H)
   → Node (X × GRUState H) (X × GRUState H)
 gruUnroll k step = iterate k step
+
+------------------------------------------------------------------------
+-- Representation/actor composition contains no mandatory standalone tanh.
+-- A tanh head is an explicit Node only when that architecture selects one.
+------------------------------------------------------------------------
+
+record NetworkPrimitives (X H Y : Set) : Set₁ where
+  field
+    affine : Node X H
+    layerNorm : Node H H
+    output : Node H Y
+    recurrent : RecurrentPrimitives X H
+
+open NetworkPrimitives
+
+representation : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X H
+representation p = compose (affine p) (layerNorm p)
+
+actorNetwork : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X Y
+actorNetwork p = compose (representation p) (output p)
+
+lstmNetworkStep : ∀ {X H Y : Set}
+  → NetworkPrimitives X H Y
+  → Node (X × LSTMState H) (LSTMState H)
+lstmNetworkStep p = lstmStepFromRun (recurrent p)
+
+gruNetworkStep : ∀ {X H Y : Set}
+  → NetworkPrimitives X H Y
+  → Node (X × GRUState H) (GRUState H)
+gruNetworkStep p = gruStepFromRun (recurrent p)
 
 ------------------------------------------------------------------------
 -- Definition-level sharing checks.
