@@ -2,7 +2,7 @@ defmodule Q do
   def norm(n, d) when d < 0, do: norm(-n, -d)
   def norm(n, d) do
     g = Integer.gcd(abs(n), abs(d))
-    {div(n, g), div(d, g)}
+    {Kernel.div(n, g), Kernel.div(d, g)}
   end
 
   def add({a, b}, {c, d}), do: norm(a * d + c * b, b * d)
