@@ -68,7 +68,7 @@ for old, new in {
     '    subLtZero : ∀ {a b} → a + neg b < zero → a < b': '    subLtZero : ∀ {a b} → Ring._+_ ring a (neg b) < zero → a < b',
     '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < Ring._*_ ring x x',
     '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
-    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
+    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → zero ≤ abs (Ring._+_ ring x y) → Ring._+_ ring (abs x) (abs y)',
     '    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y': '    absMul : ∀ x y → abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)',
     '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
     '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)':
@@ -76,7 +76,6 @@ for old, new in {
 }.items():
     s = s.replace(old, new)
 
-# Scope-local Efficient-CHAD aliases and explicit reverse multiplications.
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
