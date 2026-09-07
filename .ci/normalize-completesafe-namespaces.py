@@ -80,10 +80,18 @@ block = block.replace(
 )
 s = s[:start] + block + s[end:]
 
-# The local minus helper must retain an explicit signature after normalization.
+# Preserve the explicit local helper signature after all normalization passes.
 s = re.sub(
     r'(?m)^  Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n  minus x y = Ring\._\+_ Rg x \(Ring\.neg Rg y\)$',
     '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
+    s,
+)
+
+# The monolith's LSTMState uses `hidden` both as the size binder and as a
+# record field. Rename only that size binder, retaining the canonical field.
+s = re.sub(
+    r'record LSTMState \(S : SmoothAlgebra\) \(hidden : Nat\) : Set where\n  field hidden cell : VecS S hidden',
+    'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim',
     s,
 )
 
@@ -98,4 +106,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block-minus-equality-basis')
+print('completesafe-namespace-normalization=qualified-orderedring-block-minus-equality-basis-lstm-hiddenDim')
