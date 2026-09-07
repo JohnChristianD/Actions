@@ -14,11 +14,13 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
-      - name: Apply exact finite source repair
+      - name: Apply exact anchored finite source repairs
         shell: bash
         run: |
           set -euo pipefail
-          ruby -e 'p = "Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"; a = File.readlines(p); i = a.index { |x| x.start_with?("  accumulate : Fin n") }; abort "accumulate declaration not found" unless i; j = i; j += 1 while j < a.length && !a[j].start_with?("  accumulate i c (state s)"); abort "accumulate definition not found" unless j < a.length; a[i, j - i + 1] = ["  accumulateAt : Fin n → R → Cot → Cot\n", "  accumulateAt i c s j with finDecEq j i\n", "    ... | yes _ = s j + c\n", "    ... | no _ = s j\n", "\n", "  accumulate : Fin n → R → EState → EState\n", "  accumulate i c (state s) = state (accumulateAt i c s)\n"]; File.write(p, a.join)'
+          ruby -e 'p = "Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"; s = File.read(p); old = "  runState (state c) = c\n\n  accumulate : Fin n → R → EState → EState\n  accumulateAt : Fin n -> R -> Cot -> Cot\n  accumulateAt i c s j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j\n\n  accumulate i c (state s) = state (accumulateAt i c s)\n"; new = "  runState (state c) = c\n\n  accumulateAt : Fin n → R → Cot → Cot\n  accumulateAt i c s j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"; abort "exact anchored accumulate block not found" unless s.include?(old); s = s.sub(old, new); File.write(p, s); raise "repair did not remove old declaration" if s.include?("  accumulate : Fin n → R → EState → EState\n  accumulateAt : Fin n -> R -> Cot -> Cot"); raise "repair missing new declaration" unless s.include?("  accumulateAt : Fin n → R → Cot → Cot\n");'
+          echo '=== repaired accumulate block ==='
+          sed -n '/runState (state c) = c/,+12p' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           git diff --check
       - name: Authoritative Agda check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
