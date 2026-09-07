@@ -74,10 +74,7 @@ block = block.replace('c + b', 'Ring._+_ ring c b')
 block = block.replace('a + neg b', 'Ring._+_ ring a (Ring.neg ring b)')
 block = block.replace('x * x', 'Ring._*_ ring x x')
 block = block.replace('x ≠ zero', '¬ (x ≡ zero)')
-block = block.replace(
-    'abs (x + y) ≤ abs x + abs y',
-    'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
-)
+block = block.replace('abs (x + y) ≤ abs x + abs y', 'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)')
 s = s[:start] + block + s[end:]
 
 # Preserve the explicit local helper signature after all normalization passes.
@@ -95,6 +92,18 @@ s = re.sub(
     s,
 )
 
+# The finite LayerNorm helper functions are intentionally scalar and finite.
+s = re.sub(
+    r'(?m)^  centered x = x \+ neg μ$',
+    '  centered : Scalar S → Scalar S\n  centered x = x + neg μ',
+    s,
+)
+s = re.sub(
+    r'(?m)^  normalise x = centered x \* invStd$',
+    '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd',
+    s,
+)
+
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
@@ -106,4 +115,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block-minus-equality-basis-lstm-hiddenDim')
+print('completesafe-namespace-normalization=qualified-orderedring-block-minus-equality-basis-lstm-hiddenDim-layernorm-local-signatures')
