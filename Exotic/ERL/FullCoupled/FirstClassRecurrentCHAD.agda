@@ -68,7 +68,7 @@ gateTanh g p =
 
 ------------------------------------------------------------------------
 -- The complete recurrent forward program and its reverse program are one
--- first-class Node.  No independent LSTM primitive/VJP theorem is exposed.
+-- first-class Node. No independent LSTM primitive/VJP theorem is exposed.
 ------------------------------------------------------------------------
 
 lstmCell : ∀ {X H : Set}
@@ -152,7 +152,7 @@ lstmAt : ∀ {X H : Set}
   → LSTMNodes X H
   → X
   → Node (LSTMState H) (LSTMState H)
-lstmAt p x = node
+lstmAt {X} {H} p x = node
   lambda-s
   lambda-b
   where
