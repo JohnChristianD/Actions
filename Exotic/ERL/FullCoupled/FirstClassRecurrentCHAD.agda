@@ -8,10 +8,21 @@ open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 data _×_ (A B : Set) : Set where
   _,_ : A → B → A × B
 
+pairFst : ∀ {A B : Set} → A × B → A
+pairFst (a , _) = a
+
+pairSnd : ∀ {A B : Set} → A × B → B
+pairSnd (_ , b) = b
+
 infixr 5 _∷_
 data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+
+------------------------------------------------------------------------
+-- Efficient-CHAD node: one total functional program contains both the
+-- primal result and its reverse accumulation function.
+------------------------------------------------------------------------
 
 record Node (A B : Set) : Set₁ where
   field
@@ -86,8 +97,8 @@ lstmCell : ∀ {X H : Set} →
   LSTMNodes X H → Node (X × LSTMState H) (LSTMState H)
 lstmCell p = record
   { run = λ q →
-      let x = fst q
-          s = snd q
+      let x = pairFst q
+          s = pairSnd q
           h = LSTMState.hidden s
           c = LSTMState.cell s
           rf = run (gateSigmoid (LSTMNodes.forget p) p) (x , h)
@@ -156,8 +167,8 @@ gruCell : ∀ {X H : Set} →
   GRUNodes X H → Node (X × GRUState H) (GRUState H)
 gruCell p = record
   { run = λ q →
-      let x = fst q
-          s = snd q
+      let x = pairFst q
+          s = pairSnd q
           h = GRUState.hidden s
           rz = run (gruSigmoid (GRUNodes.update p) p) (x , h)
           rr = run (gruSigmoid (GRUNodes.reset p) p) (x , h)
@@ -197,9 +208,9 @@ gruCell p = record
   }
 
 ------------------------------------------------------------------------
--- Finite state passing over an explicit finite input sequence. Capturing an
--- input turns each recurrent cell into a state-to-state Node; finite compose
--- then generates the complete forward/reverse chain.
+-- Finite state passing over an explicit finite sequence. Capturing an input
+-- turns each recurrent cell into a state-to-state Node; finite compose then
+-- generates the complete forward/reverse chain.
 ------------------------------------------------------------------------
 
 lstmAt : ∀ {X H : Set} → LSTMNodes X H → X → Node (LSTMState H) (LSTMState H)
