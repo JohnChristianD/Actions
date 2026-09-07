@@ -13,5 +13,5 @@
 
 (doseq [[x h c] [[0.2 -0.1 0.3] [1.0 0.2 -0.4] [-0.7 0.5 0.1]]]
   (let [[lh lc] (lstm x h c)]
-    (println (format "%.10f,%.10f,%.10f,%.10f,%.10f"
+    (println (format "%.12f,%.12f,%.12f,%.12f,%.12f"
                      x h c lh lc))))
