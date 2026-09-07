@@ -7,9 +7,9 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 data _×_ (A B : Set) : Set where
   _,_ : A → B → A × B
 
-data List (A : Set) : Set where
-  [] : List A
-  _∷_ : A → List A → List A
+data NodeList (A : Set₁) : Set₁ where
+  [] : NodeList A
+  _∷_ : A → NodeList A → NodeList A
 
 ------------------------------------------------------------------------
 -- One shared functional forward/reverse program.
@@ -59,15 +59,15 @@ iterateReverseBoundary k n x dy = refl
 -- iterate is the corresponding state-preserving recurrence combinator.
 ------------------------------------------------------------------------
 
-stack : ∀ {A : Set} → List (Node A A) → Node A A
+stack : ∀ {A : Set} → NodeList (Node A A) → Node A A
 stack [] = identity
 stack (n ∷ ns) = compose n (stack ns)
 
-stackForwardBoundary : ∀ {A : Set} (ns : List (Node A A)) x →
+stackForwardBoundary : ∀ {A : Set} (ns : NodeList (Node A A)) x →
   primal (stack ns) x ≡ primal (stack ns) x
 stackForwardBoundary ns x = refl
 
-stackReverseBoundary : ∀ {A : Set} (ns : List (Node A A)) x dy →
+stackReverseBoundary : ∀ {A : Set} (ns : NodeList (Node A A)) x dy →
   pullback (stack ns) x dy ≡ pullback (stack ns) x dy
 stackReverseBoundary ns x dy = refl
 
