@@ -1,12 +1,8 @@
-name: Agda kernel live gate
-on:
-  push:
-    branches: ['ci/agda-v147-kernel-live']
 # Minimal standalone kernel gate. No tooling job can mask an Agda failure.
 name: Agda kernel live gate
 on:
   push:
-    branches: ['main']
+    branches: ['ci/agda-v147-kernel-live']
   pull_request:
     branches: ['main']
   workflow_dispatch:
