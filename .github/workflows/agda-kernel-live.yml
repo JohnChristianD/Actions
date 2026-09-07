@@ -25,5 +25,7 @@ jobs:
         run: python3 .ci/normalize-completesafe-initial-form.py
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
+      - name: Kernel-check shared forward/Efficient-CHAD program
+        run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Authoritative Agda safe check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
