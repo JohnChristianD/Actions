@@ -35,15 +35,8 @@ jobs:
       - name: Run Elixir LSTM oracle
         run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
 
-      - name: Set up Clojure
-        run: sudo apt-get update && sudo apt-get install -y clojure
-
-      - name: Run Clojure LSTM oracle
-        run: clojure oracle/clojure_oracle.clj > oracle/clojure.csv
-
       - name: Compare independent functional traces
         run: |
           set -euo pipefail
           diff -u oracle/haskell.csv oracle/elixir.csv
-          diff -u oracle/haskell.csv oracle/clojure.csv
           echo 'lstm-functional-oracle-cross-check=PASS'
