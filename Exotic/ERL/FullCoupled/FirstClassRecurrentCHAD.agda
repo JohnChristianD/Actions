@@ -4,6 +4,10 @@ module Exotic.ERL.FullCoupled.FirstClassRecurrentCHAD where
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
+------------------------------------------------------------------------
+-- Finite pure data
+------------------------------------------------------------------------
+
 infixr 5 _∷_
 data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
@@ -17,6 +21,10 @@ fst (a , _) = a
 
 snd : ∀ {A B : Set} → A × B → B
 snd (_ , b) = b
+
+------------------------------------------------------------------------
+-- One node contains both primal and reverse behavior.
+------------------------------------------------------------------------
 
 record Node (A B : Set) : Set₁ where
   constructor node
@@ -40,44 +48,57 @@ compose f g = node (λ x →
       gr = run g (fst fr)
   in fst gr , (λ dz → snd fr (snd gr dz)))
 
-record LSTMState (hiddenDim : Set) : Set where
+------------------------------------------------------------------------
+-- Finite recurrent state.
+------------------------------------------------------------------------
+
+record LSTMState (A : Set) (hiddenDim : Nat) : Set where
   constructor lstm-state
   field
-    hidden : hiddenDim
-    cell : hiddenDim
+    hidden : Vec A hiddenDim
+    cell : Vec A hiddenDim
 
-record LSTMGateNodes (X hiddenDim : Set) : Set₁ where
+------------------------------------------------------------------------
+-- Gate interfaces are finite in both input and hidden dimensions.
+-- Each gate is itself a CHAD Node, so its primal and pullback are shared.
+------------------------------------------------------------------------
+
+record LSTMGateNodes (A : Set) (inputDim hiddenDim : Nat) : Set₁ where
   field
-    affine : Node (X × hiddenDim) hiddenDim
-    layerNorm : Node hiddenDim hiddenDim
-    activation : Node hiddenDim hiddenDim
+    affine : Node (Vec A inputDim × Vec A hiddenDim) (Vec A hiddenDim)
+    layerNorm : Node (Vec A hiddenDim) (Vec A hiddenDim)
+    activation : Node (Vec A hiddenDim) (Vec A hiddenDim)
 
-record LSTMPrimitives (X hiddenDim : Set) : Set₁ where
+record LSTMPrimitives (A : Set) (inputDim hiddenDim : Nat) : Set₁ where
   field
-    forgetGate : LSTMGateNodes X hiddenDim
-    inputGate : LSTMGateNodes X hiddenDim
-    outputGate : LSTMGateNodes X hiddenDim
-    candidateGate : LSTMGateNodes X hiddenDim
-    hadamard : Node (hiddenDim × hiddenDim) hiddenDim
-    add : Node (hiddenDim × hiddenDim) hiddenDim
-    tanhCell : Node hiddenDim hiddenDim
-    addInputCotangent : Node (X × X) X
-    addStateCotangent : Node (hiddenDim × hiddenDim) hiddenDim
+    forgetGate : LSTMGateNodes A inputDim hiddenDim
+    inputGate : LSTMGateNodes A inputDim hiddenDim
+    outputGate : LSTMGateNodes A inputDim hiddenDim
+    candidateGate : LSTMGateNodes A inputDim hiddenDim
+    hadamard : Node (Vec A hiddenDim × Vec A hiddenDim) (Vec A hiddenDim)
+    add : Node (Vec A hiddenDim × Vec A hiddenDim) (Vec A hiddenDim)
+    tanhCell : Node (Vec A hiddenDim) (Vec A hiddenDim)
+    addInputCotangent : Node (Vec A inputDim × Vec A inputDim) (Vec A inputDim)
+    addStateCotangent : Node (Vec A hiddenDim × Vec A hiddenDim) (Vec A hiddenDim)
 
-gateNode : ∀ {X hiddenDim : Set}
-  → LSTMGateNodes X hiddenDim
-  → Node (X × hiddenDim) hiddenDim
+gateNode : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  → LSTMGateNodes A inputDim hiddenDim
+  → Node (Vec A inputDim × Vec A hiddenDim) (Vec A hiddenDim)
 gateNode g = compose (LSTMGateNodes.affine g)
   (compose (LSTMGateNodes.layerNorm g) (LSTMGateNodes.activation g))
 
 ------------------------------------------------------------------------
--- Complete LSTM transition. Forward intermediates and reverse propagation
--- are emitted together by the same `run` definition.
+-- Complete finite LSTM transition.
+--
+-- The forward state and reverse accumulator are emitted by one definition.
+-- No separate recurrent VJP/Jacobian program is introduced.
 ------------------------------------------------------------------------
 
-lstmCell : ∀ {X hiddenDim : Set}
-  → LSTMPrimitives X hiddenDim
-  → Node (X × LSTMState hiddenDim) (LSTMState hiddenDim)
+lstmCell : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  → LSTMPrimitives A inputDim hiddenDim
+  → Node
+      (Vec A inputDim × LSTMState A hiddenDim)
+      (LSTMState A hiddenDim)
 lstmCell ops = node (λ input →
   let x = fst input
       s = snd input
@@ -105,10 +126,10 @@ lstmCell ops = node (λ input →
         dI = fst drig
         dG = snd drig
         dO = fst drh
-        dFIn = snd (run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)) dF
-        dIIn = snd (run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)) dI
-        dOIn = snd (run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)) dO
-        dGIn = snd (run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)) dG
+        dFIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.forgetGate ops))) (x , h)) dF
+        dIIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.inputGate ops))) (x , h)) dI
+        dOIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.outputGate ops))) (x , h)) dO
+        dGIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.candidateGate ops))) (x , h)) dG
         dx₁ = fst dFIn
         dx₂ = fst dIIn
         dx₃ = fst dOIn
@@ -125,24 +146,24 @@ lstmCell ops = node (λ input →
         dh = primal (LSTMPrimitives.addStateCotangent ops) (dh₁₂ , dh₃₄)
     in dx , lstm-state dh dC)
 
-lstmAt : ∀ {X hiddenDim : Set}
-  → LSTMPrimitives X hiddenDim
-  → X
-  → Node (LSTMState hiddenDim) (LSTMState hiddenDim)
+lstmAt : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  → LSTMPrimitives A inputDim hiddenDim
+  → Vec A inputDim
+  → Node (LSTMState A hiddenDim) (LSTMState A hiddenDim)
 lstmAt ops x = node (λ s →
   let r = run (lstmCell ops) (x , s)
   in fst r , (λ ds → snd (snd r ds)))
 
-lstmUnroll : ∀ {X hiddenDim : Set} {n : Nat}
-  → Vec X n
-  → LSTMPrimitives X hiddenDim
-  → Node (LSTMState hiddenDim) (LSTMState hiddenDim)
+lstmUnroll : ∀ {A : Set} {inputDim hiddenDim : Nat} {n : Nat}
+  → Vec (Vec A inputDim) n
+  → LSTMPrimitives A inputDim hiddenDim
+  → Node (LSTMState A hiddenDim) (LSTMState A hiddenDim)
 lstmUnroll [] ops = identity
 lstmUnroll (x ∷ xs) ops = compose (lstmAt ops x) (lstmUnroll xs ops)
 
-lstmCellForwardBoundary : ∀ {X hiddenDim : Set}
-  (ops : LSTMPrimitives X hiddenDim)
-  (x : X)
-  (s : LSTMState hiddenDim)
+lstmCellForwardBoundary : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  (ops : LSTMPrimitives A inputDim hiddenDim)
+  (x : Vec A inputDim)
+  (s : LSTMState A hiddenDim)
   → primal (lstmCell ops) (x , s) ≡ primal (lstmCell ops) (x , s)
 lstmCellForwardBoundary ops x s = refl
