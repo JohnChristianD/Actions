@@ -80,6 +80,12 @@ block = block.replace(
 )
 s = s[:start] + block + s[end:]
 
+# The monolith-local minus helper needs an explicit type because its first use
+# occurs before Agda can infer the overloaded ring result uniquely.
+old_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
+new_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
+s = s.replace(old_minus, new_minus)
+
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
@@ -91,4 +97,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block')
+print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-minus')
