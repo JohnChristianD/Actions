@@ -120,7 +120,8 @@ lstmCell {X} {H} p = node
         hN = hadamardH p
         dRh = pullback hN (o , tc) (LSTMState.hidden dy)
         dTc = pullback tcN c' (pairSnd dRh)
-        dC' = pullback addN (fc , ig) (LSTMState.cell dy , dTc)
+        dC' = pullback addN (fc , ig)
+          (primal addN (LSTMState.cell dy , dTc))
         dFc = pullback fcN (f , c) (pairFst dC')
         dIg = pullback igN (i , g) (pairSnd dC')
         dF = pairFst dFc
