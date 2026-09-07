@@ -37,7 +37,7 @@ compose f g = record
   }
 
 ------------------------------------------------------------------------
--- Finite recurrent states. The index names the hidden carrier; the field
+-- Finite recurrent states. The index names the hidden dimension; the field
 -- remains `hidden` so all state equations keep their canonical projection.
 ------------------------------------------------------------------------
 
@@ -53,8 +53,8 @@ record GRUState (hiddenDim : Set) : Set where
     hidden : hiddenDim
 
 ------------------------------------------------------------------------
--- Primitive numerical nodes. They are finite algebraic interfaces; no
--- recurrent cell is hidden behind a recurrent-step primitive.
+-- Gate construction is compositional. Each gate is affine -> LayerNorm ->
+-- sigmoid/tanh; no recurrent cell operation is supplied as a primitive.
 ------------------------------------------------------------------------
 
 record LSTMGateNodes (X H : Set) : Set₁ where
@@ -81,11 +81,6 @@ gateTanh : ∀ {X H : Set} →
   LSTMGateNodes X H → LSTMCellNodes X H → Node (X × H) H
 gateTanh gate ops = compose (LSTMGateNodes.affine gate)
   (compose (LSTMGateNodes.layerNorm gate) (LSTMCellNodes.tanhH ops))
-
-------------------------------------------------------------------------
--- One LSTM transition. Its primal intermediates and reverse accumulator are
--- produced by the same `run` definition.
-------------------------------------------------------------------------
 
 lstmCell : ∀ {X H : Set}
   → LSTMCellNodes X H
@@ -135,8 +130,7 @@ lstmCell ops = record
   }
 
 ------------------------------------------------------------------------
--- GRU gates and one transition. The state mixing uses
--- h' = (1-z) ⊙ n + z ⊙ h.
+-- GRU transition: h' = (1-z) ⊙ n + z ⊙ h.
 ------------------------------------------------------------------------
 
 record GRUGateNodes (X H : Set) : Set₁ where
@@ -205,28 +199,29 @@ gruCell ops = record
             dxzr = primal (GRUCellNodes.addH ops) (dxz , dxr)
             dx = primal (GRUCellNodes.addH ops) (dxzr , dxn)
             dhzr = primal (GRUCellNodes.addH ops) (dhz , dhr)
-            dh = primal (GRUCellNodes.addH ops) (dhMix , dhCandidate)
-            dh' = primal (GRUCellNodes.addH ops) (dh , dhzr)
-        in dx , gru-state dh'
+            dhBase = primal (GRUCellNodes.addH ops) (dhMix , dhCandidate)
+            dh = primal (GRUCellNodes.addH ops) (dhBase , dhzr)
+        in dx , gru-state dh
   }
 
 ------------------------------------------------------------------------
--- Finite state passing over an explicit finite input sequence. A captured
--- input turns the cell into a state-to-state Node, so composition is typed.
+-- Finite state passing over an explicit finite input sequence. Capturing an
+-- input turns each cell into a state-to-state Node; compose then produces
+-- the complete finite forward and reverse pass definitionally.
 ------------------------------------------------------------------------
 
 lstmAt : ∀ {X H : Set} → LSTMCellNodes X H → X → Node (LSTMState H) (LSTMState H)
 lstmAt ops x = record
   { run = λ s →
       let r = run (lstmCell ops) (x , s)
-      in fst r , (λ ds → snd r (lstm-state ds (LSTMState.cell s)))
+      in fst r , (λ ds → snd r ds)
   }
 
 gruAt : ∀ {X H : Set} → GRUCellNodes X H → X → Node (GRUState H) (GRUState H)
 gruAt ops x = record
   { run = λ s →
       let r = run (gruCell ops) (x , s)
-      in fst r , (λ ds → snd r (gru-state ds))
+      in fst r , (λ ds → snd r ds)
   }
 
 lstmUnroll : ∀ {X H : Set} {n : Nat}
@@ -240,7 +235,7 @@ gruUnroll [] ops = identity
 gruUnroll (x ∷ xs) ops = compose (gruAt ops x) (gruUnroll xs ops)
 
 ------------------------------------------------------------------------
--- Definitional boundaries: both directions are obtained from the same Node.
+-- Definition-level boundaries.
 ------------------------------------------------------------------------
 
 lstmCellForwardBoundary : ∀ {X H : Set}
