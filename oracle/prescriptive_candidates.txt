@@ -1,0 +1,7 @@
+# ChatGPT-native candidate surface for later Agda certification.
+# External Haskell/Elixir traces only falsify/confirm finite instances.
+compose(affine,layerNorm)
+compose(compose(affine,layerNorm),outputTanh)
+reverse(compose(f,g))
+iterate(recurrentStep,k)
+normalize(layerNorm,x)
