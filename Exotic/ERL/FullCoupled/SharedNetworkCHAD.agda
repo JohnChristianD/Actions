@@ -86,12 +86,16 @@ mapNode node = record { run = mapNodeRun node }
 mapNodeForwardBoundary : ∀ {A B : Set} {n : Nat}
   (node : Node A B) (xs : Vec A n) →
   primal (mapNode node) xs ≡ mapVec (primal node) xs
-mapNodeForwardBoundary node xs = refl
+mapNodeForwardBoundary node [] = refl
+mapNodeForwardBoundary node (x ∷ xs) =
+  mapNodeForwardBoundary node xs
 
 mapNodeReverseBoundary : ∀ {A B : Set} {n : Nat}
   (node : Node A B) (xs : Vec A n) (dy : Vec B n) →
   pullback (mapNode node) xs dy ≡ mapVecBack node xs dy
-mapNodeReverseBoundary node xs dy = refl
+mapNodeReverseBoundary node [] [] = refl
+mapNodeReverseBoundary node (x ∷ xs) (dy ∷ dys) =
+  mapNodeReverseBoundary node xs dys
 
 ------------------------------------------------------------------------
 -- Finite state passing. Repeated composition of the same Node is the
