@@ -1,4 +1,4 @@
-import Data.Ratio ((%))
+import Data.Ratio ((%), numerator, denominator)
 
 sigmoidR :: Rational -> Rational
 sigmoidR z = (2 + z) / 4
@@ -25,8 +25,14 @@ cases = [(q 1 5, q (-1) 10, q 3 10),
          (q 1 1, q 1 5, q (-2) 5),
          (q (-7) 10, q 1 2, q 1 10)]
 
+render :: Rational -> String
+render r =
+  let n = numerator r
+      d = denominator r
+  in show n ++ if d == 1 then "" else "/" ++ show d
+
 main :: IO ()
 main = mapM_ emit cases
   where
     emit (x,h,c) = let (lh,lc) = lstm x h c
-                   in putStrLn $ show x ++ "," ++ show h ++ "," ++ show c ++ "," ++ show lh ++ "," ++ show lc
+                   in putStrLn $ render x ++ "," ++ render h ++ "," ++ render c ++ "," ++ render lh ++ "," ++ render lc
