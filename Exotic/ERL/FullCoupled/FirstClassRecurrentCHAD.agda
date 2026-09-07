@@ -79,8 +79,6 @@ record LSTMPrimitives (X hiddenDim : Set) : Set₁ where
     addInputCotangent : Node (X × X) X
     addStateCotangent : Node (hiddenDim × hiddenDim) hiddenDim
 
-open LSTMGateNodes LSTMPrimitives
-
 gateNode : ∀ {X hiddenDim : Set}
   → LSTMGateNodes X hiddenDim
   → Node (X × hiddenDim) hiddenDim
