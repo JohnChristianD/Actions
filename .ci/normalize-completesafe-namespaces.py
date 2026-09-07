@@ -81,7 +81,10 @@ old_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y 
 new_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
 s = s.replace(old_minus, new_minus)
 
-# Keep record field `hidden` distinct from its Nat dimension parameter.
+# Keep record fields distinct from Nat dimension variables and make the
+# LayerNorm local arithmetic bindings explicit enough for Agda 2.8.
+s = s.replace('  centered x = x + neg μ', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
+
 s = s.replace(
     'record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where',
     'record RecurrentAffine (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
@@ -116,4 +119,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-minus-recurrent-hiddenDim')
+print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-layernorm-centered-recurrent-hiddenDim')
