@@ -19,8 +19,8 @@ data Vec (A : Set) : Nat → Set where
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
 ------------------------------------------------------------------------
--- Explicit CHAD result packaging. The primal value and reverse
--- accumulator are fields of the same finite functional computation.
+-- Efficient-CHAD node: one total functional program contains both the
+-- primal result and its reverse accumulation function.
 ------------------------------------------------------------------------
 
 record Result (A B : Set) : Set₁ where
@@ -50,14 +50,12 @@ compose f g = record
   { run = λ x →
       let rf = run f x
           rg = run g (value rf)
-      in result
-           (value rg)
-           (λ dz → back rf (back rg dz))
+      in result (value rg) (λ dz → back rf (back rg dz))
   }
 
 ------------------------------------------------------------------------
--- Sized recurrent states. `hiddenDim` names the hidden carrier while the
--- public projection remains `hidden`.
+-- Sized recurrent states. `hiddenDim` names the hidden carrier; public
+-- projections remain `hidden` and `cell`.
 ------------------------------------------------------------------------
 
 record LSTMState (hiddenDim : Set) : Set where
@@ -97,8 +95,8 @@ gateTanh g p = compose (LSTMGate.affine g)
   (compose (LSTMGate.layerNorm g) (LSTMNodes.tanhH p))
 
 ------------------------------------------------------------------------
--- LSTM transition: one `run` produces its primal state and reverse
--- state/input accumulation.
+-- LSTM transition: primal and reverse accumulation are fields of the same
+-- `Result` constructed by this one functional run.
 ------------------------------------------------------------------------
 
 lstmCell : ∀ {X H : Set} →
@@ -118,7 +116,7 @@ lstmCell p = record
           rc = run (LSTMNodes.addH p) (value rfc , value rig)
           rt = run (LSTMNodes.tanhH p) (value rc)
           rh = run (LSTMNodes.hadamardH p) (value ro , value rt)
-          y = lstm-state (pairFst (value rh)) (pairFst (pairSnd (result (value rh , value rc) (λ k → k))))
+          y = lstm-state (value rh) (value rc)
       in result y (λ dy →
         let dRh = back rh (LSTMState.hidden dy)
             dRt = back rt (pairSnd dRh)
@@ -188,33 +186,30 @@ gruCell p = record
           rleft = run (GRUNodes.hadamardH p) (value rm , value rn)
           rright = run (GRUNodes.hadamardH p) (z , h)
           rout = run (GRUNodes.addH p) (value rleft , value rright)
-      in result
-           (gru-state (value rout))
-           (λ dy →
-             let dOut = back rout (GRUState.hidden dy)
-                 dLeft = back rleft (pairFst dOut)
-                 dRight = back rright (pairSnd dOut)
-                 dMinus = back rm (pairFst dLeft)
-                 dN = back rn (pairSnd dLeft)
-                 dRH = back rrh (pairSnd dN)
-                 dZMix = pairFst dRight
-                 dHMix = pairSnd dRight
-                 dZMinus = back rm dMinus
-                 dZ = primal (GRUNodes.addH p) (dZMix , dZMinus)
-                 dR = pairFst dRH
-                 dHCand = pairSnd dRH
-                 dReset = back rr dR
-                 dUpdate = back rz dZ
-                 dXReset = pairFst dReset
-                 dHReset = pairSnd dReset
-                 dXUpdate = pairFst dUpdate
-                 dHUpdate = pairSnd dUpdate
-                 dXCandidate = pairFst dN
-                 dHX = primal (GRUNodes.addH p) (dXUpdate , dXReset)
-                 dX = primal (GRUNodes.addH p) (dHX , dXCandidate)
-                 dH0 = primal (GRUNodes.addH p) (dHUpdate , dHReset)
-                 dH = primal (GRUNodes.addH p) (dH0 , dHCand)
-             in dX , gru-state dH)
+      in result (gru-state (value rout)) (λ dy →
+        let dOut = back rout (GRUState.hidden dy)
+            dLeft = back rleft (pairFst dOut)
+            dRight = back rright (pairSnd dOut)
+            dMinus = back rm (pairFst dLeft)
+            dN = back rn (pairSnd dLeft)
+            dRH = back rrh (pairSnd dN)
+            dZMix = pairFst dRight
+            dZMinus = back rm dMinus
+            dZ = primal (GRUNodes.addH p) (dZMix , dZMinus)
+            dR = pairFst dRH
+            dHCand = pairSnd dRH
+            dReset = back rr dR
+            dUpdate = back rz dZ
+            dXReset = pairFst dReset
+            dHReset = pairSnd dReset
+            dXUpdate = pairFst dUpdate
+            dHUpdate = pairSnd dUpdate
+            dXCandidate = pairFst dN
+            dHX = primal (GRUNodes.addH p) (dXUpdate , dXReset)
+            dX = primal (GRUNodes.addH p) (dHX , dXCandidate)
+            dH0 = primal (GRUNodes.addH p) (dHUpdate , dHReset)
+            dH = primal (GRUNodes.addH p) (dH0 , dHCand)
+        in dX , gru-state dH)
   }
 
 ------------------------------------------------------------------------
