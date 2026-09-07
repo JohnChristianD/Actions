@@ -21,154 +21,123 @@ snd (_ , b) = b
 record Node (A B : Set) : Set₁ where
   constructor node
   field
-    primal : A → B
-    pullback : A → B → A
+    run : A → B × (B → A)
 
 open Node
 
+primal : ∀ {A B : Set} → Node A B → A → B
+primal n x = fst (run n x)
+
+pullback : ∀ {A B : Set} → Node A B → A → B → A
+pullback n x dy = snd (run n x) dy
+
 identity : ∀ {A : Set} → Node A A
-identity = node (λ x → x) (λ _ dy → dy)
+identity = node (λ x → x , (λ dy → dy))
 
 compose : ∀ {A B C : Set} → Node A B → Node B C → Node A C
-compose f g = node
-  (λ x → primal g (primal f x))
-  (λ x dz → pullback f x (pullback g (primal f x) dz))
+compose f g = node (λ x →
+  let fr = run f x
+      gr = run g (fst fr)
+  in fst gr , (λ dz → snd fr (snd gr dz)))
 
-record LSTMState (hiddenDim : Set) : Set where
+record LSTMState (A : Set) (hiddenDim : Nat) : Set where
   constructor lstm-state
   field
-    hidden : hiddenDim
-    cell : hiddenDim
+    hidden : Vec A hiddenDim
+    cell : Vec A hiddenDim
 
-record LSTMGateNodes (X hiddenDim : Set) : Set₁ where
+record LSTMGateNodes (A : Set) (inputDim hiddenDim : Nat) : Set₁ where
   field
-    affine : Node (X × hiddenDim) hiddenDim
-    layerNorm : Node hiddenDim hiddenDim
+    affine : Node (Vec A inputDim × Vec A hiddenDim) (Vec A hiddenDim)
+    layerNorm : Node (Vec A hiddenDim) (Vec A hiddenDim)
+    activation : Node (Vec A hiddenDim) (Vec A hiddenDim)
 
-record LSTMNodes (X hiddenDim : Set) : Set₁ where
+record LSTMPrimitives (A : Set) (inputDim hiddenDim : Nat) : Set₁ where
   field
-    forgetGate : LSTMGateNodes X hiddenDim
-    inputGate : LSTMGateNodes X hiddenDim
-    outputGate : LSTMGateNodes X hiddenDim
-    candidateGate : LSTMGateNodes X hiddenDim
-    sigmoidH : Node hiddenDim hiddenDim
-    tanhH : Node hiddenDim hiddenDim
-    hadamardH : Node (hiddenDim × hiddenDim) hiddenDim
-    addH : Node (hiddenDim × hiddenDim) hiddenDim
-    addX : Node (X × X) X
+    forgetGate : LSTMGateNodes A inputDim hiddenDim
+    inputGate : LSTMGateNodes A inputDim hiddenDim
+    outputGate : LSTMGateNodes A inputDim hiddenDim
+    candidateGate : LSTMGateNodes A inputDim hiddenDim
+    hadamard : Node (Vec A hiddenDim × Vec A hiddenDim) (Vec A hiddenDim)
+    add : Node (Vec A hiddenDim × Vec A hiddenDim) (Vec A hiddenDim)
+    tanhCell : Node (Vec A hiddenDim) (Vec A hiddenDim)
+    addInputCotangent : Node (Vec A inputDim × Vec A inputDim) (Vec A inputDim)
+    addStateCotangent : Node (Vec A hiddenDim × Vec A hiddenDim) (Vec A hiddenDim)
 
-open LSTMGateNodes LSTMNodes
+gateNode : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  → LSTMGateNodes A inputDim hiddenDim
+  → Node (Vec A inputDim × Vec A hiddenDim) (Vec A hiddenDim)
+gateNode g = compose (LSTMGateNodes.affine g)
+  (compose (LSTMGateNodes.layerNorm g) (LSTMGateNodes.activation g))
 
-gateSigmoid : ∀ {X hiddenDim : Set}
-  → LSTMGateNodes X hiddenDim
-  → LSTMNodes X hiddenDim
-  → Node (X × hiddenDim) hiddenDim
-gateSigmoid g ops =
-  compose (LSTMGateNodes.affine g)
-    (compose (LSTMGateNodes.layerNorm g) (LSTMNodes.sigmoidH ops))
+lstmCell : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  → LSTMPrimitives A inputDim hiddenDim
+  → Node (Vec A inputDim × LSTMState A hiddenDim) (LSTMState A hiddenDim)
+lstmCell ops = node (λ input →
+  let x = fst input
+      s = snd input
+      h = LSTMState.hidden s
+      c = LSTMState.cell s
+      rf = run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)
+      ri = run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)
+      ro = run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)
+      rg = run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)
+      rfc = run (LSTMPrimitives.hadamard ops) (fst rf , c)
+      rig = run (LSTMPrimitives.hadamard ops) (fst ri , fst rg)
+      rc = run (LSTMPrimitives.add ops) (fst rfc , fst rig)
+      rt = run (LSTMPrimitives.tanhCell ops) (fst rc)
+      rh = run (LSTMPrimitives.hadamard ops) (fst ro , fst rt)
+      y = lstm-state (fst rh) (fst rc)
+  in y , λ dy →
+    let drh = snd rh (LSTMState.hidden dy)
+        drt = snd rt (snd drh)
+        dc' = primal (LSTMPrimitives.add ops) (LSTMState.cell dy , drt)
+        drc = snd rc dc'
+        drfc = snd rfc (fst drc)
+        drig = snd rig (snd drc)
+        dF = fst drfc
+        dC = snd drfc
+        dI = fst drig
+        dG = snd drig
+        dO = fst drh
+        dFIn = snd (run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)) dF
+        dIIn = snd (run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)) dI
+        dOIn = snd (run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)) dO
+        dGIn = snd (run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)) dG
+        dx₁ = fst dFIn
+        dx₂ = fst dIIn
+        dx₃ = fst dOIn
+        dx₄ = fst dGIn
+        dh₁ = snd dFIn
+        dh₂ = snd dIIn
+        dh₃ = snd dOIn
+        dh₄ = snd dGIn
+        dx₁₂ = primal (LSTMPrimitives.addInputCotangent ops) (dx₁ , dx₂)
+        dx₃₄ = primal (LSTMPrimitives.addInputCotangent ops) (dx₃ , dx₄)
+        dx = primal (LSTMPrimitives.addInputCotangent ops) (dx₁₂ , dx₃₄)
+        dh₁₂ = primal (LSTMPrimitives.addStateCotangent ops) (dh₁ , dh₂)
+        dh₃₄ = primal (LSTMPrimitives.addStateCotangent ops) (dh₃ , dh₄)
+        dh = primal (LSTMPrimitives.addStateCotangent ops) (dh₁₂ , dh₃₄)
+    in dx , lstm-state dh dC)
 
-gateTanh : ∀ {X hiddenDim : Set}
-  → LSTMGateNodes X hiddenDim
-  → LSTMNodes X hiddenDim
-  → Node (X × hiddenDim) hiddenDim
-gateTanh g ops =
-  compose (LSTMGateNodes.affine g)
-    (compose (LSTMGateNodes.layerNorm g) (LSTMNodes.tanhH ops))
+lstmAt : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  → LSTMPrimitives A inputDim hiddenDim
+  → Vec A inputDim
+  → Node (LSTMState A hiddenDim) (LSTMState A hiddenDim)
+lstmAt ops x = node (λ s →
+  let r = run (lstmCell ops) (x , s)
+  in fst r , (λ ds → snd (snd r ds)))
 
-lstmCell : ∀ {X hiddenDim : Set}
-  → LSTMNodes X hiddenDim
-  → Node (X × LSTMState hiddenDim) (LSTMState hiddenDim)
-lstmCell {X} {hiddenDim} ops = node forward reverse
-  where
-  forward : X × LSTMState hiddenDim → LSTMState hiddenDim
-  forward input =
-    let x = fst input
-        s = snd input
-        h = LSTMState.hidden s
-        c = LSTMState.cell s
-        f = primal (gateSigmoid (LSTMNodes.forgetGate ops) ops) (x , h)
-        i = primal (gateSigmoid (LSTMNodes.inputGate ops) ops) (x , h)
-        o = primal (gateSigmoid (LSTMNodes.outputGate ops) ops) (x , h)
-        g = primal (gateTanh (LSTMNodes.candidateGate ops) ops) (x , h)
-        fc = primal (LSTMNodes.hadamardH ops) (f , c)
-        ig = primal (LSTMNodes.hadamardH ops) (i , g)
-        c' = primal (LSTMNodes.addH ops) (fc , ig)
-        tc = primal (LSTMNodes.tanhH ops) c'
-        h' = primal (LSTMNodes.hadamardH ops) (o , tc)
-    in lstm-state h' c'
-
-  reverse : X × LSTMState hiddenDim → LSTMState hiddenDim → X × LSTMState hiddenDim
-  reverse input dy =
-    let x = fst input
-        s = snd input
-        h = LSTMState.hidden s
-        c = LSTMState.cell s
-        fN = gateSigmoid (LSTMNodes.forgetGate ops) ops
-        iN = gateSigmoid (LSTMNodes.inputGate ops) ops
-        oN = gateSigmoid (LSTMNodes.outputGate ops) ops
-        gN = gateTanh (LSTMNodes.candidateGate ops) ops
-        f = primal fN (x , h)
-        i = primal iN (x , h)
-        o = primal oN (x , h)
-        g = primal gN (x , h)
-        fcN = LSTMNodes.hadamardH ops
-        igN = LSTMNodes.hadamardH ops
-        addN = LSTMNodes.addH ops
-        fc = primal fcN (f , c)
-        ig = primal igN (i , g)
-        c' = primal addN (fc , ig)
-        tcN = LSTMNodes.tanhH ops
-        tc = primal tcN c'
-        hN = LSTMNodes.hadamardH ops
-        dRh = pullback hN (o , tc) (LSTMState.hidden dy)
-        dTc = pullback tcN c' (snd dRh)
-        dC' = pullback addN (fc , ig)
-          (primal addN (LSTMState.cell dy , dTc))
-        dFc = pullback fcN (f , c) (fst dC')
-        dIg = pullback igN (i , g) (snd dC')
-        dF = fst dFc
-        dC = snd dFc
-        dI = fst dIg
-        dG = snd dIg
-        dO = fst dRh
-        dFIn = pullback fN (x , h) dF
-        dIIn = pullback iN (x , h) dI
-        dOIn = pullback oN (x , h) dO
-        dGIn = pullback gN (x , h) dG
-        dX1 = fst dFIn
-        dX2 = fst dIIn
-        dX3 = fst dOIn
-        dX4 = fst dGIn
-        dH1 = snd dFIn
-        dH2 = snd dIIn
-        dH3 = snd dOIn
-        dH4 = snd dGIn
-        dX12 = primal (LSTMNodes.addX ops) (dX1 , dX2)
-        dX34 = primal (LSTMNodes.addX ops) (dX3 , dX4)
-        dX = primal (LSTMNodes.addX ops) (dX12 , dX34)
-        dH12 = primal (LSTMNodes.addH ops) (dH1 , dH2)
-        dH34 = primal (LSTMNodes.addH ops) (dH3 , dH4)
-        dH = primal (LSTMNodes.addH ops) (dH12 , dH34)
-    in dX , lstm-state dH dC
-
-lstmAt : ∀ {X hiddenDim : Set}
-  → LSTMNodes X hiddenDim
-  → X
-  → Node (LSTMState hiddenDim) (LSTMState hiddenDim)
-lstmAt ops x = node
-  (λ s → primal (lstmCell ops) (x , s))
-  (λ s ds → snd (pullback (lstmCell ops) (x , s) ds))
-
-lstmUnroll : ∀ {X hiddenDim : Set} {n : Nat}
-  → Vec X n
-  → LSTMNodes X hiddenDim
-  → Node (LSTMState hiddenDim) (LSTMState hiddenDim)
+lstmUnroll : ∀ {A : Set} {inputDim hiddenDim : Nat} {n : Nat}
+  → Vec (Vec A inputDim) n
+  → LSTMPrimitives A inputDim hiddenDim
+  → Node (LSTMState A hiddenDim) (LSTMState A hiddenDim)
 lstmUnroll [] ops = identity
 lstmUnroll (x ∷ xs) ops = compose (lstmAt ops x) (lstmUnroll xs ops)
 
-lstmCellBoundary : ∀ {X hiddenDim : Set}
-  (ops : LSTMNodes X hiddenDim)
-  (x : X)
-  (s : LSTMState hiddenDim)
+lstmCellForwardBoundary : ∀ {A : Set} {inputDim hiddenDim : Nat}
+  (ops : LSTMPrimitives A inputDim hiddenDim)
+  (x : Vec A inputDim)
+  (s : LSTMState A hiddenDim)
   → primal (lstmCell ops) (x , s) ≡ primal (lstmCell ops) (x , s)
-lstmCellBoundary ops x s = refl
+lstmCellForwardBoundary ops x s = refl
