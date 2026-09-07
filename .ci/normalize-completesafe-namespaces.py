@@ -58,8 +58,9 @@ for old, new in {
 }.items():
     s = s.replace(old, new)
 
-# The OrderedRing record is the only declaration where overloaded infix
-# multiplication is parser-ambiguous. Qualify only this finite block.
+# The OrderedRing block is the only declaration where the locally-opened
+# ring operators create parser ambiguity. Qualify the finite field statements
+# without changing their propositions.
 start = s.index('record OrderedRing')
 end = s.index('record SmoothAlgebra', start)
 block = s[start:end]
@@ -73,6 +74,10 @@ block = block.replace('c + b', 'Ring._+_ ring c b')
 block = block.replace('a + neg b', 'Ring._+_ ring a (Ring.neg ring b)')
 block = block.replace('x * x', 'Ring._*_ ring x x')
 block = block.replace('x ≠ zero', '¬ (x ≡ zero)')
+block = block.replace(
+    'abs (x + y) ≤ abs x + abs y',
+    'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
+)
 s = s[:start] + block + s[end:]
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
