@@ -8,6 +8,7 @@ replacements = {
     'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)': 'open import Agda.Builtin.Nat using (Nat; suc)',
     'open import Agda.Builtin.Nat using (Nat; suc; _+_)': 'open import Agda.Builtin.Nat using (Nat; suc)',
     'open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)': 'open import Agda.Builtin.Equality using (_≡_; refl)',
+    '      g = LSTMGates.gates (LSTMBlock.gates block)': '      g = LSTMBlock.gates block',
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
@@ -58,9 +59,6 @@ for old, new in {
 }.items():
     s = s.replace(old, new)
 
-# The OrderedRing block is the only declaration where the locally-opened
-# ring operators create parser ambiguity. Qualify the finite field statements
-# without changing their propositions.
 start = s.index('record OrderedRing')
 end = s.index('record SmoothAlgebra', start)
 block = s[start:end]
@@ -74,11 +72,23 @@ block = block.replace('c + b', 'Ring._+_ ring c b')
 block = block.replace('a + neg b', 'Ring._+_ ring a (Ring.neg ring b)')
 block = block.replace('x * x', 'Ring._*_ ring x x')
 block = block.replace('x ≠ zero', '¬ (x ≡ zero)')
-block = block.replace(
-    'abs (x + y) ≤ abs x + abs y',
-    'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
-)
+block = block.replace('abs (x + y) ≤ abs x + abs y', 'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)')
 s = s[:start] + block + s[end:]
+
+s = re.sub(
+    r'(?m)^  Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n  minus x y = Ring\._\+_ Rg x \(Ring\.neg Rg y\)$',
+    '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
+    s,
+)
+
+s = re.sub(
+    r'record LSTMState \(S : SmoothAlgebra\) \(hidden : Nat\) : Set where\n  field hidden cell : VecS S hidden',
+    'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field hidden cell : VecS S hiddenDim',
+    s,
+)
+
+s = re.sub(r'(?m)^  centered x = x \+ neg μ$', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ', s)
+s = re.sub(r'(?m)^  normalise x = centered x \* invStd$', '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd', s)
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
@@ -91,4 +101,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block')
+print('completesafe-namespace-normalization=qualified-orderedring-minus-equality-lstm-hiddenDim-layernorm-and-lstm-gates')
