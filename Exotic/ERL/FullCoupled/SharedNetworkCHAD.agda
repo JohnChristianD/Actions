@@ -1,13 +1,17 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.SharedNetworkCHAD where
 
+open import Agda.Builtin.Nat using (Nat)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.FullCoupled.FirstClassRecurrentCHAD public
 
+data _×_ (A B : Set) : Set where
+  _,_ : A → B → A × B
+
 ------------------------------------------------------------------------
--- One shared network definition.  The same Node carries its primal value
--- and reverse accumulator, while the recurrent transition is imported from
--- the first-class compositional LSTM/GRU construction.
+-- One shared network definition. The same Node carries its primal value
+-- and reverse accumulator. The recurrent part is the compositional LSTM
+-- node graph, not a separate recurrent primitive slot.
 ------------------------------------------------------------------------
 
 record NetworkPrimitives (X H Y : Set) : Set₁ where
@@ -16,39 +20,23 @@ record NetworkPrimitives (X H Y : Set) : Set₁ where
     layerNorm : Node H H
     tanhHead : Node H H
     output : Node H Y
-    lstm : LSTMCellNodes X H
-    gru : GRUCellNodes X H
+    lstm : LSTMNodes X H
 
 open NetworkPrimitives
 
 representation : ∀ {X H Y : Set}
   → NetworkPrimitives X H Y → Node X H
 representation p =
-  compose
-    (compose (affine p) (layerNorm p))
-    (tanhHead p)
+  compose (compose (affine p) (layerNorm p)) (tanhHead p)
 
 actorNetwork : ∀ {X H Y : Set}
   → NetworkPrimitives X H Y → Node X Y
 actorNetwork p = compose (representation p) (output p)
 
-lstmNetwork : ∀ {X H Y : Set}
-  → NetworkPrimitives X H Y
-  → Vec X 0
+lstmNetwork : ∀ {X H : Set} {n : Nat}
+  → NetworkPrimitives X H H → Vec X n
   → Node (LSTMState H) (LSTMState H)
-lstmNetwork p xs = lstmUnroll xs (lstm p)
-
-gruNetwork : ∀ {X H Y : Set}
-  → NetworkPrimitives X H Y
-  → Vec X 0
-  → Node (GRUState H) (GRUState H)
-gruNetwork p xs = gruUnroll xs (gru p)
-
-------------------------------------------------------------------------
--- Definition-level sharing checks.  These are reflexive because the
--- forward expression is literally the primal projection of the Node whose
--- reverse expression is simultaneously carried by the same `run`.
-------------------------------------------------------------------------
+lstmNetwork p xs = lstmUnroll xs (NetworkPrimitives.lstm p)
 
 representationForwardBoundary : ∀ {X H Y : Set}
   (p : NetworkPrimitives X H Y) (x : X) →
@@ -64,9 +52,9 @@ actorForwardBoundary : ∀ {X H Y : Set}
 actorForwardBoundary p x = refl
 
 gateConstructionBoundary : ∀ {X H : Set}
-  (ops : LSTMCellNodes X H) (g : LSTMGateNodes X H) (x : X) (h : H) →
+  (ops : LSTMNodes X H) (g : LSTMGate X H) (x : X) (h : H) →
   primal (gateSigmoid g ops) (x , h) ≡
-    primal (LSTMCellNodes.sigmoidH ops)
-      (primal (LSTMGateNodes.layerNorm g)
-        (primal (LSTMGateNodes.affine g) (x , h)))
+    primal (LSTMNodes.sigmoidH ops)
+      (primal (LSTMGate.layerNorm g)
+        (primal (LSTMGate.affine g) (x , h)))
 gateConstructionBoundary ops g x h = refl

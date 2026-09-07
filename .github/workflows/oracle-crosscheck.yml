@@ -1,4 +1,4 @@
-name: Functional oracle cross-check
+name: Functional LSTM oracle cross-check
 
 on:
   push:
@@ -16,19 +16,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Haskell and Elixir oracle runtimes
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ghc elixir
+      - name: Set up Haskell and Elixir
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
 
-      - name: Produce Haskell oracle trace
+      - name: Run Haskell LSTM oracle
         run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
 
-      - name: Produce Elixir oracle trace
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
+          elixir-version: '1.17'
+          hexpm: true
+          rebar3: false
+
+      - name: Run Elixir LSTM oracle
         run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
 
-      - name: Cross-check independent functional traces
+      - name: Compare independent functional traces
         run: |
           set -euo pipefail
           diff -u oracle/haskell.csv oracle/elixir.csv
-          echo 'oracle-cross-check=haskell-elixir=PASS'
+          echo 'lstm-functional-oracle-cross-check=PASS'

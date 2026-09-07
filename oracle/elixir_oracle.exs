@@ -1,21 +1,18 @@
 defmodule Oracle do
   def sigmoid(z), do: 1.0 / (1.0 + :math.exp(-z))
 
-  def lstm_step(x, h, c) do
-    f = sigmoid(0.7 * x + 0.4 * h)
-    i = sigmoid(0.3 * x - 0.2 * h)
-    o = sigmoid(-0.1 * x + 0.5 * h)
-    g = :math.tanh(0.6 * x + 0.1 * h)
-    c1 = f * c + i * g
-    o * :math.tanh(c1)
-  end
-
-  def emit(x, h, c) do
-    :io.format("~.12f,~.12f,~.12f,~.12f~n", [x, h, c, lstm_step(x, h, c)])
+  def lstm(x, h, c) do
+    z = x + h
+    f = sigmoid(z)
+    i = sigmoid(z)
+    o = sigmoid(z)
+    g = :math.tanh(z)
+    c2 = f * c + i * g
+    {o * :math.tanh(c2), c2}
   end
 end
 
-IO.puts("x,h,c,output")
-Oracle.emit(0.2, -0.1, 0.3)
-Oracle.emit(1.0, 0.2, -0.4)
-Oracle.emit(-0.7, 0.5, 0.1)
+for {x, h, c} <- [{0.2,-0.1,0.3},{1.0,0.2,-0.4},{-0.7,0.5,0.1}] do
+  {lh, lc} = Oracle.lstm(x, h, c)
+  IO.puts(:io_lib.format("~.12f,~.12f,~.12f,~.12f,~.12f", [x,h,c,lh,lc]))
+end
