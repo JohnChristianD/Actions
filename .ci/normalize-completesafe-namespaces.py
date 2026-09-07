@@ -67,6 +67,17 @@ end = s.index('\n---------------------------------------------------------------
 segment = s[start:end]
 segment = re.sub(r'\bR\b', 'ScalarR', segment)
 segment = segment.replace('Ring.ScalarR', 'Ring.R')
+# The CHAD scalar operators remain overloaded after the alias-preserving pass;
+# qualify the reverse product rule and primitive derivative multiplications.
+segment = segment.replace(
+    'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
+    'Ring._+_ R (Ring._*_ R (eval y ρ) (coeff x ρ i)) (Ring._*_ R (eval x ρ) (coeff y ρ i))',
+)
+for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
+    segment = segment.replace(
+        f'{name} (eval x ρ) * coeff x ρ i',
+        f'Ring._*_ R ({name} (eval x ρ)) (coeff x ρ i)',
+    )
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
