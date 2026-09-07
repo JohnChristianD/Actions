@@ -7,6 +7,32 @@ s = p.read_text()
 replacements = {
     'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)': 'open import Agda.Builtin.Nat using (Nat; suc)',
     'open import Agda.Builtin.Nat using (Nat; suc; _+_)': 'open import Agda.Builtin.Nat using (Nat; suc)',
+}
+for old, new in replacements.items():
+    s = s.replace(old, new)
+
+# Keep the monolith self-contained: Agda.Builtin.Equality here provides only _≡_ and refl.
+if 'cong : ∀ {A B : Set}' not in s:
+    marker = 'cong₂ f refl refl = refl\n'
+    helper = marker + '''
+cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
+sym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x
+sym refl = refl
+
+trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl q = q
+
+subst : ∀ {A : Set} (P : A → Set) {x y : A} → x ≡ y → P x → P y
+subst P refl px = px
+'''
+    if marker not in s:
+        raise SystemExit('expected cong₂ helper marker not found')
+    s = s.replace(marker, helper, 1)
+
+# Deterministically qualify known Nat algebra and OrderedRing declaration forms.
+for old, new in {
     '  [] : Vec A zero': '  [] : Vec A Nat.zero',
     'sumFin _ z zero _ = z': 'sumFin _ z Nat.zero _ = z',
     'qRunFuel_v142 zero r = r': 'qRunFuel_v142 Nat.zero r = r',
@@ -41,40 +67,14 @@ replacements = {
     '    subLtZero : ∀ {a b} → a + neg b < zero → a < b': '    subLtZero : ∀ {a b} → Ring._+_ ring a (neg b) < zero → a < b',
     '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < Ring._*_ ring x x',
     '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
-    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → zero ≤ abs (Ring._+_ ring x y) → Ring._+_ ring (abs x) (abs y)',
     '    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y': '    absMul : ∀ x y → abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)',
     '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
     '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)':
         '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
-}
-for old, new in replacements.items():
+}.items():
     s = s.replace(old, new)
 
-# Agda.Builtin.Equality exports only _≡_ and refl here. Keep the monolith
-# self-contained by supplying the tiny propositional-equality basis locally.
-if 'cong : ∀ {A B : Set}' not in s:
-    marker = 'cong₂ f refl refl = refl\n'
-    helper = marker + '''
-cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
-cong f refl = refl
-
-sym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x
-sym refl = refl
-
-trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
-trans refl q = q
-
-subst : ∀ {A : Set} (P : A → Set) {x y : A} → x ≡ y → P x → P y
-subst P refl px = px
-'''
-    if marker not in s:
-        raise SystemExit('expected cong₂ helper marker not found')
-    s = s.replace(marker, helper, 1)
-
-# Final parser-sensitive pass over the declaration lines themselves.
-s = re.sub(r'(?m)^    mulNonneg : (.*?) → zero ≤ a \\* b$', r'    mulNonneg : \\1 → zero ≤ Ring._*_ ring a b', s)
-s = re.sub(r'(?m)^    mulLeLeft : (.*?) → c \\* a ≤ c \\* b$', r'    mulLeLeft : \\1 → Ring._*_ ring c a ≤ Ring._*_ ring c b', s)
-
+# Scope-local Efficient-CHAD aliases and explicit reverse multiplications.
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
