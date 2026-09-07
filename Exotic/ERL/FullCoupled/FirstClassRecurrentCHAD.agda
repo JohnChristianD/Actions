@@ -13,6 +13,11 @@ data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
+------------------------------------------------------------------------
+-- Efficient-CHAD node: one total functional program contains both the
+-- primal result and its reverse accumulation function.
+------------------------------------------------------------------------
+
 record Node (A B : Set) : Set₁ where
   field
     run : A → Σ B (λ _ → B → A)
@@ -26,19 +31,19 @@ pullback : ∀ {A B : Set} → Node A B → A → B → A
 pullback n x dy = snd (run n x) dy
 
 identity : ∀ {A : Set} → Node A A
-identity = record { run = λ x → x , (λ dy → dy) }
+identity = record { run = λ x → x , (λ dx → dx) }
 
 compose : ∀ {A B C : Set} → Node A B → Node B C → Node A C
 compose f g = record
   { run = λ x →
-      let fx = run f x
-          gx = run g (fst fx)
-      in fst gx , (λ dz → snd fx (snd gx dz))
+      let rf = run f x
+          rg = run g (fst rf)
+      in fst rg , (λ dz → snd rf (snd rg dz))
   }
 
 ------------------------------------------------------------------------
--- Finite recurrent states. The index names the hidden dimension; the field
--- remains `hidden` so all state equations keep their canonical projection.
+-- Sized recurrent states. `hiddenDim` is the type-level dimension carrier;
+-- the state field stays named `hidden` for canonical projection compatibility.
 ------------------------------------------------------------------------
 
 record LSTMState (hiddenDim : Set) : Set where
@@ -53,197 +58,190 @@ record GRUState (hiddenDim : Set) : Set where
     hidden : hiddenDim
 
 ------------------------------------------------------------------------
--- Gate construction is compositional. Each gate is affine -> LayerNorm ->
--- sigmoid/tanh; no recurrent cell operation is supplied as a primitive.
+-- Gate graphs. These expose only finite primitive Nodes: affine,
+-- LayerNorm, sigmoid/tanh, Hadamard, addition, and complement. There is no
+-- opaque recurrent-step primitive.
 ------------------------------------------------------------------------
 
-record LSTMGateNodes (X H : Set) : Set₁ where
+record LSTMGate (X H : Set) : Set₁ where
   field
     affine : Node (X × H) H
     layerNorm : Node H H
 
-record LSTMCellNodes (X H : Set) : Set₁ where
+record LSTMNodes (X H : Set) : Set₁ where
   field
-    forget input output candidate : LSTMGateNodes X H
-    sigmoidH : Node H H
-    tanhH : Node H H
-    hadamardH : Node (H × H) H
-    addH : Node (H × H) H
+    forget input output candidate : LSTMGate X H
+    sigmoidH tanhH : Node H H
+    hadamardH addH : Node (H × H) H
 
-open LSTMGateNodes LSTMCellNodes
+open LSTMGate LSTMNodes
 
-gateSigmoid : ∀ {X H : Set} →
-  LSTMGateNodes X H → LSTMCellNodes X H → Node (X × H) H
-gateSigmoid gate ops = compose (LSTMGateNodes.affine gate)
-  (compose (LSTMGateNodes.layerNorm gate) (LSTMCellNodes.sigmoidH ops))
+gateSigmoid : ∀ {X H : Set} → LSTMGate X H → LSTMNodes X H → Node (X × H) H
+gateSigmoid g p = compose (LSTMGate.affine g)
+  (compose (LSTMGate.layerNorm g) (LSTMNodes.sigmoidH p))
 
-gateTanh : ∀ {X H : Set} →
-  LSTMGateNodes X H → LSTMCellNodes X H → Node (X × H) H
-gateTanh gate ops = compose (LSTMGateNodes.affine gate)
-  (compose (LSTMGateNodes.layerNorm gate) (LSTMCellNodes.tanhH ops))
+gateTanh : ∀ {X H : Set} → LSTMGate X H → LSTMNodes X H → Node (X × H) H
+gateTanh g p = compose (LSTMGate.affine g)
+  (compose (LSTMGate.layerNorm g) (LSTMNodes.tanhH p))
 
-lstmCell : ∀ {X H : Set}
-  → LSTMCellNodes X H
-  → Node (X × LSTMState H) (LSTMState H)
-lstmCell ops = record
-  { run = λ input →
-      let x = fst input
-          s = snd input
+------------------------------------------------------------------------
+-- LSTM transition. Forward intermediates and reverse accumulation are
+-- definitionally paired inside one `run` body.
+------------------------------------------------------------------------
+
+lstmCell : ∀ {X H : Set} →
+  LSTMNodes X H → Node (X × LSTMState H) (LSTMState H)
+lstmCell p = record
+  { run = λ q →
+      let x = fst q
+          s = snd q
           h = LSTMState.hidden s
           c = LSTMState.cell s
-          rf = run (gateSigmoid (LSTMCellNodes.forget ops) ops) (x , h)
-          ri = run (gateSigmoid (LSTMCellNodes.input ops) ops) (x , h)
-          ro = run (gateSigmoid (LSTMCellNodes.output ops) ops) (x , h)
-          rg = run (gateTanh (LSTMCellNodes.candidate ops) ops) (x , h)
-          rfc = run (LSTMCellNodes.hadamardH ops) (fst rf , c)
-          rig = run (LSTMCellNodes.hadamardH ops) (fst ri , fst rg)
-          rc = run (LSTMCellNodes.addH ops) (fst rfc , fst rig)
-          rt = run (LSTMCellNodes.tanhH ops) (fst rc)
-          rh = run (LSTMCellNodes.hadamardH ops) (fst ro , fst rt)
+          rf = run (gateSigmoid (LSTMNodes.forget p) p) (x , h)
+          ri = run (gateSigmoid (LSTMNodes.input p) p) (x , h)
+          ro = run (gateSigmoid (LSTMNodes.output p) p) (x , h)
+          rg = run (gateTanh (LSTMNodes.candidate p) p) (x , h)
+          rfc = run (LSTMNodes.hadamardH p) (fst rf , c)
+          rig = run (LSTMNodes.hadamardH p) (fst ri , fst rg)
+          rc = run (LSTMNodes.addH p) (fst rfc , fst rig)
+          rt = run (LSTMNodes.tanhH p) (fst rc)
+          rh = run (LSTMNodes.hadamardH p) (fst ro , fst rt)
           y = lstm-state (fst rh) (fst rc)
       in y , λ dy →
-        let drh = snd rh (LSTMState.hidden dy)
-            drt = snd rt (snd drh)
-            drc = snd rc (LSTMState.cell dy , drt)
-            drfc = snd rfc (fst drc)
-            drig = snd rig (snd drc)
-            df = fst drfc
-            dc = snd drfc
-            di = fst drig
-            dg = snd drig
-            do = fst drh
-            dxf = fst (snd rf df)
-            dxi = fst (snd ri di)
-            dxo = fst (snd ro do)
-            dxg = fst (snd rg dg)
-            dhf = snd (snd rf df)
-            dhi = snd (snd ri di)
-            dho = snd (snd ro do)
-            dhg = snd (snd rg dg)
-            dxf_i = primal (LSTMCellNodes.addH ops) (dxf , dxi)
-            dxo_g = primal (LSTMCellNodes.addH ops) (dxo , dxg)
-            dx = primal (LSTMCellNodes.addH ops) (dxf_i , dxo_g)
-            dhf_i = primal (LSTMCellNodes.addH ops) (dhf , dhi)
-            dho_g = primal (LSTMCellNodes.addH ops) (dho , dhg)
-            dh = primal (LSTMCellNodes.addH ops) (dhf_i , dho_g)
-        in dx , lstm-state dh dc
+        let dRh = snd rh (LSTMState.hidden dy)
+            dRt = snd rt (snd dRh)
+            dRc = snd rc (LSTMState.cell dy , dRt)
+            dRfc = snd rfc (fst dRc)
+            dRig = snd rig (snd dRc)
+            dF = fst dRfc
+            dC = snd dRfc
+            dI = fst dRig
+            dG = snd dRig
+            dO = fst dRh
+            dXf = fst (snd rf dF)
+            dXi = fst (snd ri dI)
+            dXo = fst (snd ro dO)
+            dXg = fst (snd rg dG)
+            dHf = snd (snd rf dF)
+            dHi = snd (snd ri dI)
+            dHo = snd (snd ro dO)
+            dHg = snd (snd rg dG)
+            dXfi = primal (LSTMNodes.addH p) (dXf , dXi)
+            dXog = primal (LSTMNodes.addH p) (dXo , dXg)
+            dX = primal (LSTMNodes.addH p) (dXfi , dXog)
+            dHfi = primal (LSTMNodes.addH p) (dHf , dHi)
+            dHog = primal (LSTMNodes.addH p) (dHo , dHg)
+            dH = primal (LSTMNodes.addH p) (dHfi , dHog)
+        in dX , lstm-state dH dC
   }
 
 ------------------------------------------------------------------------
 -- GRU transition: h' = (1-z) ⊙ n + z ⊙ h.
 ------------------------------------------------------------------------
 
-record GRUGateNodes (X H : Set) : Set₁ where
+record GRUGate (X H : Set) : Set₁ where
   field
     affine : Node (X × H) H
     layerNorm : Node H H
 
-record GRUCellNodes (X H : Set) : Set₁ where
+record GRUNodes (X H : Set) : Set₁ where
   field
-    update reset candidate : GRUGateNodes X H
-    sigmoidH : Node H H
-    tanhH : Node H H
-    hadamardH : Node (H × H) H
-    addH : Node (H × H) H
-    oneMinusH : Node H H
+    update reset candidate : GRUGate X H
+    sigmoidH tanhH oneMinusH : Node H H
+    hadamardH addH : Node (H × H) H
 
-open GRUGateNodes GRUCellNodes
+open GRUGate GRUNodes
 
-gruSigmoid : ∀ {X H : Set} →
-  GRUGateNodes X H → GRUCellNodes X H → Node (X × H) H
-gruSigmoid gate ops = compose (GRUGateNodes.affine gate)
-  (compose (GRUGateNodes.layerNorm gate) (GRUCellNodes.sigmoidH ops))
+gruSigmoid : ∀ {X H : Set} → GRUGate X H → GRUNodes X H → Node (X × H) H
+gruSigmoid g p = compose (GRUGate.affine g)
+  (compose (GRUGate.layerNorm g) (GRUNodes.sigmoidH p))
 
-gruTanh : ∀ {X H : Set} →
-  GRUGateNodes X H → GRUCellNodes X H → Node (X × H) H
-gruTanh gate ops = compose (GRUGateNodes.affine gate)
-  (compose (GRUGateNodes.layerNorm gate) (GRUCellNodes.tanhH ops))
+gruTanh : ∀ {X H : Set} → GRUGate X H → GRUNodes X H → Node (X × H) H
+gruTanh g p = compose (GRUGate.affine g)
+  (compose (GRUGate.layerNorm g) (GRUNodes.tanhH p))
 
-gruCell : ∀ {X H : Set}
-  → GRUCellNodes X H
-  → Node (X × GRUState H) (GRUState H)
-gruCell ops = record
-  { run = λ input →
-      let x = fst input
-          s = snd input
+gruCell : ∀ {X H : Set} →
+  GRUNodes X H → Node (X × GRUState H) (GRUState H)
+gruCell p = record
+  { run = λ q →
+      let x = fst q
+          s = snd q
           h = GRUState.hidden s
-          rz = run (gruSigmoid (GRUCellNodes.update ops) ops) (x , h)
-          rr = run (gruSigmoid (GRUCellNodes.reset ops) ops) (x , h)
+          rz = run (gruSigmoid (GRUNodes.update p) p) (x , h)
+          rr = run (gruSigmoid (GRUNodes.reset p) p) (x , h)
           z = fst rz
           r = fst rr
-          rrh = run (GRUCellNodes.hadamardH ops) (r , h)
-          rn = run (gruTanh (GRUCellNodes.candidate ops) ops) (x , fst rrh)
-          rm = run (GRUCellNodes.oneMinusH ops) z
-          rleft = run (GRUCellNodes.hadamardH ops) (fst rm , fst rn)
-          rright = run (GRUCellNodes.hadamardH ops) (z , h)
-          rout = run (GRUCellNodes.addH ops) (fst rleft , fst rright)
+          rrh = run (GRUNodes.hadamardH p) (r , h)
+          rn = run (gruTanh (GRUNodes.candidate p) p) (x , fst rrh)
+          rm = run (GRUNodes.oneMinusH p) z
+          rleft = run (GRUNodes.hadamardH p) (fst rm , fst rn)
+          rright = run (GRUNodes.hadamardH p) (z , h)
+          rout = run (GRUNodes.addH p) (fst rleft , fst rright)
       in gru-state (fst rout) , λ dy →
-        let drout = snd rout (GRUState.hidden dy)
-            drleft = snd rleft (fst drout)
-            drright = snd rright (snd drout)
-            drm = snd rm (fst drleft)
-            drn = snd rn (snd drleft)
-            drrh = snd rrh (snd drn)
-            dzMix = fst drright
-            dhMix = snd drright
-            dzComplement = snd (GRUCellNodes.oneMinusH ops) drm
-            dz = primal (GRUCellNodes.addH ops) (dzMix , dzComplement)
-            dr = fst drrh
-            dhCandidate = snd drrh
-            drReset = snd rr dr
-            dxz = fst (snd rz dz)
-            dhz = snd (snd rz dz)
-            dxr = fst drReset
-            dhr = snd drReset
-            dxn = fst drn
-            dxzr = primal (GRUCellNodes.addH ops) (dxz , dxr)
-            dx = primal (GRUCellNodes.addH ops) (dxzr , dxn)
-            dhzr = primal (GRUCellNodes.addH ops) (dhz , dhr)
-            dhBase = primal (GRUCellNodes.addH ops) (dhMix , dhCandidate)
-            dh = primal (GRUCellNodes.addH ops) (dhBase , dhzr)
-        in dx , gru-state dh
+        let dOut = snd rout (GRUState.hidden dy)
+            dLeft = snd rleft (fst dOut)
+            dRight = snd rright (snd dOut)
+            dMinus = snd rm (fst dLeft)
+            dN = snd rn (snd dLeft)
+            dRH = snd rrh (snd dN)
+            dZMix = fst dRight
+            dHMix = snd dRight
+            dZMinus = snd (GRUNodes.oneMinusH p) dMinus
+            dZ = primal (GRUNodes.addH p) (dZMix , dZMinus)
+            dR = fst dRH
+            dHCand = snd dRH
+            dReset = snd rr dR
+            dUpdate = snd rz dZ
+            dXReset = fst dReset
+            dHReset = snd dReset
+            dXUpdate = fst dUpdate
+            dHUpdate = snd dUpdate
+            dXCandidate = fst dN
+            dHX = primal (GRUNodes.addH p) (dXUpdate , dXReset)
+            dX = primal (GRUNodes.addH p) (dHX , dXCandidate)
+            dH0 = primal (GRUNodes.addH p) (dHUpdate , dHReset)
+            dH = primal (GRUNodes.addH p) (dH0 , dHCand)
+        in dX , gru-state dH
   }
 
 ------------------------------------------------------------------------
--- Finite state passing over an explicit finite input sequence. Capturing an
--- input turns each cell into a state-to-state Node; compose then produces
--- the complete finite forward and reverse pass definitionally.
+-- Finite state passing over an explicit finite sequence.
 ------------------------------------------------------------------------
 
-lstmAt : ∀ {X H : Set} → LSTMCellNodes X H → X → Node (LSTMState H) (LSTMState H)
-lstmAt ops x = record
+lstmAt : ∀ {X H : Set} → LSTMNodes X H → X → Node (LSTMState H) (LSTMState H)
+lstmAt p x = record
   { run = λ s →
-      let r = run (lstmCell ops) (x , s)
+      let r = run (lstmCell p) (x , s)
       in fst r , (λ ds → snd r ds)
   }
 
-gruAt : ∀ {X H : Set} → GRUCellNodes X H → X → Node (GRUState H) (GRUState H)
-gruAt ops x = record
+gruAt : ∀ {X H : Set} → GRUNodes X H → X → Node (GRUState H) (GRUState H)
+gruAt p x = record
   { run = λ s →
-      let r = run (gruCell ops) (x , s)
+      let r = run (gruCell p) (x , s)
       in fst r , (λ ds → snd r ds)
   }
 
-lstmUnroll : ∀ {X H : Set} {n : Nat}
-  → Vec X n → LSTMCellNodes X H → Node (LSTMState H) (LSTMState H)
-lstmUnroll [] ops = identity
-lstmUnroll (x ∷ xs) ops = compose (lstmAt ops x) (lstmUnroll xs ops)
+lstmUnroll : ∀ {X H : Set} {n : Nat} →
+  Vec X n → LSTMNodes X H → Node (LSTMState H) (LSTMState H)
+lstmUnroll [] p = identity
+lstmUnroll (x ∷ xs) p = compose (lstmAt p x) (lstmUnroll xs p)
 
-gruUnroll : ∀ {X H : Set} {n : Nat}
-  → Vec X n → GRUCellNodes X H → Node (GRUState H) (GRUState H)
-gruUnroll [] ops = identity
-gruUnroll (x ∷ xs) ops = compose (gruAt ops x) (gruUnroll xs ops)
+gruUnroll : ∀ {X H : Set} {n : Nat} →
+  Vec X n → GRUNodes X H → Node (GRUState H) (GRUState H)
+gruUnroll [] p = identity
+gruUnroll (x ∷ xs) p = compose (gruAt p x) (gruUnroll xs p)
 
 ------------------------------------------------------------------------
--- Definition-level boundaries.
+-- Definitional identity boundaries.
 ------------------------------------------------------------------------
 
-lstmCellForwardBoundary : ∀ {X H : Set}
-  (ops : LSTMCellNodes X H) (x : X) (s : LSTMState H) →
-  primal (lstmCell ops) (x , s) ≡ primal (lstmCell ops) (x , s)
-lstmCellForwardBoundary ops x s = refl
+lstmCellBoundary : ∀ {X H : Set}
+  (p : LSTMNodes X H) (x : X) (s : LSTMState H) →
+  primal (lstmCell p) (x , s) ≡ primal (lstmCell p) (x , s)
+lstmCellBoundary p x s = refl
 
-gruCellForwardBoundary : ∀ {X H : Set}
-  (ops : GRUCellNodes X H) (x : X) (s : GRUState H) →
-  primal (gruCell ops) (x , s) ≡ primal (gruCell ops) (x , s)
-gruCellForwardBoundary ops x s = refl
+gruCellBoundary : ∀ {X H : Set}
+  (p : GRUNodes X H) (x : X) (s : GRUState H) →
+  primal (gruCell p) (x , s) ≡ primal (gruCell p) (x , s)
+gruCellBoundary p x s = refl
