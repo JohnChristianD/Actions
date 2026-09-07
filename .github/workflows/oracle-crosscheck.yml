@@ -1,4 +1,4 @@
-name: Functional LSTM oracle cross-check
+name: Functional exact-rational oracle cross-check
 
 on:
   push:
@@ -16,10 +16,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Native Ruby exact certificate
+      - name: Set up Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+
+      - name: Run Haskell exact-rational LSTM oracle
+        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
+          elixir-version: '1.17'
+          hexpm: true
+          rebar3: false
+
+      - name: Run Elixir exact-rational LSTM oracle
+        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
+
+      - name: Run Ruby exact Rational certificate
         run: ruby oracle/rational_certificate.rb
 
-      - name: Native SymPy exact certificate
+      - name: Run SymPy exact Rational certificate
         run: |
           python3 -m pip install --disable-pip-version-check --no-cache-dir sympy
           python3 oracle/sympy_rational_certificate.py
+
+      - name: Compare exact rational functional traces
+        run: |
+          set -euo pipefail
+          diff -u oracle/haskell.csv oracle/elixir.csv
+          echo 'exact-rational-functional-oracle-cross-check=PASS'
