@@ -4,10 +4,6 @@ module Exotic.ERL.FullCoupled.FirstClassRecurrentCHAD where
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
-------------------------------------------------------------------------
--- Finite pure data
-------------------------------------------------------------------------
-
 infixr 5 _∷_
 data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
@@ -21,10 +17,6 @@ fst (a , _) = a
 
 snd : ∀ {A B : Set} → A × B → B
 snd (_ , b) = b
-
-------------------------------------------------------------------------
--- One node contains both primal and reverse behavior.
-------------------------------------------------------------------------
 
 record Node (A B : Set) : Set₁ where
   constructor node
@@ -48,20 +40,11 @@ compose f g = node (λ x →
       gr = run g (fst fr)
   in fst gr , (λ dz → snd fr (snd gr dz)))
 
-------------------------------------------------------------------------
--- Finite recurrent state.
-------------------------------------------------------------------------
-
 record LSTMState (A : Set) (hiddenDim : Nat) : Set where
   constructor lstm-state
   field
     hidden : Vec A hiddenDim
     cell : Vec A hiddenDim
-
-------------------------------------------------------------------------
--- Gate interfaces are finite in both input and hidden dimensions.
--- Each gate is itself a CHAD Node, so its primal and pullback are shared.
-------------------------------------------------------------------------
 
 record LSTMGateNodes (A : Set) (inputDim hiddenDim : Nat) : Set₁ where
   field
@@ -86,13 +69,6 @@ gateNode : ∀ {A : Set} {inputDim hiddenDim : Nat}
   → Node (Vec A inputDim × Vec A hiddenDim) (Vec A hiddenDim)
 gateNode g = compose (LSTMGateNodes.affine g)
   (compose (LSTMGateNodes.layerNorm g) (LSTMGateNodes.activation g))
-
-------------------------------------------------------------------------
--- Complete finite LSTM transition.
---
--- The forward state and reverse accumulator are emitted by one definition.
--- No separate recurrent VJP/Jacobian program is introduced.
-------------------------------------------------------------------------
 
 lstmCell : ∀ {A : Set} {inputDim hiddenDim : Nat}
   → LSTMPrimitives A inputDim hiddenDim
@@ -126,10 +102,10 @@ lstmCell ops = node (λ input →
         dI = fst drig
         dG = snd drig
         dO = fst drh
-        dFIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.forgetGate ops))) (x , h)) dF
-        dIIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.inputGate ops))) (x , h)) dI
-        dOIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.outputGate ops))) (x , h)) dO
-        dGIn = snd (run (gateNode (LSTMGateNodes.affine (LSTMPrimitives.candidateGate ops))) (x , h)) dG
+        dFIn = snd (run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)) dF
+        dIIn = snd (run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)) dI
+        dOIn = snd (run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)) dO
+        dGIn = snd (run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)) dG
         dx₁ = fst dFIn
         dx₂ = fst dIIn
         dx₃ = fst dOIn
