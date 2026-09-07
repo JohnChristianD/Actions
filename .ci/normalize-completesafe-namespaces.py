@@ -80,6 +80,13 @@ block = block.replace(
 )
 s = s[:start] + block + s[end:]
 
+# The local minus helper must retain an explicit signature after normalization.
+s = re.sub(
+    r'(?m)^  Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n  minus x y = Ring\._\+_ Rg x \(Ring\.neg Rg y\)$',
+    '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
+    s,
+)
+
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
@@ -91,4 +98,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block')
+print('completesafe-namespace-normalization=qualified-orderedring-block-minus-equality-basis')
