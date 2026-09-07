@@ -7,6 +7,7 @@ s = p.read_text()
 replacements = {
     'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)': 'open import Agda.Builtin.Nat using (Nat; suc)',
     'open import Agda.Builtin.Nat using (Nat; suc; _+_)': 'open import Agda.Builtin.Nat using (Nat; suc)',
+    'open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong; subst)': 'open import Agda.Builtin.Equality using (_≡_; refl)',
 }
 for old, new in replacements.items():
     s = s.replace(old, new)
@@ -57,7 +58,7 @@ for old, new in {
     'sampleTime + delay': 'Nat._+_ sampleTime delay',
     'delay₁ + delay₂': 'Nat._+_ delay₁ delay₂',
     '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d': '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → Ring._+_ ring a c ≤ Ring._+_ ring b d',
-    '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → a * b': '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → Ring._*_ ring a b',
+    '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ a * b': '    mulNonneg : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ Ring._*_ ring a b',
     '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b': '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → Ring._*_ ring c a ≤ Ring._*_ ring c b',
     '    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d': '    ltAdd : ∀ {a b c d} → a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
     '    addLtLeft : ∀ {a b c} → a < b → c + a < c + b': '    addLtLeft : ∀ {a b c} → a < b → Ring._+_ ring c a < Ring._+_ ring c b',
@@ -73,6 +74,10 @@ for old, new in {
         '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)',
 }.items():
     s = s.replace(old, new)
+
+# The record-field declarations above can be formatted without stable indentation by Agda;
+# qualify these exact residual multiplication forms once they are observed in the monolith.
+s = s.replace('zero ≤ a * b', 'zero ≤ Ring._*_ ring a b')
 
 # Scope-local Efficient-CHAD aliases and explicit reverse multiplications.
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
