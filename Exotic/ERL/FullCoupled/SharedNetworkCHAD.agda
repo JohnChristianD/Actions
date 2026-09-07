@@ -1,6 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.SharedNetworkCHAD where
 
+open import Agda.Builtin.Equality using (_≡_; refl)
+
 data _×_ (A B : Set) : Set where
   _,_ : A → B → A × B
 
