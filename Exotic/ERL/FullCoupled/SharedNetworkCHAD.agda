@@ -48,6 +48,9 @@ compose f g = record
       in fst gx , (λ dz → snd fx (snd gx dz))
   }
 
+cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
 ------------------------------------------------------------------------
 -- Finite vector node. Mapping a scalar CHAD node constructs both vector
 -- primal evaluation and vector reverse accumulation by structural recursion.
@@ -88,14 +91,16 @@ mapNodeForwardBoundary : ∀ {A B : Set} {n : Nat}
   primal (mapNode node) xs ≡ mapVec (primal node) xs
 mapNodeForwardBoundary node [] = refl
 mapNodeForwardBoundary node (x ∷ xs) =
-  mapNodeForwardBoundary node xs
+  cong (λ ys → fst (run node x) ∷ ys)
+       (mapNodeForwardBoundary node xs)
 
 mapNodeReverseBoundary : ∀ {A B : Set} {n : Nat}
   (node : Node A B) (xs : Vec A n) (dy : Vec B n) →
   pullback (mapNode node) xs dy ≡ mapVecBack node xs dy
 mapNodeReverseBoundary node [] [] = refl
 mapNodeReverseBoundary node (x ∷ xs) (dy ∷ dys) =
-  mapNodeReverseBoundary node xs dys
+  cong (λ ys → snd (run node x) dy ∷ ys)
+       (mapNodeReverseBoundary node xs dys)
 
 ------------------------------------------------------------------------
 -- Finite state passing. Repeated composition of the same Node is the
