@@ -1,2 +1,2 @@
 one-shot finite closure trigger
-retry=2026-09-08T22:00+08:00
+retry=2026-09-08T22:10+08:00
