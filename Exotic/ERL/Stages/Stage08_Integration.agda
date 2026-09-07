@@ -79,9 +79,8 @@ record CoupledIntegrationCertificate (s : Stage08State) : Set where
         (Stage08State.representation s)
         (chadFeature s)
       ≡
-      RP.Representation.tanh (Stage08State.representation s)
-        (RP.Representation.layerNorm (Stage08State.representation s)
-          (RP.Representation.affine (Stage08State.representation s) (chadFeature s)))
+      RP.Representation.layerNorm (Stage08State.representation s)
+        (RP.Representation.affine (Stage08State.representation s) (chadFeature s))
 
     coupledL2Boundary :
       CL.CoupledState.l2
