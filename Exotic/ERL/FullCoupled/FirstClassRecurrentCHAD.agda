@@ -13,11 +13,6 @@ data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
-------------------------------------------------------------------------
--- Efficient-CHAD node: one total functional program contains both the
--- primal result and its reverse accumulation function.
-------------------------------------------------------------------------
-
 record Node (A B : Set) : Set₁ where
   field
     run : A → Σ B (λ _ → B → A)
@@ -42,8 +37,8 @@ compose f g = record
   }
 
 ------------------------------------------------------------------------
--- Sized recurrent states. `hiddenDim` is the type-level dimension carrier;
--- the state field stays named `hidden` for canonical projection compatibility.
+-- Sized recurrent states. `hiddenDim` names the hidden carrier while the
+-- public projection remains `hidden`.
 ------------------------------------------------------------------------
 
 record LSTMState (hiddenDim : Set) : Set where
@@ -58,9 +53,8 @@ record GRUState (hiddenDim : Set) : Set where
     hidden : hiddenDim
 
 ------------------------------------------------------------------------
--- Gate graphs. These expose only finite primitive Nodes: affine,
--- LayerNorm, sigmoid/tanh, Hadamard, addition, and complement. There is no
--- opaque recurrent-step primitive.
+-- Gate graphs contain only finite primitive Nodes. The recurrent cells are
+-- constructed from these nodes rather than supplied as opaque step nodes.
 ------------------------------------------------------------------------
 
 record LSTMGate (X H : Set) : Set₁ where
@@ -74,7 +68,6 @@ record LSTMNodes (X H : Set) : Set₁ where
     sigmoidH tanhH : Node H H
     hadamardH addH : Node (H × H) H
 
-open LSTMGate LSTMNodes
 
 gateSigmoid : ∀ {X H : Set} → LSTMGate X H → LSTMNodes X H → Node (X × H) H
 gateSigmoid g p = compose (LSTMGate.affine g)
@@ -85,8 +78,8 @@ gateTanh g p = compose (LSTMGate.affine g)
   (compose (LSTMGate.layerNorm g) (LSTMNodes.tanhH p))
 
 ------------------------------------------------------------------------
--- LSTM transition. Forward intermediates and reverse accumulation are
--- definitionally paired inside one `run` body.
+-- LSTM transition: one `run` produces its primal state and reverse
+-- state/input accumulation.
 ------------------------------------------------------------------------
 
 lstmCell : ∀ {X H : Set} →
@@ -150,7 +143,6 @@ record GRUNodes (X H : Set) : Set₁ where
     sigmoidH tanhH oneMinusH : Node H H
     hadamardH addH : Node (H × H) H
 
-open GRUGate GRUNodes
 
 gruSigmoid : ∀ {X H : Set} → GRUGate X H → GRUNodes X H → Node (X × H) H
 gruSigmoid g p = compose (GRUGate.affine g)
@@ -205,7 +197,9 @@ gruCell p = record
   }
 
 ------------------------------------------------------------------------
--- Finite state passing over an explicit finite sequence.
+-- Finite state passing over an explicit finite input sequence. Capturing an
+-- input turns each recurrent cell into a state-to-state Node; finite compose
+-- then generates the complete forward/reverse chain.
 ------------------------------------------------------------------------
 
 lstmAt : ∀ {X H : Set} → LSTMNodes X H → X → Node (LSTMState H) (LSTMState H)
