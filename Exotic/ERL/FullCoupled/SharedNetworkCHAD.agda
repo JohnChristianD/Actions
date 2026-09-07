@@ -7,6 +7,11 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 data _×_ (A B : Set) : Set where
   _,_ : A → B → A × B
 
+infixr 5 _∷_
+data Vec (A : Set) : Nat → Set where
+  [] : Vec A zero
+  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+
 data NodeList (A : Set₁) : Set₁ where
   [] : NodeList A
   _∷_ : A → NodeList A → NodeList A
@@ -38,9 +43,39 @@ compose f g = record
   }
 
 ------------------------------------------------------------------------
+-- First-class finite vector CHAD node.
+-- The vector reverse pass is obtained structurally from the scalar Node.
+------------------------------------------------------------------------
+
+mapVec : ∀ {A B : Set} {n : Nat} → (A → B) → Vec A n → Vec B n
+mapVec f [] = []
+mapVec f (x ∷ xs) = f x ∷ mapVec f xs
+
+mapVecBack : ∀ {A B : Set} {n : Nat}
+  → Node A B → Vec A n → Vec B n → Vec A n
+mapVecBack node [] [] = []
+mapVecBack node (x ∷ xs) (dy ∷ dys) =
+  pullback node x dy ∷ mapVecBack node xs dys
+
+mapNode : ∀ {A B : Set} {n : Nat} → Node A B → Node (Vec A n) (Vec B n)
+mapNode node = record
+  { primal = mapVec (primal node)
+  ; pullback = mapVecBack node
+  }
+
+mapNodeForwardBoundary : ∀ {A B : Set} {n : Nat}
+  (node : Node A B) xs →
+  primal (mapNode node) xs ≡ mapVec (primal node) xs
+mapNodeForwardBoundary node xs = refl
+
+mapNodeReverseBoundary : ∀ {A B : Set} {n : Nat}
+  (node : Node A B) xs dy →
+  pullback (mapNode node) xs dy ≡ mapVecBack node xs dy
+mapNodeReverseBoundary node xs dy = refl
+
+------------------------------------------------------------------------
 -- Finite recurrent unrolling is total recursion over Nat.  This is the
--- ordinary Efficient-CHAD/state-passing case; Iterative-CHAD is reserved
--- for genuinely partial/data-dependent iteration or nontermination.
+-- ordinary Efficient-CHAD/state-passing case.
 ------------------------------------------------------------------------
 
 iterate : ∀ {A : Set} → Nat → Node A A → Node A A
@@ -87,15 +122,15 @@ record GRUState (H : Set) : Set where
     hidden : H
 
 ------------------------------------------------------------------------
--- Primitive blocks are Nodes. A standalone tanh representation layer is
--- deliberately absent: LSTM/GRU retain their intrinsic sigmoid/tanh gates.
+-- Primitive blocks are Nodes. There is deliberately no standalone
+-- representation-level tanh or sigmoid layer: those nonlinearities belong
+-- to the recurrent cell or to whichever explicit output head uses them.
 ------------------------------------------------------------------------
 
 record NetworkPrimitives (X H Y : Set) : Set₁ where
   field
     affine : Node X H
     layerNorm : Node H H
-    sigmoidBlock : Node H H
     output : Node H Y
     lstmStep : Node (X × LSTMState H) (LSTMState H)
     gruStep : Node (X × GRUState H) (GRUState H)
@@ -109,7 +144,8 @@ actorNetwork : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X Y
 actorNetwork p = compose (representation p) (output p)
 
 ------------------------------------------------------------------------
--- Recurrent cells already contain their activation structure.
+-- Recurrent cells already contain their activation structure in their
+-- shared state-transition Node.
 ------------------------------------------------------------------------
 
 lstmNetworkStep : ∀ {X H Y : Set}
