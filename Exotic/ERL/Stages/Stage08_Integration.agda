@@ -14,10 +14,7 @@ import Exotic.ERL.Stages.Stage06_CoupledLearner as CL
 import Exotic.ERL.Stages.Stage07_OuterFinite as OF
 
 data OuterMethod : Set where
-  randomSearch : OuterMethod
-  gesmrGA : OuterMethod
   openES : OuterMethod
-  mr15GA : OuterMethod
 
 record Stage08State : Set₁ where
   constructor stage08
