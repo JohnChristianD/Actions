@@ -14,11 +14,12 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
-      - name: Apply exact finite source repairs
+      - name: Apply exact anchored finite source repair
         shell: bash
         run: |
           set -euo pipefail
-          ruby -e 'p = "Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"; s = File.read(p); old = "  runState (state c) = c\n\n  accumulate : Fin n → R → EState → EState\n  accumulateAt : Fin n -> R -> Cot -> Cot\n  accumulateAt i c s j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j\n\n  accumulate i c (state s) = state (accumulateAt i c s)\n"; new = "  runState (state c) = c\n\n  addIfEqual : ∀ {i j : Fin n} → Dec (i ≡ j) → R → R → R\n  addIfEqual (yes _) x c = x + c\n  addIfEqual (no _) x c = x\n\n  accumulateAt : Fin n → R → Cot → Cot\n  accumulateAt i c s j = addIfEqual (finDecEq j i) (s j) c\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"; abort "finite accumulate block not found" unless s.include?(old); File.write(p, s.sub(old, new)); abort "old dependent accumulate survived" if s.include?("  accumulateAt : Fin n -> R -> Cot -> Cot\n  accumulateAt i c s j with")'
+          ruby -e 'p = "Exotic/ERL/FullCoupled/CompleteSafe_v147.agda"; s = File.read(p); old = "  runState (state c) = c\n\n  accumulate : Fin n → R → EState → EState\n  accumulateAt : Fin n -> R -> Cot -> Cot\n  accumulateAt i c s j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j\n\n  accumulate i c (state s) = state (accumulateAt i c s)\n"; new = "  runState (state c) = c\n\n  addIfEqual : ∀ {i j : Fin n} → Dec (i ≡ j) → R → R → R\n  addIfEqual (yes _) x c = x + c\n  addIfEqual (no _) x c = x\n\n  accumulateAt : Fin n → R → Cot → Cot\n  accumulateAt i c s j = addIfEqual (finDecEq j i) (s j) c\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"; abort "finite accumulate block not found" unless s.include?(old); File.write(p, s.sub(old, new))'
+          sed -n '/runState (state c) = c/,+14p' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           git diff --check
       - name: Authoritative Agda check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
@@ -29,7 +30,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .github/workflows/oneshot-agda-repair.yml .ci/closure-trigger.txt
-          git commit -m 'Repair parser-sensitive finite algebra proofs'
+          git commit -m 'Repair finite algebra source before kernel check'
           git rm .github/workflows/oneshot-agda-repair.yml .ci/closure-trigger.txt
           git commit -m 'Remove one-shot closure helper'
           git push origin HEAD:ci/v148-firstclass-lstm-chad
