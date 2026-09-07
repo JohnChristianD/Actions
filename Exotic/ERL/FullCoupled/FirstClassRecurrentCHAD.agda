@@ -71,6 +71,7 @@ record LSTMNodes (X H : Set) : Set₁ where
     forget input output candidate : LSTMGate X H
     sigmoidH tanhH : Node H H
     hadamardH addH : Node (H × H) H
+    addX : Node (X × X) X
 
 gateSigmoid : ∀ {X H : Set} → LSTMGate X H → LSTMNodes X H → Node (X × H) H
 gateSigmoid g p =
@@ -148,9 +149,9 @@ lstmCell p = node
         dH2 = pairSnd dIIn
         dH3 = pairSnd dOIn
         dH4 = pairSnd dGIn
-        dX12 = primal (LSTMNodes.addH p) (dX1 , dX2)
-        dX34 = primal (LSTMNodes.addH p) (dX3 , dX4)
-        dX = primal (LSTMNodes.addH p) (dX12 , dX34)
+        dX12 = primal (LSTMNodes.addX p) (dX1 , dX2)
+        dX34 = primal (LSTMNodes.addX p) (dX3 , dX4)
+        dX = primal (LSTMNodes.addX p) (dX12 , dX34)
         dH12 = primal (LSTMNodes.addH p) (dH1 , dH2)
         dH34 = primal (LSTMNodes.addH p) (dH3 , dH4)
         dH = primal (LSTMNodes.addH p) (dH12 , dH34)
@@ -172,6 +173,7 @@ record GRUNodes (X H : Set) : Set₁ where
     update reset candidate : GRUGate X H
     sigmoidH tanhH oneMinusH : Node H H
     hadamardH addH : Node (H × H) H
+    addX : Node (X × X) X
 
 gruSigmoid : ∀ {X H : Set} → GRUGate X H → GRUNodes X H → Node (X × H) H
 gruSigmoid g p =
@@ -233,8 +235,8 @@ gruCell p = node
         dR = pairFst dResetH
         dHCand = pairSnd dResetH
         dResetIn = pullback rN (x , h) dR
-        dX = primal addN
-          (primal addN (pairFst dUpdateIn , pairFst dResetIn) , pairFst dNIn)
+        dX = primal (GRUNodes.addX p)
+          (primal (GRUNodes.addX p) (pairFst dUpdateIn , pairFst dResetIn) , pairFst dNIn)
         dH = primal addN
           (primal addN (dHDirect , pairSnd dUpdateIn) ,
            primal addN (dHCand , pairSnd dResetIn))
