@@ -58,9 +58,6 @@ for old, new in {
 }.items():
     s = s.replace(old, new)
 
-# The OrderedRing block is the only declaration where the locally-opened
-# ring operators create parser ambiguity. Qualify the finite field statements
-# without changing their propositions.
 start = s.index('record OrderedRing')
 end = s.index('record SmoothAlgebra', start)
 block = s[start:end]
@@ -80,11 +77,33 @@ block = block.replace(
 )
 s = s[:start] + block + s[end:]
 
-# The monolith-local minus helper needs an explicit type because its first use
-# occurs before Agda can infer the overloaded ring result uniquely.
 old_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
 new_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
 s = s.replace(old_minus, new_minus)
+
+# Keep record field `hidden` distinct from its Nat dimension parameter.
+s = s.replace(
+    'record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where',
+    'record RecurrentAffine (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
+)
+s = s.replace('MatS S hidden input', 'MatS S hiddenDim input')
+s = s.replace('MatS S hidden hidden', 'MatS S hiddenDim hiddenDim')
+s = s.replace('VecS S hidden\n    norm : LayerNorm S hidden', 'VecS S hiddenDim\n    norm : LayerNorm S hiddenDim')
+s = s.replace(
+    'record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where',
+    'record LSTMGates (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
+)
+s = s.replace('RecurrentAffine S input hidden', 'RecurrentAffine S input hiddenDim')
+s = s.replace(
+    'record LSTMBlock (S : SmoothAlgebra) (input hidden : Nat) : Set where',
+    'record LSTMBlock (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
+)
+s = s.replace('LSTMGates S input hidden', 'LSTMGates S input hiddenDim')
+s = s.replace(
+    'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where',
+    'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where',
+)
+s = s.replace('VecS S hidden\n', 'VecS S hiddenDim\n')
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
@@ -97,4 +116,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-minus')
+print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-minus-recurrent-hiddenDim')
