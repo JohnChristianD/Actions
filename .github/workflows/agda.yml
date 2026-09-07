@@ -26,6 +26,8 @@ jobs:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
+      - name: Safe-check isolated linear coupled learner
+        run: agda --safe Exotic/ERL/FullCoupled/LinearCoupledLearnerNoNormLSTM.agda
       - name: Safe-check first-class finite recurrent CHAD
         run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
       - name: Safe-check shared network CHAD
