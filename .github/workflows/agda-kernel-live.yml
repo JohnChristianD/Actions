@@ -25,6 +25,8 @@ jobs:
         run: python3 .ci/normalize-completesafe-initial-form.py
       - name: Normalize terminal projection uniqueness
         run: python3 .ci/normalize-terminal-uniqueness.py
+      - name: Final exact OrderedRing qualification
+        run: python3 .ci/final-qualify-ordered-fields.py
       - name: Kernel-check shared forward/Efficient-CHAD program
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Authoritative Agda safe check
