@@ -78,7 +78,7 @@ gateTanh g ops =
 lstmCell : ∀ {X hiddenDim : Set}
   → LSTMNodes X hiddenDim
   → Node (X × LSTMState hiddenDim) (LSTMState hiddenDim)
-lstmCell ops = node forward reverse
+lstmCell {X} {hiddenDim} ops = node forward reverse
   where
   forward : X × LSTMState hiddenDim → LSTMState hiddenDim
   forward input =
