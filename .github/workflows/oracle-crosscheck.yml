@@ -16,6 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Agda for shared CHAD gate
+        uses: agda/agda-setup-action@v1.0.0
+        with:
+          agda-version: '2.8.0'
+
+      - name: Kernel-check shared finite CHAD program
+        run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
+
       - name: Install Haskell and Elixir oracle runtimes
         run: |
           sudo apt-get update
