@@ -41,7 +41,7 @@ replacements = {
     '    subLtZero : ∀ {a b} → a + neg b < zero → a < b': '    subLtZero : ∀ {a b} → Ring._+_ ring a (neg b) < zero → a < b',
     '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x': '    squarePositive : ∀ {x} → ¬ (x ≡ zero) → zero < Ring._*_ ring x x',
     '    squareNonnegative : ∀ x → zero ≤ x * x': '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x',
-    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → zero ≤ abs (Ring._+_ ring x y) → Ring._+_ ring (abs x) (abs y)',
+    '    absTriangle : ∀ x y → abs (x + y) ≤ abs x + abs y': '    absTriangle : ∀ x y → abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
     '    absMul : ∀ x y → abs (x * y) ≡ abs x * abs y': '    absMul : ∀ x y → abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)',
     '    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one': '    fromNatSuc : ∀ n → fromNat (suc n) ≡ Ring._+_ ring (fromNat n) one',
     '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)':
@@ -60,31 +60,17 @@ if 'cong : ∀ {A B : Set}' not in s:
         raise SystemExit('expected cong₂ helper marker not found')
     s = s.replace(marker, helper, 1)
 
-s = re.sub(
-    r'(?m)^    mulNonneg : (.*?) → zero ≤ a \* b$',
-    r'    mulNonneg : \1 → zero ≤ Ring._*_ ring a b',
-    s,
-)
-s = re.sub(
-    r'(?m)^    mulLeLeft : (.*?) → c \* a ≤ c \* b$',
-    r'    mulLeLeft : \1 → Ring._*_ ring c a ≤ Ring._*_ ring c b',
-    s,
-)
+s = re.sub(r'(?m)^    mulNonneg : (.*?) → zero ≤ a \* b$', r'    mulNonneg : \1 → zero ≤ Ring._*_ ring a b', s)
+s = re.sub(r'(?m)^    mulLeLeft : (.*?) → c \* a ≤ c \* b$', r'    mulLeLeft : \1 → Ring._*_ ring c a ≤ Ring._*_ ring c b', s)
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
 segment = s[start:end]
 segment = re.sub(r'\bR\b', 'ScalarR', segment)
 segment = segment.replace('Ring.ScalarR', 'Ring.R')
-segment = segment.replace(
-    'eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i',
-    'Ring._+_ R (Ring._*_ R (eval y ρ) (coeff x ρ i)) (Ring._*_ R (eval x ρ) (coeff y ρ i))',
-)
+segment = segment.replace('eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i', 'Ring._+_ R (Ring._*_ R (eval y ρ) (coeff x ρ i)) (Ring._*_ R (eval x ρ) (coeff y ρ i))')
 for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
-    segment = segment.replace(
-        f'{name} (eval x ρ) * coeff x ρ i',
-        f'Ring._*_ R ({name} (eval x ρ)) (coeff x ρ i)',
-    )
+    segment = segment.replace(f'{name} (eval x ρ) * coeff x ρ i', f'Ring._*_ R ({name} (eval x ρ)) (coeff x ρ i)')
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
