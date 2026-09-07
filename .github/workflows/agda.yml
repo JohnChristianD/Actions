@@ -1,5 +1,6 @@
-# Kernel closure verification trigger; Agda --safe remains authoritative.
-name: Agda CI, tooling, and closure persistence
+# Authoritative kernel gate; source proof remains unchanged until Agda accepts it.
+name: Agda authoritative safe gate
+
 on:
   push:
     paths: ['**/*.agda', '.github/workflows/agda.yml', '.ci/repair-agda-syntax.py', '.ci/normalize-completesafe-namespaces.py', '.ci/normalize-completesafe-let-bindings.py', '.ci/normalize-completesafe-initial-form.py', '.ci/normalize-terminal-uniqueness.py']
@@ -10,9 +11,7 @@ on:
   issues:
     types: [opened, edited, reopened]
   workflow_dispatch:
-concurrency:
-  group: agda-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: read
@@ -23,8 +22,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Agda Setup Action
+        with:
+          fetch-depth: 0
+      - name: Agda 2.8.0
         uses: agda/agda-setup-action@v1.0.0
         with: {agda-version: '2.8.0'}
       - name: Verify Agda executable

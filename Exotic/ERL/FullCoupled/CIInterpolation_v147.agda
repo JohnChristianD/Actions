@@ -6,10 +6,14 @@ open import Agda.Builtin.Equality using (_≡_)
 open import Exotic.ERL.FullCoupled.CompleteSafe_v147
 
 ------------------------------------------------------------------------
--- CI algebraic interpolation surface.
+-- Canonical algebraic interoperability surface.
 --
--- Every theorem below is an existing proof term from CompleteSafe_v147 or
--- a direct finite ring derivation.  No oracle result is promoted to proof.
+-- Kernel-facing names in this layer describe mathematical structure rather
+-- than a benchmark, environment, paper author, or implementation vendor.
+-- Environment-specific adapters and provenance belong outside the theorem
+-- namespace. Every theorem below is an existing proof term from
+-- CompleteSafe_v147 or a direct finite ring derivation. No oracle result is
+-- promoted to proof.
 ------------------------------------------------------------------------
 
 qNumRemove_v147 : ∀ {S} (n y : Scalar S) →
@@ -147,8 +151,10 @@ ciAlgebraicInterpolation_v147 = record
   }
 
 ------------------------------------------------------------------------
--- Bridge classification used by CI/SciSpace interpolation.
+-- Cross-layer bridge classification.
 -- Established = kernel-checked here; candidate = requires a new proof.
+-- The classification is non-semantic provenance and does not certify a
+-- benchmark, environment, author, or external empirical result.
 ------------------------------------------------------------------------
 
 data BridgeStatus_v147 : Set where
