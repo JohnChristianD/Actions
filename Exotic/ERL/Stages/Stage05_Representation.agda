@@ -4,12 +4,10 @@ module Exotic.ERL.Stages.Stage05_Representation where
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 ------------------------------------------------------------------------
--- Representation boundary.
---
--- No standalone representation-level tanh is required. LSTM and GRU own
--- their sigmoid/tanh nonlinearities inside their recurrent transitions.
--- An extra tanh after affine + LayerNorm is therefore an optional model
--- composition, not part of recurrent semantics.
+-- Representation semantics are the pre-recurrent feature transform.
+-- There is deliberately no standalone representation-level tanh layer:
+-- recurrent cells own their nonlinearities, and any output nonlinearity is
+-- an explicit head in the shared CHAD network.
 ------------------------------------------------------------------------
 
 record Representation (A B : Set) : Set₁ where
