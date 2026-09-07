@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   kernel:
@@ -26,20 +26,6 @@ jobs:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
-      - name: Canonicalize the known CompleteSafe lambda parse boundary
-        shell: bash
-        run: |
-          set -euo pipefail
-          perl -0pi -e 's/  accumulate i c \(state s\) = state \(λ j with finDecEq j i\n    \.\.\. \| yes _ = s j \+ c\n    \.\.\. \| no _ = s j\)\n/  accumulateAt : Fin n -> R -> Cot -> Cot\n  accumulateAt i c s j with finDecEq j i\n    \.\.\. \| yes _ = s j + c\n    \.\.\. \| no _ = s j\n\n  accumulate i c \(state s\) = state \(accumulateAt i c s\)\n/' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
-            echo 'source already canonicalized'
-          else
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-            git commit -m 'Repair finite accumulate lambda for Agda parser'
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
       - name: Safe-check first-class finite recurrent CHAD
         run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
       - name: Safe-check shared network CHAD
