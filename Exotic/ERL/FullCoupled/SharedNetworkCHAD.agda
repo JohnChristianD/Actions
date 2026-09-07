@@ -5,9 +5,6 @@ open import Agda.Builtin.Nat using (Nat)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.FullCoupled.FirstClassRecurrentCHAD public
 
-data _×_ (A B : Set) : Set where
-  _,_ : A → B → A × B
-
 ------------------------------------------------------------------------
 -- One shared network definition. The same Node carries its primal value
 -- and reverse accumulator. The recurrent part is the compositional LSTM
