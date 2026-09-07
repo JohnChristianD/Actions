@@ -11,7 +11,7 @@ defmodule Oracle do
   end
 
   def emit(x, h, c) do
-    :io.format("~.17f,~.17f,~.17f,~.17f~n", [x, h, c, lstm_step(x, h, c)])
+    :io.format("~.12f,~.12f,~.12f,~.12f~n", [x, h, c, lstm_step(x, h, c)])
   end
 end
 
