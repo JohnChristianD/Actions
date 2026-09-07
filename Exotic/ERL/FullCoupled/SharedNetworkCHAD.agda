@@ -14,8 +14,7 @@ data NodeList (A : Set₁) : Set₁ where
 ------------------------------------------------------------------------
 -- One shared functional forward/reverse program.
 -- The primal evaluator and reverse pullback inhabit one definition.
--- Composition is therefore the CHAD sharing boundary rather than a
--- separately stated Jacobian/VJP theorem.
+-- Composition therefore constructs the reverse program definitionally.
 ------------------------------------------------------------------------
 
 record Node (A B : Set) : Set₁ where
@@ -39,7 +38,9 @@ compose f g = record
   }
 
 ------------------------------------------------------------------------
--- Iterate-CHAD form for finite recurrent unrolling.
+-- Finite recurrent unrolling is total recursion over Nat.  This is the
+-- ordinary Efficient-CHAD/state-passing case; Iterative-CHAD is reserved
+-- for genuinely partial/data-dependent iteration or nontermination.
 ------------------------------------------------------------------------
 
 iterate : ∀ {A : Set} → Nat → Node A A → Node A A
@@ -55,8 +56,7 @@ iterateReverseBoundary : ∀ {A : Set} (k : Nat) (n : Node A A) x dy →
 iterateReverseBoundary k n x dy = refl
 
 ------------------------------------------------------------------------
--- Finite multi-layer composition.  This is ordinary CHAD composition;
--- iterate is the corresponding state-preserving recurrence combinator.
+-- Finite multi-layer composition remains ordinary CHAD composition.
 ------------------------------------------------------------------------
 
 stack : ∀ {A : Set} → NodeList (Node A A) → Node A A
@@ -87,16 +87,14 @@ record GRUState (H : Set) : Set where
     hidden : H
 
 ------------------------------------------------------------------------
--- Primitive blocks are Nodes. Their reverse clauses are their local
--- Efficient-CHAD primitive interfaces; complete networks obtain their
--- reverse pass definitionally through compose/iterate/stack.
+-- Primitive blocks are Nodes. A standalone tanh representation layer is
+-- deliberately absent: LSTM/GRU retain their intrinsic sigmoid/tanh gates.
 ------------------------------------------------------------------------
 
 record NetworkPrimitives (X H Y : Set) : Set₁ where
   field
     affine : Node X H
     layerNorm : Node H H
-    tanhBlock : Node H H
     sigmoidBlock : Node H H
     output : Node H Y
     lstmStep : Node (X × LSTMState H) (LSTMState H)
@@ -105,18 +103,13 @@ record NetworkPrimitives (X H Y : Set) : Set₁ where
 open NetworkPrimitives
 
 representation : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X H
-representation p =
-  compose
-    (compose (affine p) (layerNorm p))
-    (tanhBlock p)
+representation p = compose (affine p) (layerNorm p)
 
 actorNetwork : ∀ {X H Y : Set} → NetworkPrimitives X H Y → Node X Y
 actorNetwork p = compose (representation p) (output p)
 
 ------------------------------------------------------------------------
--- Recurrent cells already contain their own activation structure.  A
--- separate tanhBlock belongs to the representation stack, not to the
--- definition of LSTM/GRU completeness.
+-- Recurrent cells already contain their activation structure.
 ------------------------------------------------------------------------
 
 lstmNetworkStep : ∀ {X H Y : Set}
@@ -148,8 +141,7 @@ gruUnroll k step = iterate k step
 representationForwardBoundary : ∀ {X H Y : Set}
   (p : NetworkPrimitives X H Y) x →
   primal (representation p) x ≡
-    primal (tanhBlock p)
-      (primal (layerNorm p) (primal (affine p) x))
+    primal (layerNorm p) (primal (affine p) x)
 representationForwardBoundary p x = refl
 
 actorForwardBoundary : ∀ {X H Y : Set}
