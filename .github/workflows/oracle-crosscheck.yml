@@ -1,0 +1,47 @@
+name: Functional and symbolic oracle cross-check
+
+on:
+  push:
+    branches: ['ci/agda-v147-kernel-live']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-crosscheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pure-functional and symbolic runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghc kotlin elixir python3-pip
+          python3 -m pip install --break-system-packages sympy
+          swiftc --version
+
+      - name: Produce symbolic golden trace
+        run: python3 oracle/sympy_oracle.py > oracle/golden.csv
+
+      - name: Produce Haskell trace
+        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+
+      - name: Produce Kotlin trace
+        run: kotlinc oracle/kotlin_oracle.kt -include-runtime -d oracle/kotlin_oracle.jar && java -jar oracle/kotlin_oracle.jar > oracle/kotlin.csv
+
+      - name: Produce Swift trace
+        run: swiftc oracle/swift_oracle.swift -o oracle/swift_oracle && oracle/swift_oracle > oracle/swift.csv
+
+      - name: Produce Elixir trace
+        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
+
+      - name: Compare independent traces
+        run: |
+          set -euo pipefail
+          for f in oracle/haskell.csv oracle/kotlin.csv oracle/swift.csv oracle/elixir.csv; do
+            diff -u oracle/golden.csv "$f"
+          done
+          echo 'oracle-cross-check=PASS'
