@@ -24,6 +24,9 @@ jobs:
       - name: Kernel-check shared finite CHAD program
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
 
+      - name: Kernel-check first-class finite recurrent CHAD program
+        run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
+
       - name: Install Haskell and Elixir oracle runtimes
         run: |
           sudo apt-get update
