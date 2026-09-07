@@ -13,7 +13,7 @@ lstmStep x h c =
   in o * tanh c'
 
 emit :: Double -> Double -> Double -> IO ()
-emit x h c = printf "%0.17g,%0.17g,%0.17g,%0.17g\n" x h c (lstmStep x h c)
+emit x h c = printf "%.17f,%.17f,%.17f,%.17f\n" x h c (lstmStep x h c)
 
 main :: IO ()
 main = do
