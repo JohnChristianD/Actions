@@ -8,6 +8,11 @@ open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 data _×_ (A B : Set) : Set where
   _,_ : A → B → A × B
 
+infixr 5 _∷_
+data Vec (A : Set) : Nat → Set where
+  [] : Vec A zero
+  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+
 record Node (A B : Set) : Set₁ where
   field
     run : A → Σ B (λ _ → B → A)
@@ -32,8 +37,8 @@ compose f g = record
   }
 
 ------------------------------------------------------------------------
--- Sized recurrent states.  The index names the hidden dimension; the
--- state field remains `hidden` for direct pattern-free projection.
+-- Finite recurrent states. The index names the hidden carrier; the field
+-- remains `hidden` so all state equations keep their canonical projection.
 ------------------------------------------------------------------------
 
 record LSTMState (hiddenDim : Set) : Set where
@@ -48,9 +53,8 @@ record GRUState (hiddenDim : Set) : Set where
     hidden : hiddenDim
 
 ------------------------------------------------------------------------
--- Gate construction is deliberately compositional.  No recurrent-cell
--- operation is supplied as a primitive: every gate is affine -> LayerNorm
--- -> sigmoid/tanh, and the cell is then built from Hadamard/addition nodes.
+-- Primitive numerical nodes. They are finite algebraic interfaces; no
+-- recurrent cell is hidden behind a recurrent-step primitive.
 ------------------------------------------------------------------------
 
 record LSTMGateNodes (X H : Set) : Set₁ where
@@ -78,6 +82,11 @@ gateTanh : ∀ {X H : Set} →
 gateTanh gate ops = compose (LSTMGateNodes.affine gate)
   (compose (LSTMGateNodes.layerNorm gate) (LSTMCellNodes.tanhH ops))
 
+------------------------------------------------------------------------
+-- One LSTM transition. Its primal intermediates and reverse accumulator are
+-- produced by the same `run` definition.
+------------------------------------------------------------------------
+
 lstmCell : ∀ {X H : Set}
   → LSTMCellNodes X H
   → Node (X × LSTMState H) (LSTMState H)
@@ -87,14 +96,10 @@ lstmCell ops = record
           s = snd input
           h = LSTMState.hidden s
           c = LSTMState.cell s
-          gf = gateSigmoid (LSTMCellNodes.forget ops) ops
-          gi = gateSigmoid (LSTMCellNodes.input ops) ops
-          go = gateSigmoid (LSTMCellNodes.output ops) ops
-          gg = gateTanh (LSTMCellNodes.candidate ops) ops
-          rf = run gf (x , h)
-          ri = run gi (x , h)
-          ro = run go (x , h)
-          rg = run gg (x , h)
+          rf = run (gateSigmoid (LSTMCellNodes.forget ops) ops) (x , h)
+          ri = run (gateSigmoid (LSTMCellNodes.input ops) ops) (x , h)
+          ro = run (gateSigmoid (LSTMCellNodes.output ops) ops) (x , h)
+          rg = run (gateTanh (LSTMCellNodes.candidate ops) ops) (x , h)
           rfc = run (LSTMCellNodes.hadamardH ops) (fst rf , c)
           rig = run (LSTMCellNodes.hadamardH ops) (fst ri , fst rg)
           rc = run (LSTMCellNodes.addH ops) (fst rfc , fst rig)
@@ -120,17 +125,18 @@ lstmCell ops = record
             dhi = snd (snd ri di)
             dho = snd (snd ro do)
             dhg = snd (snd rg dg)
-            dxfi = primal (LSTMCellNodes.addH ops) (dxf , dxi)
-            dxog = primal (LSTMCellNodes.addH ops) (dxo , dxg)
-            dx = primal (LSTMCellNodes.addH ops) (dxfi , dxog)
-            dhfi = primal (LSTMCellNodes.addH ops) (dhf , dhi)
-            dhog = primal (LSTMCellNodes.addH ops) (dho , dhg)
-            dh = primal (LSTMCellNodes.addH ops) (dhfi , dhog)
+            dxf_i = primal (LSTMCellNodes.addH ops) (dxf , dxi)
+            dxo_g = primal (LSTMCellNodes.addH ops) (dxo , dxg)
+            dx = primal (LSTMCellNodes.addH ops) (dxf_i , dxo_g)
+            dhf_i = primal (LSTMCellNodes.addH ops) (dhf , dhi)
+            dho_g = primal (LSTMCellNodes.addH ops) (dho , dhg)
+            dh = primal (LSTMCellNodes.addH ops) (dhf_i , dho_g)
         in dx , lstm-state dh dc
   }
 
 ------------------------------------------------------------------------
--- GRU: update/reset/candidate gates are also constructed compositionally.
+-- GRU gates and one transition. The state mixing uses
+-- h' = (1-z) ⊙ n + z ⊙ h.
 ------------------------------------------------------------------------
 
 record GRUGateNodes (X H : Set) : Set₁ where
@@ -167,64 +173,75 @@ gruCell ops = record
       let x = fst input
           s = snd input
           h = GRUState.hidden s
-          gz = gruSigmoid (GRUCellNodes.update ops) ops
-          gr = gruSigmoid (GRUCellNodes.reset ops) ops
-          gn = gruTanh (GRUCellNodes.candidate ops) ops
-          rz = run gz (x , h)
-          rr = run gr (x , h)
+          rz = run (gruSigmoid (GRUCellNodes.update ops) ops) (x , h)
+          rr = run (gruSigmoid (GRUCellNodes.reset ops) ops) (x , h)
           z = fst rz
           r = fst rr
-          rhh = run (GRUCellNodes.hadamardH ops) (r , h)
-          rn = run gn (x , fst rhh)
+          rrh = run (GRUCellNodes.hadamardH ops) (r , h)
+          rn = run (gruTanh (GRUCellNodes.candidate ops) ops) (x , fst rrh)
           rm = run (GRUCellNodes.oneMinusH ops) z
-          rnh = run (GRUCellNodes.hadamardH ops) (fst rm , fst rn)
-          rzh = run (GRUCellNodes.hadamardH ops) (z , h)
-          ro = run (GRUCellNodes.addH ops) (fst rnh , fst rzh)
-      in gru-state (fst ro) , λ dy →
-        let dro = snd ro (GRUState.hidden dy)
-            drnh = snd rnh (fst dro)
-            drzh = snd rzh (snd dro)
-            drm = snd rm (fst drnh)
-            drn = snd rn (snd drnh)
-            drhh = snd rhh (snd drn)
-            dzMix = fst drzh
-            dhMix = snd drzh
+          rleft = run (GRUCellNodes.hadamardH ops) (fst rm , fst rn)
+          rright = run (GRUCellNodes.hadamardH ops) (z , h)
+          rout = run (GRUCellNodes.addH ops) (fst rleft , fst rright)
+      in gru-state (fst rout) , λ dy →
+        let drout = snd rout (GRUState.hidden dy)
+            drleft = snd rleft (fst drout)
+            drright = snd rright (snd drout)
+            drm = snd rm (fst drleft)
+            drn = snd rn (snd drleft)
+            drrh = snd rrh (snd drn)
+            dzMix = fst drright
+            dhMix = snd drright
             dzComplement = snd (GRUCellNodes.oneMinusH ops) drm
             dz = primal (GRUCellNodes.addH ops) (dzMix , dzComplement)
-            dr = fst drhh
-            dhReset = snd drhh
-            dxn = fst drn
-            dxr = fst (snd rr (snd gr (x , h) ))
+            dr = fst drrh
+            dhCandidate = snd drrh
+            drReset = snd rr dr
             dxz = fst (snd rz dz)
             dhz = snd (snd rz dz)
-            dxr' = fst (snd rr dr)
-            dhr = snd (snd rr dr)
-            dx = primal (GRUCellNodes.addH ops)
-              (primal (GRUCellNodes.addH ops) (dxz , dxr') , dxn)
-            dh0 = primal (GRUCellNodes.addH ops) (dhMix , dhReset)
-            dh1 = primal (GRUCellNodes.addH ops) (dh0 , dhz)
-            dh = primal (GRUCellNodes.addH ops) (dh1 , dhr)
-        in dx , gru-state dhMix
+            dxr = fst drReset
+            dhr = snd drReset
+            dxn = fst drn
+            dxzr = primal (GRUCellNodes.addH ops) (dxz , dxr)
+            dx = primal (GRUCellNodes.addH ops) (dxzr , dxn)
+            dhzr = primal (GRUCellNodes.addH ops) (dhz , dhr)
+            dh = primal (GRUCellNodes.addH ops) (dhMix , dhCandidate)
+            dh' = primal (GRUCellNodes.addH ops) (dh , dhzr)
+        in dx , gru-state dh'
   }
 
 ------------------------------------------------------------------------
--- Finite unrolling.  The same Node is used for both primal and reverse
--- execution; fuel makes every recurrent program total.
+-- Finite state passing over an explicit finite input sequence. A captured
+-- input turns the cell into a state-to-state Node, so composition is typed.
 ------------------------------------------------------------------------
 
-iterate : ∀ {A : Set} → Nat → Node A A → Node A A
-iterate zero n = identity
-iterate (suc k) n = compose n (iterate k n)
+lstmAt : ∀ {X H : Set} → LSTMCellNodes X H → X → Node (LSTMState H) (LSTMState H)
+lstmAt ops x = record
+  { run = λ s →
+      let r = run (lstmCell ops) (x , s)
+      in fst r , (λ ds → snd r (lstm-state ds (LSTMState.cell s)))
+  }
 
-lstmUnroll : ∀ {X H : Set}
-  → Nat → LSTMCellNodes X H
-  → Node (X × LSTMState H) (LSTMState H)
-lstmUnroll k ops = iterate k (lstmCell ops)
+gruAt : ∀ {X H : Set} → GRUCellNodes X H → X → Node (GRUState H) (GRUState H)
+gruAt ops x = record
+  { run = λ s →
+      let r = run (gruCell ops) (x , s)
+      in fst r , (λ ds → snd r (gru-state ds))
+  }
 
-gruUnroll : ∀ {X H : Set}
-  → Nat → GRUCellNodes X H
-  → Node (X × GRUState H) (GRUState H)
-gruUnroll k ops = iterate k (gruCell ops)
+lstmUnroll : ∀ {X H : Set} {n : Nat}
+  → Vec X n → LSTMCellNodes X H → Node (LSTMState H) (LSTMState H)
+lstmUnroll [] ops = identity
+lstmUnroll (x ∷ xs) ops = compose (lstmAt ops x) (lstmUnroll xs ops)
+
+gruUnroll : ∀ {X H : Set} {n : Nat}
+  → Vec X n → GRUCellNodes X H → Node (GRUState H) (GRUState H)
+gruUnroll [] ops = identity
+gruUnroll (x ∷ xs) ops = compose (gruAt ops x) (gruUnroll xs ops)
+
+------------------------------------------------------------------------
+-- Definitional boundaries: both directions are obtained from the same Node.
+------------------------------------------------------------------------
 
 lstmCellForwardBoundary : ∀ {X H : Set}
   (ops : LSTMCellNodes X H) (x : X) (s : LSTMState H) →
