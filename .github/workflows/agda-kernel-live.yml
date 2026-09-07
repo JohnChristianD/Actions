@@ -29,5 +29,7 @@ jobs:
         run: python3 .ci/final-qualify-ordered-fields.py
       - name: Kernel-check shared forward/Efficient-CHAD program
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
+      - name: Kernel-check first-class finite recurrent CHAD program
+        run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
       - name: Authoritative Agda safe check
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
