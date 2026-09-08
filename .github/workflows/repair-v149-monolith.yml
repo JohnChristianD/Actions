@@ -1,12 +1,11 @@
 name: v149 monolith parser repair
 
 on:
+  workflow_dispatch:
   push:
     branches: ['ci/v149-representation-algebra']
     paths:
       - 'Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
-      - '.github/workflows/repair-v149-monolith.yml'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -39,23 +38,23 @@ jobs:
 '''
           if old in s:
               p.write_text(s.replace(old, new, 1))
-              print('monolith parser frontier normalized')
+              print('patched monolith accumulate frontier')
           else:
-              print('monolith parser frontier already normalized')
+              print('monolith accumulate frontier already normalized')
           PY
           git diff --check
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-      - name: Commit source repair when needed
+      - name: Commit source repair
         shell: bash
         run: |
           set -euo pipefail
           if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
-            echo 'no source change to commit'
-            exit 0
+            echo 'no source change'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+            git commit -m 'fix: normalize monolithic accumulate with-clause'
+            git push origin HEAD:ci/v149-representation-algebra
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          git commit -m 'fix: normalize monolithic accumulate with-clause'
-          git push origin HEAD:ci/v149-representation-algebra
