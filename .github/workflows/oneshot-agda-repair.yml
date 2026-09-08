@@ -24,7 +24,7 @@ jobs:
           s = p.read_text()
 
           def replace_once(old: str, new: str, label: str):
-              nonlocal s
+              global s
               if old not in s:
                   raise SystemExit(f'missing repair target: {label}')
               s = s.replace(old, new, 1)
@@ -149,8 +149,9 @@ jobs:
               (sym (Ring.negScale Rg y d)))))
       cross = OrderedRing.addLtLeft hnz base
       cross' = transportLt_v142 lhs rhs cross
-  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross' '''
-          s = s[:start] + multiplier.rstrip() + s[end:]
+  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
+'''
+          s = s[:start] + multiplier + s[end:]
 
           p.write_text(s)
           PY
