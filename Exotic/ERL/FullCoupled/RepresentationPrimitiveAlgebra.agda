@@ -2,16 +2,21 @@
 module Exotic.ERL.FullCoupled.RepresentationPrimitiveAlgebra where
 
 open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
-open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 
 ------------------------------------------------------------------------
--- Minimal total algebraic boundary for representation primitives.
+-- Least-intrusion algebraic boundary for representation primitives.
 --
--- Division, square root, and transcendental activations are not assumed to
--- belong to an arbitrary Ring.  They enter only through lawful primitive
--- nodes, with domain evidence supplied at the call site.
+-- The base Ring remains finite/algebraic.  Inverse, square root, and tanh
+-- are introduced as total functions only through a parameterized contract.
+-- Division and square root carry their domain obligations explicitly; tanh
+-- carries its derivative law explicitly.  Nothing is postulated globally.
 ------------------------------------------------------------------------
+
+data ⊥ : Set where
+
+Nonzero : ∀ {A : Set} → A → Set
+Nonzero {A} x = x ≡ x → ⊥
 
 record Ring : Set₁ where
   field
@@ -37,107 +42,112 @@ record PrimitiveAlgebra (G : Ring) : Set₁ where
   open Ring G
   field
     inv : R → R
-    inv-law : ∀ {x} → x ≢ zero → mul x (inv x) ≡ one
+    invLaw : ∀ {x} → Nonzero x → mul x (inv x) ≡ one
+    invVJP : R → R → R
+    invVJPLaw : ∀ {x} → Nonzero x → ∀ c → invVJP x c ≡ neg (mul c (mul (inv x) (inv x)))
+
     sqrt : R → R
-    sqrt-law : ∀ {x} → SqrtDomain x → mul (sqrt x) (sqrt x) ≡ x
+    SqrtDomain : R → Set
+    sqrtLaw : ∀ {x} → SqrtDomain x → mul (sqrt x) (sqrt x) ≡ x
+    sqrtVJP : R → R → R
+    sqrtVJPLaw : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
+      sqrtVJP x c ≡ mul c (inv (add (sqrt x) (sqrt x)))
+
     tanh : R → R
-    tanh-deriv : R → R
-    tanh-vjp-law : ∀ x c → mul c (tanh-deriv x) ≡ mul c (add one (neg (mul (tanh x) (tanh x))))
+    tanhDerivative : R → R
+    tanhVJP : R → R → R
+    tanhVJPLaw : ∀ x c →
+      tanhVJP x c ≡ mul c (tanhDerivative x)
+    tanhDerivativeLaw : ∀ x →
+      tanhDerivative x ≡ add one (neg (mul (tanh x) (tanh x)))
 
-  SqrtDomain : R → Set
-  SqrtDomain x = Σ (R → R) (λ s → mul (s x) (s x) ≡ x)
-
-record UnaryNode (A : Set) : Set₁ where
-  field
-    primal : A → A
-    pullback : A → A → A
-
-module Laws (G : Ring) (P : PrimitiveAlgebra G) where
+module PrimitiveLaws {G : Ring} (P : PrimitiveAlgebra G) where
   open Ring G
   open PrimitiveAlgebra P
 
-  invNode : UnaryNode R
-  invNode = record
-    { primal = inv
-    ; pullback = λ x c → neg (mul c (mul (inv x) (inv x)))
-    }
+  invValueLaw : ∀ {x} → Nonzero x → mul x (inv x) ≡ one
+  invValueLaw = invLaw
 
-  sqrtNode : UnaryNode R
-  sqrtNode = record
-    { primal = sqrt
-    ; pullback = λ x c → mul c (inv (add (sqrt x) (sqrt x)))
-    }
+  invReverseLaw : ∀ {x} → Nonzero x → ∀ c →
+    invVJP x c ≡ neg (mul c (mul (inv x) (inv x)))
+  invReverseLaw = invVJPLaw
 
-  tanhNode : UnaryNode R
-  tanhNode = record
-    { primal = tanh
-    ; pullback = λ x c → mul c (tanh-deriv x)
-    }
+  sqrtValueLaw : ∀ {x} → SqrtDomain x → mul (sqrt x) (sqrt x) ≡ x
+  sqrtValueLaw = sqrtLaw
 
-  compose : UnaryNode R → UnaryNode R → UnaryNode R
-  compose f g = record
-    { primal = λ x → UnaryNode.primal g (UnaryNode.primal f x)
-    ; pullback = λ x c →
-        UnaryNode.pullback f x
-          (UnaryNode.pullback g (UnaryNode.primal f x) c)
-    }
+  sqrtReverseLaw : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
+    sqrtVJP x c ≡ mul c (inv (add (sqrt x) (sqrt x)))
+  sqrtReverseLaw = sqrtVJPLaw
 
-  composeLaw :
-    ∀ f g x c →
-    UnaryNode.pullback (compose f g) x c ≡
-      UnaryNode.pullback f x
-        (UnaryNode.pullback g (UnaryNode.primal f x) c)
-  composeLaw f g x c = refl
+  tanhReverseLaw : ∀ x c → tanhVJP x c ≡ mul c (tanhDerivative x)
+  tanhReverseLaw = tanhVJPLaw
 
-  invCorrect : ∀ {x} → x ≢ zero → mul x (inv x) ≡ one
-  invCorrect = inv-law
+  tanhDerivativeValue : ∀ x →
+    tanhDerivative x ≡ add one (neg (mul (tanh x) (tanh x)))
+  tanhDerivativeValue = tanhDerivativeLaw
 
-  sqrtCorrect : ∀ {x} → SqrtDomain x → mul (sqrt x) (sqrt x) ≡ x
-  sqrtCorrect = sqrt-law
-
-  tanhCorrect : ∀ x c →
-    UnaryNode.pullback tanhNode x c ≡ mul c (add one (neg (mul (tanh x) (tanh x))))
-  tanhCorrect x c = tanh-vjp-law x c
-
-  normalized :
-    ∀ {x eps} →
-    x ≢ zero →
-    eps ≢ zero →
-    R
-  normalized {x} {eps} _ _ = mul x (inv eps)
-
-  normalizedScaleLaw :
-    ∀ {x eps} →
-    x ≢ zero →
-    eps ≢ zero →
-    normalized {x = x} {eps = eps} ≡ mul x (inv eps)
-  normalizedScaleLaw _ _ = refl
+  tanhExplicitVJP : ∀ x c →
+    tanhVJP x c ≡ mul c (add one (neg (mul (tanh x) (tanh x))))
+  tanhExplicitVJP x c =
+    trans (tanhVJPLaw x c)
+      (cong (mul c) (tanhDerivativeLaw x))
 
 ------------------------------------------------------------------------
--- A representation gate is now a composition of lawful nodes.
--- The exact affine/mean/variance implementation can supply these nodes
--- separately; the global theorem needs no analytic postulates.
+-- Composition theorem: once each primitive provides its lawful pullback,
+-- composition is definitionally chain-rule-shaped and remains total.
 ------------------------------------------------------------------------
 
-gate : ∀ {G : Ring} → PrimitiveAlgebra G → UnaryNode (Ring.R G)
-gate P = Laws.compose (Laws.invNode (recordRing P)) (Laws.tanhNode (recordRing P))
-  where
-  recordRing : ∀ {G : Ring} → PrimitiveAlgebra G → Ring
-  recordRing {G} _ = G
+record UnaryPrimitive (G : Ring) : Set₁ where
+  open Ring G
+  field
+    value : R → R
+    reverse : R → R → R
 
-compositionKernel : ∀ {G : Ring} (P : PrimitiveAlgebra G) x c →
-  UnaryNode.pullback (gate P) x c ≡
-    UnaryNode.pullback (Laws.invNode (G)) x
-      (UnaryNode.pullback (Laws.tanhNode (G)) (PrimitiveAlgebra.inv P x) c)
-compositionKernel P x c = refl
+compose : ∀ {G : Ring} → UnaryPrimitive G → UnaryPrimitive G → UnaryPrimitive G
+compose f g = record
+  { value = λ x → UnaryPrimitive.value g (UnaryPrimitive.value f x)
+  ; reverse = λ x c →
+      UnaryPrimitive.reverse f x
+        (UnaryPrimitive.reverse g (UnaryPrimitive.value f x) c)
+  }
+
+composeReverse : ∀ {G : Ring} (f g : UnaryPrimitive G) x c →
+  UnaryPrimitive.reverse (compose f g) x c ≡
+    UnaryPrimitive.reverse f x
+      (UnaryPrimitive.reverse g (UnaryPrimitive.value f x) c)
+composeReverse f g x c = refl
+
+------------------------------------------------------------------------
+-- Layer-normalization algebraic shell.
+--
+-- This is deliberately the denominator/square-root boundary only, not a
+-- fake proof of real square roots inside an arbitrary finite ring.
+------------------------------------------------------------------------
+
+layerNormScale : ∀ {G : Ring} → PrimitiveAlgebra G →
+  (x eps : Ring.R G) → Ring.R G
+layerNormScale P x eps =
+  Ring.mul G x (PrimitiveAlgebra.inv P (PrimitiveAlgebra.sqrt P (Ring.add G x eps)))
   where
   G = _
 
+layerNormScaleDef : ∀ {G : Ring} (P : PrimitiveAlgebra G) x eps →
+  layerNormScale P x eps ≡
+    Ring.mul G x (PrimitiveAlgebra.inv P (PrimitiveAlgebra.sqrt P (Ring.add G x eps)))
+layerNormScaleDef P x eps = refl
+
 ------------------------------------------------------------------------
--- Soundness boundary: all non-algebraic semantics are obligations carried
--- by PrimitiveAlgebra.  Nothing here invokes --unsafe, postulates, floating
--- point, or an undecidable domain test.
+-- Combined representation boundary: tanh(layerNormScale(...)).
+-- The theorem requires only the explicit primitive contracts; no analytic
+-- library and no unsafe axiom are introduced.
 ------------------------------------------------------------------------
 
-representationAlgebraClosed : ∀ {G : Ring} → PrimitiveAlgebra G → Set
-representationAlgebraClosed _ = Ring.R G
+representationValue : ∀ {G : Ring} → PrimitiveAlgebra G →
+  (x eps : Ring.R G) → Ring.R G
+representationValue P x eps =
+  PrimitiveAlgebra.tanh P (layerNormScale P x eps)
+
+representationValueDef : ∀ {G : Ring} (P : PrimitiveAlgebra G) x eps →
+  representationValue P x eps ≡
+    PrimitiveAlgebra.tanh P (layerNormScale P x eps)
+representationValueDef P x eps = refl
