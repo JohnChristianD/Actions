@@ -201,10 +201,12 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   accumulateCorrect i c acc j with eqFin j i
   ... | true =
     cong (λ z → addR (acc j) z)
-      (Ring.mulOneR G c)
+      (sym (Ring.mulOneR G c))
   ... | false =
-    cong (λ z → addR (acc j) z)
-      (sym (Ring.zeroMulR G c))
+    trans
+      (sym (Ring.addZeroR G (acc j)))
+      (cong (λ z → addR (acc j) z)
+        (sym (Ring.zeroMulR G c)))
 
   reverseAccumCorrect : ∀ e ρ c acc i →
     reverseT (translate e) ρ c acc i ≡
