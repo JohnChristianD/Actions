@@ -255,18 +255,16 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
                     (mulR (mulR c ex) (coeff y ρ i))))
               (execValueCorrect y ρ)
               (execValueCorrect x ρ))
-            (trans
-              (cong
-                (λ z → addR (acc i) z)
+            (cong
+              (λ z → addR (acc i) z)
+              (trans
                 (cong₂ (Ring.add G)
                   (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
-                  (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i))))
-              (cong
-                (λ z → addR (acc i) z)
+                  (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
                 (sym
                   (Ring.distrib G c
                     (mulR (eval y ρ) (coeff x ρ i))
-                    (mulR (eval x ρ) (coeff y ρ i))))))))
+                    (mulR (eval x ρ) (coeff y ρ i)))))))))
   reverseAccumCorrect (negE x) ρ c acc i =
     trans
       (reverseAccumCorrect x ρ (negR c) acc i)
