@@ -1,10 +1,15 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.RepresentationPrimitiveAlgebra where
 
-open import Agda.Builtin.Equality using (_≡_; refl; trans; cong)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
 
 data ⊥ : Set where
+
+trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl q = q
+
+cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
 
 ------------------------------------------------------------------------
 -- Minimal total algebraic boundary for representation primitives.
@@ -34,7 +39,7 @@ record PrimitiveAlgebra (G : Ring) : Set₁ where
   open Ring G
   field
     Nonzero : R → Set
-    NonzeroDef : ∀ {x} → Nonzero x ≡ (x ≡ zero → ⊥)
+    nonzeroLaw : ∀ x → Nonzero x → x ≡ zero → ⊥
 
     inv : R → R
     invLaw : ∀ {x} → Nonzero x → mul x (inv x) ≡ one
@@ -133,9 +138,7 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
   normalizedValueDef x eps = refl
 
 ------------------------------------------------------------------------
--- The combined representation boundary is kernel-visible without requiring
--- a real-analysis library.  Concrete real/rational models instantiate the
--- PrimitiveAlgebra contract; finite test oracles validate their chosen laws.
+-- Combined representation boundary.
 ------------------------------------------------------------------------
 
 representationBoundary : ∀ {G : Ring} → PrimitiveAlgebra G →
