@@ -208,6 +208,16 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
       (cong (λ z → addR (acc j) z)
         (sym (Ring.zeroMulR G c)))
 
+  mulNegScale : ∀ c x → mulR c (negR x) ≡ mulR (negR c) x
+  mulNegScale c x =
+    trans
+      (Ring.mulComm G c (negR x))
+      (trans
+        (sym (Ring.negScale G x c))
+        (trans
+          (cong (Ring.neg G) (Ring.mulComm G x c))
+          (Ring.negScale G c x)))
+
   reverseAccumCorrect : ∀ e ρ c acc i →
     reverseT (translate e) ρ c acc i ≡
     addR (acc i) (mulR c (coeff e ρ i))
@@ -270,7 +280,7 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
       (reverseAccumCorrect x ρ (negR c) acc i)
       (cong (λ z → addR (acc i) z)
         (sym
-          (Ring.negScale G c (coeff x ρ i))))
+          (mulNegScale c (coeff x ρ i))))
   reverseAccumCorrect (prim k x) ρ c acc i =
     trans
       (reverseAccumCorrect x ρ
