@@ -13,6 +13,7 @@ cong f refl = refl
 
 ------------------------------------------------------------------------
 -- Minimal total algebraic boundary for representation primitives.
+-- Domain side conditions are carried as data, so --safe remains intact.
 ------------------------------------------------------------------------
 
 record Ring : Set₁ where
@@ -61,6 +62,15 @@ record PrimitiveAlgebra (G : Ring) : Set₁ where
     tanhDerivativeLaw : ∀ x →
       tanhDerivative x ≡ add one (neg (mul (tanh x) (tanh x)))
 
+    sigmoid : R → R
+    sigmoidDerivative : R → R
+    sigmoidVJP : R → R → R
+    sigmoidVJPLaw : ∀ x c →
+      sigmoidVJP x c ≡ mul c (sigmoidDerivative x)
+    sigmoidDerivativeLaw : ∀ x →
+      sigmoidDerivative x ≡
+        mul (sigmoid x) (add one (neg (sigmoid x)))
+
 module PrimitiveLaws {G : Ring} (P : PrimitiveAlgebra G) where
   open Ring G
   open PrimitiveAlgebra P
@@ -91,6 +101,22 @@ module PrimitiveLaws {G : Ring} (P : PrimitiveAlgebra G) where
   tanhExplicitVJP x c =
     trans (tanhVJPLaw x c)
       (cong (mul c) (tanhDerivativeLaw x))
+
+  sigmoidReverseLaw : ∀ x c →
+    sigmoidVJP x c ≡ mul c (sigmoidDerivative x)
+  sigmoidReverseLaw = sigmoidVJPLaw
+
+  sigmoidDerivativeValue : ∀ x →
+    sigmoidDerivative x ≡
+      mul (sigmoid x) (add one (neg (sigmoid x)))
+  sigmoidDerivativeValue = sigmoidDerivativeLaw
+
+  sigmoidExplicitVJP : ∀ x c →
+    sigmoidVJP x c ≡
+      mul c (mul (sigmoid x) (add one (neg (sigmoid x))))
+  sigmoidExplicitVJP x c =
+    trans (sigmoidVJPLaw x c)
+      (cong (mul c) (sigmoidDerivativeLaw x))
 
 ------------------------------------------------------------------------
 -- Purely algebraic primitive-node composition.
@@ -123,12 +149,25 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
   open Ring G
   open PrimitiveAlgebra P
 
+  invSqrt : R → R
+  invSqrt x = inv (sqrt x)
+
+  invSqrtDef : ∀ x →
+    invSqrt x ≡ inv (sqrt x)
+  invSqrtDef x = refl
+
+  invSqrtVJP : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
+    invSqrtVJP x c ≡ sqrtVJP x (invVJP (sqrt x) c)
+  invSqrtVJP {x} _ _ c = refl
+
   scale : R → R → R
-  scale x eps = mul x (inv (sqrt (add x eps)))
+  scale x eps = mul x (invSqrt (add x eps))
 
   scaleDef : ∀ x eps →
     scale x eps ≡ mul x (inv (sqrt (add x eps)))
-  scaleDef x eps = refl
+  scaleDef x eps =
+    trans refl
+      (cong invSqrt (refl {x = mul x (invSqrt (add x eps))}))
 
   normalizedValue : R → R → R
   normalizedValue x eps = tanh (scale x eps)
@@ -136,6 +175,11 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
   normalizedValueDef : ∀ x eps →
     normalizedValue x eps ≡ tanh (scale x eps)
   normalizedValueDef x eps = refl
+
+  normalizedPrimitiveChain : ∀ x eps c →
+    tanhVJP (scale x eps) c ≡
+      mul c (tanhDerivative (scale x eps))
+  normalizedPrimitiveChain x eps c = tanhVJPLaw (scale x eps) c
 
 ------------------------------------------------------------------------
 -- Combined representation boundary.
