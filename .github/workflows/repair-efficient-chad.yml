@@ -12,7 +12,7 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
-      - name: Normalize local ring operators
+      - name: Normalize Efficient-CHAD source
         shell: bash
         run: |
           set -euo pipefail
@@ -27,12 +27,15 @@ jobs:
           body = re.sub(r'^  infixl 30 _mulR_\n', '', body, flags=re.M)
           body = re.sub(r'^  _plusR_ : R → R → R\n  _plusR_ x y = Ring\._\+_ G x y\n\n', '', body, flags=re.M)
           body = re.sub(r'^  _mulR_ : R → R → R\n  _mulR_ x y = Ring\._\*_ G x y\n\n', '', body, flags=re.M)
-          body = body.replace('_+_', '_plusR_').replace('_*_', '_mulR_')
           body = body.replace(' + ', ' _plusR_ ').replace(' * ', ' _mulR_ ')
+          body = body.replace('_+_', '_plusR_').replace('_*_', '_mulR_')
+          body = body.replace('targetSize (translate e) ≡ sourceSize e ×', '(targetSize (translate e) ≡ sourceSize e) ×')
+          body = body.replace('(valueT (translate e) ρ ≡ eval e ρ) ×', '((valueT (translate e) ρ ≡ eval e ρ)) ×')
+          body = body.replace('(reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i)) ×', '((reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i))) ×')
           marker = '  open UnaryPrimitives P\n'
           insert = '''  open UnaryPrimitives P\n\n  _plusR_ : R → R → R\n  _plusR_ x y = Ring._+_ G x y\n\n  _mulR_ : R → R → R\n  _mulR_ x y = Ring._*_ G x y\n\n  infixl 20 _plusR_\n  infixl 30 _mulR_\n'''
           if marker not in body:
-              raise SystemExit('missing Language operator insertion point')
+              raise SystemExit('missing Language insertion point')
           body = body.replace(marker, insert, 1)
           p.write_text(prefix + body)
           PY
@@ -46,7 +49,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda .github/workflows/repair-efficient-chad.yml
-          git commit -m 'fix: isolate Efficient-CHAD ring operator namespace'
+          git commit -m 'fix: close Efficient-CHAD theorem parser frontier'
           git rm .github/workflows/repair-efficient-chad.yml
           git commit -m 'ci: remove one-shot Efficient-CHAD repair helper'
           git push origin HEAD:ci/v148-firstclass-lstm-chad
