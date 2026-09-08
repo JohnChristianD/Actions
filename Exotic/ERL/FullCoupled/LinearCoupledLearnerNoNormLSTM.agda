@@ -113,3 +113,7 @@ module Learner (A : Ring) (n : Nat) where
     ∀ epsilon q bonus →
     exploreVector epsilon q bonus ≡ add q (scale epsilon bonus)
   explorationVectorExpanded epsilon q bonus = refl
+
+------------------------------------------------------------------------
+-- Authoritative CI retrigger: learner source is unchanged semantically.
+------------------------------------------------------------------------
