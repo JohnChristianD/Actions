@@ -15,7 +15,7 @@ module Exotic.ERL.FullCoupled.AllSafeCombined where
 ------------------------------------------------------------------------
 
 module Learner where
-  open import Agda.Builtin.Nat using (Nat; zero; suc)
+  open import Agda.Builtin.Nat using (Nat; zero as nzero; suc as nsuc)
   open import Agda.Builtin.Equality using (_≡_; refl)
 
   record Ring : Set₁ where
@@ -40,8 +40,8 @@ module Learner where
     open Ring A
 
     data Vec : Nat → Set where
-      [] : Vec zero
-      _∷_ : ∀ {m} → R → Vec m → Vec (suc m)
+      [] : Vec nzero
+      _∷_ : ∀ {m} → R → Vec m → Vec (nsuc m)
 
     map : ∀ {m} → (R → R) → Vec m → Vec m
     map f [] = []
