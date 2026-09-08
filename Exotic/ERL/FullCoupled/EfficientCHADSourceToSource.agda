@@ -229,8 +229,9 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
           (Ring.addAssoc G (acc i)
             (mulR c (coeff x ρ i))
             (mulR c (coeff y ρ i)))
-          (sym
-            (Ring.distrib G c (coeff x ρ i) (coeff y ρ i)))))
+          (cong (λ z → addR (acc i) z)
+            (sym
+              (Ring.distrib G c (coeff x ρ i) (coeff y ρ i))))))
   reverseAccumCorrect (mulE x y) ρ c acc i =
     trans
       (reverseAccumCorrect y ρ (mulR c (eval x ρ))
