@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.LinearCoupledLearnerNoNormLSTM where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (Nat; zero; suc) renaming (zero to zeroN)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 ------------------------------------------------------------------------
@@ -31,7 +31,7 @@ module Learner (A : Ring) (n : Nat) where
   open Ring A
 
   data Vec : Nat → Set where
-    [] : Vec zero
+    [] : Vec zeroN
     _∷_ : ∀ {m} → R → Vec m → Vec (suc m)
 
   map : ∀ {m} → (R → R) → Vec m → Vec m
