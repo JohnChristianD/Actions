@@ -234,24 +234,35 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
               (Ring.distrib G c (coeff x ρ i) (coeff y ρ i))))))
   reverseAccumCorrect (mulE x y) ρ c acc i =
     trans
-      (reverseAccumCorrect y ρ (mulR c (eval x ρ))
-        (reverseT (translate x) ρ (mulR c (eval y ρ)) acc) i)
+      (reverseAccumCorrect y ρ (mulR c (valueT (translate x) ρ))
+        (reverseT (translate x) ρ
+          (mulR c (valueT (translate y) ρ)) acc) i)
       (trans
         (cong₂ (Ring.add G)
-          (reverseAccumCorrect x ρ (mulR c (eval y ρ)) acc i)
+          (reverseAccumCorrect x ρ
+            (mulR c (valueT (translate y) ρ)) acc i)
           refl)
         (trans
           (Ring.addAssoc G (acc i)
-            (mulR (mulR c (eval y ρ)) (coeff x ρ i))
-            (mulR (mulR c (eval x ρ)) (coeff y ρ i)))
+            (mulR (mulR c (valueT (translate y) ρ)) (coeff x ρ i))
+            (mulR (mulR c (valueT (translate x) ρ)) (coeff y ρ i)))
           (trans
-            (cong₂ (Ring.add G)
-              (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
-              (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
-            (sym
-              (Ring.distrib G c
-                (mulR (eval y ρ) (coeff x ρ i))
-                (mulR (eval x ρ) (coeff y ρ i)))))))
+            (cong₂
+              (λ ey ex →
+                addR (acc i)
+                  (addR
+                    (mulR (mulR c ey) (coeff x ρ i))
+                    (mulR (mulR c ex) (coeff y ρ i))))
+              (execValueCorrect y ρ)
+              (execValueCorrect x ρ))
+            (trans
+              (cong₂ (Ring.add G)
+                (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
+                (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
+              (sym
+                (Ring.distrib G c
+                  (mulR (eval y ρ) (coeff x ρ i))
+                  (mulR (eval x ρ) (coeff y ρ i)))))))))
   reverseAccumCorrect (negE x) ρ c acc i =
     trans
       (reverseAccumCorrect x ρ (negR c) acc i)
