@@ -6,6 +6,7 @@ on:
     branches: ['ci/v149-representation-algebra']
     paths:
       - 'Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
+      - '.github/workflows/repair-v149-monolith.yml'
 
 permissions:
   contents: write
