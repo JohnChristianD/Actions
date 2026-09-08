@@ -14,25 +14,22 @@ record Ring : Set₁ where
   field
     R : Set
     zero one : R
-    _+_ _*_ : R → R → R
+    addR mulR : R → R → R
     neg : R → R
-    addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-    addComm : ∀ x y → x + y ≡ y + x
-    addZeroL : ∀ x → zero + x ≡ x
-    addZeroR : ∀ x → x + zero ≡ x
-    mulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
-    mulComm : ∀ x y → x * y ≡ y * x
-    mulOneL : ∀ x → one * x ≡ x
-    mulOneR : ∀ x → x * one ≡ x
-    distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
-    zeroMulL : ∀ x → zero * x ≡ zero
-    zeroMulR : ∀ x → x * zero ≡ zero
+    addAssoc : ∀ x y z → addR (addR x y) z ≡ addR x (addR y z)
+    addComm : ∀ x y → addR x y ≡ addR y x
+    addZeroL : ∀ x → addR zero x ≡ x
+    addZeroR : ∀ x → addR x zero ≡ x
+    mulAssoc : ∀ x y z → mulR (mulR x y) z ≡ mulR x (mulR y z)
+    mulComm : ∀ x y → mulR x y ≡ mulR y x
+    mulOneL : ∀ x → mulR one x ≡ x
+    mulOneR : ∀ x → mulR x one ≡ x
+    distrib : ∀ x y z → mulR x (addR y z) ≡ addR (mulR x y) (mulR x z)
+    zeroMulL : ∀ x → mulR zero x ≡ zero
+    zeroMulR : ∀ x → mulR x zero ≡ zero
 
 module Learner (A : Ring) (n : Nat) where
   open Ring A
-
-  infixl 6 _+_
-  infixl 7 _*_
 
   data Vec : Nat → Set where
     [] : Vec NatB.zero
@@ -47,27 +44,27 @@ module Learner (A : Ring) (n : Nat) where
   zipWith f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWith f xs ys
 
   scale : ∀ {m} → R → Vec m → Vec m
-  scale a v = map (λ x → a * x) v
+  scale a v = map (λ x → mulR a x) v
 
   add : ∀ {m} → Vec m → Vec m → Vec m
-  add = zipWith _+_
+  add = zipWith addR
 
   dot : ∀ {m} → Vec m → Vec m → R
   dot [] [] = zero
-  dot (x ∷ xs) (y ∷ ys) = x * y + dot xs ys
+  dot (x ∷ xs) (y ∷ ys) = addR (mulR x y) (dot xs ys)
 
   linearQ : Vec n → Vec n → R
   linearQ w φ = dot w φ
 
   tdError : R → R → R
-  tdError target q = target + neg q
+  tdError target q = addR target (neg q)
 
   l2Decay : R → Vec n → Vec n
-  l2Decay rho w = scale (one + neg rho) w
+  l2Decay rho w = scale (addR one (neg rho)) w
 
   criticUpdate : R → R → Vec n → Vec n → Vec n
   criticUpdate alpha delta w φ =
-    add w (scale (alpha * delta) φ)
+    add w (scale (mulR alpha delta) φ)
 
   coupledUpdate : R → R → R → Vec n → Vec n → Vec n
   coupledUpdate alpha delta rho w φ =
@@ -78,7 +75,7 @@ module Learner (A : Ring) (n : Nat) where
     coupledUpdate alpha (tdError target (linearQ w φ)) rho w φ
 
   exploreScore : R → R → R → R
-  exploreScore q bonus epsilon = q + epsilon * bonus
+  exploreScore q bonus epsilon = addR q (mulR epsilon bonus)
 
   exploreVector : R → Vec n → Vec n → Vec n
   exploreVector epsilon q bonus =
@@ -92,7 +89,7 @@ module Learner (A : Ring) (n : Nat) where
   criticUpdateExpanded :
     ∀ alpha delta w φ →
     criticUpdate alpha delta w φ ≡
-      add w (scale (alpha * delta) φ)
+      add w (scale (mulR alpha delta) φ)
   criticUpdateExpanded alpha delta w φ = refl
 
   coupledUpdateExpanded :
@@ -109,7 +106,7 @@ module Learner (A : Ring) (n : Nat) where
 
   explorationScoreExpanded :
     ∀ q bonus epsilon →
-    exploreScore q bonus epsilon ≡ q + epsilon * bonus
+    exploreScore q bonus epsilon ≡ addR q (mulR epsilon bonus)
   explorationScoreExpanded q bonus epsilon = refl
 
   explorationVectorExpanded :
