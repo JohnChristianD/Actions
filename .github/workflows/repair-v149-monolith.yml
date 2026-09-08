@@ -2,7 +2,7 @@ name: v149 monolith parser repair
 
 on:
   push:
-    branches: ['ci/v149-representation-algebra']
+    branches: ['ci/v149-representation-algebra', 'ci/v149-representation-layernorm-closure']
     paths:
       - 'Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
       - '.github/workflows/repair-v149-monolith.yml'
@@ -63,4 +63,4 @@ jobs:
             git rm .github/workflows/repair-v149-monolith.yml
             git commit -m 'ci: retire monolith parser helper'
           fi
-          git push origin HEAD:ci/v149-representation-algebra
+          git push origin HEAD:ci/v149-representation-layernorm-closure
