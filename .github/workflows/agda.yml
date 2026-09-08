@@ -2,7 +2,7 @@ name: Agda authoritative safe gate
 
 on:
   push:
-    branches: ['ci/v148-firstclass-lstm-chad', 'main', 'ci/v149-representation-algebra']
+    branches: ['ci/v148-firstclass-lstm-chad', 'main', 'ci/v149-representation-algebra', 'ci/v149-representation-layernorm-closure']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
@@ -38,5 +38,7 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Safe-check representation primitive algebra
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
+      - name: Safe-check domain-carrying LayerNorm closure
+        run: agda --safe Exotic/ERL/FullCoupled/RepresentationLayerNormClosure.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
