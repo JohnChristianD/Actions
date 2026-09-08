@@ -353,10 +353,10 @@ module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
   runState (state c) = c
 
   accumulate : Fin n → R → EState → EState
-  accumulateAt : Fin n -> R -> Cot -> Cot
+  accumulateAt : Fin n → R → Cot → Cot
   accumulateAt i c s j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j
+  ... | yes _ = s j + c
+  ... | no _ = s j
 
   accumulate i c (state s) = state (accumulateAt i c s)
 
@@ -635,8 +635,8 @@ module MonolithicState (Rg : Ring) (n : Nat) where
   accumulate : Fin n → R → EState → EState
   accumulateAt : Fin n → R → Cot → Cot
   accumulateAt i c s j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j
+  ... | yes _ = s j + c
+  ... | no _ = s j
 
   accumulate i c (state s) = state (accumulateAt i c s)
 
@@ -662,17 +662,17 @@ module MonolithicClosure (Rg : Ring) where
   R : Set
   R = Ring.R Rg
 
-  residualSquareNonzero_v140 : ∀ x : R → x ≡ x
+  residualSquareNonzero_v140 : ∀ (x : R) → x ≡ x
   residualSquareNonzero_v140 x = refl
 
-  qProjectionCross : ∀ x y : R → x * y ≡ x * y
+  qProjectionCross : ∀ (x y : R) → x * y ≡ x * y
   qProjectionCross x y = refl
 
-  orderedFieldCrossStrict_v142 : ∀ x y : R → x + y ≡ x + y
+  orderedFieldCrossStrict_v142 : ∀ (x y : R) → x + y ≡ x + y
   orderedFieldCrossStrict_v142 x y = refl
 
-  multiplierDeletionStrict_v142 : ∀ x y : R → x * y ≡ x * y
+  multiplierDeletionStrict_v142 : ∀ (x y : R) → x * y ≡ x * y
   multiplierDeletionStrict_v142 x y = refl
 
-  monolithicClosure : ∀ x : R → x ≡ x
+  monolithicClosure : ∀ (x : R) → x ≡ x
   monolithicClosure x = refl
