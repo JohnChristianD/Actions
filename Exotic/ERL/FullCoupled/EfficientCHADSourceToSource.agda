@@ -172,17 +172,17 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseT (tprim k x) ρ c acc =
     reverseT x ρ (mulR c (derivPrim k (valueT x ρ))) acc
 
-  data _×_ (A B : Set) : Set where
-    _,_ : A → B → A × B
+  data Product (A B : Set) : Set where
+    pair : A → B → Product A B
 
-  fst : ∀ {A B : Set} → A × B → A
-  fst (a , _) = a
+  fst : ∀ {A B : Set} → Product A B → A
+  fst (pair a _) = a
 
-  snd : ∀ {A B : Set} → A × B → B
-  snd (_ , b) = b
+  snd : ∀ {A B : Set} → Product A B → B
+  snd (pair _ b) = b
 
-  exec : Code → Env → R0 → R0 × Cot
-  exec c ρ seed = valueT c ρ , reverseT c ρ seed zeroCot
+  exec : Code → Env → R0 → Product R0 Cot
+  exec c ρ seed = pair (valueT c ρ) (reverseT c ρ seed zeroCot)
 
   execValueCorrect : ∀ e ρ → valueT (translate e) ρ ≡ eval e ρ
   execValueCorrect (const _) _ = refl
@@ -320,12 +320,19 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   totalLinearTheorem _ = refl
 
   completeEfficientCHADTheorem : ∀ e ρ c i →
-    (targetSize (translate e) ≡ sourceSize e) ×
-    ((valueT (translate e) ρ ≡ eval e ρ)) ×
-    ((reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i))) ×
-    (natPlus (forwardWork e) (reverseWork e) ≡
-      natPlus (sourceSize e) (sourceSize e))
+    Product
+      (targetSize (translate e) ≡ sourceSize e)
+      (Product
+        (valueT (translate e) ρ ≡ eval e ρ)
+        (Product
+          (reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i))
+          (natPlus (forwardWork e) (reverseWork e) ≡
+            natPlus (sourceSize e) (sourceSize e))))
   completeEfficientCHADTheorem e ρ c i =
-    translationSizeTheorem e ,
-    (execValueCorrect e ρ ,
-      (reverseCorrect e ρ c i , totalLinearTheorem e))
+    pair
+      (translationSizeTheorem e)
+      (pair
+        (execValueCorrect e ρ)
+        (pair
+          (reverseCorrect e ρ c i)
+          (totalLinearTheorem e)))
