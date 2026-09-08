@@ -1,89 +1,42 @@
-name: One-shot Efficient-CHAD multiplication transport repair
+name: One-shot monolith restoration
 on:
   push:
     branches: ['ci/v148-firstclass-lstm-chad']
 permissions:
   contents: write
 jobs:
-  repair:
+  restore:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Repair reverse multiplication transport
+      - name: Restore exact parent monolith and apply one-character parser fix
         shell: bash
         run: |
           set -euo pipefail
+          git fetch --no-tags origin 6914fce2dda736f2ea1e389d7967a06e1c10d19a
+          git checkout 6914fce2dda736f2ea1e389d7967a06e1c10d19a -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda')
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          old = '''  reverseAccumCorrect (mulE x y) ρ c acc i =
-    trans
-      (reverseAccumCorrect y ρ (mulR c (eval x ρ))
-        (reverseT (translate x) ρ (mulR c (eval y ρ)) acc) i)
-      (trans
-        (cong₂ (Ring.add G)
-          (reverseAccumCorrect x ρ (mulR c (eval y ρ)) acc i)
-          refl)
-        (trans
-          (Ring.addAssoc G (acc i)
-            (mulR (mulR c (eval y ρ)) (coeff x ρ i))
-            (mulR (mulR c (eval x ρ)) (coeff y ρ i)))
-          (trans
-            (cong₂ (Ring.add G)
-              (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
-              (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
-            (sym
-              (Ring.distrib G c
-                (mulR (eval y ρ) (coeff x ρ i))
-                (mulR (eval x ρ) (coeff y ρ i)))))))
-'''
-          new = '''  reverseAccumCorrect (mulE x y) ρ c acc i =
-    trans
-      (reverseAccumCorrect y ρ (mulR c (valueT (translate x) ρ))
-        (reverseT (translate x) ρ
-          (mulR c (valueT (translate y) ρ)) acc) i)
-      (trans
-        (cong₂ (Ring.add G)
-          (reverseAccumCorrect x ρ
-            (mulR c (valueT (translate y) ρ)) acc i)
-          refl)
-        (trans
-          (Ring.addAssoc G (acc i)
-            (mulR (mulR c (valueT (translate y) ρ)) (coeff x ρ i))
-            (mulR (mulR c (valueT (translate x) ρ)) (coeff y ρ i)))
-          (trans
-            (cong₂
-              (λ ey ex →
-                addR (acc i)
-                  (addR
-                    (mulR (mulR c ey) (coeff x ρ i))
-                    (mulR (mulR c ex) (coeff y ρ i))))
-              (execValueCorrect y ρ)
-              (execValueCorrect x ρ))
-            (trans
-              (cong₂ (Ring.add G)
-                (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
-                (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
-              (sym
-                (Ring.distrib G c
-                  (mulR (eval y ρ) (coeff x ρ i))
-                  (mulR (eval x ρ) (coeff y ρ i)))))))))
-'''
+          old = '  accumulateAt : Fin n -> R -> Cot -> Cot\n'
+          new = '  accumulateAt : Fin n → R → Cot → Cot\n'
           if s.count(old) != 1:
-              raise SystemExit(f'expected exactly one multiplication proof frontier, found {s.count(old)}')
+              raise SystemExit(f'expected exactly one ASCII-arrow declaration, found {s.count(old)}')
           p.write_text(s.replace(old, new, 1))
           PY
+          test "$(git diff --numstat -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | awk '{print $1+$2}')" -eq 1
           git diff --check
-          agda --safe Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda
-      - name: Commit repair and remove helper
+      - name: Kernel-check restored monolith
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Commit exact restoration and remove helper
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda .github/workflows/repair-efficient-chad.yml
-          git commit -m 'fix: transport Efficient-CHAD multiplication values'
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          git commit -m 'fix: restore monolithic safe closure with minimal parser repair'
           git rm .github/workflows/repair-efficient-chad.yml
-          git commit -m 'ci: remove one-shot Efficient-CHAD transport helper'
+          git commit -m 'ci: remove monolith restoration helper'
           git push origin HEAD:ci/v148-firstclass-lstm-chad
