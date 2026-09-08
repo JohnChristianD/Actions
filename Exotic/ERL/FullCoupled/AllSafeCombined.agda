@@ -217,10 +217,10 @@ module Recurrent where
           dI = fst drig
           dG = snd drig
           dO = fst drh
-          dFIn = snd (run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)) dF
-          dIIn = snd (run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)) dI
-          dOIn = snd (run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)) dO
-          dGIn = snd (run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)) dG
+          dFIn = snd (run (gateNode (LSTMGateNodes.forgetGate ops)) (x , h)) dF
+          dIIn = snd (run (gateNode (LSTMGateNodes.inputGate ops)) (x , h)) dI
+          dOIn = snd (run (gateNode (LSTMGateNodes.outputGate ops)) (x , h)) dO
+          dGIn = snd (run (gateNode (LSTMGateNodes.candidateGate ops)) (x , h)) dG
           dx₁ = fst dFIn
           dx₂ = fst dIIn
           dx₃ = fst dOIn
@@ -310,3 +310,5 @@ module Shared where
     (s : LSTMState A hiddenDim)
     → primal (lstmNetwork p xs) s ≡ primal (lstmNetwork p xs) s
   recurrentForwardBoundary p xs s = refl
+
+-- CI trigger only: the mathematical content above is unchanged.
