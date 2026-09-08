@@ -40,6 +40,8 @@ record Ring : Set₁ where
     negScale : ∀ x y → neg (x * y) ≡ neg x * y
 
 open Ring
+infixl 20 _+_
+infixl 30 _*_
 
 data Bool : Set where
   false true : Bool
