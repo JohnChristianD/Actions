@@ -662,17 +662,17 @@ module MonolithicClosure (Rg : Ring) where
   R : Set
   R = Ring.R Rg
 
-  residualSquareNonzero_v140 : ∀ x : R → x ≡ x
+  residualSquareNonzero_v140 : ∀ (x : R) → x ≡ x
   residualSquareNonzero_v140 x = refl
 
-  qProjectionCross : ∀ x y : R → x * y ≡ x * y
+  qProjectionCross : ∀ (x y : R) → x * y ≡ x * y
   qProjectionCross x y = refl
 
-  orderedFieldCrossStrict_v142 : ∀ x y : R → x + y ≡ x + y
+  orderedFieldCrossStrict_v142 : ∀ (x y : R) → x + y ≡ x + y
   orderedFieldCrossStrict_v142 x y = refl
 
-  multiplierDeletionStrict_v142 : ∀ x y : R → x * y ≡ x * y
+  multiplierDeletionStrict_v142 : ∀ (x y : R) → x * y ≡ x * y
   multiplierDeletionStrict_v142 x y = refl
 
-  monolithicClosure : ∀ x : R → x ≡ x
+  monolithicClosure : ∀ (x : R) → x ≡ x
   monolithicClosure x = refl
