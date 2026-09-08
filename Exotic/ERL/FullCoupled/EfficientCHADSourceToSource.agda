@@ -1,265 +1,331 @@
 {-# OPTIONS --safe #-}
-
 module Exotic.ERL.FullCoupled.EfficientCHADSourceToSource where
 
+open import Agda.Builtin.Nat using (Nat; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+
+sym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x
+sym refl = refl
+
+trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl q = q
+
+cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
+cong₂ : ∀ {A B C : Set} (f : A → B → C)
+  {x x' : A} {y y' : B} → x ≡ x' → y ≡ y' → f x y ≡ f x' y'
+cong₂ f refl refl = refl
+
+natPlus : Nat → Nat → Nat
+natPlus 0 y = y
+natPlus (suc x) y = suc (natPlus x y)
 
 record Ring : Set₁ where
   field
     R : Set
-    zero : R
-    one : R
-    add : R → R → R
-    mul : R → R → R
+    zero one : R
+    add mul : R → R → R
     neg : R → R
-    add-zeroʳ : ∀ x → add x zero ≡ x
-    mul-oneʳ : ∀ x → mul x one ≡ x
+    addAssoc : ∀ x y z → add (add x y) z ≡ add x (add y z)
+    addComm : ∀ x y → add x y ≡ add y x
+    addZeroL : ∀ x → add zero x ≡ x
+    addZeroR : ∀ x → add x zero ≡ x
+    addNegR : ∀ x → add x (neg x) ≡ zero
+    mulAssoc : ∀ x y z → mul (mul x y) z ≡ mul x (mul y z)
+    mulComm : ∀ x y → mul x y ≡ mul y x
+    mulOneR : ∀ x → mul x one ≡ x
+    mulOneL : ∀ x → mul one x ≡ x
+    distrib : ∀ x y z → mul x (add y z) ≡ add (mul x y) (mul x z)
+    zeroMulR : ∀ x → mul x zero ≡ zero
+    zeroMulL : ∀ x → mul zero x ≡ zero
+    negScale : ∀ x y → neg (mul x y) ≡ mul (neg x) y
 
-module Over (A : Ring) where
+data Bool : Set where
+  false true : Bool
 
-  open Ring A
+data Fin : Nat → Set where
+  fzero : {n : Nat} → Fin (suc n)
+  fsuc : {n : Nat} → Fin n → Fin (suc n)
 
-  addR : R → R → R
-  addR = add
+eqFin : ∀ {n} → Fin n → Fin n → Bool
+eqFin fzero fzero = true
+eqFin fzero (fsuc _) = false
+eqFin (fsuc _) fzero = false
+eqFin (fsuc i) (fsuc j) = eqFin i j
 
-  mulR : R → R → R
-  mulR = mul
+record UnaryPrimitives (A : Set) : Set₁ where
+  field
+    apply : Nat → A → A
+    derivative : Nat → A → A
 
-  negR : R → R
-  negR = neg
+module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
+  open Ring G
+  open UnaryPrimitives P
 
-  data Bool : Set where
-    false : Bool
-    true : Bool
+  R0 : Set
+  R0 = Ring.R G
 
-  data Fin : Nat → Set where
-    fzero : ∀ {n} → Fin (suc n)
-    fsuc : ∀ {n} → Fin n → Fin (suc n)
+  addR : R0 → R0 → R0
+  addR = Ring.add G
 
-  eqFin : ∀ {n} → Fin n → Fin n → Bool
-  eqFin fzero fzero = true
-  eqFin fzero (fsuc _) = false
-  eqFin (fsuc _) fzero = false
-  eqFin (fsuc i) (fsuc j) = eqFin i j
+  mulR : R0 → R0 → R0
+  mulR = Ring.mul G
 
-  record UnaryPrimitives : Set where
-    field
-      prim : R → R
-      dprim : R → R
+  zeroR : R0
+  zeroR = Ring.zero G
 
-  module Language (P : UnaryPrimitives) where
+  oneR : R0
+  oneR = Ring.one G
 
-    open UnaryPrimitives P
+  negR : R0 → R0
+  negR = Ring.neg G
 
-    data Env : Nat → Set where
-      envNil : Env zero
-      envCons : ∀ {n} → R → Env n → Env (suc n)
+  Env : Set
+  Env = Fin n → R0
 
-    lookup : ∀ {n} → Fin n → Env n → R
-    lookup fzero (envCons x _) = x
-    lookup (fsuc i) (envCons _ ρ) = lookup i ρ
+  Cot : Set
+  Cot = Fin n → R0
 
-    data Cot : Nat → Set where
-      cotNil : Cot zero
-      cotCons : ∀ {n} → R → Cot n → Cot (suc n)
+  zeroCot : Cot
+  zeroCot _ = zeroR
 
-    zeroCot : ∀ {n} → Cot n
-    zeroCot {zero} = cotNil
-    zeroCot {suc n} = cotCons zero zeroCot
+  indicator : Fin n → Fin n → R0
+  indicator i j with eqFin j i
+  ... | true = oneR
+  ... | false = zeroR
 
-    indicator : ∀ {n} → Fin n → R → Cot n
-    indicator fzero c = cotCons c zeroCot
-    indicator (fsuc i) c = cotCons zero (indicator i c)
+  accumulate : Fin n → R0 → Cot → Cot
+  accumulate i c s j with eqFin j i
+  ... | true = addR (s j) c
+  ... | false = s j
 
-    accumulate : ∀ {n} → Cot n → Cot n → Cot n
-    accumulate cotNil cotNil = cotNil
-    accumulate (cotCons x xs) (cotCons y ys) = cotCons (addR x y) (accumulate xs ys)
+  data Expr : Set where
+    const : R0 → Expr
+    var : Fin n → Expr
+    addE : Expr → Expr → Expr
+    mulE : Expr → Expr → Expr
+    negE : Expr → Expr
+    prim : Nat → Expr → Expr
 
-    data Expr : Nat → Set where
-      const : ∀ {n} → R → Expr n
-      var : ∀ {n} → Fin n → Expr n
-      addE : ∀ {n} → Expr n → Expr n → Expr n
-      mulE : ∀ {n} → Expr n → Expr n → Expr n
-      negE : ∀ {n} → Expr n → Expr n
-      prim : ∀ {n} → Expr n → Expr n
+  data Code : Set where
+    tconst : R0 → Code
+    tvar : Fin n → Code
+    tadd : Code → Code → Code
+    tmul : Code → Code → Code
+    tneg : Code → Code
+    tprim : Nat → Code → Code
 
-    data Code : Nat → Set where
-      tconst : ∀ {n} → R → Code n
-      tvar : ∀ {n} → Fin n → Code n
-      tadd : ∀ {n} → Code n → Code n → Code n
-      tmul : ∀ {n} → Code n → Code n → Code n
-      tneg : ∀ {n} → Code n → Code n
-      tprim : ∀ {n} → Code n → Code n
+  translate : Expr → Code
+  translate (const c) = tconst c
+  translate (var i) = tvar i
+  translate (addE x y) = tadd (translate x) (translate y)
+  translate (mulE x y) = tmul (translate x) (translate y)
+  translate (negE x) = tneg (translate x)
+  translate (prim k x) = tprim k (translate x)
 
-    translate : ∀ {n} → Expr n → Code n
-    translate (const x) = tconst x
-    translate (var i) = tvar i
-    translate (addE e₁ e₂) = tadd (translate e₁) (translate e₂)
-    translate (mulE e₁ e₂) = tmul (translate e₁) (translate e₂)
-    translate (negE e) = tneg (translate e)
-    translate (prim e) = tprim (translate e)
+  evalPrim : Nat → R0 → R0
+  evalPrim k x = UnaryPrimitives.apply P k x
 
-    evalPrim : R → R
-    evalPrim = prim
+  derivPrim : Nat → R0 → R0
+  derivPrim k x = UnaryPrimitives.derivative P k x
 
-    derivPrim : R → R
-    derivPrim = dprim
+  eval : Expr → Env → R0
+  eval (const c) _ = c
+  eval (var i) ρ = ρ i
+  eval (addE x y) ρ = addR (eval x ρ) (eval y ρ)
+  eval (mulE x y) ρ = mulR (eval x ρ) (eval y ρ)
+  eval (negE x) ρ = negR (eval x ρ)
+  eval (prim k x) ρ = evalPrim k (eval x ρ)
 
-    eval : ∀ {n} → Expr n → Env n → R
-    eval (const x) ρ = x
-    eval (var i) ρ = lookup i ρ
-    eval (addE e₁ e₂) ρ = addR (eval e₁ ρ) (eval e₂ ρ)
-    eval (mulE e₁ e₂) ρ = mulR (eval e₁ ρ) (eval e₂ ρ)
-    eval (negE e) ρ = negR (eval e ρ)
-    eval (prim e) ρ = evalPrim (eval e ρ)
+  coeff : Expr → Env → Fin n → R0
+  coeff (const _) _ _ = zeroR
+  coeff (var j) _ i = indicator j i
+  coeff (addE x y) ρ i = addR (coeff x ρ i) (coeff y ρ i)
+  coeff (mulE x y) ρ i =
+    addR
+      (mulR (eval y ρ) (coeff x ρ i))
+      (mulR (eval x ρ) (coeff y ρ i))
+  coeff (negE x) ρ i = negR (coeff x ρ i)
+  coeff (prim k x) ρ i =
+    mulR (derivPrim k (eval x ρ)) (coeff x ρ i)
 
-    coeff : ∀ {n} → Expr n → Env n → Fin n → R
-    coeff (const _) ρ i = zero
-    coeff (var j) ρ i with eqFin j i
-    ... | false = zero
-    ... | true = one
-    coeff (addE e₁ e₂) ρ i = addR (coeff e₁ ρ i) (coeff e₂ ρ i)
-    coeff (mulE e₁ e₂) ρ i =
-      addR
-        (mulR (coeff e₁ ρ i) (eval e₂ ρ))
-        (mulR (eval e₁ ρ) (coeff e₂ ρ i))
-    coeff (negE e) ρ i = negR (coeff e ρ i)
-    coeff (prim e) ρ i = mulR (derivPrim (eval e ρ)) (coeff e ρ i)
+  valueT : Code → Env → R0
+  valueT (tconst c) _ = c
+  valueT (tvar i) ρ = ρ i
+  valueT (tadd x y) ρ = addR (valueT x ρ) (valueT y ρ)
+  valueT (tmul x y) ρ = mulR (valueT x ρ) (valueT y ρ)
+  valueT (tneg x) ρ = negR (valueT x ρ)
+  valueT (tprim k x) ρ = evalPrim k (valueT x ρ)
 
-    valueT : ∀ {n} → Code n → Env n → R
-    valueT (tconst x) ρ = x
-    valueT (tvar i) ρ = lookup i ρ
-    valueT (tadd e₁ e₂) ρ = addR (valueT e₁ ρ) (valueT e₂ ρ)
-    valueT (tmul e₁ e₂) ρ = mulR (valueT e₁ ρ) (valueT e₂ ρ)
-    valueT (tneg e) ρ = negR (valueT e ρ)
-    valueT (tprim e) ρ = evalPrim (valueT e ρ)
+  reverseT : Code → Env → R0 → Cot → Cot
+  reverseT (tconst _) _ _ acc = acc
+  reverseT (tvar i) _ c acc = accumulate i c acc
+  reverseT (tadd x y) ρ c acc =
+    reverseT y ρ c (reverseT x ρ c acc)
+  reverseT (tmul x y) ρ c acc =
+    let vx = valueT x ρ
+        vy = valueT y ρ
+    in reverseT y ρ (mulR c vx)
+         (reverseT x ρ (mulR c vy) acc)
+  reverseT (tneg x) ρ c acc = reverseT x ρ (negR c) acc
+  reverseT (tprim k x) ρ c acc =
+    reverseT x ρ (mulR c (derivPrim k (valueT x ρ))) acc
 
-    data _×_ (A B : Set) : Set where
-      _,_ : A → B → A × B
+  data _×_ (A B : Set) : Set where
+    _,_ : A → B → A × B
 
-    exec : ∀ {n} → Code n → Env n → R × Cot n
-    exec (tconst x) ρ = x , zeroCot
-    exec (tvar i) ρ = lookup i ρ , indicator i one
-    exec (tadd e₁ e₂) ρ with exec e₁ ρ
-    ... | v₁ , c₁ with exec e₂ ρ
-    ... | v₂ , c₂ = addR v₁ v₂ , accumulate c₁ c₂
-    exec (tmul e₁ e₂) ρ with exec e₁ ρ
-    ... | v₁ , c₁ with exec e₂ ρ
-    ... | v₂ , c₂ = mulR v₁ v₂ , accumulate (scaleCot v₂ c₁) (scaleCot v₁ c₂)
-    exec (tneg e) ρ with exec e ρ
-    ... | v , c = negR v , scaleCot (negR one) c
-    exec (tprim e) ρ with exec e ρ
-    ... | v , c = evalPrim v , scaleCot (derivPrim v) c
+  fst : ∀ {A B : Set} → A × B → A
+  fst (a , _) = a
 
-    scaleCot : ∀ {n} → R → Cot n → Cot n
-    scaleCot _ cotNil = cotNil
-    scaleCot a (cotCons x xs) = cotCons (mulR a x) (scaleCot a xs)
+  snd : ∀ {A B : Set} → A × B → B
+  snd (_ , b) = b
 
-    execValueCorrect : ∀ {n} (e : Expr n) (ρ : Env n) →
-      valueT (translate e) ρ ≡ eval e ρ
-    execValueCorrect (const x) ρ = refl
-    execValueCorrect (var i) ρ = refl
-    execValueCorrect (addE e₁ e₂) ρ = refl
-    execValueCorrect (mulE e₁ e₂) ρ = refl
-    execValueCorrect (negE e) ρ = refl
-    execValueCorrect (prim e) ρ = refl
+  exec : Code → Env → R0 → R0 × Cot
+  exec c ρ seed = valueT c ρ , reverseT c ρ seed zeroCot
 
-    accumulateCorrect : ∀ {n} (c₁ c₂ : Cot n) →
-      accumulate c₁ c₂ ≡ accumulate c₁ c₂
-    accumulateCorrect _ _ = refl
+  execValueCorrect : ∀ e ρ → valueT (translate e) ρ ≡ eval e ρ
+  execValueCorrect (const _) _ = refl
+  execValueCorrect (var _) _ = refl
+  execValueCorrect (addE x y) ρ =
+    cong₂ (Ring.add G) (execValueCorrect x ρ) (execValueCorrect y ρ)
+  execValueCorrect (mulE x y) ρ =
+    cong₂ (Ring.mul G) (execValueCorrect x ρ) (execValueCorrect y ρ)
+  execValueCorrect (negE x) ρ = cong (Ring.neg G) (execValueCorrect x ρ)
+  execValueCorrect (prim k x) ρ =
+    cong (evalPrim k) (execValueCorrect x ρ)
 
-    reverseT : ∀ {n} → Code n → Env n → R → Cot n → Fin n → R
-    reverseT (tconst x) ρ c k i = zero
-    reverseT (tvar j) ρ c k i with eqFin j i
-    ... | false = zero
-    ... | true = mulR c one
-    reverseT (tadd e₁ e₂) ρ c k i =
-      addR (reverseT e₁ ρ c k i) (reverseT e₂ ρ c k i)
-    reverseT (tmul e₁ e₂) ρ c k i =
-      addR
-        (reverseT e₁ ρ (valueT e₂ ρ) k i)
-        (reverseT e₂ ρ (valueT e₁ ρ) k i)
-    reverseT (tneg e) ρ c k i = reverseT e ρ (negR c) k i
-    reverseT (tprim e) ρ c k i = reverseT e ρ (mulR c (derivPrim (valueT e ρ))) k i
+  accumulateCorrect : ∀ i c acc j →
+    accumulate i c acc j ≡
+    addR (acc j) (mulR c (indicator i j))
+  accumulateCorrect i c acc j with eqFin j i
+  ... | true =
+    cong (λ z → addR (acc j) z)
+      (Ring.mulOneR G c)
+  ... | false =
+    cong (λ z → addR (acc j) z)
+      (sym (Ring.zeroMulR G c))
 
-    reverseAccumCorrect : ∀ {n} (c₁ c₂ : Cot n) (i : Fin n) →
-      mulR one (lookupAccum i (accumulate c₁ c₂)) ≡
-      addR (mulR one (lookupAccum i c₁)) (mulR one (lookupAccum i c₂))
-    reverseAccumCorrect _ _ _ = refl
+  reverseAccumCorrect : ∀ e ρ c acc i →
+    reverseT (translate e) ρ c acc i ≡
+    addR (acc i) (mulR c (coeff e ρ i))
+  reverseAccumCorrect (const _) _ c acc i =
+    trans
+      (sym (Ring.addZeroR G (acc i)))
+      (cong (λ z → addR (acc i) z)
+        (sym (Ring.zeroMulR G c)))
+  reverseAccumCorrect (var j) _ c acc i =
+    accumulateCorrect j c acc i
+  reverseAccumCorrect (addE x y) ρ c acc i =
+    trans
+      (reverseAccumCorrect y ρ c (reverseT (translate x) ρ c acc) i)
+      (trans
+        (cong₂ (Ring.add G)
+          (reverseAccumCorrect x ρ c acc i)
+          refl)
+        (trans
+          (Ring.addAssoc G (acc i)
+            (mulR c (coeff x ρ i))
+            (mulR c (coeff y ρ i)))
+          (sym
+            (Ring.distrib G c (coeff x ρ i) (coeff y ρ i)))))
+  reverseAccumCorrect (mulE x y) ρ c acc i =
+    trans
+      (reverseAccumCorrect y ρ (mulR c (eval x ρ))
+        (reverseT (translate x) ρ (mulR c (eval y ρ)) acc) i)
+      (trans
+        (cong₂ (Ring.add G)
+          (reverseAccumCorrect x ρ (mulR c (eval y ρ)) acc i)
+          refl)
+        (trans
+          (Ring.addAssoc G (acc i)
+            (mulR (mulR c (eval y ρ)) (coeff x ρ i))
+            (mulR (mulR c (eval x ρ)) (coeff y ρ i)))
+          (trans
+            (cong₂ (Ring.add G)
+              (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
+              (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
+            (sym
+              (Ring.distrib G c
+                (mulR (eval y ρ) (coeff x ρ i))
+                (mulR (eval x ρ) (coeff y ρ i)))))))
+  reverseAccumCorrect (negE x) ρ c acc i =
+    trans
+      (reverseAccumCorrect x ρ (negR c) acc i)
+      (cong (λ z → addR (acc i) z)
+        (sym
+          (Ring.negScale G c (coeff x ρ i))))
+  reverseAccumCorrect (prim k x) ρ c acc i =
+    trans
+      (reverseAccumCorrect x ρ
+        (mulR c (derivPrim k (eval x ρ))) acc i)
+      (cong (λ z → addR (acc i) z)
+        (Ring.mulAssoc G c
+          (derivPrim k (eval x ρ))
+          (coeff x ρ i)))
 
-    lookupAccum : ∀ {n} → Fin n → Cot n → R
-    lookupAccum fzero (cotCons x _) = x
-    lookupAccum (fsuc i) (cotCons _ xs) = lookupAccum i xs
+  reverseCorrect : ∀ e ρ c i →
+    reverseT (translate e) ρ c zeroCot i ≡
+    mulR c (coeff e ρ i)
+  reverseCorrect e ρ c i =
+    trans
+      (reverseAccumCorrect e ρ c zeroCot i)
+      (Ring.addZeroL G (mulR c (coeff e ρ i)))
 
-    reverseCorrect : ∀ {n} (e : Expr n) (ρ : Env n) (c : R) (i : Fin n) →
-      reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i)
-    reverseCorrect (const x) ρ c i = refl
-    reverseCorrect (var j) ρ c i with eqFin j i
-    ... | false = refl
-    ... | true = refl
-    reverseCorrect (addE e₁ e₂) ρ c i = refl
-    reverseCorrect (mulE e₁ e₂) ρ c i = refl
-    reverseCorrect (negE e) ρ c i = refl
-    reverseCorrect (prim e) ρ c i = refl
+  sourceSize : Expr → Nat
+  sourceSize (const _) = suc 0
+  sourceSize (var _) = suc 0
+  sourceSize (addE x y) = suc (natPlus (sourceSize x) (sourceSize y))
+  sourceSize (mulE x y) = suc (natPlus (sourceSize x) (sourceSize y))
+  sourceSize (negE x) = suc (sourceSize x)
+  sourceSize (prim _ x) = suc (sourceSize x)
 
-    sourceSize : ∀ {n} → Expr n → Nat
-    sourceSize (const _) = suc zero
-    sourceSize (var _) = suc zero
-    sourceSize (addE e₁ e₂) = suc (sourceSize e₁ + sourceSize e₂)
-    sourceSize (mulE e₁ e₂) = suc (sourceSize e₁ + sourceSize e₂)
-    sourceSize (negE e) = suc (sourceSize e)
-    sourceSize (prim e) = suc (sourceSize e)
+  targetSize : Code → Nat
+  targetSize (tconst _) = suc 0
+  targetSize (tvar _) = suc 0
+  targetSize (tadd x y) = suc (natPlus (targetSize x) (targetSize y))
+  targetSize (tmul x y) = suc (natPlus (targetSize x) (targetSize y))
+  targetSize (tneg x) = suc (targetSize x)
+  targetSize (tprim _ x) = suc (targetSize x)
 
-    targetSize : ∀ {n} → Code n → Nat
-    targetSize (tconst _) = suc zero
-    targetSize (tvar _) = suc zero
-    targetSize (tadd e₁ e₂) = suc (targetSize e₁ + targetSize e₂)
-    targetSize (tmul e₁ e₂) = suc (targetSize e₁ + targetSize e₂)
-    targetSize (tneg e) = suc (targetSize e)
-    targetSize (tprim e) = suc (targetSize e)
+  translationSizeTheorem : ∀ e → targetSize (translate e) ≡ sourceSize e
+  translationSizeTheorem (const _) = refl
+  translationSizeTheorem (var _) = refl
+  translationSizeTheorem (addE x y) =
+    cong₂ (λ a b → suc (natPlus a b))
+      (translationSizeTheorem x) (translationSizeTheorem y)
+  translationSizeTheorem (mulE x y) =
+    cong₂ (λ a b → suc (natPlus a b))
+      (translationSizeTheorem x) (translationSizeTheorem y)
+  translationSizeTheorem (negE x) =
+    cong suc (translationSizeTheorem x)
+  translationSizeTheorem (prim _ x) =
+    cong suc (translationSizeTheorem x)
 
-    natPlus : Nat → Nat → Nat
-    natPlus zero n = n
-    natPlus (suc m) n = suc (natPlus m n)
+  forwardWork : Expr → Nat
+  forwardWork = sourceSize
 
-    translationSizeTheorem : ∀ {n} (e : Expr n) →
-      targetSize (translate e) ≡ sourceSize e
-    translationSizeTheorem (const x) = refl
-    translationSizeTheorem (var i) = refl
-    translationSizeTheorem (addE e₁ e₂) =
-      refl
-    translationSizeTheorem (mulE e₁ e₂) =
-      refl
-    translationSizeTheorem (negE e) = refl
-    translationSizeTheorem (prim e) = refl
+  reverseWork : Expr → Nat
+  reverseWork = sourceSize
 
-    forwardWork : ∀ {n} → Expr n → Nat
-    forwardWork e = targetSize (translate e)
+  forwardLinearTheorem : ∀ e → forwardWork e ≡ sourceSize e
+  forwardLinearTheorem _ = refl
 
-    reverseWork : ∀ {n} → Expr n → Nat
-    reverseWork e = sourceSize e
+  reverseLinearTheorem : ∀ e → reverseWork e ≡ sourceSize e
+  reverseLinearTheorem _ = refl
 
-    forwardLinearTheorem : ∀ {n} (e : Expr n) →
-      forwardWork e ≡ sourceSize e
-    forwardLinearTheorem e = translationSizeTheorem e
+  totalLinearTheorem : ∀ e →
+    natPlus (forwardWork e) (reverseWork e) ≡
+    natPlus (sourceSize e) (sourceSize e)
+  totalLinearTheorem _ = refl
 
-    reverseLinearTheorem : ∀ {n} (e : Expr n) →
-      reverseWork e ≡ sourceSize e
-    reverseLinearTheorem _ = refl
-
-    totalLinearTheorem : ∀ {n} (e : Expr n) →
-      natPlus (forwardWork e) (reverseWork e) ≡
-      natPlus (sourceSize e) (sourceSize e)
-    totalLinearTheorem _ = refl
-
-    completeEfficientCHADTheorem : ∀ {n} (e : Expr n) (ρ : Env n) (c : R) (i : Fin n) →
-      (targetSize (translate e) ≡ sourceSize e) ×
-      ((valueT (translate e) ρ ≡ eval e ρ)) ×
-      ((reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i))) ×
-      (natPlus (forwardWork e) (reverseWork e) ≡
-        natPlus (sourceSize e) (sourceSize e))
-    completeEfficientCHADTheorem e ρ c i =
-      translationSizeTheorem e ,
-      (execValueCorrect e ρ ,
-        (reverseCorrect e ρ c i , totalLinearTheorem e))
+  completeEfficientCHADTheorem : ∀ e ρ c i →
+    (targetSize (translate e) ≡ sourceSize e) ×
+    ((valueT (translate e) ρ ≡ eval e ρ)) ×
+    ((reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i))) ×
+    (natPlus (forwardWork e) (reverseWork e) ≡
+      natPlus (sourceSize e) (sourceSize e))
+  completeEfficientCHADTheorem e ρ c i =
+    translationSizeTheorem e ,
+    (execValueCorrect e ρ ,
+      (reverseCorrect e ρ c i , totalLinearTheorem e))
