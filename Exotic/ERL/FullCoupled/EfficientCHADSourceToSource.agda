@@ -39,10 +39,6 @@ record Ring : Set₁ where
     zeroMulR : ∀ x → x * zero ≡ zero
     negScale : ∀ x y → neg (x * y) ≡ neg x * y
 
-open Ring
-infixl 20 _+_
-infixl 30 _*_
-
 data Bool : Set where
   false true : Bool
 
@@ -64,6 +60,8 @@ eqFin (fsuc i) (fsuc j) = eqFin i j
 module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   open Ring G
   open UnaryPrimitives P
+  infixl 20 _+_
+  infixl 30 _*_
 
   Env : Set
   Env = Fin n → R
@@ -127,7 +125,7 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   coeff (var j) _ i = indicator j i
   coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i
   coeff (mul x y) ρ i =
-    eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i
+    (eval y ρ * coeff x ρ i) + (eval x ρ * coeff y ρ i)
   coeff (negE x) ρ i = neg (coeff x ρ i)
   coeff (prim k x) ρ i =
     derivPrim k (eval x ρ) * coeff x ρ i
@@ -185,8 +183,8 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseAccumCorrect : ∀ e ρ c acc i →
     reverseT (translate e) ρ c acc i ≡ acc i + c * coeff e ρ i
   reverseAccumCorrect (const _) _ c acc i =
-    trans (addZeroR (acc i))
-      (sym (cong (λ z → acc i + z) (zeroMulR c)))
+    trans (sym (addZeroR (acc i)))
+      (cong (λ z → acc i + z) (sym (zeroMulR c)))
   reverseAccumCorrect (var j) _ c acc i =
     accumulateCorrect j c acc i
   reverseAccumCorrect (add x y) ρ c acc i =
@@ -236,16 +234,16 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
       (addZeroL (c * coeff e ρ i))
 
   sourceSize : Expr → Nat
-  sourceSize (const _) = suc Nat.zero
-  sourceSize (var _) = suc Nat.zero
+  sourceSize (const _) = suc 0
+  sourceSize (var _) = suc 0
   sourceSize (add x y) = suc (natPlus (sourceSize x) (sourceSize y))
   sourceSize (mul x y) = suc (natPlus (sourceSize x) (sourceSize y))
   sourceSize (negE x) = suc (sourceSize x)
   sourceSize (prim _ x) = suc (sourceSize x)
 
   targetSize : Code → Nat
-  targetSize (tconst _) = suc Nat.zero
-  targetSize (tvar _) = suc Nat.zero
+  targetSize (tconst _) = suc 0
+  targetSize (tvar _) = suc 0
   targetSize (tadd x y) = suc (natPlus (targetSize x) (targetSize y))
   targetSize (tmul x y) = suc (natPlus (targetSize x) (targetSize y))
   targetSize (tneg x) = suc (targetSize x)
