@@ -161,7 +161,7 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
 
   invSqrtVJPChain : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
     invSqrtBack x c ≡ sqrtVJP x (invVJP (sqrt x) c)
-  invSqrtVJPChain x c = refl
+  invSqrtVJPChain _ _ c = refl
 
   scale : R → R → R
   scale x eps = mul x (invSqrt (add x eps))
