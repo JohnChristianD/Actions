@@ -284,11 +284,16 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseAccumCorrect (prim k x) ρ c acc i =
     trans
       (reverseAccumCorrect x ρ
-        (mulR c (derivPrim k (eval x ρ))) acc i)
-      (cong (λ z → addR (acc i) z)
-        (Ring.mulAssoc G c
-          (derivPrim k (eval x ρ))
-          (coeff x ρ i)))
+        (mulR c (derivPrim k (valueT (translate x) ρ))) acc i)
+      (trans
+        (cong (λ z → addR (acc i) z)
+          (Ring.mulAssoc G c
+            (derivPrim k (valueT (translate x) ρ))
+            (coeff x ρ i)))
+        (cong (λ z →
+          addR (acc i)
+            (mulR c (mulR z (coeff x ρ i))))
+          (cong (derivPrim k) (execValueCorrect x ρ))))
 
   reverseCorrect : ∀ e ρ c i →
     reverseT (translate e) ρ c zeroCot i ≡
