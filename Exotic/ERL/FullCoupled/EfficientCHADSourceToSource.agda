@@ -1,8 +1,22 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHADSourceToSource where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
+open import Agda.Builtin.Nat using (Nat; _+_; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
+
+sym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x
+sym refl = refl
+
+trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl q = q
+
+cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
+cong₂ : ∀ {A B C : Set} (f : A → B → C)
+  {x x' : A} {y y' : B} →
+  x ≡ x' → y ≡ y' → f x y ≡ f x' y'
+cong₂ f refl refl = refl
 
 ------------------------------------------------------------------------
 -- Finite, exact, source-to-source Efficient-CHAD transliteration.
@@ -10,8 +24,6 @@ open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
 -- cotangent accumulator. Correctness is pointwise at every finite input
 -- coordinate. The cost theorem is an exact finite node-cost theorem: one
 -- forward unit and one reverse unit per translated source node.
--- This is the kernel-verified finite core; it does not silently claim
--- machine-level sparse-array or closure-conversion costs outside this model.
 ------------------------------------------------------------------------
 
 record Ring : Set₁ where
@@ -145,16 +157,17 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseT (tprim k x) ρ c acc =
     reverseT x ρ (c * derivPrim k (valueT x ρ)) acc
 
-  exec : Code → Env → R → R × Cot
-  exec c ρ seed = valueT c ρ , reverseT c ρ seed zeroCot
-
   data _×_ (A B : Set) : Set where
     _,_ : A → B → A × B
 
-  cong₂ : ∀ {A B C : Set} (f : A → B → C)
-    {x x' : A} {y y' : B} →
-    x ≡ x' → y ≡ y' → f x y ≡ f x' y'
-  cong₂ f refl refl = refl
+  fst : ∀ {A B : Set} → A × B → A
+  fst (a , _) = a
+
+  snd : ∀ {A B : Set} → A × B → B
+  snd (_ , b) = b
+
+  exec : Code → Env → R → R × Cot
+  exec c ρ seed = valueT c ρ , reverseT c ρ seed zeroCot
 
   execValueCorrect : ∀ e ρ → valueT (translate e) ρ ≡ eval e ρ
   execValueCorrect (const _) _ = refl
@@ -169,14 +182,15 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   accumulateCorrect : ∀ i c acc j →
     accumulate i c acc j ≡ acc j + c * indicator i j
   accumulateCorrect i c acc j with eqFin j i
-  ... | true = cong (λ z → acc j + z) (sym (mulOneR c))
+  ... | true = cong (λ z → acc j + z) (mulOneR c)
   ... | false = sym (zeroMulR c)
 
   reverseAccumCorrect : ∀ e ρ c acc i →
     reverseT (translate e) ρ c acc i ≡
       acc i + c * coeff e ρ i
   reverseAccumCorrect (const _) _ c acc i =
-    trans (sym (zeroMulR c)) (sym (addZeroR (acc i)))
+    trans (addZeroR (acc i))
+      (sym (cong (λ z → acc i + z) (zeroMulR c)))
   reverseAccumCorrect (var j) _ c acc i =
     accumulateCorrect j c acc i
   reverseAccumCorrect (add x y) ρ c acc i =
@@ -224,20 +238,19 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
     c * coeff e ρ i
   reverseCorrect e ρ c i =
     trans (reverseAccumCorrect e ρ c zeroCot i)
-      (cong (λ z → z + c * coeff e ρ i)
-        (addZeroL (c * coeff e ρ i)))
+      (addZeroL (c * coeff e ρ i))
 
   sourceSize : Expr → Nat
-  sourceSize (const _) = suc zero
-  sourceSize (var _) = suc zero
+  sourceSize (const _) = suc Nat.zero
+  sourceSize (var _) = suc Nat.zero
   sourceSize (add x y) = suc (sourceSize x + sourceSize y)
   sourceSize (mul x y) = suc (sourceSize x + sourceSize y)
   sourceSize (negE x) = suc (sourceSize x)
   sourceSize (prim _ x) = suc (sourceSize x)
 
   targetSize : Code → Nat
-  targetSize (tconst _) = suc zero
-  targetSize (tvar _) = suc zero
+  targetSize (tconst _) = suc Nat.zero
+  targetSize (tvar _) = suc Nat.zero
   targetSize (tadd x y) = suc (targetSize x + targetSize y)
   targetSize (tmul x y) = suc (targetSize x + targetSize y)
   targetSize (tneg x) = suc (targetSize x)
