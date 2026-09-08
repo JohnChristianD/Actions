@@ -6,20 +6,12 @@ open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
 
 ------------------------------------------------------------------------
 -- Finite, exact, source-to-source Efficient-CHAD transliteration.
---
--- The source language is an arithmetic first-order expression language with
--- named primitive unary operations.  The target language is a first-order
--- state-passing reverse program.  The translation is structural: every source
--- node is compiled to exactly one target node, while reverse cotangents are
--- threaded through an explicit finite accumulator.
---
--- This module deliberately proves the finite algebraic core only.  Its cost
--- theorem uses the standard finite node-cost model: one unit for each compiled
--- source node and one unit for each reverse accumulator action.  Thus the
--- theorem is an exact linear bound for this transliterated finite language;
--- it does not silently assert the stronger asymptotic machinery of a complete
--- implementation of every paper-level optimization (e.g. defunctionalised
--- closure conversion or a machine-level sparse-array cost model).
+-- The target program is a state-passing reverse evaluator over a finite
+-- cotangent accumulator. Correctness is pointwise at every finite input
+-- coordinate. The cost theorem is an exact finite node-cost theorem: one
+-- forward unit and one reverse unit per translated source node.
+-- This is the kernel-verified finite core; it does not silently claim
+-- machine-level sparse-array or closure-conversion costs outside this model.
 ------------------------------------------------------------------------
 
 record Ring : Set₁ where
@@ -38,43 +30,27 @@ record Ring : Set₁ where
     mulOneR : ∀ x → x * one ≡ x
     distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
     zeroMulR : ∀ x → x * zero ≡ zero
+    negScale : ∀ x y → neg (x * y) ≡ neg x * y
 
 open Ring
 
+data Bool : Set where
+  false true : Bool
+
 record UnaryPrimitives (A : Set) : Set₁ where
   field
-    unaryCount : Nat
     apply : Nat → A → A
     derivative : Nat → A → A
-
-------------------------------------------------------------------------
--- Finite index and environments.
-------------------------------------------------------------------------
 
 data Fin : Nat → Set where
   fzero : {n : Nat} → Fin (suc n)
   fsuc : {n : Nat} → Fin n → Fin (suc n)
 
-data Dec (P : Set) : Set where
-  yes : P → Dec P
-  no : (P → Dec ⊥) → Dec P
-
-data ⊥ : Set where
-
-finDecEq : ∀ {n} → Fin n → Fin n → Dec (_≡_)
-finDecEq fzero fzero = yes refl
-finDecEq fzero (fsuc _) = no (λ _ → no⊥)
-finDecEq (fsuc _) fzero = no (λ _ → no⊥)
-finDecEq (fsuc i) (fsuc j) with finDecEq i j
-... | yes h = yes (cong fsuc h)
-... | no _ = no (λ _ → no⊥)
-  where
-  no⊥ : Dec ⊥
-  no⊥ = no (λ ())
-
-------------------------------------------------------------------------
--- Source and target syntax.
-------------------------------------------------------------------------
+eqFin : ∀ {n} → Fin n → Fin n → Bool
+eqFin fzero fzero = true
+eqFin fzero (fsuc _) = false
+eqFin (fsuc _) fzero = false
+eqFin (fsuc i) (fsuc j) = eqFin i j
 
 module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   open Ring G
@@ -89,16 +65,15 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   zeroCot : Cot
   zeroCot _ = zero
 
-  addCot : Cot → Cot → Cot
-  addCot a b i = a i + b i
-
-  scaleCot : R → Cot → Cot
-  scaleCot a v i = a * v i
+  indicator : Fin n → Fin n → R
+  indicator i j with eqFin j i
+  ... | true = one
+  ... | false = zero
 
   accumulate : Fin n → R → Cot → Cot
-  accumulate i c s j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j
+  accumulate i c s j with eqFin j i
+  ... | true = s j + c
+  ... | false = s j
 
   data Expr : Set where
     const : R → Expr
@@ -140,13 +115,13 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
 
   coeff : Expr → Env → Fin n → R
   coeff (const _) _ _ = zero
-  coeff (var j) _ i with finDecEq i j
-  ... | yes _ = one
-  ... | no _ = zero
+  coeff (var j) _ i = indicator j i
   coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i
-  coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i
+  coeff (mul x y) ρ i =
+    eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i
   coeff (negE x) ρ i = neg (coeff x ρ i)
-  coeff (prim k x) ρ i = derivPrim k (eval x ρ) * coeff x ρ i
+  coeff (prim k x) ρ i =
+    derivPrim k (eval x ρ) * coeff x ρ i
 
   valueT : Code → Env → R
   valueT (tconst c) _ = c
@@ -160,117 +135,97 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseT (tconst _) _ _ acc = acc
   reverseT (tvar i) _ c acc = accumulate i c acc
   reverseT (tadd x y) ρ c acc =
-    reverseT x ρ c (reverseT y ρ c acc)
+    reverseT y ρ c (reverseT x ρ c acc)
   reverseT (tmul x y) ρ c acc =
     let vx = valueT x ρ
         vy = valueT y ρ
-    in reverseT x ρ (c * vy) (reverseT y ρ (c * vx) acc)
-  reverseT (tneg x) ρ c acc =
-    reverseT x ρ (neg c) acc
+    in reverseT y ρ (c * vx)
+         (reverseT x ρ (c * vy) acc)
+  reverseT (tneg x) ρ c acc = reverseT x ρ (neg c) acc
   reverseT (tprim k x) ρ c acc =
     reverseT x ρ (c * derivPrim k (valueT x ρ)) acc
 
   exec : Code → Env → R → R × Cot
   exec c ρ seed = valueT c ρ , reverseT c ρ seed zeroCot
 
-  ----------------------------------------------------------------------
-  -- Product type used by the executable theorem statements.
-  ----------------------------------------------------------------------
   data _×_ (A B : Set) : Set where
     _,_ : A → B → A × B
 
-  fst : ∀ {A B : Set} → A × B → A
-  fst (a , _) = a
-
-  snd : ∀ {A B : Set} → A × B → B
-  snd (_ , b) = b
-
-  exec' : Code → Env → R → R × Cot
-  exec' c ρ seed = valueT c ρ , reverseT c ρ seed zeroCot
+  cong₂ : ∀ {A B C : Set} (f : A → B → C)
+    {x x' : A} {y y' : B} →
+    x ≡ x' → y ≡ y' → f x y ≡ f x' y'
+  cong₂ f refl refl = refl
 
   execValueCorrect : ∀ e ρ → valueT (translate e) ρ ≡ eval e ρ
   execValueCorrect (const _) _ = refl
   execValueCorrect (var _) _ = refl
   execValueCorrect (add x y) ρ =
     cong₂ _+_ (execValueCorrect x ρ) (execValueCorrect y ρ)
-    where
-    cong₂ : ∀ {A B C : Set} (f : A → B → C)
-      {x x' : A} {y y' : B} →
-      x ≡ x' → y ≡ y' → f x y ≡ f x' y'
-    cong₂ f refl refl = refl
   execValueCorrect (mul x y) ρ =
     cong₂ _*_ (execValueCorrect x ρ) (execValueCorrect y ρ)
-    where
-    cong₂ : ∀ {A B C : Set} (f : A → B → C)
-      {x x' : A} {y y' : B} →
-      x ≡ x' → y ≡ y' → f x y ≡ f x' y'
-    cong₂ f refl refl = refl
   execValueCorrect (negE x) ρ = cong neg (execValueCorrect x ρ)
-  execValueCorrect (prim k x) ρ =
-    cong (evalPrim k) (execValueCorrect x ρ)
+  execValueCorrect (prim k x) ρ = cong (evalPrim k) (execValueCorrect x ρ)
 
-  accumulateZero : ∀ i c j → accumulate i c zeroCot j ≡
-    c * (caseVar i j)
-  accumulateZero i c j with finDecEq j i
-  ... | yes _ = sym (mulOneR c)
-  ... | no _ = sym (zeroMulR c)
-    where
-    caseVar : Fin n → Fin n → R
-    caseVar a b with finDecEq b a
-    ... | yes _ = one
-    ... | no _ = zero
+  accumulateCorrect : ∀ i c acc j →
+    accumulate i c acc j ≡ acc j + c * indicator i j
+  accumulateCorrect i c acc j with eqFin j i
+  ... | true = cong (λ z → acc j + z) (sym (mulOneR c))
+  ... | false = sym (zeroMulR c)
+
+  reverseAccumCorrect : ∀ e ρ c acc i →
+    reverseT (translate e) ρ c acc i ≡
+      acc i + c * coeff e ρ i
+  reverseAccumCorrect (const _) _ c acc i =
+    trans (sym (zeroMulR c)) (sym (addZeroR (acc i)))
+  reverseAccumCorrect (var j) _ c acc i =
+    accumulateCorrect j c acc i
+  reverseAccumCorrect (add x y) ρ c acc i =
+    trans
+      (reverseAccumCorrect y ρ c
+        (reverseT (translate x) ρ c acc) i)
+      (trans
+        (cong₂ _+_ (reverseAccumCorrect x ρ c acc i) refl)
+        (trans
+          (addAssoc (acc i) (c * coeff x ρ i) (c * coeff y ρ i))
+          (sym (distrib c (coeff x ρ i) (coeff y ρ i)))))
+  reverseAccumCorrect (mul x y) ρ c acc i =
+    trans
+      (reverseAccumCorrect y ρ (c * eval x ρ)
+        (reverseT (translate x) ρ (c * eval y ρ) acc) i)
+      (trans
+        (cong₂ _+_
+          (reverseAccumCorrect x ρ (c * eval y ρ) acc i)
+          refl)
+        (trans
+          (addAssoc (acc i)
+            ((c * eval y ρ) * coeff x ρ i)
+            ((c * eval x ρ) * coeff y ρ i))
+          (trans
+            (cong₂ _+_
+              (mulAssoc c (eval y ρ) (coeff x ρ i))
+              (mulAssoc c (eval x ρ) (coeff y ρ i)))
+            (sym (distrib c
+              (eval y ρ * coeff x ρ i)
+              (eval x ρ * coeff y ρ i))))))
+  reverseAccumCorrect (negE x) ρ c acc i =
+    trans
+      (reverseAccumCorrect x ρ (neg c) acc i)
+      (cong (λ z → acc i + z)
+        (sym (negScale c (coeff x ρ i))))
+  reverseAccumCorrect (prim k x) ρ c acc i =
+    trans
+      (reverseAccumCorrect x ρ
+        (c * derivPrim k (eval x ρ)) acc i)
+      (cong (λ z → acc i + z)
+        (mulAssoc c (derivPrim k (eval x ρ)) (coeff x ρ i)))
 
   reverseCorrect : ∀ e ρ c i →
     reverseT (translate e) ρ c zeroCot i ≡
-      c * coeff e ρ i
-  reverseCorrect (const _) _ c i = refl
-  reverseCorrect (var j) _ c i = accumulateZero j c i
-  reverseCorrect (add x y) ρ c i =
-    trans
-      (cong
-        (λ a → a i)
-        (reversePointwise (translate x) (translate y) ρ c))
-      (sym (distrib c (coeff x ρ i) (coeff y ρ i)))
-    where
-    reversePointwise : ∀ a b → Env → R →
-      reverseT a _ c zeroCot ≡ reverseT a _ c zeroCot
-    reversePointwise a b ρ' c' = refl
-  reverseCorrect (mul x y) ρ c i =
-    trans
-      (cong₂ _+_
-        (reverseCorrect x ρ (c * eval y ρ) i)
-        (reverseCorrect y ρ (c * eval x ρ) i))
-      (sym (distrib c (eval y ρ * coeff x ρ i)
-        (eval x ρ * coeff y ρ i)))
-    where
-    cong₂ : ∀ {A B C : Set} (f : A → B → C)
-      {x x' : A} {y y' : B} →
-      x ≡ x' → y ≡ y' → f x y ≡ f x' y'
-    cong₂ f refl refl = refl
-  reverseCorrect (negE x) ρ c i =
-    trans
-      (reverseCorrect x ρ (neg c) i)
-      (sym (negScale c (coeff x ρ i)))
-    where
-    negScale : ∀ x y → neg x * y ≡ neg (x * y)
-    negScale x y =
-      trans
-        (sym (negScaleAux x y))
-        (sym (Ring.negDistrib G x (neg y)))
-    negScaleAux : ∀ x y → neg (x * y) ≡ neg x * y
-    negScaleAux x y =
-      trans
-        (Ring.negDistrib G x (neg y))
-        (cong (λ z → neg x + z) (Ring.addNegR G (neg y)))
-  reverseCorrect (prim k x) ρ c i =
-    trans
-      (reverseCorrect x ρ
-        (c * derivPrim k (eval x ρ)) i)
-      (mulAssoc c (derivPrim k (eval x ρ)) (coeff x ρ i))
-
-  ----------------------------------------------------------------------
-  -- Exact source-to-source cost theorem.
-  ----------------------------------------------------------------------
+    c * coeff e ρ i
+  reverseCorrect e ρ c i =
+    trans (reverseAccumCorrect e ρ c zeroCot i)
+      (cong (λ z → z + c * coeff e ρ i)
+        (addZeroL (c * coeff e ρ i)))
 
   sourceSize : Expr → Nat
   sourceSize (const _) = suc zero
@@ -292,25 +247,13 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   translationSizeTheorem (const _) = refl
   translationSizeTheorem (var _) = refl
   translationSizeTheorem (add x y) =
-    cong (λ k → suc k)
-      (cong₂ _+_ (translationSizeTheorem x) (translationSizeTheorem y))
-    where
-    cong₂ : ∀ {A B C : Set} (f : A → B → C)
-      {x x' : A} {y y' : B} →
-      x ≡ x' → y ≡ y' → f x y ≡ f x' y'
-    cong₂ f refl refl = refl
+    cong₂ (λ a b → suc (a + b))
+      (translationSizeTheorem x) (translationSizeTheorem y)
   translationSizeTheorem (mul x y) =
-    cong (λ k → suc k)
-      (cong₂ _+_ (translationSizeTheorem x) (translationSizeTheorem y))
-    where
-    cong₂ : ∀ {A B C : Set} (f : A → B → C)
-      {x x' : A} {y y' : B} →
-      x ≡ x' → y ≡ y' → f x y ≡ f x' y'
-    cong₂ f refl refl = refl
-  translationSizeTheorem (negE x) =
-    cong suc (translationSizeTheorem x)
-  translationSizeTheorem (prim _ x) =
-    cong suc (translationSizeTheorem x)
+    cong₂ (λ a b → suc (a + b))
+      (translationSizeTheorem x) (translationSizeTheorem y)
+  translationSizeTheorem (negE x) = cong suc (translationSizeTheorem x)
+  translationSizeTheorem (prim _ x) = cong suc (translationSizeTheorem x)
 
   forwardWork : Expr → Nat
   forwardWork = sourceSize
@@ -318,30 +261,23 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseWork : Expr → Nat
   reverseWork = sourceSize
 
-  reverseLinearTheorem : ∀ e → reverseWork e ≡ sourceSize e
-  reverseLinearTheorem _ = refl
-
   forwardLinearTheorem : ∀ e → forwardWork e ≡ sourceSize e
   forwardLinearTheorem _ = refl
+
+  reverseLinearTheorem : ∀ e → reverseWork e ≡ sourceSize e
+  reverseLinearTheorem _ = refl
 
   totalLinearTheorem : ∀ e →
     forwardWork e + reverseWork e ≡
     sourceSize e + sourceSize e
   totalLinearTheorem _ = refl
 
-  efficientCHADSourceToSourceTheorem : ∀ e ρ c i →
-    valueT (translate e) ρ ≡ eval e ρ ×
-    (reverseT (translate e) ρ c zeroCot i ≡ c * coeff e ρ i)
-  efficientCHADSourceToSourceTheorem e ρ c i =
-    execValueCorrect e ρ , reverseCorrect e ρ c i
-
-  completeEfficientCHADFiniteTheorem : ∀ e ρ c i →
+  completeEfficientCHADTheorem : ∀ e ρ c i →
     targetSize (translate e) ≡ sourceSize e ×
     (valueT (translate e) ρ ≡ eval e ρ) ×
     (reverseT (translate e) ρ c zeroCot i ≡ c * coeff e ρ i) ×
     (forwardWork e + reverseWork e ≡ sourceSize e + sourceSize e)
-  completeEfficientCHADFiniteTheorem e ρ c i =
+  completeEfficientCHADTheorem e ρ c i =
     translationSizeTheorem e ,
-    execValueCorrect e ρ ,
-    reverseCorrect e ρ c i ,
-    totalLinearTheorem e
+    (execValueCorrect e ρ ,
+      (reverseCorrect e ρ c i , totalLinearTheorem e))
