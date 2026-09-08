@@ -120,7 +120,281 @@ record OrderedRing : Set₁ where
     ltAdd : ∀ x y z → lt x y → lt (Ring._+_ base x z) (Ring._+_ base y z)
     ltMulPos : ∀ x y → lt (Ring.zero base) y → lt x (Ring.zero base) → lt (Ring._*_ base x y) (Ring.zero base)
 
-record SemiringRational (A : Set) : Set₁ where
+------------------------------------------------------------------------
+-- Seven coupled parameter blocks and finite parameter indices
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+
+data Block : Set where
+  critic representation actor lstm trace idbd hyper : Block
+
+record SevenBlockSizes : Set where
+  field size : Block → Nat
+
+ParamIndex : SevenBlockSizes → Set
+ParamIndex s = Σ Block (λ b → Fin (SevenBlockSizes.size s b))
+
+blockDecEq : (a b : Block) → Dec (a ≡ b)
+blockDecEq critic critic = yes refl
+blockDecEq critic representation = no (λ ())
+blockDecEq critic actor = no (λ ())
+blockDecEq critic lstm = no (λ ())
+blockDecEq critic trace = no (λ ())
+blockDecEq critic idbd = no (λ ())
+blockDecEq critic hyper = no (λ ())
+blockDecEq representation critic = no (λ ())
+blockDecEq representation representation = yes refl
+blockDecEq representation actor = no (λ ())
+blockDecEq representation lstm = no (λ ())
+blockDecEq representation trace = no (λ ())
+blockDecEq representation idbd = no (λ ())
+blockDecEq representation hyper = no (λ ())
+blockDecEq actor critic = no (λ ())
+blockDecEq actor representation = no (λ ())
+blockDecEq actor actor = yes refl
+blockDecEq actor lstm = no (λ ())
+blockDecEq actor trace = no (λ ())
+blockDecEq actor idbd = no (λ ())
+blockDecEq actor hyper = no (λ ())
+blockDecEq lstm critic = no (λ ())
+blockDecEq lstm representation = no (λ ())
+blockDecEq lstm actor = no (λ ())
+blockDecEq lstm lstm = yes refl
+blockDecEq lstm trace = no (λ ())
+blockDecEq lstm idbd = no (λ ())
+blockDecEq lstm hyper = no (λ ())
+blockDecEq trace critic = no (λ ())
+blockDecEq trace representation = no (λ ())
+blockDecEq trace actor = no (λ ())
+blockDecEq trace lstm = no (λ ())
+blockDecEq trace trace = yes refl
+blockDecEq trace idbd = no (λ ())
+blockDecEq trace hyper = no (λ ())
+blockDecEq idbd critic = no (λ ())
+blockDecEq idbd representation = no (λ ())
+blockDecEq idbd actor = no (λ ())
+blockDecEq idbd lstm = no (λ ())
+blockDecEq idbd trace = no (λ ())
+blockDecEq idbd idbd = yes refl
+blockDecEq idbd hyper = no (λ ())
+blockDecEq hyper critic = no (λ ())
+blockDecEq hyper representation = no (λ ())
+blockDecEq hyper actor = no (λ ())
+blockDecEq hyper lstm = no (λ ())
+blockDecEq hyper trace = no (λ ())
+blockDecEq hyper idbd = no (λ ())
+blockDecEq hyper hyper = yes refl
+
+paramIndexDecEq : (s : SevenBlockSizes) → (i j : ParamIndex s) → Dec (i ≡ j)
+paramIndexDecEq s (b₁ , i₁) (b₂ , i₂) with blockDecEq b₁ b₂
+... | no h = no (λ { refl → h refl })
+... | yes refl with finDecEq i₁ i₂
+...   | no h = no (λ { refl → h refl })
+...   | yes refl = yes refl
+
+------------------------------------------------------------------------
+-- Efficient CHAD core: exact finite reverse pass + local accumulation state.
+-- Only the efficient state-passing reverse layer is retained.
+-- CHAD implementation is recreated.
+------------------------------------------------------------------------
+
+module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
+  open SmoothAlgebra S
+  Rg = OrderedRing.ring orderedRing
+  R = Ring.R Rg
+  Env = Fin n → R
+  Cot = Fin n → R
+
+  basis : Fin n → Cot
+  basis j i with finDecEq i j
+  ... | yes _ = one
+  ... | no _ = zero
+
+  zeroCot : Cot
+  zeroCot _ = zero
+
+  addCot : Cot → Cot → Cot
+  addCot a b i = a i + b i
+
+  scaleCot : R → Cot → Cot
+  scaleCot a v i = a * v i
+
+  negCot : Cot → Cot
+  negCot v i = neg (v i)
+
+  data Expr : Set where
+    const : R → Expr
+    var : Fin n → Expr
+    add : Expr → Expr → Expr
+    mul : Expr → Expr → Expr
+    negE : Expr → Expr
+    expE : Expr → Expr
+    logE : Expr → Expr
+    tanhE : Expr → Expr
+    sigmoidE : Expr → Expr
+
+  eval : Expr → Env → R
+  eval (const c) _ = c
+  eval (var i) ρ = ρ i
+  eval (add x y) ρ = eval x ρ + eval y ρ
+  eval (mul x y) ρ = eval x ρ * eval y ρ
+  eval (negE x) ρ = neg (eval x ρ)
+  eval (expE x) ρ = exp (eval x ρ)
+  eval (logE x) ρ = log (eval x ρ)
+  eval (tanhE x) ρ = tanh (eval x ρ)
+  eval (sigmoidE x) ρ = sigmoid (eval x ρ)
+
+  coeff : Expr → Env → Fin n → R
+  coeff (const _) _ _ = zero
+  coeff (var j) _ i with finDecEq i j
+  ... | yes _ = one
+  ... | no _ = zero
+  coeff (add x y) ρ i = coeff x ρ i + coeff y ρ i
+  coeff (mul x y) ρ i = eval y ρ * coeff x ρ i + eval x ρ * coeff y ρ i
+  coeff (negE x) ρ i = neg (coeff x ρ i)
+  coeff (expE x) ρ i = dexp (eval x ρ) * coeff x ρ i
+  coeff (logE x) ρ i = dlog (eval x ρ) * coeff x ρ i
+  coeff (tanhE x) ρ i = dtanh (eval x ρ) * coeff x ρ i
+  coeff (sigmoidE x) ρ i = dsigmoid (eval x ρ) * coeff x ρ i
+
+  record Pullback : Set where
+    field
+      value : R
+      back : R → Cot
+
+  open Pullback
+
+  pull : Expr → Env → Pullback
+  pull (const c) _ = record { value = c ; back = λ _ → zeroCot }
+  pull (var i) ρ = record { value = ρ i ; back = λ c → scaleCot c (basis i) }
+  pull (add x y) ρ =
+    let px = pull x ρ
+        py = pull y ρ
+    in record
+      { value = value px + value py
+      ; back = λ c → addCot (back px c) (back py c)
+      }
+  pull (mul x y) ρ =
+    let px = pull x ρ
+        py = pull y ρ
+        vx = value px
+        vy = value py
+    in record
+      { value = vx * vy
+      ; back = λ c → addCot (back px (c * vy)) (back py (c * vx))
+      }
+  pull (negE x) ρ =
+    let px = pull x ρ
+    in record { value = neg (value px) ; back = λ c → negCot (back px c) }
+  pull (expE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = exp vx ; back = λ c → back px (c * dexp vx) }
+  pull (logE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = log vx ; back = λ c → back px (c * dlog vx) }
+  pull (tanhE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = tanh vx ; back = λ c → back px (c * dtanh vx) }
+  pull (sigmoidE x) ρ =
+    let px = pull x ρ
+        vx = value px
+    in record { value = sigmoid vx ; back = λ c → back px (c * dsigmoid vx) }
+
+  primalCorrect : ∀ e ρ → Pullback.value (pull e ρ) ≡ eval e ρ
+  primalCorrect (const _) _ = refl
+  primalCorrect (var _) _ = refl
+  primalCorrect (add x y) ρ = cong₂ _+_ (primalCorrect x ρ) (primalCorrect y ρ)
+  primalCorrect (mul x y) ρ = cong₂ _*_ (primalCorrect x ρ) (primalCorrect y ρ)
+  primalCorrect (negE x) ρ = cong neg (primalCorrect x ρ)
+  primalCorrect (expE x) ρ = cong exp (primalCorrect x ρ)
+  primalCorrect (logE x) ρ = cong log (primalCorrect x ρ)
+  primalCorrect (tanhE x) ρ = cong tanh (primalCorrect x ρ)
+  primalCorrect (sigmoidE x) ρ = cong sigmoid (primalCorrect x ρ)
+
+  vjpCoeff : ∀ e ρ c i → Pullback.back (pull e ρ) c i ≡ c * coeff e ρ i
+  vjpCoeff (const _) _ c _ = sym (Ring.zeroMulR Rg c)
+  vjpCoeff (var j) _ c i with finDecEq i j
+  ... | yes _ = sym (Ring.mulOneR Rg c)
+  ... | no _ = sym (Ring.zeroMulR Rg c)
+  vjpCoeff (add x y) ρ c i =
+    trans
+      (cong₂ _+_ (vjpCoeff x ρ c i) (vjpCoeff y ρ c i))
+      (sym (Ring.distrib Rg c (coeff x ρ i) (coeff y ρ i)))
+  vjpCoeff (mul x y) ρ c i =
+    trans
+      (cong₂ _+_
+        (vjpCoeff x ρ (c * eval y ρ) i)
+        (vjpCoeff y ρ (c * eval x ρ) i))
+      (sym (Ring.distrib Rg c (eval y ρ * coeff x ρ i) (eval x ρ * coeff y ρ i)))
+  vjpCoeff (negE x) ρ c i =
+    trans (cong neg (vjpCoeff x ρ c i)) (sym (Ring.negScale Rg c (coeff x ρ i)))
+  vjpCoeff (expE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dexp (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dexp (eval x ρ)) (coeff x ρ i))
+  vjpCoeff (logE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dlog (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dlog (eval x ρ)) (coeff x ρ i))
+  vjpCoeff (tanhE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dtanh (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dtanh (eval x ρ)) (coeff x ρ i))
+  vjpCoeff (sigmoidE x) ρ c i =
+    trans (vjpCoeff x ρ (c * dsigmoid (eval x ρ)) i)
+      (Ring.mulAssoc Rg c (dsigmoid (eval x ρ)) (coeff x ρ i))
+
+  data EState : Set where
+    state : Cot → EState
+
+  runState : EState → Cot
+  runState (state c) = c
+
+  accumulate : Fin n → R → EState → EState
+  accumulateAt : Fin n -> R -> Cot -> Cot
+  accumulateAt i c s j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j
+
+  accumulate i c (state s) = state (accumulateAt i c s)
+
+  runBack : ∀ e ρ c → EState → EState
+  runBack e ρ c s =
+    let b = Pullback.back (pull e ρ) c in
+    state (λ i → runState s i + b i)
+
+  runBackZero : ∀ e ρ c i →
+    runState (runBack e ρ c (state zeroCot)) i ≡ c * coeff e ρ i
+  runBackZero e ρ c i =
+    trans (Ring.addZeroL Rg (Pullback.back (pull e ρ) c i))
+      (vjpCoeff e ρ c i)
+
+
+------------------------------------------------------------------------
+-- Concrete neural network components
+------------------------------------------------------------------------
+
+record Affine (S : SmoothAlgebra) (din dout : Nat) : Set where
+  field
+    weight : MatS S dout din
+    bias : VecS S dout
+
+record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
+  field
+    gain shift : VecS S d
+    epsilon : Scalar S
+    epsilonPositive : zero < epsilon
+
+record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where
+  field
+    inputWeight : MatS S hidden input
+    recurrentWeight : MatS S hidden hidden
+    bias : VecS S hidden
+    norm : LayerNorm S hidden
+
+record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where
   field
     qnum qden : A
     qdenNonzero : qden ≡ qden
