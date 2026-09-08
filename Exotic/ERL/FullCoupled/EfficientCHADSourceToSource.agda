@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHADSourceToSource where
 
-open import Agda.Builtin.Nat using (Nat; _+_; suc)
+open import Agda.Builtin.Nat using (Nat; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 sym : ∀ {A : Set} {x y : A} → x ≡ y → y ≡ x
@@ -14,17 +14,12 @@ cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
 cong f refl = refl
 
 cong₂ : ∀ {A B C : Set} (f : A → B → C)
-  {x x' : A} {y y' : B} →
-  x ≡ x' → y ≡ y' → f x y ≡ f x' y'
+  {x x' : A} {y y' : B} → x ≡ x' → y ≡ y' → f x y ≡ f x' y'
 cong₂ f refl refl = refl
 
-------------------------------------------------------------------------
--- Finite, exact, source-to-source Efficient-CHAD transliteration.
--- The target program is a state-passing reverse evaluator over a finite
--- cotangent accumulator. Correctness is pointwise at every finite input
--- coordinate. The cost theorem is an exact finite node-cost theorem: one
--- forward unit and one reverse unit per translated source node.
-------------------------------------------------------------------------
+natPlus : Nat → Nat → Nat
+natPlus 0 y = y
+natPlus (suc x) y = suc (natPlus x y)
 
 record Ring : Set₁ where
   field
@@ -186,8 +181,7 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   ... | false = sym (zeroMulR c)
 
   reverseAccumCorrect : ∀ e ρ c acc i →
-    reverseT (translate e) ρ c acc i ≡
-      acc i + c * coeff e ρ i
+    reverseT (translate e) ρ c acc i ≡ acc i + c * coeff e ρ i
   reverseAccumCorrect (const _) _ c acc i =
     trans (addZeroR (acc i))
       (sym (cong (λ z → acc i + z) (zeroMulR c)))
@@ -234,8 +228,7 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
         (mulAssoc c (derivPrim k (eval x ρ)) (coeff x ρ i)))
 
   reverseCorrect : ∀ e ρ c i →
-    reverseT (translate e) ρ c zeroCot i ≡
-    c * coeff e ρ i
+    reverseT (translate e) ρ c zeroCot i ≡ c * coeff e ρ i
   reverseCorrect e ρ c i =
     trans (reverseAccumCorrect e ρ c zeroCot i)
       (addZeroL (c * coeff e ρ i))
@@ -243,16 +236,16 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   sourceSize : Expr → Nat
   sourceSize (const _) = suc Nat.zero
   sourceSize (var _) = suc Nat.zero
-  sourceSize (add x y) = suc (sourceSize x + sourceSize y)
-  sourceSize (mul x y) = suc (sourceSize x + sourceSize y)
+  sourceSize (add x y) = suc (natPlus (sourceSize x) (sourceSize y))
+  sourceSize (mul x y) = suc (natPlus (sourceSize x) (sourceSize y))
   sourceSize (negE x) = suc (sourceSize x)
   sourceSize (prim _ x) = suc (sourceSize x)
 
   targetSize : Code → Nat
   targetSize (tconst _) = suc Nat.zero
   targetSize (tvar _) = suc Nat.zero
-  targetSize (tadd x y) = suc (targetSize x + targetSize y)
-  targetSize (tmul x y) = suc (targetSize x + targetSize y)
+  targetSize (tadd x y) = suc (natPlus (targetSize x) (targetSize y))
+  targetSize (tmul x y) = suc (natPlus (targetSize x) (targetSize y))
   targetSize (tneg x) = suc (targetSize x)
   targetSize (tprim _ x) = suc (targetSize x)
 
@@ -260,10 +253,10 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   translationSizeTheorem (const _) = refl
   translationSizeTheorem (var _) = refl
   translationSizeTheorem (add x y) =
-    cong₂ (λ a b → suc (a + b))
+    cong₂ (λ a b → suc (natPlus a b))
       (translationSizeTheorem x) (translationSizeTheorem y)
   translationSizeTheorem (mul x y) =
-    cong₂ (λ a b → suc (a + b))
+    cong₂ (λ a b → suc (natPlus a b))
       (translationSizeTheorem x) (translationSizeTheorem y)
   translationSizeTheorem (negE x) = cong suc (translationSizeTheorem x)
   translationSizeTheorem (prim _ x) = cong suc (translationSizeTheorem x)
@@ -281,15 +274,16 @@ module Language (G : Ring) (P : UnaryPrimitives (Ring.R G)) (n : Nat) where
   reverseLinearTheorem _ = refl
 
   totalLinearTheorem : ∀ e →
-    forwardWork e + reverseWork e ≡
-    sourceSize e + sourceSize e
+    natPlus (forwardWork e) (reverseWork e) ≡
+    natPlus (sourceSize e) (sourceSize e)
   totalLinearTheorem _ = refl
 
   completeEfficientCHADTheorem : ∀ e ρ c i →
     targetSize (translate e) ≡ sourceSize e ×
     (valueT (translate e) ρ ≡ eval e ρ) ×
     (reverseT (translate e) ρ c zeroCot i ≡ c * coeff e ρ i) ×
-    (forwardWork e + reverseWork e ≡ sourceSize e + sourceSize e)
+    (natPlus (forwardWork e) (reverseWork e) ≡
+      natPlus (sourceSize e) (sourceSize e))
   completeEfficientCHADTheorem e ρ c i =
     translationSizeTheorem e ,
     (execValueCorrect e ρ ,
