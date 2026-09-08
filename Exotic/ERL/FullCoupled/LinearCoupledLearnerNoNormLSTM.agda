@@ -28,6 +28,9 @@ record Ring : Set₁ where
     zeroMulL : ∀ x → zero * x ≡ zero
     zeroMulR : ∀ x → x * zero ≡ zero
 
+infixl 6 _+_
+infixl 7 _*_
+
 module Learner (A : Ring) (n : Nat) where
   open Ring A
 
