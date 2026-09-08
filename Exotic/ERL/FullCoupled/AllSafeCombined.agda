@@ -83,7 +83,7 @@ module Learner where
       coupledUpdate alpha (tdError target (linearQ w φ)) rho w φ
 
     exploreScore : R → R → R → R
-    exploreScore q bonus epsilon = q + epsilon * bonus
+    exploreScore q bonus epsilon = q + (epsilon * bonus)
 
     exploreVector : R → Vec n → Vec n → Vec n
     exploreVector epsilon q bonus =
@@ -109,7 +109,7 @@ module Learner where
 
     explorationScoreExpanded :
       ∀ q bonus epsilon →
-      exploreScore q bonus epsilon ≡ q + epsilon * bonus
+      exploreScore q bonus epsilon ≡ q + (epsilon * bonus)
     explorationScoreExpanded q bonus epsilon = refl
 
     explorationVectorExpanded :
@@ -195,10 +195,10 @@ module Recurrent where
         s = snd input
         h = LSTMState.hidden s
         c = LSTMState.cell s
-        rf = run (gateNode (LSTMPrimitives.forgetGate ops)) (x , h)
-        ri = run (gateNode (LSTMPrimitives.inputGate ops)) (x , h)
-        ro = run (gateNode (LSTMPrimitives.outputGate ops)) (x , h)
-        rg = run (gateNode (LSTMPrimitives.candidateGate ops)) (x , h)
+        rf = run (gateNode (LSTMGateNodes.forgetGate ops)) (x , h)
+        ri = run (gateNode (LSTMGateNodes.inputGate ops)) (x , h)
+        ro = run (gateNode (LSTMGateNodes.outputGate ops)) (x , h)
+        rg = run (gateNode (LSTMGateNodes.candidateGate ops)) (x , h)
         rfc = run (LSTMPrimitives.hadamard ops) (fst rf , c)
         rig = run (LSTMPrimitives.hadamard ops) (fst ri , fst rg)
         rc = run (LSTMPrimitives.add ops) (fst rfc , fst rig)
