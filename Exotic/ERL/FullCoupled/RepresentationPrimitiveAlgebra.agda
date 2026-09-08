@@ -149,6 +149,11 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
   open Ring G
   open PrimitiveAlgebra P
 
+  record SafeInvSqrt (x : R) : Set where
+    field
+      rootDomain : SqrtDomain x
+      rootNonzero : Nonzero (sqrt x)
+
   invSqrt : R → R
   invSqrt x = inv (sqrt x)
 
@@ -162,6 +167,15 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
   invSqrtVJPChain : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
     invSqrtBack x c ≡ sqrtVJP x (invVJP (sqrt x) c)
   invSqrtVJPChain _ _ c = refl
+
+  invSqrtSafeVJPChain : ∀ {x} → SafeInvSqrt x → ∀ c →
+    invSqrtBack x c ≡
+      sqrtVJP x (invVJP (sqrt x) c)
+  invSqrtSafeVJPChain d c =
+    invSqrtVJPChain
+      (SafeInvSqrt.rootDomain d)
+      (SafeInvSqrt.rootNonzero d)
+      c
 
   scale : R → R → R
   scale x eps = mul x (invSqrt (add x eps))
@@ -182,6 +196,15 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
       mul c (tanhDerivative (scale x eps))
   normalizedPrimitiveChain x eps c = tanhVJPLaw (scale x eps) c
 
+  normalizedPrimitiveExplicit : ∀ x eps c →
+    tanhVJP (scale x eps) c ≡
+      mul c (add one
+        (neg (mul (tanh (scale x eps)) (tanh (scale x eps)))))
+  normalizedPrimitiveExplicit x eps c =
+    trans
+      (normalizedPrimitiveChain x eps c)
+      (cong (mul c) (tanhDerivativeLaw (scale x eps)))
+
 ------------------------------------------------------------------------
 -- Combined representation boundary.
 ------------------------------------------------------------------------
@@ -194,3 +217,15 @@ representationBoundaryDef : ∀ {G : Ring} (P : PrimitiveAlgebra G) x eps →
   representationBoundary P x eps ≡
     PrimitiveAlgebra.tanh P (LayerNorm.scale P x eps)
 representationBoundaryDef P x eps = refl
+
+representationBoundaryPrimitiveExplicit :
+  ∀ {G : Ring} (P : PrimitiveAlgebra G) x eps c →
+  PrimitiveAlgebra.tanhVJP P (LayerNorm.scale P x eps) c ≡
+    Ring.mul G c
+      (Ring.add G (Ring.one G)
+        (Ring.neg G
+          (Ring.mul G
+            (PrimitiveAlgebra.tanh P (LayerNorm.scale P x eps))
+            (PrimitiveAlgebra.tanh P (LayerNorm.scale P x eps)))))
+representationBoundaryPrimitiveExplicit P x eps c =
+  LayerNorm.normalizedPrimitiveExplicit P x eps c
