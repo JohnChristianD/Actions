@@ -7,7 +7,7 @@ open import Exotic.ERL.FullCoupled.RepresentationPrimitiveAlgebra as RP
 ------------------------------------------------------------------------
 -- Domain-carrying LayerNorm closure.
 --
--- The existing primitive algebra remains unchanged.  This layer only
+-- The existing primitive algebra remains unchanged. This layer only
 -- packages the side conditions needed by inverse-square-root normalization
 -- so the recurrent representation path has an explicit finite algebraic
 -- domain at every normalized value.
@@ -37,7 +37,7 @@ module SafeLayerNorm {G : RP.Ring} (P : RP.PrimitiveAlgebra G) where
       mul
         (neg (mul c (mul (inv (sqrt x)) (inv (sqrt x)))))
         (inv (add (sqrt x) (sqrt x)))
-  invSqrtExplicit d c =
+  invSqrtExplicit {x} d c =
     trans
       (invSqrtExpanded d c)
       (trans
@@ -53,10 +53,8 @@ module SafeLayerNorm {G : RP.Ring} (P : RP.PrimitiveAlgebra G) where
 
   safeScale : ∀ {x eps : R} →
     SafeNormalizedInput x eps → R
-  safeScale d =
-    mul
-      (fst (RP._,_ R R))
-      (fst (RP._,_ R R))
+  safeScale {x} {eps} d =
+    mul x (inv (sqrt (add x eps)))
 
   safeScaleDef : ∀ {x eps : R}
     (d : SafeNormalizedInput x eps) →
