@@ -18,12 +18,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
 
-          old = '''  runState (state c) = c
+          def replace_once(old: str, new: str, label: str):
+              nonlocal s
+              if old not in s:
+                  raise SystemExit(f'missing repair target: {label}')
+              s = s.replace(old, new, 1)
+
+          replace_once(
+'''  runState (state c) = c
 
   accumulate : Fin n → R → EState → EState
   accumulateAt : Fin n -> R -> Cot -> Cot
@@ -32,8 +39,8 @@ jobs:
     ... | no _ = s j
 
   accumulate i c (state s) = state (accumulateAt i c s)
-'''
-          new = '''  runState (state c) = c
+''',
+'''  runState (state c) = c
 
   addIfEqual : ∀ {i j : Fin n} → Dec (i ≡ j) → R → R → R
   addIfEqual (yes _) x c = x + c
@@ -44,13 +51,10 @@ jobs:
 
   accumulate : Fin n → R → EState → EState
   accumulate i c (state s) = state (accumulateAt i c s)
-'''
-          if old not in s:
-              raise SystemExit('finite accumulate block not found')
-          s = s.replace(old, new, 1)
+''', 'accumulate')
 
-          a = s.index('residualSquareNonzero_v140 ha hr hx =')
-          b = s.index('\n\n------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem', a)
+          start = s.index('residualSquareNonzero_v140 ha hr hx =')
+          end = s.index('\n\n------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem', start)
           residual = '''residualSquareNonzero_v140 ha hr hx =
   ⊥-elim (OrderedRing.notLtFromLe ha hcontra)
   where
@@ -74,30 +78,26 @@ jobs:
 
   hcontra : Ring.zero Rg ≤ alpha + Ring.neg Rg (mu * (hx * hx))
   hcontra = subst (λ q → Ring.zero Rg ≤ q) hzero (OrderedRing.refl≤ (SmoothAlgebra.orderedRing _) alpha)'''
-          s = s[:a] + residual + s[b:]
+          s = s[:start] + residual + s[end:]
 
-          qold = '''qProjectionCross_v141 ha hr =
-  let OR = SmoothAlgebra.orderedRing _
+          q_old = '''  let OR = SmoothAlgebra.orderedRing _
       Rg = OrderedRing.ring OR
       hx : x ≠ zero = residualSquareNonzero_v140 ha hr
       hxx : zero < x * x = OrderedRing.squarePositive hx
       hlt : alpha < mu * (x * x) = OrderedRing.subLtZero hr
       hmul = OrderedRing.mulLtPosLeft hlt hxx
   in'''
-          qnew = '''qProjectionCross_v141 ha hr =
-  let OR = SmoothAlgebra.orderedRing _
+          q_new = '''  let OR = SmoothAlgebra.orderedRing _
       Rg = OrderedRing.ring OR
       hx = residualSquareNonzero_v140 ha hr
       hxx = OrderedRing.squarePositive hx
       hlt = OrderedRing.subLtZero hr
       hmul = OrderedRing.mulLtPosLeft hlt hxx
   in'''
-          if qold not in s:
-              raise SystemExit('qProjection block not found')
-          s = s.replace(qold, qnew, 1)
+          replace_once(q_old, q_new, 'qProjectionCross_v141')
 
-          a = s.index('orderedFieldCrossStrict_v142 a b d e hd he h =')
-          b = s.index('\n\n------------------------------------------------------------------------\n-- Strict deletion from a negative residual: yd < nz.', a)
+          start = s.index('orderedFieldCrossStrict_v142 a b d e hd he h =')
+          end = s.index('\n\n------------------------------------------------------------------------\n-- Strict deletion from a negative residual: yd < nz.', start)
           ordered = '''orderedFieldCrossStrict_v142 a b d e hd he h =
   OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
   where
@@ -132,10 +132,10 @@ jobs:
     trans (Ring.mulComm Rg c (b * re))
       (trans (Ring.mulAssoc Rg b re c)
         (cong (λ q → b * q) innerRight))'''
-          s = s[:a] + ordered + s[b:]
+          s = s[:start] + ordered + s[end:]
 
-          a = s.index('multiplierDeletionStrict_v142 n d y z hd he h =')
-          b = s.index('\n\n------------------------------------------------------------------------\n-- Fixed-mask q-projection transpose.', a)
+          start = s.index('multiplierDeletionStrict_v142 n d y z hd he h =')
+          end = s.index('\n\n------------------------------------------------------------------------\n-- Fixed-mask q-projection transpose.', start)
           multiplier = '''multiplierDeletionStrict_v142 n d y z hd he h =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
       hnz = OrderedRing.negLt h
@@ -149,10 +149,10 @@ jobs:
               (sym (Ring.negScale Rg y d)))))
       cross = OrderedRing.addLtLeft hnz base
       cross' = transportLt_v142 lhs rhs cross
-  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross' '''.rstrip()
-          s = s[:a] + multiplier + s[b:]
+  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross' '''
+          s = s[:start] + multiplier.rstrip() + s[end:]
+
           p.write_text(s)
-          print('finite source repairs applied')
           PY
           git diff --check
       - name: Authoritative Agda check
@@ -164,7 +164,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .github/workflows/oneshot-agda-repair.yml .ci/closure-trigger.txt
-          git commit -m 'Close multiplier deletion finite algebra proof'
+          git commit -m 'Advance finite algebra closure'
           git rm .github/workflows/oneshot-agda-repair.yml .ci/closure-trigger.txt
           git commit -m 'Remove one-shot closure helper'
           git push origin HEAD:ci/v148-firstclass-lstm-chad
