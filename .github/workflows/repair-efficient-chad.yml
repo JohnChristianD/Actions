@@ -12,7 +12,7 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: 2.8.0
-      - name: Restore exact parent monolith and apply one-character parser fix
+      - name: Restore exact parent monolith and repair parser frontier
         shell: bash
         run: |
           set -euo pipefail
@@ -22,10 +22,18 @@ jobs:
           from pathlib import Path
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
-          old = '  accumulateAt : Fin n -> R -> Cot -> Cot\n'
-          new = '  accumulateAt : Fin n → R → Cot → Cot\n'
+          old = '''  accumulateAt : Fin n -> R -> Cot -> Cot
+  accumulateAt i c s j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j
+'''
+          new = '''  accumulateAt : Fin n → R → Cot → Cot
+  accumulateAt i c s j with finDecEq j i
+  ... | yes _ = s j + c
+  ... | no _ = s j
+'''
           if s.count(old) != 1:
-              raise SystemExit(f'expected exactly one ASCII-arrow declaration, found {s.count(old)}')
+              raise SystemExit(f'expected exactly one parser frontier, found {s.count(old)}')
           p.write_text(s.replace(old, new, 1))
           PY
           ! grep -F '  accumulateAt : Fin n -> R -> Cot -> Cot' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
@@ -33,14 +41,14 @@ jobs:
           git diff --check
       - name: Kernel-check restored monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-      - name: Commit exact restoration and remove helper
+      - name: Commit minimal monolith repair and remove helper
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          git commit -m 'fix: restore monolithic safe closure with minimal parser repair'
+          git commit -m 'fix: repair monolithic accumulate parser frontier'
           git rm .github/workflows/repair-efficient-chad.yml
           git commit -m 'ci: remove monolith restoration helper'
           git push origin HEAD:ci/v148-firstclass-lstm-chad
