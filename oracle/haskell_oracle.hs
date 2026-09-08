@@ -1,21 +1,38 @@
-import Text.Printf (printf)
+import Data.Ratio ((%), numerator, denominator)
 
-sigmoid :: Double -> Double
-sigmoid z = 1 / (1 + exp (-z))
+sigmoidR :: Rational -> Rational
+sigmoidR z = (2 + z) / 4
 
-lstm :: Double -> Double -> Double -> (Double, Double)
+tanhR :: Rational -> Rational
+tanhR z = (2 * z) / (2 + z * z)
+
+lstm :: Rational -> Rational -> Rational -> (Rational, Rational)
 lstm x h c =
   let z = x + h
-      f = sigmoid z
-      i = sigmoid z
-      o = sigmoid z
-      g = tanh z
+      f = sigmoidR z
+      i = sigmoidR z
+      o = sigmoidR z
+      g = tanhR z
       c2 = f * c + i * g
-      h2 = o * tanh c2
+      h2 = o * tanhR c2
   in (h2, c2)
 
+q :: Integer -> Integer -> Rational
+q = (%)
+
+cases :: [(Rational, Rational, Rational)]
+cases = [(q 1 5, q (-1) 10, q 3 10),
+         (q 1 1, q 1 5, q (-2) 5),
+         (q (-7) 10, q 1 2, q 1 10)]
+
+render :: Rational -> String
+render r =
+  let n = numerator r
+      d = denominator r
+  in show n ++ if d == 1 then "" else "/" ++ show d
+
 main :: IO ()
-main = mapM_ emit [(0.2,-0.1,0.3),(1.0,0.2,-0.4),(-0.7,0.5,0.1)]
+main = mapM_ emit cases
   where
     emit (x,h,c) = let (lh,lc) = lstm x h c
-                    in printf "%.12f,%.12f,%.12f,%.12f,%.12f\n" x h c lh lc
+                   in putStrLn $ render x ++ "," ++ render h ++ "," ++ render c ++ "," ++ render lh ++ "," ++ render lc
