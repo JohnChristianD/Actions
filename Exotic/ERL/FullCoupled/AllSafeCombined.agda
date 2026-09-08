@@ -59,7 +59,7 @@ module Learner where
 
     dot : ∀ {m} → Vec m → Vec m → R
     dot [] [] = zero
-    dot (x ∷ xs) (y ∷ ys) = x * y + dot xs ys
+    dot (x ∷ xs) (y ∷ ys) = (x * y) + (dot xs ys)
 
     linearQ : Vec n → Vec n → R
     linearQ w φ = dot w φ
@@ -229,8 +229,8 @@ module Recurrent where
           dh₂ = snd dIIn
           dh₃ = snd dOIn
           dh₄ = snd dGIn
-          dx₁₂ = primal (LSTMPrimitives.addInputCotangent ops) (dx₁ , dx₂)
-          dx₃₄ = primal (LSTMPrimitives.addInputCotangent ops) (dx₃ , dx₄)
+          dx₁₂ = primal (LSTMGateNodes.activation (LSTMGateNodes.forgetGate ops)) (dx₁ , dx₂)
+          dx₃₄ = primal (LSTMGateNodes.activation (LSTMGateNodes.outputGate ops)) (dx₃ , dx₄)
           dx = primal (LSTMPrimitives.addInputCotangent ops) (dx₁₂ , dx₃₄)
           dh₁₂ = primal (LSTMPrimitives.addStateCotangent ops) (dh₁ , dh₂)
           dh₃₄ = primal (LSTMPrimitives.addStateCotangent ops) (dh₃ , dh₄)
