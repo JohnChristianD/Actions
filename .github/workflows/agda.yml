@@ -26,6 +26,8 @@ jobs:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
+      - name: Safe-check combined self-contained surface
+        run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check isolated linear coupled learner
         run: agda --safe Exotic/ERL/FullCoupled/LinearCoupledLearnerNoNormLSTM.agda
       - name: Safe-check first-class finite recurrent CHAD
