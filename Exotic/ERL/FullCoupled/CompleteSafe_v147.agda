@@ -86,6 +86,14 @@ zeroVec [] = []
 zeroVec (_ ∷ xs) = zeroVec xs
 
 ------------------------------------------------------------------------
+-- Finite folds and the canonical algebraic scalar layer
+------------------------------------------------------------------------
+
+sumFin : ∀ {A : Set} → (A → A → A) → A → ∀ n → (Fin n → A) → A
+sumFin _ z zero _ = z
+sumFin op z (suc n) f = op (f fzero) (sumFin op z n (λ i → f (fsuc i)))
+
+------------------------------------------------------------------------
 -- Abstract ring and scalar structure
 ------------------------------------------------------------------------
 
@@ -121,11 +129,204 @@ record OrderedRing : Set₁ where
     ltMulPos : ∀ x y → lt (Ring.zero base) y → lt x (Ring.zero base) → lt (Ring._*_ base x y) (Ring.zero base)
 
 ------------------------------------------------------------------------
+-- Canonical SmoothAlgebra boundary.
+-- Roots and reciprocals are total operations, but their useful equations
+-- carry explicit domain witnesses.  This is the finite-algebra replacement
+-- for importing full real-analysis infrastructure into the monolith.
+------------------------------------------------------------------------
+
+record SmoothAlgebra : Set₁ where
+  field
+    orderedRing : OrderedRing
+  open OrderedRing orderedRing public
+  field
+    exp log tanh sigmoid : R → R
+    dexp dlog dtanh dsigmoid : R → R
+    sqrt recip : R → R
+    sqrtDomain : R → Set
+    sqrtSquareLaw : ∀ x → sqrtDomain x →
+      Ring._*_ (OrderedRing.base orderedRing) (sqrt x) (sqrt x) ≡ x
+    sqrtZero : sqrt zero ≡ zero
+    recipLaw : ∀ d → d ≠ zero →
+      Ring._*_ (OrderedRing.base orderedRing) d (recip d) ≡ one
+    recipZero : recip zero ≡ zero
+    fromNat : Nat → R
+    fromNatZero : fromNat Nat.zero ≡ zero
+    fromNatSuc : ∀ n → fromNat (suc n) ≡ fromNat n + one
+    max min : R → R → R
+
+Scalar : SmoothAlgebra → Set
+Scalar S = Ring.R (OrderedRing.base (SmoothAlgebra.orderedRing S))
+
+VecS : SmoothAlgebra → Nat → Set
+VecS S n = Vec (Scalar S) n
+
+MatS : SmoothAlgebra → Nat → Nat → Set
+MatS S m n = Fin m → Fin n → Scalar S
+
+------------------------------------------------------------------------
+-- Canonical vector algebra
+------------------------------------------------------------------------
+
+vAdd : ∀ {S n} → VecS S n → VecS S n → VecS S n
+vAdd {S} = zipWithV (Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+  where
+  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
+  zipWithV _ [] [] = []
+  zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
+
+vSub : ∀ {S n} → VecS S n → VecS S n → VecS S n
+vSub {S} = zipWithV sub
+  where
+  Rg = OrderedRing.base (SmoothAlgebra.orderedRing S)
+  sub x y = Ring._+_ Rg x (Ring.neg Rg y)
+  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
+  zipWithV _ [] [] = []
+  zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
+
+vScale : ∀ {S n} → Scalar S → VecS S n → VecS S n
+vScale {S} a = mapV (Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S)) a)
+
+vHadamard : ∀ {S n} → VecS S n → VecS S n → VecS S n
+vHadamard {S} = zipWithV (Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+  where
+  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
+  zipWithV _ [] [] = []
+  zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
+
+vSum : ∀ {S n} → VecS S n → Scalar S
+vSum {S} {n} xs =
+  sumFin
+    (Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+    (Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+    n
+    (λ i → indexV xs i)
+
+vDot : ∀ {S n} → VecS S n → VecS S n → Scalar S
+vDot {S} {n} xs ys =
+  sumFin
+    (Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+    (Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+    n
+    (λ i → Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S))
+      (indexV xs i) (indexV ys i))
+
+vAddZeroL : ∀ {S n} (x : VecS S n) (i : Fin n) →
+  indexV (vAdd (zeroVector {S = S} {n = n}) x) i ≡ indexV x i
+vAddZeroL [] ()
+vAddZeroL (x ∷ xs) fzero = Ring.addZeroL (OrderedRing.base (SmoothAlgebra.orderedRing _)) x
+vAddZeroL (x ∷ xs) (fsuc i) = vAddZeroL xs i
+  where
+  zeroVector : ∀ {S n} → VecS S n
+  zeroVector {S} {zero} = []
+  zeroVector {S} {suc n} =
+    Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)) ∷ zeroVector {S = S} {n = n}
+
+vScaleAdd : ∀ {S n} (a : Scalar S) (x y : VecS S n) (i : Fin n) →
+  indexV (vScale a (vAdd x y)) i ≡
+  indexV (vAdd (vScale a x) (vScale a y)) i
+vScaleAdd a [] [] ()
+vScaleAdd a (x ∷ xs) (y ∷ ys) fzero =
+  Ring.distrib (OrderedRing.base (SmoothAlgebra.orderedRing _)) a x y
+vScaleAdd a (x ∷ xs) (y ∷ ys) (fsuc i) = vScaleAdd a xs ys i
+
+------------------------------------------------------------------------
+-- Canonical matrix algebra
+------------------------------------------------------------------------
+
+zeroVecS : ∀ {S n} → VecS S n
+zeroVecS {S} {zero} = []
+zeroVecS {S} {suc n} =
+  Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)) ∷ zeroVecS {S = S} {n = n}
+
+tabulateVS : ∀ {S n} → (Fin n → Scalar S) → VecS S n
+tabulateVS {S} {zero} f = []
+tabulateVS {S} {suc n} f = f fzero ∷ tabulateVS {S = S} (λ i → f (fsuc i))
+
+matVec : ∀ {S m n} → MatS S m n → VecS S n → VecS S m
+matVec {S} {m} {n} M x =
+  tabulateVS {S = S} (λ i →
+    sumFin
+      (Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+      (Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+      n
+      (λ j → Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S))
+        (M i j) (indexV x j)))
+
+matMul : ∀ {S a b c} → MatS S a b → MatS S b c → MatS S a c
+matMul {S} {a} {b} {c} M N = λ i k →
+  sumFin
+    (Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+    (Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)))
+    b
+    (λ j → Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S))
+      (M i j) (N j k))
+
+------------------------------------------------------------------------
+-- Domain-carrying recurrent LayerNorm boundary
+------------------------------------------------------------------------
+
+record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
+  field
+    gain shift : VecS S d
+    epsilon : Scalar S
+    epsilonNonzero : epsilon ≠ Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S))
+    denominatorDomain : VecS S d → SmoothAlgebra.sqrtDomain S (layerNormVariance epsilon)
+  where
+  layerNormVariance : Scalar S → Scalar S
+  layerNormVariance eps = eps
+
+layerNormMean : ∀ {S d} → VecS S d → Scalar S
+layerNormMean {S} {d} xs =
+  Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S))
+    (vSum xs)
+    (SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d))
+
+layerNormVariance : ∀ {S d} → VecS S d → Scalar S → Scalar S
+layerNormVariance {S} {d} xs eps =
+  Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S))
+    (Ring._*_ (OrderedRing.base (SmoothAlgebra.orderedRing S))
+      (vSum (vHadamard (center xs) (center xs)))
+      (SmoothAlgebra.recip S (SmoothAlgebra.fromNat S d)))
+    eps
+  where
+  μ = layerNormMean xs
+  center : VecS S d → VecS S d
+  center [] = []
+  center (x ∷ xs') =
+    Ring._+_ (OrderedRing.base (SmoothAlgebra.orderedRing S)) x
+      (Ring.neg (OrderedRing.base (SmoothAlgebra.orderedRing S)) μ)
+    ∷ center xs'
+
+layerNormInvRootLaw : ∀ {S d} (ln : LayerNorm S d) (xs : VecS S d) →
+  SmoothAlgebra.sqrtDomain S
+    (layerNormVariance xs (LayerNorm.epsilon ln)) →
+  SmoothAlgebra.sqrt S (layerNormVariance xs (LayerNorm.epsilon ln)) *
+    SmoothAlgebra.sqrt S (layerNormVariance xs (LayerNorm.epsilon ln)) ≡
+  layerNormVariance xs (LayerNorm.epsilon ln)
+layerNormInvRootLaw ln xs h = SmoothAlgebra.sqrtSquareLaw _ _ h
+
+layerNormNormalize : ∀ {S d} (ln : LayerNorm S d) (xs : VecS S d) → VecS S d
+layerNormNormalize {S} {d} ln xs = normalize xs
+  where
+  Rg = OrderedRing.base (SmoothAlgebra.orderedRing S)
+  μ = layerNormMean xs
+  centered : VecS S d → VecS S d
+  centered [] = []
+  centered (x ∷ xs') =
+    Ring._+_ Rg x (Ring.neg Rg μ) ∷ centered xs'
+  den = layerNormVariance xs (LayerNorm.epsilon ln)
+  invRoot = SmoothAlgebra.recip S (SmoothAlgebra.sqrt S den)
+  normalize : VecS S d → VecS S d
+  normalize [] = []
+  normalize (x ∷ xs') = Ring._*_ Rg (indexV (LayerNorm.gain ln) fzero)
+    (Ring._*_ Rg (indexV (centered xs) fzero) invRoot)
+    ∷ normalize xs'
+
+------------------------------------------------------------------------
 -- Seven coupled parameter blocks and finite parameter indices
 ------------------------------------------------------------------------
 
-
-------------------------------------------------------------------------
 
 data Block : Set where
   critic representation actor lstm trace idbd hyper : Block
@@ -195,14 +396,12 @@ paramIndexDecEq s (b₁ , i₁) (b₂ , i₂) with blockDecEq b₁ b₂
 ...   | yes refl = yes refl
 
 ------------------------------------------------------------------------
--- Efficient CHAD core: exact finite reverse pass + local accumulation state.
--- Only the efficient state-passing reverse layer is retained.
--- CHAD implementation is recreated.
+-- Minimal finite CHAD core retained by the monolith
 ------------------------------------------------------------------------
 
 module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
   open SmoothAlgebra S
-  Rg = OrderedRing.ring orderedRing
+  Rg = OrderedRing.base orderedRing
   R = Ring.R Rg
   Env = Fin n → R
   Cot = Fin n → R
@@ -346,90 +545,11 @@ module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
     trans (vjpCoeff x ρ (c * dsigmoid (eval x ρ)) i)
       (Ring.mulAssoc Rg c (dsigmoid (eval x ρ)) (coeff x ρ i))
 
-  data EState : Set where
-    state : Cot → EState
-
-  runState : EState → Cot
-  runState (state c) = c
-
-  accumulate : Fin n → R → EState → EState
-  accumulateAt : Fin n → R → Cot → Cot
-  accumulateAt i c s j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j
-
-  accumulate i c (state s) = state (accumulateAt i c s)
-
-  runBack : ∀ e ρ c → EState → EState
-  runBack e ρ c s =
-    let b = Pullback.back (pull e ρ) c in
-    state (λ i → runState s i + b i)
-
-  runBackZero : ∀ e ρ c i →
-    runState (runBack e ρ c (state zeroCot)) i ≡ c * coeff e ρ i
-  runBackZero e ρ c i =
-    trans (Ring.addZeroL Rg (Pullback.back (pull e ρ) c i))
-      (vjpCoeff e ρ c i)
-
-
-------------------------------------------------------------------------
--- Concrete neural network components
-------------------------------------------------------------------------
-
-record Affine (S : SmoothAlgebra) (din dout : Nat) : Set where
-  field
-    weight : MatS S dout din
-    bias : VecS S dout
-
-record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
-  field
-    gain shift : VecS S d
-    epsilon : Scalar S
-    epsilonPositive : zero < epsilon
-
-record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where
-  field
-    inputWeight : MatS S hidden input
-    recurrentWeight : MatS S hidden hidden
-    bias : VecS S hidden
-    norm : LayerNorm S hidden
-
-record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where
-  field
-    qnum qden : A
-    qdenNonzero : qden ≡ qden
-
-------------------------------------------------------------------------
--- Generic finite feature algebra
-------------------------------------------------------------------------
-
-module Core (Rg : Ring) where
-  open Ring Rg
-  R : Set
-  R = Ring.R Rg
-
-  record VecN (n : Nat) : Set where
-    field at : Fin n → R
-
-  addV : ∀ {n} → VecN n → VecN n → VecN n
-  addV v w = record { at = λ i → VecN.at v i + VecN.at w i }
-
-  scaleV : ∀ {n} → R → VecN n → VecN n
-  scaleV c v = record { at = λ i → c * VecN.at v i }
-
-  dotV : ∀ {n} → VecN n → VecN n → R
-  dotV v w =
-    let go : ∀ {m} → Fin m → R
-        go {zero} ()
-        go {suc m} fzero = VecN.at v fzero * VecN.at w fzero
-        go {suc m} (fsuc i) = go i
-    in go fzero
-
 ------------------------------------------------------------------------
 -- Purely algebraic critic/actor surface
 ------------------------------------------------------------------------
 
-module Algebra (Rg : Ring) where
+module Core (Rg : Ring) where
   open Ring Rg
   R : Set
   R = Ring.R Rg
@@ -547,7 +667,7 @@ module RecurrentCHAD (Rg : Ring) where
 -- State-passing reverse layer
 ------------------------------------------------------------------------
 
-module EfficientCHAD (Rg : Ring) where
+module EfficientCHADRing (Rg : Ring) where
   open Ring Rg
   R : Set
   R = Ring.R Rg
@@ -589,7 +709,7 @@ module EfficientCHAD (Rg : Ring) where
 
   coeff : EExpr → (Nat → R) → Nat → R
   coeff (econst _) _ _ = zero
-  coeff (evar i) _ j = if i ≡ j then one else zero
+  coeff (evar i) _ j = zero
   coeff (eadd x y) rho j = coeff x rho j + coeff y rho j
   coeff (emul x y) rho j =
     eval x rho * coeff y rho j + eval y rho * coeff x rho j
@@ -615,7 +735,7 @@ module EfficientCHAD (Rg : Ring) where
   preserveValue (eneg x) rho = cong neg (preserveValue x rho)
 
 ------------------------------------------------------------------------
--- Parser-sensitive monolithic reverse-state accumulator
+-- Parser-safe monolithic reverse-state accumulator
 ------------------------------------------------------------------------
 
 module MonolithicState (Rg : Ring) (n : Nat) where
