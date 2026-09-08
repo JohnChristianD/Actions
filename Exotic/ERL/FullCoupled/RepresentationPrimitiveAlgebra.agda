@@ -156,18 +156,19 @@ module LayerNorm {G : Ring} (P : PrimitiveAlgebra G) where
     invSqrt x ≡ inv (sqrt x)
   invSqrtDef x = refl
 
-  invSqrtVJP : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
-    invSqrtVJP x c ≡ sqrtVJP x (invVJP (sqrt x) c)
-  invSqrtVJP {x} _ _ c = refl
+  invSqrtBack : R → R → R
+  invSqrtBack x c = sqrtVJP x (invVJP (sqrt x) c)
+
+  invSqrtVJPChain : ∀ {x} → SqrtDomain x → Nonzero (sqrt x) → ∀ c →
+    invSqrtBack x c ≡ sqrtVJP x (invVJP (sqrt x) c)
+  invSqrtVJPChain x c = refl
 
   scale : R → R → R
   scale x eps = mul x (invSqrt (add x eps))
 
   scaleDef : ∀ x eps →
     scale x eps ≡ mul x (inv (sqrt (add x eps)))
-  scaleDef x eps =
-    trans refl
-      (cong invSqrt (refl {x = mul x (invSqrt (add x eps))}))
+  scaleDef x eps = refl
 
   normalizedValue : R → R → R
   normalizedValue x eps = tanh (scale x eps)
