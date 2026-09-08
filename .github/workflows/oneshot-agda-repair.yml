@@ -1,3 +1,0 @@
-name: retired
-on:
-  workflow_dispatch:
