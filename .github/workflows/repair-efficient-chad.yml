@@ -1,4 +1,4 @@
-name: One-shot Efficient-CHAD parser repair
+name: One-shot Efficient-CHAD multiplication transport repair
 on:
   push:
     branches: ['ci/v148-firstclass-lstm-chad']
@@ -9,47 +9,81 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: agda/agda-setup-action@v1.0.0
-        with:
-          agda-version: '2.8.0'
-      - name: Normalize Efficient-CHAD source
+      - name: Repair reverse multiplication transport
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re
           p = Path('Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda')
           s = p.read_text()
-          start = s.index('module Language ')
-          prefix, body = s[:start], s[start:]
-          body = re.sub(r'^  infixl 20 _plusR_\n', '', body, flags=re.M)
-          body = re.sub(r'^  infixl 30 _mulR_\n', '', body, flags=re.M)
-          body = re.sub(r'^  _plusR_ : R → R → R\n  _plusR_ x y = Ring\._\+_ G x y\n\n', '', body, flags=re.M)
-          body = re.sub(r'^  _mulR_ : R → R → R\n  _mulR_ x y = Ring\._\*_ G x y\n\n', '', body, flags=re.M)
-          body = body.replace(' + ', ' _plusR_ ').replace(' * ', ' _mulR_ ')
-          body = body.replace('_+_', '_plusR_').replace('_*_', '_mulR_')
-          body = body.replace('targetSize (translate e) ≡ sourceSize e ×', '(targetSize (translate e) ≡ sourceSize e) ×')
-          body = body.replace('(valueT (translate e) ρ ≡ eval e ρ) ×', '((valueT (translate e) ρ ≡ eval e ρ)) ×')
-          body = body.replace('(reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i)) ×', '((reverseT (translate e) ρ c zeroCot i ≡ mulR c (coeff e ρ i))) ×')
-          marker = '  open UnaryPrimitives P\n'
-          insert = '''  open UnaryPrimitives P\n\n  _plusR_ : R → R → R\n  _plusR_ x y = Ring._+_ G x y\n\n  _mulR_ : R → R → R\n  _mulR_ x y = Ring._*_ G x y\n\n  infixl 20 _plusR_\n  infixl 30 _mulR_\n'''
-          if marker not in body:
-              raise SystemExit('missing Language insertion point')
-          body = body.replace(marker, insert, 1)
-          p.write_text(prefix + body)
+          old = '''  reverseAccumCorrect (mulE x y) ρ c acc i =
+    trans
+      (reverseAccumCorrect y ρ (mulR c (eval x ρ))
+        (reverseT (translate x) ρ (mulR c (eval y ρ)) acc) i)
+      (trans
+        (cong₂ (Ring.add G)
+          (reverseAccumCorrect x ρ (mulR c (eval y ρ)) acc i)
+          refl)
+        (trans
+          (Ring.addAssoc G (acc i)
+            (mulR (mulR c (eval y ρ)) (coeff x ρ i))
+            (mulR (mulR c (eval x ρ)) (coeff y ρ i)))
+          (trans
+            (cong₂ (Ring.add G)
+              (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
+              (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
+            (sym
+              (Ring.distrib G c
+                (mulR (eval y ρ) (coeff x ρ i))
+                (mulR (eval x ρ) (coeff y ρ i)))))))
+'''
+          new = '''  reverseAccumCorrect (mulE x y) ρ c acc i =
+    trans
+      (reverseAccumCorrect y ρ (mulR c (valueT (translate x) ρ))
+        (reverseT (translate x) ρ
+          (mulR c (valueT (translate y) ρ)) acc) i)
+      (trans
+        (cong₂ (Ring.add G)
+          (reverseAccumCorrect x ρ
+            (mulR c (valueT (translate y) ρ)) acc i)
+          refl)
+        (trans
+          (Ring.addAssoc G (acc i)
+            (mulR (mulR c (valueT (translate y) ρ)) (coeff x ρ i))
+            (mulR (mulR c (valueT (translate x) ρ)) (coeff y ρ i)))
+          (trans
+            (cong₂
+              (λ ey ex →
+                addR (acc i)
+                  (addR
+                    (mulR (mulR c ey) (coeff x ρ i))
+                    (mulR (mulR c ex) (coeff y ρ i))))
+              (execValueCorrect y ρ)
+              (execValueCorrect x ρ))
+            (trans
+              (cong₂ (Ring.add G)
+                (Ring.mulAssoc G c (eval y ρ) (coeff x ρ i))
+                (Ring.mulAssoc G c (eval x ρ) (coeff y ρ i)))
+              (sym
+                (Ring.distrib G c
+                  (mulR (eval y ρ) (coeff x ρ i))
+                  (mulR (eval x ρ) (coeff y ρ i)))))))))
+'''
+          if s.count(old) != 1:
+              raise SystemExit(f'expected exactly one multiplication proof frontier, found {s.count(old)}')
+          p.write_text(s.replace(old, new, 1))
           PY
           git diff --check
-      - name: Kernel-check Efficient-CHAD
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda
-      - name: Commit and remove helper
+          agda --safe Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda
+      - name: Commit repair and remove helper
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda .github/workflows/repair-efficient-chad.yml
-          git commit -m 'fix: close Efficient-CHAD theorem parser frontier'
+          git commit -m 'fix: transport Efficient-CHAD multiplication values'
           git rm .github/workflows/repair-efficient-chad.yml
-          git commit -m 'ci: remove one-shot Efficient-CHAD repair helper'
+          git commit -m 'ci: remove one-shot Efficient-CHAD transport helper'
           git push origin HEAD:ci/v148-firstclass-lstm-chad
