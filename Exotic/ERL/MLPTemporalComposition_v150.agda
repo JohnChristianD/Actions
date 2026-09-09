@@ -72,20 +72,10 @@ mlpTemporalFold : ∀ {X n} (M : Monoid) →
 mlpTemporalFold M net xs =
   foldV M _ (mapV (MLP.forward net) xs)
 
-mlpTemporalComposition : ∀ {X m n} (M : Monoid)
-  (net : MLP X (Carrier M))
-  (xs : Vec X m)
-  (ys : Vec X n) →
-  mlpTemporalFold M net (appendV xs ys) ≡
-  Monoid._∙_ M
-    (mlpTemporalFold M net xs)
-    (mlpTemporalFold M net ys)
-mlpTemporalComposition M net xs ys =
-  foldAppend M (mapV (MLP.forward net) xs)
-    (mapV (MLP.forward net) ys)
-
 ------------------------------------------------------------------------
--- The network map itself preserves temporal append.
+-- Stateless MLP temporal composition: concatenating two temporal chunks
+-- is exactly equivalent to folding the chunks independently and combining
+-- their results with the same associative temporal accumulator.
 ------------------------------------------------------------------------
 
 mlpMapAppend : ∀ {X Y m n}
@@ -98,6 +88,21 @@ mlpMapAppend net [] ys = refl
 mlpMapAppend net (x ∷ xs) ys =
   cong (λ zs → MLP.forward net x ∷ zs)
     (mlpMapAppend net xs ys)
+
+mlpTemporalComposition : ∀ {X m n} (M : Monoid)
+  (net : MLP X (Carrier M))
+  (xs : Vec X m)
+  (ys : Vec X n) →
+  mlpTemporalFold M net (appendV xs ys) ≡
+  Monoid._∙_ M
+    (mlpTemporalFold M net xs)
+    (mlpTemporalFold M net ys)
+mlpTemporalComposition M net xs ys =
+  trans
+    (cong (λ zs → foldV M _ zs) (mlpMapAppend net xs ys))
+    (foldAppend M
+      (mapV (MLP.forward net) xs)
+      (mapV (MLP.forward net) ys))
 
 ------------------------------------------------------------------------
 -- Finite normal form for temporal batching: map once per timestep, fold
