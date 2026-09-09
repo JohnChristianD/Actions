@@ -7,38 +7,61 @@ start = s.index('record OrderedRing')
 end = s.index('\n------------------------------------------------------------------------', start)
 segment = s[start:end]
 
-# Within OrderedRing, qualify every arithmetic expression that would otherwise
-# share grammar with Agda.Builtin.Nat operators.
-repls = [
-    (r'zero ≤ a \* b', 'zero ≤ Ring._*_ ring a b'),
-    (r'c \* a ≤ c \* b', 'Ring._*_ ring c a ≤ Ring._*_ ring c b'),
-    (r'a \* e < b \* d', 'Ring._*_ ring a e < Ring._*_ ring b d'),
-    (r'c \* a < c \* b', 'Ring._*_ ring c a < Ring._*_ ring c b'),
-    (r'zero < a \* b', 'zero < Ring._*_ ring a b'),
-    (r'zero < x \* x', 'zero < Ring._*_ ring x x'),
-    (r'zero ≤ x \* x', 'zero ≤ Ring._*_ ring x x'),
-    (r'a \+ c ≤ b \+ d', 'Ring._+_ ring a c ≤ Ring._+_ ring b d'),
-    (r'a < b → c < d → a \+ c < b \+ d', 'a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d'),
-    (r'a < b → c \+ a < c \+ b', 'a < b → Ring._+_ ring c a < Ring._+_ ring c b'),
+# OrderedRing is checked while both Ring and Nat parsing environments are live.
+# Qualify arithmetic that belongs to Ring so Agda cannot choose two identical
+# grammar declarations for + or *.
+exact = [
+    ('a + c ≤ b + d', 'Ring._+_ ring a c ≤ Ring._+_ ring b d'),
+    ('a + neg b < zero', 'Ring._+_ ring a (neg b) < zero'),
+    ('zero < a * b', 'zero < Ring._*_ ring a b'),
+    ('zero ≤ a * b', 'zero ≤ Ring._*_ ring a b'),
+    ('c * a ≤ c * b', 'Ring._*_ ring c a ≤ Ring._*_ ring c b'),
+    ('c * a < c * b', 'Ring._*_ ring c a < Ring._*_ ring c b'),
+    ('a * e < b * d', 'Ring._*_ ring a e < Ring._*_ ring b d'),
+    ('zero < x * x', 'zero < Ring._*_ ring x x'),
+    ('zero ≤ x * x', 'zero ≤ Ring._*_ ring x x'),
+    ('a < b → c < d → a + c < b + d',
+     'a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d'),
+    ('a < b → c + a < c + b',
+     'a < b → Ring._+_ ring c a < Ring._+_ ring c b'),
+    ('abs (x + y) ≤ abs x + abs y',
+     'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)'),
+    ('abs (x * y) ≡ abs x * abs y',
+     'abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)'),
 ]
-for pattern, repl in repls:
-    segment = re.sub(pattern, repl, segment)
+for old, new in exact:
+    segment = segment.replace(old, new)
 
-# OrderedRing itself needs no unqualified Nat arithmetic. Ring field syntax
-# remains deliberately qualified only where required by parser ambiguity.
+# Catch the two ordered addition/multiplication implication forms without
+# changing Ring field declarations that are already parenthesized.
+segment = re.sub(
+    r'(?m)^(\s*ltAdd\s*:\s*∀ \{a b c d\} → )a < b → c < d → a \+ c < b \+ d$',
+    r'\1a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
+    segment,
+)
+segment = re.sub(
+    r'(?m)^(\s*addLtLeft\s*:\s*∀ \{a b c\} → )a < b → c \+ a < c \+ b$',
+    r'\1a < b → Ring._+_ ring c a < Ring._+_ ring c b',
+    segment,
+)
+
 s = s[:start] + segment + s[end:]
 p.write_text(s)
 
 for forbidden in (
+    'a + c ≤ b + d',
+    'a + neg b < zero',
+    'zero < a * b',
     'zero ≤ a * b',
     'c * a ≤ c * b',
     'c * a < c * b',
-    'zero < a * b',
+    'a * e < b * d',
     'zero < x * x',
     'zero ≤ x * x',
-    'a + c ≤ b + d',
     'a < b → c < d → a + c < b + d',
     'a < b → c + a < c + b',
+    'abs (x + y) ≤ abs x + abs y',
+    'abs (x * y) ≡ abs x * abs y',
 ):
     if forbidden in segment:
         raise SystemExit(f'ordered-field qualification incomplete: {forbidden!r}')
