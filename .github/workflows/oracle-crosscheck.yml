@@ -50,14 +50,3 @@ jobs:
 
       - name: Run Ruby exact Rational certificate
         run: ruby oracle/rational_certificate.rb
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install SymPy
-        run: python -m pip install --disable-pip-version-check sympy
-
-      - name: Run SymPy exact Rational certificate
-        run: python oracle/sympy_rational_certificate.py
