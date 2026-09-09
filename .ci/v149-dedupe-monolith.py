@@ -8,7 +8,6 @@ marker_end = "------------------------------------------------------------------
 if marker_start not in s or marker_end not in s:
     raise SystemExit('canonical SmoothAlgebra markers not found')
 
-# Keep the first marked canonical block; remove later copies by marker pair.
 first = s.index(marker_start)
 search = s.find(marker_start, first + len(marker_start))
 while search >= 0:
@@ -90,14 +89,13 @@ if cstart < 0: raise SystemExit('cross theorem marker not found')
 csep = s.find('\n------------------------------------------------------------------------', cstart)
 s = s[:cstart] + '''orderedFieldCrossStrict_v142 a b d e hd he h =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-      c = d * e
       rd = SmoothAlgebra.recip _ d
       re = SmoothAlgebra.recip _ e
       hleft =
         trans
-          (Ring.mulComm Rg c (a * rd))
+          (Ring.mulComm Rg (d * e) (a * rd))
           (trans
-            (Ring.mulAssoc Rg a rd c)
+            (Ring.mulAssoc Rg a rd (d * e))
             (trans
               (cong (λ q → a * q)
                 (trans
@@ -110,9 +108,9 @@ s = s[:cstart] + '''orderedFieldCrossStrict_v142 a b d e hd he h =
               (Ring.mulOneR Rg a)))
       hright =
         trans
-          (Ring.mulComm Rg c (b * re))
+          (Ring.mulComm Rg (d * e) (b * re))
           (trans
-            (Ring.mulAssoc Rg b re c)
+            (Ring.mulAssoc Rg b re (d * e))
             (trans
               (cong (λ q → b * q)
                 (trans
@@ -173,6 +171,19 @@ s = s[:rn] + '''reciprocalNonnegative_v146 {S} {d} hd with
 ... | no h = h
 ''' + s[rnsep:]
 
+# qProjectionRetraction_v147 initial-form identity
+iform = '      initialForm : QRun_v142.projection'
+start = s.find(iform)
+if start >= 0:
+    sep = s.find('\n  in trans stopped initialForm', start)
+    if sep < 0: raise SystemExit('qProjectionRetraction initialForm terminator not found')
+    s = s[:start] + '''      initialForm =
+        trans
+          (cong (λ mu → qCandidate_v142 D mu
+            (allActive_v147 {n = _}) p x) muZero)
+          (qCandidateZero_v147 D p x)
+''' + s[sep:]
+
 # Remove malformed audited-KKT documentation placeholder.
 kmarker = '-- The theorem to be exported after kernel checking is:'
 kstart = s.find(kmarker)
@@ -195,12 +206,9 @@ s = s[:tstart] + '''qTerminalProjectionUnique_v147 t u refl refl refl =
       (sym (QTerminalSolution_v147.stationarity u i)))
 ''' + s[tsep:]
 
-if s.count(marker_start) != 1:
-    raise SystemExit('canonical marker count is not one')
-if s.count('sqrtDomain : R → Set') != 1:
-    raise SystemExit('sqrt domain law missing or duplicated')
-if s.count(kmarker) != 0:
-    raise SystemExit('malformed audited KKT placeholder marker survived')
+if s.count(marker_start) != 1: raise SystemExit('canonical marker count is not one')
+if s.count('sqrtDomain : R → Set') != 1: raise SystemExit('sqrt domain law missing or duplicated')
+if s.count(kmarker) != 0: raise SystemExit('malformed audited KKT placeholder marker survived')
 
 p.write_text(s)
 print('cumulative v149 monolith normalization applied deterministically')
