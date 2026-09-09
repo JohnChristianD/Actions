@@ -28,10 +28,14 @@ jobs:
         run: python3 .ci/v149-let-bindings.py
       - name: Normalize v149 residual carrier
         run: python3 .ci/v149-residual-carrier.py
-      - name: Normalize Nat zero namespace
-        run: python3 .ci/v149-ring-zero-namespace.py
+      - name: Normalize Nat and Ring namespace
+        run: |
+          python3 .ci/v149-ring-zero-namespace.py
+          python3 .ci/final-qualify-ordered-fields.py
       - name: Print failing parser context
         run: |
+          echo '--- transformed lines 120-145 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '120,145p'
           echo '--- transformed lines 850-890 ---'
           nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '850,890p'
       - name: Print replay parser context
@@ -40,6 +44,10 @@ jobs:
           nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1385,1420p'
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Kernel-check MLP temporal composition
+        run: agda --safe Exotic/ERL/MLPTemporalComposition_v150.agda
+      - name: Kernel-check Markovian MLP temporal composition
+        run: agda --safe Exotic/ERL/MLPMarkovTemporalComposition_v151.agda
       - name: Persist kernel-checked monolith source
         shell: bash
         run: |
