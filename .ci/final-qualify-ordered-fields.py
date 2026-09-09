@@ -28,11 +28,17 @@ segment = re.sub(
     r'\1Ring._*_ ring c a < Ring._*_ ring c b',
     segment,
 )
-segment = re.sub(
-    r'(mulPos\s*:\s*[^\n]*→\s*zero < a \) → zero < )a \* b',
-    r'\1Ring._*_ ring a b',
-    segment,
-)
+
+# Agda's parser sees the locally opened Ring operator and the record field
+# operator as distinct overloads. Use a literal replacement for mulPos so the
+# exact problematic application is eliminated deterministically.
+old_mul_pos = '    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b\n'
+new_mul_pos = '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b\n'
+if old_mul_pos in segment:
+    segment = segment.replace(old_mul_pos, new_mul_pos, 1)
+elif new_mul_pos not in segment:
+    raise SystemExit('mulPos parser target not found')
+
 segment = re.sub(
     r'(squarePositive\s*:\s*[^\n]*→\s*zero < )x \* x',
     r'\1Ring._*_ ring x x',
@@ -71,11 +77,12 @@ for forbidden in (
     'c * a ≤ c * b',
     'a < b → c < d → a + c < b + d',
     'a < b → c + a < c + b',
+    'zero < a * b',
 ):
     if forbidden in segment:
         raise SystemExit(f'final ordered-field qualification incomplete: {forbidden!r}')
 
-print('final-ordered-ring-qualification=validated')
 for line in segment.splitlines():
-    if 'squarePositive' in line or 'squareNonnegative' in line:
-        print('ORDERED-RING-SQUARE:', line)
+    if 'mulPos' in line or 'squarePositive' in line or 'squareNonnegative' in line:
+        print('ORDERED-RING-PRODUCT:', line)
+print('final-ordered-ring-qualification=validated')
