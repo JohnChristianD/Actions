@@ -32,6 +32,11 @@ if second >= 0:
         raise SystemExit('vAddZeroL terminator not found after duplicate SmoothAlgebra')
     s = s[:second] + s[keep:]
 
+# The OrderedRing carrier is named `ring` in the authoritative finite algebra.
+# Older canonical fragments used `base`, which is not a field and therefore is
+# a genuine source-level boundary error rather than a mathematical theorem.
+s = s.replace('OrderedRing.base', 'OrderedRing.ring')
+
 # A generic zipWithV already exists near the primitive vector helpers. The
 # canonical vAdd/vSub/vHadamard blocks previously redeclared the same helper
 # locally, which clashes at top-level scope under Agda 2.8.0. Reuse the single
@@ -57,7 +62,8 @@ sub_anchor = 'vSub {S} = zipWithV sub\n  where\n'
 if sub_anchor in s:
     pos = s.index(sub_anchor) + len(sub_anchor)
     rest = s[pos:]
-    if '  sub : Scalar S → Scalar S → Scalar S\n' not in rest.split('\n------------------------------------------------------------------------', 1)[0]:
+    local_block = rest.split('\n------------------------------------------------------------------------', 1)[0]
+    if '  sub : Scalar S → Scalar S → Scalar S\n' not in local_block:
         m = re.match(
             r'(\s*Rg\s*=\s*[^\n]+\n)\s*(sub\s+x\s+y\s*=\s*[^\n]+\n)',
             rest,
@@ -71,22 +77,37 @@ if sub_anchor in s:
 else:
     raise SystemExit('vSub canonical declaration not found')
 
-# The only layerNormVariance *top-level* declaration should be counted here.
-# A local helper nested inside the LayerNorm record is a distinct declaration
-# scope and is not a duplicate top-level binding.
-variance_decl = '''layerNormVariance : ∀ {S d} → VecS S d → Scalar S → Scalar S
-layerNormVariance _ eps = eps
-
+# Remove the obsolete nested variance helper and expose the real variance
+# function as the domain-carrying contract of LayerNorm.
+old_ln = '''record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
+  field
+    gain shift : VecS S d
+    epsilon : Scalar S
+    epsilonNonzero : epsilon ≠ Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    denominatorDomain : VecS S d → SmoothAlgebra.sqrtDomain S (layerNormVariance epsilon)
+  where
+  layerNormVariance : Scalar S → Scalar S
+  layerNormVariance eps = eps
 '''
-if not re.search(r'(?m)^layerNormVariance\s*:', s):
-    insertion = s.find('-- Domain-carrying recurrent LayerNorm boundary')
-    if insertion < 0:
-        insertion = s.find('record LayerNorm')
-    if insertion < 0:
-        raise SystemExit('LayerNorm boundary not found for variance helper insertion')
-    s = s[:insertion] + variance_decl + s[insertion:]
+new_ln = '''record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
+  field
+    gain shift : VecS S d
+    epsilon : Scalar S
+    epsilonNonzero : epsilon ≠ Ring.zero (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    denominatorDomain : (xs : VecS S d) →
+      SmoothAlgebra.sqrtDomain S (layerNormVariance xs epsilon)
+'''
+if old_ln in s:
+    s = s.replace(old_ln, new_ln, 1)
+elif 'denominatorDomain : (xs : VecS S d) →\n      SmoothAlgebra.sqrtDomain S (layerNormVariance xs epsilon)\n' not in s:
+    raise SystemExit('LayerNorm malformed denominator-domain block not found uniquely')
 
+# The old compatibility layer may have supplied a temporary epsilon-only helper.
+# Do not recreate it: the canonical top-level variance is the only intended
+# algebraic definition.
 top_level_variance_count = len(re.findall(r'(?m)^layerNormVariance\s*:', s))
+if top_level_variance_count == 0:
+    raise SystemExit('canonical top-level layerNormVariance declaration missing')
 if top_level_variance_count != 1:
     raise SystemExit(f'layerNormVariance top-level definition count is {top_level_variance_count}, expected 1')
 
@@ -103,4 +124,4 @@ if s.count('zipWithV :') != 1:
 if 'vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))\n  where\n' in s:
     raise SystemExit('empty vAdd where block remains')
 p.write_text(s)
-print('canonical algebra helper scope normalized: one zipWithV, typed sub, one top-level layerNormVariance')
+print('canonical algebra helper scope normalized: one SmoothAlgebra, one top-level variance, canonical OrderedRing.ring')
