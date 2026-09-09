@@ -42,15 +42,15 @@ jobs:
           p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
           s = p.read_text()
           old = '''  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)
-'''
+            accumulate i c (state s) = state (λ j with finDecEq j i
+              ... | yes _ = s j + c
+              ... | no _ = s j)
+          '''
           new = '''  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j)
-'''
+            accumulate i c (state s) = state (λ j with finDecEq j i
+            ... | yes _ = s j + c
+            ... | no _ = s j)
+          '''
           if s.count(old) > 1:
               raise SystemExit(f'non-unique accumulator target: {s.count(old)}')
           if s.count(old) == 1:
