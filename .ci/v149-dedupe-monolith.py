@@ -43,18 +43,27 @@ else:
 
   accumulate i c (state s) = state (accumulateAt i c s)
 """
-    new_at = """  accumulateAt : Fin n → R → Cot → Fin n → R
-  accumulateAt i c s j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j
-
-  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (accumulateAt i c s)
-"""
     if s.count(old_at) == 1:
-        s = s.replace(old_at, new_at, 1)
-    elif s.count(new_at) != 1:
+        s = s.replace(old_at, new_acc, 1)
+    elif s.count(new_acc) != 1:
         raise SystemExit('robust accumulateAt parser form not found')
+
+# The terminal uniqueness proof is an equality transport problem; pattern
+# matching all three equality premises avoids overloaded higher-order lambdas.
+old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
+if s.count(old_terminal) != 1:
+    raise SystemExit(f'expected exactly one terminal uniqueness theorem: {s.count(old_terminal)}')
+start = s.index(old_terminal)
+sep = s.find('\n------------------------------------------------------------------------', start)
+if sep < 0:
+    raise SystemExit('expected separator after terminal uniqueness theorem')
+replacement_terminal = '''qTerminalProjectionUnique_v147 t u refl refl refl =
+  vectorExt_v147 (λ i →
+    trans
+      (QTerminalSolution_v147.stationarity t i)
+      (sym (QTerminalSolution_v147.stationarity u i)))
+'''
+s = s[:start] + replacement_terminal + s[sep:]
 
 if s.count('record SmoothAlgebra : Set₁ where') != 1:
     raise SystemExit('expected exactly one SmoothAlgebra declaration after dedupe')
@@ -62,6 +71,8 @@ if s.count('sqrtDomain : R → Set') != 1 or s.count('sqrtSquareLaw :') != 1:
     raise SystemExit('expected exactly one domain-aware sqrt law after dedupe')
 if s.count('accumulateAt : Fin n → R → Cot → Fin n → R') != 1:
     raise SystemExit('expected exactly one robust accumulateAt declaration')
+if s.count('qTerminalProjectionUnique_v147 t u refl refl refl =') != 1:
+    raise SystemExit('terminal uniqueness normalization missing')
 
 p.write_text(s)
-print('monolith dedupe/domain/accumulateAt normalization applied exactly once')
+print('monolith canonical algebra/parser/terminal uniqueness normalization applied exactly once')
