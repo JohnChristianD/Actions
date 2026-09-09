@@ -291,21 +291,24 @@ record EfficientCHAD_CReLU_Tsallis2_TheoremTarget
       OrderedAlgebra._+_ A (cplus A x) (cminus A x) ≡
       OrderedAlgebra.abs A x
     tsallisActiveEquilibrium : ∀ i →
-      Tsallis2Branch.active
-        (TsallisSensitivityCertificate.branch
-          (EfficientCHADCertificate.attention certificate)) i ≡ true →
-      Tsallis2Branch.weights
-        (TsallisSensitivityCertificate.branch
-          (EfficientCHADCertificate.attention certificate)) i ≡
+      index i
+        (Tsallis2Branch.active
+          (TsallisSensitivityCertificate.branch
+            (EfficientCHADCertificate.attention certificate))) ≡ true →
+      index i
+        (Tsallis2Branch.weights
+          (TsallisSensitivityCertificate.branch
+            (EfficientCHADCertificate.attention certificate))) ≡
         OrderedAlgebra._+_ A
-          (Tsallis2Branch.scores
-            (TsallisSensitivityCertificate.branch
-              (EfficientCHADCertificate.attention certificate)) i)
+          (index i
+            (Tsallis2Branch.scores
+              (TsallisSensitivityCertificate.branch
+                (EfficientCHADCertificate.attention certificate))))
           (OrderedAlgebra.neg A
-            (index
+            (index i
               (Tsallis2Branch.tau
                 (TsallisSensitivityCertificate.branch
-                  (EfficientCHADCertificate.attention certificate))) i))
+                  (EfficientCHADCertificate.attention certificate)))))
     qIdempotence : ∀ x →
       QProjectionCertificate.project
         (EfficientCHADCertificate.projection certificate)
