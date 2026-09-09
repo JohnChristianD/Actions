@@ -18,6 +18,7 @@ replacements = (
     ('a + c < b + d', 'Ring._+_ ring a c < Ring._+_ ring b d'),
     ('c + a < c + b', 'Ring._+_ ring c a < Ring._+_ ring c b'),
     ('a + neg b < zero', 'Ring._+_ ring a (neg b) < zero'),
+    ('abs (x + y) ≤ abs x + abs y', 'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)'),
 )
 for old, new in replacements:
     segment = segment.replace(old, new)
@@ -36,11 +37,9 @@ for forbidden in (
     'a + c < b + d',
     'c + a < c + b',
     'a + neg b < zero',
+    'abs (x + y) ≤ abs x + abs y',
 ):
     if forbidden in segment:
         raise SystemExit(f'ordered-field qualification incomplete: {forbidden!r}')
 
-for line in segment.splitlines():
-    if any(k in line for k in ('mulNonneg', 'mulLeLeft', 'mulLtPosLeft', 'mulLtPosCancelLeft', 'mulPos', 'subLtZero', 'squarePositive', 'squareNonnegative')):
-        print('ORDERED-RING-PRODUCT:', line)
 print('final-ordered-ring-qualification=validated')
