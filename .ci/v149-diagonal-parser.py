@@ -26,5 +26,24 @@ replacement = '''diagonalNewtonExposurePositive_v146 h =
        hsum
 '''
 s = s[:start] + replacement + s[sep:]
+
+# Agda requires a local type signature for the dependent local subtraction
+# helper because it is defined in a where-block under an overloaded scalar.
+old = '''vSub {S} = zipWithV minus
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  minus x y = Ring._+_ Rg x (Ring.neg Rg y)
+'''
+new = '''vSub {S} = zipWithV minus
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  minus : Scalar S → Scalar S → Scalar S
+  minus x y = Ring._+_ Rg x (Ring.neg Rg y)
+'''
+if old in s:
+    s = s.replace(old, new, 1)
+elif '  minus : Scalar S → Scalar S → Scalar S\n  minus x y =' not in s:
+    raise SystemExit('vSub local minus helper is neither canonical nor already typed')
+
 p.write_text(s)
-print('diagonal exposure proof normalized exactly once')
+print('diagonal exposure proof and vSub local-minus signature normalized exactly once')
