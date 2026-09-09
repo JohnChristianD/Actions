@@ -43,9 +43,9 @@ cases = [
 ]
 
 puts 'oracle=ruby-rational'
-cases.each_with_index do |(x, h, c), i|
+cases.each do |x, h, c|
   lh, lc = lstm(x, h, c)
-  puts "case=#{i + 1}=" + [x, h, c, lh, lc].map { |r| render(r) }.join(',')
+  puts 'case=' + [x, h, c, lh, lc].map { |r| render(r) }.join(',')
 end
 
 weights, out = tsallis2([Rational(1), Rational(1, 2), Rational(-1, 2)], [Rational(1), Rational(-1), Rational(2)])
