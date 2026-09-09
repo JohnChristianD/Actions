@@ -2,12 +2,12 @@
 module Exotic.ERL.MLPTemporalComposition_v150 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
-open import Agda.Builtin.Equality using (_≡_; refl; cong; trans)
+open import Agda.Builtin.Equality using (_≡_; refl; sym; cong; trans)
 
 ------------------------------------------------------------------------
 -- Minimal finite algebraic temporal boundary for the stateless MLP variant.
 -- The MLP itself is an arbitrary pure function; the theorem therefore does
--- not assume differentiability or real analysis.  Temporal composition is
+-- not assume differentiability or real analysis. Temporal composition is
 -- carried entirely by an explicitly associative finite accumulator.
 ------------------------------------------------------------------------
 
@@ -38,31 +38,26 @@ record Monoid : Set₁ where
 
 open Monoid
 
-foldV : ∀ {M} → Monoid M → ∀ n → Vec (Carrier M) n → Carrier M
+foldV : ∀ (M : Monoid) → ∀ n → Vec (Carrier M) n → Carrier M
 foldV M zero [] = neutral M
-foldV M (suc n) (x ∷ xs) = x ∙ foldV M n xs
-  where
-    _∙_ = Monoid._∙_ M
+foldV M (suc n) (x ∷ xs) =
+  Monoid._∙_ M x (foldV M n xs)
 
-foldAppend : ∀ {M m n}
-  (M₀ : Monoid M)
-  (xs : Vec (Monoid.Carrier M₀) m)
-  (ys : Vec (Monoid.Carrier M₀) n) →
-  foldV M₀ (m + n) (appendV xs ys) ≡
-  foldV M₀ m xs ∙ foldV M₀ n ys
-foldAppend M₀ [] ys = sym-neutralLeft M₀ ys
-  where
-  sym-neutralLeft : ∀ (N : Monoid M) (zs : Vec (Carrier N) n) →
-    foldV N n zs ≡ neutral N ∙ foldV N n zs
-  sym-neutralLeft N zs = sym (neutralL N (foldV N _ zs))
-foldAppend M₀ (x ∷ xs) ys =
+foldAppend : ∀ {m n} (M : Monoid)
+  (xs : Vec (Carrier M) m)
+  (ys : Vec (Carrier M) n) →
+  foldV M (m + n) (appendV xs ys) ≡
+  Monoid._∙_ M (foldV M m xs) (foldV M n ys)
+foldAppend M [] ys =
+  sym (Monoid.neutralL M (foldV M _ ys))
+foldAppend M (x ∷ xs) ys =
   trans
-    (cong (λ z → Monoid._∙_ M₀ x z) (foldAppend M₀ xs ys))
-    (sym (assoc M₀ x (foldV M₀ _ xs) (foldV M₀ _ ys)))
+    (cong (Monoid._∙_ M x) (foldAppend M xs ys))
+    (sym (Monoid.assoc M x (foldV M _ xs) (foldV M _ ys)))
 
 ------------------------------------------------------------------------
--- MLP temporal map/fold.  An MLP is stateless, so each timestep receives
--- the same pure network function independently.  Temporal chunks therefore
+-- MLP temporal map/fold. An MLP is stateless, so each timestep receives
+-- the same pure network function independently. Temporal chunks therefore
 -- compose by ordinary monoid fold.
 ------------------------------------------------------------------------
 
@@ -70,30 +65,27 @@ record MLP (X Y : Set) : Set where
   field
     forward : X → Y
 
-mlpTemporalFold : ∀ {M X Y n}
-  (M₀ : Monoid M) →
-  MLP X (Carrier M₀) →
+mlpTemporalFold : ∀ {X n} (M : Monoid) →
+  MLP X (Carrier M) →
   Vec X n →
-  Carrier M₀
-mlpTemporalFold M₀ net xs =
-  foldV M₀ _ (mapV (MLP.forward net) xs)
+  Carrier M
+mlpTemporalFold M net xs =
+  foldV M _ (mapV (MLP.forward net) xs)
 
-mlpTemporalComposition : ∀ {M X Y m n}
-  (M₀ : Monoid M)
-  (net : MLP X (Carrier M₀))
+mlpTemporalComposition : ∀ {X m n} (M : Monoid)
+  (net : MLP X (Carrier M))
   (xs : Vec X m)
   (ys : Vec X n) →
-  mlpTemporalFold M₀ net (appendV xs ys) ≡
-  Monoid._∙_ M₀
-    (mlpTemporalFold M₀ net xs)
-    (mlpTemporalFold M₀ net ys)
-mlpTemporalComposition M₀ net xs ys =
-  foldAppend M₀ (mapV (MLP.forward net) xs)
+  mlpTemporalFold M net (appendV xs ys) ≡
+  Monoid._∙_ M
+    (mlpTemporalFold M net xs)
+    (mlpTemporalFold M net ys)
+mlpTemporalComposition M net xs ys =
+  foldAppend M (mapV (MLP.forward net) xs)
     (mapV (MLP.forward net) ys)
 
 ------------------------------------------------------------------------
--- The stronger chunk law: the network map itself distributes over temporal
--- append before the monoid fold is applied.
+-- The network map itself preserves temporal append.
 ------------------------------------------------------------------------
 
 mlpMapAppend : ∀ {X Y m n}
@@ -108,17 +100,16 @@ mlpMapAppend net (x ∷ xs) ys =
     (mlpMapAppend net xs ys)
 
 ------------------------------------------------------------------------
--- Hence MLP temporal batching has a finite compositional normal form:
--- map once per timestep, then fold each chunk, then combine chunk states.
+-- Finite normal form for temporal batching: map once per timestep, fold
+-- each chunk, then combine the chunk results.
 ------------------------------------------------------------------------
 
-mlpTemporalNormalForm : ∀ {M X Y m n}
-  (M₀ : Monoid M)
-  (net : MLP X (Carrier M₀))
+mlpTemporalNormalForm : ∀ {X m n} (M : Monoid)
+  (net : MLP X (Carrier M))
   (xs : Vec X m)
   (ys : Vec X n) →
-  mlpTemporalFold M₀ net (appendV xs ys) ≡
-  Monoid._∙_ M₀
-    (mlpTemporalFold M₀ net xs)
-    (mlpTemporalFold M₀ net ys)
+  mlpTemporalFold M net (appendV xs ys) ≡
+  Monoid._∙_ M
+    (mlpTemporalFold M net xs)
+    (mlpTemporalFold M net ys)
 mlpTemporalNormalForm = mlpTemporalComposition
