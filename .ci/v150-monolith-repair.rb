@@ -145,7 +145,7 @@ qualifications = {
   'zero < x * x' => 'zero < Ring._*_ ring x x',
   'zero ≤ x * x' => 'zero ≤ Ring._*_ ring x x',
   'a < b → c < d → a + c < b + d' => 'a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
-  'a < b → c + a < c + b' => 'a < b → c < d → Ring._+_ ring c a < Ring._+_ ring b c',
+  'a < b → c + a < c + b' => 'a < b → c < d → Ring._+_ ring c a < Ring._+_ ring c b',
   'abs (x + y) ≤ abs x + abs y' => 'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
   'abs (x * y) ≡ abs x * abs y' => 'abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)'
 }
