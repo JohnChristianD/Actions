@@ -2,7 +2,7 @@ name: Agda authoritative safe gate
 
 on:
   push:
-    branches: ['ci/v148-firstclass-lstm-chad', 'main', 'ci/v149-representation-algebra', 'ci/v149-representation-layernorm-closure']
+    branches: ['ci/v148-firstclass-lstm-chad', 'main', 'ci/v149-representation-algebra', 'ci/v149-representation-layernorm-closure', 'ci/v149-monolith-dedupe']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
@@ -30,7 +30,7 @@ jobs:
       - name: Verify Agda executable
         run: agda --version
       - name: Apply deterministic v149 monolith repair
-        if: github.head_ref == 'ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/v149-dedupe-monolith.py
       - name: Repair canonical accumulator only on legacy v149 LayerNorm branch
         if: github.head_ref == 'ci/v149-representation-layernorm-closure' || github.ref == 'refs/heads/ci/v149-representation-layernorm-closure'
@@ -60,7 +60,7 @@ jobs:
           PY
           git diff --check
       - name: Debug transformed L2 parser window
-        if: github.head_ref == 'ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: |
           echo '--- transformed lines 1370-1435 ---'
           nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1370,1435p'
@@ -81,7 +81,7 @@ jobs:
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist kernel-checked v149 source repair
-        if: github.head_ref == 'ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         shell: bash
         run: |
           set -euo pipefail
@@ -90,10 +90,10 @@ jobs:
             exit 0
           fi
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '41898282+JohnChristianD@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           git commit -m 'fix: persist kernel-checked v149 monolith algebra'
-          git push origin HEAD:${{ github.head_ref }}
+          git push origin HEAD:${{ github.head_ref || github.ref_name }}
       - name: Persist kernel-checked legacy v149 source repair
         if: github.head_ref == 'ci/v149-representation-layernorm-closure' || github.ref == 'refs/heads/ci/v149-representation-layernorm-closure'
         shell: bash
