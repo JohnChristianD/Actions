@@ -3,6 +3,29 @@ from pathlib import Path
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
 
+# Agda's unqualified Nat.zero clashes with the Ring field zero. Keep the
+# algebraic zero name canonical and qualify only Nat-indexed zero patterns.
+s = s.replace(
+    'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
+    'open import Agda.Builtin.Nat using (Nat; suc; _+_)',
+    1,
+)
+for old, new in [
+    ('sumFin _ z zero _ = z', 'sumFin _ z Nat.zero _ = z'),
+    ('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []'),
+    ('tabulateVS {S} {zero} f = []', 'tabulateVS {S} {Nat.zero} f = []'),
+    ('zeroVector {S} {zero} = []', 'zeroVector {S} {Nat.zero} = []'),
+    ('zeroVecS {S} {zero} = []', 'zeroVecS {S} {Nat.zero} = []'),
+    ('vZero_v140 {S} {zero} = []', 'vZero_v140 {S} {Nat.zero} = []'),
+    ('maskAllFalse {zero} = []', 'maskAllFalse {Nat.zero} = []'),
+    ('qRunFuel_v142 zero r = r', 'qRunFuel_v142 Nat.zero r = r'),
+    ('shiftLV_v146 zero xs = xs', 'shiftLV_v146 Nat.zero xs = xs'),
+    ('shiftRV_v146 zero xs = xs', 'shiftRV_v146 Nat.zero xs = xs'),
+    ('qsaXorShiftDeterministic_v146 zero seed = []', 'qsaXorShiftDeterministic_v146 Nat.zero seed = []'),
+]:
+    if old in s:
+        s = s.replace(old, new, 1)
+
 marker_start = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
 marker_end = "------------------------------------------------------------------------\n-- Seven coupled parameter blocks and finite parameter indices\n"
 if marker_start not in s or marker_end not in s:
@@ -17,8 +40,6 @@ while search >= 0:
     s = s[:search] + s[close:]
     search = s.find(marker_start, search)
 
-# Preserve the first algebra record as canonical, but repair the stale unary
-# max/min field type that conflicts with all later finite comparisons.
 old_max = "    sqrt recip max min : R → R\n"
 new_max = "    sqrt recip : R → R\n    max min : R → R → R\n"
 if s.count(old_max) == 1:
@@ -46,7 +67,6 @@ new_acc = """  accumulateAt : Fin n → R → Cot → Fin n → R
 if old_acc in s:
     s = s.replace(old_acc, new_acc, 1)
 
-# CVT archive update: move dependent with-clauses out of a lambda body.
 old_cvt = """insertCVT_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
   CVTArchive_v142 S cells → Fin cells → Scalar S → CVTArchive_v142 S cells
 insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
@@ -58,16 +78,27 @@ insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
   ...     | yes _ = record { occupied = true ; fitness = f }
   ...     | no _ = CVTArchive_v142.cell a j }
 """
-new_cvt = """insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
-  CVTArchive_v142 S cells → Fin cells → Fin cells → Scalar S → CVTSlot_v142 S
-insertCVTCell_v142 D a i j f with finDecEq i j
+new_cvt = """makeCVTSlot_v142 : ∀ {S} → Scalar S → CVTSlot_v142 S
+makeCVTSlot_v142 f = record { occupied = true ; fitness = f }
+
+insertCVTOccupied_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →
+  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S
+insertCVTOccupied_v142 D slot f with QProjectionDecisionAlgebra_v140.ltDec D
+  (CVTSlot_v142.fitness slot) f
+... | yes _ = makeCVTSlot_v142 f
+... | no _ = slot
+
+insertCVTReplacement_v142 : ∀ {S} → QProjectionDecisionAlgebra_v140 S →
+  CVTSlot_v142 S → Scalar S → CVTSlot_v142 S
+insertCVTReplacement_v142 D slot f with CVTSlot_v142.occupied slot
+... | false = makeCVTSlot_v142 f
+... | true = insertCVTOccupied_v142 D slot f
+
+insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
+  CVTArchive_v142 S cells → Fin cells → Scalar S → Fin cells → CVTSlot_v142 S
+insertCVTCell_v142 D a i f j with finDecEq i j
 ... | no _ = CVTArchive_v142.cell a j
-... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
-...   | false = record { occupied = true ; fitness = f }
-...   | true with QProjectionDecisionAlgebra_v140.ltDec D
-        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
-...     | yes _ = record { occupied = true ; fitness = f }
-...     | no _ = CVTArchive_v142.cell a j
+... | yes _ = insertCVTReplacement_v142 D (CVTArchive_v142.cell a j) f
 
 insertCVT_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
   CVTArchive_v142 S cells → Fin cells → Scalar S → CVTArchive_v142 S cells
@@ -76,7 +107,6 @@ insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i }
 if old_cvt in s:
     s = s.replace(old_cvt, new_cvt, 1)
 
-# residualSquareNonzero_v140
 rstart = s.find('residualSquareNonzero_v140 ')
 if rstart < 0: raise SystemExit('residual theorem marker not found')
 rsep = s.find('\n------------------------------------------------------------------------', rstart)
@@ -101,7 +131,6 @@ s = s[:rstart] + '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x 
     in OrderedRing.notLtFromLe ha hlt
 ''' + s[rsep:]
 
-# qProjectionCross_v141
 qstart = s.find('qProjectionCross_v141 ')
 if qstart < 0: raise SystemExit('q projection theorem marker not found')
 qsep = s.find('\n------------------------------------------------------------------------', qstart)
@@ -122,7 +151,6 @@ s = s[:qstart] + '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} 
        hright
 ''' + s[qsep:]
 
-# orderedFieldCrossStrict_v142
 cstart = s.find('orderedFieldCrossStrict_v142 ')
 if cstart < 0: raise SystemExit('cross theorem marker not found')
 csep = s.find('\n------------------------------------------------------------------------', cstart)
@@ -164,7 +192,6 @@ s = s[:cstart] + '''orderedFieldCrossStrict_v142 a b d e hd he h =
   in OrderedRing.mulLtPosCancelLeft hcross (OrderedRing.mulPos hd he)
 ''' + s[csep:]
 
-# multiplierDeletionStrict_v142
 mstart = s.find('multiplierDeletionStrict_v142 ')
 if mstart < 0: raise SystemExit('multiplier theorem marker not found')
 msep = s.find('\n------------------------------------------------------------------------', mstart)
@@ -189,7 +216,6 @@ s = s[:mstart] + '''multiplierDeletionStrict_v142 n d y z hd he h =
   in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
 ''' + s[msep:]
 
-# reciprocalNonnegative_v146
 rn = s.find('reciprocalNonnegative_v146 {S} {d} hd with')
 if rn < 0: raise SystemExit('reciprocal nonnegative theorem marker not found')
 rnsep = s.find('\n------------------------------------------------------------------------', rn)
@@ -210,7 +236,6 @@ s = s[:rn] + '''reciprocalNonnegative_v146 {S} {d} hd with
 ... | no h = h
 ''' + s[rnsep:]
 
-# qProjectionRetraction_v147 initial-form identity
 iform = '      initialForm : QRun_v142.projection'
 start = s.find(iform)
 if start >= 0:
@@ -220,10 +245,9 @@ if start >= 0:
         trans
           (cong (λ mu → qCandidate_v142 D mu
             (allActive_v147 {n = _}) p x) muZero)
-          (qCandidateZero_v147 D p x)
+          (qCandidateZero_v147 D p x hp)
 ''' + s[sep:]
 
-# Remove malformed audited-KKT documentation placeholder.
 kmarker = '-- The theorem to be exported after kernel checking is:'
 kstart = s.find(kmarker)
 if kstart >= 0:
@@ -233,7 +257,6 @@ if kstart >= 0:
 -- The executable constructive KKT theorem is defined below.
 ''' + s[ksep:]
 
-# qTerminalProjectionUnique_v147
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 if s.count(old_terminal) != 1: raise SystemExit('terminal uniqueness theorem count mismatch')
 tstart = s.index(old_terminal)
@@ -249,6 +272,5 @@ if s.count(marker_start) != 1: raise SystemExit('canonical marker count is not o
 if s.count('sqrtDomain : R → Set') != 1: raise SystemExit('sqrt domain law missing or duplicated')
 if s.count(kmarker) != 0: raise SystemExit('malformed audited KKT placeholder marker survived')
 if 'λ j with finDecEq' in s: raise SystemExit('dependent lambda-with parser form survived')
-
 p.write_text(s)
-print('cumulative v149 monolith normalization applied deterministically')
+print('cumulative v149 monolith normalization applied deterministically with Nat.zero namespace repair')
