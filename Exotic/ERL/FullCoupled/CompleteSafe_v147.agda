@@ -378,10 +378,7 @@ record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
     gain shift : VecS S d
     epsilon : Scalar S
     epsilonNonzero : epsilon ≠ Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S))
-    denominatorDomain : VecS S d → SmoothAlgebra.sqrtDomain S (layerNormVariance epsilon)
-  where
-  layerNormVariance : Scalar S → Scalar S
-  layerNormVariance eps = eps
+    denominatorDomain : VecS S d → SmoothAlgebra.sqrtDomain S epsilon
 
 layerNormMean : ∀ {S d} → VecS S d → Scalar S
 layerNormMean {S} {d} xs =
@@ -658,10 +655,13 @@ module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where
   runState : EState → Cot
   runState (state c) = c
 
+  accumulateAt : Fin n → R → Cot → Fin n → R
+  accumulateAt i c s j with finDecEq j i
+  ... | yes _ = s j + c
+  ... | no _ = s j
+
   accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)
+  accumulate i c (state s) = state (accumulateAt i c s)
 
   runBack : ∀ e ρ c → EState → EState
   runBack e ρ c s =
