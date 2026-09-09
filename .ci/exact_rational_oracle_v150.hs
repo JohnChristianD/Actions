@@ -1,6 +1,5 @@
-import Data.Ratio ((%))
+import Data.Ratio (Rational, (%), denominator, numerator)
 import Data.List (sortBy)
-import Data.Ord (comparing)
 
 q0 :: Rational
 q0 = 0
@@ -30,15 +29,8 @@ path1 w1 w2 = sum
   , h <- [0 .. length w1 - 1]
   ]
 
-fmt :: Rational -> String
-fmt q = show (numerator q) ++ "/" ++ show (denominator q)
-  where
-    numerator r = let a = r * denominator r in round a
-    denominator _ = 1
-
 showR :: Rational -> String
-showR q = case q of
-  n % d -> show n ++ "/" ++ show d
+showR q = show (numerator q) ++ "/" ++ show (denominator q)
 
 main :: IO ()
 main = do
