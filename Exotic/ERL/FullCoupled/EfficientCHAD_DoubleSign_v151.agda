@@ -19,7 +19,7 @@ cong₂ f refl refl = refl
 record SignActivationCertificate (A : OrderedAlgebra) : Set₁ where
   field
     sign : OrderedAlgebra.R A → OrderedAlgebra.R A
-    signIdempotent : ∀ x → sign x ≡ sign (sign x)
+    signIdempotent : ∀ x → sign (sign x) ≡ sign x
     signAbsPreserving : ∀ x →
       OrderedAlgebra.abs A (sign x) ≡ OrderedAlgebra.abs A x
 
