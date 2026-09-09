@@ -39,9 +39,36 @@ local_zip = '''  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Ve
   zipWithV _ [] [] = []
   zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
 '''
-local_count = s.count(local_zip)
-if local_count:
-    s = s.replace(local_zip, '')
+s = s.replace(local_zip, '')
+
+# Once the vAdd local zipWithV is removed, its where block can become empty;
+# remove that block. Keep the surrounding vAdd definition unchanged.
+vadd_empty_where = '''vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))
+  where
+
+vSub :'''
+s = s.replace(vadd_empty_where, '''vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))
+
+vSub :''')
+
+# The vSub helper `sub` still needs a local type signature after local helper
+# dedupe. Give it the exact scalar carrier type used by the surrounding S.
+needle = '''vSub {S} = zipWithV sub
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  sub x y = Ring._+_ Rg x (Ring.neg Rg y)
+'''
+replacement = '''vSub {S} = zipWithV sub
+  where
+  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
+  sub : Scalar S → Scalar S → Scalar S
+  sub x y = Ring._+_ Rg x (Ring.neg Rg y)
+'''
+if needle in s:
+    s = s.replace(needle, replacement, 1)
+else:
+    if '  sub : Scalar S → Scalar S → Scalar S\n' not in s:
+        raise SystemExit('vSub local sub declaration shape not found')
 
 if s.count(record) != 1:
     raise SystemExit(f'SmoothAlgebra definition count is {s.count(record)}, expected 1')
@@ -53,5 +80,7 @@ if s.count('tabulateV :') != 1:
     raise SystemExit(f'tabulateV helper count is {s.count("tabulateV :")}, expected 1')
 if s.count('zipWithV :') != 1:
     raise SystemExit(f'zipWithV definition count is {s.count("zipWithV :")}, expected 1')
+if 'vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))\n  where\n' in s:
+    raise SystemExit('empty vAdd where block remains')
 p.write_text(s)
-print('legacy smooth algebra, duplicate matrix surface, and local zipWithV redeclarations removed')
+print('canonical vector helper dedupe normalized: global zipWithV, typed vSub sub, no empty vAdd where')
