@@ -2,29 +2,50 @@ name: Functional exact-rational oracle cross-check
 
 on:
   push:
-    branches: ['ci/v148-firstclass-lstm-chad']
+    branches: ['main', 'ci/v149-monolith-dedupe']
+    paths:
+      - 'Exotic/ERL/**/*.agda'
+      - 'oracle/haskell_oracle.hs'
+      - 'oracle/elixir_oracle.exs'
+      - 'oracle/rational_functional_oracle.rb'
+      - 'oracle/rational_certificate.rb'
+      - '.github/workflows/oracle-crosscheck.yml'
   pull_request:
     branches: ['main']
+    paths:
+      - 'Exotic/ERL/**/*.agda'
+      - 'oracle/haskell_oracle.hs'
+      - 'oracle/elixir_oracle.exs'
+      - 'oracle/rational_functional_oracle.rb'
+      - 'oracle/rational_certificate.rb'
+      - '.github/workflows/oracle-crosscheck.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  oracle-crosscheck:
+  exact-rational-oracles:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        oracle: [haskell, elixir, ruby]
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Haskell
+        if: matrix.oracle == 'haskell'
         uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.6'
 
-      - name: Run Haskell exact-rational LSTM oracle
-        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+      - name: Run Haskell exact-Rational oracle
+        if: matrix.oracle == 'haskell'
+        run: runghc oracle/haskell_oracle.hs > oracle-output.txt
 
       - name: Set up Elixir
+        if: matrix.oracle == 'elixir'
         uses: erlef/setup-beam@v1
         with:
           otp-version: '27'
@@ -32,21 +53,60 @@ jobs:
           hexpm: true
           rebar3: false
 
-      - name: Run Elixir exact-rational LSTM oracle
-        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
-
-      - name: Compare exact rational functional traces
-        run: |
-          set -euo pipefail
-          sed 's/\r$//' oracle/haskell.csv | sed '/^$/d' > oracle/haskell.normalized.csv
-          sed 's/\r$//' oracle/elixir.csv | sed '/^$/d' > oracle/elixir.normalized.csv
-          diff -u oracle/haskell.normalized.csv oracle/elixir.normalized.csv
-          echo 'exact-rational-functional-oracle-cross-check=PASS'
+      - name: Run Elixir exact-Rational oracle
+        if: matrix.oracle == 'elixir'
+        run: elixir oracle/elixir_oracle.exs > oracle-output.txt
 
       - name: Set up Ruby
+        if: matrix.oracle == 'ruby'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
 
-      - name: Run Ruby exact Rational certificate
+      - name: Run native Ruby exact-Rational oracle
+        if: matrix.oracle == 'ruby'
+        run: ruby oracle/rational_functional_oracle.rb > oracle-output.txt
+
+      - name: Upload oracle output
+        uses: actions/upload-artifact@v4
+        with:
+          name: exact-rational-${{ matrix.oracle }}
+          path: oracle-output.txt
+          if-no-files-found: error
+
+  exact-rational-consistency:
+    runs-on: ubuntu-24.04
+    needs: exact-rational-oracles
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exact-rational-*
+          path: oracle-results
+          merge-multiple: false
+      - name: Compare independent exact-Rational traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in oracle-results/exact-rational-*/oracle-output.txt; do
+            sed -i 's/\r$//' "$f"
+          done
+          for f in oracle-results/exact-rational-*/oracle-output.txt; do
+            grep -v '^oracle=' "$f" | grep -v '^status=' > "$f.normalized"
+          done
+          diff -u oracle-results/exact-rational-haskell/oracle-output.txt.normalized oracle-results/exact-rational-elixir/oracle-output.txt.normalized
+          diff -u oracle-results/exact-rational-haskell/oracle-output.txt.normalized oracle-results/exact-rational-ruby/oracle-output.txt.normalized
+          test "$(tail -n 1 oracle-results/exact-rational-haskell/oracle-output.txt)" = 'status=PASS'
+          test "$(tail -n 1 oracle-results/exact-rational-elixir/oracle-output.txt)" = 'status=PASS'
+          test "$(tail -n 1 oracle-results/exact-rational-ruby/oracle-output.txt)" = 'status=PASS'
+          echo 'exact-rational-haskell-elixir-ruby-consistency=PASS'
+
+  q-certificate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - name: Run native Ruby q-projection Rational certificate
         run: ruby oracle/rational_certificate.rb
