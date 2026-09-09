@@ -48,14 +48,34 @@ else:
     elif s.count(new_acc) != 1:
         raise SystemExit('robust accumulateAt parser form not found')
 
-old_residual = '        hlt : alpha < zero = subst (λ q → q < zero) hzero hr'
-new_residual = '        hlt = subst (λ q → q < zero) hzero hr'
-if s.count(old_residual) > 1:
-    raise SystemExit(f'unexpected residual hlt binding duplicate: {s.count(old_residual)}')
-if s.count(old_residual) == 1:
-    s = s.replace(old_residual, new_residual, 1)
-elif s.count(new_residual) != 1:
-    raise SystemExit('residual hlt binding target not found')
+residual_marker = 'residualSquareNonzero_v140 '
+rstart = s.find(residual_marker)
+if rstart < 0:
+    raise SystemExit('residual square theorem marker not found')
+rsep = s.find('\n------------------------------------------------------------------------', rstart)
+if rsep < 0:
+    raise SystemExit('residual square theorem separator not found')
+new_residual = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
+  λ hx →
+    let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+        hxx0 = trans
+          (cong₂ (Ring._*_ Rg) hx hx)
+          (Ring.zeroMulL Rg zero)
+        hmu0 = trans
+          (cong (λ q → mu * q) hxx0)
+          (Ring.zeroMulR Rg mu)
+        hneg0 = trans
+          (cong (λ q → Ring.neg Rg q) hmu0)
+          (trans
+            (sym (Ring.addZeroR Rg (Ring.neg Rg zero)))
+            (Ring.addNegL Rg zero))
+        hzero = trans
+          (cong (λ q → alpha + q) hneg0)
+          (Ring.addZeroR Rg alpha)
+        hlt = subst (λ q → q < zero) hzero hr
+    in OrderedRing.notLtFromLe ha hlt
+'''
+s = s[:rstart] + new_residual + s[rsep:]
 
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 if s.count(old_terminal) != 1:
