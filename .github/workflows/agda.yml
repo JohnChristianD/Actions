@@ -34,6 +34,9 @@ jobs:
       - name: Apply deterministic v149 monolith repair
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/v149-dedupe-monolith.py
+      - name: Normalize v149 Nat namespace
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/normalize-nat-namespace.py
       - name: Normalize v149 LayerNorm denominator domain
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/v149-layernorm-parser.py
