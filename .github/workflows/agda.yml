@@ -2,7 +2,7 @@ name: Agda authoritative safe gate
 
 on:
   push:
-    branches: ['ci/v148-firstclass-lstm-chad', 'main', 'ci/v149-representation-algebra', 'ci/v149-representation-layernorm-closure', 'ci/v149-monolith-dedupe']
+    branches: ['main', 'ci/v149-monolith-dedupe']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
@@ -52,6 +52,13 @@ jobs:
       - name: Normalize v149 reciprocal nonnegative proof
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/v149-reciprocal-parser.py
+      - name: Debug late trans context
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '--- lines 2698-2720 after repair ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '2698,2720p'
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
