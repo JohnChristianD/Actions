@@ -34,6 +34,9 @@ jobs:
       - name: Apply deterministic v149 monolith repair
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-dedupe-monolith.py
+      - name: Remove duplicate v149 SmoothAlgebra
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
+        run: python3 .ci/v149-dedupe-duplicate-smooth.py
       - name: Normalize v149 square parser boundary
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-square-parser.py
