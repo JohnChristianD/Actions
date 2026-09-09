@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (Nat; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 data ⊥ : Set where
@@ -20,7 +20,7 @@ data Fin : Nat → Set where
   fsuc : {n : Nat} → Fin n → Fin (suc n)
 
 data Vec (A : Set) : Nat → Set where
-  [] : Vec A zero
+  [] : Vec A Nat.zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
 index : ∀ {A n} → Fin n → Vec A n → A
@@ -184,7 +184,7 @@ record QProjectionCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
 record DyadicCoupledL2 (A : OrderedAlgebra) : Set₁ where
   field
     scale : Nat → OrderedAlgebra.R A
-    zeroScale : scale zero ≡ OrderedAlgebra.one A
+    zeroScale : scale Nat.zero ≡ OrderedAlgebra.one A
     half : ∀ k → OrderedAlgebra._+_ A (scale (suc k)) (scale (suc k)) ≡ scale k
     coupledNorm : OrderedAlgebra.R A → OrderedAlgebra.R A → OrderedAlgebra.R A
     coupledLaw : ∀ theta k →
@@ -206,14 +206,14 @@ record EfficientCHADCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
     branch : CompositeBranch A n
 
 natPlus : Nat → Nat → Nat
-natPlus a zero = a
+natPlus a Nat.zero = a
 natPlus a (suc b) = suc (natPlus a b)
 
 degreeStep : Nat → Nat
 degreeStep d = natPlus d (natPlus d d)
 
 power3 : Nat → Nat
-power3 zero = suc zero
+power3 Nat.zero = suc Nat.zero
 power3 (suc k) = degreeStep (power3 k)
 
 branchDegreeLaw : ∀ k → degreeStep (power3 k) ≡ power3 (suc k)
