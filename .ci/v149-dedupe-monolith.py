@@ -48,46 +48,15 @@ else:
     elif s.count(new_acc) != 1:
         raise SystemExit('robust accumulateAt parser form not found')
 
-# The typed dependent let at residualSquareNonzero_v140 was malformed for Agda:
-# a typed let uses a declaration line followed by a separate binding equation.
-old_residual = '''residualSquareNonzero_v140 ha hr hx =
-  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
-        (mu * (hx * hx)) ≡ alpha =
-      trans
-        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
-          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
-        (Ring.addZeroR (OrderedRing.ring _) alpha)
-  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))
-'''
-new_residual = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
-  λ hx →
-    let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-        hxx0 = trans
-          (cong₂ (Ring._*_ Rg) hx hx)
-          (Ring.zeroMulL Rg zero)
-        hmu0 = trans
-          (cong (λ q → mu * q) hxx0)
-          (Ring.zeroMulR Rg mu)
-        hneg0 = trans
-          (cong (λ q → Ring.neg Rg q) hmu0)
-          (trans
-            (sym (Ring.addZeroR Rg (Ring.neg Rg zero)))
-            (Ring.addNegL Rg zero))
-        hzero = trans
-          (cong (λ q → alpha + q) hneg0)
-          (Ring.addZeroR Rg alpha)
-        hlt : alpha < zero = subst (λ q → q < zero) hzero hr
-    in OrderedRing.notLtFromLe ha hlt
-'''
+old_residual = '        hlt : alpha < zero = subst (λ q → q < zero) hzero hr'
+new_residual = '        hlt = subst (λ q → q < zero) hzero hr'
 if s.count(old_residual) > 1:
-    raise SystemExit(f'unexpected residual proof duplicate: {s.count(old_residual)}')
+    raise SystemExit(f'unexpected residual hlt binding duplicate: {s.count(old_residual)}')
 if s.count(old_residual) == 1:
     s = s.replace(old_residual, new_residual, 1)
-elif s.count('residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
-    raise SystemExit('residual square normalization target not found')
+elif s.count(new_residual) != 1:
+    raise SystemExit('residual hlt binding target not found')
 
-# The terminal uniqueness proof is an equality transport problem; pattern
-# matching all three equality premises avoids overloaded higher-order lambdas.
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 if s.count(old_terminal) != 1:
     raise SystemExit(f'expected exactly one terminal uniqueness theorem: {s.count(old_terminal)}')
@@ -111,6 +80,8 @@ if s.count('accumulateAt : Fin n → R → Cot → Fin n → R') != 1:
     raise SystemExit('expected exactly one robust accumulateAt declaration')
 if s.count('residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
     raise SystemExit('residual square normalization missing')
+if s.count('        hlt = subst (λ q → q < zero) hzero hr') != 1:
+    raise SystemExit('residual hlt inference normalization missing')
 if s.count('qTerminalProjectionUnique_v147 t u refl refl refl =') != 1:
     raise SystemExit('terminal uniqueness normalization missing')
 
