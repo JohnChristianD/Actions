@@ -58,8 +58,7 @@ signDoubleMatrix s [] = refl
 signDoubleMatrix s (r ∷ rs) =
   cong₂ _∷_ (signDoubleVec s r) (signDoubleMatrix s rs)
 
-record DoubleSignNormCertificate
-  (A : OrderedAlgebra) : Set₁ where
+record DoubleSignNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
     vectorL1Preserved : ∀ {n : Nat} (s : SignActivationCertificate A)
       (x : Vector A n) →
@@ -140,12 +139,12 @@ record EfficientCHAD_DoubleSign_TheoremTarget
   field
     stack : PredictivePrescriptiveConjectureCertificate A n window
     interpolation : FiniteInterpolationCertificate A
-    doubleSignVec : ∀ x →
+    doubleSignVec : ∀ (x : Vector A n) →
       signVec₂
         (PredictivePrescriptiveConjectureCertificate.sign stack) x ≡
       signVec
         (PredictivePrescriptiveConjectureCertificate.sign stack) x
-    doubleSignMatrix : ∀ {m} (W : Matrix A m n) →
+    doubleSignMatrix : ∀ {m : Nat} (W : Matrix A m n) →
       signMatrix₂
         (PredictivePrescriptiveConjectureCertificate.sign stack) W ≡
       signMatrix
