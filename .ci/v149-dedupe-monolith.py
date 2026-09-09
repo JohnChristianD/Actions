@@ -116,7 +116,7 @@ old_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
               (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
                 (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
                   (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
-                    (Ring.mulOneL Rg e))))) refl)
+                    (Ring.mulOneL Rg e)))) )
       rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =
         trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
           (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
@@ -124,7 +124,7 @@ old_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
               (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
                 (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
                   (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
-                    (Ring.mulOneL Rg d))))) refl)
+                    (Ring.mulOneL Rg d)))) )
   in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
 '''
 new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
@@ -138,7 +138,7 @@ new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
               (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
                 (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
                   (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
-                    (Ring.mulOneL Rg e))))) refl)
+                    (Ring.mulOneL Rg e)))) )
       rightNorm =
         trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
           (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
@@ -146,7 +146,7 @@ new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
               (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
                 (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
                   (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
-                    (Ring.mulOneL Rg d))))) refl)
+                    (Ring.mulOneL Rg d)))) )
   in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
 '''
 if s.count(old_cross) > 1:
