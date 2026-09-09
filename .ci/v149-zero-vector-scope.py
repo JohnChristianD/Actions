@@ -5,23 +5,23 @@ s = p.read_text()
 marker = 'vAddZeroL : ∀ {S n} (x : VecS S n) (i : Fin n) →'
 if marker not in s:
     raise SystemExit('vAddZeroL marker not found')
-if 'zeroVector : ∀ {S n} → VecS S n\n' not in s:
-    block = '''zeroVector : ∀ {S n} → VecS S n
-zeroVector {S} {zero} = []
-zeroVector {S} {suc n} =
-  Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)) ∷ zeroVector {S = S} {n = n}
+
+name = 'zeroVectorTop'
+if f'{name} : ∀ {{S n}} → VecS S n\n' not in s:
+    block = '''zeroVectorTop : ∀ {S n} → VecS S n
+zeroVectorTop {S} {zero} = []
+zeroVectorTop {S} {suc n} =
+  Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)) ∷ zeroVectorTop {S = S} {n = n}
 
 '''
     s = s.replace(marker, block + marker, 1)
-# Remove the old local declaration, since the theorem type needs the shared one.
-old = '''  where
-  zeroVector : ∀ {S n} → VecS S n
-  zeroVector {S} {zero} = []
-  zeroVector {S} {suc n} =
-    Ring.zero (OrderedRing.base (SmoothAlgebra.orderedRing S)) ∷ zeroVector {S = S} {n = n}
-'''
-s = s.replace(old, '', 1)
+
+type_line = '  indexV (vAdd (zeroVector {S = S} {n = n}) x) i ≡ indexV x i'
+if type_line in s:
+    s = s.replace(type_line, '  indexV (vAdd (zeroVectorTop {S = S} {n = n}) x) i ≡ indexV x i', 1)
 p.write_text(s)
-if s.count('zeroVector : ∀ {S n} → VecS S n') != 1:
-    raise SystemExit('zeroVector scope normalization count mismatch')
-print('zeroVector-scope=top-level')
+if s.count(f'{name} : ∀ {{S n}} → VecS S n') != 1:
+    raise SystemExit('zeroVectorTop declaration count mismatch')
+if 'indexV (vAdd (zeroVectorTop {S = S} {n = n}) x) i' not in s:
+    raise SystemExit('zeroVectorTop theorem type rewrite missing')
+print('zeroVector-scope=top-level-unambiguous')
