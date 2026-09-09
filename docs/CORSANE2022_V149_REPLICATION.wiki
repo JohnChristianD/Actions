@@ -1,0 +1,96 @@
+= V149 Replication Prompt and Formalization Status =
+
+== Scope ==
+
+This page is the replication contract for the V149 formal-algebra closure. Preserve exact source semantics; do not weaken theorem statements merely to make Agda compile. The authoritative proof gate is Agda 2.8.0 with `--safe`, no Agda standard library, and finite algebraic contracts instead of full real-analysis infrastructure.
+
+The project records empirical replication in a flat Corsane-2022-style CSV layout: provenance, phenotype/configuration metadata, per-task direct returns, diagnostics, and status. Historical scores are not inserted into fresh fitness and measured returns are not rounded or rescaled.
+
+== Current architecture ==
+
+There is one recurrent representation layer. Each representation layer is conceptually `Affine + LayerNorm(L1 or L2) + coupled L2 regularization`; the recurrent primitive retains bounded LSTM sigmoid/tanh gates. The finite algebra proof surface treats roots, reciprocals, tanh, and sigmoid as explicit operations with domain or derivative laws rather than importing real analysis.
+
+The Efficient-CHAD source-to-source surface is independently `--safe` and the first-class recurrent and shared-network CHAD surfaces are independently `--safe`. The remaining authoritative closure problem is concentrated in `CompleteSafe_v147`.
+
+== Verified findings ==
+
+* CI reached `CompleteSafe_v147.agda` only after all preceding safe checks passed. The immediate failure was a scope error, not a mathematical failure.
+* At the failing boundary, `LayerNorm.denominatorDomain` referenced `layerNormVariance` before its declaration was in scope. The repair reorders the canonical mean/variance definitions before the record and preserves the domain witness.
+* A duplicate `SmoothAlgebra` surface and legacy `OrderedRing.base` names were also source-boundary defects. The deterministic repair keeps one canonical algebra record and uses `OrderedRing.ring`.
+* The exact-rational Haskell/Elixir oracle path is independent of Agda kernel acceptance. SymPy is permanently removed from the active repository oracle path.
+* The existing CI security-check surfaces for application repositories are treated as separate concerns from this algebraic proof gate; this V149 change does not replace those checks.
+
+== Roots and transcendentals: exact diagnosis ==
+
+The blocker is not "roots and transcendentals require real-analytic". They do not force a real-analysis proof merely to appear in a finite algebraic Agda development. A safe formalization can parameterize over total operations such as `sqrt`, `recip`, `tanh`, and `sigmoid` and carry only the equations actually required by each theorem.
+
+The practical failure mode has instead been declaration scope, duplicate top-level names, malformed higher-order syntax, and theorem proofs whose implicit arguments become ambiguous after source deduplication. These are parser/scope/elaboration boundaries. Once those are repaired, the kernel—not an external CAS—decides whether the theorem follows from the declared contracts.
+
+== L1 Section 2 repair ==
+
+Reference: Aditya Biswas, `Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization`, arXiv:2404.19112v1, Section 2.
+
+The algebraic core is:
+
+`w = (g / ||v||_1) v`
+
+and, on the nonzero normalization domain,
+
+`grad_v f(x) = (g / ||v||_1) (x - ((w^T x)/||w||_1) sign(w))`.
+
+Equivalently, define the oblique projection
+
+`M_w x = x - ((w^T x)/||w||_1) sign(w)`.
+
+The key identity needed by the proof is `w^T M_w x = 0`, obtained from `w^T sign(w) = ||w||_1`. The Section-2 encoding therefore makes the norm/sign relationship and the nonzero domain explicit.
+
+Zero-coordinate behavior is intentionally not represented as a classical derivative theorem. The L1 sign map is treated as a subgradient/domain boundary. This matches the paper's use of a subgradient and its discussion of discontinuous oblique projection behavior near zero.
+
+The new self-contained module is `Exotic/ERL/FullCoupled/L1WeightNormalizationSection2.agda`. It contains no square roots, logarithms, probabilistic assumptions, or real-analysis axioms.
+
+== L1 versus L2 LayerNorm ==
+
+L1 normalization is algebraically tractable in finite form and avoids the square-root operation used by conventional L2 normalization. The normalization paper by Wu et al. reports an L1-norm batch-normalization variant using only linear forward/backward operations and reports approximate equivalence to L2 normalization up to a scaling factor; this is useful empirical motivation, not a formal equality in the Agda development.
+
+For the present representation architecture, L2 LayerNorm is the cleaner canonical target for classical reverse-mode identities because its denominator has an explicit square-root domain contract already present in the repository. L1 remains a valid algebraic ablation, with `abs/sign` represented explicitly and zero handled by a subgradient/domain rule rather than an invented smooth derivative.
+
+== Gallici applicability ==
+
+Gallici et al., `Simplifying Deep Temporal Difference Learning` (ICLR 2025), proves a TD stability result in a setting combining LayerNorm and L2 regularization. Their theorem is useful as a design and theorem-extraction blueprint here, especially for the shared-L2 and LayerNorm coupling, bounded activations, and finite-horizon Jacobian/VJP language.
+
+It is not a direct theorem transplant into this finite `--safe` development. The paper's proof uses analytic/stability assumptions and expectations that are outside the current finite algebra carrier. The correct replication target is therefore a sequence of finite algebraic lemmas: LayerNorm denominator/domain identities, bounded primitive contracts, explicit coupled-L2 update identities, and finite-horizon TD/Jacobian identities. A global convergence theorem remains a conjecture until its missing analytic/probabilistic assumptions are separately formalized.
+
+== Theorems currently intended ==
+
+The authoritative closure target is the full monolithic coupled learner theorem after source deduplication, including the finite algebra boundary, LayerNorm domain witnesses, recurrent CHAD interfaces, coupled regularization semantics, and the terminal KKT/projection uniqueness chain.
+
+The L1 Section-2 target is limited to the normalization equation, the oblique projection/subgradient equation, and the orthogonality identity on the nonzero domain.
+
+The Efficient-CHAD target is structural source-to-source correctness and preservation identities; paper-level complexity claims are not asserted unless the corresponding finite cost semantics are present.
+
+== Conjectures and non-claims ==
+
+* A global deep-TD convergence theorem for the exact recurrent architecture is not claimed merely from LayerNorm, L2, tanh, sigmoid, or bounded finite-horizon Jacobians.
+* L1 LayerNorm is not claimed to have the same Jacobian or convergence theorem as L2 LayerNorm.
+* The L1 zero crossing is not claimed to be classically differentiable.
+* External rational or symbolic oracles are consistency checks, not proof premises.
+
+== Missing work / next replication ==
+
+1. Re-run the authoritative V149 `--safe` gate after the LayerNorm declaration-order repair and record the next exact kernel error without introducing analytic assumptions.
+2. Close any remaining higher-order `cong`/`trans` elaboration boundaries structurally, preserving theorem statements.
+3. Persist the kernel-checked repaired `CompleteSafe_v147.agda` source and remove temporary repair workflows/scripts only after the persisted source itself passes.
+4. Keep a single deterministic authoritative `agda.yml` gate and a separate exact-rational functional oracle gate.
+5. Run the new L1 Section-2 safe gate and use it as the contract for future L1 normalization ablations.
+6. Replicate direct environment results only from source-faithful runtimes. Missing official runtimes remain `NA`; never use proxy scores.
+7. Preserve three-seed synchronous evaluation and lane independence; never average gradients across lanes.
+
+== Merge policy ==
+
+Use squash merge after the required checks are green. The repository configuration currently disables merge-commit and rebase methods, leaving squash as the supported landing method. Do not bypass branch protection or force-merge a failed kernel gate. Auto-merge should be enabled only for a green PR with the required review/check state.
+
+== Evidence ==
+
+* arXiv Section 2: https://arxiv.org/html/2404.19112v1#S2
+* ICLR 2025 Gallici et al.: https://proceedings.iclr.cc/paper_files/paper/2025/file/c23f3852601f6dd7f0b39223d031806f-Abstract-Conference.html
+* L1-Norm Batch Normalization: https://pubmed.ncbi.nlm.nih.gov/30418924/
