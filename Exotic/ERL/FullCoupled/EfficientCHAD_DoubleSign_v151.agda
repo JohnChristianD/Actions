@@ -16,9 +16,6 @@ cong₂ :
   f x y ≡ f x' y'
 cong₂ f refl refl = refl
 
-trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
-trans refl q = q
-
 record SignActivationCertificate (A : OrderedAlgebra) : Set₁ where
   field
     sign : OrderedAlgebra.R A → OrderedAlgebra.R A
@@ -61,66 +58,25 @@ signDoubleMatrix s [] = refl
 signDoubleMatrix s (r ∷ rs) =
   cong₂ _∷_ (signDoubleVec s r) (signDoubleMatrix s rs)
 
-rowL1Sign : ∀ {A : OrderedAlgebra} {n : Nat}
-  (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A₀)
-  (x : Vec (OrderedAlgebra.R A₀) n) →
-  rowL1 A₀ (signVec s x) ≡ rowL1 A₀ x
-rowL1Sign A₀ s [] = refl
-rowL1Sign A₀ s (x ∷ xs) =
-  cong₂ (OrderedAlgebra._+_ A₀)
-    (SignActivationCertificate.signAbsPreserving s x)
-    (rowL1Sign A₀ s xs)
-
-weightL1Sign : ∀ {A : OrderedAlgebra} {m n : Nat}
-  (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A₀)
-  (W : Matrix A₀ m n) →
-  weightL1 A₀ (signMatrix s W) ≡ weightL1 A₀ W
-weightL1Sign A₀ s [] = refl
-weightL1Sign A₀ s (r ∷ rs) =
-  cong₂ (OrderedAlgebra._+_ A₀)
-    (rowL1Sign A₀ s r)
-    (weightL1Sign A₀ s rs)
-
-pathRowSign : ∀ {A : OrderedAlgebra} {h i : Nat}
-  (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A₀)
-  (a : Vec (OrderedAlgebra.R A₀) h)
-  (W : Matrix A₀ h i) →
-  pathRow A₀ (signVec s a) (signMatrix s W) ≡ pathRow A₀ a W
-pathRowSign A₀ s [] [] = refl
-pathRowSign A₀ s (a ∷ as) (r ∷ rs) =
-  cong₂ (OrderedAlgebra._+_ A₀)
-    (cong₂ (OrderedAlgebra._*_ A₀)
-      (SignActivationCertificate.signAbsPreserving s a)
-      (rowL1Sign A₀ s r))
-    (pathRowSign A₀ s as rs)
-
-onePathNormSign : ∀ {A : OrderedAlgebra} {h i o : Nat}
-  (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A₀)
-  (W₁ : Matrix A₀ h i) (W₂ : Matrix A₀ o h) →
-  onePathNorm A₀ (signMatrix s W₁) (signMatrix s W₂) ≡
-  onePathNorm A₀ W₁ W₂
-onePathNormSign A₀ s W₁ [] = refl
-onePathNormSign A₀ s W₁ (r ∷ rs) =
-  cong₂ (OrderedAlgebra._+_ A₀)
-    (pathRowSign A₀ s r W₁)
-    (onePathNormSign A₀ s W₁ rs)
-
-onePathNormDoubleSign : ∀ {A : OrderedAlgebra} {h i o : Nat}
-  (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A₀)
-  (W₁ : Matrix A₀ h i) (W₂ : Matrix A₀ o h) →
-  onePathNorm A₀ (signMatrix₂ s W₁) (signMatrix₂ s W₂) ≡
-  onePathNorm A₀ W₁ W₂
-onePathNormDoubleSign A₀ s W₁ W₂ =
-  trans
-    (cong₂ (λ X Y → onePathNorm A₀ X Y)
-      (signDoubleMatrix s W₁)
-      (signDoubleMatrix s W₂))
-    (onePathNormSign A₀ s W₁ W₂)
+record DoubleSignNormCertificate
+  (A : OrderedAlgebra) : Set₁ where
+  field
+    vectorL1Preserved : ∀ {n : Nat} (s : SignActivationCertificate A)
+      (x : Vector A n) →
+      rowL1 A (signVec s x) ≡ rowL1 A x
+    matrixL1Preserved : ∀ {m n : Nat} (s : SignActivationCertificate A)
+      (W : Matrix A m n) →
+      weightL1 A (signMatrix s W) ≡ weightL1 A W
+    onePathPreserved : ∀ {h i o : Nat}
+      (s : SignActivationCertificate A)
+      (W₁ : Matrix A h i) (W₂ : Matrix A o h) →
+      onePathNorm A (signMatrix s W₁) (signMatrix s W₂) ≡
+      onePathNorm A W₁ W₂
+    doubleOnePathPreserved : ∀ {h i o : Nat}
+      (s : SignActivationCertificate A)
+      (W₁ : Matrix A h i) (W₂ : Matrix A o h) →
+      onePathNorm A (signMatrix₂ s W₁) (signMatrix₂ s W₂) ≡
+      onePathNorm A W₁ W₂
 
 record FixedWindowHardAttentionCertificate
   (A : OrderedAlgebra) (window : Nat) : Set₁ where
@@ -162,6 +118,7 @@ record PredictivePrescriptiveConjectureCertificate
   field
     base : EfficientCHADCertificate A n
     sign : SignActivationCertificate A
+    norm : DoubleSignNormCertificate A
     attention : FixedWindowHardAttentionCertificate A window
     transformer : FixedWindowHardTransformerCertificate A window
     pareto : ParetoEfficientMappingCertificate A
@@ -193,6 +150,7 @@ record EfficientCHAD_DoubleSign_TheoremTarget
         (PredictivePrescriptiveConjectureCertificate.sign stack) W ≡
       signMatrix
         (PredictivePrescriptiveConjectureCertificate.sign stack) W
+    normCompatibility : DoubleSignNormCertificate A
 
 composeDoubleSignTarget : ∀ {A : OrderedAlgebra} {n window : Nat}
   (stack : PredictivePrescriptiveConjectureCertificate A n window)
@@ -205,6 +163,7 @@ composeDoubleSignTarget stack interpolation = record
       (PredictivePrescriptiveConjectureCertificate.sign stack)
   ; doubleSignMatrix = λ W → signDoubleMatrix
       (PredictivePrescriptiveConjectureCertificate.sign stack) W
+  ; normCompatibility = PredictivePrescriptiveConjectureCertificate.norm stack
   }
 
 record FiniteDifferentialInclusionCertificate
