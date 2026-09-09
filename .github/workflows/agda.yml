@@ -37,6 +37,9 @@ jobs:
       - name: Normalize v149 square parser boundary
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-square-parser.py
+      - name: Normalize v149 inequality notation
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
+        run: python3 .ci/v149-neq-parser.py
       - name: Normalize v149 Nat namespace
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/normalize-nat-namespace.py
