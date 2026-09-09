@@ -1,0 +1,61 @@
+# Exact finite ordered Rational oracle matching the Haskell/Elixir reference.
+# Native Ruby Rational arithmetic; no floating point and no mutation.
+
+def sigmoid_r(z)
+  (Rational(2) + z) / Rational(4)
+end
+
+def tanh_r(z)
+  (Rational(2) * z) / (Rational(2) + z * z)
+end
+
+def crelu(z)
+  [z > 0 ? z : Rational(0), z < 0 ? -z : Rational(0)]
+end
+
+def tsallis2(scores, values)
+  tau = Rational(1, 4)
+  weights = scores.map { |s| [s - tau, Rational(0)].max }
+  total = weights.inject(Rational(0), :+)
+  weights.map! { |w| w / total }
+  out = values.zip(weights).inject(Rational(0)) { |acc, (v, p)| acc + p * v }
+  [weights, out]
+end
+
+def lstm(x, h, c)
+  z = x + h
+  f = sigmoid_r(z)
+  i = sigmoid_r(z)
+  o = sigmoid_r(z)
+  g = tanh_r(z)
+  c2 = f * c + i * g
+  [o * tanh_r(c2), c2]
+end
+
+def render(r)
+  r.denominator == 1 ? r.numerator.to_s : "#{r.numerator}/#{r.denominator}"
+end
+
+cases = [
+  [Rational(1, 5), Rational(-1, 10), Rational(3, 10)],
+  [Rational(1), Rational(1, 5), Rational(-2, 5)],
+  [Rational(-7, 10), Rational(1, 2), Rational(1, 10)]
+]
+
+puts 'oracle=ruby-rational'
+cases.each do |x, h, c|
+  lh, lc = lstm(x, h, c)
+  puts [x, h, c, lh, lc].map { |r| render(r) }.join(',')
+end
+
+weights, out = tsallis2([Rational(1), Rational(1, 2), Rational(-1, 2)], [Rational(1), Rational(-1), Rational(2)])
+abort 'Ruby Tsallis-2 equilibrium failure' unless weights == [Rational(3, 4), Rational(1, 4), Rational(0)]
+abort 'Ruby Tsallis-2 weighted output failure' unless out == Rational(1, 2)
+
+p, m = crelu(Rational(-3, 2))
+abort 'Ruby CReLU reconstruction failure' unless p - m == Rational(-3, 2)
+abort 'Ruby CReLU magnitude failure' unless p + m == Rational(3, 2)
+
+abort 'Ruby degree recurrence failure' unless [1, 3, 9, 27].each_cons(2).all? { |a, b| b == 3 * a }
+
+puts 'status=PASS'
