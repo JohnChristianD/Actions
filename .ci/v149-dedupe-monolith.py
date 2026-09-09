@@ -77,6 +77,31 @@ new_residual = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = 
 '''
 s = s[:rstart] + new_residual + s[rsep:]
 
+q_marker = 'qProjectionCross_v141 '
+qstart = s.find(q_marker)
+if qstart < 0:
+    raise SystemExit('q projection cross theorem marker not found')
+qsep = s.find('\n------------------------------------------------------------------------', qstart)
+if qsep < 0:
+    raise SystemExit('q projection cross theorem separator not found')
+new_q = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hx = residualSquareNonzero_v140 ha hr
+      hxx = OrderedRing.squarePositive hx
+      hlt = OrderedRing.subLtZero hr
+      hmul = OrderedRing.mulLtPosLeft hlt hxx
+      hright =
+        trans
+          (Ring.mulComm Rg (x * x) (mu * (x * x)))
+          (sym (Ring.mulAssoc Rg mu (x * x) (x * x)))
+  in trans
+       (trans
+         (sym (Ring.mulComm Rg alpha (x * x)))
+         hmul)
+       hright
+'''
+s = s[:qstart] + new_q + s[qsep:]
+
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 if s.count(old_terminal) != 1:
     raise SystemExit(f'expected exactly one terminal uniqueness theorem: {s.count(old_terminal)}')
@@ -100,10 +125,10 @@ if s.count('accumulateAt : Fin n → R → Cot → Fin n → R') != 1:
     raise SystemExit('expected exactly one robust accumulateAt declaration')
 if s.count('residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
     raise SystemExit('residual square normalization missing')
-if s.count('        hlt = subst (λ q → q < zero) hzero hr') != 1:
-    raise SystemExit('residual hlt inference normalization missing')
+if s.count('qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
+    raise SystemExit('q projection cross normalization missing')
 if s.count('qTerminalProjectionUnique_v147 t u refl refl refl =') != 1:
     raise SystemExit('terminal uniqueness normalization missing')
 
 p.write_text(s)
-print('monolith canonical algebra/parser/residual/terminal uniqueness normalization applied exactly once')
+print('monolith canonical algebra/parser/residual/q-cross/terminal uniqueness normalization applied exactly once')
