@@ -3,8 +3,8 @@ from pathlib import Path
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
 
-# Keep algebraic zero unqualified; qualify Nat.zero everywhere it is a
-# size/index constructor. This avoids a global name clash under --safe Agda.
+# Keep algebraic zero unqualified; qualify Nat.zero where it denotes a
+# vector/index size constructor. Do not globally rewrite algebraic zero.
 s = s.replace(
     'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
     'open import Agda.Builtin.Nat using (Nat; suc; _+_)',
@@ -27,34 +27,45 @@ for old, new in [
     if old in s:
         s = s.replace(old, new, 1)
 
-# Remove the historical pre-canonical scalar algebra block. The canonical
-# SmoothAlgebra below is the only exported scalar interface.
-legacy = s.find('record SmoothAlgebra : Set₁ where')
-canonical = s.find('-- Canonical SmoothAlgebra boundary.')
-if legacy >= 0 and canonical >= 0 and legacy < canonical:
-    scalar_after = s.find('\nScalar : SmoothAlgebra → Set\n', legacy)
-    if scalar_after < 0 or scalar_after > canonical:
+canonical_header = '-- Canonical SmoothAlgebra boundary.'
+header_pos = s.find(canonical_header)
+if header_pos < 0:
+    raise SystemExit('canonical SmoothAlgebra header not found')
+legacy_pos = s.find('record SmoothAlgebra : Set₁ where')
+if legacy_pos >= 0 and legacy_pos < header_pos:
+    scalar_pos = s.find('\nScalar : SmoothAlgebra → Set\n', legacy_pos)
+    if scalar_pos < 0 or scalar_pos > header_pos:
         raise SystemExit('legacy SmoothAlgebra block has no scalar boundary')
-    s = s[:legacy] + s[scalar_after + 1:]
+    s = s[:legacy_pos] + s[scalar_pos + 1:]
+    header_pos = s.find(canonical_header)
 
 marker_start = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
 marker_end = "------------------------------------------------------------------------\n-- Seven coupled parameter blocks and finite parameter indices\n"
 if marker_start not in s or marker_end not in s:
     raise SystemExit('canonical SmoothAlgebra markers not found')
 first = s.index(marker_start)
-search = s.find(marker_start, first + len(marker_start))
-while search >= 0:
-    close = s.find(marker_end, search + len(marker_start))
-    if close < 0:
-        raise SystemExit('duplicate SmoothAlgebra marker has no closing marker')
-    s = s[:search] + s[close:]
-    search = s.find(marker_start, search)
+end_boundary = s.find(marker_end, first + len(marker_start))
+if end_boundary < 0:
+    raise SystemExit('canonical SmoothAlgebra closing boundary not found')
+region = s[first:end_boundary]
+record_token = 'record SmoothAlgebra : Set₁ where'
+first_record = region.find(record_token)
+if first_record < 0:
+    raise SystemExit('canonical SmoothAlgebra record missing')
+second_record = region.find(record_token, first_record + len(record_token))
+while second_record >= 0:
+    scalar_pos = region.find('\nScalar : SmoothAlgebra → Set\n', second_record)
+    if scalar_pos < 0:
+        raise SystemExit('duplicate SmoothAlgebra has no scalar boundary')
+    region = region[:second_record] + region[scalar_pos + 1:]
+    second_record = region.find(record_token, first_record + len(record_token))
+s = s[:first] + region + s[end_boundary:]
 
 old_max = "    sqrt recip max min : R → R\n"
 new_max = "    sqrt recip : R → R\n    max min : R → R → R\n"
 if s.count(old_max) == 1:
     s = s.replace(old_max, new_max, 1)
-elif "    sqrt recip : R → R\n    max min : R → R → R\n" not in s:
+elif new_max not in s:
     raise SystemExit('SmoothAlgebra max/min signature not found')
 
 needle = "    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n"
@@ -278,7 +289,8 @@ s = s[:tstart] + '''qTerminalProjectionUnique_v147 t u refl refl refl =
       (sym (QTerminalSolution_v147.stationarity u i)))
 ''' + s[tsep:]
 
-if s.count(marker_start) != 1: raise SystemExit('canonical marker count is not one')
+if s.count(header_marker) != 1: raise SystemExit('canonical marker count is not one')
+if s.count(record_token) != 1: raise SystemExit('SmoothAlgebra record count is not one')
 if s.count('sqrtDomain : R → Set') != 1: raise SystemExit('sqrt domain law missing or duplicated')
 if s.count(kmarker) != 0: raise SystemExit('malformed audited KKT placeholder marker survived')
 if 'λ j with finDecEq' in s: raise SystemExit('dependent lambda-with parser form survived')
