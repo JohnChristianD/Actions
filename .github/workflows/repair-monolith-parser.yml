@@ -2,7 +2,7 @@ name: one-shot monolith parser repair
 
 on:
   push:
-    branches: ['ci/v149-monolith-dedupe']
+    branches: ['ci/v149-monolith-final']
   workflow_dispatch:
 
 permissions:
@@ -23,6 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 .ci/v149-dedupe-monolith.py
+          python3 .ci/v149-dedupe-duplicate-smooth.py
           git diff --check
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
@@ -32,7 +33,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@github-actions[bot].github.com'
-          rm .ci/v149-dedupe-monolith.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
-          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .ci/v149-dedupe-monolith.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
+          rm -f .ci/v149-dedupe-monolith.py .ci/v149-dedupe-duplicate-smooth.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .ci/v149-dedupe-monolith.py .ci/v149-dedupe-duplicate-smooth.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
           git commit -m 'fix: kernel-check canonical monolith dedupe'
-          git push origin HEAD:ci/v149-monolith-dedupe
+          git push origin HEAD:ci/v149-monolith-final
