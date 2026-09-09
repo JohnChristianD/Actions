@@ -25,6 +25,11 @@ for old, new in replacements:
 
 s = s[:start] + segment + s[end:]
 
+# The canonical OrderedRing carrier is `ring`; earlier v149 iterations
+# accidentally emitted the non-existent `base` field in the refreshed
+# SmoothAlgebra/carrier boundary. Normalize that scope seam deterministically.
+s = s.replace('OrderedRing.base', 'OrderedRing.ring')
+
 needle = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n'
 if needle in s and '  minus : Ring.R Rg → Ring.R Rg → Ring.R Rg\n' not in s:
     s = s.replace(needle, '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Ring.R Rg → Ring.R Rg → Ring.R Rg\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n', 1)
@@ -39,4 +44,6 @@ for forbidden in (
 ):
     if forbidden in segment:
         raise SystemExit(f'ordered-field qualification incomplete: {forbidden!r}')
+if 'OrderedRing.base' in s:
+    raise SystemExit('OrderedRing.base qualification remains after normalization')
 print('final-ordered-ring-qualification=validated')
