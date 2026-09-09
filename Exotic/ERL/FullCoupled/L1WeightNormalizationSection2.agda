@@ -17,9 +17,9 @@ cong f refl = refl
 
 ------------------------------------------------------------------------
 -- Finite algebraic core of arXiv:2404.19112v1, Section 2.
--- No real-analysis infrastructure is used.  The L1 normalization and
+-- No real-analysis infrastructure is used. The L1 normalization and
 -- subgradient equations are represented with total algebraic primitives plus
--- explicit nonzero/domain witnesses.  No classical differentiability claim
+-- explicit nonzero/domain witnesses. No classical differentiability claim
 -- is made at a zero coordinate.
 ------------------------------------------------------------------------
 
@@ -81,17 +81,19 @@ record L1Algebra : Set₁ where
             (mapV sign w)))
       ≡ zero
 
-open L1Algebra
-
 ------------------------------------------------------------------------
 -- Equation (1): w = (g / ||v||₁) v.
 ------------------------------------------------------------------------
 
 l1Weight : ∀ {A : L1Algebra} {n : Nat} →
-  (g : R A) → (v : Vec (R A) n) → norm1 v ≠ zero → Vec (R A) n
+  (g : L1Algebra.R A) →
+  (v : Vec (L1Algebra.R A) n) →
+  L1Algebra.norm1 A v ≠ L1Algebra.zero A →
+  Vec (L1Algebra.R A) n
 l1Weight {A} g v hv =
-  scale
-    (mul g (inv (norm1 v)))
+  L1Algebra.scale A
+    (L1Algebra.mul A g
+      (L1Algebra.inv A (L1Algebra.norm1 A v)))
     v
 
 ------------------------------------------------------------------------
@@ -99,16 +101,26 @@ l1Weight {A} g v hv =
 ------------------------------------------------------------------------
 
 obliqueProjection : ∀ {A : L1Algebra} {n : Nat} →
-  (w x : Vec (R A) n) → norm1 w ≠ zero → Vec (R A) n
-obliqueProjection w x hw =
-  sub x
-    (scale (mul (dot w x) (inv (norm1 w)))
-      (mapV sign w))
+  (w x : Vec (L1Algebra.R A) n) →
+  L1Algebra.norm1 A w ≠ L1Algebra.zero A →
+  Vec (L1Algebra.R A) n
+obliqueProjection {A} w x hw =
+  L1Algebra.sub A x
+    (L1Algebra.scale A
+      (L1Algebra.mul A
+        (L1Algebra.dot A w x)
+        (L1Algebra.inv A (L1Algebra.norm1 A w)))
+      (mapV (L1Algebra.sign A) w))
 
 l1Subgradient : ∀ {A : L1Algebra} {n : Nat} →
-  (g : R A) → (v x : Vec (R A) n) → norm1 v ≠ zero → Vec (R A) n
-l1Subgradient g v x hv =
-  scale (mul g (inv (norm1 v)))
+  (g : L1Algebra.R A) →
+  (v x : Vec (L1Algebra.R A) n) →
+  L1Algebra.norm1 A v ≠ L1Algebra.zero A →
+  Vec (L1Algebra.R A) n
+l1Subgradient {A} g v x hv =
+  L1Algebra.scale A
+    (L1Algebra.mul A g
+      (L1Algebra.inv A (L1Algebra.norm1 A v)))
     (obliqueProjection v x hv)
 
 ------------------------------------------------------------------------
@@ -116,17 +128,26 @@ l1Subgradient g v x hv =
 ------------------------------------------------------------------------
 
 obliqueProjectionOrthogonal : ∀ {A : L1Algebra} {n : Nat}
-  (w x : Vec (R A) n) (hw : norm1 w ≠ zero) →
-  dot w (obliqueProjection w x hw) ≡ zero
-obliqueProjectionOrthogonal w x hw = obliqueProjectionLaw w x hw
+  (w x : Vec (L1Algebra.R A) n)
+  (hw : L1Algebra.norm1 A w ≠ L1Algebra.zero A) →
+  L1Algebra.dot A w (obliqueProjection w x hw) ≡ L1Algebra.zero A
+obliqueProjectionOrthogonal {A} w x hw =
+  L1Algebra.obliqueProjectionLaw A w x hw
 
 l1SubgradientExpanded : ∀ {A : L1Algebra} {n : Nat}
-  (g : R A) (v x : Vec (R A) n) (hv : norm1 v ≠ zero) →
+  (g : L1Algebra.R A)
+  (v x : Vec (L1Algebra.R A) n)
+  (hv : L1Algebra.norm1 A v ≠ L1Algebra.zero A) →
   l1Subgradient g v x hv ≡
-    scale (mul g (inv (norm1 v)))
-      (sub x
-        (scale (mul (dot v x) (inv (norm1 v)))
-          (mapV sign v)))
+    L1Algebra.scale A
+      (L1Algebra.mul A g
+        (L1Algebra.inv A (L1Algebra.norm1 A v)))
+      (L1Algebra.sub A x
+        (L1Algebra.scale A
+          (L1Algebra.mul A
+            (L1Algebra.dot A v x)
+            (L1Algebra.inv A (L1Algebra.norm1 A v)))
+          (mapV (L1Algebra.sign A) v)))
 l1SubgradientExpanded g v x hv = refl
 
 ------------------------------------------------------------------------
@@ -135,12 +156,14 @@ l1SubgradientExpanded g v x hv = refl
 
 record NonzeroVectorDomain {A : L1Algebra} (n : Nat) : Set where
   field
-    vector : Vec (R A) n
-    normNonzero : norm1 vector ≠ zero
+    vector : Vec (L1Algebra.R A) n
+    normNonzero : L1Algebra.norm1 A vector ≠ L1Algebra.zero A
 
 subgradientDomain : ∀ {A : L1Algebra} {n : Nat} →
   NonzeroVectorDomain n → Set
-subgradientDomain d = nonzero (norm1 (NonzeroVectorDomain.vector d))
+subgradientDomain {A} d =
+  L1Algebra.nonzero A
+    (L1Algebra.norm1 A (NonzeroVectorDomain.vector d))
 
 ------------------------------------------------------------------------
 -- Representation-layer contract: L1 and L2 are alternative normalization
@@ -153,4 +176,4 @@ data NormalizationMode : Set where
 record RepresentationNormalizationContract (A : L1Algebra) : Set₁ where
   field
     mode : NormalizationMode
-    coupledL2 : R A
+    coupledL2 : L1Algebra.R A
