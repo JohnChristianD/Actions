@@ -42,39 +42,50 @@ local_zip = '''  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Ve
 '''
 s = s.replace(local_zip, '')
 
-# Once local helper declarations are removed, an empty vAdd `where` remains
-# in some source revisions. Eliminate only the known empty block.
+# Once local helper declarations are removed, empty vAdd/vHadamard `where`
+# blocks can remain in some source revisions. Eliminate only those blocks.
 s = re.sub(
     r'(vAdd\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSub\s*:)',
-    r'\1\n\n',
-    s,
-    count=1,
-)
+    r'\1\n\n', s, count=1)
+s = re.sub(
+    r'(vHadamard\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSum\s*:)',
+    r'\1\n\n', s, count=1)
 
 # vSub keeps its carrier-local arithmetic helper. Ensure the helper itself has
 # a type signature, which Agda requires after the generic zipWithV dedupe.
-sub_pat = re.compile(
-    r'(vSub\s*\{S\}\s*=\s*zipWithV\s+sub\s*\n\s*where\n)'
-    r'(\s*Rg\s*=\s*OrderedRing\.ring\s+\(SmoothAlgebra\.orderedRing\s+S\)\s*\n)'
-    r'(\s*sub\s+)(x\s+y\s*=\s*Ring\._\+_\s+Rg\s+x\s+\(Ring\.neg\s+Rg\s+y\))',
-)
-if sub_pat.search(s):
-    s = sub_pat.sub(
-        r'\1\2  sub : Scalar S → Scalar S → Scalar S\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)',
-        s,
-        count=1,
-    )
-elif '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)' not in s:
-    # Fall back to the exact declaration line shape after earlier normalizers.
-    line_pat = re.compile(
-        r'(vSub\s*\{S\}\s*=\s*zipWithV\s+sub\s*\n\s*where\n)'
-        r'(\s*Rg\s*=\s*[^\n]+\n)'
-        r'\s*sub\s+x\s+y\s*=\s*([^\n]+)'
-    )
-    m = line_pat.search(s)
-    if not m:
-        raise SystemExit('vSub local sub declaration shape not found')
-    s = s[:m.start()] + m.group(1) + m.group(2) + '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = ' + m.group(3) + s[m.end():]
+sub_anchor = 'vSub {S} = zipWithV sub\n  where\n'
+if sub_anchor in s:
+    pos = s.index(sub_anchor) + len(sub_anchor)
+    rest = s[pos:]
+    local_block = rest.split('\n------------------------------------------------------------------------', 1)[0]
+    if '  sub : Scalar S → Scalar S → Scalar S\n' not in local_block:
+        m = re.match(
+            r'(\s*Rg\s*=\s*[^\n]+\n)\s*(sub\s+x\s+y\s*=\s*[^\n]+\n)',
+            rest,
+        )
+        if not m:
+            raise SystemExit('vSub local sub declaration shape not found')
+        body = m.group(2).split('sub x y =', 1)[1].rstrip('\n')
+        old = m.group(0)
+        new = m.group(1) + '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = ' + body + '\n'
+        s = s[:pos] + rest.replace(old, new, 1)
+else:
+    raise SystemExit('vSub canonical declaration not found')
+
+# The legacy LayerNorm surface defined layerNormVariance as the supplied
+# epsilon. After that surface is removed, preserve the same finite-algebra
+# semantic as one top-level helper matching the canonical (xs, epsilon) call.
+variance_decl = '''layerNormVariance : ∀ {S d} → VecS S d → Scalar S → Scalar S
+layerNormVariance _ eps = eps
+
+'''
+if 'layerNormVariance : ∀ {S d}' not in s:
+    insertion = s.find('-- Domain-carrying recurrent LayerNorm boundary')
+    if insertion < 0:
+        insertion = s.find('record LayerNorm')
+    if insertion < 0:
+        raise SystemExit('LayerNorm boundary not found for variance helper insertion')
+    s = s[:insertion] + variance_decl + s[insertion:]
 
 if s.count(record) != 1:
     raise SystemExit(f'SmoothAlgebra definition count is {s.count(record)}, expected 1')
@@ -86,7 +97,9 @@ if s.count('tabulateV :') != 1:
     raise SystemExit(f'tabulateV helper count is {s.count("tabulateV :")}, expected 1')
 if s.count('zipWithV :') != 1:
     raise SystemExit(f'zipWithV definition count is {s.count("zipWithV :")}, expected 1')
+if s.count('layerNormVariance :') != 1:
+    raise SystemExit(f'layerNormVariance definition count is {s.count("layerNormVariance :")}, expected 1')
 if 'vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))\n  where\n' in s:
     raise SystemExit('empty vAdd where block remains')
 p.write_text(s)
-print('canonical vector helper scope normalized: one global zipWithV, typed sub, no empty vAdd where')
+print('canonical algebra helper scope normalized: one zipWithV, typed sub, preserved layerNormVariance')
