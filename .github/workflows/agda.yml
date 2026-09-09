@@ -70,6 +70,9 @@ jobs:
       - name: Normalize v149 reciprocal nonnegative proof
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-reciprocal-parser.py
+      - name: Normalize v149 EfficientCHAD carrier scope
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
+        run: python3 .ci/v149-efficientchad-scope.py
       - name: Debug transformed monolith declaration window
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         shell: bash
