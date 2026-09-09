@@ -316,14 +316,14 @@ record EfficientCHAD_CReLU_Tsallis2_TheoremTarget
           (EfficientCHADCertificate.projection certificate) x) ≡
       QProjectionCertificate.project
         (EfficientCHADCertificate.projection certificate) x
-    degreeBound : depth → Nat
+    degreeBound : Nat → Nat
     depthLaw : degreeBound (suc depth) ≡
       degreeStep (degreeBound depth)
     sensitivity : BranchSensitivityLaw A n
     finiteOrderedClosure : EfficientCHADCertificate A n →
       EfficientCHADCertificate A n
 
-constructTheoremTarget : ∀ {A : OrderedAlgebra} {n depth} →
+constructTheoremTarget : ∀ {A : OrderedAlgebra} {n depth : Nat} →
   EfficientCHADCertificate A n →
   EfficientCHAD_CReLU_Tsallis2_TheoremTarget A n depth
 constructTheoremTarget c = record
