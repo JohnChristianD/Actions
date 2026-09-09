@@ -53,8 +53,8 @@ signDoubleMatrix s (r ∷ rs) =
   cong₂ _∷_ (signDoubleVec s r) (signDoubleMatrix s rs)
 
 rowL1Sign : ∀ {A n} (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A)
-  (x : Vec (OrderedAlgebra.R A) n) →
+  (s : SignActivationCertificate A₀)
+  (x : Vec (OrderedAlgebra.R A₀) n) →
   rowL1 A₀ (signVec s x) ≡ rowL1 A₀ x
 rowL1Sign A₀ s [] = refl
 rowL1Sign A₀ s (x ∷ xs) =
@@ -63,8 +63,8 @@ rowL1Sign A₀ s (x ∷ xs) =
     (rowL1Sign A₀ s xs)
 
 weightL1Sign : ∀ {A m n} (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A)
-  (W : Matrix A m n) →
+  (s : SignActivationCertificate A₀)
+  (W : Matrix A₀ m n) →
   weightL1 A₀ (signMatrix s W) ≡ weightL1 A₀ W
 weightL1Sign A₀ s [] = refl
 weightL1Sign A₀ s (r ∷ rs) =
@@ -72,10 +72,10 @@ weightL1Sign A₀ s (r ∷ rs) =
     (rowL1Sign A₀ s r)
     (weightL1Sign A₀ s rs)
 
-pathRowSign : ∀ {A h i o} (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A)
-  (a : Vec (OrderedAlgebra.R A) h)
-  (W : Matrix A h i) →
+pathRowSign : ∀ {A h i} (A₀ : OrderedAlgebra)
+  (s : SignActivationCertificate A₀)
+  (a : Vec (OrderedAlgebra.R A₀) h)
+  (W : Matrix A₀ h i) →
   pathRow A₀ (signVec s a) (signMatrix s W) ≡
   pathRow A₀ a W
 pathRowSign A₀ s [] [] = refl
@@ -87,8 +87,8 @@ pathRowSign A₀ s (a ∷ as) (r ∷ rs) =
     (pathRowSign A₀ s as rs)
 
 onePathNormSign : ∀ {A h i o} (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A)
-  (W₁ : Matrix A h i) (W₂ : Matrix A o h) →
+  (s : SignActivationCertificate A₀)
+  (W₁ : Matrix A₀ h i) (W₂ : Matrix A₀ o h) →
   onePathNorm A₀ (signMatrix s W₁) (signMatrix s W₂) ≡
   onePathNorm A₀ W₁ W₂
 onePathNormSign A₀ s W₁ [] = refl
@@ -98,8 +98,8 @@ onePathNormSign A₀ s W₁ (r ∷ rs) =
     (onePathNormSign A₀ s W₁ rs)
 
 onePathNormDoubleSign : ∀ {A h i o} (A₀ : OrderedAlgebra)
-  (s : SignActivationCertificate A)
-  (W₁ : Matrix A h i) (W₂ : Matrix A o h) →
+  (s : SignActivationCertificate A₀)
+  (W₁ : Matrix A₀ h i) (W₂ : Matrix A₀ o h) →
   onePathNorm A₀ (signMatrix₂ s W₁) (signMatrix₂ s W₂) ≡
   onePathNorm A₀ W₁ W₂
 onePathNormDoubleSign A₀ s W₁ W₂ =
