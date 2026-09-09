@@ -317,8 +317,8 @@ record EfficientCHAD_CReLU_Tsallis2_TheoremTarget
       QProjectionCertificate.project
         (EfficientCHADCertificate.projection certificate) x
     degreeBound : Nat → Nat
-    depthLaw : degreeBound (suc depth) ≡
-      degreeStep (degreeBound depth)
+    depthLaw : ∀ k →
+      degreeBound (suc k) ≡ degreeStep (degreeBound k)
     sensitivity : BranchSensitivityLaw A n
     finiteOrderedClosure : EfficientCHADCertificate A n →
       EfficientCHADCertificate A n
@@ -341,7 +341,7 @@ constructTheoremTarget c = record
       QProjectionCertificate.idempotent
         (EfficientCHADCertificate.projection c)
   ; degreeBound = power3
-  ; depthLaw = branchDegreeLaw _
+  ; depthLaw = branchDegreeLaw
   ; sensitivity = branchSensitiveClosure c
   ; finiteOrderedClosure = λ x → x
   }
