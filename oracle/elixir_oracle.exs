@@ -2,7 +2,7 @@ defmodule Q do
   def norm(n, d) when d < 0, do: norm(-n, -d)
   def norm(n, d) do
     g = Integer.gcd(abs(n), abs(d))
-    {div(n, g), div(d, g)}
+    {Kernel.div(n, g), Kernel.div(d, g)}
   end
 
   def add({a, b}, {c, d}), do: norm(a * d + c * b, b * d)
@@ -12,9 +12,9 @@ defmodule Q do
   def neg({a, b}), do: {-a, b}
   def from_int(n), do: {n, 1}
   def zero, do: {0, 1}
-  def max(a, b) do
-    if sub(a, b) |> elem(0) * elem(a, 1) * elem(b, 1) >= 0, do: a, else: b
-  end
+  def nonnegative?({n, _}), do: n >= 0
+  def positive?({n, _}), do: n > 0
+  def max(a, b), do: if sub(a, b) |> nonnegative?(), do: a, else: b
   def text({n, 1}), do: Integer.to_string(n)
   def text({n, d}), do: Integer.to_string(n) <> "/" <> Integer.to_string(d)
 end
@@ -29,13 +29,12 @@ defmodule Oracle do
 
   def crelu(z) do
     zero = Q.zero()
-    {if(Q.sub(z, zero) |> raw_num() > 0, do: z, else: zero),
-     if(raw_num(z) < 0, do: Q.neg(z), else: zero)}
+    {if(Q.positive?(z), do: z, else: zero), if(Q.positive?(Q.neg(z)), do: Q.neg(z), else: zero)}
   end
 
   def tsallis2(scores, values) do
     tau = {1, 4}
-    raw = Enum.map(scores, fn s -> if raw_num(Q.sub(s, tau)) > 0, do: Q.sub(s, tau), else: Q.zero() end)
+    raw = Enum.map(scores, fn s -> Q.max(Q.sub(s, tau), Q.zero()) end)
     total = Enum.reduce(raw, Q.zero(), &Q.add/2)
     weights = Enum.map(raw, &Q.div(&1, total))
     out = Enum.zip(weights, values) |> Enum.reduce(Q.zero(), fn {p, v}, acc -> Q.add(acc, Q.mul(p, v)) end)
@@ -51,8 +50,6 @@ defmodule Oracle do
     c2 = Q.add(Q.mul(f, c), Q.mul(i, g))
     {Q.mul(o, tanh_r(c2)), c2}
   end
-
-  def raw_num({n, d}), do: n / d
 end
 
 q = fn n, d -> Q.norm(n, d) end
