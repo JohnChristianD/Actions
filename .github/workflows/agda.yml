@@ -69,3 +69,5 @@ jobs:
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           git commit -m 'fix: persist Ruby-kernel-checked monolith migration'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
+
+      # v151 explicit dependent-dimension gate retrigger
