@@ -20,9 +20,13 @@ s.sub!('open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
 }.each { |a, b| s.sub!(a, b) if s.include?(a) }
 
 # The residual theorem uses SmoothAlgebra's dependent carrier explicitly.
-# This is idempotent and prevents Agda from treating S as an unconstrained Set.
 s.sub!('residualSquareNonzero_v140 : ∀ {S}\n',
        'residualSquareNonzero_v140 : ∀ {S : SmoothAlgebra}\n')
+
+# Agda local dependent lets use an equation binding directly here; the
+# source's annotation was the remaining parser-sensitive shape.
+s.sub!('  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))\n        (mu * (hx * hx)) ≡ alpha =\n',
+       '  let hzero =\n')
 
 legacy = s.index('record SmoothAlgebra : Set₁ where')
 canonical = s.index('-- Canonical SmoothAlgebra boundary.')
@@ -141,7 +145,7 @@ qualifications = {
   'zero < x * x' => 'zero < Ring._*_ ring x x',
   'zero ≤ x * x' => 'zero ≤ Ring._*_ ring x x',
   'a < b → c < d → a + c < b + d' => 'a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
-  'a < b → c + a < c + b' => 'a < b → c < d → Ring._+_ ring c a < Ring._+_ ring c b',
+  'a < b → c + a < c + b' => 'a < b → c < d → Ring._+_ ring c a < Ring._+_ ring b c',
   'abs (x + y) ≤ abs x + abs y' => 'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
   'abs (x * y) ≡ abs x * abs y' => 'abs (Ring._*_ ring x y) ≡ Ring._*_ ring (abs x) (abs y)'
 }
