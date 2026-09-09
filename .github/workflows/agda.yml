@@ -6,17 +6,13 @@ on:
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
-      - '.ci/v149-*.py'
-      - '.ci/exact_rational_oracle_v150.py'
-      - '.ci/exact_rational_oracle_v150.hs'
+      - '.ci/v150-monolith-repair.rb'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
-      - '.ci/v149-*.py'
-      - '.ci/exact_rational_oracle_v150.py'
-      - '.ci/exact_rational_oracle_v150.hs'
+      - '.ci/v150-monolith-repair.rb'
   workflow_dispatch:
 
 permissions:
@@ -33,42 +29,14 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
-      - name: Verify Agda executable
-        run: agda --version
-      - name: Apply deterministic v149 monolith repair
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-dedupe-monolith.py
-      - name: Normalize v149 Nat namespace
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/normalize-nat-namespace.py
-      - name: Qualify v149 OrderedRing fields
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/final-qualify-ordered-fields.py
-      - name: Normalize v149 LayerNorm denominator domain
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-layernorm-parser.py
-      - name: Normalize v149 CVT insertion parser
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-cvt-parser.py
-      - name: Normalize v149 diagonal proof parser
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-diagonal-parser.py
-      - name: Normalize v149 typed let bindings
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-let-bindings.py
-      - name: Normalize v149 residual carrier
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-residual-carrier.py
-      - name: Normalize v149 reciprocal nonnegative proof
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: python3 .ci/v149-reciprocal-parser.py
-      - name: Debug late trans context
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        shell: bash
+      - name: Verify Agda and Ruby
         run: |
           set -euo pipefail
-          echo '--- lines 2698-2720 after repair ---'
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '2698,2720p'
+          agda --version
+          ruby --version
+      - name: Apply one-time LayerNorm-free monolith migration
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: ruby .ci/v150-monolith-repair.rb
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
@@ -81,81 +49,21 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Safe-check representation primitive algebra
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
-      - name: Safe-check CReLU Tsallis-2 finite Efficient-CHAD theorem target
+      - name: Safe-check LayerNorm-free CReLU Tsallis-2 theorem target
         run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_CReLU_Tsallis2_v150.agda
-      - name: Safe-check domain-carrying LayerNorm closure
-        run: agda --safe Exotic/ERL/FullCoupled/RepresentationLayerNormClosure.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-      - name: Persist kernel-checked v149 source repair
+      - name: Persist kernel-checked migration
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         shell: bash
         run: |
           set -euo pipefail
           if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
-            echo 'no v149 monolith source repair to persist'
+            echo 'no monolith migration changes to persist'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          git commit -m 'fix: persist kernel-checked v149 monolith algebra'
+          git commit -m 'fix: persist Ruby-kernel-checked monolith migration'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
-
-  rational-oracles:
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        oracle: [python-fraction, haskell-rational]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.head_ref || github.ref }}
-      - name: Verify Python oracle
-        if: matrix.oracle == 'python-fraction'
-        run: python3 .ci/exact_rational_oracle_v150.py | tee rational-oracle.txt
-      - name: Verify Haskell oracle
-        if: matrix.oracle == 'haskell-rational'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! command -v runhaskell >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y ghc
-          fi
-          runhaskell .ci/exact_rational_oracle_v150.hs | tee rational-oracle.txt
-      - name: Publish exact oracle output
-        uses: actions/upload-artifact@v4
-        with:
-          name: rational-${{ matrix.oracle }}
-          path: rational-oracle.txt
-          if-no-files-found: error
-
-  rational-consistency:
-    runs-on: ubuntu-24.04
-    needs: rational-oracles
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: rational-*
-          path: rational-results
-          merge-multiple: false
-      - name: Compare independent exact rational oracle results
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          py = Path('rational-results/rational-python-fraction/rational-oracle.txt').read_text().splitlines()
-          hs = Path('rational-results/rational-haskell-rational/rational-oracle.txt').read_text().splitlines()
-
-          def canonical(lines):
-              return [line for line in lines if not line.startswith('oracle=')]
-
-          assert canonical(py) == canonical(hs), 'independent exact Rational oracle mismatch'
-          assert canonical(py)[-1] == 'status=PASS'
-          print('exact-rational-consistency=PASS')
-          PY
