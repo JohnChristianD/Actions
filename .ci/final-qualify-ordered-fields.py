@@ -24,22 +24,21 @@ for old, new in replacements:
     segment = segment.replace(old, new)
 
 s = s[:start] + segment + s[end:]
+
+# The later canonical finite vector algebra uses a local `minus` helper.
+# Agda 2.8 requires its local signature explicitly in this self-contained file.
+needle = '  Rg = OrderedRing.base (SmoothAlgebra.orderedRing S)\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)\n'
+if needle in s and '  sub : Scalar S → Scalar S → Scalar S\n' not in s:
+    s = s.replace(needle, '  Rg = OrderedRing.base (SmoothAlgebra.orderedRing S)\n  sub : Scalar S → Scalar S → Scalar S\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)\n', 1)
+
 p.write_text(s)
 
 for forbidden in (
-    'zero ≤ a * b',
-    'c * a ≤ c * b',
-    'c * a < c * b',
-    'zero < a * b',
-    'zero < x * x',
-    'zero ≤ x * x',
-    'a + c ≤ b + d',
-    'a + c < b + d',
-    'c + a < c + b',
-    'a + neg b < zero',
-    'abs (x + y) ≤ abs x + abs y',
+    'zero ≤ a * b', 'c * a ≤ c * b', 'c * a < c * b',
+    'zero < a * b', 'zero < x * x', 'zero ≤ x * x',
+    'a + c ≤ b + d', 'a + c < b + d', 'c + a < c + b',
+    'a + neg b < zero', 'abs (x + y) ≤ abs x + abs y',
 ):
     if forbidden in segment:
         raise SystemExit(f'ordered-field qualification incomplete: {forbidden!r}')
-
 print('final-ordered-ring-qualification=validated')
