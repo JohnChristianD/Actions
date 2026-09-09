@@ -1,0 +1,34 @@
+name: v149 monolith dedupe repair
+
+on:
+  push:
+    branches: ['ci/v149-monolith-dedupe']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: agda/agda-setup-action@v1.0.0
+        with:
+          agda-version: '2.8.0'
+      - name: Apply exact dedupe
+        run: python3 .ci/v149-dedupe-monolith.py
+      - name: Compile monolith
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Persist source and remove helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm .ci/v149-dedupe-monolith.py
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .ci/v149-dedupe-monolith.py
+          git commit -m 'fix: deduplicate canonical SmoothAlgebra in monolith'
+          git push origin HEAD:ci/v149-monolith-dedupe
