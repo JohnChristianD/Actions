@@ -28,6 +28,8 @@ jobs:
         run: python3 .ci/v149-let-bindings.py
       - name: Normalize v149 residual carrier
         run: python3 .ci/v149-residual-carrier.py
+      - name: Normalize Nat zero namespace
+        run: python3 .ci/v149-ring-zero-namespace.py
       - name: Print failing parser context
         run: |
           echo '--- transformed lines 850-890 ---'
