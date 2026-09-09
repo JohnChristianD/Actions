@@ -8,63 +8,55 @@ start = s.index('record OrderedRing')
 end = s.index('\n------------------------------------------------------------------------', start)
 segment = s[start:end]
 
-segment = re.sub(
-    r'(mulNonneg\s*:\s*[^\n]*→\s*zero ≤ )a \* b',
-    r'\1Ring._*_ ring a b',
-    segment,
-)
-segment = re.sub(
-    r'(mulLeLeft\s*:\s*[^\n]*→\s*zero ≤ c → )c \* a ≤ c \* b',
-    r'\1Ring._*_ ring c a ≤ Ring._*_ ring c b',
-    segment,
-)
-segment = re.sub(
-    r'(mulLtPosLeft\s*:\s*[^\n]*→\s*zero < c → )c \* a < c \* b',
-    r'\1Ring._*_ ring c a < Ring._*_ ring c b',
-    segment,
-)
-segment = re.sub(
-    r'(mulLtPosCancelLeft\s*:\s*[^\n]*→\s*)c \* a < c \* b',
-    r'\1Ring._*_ ring c a < Ring._*_ ring c b',
-    segment,
-)
-
-# Agda's parser sees the locally opened Ring operator and the record field
-# operator as distinct overloads. Use a literal replacement for mulPos so the
-# exact problematic application is eliminated deterministically.
-old_mul_pos = '    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b\n'
-new_mul_pos = '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b\n'
-if old_mul_pos in segment:
-    segment = segment.replace(old_mul_pos, new_mul_pos, 1)
-elif new_mul_pos not in segment:
-    raise SystemExit('mulPos parser target not found')
-
-segment = re.sub(
-    r'(squarePositive\s*:\s*[^\n]*→\s*zero < )x \* x',
-    r'\1Ring._*_ ring x x',
-    segment,
-)
-segment = re.sub(
-    r'(squareNonnegative\s*:\s*[^\n]*→\s*zero ≤ )x \* x',
-    r'\1Ring._*_ ring x x',
-    segment,
-)
-
-# The outer open Ring and the nested open Ring ring expose the same infix +
-# twice to the parser. Qualify additive ordered-field fields explicitly.
 segment = segment.replace(
-    'a + c ≤ b + d',
-    'Ring._+_ ring a c ≤ Ring._+_ ring b d',
+    '    mulNonneg : ∀ {a b} → zero ≤ a * b\n',
+    '    mulNonneg : ∀ {a b} → zero ≤ Ring._*_ ring a b\n',
     1,
 )
 segment = segment.replace(
-    'a < b → c < d → a + c < b + d',
-    'a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
+    '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → c * a ≤ c * b\n',
+    '    mulLeLeft : ∀ {a b c} → a ≤ b → zero ≤ c → Ring._*_ ring c a ≤ Ring._*_ ring c b\n',
     1,
 )
 segment = segment.replace(
-    'a < b → c + a < c + b',
-    'a < b → Ring._+_ ring c a < Ring._+_ ring c b',
+    '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b\n',
+    '    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → Ring._*_ ring c a < Ring._*_ ring c b\n',
+    1,
+)
+segment = segment.replace(
+    '    mulLtPosCancelLeft : ∀ {a b c} → c * a < c * b → zero < c → a < b\n',
+    '    mulLtPosCancelLeft : ∀ {a b c} → Ring._*_ ring c a < Ring._*_ ring c b → zero < c → a < b\n',
+    1,
+)
+segment = segment.replace(
+    '    mulPos : ∀ {a b} → zero < a → zero < b → zero < a * b\n',
+    '    mulPos : ∀ {a b} → zero < a → zero < b → zero < Ring._*_ ring a b\n',
+    1,
+)
+segment = segment.replace(
+    '    squarePositive : ∀ {x} → x ≠ zero → zero < x * x\n',
+    '    squarePositive : ∀ {x} → x ≠ zero → zero < Ring._*_ ring x x\n',
+    1,
+)
+segment = segment.replace(
+    '    squareNonnegative : ∀ x → zero ≤ x * x\n',
+    '    squareNonnegative : ∀ x → zero ≤ Ring._*_ ring x x\n',
+    1,
+)
+
+segment = segment.replace(
+    '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d\n',
+    '    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → Ring._+_ ring a c ≤ Ring._+_ ring b d\n',
+    1,
+)
+segment = segment.replace(
+    '    ltAdd : ∀ {a b c d} → a < b → c < d → a + c < b + d\n',
+    '    ltAdd : ∀ {a b c d} → a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d\n',
+    1,
+)
+segment = segment.replace(
+    '    addLtLeft : ∀ {a b c} → a < b → c + a < c + b\n',
+    '    addLtLeft : ∀ {a b c} → a < b → Ring._+_ ring c a < Ring._+_ ring c b\n',
     1,
 )
 
@@ -78,11 +70,12 @@ for forbidden in (
     'a < b → c < d → a + c < b + d',
     'a < b → c + a < c + b',
     'zero < a * b',
+    'zero < x * x',
 ):
     if forbidden in segment:
-        raise SystemExit(f'final ordered-field qualification incomplete: {forbidden!r}')
+        raise SystemExit(f'ordered-field qualification incomplete: {forbidden!r}')
 
 for line in segment.splitlines():
-    if 'mulPos' in line or 'squarePositive' in line or 'squareNonnegative' in line:
+    if any(k in line for k in ('mulNonneg', 'mulLeLeft', 'mulLtPosLeft', 'mulLtPosCancelLeft', 'mulPos', 'squarePositive', 'squareNonnegative')):
         print('ORDERED-RING-PRODUCT:', line)
 print('final-ordered-ring-qualification=validated')
