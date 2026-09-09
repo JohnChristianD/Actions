@@ -1,5 +1,5 @@
-# Exact finite ordered Rational oracle matching the Haskell/Elixir reference.
-# Native Ruby Rational arithmetic; no floating point and no mutation.
+# Exact finite ordered Rational oracle for the v150 Efficient-CHAD target.
+# Native Ruby Rational arithmetic; no floating point values.
 
 def sigmoid_r(z)
   (Rational(2) + z) / Rational(4)
@@ -15,9 +15,9 @@ end
 
 def tsallis2(scores, values)
   tau = Rational(1, 4)
-  weights = scores.map { |s| [s - tau, Rational(0)].max }
-  total = weights.inject(Rational(0), :+)
-  weights.map! { |w| w / total }
+  raw = scores.map { |s| [s - tau, Rational(0)].max }
+  total = raw.inject(Rational(0), :+)
+  weights = raw.map { |w| w / total }
   out = values.zip(weights).inject(Rational(0)) { |acc, (v, p)| acc + p * v }
   [weights, out]
 end
@@ -43,19 +43,21 @@ cases = [
 ]
 
 puts 'oracle=ruby-rational'
-cases.each do |x, h, c|
+cases.each_with_index do |(x, h, c), i|
   lh, lc = lstm(x, h, c)
-  puts [x, h, c, lh, lc].map { |r| render(r) }.join(',')
+  puts "case=#{i + 1}=" + [x, h, c, lh, lc].map { |r| render(r) }.join(',')
 end
 
 weights, out = tsallis2([Rational(1), Rational(1, 2), Rational(-1, 2)], [Rational(1), Rational(-1), Rational(2)])
 abort 'Ruby Tsallis-2 equilibrium failure' unless weights == [Rational(3, 4), Rational(1, 4), Rational(0)]
 abort 'Ruby Tsallis-2 weighted output failure' unless out == Rational(1, 2)
+puts "tsallis=" + weights.map { |r| render(r) }.join(',') + ";" + render(out)
 
-p, m = crelu(Rational(-3, 2))
-abort 'Ruby CReLU reconstruction failure' unless p - m == Rational(-3, 2)
-abort 'Ruby CReLU magnitude failure' unless p + m == Rational(3, 2)
+cp, cm = crelu(Rational(-3, 2))
+abort 'Ruby CReLU reconstruction failure' unless cp - cm == Rational(-3, 2)
+abort 'Ruby CReLU magnitude failure' unless cp + cm == Rational(3, 2)
+puts "crelu=" + [cp, cm, cp - cm, cp + cm].map { |r| render(r) }.join(',')
 
 abort 'Ruby degree recurrence failure' unless [1, 3, 9, 27].each_cons(2).all? { |a, b| b == 3 * a }
-
+puts 'degree=1,3,9,27'
 puts 'status=PASS'
