@@ -37,6 +37,9 @@ jobs:
       - name: Normalize v149 Nat namespace
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/normalize-nat-namespace.py
+      - name: Qualify v149 OrderedRing fields
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/final-qualify-ordered-fields.py
       - name: Normalize v149 LayerNorm denominator domain
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/v149-layernorm-parser.py
