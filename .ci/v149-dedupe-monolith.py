@@ -5,17 +5,20 @@ s = p.read_text()
 
 marker_start = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
 marker_end = "------------------------------------------------------------------------\n-- Seven coupled parameter blocks and finite parameter indices\n"
-if marker_start not in s or marker_end not in s:
-    raise SystemExit('canonical SmoothAlgebra markers not found')
-
-first = s.index(marker_start)
-search = s.find(marker_start, first + len(marker_start))
-while search >= 0:
-    close = s.find(marker_end, search + len(marker_start))
-    if close < 0:
-        raise SystemExit('duplicate SmoothAlgebra marker has no closing marker')
-    s = s[:search] + s[close:]
-    search = s.find(marker_start, search)
+if marker_start in s and marker_end in s:
+    first = s.index(marker_start)
+    search = s.find(marker_start, first + len(marker_start))
+    while search >= 0:
+        close = s.find(marker_end, search + len(marker_start))
+        if close < 0:
+            raise SystemExit('duplicate SmoothAlgebra marker has no closing marker')
+        s = s[:search] + s[close:]
+        search = s.find(marker_start, search)
+else:
+    # The source may already contain the canonical algebra after a previous
+    # successful persistence commit. In that case there is nothing to dedupe.
+    if '    sqrtDomain : R → Set\n' not in s:
+        raise SystemExit('canonical SmoothAlgebra markers absent and canonical sqrt domain missing')
 
 needle = "    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n"
 if needle in s and '    sqrtDomain : R → Set\n' not in s:
@@ -206,7 +209,8 @@ s = s[:tstart] + '''qTerminalProjectionUnique_v147 t u refl refl refl =
       (sym (QTerminalSolution_v147.stationarity u i)))
 ''' + s[tsep:]
 
-if s.count(marker_start) != 1: raise SystemExit('canonical marker count is not one')
+if marker_start in s and s.count(marker_start) != 1:
+    raise SystemExit('canonical marker count is not one')
 if s.count('sqrtDomain : R → Set') != 1: raise SystemExit('sqrt domain law missing or duplicated')
 if s.count(kmarker) != 0: raise SystemExit('malformed audited KKT placeholder marker survived')
 
