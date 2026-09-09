@@ -20,6 +20,12 @@ jobs:
           agda-version: '2.8.0'
       - name: Apply deterministic v149 normalization
         run: python3 .ci/v149-dedupe-monolith.py
+      - name: Normalize v149 CVT insertion parser
+        run: python3 .ci/v149-cvt-parser.py
+      - name: Normalize v149 diagonal proof parser
+        run: python3 .ci/v149-diagonal-parser.py
+      - name: Normalize v149 typed let bindings
+        run: python3 .ci/v149-let-bindings.py
       - name: Print replay parser context
         run: |
           echo '--- transformed lines 1385-1420 ---'
