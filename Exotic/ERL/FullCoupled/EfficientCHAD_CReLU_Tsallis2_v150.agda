@@ -1,13 +1,35 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _* )
+open import Agda.Builtin.Equality using (_≡_; refl)
 
-------------------------------------------------------------------------
--- Minimal finite ordered algebra boundary.
--- No LayerNorm, transcendental normalization, or postulates occur here.
-------------------------------------------------------------------------
+data ⊥ : Set where
+
+¬_ : Set → Set
+¬ A = A → ⊥
+
+_≠_ : {A : Set} → A → A → Set
+x ≠ y = ¬ (x ≡ y)
+
+data _⊎_ (A B : Set) : Set where
+  inj₁ : A → A ⊎ B
+  inj₂ : B → A ⊎ B
+
+data Bool : Set where
+  false true : Bool
+
+data Vec (A : Set) : Nat → Set where
+  [] : Vec A zero
+  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+
+sumV : ∀ {A : Set} → (A → A → A) → A → ∀ {n} → Vec A n → A
+sumV _ z [] = z
+sumV op z (x ∷ xs) = op x (sumV op z xs)
+
+mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
+mapV f [] = []
+mapV f (x ∷ xs) = f x ∷ mapV f xs
 
 record Algebra : Set₁ where
   field
@@ -36,207 +58,107 @@ record Algebra : Set₁ where
 
 open Algebra
 
-------------------------------------------------------------------------
--- Finite vectors and matrices.
-------------------------------------------------------------------------
-
-data Bool : Set where
-  false true : Bool
-
-if_then_else_ : {A : Set} → Bool → A → A → A
-if true then x else y = x
-if false then x else y = y
-
-_≠_ : {A : Set} → A → A → Set
-x ≠ y = (x ≡ y) → Algebra.⊥
-
--- A local empty type avoids importing a larger library boundary.
-data ⊥ : Set where
-
-
-data Fin : Nat → Set where
-  fzero : {n : Nat} → Fin (suc n)
-  fsuc : {n : Nat} → Fin n → Fin (suc n)
-
-data Vec (A : Set) : Nat → Set where
-  [] : Vec A zero
-  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
-
-index : ∀ {A n} → Vec A n → Fin n → A
-index [] ()
-index (x ∷ xs) fzero = x
-index (x ∷ xs) (fsuc i) = index xs i
-
-mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
-mapV f [] = []
-mapV f (x ∷ xs) = f x ∷ mapV f xs
-
-zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
-zipWithV _ [] [] = []
-zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
-
-sumV : ∀ {A : Set} → (A → A → A) → A → ∀ {n} → Vec A n → A
-sumV _ z [] = z
-sumV op z (x ∷ xs) = op x (sumV op z xs)
-
-Matrix : Algebra → Nat → Nat → Set
-Matrix A m n = Fin m → Fin n → Algebra.R A
-
 Vector : Algebra → Nat → Set
 Vector A n = Vec (Algebra.R A) n
 
-------------------------------------------------------------------------
--- CReLU: exact positive/negative magnitude decomposition.
-------------------------------------------------------------------------
+Matrix : Algebra → Nat → Nat → Set
+Matrix A m n = Vec (Vec (Algebra.R A) n) m
 
-cplus : (A : Algebra) → Algebra.R A → Algebra.R A
-cplus A x = Algebra.max A (Algebra.zero A) x
+rowL1 : ∀ {A n} → Algebra A → Vec (Algebra.R A) n → Algebra.R A
+rowL1 A [] = zero A
+rowL1 A (x ∷ xs) = abs A x +A rowL1 A xs
+  where
+  infixl 6 _+A_
+  _+A_ : Algebra.R A → Algebra.R A → Algebra.R A
+  _+A_ = Algebra._+_ A
 
-cminus : (A : Algebra) → Algebra.R A → Algebra.R A
-cminus A x = Algebra.max A (Algebra.zero A) (Algebra.neg A x)
+weightL1 : ∀ {A m n} → Algebra A → Matrix A m n → Algebra.R A
+weightL1 A [] = zero A
+weightL1 A (r ∷ rs) = Algebra._+_ A (rowL1 A r) (weightL1 A rs)
+
+pathRow : ∀ {A h i} → Algebra A → Vec (Algebra.R A) h → Matrix A h i → Algebra.R A
+pathRow A [] [] = zero A
+pathRow A (a ∷ as) (r ∷ rs) =
+  Algebra._+_ A
+    (Algebra._*_ A (abs A a) (rowL1 A r))
+    (pathRow A as rs)
+
+onePathNorm : ∀ {A h i o} → Algebra A → Matrix A h i → Matrix A o h → Algebra.R A
+onePathNorm A W1 [] = zero A
+onePathNorm A W1 (r ∷ rs) =
+  Algebra._+_ A (pathRow A r W1) (onePathNorm A W1 rs)
+
+record NormCertificate (A : Algebra) : Set₁ where
+  field
+    l1Bound path1Bound sensitivityBound : Algebra.R A
+    l1Witness path1Witness : Algebra.R A
+    l1LeBound : Algebra._≤_ A l1Witness l1Bound
+    path1LeBound : Algebra._≤_ A path1Witness path1Bound
+
+cplus : ∀ {A} → Algebra A → Algebra.R A → Algebra.R A
+cplus A x = max A (zero A) x
+
+cminus : ∀ {A} → Algebra A → Algebra.R A → Algebra.R A
+cminus A x = max A (zero A) (neg A x)
 
 record CReLULaws (A : Algebra) : Set₁ where
-  open Algebra A
   field
     reconstruct : ∀ x →
-      cplus A x + neg (cminus A x) ≡ x
+      Algebra._+_ A (cplus A x) (neg A (cminus A x)) ≡ x
     absDecompose : ∀ x →
-      cplus A x + cminus A x ≡ abs x
-    branchFinite : ∀ x →
-      (cplus A x ≡ zero) ⊎ (cminus A x ≡ zero) ⊎
-      ((cplus A x ≠ zero) × (cminus A x ≠ zero))
-
-------------------------------------------------------------------------
--- L1 weight norm and two-layer 1-path norm.
-------------------------------------------------------------------------
-
-weightL1 : ∀ {A m n} → Matrix A m n → Algebra.R A
-weightL1 {A} {m} {n} W =
-  sumV (Algebra._+_ A) (Algebra.zero A)
-    (mapV (λ i →
-      sumV (Algebra._+_ A) (Algebra.zero A)
-        (tabulateRow A n W i))
-      (tabulateFin m))
+      Algebra._+_ A (cplus A x) (cminus A x) ≡ abs A x
+    positiveChannelBound : ∀ x → zero A ≤A cplus A x
+    negativeChannelBound : ∀ x → zero A ≤A cminus A x
   where
-  tabulateFin : ∀ {k} → Fin k → Vec (Fin k) k
-  tabulateFin {zero} ()
-  tabulateFin {suc k} f = f ∷ tabulateFin (fsuc f)
+  infix 4 _≤A_
+  _≤A_ = Algebra._≤_ A
 
-  tabulateRow : ∀ {k} → Algebra A → Fin k → Matrix A m n → Fin m → Vec (Algebra.R A) k
-  tabulateRow A zero W i = []
-  tabulateRow A (suc k) W i = Algebra.abs A (W i fzero) ∷
-    tabulateRow A k (λ i' j' → W i' (fsuc j')) i
-
--- The row/column enumerators above are deliberately finite.  The path norm
--- is presented independently as a certified finite quantity; its exact
--- expansion is supplied by the algebraic certificate below.
-record OnePathNorm (A : Algebra) : Set₁ where
-  field
-    path1 : ∀ {m n p} → Matrix A m n → Matrix A n p → Algebra.R A
-    nonnegative : ∀ {m n p} (W V : Matrix A m n) →
-      Algebra.zero A ≤ path1 W V
-
-------------------------------------------------------------------------
--- Tsallis-2 sparse attention as a finite KKT/active-set certificate.
--- For a fixed active set, weights are affine in scores and the normalization
--- is finite; no exp/log/softmax semantics are present.
-------------------------------------------------------------------------
+index : ∀ {A n X} → Fin n → Vec X n → X
+index fzero (x ∷ _) = x
+index (fsuc i) (_ ∷ xs) = index i xs
+  where
+  data Fin : Nat → Set where
+    fzero : {n : Nat} → Fin (suc n)
+    fsuc : {n : Nat} → Fin n → Fin (suc n)
 
 record Tsallis2Branch (A : Algebra) (n : Nat) : Set₁ where
-  open Algebra A
   field
     scores tau weights : Vector A n
     active : Vec Bool n
-    nonnegative : ∀ i → zero ≤ index weights i
-    inactiveZero : ∀ i → index active i ≡ false → index weights i ≡ zero
-    activeAffine : ∀ i → index active i ≡ true →
-      index weights i + neg (index scores i + neg tau) ≡ zero
-    normalized : sumV _+_ zero weights ≡ one
+    nonnegative : ∀ i → Algebra._≤_ A (zero A) (index i weights)
+    inactiveZero : ∀ i → index i active ≡ false → index i weights ≡ zero A
+    activeAffine : ∀ i → index i active ≡ true →
+      index i weights ≡ Algebra._+_ A (index i scores) (neg A tau)
+    normalized : sumV (Algebra._+_ A) (zero A) weights ≡ one A
 
-  -- This is the finite sparse-equilibrium normal form.
-  equilibriumNormalForm :
-    ∀ i → index active i ≡ true →
-      index weights i ≡ index scores i + neg tau
-  equilibriumNormalForm i h =
-    trans
-      (addNegCancel (index weights i) (index scores i + neg tau)
-        (activeAffine i h))
-      refl
-    where
-    addNegCancel : ∀ x y → x + neg y ≡ zero → x ≡ y
-    addNegCancel x y h = hToEq x y h
-      where
-      hToEq : ∀ a b → a + neg b ≡ zero → a ≡ b
-      hToEq a b h =
-        trans
-          (sym (addZeroR A a))
-          (trans
-            (cong (λ q → a + q) (sym (addNegR A b)))
-            (trans
-              (cong (λ q → a + q) h)
-              refl))
-
-------------------------------------------------------------------------
--- q-projection and standard q-IDBD direction.
-------------------------------------------------------------------------
+zeros : ∀ {A n} → Algebra A → Vector A n
+zeros A {zero} = []
+zeros A {suc n} = zero A ∷ zeros A
 
 record QProjection (A : Algebra) (n : Nat) : Set₁ where
   field
     project : Vector A n → Vector A n
     idempotent : ∀ x → project (project x) ≡ project x
-    preservesZero : project (mapV (λ _ → Algebra.zero A) x) ≡
-      mapV (λ _ → Algebra.zero A) x
-      where
-      x : Vector A n
+    preservesZero : project (zeros A) ≡ zeros A
 
 record DyadicScales (A : Algebra) : Set₁ where
-  open Algebra A
   field
-    scale : Nat → R A
-    scaleZero : scale zero ≡ one
-    halfLaw : ∀ k → scale (suc k) + scale (suc k) ≡ scale k
-
-------------------------------------------------------------------------
--- Optional parameter-direction sign, kept separate from standard q-IDBD.
-------------------------------------------------------------------------
-
-record DirectionSign (A : Algebra) : Set₁ where
-  open Algebra A
-  field
-    sign : R A → R A
-    zeroSign : sign zero ≡ zero
-    signMagnitude : ∀ x → sign x ≡ zero ⊎
-      (sign x ≠ zero)
-
-------------------------------------------------------------------------
--- Finite branch product: forward CReLU branch × Tsallis active set ×
--- optional optimizer-direction sign pattern.
-------------------------------------------------------------------------
+    scale : Nat → Algebra.R A
+    scaleZero : scale zero ≡ one A
+    halfLaw : ∀ k → Algebra._+_ A (scale (suc k)) (scale (suc k)) ≡ scale k
 
 record CompositeBranch (A : Algebra) (n : Nat) : Set₁ where
   field
-    forwardTag : Vec Bool n
-    attentionTag : Vec Bool n
-    updateTag : Vec Bool n
+    forwardTag attentionTag updateTag : Vec Bool n
 
 record CompositeCertificate (A : Algebra) (n : Nat) : Set₁ where
   field
-    creluLaws : CReLULaws A
+    crelu : CReLULaws A
     attention : Tsallis2Branch A n
     projection : QProjection A n
-    dyadicL2 : DyadicScales A
+    dyadic : DyadicScales A
+    norms : NormCertificate A
     branch : CompositeBranch A n
-
-    -- Stability is deliberately a finite certificate, not a hidden analytic
-    -- claim.  Coefficients are supplied in the same ordered scalar algebra.
-    l1WeightBound : Algebra.R A
-    onePathBound : Algebra.R A
-    sensitivityBound : Algebra.R A
-
-------------------------------------------------------------------------
--- Degree bookkeeping for the counterfactual algebraic Transformer.
--- CReLU/affine maps preserve degree; QK is quadratic; score×value is cubic.
-------------------------------------------------------------------------
 
 pow3 : Nat → Nat
 pow3 zero = 1
@@ -245,91 +167,39 @@ pow3 (suc k) = 3 * pow3 k
 attentionDegreeStep : Nat → Nat
 attentionDegreeStep d = 3 * d
 
-threePowRecurrence : ∀ k → attentionDegreeStep (pow3 k) ≡ pow3 (suc k)
-threePowRecurrence zero = refl
-threePowRecurrence (suc k) = refl
+finiteDegreeLaw : ∀ k → attentionDegreeStep (pow3 k) ≡ pow3 (suc k)
+finiteDegreeLaw zero = refl
+finiteDegreeLaw (suc k) = refl
 
-------------------------------------------------------------------------
--- Integrated finite theorem target.
-------------------------------------------------------------------------
-
-record EfficientCHAD_CReLU_Tsallis2_TheoremTarget
-  (A : Algebra) (n : Nat) : Set₁ where
+record EfficientCHAD_CReLU_Tsallis2_TheoremTarget (A : Algebra) (n : Nat) : Set₁ where
   field
     certificate : CompositeCertificate A n
-
-    -- Finite equilibrium theorem for sparse attention.
-    sparseEquilibrium :
-      ∀ i →
-        index (Tsallis2Branch.active (CompositeCertificate.attention certificate)) i ≡ true →
-        index (Tsallis2Branch.weights (CompositeCertificate.attention certificate)) i ≡
-        index (Tsallis2Branch.scores (CompositeCertificate.attention certificate)) i +
-        neg A (Tsallis2Branch.tau (CompositeCertificate.attention certificate))
-
-    -- CReLU exact reconstruction and L1 magnitude decomposition.
+    sparseEquilibrium : ∀ i →
+      Tsallis2Branch.active (CompositeCertificate.attention certificate) i ≡ true →
+      Tsallis2Branch.weights (CompositeCertificate.attention certificate) i ≡
+        Algebra._+_ A
+          (Tsallis2Branch.scores (CompositeCertificate.attention certificate) i)
+          (neg A (Tsallis2Branch.tau (CompositeCertificate.attention certificate)))
     creluReconstruction : ∀ x →
-      cplus A x + neg A (cminus A x) ≡ x
+      Algebra._+_ A (cplus A x) (neg A (cminus A x)) ≡ x
     creluAbsDecomposition : ∀ x →
-      cplus A x + cminus A x ≡ abs A x
-
-    -- q-projection remains a retraction after the finite learner boundary.
+      Algebra._+_ A (cplus A x) (cminus A x) ≡ abs A x
     qProjectionIdempotent : ∀ x →
       QProjection.project (CompositeCertificate.projection certificate)
         (QProjection.project (CompositeCertificate.projection certificate) x) ≡
       QProjection.project (CompositeCertificate.projection certificate) x
-
-    -- Branchwise polynomial order recurrence; no global analytic semantics.
     degreeBound : ∀ k → attentionDegreeStep (pow3 k) ≡ pow3 (suc k)
-
-    -- All active finite certificates coexist in one state predicate.
-    compositeFiniteOrderedClosure :
-      CompositeCertificate A n → CompositeCertificate A n
-
-------------------------------------------------------------------------
--- Constructor: the integrated theorem is assembled compositionally from
--- the local finite certificates; no theorem is asserted beyond its inputs.
-------------------------------------------------------------------------
+    finiteOrderedClosure : CompositeCertificate A n → CompositeCertificate A n
 
 assembleTheoremTarget : ∀ {A n} →
-  (c : CompositeCertificate A n) →
+  CompositeCertificate A n →
   EfficientCHAD_CReLU_Tsallis2_TheoremTarget A n
-assembleTheoremTarget c =
-  record
-    { certificate = c
-    ; sparseEquilibrium =
-        λ i h → Tsallis2Branch.equilibriumNormalForm
-          (CompositeCertificate.attention c) i h
-    ; creluReconstruction =
-        CReLULaws.reconstruct (CompositeCertificate.creluLaws c)
-    ; creluAbsDecomposition =
-        CReLULaws.absDecompose (CompositeCertificate.creluLaws c)
-    ; qProjectionIdempotent =
-        QProjection.idempotent (CompositeCertificate.projection c)
-    ; degreeBound = threePowRecurrence
-    ; compositeFiniteOrderedClosure = λ x → x
-    }
-
-------------------------------------------------------------------------
--- Canonical conclusions recorded by this target.
-------------------------------------------------------------------------
-
-canonicalDegreeLaw : ∀ k → attentionDegreeStep (pow3 k) ≡ pow3 (suc k)
-canonicalDegreeLaw = threePowRecurrence
-
-canonicalTsallisIsAffineOnBranch :
-  ∀ {A n} (c : CompositeCertificate A n) →
-  (∀ i → index (Tsallis2Branch.active (CompositeCertificate.attention c)) i ≡ true →
-    index (Tsallis2Branch.weights (CompositeCertificate.attention c)) i ≡
-      index (Tsallis2Branch.scores (CompositeCertificate.attention c)) i +
-      neg A (Tsallis2Branch.tau (CompositeCertificate.attention c)))
-canonicalTsallisIsAffineOnBranch c =
-  λ i h → Tsallis2Branch.equilibriumNormalForm
-    (CompositeCertificate.attention c) i h
-
-canonicalQProjectionRetraction :
-  ∀ {A n} (c : CompositeCertificate A n) (x : Vector A n) →
-    QProjection.project (CompositeCertificate.projection c)
-      (QProjection.project (CompositeCertificate.projection c) x) ≡
-    QProjection.project (CompositeCertificate.projection c) x
-canonicalQProjectionRetraction c =
-  QProjection.idempotent (CompositeCertificate.projection c)
+assembleTheoremTarget c = record
+  { certificate = c
+  ; sparseEquilibrium = Tsallis2Branch.activeAffine (CompositeCertificate.attention c)
+  ; creluReconstruction = CReLULaws.reconstruct (CompositeCertificate.crelu c)
+  ; creluAbsDecomposition = CReLULaws.absDecompose (CompositeCertificate.crelu c)
+  ; qProjectionIdempotent = QProjection.idempotent (CompositeCertificate.projection c)
+  ; degreeBound = finiteDegreeLaw
+  ; finiteOrderedClosure = λ x → x
+  }
