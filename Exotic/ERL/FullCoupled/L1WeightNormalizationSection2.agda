@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.L1WeightNormalizationSection2 where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (Nat; suc)
 
 data ⊥ : Set where
 
@@ -17,7 +17,6 @@ cong f refl = refl
 
 ------------------------------------------------------------------------
 -- Finite algebraic core of arXiv:2404.19112v1, Section 2.
---
 -- No real-analysis infrastructure is used.  The L1 normalization and
 -- subgradient equations are represented with total algebraic primitives plus
 -- explicit nonzero/domain witnesses.  No classical differentiability claim
@@ -25,7 +24,7 @@ cong f refl = refl
 ------------------------------------------------------------------------
 
 data Vec (A : Set) : Nat → Set where
-  [] : Vec A zero
+  [] : Vec A 0
   _::_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
 mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
