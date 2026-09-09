@@ -5,6 +5,9 @@ s = p.read_text()
 
 needle = 'insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j'
 if s.count(needle) == 0:
+    if s.count('insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i }') == 1:
+        print('CVT insertion already normalized')
+        raise SystemExit(0)
     if s.count('insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i f }') == 1:
         print('CVT insertion already normalized')
         raise SystemExit(0)
