@@ -68,7 +68,7 @@ vScale A a [] = []
 vScale A a (x ∷ xs) = OrderedAlgebra._*_ A a x ∷ vScale A a xs
 matVec : ∀ {m n : Nat} → (A : OrderedAlgebra) → Matrix A m n → Vector A n → Vector A m
 matVec A [] _ = []
-matVec A (row ∷ rows) x = sumRow row x A ∷ matVec A rows x
+matVec A (row ∷ rows) x = sumRow row x ∷ matVec A rows x
   where
   sumRow : ∀ {n : Nat} → Vec (OrderedAlgebra.R A) n → Vector A n → OrderedAlgebra.R A
   sumRow [] [] = OrderedAlgebra.zero A
