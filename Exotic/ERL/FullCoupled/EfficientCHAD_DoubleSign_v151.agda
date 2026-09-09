@@ -16,6 +16,9 @@ cong₂ :
   f x y ≡ f x' y'
 cong₂ f refl refl = refl
 
+trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl q = q
+
 record SignActivationCertificate (A : OrderedAlgebra) : Set₁ where
   field
     sign : OrderedAlgebra.R A → OrderedAlgebra.R A
@@ -103,7 +106,11 @@ onePathNormDoubleSign : ∀ {A h i o} (A₀ : OrderedAlgebra)
   onePathNorm A₀ (signMatrix₂ s W₁) (signMatrix₂ s W₂) ≡
   onePathNorm A₀ W₁ W₂
 onePathNormDoubleSign A₀ s W₁ W₂ =
-  onePathNormSign A₀ s (signMatrix s W₁) (signMatrix s W₂)
+  trans
+    (cong₂ (λ X Y → onePathNorm A₀ X Y)
+      (signDoubleMatrix s W₁)
+      (signDoubleMatrix s W₂))
+    (onePathNormSign A₀ s W₁ W₂)
 
 record FixedWindowHardAttentionCertificate
   (A : OrderedAlgebra) (window : Nat) : Set₁ where
@@ -112,6 +119,17 @@ record FixedWindowHardAttentionCertificate
     winner : Fin window
     winnerMax : ∀ j →
       OrderedAlgebra._≤_ A (score j) (score winner)
+
+record FixedWindowHardTransformerCertificate
+  (A : OrderedAlgebra) (window : Nat) : Set₁ where
+  field
+    context : Vec (OrderedAlgebra.R A) window
+    query : OrderedAlgebra.R A
+    score : Fin window → OrderedAlgebra.R A
+    winner : Fin window
+    winnerMax : ∀ j →
+      OrderedAlgebra._≤_ A (score j) (score winner)
+    nextContext : Vec (OrderedAlgebra.R A) window
 
 record CoupledHyperParameterCertificate (A : OrderedAlgebra) : Set₁ where
   field
@@ -135,6 +153,7 @@ record PredictivePrescriptiveConjectureCertificate
     base : EfficientCHADCertificate A n
     sign : SignActivationCertificate A
     attention : FixedWindowHardAttentionCertificate A window
+    transformer : FixedWindowHardTransformerCertificate A window
     pareto : ParetoEfficientMappingCertificate A
     predictedNorm : OrderedAlgebra.R A
     prescribedMode : UpdateMode
