@@ -102,6 +102,60 @@ new_q = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
 '''
 s = s[:qstart] + new_q + s[qsep:]
 
+# Agda accepts typed declarations in where-blocks, but the multiline
+# dependent-let form used here was parsed as an unfinished assignment.
+# The witnesses are fully inferred from the equality expressions.
+old_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      c = d * e
+      hc = OrderedRing.mulPos hd he
+      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =
+        trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
+          (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
+            (trans (cong (λ q → a * q)
+              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
+                (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
+                  (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
+                    (Ring.mulOneL Rg e))))) refl)
+      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =
+        trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
+          (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
+            (trans (cong (λ q → b * q)
+              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
+                (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
+                  (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
+                    (Ring.mulOneL Rg d))))) refl)
+  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
+'''
+new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      c = d * e
+      hc = OrderedRing.mulPos hd he
+      leftNorm =
+        trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
+          (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
+            (trans (cong (λ q → a * q)
+              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
+                (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
+                  (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
+                    (Ring.mulOneL Rg e))))) refl)
+      rightNorm =
+        trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
+          (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
+            (trans (cong (λ q → b * q)
+              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
+                (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
+                  (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
+                    (Ring.mulOneL Rg d))))) refl)
+  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
+'''
+if s.count(old_cross) > 1:
+    raise SystemExit(f'unexpected ordered field cross duplicate: {s.count(old_cross)}')
+if s.count(old_cross) == 1:
+    s = s.replace(old_cross, new_cross, 1)
+elif s.count('orderedFieldCrossStrict_v142 a b d e hd he h =') != 1:
+    raise SystemExit('ordered field cross theorem target not found')
+
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 if s.count(old_terminal) != 1:
     raise SystemExit(f'expected exactly one terminal uniqueness theorem: {s.count(old_terminal)}')
@@ -127,8 +181,10 @@ if s.count('residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha 
     raise SystemExit('residual square normalization missing')
 if s.count('qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
     raise SystemExit('q projection cross normalization missing')
+if s.count('orderedFieldCrossStrict_v142 a b d e hd he h =') != 1:
+    raise SystemExit('ordered field cross normalization missing')
 if s.count('qTerminalProjectionUnique_v147 t u refl refl refl =') != 1:
     raise SystemExit('terminal uniqueness normalization missing')
 
 p.write_text(s)
-print('monolith canonical algebra/parser/residual/q-cross/terminal uniqueness normalization applied exactly once')
+print('monolith canonical algebra/parser/residual/q-cross/ordered-field-cross/terminal normalization applied exactly once')
