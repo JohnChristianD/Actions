@@ -44,6 +44,14 @@ segment = re.sub(
     segment,
 )
 
+# The outer open Ring and the nested open Ring ring expose the same infix +
+# twice to the parser. Qualify this first additive ordered-field field.
+segment = segment.replace(
+    'a + c ≤ b + d',
+    'Ring._+_ ring a c ≤ Ring._+_ ring b d',
+    1,
+)
+
 s = s[:start] + segment + s[end:]
 p.write_text(s)
 
