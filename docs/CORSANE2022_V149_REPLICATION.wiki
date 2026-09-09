@@ -17,7 +17,7 @@ The Efficient-CHAD source-to-source surface is independently `--safe` and the fi
 * CI reached `CompleteSafe_v147.agda` only after all preceding safe checks passed. The immediate failure was a scope error, not a mathematical failure.
 * At the failing boundary, `LayerNorm.denominatorDomain` referenced `layerNormVariance` before its declaration was in scope. The repair reorders the canonical mean/variance definitions before the record and preserves the domain witness.
 * A duplicate `SmoothAlgebra` surface and legacy `OrderedRing.base` names were also source-boundary defects. The deterministic repair keeps one canonical algebra record and uses `OrderedRing.ring`.
-* The exact-rational Haskell/Elixir oracle path is independent of Agda kernel acceptance. SymPy is permanently removed from the active repository oracle path.
+* The independent exact-rational Haskell/Elixir/Ruby oracle path remains separate from Agda kernel acceptance; the former symbolic-CAS oracle has been removed.
 * The existing CI security-check surfaces for application repositories are treated as separate concerns from this algebraic proof gate; this V149 change does not replace those checks.
 
 == Roots and transcendentals: exact diagnosis ==
@@ -46,7 +46,7 @@ The key identity needed by the proof is `w^T M_w x = 0`, obtained from `w^T sign
 
 Zero-coordinate behavior is intentionally not represented as a classical derivative theorem. The L1 sign map is treated as a subgradient/domain boundary. This matches the paper's use of a subgradient and its discussion of discontinuous oblique projection behavior near zero.
 
-The new self-contained module is `Exotic/ERL/FullCoupled/L1WeightNormalizationSection2.agda`. It contains no square roots, logarithms, probabilistic assumptions, or real-analysis axioms.
+The self-contained module is `Exotic/ERL/FullCoupled/L1WeightNormalizationSection2.agda`. It contains no square roots, logarithms, probabilistic assumptions, or real-analysis axioms.
 
 == L1 versus L2 LayerNorm ==
 
