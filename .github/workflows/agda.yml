@@ -38,6 +38,9 @@ jobs:
       - name: Normalize v149 diagonal proof parser
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: python3 .ci/v149-diagonal-parser.py
+      - name: Normalize v149 typed let bindings
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-let-bindings.py
       - name: Repair canonical accumulator only on legacy v149 LayerNorm branch
         if: github.head_ref == 'ci/v149-representation-layernorm-closure' || github.ref == 'refs/heads/ci/v149-representation-layernorm-closure'
         shell: bash
