@@ -14,7 +14,7 @@ Agda `--safe` is the mathematical authority. The modular Stage01..Stage08 graph 
 | EAT-02 | CHAD identity/composition boundary | proved | primal/pullback transport |
 | EAT-03 | finite linear critic update shape | proved | critic-state boundary |
 | EAT-04 | q-projection idempotence | proved | exact retraction boundary |
-| EAT-05 | representation expansion boundary | proved | affine -> layerNorm -> tanh composition |
+| EAT-05 | representation expansion boundary | proved | historical representation compatibility surface |
 | EAT-06 | finite VJP transport shape | proved | reverse-map boundary |
 | EAT-07 | coupled L2 state preservation | proved | critic/representation coupling state boundary |
 | EAT-08 | finite archive max/insert shape | proved | incumbent composition |
@@ -24,6 +24,60 @@ Agda `--safe` is the mathematical authority. The modular Stage01..Stage08 graph 
 | EAT-12 | finite OpenES mean update equation | existing equation surface | emitter state transition |
 
 The current Stage08 certificate requires finite algebra, CHAD, critic, q-projection, representation, coupled L2, archive, and method-preservation boundaries simultaneously. That is an integration theorem, not merely a list of independently typed declarations.
+
+## EAT-30: LayerNorm-free CReLU + Tsallis-2 Efficient-CHAD target
+
+The v150 target is deliberately independent of LayerNorm. Its intended forward core is affine + CReLU followed by Tsallis-2/sparsemax attention. The optimizer boundary remains standard magnitude-aware q-IDBD; parameter-direction sign is an optional ablation rather than the canonical learner.
+
+The finite ordered structure is:
+
+`Affine -> CReLU -> QK score -> Tsallis-2 active-set equilibrium -> weighted value sum`
+
+with a separate learner boundary:
+
+`IDBD direction -> q-projection -> q-IDBD update -> dyadic coupled-L2`.
+
+The integrated certificate tracks:
+
+- CReLU reconstruction: `cplus(x) - cminus(x) = x`;
+- CReLU magnitude decomposition: `cplus(x) + cminus(x) = abs(x)`;
+- Tsallis-2 equilibrium on an active set: `p_i = score_i - tau` for active coordinates and `p_i = 0` otherwise;
+- finite normalization: `sum p_i = 1`;
+- L1 weight witness and bound;
+- two-layer 1-path-norm witness and bound;
+- q-projection idempotence;
+- dyadic coefficient law `lambda (k+1) + lambda (k+1) = lambda k`;
+- finite branch product carrying forward, attention, and optional update sign patterns.
+
+The intended theorem does not claim global real-analytic convergence. Sensitivity is a finite certificate over an explicit ordered algebra. External exact-Rational programs are cross-checks only; they do not upgrade an Agda theorem's proof status.
+
+### EAT-31: branchwise polynomial degree law
+
+For an affine+CReLU representation entering a dot-product attention stage, if the incoming branchwise degree is `d`, then:
+
+`deg(QK) <= 2d`
+
+and
+
+`deg(score * value) <= 3d`.
+
+Thus the counterfactual algebraic Transformer has the finite recurrence
+
+`D(0) = 1`, `D(k+1) = 3 D(k)`,
+
+so `D(k) = 3^k` as the branchwise degree upper bound, provided the attention scores and values are polynomial on the fixed finite branch. L1 and 1-path norm constraints bound coefficients/sensitivity but do not change this degree recurrence.
+
+### EAT-32: exact sparse equilibrium / sensitivity composition target
+
+For fixed CReLU branch and fixed Tsallis active set, the routing coefficients are affine in the scores. A sensitivity proof should therefore proceed by finite branch composition rather than a real-analysis mean-value theorem. The target is an explicit finite coefficient bound whose inputs include the representation L1 bound and 1-path norm bound and whose routing contribution is controlled by normalized nonnegative Tsallis weights.
+
+### EAT-33: double-sign extension
+
+If parameter-direction sign is enabled, the total finite branch state becomes
+
+`forward CReLU branch × Tsallis active set × update-sign branch`.
+
+The forward CReLU channels retain magnitude; the optional update sign quantizes only the q-projected parameter direction. Consequently q-IDBD is the information-preserving canonical learner, while sign-q-IDBD is a finite direction-only quotient/ablation rather than an equivalent algorithm.
 
 ## Emergent finite-horizon theorems that fit the current no-real-analysis policy
 
@@ -103,9 +157,9 @@ The important distinction is that this is a finite identity/invariant theorem, n
 
 ## What is not yet justified by the present abstractions
 
-A numeric Jacobian norm bound cannot be derived merely from `Representation A B`, because `affine`, `layerNorm`, and `tanh` are currently arbitrary functions. A local contraction theorem likewise requires an explicit finite discrepancy measure and a contraction/bound certificate. The catalog therefore marks those theorems as requiring new certificates instead of pretending that `refl` proves them.
+A numeric Jacobian norm bound cannot be derived merely from an abstract representation certificate. A local contraction theorem likewise requires an explicit finite discrepancy measure and a contraction/bound certificate. The catalog therefore marks those theorems as requiring new certificates instead of pretending that `refl` proves them.
 
-Likewise, the current OpenES surface supports exact finite estimator algebra and mean-update equations but does not justify global stochastic convergence from those finite equations alone.
+Likewise, finite exact-Rational oracle agreement does not justify global stochastic convergence. It is an independent finite cross-check only.
 
 ## Oracle policy
 
@@ -115,13 +169,13 @@ The kernel is the authority. Other language CI can be retained only as independe
 - independent implementation checks;
 - syntax/build regression checks for generated artifacts;
 - deterministic example enumeration;
-- comparison of serialized experiment records.
+- comparison of exact theorem witnesses.
 
 Other language CI must not certify Agda theorems, rewrite theorem statements, inject hidden axioms, or introduce obsolete algorithms into the active semantics.
 
-The current `ci/agda-v147-kernel-live` branch contains four active workflow files, all Agda-oriented: `agda-kernel-live.yml`, `agda-modular.yml`, `agda-proof-dag.yml`, and `agda.yml`. There is no active non-Agda functional-language workflow on this branch to serve as an additional mathematical authority.
+The current `ci/agda-v147-kernel-live` branch contains four active workflow files, all Agda-oriented: `agda-kernel-live.yml`, `agda-modular.yml`, `agda-proof-dag.yml`, and `agda.yml`. The v150 branch now also runs two independent exact-Rational oracle implementations in parallel and requires their canonical outputs to agree before the oracle job is green.
 
-The recommended retirement rule for historical FP CI is therefore semantic, not linguistic: delete a workflow when it encodes a superseded algorithm, a stale theorem contract, or a second definition of the semantics. Keep an independent FP checker only when it still computes a useful finite cross-check that is intentionally independent of the Agda implementation.
+The recommended retirement rule for historical FP CI is semantic, not linguistic: delete a workflow when it encodes a superseded algorithm, a stale theorem contract, or a second definition of the semantics. Keep an independent FP checker only when it still computes a useful finite cross-check that is intentionally independent of the Agda implementation.
 
 ## Replication record
 
