@@ -4,8 +4,8 @@ module Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 where
 -- v150 target: LayerNorm-free Efficient-CHAD; CReLU + Tsallis-2 + q-IDBD.
 -- Norm invariants: L1 weight norm + one-path norm. All certificates are finite-ordered.
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
+open import Agda.Builtin.Nat using (Nat; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
 
 data ⊥ : Set where
 ¬_ : Set → Set
@@ -17,7 +17,7 @@ data Fin : Nat → Set where
   fzero : {n : Nat} → Fin (suc n)
   fsuc : {n : Nat} → Fin n → Fin (suc n)
 data Vec (A : Set) : Nat → Set where
-  [] : Vec A zero
+  [] : Vec A Nat.zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 index : ∀ {A n} → Fin n → Vec A n → A
 index fzero (x ∷ _) = x
@@ -59,6 +59,7 @@ Vector : OrderedAlgebra → Nat → Set
 Vector A n = Vec (OrderedAlgebra.R A) n
 Matrix : OrderedAlgebra → Nat → Nat → Set
 Matrix A m n = Vec (Vec (OrderedAlgebra.R A) n) m
+
 vAdd : ∀ {A n} → OrderedAlgebra A → Vector A n → Vector A n → Vector A n
 vAdd A [] [] = []
 vAdd A (x ∷ xs) (y ∷ ys) = OrderedAlgebra._+_ A x y ∷ vAdd A xs ys
@@ -140,7 +141,7 @@ record QProjectionCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
 record DyadicCoupledL2 (A : OrderedAlgebra) : Set₁ where
   field
     scale : Nat → OrderedAlgebra.R A
-    zeroScale : scale zero ≡ OrderedAlgebra.one A
+    zeroScale : scale Nat.zero ≡ OrderedAlgebra.one A
     half : ∀ k → OrderedAlgebra._+_ A (scale (suc k)) (scale (suc k)) ≡ scale k
     coupledNorm : OrderedAlgebra.R A → OrderedAlgebra.R A → OrderedAlgebra.R A
     coupledLaw : ∀ theta k → coupledNorm theta (scale k) ≡ OrderedAlgebra._*_ A (scale k) theta
@@ -157,11 +158,16 @@ record EfficientCHADCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
     norms : NormSensitivityCertificate A
     branch : CompositeBranch A n
 
+natPlus : Nat → Nat → Nat
+natPlus a Nat.zero = a
+natPlus a (suc b) = suc (natPlus a b)
 power3 : Nat → Nat
-power3 zero = 1
-power3 (suc k) = 3 * power3 k
+power3 Nat.zero = suc Nat.zero
+power3 (suc k) = degreeStep (power3 k)
+  where
+  degreeStep : Nat → Nat
 degreeStep : Nat → Nat
-degreeStep d = 3 * d
+degreeStep d = natPlus d (natPlus d d)
 branchDegreeLaw : ∀ k → degreeStep (power3 k) ≡ power3 (suc k)
 branchDegreeLaw k = refl
 
@@ -189,7 +195,7 @@ assembleCompositeInvariant : ∀ {A n} → EfficientCHADCertificate A n → Comp
 assembleCompositeInvariant c = record
   { finiteOrdered = c
   ; degreeAtDepth = power3
-  ; degreeLaw = branchDegreeLaw
+  ; degreeLaw = λ k → branchDegreeLaw k
   ; branchSensitive = branchSensitiveClosure c
   }
 record DoubleSignCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
@@ -215,7 +221,6 @@ record EfficientCHAD_CReLU_Tsallis2_TheoremTarget (A : OrderedAlgebra) (n depth 
     depthLaw : degreeBound (suc depth) ≡ degreeStep (degreeBound depth)
     sensitivity : BranchSensitivityLaw A n
     finiteOrderedClosure : EfficientCHADCertificate A n → EfficientCHADCertificate A n
-
 constructTheoremTarget : ∀ {A n depth} → EfficientCHADCertificate A n → EfficientCHAD_CReLU_Tsallis2_TheoremTarget A n depth
 constructTheoremTarget c = record
   { certificate = c
