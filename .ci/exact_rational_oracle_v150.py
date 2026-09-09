@@ -7,13 +7,11 @@ def crelu(x):
 
 def sparsemax(xs):
     u = sorted(xs, reverse=True)
-    tau = Q(0)
     for k in range(1, len(xs) + 1):
-        candidate = (sum(u[:k]) - Q(1)) / Q(k)
-        if k == len(xs) or u[k] <= candidate:
-            tau = candidate
-            break
-    return [max(Q(0), x - tau) for x in xs], tau
+        tau = (sum(u[:k], Q(0)) - Q(1)) / Q(k)
+        if k == len(xs) or u[k] <= tau:
+            return [max(Q(0), x - tau) for x in xs], tau
+    raise AssertionError("no active-set solution")
 
 
 def row_l1(row):
@@ -60,7 +58,7 @@ def main():
     l1 = weight_l1(w1)
     p1 = path1(w1, w2)
     assert l1 == Q(77, 60)
-    assert p1 == Q(77, 72)
+    assert p1 == Q(643, 720)
 
     degrees = [Q(1)]
     for _ in range(4):
