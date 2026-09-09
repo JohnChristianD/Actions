@@ -245,7 +245,7 @@ record BranchSensitivityLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
 branchSensitiveClosure : ∀ {A : OrderedAlgebra} {n} →
   EfficientCHADCertificate A n → BranchSensitivityLaw A n
 branchSensitiveClosure c = record
-  { coefficientBound = TsallisSensitivityCertificate.outputEnvelope
+  { coefficientBound = TsallisSensitivityCertificate.coefficientEnvelope
       (EfficientCHADCertificate.attention c)
   ; outputBound = TsallisSensitivityCertificate.outputEnvelope
       (EfficientCHADCertificate.attention c)
