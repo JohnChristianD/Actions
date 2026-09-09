@@ -1,16 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_) 
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
-
-------------------------------------------------------------------------
--- LayerNorm-free finite ordered Efficient-CHAD target.
--- Canonical representation: Affine + CReLU.
--- Canonical attention: finite-window Tsallis-2 / sparsemax active set.
--- Canonical learner: magnitude-aware q-projected IDBD.
--- Optional parameter-direction sign is an explicit ablation only.
-------------------------------------------------------------------------
 
 data ⊥ : Set where
 
@@ -75,6 +67,15 @@ Vector A n = Vec (OrderedAlgebra.R A) n
 Matrix : OrderedAlgebra → Nat → Nat → Set
 Matrix A m n = Vec (Vec (OrderedAlgebra.R A) n) m
 
+vAdd : ∀ {A n} → OrderedAlgebra A → Vector A n → Vector A n → Vector A n
+vAdd A [] [] = []
+vAdd A (x ∷ xs) (y ∷ ys) =
+  OrderedAlgebra._+_ A x y ∷ vAdd A xs ys
+
+vScale : ∀ {A n} → OrderedAlgebra A → OrderedAlgebra.R A → Vector A n → Vector A n
+vScale A a [] = []
+vScale A a (x ∷ xs) = OrderedAlgebra._*_ A a x ∷ vScale A a xs
+
 matVec : ∀ {A m n} → OrderedAlgebra A → Matrix A m n → Vector A n → Vector A m
 matVec A [] _ = []
 matVec A (row ∷ rows) x =
@@ -108,9 +109,8 @@ onePathNorm A W1 (r ∷ rs) =
   OrderedAlgebra._+_ A (pathRow A r W1) (onePathNorm A W1 rs)
 
 ------------------------------------------------------------------------
--- Affine + CReLU. CReLU is represented by two nonnegative channels and
--- therefore retains exact magnitude decomposition while remaining finite
--- ordered/piecewise-affine.
+-- Affine + CReLU. The activation is part of the representation stage; it
+-- need not be a separately counted layer for the degree law.
 ------------------------------------------------------------------------
 
 cplus : ∀ {A} → OrderedAlgebra A → OrderedAlgebra.R A → OrderedAlgebra.R A
@@ -137,12 +137,13 @@ record AffineCReLU (A : OrderedAlgebra) (din dout : Nat) : Set₁ where
     bias : Vector A dout
     crelu : CReLUCertificate A
 
-affineOnly : ∀ {A din dout} → OrderedAlgebra A → AffineCReLU A din dout → Vector A din → Vector A dout
+affineForward : ∀ {A din dout} → OrderedAlgebra A → AffineCReLU A din dout → Vector A din → Vector A dout
 
-affineOnly A layer x = matVec A (AffineCReLU.weight layer) x
+affineForward A layer x = matVec A (AffineCReLU.weight layer) x
 
 ------------------------------------------------------------------------
--- Finite Tsallis-2 / sparsemax branch certificate.
+-- Finite Tsallis-2 / sparsemax branch. The active set is an explicit finite
+-- object; inside a fixed active set the weights are affine in the scores.
 ------------------------------------------------------------------------
 
 record Tsallis2Branch (A : OrderedAlgebra) (n : Nat) : Set₁ where
@@ -158,24 +159,18 @@ record Tsallis2Branch (A : OrderedAlgebra) (n : Nat) : Set₁ where
 weightedValue : ∀ {A n d} → OrderedAlgebra A → Vector A n → Vec (Vector A d) n → Vector A d
 weightedValue A [] [] = []
 weightedValue A (p ∷ ps) (v ∷ vs) =
-  scale p v A (weightedValue A ps vs)
-  where
-  scale : ∀ {d} → OrderedAlgebra.R A → Vector A d → OrderedAlgebra.R A
-  scale a x _ =
-    let total = sumV (OrderedAlgebra._+_ A) (OrderedAlgebra.zero A) x
-    in OrderedAlgebra._*_ A a total
+  vAdd A (vScale A p v) (weightedValue A ps vs)
 
 ------------------------------------------------------------------------
--- Norm/sensitivity certificate. These bounds are primitive finite witnesses;
--- they are not derived from real-analysis norms.
+-- Norm and sensitivity certificates are finite ordered witnesses. They make
+-- the L1 and one-path controls independent of the piecewise branch algebra.
 ------------------------------------------------------------------------
 
 record NormSensitivityCertificate (A : OrderedAlgebra) : Set₁ where
   field
     l1Input l1Output l1Bound : OrderedAlgebra.R A
     pathInput pathOutput pathBound : OrderedAlgebra.R A
-    sensitivity : OrderedAlgebra.R A
-    sensitivityBound : OrderedAlgebra.R A
+    sensitivity sensitivityBound : OrderedAlgebra.R A
     l1OutputLe : l1Output ≤ l1Bound
     pathOutputLe : pathOutput ≤ pathBound
     sensitivityLe : sensitivity ≤ sensitivityBound
@@ -183,13 +178,12 @@ record NormSensitivityCertificate (A : OrderedAlgebra) : Set₁ where
 record TsallisSensitivityCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
     branch : Tsallis2Branch A n
-    coefficientEnvelope : OrderedAlgebra.R A
-    outputEnvelope : OrderedAlgebra.R A
+    coefficientEnvelope outputEnvelope : OrderedAlgebra.R A
     outputLe : outputEnvelope ≤ coefficientEnvelope
 
 ------------------------------------------------------------------------
--- q-projected standard IDBD is canonical; parameter-direction sign is an
--- optional quotient/ablation and does not define the principal learner.
+-- q-projected standard IDBD is canonical. Parameter-direction sign is an
+-- optional finite quotient and is not inserted into the canonical update.
 ------------------------------------------------------------------------
 
 data UpdateMode : Set where
@@ -210,13 +204,7 @@ record DyadicCoupledL2 (A : OrderedAlgebra) : Set₁ where
       OrderedAlgebra._+_ A (scale (suc k)) (scale (suc k)) ≡ scale k
     coupledNorm : OrderedAlgebra.R A → OrderedAlgebra.R A → OrderedAlgebra.R A
     coupledLaw : ∀ theta k →
-      coupledNorm theta (scale k) ≡
-      OrderedAlgebra._*_ A (scale k) theta
-
-------------------------------------------------------------------------
--- Finite branch product: forward CReLU region × Tsallis active set × update
--- sign region. For StandardQIDBD the third component is a singleton tag.
-------------------------------------------------------------------------
+      coupledNorm theta (scale k) ≡ OrderedAlgebra._*_ A (scale k) theta
 
 record CompositeBranch (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
@@ -233,8 +221,9 @@ record EfficientCHADCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
     branch : CompositeBranch A n
 
 ------------------------------------------------------------------------
--- Branchwise polynomial degree. CReLU is affine on each branch. QK is
--- degree 2d, Tsallis weights are degree 2d, and weight×value is degree 3d.
+-- Effective polynomial degree. On each fixed CReLU region, Q/K/V have degree
+-- d; QK scores have degree 2d; Tsallis weights have degree 2d; multiplying by
+-- V gives degree 3d. Hence D(k)=3^k. CReLU changes region count, not degree.
 ------------------------------------------------------------------------
 
 power3 : Nat → Nat
@@ -248,7 +237,9 @@ branchDegreeLaw : ∀ k → degreeStep (power3 k) ≡ power3 (suc k)
 branchDegreeLaw k = refl
 
 ------------------------------------------------------------------------
--- Finite CHAD sensitivity and invariant preservation interfaces.
+-- Efficient-CHAD finite sensitivity interface. This is deliberately a
+-- certificate over an ordered algebra rather than a hidden real-analysis
+-- theorem.
 ------------------------------------------------------------------------
 
 record BranchSensitivityLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
@@ -257,13 +248,6 @@ record BranchSensitivityLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
     outputLe : outputBound ≤ coefficientBound
     normCompatible : NormSensitivityCertificate A
     qCompatible : TsallisSensitivityCertificate A n
-
-record CompositeInvariant (A : OrderedAlgebra) (n : Nat) : Set₁ where
-  field
-    finiteOrdered : EfficientCHADCertificate A n
-    degreeAtDepth : Nat → Nat
-    degreeLaw : ∀ k → degreeAtDepth (suc k) ≡ degreeStep (degreeAtDepth k)
-    branchSensitive : BranchSensitivityLaw A n
 
 branchSensitiveClosure : ∀ {A n} →
   EfficientCHADCertificate A n →
@@ -282,9 +266,15 @@ branchSensitiveClosure c = record
   ; qCompatible = EfficientCHADCertificate.attention c
   }
 
+record CompositeInvariant (A : OrderedAlgebra) (n : Nat) : Set₁ where
+  field
+    finiteOrdered : EfficientCHADCertificate A n
+    degreeAtDepth : Nat → Nat
+    degreeLaw : ∀ k → degreeAtDepth (suc k) ≡ degreeStep (degreeAtDepth k)
+    branchSensitive : BranchSensitivityLaw A n
+
 assembleCompositeInvariant : ∀ {A n} →
-  EfficientCHADCertificate A n →
-  CompositeInvariant A n
+  EfficientCHADCertificate A n → CompositeInvariant A n
 assembleCompositeInvariant c = record
   { finiteOrdered = c
   ; degreeAtDepth = power3
@@ -293,9 +283,9 @@ assembleCompositeInvariant c = record
   }
 
 ------------------------------------------------------------------------
--- Double-sign extension theorem shape. It composes a forward CReLU branch
--- with an optional parameter-direction sign branch without claiming that
--- update sign is information-equivalent to standard q-IDBD.
+-- Double-sign extension: independent forward sign/CReLU branch and optional
+-- parameter-direction sign branch. Standard q-IDBD remains the magnitude-
+-- preserving canonical learner.
 ------------------------------------------------------------------------
 
 record DoubleSignCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
@@ -304,15 +294,6 @@ record DoubleSignCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
     forwardSign : Vec Bool n
     updateSign : Vec Bool n
     directionOnly : Bool
-
-signedDirectionProjectionLaw : ∀ {A n} →
-  DoubleSignCertificate A n →
-  Vec Bool n
-signedDirectionProjectionLaw c = DoubleSignCertificate.updateSign c
-
-------------------------------------------------------------------------
--- Main v150 theorem target: exactly the finite ordered composition requested.
-------------------------------------------------------------------------
 
 record EfficientCHAD_CReLU_Tsallis2_TheoremTarget
   (A : OrderedAlgebra) (n depth : Nat) : Set₁ where
