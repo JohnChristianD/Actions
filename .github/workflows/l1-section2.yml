@@ -1,0 +1,22 @@
+name: L1 Section 2 algebraic safe gate
+
+on:
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  l1-section2:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: agda/agda-setup-action@v1.0.0
+        with:
+          agda-version: '2.8.0'
+      - name: Verify Agda executable
+        run: agda --version
+      - name: Safe-check arXiv Section 2 finite algebra
+        run: agda --safe Exotic/ERL/FullCoupled/L1WeightNormalizationSection2.agda
