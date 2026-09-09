@@ -31,6 +31,18 @@ if second >= 0:
         raise SystemExit('vAddZeroL terminator not found after duplicate SmoothAlgebra')
     s = s[:second] + s[keep:]
 
+# A generic zipWithV already exists near the primitive vector helpers. The
+# canonical vAdd/vSub/vHadamard blocks previously redeclared the same helper
+# locally, which clashes at top-level scope under Agda 2.8.0. Reuse the single
+# generic helper instead.
+local_zip = '''  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
+  zipWithV _ [] [] = []
+  zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
+'''
+local_count = s.count(local_zip)
+if local_count:
+    s = s.replace(local_zip, '')
+
 if s.count(record) != 1:
     raise SystemExit(f'SmoothAlgebra definition count is {s.count(record)}, expected 1')
 if s.count('matVec :') != 1:
@@ -39,5 +51,7 @@ if s.count('matMul :') != 1:
     raise SystemExit(f'matMul definition count is {s.count("matMul :")}, expected 1')
 if s.count('tabulateV :') != 1:
     raise SystemExit(f'tabulateV helper count is {s.count("tabulateV :")}, expected 1')
+if s.count('zipWithV :') != 1:
+    raise SystemExit(f'zipWithV definition count is {s.count("zipWithV :")}, expected 1')
 p.write_text(s)
-print('legacy smooth algebra removed; canonical algebra/vector/matrix definitions unique')
+print('legacy smooth algebra, duplicate matrix surface, and local zipWithV redeclarations removed')
