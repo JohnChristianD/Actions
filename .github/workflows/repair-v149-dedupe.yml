@@ -28,6 +28,10 @@ jobs:
         run: python3 .ci/v149-let-bindings.py
       - name: Normalize v149 residual carrier
         run: python3 .ci/v149-residual-carrier.py
+      - name: Print failing parser context
+        run: |
+          echo '--- transformed lines 850-890 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '850,890p'
       - name: Print replay parser context
         run: |
           echo '--- transformed lines 1385-1420 ---'
