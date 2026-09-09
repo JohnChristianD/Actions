@@ -25,6 +25,12 @@ jobs:
           python3 .ci/v149-dedupe-monolith.py
           python3 .ci/v149-dedupe-duplicate-smooth.py
           git diff --check
+      - name: Print current parser frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '--- transformed lines 1508-1548 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1508,1548p'
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist checked source and remove repair machinery
