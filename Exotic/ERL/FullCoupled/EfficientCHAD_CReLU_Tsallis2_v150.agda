@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 where
 
 -- v150 target: LayerNorm-free Efficient-CHAD; CReLU + Tsallis-2 + q-IDBD.
 -- Norm invariants: L1 weight norm + one-path norm. All certificates are finite-ordered.
+-- Fresh kernel gate after Python-CI retirement.
 
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
