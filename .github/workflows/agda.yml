@@ -7,12 +7,14 @@ on:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
       - '.ci/v150-monolith-repair.rb'
+      - '.ci/v151-residual-finalize.rb'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
       - '.ci/v150-monolith-repair.rb'
+      - '.ci/v151-residual-finalize.rb'
   workflow_dispatch:
 
 permissions:
@@ -37,6 +39,9 @@ jobs:
       - name: Apply one-time LayerNorm-free monolith migration
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: ruby .ci/v150-monolith-repair.rb
+      - name: Finalize residual safe normalization
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: ruby .ci/v151-residual-finalize.rb
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
@@ -69,5 +74,3 @@ jobs:
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           git commit -m 'fix: persist Ruby-kernel-checked monolith migration'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
-
-      # v151 explicit dependent-dimension gate retrigger
