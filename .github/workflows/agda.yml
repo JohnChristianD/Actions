@@ -59,7 +59,11 @@ jobs:
               raise SystemExit('canonical accumulator parser form not found')
           PY
           git diff --check
-      # v149 L2 Efficient-CHAD closure remains the canonical path; L1 is not a fallback yet.
+      - name: Debug transformed L2 parser window
+        if: github.head_ref == 'ci/v149-monolith-dedupe'
+        run: |
+          echo '--- transformed lines 1370-1435 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1370,1435p'
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
