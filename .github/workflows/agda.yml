@@ -2,15 +2,17 @@ name: Agda authoritative safe gate
 
 on:
   push:
-    branches: ['ci/v148-firstclass-lstm-chad', 'main', 'ci/v149-representation-algebra', 'ci/v149-representation-layernorm-closure']
+    branches: ['main', 'ci/v149-monolith-dedupe']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
+      - '.ci/v149-*.py'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
+      - '.ci/v149-*.py'
   workflow_dispatch:
 
 permissions:
@@ -29,33 +31,40 @@ jobs:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
-      - name: Repair canonical accumulator only on v149 LayerNorm branch
-        if: github.head_ref == 'ci/v149-representation-layernorm-closure' || github.ref == 'refs/heads/ci/v149-representation-layernorm-closure'
+      - name: Apply deterministic v149 monolith repair
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-dedupe-monolith.py
+      - name: Normalize v149 Nat namespace
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/normalize-nat-namespace.py
+      - name: Qualify v149 OrderedRing fields
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/final-qualify-ordered-fields.py
+      - name: Normalize v149 LayerNorm denominator domain
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-layernorm-parser.py
+      - name: Normalize v149 CVT insertion parser
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-cvt-parser.py
+      - name: Normalize v149 diagonal proof parser
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-diagonal-parser.py
+      - name: Normalize v149 typed let bindings
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-let-bindings.py
+      - name: Normalize v149 residual carrier
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-residual-carrier.py
+      - name: Normalize v149 reciprocal nonnegative proof
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: python3 .ci/v149-reciprocal-parser.py
+      - name: Debug late trans context
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
-          s = p.read_text()
-          old = '''  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)
-'''
-          new = '''  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j)
-'''
-          if s.count(old) > 1:
-              raise SystemExit(f'non-unique accumulator target: {s.count(old)}')
-          if s.count(old) == 1:
-              p.write_text(s.replace(old, new, 1))
-          elif s.count(new) != 1:
-              raise SystemExit('canonical accumulator parser form not found')
-          PY
-          git diff --check
+          echo '--- lines 2698-2720 after repair ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '2698,2720p'
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
@@ -73,16 +82,16 @@ jobs:
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist kernel-checked v149 source repair
-        if: github.head_ref == 'ci/v149-representation-layernorm-closure' || github.ref == 'refs/heads/ci/v149-representation-layernorm-closure'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         shell: bash
         run: |
           set -euo pipefail
           if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
-            echo 'no source repair to persist'
+            echo 'no v149 monolith source repair to persist'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-          git commit -m 'fix: close canonical monolith accumulator parser'
+          git commit -m 'fix: persist kernel-checked v149 monolith algebra'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}

@@ -44,6 +44,24 @@ segment = re.sub(
     segment,
 )
 
+# The outer open Ring and the nested open Ring ring expose the same infix +
+# twice to the parser. Qualify additive ordered-field fields explicitly.
+segment = segment.replace(
+    'a + c ≤ b + d',
+    'Ring._+_ ring a c ≤ Ring._+_ ring b d',
+    1,
+)
+segment = segment.replace(
+    'a < b → c < d → a + c < b + d',
+    'a < b → c < d → Ring._+_ ring a c < Ring._+_ ring b d',
+    1,
+)
+segment = segment.replace(
+    'a < b → c + a < c + b',
+    'a < b → Ring._+_ ring c a < Ring._+_ ring c b',
+    1,
+)
+
 s = s[:start] + segment + s[end:]
 p.write_text(s)
 
@@ -52,6 +70,7 @@ for forbidden in (
     'a + c ≤ b + d',
     'c * a ≤ c * b',
     'a < b → c < d → a + c < b + d',
+    'a < b → c + a < c + b',
 ):
     if forbidden in segment:
         raise SystemExit(f'final ordered-field qualification incomplete: {forbidden!r}')

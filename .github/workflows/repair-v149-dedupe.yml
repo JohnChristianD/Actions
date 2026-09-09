@@ -1,0 +1,53 @@
+name: v149 monolith dedupe repair
+
+on:
+  push:
+    branches: ['ci/v149-monolith-dedupe']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: agda/agda-setup-action@v1.0.0
+        with:
+          agda-version: '2.8.0'
+      - name: Apply deterministic v149 normalization
+        run: python3 .ci/v149-dedupe-monolith.py
+      - name: Normalize v149 CVT insertion parser
+        run: python3 .ci/v149-cvt-parser.py
+      - name: Normalize v149 diagonal proof parser
+        run: python3 .ci/v149-diagonal-parser.py
+      - name: Normalize v149 typed let bindings
+        run: python3 .ci/v149-let-bindings.py
+      - name: Normalize v149 residual carrier
+        run: python3 .ci/v149-residual-carrier.py
+      - name: Print failing parser context
+        run: |
+          echo '--- transformed lines 850-890 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '850,890p'
+      - name: Print replay parser context
+        run: |
+          echo '--- transformed lines 1385-1420 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1385,1420p'
+      - name: Kernel-check monolith
+        run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Persist kernel-checked monolith source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
+            echo 'monolith is already normalized; nothing to persist'
+            exit 0
+          fi
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          git commit -m 'fix: persist kernel-checked v149 monolith algebra'
+          git push origin HEAD:ci/v149-monolith-dedupe
