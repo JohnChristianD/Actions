@@ -37,6 +37,36 @@ new_acc = """  accumulateAt : Fin n → R → Cot → Fin n → R
 if old_acc in s:
     s = s.replace(old_acc, new_acc, 1)
 
+# CVT archive update: move dependent with-clauses out of a lambda body.
+old_cvt = """insertCVT_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
+  CVTArchive_v142 S cells → Fin cells → Scalar S → CVTArchive_v142 S cells
+insertCVT_v142 D a i f = record { cell = λ j with finDecEq i j
+  ... | no _ = CVTArchive_v142.cell a j
+  ... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+  ...   | false = record { occupied = true ; fitness = f }
+  ...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+  ...     | yes _ = record { occupied = true ; fitness = f }
+  ...     | no _ = CVTArchive_v142.cell a j }
+"""
+new_cvt = """insertCVTCell_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
+  CVTArchive_v142 S cells → Fin cells → Fin cells → Scalar S → CVTSlot_v142 S
+insertCVTCell_v142 D a i j f with finDecEq i j
+... | no _ = CVTArchive_v142.cell a j
+... | yes _ with CVTSlot_v142.occupied (CVTArchive_v142.cell a j)
+...   | false = record { occupied = true ; fitness = f }
+...   | true with QProjectionDecisionAlgebra_v140.ltDec D
+        (CVTSlot_v142.fitness (CVTArchive_v142.cell a j)) f
+...     | yes _ = record { occupied = true ; fitness = f }
+...     | no _ = CVTArchive_v142.cell a j
+
+insertCVT_v142 : ∀ {S cells} → QProjectionDecisionAlgebra_v140 S →
+  CVTArchive_v142 S cells → Fin cells → Scalar S → CVTArchive_v142 S cells
+insertCVT_v142 D a i f = record { cell = insertCVTCell_v142 D a i }
+"""
+if old_cvt in s:
+    s = s.replace(old_cvt, new_cvt, 1)
+
 # residualSquareNonzero_v140
 rstart = s.find('residualSquareNonzero_v140 ')
 if rstart < 0: raise SystemExit('residual theorem marker not found')
@@ -209,6 +239,7 @@ s = s[:tstart] + '''qTerminalProjectionUnique_v147 t u refl refl refl =
 if s.count(marker_start) != 1: raise SystemExit('canonical marker count is not one')
 if s.count('sqrtDomain : R → Set') != 1: raise SystemExit('sqrt domain law missing or duplicated')
 if s.count(kmarker) != 0: raise SystemExit('malformed audited KKT placeholder marker survived')
+if 'λ j with finDecEq' in s: raise SystemExit('dependent lambda-with parser form survived')
 
 p.write_text(s)
 print('cumulative v149 monolith normalization applied deterministically')
