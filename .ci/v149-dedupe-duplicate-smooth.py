@@ -57,8 +57,7 @@ sub_anchor = 'vSub {S} = zipWithV sub\n  where\n'
 if sub_anchor in s:
     pos = s.index(sub_anchor) + len(sub_anchor)
     rest = s[pos:]
-    local_block = rest.split('\n------------------------------------------------------------------------', 1)[0]
-    if '  sub : Scalar S → Scalar S → Scalar S\n' not in local_block:
+    if '  sub : Scalar S → Scalar S → Scalar S\n' not in rest.split('\n------------------------------------------------------------------------', 1)[0]:
         m = re.match(
             r'(\s*Rg\s*=\s*[^\n]+\n)\s*(sub\s+x\s+y\s*=\s*[^\n]+\n)',
             rest,
@@ -72,20 +71,24 @@ if sub_anchor in s:
 else:
     raise SystemExit('vSub canonical declaration not found')
 
-# The legacy LayerNorm surface defined layerNormVariance as the supplied
-# epsilon. After that surface is removed, preserve the same finite-algebra
-# semantic as one top-level helper matching the canonical (xs, epsilon) call.
+# The only layerNormVariance *top-level* declaration should be counted here.
+# A local helper nested inside the LayerNorm record is a distinct declaration
+# scope and is not a duplicate top-level binding.
 variance_decl = '''layerNormVariance : ∀ {S d} → VecS S d → Scalar S → Scalar S
 layerNormVariance _ eps = eps
 
 '''
-if 'layerNormVariance : ∀ {S d}' not in s:
+if not re.search(r'(?m)^layerNormVariance\s*:', s):
     insertion = s.find('-- Domain-carrying recurrent LayerNorm boundary')
     if insertion < 0:
         insertion = s.find('record LayerNorm')
     if insertion < 0:
         raise SystemExit('LayerNorm boundary not found for variance helper insertion')
     s = s[:insertion] + variance_decl + s[insertion:]
+
+top_level_variance_count = len(re.findall(r'(?m)^layerNormVariance\s*:', s))
+if top_level_variance_count != 1:
+    raise SystemExit(f'layerNormVariance top-level definition count is {top_level_variance_count}, expected 1')
 
 if s.count(record) != 1:
     raise SystemExit(f'SmoothAlgebra definition count is {s.count(record)}, expected 1')
@@ -97,9 +100,7 @@ if s.count('tabulateV :') != 1:
     raise SystemExit(f'tabulateV helper count is {s.count("tabulateV :")}, expected 1')
 if s.count('zipWithV :') != 1:
     raise SystemExit(f'zipWithV definition count is {s.count("zipWithV :")}, expected 1')
-if s.count('layerNormVariance :') != 1:
-    raise SystemExit(f'layerNormVariance definition count is {s.count("layerNormVariance :")}, expected 1')
 if 'vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))\n  where\n' in s:
     raise SystemExit('empty vAdd where block remains')
 p.write_text(s)
-print('canonical algebra helper scope normalized: one zipWithV, typed sub, preserved layerNormVariance')
+print('canonical algebra helper scope normalized: one zipWithV, typed sub, one top-level layerNormVariance')
