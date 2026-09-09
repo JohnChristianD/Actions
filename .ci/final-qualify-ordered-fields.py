@@ -25,11 +25,9 @@ for old, new in replacements:
 
 s = s[:start] + segment + s[end:]
 
-# The later canonical finite vector algebra uses a local `minus` helper.
-# Agda 2.8 requires its local signature explicitly in this self-contained file.
-needle = '  Rg = OrderedRing.base (SmoothAlgebra.orderedRing S)\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)\n'
-if needle in s and '  sub : Scalar S → Scalar S → Scalar S\n' not in s:
-    s = s.replace(needle, '  Rg = OrderedRing.base (SmoothAlgebra.orderedRing S)\n  sub : Scalar S → Scalar S → Scalar S\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)\n', 1)
+needle = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n'
+if needle in s and '  minus : Ring.R Rg → Ring.R Rg → Ring.R Rg\n' not in s:
+    s = s.replace(needle, '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Ring.R Rg → Ring.R Rg → Ring.R Rg\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)\n', 1)
 
 p.write_text(s)
 
