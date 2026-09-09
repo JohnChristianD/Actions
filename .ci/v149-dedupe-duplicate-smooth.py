@@ -6,10 +6,6 @@ s = p.read_text()
 record = 'record SmoothAlgebra : Set₁ where'
 marker = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
 
-# The canonical v149 boundary is authoritative. Any legacy SmoothAlgebra and
-# its pre-canonical vector/matrix surface must be removed before checking the
-# canonical definitions. Keep only the generic tabulateV helper from that old
-# surface because the canonical matVec reuses it.
 first_record = s.find(record)
 canonical = s.find(marker)
 if first_record >= 0 and canonical >= 0 and first_record < canonical:
@@ -22,8 +18,6 @@ if first_record >= 0 and canonical >= 0 and first_record < canonical:
     tabulate_block = s[tab:legacy_mat]
     s = s[:first_record] + tabulate_block + '\n\n' + s[canonical:]
 
-# Remove any later duplicated canonical SmoothAlgebra surface. The first is
-# the retained authoritative definition.
 first = s.find(record)
 second = s.find(record, first + len(record)) if first >= 0 else -1
 if second >= 0:
@@ -32,53 +26,44 @@ if second >= 0:
         raise SystemExit('vAddZeroL terminator not found after duplicate SmoothAlgebra')
     s = s[:second] + s[keep:]
 
-# The OrderedRing carrier is named `ring` in the authoritative finite algebra.
-# Older canonical fragments used `base`, which is not a field and therefore is
-# a genuine source-level boundary error rather than a mathematical theorem.
 s = s.replace('OrderedRing.base', 'OrderedRing.ring')
 
-# A generic zipWithV already exists near the primitive vector helpers. The
-# canonical vAdd/vSub/vHadamard blocks previously redeclared the same helper
-# locally, which clashes at top-level scope under Agda 2.8.0. Reuse the single
-# generic helper instead.
 local_zip = '''  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
   zipWithV _ [] [] = []
   zipWithV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWithV f xs ys
 '''
 s = s.replace(local_zip, '')
 
-# Once local helper declarations are removed, empty vAdd/vHadamard `where`
-# blocks can remain in some source revisions. Eliminate only those blocks.
-s = re.sub(
-    r'(vAdd\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSub\s*:)',
-    r'\1\n\n', s, count=1)
-s = re.sub(
-    r'(vHadamard\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSum\s*:)',
-    r'\1\n\n', s, count=1)
+s = re.sub(r'(vAdd\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSub\s*:)', r'\1\n\n', s, count=1)
+s = re.sub(r'(vHadamard\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSum\s*:)', r'\1\n\n', s, count=1)
 
-# vSub keeps its carrier-local arithmetic helper. Ensure the helper itself has
-# a type signature, which Agda requires after the generic zipWithV dedupe.
 sub_anchor = 'vSub {S} = zipWithV sub\n  where\n'
 if sub_anchor in s:
     pos = s.index(sub_anchor) + len(sub_anchor)
     rest = s[pos:]
     local_block = rest.split('\n------------------------------------------------------------------------', 1)[0]
     if '  sub : Scalar S → Scalar S → Scalar S\n' not in local_block:
-        m = re.match(
-            r'(\s*Rg\s*=\s*[^\n]+\n)\s*(sub\s+x\s+y\s*=\s*[^\n]+\n)',
-            rest,
-        )
+        m = re.match(r'(\s*Rg\s*=\s*[^\n]+\n)\s*(sub\s+x\s+y\s*=\s*[^\n]+\n)', rest)
         if not m:
             raise SystemExit('vSub local sub declaration shape not found')
         body = m.group(2).split('sub x y =', 1)[1].rstrip('\n')
-        old = m.group(0)
-        new = m.group(1) + '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = ' + body + '\n'
-        s = s[:pos] + rest.replace(old, new, 1)
+        s = s[:pos] + rest.replace(m.group(0), m.group(1) + '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = ' + body + '\n', 1)
 else:
     raise SystemExit('vSub canonical declaration not found')
 
-# Remove the obsolete nested variance helper and expose the real variance
-# function as the domain-carrying contract of LayerNorm.
+# Preserve the Gaussian log-normalization constant required downstream.
+sa_start = s.find(record)
+sa_end = s.find('\nopen SmoothAlgebra', sa_start)
+if sa_start < 0 or sa_end < 0:
+    raise SystemExit('canonical SmoothAlgebra block not found')
+sa_block = s[sa_start:sa_end]
+if '\n    pi : R\n' not in sa_block:
+    from_nat = '    fromNat : Nat → R\n'
+    if from_nat not in sa_block:
+        raise SystemExit('SmoothAlgebra fromNat field not found for pi restoration')
+    sa_block = sa_block.replace(from_nat, '    pi : R\n' + from_nat, 1)
+    s = s[:sa_start] + sa_block + s[sa_end:]
+
 old_ln = '''record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
   field
     gain shift : VecS S d
@@ -102,9 +87,6 @@ if old_ln in s:
 elif 'denominatorDomain : (xs : VecS S d) →\n      SmoothAlgebra.sqrtDomain S (layerNormVariance xs epsilon)\n' not in s:
     raise SystemExit('LayerNorm malformed denominator-domain block not found uniquely')
 
-# The old compatibility layer may have supplied a temporary epsilon-only helper.
-# Do not recreate it: the canonical top-level variance is the only intended
-# algebraic definition.
 top_level_variance_count = len(re.findall(r'(?m)^layerNormVariance\s*:', s))
 if top_level_variance_count == 0:
     raise SystemExit('canonical top-level layerNormVariance declaration missing')
@@ -121,7 +103,8 @@ if s.count('tabulateV :') != 1:
     raise SystemExit(f'tabulateV helper count is {s.count("tabulateV :")}, expected 1')
 if s.count('zipWithV :') != 1:
     raise SystemExit(f'zipWithV definition count is {s.count("zipWithV :")}, expected 1')
-if 'vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))\n  where\n' in s:
-    raise SystemExit('empty vAdd where block remains')
+if '\n    pi : R\n' not in s[sa_start:s.find('\nopen SmoothAlgebra', sa_start)]:
+    raise SystemExit('pi restoration did not persist in canonical SmoothAlgebra')
+
 p.write_text(s)
-print('canonical algebra helper scope normalized: one SmoothAlgebra, one top-level variance, canonical OrderedRing.ring')
+print('canonical algebra helper scope normalized: one SmoothAlgebra, one pi field, one top-level variance')
