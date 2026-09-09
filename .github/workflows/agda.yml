@@ -7,12 +7,16 @@ on:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
       - '.ci/v149-*.py'
+      - '.ci/exact_rational_oracle_v150.py'
+      - '.ci/exact_rational_oracle_v150.hs'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
       - '.ci/v149-*.py'
+      - '.ci/exact_rational_oracle_v150.py'
+      - '.ci/exact_rational_oracle_v150.hs'
   workflow_dispatch:
 
 permissions:
@@ -77,6 +81,8 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
       - name: Safe-check representation primitive algebra
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
+      - name: Safe-check CReLU Tsallis-2 finite Efficient-CHAD theorem target
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_CReLU_Tsallis2_v150.agda
       - name: Safe-check domain-carrying LayerNorm closure
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationLayerNormClosure.agda
       - name: Safe-check authoritative complete closure
@@ -95,3 +101,61 @@ jobs:
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
           git commit -m 'fix: persist kernel-checked v149 monolith algebra'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
+
+  rational-oracles:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        oracle: [python-fraction, haskell-rational]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.head_ref || github.ref }}
+      - name: Verify Python oracle
+        if: matrix.oracle == 'python-fraction'
+        run: python3 .ci/exact_rational_oracle_v150.py | tee rational-oracle.txt
+      - name: Verify Haskell oracle
+        if: matrix.oracle == 'haskell-rational'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v runhaskell >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ghc
+          fi
+          runhaskell .ci/exact_rational_oracle_v150.hs | tee rational-oracle.txt
+      - name: Publish exact oracle output
+        uses: actions/upload-artifact@v4
+        with:
+          name: rational-${{ matrix.oracle }}
+          path: rational-oracle.txt
+          if-no-files-found: error
+
+  rational-consistency:
+    runs-on: ubuntu-24.04
+    needs: rational-oracles
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rational-*
+          path: rational-results
+          merge-multiple: false
+      - name: Compare independent exact rational oracle results
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          py = Path('rational-results/rational-python-fraction/rational-oracle.txt').read_text().splitlines()
+          hs = Path('rational-results/rational-haskell-rational/rational-oracle.txt').read_text().splitlines()
+
+          def canonical(lines):
+              return [line for line in lines if not line.startswith('oracle=')]
+
+          assert canonical(py) == canonical(hs), 'independent exact Rational oracle mismatch'
+          assert canonical(py)[-1] == 'status=PASS'
+          print('exact-rational-consistency=PASS')
+          PY
