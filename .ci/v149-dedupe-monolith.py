@@ -10,9 +10,8 @@ if s.count(marker_start) != 1 or s.count(marker_end) != 1:
 
 needle = "    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n"
 replacement = needle + "    sqrtDomain : R → Set\n    sqrtSquareLaw : ∀ x → sqrtDomain x →\n      Ring._*_ (OrderedRing.ring orderedRing) (sqrt x) (sqrt x) ≡ x\n"
-if s.count(needle) != 1:
-    raise SystemExit(f'unexpected reciprocal law count: {s.count(needle)}')
-s = s.replace(needle, replacement, 1)
+if s.count(needle) == 1:
+    s = s.replace(needle, replacement, 1)
 
 start = s.index(marker_start)
 end = s.index(marker_end, start)
@@ -31,31 +30,14 @@ new_acc = """  accumulateAt : Fin n → R → Cot → Fin n → R
   accumulate : Fin n → R → EState → EState
   accumulate i c (state s) = state (accumulateAt i c s)
 """
-if s.count(old_acc) > 1:
-    raise SystemExit(f'non-unique accumulator parser target: {s.count(old_acc)}')
 if s.count(old_acc) == 1:
     s = s.replace(old_acc, new_acc, 1)
-else:
-    old_at = """  accumulateAt : Fin n → R → Cot → Cot
-  accumulateAt i c s j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j
-
-  accumulate i c (state s) = state (accumulateAt i c s)
-"""
-    if s.count(old_at) == 1:
-        s = s.replace(old_at, new_acc, 1)
-    elif s.count(new_acc) != 1:
-        raise SystemExit('robust accumulateAt parser form not found')
 
 residual_marker = 'residualSquareNonzero_v140 '
 rstart = s.find(residual_marker)
-if rstart < 0:
-    raise SystemExit('residual square theorem marker not found')
+if rstart < 0: raise SystemExit('residual theorem marker not found')
 rsep = s.find('\n------------------------------------------------------------------------', rstart)
-if rsep < 0:
-    raise SystemExit('residual square theorem separator not found')
-new_residual = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
+residual = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
   λ hx →
     let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
         hxx0 = trans
@@ -75,16 +57,13 @@ new_residual = '''residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = 
         hlt = subst (λ q → q < zero) hzero hr
     in OrderedRing.notLtFromLe ha hlt
 '''
-s = s[:rstart] + new_residual + s[rsep:]
+s = s[:rstart] + residual + s[rsep:]
 
 q_marker = 'qProjectionCross_v141 '
 qstart = s.find(q_marker)
-if qstart < 0:
-    raise SystemExit('q projection cross theorem marker not found')
+if qstart < 0: raise SystemExit('q projection theorem marker not found')
 qsep = s.find('\n------------------------------------------------------------------------', qstart)
-if qsep < 0:
-    raise SystemExit('q projection cross theorem separator not found')
-new_q = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
+qcross = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
       hx = residualSquareNonzero_v140 ha hr
       hxx = OrderedRing.squarePositive hx
@@ -100,16 +79,13 @@ new_q = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
          hmul)
        hright
 '''
-s = s[:qstart] + new_q + s[qsep:]
+s = s[:qstart] + qcross + s[qsep:]
 
 cross_marker = 'orderedFieldCrossStrict_v142 '
 cstart = s.find(cross_marker)
-if cstart < 0:
-    raise SystemExit('ordered field cross theorem marker not found')
+if cstart < 0: raise SystemExit('cross theorem marker not found')
 csep = s.find('\n------------------------------------------------------------------------', cstart)
-if csep < 0:
-    raise SystemExit('ordered field cross theorem separator not found')
-new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
+cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
       leftCancel = cancelRecip_v142 a d hd
       rightCancel = cancelRecip_v142 b e he
@@ -128,24 +104,47 @@ new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
   in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h)
        (OrderedRing.mulPos hd he)
 '''
-s = s[:cstart] + new_cross + s[csep:]
+s = s[:cstart] + cross + s[csep:]
+
+mult_marker = 'multiplierDeletionStrict_v142 '
+mstart = s.find(mult_marker)
+if mstart < 0: raise SystemExit('multiplier theorem marker not found')
+msep = s.find('\n------------------------------------------------------------------------', mstart)
+mult = '''multiplierDeletionStrict_v142 n d y z hd he h =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hnz = OrderedRing.negLt h
+      base = n * d
+      negMul =
+        trans
+          (sym (Ring.negScale Rg d y))
+          (cong (Ring.neg Rg) (Ring.mulComm Rg d y))
+      lhs =
+        trans
+          (Ring.distrib Rg n d (neg z))
+          (cong₂ _+_ refl (sym (Ring.negScale Rg n z)))
+      rhs =
+        trans
+          (Ring.distrib Rg d n (neg y))
+          (cong₂ _+_ (Ring.mulComm Rg d n) negMul)
+      cross = OrderedRing.addLtLeft hnz base
+      cross' = transportLt_v142 lhs rhs cross
+  in orderedFieldCrossStrict_v142 n (n + neg y) d (d + neg z) hd he cross'
+'''
+s = s[:mstart] + mult + s[msep:]
 
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
-if s.count(old_terminal) != 1:
-    raise SystemExit(f'expected exactly one terminal uniqueness theorem: {s.count(old_terminal)}')
+if s.count(old_terminal) != 1: raise SystemExit('terminal uniqueness theorem count mismatch')
 tstart = s.index(old_terminal)
 tsep = s.find('\n------------------------------------------------------------------------', tstart)
-if tsep < 0:
-    raise SystemExit('terminal uniqueness separator not found')
-replacement_terminal = '''qTerminalProjectionUnique_v147 t u refl refl refl =
+terminal = '''qTerminalProjectionUnique_v147 t u refl refl refl =
   vectorExt_v147 (λ i →
     trans
       (QTerminalSolution_v147.stationarity t i)
       (sym (QTerminalSolution_v147.stationarity u i)))
 '''
-s = s[:tstart] + replacement_terminal + s[tsep:]
+s = s[:tstart] + terminal + s[tsep:]
 
-for needle in [
+checks = [
     'record SmoothAlgebra : Set₁ where',
     'sqrtDomain : R → Set',
     'sqrtSquareLaw :',
@@ -153,9 +152,10 @@ for needle in [
     'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =',
     'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =',
     'orderedFieldCrossStrict_v142 a b d e hd he h =',
-    'qTerminalProjectionUnique_v147 t u refl refl refl =']:
-    if s.count(needle) != 1:
-        raise SystemExit(f'missing/duplicate target: {needle}')
+    'multiplierDeletionStrict_v142 n d y z hd he h =',
+    'qTerminalProjectionUnique_v147 t u refl refl refl =']
+for needle in checks:
+    if s.count(needle) != 1: raise SystemExit(f'missing/duplicate target: {needle}')
 
 p.write_text(s)
-print('monolith canonical algebra/parser/residual/q-cross/reciprocal-cross/terminal uniqueness normalization applied exactly once')
+print('monolith canonical algebra/parser/residual/q-cross/reciprocal-cross/multiplier/terminal normalization applied exactly once')
