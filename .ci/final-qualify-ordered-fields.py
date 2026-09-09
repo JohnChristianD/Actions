@@ -76,3 +76,6 @@ for forbidden in (
         raise SystemExit(f'final ordered-field qualification incomplete: {forbidden!r}')
 
 print('final-ordered-ring-qualification=validated')
+for line in segment.splitlines():
+    if 'squarePositive' in line or 'squareNonnegative' in line:
+        print('ORDERED-RING-SQUARE:', line)
