@@ -1,0 +1,31 @@
+name: SymPy ban
+
+on:
+  push:
+    branches: ['main', 'ci/v149-monolith-final']
+    paths:
+      - '**'
+  pull_request:
+    branches: ['main']
+    paths:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-sympy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert SymPy is absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RniE --exclude-dir=.git --exclude='*.lock' 'sympy|SymPy' .; then
+            echo 'forbidden SymPy reference found'
+            exit 1
+          fi
+          test ! -e oracle/sympy_rational_certificate.py
+          echo 'sympy-ban=PASS'
