@@ -4,6 +4,11 @@ module Exotic.ERL.FullCoupled.L1WeightNormalizationSection2 where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 
+data ⊥ : Set where
+
+_≠_ : ∀ {A : Set} → A → A → Set
+x ≠ y = x ≡ y → ⊥
+
 trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
 trans refl q = q
 
@@ -13,10 +18,10 @@ cong f refl = refl
 ------------------------------------------------------------------------
 -- Finite algebraic core of arXiv:2404.19112v1, Section 2.
 --
--- This is deliberately not a real-analysis formalization.  The paper's
--- L1-weight-normalization equations are represented as algebraic operations
--- and explicit nonzero/subgradient-domain contracts.  In particular, no
--- continuity or differentiability at a zero coordinate is asserted.
+-- No real-analysis infrastructure is used.  The L1 normalization and
+-- subgradient equations are represented with total algebraic primitives plus
+-- explicit nonzero/domain witnesses.  No classical differentiability claim
+-- is made at a zero coordinate.
 ------------------------------------------------------------------------
 
 data Vec (A : Set) : Nat → Set where
@@ -44,7 +49,6 @@ record L1Algebra : Set₁ where
     mulOneR : ∀ x → mul x one ≡ x
     distrib : ∀ x y z → mul x (add y z) ≡ add (mul x y) (mul x z)
 
-    absNonnegative : ∀ x → R
     absSignLaw : ∀ x → mul x (sign x) ≡ abs x
 
     nonzero : R → Set
@@ -60,14 +64,14 @@ record L1Algebra : Set₁ where
     dotDefCons : ∀ {n} x xs y ys →
       dot (x :: xs) (y :: ys) ≡ add (mul x y) (dot xs ys)
 
-    scale : R → Vec R zero → Vec R zero
+    scale : ∀ {n} → R → Vec R n → Vec R n
     scaleCons : ∀ {n} a x xs →
       scale a (x :: xs) ≡ mul a x :: scale a xs
 
     sub : ∀ {n} → Vec R n → Vec R n → Vec R n
-    subDef : ∀ {n} x y → sub x y ≡ x
 
     norm1Nonzero : ∀ {n} v → norm1 v ≠ zero → nonzero (norm1 v)
+
     norm1Sign : ∀ {n} v →
       dot v (mapV sign v) ≡ norm1 v
 
@@ -86,30 +90,30 @@ open L1Algebra
 
 l1Weight : ∀ {A : L1Algebra} {n : Nat} →
   (g : R A) → (v : Vec (R A) n) → norm1 v ≠ zero → Vec (R A) n
-l1Weight {A} {n} g v hv =
+l1Weight {A} g v hv =
   scale
     (mul g (inv (norm1 v)))
     v
 
 ------------------------------------------------------------------------
--- Equation (2) and its oblique projection M_w x.
+-- Equation (2) and the oblique projection M_w x.
 ------------------------------------------------------------------------
 
 obliqueProjection : ∀ {A : L1Algebra} {n : Nat} →
   (w x : Vec (R A) n) → norm1 w ≠ zero → Vec (R A) n
-obliqueProjection {A} {n} w x hw =
+obliqueProjection w x hw =
   sub x
     (scale (mul (dot w x) (inv (norm1 w)))
       (mapV sign w))
 
 l1Subgradient : ∀ {A : L1Algebra} {n : Nat} →
   (g : R A) → (v x : Vec (R A) n) → norm1 v ≠ zero → Vec (R A) n
-l1Subgradient {A} {n} g v x hv =
+l1Subgradient g v x hv =
   scale (mul g (inv (norm1 v)))
     (obliqueProjection v x hv)
 
 ------------------------------------------------------------------------
--- Algebraic consequences used by the Section-2 proof sketch.
+-- Algebraic consequences explicitly carried by the Section-2 contract.
 ------------------------------------------------------------------------
 
 obliqueProjectionOrthogonal : ∀ {A : L1Algebra} {n : Nat}
@@ -127,7 +131,7 @@ l1SubgradientExpanded : ∀ {A : L1Algebra} {n : Nat}
 l1SubgradientExpanded g v x hv = refl
 
 ------------------------------------------------------------------------
--- Zero-crossing is intentionally a domain boundary, not a smooth theorem.
+-- Zero-crossing is intentionally a boundary of the subgradient domain.
 ------------------------------------------------------------------------
 
 record NonzeroVectorDomain {A : L1Algebra} (n : Nat) : Set where
@@ -140,9 +144,8 @@ subgradientDomain : ∀ {A : L1Algebra} {n : Nat} →
 subgradientDomain d = nonzero (norm1 (NonzeroVectorDomain.vector d))
 
 ------------------------------------------------------------------------
--- Replication-layer contract: L1 and L2 are alternative normalization modes;
--- coupled L2 regularization is orthogonal metadata/penalty and does not turn
--- the L1 sign map into a classically differentiable operation at zero.
+-- Representation-layer contract: L1 and L2 are alternative normalization
+-- variants; coupled L2 regularization is an independent algebraic parameter.
 ------------------------------------------------------------------------
 
 data NormalizationMode : Set where
@@ -152,4 +155,3 @@ record RepresentationNormalizationContract (A : L1Algebra) : Set₁ where
   field
     mode : NormalizationMode
     coupledL2 : R A
-    coupledL2Nonnegative : R A
