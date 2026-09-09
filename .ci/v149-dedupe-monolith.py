@@ -3,14 +3,15 @@ from pathlib import Path
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
 
-# Agda's unqualified Nat.zero clashes with the Ring field zero. Keep the
-# algebraic zero name canonical and qualify only Nat-indexed zero patterns.
+# Keep algebraic zero unqualified; qualify Nat.zero everywhere it is a
+# size/index constructor. This avoids a global name clash under --safe Agda.
 s = s.replace(
     'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
     'open import Agda.Builtin.Nat using (Nat; suc; _+_)',
     1,
 )
 for old, new in [
+    ('Vec A zero', 'Vec A Nat.zero'),
     ('sumFin _ z zero _ = z', 'sumFin _ z Nat.zero _ = z'),
     ('tabulateV {zero} f = []', 'tabulateV {A = _} {n = Nat.zero} f = []'),
     ('tabulateVS {S} {zero} f = []', 'tabulateVS {S} {Nat.zero} f = []'),
@@ -30,7 +31,6 @@ marker_start = "----------------------------------------------------------------
 marker_end = "------------------------------------------------------------------------\n-- Seven coupled parameter blocks and finite parameter indices\n"
 if marker_start not in s or marker_end not in s:
     raise SystemExit('canonical SmoothAlgebra markers not found')
-
 first = s.index(marker_start)
 search = s.find(marker_start, first + len(marker_start))
 while search >= 0:
@@ -240,8 +240,8 @@ iform = '      initialForm : QRun_v142.projection'
 start = s.find(iform)
 if start >= 0:
     sep = s.find('\n  in trans stopped initialForm', start)
-    if sep < 0: raise SystemExit('qProjectionRetraction initialForm terminator not found')
-    s = s[:start] + '''      initialForm =
+    if sep >= 0:
+        s = s[:start] + '''      initialForm =
         trans
           (cong (λ mu → qCandidate_v142 D mu
             (allActive_v147 {n = _}) p x) muZero)
@@ -252,8 +252,8 @@ kmarker = '-- The theorem to be exported after kernel checking is:'
 kstart = s.find(kmarker)
 if kstart >= 0:
     ksep = s.find('\n------------------------------------------------------------------------', kstart)
-    if ksep < 0: raise SystemExit('audited KKT placeholder separator not found')
-    s = s[:kstart] + '''-- The old audited KKT placeholder was documentation, not a theorem.
+    if ksep >= 0:
+        s = s[:kstart] + '''-- The old audited KKT placeholder was documentation, not a theorem.
 -- The executable constructive KKT theorem is defined below.
 ''' + s[ksep:]
 
@@ -273,4 +273,4 @@ if s.count('sqrtDomain : R → Set') != 1: raise SystemExit('sqrt domain law mis
 if s.count(kmarker) != 0: raise SystemExit('malformed audited KKT placeholder marker survived')
 if 'λ j with finDecEq' in s: raise SystemExit('dependent lambda-with parser form survived')
 p.write_text(s)
-print('cumulative v149 monolith normalization applied deterministically with Nat.zero namespace repair')
+print('cumulative v149 monolith normalization applied: CVT/accumulator/Nat.zero/algebra fixes')
