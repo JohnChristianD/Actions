@@ -7,7 +7,7 @@ This page is the repository-local replication prompt for the current formalizati
 Replicate the finite algebraic learner and representation semantics while keeping three evidence layers separate:
 
 1. **Kernel evidence:** Agda 2.8.0 with `--safe`.
-2. **Oracle evidence:** independent exact-rational Haskell, Elixir, Ruby, and SymPy checks.
+2. **Oracle evidence:** independent exact-rational Haskell, Elixir, and Ruby checks.
 3. **Empirical evidence:** raw task-level returns and phenotype metadata in CSV; never substitute an oracle result for a measured return.
 
 The modular proof DAG is the primary mathematical surface. The monolithic `Exotic/ERL/FullCoupled/CompleteSafe_v147.agda` is retained as a compatibility/regression target until its legacy scope surface is fully normalized.
@@ -194,6 +194,8 @@ The immediate dependency chain is: monolith scope closure -> persist source -> c
 Matteo Gallici, Mattie Fellows, Benjamin J. Ellis, Bartomeu Pou, Ivan Masmitjà Rusiñol, Jakob Foerster, and Mario Martín. `Simplifying Deep Temporal Difference Learning`. ICLR 2025 / arXiv:2407.04811.
 
 Shuang Wu, Guoqi Li, Lei Deng, et al. `L1-Norm Batch Normalization for Efficient Training of Deep Neural Networks`. IEEE TNNLS (2019). This motivates treating L1 normalization as a viable algebraic ablation while making its zero/sign derivative convention explicit.
+
+Aditya Biswas. `Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization`. arXiv:2404.19112v1 (2024). Section 2 explicitly uses an L1-normalized parameterization and a subgradient involving `sign`, and Section 3 derives a finite 1-path-norm/Lipschitz bound under a bounded output subgradient.
 
 ## 15. Acceptance criterion for the next merge
 
