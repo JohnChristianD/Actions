@@ -26,7 +26,24 @@ if second >= 0:
         raise SystemExit('vAddZeroL terminator not found after duplicate SmoothAlgebra')
     s = s[:second] + s[keep:]
 
+# The preceding v149 monolith pass may already have removed the canonical
+# marker/block. In that case the remaining first SmoothAlgebra is the
+# authoritative surface and this stage must continue idempotently.
 s = s.replace('OrderedRing.base', 'OrderedRing.ring')
+
+# Normalize the surviving SmoothAlgebra API to the binary max/min shape used
+# throughout the q and LayerNorm algebra, while retaining the explicit
+# domain-carrying root/reciprocal contracts.
+old_ops = '    sqrt recip max min : R → R\n'
+if old_ops in s:
+    s = s.replace(old_ops, '    sqrt recip : R → R\n    max min : R → R → R\n', 1)
+
+old_domain_anchor = '    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n'
+if old_domain_anchor in s and '    sqrtDomain : R → Set\n' not in s:
+    s = s.replace(old_domain_anchor, old_domain_anchor +
+        '    sqrtDomain : R → Set\n'
+        '    sqrtSquareLaw : ∀ x → sqrtDomain x →\n'
+        '      Ring._*_ (OrderedRing.ring orderedRing) (sqrt x) (sqrt x) ≡ x\n', 1)
 
 local_zip = '''  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
   zipWithV _ [] [] = []
@@ -55,7 +72,7 @@ else:
 sa_start = s.find(record)
 sa_end = s.find('\nopen SmoothAlgebra', sa_start)
 if sa_start < 0 or sa_end < 0:
-    raise SystemExit('canonical SmoothAlgebra block not found')
+    raise SystemExit('SmoothAlgebra block not found')
 sa_block = s[sa_start:sa_end]
 if '\n    pi : R\n' not in sa_block:
     from_nat = '    fromNat : Nat → R\n'
@@ -64,6 +81,7 @@ if '\n    pi : R\n' not in sa_block:
     sa_block = sa_block.replace(from_nat, '    pi : R\n' + from_nat, 1)
     s = s[:sa_start] + sa_block + s[sa_end:]
 
+# LayerNorm must carry the square-root domain at each concrete input.
 old_ln = '''record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
   field
     gain shift : VecS S d
@@ -84,14 +102,20 @@ new_ln = '''record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where
 '''
 if old_ln in s:
     s = s.replace(old_ln, new_ln, 1)
-elif 'denominatorDomain : (xs : VecS S d) →\n      SmoothAlgebra.sqrtDomain S (layerNormVariance xs epsilon)\n' not in s:
-    raise SystemExit('LayerNorm malformed denominator-domain block not found uniquely')
 
-top_level_variance_count = len(re.findall(r'(?m)^layerNormVariance\s*:', s))
-if top_level_variance_count == 0:
-    raise SystemExit('canonical top-level layerNormVariance declaration missing')
-if top_level_variance_count != 1:
-    raise SystemExit(f'layerNormVariance top-level definition count is {top_level_variance_count}, expected 1')
+# Agda requires the referenced helper to be declared before the record.
+record_marker = 'record LayerNorm (S : SmoothAlgebra) (d : Nat) : Set where\n'
+mean_marker = 'layerNormMean : ∀ {S d} → VecS S d → Scalar S\n'
+inv_marker = 'layerNormInvRootLaw : ∀ {S d} (ln : LayerNorm S d) (xs : VecS S d) →\n'
+if record_marker in s and mean_marker in s and inv_marker in s:
+    record_pos = s.index(record_marker)
+    mean_pos = s.index(mean_marker)
+    if mean_pos > record_pos:
+        inv_pos = s.index(inv_marker, mean_pos)
+        block = s[mean_pos:inv_pos]
+        s = s[:mean_pos] + s[inv_pos:]
+        record_pos = s.index(record_marker)
+        s = s[:record_pos] + block + s[record_pos:]
 
 if s.count(record) != 1:
     raise SystemExit(f'SmoothAlgebra definition count is {s.count(record)}, expected 1')
@@ -103,8 +127,10 @@ if s.count('tabulateV :') != 1:
     raise SystemExit(f'tabulateV helper count is {s.count("tabulateV :")}, expected 1')
 if s.count('zipWithV :') != 1:
     raise SystemExit(f'zipWithV definition count is {s.count("zipWithV :")}, expected 1')
+if s.count('sqrtDomain : R → Set') != 1:
+    raise SystemExit(f'sqrt domain law count is {s.count("sqrtDomain : R → Set")}, expected 1')
 if '\n    pi : R\n' not in s[sa_start:s.find('\nopen SmoothAlgebra', sa_start)]:
-    raise SystemExit('pi restoration did not persist in canonical SmoothAlgebra')
+    raise SystemExit('pi restoration did not persist in authoritative SmoothAlgebra')
 
 p.write_text(s)
-print('canonical algebra helper scope normalized: one SmoothAlgebra, one pi field, one top-level variance')
+print('canonical algebra helper scope normalized: one SmoothAlgebra, binary max/min, domain-aware root, one pi field, one top-level variance')
