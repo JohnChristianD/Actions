@@ -3,16 +3,25 @@ from pathlib import Path
 path = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 text = path.read_text()
 
-old = 'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)'
-new = 'open import Agda.Builtin.Nat using (Nat; suc)'
-if old in text:
-    text = text.replace(old, new, 1)
-elif 'open import Agda.Builtin.Nat using (Nat; suc)' not in text:
-    raise SystemExit('Nat import shape not found')
+# The canonical monolith repair may already have removed the unqualified Nat
+# import. This pass is intentionally idempotent and accepts either state.
+imports = [
+    'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)',
+    'open import Agda.Builtin.Nat using (Nat; suc; _+_)',
+    'open import Agda.Builtin.Nat using (Nat; suc)',
+]
+if imports[0] in text:
+    text = text.replace(imports[0], imports[2], 1)
+elif imports[1] in text:
+    text = text.replace(imports[1], imports[2], 1)
+elif imports[2] not in text:
+    raise SystemExit('no supported Nat import form found')
 
 patterns = [
     ('  [] : Vec A zero\n', '  [] : Vec A Nat.zero\n'),
+    ('[] : Vec A zero', '[] : Vec A Nat.zero'),
     ('sumFin _ z zero _ = z\n', 'sumFin _ z Nat.zero _ = z\n'),
+    ('sumFin _ z zero _ =', 'sumFin _ z Nat.zero _ ='),
     ('tabulateV {zero} f =', 'tabulateV {Nat.zero} f ='),
     ('zeroVector {S} {zero} =', 'zeroVector {S} {Nat.zero} ='),
     ('zeroVecS {S} {zero} =', 'zeroVecS {S} {Nat.zero} ='),
@@ -22,9 +31,6 @@ patterns = [
     ('qRunFuel_v142 zero r =', 'qRunFuel_v142 Nat.zero r ='),
     ('natSub_v146 zero _ =', 'natSub_v146 Nat.zero _ ='),
     ('natPlusSucc_v141 zero n =', 'natPlusSucc_v141 Nat.zero n ='),
-    ('qRunFuel_v142 zero r = r', 'qRunFuel_v142 Nat.zero r = r'),
-    ('natSub_v146 zero _ = zero', 'natSub_v146 Nat.zero _ = zero'),
-    ('natPlusSucc_v141 zero n = refl', 'natPlusSucc_v141 Nat.zero n = refl'),
 ]
 for old, new in patterns:
     text = text.replace(old, new)
@@ -36,7 +42,9 @@ text = text.replace('{S} {zero} f = []', '{S} {Nat.zero} f = []')
 
 if 'open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)' in text:
     raise SystemExit('unqualified Nat zero import survived')
-if '  [] : Vec A zero\n' in text:
+if 'open import Agda.Builtin.Nat using (Nat; suc; _+_)' in text:
+    raise SystemExit('unqualified Nat addition import survived')
+if '  [] : Vec A zero\n' in text or '[] : Vec A zero' in text:
     raise SystemExit('unqualified Nat.zero Vec base constructor survived')
 
 path.write_text(text)
