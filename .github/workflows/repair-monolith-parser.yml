@@ -30,13 +30,15 @@ jobs:
           git diff --check
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      - name: Kernel-check MLP temporal composition
+        run: agda --safe Exotic/ERL/MLPTemporalComposition_v150.agda
       - name: Persist checked source and remove repair machinery
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@github-actions[bot].github.com'
-          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda Exotic/ERL/MLPTemporalComposition_v150.agda
           git add .ci/v149-dedupe-monolith.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py
           git commit -m 'fix: persist kernel-checked monolith parser normalization'
           git push origin HEAD:ci/v149-monolith-dedupe
