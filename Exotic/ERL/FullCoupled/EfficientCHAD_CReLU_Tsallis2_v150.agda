@@ -59,7 +59,6 @@ Vector : OrderedAlgebra → Nat → Set
 Vector A n = Vec (OrderedAlgebra.R A) n
 Matrix : OrderedAlgebra → Nat → Nat → Set
 Matrix A m n = Vec (Vec (OrderedAlgebra.R A) n) m
-
 vAdd : ∀ {A n} → OrderedAlgebra A → Vector A n → Vector A n → Vector A n
 vAdd A [] [] = []
 vAdd A (x ∷ xs) (y ∷ ys) = OrderedAlgebra._+_ A x y ∷ vAdd A xs ys
@@ -161,13 +160,11 @@ record EfficientCHADCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
 natPlus : Nat → Nat → Nat
 natPlus a Nat.zero = a
 natPlus a (suc b) = suc (natPlus a b)
+degreeStep : Nat → Nat
+degreeStep d = natPlus d (natPlus d d)
 power3 : Nat → Nat
 power3 Nat.zero = suc Nat.zero
 power3 (suc k) = degreeStep (power3 k)
-  where
-  degreeStep : Nat → Nat
-degreeStep : Nat → Nat
-degreeStep d = natPlus d (natPlus d d)
 branchDegreeLaw : ∀ k → degreeStep (power3 k) ≡ power3 (suc k)
 branchDegreeLaw k = refl
 
@@ -204,7 +201,6 @@ record DoubleSignCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
     forwardSign : Vec Bool n
     updateSign : Vec Bool n
     directionOnly : Bool
-
 record EfficientCHAD_CReLU_Tsallis2_TheoremTarget (A : OrderedAlgebra) (n depth : Nat) : Set₁ where
   field
     certificate : EfficientCHADCertificate A n
