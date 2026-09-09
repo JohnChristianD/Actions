@@ -27,23 +27,55 @@ replacement = '''diagonalNewtonExposurePositive_v146 h =
 '''
 s = s[:start] + replacement + s[sep:]
 
-# Agda requires a local type signature for the dependent local subtraction
-# helper because it is defined in a where-block under an overloaded scalar.
-old = '''vSub {S} = zipWithV minus
+old = '''residualSquareNonzero_v140 : ∀ {S}
+  {alpha mu x : Scalar S} →
+  zero ≤ alpha →
+  alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    (mu * (x * x)) < zero → x ≠ zero
+residualSquareNonzero_v140 ha hr hx =
+  let hzero : alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        (mu * (hx * hx)) ≡ alpha =
+      trans
+        (cong (λ q → alpha + Ring.neg (OrderedRing.ring _) (mu * q))
+          (cong₂ (Ring._*_ (OrderedRing.ring _)) hx hx))
+        (Ring.addZeroR (OrderedRing.ring _) alpha)
+  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))
+'''
+new = '''residualSquareNonzero_v140 : ∀ {S}
+  {alpha mu x : Scalar S} →
+  zero ≤ alpha →
+  alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    (mu * (x * x)) < zero → x ≠ zero
+residualSquareNonzero_v140 ha hr hxeq =
+  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      hsquare : x * x ≡ Ring.zero Rg =
+        cong₂ (Ring._*_ Rg) hxeq hxeq
+      hzero : alpha + Ring.neg Rg (mu * (x * x)) ≡ alpha =
+        trans
+          (cong (λ q → alpha + Ring.neg Rg (mu * q)) hsquare)
+          (Ring.addZeroR Rg alpha)
+  in ⊥-elim (OrderedRing.notLtFromLe ha (subst (λ q → zero ≤ q) hzero hr))
+'''
+if old in s:
+    s = s.replace(old, new, 1)
+elif 'residualSquareNonzero_v140 ha hr hxeq =' not in s:
+    raise SystemExit('residual square theorem is neither canonical nor already repaired')
+
+old2 = '''vSub {S} = zipWithV minus
   where
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
   minus x y = Ring._+_ Rg x (Ring.neg Rg y)
 '''
-new = '''vSub {S} = zipWithV minus
+new2 = '''vSub {S} = zipWithV minus
   where
   Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
   minus : Scalar S → Scalar S → Scalar S
   minus x y = Ring._+_ Rg x (Ring.neg Rg y)
 '''
-if old in s:
-    s = s.replace(old, new, 1)
+if old2 in s:
+    s = s.replace(old2, new2, 1)
 elif '  minus : Scalar S → Scalar S → Scalar S\n  minus x y =' not in s:
     raise SystemExit('vSub local minus helper is neither canonical nor already typed')
 
 p.write_text(s)
-print('diagonal exposure proof and vSub local-minus signature normalized exactly once')
+print('diagonal exposure proof, residual-square contradiction, and vSub helper normalized exactly once')
