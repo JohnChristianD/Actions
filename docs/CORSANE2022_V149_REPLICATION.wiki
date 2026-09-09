@@ -17,14 +17,14 @@ The Efficient-CHAD source-to-source surface is independently `--safe` and the fi
 * CI reached `CompleteSafe_v147.agda` only after all preceding safe checks passed. The immediate failure was a scope error, not a mathematical failure.
 * At the failing boundary, `LayerNorm.denominatorDomain` referenced `layerNormVariance` before its declaration was in scope. The repair reorders the canonical mean/variance definitions before the record and preserves the domain witness.
 * A duplicate `SmoothAlgebra` surface and legacy `OrderedRing.base` names were also source-boundary defects. The deterministic repair keeps one canonical algebra record and uses `OrderedRing.ring`.
-* The independent exact-rational Haskell/Elixir/Ruby oracle path remains separate from Agda kernel acceptance; the former symbolic-CAS oracle has been removed.
+* Independent exact-rational Haskell/Elixir/Ruby checks remain separate from Agda kernel acceptance; symbolic and numeric oracle experiments are not proof premises.
 * The existing CI security-check surfaces for application repositories are treated as separate concerns from this algebraic proof gate; this V149 change does not replace those checks.
 
 == Roots and transcendentals: exact diagnosis ==
 
 The blocker is not "roots and transcendentals require real-analytic". They do not force a real-analysis proof merely to appear in a finite algebraic Agda development. A safe formalization can parameterize over total operations such as `sqrt`, `recip`, `tanh`, and `sigmoid` and carry only the equations actually required by each theorem.
 
-The practical failure mode has instead been declaration scope, duplicate top-level names, malformed higher-order syntax, and theorem proofs whose implicit arguments become ambiguous after source deduplication. These are parser/scope/elaboration boundaries. Once those are repaired, the kernel—not an external CAS—decides whether the theorem follows from the declared contracts.
+The practical failure mode has instead been declaration scope, duplicate top-level names, malformed higher-order syntax, and theorem proofs whose implicit arguments become ambiguous after source deduplication. These are parser/scope/elaboration boundaries. Once those are repaired, the kernel—not an external computer algebra system—decides whether the theorem follows from the declared contracts.
 
 == L1 Section 2 repair ==
 
@@ -73,7 +73,7 @@ The Efficient-CHAD target is structural source-to-source correctness and preserv
 * A global deep-TD convergence theorem for the exact recurrent architecture is not claimed merely from LayerNorm, L2, tanh, sigmoid, or bounded finite-horizon Jacobians.
 * L1 LayerNorm is not claimed to have the same Jacobian or convergence theorem as L2 LayerNorm.
 * The L1 zero crossing is not claimed to be classically differentiable.
-* External rational or symbolic oracles are consistency checks, not proof premises.
+* External exact-rational or symbolic checks are consistency checks, not proof premises.
 
 == Missing work / next replication ==
 
@@ -87,7 +87,7 @@ The Efficient-CHAD target is structural source-to-source correctness and preserv
 
 == Merge policy ==
 
-Use squash merge after the required checks are green. The repository configuration currently disables merge-commit and rebase methods, leaving squash as the supported landing method. Do not bypass branch protection or force-merge a failed kernel gate. Auto-merge should be enabled only for a green PR with the required review/check state.
+Use squash merge after the required checks are green. The repository configuration currently disables merge-commit and rebase methods, leaving squash as the supported landing method. Do not bypass branch protection or force-merge a failed kernel. Auto-merge should be enabled only for a green PR with the required review/check state.
 
 == Evidence ==
 
