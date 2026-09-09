@@ -51,6 +51,8 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
       - name: Safe-check LayerNorm-free CReLU Tsallis-2 theorem target
         run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_CReLU_Tsallis2_v150.agda
+      - name: Safe-check finite DoubleSign composition theorem
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_DoubleSign_v151.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist kernel-checked migration
