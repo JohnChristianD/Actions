@@ -18,51 +18,20 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
-      - name: Apply exact dedupe
+      - name: Apply deterministic v149 normalization
         run: python3 .ci/v149-dedupe-monolith.py
-      - name: Normalize stale cross bindings
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
-          s = p.read_text()
-          old_l = '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =\n'
-          old_r = '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =\n'
-          if s.count(old_l) != 1 or s.count(old_r) != 1:
-              raise SystemExit(f'unexpected cross binding counts: left={s.count(old_l)} right={s.count(old_r)}')
-          s = s.replace(old_l, '      leftNorm =\n', 1).replace(old_r, '      rightNorm =\n', 1)
-          p.write_text(s)
-          print('removed exactly two typed cross equality bindings')
-          PY
-      - name: Normalize stale trans terminators
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
-          s = p.read_text()
-          old_e = '                    (Ring.mulOneL Rg e))))) refl)\n'
-          new_e = '                    (Ring.mulOneL Rg e)))))\n'
-          old_d = '                    (Ring.mulOneL Rg d))))) refl)\n'
-          new_d = '                    (Ring.mulOneL Rg d)))))\n'
-          if s.count(old_e) != 1 or s.count(old_d) != 1:
-              raise SystemExit(f'unexpected stale trans terminators: e={s.count(old_e)} d={s.count(old_d)}')
-          s = s.replace(old_e, new_e, 1).replace(old_d, new_d, 1)
-          p.write_text(s)
-          print('removed exactly two stale trans terminators')
-          PY
-      - name: Print parser context
-        run: |
-          echo '--- lines 1038-1065 after repair ---'
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1038,1065p'
-      - name: Compile monolith
+      - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
-      - name: Persist source and remove helper
+      - name: Persist kernel-checked monolith source
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          rm .ci/v149-dedupe-monolith.py
-          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .ci/v149-dedupe-monolith.py .github/workflows/repair-v149-dedupe.yml
-          git commit -m 'fix: deduplicate canonical SmoothAlgebra in monolith'
+          if git diff --quiet -- Exotic/ERL/FullCoupled/CompleteSafe_v147.agda; then
+            echo 'monolith is already normalized; nothing to persist'
+            exit 0
+          fi
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+          git commit -m 'fix: persist kernel-checked v149 monolith algebra'
           git push origin HEAD:ci/v149-monolith-dedupe
