@@ -102,89 +102,60 @@ new_q = '''qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =
 '''
 s = s[:qstart] + new_q + s[qsep:]
 
-# Agda accepts typed declarations in where-blocks, but the multiline
-# dependent-let form used here was parsed as an unfinished assignment.
-# The witnesses are fully inferred from the equality expressions.
-old_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
-  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-      c = d * e
-      hc = OrderedRing.mulPos hd he
-      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =
-        trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
-          (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
-            (trans (cong (λ q → a * q)
-              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
-                (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
-                  (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
-                    (Ring.mulOneL Rg e)))) )
-      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =
-        trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
-          (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
-            (trans (cong (λ q → b * q)
-              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
-                (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
-                  (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
-                    (Ring.mulOneL Rg d)))) )
-  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
-'''
+cross_marker = 'orderedFieldCrossStrict_v142 '
+cstart = s.find(cross_marker)
+if cstart < 0:
+    raise SystemExit('ordered field cross theorem marker not found')
+csep = s.find('\n------------------------------------------------------------------------', cstart)
+if csep < 0:
+    raise SystemExit('ordered field cross theorem separator not found')
 new_cross = '''orderedFieldCrossStrict_v142 a b d e hd he h =
   let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
-      c = d * e
-      hc = OrderedRing.mulPos hd he
+      leftCancel = cancelRecip_v142 a d hd
+      rightCancel = cancelRecip_v142 b e he
       leftNorm =
-        trans (Ring.mulComm Rg c (a * SmoothAlgebra.recip _ d))
-          (trans (Ring.mulAssoc Rg a (SmoothAlgebra.recip _ d) c)
-            (trans (cong (λ q → a * q)
-              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ d) d e))
-                (trans (cong (λ q → q * e) (Ring.mulComm Rg (SmoothAlgebra.recip _ d) d))
-                  (trans (cong (λ q → q * e) (SmoothAlgebra.reciprocalLaw _ hd))
-                    (Ring.mulOneL Rg e)))) )
+        trans
+          (sym (Ring.mulAssoc Rg d e (a * SmoothAlgebra.recip _ d)))
+          (trans
+            (cong (λ q → e * q) leftCancel)
+            (Ring.mulComm Rg e a))
       rightNorm =
-        trans (Ring.mulComm Rg c (b * SmoothAlgebra.recip _ e))
-          (trans (Ring.mulAssoc Rg b (SmoothAlgebra.recip _ e) c)
-            (trans (cong (λ q → b * q)
-              (trans (sym (Ring.mulAssoc Rg (SmoothAlgebra.recip _ e) e d))
-                (trans (cong (λ q → q * d) (Ring.mulComm Rg (SmoothAlgebra.recip _ e) e))
-                  (trans (cong (λ q → q * d) (SmoothAlgebra.reciprocalLaw _ he))
-                    (Ring.mulOneL Rg d)))) )
-  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h) hc
+        trans
+          (sym (Ring.mulAssoc Rg e d (b * SmoothAlgebra.recip _ e)))
+          (trans
+            (cong (λ q → d * q) rightCancel)
+            (Ring.mulComm Rg d b))
+  in OrderedRing.mulLtPosCancelLeft (transportLt_v142 leftNorm rightNorm h)
+       (OrderedRing.mulPos hd he)
 '''
-if s.count(old_cross) > 1:
-    raise SystemExit(f'unexpected ordered field cross duplicate: {s.count(old_cross)}')
-if s.count(old_cross) == 1:
-    s = s.replace(old_cross, new_cross, 1)
-elif s.count('orderedFieldCrossStrict_v142 a b d e hd he h =') != 1:
-    raise SystemExit('ordered field cross theorem target not found')
+s = s[:cstart] + new_cross + s[csep:]
 
 old_terminal = 'qTerminalProjectionUnique_v147 t u ha hx hmu ='
 if s.count(old_terminal) != 1:
     raise SystemExit(f'expected exactly one terminal uniqueness theorem: {s.count(old_terminal)}')
-start = s.index(old_terminal)
-sep = s.find('\n------------------------------------------------------------------------', start)
-if sep < 0:
-    raise SystemExit('expected separator after terminal uniqueness theorem')
+tstart = s.index(old_terminal)
+tsep = s.find('\n------------------------------------------------------------------------', tstart)
+if tsep < 0:
+    raise SystemExit('terminal uniqueness separator not found')
 replacement_terminal = '''qTerminalProjectionUnique_v147 t u refl refl refl =
   vectorExt_v147 (λ i →
     trans
       (QTerminalSolution_v147.stationarity t i)
       (sym (QTerminalSolution_v147.stationarity u i)))
 '''
-s = s[:start] + replacement_terminal + s[sep:]
+s = s[:tstart] + replacement_terminal + s[tsep:]
 
-if s.count('record SmoothAlgebra : Set₁ where') != 1:
-    raise SystemExit('expected exactly one SmoothAlgebra declaration after dedupe')
-if s.count('sqrtDomain : R → Set') != 1 or s.count('sqrtSquareLaw :') != 1:
-    raise SystemExit('expected exactly one domain-aware sqrt law after dedupe')
-if s.count('accumulateAt : Fin n → R → Cot → Fin n → R') != 1:
-    raise SystemExit('expected exactly one robust accumulateAt declaration')
-if s.count('residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
-    raise SystemExit('residual square normalization missing')
-if s.count('qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =') != 1:
-    raise SystemExit('q projection cross normalization missing')
-if s.count('orderedFieldCrossStrict_v142 a b d e hd he h =') != 1:
-    raise SystemExit('ordered field cross normalization missing')
-if s.count('qTerminalProjectionUnique_v147 t u refl refl refl =') != 1:
-    raise SystemExit('terminal uniqueness normalization missing')
+for needle in [
+    'record SmoothAlgebra : Set₁ where',
+    'sqrtDomain : R → Set',
+    'sqrtSquareLaw :',
+    'accumulateAt : Fin n → R → Cot → Fin n → R',
+    'residualSquareNonzero_v140 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =',
+    'qProjectionCross_v141 {S} {alpha = alpha} {mu = mu} {x = x} ha hr =',
+    'orderedFieldCrossStrict_v142 a b d e hd he h =',
+    'qTerminalProjectionUnique_v147 t u refl refl refl =']:
+    if s.count(needle) != 1:
+        raise SystemExit(f'missing/duplicate target: {needle}')
 
 p.write_text(s)
-print('monolith canonical algebra/parser/residual/q-cross/ordered-field-cross/terminal normalization applied exactly once')
+print('monolith canonical algebra/parser/residual/q-cross/reciprocal-cross/terminal uniqueness normalization applied exactly once')
