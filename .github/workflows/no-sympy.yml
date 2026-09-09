@@ -19,13 +19,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Assert SymPy is absent
+      - name: Assert forbidden symbolic-CAS oracle is absent
         shell: bash
         run: |
           set -euo pipefail
-          if grep -RniE --exclude-dir=.git --exclude='*.lock' 'sympy|SymPy' .; then
-            echo 'forbidden SymPy reference found'
+          if grep -RniE \
+            --exclude-dir=.git \
+            --exclude='*.lock' \
+            --exclude='no-sympy.yml' \
+            'sympy|SymPy|sympy_rational_certificate|SymPy oracle|symbolic-CAS oracle' .; then
+            echo 'forbidden symbolic-CAS oracle reference found'
             exit 1
           fi
           test ! -e oracle/sympy_rational_certificate.py
-          echo 'sympy-ban=PASS'
+          echo 'forbidden-symbolic-cas-oracle-ban=PASS'
