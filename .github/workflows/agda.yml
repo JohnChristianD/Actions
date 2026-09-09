@@ -59,8 +59,7 @@ jobs:
               raise SystemExit('canonical accumulator parser form not found')
           PY
           git diff --check
-      # v149 repair CI is deliberately exercised through the PR synchronize event;
-      # this comment keeps the authoritative workflow itself as the triggering surface.
+      # v149 L2 Efficient-CHAD closure remains the canonical path; L1 is not a fallback yet.
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
