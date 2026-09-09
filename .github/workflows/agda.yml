@@ -73,14 +73,17 @@ jobs:
       - name: Normalize v149 EfficientCHAD carrier scope
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-efficientchad-scope.py
+      - name: Normalize v149 EfficientCHAD product parser
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
+        run: python3 .ci/v149-efficientchad-product-parser.py
       - name: Debug transformed monolith declaration window
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         shell: bash
         run: |
           set -euo pipefail
-          echo '--- transformed lines 425-450 ---'
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '425,450p'
-          echo '--- transformed top-level R declarations ---'
+          echo '--- transformed lines 475-500 ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '475,500p'
+          echo '--- transformed top-level record/field declarations ---'
           grep -nE '^record [A-Za-z0-9_]+|^    R :|^  R :' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | head -80
           echo '--- transformed layerNorm dependencies ---'
           grep -nE '^layerNormMean|^layerNormVariance|^record LayerNorm' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
