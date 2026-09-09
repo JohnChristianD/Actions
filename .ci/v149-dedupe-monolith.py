@@ -17,6 +17,15 @@ while search >= 0:
     s = s[:search] + s[close:]
     search = s.find(marker_start, search)
 
+# Preserve the first algebra record as canonical, but repair the stale unary
+# max/min field type that conflicts with all later finite comparisons.
+old_max = "    sqrt recip max min : R → R\n"
+new_max = "    sqrt recip : R → R\n    max min : R → R → R\n"
+if s.count(old_max) == 1:
+    s = s.replace(old_max, new_max, 1)
+elif "    sqrt recip : R → R\n    max min : R → R → R\n" not in s:
+    raise SystemExit('SmoothAlgebra max/min signature not found')
+
 needle = "    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n"
 if needle in s and '    sqrtDomain : R → Set\n' not in s:
     s = s.replace(needle, needle + "    sqrtDomain : R → Set\n    sqrtSquareLaw : ∀ x → sqrtDomain x →\n      Ring._*_ (OrderedRing.ring orderedRing) (sqrt x) (sqrt x) ≡ x\n", 1)
