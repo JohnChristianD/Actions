@@ -28,6 +28,7 @@ jobs:
           python3 .ci/v149-let-bindings.py
           python3 .ci/v149-residual-carrier.py
           python3 .ci/v149-ring-zero-namespace.py
+          python3 .ci/final-qualify-ordered-fields.py
           git diff --check
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
@@ -42,6 +43,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@github-actions[bot].github.com'
           git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda Exotic/ERL/MLPTemporalComposition_v150.agda Exotic/ERL/MLPMarkovTemporalComposition_v151.agda
-          git add .ci/v149-dedupe-monolith.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py .ci/v149-ring-zero-namespace.py .ci/v149-layernorm-parser.py .ci/normalize-nat-namespace.py
+          git add .ci/v149-dedupe-monolith.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py .ci/v149-ring-zero-namespace.py .ci/final-qualify-ordered-fields.py .ci/v149-layernorm-parser.py .ci/normalize-nat-namespace.py
           git commit -m 'fix: persist kernel-checked monolith and MLP composition surfaces'
           git push origin HEAD:ci/v149-monolith-dedupe
