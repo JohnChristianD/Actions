@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _* )
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 data ⊥ : Set where
@@ -19,17 +19,21 @@ data _⊎_ (A B : Set) : Set where
 data Bool : Set where
   false true : Bool
 
+data Fin : Nat → Set where
+  fzero : {n : Nat} → Fin (suc n)
+  fsuc : {n : Nat} → Fin n → Fin (suc n)
+
 data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
+index : ∀ {A n X} → Fin n → Vec X n → X
+index fzero (x ∷ _) = x
+index (fsuc i) (_ ∷ xs) = index i xs
+
 sumV : ∀ {A : Set} → (A → A → A) → A → ∀ {n} → Vec A n → A
 sumV _ z [] = z
 sumV op z (x ∷ xs) = op x (sumV op z xs)
-
-mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
-mapV f [] = []
-mapV f (x ∷ xs) = f x ∷ mapV f xs
 
 record Algebra : Set₁ where
   field
@@ -66,11 +70,7 @@ Matrix A m n = Vec (Vec (Algebra.R A) n) m
 
 rowL1 : ∀ {A n} → Algebra A → Vec (Algebra.R A) n → Algebra.R A
 rowL1 A [] = zero A
-rowL1 A (x ∷ xs) = abs A x +A rowL1 A xs
-  where
-  infixl 6 _+A_
-  _+A_ : Algebra.R A → Algebra.R A → Algebra.R A
-  _+A_ = Algebra._+_ A
+rowL1 A (x ∷ xs) = Algebra._+_ A (abs A x) (rowL1 A xs)
 
 weightL1 : ∀ {A m n} → Algebra A → Matrix A m n → Algebra.R A
 weightL1 A [] = zero A
@@ -107,19 +107,8 @@ record CReLULaws (A : Algebra) : Set₁ where
       Algebra._+_ A (cplus A x) (neg A (cminus A x)) ≡ x
     absDecompose : ∀ x →
       Algebra._+_ A (cplus A x) (cminus A x) ≡ abs A x
-    positiveChannelBound : ∀ x → zero A ≤A cplus A x
-    negativeChannelBound : ∀ x → zero A ≤A cminus A x
-  where
-  infix 4 _≤A_
-  _≤A_ = Algebra._≤_ A
-
-index : ∀ {A n X} → Fin n → Vec X n → X
-index fzero (x ∷ _) = x
-index (fsuc i) (_ ∷ xs) = index i xs
-  where
-  data Fin : Nat → Set where
-    fzero : {n : Nat} → Fin (suc n)
-    fsuc : {n : Nat} → Fin n → Fin (suc n)
+    positiveChannelBound : ∀ x → Algebra._≤_ A (zero A) (cplus A x)
+    negativeChannelBound : ∀ x → Algebra._≤_ A (zero A) (cminus A x)
 
 record Tsallis2Branch (A : Algebra) (n : Nat) : Set₁ where
   field
