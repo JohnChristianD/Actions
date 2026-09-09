@@ -60,35 +60,35 @@ Vector : OrderedAlgebra → Nat → Set
 Vector A n = Vec (OrderedAlgebra.R A) n
 Matrix : OrderedAlgebra → Nat → Nat → Set
 Matrix A m n = Vec (Vec (OrderedAlgebra.R A) n) m
-vAdd : ∀ {A n} → OrderedAlgebra A → Vector A n → Vector A n → Vector A n
+vAdd : ∀ {n : Nat} → (A : OrderedAlgebra) → Vector A n → Vector A n → Vector A n
 vAdd A [] [] = []
 vAdd A (x ∷ xs) (y ∷ ys) = OrderedAlgebra._+_ A x y ∷ vAdd A xs ys
-vScale : ∀ {A n} → OrderedAlgebra A → OrderedAlgebra.R A → Vector A n → Vector A n
+vScale : ∀ {n : Nat} → (A : OrderedAlgebra) → OrderedAlgebra.R A → Vector A n → Vector A n
 vScale A a [] = []
 vScale A a (x ∷ xs) = OrderedAlgebra._*_ A a x ∷ vScale A a xs
-matVec : ∀ {A m n} → OrderedAlgebra A → Matrix A m n → Vector A n → Vector A m
+matVec : ∀ {m n : Nat} → (A : OrderedAlgebra) → Matrix A m n → Vector A n → Vector A m
 matVec A [] _ = []
 matVec A (row ∷ rows) x = sumRow row x A ∷ matVec A rows x
   where
-  sumRow : ∀ {n} → Vec (OrderedAlgebra.R A) n → Vector A n → OrderedAlgebra.R A
+  sumRow : ∀ {n : Nat} → Vec (OrderedAlgebra.R A) n → Vector A n → OrderedAlgebra.R A
   sumRow [] [] = OrderedAlgebra.zero A
   sumRow (w ∷ ws) (v ∷ vs) = OrderedAlgebra._+_ A (OrderedAlgebra._*_ A w v) (sumRow ws vs)
-rowL1 : ∀ {A n} → OrderedAlgebra A → Vec (OrderedAlgebra.R A) n → OrderedAlgebra.R A
+rowL1 : ∀ {n : Nat} → (A : OrderedAlgebra) → Vec (OrderedAlgebra.R A) n → OrderedAlgebra.R A
 rowL1 A [] = OrderedAlgebra.zero A
 rowL1 A (x ∷ xs) = OrderedAlgebra._+_ A (OrderedAlgebra.abs A x) (rowL1 A xs)
-weightL1 : ∀ {A m n} → OrderedAlgebra A → Matrix A m n → OrderedAlgebra.R A
+weightL1 : ∀ {m n : Nat} → (A : OrderedAlgebra) → Matrix A m n → OrderedAlgebra.R A
 weightL1 A [] = OrderedAlgebra.zero A
 weightL1 A (r ∷ rs) = OrderedAlgebra._+_ A (rowL1 A r) (weightL1 A rs)
-pathRow : ∀ {A h i} → OrderedAlgebra A → Vec (OrderedAlgebra.R A) h → Matrix A h i → OrderedAlgebra.R A
+pathRow : ∀ {h i : Nat} → (A : OrderedAlgebra) → Vec (OrderedAlgebra.R A) h → Matrix A h i → OrderedAlgebra.R A
 pathRow A [] [] = OrderedAlgebra.zero A
 pathRow A (a ∷ as) (r ∷ rs) = OrderedAlgebra._+_ A (OrderedAlgebra._*_ A (OrderedAlgebra.abs A a) (rowL1 A r)) (pathRow A as rs)
-onePathNorm : ∀ {A h i o} → OrderedAlgebra A → Matrix A h i → Matrix A o h → OrderedAlgebra.R A
+onePathNorm : ∀ {h i o : Nat} → (A : OrderedAlgebra) → Matrix A h i → Matrix A o h → OrderedAlgebra.R A
 onePathNorm A W1 [] = OrderedAlgebra.zero A
 onePathNorm A W1 (r ∷ rs) = OrderedAlgebra._+_ A (pathRow A r W1) (onePathNorm A W1 rs)
 
-cplus : ∀ {A} → OrderedAlgebra A → OrderedAlgebra.R A → OrderedAlgebra.R A
+cplus : (A : OrderedAlgebra) → OrderedAlgebra.R A → OrderedAlgebra.R A
 cplus A x = OrderedAlgebra.max A (OrderedAlgebra.zero A) x
-cminus : ∀ {A} → OrderedAlgebra A → OrderedAlgebra.R A → OrderedAlgebra.R A
+cminus : (A : OrderedAlgebra) → OrderedAlgebra.R A → OrderedAlgebra.R A
 cminus A x = OrderedAlgebra.max A (OrderedAlgebra.zero A) (OrderedAlgebra.neg A x)
 record CReLUCertificate (A : OrderedAlgebra) : Set₁ where
   field
@@ -101,8 +101,8 @@ record AffineCReLU (A : OrderedAlgebra) (din dout : Nat) : Set₁ where
     weight : Matrix A dout din
     bias : Vector A dout
     crelu : CReLUCertificate A
-affineForward : ∀ {A din dout} → OrderedAlgebra A → AffineCReLU A din dout → Vector A din → Vector A dout
-affineForward A layer x = matVec A (AffineCReLU.weight layer) x
+affineForward : ∀ {A : OrderedAlgebra} {din dout : Nat} → AffineCReLU A din dout → Vector A din → Vector A dout
+affineForward {A} layer x = matVec A (AffineCReLU.weight layer) x
 
 record Tsallis2Branch (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
@@ -112,7 +112,7 @@ record Tsallis2Branch (A : OrderedAlgebra) (n : Nat) : Set₁ where
     inactiveZero : ∀ i → index i active ≡ false → index i weights ≡ OrderedAlgebra.zero A
     activeAffine : ∀ i → index i active ≡ true → index i weights ≡ OrderedAlgebra._+_ A (index i scores) (OrderedAlgebra.neg A (index i tau))
     normalized : sumV (OrderedAlgebra._+_ A) (OrderedAlgebra.zero A) weights ≡ OrderedAlgebra.one A
-weightedValue : ∀ {A n d} → OrderedAlgebra A → Vector A n → Vec (Vector A d) n → Vector A d
+weightedValue : ∀ {n d : Nat} → (A : OrderedAlgebra) → Vector A n → Vec (Vector A d) n → Vector A d
 weightedValue A [] [] = []
 weightedValue A (p ∷ ps) (v ∷ vs) = vAdd A (vScale A p v) (weightedValue A ps vs)
 
@@ -175,7 +175,7 @@ record BranchSensitivityLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
     outputLe : outputBound ≤ coefficientBound
     normCompatible : NormSensitivityCertificate A
     qCompatible : TsallisSensitivityCertificate A n
-branchSensitiveClosure : ∀ {A n} → EfficientCHADCertificate A n → BranchSensitivityLaw A n
+branchSensitiveClosure : ∀ {A : OrderedAlgebra} {n : Nat} → EfficientCHADCertificate A n → BranchSensitivityLaw A n
 branchSensitiveClosure c = record
   { coefficientBound = TsallisSensitivityCertificate.outputEnvelope (EfficientCHADCertificate.attention c)
   ; outputBound = TsallisSensitivityCertificate.outputEnvelope (EfficientCHADCertificate.attention c)
@@ -189,7 +189,7 @@ record CompositeInvariant (A : OrderedAlgebra) (n : Nat) : Set₁ where
     degreeAtDepth : Nat → Nat
     degreeLaw : ∀ k → degreeAtDepth (suc k) ≡ degreeStep (degreeAtDepth k)
     branchSensitive : BranchSensitivityLaw A n
-assembleCompositeInvariant : ∀ {A n} → EfficientCHADCertificate A n → CompositeInvariant A n
+assembleCompositeInvariant : ∀ {A : OrderedAlgebra} {n : Nat} → EfficientCHADCertificate A n → CompositeInvariant A n
 assembleCompositeInvariant c = record
   { finiteOrdered = c
   ; degreeAtDepth = power3
@@ -218,7 +218,7 @@ record EfficientCHAD_CReLU_Tsallis2_TheoremTarget (A : OrderedAlgebra) (n depth 
     depthLaw : degreeBound (suc depth) ≡ degreeStep (degreeBound depth)
     sensitivity : BranchSensitivityLaw A n
     finiteOrderedClosure : EfficientCHADCertificate A n → EfficientCHADCertificate A n
-constructTheoremTarget : ∀ {A n depth} → EfficientCHADCertificate A n → EfficientCHAD_CReLU_Tsallis2_TheoremTarget A n depth
+constructTheoremTarget : ∀ {A : OrderedAlgebra} {n depth : Nat} → EfficientCHADCertificate A n → EfficientCHAD_CReLU_Tsallis2_TheoremTarget A n depth
 constructTheoremTarget c = record
   { certificate = c
   ; invariant = assembleCompositeInvariant c
