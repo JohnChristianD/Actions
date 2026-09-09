@@ -20,6 +20,20 @@ jobs:
           agda-version: '2.8.0'
       - name: Apply exact dedupe
         run: python3 .ci/v149-dedupe-monolith.py
+      - name: Normalize stale cross bindings
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
+          s = p.read_text()
+          old_l = '      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =\n'
+          old_r = '      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =\n'
+          if s.count(old_l) != 1 or s.count(old_r) != 1:
+              raise SystemExit(f'unexpected cross binding counts: left={s.count(old_l)} right={s.count(old_r)}')
+          s = s.replace(old_l, '      leftNorm =\n', 1).replace(old_r, '      rightNorm =\n', 1)
+          p.write_text(s)
+          print('removed exactly two typed cross equality bindings')
+          PY
       - name: Normalize stale trans terminators
         run: |
           python3 - <<'PY'
