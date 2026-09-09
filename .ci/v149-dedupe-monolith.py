@@ -23,22 +23,45 @@ old_acc = """  accumulate : Fin n → R → EState → EState
     ... | yes _ = s j + c
     ... | no _ = s j)
 """
-new_acc = """  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
+new_acc = """  accumulateAt : Fin n → R → Cot → Fin n → R
+  accumulateAt i c s j with finDecEq j i
   ... | yes _ = s j + c
-  ... | no _ = s j)
+  ... | no _ = s j
+
+  accumulate : Fin n → R → EState → EState
+  accumulate i c (state s) = state (accumulateAt i c s)
 """
 if s.count(old_acc) > 1:
     raise SystemExit(f'non-unique accumulator parser target: {s.count(old_acc)}')
 if s.count(old_acc) == 1:
     s = s.replace(old_acc, new_acc, 1)
-elif s.count(new_acc) != 1:
-    raise SystemExit('canonical accumulator parser form not found')
+else:
+    old_at = """  accumulateAt : Fin n → R → Cot → Cot
+  accumulateAt i c s j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j
+
+  accumulate i c (state s) = state (accumulateAt i c s)
+"""
+    new_at = """  accumulateAt : Fin n → R → Cot → Fin n → R
+  accumulateAt i c s j with finDecEq j i
+  ... | yes _ = s j + c
+  ... | no _ = s j
+
+  accumulate : Fin n → R → EState → EState
+  accumulate i c (state s) = state (accumulateAt i c s)
+"""
+    if s.count(old_at) == 1:
+        s = s.replace(old_at, new_at, 1)
+    elif s.count(new_at) != 1:
+        raise SystemExit('robust accumulateAt parser form not found')
 
 if s.count('record SmoothAlgebra : Set₁ where') != 1:
     raise SystemExit('expected exactly one SmoothAlgebra declaration after dedupe')
 if s.count('sqrtDomain : R → Set') != 1 or s.count('sqrtSquareLaw :') != 1:
-    raise SystemExit('expected exactly one domain-carrying sqrt law after dedupe')
+    raise SystemExit('expected exactly one domain-aware sqrt law after dedupe')
+if s.count('accumulateAt : Fin n → R → Cot → Fin n → R') != 1:
+    raise SystemExit('expected exactly one robust accumulateAt declaration')
 
 p.write_text(s)
-print('monolith dedupe/domain/parser normalization applied exactly once')
+print('monolith dedupe/domain/accumulateAt normalization applied exactly once')
