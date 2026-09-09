@@ -27,6 +27,16 @@ for old, new in [
     if old in s:
         s = s.replace(old, new, 1)
 
+# Remove the historical pre-canonical scalar algebra block. The canonical
+# SmoothAlgebra below is the only exported scalar interface.
+legacy = s.find('record SmoothAlgebra : Set₁ where')
+canonical = s.find('-- Canonical SmoothAlgebra boundary.')
+if legacy >= 0 and canonical >= 0 and legacy < canonical:
+    scalar_after = s.find('\nScalar : SmoothAlgebra → Set\n', legacy)
+    if scalar_after < 0 or scalar_after > canonical:
+        raise SystemExit('legacy SmoothAlgebra block has no scalar boundary')
+    s = s[:legacy] + s[scalar_after + 1:]
+
 marker_start = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
 marker_end = "------------------------------------------------------------------------\n-- Seven coupled parameter blocks and finite parameter indices\n"
 if marker_start not in s or marker_end not in s:
