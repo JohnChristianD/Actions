@@ -4,27 +4,33 @@ p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
 record = 'record SmoothAlgebra : Set₁ where'
 marker = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
-first = s.find(record)
-if first >= 0:
-    # The pre-v149 algebra surface is obsolete. Remove that entire surface,
-    # including its legacy vector/matrix implementations, but retain the
-    # generic tabulateV helper because the canonical matVec uses it.
-    legacy_start = first
-    tab = s.find('tabulateV :', first)
-    if tab < 0:
-        raise SystemExit('generic tabulateV helper not found after legacy SmoothAlgebra')
-    tab_end = s.find('\n------------------------------------------------------------------------', tab)
-    if tab_end < 0:
-        raise SystemExit('separator after legacy tabulateV not found')
-    tabulate_block = s[tab:tab_end]
-    canonical = s.find(marker, tab_end)
-    if canonical < 0:
-        raise SystemExit('canonical SmoothAlgebra marker not found after legacy algebra')
-    s = s[:legacy_start] + tabulate_block + '\n\n' + s[canonical:]
 
-# If more than one canonical record survived, retain the first canonical
-# surface and delete later duplicate canonical surfaces through their local
-# vector-algebra terminator.
+# The canonical v149 boundary is authoritative. Any legacy SmoothAlgebra and
+# its pre-canonical vector/matrix surface must be removed before checking the
+# canonical definitions. Keep only the generic tabulateV helper from that old
+# surface because the canonical matVec reuses it.
+first_record = s.find(record)
+canonical = s.find(marker)
+if first_record >= 0 and canonical >= 0 and first_record < canonical:
+    tab = s.find('tabulateV :', first_record, canonical)
+    if tab < 0:
+        raise SystemExit('legacy tabulateV helper not found before canonical boundary')
+    tab_end = s.find('\n------------------------------------------------------------------------', tab, canonical)
+    if tab_end < 0:
+        raise SystemExit('legacy tabulateV terminator not found before canonical boundary')
+    tabulate_block = s[tab:tab_end]
+    s = s[:first_record] + tabulate_block + '\n\n' + s[canonical:]
+
+# Defensive structural normalization: if any pre-canonical matrix declarations
+# survived the legacy-surface removal, delete the entire prefix from the first
+# matVec through the canonical marker. The canonical matVec/matMul are retained.
+canonical = s.find(marker)
+first_mat = s.find('matVec :')
+if canonical >= 0 and first_mat >= 0 and first_mat < canonical:
+    s = s[:first_mat] + s[canonical:]
+
+# Remove any later duplicated canonical SmoothAlgebra surface. The first is
+# the retained authoritative definition.
 first = s.find(record)
 second = s.find(record, first + len(record)) if first >= 0 else -1
 if second >= 0:
