@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
@@ -41,34 +42,39 @@ local_zip = '''  zipWithV : ∀ {A B C n} → (A → B → C) → Vec A n → Ve
 '''
 s = s.replace(local_zip, '')
 
-# Once the vAdd local zipWithV is removed, its where block can become empty;
-# remove that block. Keep the surrounding vAdd definition unchanged.
-vadd_empty_where = '''vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))
-  where
+# Once local helper declarations are removed, an empty vAdd `where` remains
+# in some source revisions. Eliminate only the known empty block.
+s = re.sub(
+    r'(vAdd\s*\{S\}\s*=\s*zipWithV\s*\([^\n]+\))\n\s*where\n(?=\nvSub\s*:)',
+    r'\1\n\n',
+    s,
+    count=1,
+)
 
-vSub :'''
-s = s.replace(vadd_empty_where, '''vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))
-
-vSub :''')
-
-# The vSub helper `sub` still needs a local type signature after local helper
-# dedupe. Give it the exact scalar carrier type used by the surrounding S.
-needle = '''vSub {S} = zipWithV sub
-  where
-  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
-  sub x y = Ring._+_ Rg x (Ring.neg Rg y)
-'''
-replacement = '''vSub {S} = zipWithV sub
-  where
-  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)
-  sub : Scalar S → Scalar S → Scalar S
-  sub x y = Ring._+_ Rg x (Ring.neg Rg y)
-'''
-if needle in s:
-    s = s.replace(needle, replacement, 1)
-else:
-    if '  sub : Scalar S → Scalar S → Scalar S\n' not in s:
+# vSub keeps its carrier-local arithmetic helper. Ensure the helper itself has
+# a type signature, which Agda requires after the generic zipWithV dedupe.
+sub_pat = re.compile(
+    r'(vSub\s*\{S\}\s*=\s*zipWithV\s+sub\s*\n\s*where\n)'
+    r'(\s*Rg\s*=\s*OrderedRing\.ring\s+\(SmoothAlgebra\.orderedRing\s+S\)\s*\n)'
+    r'(\s*sub\s+)(x\s+y\s*=\s*Ring\._\+_\s+Rg\s+x\s+\(Ring\.neg\s+Rg\s+y\))',
+)
+if sub_pat.search(s):
+    s = sub_pat.sub(
+        r'\1\2  sub : Scalar S → Scalar S → Scalar S\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)',
+        s,
+        count=1,
+    )
+elif '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = Ring._+_ Rg x (Ring.neg Rg y)' not in s:
+    # Fall back to the exact declaration line shape after earlier normalizers.
+    line_pat = re.compile(
+        r'(vSub\s*\{S\}\s*=\s*zipWithV\s+sub\s*\n\s*where\n)'
+        r'(\s*Rg\s*=\s*[^\n]+\n)'
+        r'\s*sub\s+x\s+y\s*=\s*([^\n]+)'
+    )
+    m = line_pat.search(s)
+    if not m:
         raise SystemExit('vSub local sub declaration shape not found')
+    s = s[:m.start()] + m.group(1) + m.group(2) + '  sub : Scalar S → Scalar S → Scalar S\n  sub x y = ' + m.group(3) + s[m.end():]
 
 if s.count(record) != 1:
     raise SystemExit(f'SmoothAlgebra definition count is {s.count(record)}, expected 1')
@@ -83,4 +89,4 @@ if s.count('zipWithV :') != 1:
 if 'vAdd {S} = zipWithV (Ring._+_ (OrderedRing.ring (SmoothAlgebra.orderedRing S)))\n  where\n' in s:
     raise SystemExit('empty vAdd where block remains')
 p.write_text(s)
-print('canonical vector helper dedupe normalized: global zipWithV, typed vSub sub, no empty vAdd where')
+print('canonical vector helper scope normalized: one global zipWithV, typed sub, no empty vAdd where')
