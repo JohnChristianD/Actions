@@ -22,20 +22,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 .ci/normalize-completesafe-namespaces.py
           python3 .ci/v149-dedupe-monolith.py
           python3 .ci/v149-dedupe-duplicate-smooth.py
           python3 .ci/v149-cvt-parser.py
           python3 .ci/v149-diagonal-parser.py
           python3 .ci/v149-let-bindings.py
           python3 .ci/v149-residual-carrier.py
-          python3 .ci/v149-nat-zero-scope.py
           git diff --check
       - name: Print current kernel frontier
         shell: bash
         run: |
           set -euo pipefail
-          echo '--- scalar/vector opening ---'
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1,120p'
+          echo '--- canonical namespace opening ---'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1,150p'
       - name: Kernel-check monolith
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist checked source and remove repair machinery
@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@github-actions[bot].github.com'
-          rm -f .ci/v149-dedupe-monolith.py .ci/v149-dedupe-duplicate-smooth.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py .ci/v149-nat-zero-scope.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
-          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .ci/v149-dedupe-monolith.py .ci/v149-dedupe-duplicate-smooth.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py .ci/v149-nat-zero-scope.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
-          git commit -m 'fix: kernel-check canonical monolith dedupe'
+          rm -f .ci/normalize-completesafe-namespaces.py .ci/v149-dedupe-monolith.py .ci/v149-dedupe-duplicate-smooth.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py .ci/v149-nat-zero-scope.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
+          git add Exotic/ERL/FullCoupled/CompleteSafe_v147.agda .ci/normalize-completesafe-namespaces.py .ci/v149-dedupe-monolith.py .ci/v149-dedupe-duplicate-smooth.py .ci/v149-cvt-parser.py .ci/v149-diagonal-parser.py .ci/v149-let-bindings.py .ci/v149-residual-carrier.py .ci/v149-nat-zero-scope.py .github/workflows/repair-v149-dedupe.yml .github/workflows/repair-monolith-parser.yml
+          git commit -m 'fix: kernel-check canonical monolith namespace'
           git push origin HEAD:ci/v149-monolith-final
