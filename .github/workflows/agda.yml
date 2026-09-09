@@ -2,7 +2,7 @@ name: Agda authoritative safe gate
 
 on:
   push:
-    branches: ['main', 'ci/v149-monolith-dedupe']
+    branches: ['main', 'ci/v149-monolith-dedupe', 'ci/v149-monolith-final']
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
@@ -32,34 +32,37 @@ jobs:
       - name: Verify Agda executable
         run: agda --version
       - name: Apply deterministic v149 monolith repair
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-dedupe-monolith.py
+      - name: Normalize v149 square parser boundary
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
+        run: python3 .ci/v149-square-parser.py
       - name: Normalize v149 Nat namespace
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/normalize-nat-namespace.py
       - name: Qualify v149 OrderedRing fields
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/final-qualify-ordered-fields.py
       - name: Normalize v149 LayerNorm denominator domain
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-layernorm-parser.py
       - name: Normalize v149 CVT insertion parser
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-cvt-parser.py
       - name: Normalize v149 diagonal proof parser
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-diagonal-parser.py
       - name: Normalize v149 typed let bindings
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-let-bindings.py
       - name: Normalize v149 residual carrier
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-residual-carrier.py
       - name: Normalize v149 reciprocal nonnegative proof
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         run: python3 .ci/v149-reciprocal-parser.py
       - name: Debug late trans context
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         shell: bash
         run: |
           set -euo pipefail
@@ -82,7 +85,7 @@ jobs:
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist kernel-checked v149 source repair
-        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe' || github.head_ref == 'ci/v149-monolith-final' || github.ref == 'refs/heads/ci/v149-monolith-final'
         shell: bash
         run: |
           set -euo pipefail
