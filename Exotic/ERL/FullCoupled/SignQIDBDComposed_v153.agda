@@ -61,8 +61,8 @@ hardAttention : ∀ {A : OrderedAlgebra} {n : Nat} → HardAttention A n → Vec
 hardAttention h values = index values (HardAttention.selected h)
 
 onePathNorm : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
-onePathNorm [] = rzero _
-onePathNorm (x ∷ xs) = abs _ x r+ onePathNorm xs
+onePathNorm {A} [] = rzero A
+onePathNorm {A} (x ∷ xs) = (OrderedAlgebra.abs A x) r+ onePathNorm xs
 
 record OnePathNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
