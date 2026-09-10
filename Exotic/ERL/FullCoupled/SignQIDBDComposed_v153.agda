@@ -152,7 +152,7 @@ record FixedWindowTransformer (A : OrderedAlgebra) : Set₁ where
   field
     width : Nat
     positionTable : Vec (R A) width
-    hardAttention : ∀ {n} → HardAttention A n → Vec (R A) n → R A
+    attend : ∀ {n} → HardAttention A n → Vec (R A) n → R A
 
 record DoubleSignComposition (A : OrderedAlgebra) : Set₁ where
   field
