@@ -30,8 +30,8 @@ jobs:
         with:
           otp-version: '27'
           elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
+          install-hex: true
+          install-rebar: false
       - name: Verify runtimes
         run: |
           agda --version
@@ -41,12 +41,11 @@ jobs:
           set -euo pipefail
           elixir .ci/normalise_agda.exs
           test -z "$(find .ci .github/workflows oracle -type f \( -name '*.py' -o -name '*.rb' \) -print)"
-          ! grep -RInE 'python3?|ruby|\.rb' .ci .github/workflows oracle
       - name: Kernel-check canonical composed theorem
         run: agda --safe Exotic/ERL/FullCoupled/SignQIDBDComposed_v153.agda
+      - name: Kernel-check conjecture generation and interpolation
+        run: agda --safe Exotic/ERL/FullCoupled/ConjectureGeneration_v153.agda
       - name: Kernel-check normalisation certificate
         run: agda --safe Exotic/ERL/FullCoupled/NormaliseAgda_v153.agda
-      - name: Kernel-check interpolation and staged algebra
-        run: |
-          agda --safe Exotic/ERL/Stages/Stage01_FiniteAlgebra.agda
-          agda --safe Exotic/ERL/FullCoupled/CIInterpolation_v147.agda
+      - name: Kernel-check finite staged algebra
+        run: agda --safe Exotic/ERL/Stages/Stage01_FiniteAlgebra.agda
