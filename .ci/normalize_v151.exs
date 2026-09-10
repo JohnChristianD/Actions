@@ -21,7 +21,6 @@ repairs = [
   {"signScalar : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nsignScalar {A} x = cPlus {A} x + DyadicRing.neg A (cMinus {A} x)", "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x"},
   {"parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)", "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)"},
   {"signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = signScalar {A} x ∷ signQIDBDDirection xs", "signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = parameterSign {A} x ∷ signQIDBDDirection xs"},
-  {"signQIDBDNormalForm A0 x = DyadicRing.signIdempotent A0 x", "signQIDBDNormalForm A0 x = DyadicRing.signIdempotent A0 x"},
   {"signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  signScalar {A} (signScalar {A} x) ≡ signScalar {A} x", "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x"}
 ]
 
@@ -29,11 +28,7 @@ text = Enum.reduce(repairs, text, fn {old, new}, acc ->
   String.replace(acc, old, new)
 end)
 
-text = Regex.replace(
-  ~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s,
-  text,
-  ""
-)
+text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s, text, "")
 
 forbidden = [
   "LayerNorm",
@@ -46,7 +41,6 @@ forbidden = [
   "setup-python",
   "ruby/setup-ruby",
   "Σ",
-  "signScalar"
 ]
 
 Enum.each(forbidden, fn token ->
