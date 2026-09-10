@@ -8,6 +8,7 @@ on:
       - '.github/workflows/agda.yml'
       - '.ci/v150-monolith-repair.rb'
       - '.ci/v151-residual-finalize.rb'
+      - '.ci/v164-exposure-pareto.rb'
   pull_request:
     branches: ['main']
     paths:
@@ -15,6 +16,7 @@ on:
       - '.github/workflows/agda.yml'
       - '.ci/v150-monolith-repair.rb'
       - '.ci/v151-residual-finalize.rb'
+      - '.ci/v164-exposure-pareto.rb'
   workflow_dispatch:
 
 permissions:
@@ -42,11 +44,9 @@ jobs:
       - name: Finalize residual safe normalization
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: ruby .ci/v151-residual-finalize.rb
-      - name: Dump post-repair transport contexts
+      - name: Finalize diagonal exposure and Pareto normalization
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
-        run: |
-          set -euo pipefail
-          grep -n -B 8 -A 12 'transportLt_v142' Exotic/ERL/FullCoupled/CompleteSafe_v147.agda || true
+        run: ruby .ci/v164-exposure-pareto.rb
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
