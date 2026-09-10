@@ -51,17 +51,13 @@ record HardAttention (A : OrderedAlgebra) (n : Nat) : Set where
 hardAttention : ∀ {A : OrderedAlgebra} {n : Nat} → HardAttention A n → Vec (R A) n → R A
 hardAttention h values = index values (HardAttention.selected h)
 
-onePathNorm : ∀ {A : OrderedAlgebra} {n : Nat} → (R A → R A) → Vec (R A) n → R A
-onePathNorm {A} mag [] = rzero A
-onePathNorm {A} mag (x ∷ xs) = mag x r+ onePathNorm mag xs
-
 record OnePathNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
     magnitude : R A → R A
-    magnitudeNonnegative : ∀ x → rzero A r≤ magnitude x
+    magnitudeNonnegative : ∀ x → r≤A (rzero A) (magnitude x)
     pathBound : R A
     normDefinition : pathBound ≡ pathBound
-    pathNonnegative : rzero A r≤ pathBound
+    pathNonnegative : r≤A (rzero A) pathBound
 
 record DyadicL2 (A : OrderedAlgebra) : Set₁ where
   field
