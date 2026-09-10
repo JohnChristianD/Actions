@@ -79,6 +79,8 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
       - name: Safe-check domain-carrying LayerNorm closure
         run: agda --safe Exotic/ERL/FullCoupled/RepresentationLayerNormClosure.agda
+      - name: Safe-check v151 StoSignSGDv2 Transformer Efficient-CHAD
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_StoSignSGDv2_Tsallis2_v151.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist kernel-checked v149 source repair
