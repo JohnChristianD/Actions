@@ -64,10 +64,25 @@ else
   s4
 end
 
-# Match the complete legacy dependent-lambda block by its distinctive start and end clauses.
-old_acc = ~r/  accumulate i c \(state s\) = state \(λ j with finDecEq j i\n(?:.*\n)*?    \.\.\. \| no _ = s j\)\n/
-new_acc = "  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"
-s6 = Regex.replace(old_acc, s5, new_acc, global: true)
+old_acc = """  accumulate : Fin n → R → EState → EState
+  accumulate i c (state s) = state (λ j with finDecEq j i
+    ... | yes _ = s j + c
+    ... | no _ = s j)
+"""
+new_acc = """  accumulateAt : Fin n → R → EState → Fin n → R
+  accumulateAt i c (state s) j with finDecEq j i
+  ... | yes _ = s j + c
+  ... | no _ = s j
+
+  accumulate : Fin n → R → EState → EState
+  accumulate i c s = state (accumulateAt i c s)
+"""
+s6 =
+  if String.contains?(s5, old_acc) do
+    String.replace(s5, old_acc, new_acc, global: false)
+  else
+    s5
+  end
 
 unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1, do: raise "SmoothAlgebra record count is not one after normalization"
 if String.contains?(s6, "λ j with finDecEq") do
