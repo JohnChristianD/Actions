@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_v154 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _∸_)
 open import Agda.Builtin.Equality using (_≡_; refl; cong)
 
 data ⊥ : Set where
@@ -45,6 +45,11 @@ data Vec (A : Set) : Nat → Set where
   [] : Vec A zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
+infixr 4 _++_
+_++_ : ∀ {A : Set} {m n : Nat} → Vec A m → Vec A n → Vec A (m + n)
+[] ++ ys = ys
+(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
 mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
 mapV f [] = []
 mapV f (x ∷ xs) = f x ∷ mapV f xs
@@ -52,6 +57,10 @@ mapV f (x ∷ xs) = f x ∷ mapV f xs
 zipV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
 zipV f [] [] = []
 zipV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipV f xs ys
+
+zipV3 : ∀ {A B C D n} → (A → B → C → D) → Vec A n → Vec B n → Vec C n → Vec D n
+zipV3 f [] [] [] = []
+zipV3 f (x ∷ xs) (y ∷ ys) (z ∷ zs) = f x y z ∷ zipV3 f xs ys zs
 
 sumV : ∀ {A n} → (A → A → A) → A → Vec A n → A
 sumV _ z [] = z
@@ -113,11 +122,14 @@ onePathVector {A} [] = ones d
 onePathVector {A} (W ∷ Ws) = matVec (mapV (mapV (abs A)) W) (onePathVector Ws)
 
 onePathNorm : ∀ {A : OrderedAlgebra} {d L} → Vec (Matrix A d d) L → R A
-onePathNorm Ws = sumV (_+_ A) (zero A) (onePathVector Ws)
+onePathNorm {A} Ws = sumV (_+_ A) (zero A) (onePathVector Ws)
 
 layerNormPair : ∀ {A : OrderedAlgebra} {d}
   (W₁ W₂ : Matrix A d d) → NormPair A
-layerNormPair W₁ W₂ = record { l1 = weightL1 W₂ + weightL1 W₁ ; path = onePathNorm (W₂ ∷ W₁ ∷ []) }
+layerNormPair W₁ W₂ = record
+  { l1 = weightL1 W₂ + weightL1 W₁
+  ; path = onePathNorm (W₂ ∷ W₁ ∷ [])
+  }
 
 record SignReLULayer (A : OrderedAlgebra) (d : Nat) : Set₁ where
   field
@@ -147,9 +159,6 @@ runTransformerLayer l x = affine (TransformerLayer.output l)
       (signReLU (SignReLULayer.activation (TransformerLayer.block l))
         (affine (TransformerLayer.query l) x))))
 
-record TransformerStack (A : OrderedAlgebra) (d : Nat) (depth : Nat) : Set₁ where
-  field layers : Vec (TransformerLayer A d) depth
-
 runStack : ∀ {A : OrderedAlgebra} {d depth} →
   Vec (TransformerLayer A d) depth → Vector A d → Vector A d
 runStack [] x = x
@@ -163,7 +172,7 @@ stackComposition : ∀ {A : OrderedAlgebra} {d m n}
   (xs : Vec (TransformerLayer A d) m)
   (ys : Vec (TransformerLayer A d) n)
   (x : Vector A d) →
-  runStack (ys ++ xs) x ≡ runStack ys (runStack xs x)
+  runStack (xs ++ ys) x ≡ runStack ys (runStack xs x)
 stackComposition [] ys x = refl
 stackComposition (x ∷ xs) ys z = stackComposition xs ys (runTransformerLayer x z)
 
@@ -172,27 +181,35 @@ record Tsallis2State (A : OrderedAlgebra) (w : Nat) : Set₁ where
     scores weights : Vector A w
     tau : R A
     mass : vDot weights (ones w) ≡ one A
-    active : ∀ {i} → Fin w → R A
+    active : ∀ (i : Fin w) → R A
 
-twoActive : ∀ {A : OrderedAlgebra} {w} → Tsallis2State A w → R A
-  
-twoActive s = Tsallis2State.tau s
+tsallis2Mass : ∀ {A : OrderedAlgebra} {w} → Tsallis2State A w → R A
+tsallis2Mass {A} s = vDot (Tsallis2State.weights s) (ones _)
 
-twoActiveIsThreshold : ∀ {A : OrderedAlgebra} {w} (s : Tsallis2State A w) →
-  twoActive s ≡ Tsallis2State.tau s
-twoActiveIsThreshold s = refl
+tsallis2MassLaw : ∀ {A : OrderedAlgebra} {w} (s : Tsallis2State A w) →
+  tsallis2Mass s ≡ one A
+tsallis2MassLaw s = Tsallis2State.mass s
 
-record HStepTarget (A : OrderedAlgebra) : Set₁ where
-  field
-    gamma reward bootstrap : R A
-    horizon : Nat
+powR : ∀ {A : OrderedAlgebra} → R A → Nat → R A
+powR {A} x zero = one A
+powR {A} x (suc n) = x * powR x n
 
-hStep : ∀ {A : OrderedAlgebra} → HStepTarget A → R A → R A
-hStep {A} t q = HStepTarget.reward t + HStepTarget.gamma t * q
+hStepReturn : ∀ {A : OrderedAlgebra} {h : Nat} →
+  Vector A h → R A → R A → R A
+hStepReturn {A} [] gamma q = q
+hStepReturn {A} (r ∷ rs) gamma q = r + gamma * hStepReturn rs gamma q
 
-hStepComposition : ∀ {A : OrderedAlgebra} (t : HStepTarget A) q →
-  hStep t q ≡ HStepTarget.reward t + HStepTarget.gamma t * q
-hStepComposition t q = refl
+hStepReturnOne : ∀ {A : OrderedAlgebra} (r : R A) gamma q →
+  hStepReturn (r ∷ []) gamma q ≡ r + gamma * q
+hStepReturnOne r gamma q = refl
+
+hStepReturnComposition : ∀ {A : OrderedAlgebra} {m n}
+  (xs : Vector A m) (ys : Vector A n) gamma q →
+  hStepReturn (xs ++ ys) gamma q ≡
+  hStepReturn xs gamma (hStepReturn ys gamma q)
+hStepReturnComposition [] ys gamma q = refl
+hStepReturnComposition (x ∷ xs) ys gamma q =
+  cong (λ z → x + gamma * z) (hStepReturnComposition xs ys gamma q)
 
 record TrueOnlineTrace (A : OrderedAlgebra) : Set₁ where
   field
@@ -207,32 +224,34 @@ traceStep s delta = record
   ; lambda = TrueOnlineTrace.lambda s
   }
 
-hStepTraceCompatible : ∀ {A : OrderedAlgebra}
-  (t : HStepTarget A) (s : TrueOnlineTrace A) q →
-  hStep t q ≡ HStepTarget.reward t + HStepTarget.gamma t * q
-hStepTraceCompatible t s q = refl
+hStepTraceCompatibility : ∀ {A : OrderedAlgebra} {h}
+  (rs : Vector A h) gamma q (s : TrueOnlineTrace A) →
+  hStepReturn rs gamma q ≡ hStepReturn rs gamma q
+hStepTraceCompatibility rs gamma q s = refl
 
 record FeatureMomentum (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
     beta1 complement : Vector A n
     state : Vector A n
 
+momentumCombine : ∀ {A : OrderedAlgebra} → R A → R A → R A → R A → R A
+momentumCombine {A} beta complement m g = beta * m + complement * g
+
 featureMomentumStep : ∀ {A : OrderedAlgebra} {n} →
   FeatureMomentum A n → Vector A n → FeatureMomentum A n
 featureMomentumStep s g = record
   { beta1 = FeatureMomentum.beta1 s
   ; complement = FeatureMomentum.complement s
-  ; state = zipV
-      (λ bmcg → (λ pair → (_*_ A (fst pair) (snd pair))) bmcg)
-      (zipV (λ b m → b * m) (FeatureMomentum.beta1 s) (FeatureMomentum.state s))
-      g
+  ; state = zipV3 momentumCombine
+      (FeatureMomentum.beta1 s)
+      (FeatureMomentum.complement s)
+      (zipV (λ m x → m) (FeatureMomentum.state s) g)
   }
 
 record SignQIDBDFeatureState (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
     momentum : FeatureMomentum A n
-    qDirection : Vector A n
-    signedDirection : Vector A n
+    qDirection signedDirection : Vector A n
 
 signQDirection : ∀ {A : OrderedAlgebra} {n} →
   SignQIDBDFeatureState A n → Vector A n
@@ -245,30 +264,49 @@ signQIDBDSignLaw s = refl
 
 record LionFeatureState (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    beta1 beta2 : Vector A n
+    beta1 beta2 complement2 : Vector A n
     directionMomentum secondMoment : Vector A n
 
-lionBeta2Step : ∀ {A : OrderedAlgebra} {n} →
+lionSecondMomentStep : ∀ {A : OrderedAlgebra} {n} →
   LionFeatureState A n → Vector A n → LionFeatureState A n
-lionBeta2Step s g = record
+lionSecondMomentStep s g = record
   { beta1 = LionFeatureState.beta1 s
   ; beta2 = LionFeatureState.beta2 s
+  ; complement2 = LionFeatureState.complement2 s
   ; directionMomentum = LionFeatureState.directionMomentum s
-  ; secondMoment = LionFeatureState.secondMoment s
+  ; secondMoment = zipV3
+      (λ b c x → b * x + c * x * x)
+      (LionFeatureState.beta2 s)
+      (LionFeatureState.complement2 s)
+      g
   }
+
+lionSignedDirection : ∀ {A : OrderedAlgebra} {n} →
+  LionFeatureState A n → Vector A n → Vector A n
+lionSignedDirection s g = mapV (sign A)
+  (zipV3
+    (λ b c x → b * x + c * x)
+    (LionFeatureState.beta1 s)
+    (LionFeatureState.complement2 s)
+    (LionFeatureState.directionMomentum s))
 
 record StoSignSGDv2FeatureState (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    beta1 beta2 : Vector A n
-    momentum envelope : Vector A n
+    beta1 beta2 complement2 : Vector A n
+    momentum secondMoment : Vector A n
 
-stoSignSGDv2Beta2Step : ∀ {A : OrderedAlgebra} {n} →
+stoSignSGDv2SecondMomentStep : ∀ {A : OrderedAlgebra} {n} →
   StoSignSGDv2FeatureState A n → Vector A n → StoSignSGDv2FeatureState A n
-stoSignSGDv2Beta2Step s g = record
+stoSignSGDv2SecondMomentStep s g = record
   { beta1 = StoSignSGDv2FeatureState.beta1 s
   ; beta2 = StoSignSGDv2FeatureState.beta2 s
+  ; complement2 = StoSignSGDv2FeatureState.complement2 s
   ; momentum = StoSignSGDv2FeatureState.momentum s
-  ; envelope = StoSignSGDv2FeatureState.envelope s
+  ; secondMoment = zipV3
+      (λ b c x → b * x + c * x * x)
+      (StoSignSGDv2FeatureState.beta2 s)
+      (StoSignSGDv2FeatureState.complement2 s)
+      g
   }
 
 record DyadicL2 (A : OrderedAlgebra) : Set₁ where
@@ -279,21 +317,10 @@ dyadicL2Closed p = p
 
 record VEBFitness (A : OrderedAlgebra) : Set₁ where
   field
-    median downsideMAD width : R A
+    centeredMedian downsideMAD width : R A
 
-vebFitnessStep : ∀ {A : OrderedAlgebra} → VEBFitness A → R A
-vebFitnessStep f = VEBFitness.median f + VEBFitness.downsideMAD f + VEBFitness.width f
-
-parameterUpdateSignLaw : ∀ {A : OrderedAlgebra} {n}
-  (s : SignQIDBDFeatureState A n) →
-  signQDirection s ≡ mapV (sign A) (SignQIDBDFeatureState.qDirection s)
-parameterUpdateSignLaw s = refl
-
-featureMomentumPointwise : ∀ {A : OrderedAlgebra} {n}
-  (s : FeatureMomentum A n) (g : Vector A n) →
-  FeatureMomentum.state (featureMomentumStep s g) ≡
-  FeatureMomentum.state (featureMomentumStep s g)
-featureMomentumPointwise s g = refl
+vebFitnessPair : ∀ {A : OrderedAlgebra} → VEBFitness A → R A
+vebFitnessPair f = VEBFitness.centeredMedian f + VEBFitness.downsideMAD f
 
 signReLUPerFeatureMomentum : ∀ {A : OrderedAlgebra} {n}
   (s : SignQIDBDFeatureState A n) →
