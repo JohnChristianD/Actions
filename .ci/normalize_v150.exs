@@ -61,11 +61,9 @@ end_abs = first + rel_end
 prefix = binary_part(s, 0, first)
 region = binary_part(s, first, end_abs - first)
 suffix = binary_part(s, end_abs, byte_size(s) - end_abs)
-
 region = Regex.replace(~r/record SmoothAlgebra : Set₁ where(?s:.*?)\nScalar : SmoothAlgebra → Set\n/, region, "Scalar : SmoothAlgebra → Set\n")
 s = prefix <> region <> suffix
 
-# Preserve canonical max/min arity if an older combined declaration is still present.
 s = String.replace(s,
   "    sqrt recip max min : R → R\n",
   "    sqrt recip : R → R\n    max min : R → R → R\n",
@@ -76,19 +74,8 @@ if String.contains?(s, needle) and not String.contains?(s, "    sqrtDomain : R �
   s = String.replace(s, needle, needle <> "    sqrtDomain : R → Set\n    sqrtSquareLaw : ∀ x → sqrtDomain x →\n      Ring._*_ (OrderedRing.ring orderedRing) (sqrt x) (sqrt x) ≡ x\n", global: false)
 end
 
-old_acc = """  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)
-"""
-new_acc = """  accumulateAt : Fin n → R → Cot → Fin n → R
-  accumulateAt i c s j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j
-
-  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (accumulateAt i c s)
-"""
+old_acc = "  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j)\n"
+new_acc = "  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"
 s = String.replace(s, old_acc, new_acc, global: false)
 
 if String.contains?(s, "-- AUDITED-KKT-OBLIGATION") do
