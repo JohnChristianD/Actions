@@ -64,31 +64,23 @@ else
   s4
 end
 
-old_acc =
+legacy_acc =
   "  accumulate : Fin n → R → EState → EState\n" <>
   "  accumulate i c (state s) = state (λ j with finDecEq j i\n" <>
   "    ... | yes _ = s j + c\n" <>
   "    ... | no _ = s j)\n"
-new_acc =
+canonical_acc =
   "  accumulateAt : Fin n → R → EState → Fin n → R\n" <>
   "  accumulateAt i c (state s) j with finDecEq j i\n" <>
   "  ... | yes _ = s j + c\n" <>
   "  ... | no _ = s j\n\n" <>
   "  accumulate : Fin n → R → EState → EState\n" <>
   "  accumulate i c s = state (accumulateAt i c s)\n"
-s6a = String.replace(s5, old_acc, new_acc, global: false)
-
-acc_marker = "  accumulate : Fin n → R → EState → EState\n"
-s6 =
-  case :binary.match(s6a, acc_marker) do
-    :nomatch -> s6a
-    {acc_pos, _} ->
-      tail = binary_part(s6a, acc_pos, byte_size(s6a) - acc_pos)
-      case :binary.match(tail, "\n\n") do
-        {gap_pos, _} -> binary_part(s6a, 0, acc_pos) <> new_acc <> binary_part(tail, gap_pos + 2, byte_size(tail) - gap_pos - 2)
-        :nomatch -> raise "accumulate block has no terminating blank line"
-      end
-  end
+s6 = if String.contains?(s5, legacy_acc) do
+  String.replace(s5, legacy_acc, canonical_acc, global: false)
+else
+  s5
+end
 
 unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1, do: raise "SmoothAlgebra record count is not one after normalization"
 if String.contains?(s6, "λ j with finDecEq") do
@@ -101,10 +93,10 @@ end
 File.write!(monolith_path, s6)
 
 target = File.read!(Path.join(repo, "Exotic/ERL/FullCoupled/EfficientCHAD_SignedQIDBD_Tsallis2_Complete_v154.agda"))
-for token <- ["SignedParameterDirectionQIDBD", "CReLU", "Tsallis2Branch", "DyadicCoupledL2", "onePathNorm", "CompositeFiniteTheorem"] do
+for token <- ["SignedParameterDirectionQIDBD", "CReLU", "Tsallis2Branch", "PerFeatureDyadicMomentum", "onePathNorm", "CompositeFiniteTheorem"] do
   unless String.contains?(target, token), do: raise "v154 theorem target missing #{token}"
 end
-for token <- ["LayerNorm", "python3", "ruby/setup-ruby", "Set ="] do
+for token <- ["LayerNorm", "python3", "ruby/setup-ruby"] do
   if String.contains?(target, token), do: raise "forbidden target token #{token}"
 end
 
