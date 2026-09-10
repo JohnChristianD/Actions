@@ -18,42 +18,33 @@ repairs = [
 
 text = Enum.reduce(repairs, text, fn {old, new}, acc -> String.replace(acc, old, new) end)
 
-text = Regex.replace(
-  ~r/signScalar\s*:\s*∀ \{A : DyadicRing\} → DyadicRing\.R A → DyadicRing\.R A\s*signScalar \{A\} x = .*?(?=\n\n)/s,
+text = Regex.replace(~r/signScalar\s*:\s*∀ \{A : DyadicRing\} → DyadicRing\.R A → DyadicRing\.R A\s*signScalar \{A\} x = .*?(?=\n\n)/s,
   text,
-  "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x"
-)
+  "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x")
 
-text = Regex.replace(
-  ~r/cReLUReconstruct\s*:\s*∀ \{A : DyadicRing\}.*?cReLUReconstruct A0 x = .*?(?=\n\ncReLUMagnitudeProof)/s,
+text = Regex.replace(~r/cReLUReconstruct\s*:\s*∀ \{A : DyadicRing\}.*?cReLUReconstruct A0 x = .*?(?=\n\ncReLUMagnitudeProof)/s,
   text,
-  "cReLUReconstruct : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  cPlus {A} x + DyadicRing.neg A (cMinus {A} x) ≡ x\ncReLUReconstruct {A} x = DyadicRing.cReLULaw A x"
-)
+  "cReLUReconstruct : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  cPlus {A} x + DyadicRing.neg A (cMinus {A} x) ≡ x\ncReLUReconstruct {A} x = DyadicRing.cReLULaw A x")
 
-text = Regex.replace(
-  ~r/cReLUMagnitudeProof\s*:\s*∀ \{A : DyadicRing\}.*?cReLUMagnitudeProof A0 x = .*?(?=\n\n)/s,
+text = Regex.replace(~r/cReLUMagnitudeProof\s*:\s*∀ \{A : DyadicRing\}.*?cReLUMagnitudeProof A0 x = .*?(?=\n\n)/s,
   text,
-  "cReLUMagnitudeProof : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  cPlus {A} x + cMinus {A} x ≡ DyadicRing.abs A x\ncReLUMagnitudeProof {A} x = DyadicRing.cReLUMagnitude A x"
-)
+  "cReLUMagnitudeProof : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  cPlus {A} x + cMinus {A} x ≡ DyadicRing.abs A x\ncReLUMagnitudeProof {A} x = DyadicRing.cReLUMagnitude A x")
 
-text = Regex.replace(
-  ~r/antitheticCancel\s*:\s*∀ \{A : DyadicRing\}.*?antitheticCancel A0 x = .*?(?=\n\nsignQIDBDNormalForm)/s,
+text = Regex.replace(~r/antitheticCancel\s*:\s*∀ \{A : DyadicRing\}.*?antitheticCancel A0 x = .*?(?=\n\nsignQIDBDNormalForm)/s,
   text,
-  "antitheticCancel : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  DyadicRing._+_ A x (DyadicRing.neg A x) ≡ DyadicRing.zero A\nantitheticCancel {A} x = DyadicRing.addNegR A x"
-)
+  "antitheticCancel : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  DyadicRing._+_ A x (DyadicRing.neg A x) ≡ DyadicRing.zero A\nantitheticCancel {A} x = DyadicRing.addNegR A x")
 
-text = Regex.replace(
-  ~r/signQIDBDNormalForm\s*:\s*∀ \{A : DyadicRing\}.*?signQIDBDNormalForm A0 x = .*?(?=\n\ndata DegreeRecurrence)/s,
+text = Regex.replace(~r/signQIDBDNormalForm\s*:\s*∀ \{A : DyadicRing\}.*?signQIDBDNormalForm A0 x = .*?(?=\n\ndata DegreeRecurrence)/s,
   text,
-  "signQIDBDNormalForm : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x\nsignQIDBDNormalForm {A} x = DyadicRing.signIdempotent A x"
-)
+  "signQIDBDNormalForm : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x\nsignQIDBDNormalForm {A} x = DyadicRing.signIdempotent A x")
 
-text = String.replace(text,
-  "parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)",
-  "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)"
-)
+text = Regex.replace(~r/\(A0 : A\) x →/, "(x : DyadicRing.R A) →", text)
+text = Regex.replace(~r/\bDyadicRing\.(cReLULaw|cReLUMagnitude|addNegR|signIdempotent) A0 x/, "DyadicRing.\\1 A x", text)
 text = Regex.replace(~r/signQIDBDDirection \{A\} \(x ∷ xs\) = signScalar \{A\} x ∷ signQIDBDDirection xs/, text,
   "signQIDBDDirection {A} (x ∷ xs) = parameterSign {A} x ∷ signQIDBDDirection xs")
+text = String.replace(text,
+  "parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)",
+  "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)")
 
 text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s, text, "")
 
