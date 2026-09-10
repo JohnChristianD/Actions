@@ -100,12 +100,12 @@ end
 
 File.write!(monolith_path, s6)
 
-target = File.read!(Path.join(repo, "Exotic/ERL/FullCoupled/EfficientCHAD_CReLU_Tsallis2_v150.agda"))
-for token <- ["SignedParameterDirectionQIDBD", "CReLU", "Tsallis2Branch", "DyadicCoupledL2", "onePathNorm", "EfficientCHAD_CReLU_Tsallis2_TheoremTarget"] do
-  unless String.contains?(target, token), do: raise "v150 theorem target missing #{token}"
+target = File.read!(Path.join(repo, "Exotic/ERL/FullCoupled/EfficientCHAD_SignedQIDBD_Tsallis2_Complete_v154.agda"))
+for token <- ["SignedParameterDirectionQIDBD", "CReLU", "Tsallis2Branch", "DyadicCoupledL2", "onePathNorm", "CompositeFiniteTheorem"] do
+  unless String.contains?(target, token), do: raise "v154 theorem target missing #{token}"
 end
-for token <- ["LayerNorm", "python3", "ruby/setup-ruby"] do
+for token <- ["LayerNorm", "python3", "ruby/setup-ruby", "Set ="] do
   if String.contains?(target, token), do: raise "forbidden target token #{token}"
 end
 
-IO.puts("v150 Elixir normalization: PASS")
+IO.puts("v154 Elixir normalization: PASS")
