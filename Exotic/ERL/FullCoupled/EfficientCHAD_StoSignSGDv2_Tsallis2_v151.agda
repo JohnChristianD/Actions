@@ -10,7 +10,7 @@ _≠_ : ∀ {A : Set} → A → A → Set
 x ≠ y = (x ≡ y) → ⊥
 
 ------------------------------------------------------------------------
--- Finite ordered dyadic algebra. No external Agda library is used.
+-- Finite ordered dyadic algebra. No external Agda library is required.
 ------------------------------------------------------------------------
 
 record DyadicRing : Set₁ where
@@ -127,7 +127,7 @@ vSum {A} [] = DyadicRing.zero A
 vSum {A} (x ∷ xs) = x + vSum xs
 
 ------------------------------------------------------------------------
--- Full 1-path norm and its exact one-layer agreement with L1 weight norm.
+-- Exact L1 / 1-path norm theorem.
 ------------------------------------------------------------------------
 
 onePathVector : ∀ {A : DyadicRing} {d L} →
@@ -175,7 +175,7 @@ cReLUReconstruct : ∀ {A : DyadicRing} (x : DyadicRing.R A) →
 cReLUReconstruct x = DyadicRing.cReLULaw _ x
 
 cReLUMagnitude : ∀ {A : DyadicRing} (x : DyadicRing.R A) →
-  cPlus x + cMinus x ≡ DyadicRing.abs A x
+  cPlus x + cMinus x ≡ DyadicRing.abs _ x
 cReLUMagnitude x = DyadicRing.cReLUMagnitude _ x
 
 cReLUForward : ∀ {A : DyadicRing} {n} → Vector A n → Vector A n
@@ -243,7 +243,8 @@ tsallis2Attention : ∀ {A : DyadicRing} {w d} →
 tsallis2Attention r vs = weightedVectorSum (Tsallis2Weights.weights r) vs
 
 ------------------------------------------------------------------------
--- Branchwise degree: d' = 3d for bilinear QK + Tsallis-2 + value product.
+-- Branchwise polynomial degree: affine/CReLU is degree 1; bilinear QK is
+-- 2d; Tsallis weights retain 2d on an active set; p*v gives 3d.
 ------------------------------------------------------------------------
 
 data Degree : Set where
@@ -270,7 +271,7 @@ degreePow3 Nat.zero = refl
 degreePow3 (suc n) = cong (λ q → 3 * q) (degreePow3 n)
 
 ------------------------------------------------------------------------
--- Sign-q-IDBD and per-feature dyadic momentum.
+-- Sign-q-IDBD, dyadic per-feature momentum, and dyadic meta-step.
 ------------------------------------------------------------------------
 
 record DyadicParameters : Set where
@@ -300,8 +301,7 @@ defaultDyadicParameters = record
 parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A
 parameterSign {A} x = DyadicRing.sign A x
 
-signQIDBDDirection : ∀ {A : DyadicRing} {n} →
-  Vector A n → Vector A n
+signQIDBDDirection : ∀ {A : DyadicRing} {n} → Vector A n → Vector A n
 signQIDBDDirection [] = []
 signQIDBDDirection (x ∷ xs) = parameterSign x ∷ signQIDBDDirection xs
 
@@ -310,13 +310,11 @@ signQIDBDIdempotent : ∀ {A : DyadicRing} {x : DyadicRing.R A} →
 signQIDBDIdempotent {A} = DyadicRing.signIdempotent A _
 
 momentumStep : ∀ {A : DyadicRing} →
-  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A →
-  DyadicRing.R A → DyadicRing.R A
+  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 momentumStep beta complement m g = beta * m + complement * g
 
 signMomentumStep : ∀ {A : DyadicRing} →
-  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A →
-  DyadicRing.R A → DyadicRing.R A
+  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 signMomentumStep beta complement m g = parameterSign (momentumStep beta complement m g)
 
 momentumBound : ∀ {A : DyadicRing}
@@ -326,8 +324,8 @@ momentumBound : ∀ {A : DyadicRing}
 momentumBound beta complement m g = DyadicRing.momentumAbsBound _ _ _ _
 
 ------------------------------------------------------------------------
--- Quadratic diagonal Newton comparison: equality requires the reciprocal
--- curvature condition. Sign-q-IDBD does not imply it by quantisation alone.
+-- Quadratic Newton comparison: equality requires an explicit reciprocal
+-- curvature condition; sign quantisation does not create Newton equality.
 ------------------------------------------------------------------------
 
 idbdNewtonCondition : ∀ {A : DyadicRing}
@@ -346,12 +344,10 @@ signQIDBDNewtonCondition h d refl = refl
 ------------------------------------------------------------------------
 
 traceStep : ∀ {A : DyadicRing} →
-  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A →
-  DyadicRing.R A
+  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 traceStep gamma lambda e phi = gamma * lambda * e + phi
 
-cemMax : ∀ {A : DyadicRing} →
-  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
+cemMax : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 cemMax = DyadicRing.max _
 
 cemMaxLeft : ∀ {A : DyadicRing} (x y : DyadicRing.R A) → x ≤ cemMax x y
@@ -380,10 +376,8 @@ record SparseOuterState (A : DyadicRing) (n : Nat) : Set₁ where
     overestimationFinite munchausenFinite : Set
 
 ------------------------------------------------------------------------
--- Final LayerNorm-free semantic surface.
--- L1 and 1-path norms are explicit stability invariants; dyadic coupled L2
--- fixes exact regularisation scales; the forward model is Affine + CReLU +
--- finite-window Tsallis-2 attention; sign is restricted to parameter updates.
--- The branchwise polynomial degree is exactly bounded by 3^L under the stated
--- bilinear-QK composition, independent of the dyadic coefficient choices.
+-- Final finite semantic surface: affine/CReLU representation, fixed-window
+-- Tsallis-2 routing, sign-q-IDBD, exact dyadic coefficients, L1 and 1-path
+-- stability invariants, dyadic coupled L2, trace recursion, actor/critic
+-- outer algebra, and finite emitter/selection composition.
 ------------------------------------------------------------------------
