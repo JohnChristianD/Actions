@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_v154 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _∸_)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Equality using (_≡_; refl; cong)
 
 data ⊥ : Set where
@@ -61,6 +61,12 @@ zipV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipV f xs ys
 zipV3 : ∀ {A B C D n} → (A → B → C → D) → Vec A n → Vec B n → Vec C n → Vec D n
 zipV3 f [] [] [] = []
 zipV3 f (x ∷ xs) (y ∷ ys) (z ∷ zs) = f x y z ∷ zipV3 f xs ys zs
+
+zipV4 : ∀ {A B C D E n} → (A → B → C → D → E) →
+  Vec A n → Vec B n → Vec C n → Vec D n → Vec E n
+zipV4 f [] [] [] [] = []
+zipV4 f (a ∷ as) (b ∷ bs) (c ∷ cs) (d ∷ ds) =
+  f a b c d ∷ zipV4 f as bs cs ds
 
 sumV : ∀ {A n} → (A → A → A) → A → Vec A n → A
 sumV _ z [] = z
@@ -190,10 +196,6 @@ tsallis2MassLaw : ∀ {A : OrderedAlgebra} {w} (s : Tsallis2State A w) →
   tsallis2Mass s ≡ one A
 tsallis2MassLaw s = Tsallis2State.mass s
 
-powR : ∀ {A : OrderedAlgebra} → R A → Nat → R A
-powR {A} x zero = one A
-powR {A} x (suc n) = x * powR x n
-
 hStepReturn : ∀ {A : OrderedAlgebra} {h : Nat} →
   Vector A h → R A → R A → R A
 hStepReturn {A} [] gamma q = q
@@ -242,10 +244,11 @@ featureMomentumStep : ∀ {A : OrderedAlgebra} {n} →
 featureMomentumStep s g = record
   { beta1 = FeatureMomentum.beta1 s
   ; complement = FeatureMomentum.complement s
-  ; state = zipV3 momentumCombine
+  ; state = zipV4 momentumCombine
       (FeatureMomentum.beta1 s)
       (FeatureMomentum.complement s)
-      (zipV (λ m x → m) (FeatureMomentum.state s) g)
+      (FeatureMomentum.state s)
+      g
   }
 
 record SignQIDBDFeatureState (A : OrderedAlgebra) (n : Nat) : Set₁ where
@@ -281,14 +284,17 @@ lionSecondMomentStep s g = record
       g
   }
 
+lionDirectionCombine : ∀ {A : OrderedAlgebra} → R A → R A → R A → R A → R A
+lionDirectionCombine {A} beta complement m g = beta * m + complement * g
+
 lionSignedDirection : ∀ {A : OrderedAlgebra} {n} →
   LionFeatureState A n → Vector A n → Vector A n
 lionSignedDirection s g = mapV (sign A)
-  (zipV3
-    (λ b c x → b * x + c * x)
+  (zipV4 lionDirectionCombine
     (LionFeatureState.beta1 s)
-    (LionFeatureState.complement2 s)
-    (LionFeatureState.directionMomentum s))
+    (mapV (λ x → one A + neg A x) (LionFeatureState.beta1 s))
+    (LionFeatureState.directionMomentum s)
+    g)
 
 record StoSignSGDv2FeatureState (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
