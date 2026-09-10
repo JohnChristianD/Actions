@@ -12,6 +12,7 @@ repairs = [
   {"beta115_128_code", "betaDyadicCode"},
   {"onePathVector : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → Vector A d", "onePathVector : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → Vector A d"},
   {"onePathNorm : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → DyadicRing.R A", "onePathNorm : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → DyadicRing.R A"},
+  {"cReLUPair : ∀ {A : DyadicRing} → DyadicRing.R A →\n  Σ (DyadicRing.R A) (λ _ → DyadicRing.R A)\ncReLUPair {A} x = cPlus {A} x , cMinus {A} x", "record CReLUPair (A : DyadicRing) : Set where\n  constructor mkCReLUPair\n  field\n    pos neg : DyadicRing.R A\n\ncReLUPair : ∀ {A : DyadicRing} → DyadicRing.R A → CReLUPair A\ncReLUPair {A} x = mkCReLUPair (cPlus {A} x) (cMinus {A} x)"},
   {"cReLUPair : ∀ {A : DyadicRing} → DyadicRing.R A →\n  Σ (DyadicRing.R A) (λ _ → DyadicRing.R A)\ncReLUPair {A} x = _,_ (cPlus {A} x) (cMinus {A} x)", "record CReLUPair (A : DyadicRing) : Set where\n  constructor mkCReLUPair\n  field\n    pos neg : DyadicRing.R A\n\ncReLUPair : ∀ {A : DyadicRing} → DyadicRing.R A → CReLUPair A\ncReLUPair {A} x = mkCReLUPair (cPlus {A} x) (cMinus {A} x)"},
   {"cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
   {"cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
@@ -32,7 +33,8 @@ forbidden = [
   "beta1Zero",
   "python3",
   "setup-python",
-  "ruby/setup-ruby"
+  "ruby/setup-ruby",
+  "Σ"
 ]
 
 Enum.each(forbidden, fn token ->
