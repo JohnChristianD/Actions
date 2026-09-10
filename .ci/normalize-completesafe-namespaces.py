@@ -1,7 +1,6 @@
 from pathlib import Path
 import re
 
-# Canonical safe-closure namespace normalizer: deterministic structural compatibility only.
 p = Path('Exotic/ERL/FullCoupled/CompleteSafe_v147.agda')
 s = p.read_text()
 replacements = {
@@ -78,8 +77,6 @@ old_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y 
 new_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
 s = s.replace(old_minus, new_minus)
 
-# Keep record fields distinct from Nat dimension variables and make
-# LayerNorm local arithmetic bindings explicit enough for Agda 2.8.
 s = s.replace('  centered x = x + neg μ', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
 s = s.replace('  normalise x = centered x * invStd', '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
 
@@ -93,20 +90,7 @@ s = s.replace('record LSTMBlock (S : SmoothAlgebra) (input hidden : Nat) : Set w
 s = s.replace('LSTMGates S input hidden', 'LSTMGates S input hiddenDim')
 s = s.replace('record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where', 'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where')
 s = s.replace('VecS S hidden\n', 'VecS S hiddenDim\n')
-
-# Recurrent functions retain their local binder names while using hiddenDim
-# in result types after the record-level rename.
-for old, new in {
-    'recurrentAffine : ∀ {S input hidden} →\n  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden':
-    'recurrentAffine : ∀ {S input hiddenDim} →\n  RecurrentAffine S input hiddenDim → VecS S input → VecS S hiddenDim → VecS S hiddenDim',
-    'sigmoidGate : ∀ {S input hidden} →\n  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden':
-    'sigmoidGate : ∀ {S input hiddenDim} →\n  RecurrentAffine S input hiddenDim → VecS S input → VecS S hiddenDim → VecS S hiddenDim',
-    'tanhGate : ∀ {S input hidden} →\n  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden':
-    'tanhGate : ∀ {S input hiddenDim} →\n  RecurrentAffine S input hiddenDim → VecS S input → VecS S hiddenDim → VecS S hiddenDim',
-    'lstmStep : ∀ {S input hidden} →\n  LSTMBlock S input hidden → LSTMState S hidden → VecS S input → LSTMState S hidden':
-    'lstmStep : ∀ {S input hiddenDim} →\n  LSTMBlock S input hiddenDim → LSTMState S hiddenDim → VecS S input → LSTMState S hiddenDim',
-}.items():
-    s = s.replace(old, new)
+s = s.replace('∀ {S input hidden} →', '∀ {S input hiddenDim} →')
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
@@ -119,4 +103,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-layernorm-local-signatures-recurrent-hiddenDim')
+print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-layernorm-local-signatures-recurrent-hiddenDim-binders')
