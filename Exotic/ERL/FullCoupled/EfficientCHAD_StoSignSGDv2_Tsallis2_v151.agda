@@ -102,14 +102,12 @@ matAbs {A} (r ∷ rs) = mapV (DyadicRing.abs A) r ∷ matAbs {A} rs
 
 matVecAbs : ∀ {A : DyadicRing} {m n} → Matrix A m n → Vector A n → Vector A m
 matVecAbs {A} [] _ = []
-matVecAbs {A} (r ∷ rs) x =
-  vDot {A} (mapV (DyadicRing.abs A) r) x ∷ matVecAbs {A} rs x
+matVecAbs {A} (r ∷ rs) x = vDot {A} (mapV (DyadicRing.abs A) r) x ∷ matVecAbs {A} rs x
 
 vSum : ∀ {A : DyadicRing} {n} → Vector A n → DyadicRing.R A
 vSum {A} [] = DyadicRing.zero A
 vSum {A} (x ∷ xs) = DyadicRing._+_ A x (vSum {A} xs)
 
--- Exact finite 1-path norm: 1^T |W_L| ... |W_1| 1.
 onePathVector : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → Vector A d
 onePathVector {A} [] = ones {A} _
 onePathVector {A} (W ∷ Ws) = matVecAbs W (onePathVector {A} Ws)
@@ -205,7 +203,7 @@ defaultDyadicParameters = record
 record SignQIDBDState (A : DyadicRing) (n : Nat) : Set₁ where
   field
     parameter trace metaBeta rawDirection signedDirection momentum : Vector A n
-    parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar (index rawDirection i)
+    parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)
     hyperparameters : DyadicParameters
 
 signQIDBDDirection : ∀ {A : DyadicRing} {n} → Vector A n → Vector A n
@@ -245,8 +243,6 @@ degreeOf : DegreeRecurrence → Nat
 degreeOf affineDegree = 1
 degreeOf (attentionDegree r) = 3 * degreeOf r
 
--- Finite dyadic momentum is an affine recurrence.  beta1 = 115/128,
--- complement = 13/128, and the meta-step code is 1/128.
 momentumStep : ∀ {A : DyadicRing} →
   DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 momentumStep {A} beta complement m g =
@@ -255,17 +251,13 @@ momentumStep {A} beta complement m g =
 beta115_128_code : DyadicParameters
 beta115_128_code = defaultDyadicParameters
 
--- No universal non-chattering theorem is asserted: arbitrary exact signed
--- directions can alternate. The safe target instead proves finite sign
--- normal forms, active-set equations, norm recursion, and invariant closure.
-
 ------------------------------------------------------------------------
 -- Finite emergent composition target.
--- LayerNorm/BatchNorm/BatchRenorm are deliberately absent.
+-- No layer normalization or batch normalization is present.
 -- Affine + CReLU is the representation family. Sign is applied only after
 -- q-style projection on the parameter direction: sign-q-IDBD.
 -- beta1 = 115/128, complement = 13/128, meta-step = 1/128.
--- Bilinear QK scoring gives degree 2d; Tsallis-2 preserves this score degree
+-- Bilinear QK scoring gives degree 2d; Tsallis-2 preserves that score degree
 -- on a fixed active set; multiplying by values gives degree 3d. Starting from
 -- affine degree 1 gives the recurrence d(0)=1, d(L+1)=3*d(L).
 -- L1 weight norm and exact finite 1-path norm constrain coefficient/path mass.

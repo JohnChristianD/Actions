@@ -10,8 +10,8 @@ repairs = [
   {"∀ {A} (A0 : DyadicRing A)", "∀ {A : DyadicRing} (A0 : A)"}
 ]
 
-Enum.each(repairs, fn {old, new} ->
-  text = String.replace(text, old, new)
+text = Enum.reduce(repairs, text, fn {old, new}, acc ->
+  String.replace(acc, old, new)
 end)
 
 forbidden = [
