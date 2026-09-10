@@ -49,8 +49,8 @@ hardAttention h values = index values (HardAttention.selected h)
 onePathNorm : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
 onePathNorm {A} [] = rzero A
 onePathNorm {A} (x ∷ xs) =
-  let open OrderedAlgebra A
-  in absolute x r+ onePathNorm xs
+  let module OA = OrderedAlgebra A
+  in OA.absolute x r+ onePathNorm xs
 record OnePathNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
     pathBound : R A
