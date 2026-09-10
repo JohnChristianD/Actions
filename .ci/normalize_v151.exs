@@ -8,7 +8,9 @@ repairs = [
   {"∀ {A w} (A0 : DyadicRing A)", "∀ {A : DyadicRing} {w} (A0 : A)"},
   {"∀ {A n} (A0 : DyadicRing A)", "∀ {A : DyadicRing} {n} (A0 : A)"},
   {"∀ {A} (A0 : DyadicRing A)", "∀ {A : DyadicRing} (A0 : A)"},
-  {"beta115_128_code", "betaDyadicCode"}
+  {"beta115_128_code", "betaDyadicCode"},
+  {"onePathVector : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → Vector A d", "onePathVector : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → Vector A d"},
+  {"onePathNorm : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → DyadicRing.R A", "onePathNorm : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → DyadicRing.R A"}
 ]
 
 text = Enum.reduce(repairs, text, fn {old, new}, acc ->
