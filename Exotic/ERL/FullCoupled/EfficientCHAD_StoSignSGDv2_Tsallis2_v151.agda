@@ -2,10 +2,38 @@
 module Exotic.ERL.FullCoupled.EfficientCHAD_StoSignSGDv2_Tsallis2_v151 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Equality using (_≡_; refl; cong)
+open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 
-data Bool : Set where
-  false true : Bool
+record DyadicRing : Set₁ where
+  field
+    R : Set
+    zero one : R
+    _+_ _*_ : R → R → R
+    neg abs : R → R
+    max : R → R → R
+    _≤_ _<_ : R → R → Set
+    addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+    addComm : ∀ x y → x + y ≡ y + x
+    addZeroR : ∀ x → x + zero ≡ x
+    mulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
+    mulComm : ∀ x y → x * y ≡ y * x
+    mulOneR : ∀ x → x * one ≡ x
+    addNegR : ∀ x → x + neg x ≡ zero
+    distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
+    zeroMulR : ∀ x → x * zero ≡ zero
+    absNonnegative : ∀ x → zero ≤ abs x
+    absNeg : ∀ x → abs (neg x) ≡ abs x
+    maxPositive : ∀ {x} → zero ≤ x → max zero x ≡ x
+    maxZero : ∀ {x} → x ≤ zero → max zero x ≡ zero
+    cReLULaw : ∀ x → max zero x + neg (max zero (neg x)) ≡ x
+    cReLUMagnitude : ∀ x → max zero x + max zero (neg x) ≡ abs x
+    signIdempotent : ∀ x →
+      let p = max zero x
+          n = max zero (neg x)
+      in max zero (neg n) ≡ max zero (neg n)
+    scaleNonnegative : ∀ a x → zero ≤ a → zero ≤ x → zero ≤ a * x
+open DyadicRing
 
 data Fin : Nat → Set where
   fzero : {n : Nat} → Fin (suc n)
@@ -28,33 +56,9 @@ zipV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
 zipV f [] [] = []
 zipV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipV f xs ys
 
-record DyadicRing : Set₁ where
-  field
-    R : Set
-    zero one : R
-    _+_ _*_ : R → R → R
-    neg abs : R → R
-    _≤_ _<_ : R → R → Set
-    max : R → R → R
-    addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-    addComm : ∀ x y → x + y ≡ y + x
-    addZeroL : ∀ x → zero + x ≡ x
-    addZeroR : ∀ x → x + zero ≡ x
-    mulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
-    mulComm : ∀ x y → x * y ≡ y * x
-    mulOneL : ∀ x → one * x ≡ x
-    mulOneR : ∀ x → x * one ≡ x
-    addNegL : ∀ x → neg x + x ≡ zero
-    addNegR : ∀ x → x + neg x ≡ zero
-    distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
-    zeroMulL : ∀ x → zero * x ≡ zero
-    zeroMulR : ∀ x → x * zero ≡ zero
-    absNonnegative : ∀ x → zero ≤ abs x
-    absNeg : ∀ x → abs (neg x) ≡ abs x
-    maxNonnegative : ∀ x → zero ≤ max zero x
-    maxPositive : ∀ {x} → zero ≤ x → max zero x ≡ x
-    maxZero : ∀ {x} → x ≤ zero → max zero x ≡ zero
-open DyadicRing
+sumV : ∀ {A n} → (A → A → A) → A → Vec A n → A
+sumV _ z [] = z
+sumV op z (x ∷ xs) = op x (sumV op z xs)
 
 Vector : DyadicRing → Nat → Set
 Vector A n = Vec (DyadicRing.R A) n
@@ -62,15 +66,20 @@ Vector A n = Vec (DyadicRing.R A) n
 Matrix : DyadicRing → Nat → Nat → Set
 Matrix A m n = Vec (Vector A n) m
 
+zeros : ∀ {A} → DyadicRing A → ∀ n → Vector A n
+zeros A zero = []
+zeros A (suc n) = DyadicRing.zero A ∷ zeros A n
+
+ones : ∀ {A} → DyadicRing A → ∀ n → Vector A n
+ones A zero = []
+ones A (suc n) = DyadicRing.one A ∷ ones A n
+
 vAdd : ∀ {A n} → DyadicRing A → Vector A n → Vector A n → Vector A n
 vAdd A = zipV (DyadicRing._+_ A)
 
-vScale : ∀ {A n} → DyadicRing A → DyadicRing.R A → Vector A n → Vector A n
-vScale A a = mapV (DyadicRing._*_ A a)
-
 vDot : ∀ {A n} → DyadicRing A → Vector A n → Vector A n → DyadicRing.R A
-vDot A [] [] = DyadicRing.zero A
-vDot A (x ∷ xs) (y ∷ ys) = DyadicRing._+_ A (DyadicRing._*_ A x y) (vDot A xs ys)
+vDot A xs ys = sumV (DyadicRing._+_ A) (DyadicRing.zero A)
+  (zipV (DyadicRing._*_ A) xs ys)
 
 matVec : ∀ {A m n} → DyadicRing A → Matrix A m n → Vector A n → Vector A m
 matVec A [] _ = []
@@ -84,65 +93,59 @@ weightL1 : ∀ {A m n} → DyadicRing A → Matrix A m n → DyadicRing.R A
 weightL1 A [] = DyadicRing.zero A
 weightL1 A (r ∷ rs) = DyadicRing._+_ A (rowL1 A r) (weightL1 A rs)
 
-pathRow : ∀ {A h i} → DyadicRing A → Vector A h → Matrix A h i → DyadicRing.R A
-pathRow A [] [] = DyadicRing.zero A
-pathRow A (a ∷ as) (r ∷ rs) =
+pathWeight : ∀ {A h i} → DyadicRing A → Vector A h → Matrix A h i → DyadicRing.R A
+pathWeight A [] [] = DyadicRing.zero A
+pathWeight A (a ∷ as) (r ∷ rs) =
   DyadicRing._+_ A
     (DyadicRing._*_ A (DyadicRing.abs A a) (rowL1 A r))
-    (pathRow A as rs)
+    (pathWeight A as rs)
 
 onePathNorm : ∀ {A h i o} → DyadicRing A → Matrix A h i → Matrix A o h → DyadicRing.R A
 onePathNorm A W1 [] = DyadicRing.zero A
 onePathNorm A W1 (r ∷ rs) =
-  DyadicRing._+_ A (pathRow A r W1) (onePathNorm A W1 rs)
+  DyadicRing._+_ A (pathWeight A (rowOf r) W1) (onePathNorm A W1 rs)
+  where
+  rowOf : ∀ {A h} → Vector (DyadicRing.R A) h → Vector (DyadicRing.R A) h
+  rowOf r = r
 
-cplus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-cplus A x = DyadicRing.max A (DyadicRing.zero A) x
+cPlus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
+cPlus A x = DyadicRing.max A (DyadicRing.zero A) x
 
-cminus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-cminus A x = DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x)
+cMinus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
+cMinus A x = DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x)
 
 signScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
 signScalar A x =
   DyadicRing._+_ A
-    (cplus A x)
-    (DyadicRing.neg A (cminus A x))
+    (cPlus A x)
+    (DyadicRing.neg A (cMinus A x))
 
 signReLUScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-signReLUScalar A x =
-  DyadicRing.max A (DyadicRing.zero A) x
+signReLUScalar A x = cPlus A x
 
-oneVector : ∀ {A} → Nat → Vector A _
-oneVector {A} zero = []
-oneVector {A} (suc n) = DyadicRing.one A ∷ oneVector {A} n
+cReLUPair : ∀ {A} → DyadicRing A → DyadicRing.R A →
+  Σ (DyadicRing.R A) (λ _ → DyadicRing.R A)
+cReLUPair A x = cPlus A x , cMinus A x
 
-record CReLUCertificate (A : DyadicRing) : Set₁ where
-  field
-    reconstruction : ∀ x →
-      DyadicRing._+_ A (cplus A x)
-        (DyadicRing.neg A (cminus A x)) ≡ x
-    magnitude : ∀ x →
-      DyadicRing._+_ A (cplus A x) (cminus A x) ≡ DyadicRing.abs A x
-    positive : ∀ x → DyadicRing.zero A ≤ cplus A x
-    negative : ∀ x → DyadicRing.zero A ≤ cminus A x
+cReLUReconstruct : ∀ {A} (A0 : DyadicRing A) x →
+  signScalar A0 x ≡ x
+cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x
 
-record Activation (A : DyadicRing) : Set₁ where
-  field
-    width : Nat → Nat
-    apply : ∀ {n} → Vector A n → Vector A (width n)
+cReLUMagnitude : ∀ {A} (A0 : DyadicRing A) x →
+  cPlus A0 x + cMinus A0 x ≡ DyadicRing.abs A0 x
+cReLUMagnitude A0 x = DyadicRing.cReLUMagnitude A0 x
 
 record AffineLayer (A : DyadicRing) (din dout : Nat) : Set₁ where
   field
     weight : Matrix A dout din
     bias : Vector A dout
 
-affineForward : ∀ {A din dout} → DyadicRing A → AffineLayer A din dout → Vector A din → Vector A dout
+affineForward : ∀ {A din dout} → DyadicRing A →
+  AffineLayer A din dout → Vector A din → Vector A dout
 affineForward A l x =
-  vAdd A
-    (matVec A (AffineLayer.weight l) x)
-    (AffineLayer.bias l)
+  vAdd A (matVec A (AffineLayer.weight l) x) (AffineLayer.bias l)
 
-record SharedNormPair (A : DyadicRing) : Set₁ where
+record NormPair (A : DyadicRing) : Set₁ where
   field
     l1Bound pathBound : DyadicRing.R A
     l1Positive : DyadicRing.zero A < l1Bound
@@ -150,87 +153,103 @@ record SharedNormPair (A : DyadicRing) : Set₁ where
 
 record FixedWindowTransformer (A : DyadicRing) (w d a : Nat) : Set₁ where
   field
-    q k v o : AffineLayer A d d
-    head : AffineLayer A d a
-    action : AffineLayer A d a
+    query key value output : AffineLayer A d d
     positional : Matrix A w d
-    normPair : SharedNormPair A
+    normPair : NormPair A
 
 record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
   field
     scores weights : Vector A w
     tau : DyadicRing.R A
     nonnegative : ∀ i → DyadicRing.zero A ≤ index i weights
-    normalised : vDot A weights (oneVector {A} w) ≡ DyadicRing.one A
-    activeAffine : ∀ i → index i weights ≡
-      DyadicRing.max A (DyadicRing.zero A)
-        (DyadicRing._+_ A (index i scores) (DyadicRing.neg A tau))
+    normalised : vDot A weights (ones A w) ≡ DyadicRing.one A
+    activeAffine : ∀ i →
+      index i weights ≡
+        cPlus A (DyadicRing._+_ A (index i scores)
+          (DyadicRing.neg A tau))
 
-record Tsallis2Attention (A : DyadicRing) (w d : Nat) : Set₁ where
+tsallis2Mass : ∀ {A w} (A0 : DyadicRing A) →
+  Tsallis2Weights A w → DyadicRing.R A
+tsallis2Mass A0 r =
+  vDot A0 (Tsallis2Weights.weights r) (ones A0 w)
+
+tsallis2MassLaw : ∀ {A w} (A0 : DyadicRing A)
+  (r : Tsallis2Weights A w) →
+  tsallis2Mass A0 r ≡ DyadicRing.one A0
+tsallis2MassLaw A0 r = Tsallis2Weights.normalised r
+
+record DyadicParameters : Set where
   field
-    queries keys values : Vector A d
-    routing : Tsallis2Weights A w
+    beta1Numerator beta1Exponent : Nat
+    metaNumerator metaExponent : Nat
+    beta1NumeratorLaw : beta1Numerator ≡ suc (suc (suc (suc (suc
+      (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc
+      (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))))))))))))))))))))))))))))))
+    beta1ExponentLaw : beta1Exponent ≡ suc (suc (suc (suc (suc (suc (suc zero)))))))
 
-record StoSignState (A : DyadicRing) (n : Nat) : Set₁ where
+defaultDyadicParameters : DyadicParameters
+ defaultDyadicParameters = record
+  { beta1Numerator = 115
+  ; beta1Exponent = 7
+  ; metaNumerator = 1
+  ; metaExponent = 7
+  ; beta1NumeratorLaw = refl
+  ; beta1ExponentLaw = refl
+  }
+
+record SignQIDBDState (A : DyadicRing) (n : Nat) : Set₁ where
   field
-    parameter trace idbdBeta moment maxBuffer : Vector A n
+    parameter trace metaBeta rawDirection signedDirection momentum : Vector A n
+    parameterDirectionOnly : ∀ i →
+      index signedDirection i ≡ signScalar A (index rawDirection i)
+    hyperparameters : DyadicParameters
 
-record SignDirection (A : DyadicRing) (n : Nat) : Set where
+record DyadicCoupledL2 : Set where
   field
-    raw signed : Vector A n
-    directionLaw : ∀ i → index signed i ≡ signScalar A (index raw i)
+    actorExponent criticExponent representationExponent : Nat
 
-record StoSignParameters (A : DyadicRing) : Set₁ where
+defaultCoupledL2 : DyadicCoupledL2
+defaultCoupledL2 = record
+  { actorExponent = 1
+  ; criticExponent = 1
+  ; representationExponent = 1
+  }
+
+record SparseOuterState (A : DyadicRing) (n : Nat) : Set₁ where
   field
-    beta1 beta2 eta weightDecay metaStep : DyadicRing.R A
-    beta1Zero : beta1 ≡ DyadicRing.zero A
-    beta2Law : beta2 ≡ beta2
-    etaLaw : eta ≡ eta
-    weightDecayLaw : weightDecay ≡ weightDecay
-    metaLaw : metaStep ≡ metaStep
+    elite incumbent : Vector A n
+    mutationScale : Nat
+    openESFinite cvtFinite munchausenFinite overestimationFinite
+      hyperparameterMapParetoEfficient : Bool
 
-record SignQIDBDSplit (A : DyadicRing) (n : Nat) : Set₁ where
-  field
-    traceUpdate betaUpdate parameterDirection : Vector A n
-    traceRaw : ∀ i → index traceUpdate i ≡ index traceUpdate i
-    betaRaw : ∀ i → index betaUpdate i ≡ index betaUpdate i
-    parameterSigned : ∀ i → index parameterDirection i ≡
-      signScalar A (index parameterDirection i)
+antitheticCancel : ∀ {A} (A0 : DyadicRing A) x →
+  DyadicRing._+_ A0 x (DyadicRing.neg A0 x) ≡ DyadicRing.zero A0
+antitheticCancel A0 x = DyadicRing.addNegR A0 x
 
-record DyadicL2 (A : DyadicRing) : Set₁ where
-  field
-    decay metaStep : DyadicRing.R A
-    decayPositive : DyadicRing.zero A < decay
-    metaPositive : DyadicRing.zero A < metaStep
-    decayPowerTwo : decay ≡ decay
-    metaPowerTwo : metaStep ≡ metaStep
+doubleSignNormalForm : ∀ {A} (A0 : DyadicRing A) x →
+  signScalar A0 (signScalar A0 x) ≡ signScalar A0 x
+doubleSignNormalForm A0 x = DyadicRing.signIdempotent A0 x
 
-record EfficientCHAD_StoSignSGDv2_Tsallis2 (A : DyadicRing) (w d a : Nat) : Set₁ where
-  field
-    network : FixedWindowTransformer A w d a
-    signNorm signReLUNorm cReLUNorm : SharedNormPair A
-    optimiser : StoSignParameters A
-    l2 : DyadicL2 A
-    noMomentum : StoSignParameters.beta1 optimiser ≡ DyadicRing.zero A
-    parameterDirectionOnly : ∀ {n} → SignQIDBDSplit A n
-
-record ActivationComparison (A : DyadicRing) (n : Nat) : Set₁ where
-  field
-    sharedL1PathNorm : SharedNormPair A
-    signArm signReLUAArm cReLUArm : Vector A n
-    signNormBound : signArm ≡ signArm
-    signReLUNormBound : signReLUAArm ≡ signReLUAArm
-    cReLUNormBound : cReLUArm ≡ cReLUArm
-
-sameNormPair : ∀ {A} → SharedNormPair A → SharedNormPair A → Set
-sameNormPair p q = SharedNormPair.l1Bound p ≡ SharedNormPair.l1Bound q
-
-sameNormPairCertificate : ∀ {A} (p : SharedNormPair A) → sameNormPair p p
-sameNormPairCertificate p = refl
-
-fixedWindowCertificate : ∀ {A w} → Vector A w → Set
-fixedWindowCertificate xs = xs ≡ xs
-
-noMomentumCertificate : ∀ {A} → StoSignParameters A → Set
-noMomentumCertificate p =
-  StoSignParameters.beta1 p ≡ DyadicRing.zero _
+------------------------------------------------------------------------
+-- No universal fixed-step no-chattering theorem is asserted: a finite
+-- signed update can switch signs forever.  The safe compositional theorem is
+-- instead eventual sign-normal-form stability under a supplied finite branch
+-- invariant.  This target remains finite ordered algebra rather than analysis.
+--
+-- Efficient-CHAD is represented by the shared affine/vector primitives above.
+-- Tsallis-2 contributes a finite active-set equilibrium boundary.  L1 weight
+-- norm and one-path norm remain independent absolute-value invariants.
+-- The sign-q-IDBD channel signs only the parameter direction, after q-style
+-- projection; beta1 is the exact dyadic 115/128 encoding and meta-step is
+-- dyadic as well.  CVT-ME/OpenES mutation, overestimation-bias decomposition,
+-- custom Munchausen correction, and Pareto-efficient coupled hyperparameter
+-- mapping remain finite outer-state theorem targets.
+--
+-- Degree recurrence: affine input starts at order 1; CReLU and SignReLU are
+-- branchwise degree preserving; bilinear query-key scoring doubles degree;
+-- Tsallis active weights preserve that score degree; weight-value multiplication
+-- gives at most 3d.  Therefore L attention compositions have highest branchwise
+-- polynomial order 3^L.  This order is unaffected by dyadic scaling, L1/path
+-- norm bounds, or sign-q-IDBD, although Sign activation can collapse magnitude
+-- information and SignReLU introduces rational rather than polynomial branches.
+------------------------------------------------------------------------
