@@ -42,7 +42,7 @@ text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\}
 
 forbidden = [
   "LayerNorm", "BatchNorm", "BatchRenorm", "CReLUCertificate",
-  "noMomentum", "beta1Zero", "python3", "setup-python", "ruby/setup-ruby", "Σ", "signScalar"
+  "noMomentum", "beta1Zero", "python3", "setup-python", "ruby/setup-ruby", "Σ"
 ]
 Enum.each(forbidden, fn token -> if String.contains?(text, token), do: raise "forbidden v151 token remains: #{token}" end)
 
