@@ -64,11 +64,6 @@ else
   s4
 end
 
-legacy_acc =
-  "  accumulate : Fin n → R → EState → EState\n" <>
-  "  accumulate i c (state s) = state (λ j with finDecEq j i\n" <>
-  "    ... | yes _ = s j + c\n" <>
-  "    ... | no _ = s j)\n"
 canonical_acc =
   "  accumulateAt : Fin n → R → EState → Fin n → R\n" <>
   "  accumulateAt i c (state s) j with finDecEq j i\n" <>
@@ -76,16 +71,14 @@ canonical_acc =
   "  ... | no _ = s j\n\n" <>
   "  accumulate : Fin n → R → EState → EState\n" <>
   "  accumulate i c s = state (accumulateAt i c s)\n"
-s6 = if String.contains?(s5, legacy_acc) do
-  String.replace(s5, legacy_acc, canonical_acc, global: false)
-else
-  s5
-end
 
-unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1, do: raise "SmoothAlgebra record count is not one after normalization"
+legacy_acc_re = ~r/  accumulate : Fin n → R → EState → EState\r?\n  accumulate i c \(state s\) = state \(λ j with finDecEq j i\r?\n    \.\.\. \| yes _ = s j \+ c\r?\n    \.\.\. \| no _ = s j\)\r?\n/m
+s6 = Regex.replace(s5, legacy_acc_re, canonical_acc)
+
 if String.contains?(s6, "λ j with finDecEq") do
   raise "dependent lambda-with parser form survived"
 end
+unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1, do: raise "SmoothAlgebra record count is not one after normalization"
 if String.contains?(s6, "-- AUDITED-KKT-OBLIGATION") do
   raise "audited KKT placeholder survived"
 end
