@@ -2,7 +2,13 @@
 module Exotic.ERL.FullCoupled.SignQIDBDComposed_v153 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Builtin.Equality using (_≡_; refl; cong; trans)
+open import Agda.Builtin.Equality using (_≡_; refl)
+
+congLocal : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+congLocal f refl = refl
+
+transLocal : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+transLocal refl q = q
 
 record OrderedAlgebra : Set₁ where
   field
@@ -125,7 +131,7 @@ featureMomentum mu previous q = (mu r* previous) r+ q
 featureMomentumZero : ∀ {A : OrderedAlgebra} (previous q : R A) →
   featureMomentum (rzero A) previous q ≡ q
 featureMomentumZero previous q =
-  trans (cong (λ x → x r+ q) (mulZeroL A previous)) (addZeroR A q)
+  transLocal (congLocal (λ x → x r+ q) (mulZeroL A previous)) (addZeroR A q)
 
 signQIDBDStep : ∀ {A : OrderedAlgebra}
   (S : IDBDSpec A) → R A → R A → R A → R A → R A → R A
