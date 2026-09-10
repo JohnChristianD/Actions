@@ -1,6 +1,19 @@
 path = "Exotic/ERL/FullCoupled/EfficientCHAD_StoSignSGDv2_Tsallis2_v151.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
+repairs = [
+  {"∀ {A n} → DyadicRing A →", "∀ {A : DyadicRing} {n} →"},
+  {"∀ {A m n} → DyadicRing A →", "∀ {A : DyadicRing} {m n} →"},
+  {"∀ {A} → DyadicRing A →", "∀ {A : DyadicRing} →"},
+  {"∀ {A w} (A0 : DyadicRing A)", "∀ {A : DyadicRing} {w} (A0 : A)"},
+  {"∀ {A n} (A0 : DyadicRing A)", "∀ {A : DyadicRing} {n} (A0 : A)"},
+  {"∀ {A} (A0 : DyadicRing A)", "∀ {A : DyadicRing} (A0 : A)"}
+]
+
+Enum.each(repairs, fn {old, new} ->
+  text = String.replace(text, old, new)
+end)
+
 forbidden = [
   "LayerNorm",
   "BatchNorm",
@@ -9,6 +22,8 @@ forbidden = [
   "noMomentum",
   "beta1Zero",
   "python3",
+  "setup-python",
+  "ruby/setup-ruby"
 ]
 
 Enum.each(forbidden, fn token ->
@@ -28,7 +43,7 @@ required = [
   "Munchausen",
   "overestimation",
   "CVT",
-  "OpenES",
+  "OpenES"
 ]
 
 Enum.each(required, fn token ->

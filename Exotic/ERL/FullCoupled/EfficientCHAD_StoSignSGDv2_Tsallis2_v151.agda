@@ -35,6 +35,7 @@ record DyadicRing : Set₁ where
       let p = max zero x
           n = max zero (neg x)
       in max zero (neg n) ≡ max zero (neg n)
+
 open DyadicRing
 
 data Fin : Nat → Set where
@@ -68,59 +69,77 @@ Vector A n = Vec (DyadicRing.R A) n
 Matrix : DyadicRing → Nat → Nat → Set
 Matrix A m n = Vec (Vector A n) m
 
-zeros : ∀ {A} → DyadicRing A → ∀ n → Vector A n
-zeros A Nat.zero = []
-zeros A (suc n) = DyadicRing.zero A ∷ zeros A n
+zeros : ∀ {A : DyadicRing} → ∀ n → Vector A n
+zeros {A} Nat.zero = []
+zeros {A} (suc n) = DyadicRing.zero A ∷ zeros {A} n
 
-ones : ∀ {A} → DyadicRing A → ∀ n → Vector A n
-ones A Nat.zero = []
-ones A (suc n) = DyadicRing.one A ∷ ones A n
+ones : ∀ {A : DyadicRing} → ∀ n → Vector A n
+ones {A} Nat.zero = []
+ones {A} (suc n) = DyadicRing.one A ∷ ones {A} n
 
-vAdd : ∀ {A n} → DyadicRing A → Vector A n → Vector A n → Vector A n
-vAdd A = zipV (DyadicRing._+_ A)
+vAdd : ∀ {A : DyadicRing} {n} → Vector A n → Vector A n → Vector A n
+vAdd {A} = zipV (DyadicRing._+_ A)
 
-vDot : ∀ {A n} → DyadicRing A → Vector A n → Vector A n → DyadicRing.R A
-vDot A xs ys = sumV (DyadicRing._+_ A) (DyadicRing.zero A)
+vDot : ∀ {A : DyadicRing} {n} → Vector A n → Vector A n → DyadicRing.R A
+vDot {A} xs ys = sumV (DyadicRing._+_ A) (DyadicRing.zero A)
   (zipV (DyadicRing._*_ A) xs ys)
 
-matVec : ∀ {A m n} → DyadicRing A → Matrix A m n → Vector A n → Vector A m
-matVec A [] _ = []
-matVec A (r ∷ rs) x = vDot A r x ∷ matVec A rs x
+matVec : ∀ {A : DyadicRing} {m n} → Matrix A m n → Vector A n → Vector A m
+matVec {A} [] _ = []
+matVec {A} (r ∷ rs) x = vDot r x ∷ matVec rs x
 
-rowL1 : ∀ {A n} → DyadicRing A → Vector A n → DyadicRing.R A
-rowL1 A [] = DyadicRing.zero A
-rowL1 A (x ∷ xs) = DyadicRing._+_ A (DyadicRing.abs A x) (rowL1 A xs)
+rowL1 : ∀ {A : DyadicRing} {n} → Vector A n → DyadicRing.R A
+rowL1 {A} [] = DyadicRing.zero A
+rowL1 {A} (x ∷ xs) = DyadicRing._+_ A (DyadicRing.abs A x) (rowL1 {A} xs)
 
-weightL1 : ∀ {A m n} → DyadicRing A → Matrix A m n → DyadicRing.R A
-weightL1 A [] = DyadicRing.zero A
-weightL1 A (r ∷ rs) = DyadicRing._+_ A (rowL1 A r) (weightL1 A rs)
+weightL1 : ∀ {A : DyadicRing} {m n} → Matrix A m n → DyadicRing.R A
+weightL1 {A} [] = DyadicRing.zero A
+weightL1 {A} (r ∷ rs) = DyadicRing._+_ A (rowL1 {A} r) (weightL1 {A} rs)
 
-onePathNorm : ∀ {A m n} → DyadicRing A → Matrix A m n → DyadicRing.R A
-onePathNorm A [] = DyadicRing.zero A
-onePathNorm A (r ∷ rs) = DyadicRing._+_ A (rowL1 A r) (onePathNorm A rs)
+matAbs : ∀ {A : DyadicRing} {m n} → Matrix A m n → Matrix A m n
+matAbs {A} [] = []
+matAbs {A} (r ∷ rs) = mapV (DyadicRing.abs A) r ∷ matAbs {A} rs
 
-cPlus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-cPlus A x = DyadicRing.max A (DyadicRing.zero A) x
+matVecAbs : ∀ {A : DyadicRing} {m n} → Matrix A m n → Vector A n → Vector A m
+matVecAbs {A} [] _ = []
+matVecAbs {A} (r ∷ rs) x =
+  vDot {A} (mapV (DyadicRing.abs A) r) x ∷ matVecAbs {A} rs x
 
-cMinus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-cMinus A x = DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x)
+vSum : ∀ {A : DyadicRing} {n} → Vector A n → DyadicRing.R A
+vSum {A} [] = DyadicRing.zero A
+vSum {A} (x ∷ xs) = DyadicRing._+_ A x (vSum {A} xs)
 
-signScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-signScalar A x = cPlus A x + DyadicRing.neg A (cMinus A x)
+-- Exact finite 1-path norm: 1^T |W_L| ... |W_1| 1.
+onePathVector : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → Vector A d
+onePathVector {A} [] = ones {A} _
+onePathVector {A} (W ∷ Ws) = matVecAbs W (onePathVector {A} Ws)
 
-signReLUScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-signReLUScalar A x = cPlus A x
+onePathNorm : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → DyadicRing.R A
+onePathNorm {A} Ws = vSum (onePathVector {A} Ws)
 
-cReLUPair : ∀ {A} → DyadicRing A → DyadicRing.R A →
+onePathDepthStep : ∀ {A : DyadicRing} {d L}
+  (W : Matrix A d d) (Ws : Vec (Matrix A d d) L) →
+  onePathVector {A} (W ∷ Ws) ≡ matVecAbs W (onePathVector {A} Ws)
+onePathDepthStep W Ws = refl
+
+cPlus : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A
+cPlus {A} x = DyadicRing.max A (DyadicRing.zero A) x
+
+cMinus : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A
+cMinus {A} x = DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x)
+
+signScalar : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A
+signScalar {A} x = cPlus {A} x + DyadicRing.neg A (cMinus {A} x)
+
+cReLUPair : ∀ {A : DyadicRing} → DyadicRing.R A →
   Σ (DyadicRing.R A) (λ _ → DyadicRing.R A)
-cReLUPair A x = cPlus A x , cMinus A x
+cReLUPair {A} x = cPlus {A} x , cMinus {A} x
 
-cReLUReconstruct : ∀ {A} (A0 : DyadicRing A) x →
-  signScalar A0 x ≡ x
+cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x → signScalar {A} x ≡ x
 cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x
 
-cReLUMagnitudeProof : ∀ {A} (A0 : DyadicRing A) x →
-  cPlus A0 x + cMinus A0 x ≡ DyadicRing.abs A0 x
+cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) x →
+  cPlus {A} x + cMinus {A} x ≡ DyadicRing.abs A0 x
 cReLUMagnitudeProof A0 x = DyadicRing.cReLUMagnitude A0 x
 
 record AffineLayer (A : DyadicRing) (din dout : Nat) : Set₁ where
@@ -128,10 +147,8 @@ record AffineLayer (A : DyadicRing) (din dout : Nat) : Set₁ where
     weight : Matrix A dout din
     bias : Vector A dout
 
-affineForward : ∀ {A din dout} → DyadicRing A →
-  AffineLayer A din dout → Vector A din → Vector A dout
-affineForward A l x =
-  vAdd A (matVec A (AffineLayer.weight l) x) (AffineLayer.bias l)
+affineForward : ∀ {A : DyadicRing} {din dout} → AffineLayer A din dout → Vector A din → Vector A dout
+affineForward {A} l x = vAdd (matVec (AffineLayer.weight l) x) (AffineLayer.bias l)
 
 record NormPair (A : DyadicRing) : Set₁ where
   field
@@ -150,20 +167,15 @@ record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
     scores weights : Vector A w
     tau : DyadicRing.R A
     nonnegative : ∀ i → DyadicRing.zero A ≤ index i weights
-    normalised : vDot A weights (ones A w) ≡ DyadicRing.one A
-    activeAffine : ∀ i →
-      index i weights ≡ cPlus A
-        (index i scores + DyadicRing.neg A tau)
+    normalised : vDot weights (ones {A} w) ≡ DyadicRing.one A
+    activeAffine : ∀ i → index i weights ≡ cPlus {A} (index i scores + DyadicRing.neg A tau)
 
-tsallis2Mass : ∀ {A w} (A0 : DyadicRing A) →
-  Tsallis2Weights A w → DyadicRing.R A
-tsallis2Mass A0 r =
-  vDot A0 (Tsallis2Weights.weights r) (ones A0 _)
+tsallis2Mass : ∀ {A : DyadicRing} {w} → Tsallis2Weights A w → DyadicRing.R A
+tsallis2Mass {A} r = vDot (Tsallis2Weights.weights r) (ones {A} _)
 
-tsallis2MassLaw : ∀ {A w} (A0 : DyadicRing A)
-  (r : Tsallis2Weights A w) →
-  tsallis2Mass A0 r ≡ DyadicRing.one A0
-tsallis2MassLaw A0 r = Tsallis2Weights.normalised r
+tsallis2MassLaw : ∀ {A : DyadicRing} {w} (r : Tsallis2Weights A w) →
+  tsallis2Mass r ≡ DyadicRing.one A
+tsallis2MassLaw r = Tsallis2Weights.normalised r
 
 record DyadicParameters : Set where
   field
@@ -193,13 +205,12 @@ defaultDyadicParameters = record
 record SignQIDBDState (A : DyadicRing) (n : Nat) : Set₁ where
   field
     parameter trace metaBeta rawDirection signedDirection momentum : Vector A n
-    parameterDirectionOnly : ∀ i →
-      index signedDirection i ≡ signScalar A (index rawDirection i)
+    parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar (index rawDirection i)
     hyperparameters : DyadicParameters
 
-signQIDBDDirection : ∀ {A n} (A0 : DyadicRing A) → Vector A n → Vector A n
-signQIDBDDirection A [] = []
-signQIDBDDirection A (x ∷ xs) = signScalar A x ∷ signQIDBDDirection A xs
+signQIDBDDirection : ∀ {A : DyadicRing} {n} → Vector A n → Vector A n
+signQIDBDDirection {A} [] = []
+signQIDBDDirection {A} (x ∷ xs) = signScalar {A} x ∷ signQIDBDDirection xs
 
 record DyadicCoupledL2 : Set where
   field
@@ -216,31 +227,50 @@ record SparseOuterState (A : DyadicRing) (n : Nat) : Set₁ where
   field
     elite incumbent : Vector A n
     mutationScale : Nat
-    openESFinite cvtFinite munchausenFinite overestimationFinite
-      hyperparameterMapParetoEfficient : Bool
+    openESFinite cvtFinite munchausenFinite overestimationFinite hyperparameterMapParetoEfficient : Bool
 
-antitheticCancel : ∀ {A} (A0 : DyadicRing A) x →
+antitheticCancel : ∀ {A : DyadicRing} (A0 : A) x →
   DyadicRing._+_ A0 x (DyadicRing.neg A0 x) ≡ DyadicRing.zero A0
 antitheticCancel A0 x = DyadicRing.addNegR A0 x
 
-doubleSignNormalForm : ∀ {A} (A0 : DyadicRing A) x →
-  signScalar A0 (signScalar A0 x) ≡ signScalar A0 x
-doubleSignNormalForm A0 x = DyadicRing.signIdempotent A0 x
+signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) x →
+  signScalar {A} (signScalar {A} x) ≡ signScalar {A} x
+signQIDBDNormalForm A0 x = DyadicRing.signIdempotent A0 x
+
+data DegreeRecurrence : Set where
+  affineDegree : DegreeRecurrence
+  attentionDegree : DegreeRecurrence → DegreeRecurrence
+
+degreeOf : DegreeRecurrence → Nat
+degreeOf affineDegree = 1
+degreeOf (attentionDegree r) = 3 * degreeOf r
+
+-- Finite dyadic momentum is an affine recurrence.  beta1 = 115/128,
+-- complement = 13/128, and the meta-step code is 1/128.
+momentumStep : ∀ {A : DyadicRing} →
+  DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
+momentumStep {A} beta complement m g =
+  (DyadicRing._*_ A beta m) + (DyadicRing._*_ A complement g)
+
+beta115_128_code : DyadicParameters
+beta115_128_code = defaultDyadicParameters
+
+-- No universal non-chattering theorem is asserted: arbitrary exact signed
+-- directions can alternate. The safe target instead proves finite sign
+-- normal forms, active-set equations, norm recursion, and invariant closure.
 
 ------------------------------------------------------------------------
 -- Finite emergent composition target.
--- CReLU is the practical representation activation. Sign is used on the
--- parameter direction only, after q-projection: sign-q-IDBD.
--- beta1 is exactly 115/128, with complement 13/128, and meta-step is 1/128.
--- Bilinear QK scoring maps degree d to 2d; Tsallis-2 routing preserves that
--- score degree; value weighting gives 3d. Thus L attention layers have
--- branchwise polynomial degree at most 3^L from affine degree 1.
--- L1 weight norm and one-path norm constrain coefficient/path mass without
--- changing degree. Dyadic coupled L2 and dyadic meta-step likewise constrain
--- coefficients without changing degree.
--- SignReLU is not in this polynomial core because its negative branch is
--- rational and requires reciprocal/domain laws.
--- The outer finite target retains CVT-ME/OpenES antithetic mutation,
--- overestimation-bias, custom Munchausen, and Pareto-efficient coupled
--- hyperparameter-mapping theorem surfaces.
+-- LayerNorm/BatchNorm/BatchRenorm are deliberately absent.
+-- Affine + CReLU is the representation family. Sign is applied only after
+-- q-style projection on the parameter direction: sign-q-IDBD.
+-- beta1 = 115/128, complement = 13/128, meta-step = 1/128.
+-- Bilinear QK scoring gives degree 2d; Tsallis-2 preserves this score degree
+-- on a fixed active set; multiplying by values gives degree 3d. Starting from
+-- affine degree 1 gives the recurrence d(0)=1, d(L+1)=3*d(L).
+-- L1 weight norm and exact finite 1-path norm constrain coefficient/path mass.
+-- Dyadic coupled L2 and dyadic meta-step constrain coefficient arithmetic.
+-- The outer target retains CVT-ME/OpenES antithetic mutation, finite
+-- overestimation-bias decomposition, custom Munchausen, and Pareto-efficient
+-- coupled hyperparameter mapping as finite algebraic theorem surfaces.
 ------------------------------------------------------------------------
