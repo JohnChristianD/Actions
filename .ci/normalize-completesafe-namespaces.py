@@ -71,10 +71,7 @@ block = block.replace('c + b', 'Ring._+_ ring c b')
 block = block.replace('a + neg b', 'Ring._+_ ring a (Ring.neg ring b)')
 block = block.replace('x * x', 'Ring._*_ ring x x')
 block = block.replace('x ≠ zero', '¬ (x ≡ zero)')
-block = block.replace(
-    'abs (x + y) ≤ abs x + abs y',
-    'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)',
-)
+block = block.replace('abs (x + y) ≤ abs x + abs y', 'abs (Ring._+_ ring x y) ≤ Ring._+_ ring (abs x) (abs y)')
 s = s[:start] + block + s[end:]
 
 old_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
@@ -86,28 +83,30 @@ s = s.replace(old_minus, new_minus)
 s = s.replace('  centered x = x + neg μ', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
 s = s.replace('  normalise x = centered x * invStd', '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
 
-s = s.replace(
-    'record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where',
-    'record RecurrentAffine (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
-)
+s = s.replace('record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where', 'record RecurrentAffine (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where')
 s = s.replace('MatS S hidden input', 'MatS S hiddenDim input')
 s = s.replace('MatS S hidden hidden', 'MatS S hiddenDim hiddenDim')
 s = s.replace('VecS S hidden\n    norm : LayerNorm S hidden', 'VecS S hiddenDim\n    norm : LayerNorm S hiddenDim')
-s = s.replace(
-    'record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where',
-    'record LSTMGates (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
-)
+s = s.replace('record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where', 'record LSTMGates (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where')
 s = s.replace('RecurrentAffine S input hidden', 'RecurrentAffine S input hiddenDim')
-s = s.replace(
-    'record LSTMBlock (S : SmoothAlgebra) (input hidden : Nat) : Set where',
-    'record LSTMBlock (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where',
-)
+s = s.replace('record LSTMBlock (S : SmoothAlgebra) (input hidden : Nat) : Set where', 'record LSTMBlock (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where')
 s = s.replace('LSTMGates S input hidden', 'LSTMGates S input hiddenDim')
-s = s.replace(
-    'record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where',
-    'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where',
-)
+s = s.replace('record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where', 'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where')
 s = s.replace('VecS S hidden\n', 'VecS S hiddenDim\n')
+
+# Recurrent functions retain their local binder names while using hiddenDim
+# in result types after the record-level rename.
+for old, new in {
+    'recurrentAffine : ∀ {S input hidden} →\n  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden':
+    'recurrentAffine : ∀ {S input hiddenDim} →\n  RecurrentAffine S input hiddenDim → VecS S input → VecS S hiddenDim → VecS S hiddenDim',
+    'sigmoidGate : ∀ {S input hidden} →\n  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden':
+    'sigmoidGate : ∀ {S input hiddenDim} →\n  RecurrentAffine S input hiddenDim → VecS S input → VecS S hiddenDim → VecS S hiddenDim',
+    'tanhGate : ∀ {S input hidden} →\n  RecurrentAffine S input hidden → VecS S input → VecS S hidden → VecS S hidden':
+    'tanhGate : ∀ {S input hiddenDim} →\n  RecurrentAffine S input hiddenDim → VecS S input → VecS S hiddenDim → VecS S hiddenDim',
+    'lstmStep : ∀ {S input hidden} →\n  LSTMBlock S input hidden → LSTMState S hidden → VecS S input → LSTMState S hidden':
+    'lstmStep : ∀ {S input hiddenDim} →\n  LSTMBlock S input hiddenDim → LSTMState S hiddenDim → VecS S input → LSTMState S hiddenDim',
+}.items():
+    s = s.replace(old, new)
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
