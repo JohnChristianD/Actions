@@ -1,7 +1,7 @@
 path = 'Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
 s = File.read(path)
 
-old = /residualSquareNonzero_v140 : ∀ \{S\}\n.*?------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem/sm
+old = /residualSquareNonzero_v140 : ∀ \{S\}\n[\s\S]*?------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem/
 new = <<'AGDA'
 residualSquareNonzero_v140 : ∀ {S : SmoothAlgebra}
   {alpha mu x : Scalar S} →
@@ -37,9 +37,7 @@ residualSquareNonzero_v140 ha hr hx =
 -- The clean, reusable cross-multiplication theorem
 AGDA
 
-unless old.match?(s)
-  abort 'residual theorem block not found'
-end
+abort 'residual theorem block not found' unless old.match?(s)
 s.sub!(old, new)
 File.write(path, s)
 abort 'residual theorem remained implicit' if s.match?(/residualSquareNonzero_v140 : ∀ \{S\}\n/)
