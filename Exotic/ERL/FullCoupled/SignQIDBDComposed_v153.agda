@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.SignQIDBDComposed_v153 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Bool using (Bool; false; true)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 record OrderedAlgebra : Set₁ where
@@ -104,7 +105,7 @@ record NormSensitivityCertificate (A : OrderedAlgebra) : Set₁ where
   field
     input output bound sensitivity sensitivityBound : R A
     outputLe : rle A output bound
-    sensitivityLe : rle A sensitivity sensitivityBound
+    sensitivityLe : rle A sensitivityBound
     pathBound : R A
     pathLe : rle A (rzero A) pathBound
 
