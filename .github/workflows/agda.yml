@@ -52,6 +52,11 @@ jobs:
       - name: Finalize q-projection compatibility
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: ruby .ci/v165-qcross-compat.rb
+      - name: Dump post-repair q-projection context
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: |
+          set -euo pipefail
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1215,1250p'
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
