@@ -60,6 +60,8 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_DoubleSign_v151.agda
       - name: Safe-check compact composed DoubleSign theorem
         run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_DoubleSign_Composed_v152.agda
+      - name: Safe-check signed q-IDBD Tsallis-2 OpenES composition theorem
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_SignedQIDBD_TsallisOpenES_v153.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist idempotent Elixir normalization
