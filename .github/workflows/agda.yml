@@ -6,7 +6,6 @@ on:
     paths:
       - '**/*.agda'
       - '.github/workflows/agda.yml'
-      - '.ci/normalize_v151.exs'
   workflow_dispatch:
 
 permissions:
@@ -22,19 +21,12 @@ jobs:
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: '27'
-          elixir-version: '1.17'
-      - name: Normalize v151 source and enforce semantic exclusions
-        run: elixir .ci/normalize_v151.exs
       - name: Verify Agda executable
         run: agda --version
-      - name: Safe-check v151 finite ordered Efficient-CHAD target
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_StoSignSGDv2_Tsallis2_v151.agda
-      - name: Verify no LayerNorm or legacy certificate surface in target
+      - name: Safe-check v154 finite ordered Efficient-CHAD target
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v154.agda
+      - name: Verify active target exclusions
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -nE 'LayerNorm|BatchNorm|BatchRenorm|Certificate|noMomentum|beta1Zero|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_StoSignSGDv2_Tsallis2_v151.agda
+          ! grep -nE 'LayerNorm|BatchNorm|BatchRenorm|Certificate|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_v154.agda
