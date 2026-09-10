@@ -240,7 +240,7 @@ record CanonicalComposition (A : OrderedAlgebra) : Set₁ where
     defaultSignQIDBD : SignQIDBDDefault A learner
     kkt : QProjectionKKTBridge A
     pareto : ParetoMapping A
-    doubleSign : DoubleSignComposition A
+    doubleSignComposition : DoubleSignComposition A
     doubleSignNorm : DoubleSignNormCertificate A
     interpolation : DyadicInterpolation A
     conjecture : ConjectureCandidate A
