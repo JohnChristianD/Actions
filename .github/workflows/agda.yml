@@ -9,6 +9,7 @@ on:
       - '.ci/v150-monolith-repair.rb'
       - '.ci/v151-residual-finalize.rb'
       - '.ci/v164-exposure-pareto.rb'
+      - '.ci/v165-qcross-compat.rb'
   pull_request:
     branches: ['main']
     paths:
@@ -17,6 +18,7 @@ on:
       - '.ci/v150-monolith-repair.rb'
       - '.ci/v151-residual-finalize.rb'
       - '.ci/v164-exposure-pareto.rb'
+      - '.ci/v165-qcross-compat.rb'
   workflow_dispatch:
 
 permissions:
@@ -47,6 +49,9 @@ jobs:
       - name: Finalize diagonal exposure and Pareto normalization
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: ruby .ci/v164-exposure-pareto.rb
+      - name: Finalize q-projection compatibility
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: ruby .ci/v165-qcross-compat.rb
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
