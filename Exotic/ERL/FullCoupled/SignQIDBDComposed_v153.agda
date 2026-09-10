@@ -141,7 +141,7 @@ signQIDBDStep {A} S previousMomentum meta trace gradient theta =
       signed = IDBDSpec.encode S (IDBDSpec.parameterSign S m)
       decay = IDBDSpec.l2 S r* theta
       direction = signed r+ (rneg A decay)
-  in theta r+ IDBDSpec.eta S r* direction
+  in theta r+ (IDBDSpec.eta S r* direction)
 
 record SignQIDBDDefault (A : OrderedAlgebra) (S : IDBDSpec A) : Set₁ where
   field
