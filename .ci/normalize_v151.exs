@@ -7,7 +7,8 @@ repairs = [
   {"∀ {A} → DyadicRing A →", "∀ {A : DyadicRing} →"},
   {"∀ {A w} (A0 : DyadicRing A)", "∀ {A : DyadicRing} {w} (A0 : A)"},
   {"∀ {A n} (A0 : DyadicRing A)", "∀ {A : DyadicRing} {n} (A0 : A)"},
-  {"∀ {A} (A0 : DyadicRing A)", "∀ {A : DyadicRing} (A0 : A)"}
+  {"∀ {A} (A0 : DyadicRing A)", "∀ {A : DyadicRing} (A0 : A)"},
+  {"beta115_128_code", "betaDyadicCode"}
 ]
 
 text = Enum.reduce(repairs, text, fn {old, new}, acc ->
