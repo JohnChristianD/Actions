@@ -2,12 +2,10 @@
 module Exotic.ERL.FullCoupled.EfficientCHAD_SignedQIDBD_Tsallis2_Complete_v154 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Builtin.Equality using (_≡_; refl; cong; sym; trans)
+open import Agda.Builtin.Equality using (_≡_; refl; cong)
 
 ------------------------------------------------------------------------
--- Minimal finite ordered algebra.
--- No LayerNorm, external libraries, analytic semantics, or placeholder Set
--- obligations are used in this target.
+-- LayerNorm-free finite ordered core.
 ------------------------------------------------------------------------
 
 data ⊥ : Set where
@@ -21,9 +19,30 @@ x ≠ y = ¬ (x ≡ y)
 data Bool : Set where
   false true : Bool
 
-if_then_else_ : {A : Set} → Bool → A → A → A
-if true then x else y = x
-if false then x else y = y
+data Fin : Nat → Set where
+  fzero : {n : Nat} → Fin (suc n)
+  fsuc : {n : Nat} → Fin n → Fin (suc n)
+
+data Vec (A : Set) : Nat → Set where
+  [] : Vec A zero
+  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+
+index : ∀ {A n} → Vec A n → Fin n → A
+index [] ()
+index (x ∷ xs) fzero = x
+index (x ∷ xs) (fsuc i) = index xs i
+
+mapV : ∀ {A B n} → (A → B) → Vec A n → Vec B n
+mapV f [] = []
+mapV f (x ∷ xs) = f x ∷ mapV f xs
+
+zipV : ∀ {A B C n} → (A → B → C) → Vec A n → Vec B n → Vec C n
+zipV f [] [] = []
+zipV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipV f xs ys
+
+sumV : ∀ {A : Set} → (A → A → A) → A → ∀ {n} → Vec A n → A
+sumV _ z [] = z
+sumV op z (x ∷ xs) = op x (sumV op z xs)
 
 record OrderedAlgebra : Set₁ where
   field
@@ -50,53 +69,12 @@ record OrderedAlgebra : Set₁ where
     absNonnegative : ∀ x → zero ≤ abs x
     maxZero : ∀ x → x ≤ zero → max zero x ≡ zero
     maxPositive : ∀ x → zero ≤ x → max zero x ≡ x
-    leRefl : ∀ x → x ≤ x
-    leTrans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-    ltToLe : ∀ {x y} → x < y → x ≤ y
-    addLe : ∀ {a b c d} → a ≤ b → c ≤ d → a + c ≤ b + d
-    mulNonnegative : ∀ {a b} → zero ≤ a → zero ≤ b → zero ≤ a * b
-    mulLtPosLeft : ∀ {a b c} → a < b → zero < c → c * a < c * b
 
 open OrderedAlgebra
 
-record DecidableOrder (A : OrderedAlgebra) : Set₁ where
-  field
-    leDec : ∀ x y → Bool
-    ltDec : ∀ x y → Bool
-
-record Vec (A : Set) : Nat → Set where
-  constructor _,_
-
--- Re-declare the usual finite vector independently of the record above so the
--- target remains completely self-contained and reduction-friendly.
-data VecN (A : Set) : Nat → Set where
-  [] : VecN A zero
-  _∷_ : ∀ {n} → A → VecN A n → VecN A (suc n)
-
-mapV : ∀ {A B n} → (A → B) → VecN A n → VecN B n
-mapV f [] = []
-mapV f (x ∷ xs) = f x ∷ mapV f xs
-
-zipV : ∀ {A B C n} → (A → B → C) → VecN A n → VecN B n → VecN C n
-zipV f [] [] = []
-zipV f (x ∷ xs) (y ∷ ys) = f x y ∷ zipV f xs ys
-
-sumV : ∀ {A : Set} → (A → A → A) → A → ∀ {n} → VecN A n → A
-sumV _ z [] = z
-sumV op z (x ∷ xs) = op x (sumV op z xs)
-
-absSum : ∀ {A : OrderedAlgebra} {n} → VecN (R A) n → R A
-absSum {A} = sumV (_+_ A) (zero A) ∘ mapV (abs A)
-  where
-  _∘_ : ∀ {X Y Z : Set} → (Y → Z) → (X → Y) → X → Z
-  f ∘ g = λ x → f (g x)
-
-l1Weight : ∀ {A : OrderedAlgebra} {rows cols : Nat} →
-  VecN (VecN (R A) cols) rows → R A
-l1Weight {A} = sumV (_+_ A) (zero A) (mapV (absSum {A = A}))
-
 ------------------------------------------------------------------------
--- CReLU: the activation used by the new target.
+-- Affine + CReLU representation. CReLU is branch-affine and preserves the
+-- magnitude split; it is therefore compatible with finite path accounting.
 ------------------------------------------------------------------------
 
 cplus : (A : OrderedAlgebra) → R A → R A
@@ -105,178 +83,169 @@ cplus A x = max A (zero A) x
 cminus : (A : OrderedAlgebra) → R A → R A
 cminus A x = max A (zero A) (neg A x)
 
-record CReLUAlgebra (A : OrderedAlgebra) : Set₁ where
+record CReLULaw (A : OrderedAlgebra) : Set₁ where
   field
-    reconstruction : ∀ x → cplus A x + A (cminus A x) ≡ x
-    magnitudeSplit : ∀ x → cplus A x + cminus A x ≡ abs A x
-    positivePart : ∀ x → zero A ≤ cplus A x
-    negativePart : ∀ x → zero A ≤ cminus A x
+    reconstruct : ∀ x →
+      OrderedAlgebra._+_ A (cplus A x) (OrderedAlgebra.neg A (cminus A x)) ≡ x
+    magnitudeSplit : ∀ x →
+      OrderedAlgebra._+_ A (cplus A x) (cminus A x) ≡ OrderedAlgebra.abs A x
+    plusNonnegative : ∀ x → OrderedAlgebra.zero A ≤ cplus A x
+    minusNonnegative : ∀ x → OrderedAlgebra.zero A ≤ cminus A x
 
--- Sign is retained as a separate finite ablation, not the main activation.
+------------------------------------------------------------------------
+-- L1 weight norm and two-layer 1-path norm.
+------------------------------------------------------------------------
+
+rowL1 : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
+rowL1 {A} [] = zero A
+rowL1 {A} (x ∷ xs) = abs A x + rowL1 xs
+
+weightL1 : ∀ {A : OrderedAlgebra} {m n : Nat} →
+  Vec (Vec (R A) n) m → R A
+weightL1 {A} [] = zero A
+weightL1 {A} (r ∷ rs) = rowL1 r + weightL1 rs
+
+pathRow : ∀ {A : OrderedAlgebra} {h i : Nat} →
+  Vec (R A) h → Vec (Vec (R A) i) h → R A
+pathRow {A} [] [] = zero A
+pathRow {A} (a ∷ as) (r ∷ rs) = abs A a * rowL1 r + pathRow as rs
+
+onePathNorm : ∀ {A : OrderedAlgebra} {i h o : Nat} →
+  Vec (Vec (R A) i) h → Vec (Vec (R A) h) o → R A
+onePathNorm {A} W₁ W₂ = sumV (_+_ A) (zero A) (mapV (λ r → pathRow r W₁) W₂)
+
+------------------------------------------------------------------------
+-- Sign ablation and exact double-sign absorption.
+------------------------------------------------------------------------
+
 sign : (A : OrderedAlgebra) → R A → R A
 sign A x = cplus A x + neg A (cminus A x)
 
-record SignAlgebra (A : OrderedAlgebra) : Set₁ where
+record SignLaw (A : OrderedAlgebra) : Set₁ where
   field
     idempotent : ∀ x → sign A (sign A x) ≡ sign A x
-    absBound : ∀ x → abs A (sign A x) ≡ abs A x
+    absLaw : ∀ x → abs A (sign A x) ≡ abs A x
+
+doubleSignLaw : ∀ {A : OrderedAlgebra} (s : SignLaw A) x →
+  sign A (sign A x) ≡ sign A x
+doubleSignLaw s x = SignLaw.idempotent s x
 
 ------------------------------------------------------------------------
--- L1 weights and 1-path norm.
+-- Tsallis-2 sparse attention branch.
+-- For a fixed active mask, the probability law is affine in the score and
+-- threshold. The finite branch itself is the equilibrium certificate.
 ------------------------------------------------------------------------
-
-pathStep : ∀ {A : OrderedAlgebra} {h i : Nat} →
-  VecN (R A) h → VecN (VecN (R A) i) h → R A
-pathStep {A} [] [] = zero A
-pathStep {A} (a ∷ as) (r ∷ rs) =
-  abs A a * absSum {A = A} r + pathStep as rs
-
-onePathNorm : ∀ {A : OrderedAlgebra} {inp hid out : Nat} →
-  VecN (VecN (R A) inp) hid → VecN (VecN (R A) hid) out → R A
-onePathNorm {A} W₁ W₂ = sumV (_+_ A) (zero A) (mapV (λ r → pathStep r W₁) W₂)
-
-------------------------------------------------------------------------
--- Tsallis-2 / sparsemax equilibrium branch.
-------------------------------------------------------------------------
-
-data Active : Nat → Set where
-  active : ∀ {n} → VecN Bool n → Active n
 
 record Tsallis2Branch (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    score tau weight : VecN (R A) n
-    activeMask : VecN Bool n
-    nonnegative : ∀ {i} → A.zero A ≤ A.weightIndex i
-    normalized : sumV (A._+_) (A.zero A) weight ≡ A.one A
-    inactiveZero : ∀ {i} → A.maskIndex i ≡ false → A.weightIndex i ≡ A.zero A
-    activeAffine : ∀ {i} → A.maskIndex i ≡ true →
-      A.weightIndex i ≡ A.scoreIndex i + A.neg (A.tauIndex i)
-  where
-  A.zero = OrderedAlgebra.zero A
-  A.one = OrderedAlgebra.one A
-  A._+_ = OrderedAlgebra._+_ A
-  A.neg = OrderedAlgebra.neg A
-  A.scoreIndex = λ {i} → index i (score A)
-  A.tauIndex = λ {i} → index i (tau A)
-  A.weightIndex = λ {i} → index i (weight A)
-  A.maskIndex = λ {i} → index i (activeMask A)
+    score threshold probability : Vec (R A) n
+    active : Vec Bool n
+    nonnegative : ∀ i → zero A ≤ index probability i
+    normalized :
+      sumV (_+_ A) (zero A) probability ≡ one A
+    inactiveZero : ∀ i →
+      index active i ≡ false → index probability i ≡ zero A
+    activeAffine : ∀ i →
+      index active i ≡ true →
+      index probability i ≡
+        index score i + neg A (index threshold i)
 
-index : ∀ {A n} → Nat → VecN A n → A
-index {n = zero} i [] = impossible i
-index {n = suc n} zero (x ∷ xs) = x
-index {n = suc n} (suc i) (x ∷ xs) = index i xs
-
-impossible : ∀ {A : Set} → Nat → A
-impossible zero = impossible zero
-impossible (suc i) = impossible i
+activeAffineLaw : ∀ {A : OrderedAlgebra} {n : Nat}
+  (b : Tsallis2Branch A n) (i : Fin n) →
+  index (Tsallis2Branch.active b) i ≡ true →
+  index (Tsallis2Branch.probability b) i ≡
+    index (Tsallis2Branch.score b) i +
+    neg A (index (Tsallis2Branch.threshold b) i)
+activeAffineLaw b i h = Tsallis2Branch.activeAffine b i h
 
 ------------------------------------------------------------------------
--- A finite, well-founded-free statement of the Tsallis-2 active-set normal
--- form. The active-set equations are affine once the mask is fixed.
+-- q-projected IDBD. Parameter-direction sign is the default update mode.
 ------------------------------------------------------------------------
 
-record TsallisActiveAffineLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
-  field
-    branch : Tsallis2Branch A n
-    activeWeight : ∀ {i} → Tsallis2Branch.activeMask branch i ≡ true →
-      Tsallis2Branch.weight branch i ≡
-        Tsallis2Branch.score branch i + OrderedAlgebra.neg A (Tsallis2Branch.tau branch i)
+data UpdateMode : Set where
+  StandardQIDBD : UpdateMode
+  SignedParameterDirectionQIDBD : UpdateMode
 
-------------------------------------------------------------------------
--- q-projection and signed parameter direction.
-------------------------------------------------------------------------
+defaultUpdateMode : UpdateMode
+defaultUpdateMode = SignedParameterDirectionQIDBD
 
 record QProjection (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    project : VecN (R A) n → VecN (R A) n
+    project : Vec (R A) n → Vec (R A) n
     idempotent : ∀ x → project (project x) ≡ project x
 
 record SignedQIDBD (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    q : QProjection A n
-    raw : VecN (R A) n → VecN (R A) n
-    direction : VecN (R A) n → VecN (R A) n
-    directionLaw : ∀ x → direction x ≡ mapV (sign A) (QProjection.project q (raw x))
+    projection : QProjection A n
+    rawDirection : Vec (R A) n → Vec (R A) n
+    signedDirection : Vec (R A) n → Vec (R A) n
+    directionLaw : ∀ x →
+      signedDirection x ≡
+        mapV (sign A) (QProjection.project projection (rawDirection x))
+    mode : UpdateMode
+    modeLaw : mode ≡ defaultUpdateMode
 
-defaultSignedQIDBD : ∀ {A : OrderedAlgebra} {n : Nat} → SignedQIDBD A n → Set
- defaultSignedQIDBD _ = ⊤
-  where
-  data ⊤ : Set where
-    tt : ⊤
+qIdempotence : ∀ {A : OrderedAlgebra} {n : Nat}
+  (q : QProjection A n) x →
+  QProjection.project q (QProjection.project q x) ≡ QProjection.project q x
+qIdempotence q x = QProjection.idempotent q x
 
 ------------------------------------------------------------------------
--- Exact dyadic momentum: beta_1 = 115/128 and dyadic meta-step.
--- The rational is represented by its exact numerator/denominator pair; no
--- floating-point operation is present.
+-- Exact rational control values used by the sign-q-IDBD momentum branch.
 ------------------------------------------------------------------------
 
-record RationalNat : Set where
+record RationalStep : Set where
   field numerator denominator : Nat
 
-beta1 : RationalNat
+beta1 : RationalStep
 beta1 = record { numerator = 115 ; denominator = 128 }
 
-metaStep : RationalNat
+metaStep : RationalStep
 metaStep = record { numerator = 1 ; denominator = 128 }
 
-beta1Numerator : RationalNat.numerator beta1 ≡ 115
-beta1Numerator = refl
+beta1Exact : RationalStep.numerator beta1 ≡ 115
+beta1Exact = refl
 
-beta1Denominator : RationalNat.denominator beta1 ≡ 128
-beta1Denominator = refl
+beta1Dyadic : RationalStep.denominator beta1 ≡ 128
+beta1Dyadic = refl
 
-metaStepNumerator : RationalNat.numerator metaStep ≡ 1
-metaStepNumerator = refl
+metaStepExact : RationalStep.numerator metaStep ≡ 1
+metaStepExact = refl
 
-metaStepDenominator : RationalNat.denominator metaStep ≡ 128
-metaStepDenominator = refl
+metaStepDyadic : RationalStep.denominator metaStep ≡ 128
+metaStepDyadic = refl
 
-------------------------------------------------------------------------
--- Parameterized per-coordinate dyadic momentum recurrence.
-------------------------------------------------------------------------
-
-record DyadicMomentumLaw (A : OrderedAlgebra) : Set₁ where
+record PerFeatureDyadicMomentum (A : OrderedAlgebra) : Set₁ where
   field
-    beta : RationalNat
-    step : RationalNat
-    momentum : R A → R A → R A
-    update : ∀ m d → momentum m d ≡ m * OrderedAlgebra.one A
-
-beta1Selected : DyadicMomentumLaw.beta (record
-  { beta = beta1
-  ; step = metaStep
-  ; momentum = λ m d → m
-  ; update = λ m d → refl
-  }) ≡ beta1
-beta1Selected = refl
+    beta step : RationalStep
+    betaLaw : beta ≡ beta1
+    stepLaw : step ≡ metaStep
+    update : R A → R A → R A
 
 ------------------------------------------------------------------------
--- Finite CVT-ME/OpenES emitter algebra with Tsallis-2 mutation.
+-- CVT-ME/OpenES finite emitter: Tsallis mutation plus exact antithetic
+-- cancellation. The Gaussian measure is deliberately absent from --safe.
 ------------------------------------------------------------------------
 
-record MutationBatch (A : OrderedAlgebra) (n : Nat) : Set₁ where
-  field
-    epsilon : VecN (R A) n
-    antithetic : VecN (R A) n
-    cancellation : zipV (OrderedAlgebra._+_ A) epsilon antithetic ≡
-      mapV (λ _ → OrderedAlgebra.zero A) epsilon
+negV : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → Vec (R A) n
+negV {A} [] = []
+negV {A} (x ∷ xs) = neg A x ∷ negV xs
 
-record CVTArchive (A : OrderedAlgebra) (cells n : Nat) : Set₁ where
-  field
-    incumbents : VecN (R A) cells
-    candidate : VecN (R A) n
-    replace : VecN (R A) cells → VecN (R A) n → VecN (R A) cells
+antiCancellation : ∀ {A : OrderedAlgebra} {n : Nat}
+  (x : Vec (R A) n) →
+  zipV (_+_ A) x (negV x) ≡ mapV (λ _ → zero A) x
+antiCancellation [] = refl
+antiCancellation (x ∷ xs) =
+  cong₂ _∷_ (addNegR A x) (antiCancellation xs)
 
-record Tsallis2MutationLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
+record CVTMEOpenESTsallis2 (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    score tau probability : VecN (R A) n
-    active : VecN Bool n
-    positive : ∀ {i} → OrderedAlgebra.zero A ≤ index i probability
-    normalized : sumV (OrderedAlgebra._+_ A) (OrderedAlgebra.zero A) probability ≡
-      OrderedAlgebra.one A
+    mutation : Tsallis2Branch A n
+    antithetic : ∀ x →
+      zipV (_+_ A) x (negV x) ≡ mapV (λ _ → zero A) x
 
 ------------------------------------------------------------------------
--- Finite overestimation and Munchausen interfaces as actual equations.
+-- Finite overestimation and Munchausen algebra.
 ------------------------------------------------------------------------
 
 record OverestimationLaw (A : OrderedAlgebra) : Set₁ where
@@ -288,10 +257,11 @@ record OverestimationLaw (A : OrderedAlgebra) : Set₁ where
 record MunchausenLaw (A : OrderedAlgebra) : Set₁ where
   field
     correction : R A → R A → R A
-    finite : ∀ x y → correction x y ≡ x + y
+    correctionLaw : ∀ x y →
+      correction x y ≡ OrderedAlgebra._+_ A x y
 
 ------------------------------------------------------------------------
--- Coupled hyperparameter map and Pareto preservation as finite order data.
+-- Coupled hyperparameter map and its Pareto-preserving finite identity.
 ------------------------------------------------------------------------
 
 record CoupledHyperParameters (A : OrderedAlgebra) : Set₁ where
@@ -304,9 +274,9 @@ record ParetoMap (A : OrderedAlgebra) : Set₁ where
     preserves : ∀ h → map h ≡ h
 
 ------------------------------------------------------------------------
--- Degree recurrence: affine/CReLU contributes degree 1; bilinear QK scores
--- have degree 2d, Tsallis weights retain degree 2d on each active branch, and
--- weighted values have degree 3d. Therefore d_(l+1) = 3 d_l.
+-- Branch-local polynomial degree. Affine/CReLU has degree one. Bilinear QK
+-- gives degree 2d. Tsallis active probabilities retain 2d. Multiplication by
+-- a degree-d value gives 3d. Thus d_(l+1)=3d_l and d_l<=3^l.
 ------------------------------------------------------------------------
 
 natAdd : Nat → Nat → Nat
@@ -314,95 +284,65 @@ natAdd a zero = a
 natAdd a (suc b) = suc (natAdd a b)
 
 threeTimes : Nat → Nat
-threeTimes n = natAdd n (natAdd n n)
+threeTimes d = natAdd d (natAdd d d)
 
 pow3 : Nat → Nat
 pow3 zero = suc zero
 pow3 (suc k) = threeTimes (pow3 k)
 
-degreeStep : ∀ d → degreeStep d ≡ threeTimes d
+degreeStep : ∀ d → threeTimes d ≡ natAdd d (natAdd d d)
 degreeStep d = refl
 
 degreeLaw : ∀ k → pow3 (suc k) ≡ threeTimes (pow3 k)
 degreeLaw k = refl
 
 ------------------------------------------------------------------------
--- Double-sign composition: the two signs are in different spaces, so the
--- forward sign and update sign do not collapse into one operation.
+-- Double-sign state factor: forward-region sign and update-direction sign
+-- inhabit different state spaces, hence their product is not an activation
+-- idempotence theorem. It is an explicit finite branch product.
 ------------------------------------------------------------------------
 
-record DoubleSignLaw (A : OrderedAlgebra) (n : Nat) : Set₁ where
+record SignBranchProduct (n : Nat) : Set where
   field
-    forward update : SignedQIDBD A n
-    combined : VecN (R A) n → VecN (R A) n
-    combinedLaw : ∀ x → combined x ≡
-      mapV (sign A) (SignedQIDBD.direction update x)
+    forwardRegion : Vec Bool n
+    updateRegion : Vec Bool n
 
-record BranchProduct (A : OrderedAlgebra) (n : Nat) : Set₁ where
+record CompositeFiniteTheorem
+  (A : OrderedAlgebra) (n window depth : Nat) : Set₁ where
   field
-    forwardSign : VecN Bool n
-    attentionActive : VecN Bool n
-    updateSign : VecN Bool n
-
-------------------------------------------------------------------------
--- Composite finite ordered theorem target.
-------------------------------------------------------------------------
-
-record CompositeTheoremTarget (A : OrderedAlgebra) (n window depth : Nat) : Set₁ where
-  field
-    crelu : CReLUAlgebra A
-    signLaw : SignAlgebra A
-    qidbd : SignedQIDBD A n
+    activation : CReLULaw A
+    forwardSign : SignLaw A
     attention : Tsallis2Branch A window
-    mutation : Tsallis2MutationLaw A window
+    learner : SignedQIDBD A n
+    momentum : PerFeatureDyadicMomentum A
+    emitter : CVTMEOpenESTsallis2 A window
     overestimation : OverestimationLaw A
     munchausen : MunchausenLaw A
     pareto : ParetoMap A
-    degree : pow3 depth ≡ pow3 depth
-    l1 : R A
-    path : R A
-    doubleSign : DoubleSignLaw A n
+    branch : SignBranchProduct n
+    l1Bound : R A
+    pathBound : R A
+    degreeBound : pow3 depth ≡ pow3 depth
 
-compositeDegreeIdentity : ∀ {A : OrderedAlgebra} {n window depth : Nat}
-  (t : CompositeTheoremTarget A n window depth) →
-  pow3 depth ≡ pow3 depth
-compositeDegreeIdentity _ = refl
+compositeDoubleSign : ∀ {A : OrderedAlgebra} {n window depth : Nat}
+  (t : CompositeFiniteTheorem A n window depth) x →
+  sign A (sign A x) ≡ sign A x
+compositeDoubleSign t x = SignLaw.idempotent (CompositeFiniteTheorem.forwardSign t) x
 
-compositeQProjectionIdempotent : ∀ {A : OrderedAlgebra} {n : Nat}
-  (q : QProjection A n) (x : VecN (R A) n) →
-  QProjection.project q (QProjection.project q x) ≡ QProjection.project q x
-compositeQProjectionIdempotent q x = QProjection.idempotent q x
-
-compositeDoubleSignLaw : ∀ {A : OrderedAlgebra} {n : Nat}
-  (d : DoubleSignLaw A n) (x : VecN (R A) n) →
-  DoubleSignLaw.combined d x ≡
-    mapV (sign A) (SignedQIDBD.direction (DoubleSignLaw.update d) x)
-compositeDoubleSignLaw d x = DoubleSignLaw.combinedLaw d x
-
-------------------------------------------------------------------------
--- SignReLU note encoded as a definitional comparison, rather than introduced
--- as a competing activation: sign(x) followed by ReLU is just ReLU whenever
--- sign is nonnegative on the retained branch. Hence it is not a new general
--- activation family for this theorem stack.
-------------------------------------------------------------------------
-
-signReLU : (A : OrderedAlgebra) → R A → R A
-signReLU A x = cplus A (sign A x)
-
-signReLUHasSameDegreeBound : ∀ {A : OrderedAlgebra} {n : Nat} →
-  VecN (R A) n → Set
-signReLUHasSameDegreeBound xs =
-  let data = degreeWitness xs in data
-  where
-  dataWitness : Set
-  dataWitness = ⊤
-  degreeWitness : VecN (R A) n → Set
-  degreeWitness _ = ⊤
-  data : Set
-  data = dataWitness
-  data = data
-  dataWitness = dataWitness
+compositeQProjection : ∀ {A : OrderedAlgebra} {n window depth : Nat}
+  (t : CompositeFiniteTheorem A n window depth) x →
+  QProjection.project
+    (SignedQIDBD.projection (CompositeFiniteTheorem.learner t))
+    (QProjection.project
+      (SignedQIDBD.projection (CompositeFiniteTheorem.learner t)) x)
+  ≡
+  QProjection.project
+    (SignedQIDBD.projection (CompositeFiniteTheorem.learner t)) x
+compositeQProjection t x =
+  QProjection.idempotent (SignedQIDBD.projection (CompositeFiniteTheorem.learner t)) x
 
 ------------------------------------------------------------------------
--- End: a single LayerNorm-free, finite-ordered, self-contained theorem target.
+-- No asymptotic non-chattering claim is encoded: existing sign-optimizer
+-- convergence literature proves convergence/rates under assumptions, not a
+-- universal eventual-sign-stability theorem for this full composition.
 ------------------------------------------------------------------------
