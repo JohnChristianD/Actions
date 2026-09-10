@@ -103,12 +103,43 @@ multiplierDeletionStrict_v142 n d y z hd he h =
 -- Fixed-mask q-projection transpose.
 AGDA
 
+old_qcross = /qProjectionCross_v141 : ∀ \{S\}\n  \{alpha mu x : Scalar S\} →\n[\s\S]*?\n------------------------------------------------------------------------\n-- Total finite q-projection search\./
+new_qcross = <<'AGDA'
+qProjectionCross_v141 : ∀ {S}
+  {alpha mu x : Scalar S} →
+  zero ≤ alpha →
+  alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
+    (mu * (x * x)) < zero →
+  alpha * (x * x) < mu * ((x * x) * (x * x))
+qProjectionCross_v141 ha hr =
+  trans
+    (trans
+      (sym (Ring.mulComm
+        (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        alpha (x * x)))
+      (OrderedRing.mulLtPosLeft
+        (OrderedRing.subLtZero hr)
+        (OrderedRing.squarePositive (residualSquareNonzero_v140 ha hr))))
+    (trans
+      (Ring.mulComm
+        (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        (x * x) (mu * (x * x)))
+      (sym (Ring.mulAssoc
+        (OrderedRing.ring (SmoothAlgebra.orderedRing _))
+        mu (x * x) (x * x))))
+
+------------------------------------------------------------------------
+-- Total finite q-projection search.
+AGDA
+
 abort 'residual theorem block not found' unless old_residual.match?(s)
 s.sub!(old_residual, new_residual)
 abort 'cross strict theorem block not found' unless old_cross.match?(s)
 s.sub!(old_cross, new_cross)
 abort 'multiplier theorem block not found' unless old_multiplier.match?(s)
 s.sub!(old_multiplier, new_multiplier)
+abort 'q-projection cross theorem block not found' unless old_qcross.match?(s)
+s.sub!(old_qcross, new_qcross)
 File.write(path, s)
 abort 'residual theorem still uses proof witness as scalar' if s.include?('(mu * (hx * hx))')
-puts 'v162 residual, reciprocal, and multiplier proofs flattened: PASS'
+puts 'v163 finite proof normalizations: PASS'
