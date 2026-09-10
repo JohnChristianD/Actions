@@ -135,7 +135,7 @@ featureMomentumZero {A} previous q =
 
 signQIDBDStep : ∀ {A : OrderedAlgebra}
   (S : IDBDSpec A) → R A → R A → R A → R A → R A → R A
-signQIDBDStep S previousMomentum meta trace gradient theta =
+signQIDBDStep {A} S previousMomentum meta trace gradient theta =
   let q = rawQDirection S meta trace gradient
       m = featureMomentum (IDBDSpec.momentum S) previousMomentum q
       signed = IDBDSpec.encode S (IDBDSpec.parameterSign S m)
