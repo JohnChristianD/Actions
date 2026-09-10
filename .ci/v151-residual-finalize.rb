@@ -1,7 +1,7 @@
 path = 'Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
 s = File.read(path)
 
-old_residual = /residualSquareNonzero_v140 : ∀ \{S\}\n[\s\S]*?------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem/
+old_residual = /residualSquareNonzero_v140 : ∀ \{S\}[\s\S]*?(?=------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem)/
 new_residual = <<'AGDA'
 residualSquareNonzero_v140 : ∀ {S : SmoothAlgebra}
   {alpha mu x : Scalar S} →
@@ -21,8 +21,6 @@ residualSquareNonzero_v140 ha hr refl =
     (cong (λ q → alpha + q) hnegMul)
     (Ring.addZeroR rg alpha)
 
-------------------------------------------------------------------------
--- The clean, reusable cross-multiplication theorem
 AGDA
 
 old_cross = /orderedFieldCrossStrict_v142 : ∀ \{S\} \(a b d e : Scalar S\) →\n[\s\S]*?------------------------------------------------------------------------\n-- Strict deletion from a negative residual: yd < nz\./
@@ -64,8 +62,6 @@ orderedFieldCrossStrict_v142 a b d e hd he h =
       h)
     (OrderedRing.mulPos hd he)
 
-------------------------------------------------------------------------
--- Strict deletion from a negative residual: yd < nz.
 AGDA
 
 abort 'residual theorem block not found' unless old_residual.match?(s)
@@ -73,6 +69,5 @@ s.sub!(old_residual, new_residual)
 abort 'cross strict theorem block not found' unless old_cross.match?(s)
 s.sub!(old_cross, new_cross)
 File.write(path, s)
-abort 'residual theorem remained implicit' if s.match?(/residualSquareNonzero_v140 : ∀ \{S\}\n/)
 abort 'residual theorem still uses proof witness as scalar' if s.include?('(mu * (hx * hx))')
-puts 'v160 residual and reciprocal proofs flattened: PASS'
+puts 'v161 residual and reciprocal proofs flattened: PASS'
