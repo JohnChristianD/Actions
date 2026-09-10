@@ -1,8 +1,8 @@
 path = 'Exotic/ERL/FullCoupled/CompleteSafe_v147.agda'
 s = File.read(path)
 
-old = /residualSquareNonzero_v140 : ∀ \{S\}\n[\s\S]*?------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem/
-new = <<'AGDA'
+old_residual = /residualSquareNonzero_v140 : ∀ \{S\}\n[\s\S]*?------------------------------------------------------------------------\n-- The clean, reusable cross-multiplication theorem/
+new_residual = <<'AGDA'
 residualSquareNonzero_v140 : ∀ {S : SmoothAlgebra}
   {alpha mu x : Scalar S} →
   zero ≤ alpha →
@@ -25,9 +25,41 @@ residualSquareNonzero_v140 ha hr refl =
 -- The clean, reusable cross-multiplication theorem
 AGDA
 
-abort 'residual theorem block not found' unless old.match?(s)
-s.sub!(old, new)
+old_cross = /orderedFieldCrossStrict_v142 : ∀ \{S\} \(a b d e : Scalar S\) →\n[\s\S]*?------------------------------------------------------------------------\n-- Strict deletion from a negative residual: yd < nz\./
+new_cross = <<'AGDA'
+orderedFieldCrossStrict_v142 : ∀ {S} (a b d e : Scalar S) →
+  zero < d → zero < e → a * e < b * d → a * SmoothAlgebra.recip _ d < b * SmoothAlgebra.recip _ e
+orderedFieldCrossStrict_v142 a b d e hd he h =
+  let rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+      c = d * e
+      hc = OrderedRing.mulPos hd he
+      leftNorm : c * (a * SmoothAlgebra.recip _ d) ≡ a * e =
+        trans
+          (Ring.mulAssoc rg d e (a * SmoothAlgebra.recip _ d))
+          (trans
+            (cong (λ q → d * q)
+              (Ring.mulComm rg e (a * SmoothAlgebra.recip _ d)))
+            (trans
+              (sym (Ring.mulAssoc rg d (a * SmoothAlgebra.recip _ d) e))
+              (cong (λ q → q * e) (cancelRecip_v142 a d hd))))
+      rightNorm : c * (b * SmoothAlgebra.recip _ e) ≡ b * d =
+        trans
+          (Ring.mulAssoc rg d e (b * SmoothAlgebra.recip _ e))
+          (trans
+            (Ring.mulComm rg d (e * (b * SmoothAlgebra.recip _ e)))
+            (cong (λ q → q * d) (cancelRecip_v142 b e he)))
+  in OrderedRing.mulLtPosCancelLeft
+      (transportLt_v142 leftNorm rightNorm h) hc
+
+------------------------------------------------------------------------
+-- Strict deletion from a negative residual: yd < nz.
+AGDA
+
+abort 'residual theorem block not found' unless old_residual.match?(s)
+s.sub!(old_residual, new_residual)
+abort 'cross strict theorem block not found' unless old_cross.match?(s)
+s.sub!(old_cross, new_cross)
 File.write(path, s)
 abort 'residual theorem remained implicit' if s.match?(/residualSquareNonzero_v140 : ∀ \{S\}\n/)
 abort 'residual theorem still uses proof witness as scalar' if s.include?('(mu * (hx * hx))')
-puts 'v158 residual proof normalization: PASS'
+puts 'v159 residual and reciprocal normalizations: PASS'
