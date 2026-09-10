@@ -13,9 +13,7 @@ record_token = "record SmoothAlgebra : Set₁ where"
 scalar_marker = "\nScalar : SmoothAlgebra → Set\n"
 marker_start = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
 
-unless String.contains?(s0, marker_start) do
-  raise "canonical SmoothAlgebra boundary missing"
-end
+unless String.contains?(s0, marker_start), do: raise "canonical SmoothAlgebra boundary missing"
 
 s1 = String.replace(s0,
   "open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)",
@@ -66,15 +64,13 @@ else
   s4
 end
 
-# The legacy accumulate parser form is replaced without relying on a multiline heredoc.
-old_acc_re = ~r/  accumulate : Fin n → R → EState → EState\n  accumulate i c \(state s\) = state \(λ j with finDecEq j i\n    \.\.\. \| yes _ = s j \+ c\n    \.\.\. \| no _ = s j\)\n/
+# Match the complete legacy dependent-lambda block by its distinctive start and end clauses.
+old_acc = ~r/  accumulate i c \(state s\) = state \(λ j with finDecEq j i\n(?:.*\n)*?    \.\.\. \| no _ = s j\)\n/
 new_acc = "  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"
-s6 = Regex.replace(old_acc_re, s5, new_acc, global: true)
+s6 = Regex.replace(old_acc, s5, new_acc, global: true)
 
-unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1 do
-  raise "SmoothAlgebra record count is not one after normalization"
-end
-if Regex.match?(old_acc_re, s6) or String.contains?(s6, "λ j with finDecEq") do
+unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1, do: raise "SmoothAlgebra record count is not one after normalization"
+if String.contains?(s6, "λ j with finDecEq") do
   raise "dependent lambda-with parser form survived"
 end
 if String.contains?(s6, "-- AUDITED-KKT-OBLIGATION") do
