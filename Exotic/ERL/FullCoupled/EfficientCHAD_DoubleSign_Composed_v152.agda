@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.EfficientCHAD_DoubleSign_Composed_v152 where
 
 open import Agda.Builtin.Nat using (Nat)
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150
 open import Exotic.ERL.FullCoupled.EfficientCHAD_DoubleSign_v151
 
 record DoubleSignCompositionLaw (A : OrderedAlgebra) : Set₁ where
