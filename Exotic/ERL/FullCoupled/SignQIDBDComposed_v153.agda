@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.SignQIDBDComposed_v153 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Equality using (_≡_; refl; cong; trans)
 
 record OrderedAlgebra : Set₁ where
   field
@@ -45,8 +45,7 @@ record HardAttention (A : OrderedAlgebra) (n : Nat) : Set where
     selected : Fin n
     selectedMax : ∀ j → score j r≤ score selected
 
-hardAttention : ∀ {A : OrderedAlgebra} {n : Nat} →
-  HardAttention A n → Vec (R A) n → R A
+hardAttention : ∀ {A : OrderedAlgebra} {n : Nat} → HardAttention A n → Vec (R A) n → R A
 hardAttention h values = index values (HardAttention.selected h)
 
 onePathNorm : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
@@ -116,22 +115,26 @@ record IDBDSpec (A : OrderedAlgebra) : Set₁ where
     encode : SignCode → R A
     eta l2 momentum : R A
 
-rawQDirection : ∀ {A : OrderedAlgebra} →
-  IDBDSpec A → R A → R A → R A → R A
+rawQDirection : ∀ {A : OrderedAlgebra} → IDBDSpec A → R A → R A → R A → R A
 rawQDirection S meta trace gradient =
   IDBDSpec.qProject S (IDBDSpec.rawDirection S meta trace gradient)
 
 featureMomentum : ∀ {A : OrderedAlgebra} → R A → R A → R A → R A
 featureMomentum mu previous q = (mu r* previous) r+ q
 
+featureMomentumZero : ∀ {A : OrderedAlgebra} (previous q : R A) →
+  featureMomentum (rzero A) previous q ≡ q
+featureMomentumZero previous q =
+  trans (cong (λ x → x r+ q) (mulZeroL A previous)) (addZeroR A q)
+
 signQIDBDStep : ∀ {A : OrderedAlgebra}
-  (S : IDBDSpec A) → R A → R A → R A → R A → R A
-signQIDBDStep S meta trace gradient theta =
+  (S : IDBDSpec A) → R A → R A → R A → R A → R A → R A
+signQIDBDStep S previousMomentum meta trace gradient theta =
   let q = rawQDirection S meta trace gradient
-      m = featureMomentum (IDBDSpec.momentum S) theta q
+      m = featureMomentum (IDBDSpec.momentum S) previousMomentum q
       signed = IDBDSpec.encode S (IDBDSpec.parameterSign S m)
       decay = IDBDSpec.l2 S r* theta
-      direction = signed r+ rneg _ decay
+      direction = signed r+ (rneg A decay)
   in theta r+ IDBDSpec.eta S r* direction
 
 record SignQIDBDDefault (A : OrderedAlgebra) (S : IDBDSpec A) : Set₁ where
@@ -150,8 +153,7 @@ record DoubleSignComposition (A : OrderedAlgebra) : Set₁ where
     first second : SignOracle A
     representationPath : R A → R A
 
-doubleSign : ∀ {A : OrderedAlgebra} →
-  DoubleSignComposition A → R A → SignCode
+doubleSign : ∀ {A : OrderedAlgebra} → DoubleSignComposition A → R A → SignCode
 doubleSign C x =
   SignOracle.sign (DoubleSignComposition.second C)
     (DoubleSignComposition.representationPath C x)
@@ -213,15 +215,15 @@ record EventualSignStability : Set₁ where
 kktClosure : ∀ {A : OrderedAlgebra}
   (B : QProjectionKKTBridge A) →
   QProjection.project (QProjectionKKTBridge.projection B)
-    (QProjectionKKTBridge.fixedPoint B)
-    ≡ QProjectionKKTBridge.fixedPoint B
+    (QProjectionKKTBridge.fixedPoint B) ≡
+  QProjectionKKTBridge.fixedPoint B
 kktClosure B = QProjectionKKTBridge.fixedPointLaw B
 
 momentumStateClosure : ∀ {A : OrderedAlgebra}
-  (S : IDBDSpec A) (meta trace gradient theta : R A) →
-  signQIDBDStep S meta trace gradient theta ≡
-  signQIDBDStep S meta trace gradient theta
-momentumStateClosure S meta trace gradient theta = refl
+  (S : IDBDSpec A) (previousMomentum meta trace gradient theta : R A) →
+  signQIDBDStep S previousMomentum meta trace gradient theta ≡
+  signQIDBDStep S previousMomentum meta trace gradient theta
+momentumStateClosure S previousMomentum meta trace gradient theta = refl
 
 record CanonicalComposition (A : OrderedAlgebra) : Set₁ where
   field
