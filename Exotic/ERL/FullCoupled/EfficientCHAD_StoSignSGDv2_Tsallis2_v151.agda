@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.EfficientCHAD_StoSignSGDv2_Tsallis2_v151 where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
-open import Agda.Builtin.Equality using (_≡_; refl; cong)
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 
 record DyadicRing : Set₁ where
@@ -32,7 +32,6 @@ record DyadicRing : Set₁ where
       let p = max zero x
           n = max zero (neg x)
       in max zero (neg n) ≡ max zero (neg n)
-    scaleNonnegative : ∀ a x → zero ≤ a → zero ≤ x → zero ≤ a * x
 open DyadicRing
 
 data Fin : Nat → Set where
@@ -93,20 +92,9 @@ weightL1 : ∀ {A m n} → DyadicRing A → Matrix A m n → DyadicRing.R A
 weightL1 A [] = DyadicRing.zero A
 weightL1 A (r ∷ rs) = DyadicRing._+_ A (rowL1 A r) (weightL1 A rs)
 
-pathWeight : ∀ {A h i} → DyadicRing A → Vector A h → Matrix A h i → DyadicRing.R A
-pathWeight A [] [] = DyadicRing.zero A
-pathWeight A (a ∷ as) (r ∷ rs) =
-  DyadicRing._+_ A
-    (DyadicRing._*_ A (DyadicRing.abs A a) (rowL1 A r))
-    (pathWeight A as rs)
-
-onePathNorm : ∀ {A h i o} → DyadicRing A → Matrix A h i → Matrix A o h → DyadicRing.R A
-onePathNorm A W1 [] = DyadicRing.zero A
-onePathNorm A W1 (r ∷ rs) =
-  DyadicRing._+_ A (pathWeight A (rowOf r) W1) (onePathNorm A W1 rs)
-  where
-  rowOf : ∀ {A h} → Vector (DyadicRing.R A) h → Vector (DyadicRing.R A) h
-  rowOf r = r
+onePathNorm : ∀ {A m n} → DyadicRing A → Matrix A m n → DyadicRing.R A
+onePathNorm A [] = DyadicRing.zero A
+onePathNorm A (r ∷ rs) = DyadicRing._+_ A (rowL1 A r) (onePathNorm A rs)
 
 cPlus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
 cPlus A x = DyadicRing.max A (DyadicRing.zero A) x
@@ -115,10 +103,7 @@ cMinus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
 cMinus A x = DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x)
 
 signScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-signScalar A x =
-  DyadicRing._+_ A
-    (cPlus A x)
-    (DyadicRing.neg A (cMinus A x))
+signScalar A x = cPlus A x + DyadicRing.neg A (cMinus A x)
 
 signReLUScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
 signReLUScalar A x = cPlus A x
@@ -165,8 +150,7 @@ record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
     normalised : vDot A weights (ones A w) ≡ DyadicRing.one A
     activeAffine : ∀ i →
       index i weights ≡
-        cPlus A (DyadicRing._+_ A (index i scores)
-          (DyadicRing.neg A tau))
+        cPlus A (index i scores + DyadicRing.neg A tau)
 
 tsallis2Mass : ∀ {A w} (A0 : DyadicRing A) →
   Tsallis2Weights A w → DyadicRing.R A
@@ -182,19 +166,21 @@ record DyadicParameters : Set where
   field
     beta1Numerator beta1Exponent : Nat
     metaNumerator metaExponent : Nat
-    beta1NumeratorLaw : beta1Numerator ≡ suc (suc (suc (suc (suc
-      (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc
-      (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))))))))))))))))))))))))))))))
-    beta1ExponentLaw : beta1Exponent ≡ suc (suc (suc (suc (suc (suc (suc zero)))))))
+    beta1NumeratorLaw : beta1Numerator ≡ 115
+    beta1ExponentLaw : beta1Exponent ≡ 7
+    metaNumeratorLaw : metaNumerator ≡ 1
+    metaExponentLaw : metaExponent ≡ 7
 
 defaultDyadicParameters : DyadicParameters
- defaultDyadicParameters = record
+defaultDyadicParameters = record
   { beta1Numerator = 115
   ; beta1Exponent = 7
   ; metaNumerator = 1
   ; metaExponent = 7
   ; beta1NumeratorLaw = refl
   ; beta1ExponentLaw = refl
+  ; metaNumeratorLaw = refl
+  ; metaExponentLaw = refl
   }
 
 record SignQIDBDState (A : DyadicRing) (n : Nat) : Set₁ where
@@ -231,25 +217,28 @@ doubleSignNormalForm : ∀ {A} (A0 : DyadicRing A) x →
 doubleSignNormalForm A0 x = DyadicRing.signIdempotent A0 x
 
 ------------------------------------------------------------------------
--- No universal fixed-step no-chattering theorem is asserted: a finite
--- signed update can switch signs forever.  The safe compositional theorem is
--- instead eventual sign-normal-form stability under a supplied finite branch
--- invariant.  This target remains finite ordered algebra rather than analysis.
+-- SignReLU is deliberately not part of the stable core: its negative branch
+-- is rational (for alpha=1, x/(1-x)), so it requires reciprocal/domain laws
+-- and does not preserve a uniform finite polynomial branch class.
 --
--- Efficient-CHAD is represented by the shared affine/vector primitives above.
--- Tsallis-2 contributes a finite active-set equilibrium boundary.  L1 weight
--- norm and one-path norm remain independent absolute-value invariants.
--- The sign-q-IDBD channel signs only the parameter direction, after q-style
--- projection; beta1 is the exact dyadic 115/128 encoding and meta-step is
--- dyadic as well.  CVT-ME/OpenES mutation, overestimation-bias decomposition,
--- custom Munchausen correction, and Pareto-efficient coupled hyperparameter
--- mapping remain finite outer-state theorem targets.
+-- Sign and CReLU are finite ordered branch operators. CReLU preserves the
+-- magnitude channel via its two coordinates, while Sign is the parameter-
+-- direction quantizer. Standard q-IDBD retains update magnitude; this target
+-- fixes sign-q-IDBD as the default instead, with beta1 = 115/128 and a dyadic
+-- meta-step, because the signed parameter channel is the intended finite-
+-- ordered quotient. Momentum remains a magnitude-bearing state before the
+-- final parameter-direction sign operation.
 --
--- Degree recurrence: affine input starts at order 1; CReLU and SignReLU are
--- branchwise degree preserving; bilinear query-key scoring doubles degree;
--- Tsallis active weights preserve that score degree; weight-value multiplication
--- gives at most 3d.  Therefore L attention compositions have highest branchwise
--- polynomial order 3^L.  This order is unaffected by dyadic scaling, L1/path
--- norm bounds, or sign-q-IDBD, although Sign activation can collapse magnitude
--- information and SignReLU introduces rational rather than polynomial branches.
+-- CReLU does not raise polynomial degree on a fixed branch. Bilinear query/key
+-- scoring gives degree 2d, Tsallis-2 routing preserves that degree, and
+-- weight-value multiplication gives degree 3d. Starting from affine degree 1,
+-- the effective highest branchwise polynomial order after L attention layers
+-- is therefore 3^L. L1 weight norm and one-path norm bound coefficients/path
+-- mass but do not lower that order. Dyadic coupled L2 and dyadic meta-step
+-- likewise constrain coefficients rather than degree.
+--
+-- The outer theorem surface retains finite CVT-ME/OpenES antithetic mutation,
+-- overestimation-bias decomposition, custom Munchausen correction, and the
+-- Pareto-efficient coupled-hyperparameter mapping as finite theorem targets;
+-- no stochastic asymptotic certificate is claimed here.
 ------------------------------------------------------------------------
