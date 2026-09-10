@@ -29,6 +29,17 @@ path1 w1 w2 = sum
   , h <- [0 .. length w1 - 1]
   ]
 
+signR :: Rational -> Rational
+signR x | x > 0 = 1
+        | x < 0 = -1
+        | otherwise = 0
+
+signedQIDBDStep :: Rational -> Rational -> Rational -> Rational -> Rational
+signedQIDBDStep theta eta direction decay = theta - eta * signR direction - decay * theta
+
+dyadicMomentum :: Rational -> Rational -> Rational -> Rational
+dyadicMomentum beta momentum gradient = beta * momentum + (1 - beta) * gradient
+
 showR :: Rational -> String
 showR q = show (numerator q) ++ "/" ++ show (denominator q)
 
@@ -43,6 +54,9 @@ main = do
       l1 = weightL1 w1
       p1 = path1 w1 w2
       degrees = take 5 (iterate (*3) 1)
+      signed = signedQIDBDStep (1 % 2) (1 % 4) ((-3) % 2) (1 % 8)
+      betaMomentum = dyadicMomentum (1 % 2) (1 % 3) (1 % 4)
+      beta2Momentum = dyadicMomentum (3 % 4) (1 % 3) (1 % 4)
   if pos - neg /= x then error "CReLU reconstruction failed" else pure ()
   if pos + neg /= abs x then error "CReLU absolute decomposition failed" else pure ()
   if weights /= [3 % 4, 1 % 4, 0] then error "Tsallis-2 weights failed" else pure ()
@@ -50,7 +64,10 @@ main = do
   if l1 /= 77 % 60 then error "L1 weight norm failed" else pure ()
   if p1 /= 643 % 720 then error "1-path norm failed" else pure ()
   if degrees /= [1,3,9,27,81] then error "degree recurrence failed" else pure ()
-  putStrLn "oracle=haskell-rational"
+  if signed /= 11 % 16 then error "signed q-IDBD witness failed" else pure ()
+  if betaMomentum /= 7 % 24 then error "dyadic beta momentum failed" else pure ()
+  if beta2Momentum /= 5 % 16 then error "dyadic beta2 momentum failed" else pure ()
+  putStrLn "oracle=functional-rational"
   putStrLn ("crelu.reconstruct=" ++ showR (pos - neg))
   putStrLn ("crelu.abs=" ++ showR (pos + neg))
   putStrLn ("tsallis.tau=" ++ showR tau)
@@ -58,6 +75,9 @@ main = do
   putStrLn ("weight_l1=" ++ showR l1)
   putStrLn ("path1=" ++ showR p1)
   putStrLn "degree_sequence=1,3,9,27,81"
+  putStrLn ("signed_qidbd=" ++ showR signed)
+  putStrLn ("dyadic_beta_momentum=" ++ showR betaMomentum)
+  putStrLn ("dyadic_beta2_momentum=" ++ showR beta2Momentum)
   putStrLn "status=PASS"
   where
     comma [] = ""
