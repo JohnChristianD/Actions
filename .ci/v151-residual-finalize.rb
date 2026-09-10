@@ -13,25 +13,19 @@ residualSquareNonzero_v140 ha hr hx =
     (OrderedRing.notLtFromLe ha
       (subst (λ q → q < zero) hresidual hr))
   where
-  rg : Ring (SmoothAlgebra.orderedRing _) =
-    OrderedRing.ring (SmoothAlgebra.orderedRing _)
-  hxx : x * x ≡ zero
+  rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
   hxx =
     trans
       (cong₂ (Ring._*_ rg) hx hx)
       (Ring.zeroMulR rg zero)
-  hmul : mu * (x * x) ≡ zero
   hmul =
     trans
       (cong (λ q → mu * q) hxx)
       (Ring.zeroMulR rg mu)
-  hnegZero : Ring.neg rg zero ≡ zero
   hnegZero =
     trans
       (sym (Ring.addZeroR rg (Ring.neg rg zero)))
       (Ring.addNegL rg zero)
-  hresidual :
-    alpha + Ring.neg rg (mu * (x * x)) ≡ alpha
   hresidual =
     trans
       (cong (λ q → alpha + q)
@@ -49,4 +43,4 @@ s.sub!(old, new)
 File.write(path, s)
 abort 'residual theorem remained implicit' if s.match?(/residualSquareNonzero_v140 : ∀ \{S\}\n/)
 abort 'residual theorem still uses proof witness as scalar' if s.include?('(mu * (hx * hx))')
-puts 'v154 residual proof normalization: PASS'
+puts 'v155 residual proof normalization: PASS'
