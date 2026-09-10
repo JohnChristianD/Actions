@@ -3,68 +3,87 @@ module Exotic.ERL.FullCoupled.EfficientCHAD_DoubleSign_Composed_v152 where
 
 open import Agda.Builtin.Nat using (Nat)
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150
-open import Exotic.ERL.FullCoupled.EfficientCHAD_DoubleSign_v151
+import Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 as Base
+import Exotic.ERL.FullCoupled.EfficientCHAD_DoubleSign_v151 as D
 
-record DoubleSignCompositionLaw (A : OrderedAlgebra) : Set₁ where
+cong₂ :
+  {A B C : Set} →
+  (f : A → B → C) →
+  {x x' : A} →
+  {y y' : B} →
+  x ≡ x' →
+  y ≡ y' →
+  f x y ≡ f x' y'
+cong₂ f refl refl = refl
+
+record DoubleSignCompositionLaw
+  (A : Base.OrderedAlgebra) : Set₁ where
   field
-    inner outer : SignActivationCertificate A
+    inner outer : D.SignActivationCertificate A
     absorb : ∀ x →
-      SignActivationCertificate.sign outer
-        (SignActivationCertificate.sign inner x) ≡
-      SignActivationCertificate.sign inner x
+      D.SignActivationCertificate.sign outer
+        (D.SignActivationCertificate.sign inner x) ≡
+      D.SignActivationCertificate.sign inner x
 
-composeSign : ∀ {A : OrderedAlgebra} {n : Nat}
-  → DoubleSignCompositionLaw A → Vector A n → Vector A n
+composeSign : ∀ {A : Base.OrderedAlgebra} {n : Nat}
+  → DoubleSignCompositionLaw A
+  → Base.Vector A n
+  → Base.Vector A n
 composeSign c [] = []
 composeSign c (x ∷ xs) =
-  SignActivationCertificate.sign
+  D.SignActivationCertificate.sign
     (DoubleSignCompositionLaw.outer c)
-    (SignActivationCertificate.sign
+    (D.SignActivationCertificate.sign
       (DoubleSignCompositionLaw.inner c) x)
   ∷ composeSign c xs
 
-composeSignCorrect : ∀ {A : OrderedAlgebra} {n : Nat}
-  (c : DoubleSignCompositionLaw A) (x : Vector A n) →
-  composeSign c x ≡ signVec (DoubleSignCompositionLaw.inner c) x
+composeSignCorrect : ∀ {A : Base.OrderedAlgebra} {n : Nat}
+  (c : DoubleSignCompositionLaw A) (x : Base.Vector A n) →
+  composeSign c x ≡
+  D.signVec (DoubleSignCompositionLaw.inner c) x
 composeSignCorrect c [] = refl
 composeSignCorrect c (x ∷ xs) =
   cong₂ _∷_
     (DoubleSignCompositionLaw.absorb c x)
     (composeSignCorrect c xs)
 
-sameSignCompositionLaw : ∀ {A : OrderedAlgebra}
-  (s : SignActivationCertificate A) →
+sameSignCompositionLaw : ∀ {A : Base.OrderedAlgebra}
+  (s : D.SignActivationCertificate A) →
   DoubleSignCompositionLaw A
 sameSignCompositionLaw s = record
   { inner = s
   ; outer = s
-  ; absorb = SignActivationCertificate.signIdempotent s
+  ; absorb = D.SignActivationCertificate.signIdempotent s
   }
 
+sameSignCompositionLawCorrect : ∀ {A : Base.OrderedAlgebra} {n : Nat}
+  (s : D.SignActivationCertificate A) (x : Base.Vector A n) →
+  composeSign (sameSignCompositionLaw s) x ≡ D.signVec s x
+sameSignCompositionLawCorrect s x = composeSignCorrect (sameSignCompositionLaw s) x
+
 record FiniteKKTFixedPointLaw
-  (A : OrderedAlgebra) (n : Nat) : Set₁ where
+  (A : Base.OrderedAlgebra) (n : Nat) : Set₁ where
   field
-    relation : Vector A n → Vector A n → Set
-    stationarity feasible complementarity : Vector A n → Set
-    point : Vector A n
+    relation : Base.Vector A n → Base.Vector A n → Set
+    stationarity feasible complementarity : Base.Vector A n → Set
+    point : Base.Vector A n
     fixed : relation point point
     stationary : stationarity point
     feasibleAt : feasible point
     complementaryAt : complementarity point
 
 record DoubleSignComposedCertificate
-  (A : OrderedAlgebra) (n window : Nat) : Set₁ where
+  (A : Base.OrderedAlgebra) (n window : Nat) : Set₁ where
   field
-    stack : PredictivePrescriptiveConjectureCertificate A n window
+    stack : D.PredictivePrescriptiveConjectureCertificate A n window
     composition : DoubleSignCompositionLaw A
-    interpolation : FiniteInterpolationCertificate A
+    interpolation : D.FiniteInterpolationCertificate A
     nonsmooth : FiniteKKTFixedPointLaw A n
-    pareto : ParetoEfficientMappingCertificate A
-    predictedNorm : OrderedAlgebra.R A
+    pareto : D.ParetoEfficientMappingCertificate A
+    predictedNorm : Base.OrderedAlgebra.R A
 
 composeDoubleSignComposedCertificate : ∀
-  {A : OrderedAlgebra} {n window : Nat} →
+  {A : Base.OrderedAlgebra} {n window : Nat} →
   DoubleSignComposedCertificate A n window →
   DoubleSignComposedCertificate A n window
 composeDoubleSignComposedCertificate c = c
