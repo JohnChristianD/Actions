@@ -14,7 +14,6 @@ on:
     paths:
       - 'Exotic/ERL/**/*.agda'
       - 'oracle/haskell_oracle.hs'
-      - 'oracle/elixir_oracle.exs'
       - 'oracle/q_certificate.exs'
       - '.github/workflows/oracle-crosscheck.yml'
   workflow_dispatch:
@@ -48,8 +47,8 @@ jobs:
         with:
           otp-version: '27'
           elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
+          install-hex: true
+          install-rebar: false
 
       - name: Run Elixir exact-Rational oracle
         if: matrix.oracle == 'elixir'
@@ -94,7 +93,7 @@ jobs:
         with:
           otp-version: '27'
           elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
+          install-hex: true
+          install-rebar: false
       - name: Run Elixir exact-Rational q-projection certificate
         run: elixir oracle/q_certificate.exs
