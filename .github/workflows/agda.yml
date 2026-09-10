@@ -10,6 +10,7 @@ on:
       - '.ci/v151-residual-finalize.rb'
       - '.ci/v164-exposure-pareto.rb'
       - '.ci/v165-qcross-compat.rb'
+      - '.ci/v167-qkkt-comment-repair.rb'
   pull_request:
     branches: ['main']
     paths:
@@ -19,6 +20,7 @@ on:
       - '.ci/v151-residual-finalize.rb'
       - '.ci/v164-exposure-pareto.rb'
       - '.ci/v165-qcross-compat.rb'
+      - '.ci/v167-qkkt-comment-repair.rb'
   workflow_dispatch:
 
 permissions:
@@ -52,11 +54,14 @@ jobs:
       - name: Finalize q-projection compatibility
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: ruby .ci/v165-qcross-compat.rb
+      - name: Restore q-projection fixed-point declaration
+        if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
+        run: ruby .ci/v167-qkkt-comment-repair.rb
       - name: Dump post-repair q-projection context
         if: github.head_ref == 'ci/v149-monolith-dedupe' || github.ref == 'refs/heads/ci/v149-monolith-dedupe'
         run: |
           set -euo pipefail
-          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1215,1250p'
+          nl -ba Exotic/ERL/FullCoupled/CompleteSafe_v147.agda | sed -n '1215,1255p'
       - name: Safe-check combined self-contained surface
         run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
       - name: Safe-check full Efficient-CHAD source-to-source transliteration
