@@ -12,16 +12,15 @@ repairs = [
   {"beta115_128_code", "betaDyadicCode"},
   {"onePathVector : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → Vector A d", "onePathVector : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → Vector A d"},
   {"onePathNorm : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → DyadicRing.R A", "onePathNorm : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → DyadicRing.R A"},
-  {"cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
+  {"    neg abs : R → R\n    max : R → R → R", "    neg abs sign : R → R\n    max : R → R → R"},
+  {"    signIdempotent : ∀ x →\n      let p = max zero x\n          n = max zero (neg x)\n      in max zero (neg n) ≡ max zero (neg n)", "    signIdempotent : ∀ x → sign (sign x) ≡ sign x\n    signZero : sign zero ≡ zero\n    signNegOne : ∀ {x} → x < zero → sign x ≡ neg one\n    signPosOne : ∀ {x} → zero < x → sign x ≡ one"},
+  {"cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x → signScalar {A} x ≡ x", "cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  cPlus {A} x + DyadicRing.neg A (cMinus {A} x) ≡ x"},
+  {"cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x", "cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x"},
   {"cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
   {"antitheticCancel : ∀ {A : DyadicRing} (A0 : A) x →", "antitheticCancel : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
   {"signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) x →", "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
-  {"    neg abs : R → R\n    max : R → R → R", "    neg abs sign : R → R\n    max : R → R → R"},
-  {"    signIdempotent : ∀ x →\n      let p = max zero x\n          n = max zero (neg x)\n      in max zero (neg n) ≡ max zero (neg n)", "    signIdempotent : ∀ x → sign (sign x) ≡ sign x\n    signZero : sign zero ≡ zero\n    signNegOne : ∀ {x} → x < zero → sign x ≡ neg one\n    signPosOne : ∀ {x} → zero < x → sign x ≡ one"},
-  {"signScalar : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nsignScalar {A} x = cPlus {A} x + DyadicRing.neg A (cMinus {A} x)", "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x"},
   {"parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)", "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)"},
-  {"signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = signScalar {A} x ∷ signQIDBDDirection xs", "signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = parameterSign {A} x ∷ signQIDBDDirection xs"},
-  {"signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  signScalar {A} (signScalar {A} x) ≡ signScalar {A} x", "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x"}
+  {"signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = signScalar {A} x ∷ signQIDBDDirection xs", "signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = parameterSign {A} x ∷ signQIDBDDirection xs"}
 ]
 
 text = Enum.reduce(repairs, text, fn {old, new}, acc ->
@@ -29,6 +28,13 @@ text = Enum.reduce(repairs, text, fn {old, new}, acc ->
 end)
 
 text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s, text, "")
+
+oldSign = "signScalar : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nsignScalar {A} x = cPlus {A} x + DyadicRing.neg A (cMinus {A} x)"
+text = String.replace(text, oldSign, "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x")
+
+text = String.replace(text,
+  "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  signScalar {A} (signScalar {A} x) ≡ signScalar {A} x",
+  "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x")
 
 forbidden = [
   "LayerNorm",
@@ -41,6 +47,7 @@ forbidden = [
   "setup-python",
   "ruby/setup-ruby",
   "Σ",
+  "signScalar"
 ]
 
 Enum.each(forbidden, fn token ->
