@@ -24,7 +24,7 @@ required = [
   "weightL1",
   "beta1Numerator",
   "beta1Exponent",
-  "metaStepExponent",
+  "metaExponent",
   "Munchausen",
   "overestimation",
   "CVT",
