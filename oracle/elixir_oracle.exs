@@ -12,7 +12,7 @@ defmodule Q do
   def zero, do: {0, 1}
   def nonnegative?({n, _}), do: n >= 0
   def positive?({n, _}), do: n > 0
-  def max(a, b), do: if sub(a, b) |> nonnegative?(), do: a, else: b
+  def max(a, b), do: if(sub(a, b) |> nonnegative?(), do: a, else: b)
   def text({n, 1}), do: Integer.to_string(n) <> "/1"
   def text({n, d}), do: Integer.to_string(n) <> "/" <> Integer.to_string(d)
 end
@@ -33,8 +33,7 @@ defmodule Oracle do
       end)
 
     admissible = fn k, tau ->
-      k == length(xs) or
-        (Enum.at(sorted, k) |> Q.sub(tau) |> Q.nonnegative?())
+      k == length(xs) or Q.sub(tau, Enum.at(sorted, k)) |> Q.nonnegative?()
     end
 
     {_, tau} =
