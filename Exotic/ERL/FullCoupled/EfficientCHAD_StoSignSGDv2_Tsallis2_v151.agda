@@ -5,6 +5,9 @@ open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 
+data Bool : Set where
+  false true : Bool
+
 record DyadicRing : Set₁ where
   field
     R : Set
@@ -40,8 +43,8 @@ data Fin : Nat → Set where
 
 infixr 5 _∷_
 data Vec (A : Set) : Nat → Set where
-  [] : Vec A (Nat.zero)
-  _∷_ : ∀ {n} → A → Vec A (suc n)
+  [] : Vec A Nat.zero
+  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
 index : ∀ {A n} → Fin n → Vec A n → A
 index fzero (x ∷ _) = x
@@ -149,13 +152,13 @@ record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
     nonnegative : ∀ i → DyadicRing.zero A ≤ index i weights
     normalised : vDot A weights (ones A w) ≡ DyadicRing.one A
     activeAffine : ∀ i →
-      index i weights ≡
-        cPlus A (index i scores + DyadicRing.neg A tau)
+      index i weights ≡ cPlus A
+        (index i scores + DyadicRing.neg A tau)
 
 tsallis2Mass : ∀ {A w} (A0 : DyadicRing A) →
   Tsallis2Weights A w → DyadicRing.R A
 tsallis2Mass A0 r =
-  vDot A0 (Tsallis2Weights.weights r) (ones A0 _)
+  vDot A0 (Tsallis2Weights.weights r) (ones A0 w)
 
 tsallis2MassLaw : ∀ {A w} (A0 : DyadicRing A)
   (r : Tsallis2Weights A w) →
@@ -165,8 +168,10 @@ tsallis2MassLaw A0 r = Tsallis2Weights.normalised r
 record DyadicParameters : Set where
   field
     beta1Numerator beta1Exponent : Nat
+    beta1ComplementNumerator : Nat
     metaNumerator metaExponent : Nat
     beta1NumeratorLaw : beta1Numerator ≡ 115
+    beta1ComplementLaw : beta1ComplementNumerator ≡ 13
     beta1ExponentLaw : beta1Exponent ≡ 7
     metaNumeratorLaw : metaNumerator ≡ 1
     metaExponentLaw : metaExponent ≡ 7
@@ -174,10 +179,12 @@ record DyadicParameters : Set where
 defaultDyadicParameters : DyadicParameters
 defaultDyadicParameters = record
   { beta1Numerator = 115
+  ; beta1ComplementNumerator = 13
   ; beta1Exponent = 7
   ; metaNumerator = 1
   ; metaExponent = 7
   ; beta1NumeratorLaw = refl
+  ; beta1ComplementLaw = refl
   ; beta1ExponentLaw = refl
   ; metaNumeratorLaw = refl
   ; metaExponentLaw = refl
@@ -189,6 +196,11 @@ record SignQIDBDState (A : DyadicRing) (n : Nat) : Set₁ where
     parameterDirectionOnly : ∀ i →
       index signedDirection i ≡ signScalar A (index rawDirection i)
     hyperparameters : DyadicParameters
+
+signQIDBDDirection : ∀ {A n} (A0 : DyadicRing A) →
+  Vector A n → Vector A n
+signQIDBDDirection A [] = []
+signQIDBDDirection A (x ∷ xs) = signScalar A x ∷ signQIDBDDirection A xs
 
 record DyadicCoupledL2 : Set where
   field
@@ -207,9 +219,6 @@ record SparseOuterState (A : DyadicRing) (n : Nat) : Set₁ where
     mutationScale : Nat
     openESFinite cvtFinite munchausenFinite overestimationFinite
       hyperparameterMapParetoEfficient : Bool
-  where
-  data Bool : Set where
-    false true : Bool
 
 antitheticCancel : ∀ {A} (A0 : DyadicRing A) x →
   DyadicRing._+_ A0 x (DyadicRing.neg A0 x) ≡ DyadicRing.zero A0
@@ -221,25 +230,18 @@ doubleSignNormalForm A0 x = DyadicRing.signIdempotent A0 x
 
 ------------------------------------------------------------------------
 -- Finite emergent composition target.
---
--- CReLU is the primary practical activation arm and is degree preserving on
--- each finite branch. Sign is the parameter-direction quantizer only.
--- SignReLU is excluded from the polynomial core because its negative branch
--- is rational and therefore needs denominator/domain semantics.
---
--- Bilinear query-key scoring maps degree d to 2d. Tsallis-2 active weights
--- preserve that score degree. Multiplication by values gives 3d. Starting
--- from affine degree 1, L attention compositions therefore have branchwise
--- polynomial order at most 3^L. L1 weight norm and one-path norm constrain
--- coefficient/path mass, while dyadic coupled L2 and dyadic meta-step constrain
--- coefficients without changing this degree bound.
---
--- Forward activation branch and parameter-direction sign are distinct finite
--- channels. The relevant composed branch index is activation-region ×
--- Tsallis-active-set × parameter-direction-sign-region.
---
--- The outer target retains finite CVT-ME/OpenES antithetic mutation,
+-- CReLU is the practical representation activation. Sign is used on the
+-- parameter direction only, after q-projection: sign-q-IDBD.
+-- beta1 is exactly 115/128, with complement 13/128, and meta-step is 1/128.
+-- Bilinear QK scoring maps degree d to 2d; Tsallis-2 routing preserves that
+-- score degree; value weighting gives 3d. Thus L attention layers have
+-- branchwise polynomial degree at most 3^L from affine degree 1.
+-- L1 weight norm and one-path norm constrain coefficient/path mass without
+-- changing degree. Dyadic coupled L2 and dyadic meta-step likewise constrain
+-- coefficients without changing degree.
+-- SignReLU is not in this polynomial core because its negative branch is
+-- rational and requires reciprocal/domain laws.
+-- The outer finite target retains CVT-ME/OpenES antithetic mutation,
 -- overestimation-bias, custom Munchausen, and Pareto-efficient coupled
--- hyperparameter-mapping theorem surfaces. These are finite algebraic targets,
--- not claims of stochastic asymptotic convergence.
+-- hyperparameter-mapping theorem surfaces.
 ------------------------------------------------------------------------
