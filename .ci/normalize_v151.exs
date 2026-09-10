@@ -14,69 +14,31 @@ repairs = [
   {"onePathNorm : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → DyadicRing.R A", "onePathNorm : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → DyadicRing.R A"},
   {"    neg abs : R → R\n    max : R → R → R", "    neg abs sign : R → R\n    max : R → R → R"},
   {"    signIdempotent : ∀ x →\n      let p = max zero x\n          n = max zero (neg x)\n      in max zero (neg n) ≡ max zero (neg n)", "    signIdempotent : ∀ x → sign (sign x) ≡ sign x\n    signZero : sign zero ≡ zero\n    signNegOne : ∀ {x} → x < zero → sign x ≡ neg one\n    signPosOne : ∀ {x} → zero < x → sign x ≡ one"},
-  {"cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x → signScalar {A} x ≡ x", "cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  cPlus {A} x + DyadicRing.neg A (cMinus {A} x) ≡ x"},
-  {"cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x", "cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x"},
-  {"cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
-  {"antitheticCancel : ∀ {A : DyadicRing} (A0 : A) x →", "antitheticCancel : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
-  {"signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) x →", "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →"},
-  {"parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)", "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)"},
-  {"signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = signScalar {A} x ∷ signQIDBDDirection xs", "signQIDBDDirection {A} [] = []\nsignQIDBDDirection {A} (x ∷ xs) = parameterSign {A} x ∷ signQIDBDDirection xs"}
+  {"cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x → signScalar {A} x ≡ x", "cReLUReconstruct : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
+  {"cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x", "cReLUReconstruct {A} x = DyadicRing.cReLULaw A x"},
+  {"cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUMagnitudeProof : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
+  {"cReLUMagnitudeProof A0 x = DyadicRing.cReLUMagnitude A0 x", "cReLUMagnitudeProof {A} x = DyadicRing.cReLUMagnitude A x"},
+  {"antitheticCancel : ∀ {A : DyadicRing} (A0 : A) x →", "antitheticCancel : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
+  {"antitheticCancel A0 x = DyadicRing.addNegR A0 x", "antitheticCancel {A} x = DyadicRing.addNegR A x"},
+  {"signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) x →", "signQIDBDNormalForm : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
+  {"signQIDBDNormalForm A0 x = DyadicRing.signIdempotent A0 x", "signQIDBDNormalForm {A} x = DyadicRing.signIdempotent A x"}
 ]
 
-text = Enum.reduce(repairs, text, fn {old, new}, acc ->
-  String.replace(acc, old, new)
-end)
-
+text = Enum.reduce(repairs, text, fn {old, new}, acc -> String.replace(acc, old, new) end)
 text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s, text, "")
 
-oldSign = "signScalar : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nsignScalar {A} x = cPlus {A} x + DyadicRing.neg A (cMinus {A} x)"
-text = String.replace(text, oldSign, "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x")
-
-text = String.replace(text,
-  "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  signScalar {A} (signScalar {A} x) ≡ signScalar {A} x",
-  "signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x")
-
 forbidden = [
-  "LayerNorm",
-  "BatchNorm",
-  "BatchRenorm",
-  "CReLUCertificate",
-  "noMomentum",
-  "beta1Zero",
-  "python3",
-  "setup-python",
-  "ruby/setup-ruby",
-  "Σ",
-  "signScalar"
+  "LayerNorm", "BatchNorm", "BatchRenorm", "CReLUCertificate",
+  "noMomentum", "beta1Zero", "python3", "setup-python", "ruby/setup-ruby", "Σ"
 ]
-
-Enum.each(forbidden, fn token ->
-  if String.contains?(text, token) do
-    raise "forbidden v151 token remains: #{token}"
-  end
-end)
+Enum.each(forbidden, fn token -> if String.contains?(text, token), do: raise "forbidden v151 token remains: #{token}" end)
 
 required = [
-  "sign-q-IDBD",
-  "Tsallis2",
-  "onePathNorm",
-  "weightL1",
-  "beta1Numerator",
-  "beta1Exponent",
-  "metaExponent",
-  "Munchausen",
-  "overestimation",
-  "CVT",
-  "OpenES",
-  "parameterSign",
-  "signIdempotent"
+  "sign-q-IDBD", "Tsallis2", "onePathNorm", "weightL1", "beta1Numerator",
+  "beta1Exponent", "metaExponent", "Munchausen", "overestimation", "CVT",
+  "OpenES", "parameterSign", "signIdempotent"
 ]
-
-Enum.each(required, fn token ->
-  unless String.contains?(text, token) do
-    raise "required v151 token missing: #{token}"
-  end
-end)
+Enum.each(required, fn token -> unless String.contains?(text, token), do: raise "required v151 token missing: #{token}" end)
 
 File.write!(path, text)
 IO.puts("v151 Elixir normalisation/hygiene: PASS")
