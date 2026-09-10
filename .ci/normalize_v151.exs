@@ -13,18 +13,48 @@ repairs = [
   {"onePathVector : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → Vector A d", "onePathVector : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → Vector A d"},
   {"onePathNorm : ∀ {A : DyadicRing} {d} → Vec (Matrix A d d) Nat → DyadicRing.R A", "onePathNorm : ∀ {A : DyadicRing} {d L} → Vec (Matrix A d d) L → DyadicRing.R A"},
   {"    neg abs : R → R\n    max : R → R → R", "    neg abs sign : R → R\n    max : R → R → R"},
-  {"    signIdempotent : ∀ x →\n      let p = max zero x\n          n = max zero (neg x)\n      in max zero (neg n) ≡ max zero (neg n)", "    signIdempotent : ∀ x → sign (sign x) ≡ sign x\n    signZero : sign zero ≡ zero\n    signNegOne : ∀ {x} → x < zero → sign x ≡ neg one\n    signPosOne : ∀ {x} → zero < x → sign x ≡ one"},
-  {"cReLUReconstruct : ∀ {A : DyadicRing} (A0 : A) x → signScalar {A} x ≡ x", "cReLUReconstruct : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
-  {"cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x", "cReLUReconstruct {A} x = DyadicRing.cReLULaw A x"},
-  {"cReLUMagnitudeProof : ∀ {A : DyadicRing} (A0 : A) x →", "cReLUMagnitudeProof : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
-  {"cReLUMagnitudeProof A0 x = DyadicRing.cReLUMagnitude A0 x", "cReLUMagnitudeProof {A} x = DyadicRing.cReLUMagnitude A x"},
-  {"antitheticCancel : ∀ {A : DyadicRing} (A0 : A) x →", "antitheticCancel : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
-  {"antitheticCancel A0 x = DyadicRing.addNegR A0 x", "antitheticCancel {A} x = DyadicRing.addNegR A x"},
-  {"signQIDBDNormalForm : ∀ {A : DyadicRing} (A0 : A) x →", "signQIDBDNormalForm : ∀ {A : DyadicRing} (x : DyadicRing.R A) →"},
-  {"signQIDBDNormalForm A0 x = DyadicRing.signIdempotent A0 x", "signQIDBDNormalForm {A} x = DyadicRing.signIdempotent A x"}
+  {"    signIdempotent : ∀ x →\n      let p = max zero x\n          n = max zero (neg x)\n      in max zero (neg n) ≡ max zero (neg n)", "    signIdempotent : ∀ x → sign (sign x) ≡ sign x\n    signZero : sign zero ≡ zero\n    signNegOne : ∀ {x} → x < zero → sign x ≡ neg one\n    signPosOne : ∀ {x} → zero < x → sign x ≡ one"}
 ]
 
 text = Enum.reduce(repairs, text, fn {old, new}, acc -> String.replace(acc, old, new) end)
+
+text = Regex.replace(
+  ~r/signScalar\s*:\s*∀ \{A : DyadicRing\} → DyadicRing\.R A → DyadicRing\.R A\s*signScalar \{A\} x = .*?(?=\n\n)/s,
+  text,
+  "parameterSign : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A\nparameterSign {A} x = DyadicRing.sign A x"
+)
+
+text = Regex.replace(
+  ~r/cReLUReconstruct\s*:\s*∀ \{A : DyadicRing\}.*?cReLUReconstruct A0 x = .*?(?=\n\ncReLUMagnitudeProof)/s,
+  text,
+  "cReLUReconstruct : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  cPlus {A} x + DyadicRing.neg A (cMinus {A} x) ≡ x\ncReLUReconstruct {A} x = DyadicRing.cReLULaw A x"
+)
+
+text = Regex.replace(
+  ~r/cReLUMagnitudeProof\s*:\s*∀ \{A : DyadicRing\}.*?cReLUMagnitudeProof A0 x = .*?(?=\n\n)/s,
+  text,
+  "cReLUMagnitudeProof : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  cPlus {A} x + cMinus {A} x ≡ DyadicRing.abs A x\ncReLUMagnitudeProof {A} x = DyadicRing.cReLUMagnitude A x"
+)
+
+text = Regex.replace(
+  ~r/antitheticCancel\s*:\s*∀ \{A : DyadicRing\}.*?antitheticCancel A0 x = .*?(?=\n\nsignQIDBDNormalForm)/s,
+  text,
+  "antitheticCancel : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  DyadicRing._+_ A x (DyadicRing.neg A x) ≡ DyadicRing.zero A\nantitheticCancel {A} x = DyadicRing.addNegR A x"
+)
+
+text = Regex.replace(
+  ~r/signQIDBDNormalForm\s*:\s*∀ \{A : DyadicRing\}.*?signQIDBDNormalForm A0 x = .*?(?=\n\ndata DegreeRecurrence)/s,
+  text,
+  "signQIDBDNormalForm : ∀ {A : DyadicRing} (x : DyadicRing.R A) →\n  parameterSign {A} (parameterSign {A} x) ≡ parameterSign {A} x\nsignQIDBDNormalForm {A} x = DyadicRing.signIdempotent A x"
+)
+
+text = String.replace(text,
+  "parameterDirectionOnly : ∀ i → index signedDirection i ≡ signScalar {A} (index rawDirection i)",
+  "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)"
+)
+text = Regex.replace(~r/signQIDBDDirection \{A\} \(x ∷ xs\) = signScalar \{A\} x ∷ signQIDBDDirection xs/, text,
+  "signQIDBDDirection {A} (x ∷ xs) = parameterSign {A} x ∷ signQIDBDDirection xs")
+
 text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s, text, "")
 
 forbidden = [
