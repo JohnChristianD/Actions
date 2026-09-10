@@ -62,3 +62,4 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_DoubleSign_Composed_v152.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
+      # Retrigger the complete finite-order gate after CI-only changes.
