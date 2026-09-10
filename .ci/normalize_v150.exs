@@ -1,27 +1,28 @@
 repo = File.cwd!()
-workflow_paths = Path.wildcard(Path.join(repo, ".github/workflows/*.yml"))
-workflow_text = Enum.map(workflow_paths, &File.read!/1) |> Enum.join("\n")
+workflow_text = Path.wildcard(Path.join(repo, ".github/workflows/*.yml")) |> Enum.map(&File.read!/1) |> Enum.join("\n")
 
-forbidden = [~r/\bpython3\b/, ~r/ruby\/setup-ruby/, ~r/\bruby\s+[^\n]*\.ci\//]
-if Enum.any?(forbidden, &Regex.match?(&1, workflow_text)) do
+unless not Regex.match?(~r/\bpython3\b/, workflow_text) and
+       not Regex.match?(~r/ruby\/setup-ruby/, workflow_text) and
+       not Regex.match?(~r/\bruby\s+[^\n]*\.ci\//, workflow_text) do
   raise "forbidden Python/Ruby CI invocation remains"
 end
 
 monolith_path = Path.join(repo, "Exotic/ERL/FullCoupled/CompleteSafe_v147.agda")
-s = File.read!(monolith_path)
+s0 = File.read!(monolith_path)
 record_token = "record SmoothAlgebra : Set₁ where"
 scalar_marker = "\nScalar : SmoothAlgebra → Set\n"
 marker_start = "------------------------------------------------------------------------\n-- Canonical SmoothAlgebra boundary.\n"
-marker_end = "------------------------------------------------------------------------\n-- Seven coupled parameter blocks and finite parameter indices\n"
 
-unless String.contains?(s, marker_start) and String.contains?(s, marker_end) do
-  raise "canonical SmoothAlgebra boundaries not found"
+unless String.contains?(s0, marker_start) do
+  raise "canonical SmoothAlgebra boundary missing"
 end
 
-s = String.replace(s,
+s1 = String.replace(
+  s0,
   "open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)",
   "open import Agda.Builtin.Nat using (Nat; suc; _+_)",
-  global: false)
+  global: false
+)
 
 replacements = [
   {"Vec A zero", "Vec A Nat.zero"},
@@ -37,68 +38,56 @@ replacements = [
   {"shiftRV_v146 zero xs = xs", "shiftRV_v146 Nat.zero xs = xs"},
   {"qsaXorShiftDeterministic_v146 zero seed = []", "qsaXorShiftDeterministic_v146 Nat.zero seed = []"}
 ]
-for {a, b} <- replacements, do: s = String.replace(s, a, b, global: false)
 
-# Remove one legacy SmoothAlgebra definition when it occurs before the canonical marker.
-header_pos = :binary.match(s, marker_start) |> elem(0)
-case :binary.match(s, record_token) do
-  :nomatch -> raise "SmoothAlgebra record missing"
-  {legacy_pos, _} when legacy_pos < header_pos ->
-    case :binary.match(s, scalar_marker, scope: legacy_pos..byte_size(s)) do
-      :nomatch -> raise "legacy SmoothAlgebra scalar boundary missing"
-      {scalar_pos, _} ->
-        s = binary_part(s, 0, legacy_pos) <> binary_part(s, scalar_pos + 1, byte_size(s) - scalar_pos - 1)
-    end
-  _ -> :ok
-end
+s2 = Enum.reduce(replacements, s1, fn {a, b}, acc -> String.replace(acc, a, b, global: false) end)
 
-# Recompute positions after legacy removal and deduplicate only inside the canonical region.
-first = :binary.match(s, marker_start) |> elem(0)
-end_rel = binary_part(s, first, byte_size(s) - first) |> :binary.match(marker_end)
-unless end_rel != :nomatch, do: raise "canonical SmoothAlgebra closing boundary missing"
-{rel_end, _} = end_rel
-end_abs = first + rel_end
-prefix = binary_part(s, 0, first)
-region = binary_part(s, first, end_abs - first)
-suffix = binary_part(s, end_abs, byte_size(s) - end_abs)
-region = Regex.replace(~r/record SmoothAlgebra : Set₁ where(?s:.*?)\nScalar : SmoothAlgebra → Set\n/, region, "Scalar : SmoothAlgebra → Set\n")
-s = prefix <> region <> suffix
+header_pos = :binary.match(s2, marker_start) |> elem(0)
+s3 =
+  case :binary.match(s2, record_token) do
+    :nomatch -> raise "SmoothAlgebra record missing"
+    {record_pos, _} when record_pos < header_pos ->
+      tail = binary_part(s2, record_pos, byte_size(s2) - record_pos)
+      case :binary.match(tail, scalar_marker) do
+        :nomatch -> raise "legacy SmoothAlgebra scalar boundary missing"
+        {scalar_rel, _} ->
+          scalar_pos = record_pos + scalar_rel
+          binary_part(s2, 0, record_pos) <> binary_part(s2, scalar_pos + byte_size(scalar_marker), byte_size(s2) - scalar_pos - byte_size(scalar_marker))
+      end
+    _ -> s2
+  end
 
-s = String.replace(s,
+s4 = String.replace(
+  s3,
   "    sqrt recip max min : R → R\n",
   "    sqrt recip : R → R\n    max min : R → R → R\n",
-  global: false)
+  global: false
+)
 
 needle = "    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n"
-if String.contains?(s, needle) and not String.contains?(s, "    sqrtDomain : R → Set\n") do
-  s = String.replace(s, needle, needle <> "    sqrtDomain : R → Set\n    sqrtSquareLaw : ∀ x → sqrtDomain x →\n      Ring._*_ (OrderedRing.ring orderedRing) (sqrt x) (sqrt x) ≡ x\n", global: false)
+s5 = if String.contains?(s4, needle) and not String.contains?(s4, "    sqrtDomain : R → Set\n") do
+  String.replace(s4, needle, needle <> "    sqrtDomain : R → Set\n    sqrtSquareLaw : ∀ x → sqrtDomain x →\n      Ring._*_ (OrderedRing.ring orderedRing) (sqrt x) (sqrt x) ≡ x\n", global: false)
+else
+  s4
 end
 
 old_acc = "  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j)\n"
 new_acc = "  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"
-s = String.replace(s, old_acc, new_acc, global: false)
+s6 = String.replace(s5, old_acc, new_acc, global: false)
 
-if String.contains?(s, "-- AUDITED-KKT-OBLIGATION") do
-  raise "malformed audited KKT placeholder marker survived"
-end
-if length(Regex.scan(~r/^record SmoothAlgebra\b/m, s)) != 1 do
+unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1 do
   raise "SmoothAlgebra record count is not one after normalization"
 end
-if String.contains?(s, "λ j with finDecEq") do
+if String.contains?(s6, "λ j with finDecEq") do
   raise "dependent lambda-with parser form survived"
 end
+if String.contains?(s6, "-- AUDITED-KKT-OBLIGATION") do
+  raise "audited KKT placeholder survived"
+end
 
-File.write!(monolith_path, s)
+File.write!(monolith_path, s6)
 
 target = File.read!(Path.join(repo, "Exotic/ERL/FullCoupled/EfficientCHAD_CReLU_Tsallis2_v150.agda"))
-for token <- [
-  "SignedParameterDirectionQIDBD",
-  "CReLU",
-  "Tsallis2Branch",
-  "DyadicCoupledL2",
-  "onePathNorm",
-  "EfficientCHAD_CReLU_Tsallis2_TheoremTarget"
-] do
+for token <- ["SignedParameterDirectionQIDBD", "CReLU", "Tsallis2Branch", "DyadicCoupledL2", "onePathNorm", "EfficientCHAD_CReLU_Tsallis2_TheoremTarget"] do
   unless String.contains?(target, token), do: raise "v150 theorem target missing #{token}"
 end
 for token <- ["LayerNorm", "python3", "ruby/setup-ruby"] do
