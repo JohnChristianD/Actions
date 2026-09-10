@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_StoSignSGDv2_Tsallis2_v151 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 
@@ -40,8 +40,8 @@ data Fin : Nat → Set where
 
 infixr 5 _∷_
 data Vec (A : Set) : Nat → Set where
-  [] : Vec A zero
-  _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+  [] : Vec A (Nat.zero)
+  _∷_ : ∀ {n} → A → Vec A (suc n)
 
 index : ∀ {A n} → Fin n → Vec A n → A
 index fzero (x ∷ _) = x
@@ -66,11 +66,11 @@ Matrix : DyadicRing → Nat → Nat → Set
 Matrix A m n = Vec (Vector A n) m
 
 zeros : ∀ {A} → DyadicRing A → ∀ n → Vector A n
-zeros A zero = []
+zeros A Nat.zero = []
 zeros A (suc n) = DyadicRing.zero A ∷ zeros A n
 
 ones : ∀ {A} → DyadicRing A → ∀ n → Vector A n
-ones A zero = []
+ones A Nat.zero = []
 ones A (suc n) = DyadicRing.one A ∷ ones A n
 
 vAdd : ∀ {A n} → DyadicRing A → Vector A n → Vector A n → Vector A n
@@ -155,7 +155,7 @@ record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
 tsallis2Mass : ∀ {A w} (A0 : DyadicRing A) →
   Tsallis2Weights A w → DyadicRing.R A
 tsallis2Mass A0 r =
-  vDot A0 (Tsallis2Weights.weights r) (ones A0 w)
+  vDot A0 (Tsallis2Weights.weights r) (ones A0 _)
 
 tsallis2MassLaw : ∀ {A w} (A0 : DyadicRing A)
   (r : Tsallis2Weights A w) →
@@ -207,6 +207,9 @@ record SparseOuterState (A : DyadicRing) (n : Nat) : Set₁ where
     mutationScale : Nat
     openESFinite cvtFinite munchausenFinite overestimationFinite
       hyperparameterMapParetoEfficient : Bool
+  where
+  data Bool : Set where
+    false true : Bool
 
 antitheticCancel : ∀ {A} (A0 : DyadicRing A) x →
   DyadicRing._+_ A0 x (DyadicRing.neg A0 x) ≡ DyadicRing.zero A0
@@ -217,28 +220,26 @@ doubleSignNormalForm : ∀ {A} (A0 : DyadicRing A) x →
 doubleSignNormalForm A0 x = DyadicRing.signIdempotent A0 x
 
 ------------------------------------------------------------------------
--- SignReLU is deliberately not part of the stable core: its negative branch
--- is rational (for alpha=1, x/(1-x)), so it requires reciprocal/domain laws
--- and does not preserve a uniform finite polynomial branch class.
+-- Finite emergent composition target.
 --
--- Sign and CReLU are finite ordered branch operators. CReLU preserves the
--- magnitude channel via its two coordinates, while Sign is the parameter-
--- direction quantizer. Standard q-IDBD retains update magnitude; this target
--- fixes sign-q-IDBD as the default instead, with beta1 = 115/128 and a dyadic
--- meta-step, because the signed parameter channel is the intended finite-
--- ordered quotient. Momentum remains a magnitude-bearing state before the
--- final parameter-direction sign operation.
+-- CReLU is the primary practical activation arm and is degree preserving on
+-- each finite branch. Sign is the parameter-direction quantizer only.
+-- SignReLU is excluded from the polynomial core because its negative branch
+-- is rational and therefore needs denominator/domain semantics.
 --
--- CReLU does not raise polynomial degree on a fixed branch. Bilinear query/key
--- scoring gives degree 2d, Tsallis-2 routing preserves that degree, and
--- weight-value multiplication gives degree 3d. Starting from affine degree 1,
--- the effective highest branchwise polynomial order after L attention layers
--- is therefore 3^L. L1 weight norm and one-path norm bound coefficients/path
--- mass but do not lower that order. Dyadic coupled L2 and dyadic meta-step
--- likewise constrain coefficients rather than degree.
+-- Bilinear query-key scoring maps degree d to 2d. Tsallis-2 active weights
+-- preserve that score degree. Multiplication by values gives 3d. Starting
+-- from affine degree 1, L attention compositions therefore have branchwise
+-- polynomial order at most 3^L. L1 weight norm and one-path norm constrain
+-- coefficient/path mass, while dyadic coupled L2 and dyadic meta-step constrain
+-- coefficients without changing this degree bound.
 --
--- The outer theorem surface retains finite CVT-ME/OpenES antithetic mutation,
--- overestimation-bias decomposition, custom Munchausen correction, and the
--- Pareto-efficient coupled-hyperparameter mapping as finite theorem targets;
--- no stochastic asymptotic certificate is claimed here.
+-- Forward activation branch and parameter-direction sign are distinct finite
+-- channels. The relevant composed branch index is activation-region ×
+-- Tsallis-active-set × parameter-direction-sign-region.
+--
+-- The outer target retains finite CVT-ME/OpenES antithetic mutation,
+-- overestimation-bias, custom Munchausen, and Pareto-efficient coupled
+-- hyperparameter-mapping theorem surfaces. These are finite algebraic targets,
+-- not claims of stochastic asymptotic convergence.
 ------------------------------------------------------------------------
