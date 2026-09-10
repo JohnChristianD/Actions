@@ -9,26 +9,26 @@ residualSquareNonzero_v140 : ∀ {S : SmoothAlgebra}
   alpha + Ring.neg (OrderedRing.ring (SmoothAlgebra.orderedRing S))
     (mu * (x * x)) < zero → x ≠ zero
 residualSquareNonzero_v140 ha hr hx =
-  let Rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
+  let rg = OrderedRing.ring (SmoothAlgebra.orderedRing _)
       hxx : _ ≡ zero =
         trans
-          (cong₂ (Ring._*_ Rg) hx hx)
-          (Ring.zeroMulR Rg zero)
+          (cong₂ (Ring._*_ rg) hx hx)
+          (Ring.zeroMulR rg zero)
       hmul : _ ≡ zero =
         trans
           (cong (λ q → _ * q) hxx)
-          (Ring.zeroMulR Rg mu)
-      hnegZero : Ring.neg Rg zero ≡ zero =
+          (Ring.zeroMulR rg mu)
+      hnegZero : Ring.neg rg zero ≡ zero =
         trans
-          (sym (Ring.addZeroR Rg (Ring.neg Rg zero)))
-          (Ring.addNegL Rg zero)
+          (sym (Ring.addZeroR rg (Ring.neg rg zero)))
+          (Ring.addNegL rg zero)
       hresidual : _ ≡ alpha =
         trans
           (cong (λ q → alpha + q)
             (trans
-              (cong (Ring.neg Rg) hmul)
+              (cong (Ring.neg rg) hmul)
               hnegZero))
-          (Ring.addZeroR Rg alpha)
+          (Ring.addZeroR rg alpha)
   in ⊥-elim
       (OrderedRing.notLtFromLe ha
         (subst (λ q → q < zero) hresidual hr))
@@ -42,4 +42,4 @@ s.sub!(old, new)
 File.write(path, s)
 abort 'residual theorem remained implicit' if s.match?(/residualSquareNonzero_v140 : ∀ \{S\}\n/)
 abort 'residual theorem still uses proof witness as scalar' if s.include?('(mu * (hx * hx))')
-puts 'v152 residual proof normalization: PASS'
+puts 'v153 residual proof normalization: PASS'
