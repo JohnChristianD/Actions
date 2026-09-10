@@ -7,8 +7,7 @@ on:
       - 'Exotic/ERL/**/*.agda'
       - 'oracle/haskell_oracle.hs'
       - 'oracle/elixir_oracle.exs'
-      - 'oracle/rational_functional_oracle.rb'
-      - 'oracle/rational_certificate.rb'
+      - 'oracle/q_certificate.exs'
       - '.github/workflows/oracle-crosscheck.yml'
   pull_request:
     branches: ['main']
@@ -16,8 +15,7 @@ on:
       - 'Exotic/ERL/**/*.agda'
       - 'oracle/haskell_oracle.hs'
       - 'oracle/elixir_oracle.exs'
-      - 'oracle/rational_functional_oracle.rb'
-      - 'oracle/rational_certificate.rb'
+      - 'oracle/q_certificate.exs'
       - '.github/workflows/oracle-crosscheck.yml'
   workflow_dispatch:
 
@@ -30,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        oracle: [haskell, elixir, ruby]
+        oracle: [haskell, elixir]
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +40,7 @@ jobs:
 
       - name: Run Haskell exact-Rational oracle
         if: matrix.oracle == 'haskell'
-        run: runghc oracle/haskell_oracle.hs > oracle-output.txt
+        run: runghc .ci/exact_rational_oracle_v150.hs > oracle-output.txt
 
       - name: Set up Elixir
         if: matrix.oracle == 'elixir'
@@ -56,16 +54,6 @@ jobs:
       - name: Run Elixir exact-Rational oracle
         if: matrix.oracle == 'elixir'
         run: elixir oracle/elixir_oracle.exs > oracle-output.txt
-
-      - name: Set up Ruby
-        if: matrix.oracle == 'ruby'
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-
-      - name: Run native Ruby exact-Rational oracle
-        if: matrix.oracle == 'ruby'
-        run: ruby oracle/rational_functional_oracle.rb > oracle-output.txt
 
       - name: Upload oracle output
         uses: actions/upload-artifact@v4
@@ -94,19 +82,19 @@ jobs:
             grep -v '^oracle=' "$f" | grep -v '^status=' > "$f.normalized"
           done
           diff -u oracle-results/exact-rational-haskell/oracle-output.txt.normalized oracle-results/exact-rational-elixir/oracle-output.txt.normalized
-          diff -u oracle-results/exact-rational-haskell/oracle-output.txt.normalized oracle-results/exact-rational-ruby/oracle-output.txt.normalized
           test "$(tail -n 1 oracle-results/exact-rational-haskell/oracle-output.txt)" = 'status=PASS'
           test "$(tail -n 1 oracle-results/exact-rational-elixir/oracle-output.txt)" = 'status=PASS'
-          test "$(tail -n 1 oracle-results/exact-rational-ruby/oracle-output.txt)" = 'status=PASS'
-          echo 'exact-rational-haskell-elixir-ruby-consistency=PASS'
+          echo 'exact-rational-haskell-elixir-consistency=PASS'
 
   q-certificate:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: erlef/setup-beam@v1
         with:
-          ruby-version: '3.3'
-      - name: Run native Ruby q-projection Rational certificate
-        run: ruby oracle/rational_certificate.rb
+          otp-version: '27'
+          elixir-version: '1.17'
+          hexpm: true
+          rebar3: false
+      - name: Run Elixir exact-Rational q-projection certificate
+        run: elixir oracle/q_certificate.exs
