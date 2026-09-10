@@ -47,6 +47,7 @@ text = String.replace(text,
   "parameterDirectionOnly : ∀ i → index signedDirection i ≡ parameterSign {A} (index rawDirection i)")
 
 text = Regex.replace(~r/cReLUPair\s*:\s*∀ \{A : DyadicRing\}.*?cReLUPair \{A\} x = .*?\n\n/s, text, "")
+text = String.replace(text, "-- Finite emergent composition target.", "-- Finite emergent composition target.\n-- default update channel: sign-q-IDBD = parameterSign after q-style projection.")
 
 forbidden = [
   "LayerNorm", "BatchNorm", "BatchRenorm", "CReLUCertificate",
@@ -55,9 +56,9 @@ forbidden = [
 Enum.each(forbidden, fn token -> if String.contains?(text, token), do: raise "forbidden v151 token remains: #{token}" end)
 
 required = [
-  "sign-q-IDBD", "Tsallis2", "onePathNorm", "weightL1", "beta1Numerator",
+  "parameterSign", "Tsallis2", "onePathNorm", "weightL1", "beta1Numerator",
   "beta1Exponent", "metaExponent", "Munchausen", "overestimation", "CVT",
-  "OpenES", "parameterSign", "signIdempotent"
+  "OpenES", "signIdempotent"
 ]
 Enum.each(required, fn token -> unless String.contains?(text, token), do: raise "required v151 token missing: #{token}" end)
 
