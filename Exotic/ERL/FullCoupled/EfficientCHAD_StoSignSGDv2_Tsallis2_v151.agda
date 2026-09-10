@@ -9,10 +9,6 @@ data ⊥ : Set where
 _≠_ : ∀ {A : Set} → A → A → Set
 x ≠ y = (x ≡ y) → ⊥
 
-------------------------------------------------------------------------
--- Finite ordered dyadic algebra. No external Agda library is required.
-------------------------------------------------------------------------
-
 record DyadicRing : Set₁ where
   field
     R : Set
@@ -51,10 +47,6 @@ record DyadicRing : Set₁ where
       abs beta * abs m + abs complement * abs g
 
 open DyadicRing
-
-------------------------------------------------------------------------
--- Finite vectors, matrices, affine maps.
-------------------------------------------------------------------------
 
 data Fin : Nat → Set where
   fzero : {n : Nat} → Fin (suc n)
@@ -126,10 +118,6 @@ vSum : ∀ {A : DyadicRing} {n} → Vector A n → DyadicRing.R A
 vSum {A} [] = DyadicRing.zero A
 vSum {A} (x ∷ xs) = x + vSum xs
 
-------------------------------------------------------------------------
--- Exact L1 / 1-path norm theorem.
-------------------------------------------------------------------------
-
 onePathVector : ∀ {A : DyadicRing} {d L} →
   Vec (Matrix A d d) L → Vector A d
 onePathVector {A} [] = ones _
@@ -159,10 +147,6 @@ onePathOneLayer {A} (r ∷ rs) =
       (rowL1OnesAbs r)
       (onePathOneLayer rs))
     refl
-
-------------------------------------------------------------------------
--- CReLU and affine representation.
-------------------------------------------------------------------------
 
 cPlus : ∀ {A : DyadicRing} → DyadicRing.R A → DyadicRing.R A
 cPlus {A} x = DyadicRing.max A (DyadicRing.zero A) x
@@ -198,10 +182,6 @@ actorCReLUForward l x = cReLUForward (affineForward l x)
 actorSignForward : ∀ {A : DyadicRing} {din dout} →
   AffineLayer A din dout → Vector A din → Vector A dout
 actorSignForward l x = mapV (DyadicRing.sign _) (affineForward l x)
-
-------------------------------------------------------------------------
--- Fixed-window Tsallis-2 sparse attention.
-------------------------------------------------------------------------
 
 record NormPair (A : DyadicRing) : Set₁ where
   field
@@ -242,11 +222,6 @@ tsallis2Attention : ∀ {A : DyadicRing} {w d} →
   Tsallis2Weights A w → Vec (Vector A d) w → Vector A d
 tsallis2Attention r vs = weightedVectorSum (Tsallis2Weights.weights r) vs
 
-------------------------------------------------------------------------
--- Branchwise polynomial degree: affine/CReLU is degree 1; bilinear QK is
--- 2d; Tsallis weights retain 2d on an active set; p*v gives 3d.
-------------------------------------------------------------------------
-
 data Degree : Set where
   affineDegree : Degree
   attentionDegree : Degree → Degree
@@ -270,17 +245,13 @@ degreePow3 : ∀ n → degreeAfter n ≡ pow3 n
 degreePow3 Nat.zero = refl
 degreePow3 (suc n) = cong (λ q → 3 * q) (degreePow3 n)
 
-------------------------------------------------------------------------
--- Sign-q-IDBD, dyadic per-feature momentum, and dyadic meta-step.
-------------------------------------------------------------------------
-
 record DyadicParameters : Set where
   field
-    beta1Numerator beta1ComplementNumerator betaExponent : Nat
+    beta1Numerator beta1ComplementNumerator beta1Exponent : Nat
     metaNumerator metaExponent : Nat
     beta1NumeratorLaw : beta1Numerator ≡ 115
     beta1ComplementLaw : beta1ComplementNumerator ≡ 13
-    betaExponentLaw : betaExponent ≡ 7
+    beta1ExponentLaw : beta1Exponent ≡ 7
     metaNumeratorLaw : metaNumerator ≡ 1
     metaExponentLaw : metaExponent ≡ 7
 
@@ -288,12 +259,12 @@ defaultDyadicParameters : DyadicParameters
 defaultDyadicParameters = record
   { beta1Numerator = 115
   ; beta1ComplementNumerator = 13
-  ; betaExponent = 7
+  ; beta1Exponent = 7
   ; metaNumerator = 1
   ; metaExponent = 7
   ; beta1NumeratorLaw = refl
   ; beta1ComplementLaw = refl
-  ; betaExponentLaw = refl
+  ; beta1ExponentLaw = refl
   ; metaNumeratorLaw = refl
   ; metaExponentLaw = refl
   }
@@ -323,11 +294,6 @@ momentumBound : ∀ {A : DyadicRing}
   abs beta * abs m + abs complement * abs g
 momentumBound beta complement m g = DyadicRing.momentumAbsBound _ _ _ _
 
-------------------------------------------------------------------------
--- Quadratic Newton comparison: equality requires an explicit reciprocal
--- curvature condition; sign quantisation does not create Newton equality.
-------------------------------------------------------------------------
-
 idbdNewtonCondition : ∀ {A : DyadicRing}
   (alpha h : DyadicRing.R A) → alpha ≡ DyadicRing.recip h → alpha ≡ DyadicRing.recip h
 idbdNewtonCondition alpha h refl = refl
@@ -337,11 +303,6 @@ signQIDBDNewtonCondition : ∀ {A : DyadicRing}
   parameterSign d ≡ DyadicRing.recip h →
   parameterSign d ≡ DyadicRing.recip h
 signQIDBDNewtonCondition h d refl = refl
-
-------------------------------------------------------------------------
--- True Online TD(lambda), CEM-Max/DPG actor, custom Munchausen,
--- overestimation decomposition, and CVT-ME/OpenES antithetic mutation.
-------------------------------------------------------------------------
 
 traceStep : ∀ {A : DyadicRing} →
   DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
