@@ -64,14 +64,13 @@ else
   s4
 end
 
-new_acc = """  accumulateAt : Fin n → R → EState → Fin n → R
-  accumulateAt i c (state s) j with finDecEq j i
-  ... | yes _ = s j + c
-  ... | no _ = s j
-
-  accumulate : Fin n → R → EState → EState
-  accumulate i c s = state (accumulateAt i c s)
-"""
+new_acc =
+  "  accumulateAt : Fin n → R → EState → Fin n → R\n" <>
+  "  accumulateAt i c (state s) j with finDecEq j i\n" <>
+  "  ... | yes _ = s j + c\n" <>
+  "  ... | no _ = s j\n\n" <>
+  "  accumulate : Fin n → R → EState → EState\n" <>
+  "  accumulate i c s = state (accumulateAt i c s)\n"
 acc_marker = "  accumulate : Fin n → R → EState → EState\n"
 s6 =
   case :binary.match(s5, acc_marker) do
