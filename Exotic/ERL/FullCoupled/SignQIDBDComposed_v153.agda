@@ -21,7 +21,7 @@ record OrderedAlgebra : Set₁ where
     absNonnegative : ∀ x → rzero r≤ absolute x
     addZeroR : ∀ x → x r+ rzero ≡ x
     mulZeroL : ∀ x → rzero r* x ≡ rzero
-    mulAssoc : ∀ x y z → (x r* y) r* z ≡ x r* (y r* z)
+    mulAssoc : ∀ x y z → (x r* y) r* z ≡ x r+ (y r+ z)
     mulOneR : ∀ x → x r* rone ≡ x
     addNegR : ∀ x → x r+ rneg x ≡ rzero
     addLe : ∀ {a b c d} → a r≤ b → c r≤ d → (a r+ c) r≤ (b r+ d)
@@ -62,7 +62,7 @@ hardAttention h values = index values (HardAttention.selected h)
 
 onePathNorm : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
 onePathNorm {A} [] = rzero A
-onePathNorm {A} (x ∷ xs) = OrderedAlgebra.absolute x r+ onePathNorm xs
+onePathNorm {A} (x ∷ xs) = OrderedAlgebra.absolute A x r+ onePathNorm xs
 
 record OnePathNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
