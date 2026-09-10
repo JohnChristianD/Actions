@@ -24,7 +24,7 @@ record DyadicRing : Set₁ where
     mulOneR : ∀ x → x * one ≡ x
     addNegR : ∀ x → x + neg x ≡ zero
     distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
-    zeroMulR : ∀ x → x * zero ≡ zero
+    zeroMulR : ∀ x → zero * x ≡ zero
     absNonnegative : ∀ x → zero ≤ abs x
     absNeg : ∀ x → abs (neg x) ≡ abs x
     maxPositive : ∀ {x} → zero ≤ x → max zero x ≡ x
@@ -119,9 +119,9 @@ cReLUReconstruct : ∀ {A} (A0 : DyadicRing A) x →
   signScalar A0 x ≡ x
 cReLUReconstruct A0 x = DyadicRing.cReLULaw A0 x
 
-cReLUMagnitude : ∀ {A} (A0 : DyadicRing A) x →
+cReLUMagnitudeProof : ∀ {A} (A0 : DyadicRing A) x →
   cPlus A0 x + cMinus A0 x ≡ DyadicRing.abs A0 x
-cReLUMagnitude A0 x = DyadicRing.cReLUMagnitude A0 x
+cReLUMagnitudeProof A0 x = DyadicRing.cReLUMagnitude A0 x
 
 record AffineLayer (A : DyadicRing) (din dout : Nat) : Set₁ where
   field
@@ -158,7 +158,7 @@ record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
 tsallis2Mass : ∀ {A w} (A0 : DyadicRing A) →
   Tsallis2Weights A w → DyadicRing.R A
 tsallis2Mass A0 r =
-  vDot A0 (Tsallis2Weights.weights r) (ones A0 w)
+  vDot A0 (Tsallis2Weights.weights r) (ones A0 _)
 
 tsallis2MassLaw : ∀ {A w} (A0 : DyadicRing A)
   (r : Tsallis2Weights A w) →
