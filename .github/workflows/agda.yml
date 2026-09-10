@@ -43,6 +43,8 @@ jobs:
           test -z "$(find .ci .github/workflows oracle -type f \( -name '*.py' -o -name '*.rb' \) -print)"
       - name: Kernel-check canonical composed theorem
         run: agda --safe Exotic/ERL/FullCoupled/SignQIDBDComposed_v153.agda
+      - name: Kernel-check complete Efficient-CHAD transliteration
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda
       - name: Kernel-check conjecture generation and interpolation
         run: agda --safe Exotic/ERL/FullCoupled/ConjectureGeneration_v153.agda
       - name: Kernel-check normalisation certificate
