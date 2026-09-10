@@ -61,11 +61,11 @@ record OnePathNormCertificate (A : OrderedAlgebra) : Set₁ where
 
 record DyadicL2 (A : OrderedAlgebra) : Set₁ where
   field
-    half : R A
-    halfLaw : half r+ half ≡ rone A
+    halfUnit : R A
+    halfLaw : halfUnit r+ halfUnit ≡ rone A
     blockWeight : Nat → R A
     blockZero : blockWeight zero ≡ rone A
-    blockStep : ∀ k → blockWeight (suc k) ≡ half r* blockWeight k
+    blockStep : ∀ k → blockWeight (suc k) ≡ halfUnit r* blockWeight k
     objective : R A → R A
 
 data SignCode : Set where
@@ -157,9 +157,9 @@ paretoMappingIdentity : ∀ {A : OrderedAlgebra} (M : ParetoMapping A) → Paret
 paretoMappingIdentity M = refl
 record DyadicInterpolation (A : OrderedAlgebra) : Set₁ where
   field
-    left right half result : R A
-    halfLaw : half r+ half ≡ rone A
-    interpolationLaw : result ≡ half r* (left r+ right)
+    left right halfUnit result : R A
+    halfLaw : halfUnit r+ halfUnit ≡ rone A
+    interpolationLaw : result ≡ halfUnit r* (left r+ right)
 record ConjectureCandidate (A : OrderedAlgebra) : Set₁ where
   field
     statement : Set
