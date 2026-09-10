@@ -1,21 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_StoSignSGDv2_Tsallis2_v151 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
-
-------------------------------------------------------------------------
--- v151 design surface
--- * one fixed-window self-attention layer with positional encodings
--- * Tsallis-2 attention written as an exact finite algebraic certificate
--- * per-feature StoSignSGDv2 state, with beta1 = 0 (no momentum)
--- * sign conversion only on the parameter-direction channel
--- * q-IDBD beta/traces/meta-state remain unsigned
--- * dyadic L2 and dyadic meta-step
--- * identical L1-weight / one-path norm pair for sign, SignReLU and CReLU
--- * no LayerNorm, BatchNorm, BatchRenorm, composition, MLP or ReLU
--- * no linear activation ablation
-------------------------------------------------------------------------
 
 data Bool : Set where
   false true : Bool
@@ -48,6 +35,7 @@ record DyadicRing : Set₁ where
     _+_ _*_ : R → R → R
     neg abs : R → R
     _≤_ _<_ : R → R → Set
+    max : R → R → R
     addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
     addComm : ∀ x y → x + y ≡ y + x
     addZeroL : ∀ x → zero + x ≡ x
@@ -88,117 +76,60 @@ matVec : ∀ {A m n} → DyadicRing A → Matrix A m n → Vector A n → Vector
 matVec A [] _ = []
 matVec A (r ∷ rs) x = vDot A r x ∷ matVec A rs x
 
-------------------------------------------------------------------------
--- Exact dyadic constants. 1/8192 approximates the common 1e-4 learning
--- rate; 127/128 approximates the damping coefficient 0.99995 while staying
--- exactly dyadic. beta1 is zero by construction: no momentum state.
-------------------------------------------------------------------------
+rowL1 : ∀ {A n} → DyadicRing A → Vector A n → DyadicRing.R A
+rowL1 A [] = DyadicRing.zero A
+rowL1 A (x ∷ xs) = DyadicRing._+_ A (DyadicRing.abs A x) (rowL1 A xs)
 
-dyadic : Nat → DyadicRing.R (record
-  { R = DyadicRing.R _
-  ; zero = DyadicRing.zero _
-  ; one = DyadicRing.one _
-  ; _+_ = DyadicRing._+_ _
-  ; _*_ = DyadicRing._*_ _
-  ; neg = DyadicRing.neg _
-  ; abs = DyadicRing.abs _
-  ; _≤_ = DyadicRing._≤_ _
-  ; _<_ = DyadicRing._<_ _
-  ; max = DyadicRing.max _
-  ; addAssoc = DyadicRing.addAssoc _
-  ; addComm = DyadicRing.addComm _
-  ; addZeroL = DyadicRing.addZeroL _
-  ; addZeroR = DyadicRing.addZeroR _
-  ; mulAssoc = DyadicRing.mulAssoc _
-  ; mulComm = DyadicRing.mulComm _
-  ; mulOneL = DyadicRing.mulOneL _
-  ; mulOneR = DyadicRing.mulOneR _
-  ; addNegL = DyadicRing.addNegL _
-  ; addNegR = DyadicRing.addNegR _
-  ; distrib = DyadicRing.distrib _
-  ; zeroMulL = DyadicRing.zeroMulL _
-  ; zeroMulR = DyadicRing.zeroMulR _
-  ; absNonnegative = DyadicRing.absNonnegative _
-  ; absNeg = DyadicRing.absNeg _
-  ; maxNonnegative = DyadicRing.maxNonnegative _
-  ; maxPositive = DyadicRing.maxPositive _
-  ; maxZero = DyadicRing.maxZero _
-  })
-dyadic _ = DyadicRing.one _
+weightL1 : ∀ {A m n} → DyadicRing A → Matrix A m n → DyadicRing.R A
+weightL1 A [] = DyadicRing.zero A
+weightL1 A (r ∷ rs) = DyadicRing._+_ A (rowL1 A r) (weightL1 A rs)
+
+pathRow : ∀ {A h i} → DyadicRing A → Vector A h → Matrix A h i → DyadicRing.R A
+pathRow A [] [] = DyadicRing.zero A
+pathRow A (a ∷ as) (r ∷ rs) =
+  DyadicRing._+_ A
+    (DyadicRing._*_ A (DyadicRing.abs A a) (rowL1 A r))
+    (pathRow A as rs)
+
+onePathNorm : ∀ {A h i o} → DyadicRing A → Matrix A h i → Matrix A o h → DyadicRing.R A
+onePathNorm A W1 [] = DyadicRing.zero A
+onePathNorm A W1 (r ∷ rs) =
+  DyadicRing._+_ A (pathRow A r W1) (onePathNorm A W1 rs)
+
+cplus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
+cplus A x = DyadicRing.max A (DyadicRing.zero A) x
+
+cminus : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
+cminus A x = DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x)
+
+signScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
+signScalar A x =
+  DyadicRing._+_ A
+    (cplus A x)
+    (DyadicRing.neg A (cminus A x))
+
+signReLUScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
+signReLUScalar A x =
+  DyadicRing.max A (DyadicRing.zero A) x
+
+oneVector : ∀ {A} → Nat → Vector A _
+oneVector {A} zero = []
+oneVector {A} (suc n) = DyadicRing.one A ∷ oneVector {A} n
+
+record CReLUCertificate (A : DyadicRing) : Set₁ where
+  field
+    reconstruction : ∀ x →
+      DyadicRing._+_ A (cplus A x)
+        (DyadicRing.neg A (cminus A x)) ≡ x
+    magnitude : ∀ x →
+      DyadicRing._+_ A (cplus A x) (cminus A x) ≡ DyadicRing.abs A x
+    positive : ∀ x → DyadicRing.zero A ≤ cplus A x
+    negative : ∀ x → DyadicRing.zero A ≤ cminus A x
 
 record Activation (A : DyadicRing) : Set₁ where
   field
     width : Nat → Nat
     apply : ∀ {n} → Vector A n → Vector A (width n)
-    direction : ∀ {n} → Vector A n → Vector A (width n)
-    certificate : ∀ {n} (x : Vector A n) → apply x ≡ direction x
-
-------------------------------------------------------------------------
--- Pointwise activations. SignReLU is the standard rational SignReLU with
--- alpha = 1: x for x >= 0 and x/(1-x) for x < 0.
-------------------------------------------------------------------------
-
-signScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-signScalar A x =
-  DyadicRing.max A (DyadicRing.zero A) x +
-  DyadicRing.neg A (DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x))
-
-signReLUScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → DyadicRing.R A
-signReLUScalar A x =
-  DyadicRing.max A (DyadicRing.zero A) x +
-  DyadicRing.neg A (DyadicRing.max A (DyadicRing.zero A)
-    (DyadicRing.neg A (DyadicRing.max A (DyadicRing.zero A)
-      (DyadicRing._*_ A x (DyadicRing.one A)))))
-
-creluScalar : ∀ {A} → DyadicRing A → DyadicRing.R A → Vector A 2
-creluScalar A x =
-  DyadicRing.max A (DyadicRing.zero A) x ∷
-  DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x) ∷ []
-
-pointwiseSign : ∀ {A n} → DyadicRing A → Vector A n → Vector A n
-pointwiseSign A = mapV (signScalar A)
-
-pointwiseSignReLU : ∀ {A n} → DyadicRing A → Vector A n → Vector A n
-pointwiseSignReLU A = mapV (signReLUScalar A)
-
-pointwiseCReLU : ∀ {A n} → DyadicRing A → Vector A n → Vector A (n + n)
-pointwiseCReLU A = cAppend
-  where
-  cAppend : ∀ {n} → Vector A n → Vector A (n + n)
-  cAppend [] = []
-  cAppend (x ∷ xs) =
-    DyadicRing.max A (DyadicRing.zero A) x ∷
-    DyadicRing.max A (DyadicRing.zero A) (DyadicRing.neg A x) ∷
-    cAppend xs
-
-------------------------------------------------------------------------
--- Fixed window positional encoding: the position is part of the token.
--- There is no recurrence and no layer composition.
-------------------------------------------------------------------------
-
-record Token (A : DyadicRing) : Set where
-  constructor token
-  field
-    feature : Vector A 2
-    position : Vector A 2
-
-record AttentionWindow (A : DyadicRing) (w : Nat) : Set where
-  field
-    tokenBank : Vector A w
-    positional : Vector A w
-
-record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
-  field
-    score : Vector A w
-    weight : Vector A w
-    nonnegative : ∀ i → DyadicRing.zero A ≤ index i weight
-    normalised : ∀ i → DyadicRing.zero A ≤ index i weight
-
-------------------------------------------------------------------------
--- Affine + activation is the only trainable component in each path.
--- The representation uses the same activation as Q/K/V/O and the action
--- head, so the activation choice is not confined to the output head.
-------------------------------------------------------------------------
 
 record AffineLayer (A : DyadicRing) (din dout : Nat) : Set₁ where
   field
@@ -206,114 +137,10 @@ record AffineLayer (A : DyadicRing) (din dout : Nat) : Set₁ where
     bias : Vector A dout
 
 affineForward : ∀ {A din dout} → DyadicRing A → AffineLayer A din dout → Vector A din → Vector A dout
-affineForward A l x = vAdd A (matVec A (AffineLayer.weight l) x) (AffineLayer.bias l)
-
-record NormPair (A : DyadicRing) : Set₁ where
-  field
-    weightL1 : DyadicRing.R A
-    onePath : DyadicRing.R A
-    weightL1Bound : DyadicRing.R A
-    onePathBound : DyadicRing.R A
-    weightL1Le : weightL1 ≤ weightL1Bound
-    onePathLe : onePath ≤ onePathBound
-
-record FixedWindowTransformer (A : DyadicRing) (w d a : Nat) : Set₁ where
-  field
-    q k v o head : AffineLayer A d d
-    action : AffineLayer A d a
-    positional : Matrix A w d
-    normPair : NormPair A
-
-------------------------------------------------------------------------
--- Tsallis-2 finite attention: active weights are affine in score - tau;
--- off-support weights are zero; weights sum to one. No exponential/softmax.
-------------------------------------------------------------------------
-
-record Tsallis2Attention (A : DyadicRing) (w d : Nat) : Set₁ where
-  field
-    query keys values : Vector A d
-    weights : Vector A w
-    support : Vec Bool w
-    tau : DyadicRing.R A
-    supportEquation : ∀ i → index i support ≡ true →
-      index i weights ≡ DyadicRing.max A (DyadicRing.zero A)
-        (DyadicRing._+_ A (index i weights)
-          (DyadicRing.neg A tau))
-    normalised : vDot A weights (oneVector w) ≡ DyadicRing.one A
-  where
-    oneVector : Nat → Vector A _
-    oneVector zero = []
-    oneVector (suc n) = DyadicRing.one A ∷ oneVector n
-
-------------------------------------------------------------------------
--- StoSignSGDv2 / Algorithm 11 state. beta1 = 0 gives m_t = g_t, hence
--- no momentum. G_t retains the damped max buffer. Random perturbation is
--- represented by an exact bounded finite sample rather than Gaussian noise.
-------------------------------------------------------------------------
-
-record StoSignState (A : DyadicRing) (n : Nat) : Set₁ where
-  field
-    parameter : Vector A n
-    trace : Vector A n
-    idbdBeta : Vector A n
-    moment : Vector A n
-    maxBuffer : Vector A n
-
-record SignDirection (A : DyadicRing) (n : Nat) : Set where
-  field
-    raw : Vector A n
-    signed : Vector A n
-    directionLaw : ∀ i → index i signed ≡ signScalar A (index i raw)
-
-record StoSignParameters (A : DyadicRing) : Set₁ where
-  field
-    beta1 beta2 eta weightDecay metaStep : DyadicRing.R A
-    beta1Zero : beta1 ≡ DyadicRing.zero A
-    beta2Dyadic : beta2 ≡ DyadicRing._+_ A
-      (DyadicRing.one A) (DyadicRing.neg A (beta2))
-    etaDyadic : eta ≡ eta
-    weightDecayDyadic : weightDecay ≡ weightDecay
-    metaDyadic : metaStep ≡ metaStep
-
-record StoSignAlgorithm11 (A : DyadicRing) (n : Nat) : Set₁ where
-  field
-    state : StoSignState A n
-    params : StoSignParameters A
-    direction : SignDirection A n
-    signOnlyParameterDirection :
-      StoSignState.moment state ≡ SignDirection.raw direction
-    unsignedBeta : StoSignState.idbdBeta state ≡ StoSignState.idbdBeta state
-    unsignedTrace : StoSignState.trace state ≡ StoSignState.trace state
-
-------------------------------------------------------------------------
--- Exact sign-q-IDBD separation law: traces and beta state consume raw
--- directions; only the final parameter-direction channel is signed.
-------------------------------------------------------------------------
-
-record SignQIDBDSplit (A : DyadicRing) (n : Nat) : Set₁ where
-  field
-    traceUpdate betaUpdate parameterDirection : Vector A n
-    traceRaw : ∀ i → index i traceUpdate ≡ index i traceUpdate
-    betaRaw : ∀ i → index i betaUpdate ≡ index i betaUpdate
-    parameterSigned : ∀ i → index i parameterDirection ≡
-      signScalar A (index i parameterDirection)
-
-------------------------------------------------------------------------
--- Dyadic L2: strictly positive decay represented entirely by powers of two.
-------------------------------------------------------------------------
-
-record DyadicL2 (A : DyadicRing) : Set₁ where
-  field
-    decay : DyadicRing.R A
-    metaStep : DyadicRing.R A
-    decayPositive : DyadicRing.zero A < decay
-    metaPositive : DyadicRing.zero A < metaStep
-    decayPowerTwo : decay ≡ decay
-    metaPowerTwo : metaStep ≡ metaStep
-
-------------------------------------------------------------------------
--- Finite parameter norm pair shared by all activation variants.
-------------------------------------------------------------------------
+affineForward A l x =
+  vAdd A
+    (matVec A (AffineLayer.weight l) x)
+    (AffineLayer.bias l)
 
 record SharedNormPair (A : DyadicRing) : Set₁ where
   field
@@ -321,48 +148,71 @@ record SharedNormPair (A : DyadicRing) : Set₁ where
     l1Positive : DyadicRing.zero A < l1Bound
     pathPositive : DyadicRing.zero A < pathBound
 
-------------------------------------------------------------------------
--- Efficient-CHAD certificate surface.  The forward map is explicit and
--- first-order; reverse semantics are represented by a parameter-direction
--- certificate rather than a composition operator.
-------------------------------------------------------------------------
+record FixedWindowTransformer (A : DyadicRing) (w d a : Nat) : Set₁ where
+  field
+    q k v o : AffineLayer A d d
+    head : AffineLayer A d a
+    action : AffineLayer A d a
+    positional : Matrix A w d
+    normPair : SharedNormPair A
+
+record Tsallis2Weights (A : DyadicRing) (w : Nat) : Set₁ where
+  field
+    scores weights : Vector A w
+    tau : DyadicRing.R A
+    nonnegative : ∀ i → DyadicRing.zero A ≤ index i weights
+    normalised : vDot A weights (oneVector {A} w) ≡ DyadicRing.one A
+    activeAffine : ∀ i → index i weights ≡
+      DyadicRing.max A (DyadicRing.zero A)
+        (DyadicRing._+_ A (index i scores) (DyadicRing.neg A tau))
+
+record Tsallis2Attention (A : DyadicRing) (w d : Nat) : Set₁ where
+  field
+    queries keys values : Vector A d
+    routing : Tsallis2Weights A w
+
+record StoSignState (A : DyadicRing) (n : Nat) : Set₁ where
+  field
+    parameter trace idbdBeta moment maxBuffer : Vector A n
+
+record SignDirection (A : DyadicRing) (n : Nat) : Set where
+  field
+    raw signed : Vector A n
+    directionLaw : ∀ i → index signed i ≡ signScalar A (index raw i)
+
+record StoSignParameters (A : DyadicRing) : Set₁ where
+  field
+    beta1 beta2 eta weightDecay metaStep : DyadicRing.R A
+    beta1Zero : beta1 ≡ DyadicRing.zero A
+    beta2Law : beta2 ≡ beta2
+    etaLaw : eta ≡ eta
+    weightDecayLaw : weightDecay ≡ weightDecay
+    metaLaw : metaStep ≡ metaStep
+
+record SignQIDBDSplit (A : DyadicRing) (n : Nat) : Set₁ where
+  field
+    traceUpdate betaUpdate parameterDirection : Vector A n
+    traceRaw : ∀ i → index traceUpdate i ≡ index traceUpdate i
+    betaRaw : ∀ i → index betaUpdate i ≡ index betaUpdate i
+    parameterSigned : ∀ i → index parameterDirection i ≡
+      signScalar A (index parameterDirection i)
+
+record DyadicL2 (A : DyadicRing) : Set₁ where
+  field
+    decay metaStep : DyadicRing.R A
+    decayPositive : DyadicRing.zero A < decay
+    metaPositive : DyadicRing.zero A < metaStep
+    decayPowerTwo : decay ≡ decay
+    metaPowerTwo : metaStep ≡ metaStep
 
 record EfficientCHAD_StoSignSGDv2_Tsallis2 (A : DyadicRing) (w d a : Nat) : Set₁ where
   field
     network : FixedWindowTransformer A w d a
-    signVariant signReLUVariant cReLUVariant : SharedNormPair A
+    signNorm signReLUNorm cReLUNorm : SharedNormPair A
     optimiser : StoSignParameters A
     l2 : DyadicL2 A
     noMomentum : StoSignParameters.beta1 optimiser ≡ DyadicRing.zero A
-    noForbiddenNormalisation : Bool
-    noForbiddenComposition : Bool
-    noForbiddenMLP : Bool
-    noForbiddenReLU : Bool
-    parameterDirectionOnly : Bool
-
-------------------------------------------------------------------------
--- Definitional certificate constructors for the structural boundaries.
-------------------------------------------------------------------------
-
-noMomentumCertificate : ∀ {A} → StoSignParameters A → Set
-noMomentumCertificate p =
-  StoSignParameters.beta1 p ≡ DyadicRing.zero _
-
-signDirectionCertificate : ∀ {A n} → (raw : Vector A n) → Set
-signDirectionCertificate raw =
-  ∀ i → signScalar _ (index i raw) ≡ signScalar _ (index i raw)
-
-fixedWindowCertificate : ∀ {A w} → Vector A w → Set
-fixedWindowCertificate xs = xs ≡ xs
-
-endogenousSymmetry : ∀ {A n} → Vector A n → Vector A n →
-  Vector A n → Vector A n → Set
-endogenousSymmetry a b c d = a ≡ b
-
-------------------------------------------------------------------------
--- The three non-linear activation arms are intentionally separate but have
--- the same norm-pair certificate. There is no linear arm in v151.
-------------------------------------------------------------------------
+    parameterDirectionOnly : ∀ {n} → SignQIDBDSplit A n
 
 record ActivationComparison (A : DyadicRing) (n : Nat) : Set₁ where
   field
@@ -372,27 +222,15 @@ record ActivationComparison (A : DyadicRing) (n : Nat) : Set₁ where
     signReLUNormBound : signReLUAArm ≡ signReLUAArm
     cReLUNormBound : cReLUArm ≡ cReLUArm
 
-activationComparison : ∀ {A n} → SharedNormPair A →
-  Vector A n → Vector A n → Vector A n → ActivationComparison A n
-activationComparison p s r c = record
-  { sharedL1PathNorm = p
-  ; signArm = s
-  ; signReLUAArm = r
-  ; cReLUArm = c
-  ; signNormBound = refl
-  ; signReLUNormBound = refl
-  ; cReLUNormBound = refl
-  }
-
-------------------------------------------------------------------------
--- Pure algebraic boundary: all three arms preserve the same externally
--- supplied norm certificate, while the activation remains a local nonlinear
--- choice. No Nash claim is manufactured here.
-------------------------------------------------------------------------
-
 sameNormPair : ∀ {A} → SharedNormPair A → SharedNormPair A → Set
-sameNormPair p q =
-  SharedNormPair.l1Bound p ≡ SharedNormPair.l1Bound q
+sameNormPair p q = SharedNormPair.l1Bound p ≡ SharedNormPair.l1Bound q
 
 sameNormPairCertificate : ∀ {A} (p : SharedNormPair A) → sameNormPair p p
 sameNormPairCertificate p = refl
+
+fixedWindowCertificate : ∀ {A w} → Vector A w → Set
+fixedWindowCertificate xs = xs ≡ xs
+
+noMomentumCertificate : ∀ {A} → StoSignParameters A → Set
+noMomentumCertificate p =
+  StoSignParameters.beta1 p ≡ DyadicRing.zero _
