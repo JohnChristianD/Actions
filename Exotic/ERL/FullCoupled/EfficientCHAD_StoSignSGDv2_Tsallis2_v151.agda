@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_StoSignSGDv2_Tsallis2_v151 where
 
-open import Agda.Builtin.Nat using (Nat; suc; _+_)
+open import Agda.Builtin.Nat using (Nat; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Sigma using (Σ; _,_; fst; snd)
 
@@ -197,8 +197,7 @@ record SignQIDBDState (A : DyadicRing) (n : Nat) : Set₁ where
       index signedDirection i ≡ signScalar A (index rawDirection i)
     hyperparameters : DyadicParameters
 
-signQIDBDDirection : ∀ {A n} (A0 : DyadicRing A) →
-  Vector A n → Vector A n
+signQIDBDDirection : ∀ {A n} (A0 : DyadicRing A) → Vector A n → Vector A n
 signQIDBDDirection A [] = []
 signQIDBDDirection A (x ∷ xs) = signScalar A x ∷ signQIDBDDirection A xs
 
