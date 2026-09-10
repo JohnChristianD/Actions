@@ -27,8 +27,6 @@ jobs:
         with:
           otp-version: '27'
           elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
       - name: Normalize v151 source and enforce semantic exclusions
         run: elixir .ci/normalize_v151.exs
       - name: Verify Agda executable
