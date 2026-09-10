@@ -42,26 +42,8 @@ jobs:
           elixir --version
       - name: Elixir repair normalization gate
         run: elixir .ci/normalize_v150.exs
-      - name: Safe-check combined self-contained surface
-        run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
-      - name: Safe-check full Efficient-CHAD source-to-source transliteration
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda
-      - name: Safe-check isolated linear coupled learner
-        run: agda --safe Exotic/ERL/FullCoupled/LinearCoupledLearnerNoNormLSTM.agda
-      - name: Safe-check first-class finite recurrent CHAD
-        run: agda --safe Exotic/ERL/FullCoupled/FirstClassRecurrentCHAD.agda
-      - name: Safe-check shared network CHAD
-        run: agda --safe Exotic/ERL/FullCoupled/SharedNetworkCHAD.agda
-      - name: Safe-check representation primitive algebra
-        run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
-      - name: Safe-check LayerNorm-free CReLU Tsallis-2 theorem target
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_CReLU_Tsallis2_v150.agda
-      - name: Safe-check finite DoubleSign composition theorem
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_DoubleSign_v151.agda
-      - name: Safe-check compact composed DoubleSign theorem
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_DoubleSign_Composed_v152.agda
-      - name: Safe-check signed q-IDBD Tsallis-2 OpenES composition theorem
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_SignedQIDBD_TsallisOpenES_v153.agda
+      - name: Safe-check self-contained LayerNorm-free theorem target
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_SignedQIDBD_Tsallis2_Complete_v154.agda
       - name: Safe-check authoritative complete closure
         run: agda --safe Exotic/ERL/FullCoupled/CompleteSafe_v147.agda
       - name: Persist idempotent Elixir normalization
