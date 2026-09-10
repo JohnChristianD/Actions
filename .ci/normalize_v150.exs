@@ -17,12 +17,10 @@ unless String.contains?(s0, marker_start) do
   raise "canonical SmoothAlgebra boundary missing"
 end
 
-s1 = String.replace(
-  s0,
+s1 = String.replace(s0,
   "open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)",
   "open import Agda.Builtin.Nat using (Nat; suc; _+_)",
-  global: false
-)
+  global: false)
 
 replacements = [
   {"Vec A zero", "Vec A Nat.zero"},
@@ -38,7 +36,6 @@ replacements = [
   {"shiftRV_v146 zero xs = xs", "shiftRV_v146 Nat.zero xs = xs"},
   {"qsaXorShiftDeterministic_v146 zero seed = []", "qsaXorShiftDeterministic_v146 Nat.zero seed = []"}
 ]
-
 s2 = Enum.reduce(replacements, s1, fn {a, b}, acc -> String.replace(acc, a, b, global: false) end)
 
 header_pos = :binary.match(s2, marker_start) |> elem(0)
@@ -51,17 +48,16 @@ s3 =
         :nomatch -> raise "legacy SmoothAlgebra scalar boundary missing"
         {scalar_rel, _} ->
           scalar_pos = record_pos + scalar_rel
-          binary_part(s2, 0, record_pos) <> binary_part(s2, scalar_pos + byte_size(scalar_marker), byte_size(s2) - scalar_pos - byte_size(scalar_marker))
+          binary_part(s2, 0, record_pos) <>
+            binary_part(s2, scalar_pos + byte_size(scalar_marker), byte_size(s2) - scalar_pos - byte_size(scalar_marker))
       end
     _ -> s2
   end
 
-s4 = String.replace(
-  s3,
+s4 = String.replace(s3,
   "    sqrt recip max min : R → R\n",
   "    sqrt recip : R → R\n    max min : R → R → R\n",
-  global: false
-)
+  global: false)
 
 needle = "    reciprocalLaw : ∀ {d} → zero < d → Ring._*_ (OrderedRing.ring orderedRing) d (recip d) ≡ one\n"
 s5 = if String.contains?(s4, needle) and not String.contains?(s4, "    sqrtDomain : R → Set\n") do
@@ -70,14 +66,15 @@ else
   s4
 end
 
-old_acc = "  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (λ j with finDecEq j i\n    ... | yes _ = s j + c\n    ... | no _ = s j)\n"
+# The legacy accumulate parser form is replaced without relying on a multiline heredoc.
+old_acc_re = ~r/  accumulate : Fin n → R → EState → EState\n  accumulate i c \(state s\) = state \(λ j with finDecEq j i\n    \.\.\. \| yes _ = s j \+ c\n    \.\.\. \| no _ = s j\)\n/
 new_acc = "  accumulateAt : Fin n → R → Cot → Fin n → R\n  accumulateAt i c s j with finDecEq j i\n  ... | yes _ = s j + c\n  ... | no _ = s j\n\n  accumulate : Fin n → R → EState → EState\n  accumulate i c (state s) = state (accumulateAt i c s)\n"
-s6 = String.replace(s5, old_acc, new_acc, global: false)
+s6 = Regex.replace(old_acc_re, s5, new_acc, global: true)
 
 unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1 do
   raise "SmoothAlgebra record count is not one after normalization"
 end
-if String.contains?(s6, "λ j with finDecEq") do
+if Regex.match?(old_acc_re, s6) or String.contains?(s6, "λ j with finDecEq") do
   raise "dependent lambda-with parser form survived"
 end
 if String.contains?(s6, "-- AUDITED-KKT-OBLIGATION") do
