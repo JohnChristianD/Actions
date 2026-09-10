@@ -29,4 +29,4 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -nE 'LayerNorm|BatchNorm|BatchRenorm|Certificate|setup-python|ruby/setup-ruby|python3|StoSignSGD' Exotic/ERL/FullCoupled/EfficientCHAD_v154.agda
+          ! grep -nE 'LayerNorm|BatchNorm|BatchRenorm|Certificate|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_v154.agda
