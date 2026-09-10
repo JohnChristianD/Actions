@@ -73,7 +73,7 @@ canonical_acc =
   "  accumulate i c s = state (accumulateAt i c s)\n"
 
 legacy_acc_re = ~r/  accumulate : Fin n → R → EState → EState\r?\n  accumulate i c \(state s\) = state \(λ j with finDecEq j i\r?\n    \.\.\. \| yes _ = s j \+ c\r?\n    \.\.\. \| no _ = s j\)\r?\n/m
-s6 = Regex.replace(s5, legacy_acc_re, canonical_acc)
+s6 = Regex.replace(legacy_acc_re, s5, canonical_acc, [])
 
 if String.contains?(s6, "λ j with finDecEq") do
   raise "dependent lambda-with parser form survived"
