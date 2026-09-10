@@ -145,10 +145,7 @@ record DoubleSignComposition (A : OrderedAlgebra) : Set₁ where
   field
     first second : SignOracle A
     firstValue secondValue : SignCode
-    firstLaw : firstValue ≡ SignOracle.sign first (secondValueToScalar)
-      where
-        secondValueToScalar : R A
-        secondValueToScalar = OrderedAlgebra.rzero A
+    firstLaw : firstValue ≡ SignOracle.sign first (OrderedAlgebra.rzero A)
     secondLaw : secondValue ≡ SignOracle.sign second (OrderedAlgebra.rzero A)
     representationPath : R A → R A
 
@@ -190,7 +187,8 @@ record DyadicInterpolation (A : OrderedAlgebra) : Set₁ where
 
 record ConjectureCandidate (A : OrderedAlgebra) : Set₁ where
   field
-    statement predictive prescriptive : Set
+    statement : Set
+    predictive prescriptive : R A
     interpolation : DyadicInterpolation A
 
 record EventualSignStability : Set₁ where
@@ -249,23 +247,20 @@ record SignQIDBDComposedTheoremTarget (A : OrderedAlgebra) (depth : Nat) : Set�
     degreeLaw : degreeBound ≡ power3 depth
     qKktFixedPoint : R A
     qKktLaw : QProjection.project (QProjectionKKTBridge.projection (SignQIDBDChatterComposition.kkt composition)) qKktFixedPoint ≡ qKktFixedPoint
-    signDefault : SignQIDBDDefaultWitness
+    signDefault : UpdateMode
+    signDefaultLaw : signDefault ≡ SignedParameterDirectionQIDBD
     noChatter : NoChatterTheorem
     interpolation : DyadicInterpolation A
-  where
-  record SignQIDBDDefaultWitness : Set₁ where
-    field
-      mode : UpdateMode
-      modeLaw : mode ≡ SignedParameterDirectionQIDBD
 
 closeSignQIDBDComposed : ∀ {A : OrderedAlgebra} {depth : Nat} → SignQIDBDChatterComposition A → SignQIDBDComposedTheoremTarget A depth
 closeSignQIDBDComposed C = record
   { composition = C
-  ; degreeBound = power3 _
+  ; degreeBound = power3 depth
   ; degreeLaw = refl
   ; qKktFixedPoint = QProjectionKKTBridge.bridgePoint (SignQIDBDChatterComposition.kkt C)
   ; qKktLaw = QProjectionKKTBridge.bridgeLaw (SignQIDBDChatterComposition.kkt C)
-  ; signDefault = record { mode = SignQIDBDDefault.mode (record { mode = SignedParameterDirectionQIDBD ; modeLaw = refl }) ; modeLaw = refl }
+  ; signDefault = SignedParameterDirectionQIDBD
+  ; signDefaultLaw = refl
   ; noChatter = SignQIDBDChatterComposition.noChatter C
   ; interpolation = SignQIDBDChatterComposition.interpolation C
   }
