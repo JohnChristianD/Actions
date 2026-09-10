@@ -253,7 +253,7 @@ record SignQIDBDComposedTheoremTarget (A : OrderedAlgebra) (depth : Nat) : Set�
     interpolation : DyadicInterpolation A
 
 closeSignQIDBDComposed : ∀ {A : OrderedAlgebra} {depth : Nat} → SignQIDBDChatterComposition A → SignQIDBDComposedTheoremTarget A depth
-closeSignQIDBDComposed C = record
+closeSignQIDBDComposed {depth = depth} C = record
   { composition = C
   ; degreeBound = power3 depth
   ; degreeLaw = refl
