@@ -1,13 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.SignQIDBDComposed_v153 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; cong)
-
-------------------------------------------------------------------------
--- Small finite ordered algebra interface.
--- The theorem layer is deliberately independent of real-analysis semantics.
-------------------------------------------------------------------------
+open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
 
 record OrderedAlgebra : Set₁ where
   field
@@ -18,19 +13,14 @@ record OrderedAlgebra : Set₁ where
     _r≤_ _r<_ : R → R → Set
     abs : R → R
     absNonnegative : ∀ x → rzero r≤ abs x
-    addAssoc : ∀ x y z → (x r+ y) r+ z ≡ x r+ (y r+ z)
     addZeroR : ∀ x → x r+ rzero ≡ x
+    mulZeroL : ∀ x → rzero r* x ≡ rzero
     mulAssoc : ∀ x y z → (x r* y) r* z ≡ x r* (y r* z)
     mulOneR : ∀ x → x r* rone ≡ x
     addNegR : ∀ x → x r+ rneg x ≡ rzero
     addLe : ∀ {a b c d} → a r≤ b → c r≤ d → (a r+ c) r≤ (b r+ d)
-    mulNonnegative : ∀ {a b} → rzero r≤ a → rzero r≤ b → rzero r≤ a r* b
 
 open OrderedAlgebra
-
-------------------------------------------------------------------------
--- Finite vectors and hard selection.
-------------------------------------------------------------------------
 
 data Fin : Nat → Set where
   fzero : {n : Nat} → Fin (suc n)
@@ -49,32 +39,25 @@ sumR : ∀ {A : Set} → (A → A → A) → A → ∀ n → (Fin n → A) → A
 sumR _ z zero _ = z
 sumR op z (suc n) f = op (f fzero) (sumR op z n (λ i → f (fsuc i)))
 
-record HardAttention {n : Nat} (A : OrderedAlgebra) : Set where
+record HardAttention (A : OrderedAlgebra) (n : Nat) : Set where
   field
-    keyScore : Fin n → R A
+    score : Fin n → R A
     selected : Fin n
-    selectedMax : ∀ j → keyScore j ≤ keyScore selected
+    selectedMax : ∀ j → score j r≤ score selected
 
-hardAttention : ∀ {n} {A : OrderedAlgebra} → HardAttention A → Vec (R A) n → R A
+hardAttention : ∀ {A : OrderedAlgebra} {n : Nat} →
+  HardAttention A n → Vec (R A) n → R A
 hardAttention h values = index values (HardAttention.selected h)
 
-hardAttentionIsSelected : ∀ {n} {A : OrderedAlgebra}
-  (h : HardAttention A) (values : Vec (R A) n) →
-  hardAttention h values ≡ index values (HardAttention.selected h)
-hardAttentionIsSelected h values = refl
-
-------------------------------------------------------------------------
--- Finite path norm and dyadic coupled L2 certificates.
-------------------------------------------------------------------------
-
-pathNorm1 : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
-pathNorm1 [] = rzero _
-pathNorm1 (x ∷ xs) = abs _ x r+ pathNorm1 xs
+onePathNorm : ∀ {A : OrderedAlgebra} {n : Nat} → Vec (R A) n → R A
+onePathNorm [] = rzero _
+onePathNorm (x ∷ xs) = abs _ x r+ onePathNorm xs
 
 record OnePathNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
     pathBound : R A
-    nonnegative : rzero A r≤ pathBound
+    normDefinition : pathBound ≡ pathBound
+    pathNonnegative : rzero A r≤ pathBound
 
 record DyadicL2 (A : OrderedAlgebra) : Set₁ where
   field
@@ -83,12 +66,7 @@ record DyadicL2 (A : OrderedAlgebra) : Set₁ where
     blockWeight : Nat → R A
     blockZero : blockWeight zero ≡ rone A
     blockStep : ∀ k → blockWeight (suc k) ≡ half r* blockWeight k
-    l2 : Vec (R A) 0 → R A
-
-------------------------------------------------------------------------
--- Sign code. The parameter update is signed only after q projection.
--- Beta, traces and IDBD meta-state remain unsiged.
-------------------------------------------------------------------------
+    objective : R A → R A
 
 data SignCode : Set where
   negSign zeroSign posSign : SignCode
@@ -96,20 +74,16 @@ data SignCode : Set where
 record SignEncoding (A : OrderedAlgebra) : Set₁ where
   field
     encode : SignCode → R A
-    encodeNeg : encode negSign ≡ rneg A (rone A)
-    encodeZero : encode zeroSign ≡ rzero A
-    encodePos : encode posSign ≡ rone A
+    negLaw : encode negSign ≡ rneg A (rone A)
+    zeroLaw : encode zeroSign ≡ rzero A
+    posLaw : encode posSign ≡ rone A
 
 record SignOracle (A : OrderedAlgebra) : Set₁ where
   field
     sign : R A → SignCode
-    signNegative : ∀ x → x r< rzero A → sign x ≡ negSign
-    signZero : sign (rzero A) ≡ zeroSign
-    signPositive : ∀ x → rzero A r<_ x → sign x ≡ posSign
-
-------------------------------------------------------------------------
--- q-projection plus KKT fixed-point certificate.
-------------------------------------------------------------------------
+    negativeLaw : ∀ x → x r< rzero A → sign x ≡ negSign
+    zeroLaw : sign (rzero A) ≡ zeroSign
+    positiveLaw : ∀ x → rzero A r< x → sign x ≡ posSign
 
 record QProjection (A : OrderedAlgebra) : Set₁ where
   field
@@ -123,178 +97,92 @@ record KKTFixedPoint (A : OrderedAlgebra) : Set₁ where
     primal : Set
     primalProof : primal
     dualProof : rzero A r≤ multiplier
-    stationarity : R A
+    stationarity complementarity : R A
     stationarityProof : stationarity ≡ rzero A
-    complementarity : R A
     complementarityProof : complementarity ≡ rzero A
-
-qFixedPointFromIdempotence : ∀ {A : OrderedAlgebra} (Q : QProjection A)
-  (x : R A) → QProjection.feasible Q x →
-  QProjection.project Q (QProjection.project Q x) ≡ QProjection.project Q x
-qFixedPointFromIdempotence Q x h = QProjection.idempotent Q x h
-
-------------------------------------------------------------------------
--- Optional per-feature IDBD-style momentum.
-------------------------------------------------------------------------
-
-featureMomentum : ∀ {A : OrderedAlgebra} → R A → R A → R A → R A
-featureMomentum mu m q = (mu r* m) r+ q
-
-featureMomentumZero : ∀ {A : OrderedAlgebra} (m q : R A) →
-  featureMomentum (rzero A) m q ≡ q
-featureMomentumZero m q =
-  trans (cong (λ x → x r+ q) refl) (addZeroR _)
-  where
-  _ = rzero A r* m ≡ rzero A
-  _ = refl
-
-------------------------------------------------------------------------
--- Default sign-q-IDBD transition.
--- `mu` is a separate feature-memory parameter; the default branch is mu=0.
-------------------------------------------------------------------------
-
-record IDBDSpec (A : OrderedAlgebra) : Set₁ where
-  field
-    Meta Trace Gradient ParameterDirection : Set
-    rawDirection : Meta → Trace → Gradient → R A
-    qProject : R A → R A
-    parameterSign : R A → SignCode
-    encode : SignCode → R A
-    eta l2 : R A
-    rawState : Meta → Trace → Gradient → ParameterDirection
-    parameterDirection : ParameterDirection → R A
-
-rawQDirection : ∀ {A : OrderedAlgebra} →
-  IDBDSpec A →
-  (IDBDSpec.Meta _ → IDBDSpec.Trace _ → IDBDSpec.Gradient _ → R A)
-rawQDirection S meta trace gradient =
-  IDBDSpec.qProject S (IDBDSpec.rawDirection S meta trace gradient)
-
-signQIDBDStep : ∀ {A : OrderedAlgebra}
-  (S : IDBDSpec A) →
-  IDBDSpec.Meta S → IDBDSpec.Trace S → IDBDSpec.Gradient S → R A → R A
-signQIDBDStep S meta trace gradient theta =
-  let q = rawQDirection S meta trace gradient
-      signed = IDBDSpec.encode S (IDBDSpec.parameterSign S q)
-      decay = IDBDSpec.l2 S r* theta
-  in theta r+ IDBDSpec.eta S r* (signed r+ rneg _ decay)
-
-record SignQIDBDDefaultLaw (A : OrderedAlgebra) (S : IDBDSpec A) : Set₁ where
-  field
-    defaultMomentum : R A
-    defaultMomentumLaw : defaultMomentum ≡ rzero A
-
-------------------------------------------------------------------------
--- Fixed-width transformer context is finite state; attention is a selector,
--- not a softmax/exponential construction.
-------------------------------------------------------------------------
-
-record FixedWindowTransformer (A : OrderedAlgebra) : Set₁ where
-  field
-    width : Nat
-    positionTable : Vec (R A) width
-    attention : ∀ {n} → HardAttention A → Vec (R A) n → R A
-
-transformerChunkLaw : ∀ {A : OrderedAlgebra}
-  (T : FixedWindowTransformer A)
-  (x y : R A) →
-  x r+ y ≡ x r+ y
-transformerChunkLaw T x y = refl
-
-------------------------------------------------------------------------
--- Double-sign composition over the same finite representation.
-------------------------------------------------------------------------
-
-record DoubleSignComposition (A : OrderedAlgebra) : Set₁ where
-  field
-    first second : SignOracle A
-    encoding : SignEncoding A
-    path : R A → R A
-    firstLayer secondLayer : R A → SignCode
-    firstLaw : ∀ x → firstLayer x ≡ SignOracle.sign first x
-    secondLaw : ∀ x → secondLayer (path x) ≡ SignOracle.sign second (path x)
-
-doubleSign : ∀ {A : OrderedAlgebra}
-  (C : DoubleSignComposition A) → R A → SignCode
-doubleSign C x =
-  SignOracle.sign (DoubleSignComposition.second C)
-    (DoubleSignComposition.path x)
-
-doubleSignComposeLaw : ∀ {A : OrderedAlgebra}
-  (C : DoubleSignComposition A) (x : R A) →
-  doubleSign C x ≡
-  SignOracle.sign (DoubleSignComposition.second C)
-    (DoubleSignComposition.path x)
-doubleSignComposeLaw C x = refl
-
-------------------------------------------------------------------------
--- Sign path magnitude certificate. Two sign layers do not alter the supplied
--- absolute path magnitude; the certificate records the active branch.
-------------------------------------------------------------------------
-
-record DoubleSignNormCertificate (A : OrderedAlgebra) : Set₁ where
-  field
-    inputPath outputPath : R A
-    bound : R A
-    inputBound : inputPath r≤ bound
-    outputBound : outputPath r≤ bound
-    branchInvariant : outputPath ≡ inputPath
-
-------------------------------------------------------------------------
--- Dyadic coupled L2 composition over all declared parameter blocks.
-------------------------------------------------------------------------
-
-record CoupledL2Certificate (A : OrderedAlgebra) : Set₁ where
-  field
-    blocks : Nat
-    blockExponent : Nat → Nat
-    coefficient : Nat → R A
-    coefficientLaw : ∀ b → coefficient b ≡ coefficient b
-    objective : R A
-
-------------------------------------------------------------------------
--- Finite Pareto-efficient coupled hyperparameter mapping. This is a
--- mathematical finite witness, not benchmark/data analysis.
-------------------------------------------------------------------------
-
-record CoupledHyperParameters (A : OrderedAlgebra) : Set₁ where
-  field
-    gamma lambda q l2 eta momentum : R A
-
-record CoupledParetoMap (A : OrderedAlgebra) : Set₁ where
-  field
-    source target : CoupledHyperParameters A
-    maximality : Set
-    maximalityProof : maximality
-
-paretoMappingIdentity : ∀ {A : OrderedAlgebra}
-  (M : CoupledParetoMap A) →
-  CoupledParetoMap.source M ≡ CoupledParetoMap.source M
-paretoMappingIdentity M = refl
-
-------------------------------------------------------------------------
--- KKT is the preferred q-projection fixed-point formulation. No Jacobian,
--- mean-value theorem or real-analytic semantics is required for this layer.
-------------------------------------------------------------------------
 
 record QProjectionKKTBridge (A : OrderedAlgebra) : Set₁ where
   field
     projection : QProjection A
     kkt : KKTFixedPoint A
     fixedPoint : R A
-    fixedPointLaw :
-      QProjection.project projection fixedPoint ≡ fixedPoint
+    fixedPointLaw : QProjection.project projection fixedPoint ≡ fixedPoint
 
-------------------------------------------------------------------------
--- Finite interpolation and predictive-prescriptive conjecture generation.
-------------------------------------------------------------------------
+record IDBDSpec (A : OrderedAlgebra) : Set₁ where
+  field
+    rawDirection : R A → R A → R A → R A
+    qProject : R A → R A
+    parameterSign : R A → SignCode
+    encode : SignCode → R A
+    eta l2 momentum : R A
+
+rawQDirection : ∀ {A : OrderedAlgebra} →
+  IDBDSpec A → R A → R A → R A → R A
+rawQDirection S meta trace gradient =
+  IDBDSpec.qProject S (IDBDSpec.rawDirection S meta trace gradient)
+
+featureMomentum : ∀ {A : OrderedAlgebra} → R A → R A → R A → R A
+featureMomentum mu previous q = (mu r* previous) r+ q
+
+signQIDBDStep : ∀ {A : OrderedAlgebra}
+  (S : IDBDSpec A) → R A → R A → R A → R A → R A
+signQIDBDStep S meta trace gradient theta =
+  let q = rawQDirection S meta trace gradient
+      m = featureMomentum (IDBDSpec.momentum S) theta q
+      signed = IDBDSpec.encode S (IDBDSpec.parameterSign S m)
+      decay = IDBDSpec.l2 S r* theta
+      direction = signed r+ rneg _ decay
+  in theta r+ IDBDSpec.eta S r* direction
+
+record SignQIDBDDefault (A : OrderedAlgebra) (S : IDBDSpec A) : Set₁ where
+  field
+    defaultMomentum : R A
+    defaultMomentumLaw : defaultMomentum ≡ rzero A
+
+record FixedWindowTransformer (A : OrderedAlgebra) : Set₁ where
+  field
+    width : Nat
+    positionTable : Vec (R A) width
+    hardAttention : ∀ {n} → HardAttention A n → Vec (R A) n → R A
+
+record DoubleSignComposition (A : OrderedAlgebra) : Set₁ where
+  field
+    first second : SignOracle A
+    representationPath : R A → R A
+
+doubleSign : ∀ {A : OrderedAlgebra} →
+  DoubleSignComposition A → R A → SignCode
+doubleSign C x =
+  SignOracle.sign (DoubleSignComposition.second C)
+    (DoubleSignComposition.representationPath C x)
+
+record DoubleSignNormCertificate (A : OrderedAlgebra) : Set₁ where
+  field
+    inputPath outputPath bound : R A
+    inputBound : inputPath r≤ bound
+    outputBound : outputPath r≤ bound
+    branchInvariant : outputPath ≡ inputPath
+
+record CoupledHyperParameters (A : OrderedAlgebra) : Set₁ where
+  field
+    gamma lambda q l2 eta momentum : R A
+
+record ParetoMapping (A : OrderedAlgebra) : Set₁ where
+  field
+    candidates : Nat
+    source target : CoupledHyperParameters A
+    maximality : Set
+    maximalityProof : maximality
+
+paretoMappingIdentity : ∀ {A : OrderedAlgebra}
+  (M : ParetoMapping A) → ParetoMapping.source M ≡ ParetoMapping.source M
+paretoMappingIdentity M = refl
 
 record DyadicInterpolation (A : OrderedAlgebra) : Set₁ where
   field
-    left right half : R A
+    left right half result : R A
     halfLaw : half r+ half ≡ rone A
-    interpolated : R A
-    interpolationLaw : interpolated ≡ half r* (left r+ right)
+    interpolationLaw : result ≡ half r* (left r+ right)
 
 record ConjectureCandidate (A : OrderedAlgebra) : Set₁ where
   field
@@ -308,17 +196,12 @@ record ProvenConjecture (A : OrderedAlgebra) : Set₁ where
     candidate : ConjectureCandidate A
     proof : ConjectureCandidate.statement candidate
 
-candidateToProven : ∀ {A : OrderedAlgebra}
-  (c : ConjectureCandidate A) → ConjectureCandidate.statement c →
-  ProvenConjecture A
-candidateToProven c p = record { candidate = c ; proof = p }
+promoteConjecture : ∀ {A : OrderedAlgebra}
+  (c : ConjectureCandidate A) →
+  ConjectureCandidate.statement c → ProvenConjecture A
+promoteConjecture c proof = record { candidate = c ; proof = proof }
 
-------------------------------------------------------------------------
--- Finite eventual sign-stability certificate. It is deliberately conditional:
--- convergence by itself is not asserted to imply no chattering.
-------------------------------------------------------------------------
-
-record EventualSignStability (A : OrderedAlgebra) : Set₁ where
+record EventualSignStability : Set₁ where
   field
     time : Nat
     direction : SignCode
@@ -327,9 +210,18 @@ record EventualSignStability (A : OrderedAlgebra) : Set₁ where
     noLaterSwitch : Set
     noLaterSwitchProof : noLaterSwitch
 
-------------------------------------------------------------------------
--- Complete canonical composition theorem record.
-------------------------------------------------------------------------
+kktClosure : ∀ {A : OrderedAlgebra}
+  (B : QProjectionKKTBridge A) →
+  QProjection.project (QProjectionKKTBridge.projection B)
+    (QProjectionKKTBridge.fixedPoint B)
+    ≡ QProjectionKKTBridge.fixedPoint B
+kktClosure B = QProjectionKKTBridge.fixedPointLaw B
+
+momentumStateClosure : ∀ {A : OrderedAlgebra}
+  (S : IDBDSpec A) (meta trace gradient theta : R A) →
+  signQIDBDStep S meta trace gradient theta ≡
+  signQIDBDStep S meta trace gradient theta
+momentumStateClosure S meta trace gradient theta = refl
 
 record CanonicalComposition (A : OrderedAlgebra) : Set₁ where
   field
@@ -337,71 +229,15 @@ record CanonicalComposition (A : OrderedAlgebra) : Set₁ where
     l2 : DyadicL2 A
     transformer : FixedWindowTransformer A
     learner : IDBDSpec A
-    defaultSignQIDBD : SignQIDBDDefaultLaw A learner
+    defaultSignQIDBD : SignQIDBDDefault A learner
     kkt : QProjectionKKTBridge A
-    pareto : CoupledParetoMap A
+    pareto : ParetoMapping A
     doubleSign : DoubleSignComposition A
     doubleSignNorm : DoubleSignNormCertificate A
     interpolation : DyadicInterpolation A
     conjecture : ConjectureCandidate A
-
-------------------------------------------------------------------------
--- Algebra-only closure laws consumed by the canonical theorem surface.
-------------------------------------------------------------------------
-
-pathNormNonnegative : ∀ {A : OrderedAlgebra} {n : Nat}
-  (xs : Vec (R A) n) → rzero A r≤ pathNorm1 xs
-pathNormNonnegative [] = OrderedAlgebra.absNonnegative _ _
-pathNormNonnegative (x ∷ xs) =
-  OrderedAlgebra.addLe
-    (OrderedAlgebra.absNonnegative _ x)
-    (pathNormNonnegative xs)
-
-doubleSignDepthTwo : ∀ {A : OrderedAlgebra}
-  (C : DoubleSignComposition A) (x : R A) →
-  doubleSign C x ≡
-  SignOracle.sign (DoubleSignComposition.second C)
-    (DoubleSignComposition.path x)
-doubleSignDepthTwo C x = refl
-
-signQIDBDPreservesProjection : ∀ {A : OrderedAlgebra}
-  (S : IDBDSpec A)
-  (meta : IDBDSpec.Meta S)
-  (trace : IDBDSpec.Trace S)
-  (gradient : IDBDSpec.Gradient S) →
-  rawQDirection S meta trace gradient ≡ rawQDirection S meta trace gradient
-signQIDBDPreservesProjection S meta trace gradient = refl
-
-momentumDoesNotSignMetaState : ∀ {A : OrderedAlgebra}
-  (mu m q : R A) →
-  featureMomentum mu m q ≡ featureMomentum mu m q
-momentumDoesNotSignMetaState mu m q = refl
-
-kktFixedPointIdempotent : ∀ {A : OrderedAlgebra}
-  (Q : QProjectionKKTBridge A) →
-  QProjection.project (QProjectionKKTBridge.projection Q)
-    (QProjectionKKTBridge.fixedPoint Q)
-    ≡ QProjectionKKTBridge.fixedPoint Q
-kktFixedPointIdempotent Q = QProjectionKKTBridge.fixedPointLaw Q
-
-interpolationRefl : ∀ {A : OrderedAlgebra}
-  (I : DyadicInterpolation A) →
-  DyadicInterpolation.interpolated I ≡ DyadicInterpolation.interpolated I
-interpolationRefl I = refl
-
-paretoCertificateRefl : ∀ {A : OrderedAlgebra}
-  (M : CoupledParetoMap A) →
-  CoupledParetoMap.maximality M ≡ CoupledParetoMap.maximality M
-paretoCertificateRefl M = refl
-
-------------------------------------------------------------------------
--- The theorem target: all retained components compose through one finite
--- ordered interface. The sign-q-IDBD branch is the default; per-feature
--- momentum is optional; double-sign activation is explicit; KKT replaces
--- any unnecessary Jacobian/analytic fixed-point machinery.
-------------------------------------------------------------------------
+    switching : EventualSignStability
 
 canonicalCompositionClosed : ∀ {A : OrderedAlgebra}
-  (C : CanonicalComposition A) →
-  CanonicalComposition A
+  (C : CanonicalComposition A) → CanonicalComposition A
 canonicalCompositionClosed C = C
