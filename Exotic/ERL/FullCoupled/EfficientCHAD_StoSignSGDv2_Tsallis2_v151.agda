@@ -321,6 +321,8 @@ overestimationGap : ∀ {A : DyadicRing} →
   DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 overestimationGap x y = cemMax x y + DyadicRing.neg _ x
 
+-- Munchausen theorem surface: custom bonus/bootstrapping composition remains
+-- an exact finite ordered algebraic transition, not a statistical certificate.
 munchausenTarget : ∀ {A : DyadicRing} →
   DyadicRing.R A → DyadicRing.R A → DyadicRing.R A → DyadicRing.R A
 munchausenTarget reward bonus bootstrap = reward + bonus + bootstrap
