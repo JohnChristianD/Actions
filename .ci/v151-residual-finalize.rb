@@ -30,4 +30,4 @@ s.sub!(old, new)
 File.write(path, s)
 abort 'residual theorem remained implicit' if s.match?(/residualSquareNonzero_v140 : ∀ \{S\}\n/)
 abort 'residual theorem still uses proof witness as scalar' if s.include?('(mu * (hx * hx))')
-puts 'v157 residual proof normalization: PASS'
+puts 'v158 residual proof normalization: PASS'
