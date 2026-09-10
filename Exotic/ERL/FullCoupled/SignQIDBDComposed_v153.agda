@@ -28,6 +28,12 @@ record OrderedAlgebra : Set₁ where
 
 open OrderedAlgebra
 
+r≤A : ∀ {A : OrderedAlgebra} → R A → R A → Set
+r≤A {A} = OrderedAlgebra._r≤_ A
+
+r<A : ∀ {A : OrderedAlgebra} → R A → R A → Set
+r<A {A} = OrderedAlgebra._r<_ A
+
 data Fin : Nat → Set where
   fzero : {n : Nat} → Fin (suc n)
   fsuc : {n : Nat} → Fin n → Fin (suc n)
@@ -49,7 +55,7 @@ record HardAttention (A : OrderedAlgebra) (n : Nat) : Set where
   field
     score : Fin n → R A
     selected : Fin n
-    selectedMax : ∀ j → score j r≤ score selected
+    selectedMax : ∀ j → r≤A (score j) (score selected)
 
 hardAttention : ∀ {A : OrderedAlgebra} {n : Nat} → HardAttention A n → Vec (R A) n → R A
 hardAttention h values = index values (HardAttention.selected h)
@@ -86,9 +92,9 @@ record SignEncoding (A : OrderedAlgebra) : Set₁ where
 record SignOracle (A : OrderedAlgebra) : Set₁ where
   field
     sign : R A → SignCode
-    negativeLaw : ∀ x → x r< rzero A → sign x ≡ negSign
+    negativeLaw : ∀ x → r<A x (rzero A) → sign x ≡ negSign
     zeroLaw : sign (rzero A) ≡ zeroSign
-    positiveLaw : ∀ x → rzero A r< x → sign x ≡ posSign
+    positiveLaw : ∀ x → r<A (rzero A) x → sign x ≡ posSign
 
 record QProjection (A : OrderedAlgebra) : Set₁ where
   field
@@ -101,7 +107,7 @@ record KKTFixedPoint (A : OrderedAlgebra) : Set₁ where
     point multiplier : R A
     primal : Set
     primalProof : primal
-    dualProof : rzero A r≤ multiplier
+    dualProof : r≤A (rzero A) multiplier
     stationarity complementarity : R A
     stationarityProof : stationarity ≡ rzero A
     complementarityProof : complementarity ≡ rzero A
@@ -167,8 +173,8 @@ doubleSign C x =
 record DoubleSignNormCertificate (A : OrderedAlgebra) : Set₁ where
   field
     inputPath outputPath bound : R A
-    inputBound : inputPath r≤ bound
-    outputBound : outputPath r≤ bound
+    inputBound : r≤A inputPath bound
+    outputBound : r≤A outputPath bound
     branchInvariant : outputPath ≡ inputPath
 
 record CoupledHyperParameters (A : OrderedAlgebra) : Set₁ where
