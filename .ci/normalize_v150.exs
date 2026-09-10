@@ -64,11 +64,6 @@ else
   s4
 end
 
-old_acc = """  accumulate : Fin n → R → EState → EState
-  accumulate i c (state s) = state (λ j with finDecEq j i
-    ... | yes _ = s j + c
-    ... | no _ = s j)
-"""
 new_acc = """  accumulateAt : Fin n → R → EState → Fin n → R
   accumulateAt i c (state s) j with finDecEq j i
   ... | yes _ = s j + c
@@ -77,11 +72,16 @@ new_acc = """  accumulateAt : Fin n → R → EState → Fin n → R
   accumulate : Fin n → R → EState → EState
   accumulate i c s = state (accumulateAt i c s)
 """
+acc_marker = "  accumulate : Fin n → R → EState → EState\n"
 s6 =
-  if String.contains?(s5, old_acc) do
-    String.replace(s5, old_acc, new_acc, global: false)
-  else
-    s5
+  case :binary.match(s5, acc_marker) do
+    :nomatch -> s5
+    {acc_pos, _} ->
+      tail = binary_part(s5, acc_pos, byte_size(s5) - acc_pos)
+      case :binary.match(tail, "\n\n") do
+        {gap_pos, _} -> binary_part(s5, 0, acc_pos) <> new_acc <> binary_part(tail, gap_pos + 2, byte_size(tail) - gap_pos - 2)
+        :nomatch -> raise "accumulate block has no terminating blank line"
+      end
   end
 
 unless length(Regex.scan(~r/^record SmoothAlgebra\b/m, s6)) == 1, do: raise "SmoothAlgebra record count is not one after normalization"
