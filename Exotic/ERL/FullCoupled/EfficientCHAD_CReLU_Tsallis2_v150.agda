@@ -190,6 +190,9 @@ data UpdateMode : Set where
   StandardQIDBD : UpdateMode
   SignedParameterDirectionQIDBD : UpdateMode
 
+defaultUpdateMode : UpdateMode
+defaultUpdateMode = SignedParameterDirectionQIDBD
+
 record QProjectionCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
     project : Vector A n → Vector A n
@@ -211,6 +214,7 @@ record CompositeBranch (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
     forwardBranch attentionBranch updateBranch : Vec Bool n
     mode : UpdateMode
+    defaultMode : mode ≡ defaultUpdateMode
 
 record EfficientCHADCertificate (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field
