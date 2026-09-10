@@ -5,6 +5,7 @@ open import Agda.Builtin.Nat using (Nat)
 open import Agda.Builtin.Equality using (_≡_; refl)
 import Exotic.ERL.FullCoupled.EfficientCHAD_CReLU_Tsallis2_v150 as Base
 import Exotic.ERL.FullCoupled.EfficientCHAD_DoubleSign_v151 as D
+open Base
 
 cong₂ :
   {A B C : Set} →
