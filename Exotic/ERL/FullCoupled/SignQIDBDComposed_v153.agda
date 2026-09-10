@@ -130,7 +130,7 @@ featureMomentum mu previous q = (mu r* previous) r+ q
 
 featureMomentumZero : ∀ {A : OrderedAlgebra} (previous q : R A) →
   featureMomentum (rzero A) previous q ≡ q
-featureMomentumZero previous q =
+featureMomentumZero {A} previous q =
   transLocal (congLocal (λ x → x r+ q) (mulZeroL A previous)) (addZeroR A q)
 
 signQIDBDStep : ∀ {A : OrderedAlgebra}
