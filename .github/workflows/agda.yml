@@ -15,6 +15,8 @@ on:
       - 'oracle/**'
       - '.ci/**'
       - '.github/workflows/agda.yml'
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -35,28 +37,8 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Run Elixir canonical normalization
+      - name: Validate canonical v158 source
         run: elixir .ci/normalize_v158.exs
-      - name: Canonicalize Agda module header
-        shell: bash
-        run: |
-          set -euo pipefail
-          src='Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda'
-          tmp="${src}.tmp"
-          grep -vE '^\{\-# OPTIONS --safe #-\}$|^module Exotic\.ERL\.FullCoupled\.EfficientCHAD_v158 where$' "$src" > "$tmp"
-          {
-            printf '%s\n' '{-# OPTIONS --safe #-}'
-            printf '%s\n' 'module Exotic.ERL.FullCoupled.EfficientCHAD_v158 where'
-            printf '\n'
-            cat "$tmp"
-          } > "$src"
-          rm -f "$tmp"
-      - name: Inspect normalized Agda header
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -n '1,4p' Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
-          grep -n '^module Exotic\.ERL\.FullCoupled\.EfficientCHAD_v158 where$' Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
@@ -64,6 +46,8 @@ jobs:
         run: agda --version
       - name: Agda safe check
         run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
+      - name: Agda safe regression check
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v158_test.agda
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
