@@ -23,10 +23,10 @@ jobs:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
-      - name: Safe-check v154 finite ordered Efficient-CHAD target
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v154.agda
+      - name: Safe-check v155 canonical finite ordered Efficient-CHAD
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v155.agda
       - name: Verify active target exclusions
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -nE 'LayerNorm|BatchNorm|BatchRenorm|Certificate|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_v154.agda
+          ! grep -nE 'LayerNorm|BatchNorm|BatchRenorm|StoSignSGDv2|Newton|Certificate|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_v155.agda
