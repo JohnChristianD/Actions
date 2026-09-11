@@ -45,9 +45,9 @@ jobs:
       - name: Verify Agda executable
         run: agda --version
       - name: Agda safe check on generated canonical copy
-        run: agda --safe -i .ci/kernel .ci/kernel/Exotic/ERL/FullCoupled/EfficientCHAD_v159.agda
+        run: agda --safe -i .ci/kernel .ci/kernel/Canonical/ERL/FullCoupled/EfficientCHAD_v159.agda
       - name: Agda safe regression check
-        run: agda --safe -i .ci/kernel .ci/kernel/Exotic/ERL/FullCoupled/EfficientCHAD_v159_test.agda
+        run: agda --safe -i .ci/kernel .ci/kernel/Canonical/ERL/FullCoupled/EfficientCHAD_v159_test.agda
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
