@@ -1,7 +1,9 @@
-source = "Exotic/ERL/FullCoupled/EfficientCHAD_v162.agda"
+manifest = ".ci/canonical-module.txt"
+source = File.read!(manifest) |> String.split("\n") |> Enum.at(0) |> String.trim()
 raw = File.read!(source) |> String.replace("\r\n", "\n")
-expected = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_v162 where"
-unless String.starts_with?(raw, expected), do: raise("v162 source header/module mismatch")
+module = source |> Path.rootname() |> String.replace("/", ".")
+expected = "{-# OPTIONS --safe #-}\nmodule #{module} where"
+unless String.starts_with?(raw, expected), do: raise("canonical source header/module mismatch: #{source}")
 
 forbidden = [
   "StoSignSGD",
@@ -28,23 +30,24 @@ forbidden = [
   "SmoothAlgebra.exp",
   "SmoothAlgebra.log",
   "clamp",
-  "squash",
-  "momentum"
+  "squash"
 ]
 
 matches = Enum.filter(forbidden, &String.contains?(raw, &1))
-if matches != [], do: raise("forbidden retired formulation(s) remain in v162: #{Enum.join(matches, ", ")}")
+if matches != [], do: raise("forbidden retired formulation(s) remain in #{source}: #{Enum.join(matches, ", ")}")
 
 required = [
-  "softsignQIDBDStep",
-  "SoftsignQIDBDMetaDecay",
-  "canonicalOnlyOptimizer",
+  "F4IntSigmaDeltaState",
+  "f4ExactEMA",
+  "f4MomentumSigmaDeltaLaw",
+  "f4LogSigmaDeltaLaw",
+  "canonicalOptimizerIsF4IntSigmaDelta",
   "CanonicalSoftsignSignReLUFFN",
-  "canonicalNormPairSurface",
-  "canonicalLearnerUpdate"
+  "NormPair",
+  "FullFiniteOrderedRationalLearner"
 ]
 
 missing = Enum.reject(required, &String.contains?(raw, &1))
-if missing != [], do: raise("canonical v162 surface missing: #{Enum.join(missing, ", ")}")
+if missing != [], do: raise("canonical source missing: #{Enum.join(missing, ", ")}")
 
-IO.puts("v162 canonical source hygiene: PASS")
+IO.puts("canonical source hygiene: PASS #{source}")
