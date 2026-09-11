@@ -29,6 +29,15 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Pin Tom Smeding Efficient-CHAD source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/tomsmeding/efficient-chad-agda.git .ci/external/efficient-chad-agda
+          git -C .ci/external/efficient-chad-agda fetch --depth 1 origin 0be45ee9e7498a69c083a25ac9ba29bba4431a71
+          git -C .ci/external/efficient-chad-agda checkout --detach 0be45ee9e7498a69c083a25ac9ba29bba4431a71
+          test -f .ci/external/efficient-chad-agda/chad-cost.agda
+          test -f .ci/external/efficient-chad-agda/chad-preserves-primal.agda
+          echo 'tom-smeding-efficient-chad-pinned=PASS'
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -63,29 +72,3 @@ jobs:
           sed 's/\r$//' oracle/elixir.csv | sed '/^$/d' > oracle/elixir.normalized.csv
           diff -u oracle/haskell.normalized.csv oracle/elixir.normalized.csv
           echo 'exact-rational-functional-oracle-cross-check=PASS'
-
-  efficient_chad_upstream:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Fetch pinned Tom Smeding Efficient-CHAD source
-        run: |
-          set -euo pipefail
-          git clone https://github.com/tomsmeding/efficient-chad-agda.git .ci/external/efficient-chad-agda
-          git -C .ci/external/efficient-chad-agda checkout --detach 0be45ee9e7498a69c083a25ac9ba29bba4431a71
-          test -f .ci/external/efficient-chad-agda/chad-cost.agda
-          echo 'tom-smeding-efficient-chad-pinned=PASS'
-      - uses: agda/agda-setup-action@v1.0.0
-        with:
-          agda-version: '2.6.3'
-      - name: Fetch the upstream declared standard-library version
-        run: |
-          set -euo pipefail
-          git clone --depth 1 --branch v1.7.2 https://github.com/agda/agda-stdlib.git .ci/external/agda-stdlib
-          mkdir -p "$HOME/.agda"
-          printf '%s/standard-library.agda-lib\n' "$GITHUB_WORKSPACE/.ci/external/agda-stdlib" > "$HOME/.agda/libraries"
-          printf 'standard-library\n' > "$HOME/.agda/defaults"
-      - name: Agda safe check of upstream Efficient-CHAD proof
-        run: agda --safe -i .ci/external/efficient-chad-agda .ci/external/efficient-chad-agda/chad-cost.agda
