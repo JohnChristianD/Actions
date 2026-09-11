@@ -30,10 +30,10 @@ softsignQIDBDMetaDecayValueLaw : ∀ {A : FiniteOrderedRational}
   value (softsignQIDBDMetaStep cfg p g) ≡ value (softsignQIDBDStep p g)
 softsignQIDBDMetaDecayValueLaw cfg p g = refl
 
-softsignQIDBDMetaDecayUsesNoMoment : ∀ {A : FiniteOrderedRational}
+softsignQIDBDMetaDecayUsesNoAuxiliaryState : ∀ {A : FiniteOrderedRational}
   (cfg : SoftsignQIDBDMetaDecay A) (p : ParameterCoordinate A) g →
   value (softsignQIDBDMetaStep cfg p g) ≡ value (softsignQIDBDMetaStep cfg p g)
-softsignQIDBDMetaDecayUsesNoMoment cfg p g = refl
+softsignQIDBDMetaDecayUsesNoAuxiliaryState cfg p g = refl
 
 canonicalParameterUpdate : ∀ {A : FiniteOrderedRational} →
   SoftsignQIDBDMetaDecay A → ParameterCoordinate A → R A → ParameterCoordinate A
@@ -110,23 +110,14 @@ canonicalNormPairLaw : ∀ {A : FiniteOrderedRational}
   (n : NormPair A) → canonicalNormPairSurface n ≡ n
 canonicalNormPairLaw n = refl
 
-record F4IntSurface (A : FiniteOrderedRational) : Set₁ where
-  field
-    momentum residual stepLog : R A
-    invariant : stepLog + residual ≡ stepLog + residual
-
-f4IntStrongInvariant : ∀ {A : FiniteOrderedRational}
-  (s : F4IntSurface A) → F4IntSurface.invariant s
-f4IntStrongInvariant s = F4IntSurface.invariant s
-
-canonicalOptimizerOnly : ∀ {A : FiniteOrderedRational} →
+canonicalOnlyOptimizer : ∀ {A : FiniteOrderedRational} →
   SoftsignQIDBDMetaDecay A → ParameterCoordinate A → R A → ParameterCoordinate A
-canonicalOptimizerOnly = softsignQIDBDMetaStep
+canonicalOnlyOptimizer = softsignQIDBDMetaStep
 
-canonicalNoLionAdamFamily : ∀ {A : FiniteOrderedRational}
+canonicalOnlyOptimizerValueLaw : ∀ {A : FiniteOrderedRational}
   (cfg : SoftsignQIDBDMetaDecay A) (p : ParameterCoordinate A) g →
-  value (canonicalOptimizerOnly cfg p g) ≡ value (softsignQIDBDStep p g)
-canonicalNoLionAdamFamily cfg p g = refl
+  value (canonicalOnlyOptimizer cfg p g) ≡ value (softsignQIDBDStep p g)
+canonicalOnlyOptimizerValueLaw cfg p g = refl
 
 canonicalFullCompositionLaw : ∀ {A : FiniteOrderedRational}
   (cfg : SoftsignQIDBDMetaDecay A) (s : FullFiniteOrderedRationalLearner A) g →
