@@ -1,7 +1,7 @@
-source = "Exotic/ERL/FullCoupled/EfficientCHAD_v161.agda"
+source = "Exotic/ERL/FullCoupled/EfficientCHAD_v162.agda"
 raw = File.read!(source) |> String.replace("\r\n", "\n")
-expected = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_v161 where"
-unless String.starts_with?(raw, expected), do: raise("v161 source header/module mismatch")
+expected = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_v162 where"
+unless String.starts_with?(raw, expected), do: raise("v162 source header/module mismatch")
 
 forbidden = [
   "StoSignSGD",
@@ -28,16 +28,20 @@ forbidden = [
   "SmoothAlgebra.exp",
   "SmoothAlgebra.log",
   "clamp",
-  "squash"
+  "squash",
+  "momentum"
 ]
 
 matches = Enum.filter(forbidden, &String.contains?(raw, &1))
-if matches != [], do: raise("forbidden retired formulation(s) remain in v161: #{Enum.join(matches, ", ")}")
+if matches != [], do: raise("forbidden retired formulation(s) remain in v162: #{Enum.join(matches, ", ")}")
 
 unless String.contains?(raw, "softsignQIDBDStep"), do: raise("canonical softsign-q-IDBD missing")
-unless String.contains?(raw, "dyadicEpsilon"), do: raise("canonical dyadic threshold missing")
-unless String.contains?(raw, "idbdPow2") and String.contains?(raw, "idbdLog2"), do: raise("base-2 IDBD surface missing")
-unless String.contains?(raw, "critic actor transformer representation"), do: raise("four canonical parameter groups missing")
-unless String.contains?(raw, "identityActor"), do: raise("canonical actor identity mode missing")
+unless String.contains?(raw, "softsignQIDBDMetaDecay"), do: raise("canonical meta-decay surface missing")
+unless String.contains?(raw, "dyadicEpsilon"), do: raise("canonical dyadic threshold missing from imported core")
+unless String.contains?(raw, "canonicalOnlyOptimizer"), do: raise("single global optimizer surface missing")
+unless String.contains?(raw, "critic actor transformer representation"), do: raise("four canonical parameter groups missing from imported core")
+unless String.contains?(raw, "CanonicalSoftsignSignReLUFFN"), do: raise("canonical three-activation FFN surface missing")
+unless String.contains?(raw, "norm : NormPair A"), do: raise("canonical L1/one-path norm pair surface missing")
+unless String.contains?(raw, "identityActor"), do: raise("canonical actor identity mode missing from imported core")
 
-IO.puts("v161 canonical source hygiene: PASS")
+IO.puts("v162 canonical source hygiene: PASS")
