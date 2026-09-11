@@ -77,6 +77,13 @@ old_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus x y 
 new_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Scalar S → Scalar S → Scalar S\n  minus x y = Ring._+_ Rg x (Ring.neg Rg y)'
 s = s.replace(old_minus, new_minus)
 
+# Robust fallback for any residual helper whose binder was split by prior normalization.
+s = re.sub(
+    r'(Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n\s*)minus x y =',
+    r'\1minus : Scalar S → Scalar S → Scalar S\n  minus x y =',
+    s,
+)
+
 s = s.replace('  centered x = x + neg μ', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
 s = s.replace('  normalise x = centered x * invStd', '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
 
