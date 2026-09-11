@@ -2,8 +2,10 @@ path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
 text = String.replace(text, "neg abs max sign recip : R → R", "neg abs sign recip : R → R\n    max : R → R → R")
-text = String.replace(text, "featureAbsSum {A} = sumL (_+_ A) (zero A) (mapL (abs A))", "featureAbsSum {A} xs = sumL (_+_ A) (zero A) (mapL (abs A) xs)")
-text = String.replace(text, "weightL1 {A} = sumL (_+_ A) (zero A) (mapL featureAbsSum)", "weightL1 {A} xs = sumL (_+_ A) (zero A) (mapL featureAbsSum xs)")
+text = String.replace(text, "featureAbsSum {A} = sumL (_+_ A) (zero A) (mapL (abs A))", "featureAbsSum : ∀ {A : OrderedAlgebra} → FeatureVec A → R A\nfeatureAbsSum {A} [] = zero A\nfeatureAbsSum {A} (x ∷ xs) = abs A x + featureAbsSum xs")
+text = String.replace(text, "featureAbsSum {A} xs = sumL (_+_ A) (zero A) (mapL (abs A) xs)", "featureAbsSum : ∀ {A : OrderedAlgebra} → FeatureVec A → R A\nfeatureAbsSum {A} [] = zero A\nfeatureAbsSum {A} (x ∷ xs) = abs A x + featureAbsSum xs")
+text = String.replace(text, "weightL1 {A} = sumL (_+_ A) (zero A) (mapL featureAbsSum)", "weightL1 : ∀ {A : OrderedAlgebra} → List (FeatureVec A) → R A\nweightL1 {A} [] = zero A\nweightL1 {A} (x ∷ xs) = featureAbsSum x + weightL1 xs")
+text = String.replace(text, "weightL1 {A} xs = sumL (_+_ A) (zero A) (mapL featureAbsSum xs)", "weightL1 : ∀ {A : OrderedAlgebra} → List (FeatureVec A) → R A\nweightL1 {A} [] = zero A\nweightL1 {A} (x ∷ xs) = featureAbsSum x + weightL1 xs")
 text = String.replace(text, "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set", "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
 text = String.replace(text, "hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)")
 text = String.replace(text, "b * m + c * x", "(b * m) + (c * x)")
@@ -22,7 +24,11 @@ bodyRepairs = [
   {"_*_ A", "_*_ _"}, {"_+_ A", "_+_ _"}
 ]
 text = text |> String.split("\n") |> Enum.map(fn line ->
-  if String.contains?(line, "="), do: Enum.reduce(bodyRepairs, line, fn {from, to}, acc -> String.replace(acc, from, to) end), else: line
+  if String.contains?(line, "=") do
+    Enum.reduce(bodyRepairs, line, fn {from, to}, acc -> String.replace(acc, from, to) end)
+  else
+    line
+  end
 end) |> Enum.join("\n")
 
 forbidden = ["StoSignSGDv2", "StoSignSGD", "LayerNorm", "BatchNorm", "BatchRenorm", "Newton", "Certificate", "postulate", "{!!}", "CReLU"]
