@@ -13,5 +13,5 @@ couplingTest : ∀ {A : FiniteOrderedRational} →
 couplingTest = fullFiniteOrderedRationalCoupling
 
 actorTest : ∀ {A : FiniteOrderedRational} x →
-  evalActorAction {A = A} unsquashedActor x ≡ x
-actorTest = canonicalActorUnsquashed
+  evalActorAction {A = A} identityActor x ≡ x
+actorTest = canonicalActorIdentity
