@@ -109,7 +109,7 @@ softsignQIDBDStep : ∀ {A : FiniteOrderedRational} →
   ParameterCoordinate A → R A → ParameterCoordinate A
 softsignQIDBDStep {A} p g = record
   { value =
-      (value p + stepSize p * deadZone A (threshold p) (softsign A g))
+      (value p + (stepSize p * deadZone A (threshold p) (softsign A g)))
         + neg A (l2 p * value p)
   ; stepSize = stepSize p
   ; l2 = l2 p
@@ -118,7 +118,7 @@ softsignQIDBDStep {A} p g = record
 softsignQIDBDFormula : ∀ {A : FiniteOrderedRational}
   (p : ParameterCoordinate A) g →
   value (softsignQIDBDStep p g) ≡
-    (value p + stepSize p * deadZone A (threshold p) (softsign A g))
+    (value p + (stepSize p * deadZone A (threshold p) (softsign A g)))
       + neg A (l2 p * value p)
 softsignQIDBDFormula p g = refl
 
@@ -203,10 +203,10 @@ cemMax {A} = maximum A
 
 hStepReturn : ∀ {A : FiniteOrderedRational} → List (R A) → R A → R A → R A
 hStepReturn [] gamma bootstrap = bootstrap
-hStepReturn (r ∷ rs) gamma bootstrap = r + gamma * hStepReturn rs gamma bootstrap
+hStepReturn (r ∷ rs) gamma bootstrap = r + (gamma * hStepReturn rs gamma bootstrap)
 
 hStepRecursionLaw : ∀ {A : FiniteOrderedRational} r gamma bootstrap rs →
-  hStepReturn (r ∷ rs) gamma bootstrap ≡ r + gamma * hStepReturn rs gamma bootstrap
+  hStepReturn (r ∷ rs) gamma bootstrap ≡ r + (gamma * hStepReturn rs gamma bootstrap)
 hStepRecursionLaw r gamma bootstrap rs = refl
 
 record QProjection (A : FiniteOrderedRational) : Set₁ where
@@ -249,7 +249,7 @@ record FullFiniteOrderedRationalCoupling (A : FiniteOrderedRational) : Set₁ wh
     noMoment : ∀ (p : ParameterCoordinate A) g → value (softsignQIDBDStep p g) ≡ value (softsignQIDBDStep p g)
     oneTransformer : ∀ (l : TransformerLayer A) x → runTransformer l x ≡ runTransformer l x
     actorIdentity : ∀ x → evalActorAction {A = A} identityActor x ≡ x
-    hStep : ∀ r gamma bootstrap rs → hStepReturn (r ∷ rs) gamma bootstrap ≡ r + gamma * hStepReturn rs gamma bootstrap
+    hStep : ∀ r gamma bootstrap rs → hStepReturn (r ∷ rs) gamma bootstrap ≡ r + (gamma * hStepReturn rs gamma bootstrap)
     qProjection : ∀ (q : QProjection A) x → project q (project q x) ≡ project q x
     deadZone : ∀ {eps y : R A} → y ≤ eps → neg A eps ≤ y → deadZone A eps y ≡ zero A
     softsign : ∀ x → softsign A x ≡ x * reciprocal A (one A + magnitude A x)
