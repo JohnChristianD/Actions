@@ -21,6 +21,15 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
+          elixir-version: '1.17'
+          hexpm: true
+          rebar3: false
+      - name: Run Elixir canonical normalization
+        run: elixir .ci/normalize_v158.exs
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
@@ -34,17 +43,8 @@ jobs:
           ghc-version: '9.6'
       - name: Run Haskell exact-rational oracle
         run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: '27'
-          elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
       - name: Run Elixir exact-rational oracle
         run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
-      - name: Run Elixir canonical normalization
-        run: elixir .ci/normalize_v158.exs
       - name: Compare exact-rational Haskell and Elixir traces
         shell: bash
         run: |
@@ -57,4 +57,4 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -nE 'StoSignSGDv2|LayerNorm|BatchNorm|BatchRenorm|Newton|Certificate|postulate|\{!!\}|CReLU' Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
+          ! grep -nE 'StoSignSGDv2|StoSignSGD|LayerNorm|BatchNorm|BatchRenorm|Newton|Certificate|postulate|\{!!\}|CReLU' Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
