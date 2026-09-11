@@ -45,17 +45,53 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Validate canonical v161 source
+      - name: Validate canonical v162 source
         run: elixir .ci/normalize_v161.exs
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
+      - name: Audit upstream Efficient-CHAD imports
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd .ci/external/efficient-chad-agda
+          imports=$(mktemp)
+          grep -RhoE '^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+[A-Za-z0-9_.-]+' --include='*.agda' . | sort -u > "$imports"
+          echo 'upstream-imports:'
+          cat "$imports"
+          if ! grep -Eq '(^| )(Data|Function|Relation)(\.|$)' "$imports"; then
+            echo 'expected standard-library import families were not found'
+            exit 1
+          fi
+          echo 'tom-smeding-stdlib-dependency=DETECTED'
+      - name: Probe upstream Efficient-CHAD with no standard library
+        shell: bash
+        run: |
+          set -uo pipefail
+          cd .ci/external/efficient-chad-agda
+          isolated_agda_dir=$(mktemp -d)
+          : > "$isolated_agda_dir/libraries"
+          : > "$isolated_agda_dir/defaults"
+          set +e
+          AGDA_DIR="$isolated_agda_dir" agda --safe chad-cost.agda > /tmp/tom-smeding-no-stdlib.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/tom-smeding-no-stdlib.log
+          if [ "$status" -eq 0 ]; then
+            echo 'unexpected-success: upstream Efficient-CHAD resolved without standard library'
+            exit 1
+          fi
+          if ! grep -Eq 'Failed to find source|Failed to find source of module|Cannot find module|not found' /tmp/tom-smeding-no-stdlib.log; then
+            echo 'unexpected failure mode from no-stdlib probe'
+            exit 1
+          fi
+          echo 'tom-smeding-no-stdlib-probe=EXPECTED-FAIL'
       - name: Agda safe check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v161.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v162.agda
       - name: Agda safe regression check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v161_test.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v162_test.agda
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
