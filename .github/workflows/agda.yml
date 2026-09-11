@@ -37,6 +37,20 @@ jobs:
           install-rebar: false
       - name: Run Elixir canonical normalization
         run: elixir .ci/normalize_v158.exs
+      - name: Canonicalize Agda module header
+        shell: bash
+        run: |
+          set -euo pipefail
+          src='Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda'
+          tmp="${src}.tmp"
+          grep -vE '^\{\-# OPTIONS --safe #-\}$|^module Exotic\.ERL\.FullCoupled\.EfficientCHAD_v158 where$' "$src" > "$tmp"
+          {
+            printf '%s\n' '{-# OPTIONS --safe #-}'
+            printf '%s\n' 'module Exotic.ERL.FullCoupled.EfficientCHAD_v158 where'
+            printf '\n'
+            cat "$tmp"
+          } > "$src"
+          rm -f "$tmp"
       - name: Inspect normalized Agda header
         shell: bash
         run: |
