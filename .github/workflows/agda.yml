@@ -33,8 +33,8 @@ jobs:
         with:
           otp-version: '27'
           elixir-version: '1.17'
-          hexpm: true
-          rebar3: false
+          install-hex: true
+          install-rebar: false
       - name: Run Elixir canonical normalization
         run: elixir .ci/normalize_v158.exs
       - uses: agda/agda-setup-action@v1.0.0
