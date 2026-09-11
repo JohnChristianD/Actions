@@ -3,6 +3,7 @@ text = File.read!(path) |> String.replace("\r\n", "\n")
 
 text = String.replace(text, "neg abs max sign recip : R → R", "neg abs sign recip : R → R\n    max : R → R → R")
 text = String.replace(text, "featureAbsSum {A} = sumL (_+_ A) (zero A) (mapL (abs A))", "featureAbsSum {A} xs = sumL (_+_ A) (zero A) (mapL (abs A) xs)")
+text = String.replace(text, "weightL1 {A} = sumL (_+_ A) (zero A) (mapL featureAbsSum)", "weightL1 {A} xs = sumL (_+_ A) (zero A) (mapL featureAbsSum xs)")
 text = String.replace(text, "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set", "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
 text = String.replace(text, "hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)")
 text = String.replace(text, "b * m + c * x", "(b * m) + (c * x)")
