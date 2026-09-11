@@ -152,7 +152,7 @@ record Tsallis2Attention (A : FiniteOrderedRational) : Set₁ where
 weightedAttention : ∀ {A : FiniteOrderedRational} → Tsallis2Attention A → FeatureVec A
 weightedAttention a = weighted (weights a) (values a)
   where
-  weighted : FeatureVec _ → List (FeatureVec _) → FeatureVec _
+  weighted : FeatureVec A → List (FeatureVec A) → FeatureVec A
   weighted [] _ = []
   weighted (_ ∷ _) [] = []
   weighted (w ∷ ws) (v ∷ vs) = featureAdd (featureScale w v) (weighted ws vs)
@@ -179,8 +179,8 @@ oneTransformerLaw l x = refl
 record ActorActionMode : Set where
   field useSoftsign : Bool
 
-unsquashedActor : ActorActionMode
-unsquashedActor = record { useSoftsign = false }
+identityActor : ActorActionMode
+identityActor = record { useSoftsign = false }
 
 optionalSoftsignActor : ActorActionMode
 optionalSoftsignActor = record { useSoftsign = true }
@@ -190,9 +190,9 @@ evalActorAction mode x with useSoftsign mode
 ... | false = x
 ... | true = softsign _ x
 
-canonicalActorUnsquashed : ∀ {A : FiniteOrderedRational} x →
-  evalActorAction {A = A} unsquashedActor x ≡ x
-canonicalActorUnsquashed x = refl
+canonicalActorIdentity : ∀ {A : FiniteOrderedRational} x →
+  evalActorAction {A = A} identityActor x ≡ x
+canonicalActorIdentity x = refl
 
 record TrueOnlineTrace (A : FiniteOrderedRational) : Set₁ where
   field trace : FeatureVec A
@@ -248,7 +248,7 @@ record FullFiniteOrderedRationalCoupling (A : FiniteOrderedRational) : Set₁ wh
     base2 : ∀ xs → idbdLog2 A (idbdPow2 A xs) ≡ xs
     noMoment : ∀ (p : ParameterCoordinate A) g → value (softsignQIDBDStep p g) ≡ value (softsignQIDBDStep p g)
     oneTransformer : ∀ (l : TransformerLayer A) x → runTransformer l x ≡ runTransformer l x
-    actorUnsquashed : ∀ x → evalActorAction {A = A} unsquashedActor x ≡ x
+    actorIdentity : ∀ x → evalActorAction {A = A} identityActor x ≡ x
     hStep : ∀ r gamma bootstrap rs → hStepReturn (r ∷ rs) gamma bootstrap ≡ r + gamma * hStepReturn rs gamma bootstrap
     qProjection : ∀ (q : QProjection A) x → project q (project q x) ≡ project q x
     deadZone : ∀ {eps y : R A} → y ≤ eps → neg A eps ≤ y → deadZone A eps y ≡ zero A
@@ -260,7 +260,7 @@ fullFiniteOrderedRationalCoupling = record
   ; base2 = idbdBase2RoundTrip
   ; noMoment = softsignQIDBDUsesNoMoment
   ; oneTransformer = oneTransformerLaw
-  ; actorUnsquashed = canonicalActorUnsquashed
+  ; actorIdentity = canonicalActorIdentity
   ; hStep = hStepRecursionLaw
   ; qProjection = qProjectionLaw
   ; deadZone = deadZoneZero _
@@ -291,9 +291,9 @@ emergentSingleTransformer : ∀ {A : FiniteOrderedRational}
   (l : TransformerLayer A) x → runTransformer l x ≡ runTransformer l x
 emergentSingleTransformer = oneTransformerLaw
 
-emergentUnsquashedActor : ∀ {A : FiniteOrderedRational} x →
-  evalActorAction {A = A} unsquashedActor x ≡ x
-emergentUnsquashedActor = canonicalActorUnsquashed
+emergentActorIdentity : ∀ {A : FiniteOrderedRational} x →
+  evalActorAction {A = A} identityActor x ≡ x
+emergentActorIdentity = canonicalActorIdentity
 
 emergentHStepCEMMax : ∀ {A : FiniteOrderedRational}
   (rs : List (R A)) gamma q₁ q₂ →
