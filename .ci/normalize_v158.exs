@@ -7,10 +7,10 @@ text = String.replace(text,
 text = String.replace(text,
   "hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap",
   "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)")
+text = String.replace(text, "b * m + c * x", "(b * m) + (c * x)")
 
 bodyRepairs = [
   {"r + gamma * hStepReturn rs gamma bootstrap", "r + (gamma * hStepReturn rs gamma bootstrap)"},
-  {"b * m + c * x", "(b * m) + (c * x)"},
   {"TrueOnlineTrace.alpha s * decay * featureDot", "(TrueOnlineTrace.alpha s * decay) * featureDot"},
   {"neg A", "neg _"},
   {"sign A", "sign _"},
