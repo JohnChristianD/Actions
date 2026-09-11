@@ -35,7 +35,7 @@ record FiniteOrderedRational : Set₁ where
     addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
     mulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
     mulOne : ∀ x → x * one ≡ x
-    onePlusMagnitudeNeqZero : ∀ x → one + magnitude x ≠ zero
+    onePlusMagnitudeNeqZero : ∀ x → (one + magnitude x) ≠ zero
     reciprocalLaw : ∀ {x} → x ≠ zero → x * reciprocal x ≡ one
     softsignFormula : ∀ x → softsign x ≡ x * reciprocal (one + magnitude x)
     deadZoneZero : ∀ {eps y} → y ≤ eps → neg eps ≤ y → deadZone eps y ≡ zero
