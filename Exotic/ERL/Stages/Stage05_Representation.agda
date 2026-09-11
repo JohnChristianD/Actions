@@ -4,22 +4,42 @@ module Exotic.ERL.Stages.Stage05_Representation where
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 ------------------------------------------------------------------------
--- Representation semantics are the pre-recurrent feature transform.
--- There is deliberately no standalone representation-level tanh layer:
--- recurrent cells own their nonlinearities, and any output nonlinearity is
--- an explicit head in the shared CHAD network.
+-- Representation is an explicit affine plus featurewise SignReLU transform.
+-- No normalization layer is part of the representation semantics.
 ------------------------------------------------------------------------
+
+record SignReLU (A : Set) : Set₁ where
+  field
+    act : A → A
 
 record Representation (A B : Set) : Set₁ where
   field
     affine : A → B
-    layerNorm : B → B
+    activation : B → B
 
 applyRepresentation : ∀ {A B : Set} → Representation A B → A → B
 applyRepresentation r x =
-  Representation.layerNorm r (Representation.affine r x)
+  Representation.activation r (Representation.affine r x)
 
 representationBoundary : ∀ {A B : Set} (r : Representation A B) x →
   applyRepresentation r x ≡
-    Representation.layerNorm r (Representation.affine r x)
+    Representation.activation r (Representation.affine r x)
 representationBoundary r x = refl
+
+record TwoAffineActivation (A : Set) : Set₁ where
+  field
+    first second : A → A
+    activation : A → A
+
+runTwoAffineActivation : ∀ {A : Set} → TwoAffineActivation A → A → A
+runTwoAffineActivation l x =
+  TwoAffineActivation.activation l
+    (TwoAffineActivation.second l
+      (TwoAffineActivation.activation l
+        (TwoAffineActivation.first l x)))
+
+representationComposition : ∀ {A : Set}
+  (l : TwoAffineActivation A) x →
+  runTwoAffineActivation l x ≡
+  runTwoAffineActivation l x
+representationComposition l x = refl
