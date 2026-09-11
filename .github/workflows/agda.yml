@@ -7,12 +7,14 @@ on:
       - '**/*.agda'
       - 'oracle/**'
       - '.ci/**'
+      - 'docs/**'
       - '.github/workflows/agda.yml'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.ci/**'
+      - 'docs/**'
       - '.github/workflows/agda.yml'
   schedule:
     - cron: '17 * * * *'
@@ -45,8 +47,11 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Validate canonical v163 source
-        run: elixir .ci/normalize_v163.exs
+      - name: Validate canonical v164 source
+        run: elixir .ci/normalize_v164.exs
+      - name: Prune upstream Efficient-CHAD to local dependency closure
+        shell: bash
+        run: bash .ci/audit_tom_smeding.sh
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
@@ -89,9 +94,9 @@ jobs:
           fi
           echo 'tom-smeding-no-stdlib-probe=EXPECTED-FAIL'
       - name: Agda safe check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v163.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v164.agda
       - name: Agda safe regression check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v163_test.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v164_test.agda
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
@@ -100,7 +105,7 @@ jobs:
         run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
       - name: Run Elixir exact-rational oracle
         run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
-      - name: Compare exact-rational Haskell and Elixir traces
+      - name: Compare exact-rational functional oracles
         shell: bash
         run: |
           set -euo pipefail
