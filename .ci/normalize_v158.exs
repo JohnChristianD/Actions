@@ -1,9 +1,13 @@
 path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
-text = String.replace(text,
-  "neg abs max sign recip : R → R",
-  "neg abs sign recip : R → R\n    max : R → R → R")
+unless String.contains?(text, "{-# OPTIONS --safe #-}") do
+  text = "{-# OPTIONS --safe #-}\n" <> text
+else
+  text = text
+end
+
+text = String.replace(text, "neg abs max sign recip : R → R", "neg abs sign recip : R → R\n    max : R → R → R")
 
 feature_abs_old = ~r/featureAbsSum\s*:\s*∀ \{A : OrderedAlgebra\} → FeatureVec A → R A\s*\nfeatureAbsSum \{A\} = sumL \(_\+_ A\) \(zero A\) \(mapL \(abs A\)\)/
 feature_abs_new = "featureAbsSum : ∀ {A : OrderedAlgebra} → FeatureVec A → R A\nfeatureAbsSum {A} [] = zero A\nfeatureAbsSum {A} (x ∷ xs) = abs A x + featureAbsSum xs"
@@ -13,12 +17,8 @@ weight_old = ~r/weightL1\s*:\s*∀ \{A : OrderedAlgebra\} → List \(FeatureVec 
 weight_new = "weightL1 : ∀ {A : OrderedAlgebra} → List (FeatureVec A) → R A\nweightL1 {A} [] = zero A\nweightL1 {A} (x ∷ xs) = featureAbsSum x + weightL1 xs"
 text = Regex.replace(weight_old, weight_new, text)
 
-text = String.replace(text,
-  "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set",
-  "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
-text = String.replace(text,
-  "hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap",
-  "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)")
+text = String.replace(text, "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set", "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
+text = String.replace(text, "hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)")
 text = String.replace(text, "b * m + c * x", "(b * m) + (c * x)")
 
 bodyRepairs = [
