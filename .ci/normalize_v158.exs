@@ -1,10 +1,10 @@
 path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
-unless String.contains?(text, "{-# OPTIONS --safe #-}") do
-  text = "{-# OPTIONS --safe #-}\n" <> text
+text = if String.contains?(text, "{-# OPTIONS --safe #-}") do
+  text
 else
-  text = text
+  "{-# OPTIONS --safe #-}\n" <> text
 end
 
 text = String.replace(text, "neg abs max sign recip : R → R", "neg abs sign recip : R → R\n    max : R → R → R")
