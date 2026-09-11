@@ -38,6 +38,6 @@ unless String.contains?(raw, "softsignQIDBDStep"), do: raise("canonical softsign
 unless String.contains?(raw, "dyadicEpsilon"), do: raise("canonical dyadic threshold missing")
 unless String.contains?(raw, "idbdPow2") and String.contains?(raw, "idbdLog2"), do: raise("base-2 IDBD surface missing")
 unless String.contains?(raw, "critic actor transformer representation"), do: raise("four canonical parameter groups missing")
-unless String.contains?(raw, "unsquashedActor"), do: raise("unsquashed actor mode missing")
+unless String.contains?(raw, "identityActor"), do: raise("canonical actor identity mode missing")
 
 IO.puts("v161 canonical source hygiene: PASS")
