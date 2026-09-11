@@ -127,7 +127,7 @@ runSignReLULayer : ∀ {A : OrderedAlgebra} → SignReLULayer A → FeatureVec A
 runSignReLULayer l x =
   signReLU (SignReLULayer.activation l)
     (Affine.apply (SignReLULayer.second l)
-      (signReLU (SignReLU L.activation l)
+      (signReLU (SignReLULayer.activation l)
         (Affine.apply (SignReLULayer.first l) x)))
 
 twoAffineSignReLULaw : ∀ {A : OrderedAlgebra} (l : SignReLULayer A) x →
