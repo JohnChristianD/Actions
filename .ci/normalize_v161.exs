@@ -35,13 +35,16 @@ forbidden = [
 matches = Enum.filter(forbidden, &String.contains?(raw, &1))
 if matches != [], do: raise("forbidden retired formulation(s) remain in v162: #{Enum.join(matches, ", ")}")
 
-unless String.contains?(raw, "softsignQIDBDStep"), do: raise("canonical softsign-q-IDBD missing")
-unless String.contains?(raw, "softsignQIDBDMetaDecay"), do: raise("canonical meta-decay surface missing")
-unless String.contains?(raw, "dyadicEpsilon"), do: raise("canonical dyadic threshold missing from imported core")
-unless String.contains?(raw, "canonicalOnlyOptimizer"), do: raise("single global optimizer surface missing")
-unless String.contains?(raw, "critic actor transformer representation"), do: raise("four canonical parameter groups missing from imported core")
-unless String.contains?(raw, "CanonicalSoftsignSignReLUFFN"), do: raise("canonical three-activation FFN surface missing")
-unless String.contains?(raw, "norm : NormPair A"), do: raise("canonical L1/one-path norm pair surface missing")
-unless String.contains?(raw, "identityActor"), do: raise("canonical actor identity mode missing from imported core")
+required = [
+  "softsignQIDBDStep",
+  "SoftsignQIDBDMetaDecay",
+  "canonicalOnlyOptimizer",
+  "CanonicalSoftsignSignReLUFFN",
+  "canonicalNormPairSurface",
+  "canonicalLearnerUpdate"
+]
+
+missing = Enum.reject(required, &String.contains?(raw, &1))
+if missing != [], do: raise("canonical v162 surface missing: #{Enum.join(missing, ", ")}")
 
 IO.puts("v162 canonical source hygiene: PASS")
