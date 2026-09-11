@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.EfficientCHAD_v156 where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.List using (List; []; _∷_)
+open import Agda.Builtin.Nat using (Nat)
 
 record OrderedAlgebra : Set₁ where
   field
@@ -38,12 +39,16 @@ mapL f [] = []
 mapL f (x ∷ xs) = f x ∷ mapL f xs
 
 zipL : ∀ {A B C : Set} → (A → B → C) → List A → List B → List C
-zipL f [] [] = []
+zipL f [] _ = []
+zipL f (_ ∷ _) [] = []
 zipL f (x ∷ xs) (y ∷ ys) = f x y ∷ zipL f xs ys
 
 zipL4 : ∀ {A B C D E : Set} →
   (A → B → C → D → E) → List A → List B → List C → List D → List E
-zipL4 f [] [] [] [] = []
+zipL4 f [] _ _ _ = []
+zipL4 f (_ ∷ _) [] _ _ = []
+zipL4 f (_ ∷ _) (_ ∷ _) [] _ = []
+zipL4 f (_ ∷ _) (_ ∷ _) (_ ∷ _) [] = []
 zipL4 f (a ∷ as) (b ∷ bs) (c ∷ cs) (d ∷ ds) =
   f a b c d ∷ zipL4 f as bs cs ds
 
@@ -105,7 +110,8 @@ record TransformerLayer (A : OrderedAlgebra) : Set₁ where
         values : List (FeatureVec A)
 
 weightedSum : ∀ {A : OrderedAlgebra} → FeatureVec A → List (FeatureVec A) → FeatureVec A
-weightedSum [] [] = []
+weightedSum [] _ = []
+weightedSum (_ ∷ _) [] = []
 weightedSum (p ∷ ps) (v ∷ vs) = featureAdd (featureScale p v) (weightedSum ps vs)
 
 runTransformerLayer : ∀ {A : OrderedAlgebra} → TransformerLayer A → FeatureVec A → FeatureVec A
@@ -159,7 +165,8 @@ cemMax {A} = max A
 
 hStepCEMMaxTarget : ∀ {A : OrderedAlgebra} →
   List (R A) → R A → R A → R A → R A
-hStepCEMMaxTarget rewards gamma q₁ q₂ = hStepReturn rewards gamma (cemMax q₁ q₂)
+hStepCEMMaxTarget rewards gamma q₁ q₂ =
+  hStepReturn rewards gamma (cemMax q₁ q₂)
 
 record TrueOnlineTrace (A : OrderedAlgebra) : Set₁ where
   field trace : FeatureVec A
@@ -193,6 +200,14 @@ hStepCEMMaxTrueOnline : ∀ {A : OrderedAlgebra}
   (s : TrueOnlineTrace A) phi → TrueOnlineTrace A
 hStepCEMMaxTrueOnline rewards gamma q₁ q₂ value s phi =
   trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
+
+hStepCEMMaxTraceDelta : ∀ {A : OrderedAlgebra}
+  (rewards : List (R A)) gamma q₁ q₂ value
+  (s : TrueOnlineTrace A) phi →
+  TrueOnlineTrace.previousDelta
+    (hStepCEMMaxTrueOnline rewards gamma q₁ q₂ value s phi) ≡
+  hStepCEMMaxDelta rewards gamma q₁ q₂ value
+hStepCEMMaxTraceDelta rewards gamma q₁ q₂ value s phi = refl
 
 record FeatureMomentum (A : OrderedAlgebra) : Set₁ where
   field beta1 complement1 state : FeatureVec A
@@ -251,7 +266,7 @@ lionMomentumStep s g = record
   }
 
 record DyadicCode : Set where
-  field numerator exponent : Agda.Builtin.Nat.Nat
+  field numerator exponent : Nat
 
 defaultIDBDBeta1 : DyadicCode
 defaultIDBDBeta1 = record { numerator = 115 ; exponent = 7 }
