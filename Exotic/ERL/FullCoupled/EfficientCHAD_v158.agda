@@ -127,7 +127,7 @@ runSignReLULayer : ∀ {A : OrderedAlgebra} → SignReLULayer A → FeatureVec A
 runSignReLULayer l x =
   signReLU (SignReLULayer.activation l)
     (Affine.apply (SignReLULayer.second l)
-      (signReLU (SignReLULayer.activation l)
+      (signReLU (SignReLU L.activation l)
         (Affine.apply (SignReLULayer.first l) x)))
 
 twoAffineSignReLULaw : ∀ {A : OrderedAlgebra} (l : SignReLULayer A) x →
@@ -279,7 +279,7 @@ idbdBase2RoundTrip {A} (x ∷ xs) = cong₂ _∷_ (log2Pow2 A x) (idbdBase2Round
 
 idbdAlphaDefinitionLaw : ∀ {A : OrderedAlgebra} (s : SignQIDBDState A) →
   SignQIDBDState.alpha s ≡ idbdPow2 A (SignQIDBDState.beta s)
-idbdAlphaDefinitionLaw s = SignQIDIDBDState.alphaFromBeta s
+idbdAlphaDefinitionLaw s = SignQIDBDState.alphaFromBeta s
 
 record LionFeatureState (A : OrderedAlgebra) : Set₁ where
   field beta1 beta2 complement1 complement2 momentum : FeatureVec A
