@@ -3,6 +3,7 @@ text = File.read!(path) |> String.replace("\r\n", "\n")
 
 repairs = [
   {"r + gamma * hStepReturn rs gamma bootstrap", "r + (gamma * hStepReturn rs gamma bootstrap)"},
+  {"hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)"},
   {"b * m + c * x", "(b * m) + (c * x)"},
   {"TrueOnlineTrace.alpha s * decay * featureDot", "(TrueOnlineTrace.alpha s * decay) * featureDot"}
 ]
