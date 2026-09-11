@@ -1,9 +1,11 @@
 path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
-repairs = [
-  {"_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set",
-   "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom"},
+text = String.replace(text,
+  "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set",
+  "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
+
+bodyRepairs = [
   {"r + gamma * hStepReturn rs gamma bootstrap", "r + (gamma * hStepReturn rs gamma bootstrap)"},
   {"hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)"},
   {"b * m + c * x", "(b * m) + (c * x)"},
@@ -32,7 +34,17 @@ repairs = [
   {"_*_ A", "_*_ _"},
   {"_+_ A", "_+_ _"}
 ]
-text = Enum.reduce(repairs, text, fn {from, to}, acc -> String.replace(acc, from, to) end)
+
+text = text
+  |> String.split("\n")
+  |> Enum.map(fn line ->
+    if String.contains?(line, "=") do
+      Enum.reduce(bodyRepairs, line, fn {from, to}, acc -> String.replace(acc, from, to) end)
+    else
+      line
+    end
+  end)
+  |> Enum.join("\n")
 
 forbidden = ["StoSignSGDv2", "StoSignSGD", "LayerNorm", "BatchNorm", "BatchRenorm", "Newton", "Certificate", "postulate", "{!!}", "CReLU"]
 required = ["--safe", "SignReLU", "signQIDBDDirection", "LionFeatureState", "qLog2", "munchausenAlphaQLog2", "Tsallis2State", "hStepCEMMaxTarget", "TrueOnlineTrace", "weightL1", "onePathNorm", "algorithm11L2RoundedDyad", "RepresentationOnlyState", "CVTCell", "OpenESEmitter", "proximalSignLaw", "clarkeBranchLaw", "medianL1Law", "tropicalMaxLaw"]
