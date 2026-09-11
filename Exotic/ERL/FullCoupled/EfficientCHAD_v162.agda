@@ -53,15 +53,6 @@ mapL : ∀ {A B : Set} → (A → B) → List A → List B
 mapL f [] = []
 mapL f (x ∷ xs) = f x ∷ mapL f xs
 
-zipL : ∀ {A B C : Set} → (A → B → C) → List A → List B → List C
-zipL f [] _ = []
-zipL f (_ ∷ _) [] = []
-zipL f (x ∷ xs) (y ∷ ys) = f x y ∷ zipL f xs ys
-
-sumL : ∀ {A : Set} → (A → A → A) → A → List A → A
-sumL _ z [] = z
-sumL op z (x ∷ xs) = op x (sumL op z xs)
-
 record DyadicCode : Set where
   field numerator exponent : Nat
 
@@ -173,7 +164,7 @@ runCanonicalSoftsignSignReLUFFN {A} f x =
 
 canonicalFFNLayeringLaw : ∀ {A : FiniteOrderedRational}
   (f : CanonicalSoftsignSignReLUFFN A) x →
-  runCanonicalSoftsignSignReReLUFFN f x ≡ runCanonicalSoftsignSignReReLUFFN f x
+  runCanonicalSoftsignSignReLUFFN f x ≡ runCanonicalSoftsignSignReLUFFN f x
 canonicalFFNLayeringLaw f x = refl
 
 record Tsallis2Attention (A : FiniteOrderedRational) : Set₁ where
@@ -181,24 +172,19 @@ record Tsallis2Attention (A : FiniteOrderedRational) : Set₁ where
         values : List (FeatureVec A)
 
 weightedAttention : ∀ {A : FiniteOrderedRational} → Tsallis2Attention A → FeatureVec A
-weightedAttention {A} a = weighted (weights a) (values a)
+weightedAttention {A} a = weighted (Tsallis2Attention.weights a) (Tsallis2Attention.values a)
   where
-  weighted : FeatureVec A → List (FeatureVec A) → FeatureVec A
-  weighted [] _ = []
-  weighted (_ ∷ _) [] = []
-  weighted (w ∷ ws) (v ∷ vs) = weightedValue w v ws vs
-  weightedValue : R A → FeatureVec A → FeatureVec A → List (FeatureVec A) → FeatureVec A
-  weightedValue w v ws vs =
-    zipFeature (featureAdd (featureScale w v)) (weighted ws vs)
   featureScale : R A → FeatureVec A → FeatureVec A
   featureScale _ [] = []
-  featureScale a (x ∷ xs) = a * x ∷ featureScale a xs
+  featureScale c (x ∷ xs) = c * x ∷ featureScale c xs
   featureAdd : FeatureVec A → FeatureVec A → FeatureVec A
   featureAdd [] ys = ys
   featureAdd xs [] = xs
   featureAdd (x ∷ xs) (y ∷ ys) = x + y ∷ featureAdd xs ys
-  zipFeature : FeatureVec A → FeatureVec A → FeatureVec A
-  zipFeature = featureAdd
+  weighted : FeatureVec A → List (FeatureVec A) → FeatureVec A
+  weighted [] _ = []
+  weighted (_ ∷ _) [] = []
+  weighted (w ∷ ws) (v ∷ vs) = featureAdd (featureScale w v) (weighted ws vs)
 
 record SoftsignAffineBlock (A : FiniteOrderedRational) : Set₁ where
   field affine : FeatureVec A → FeatureVec A
@@ -286,15 +272,15 @@ mapOptimizer cfg (p ∷ ps) g = canonicalOnlyOptimizer cfg p g ∷ mapOptimizer 
 canonicalLearnerUpdate : ∀ {A : FiniteOrderedRational} →
   SoftsignQIDBDMetaDecay A → FullFiniteOrderedRationalLearner A → R A → FullFiniteOrderedRationalLearner A
 canonicalLearnerUpdate {A} cfg s g = record
-  { FullFiniteOrderedRationalLearner.critic = mapOptimizer cfg (FullFiniteOrderedRationalLearner.critic s) g
-  ; FullFiniteOrderedRationalLearner.actor = mapOptimizer cfg (FullFiniteOrderedRationalLearner.actor s) g
-  ; FullFiniteOrderedRationalLearner.transformer = mapOptimizer cfg (FullFiniteOrderedRationalLearner.transformer s) g
-  ; FullFiniteOrderedRationalLearner.representation = mapOptimizer cfg (FullFiniteOrderedRationalLearner.representation s) g
-  ; FullFiniteOrderedRationalLearner.attention = FullFiniteOrderedRationalLearner.attention s
-  ; FullFiniteOrderedRationalLearner.transformerLayer = FullFiniteOrderedRationalLearner.transformerLayer s
-  ; FullFiniteOrderedRationalLearner.trace = FullFiniteOrderedRationalLearner.trace s
-  ; FullFiniteOrderedRationalLearner.qProjection = FullFiniteOrderedRationalLearner.qProjection s
-  ; FullFiniteOrderedRationalLearner.qBudget = FullFiniteOrderedRationalLearner.qBudget s }
+  { critic = mapOptimizer cfg (FullFiniteOrderedRationalLearner.critic s) g
+  ; actor = mapOptimizer cfg (FullFiniteOrderedRationalLearner.actor s) g
+  ; transformer = mapOptimizer cfg (FullFiniteOrderedRationalLearner.transformer s) g
+  ; representation = mapOptimizer cfg (FullFiniteOrderedRationalLearner.representation s) g
+  ; attention = FullFiniteOrderedRationalLearner.attention s
+  ; transformerLayer = FullFiniteOrderedRationalLearner.transformerLayer s
+  ; trace = FullFiniteOrderedRationalLearner.trace s
+  ; qProjection = FullFiniteOrderedRationalLearner.qProjection s
+  ; qBudget = FullFiniteOrderedRationalLearner.qBudget s }
 
 canonicalCriticLaw : ∀ {A : FiniteOrderedRational}
   (cfg : SoftsignQIDBDMetaDecay A) (s : FullFiniteOrderedRationalLearner A) g →
