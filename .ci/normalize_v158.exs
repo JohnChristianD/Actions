@@ -1,33 +1,29 @@
-path = "Exotic/ERL/FullCoupled/EfficientCHAD_v159.agda"
-raw = File.read!(path)
-text = String.replace(raw, "\r\n", "\n")
+source = "Exotic/ERL/FullCoupled/EfficientCHAD_v159.agda"
+target = ".ci/kernel/Exotic/ERL/FullCoupled/EfficientCHAD_v159.agda"
+test_source = "Exotic/ERL/FullCoupled/EfficientCHAD_v159_test.agda"
+test_target = ".ci/kernel/Exotic/ERL/FullCoupled/EfficientCHAD_v159_test.agda"
 
-expected_header = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_v159 where"
-unless String.starts_with?(text, expected_header) do
-  raise("v159 source header/module mismatch")
-end
+raw = File.read!(source) |> String.replace("\r\n", "\n")
+expected = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_v159 where"
+unless String.starts_with?(raw, expected), do: raise("v159 source header/module mismatch")
 
-code = Regex.replace(~r/--[^\n]*/, "", text)
-
-forbidden = [
-  "StoSignSGDv2",
-  "StoSignSGD",
-  "LayerNorm",
-  "BatchNorm",
-  "BatchRenorm",
-  "Newton",
-  "Certificate",
-  "postulate",
-  "{!!}",
-  "CReLU"
-]
-
+code = Regex.replace(~r/--[^\n]*/, "", raw)
+forbidden = ["StoSignSGDv2", "StoSignSGD", "LayerNorm", "BatchNorm", "BatchRenorm", "Newton", "Certificate", "postulate", "{!!}", "CReLU"]
 Enum.each(forbidden, fn token ->
   if String.contains?(code, token), do: raise("forbidden canonical token remains: #{token}")
 end)
+if String.contains?(code, "SmoothAlgebra.exp") or String.contains?(code, "SmoothAlgebra.log"), do: raise("legacy natural exp/log remains")
 
-if String.contains?(code, "SmoothAlgebra.exp") or String.contains?(code, "SmoothAlgebra.log") do
-  raise("legacy natural exp/log remains in the canonical learner surface")
+kernel = raw
+|> String.replace("open import Agda.Builtin.Nat using (Nat; zero; suc)", "open import Agda.Builtin.Nat using (Nat)")
+|> String.replace("≡ suc (rank (next s))", "≡ Nat.suc (rank (next s))")
+
+unless String.replace(kernel, "\n", "\n") |> String.split("\n") |> length() == String.split(raw, "\n") |> length() do
+  raise("kernel normalization changed line structure")
 end
 
-IO.puts("v159 Elixir validation-only normalization/hygiene: PASS")
+File.mkdir_p!(Path.dirname(target))
+File.mkdir_p!(Path.dirname(test_target))
+File.write!(target, kernel)
+File.write!(test_target, File.read!(test_source) |> String.replace("\r\n", "\n"))
+IO.puts("v159 source hygiene PASS; generated kernel copy PASS")
