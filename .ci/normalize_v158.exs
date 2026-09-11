@@ -2,6 +2,8 @@ path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
 repairs = [
+  {"_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set",
+   "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom"},
   {"r + gamma * hStepReturn rs gamma bootstrap", "r + (gamma * hStepReturn rs gamma bootstrap)"},
   {"hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)"},
   {"b * m + c * x", "(b * m) + (c * x)"},
