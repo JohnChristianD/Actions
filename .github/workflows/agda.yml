@@ -45,8 +45,8 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Validate canonical v162 source
-        run: elixir .ci/normalize_v161.exs
+      - name: Validate canonical v163 source
+        run: elixir .ci/normalize_v163.exs
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
@@ -89,9 +89,9 @@ jobs:
           fi
           echo 'tom-smeding-no-stdlib-probe=EXPECTED-FAIL'
       - name: Agda safe check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v162.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v163.agda
       - name: Agda safe regression check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v162_test.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v163_test.agda
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
