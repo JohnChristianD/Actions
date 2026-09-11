@@ -56,6 +56,9 @@ record OrderedAlgebra : Set₁ where
 
 open OrderedAlgebra
 
+absVal : (A : OrderedAlgebra) → R A → R A
+absVal A = OrderedAlgebra.absR A
+
 mapL : ∀ {A B : Set} → (A → B) → List A → List B
 mapL f [] = []
 mapL f (x ∷ xs) = f x ∷ mapL f xs
@@ -92,7 +95,7 @@ featureAdd {A} = zipL (_+_ A)
 
 featureAbsSum : ∀ {A : OrderedAlgebra} → FeatureVec A → R A
 featureAbsSum {A} [] = zero A
-featureAbsSum {A} (x ∷ xs) = absR A x + featureAbsSum xs
+featureAbsSum {A} (x ∷ xs) = absVal A x + featureAbsSum xs
 
 weightL1 : ∀ {A : OrderedAlgebra} → List (FeatureVec A) → R A
 weightL1 {A} [] = zero A
@@ -391,7 +394,7 @@ proximalSignLaw {A} x = signIdempotent A x
 clarkeBranchLaw : ∀ {A : OrderedAlgebra} x → sign A (sign A x) ≡ sign A x
 clarkeBranchLaw {A} x = signIdempotent A x
 
-medianL1Law : ∀ {A : OrderedAlgebra} x → absR A (absR A x) ≡ absR A x
+medianL1Law : ∀ {A : OrderedAlgebra} x → absVal A (absVal A x) ≡ absVal A x
 medianL1Law {A} x = absIdempotent A x
 
 tropicalMaxLaw : ∀ {A : OrderedAlgebra} x y → x ≤ max A x y
@@ -401,7 +404,7 @@ record EmergentGeometryLaw (A : OrderedAlgebra) (x : R A) : Set₁ where
   field
     proximal : sign A (sign A x) ≡ sign A x
     clarke : sign A (sign A x) ≡ sign A x
-    median : absR A (absR A x) ≡ absR A x
+    median : absVal A (absVal A x) ≡ absVal A x
     tropical : ∀ y → x ≤ max A x y
 
 emergentGeometryLaw : ∀ (A : OrderedAlgebra) (x : R A) → EmergentGeometryLaw A x
