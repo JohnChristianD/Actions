@@ -1,6 +1,13 @@
 path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
+repairs = [
+  {"r + gamma * hStepReturn rs gamma bootstrap", "r + (gamma * hStepReturn rs gamma bootstrap)"},
+  {"b * m + c * x", "(b * m) + (c * x)"},
+  {"TrueOnlineTrace.alpha s * decay * featureDot", "(TrueOnlineTrace.alpha s * decay) * featureDot"}
+]
+text = Enum.reduce(repairs, text, fn {from, to}, acc -> String.replace(acc, from, to) end)
+
 forbidden = ["StoSignSGDv2", "StoSignSGD", "LayerNorm", "BatchNorm", "BatchRenorm", "Newton", "Certificate", "postulate", "{!!}", "CReLU"]
 required = ["--safe", "SignReLU", "signQIDBDDirection", "LionFeatureState", "qLog2", "munchausenAlphaQLog2", "Tsallis2State", "hStepCEMMaxTarget", "TrueOnlineTrace", "weightL1", "onePathNorm", "algorithm11L2RoundedDyad", "RepresentationOnlyState", "CVTCell", "OpenESEmitter", "proximalSignLaw", "clarkeBranchLaw", "medianL1Law", "tropicalMaxLaw"]
 
