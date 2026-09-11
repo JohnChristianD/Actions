@@ -1,8 +1,11 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EfficientCHAD_v155 where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Agda.Builtin.Equality using (_≡_; refl; cong; sym)
+open import Agda.Builtin.Nat using (Nat; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
+
+cong : ∀ {A B : Set} {x y : A} (f : A → B) → x ≡ y → f x ≡ f y
+cong f refl = refl
 
 record OrderedAlgebra : Set₁ where
   field
@@ -39,11 +42,11 @@ data Fin : Nat → Set where
 
 infixr 5 _∷_
 data Vec (A : Set) : Nat → Set where
-  [] : Vec A zero
+  [] : Vec A Nat.zero
   _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
 
 infixr 4 _++_
-_++_ : ∀ {A : Set} {m n : Nat} → Vec A m → Vec A n → Vec A (m + n)
+_++_ : ∀ {A : Set} {m n : Nat} → Vec A m → Vec A n → Vec A (Nat._+_ m n)
 [] ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
@@ -75,7 +78,7 @@ index fzero (x ∷ _) = x
 index (fsuc i) (_ ∷ xs) = index i xs
 
 ones : ∀ {A : OrderedAlgebra} (n : Nat) → Vector A n
-ones {A} zero = []
+ones {A} Nat.zero = []
 ones {A} (suc n) = one A ∷ ones n
 
 vAdd : ∀ {A : OrderedAlgebra} {n} → Vector A n → Vector A n → Vector A n
@@ -123,7 +126,7 @@ weightL1 {A} [] = zero A
 weightL1 {A} (r ∷ rs) = rowL1 r + weightL1 rs
 
 onePathVector : ∀ {A : OrderedAlgebra} {d L} → Vec (Matrix A d d) L → Vector A d
-onePathVector {A} [] = ones d
+onePathVector {A} [] = ones _
 onePathVector {A} (W ∷ Ws) = matVec (mapV (mapV (abs A)) W) (onePathVector Ws)
 
 onePathNorm : ∀ {A : OrderedAlgebra} {d L} → Vec (Matrix A d d) L → R A
@@ -150,15 +153,6 @@ record Tsallis2State (A : OrderedAlgebra) (w : Nat) : Set₁ where
     tau : R A
     mass : vDot weights (ones w) ≡ one A
     activeAffine : ∀ i → index i weights ≡ max A (zero A) (index i scores + neg A tau)
-
-tsallis2Mass : ∀ {A : OrderedAlgebra} {w} → Tsallis2State A w → R A
-tsallis2Mass s = vDot (Tsallis2State.weights s) (ones _)
-
-tsallis2MassLaw : ∀ {A : OrderedAlgebra} {w} (s : Tsallis2State A w) → tsallis2Mass s ≡ one A
-tsallis2MassLaw s = Tsallis2State.mass s
-
-tsallis2Entropy : ∀ {A : OrderedAlgebra} {w} → Vector A w → R A
-tsallis2Entropy {A} p = one A + neg A (vDot p p)
 
 record TransformerLayer (A : OrderedAlgebra) (d w : Nat) : Set₁ where
   field
@@ -191,7 +185,8 @@ stackComposition [] ys x = refl
 stackComposition (l ∷ ls) ys x = stackComposition ls ys (runTransformerLayer l x)
 
 munchausenBonus : ∀ {A : OrderedAlgebra} {w} → Tsallis2State A w → R A
-munchausenBonus s = tsallis2Entropy (Tsallis2State.weights s)
+munchausenBonus s =
+  one A + neg A (vDot (Tsallis2State.weights s) (Tsallis2State.weights s))
 
 munchausenTsallis2Target : ∀ {A : OrderedAlgebra} {w} →
   Tsallis2State A w → R A → R A → R A
@@ -289,10 +284,6 @@ signQIDBDSignIdempotent : ∀ {A : OrderedAlgebra} {x : R A} →
   sign A (sign A x) ≡ sign A x
 signQIDBDSignIdempotent {A} = signIdempotent A _
 
-------------------------------------------------------------------------
--- Lion only: per-feature beta1 direction and beta2 momentum state.
-------------------------------------------------------------------------
-
 record LionFeatureState (A : OrderedAlgebra) (n : Nat) : Set₁ where
   field beta1 beta2 complement1 complement2 : Vector A n
         momentum : Vector A n
@@ -331,7 +322,6 @@ defaultLionBeta1 = record { numerator = 115 ; exponent = 7 }
 defaultLionBeta2 : DyadicCode
 defaultLionBeta2 = record { numerator = 127 ; exponent = 7 }
 
--- The published Algorithm-11 training weight decay 0.1 rounds to 1/8.
 algorithm11L2RoundedDyad : DyadicCode
 algorithm11L2RoundedDyad = record { numerator = 1 ; exponent = 3 }
 
@@ -377,11 +367,6 @@ record OpenESEmitter (A : OrderedAlgebra) (d w depth : Nat) : Set₁ where
 antitheticCancel : ∀ {A : OrderedAlgebra} (x : R A) → x + neg A x ≡ zero A
 antitheticCancel x = addNegR A x
 
-------------------------------------------------------------------------
--- Emergent geometry surfaces; the Clarke item is explicitly an envelope
--- interface because the raw sign map is discontinuous at zero.
-------------------------------------------------------------------------
-
 record L1SubgradientChoice (A : OrderedAlgebra) (x s : R A) : Set where
   field
     nonzeroLaw : x ≠ zero A → s ≡ sign A x
@@ -415,13 +400,8 @@ tropicalGeometry = record
   ; tropicalMulLaw = λ x y → refl
   }
 
-l1SubgradientSignSelection : ∀ {A : OrderedAlgebra} (x : R A) →
-  sign A x ≡ sign A x
+l1SubgradientSignSelection : ∀ {A : OrderedAlgebra} (x : R A) → sign A x ≡ sign A x
 l1SubgradientSignSelection x = refl
-
-------------------------------------------------------------------------
--- Generated whole-system state: representation is the only evolved object.
-------------------------------------------------------------------------
 
 record EfficientCHADState (A : OrderedAlgebra) (d w depth n : Nat) : Set₁ where
   field
