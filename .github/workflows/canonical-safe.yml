@@ -1,0 +1,65 @@
+name: Canonical Agda Elixir Haskell safe gate
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - '**/*.agda'
+      - 'oracle/**'
+      - '.ci/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canonical:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: agda/agda-setup-action@v1.0.0
+        with:
+          agda-version: '2.8.0'
+      - name: Verify Agda executable
+        run: agda --version
+      - name: Agda safe check
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
+
+      - name: Set up Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+      - name: Run Haskell exact-rational oracle
+        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
+          elixir-version: '1.17'
+          hexpm: true
+          rebar3: false
+      - name: Run Elixir exact-rational oracle
+        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
+      - name: Run Elixir canonical normalization
+        run: elixir .ci/normalize_v158.exs
+
+      - name: Compare exact-rational Haskell and Elixir traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed 's/\r$//' oracle/haskell.csv | sed '/^$/d' > oracle/haskell.normalized.csv
+          sed 's/\r$//' oracle/elixir.csv | sed '/^$/d' > oracle/elixir.normalized.csv
+          diff -u oracle/haskell.normalized.csv oracle/elixir.normalized.csv
+          echo 'exact-rational-functional-oracle-cross-check=PASS'
+
+      - name: Verify canonical target has no retired surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -nE 'StoSignSGDv2|LayerNorm|BatchNorm|BatchRenorm|Newton|Certificate|postulate|\{!!\}|CReLU' Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
