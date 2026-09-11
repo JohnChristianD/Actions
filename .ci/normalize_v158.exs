@@ -2,6 +2,9 @@ path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
 text = File.read!(path) |> String.replace("\r\n", "\n")
 
 text = String.replace(text,
+  "neg abs max sign recip : R → R",
+  "neg abs sign recip : R → R\n    max : R → R → R")
+text = String.replace(text,
   "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set",
   "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
 text = String.replace(text,
