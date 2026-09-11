@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.EfficientCHAD_v164 where
 
 open import Agda.Builtin.Bool using (Bool; false; true)
-open import Agda.Builtin.Equality using (_≡_; refl; trans; cong)
+open import Agda.Builtin.Equality using (_≡_; refl; trans; cong; sym)
 open import Agda.Builtin.Int using (Int)
 open import Agda.Builtin.List using (List; []; _∷_)
 open import Agda.Builtin.Nat using (Nat)
@@ -153,18 +153,18 @@ f4IntSigmaDeltaIntegratorLaw : ∀ {A : FiniteOrderedRational}
     + rL (f4IntSigmaDeltaStep cfg s g)
     ≡ (intEmbed A (logStep s) + rL s) + fullPrequantizedState cfg s g
 f4IntSigmaDeltaIntegratorLaw {A} cfg s g =
-  trans
-    (cong (λ x → x + SigmaDeltaLogQuantizer.residual (logQ cfg) (rL s + fullPrequantizedState cfg s g))
-      (intEmbedAdd A (logStep s) (SigmaDeltaLogQuantizer.round (logQ cfg) (rL s + fullPrequantizedState cfg s g))))
-    (trans
-      (addAssoc A (intEmbed A (logStep s))
-        (SigmaDeltaLogQuantizer.round (logQ cfg) (rL s + fullPrequantizedState cfg s g) |> intEmbed A)
-        (SigmaDeltaLogQuantizer.residual (logQ cfg) (rL s + fullPrequantizedState cfg s g)))
-      (cong (λ x → intEmbed A (logStep s) + x)
-        (SigmaDeltaLogQuantizer.reconstruct (logQ cfg) (rL s + fullPrequantizedState cfg s g))))
+  let r* = rL s + fullPrequantizedState cfg s g
+      dl = SigmaDeltaLogQuantizer.round (logQ cfg) r*
+      rr = SigmaDeltaLogQuantizer.residual (logQ cfg) r*
+      p1 = cong (λ x → x + rr) (intEmbedAdd A (logStep s) dl)
+      p2 = addAssoc A (intEmbed A (logStep s)) (intEmbed A dl) rr
+      p3 = cong (λ x → intEmbed A (logStep s) + x)
+             (SigmaDeltaLogQuantizer.reconstruct (logQ cfg) r*)
+      p4 = sym (addAssoc A (intEmbed A (logStep s)) (rL s) (fullPrequantizedState cfg s g))
+  in trans p1 (trans p2 (trans p3 (trans (cong (λ x → intEmbed A (logStep s) + x) refl) p4)))
 
--- The only optimizer-bearing state is F4-Int+SigmaDelta: one EMA state, one momentum residual,
--- one integration residual, the parameter, and the integer log-step. No additional optimizer state appears.
+-- The only optimizer-bearing state is the F4-Int+SigmaDelta state: one EMA state,
+-- one EMA residual, one integration residual, the parameter, and the integer log-step.
 canonicalOnlyOptimizer : ∀ {A : FiniteOrderedRational} →
   F4IntSigmaDeltaConfig A → F4IntSigmaDeltaState A → R A → F4IntSigmaDeltaState A
 canonicalOnlyOptimizer = f4IntSigmaDeltaStep
