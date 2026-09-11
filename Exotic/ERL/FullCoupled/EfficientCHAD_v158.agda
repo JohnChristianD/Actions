@@ -57,7 +57,7 @@ record OrderedAlgebra : Set₁ where
 open OrderedAlgebra
 
 absVal : (A : OrderedAlgebra) → R A → R A
-absVal A = OrderedAlgebra.absR A
+absVal A x = A .OrderedAlgebra.absR x
 
 mapL : ∀ {A B : Set} → (A → B) → List A → List B
 mapL f [] = []
