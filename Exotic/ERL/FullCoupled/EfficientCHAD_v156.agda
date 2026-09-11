@@ -143,7 +143,7 @@ topTsallis2Utility : ∀ {A : OrderedAlgebra} → Tsallis2State A → R A
 topTsallis2Utility s = featureDot (Tsallis2State.weights s) (Tsallis2State.scores s)
 
 munchausenTsallis2Bonus : ∀ {A : OrderedAlgebra} → Tsallis2State A → R A
-munchausenTsallis2Bonus s =
+munchausenTsallis2Bonus {A} s =
   one A + neg A (featureDot (Tsallis2State.weights s) (Tsallis2State.weights s))
 
 munchausenTsallis2Target : ∀ {A : OrderedAlgebra} →
@@ -244,8 +244,7 @@ signQIDBDSignIdempotent {A} x = signIdempotent A x
 record LionFeatureState (A : OrderedAlgebra) : Set₁ where
   field beta1 beta2 complement1 complement2 momentum : FeatureVec A
 
-lionDirection : ∀ {A : OrderedAlgebra} → LionFeatureState A →
-  FeatureVec A → FeatureVec A
+lionDirection : ∀ {A : OrderedAlgebra} → LionFeatureState A → FeatureVec A → FeatureVec A
 lionDirection s g = mapL (sign A)
   (zipL4 (λ b c m x → b * m + c * x)
     (LionFeatureState.beta1 s)
