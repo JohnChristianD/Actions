@@ -125,7 +125,7 @@ munchausenAlphaQLog2 : ∀ {A : OrderedAlgebra} → MunchausenTsallis2 A → R A
 munchausenAlphaQLog2 p = MunchausenTsallis2.alpha p * qLog2 (MunchausenTsallis2.policyValue p)
 
 munchausenTsallis2Target : ∀ {A : OrderedAlgebra} → MunchausenTsallis2 A → R A → R A → R A
-munchausenTsallis2Target p reward bootstrap = reward + munchausenAlphaQLog2 p + bootstrap
+munchausenTsallis2Target p reward bootstrap = (reward + munchausenAlphaQLog2 p) + bootstrap
 
 record TransformerLayer (A : OrderedAlgebra) : Set₁ where
   field representation : SignReLULayer A
