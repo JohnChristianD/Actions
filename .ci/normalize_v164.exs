@@ -15,7 +15,7 @@ if matches != [], do: raise("forbidden retired formulation(s) remain in v164: #{
 
 required = [
   "F4IntSigmaDeltaConfig", "F4IntSigmaDeltaState", "SigmaDeltaMomentumQuantizer",
-  "SigmaDeltaLogQuantizer", "beta2", "fullEffectiveState", "fullPrequantizedState",
+  "SigmaDeltaLogQuantizer", "beta2", "half : R", "fullEffectiveState", "fullPrequantizedState",
   "f4IntSigmaDeltaStep", "f4IntSigmaDeltaMomentumReconstruction",
   "f4IntSigmaDeltaIntegratorLaw", "canonicalOnlyOptimizer", "NormPair",
   "CanonicalSoftsignSignReLUFFN", "canonicalLearnerUpdate", "pow2Int", "intEmbed"
