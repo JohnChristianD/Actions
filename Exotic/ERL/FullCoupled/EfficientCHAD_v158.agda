@@ -26,7 +26,7 @@ record OrderedAlgebra : Set₁ where
     R : Set
     zero one : R
     _+_ _*_ : R → R → R
-    neg abs : R → R
+    neg absR : R → R
     max : R → R → R
     sign recip pow2 log2 : R → R
     _≤_ _<_ : R → R → Set
@@ -39,8 +39,8 @@ record OrderedAlgebra : Set₁ where
     addNegR : ∀ x → x + neg x ≡ zero
     distrib : ∀ x y z → x * (y + z) ≡ (x * y) + (x * z)
     zeroMulR : ∀ x → zero * x ≡ zero
-    absNeg : ∀ x → abs (neg x) ≡ abs x
-    absIdempotent : ∀ x → abs (abs x) ≡ abs x
+    absNeg : ∀ x → absR (neg x) ≡ absR x
+    absIdempotent : ∀ x → absR (absR x) ≡ absR x
     maxPositive : ∀ {x} → zero ≤ x → max zero x ≡ x
     maxZero : ∀ {x} → x ≤ zero → max zero x ≡ zero
     maxLeLeft : ∀ x y → x ≤ max x y
@@ -92,7 +92,7 @@ featureAdd {A} = zipL (_+_ A)
 
 featureAbsSum : ∀ {A : OrderedAlgebra} → FeatureVec A → R A
 featureAbsSum {A} [] = zero A
-featureAbsSum {A} (x ∷ xs) = abs A x + featureAbsSum xs
+featureAbsSum {A} (x ∷ xs) = absR A x + featureAbsSum xs
 
 weightL1 : ∀ {A : OrderedAlgebra} → List (FeatureVec A) → R A
 weightL1 {A} [] = zero A
@@ -279,7 +279,7 @@ idbdBase2RoundTrip {A} (x ∷ xs) = cong₂ _∷_ (log2Pow2 A x) (idbdBase2Round
 
 idbdAlphaDefinitionLaw : ∀ {A : OrderedAlgebra} (s : SignQIDBDState A) →
   SignQIDBDState.alpha s ≡ idbdPow2 A (SignQIDBDState.beta s)
-idbdAlphaDefinitionLaw s = SignQIDBDState.alphaFromBeta s
+idbdAlphaDefinitionLaw s = SignQIDIDBDState.alphaFromBeta s
 
 record LionFeatureState (A : OrderedAlgebra) : Set₁ where
   field beta1 beta2 complement1 complement2 momentum : FeatureVec A
@@ -391,7 +391,7 @@ proximalSignLaw {A} x = signIdempotent A x
 clarkeBranchLaw : ∀ {A : OrderedAlgebra} x → sign A (sign A x) ≡ sign A x
 clarkeBranchLaw {A} x = signIdempotent A x
 
-medianL1Law : ∀ {A : OrderedAlgebra} x → abs A (abs A x) ≡ abs A x
+medianL1Law : ∀ {A : OrderedAlgebra} x → absR A (absR A x) ≡ absR A x
 medianL1Law {A} x = absIdempotent A x
 
 tropicalMaxLaw : ∀ {A : OrderedAlgebra} x y → x ≤ max A x y
@@ -401,7 +401,7 @@ record EmergentGeometryLaw (A : OrderedAlgebra) (x : R A) : Set₁ where
   field
     proximal : sign A (sign A x) ≡ sign A x
     clarke : sign A (sign A x) ≡ sign A x
-    median : abs A (abs A x) ≡ abs A x
+    median : absR A (absR A x) ≡ absR A x
     tropical : ∀ y → x ≤ max A x y
 
 emergentGeometryLaw : ∀ (A : OrderedAlgebra) (x : R A) → EmergentGeometryLaw A x
