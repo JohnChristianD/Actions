@@ -31,7 +31,8 @@ forbidden = [
   "squash"
 ]
 
-if Enum.any?(forbidden, &String.contains?(raw, &1)), do: raise("forbidden retired formulation remains in v161")
+matches = Enum.filter(forbidden, &String.contains?(raw, &1))
+if matches != [], do: raise("forbidden retired formulation(s) remain in v161: #{Enum.join(matches, ", ")}")
 
 unless String.contains?(raw, "softsignQIDBDStep"), do: raise("canonical softsign-q-IDBD missing")
 unless String.contains?(raw, "dyadicEpsilon"), do: raise("canonical dyadic threshold missing")
