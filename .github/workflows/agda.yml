@@ -23,6 +23,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CANONICAL_MANIFEST: .ci/canonical-module.txt
+
 jobs:
   canonical:
     runs-on: ubuntu-24.04
@@ -31,6 +34,22 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Resolve canonical composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t canonical < "$CANONICAL_MANIFEST"
+          test "${#canonical[@]}" -eq 2
+          test -n "${canonical[0]}"
+          test -n "${canonical[1]}"
+          test -f "${canonical[0]}"
+          test -f "${canonical[1]}"
+          {
+            echo "CANONICAL_SOURCE=${canonical[0]}"
+            echo "CANONICAL_TEST=${canonical[1]}"
+          } >> "$GITHUB_ENV"
+          echo "canonical-source=${canonical[0]}"
+          echo "canonical-test=${canonical[1]}"
       - name: Pin Tom Smeding Efficient-CHAD source
         run: |
           set -euo pipefail
@@ -47,7 +66,7 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Validate canonical v164 source
+      - name: Validate canonical source
         run: elixir .ci/normalize_v164.exs
       - name: Prune upstream Efficient-CHAD to local dependency closure
         shell: bash
@@ -94,9 +113,9 @@ jobs:
           fi
           echo 'tom-smeding-no-stdlib-probe=EXPECTED-FAIL'
       - name: Agda safe check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v164.agda
+        run: agda --safe "$CANONICAL_SOURCE"
       - name: Agda safe regression check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v164_test.agda
+        run: agda --safe "$CANONICAL_TEST"
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
