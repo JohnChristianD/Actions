@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.EfficientCHAD_v158 where
 
 open import Agda.Builtin.Equality using (_≡_; refl; cong)
 open import Agda.Builtin.List using (List; []; _∷_)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (Nat)
 
 data Bottom : Set where
 
@@ -153,7 +153,7 @@ munchausenTsallis2Target p reward bootstrap =
 munchausenTsallis2CompositionLaw : ∀ {A : OrderedAlgebra}
   (p : MunchausenTsallis2 A) reward bootstrap →
   munchausenTsallis2Target p reward bootstrap ≡
-    (reward + munchausenAlphaQLog2 p) + bootstrap
+  (reward + munchausenAlphaQLog2 p) + bootstrap
 munchausenTsallis2CompositionLaw p reward bootstrap = refl
 
 record TransformerLayer (A : OrderedAlgebra) : Set₁ where
@@ -278,11 +278,6 @@ idbdAlphaDefinitionLaw : ∀ {A : OrderedAlgebra}
   (s : SignQIDBDState A) →
   SignQIDBDState.alpha s ≡ idbdPow2 A (SignQIDBDState.beta s)
 idbdAlphaDefinitionLaw s = SignQIDBDState.alphaFromBeta s
-
-idbdAlphaNonnegative : ∀ {A : OrderedAlgebra} (xs : FeatureVec A) →
-  NonnegativeVec A (idbdPow2 A xs)
-idbdAlphaNonnegative [] = nnNil
-idbdAlphaNonnegative (x ∷ xs) = nnCons (pow2Nonnegative _ x) (idbdAlphaNonnegative xs)
 
 record LionFeatureState (A : OrderedAlgebra) : Set₁ where
   field beta1 beta2 complement1 complement2 momentum : FeatureVec A
@@ -457,6 +452,9 @@ fullLearnerRepresentationLaw : ∀ {A : OrderedAlgebra}
     (RepresentationGenome.stack (FullFiniteOrderedRationalLearner.representation s)) x
 fullLearnerRepresentationLaw s x = refl
 
+hStepAndCEMMax : ∀ {A : OrderedAlgebra} → List (R A) → R A → R A → R A → R A
+hStepAndCEMMax rewards gamma q₁ q₂ = hStepCEMMaxTarget rewards gamma q₁ q₂
+
 fullLearnerHStepCEMLaw : ∀ {A : OrderedAlgebra}
   (s : FullFiniteOrderedRationalLearner A) gamma q₁ q₂ →
   hStepAndCEMMax
@@ -464,14 +462,6 @@ fullLearnerHStepCEMLaw : ∀ {A : OrderedAlgebra}
   hStepCEMMaxTarget
     (FullFiniteOrderedRationalLearner.hStepRewards s) gamma q₁ q₂
 fullLearnerHStepCEMLaw s gamma q₁ q₂ = refl
-
-hStepAndCEMMax : ∀ {A : OrderedAlgebra} → List (R A) → R A → R A → R A → R A
-hStepAndCEMMax rewards gamma q₁ q₂ = hStepCEMMaxTarget rewards gamma q₁ q₂
-
-hStepAndCEMMaxStateLaw : ∀ {A : OrderedAlgebra}
-  (s : FullFiniteOrderedRationalLearner A) q₁ q₂ gamma → R A
-hStepAndCEMMaxStateLaw s q₁ q₂ gamma =
-  hStepAndCEMMax (FullFiniteOrderedRationalLearner.hStepRewards s) gamma q₁ q₂
 
 record EfficientCHADState (A : OrderedAlgebra) : Set₁ where
   field representation : RepresentationGenome A
@@ -494,54 +484,9 @@ representationCompositionLaw : ∀ {A : OrderedAlgebra}
   runStack (RepresentationGenome.stack (EfficientCHADState.representation s)) x
 representationCompositionLaw s x = refl
 
-------------------------------------------------------------------------
--- Finite ordered learner convergence closure. This is a finite ranking theorem,
--- not an infinite-horizon or real-analysis convergence theorem.
-------------------------------------------------------------------------
-
-data ReachesWithin {S : Set}
-  (terminal : S → Set)
-  (step : S → S) : Nat → S → Set where
-  reachesHere : ∀ {s} → terminal s → ReachesWithin terminal step zero s
-  reachesStep : ∀ {n s} → ReachesWithin terminal step n (step s) →
-    ReachesWithin terminal step (suc n) s
-
-record FiniteRankCertificate (S : Set) : Set₁ where
-  field
-    terminal : S → Set
-    rank : S → Nat
-    step : S → S
-    terminalOrDrop : ∀ s → terminal s ⊎ RankDrop S s
-
-record RankDrop (S : Set) : Set where
-  field
-    source target : S
-    sourceEq : source ≡ target
-
--- The main closure uses an explicit rank successor law below rather than a
--- certificate wrapper. Retained only as a finite architectural boundary.
-
-record FiniteOrderedCouplingRank (S : Set) : Set₁ where
-  field
-    terminal : S → Set
-    rank : S → Nat
-    step : S → S
-    rankDrop : ∀ s → rank s ≡ suc (rank (step s))
-
-finiteRankSuccessor : ∀ {S : Set}
-  (c : FiniteOrderedCouplingRank S) s →
-  rank c s ≡ suc (rank c (step c s))
-finiteRankSuccessor c s = FiniteOrderedCouplingRank.rankDrop c s
-
-------------------------------------------------------------------------
--- Canonical full closure: every active coupling is represented by an actual
--- proof term. Retired v147 Newton/LayerNorm/StoSign surfaces are deliberately
--- absent; their slots are replaced by the finite emergent geometry laws above.
-------------------------------------------------------------------------
-
 record FullFiniteOrderedRationalCoupling (A : OrderedAlgebra) : Set₁ where
   field
-    signReLU : ∀ (l : SignReLULayer A) x →
+    twoStageSignReLU : ∀ (l : SignReLULayer A) x →
       runSignReLULayer l x ≡
       signReLU (SignReLULayer.activation l)
         (Affine.apply (SignReLULayer.second l)
@@ -581,7 +526,7 @@ record FullFiniteOrderedRationalCoupling (A : OrderedAlgebra) : Set₁ where
 fullFiniteOrderedRationalCoupling : ∀ {A : OrderedAlgebra} →
   FullFiniteOrderedRationalCoupling A
 fullFiniteOrderedRationalCoupling {A} = record
-  { signReLU = twoAffineSignReLULaw
+  { twoStageSignReLU = twoAffineSignReLULaw
   ; stack = stackComposition
   ; tsallis2 = munchausenTsallis2CompositionLaw
   ; hStep = hStepRecursionLaw
