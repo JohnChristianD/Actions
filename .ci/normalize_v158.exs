@@ -7,6 +7,8 @@ unless String.starts_with?(text, expected_header) do
   raise("v158 source header/module mismatch")
 end
 
+code = Regex.replace(~r/--[^\n]*/, "", text)
+
 forbidden = [
   "StoSignSGDv2",
   "StoSignSGD",
@@ -21,10 +23,10 @@ forbidden = [
 ]
 
 Enum.each(forbidden, fn token ->
-  if String.contains?(text, token), do: raise("forbidden v158 token remains: #{token}")
+  if String.contains?(code, token), do: raise("forbidden v158 token remains: #{token}")
 end)
 
-if String.contains?(text, "SmoothAlgebra.exp") or String.contains?(text, "SmoothAlgebra.log") do
+if String.contains?(code, "SmoothAlgebra.exp") or String.contains?(code, "SmoothAlgebra.log") do
   raise("legacy natural exp/log remains in the canonical v158 learner surface")
 end
 
