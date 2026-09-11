@@ -15,7 +15,7 @@ x ≠ y = x ≡ y → Bottom
 record FiniteOrderedRational : Set₁ where
   field
     R : Set
-    zero one : R
+    zero one half : R
     _+_ _*_ : R → R → R
     neg magnitude reciprocal : R → R
     maximum sign softsign : R → R
@@ -28,6 +28,7 @@ record FiniteOrderedRational : Set₁ where
     addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
     mulAssoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
     mulOne : ∀ x → x * one ≡ x
+    halfPlusHalf : half + half ≡ one
     onePlusMagnitudeNeqZero : ∀ x → (one + magnitude x) ≠ zero
     reciprocalLaw : ∀ {x} → x ≠ zero → x * reciprocal x ≡ one
     softsignFormula : ∀ x → softsign x ≡ x * reciprocal (one + magnitude x)
@@ -83,14 +84,14 @@ record SigmaDeltaMomentumQuantizer (A : FiniteOrderedRational) : Set₁ where
     quantize : R A → R A
     residual : R A → R A
     reconstruct : ∀ x → quantize x + residual x ≡ x
-    residualBound : ∀ x → magnitude (residual x) ≤ one A
+    residualBound : ∀ x → magnitude (residual x) ≤ half A
 
 record SigmaDeltaLogQuantizer (A : FiniteOrderedRational) : Set₁ where
   field
     round : R A → Int
     residual : R A → R A
     reconstruct : ∀ x → intEmbed A (round x) + residual x ≡ x
-    residualBound : ∀ x → magnitude (residual x) ≤ one A
+    residualBound : ∀ x → magnitude (residual x) ≤ half A
 
 record F4IntSigmaDeltaConfig (A : FiniteOrderedRational) : Set₁ where
   field
