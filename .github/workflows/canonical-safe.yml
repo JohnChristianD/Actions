@@ -13,6 +13,7 @@ on:
 permissions:
   contents: read
 
+# Canonical gate: exact PR head only; one integrated verifier surface.
 jobs:
   canonical:
     runs-on: ubuntu-24.04
