@@ -37,7 +37,7 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Validate canonical v158 source
+      - name: Validate canonical v159 source
         run: elixir .ci/normalize_v158.exs
       - uses: agda/agda-setup-action@v1.0.0
         with:
@@ -45,9 +45,9 @@ jobs:
       - name: Verify Agda executable
         run: agda --version
       - name: Agda safe check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v159.agda
       - name: Agda safe regression check
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v158_test.agda
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v159_test.agda
       - name: Set up Haskell
         uses: haskell-actions/setup@v2
         with:
