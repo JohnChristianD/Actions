@@ -73,10 +73,7 @@ featureAdd : ∀ {A : OrderedAlgebra} → FeatureVec A → FeatureVec A → Feat
 featureAdd {A} = zipL (_+_ A)
 
 featureAbsSum : ∀ {A : OrderedAlgebra} → FeatureVec A → R A
-featureAbsSum {A} = sumL (_+_ A) (zero A) ∘ mapL (abs A)
-  where
-  _∘_ : ∀ {X Y Z : Set} → (Y → Z) → (X → Y) → X → Z
-  f ∘ g = λ x → f (g x)
+featureAbsSum {A} = sumL (_+_ A) (zero A) (mapL (abs A))
 
 weightL1 : ∀ {A : OrderedAlgebra} → List (FeatureVec A) → R A
 weightL1 {A} = sumL (_+_ A) (zero A) (mapL featureAbsSum)
@@ -127,9 +124,8 @@ record MunchausenTsallis2 (A : OrderedAlgebra) : Set₁ where
 munchausenAlphaQLog2 : ∀ {A : OrderedAlgebra} → MunchausenTsallis2 A → R A
 munchausenAlphaQLog2 p = MunchausenTsallis2.alpha p * qLog2 (MunchausenTsallis2.policyValue p)
 
-munchausenTsallis2Target : ∀ {A : OrderedAlgebra} →
-  MunchausenTsallis2 A → R A → R A → R A
-munchausenTsallis2Target p reward bootstrap = reward + munchausenAlphaQLog2 p + bootstrap
+munchausenTsallis2Target : ∀ {A : OrderedAlgebra} → MunchausenTsallis2 A → R A → R A → R A
+munchausenTsallis2Target p reward bootstrap = (reward + munchausenAlphaQLog2 p) + bootstrap
 
 record TransformerLayer (A : OrderedAlgebra) : Set₁ where
   field representation : SignReLULayer A
@@ -160,8 +156,7 @@ runStack : ∀ {A : OrderedAlgebra} → Stack A → FeatureVec A → FeatureVec 
 runStack empty x = x
 runStack (push l ls) x = runStack ls (runTransformerLayer l x)
 
-stackComposition : ∀ {A : OrderedAlgebra} (xs ys : Stack A) x →
-  runStack (appendStack xs ys) x ≡ runStack ys (runStack xs x)
+stackComposition : ∀ {A : OrderedAlgebra} (xs ys : Stack A) x → runStack (appendStack xs ys) x ≡ runStack ys (runStack xs x)
 stackComposition empty ys x = refl
 stackComposition (push l xs) ys x = stackComposition xs ys (runTransformerLayer l x)
 
@@ -197,10 +192,8 @@ trueOnlineTraceStep s delta phi =
 hStepCEMMaxDelta : ∀ {A : OrderedAlgebra} → List (R A) → R A → R A → R A → R A → R A
 hStepCEMMaxDelta rewards gamma q₁ q₂ value = hStepCEMMaxTarget rewards gamma q₁ q₂ + neg _ value
 
-hStepCEMMaxTrueOnline : ∀ {A : OrderedAlgebra} (rewards : List (R A)) gamma q₁ q₂ value
-  (s : TrueOnlineTrace A) phi → TrueOnlineTrace A
-hStepCEMMaxTrueOnline rewards gamma q₁ q₂ value s phi =
-  trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
+hStepCEMMaxTrueOnline : ∀ {A : OrderedAlgebra} (rewards : List (R A)) gamma q₁ q₂ value (s : TrueOnlineTrace A) phi → TrueOnlineTrace A
+hStepCEMMaxTrueOnline rewards gamma q₁ q₂ value s phi = trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
 
 record FeatureMomentum (A : OrderedAlgebra) : Set₁ where
   field beta1 complement1 state : FeatureVec A
@@ -209,8 +202,7 @@ featureMomentumStep : ∀ {A : OrderedAlgebra} → FeatureMomentum A → Feature
 featureMomentumStep s g = record
   { beta1 = FeatureMomentum.beta1 s
   ; complement1 = FeatureMomentum.complement1 s
-  ; state = zipL4 (λ b c m x → b * m + c * x)
-      (FeatureMomentum.beta1 s) (FeatureMomentum.complement1 s) (FeatureMomentum.state s) g }
+  ; state = zipL4 (λ b c m x → b * m + c * x) (FeatureMomentum.beta1 s) (FeatureMomentum.complement1 s) (FeatureMomentum.state s) g }
 
 record QProjection (A : OrderedAlgebra) : Set₁ where
   field project : FeatureVec A → FeatureVec A
@@ -222,8 +214,7 @@ record SignQIDBDState (A : OrderedAlgebra) : Set₁ where
 
 signQIDBDDirection : ∀ {A : OrderedAlgebra} → SignQIDBDState A → FeatureVec A
 signQIDBDDirection s = mapL (sign A)
-  (QProjection.project (SignQIDBDState.qProjection s)
-    (FeatureMomentum.state (SignQIDBDState.momentum s)))
+  (QProjection.project (SignQIDBDState.qProjection s) (FeatureMomentum.state (SignQIDBDState.momentum s)))
 
 signQIDBDSignIdempotent : ∀ {A : OrderedAlgebra} x → sign A (sign A x) ≡ sign A x
 signQIDBDSignIdempotent {A} x = signIdempotent A x
@@ -237,15 +228,14 @@ lionMomentumStep s g = record
   ; beta2 = LionFeatureState.beta2 s
   ; complement1 = LionFeatureState.complement1 s
   ; complement2 = LionFeatureState.complement2 s
-  ; momentum = zipL4 (λ b c m x → b * m + c * x)
-      (LionFeatureState.beta2 s) (LionFeatureState.complement2 s) (LionFeatureState.momentum s) g }
+  ; momentum = zipL4 (λ b c m x → b * m + c * x) (LionFeatureState.beta2 s) (LionFeatureState.complement2 s) (LionFeatureState.momentum s) g }
 
 lionDirection : ∀ {A : OrderedAlgebra} → LionFeatureState A → FeatureVec A → FeatureVec A
 lionDirection s g = mapL (sign A)
-  (zipL4 (λ b c m x → b * m + c * x)
-    (LionFeatureState.beta1 s) (LionFeatureState.complement1 s) (LionFeatureState.momentum s) g)
+  (zipL4 (λ b c m x → b * m + c * x) (LionFeatureState.beta1 s) (LionFeatureState.complement1 s) (LionFeatureState.momentum s) g)
 
-record DyadicCode : Set where field numerator exponent : Nat
+record DyadicCode : Set where
+  field numerator exponent : Nat
 
 defaultIDBDBeta1 : DyadicCode
 defaultIDBDBeta1 = record { numerator = 115 ; exponent = 7 }
