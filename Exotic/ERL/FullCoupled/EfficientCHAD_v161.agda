@@ -105,6 +105,8 @@ idbdBase2RoundTrip {A} (x ∷ xs) = cong₂ _∷_ (log2Pow2 A x) (idbdBase2Round
 record ParameterCoordinate (A : FiniteOrderedRational) : Set₁ where
   field value stepSize l2 threshold : R A
 
+open ParameterCoordinate
+
 softsignQIDBDStep : ∀ {A : FiniteOrderedRational} →
   ParameterCoordinate A → R A → ParameterCoordinate A
 softsignQIDBDStep {A} p g = record
