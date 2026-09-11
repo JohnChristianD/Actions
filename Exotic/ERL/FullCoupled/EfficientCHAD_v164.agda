@@ -161,7 +161,7 @@ f4IntSigmaDeltaIntegratorLaw {A} cfg s g =
       p3 = cong (λ x → intEmbed A (logStep s) + x)
              (SigmaDeltaLogQuantizer.reconstruct (logQ cfg) r*)
       p4 = sym (addAssoc A (intEmbed A (logStep s)) (rL s) (fullPrequantizedState cfg s g))
-  in trans p1 (trans p2 (trans p3 (trans (cong (λ x → intEmbed A (logStep s) + x) refl) p4)))
+  in trans p1 (trans p2 (trans p3 p4))
 
 -- The only optimizer-bearing state is the F4-Int+SigmaDelta state: one EMA state,
 -- one EMA residual, one integration residual, the parameter, and the integer log-step.
