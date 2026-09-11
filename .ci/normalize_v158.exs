@@ -18,6 +18,9 @@ kernel = raw
 |> String.replace("module Exotic.ERL.FullCoupled.EfficientCHAD_v159 where", "module Canonical.ERL.FullCoupled.EfficientCHAD_v159 where")
 |> String.replace("open import Agda.Builtin.Nat using (Nat; zero; suc)", "open import Agda.Builtin.Nat using (Nat)")
 |> String.replace("≡ suc (rank (next s))", "≡ Nat.suc (rank (next s))")
+|> String.replace("    signReLU :", "    twoStageSignReLU :")
+|> String.replace("  { signReLU =", "  { twoStageSignReLU =")
+|> String.replace("SignQIDIDBDState", "SignQIDBDState")
 
 test = File.read!(test_source)
 |> String.replace("module Exotic.ERL.FullCoupled.EfficientCHAD_v159_test where", "module Canonical.ERL.FullCoupled.EfficientCHAD_v159_test where")
