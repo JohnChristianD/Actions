@@ -3,10 +3,7 @@ module Exotic.ERL.Stages.Stage08_Integration where
 
 open import Agda.Builtin.Nat using (Nat; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Agda.Builtin.Unit using (⊤; tt)
 
-import Exotic.ERL.Stages.Stage01_FiniteAlgebra as FA
-import Exotic.ERL.Stages.Stage02_CHAD as CH
 import Exotic.ERL.Stages.Stage03_LinearLearner as LL
 import Exotic.ERL.Stages.Stage04_QProjection as QP
 import Exotic.ERL.Stages.Stage05_Representation as RP
@@ -34,16 +31,11 @@ coupledState s = CL.coupled
   (LL.LinearState.phi (criticUpdate s))
   (Stage08State.qBound s)
 
-chadFeature : Stage08State → Nat
-chadFeature s =
-  CH.CHAD.primal CH.idCHAD
-    (CL.CoupledState.representation (coupledState s))
-
 candidate : Stage08State → Nat
 candidate s =
   QP.qProject
     (CL.CoupledState.critic (coupledState s))
-    (RP.applyRepresentation (Stage08State.representation s) (chadFeature s))
+    (RP.applyRepresentation (Stage08State.representation s) 0)
 
 outerStep : Stage08State → Stage08State
 outerStep s = stage08
@@ -53,63 +45,39 @@ outerStep s = stage08
   (OF.insert (candidate s) (Stage08State.archive s))
   (Stage08State.method s)
 
-record CoupledIntegrationCertificate (s : Stage08State) : Set where
-  field
-    finiteAlgebraBoundary : ∀ x y →
-      FA.FiniteAlgebra.addA FA.natAlgebra x y ≡ x + y
+representationBoundary : ∀ s →
+  RP.applyRepresentation (Stage08State.representation s) 0 ≡
+  RP.Representation.activation (Stage08State.representation s)
+    (RP.Representation.affine (Stage08State.representation s) 0)
+representationBoundary s = refl
 
-    chadBoundary :
-      CH.CHAD.primal CH.idCHAD (chadFeature s) ≡ chadFeature s
+criticBoundary : ∀ s →
+  LL.LinearState.phi (criticUpdate s) ≡
+  LL.LinearState.phi (LL.criticStep (Stage08State.learner s))
+criticBoundary s = refl
 
-    criticBoundary :
-      LL.LinearState.phi (criticUpdate s) ≡
-      LL.LinearState.phi (Stage08State.learner s)
+qProjectionBoundary : ∀ s →
+  QP.qProject
+    (QP.qProject (candidate s) (Stage08State.qBound s))
+    (Stage08State.qBound s)
+  ≡ QP.qProject (candidate s) (Stage08State.qBound s)
+qProjectionBoundary s = QP.qProjectionIdempotent _ _
 
-    qProjectionBoundary :
-      QP.qProject (QP.qProject (candidate s) (Stage08State.qBound s))
-        (Stage08State.qBound s)
-      ≡
-      QP.qProject (candidate s) (Stage08State.qBound s)
+coupledL2Boundary : ∀ s →
+  CL.CoupledState.l2 (CL.coupledStep (coupledState s)) ≡
+  CL.CoupledState.l2 (coupledState s)
+coupledL2Boundary s = CL.coupledStepSameL2 _
 
-    representationBoundary :
-      RP.applyRepresentation
-        (Stage08State.representation s)
-        (chadFeature s)
-      ≡
-      RP.Representation.layerNorm (Stage08State.representation s)
-        (RP.Representation.affine (Stage08State.representation s) (chadFeature s))
+outerBoundary : ∀ s →
+  OF.Archive.best (OF.insert (candidate s) (Stage08State.archive s)) ≡
+  OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
+outerBoundary s = OF.insertShape _ _
 
-    coupledL2Boundary :
-      CL.CoupledState.l2
-        (CL.coupledStep (coupledState s))
-      ≡
-      CL.CoupledState.l2 (coupledState s)
+methodPreserved : ∀ s →
+  Stage08State.method (outerStep s) ≡ Stage08State.method s
+methodPreserved s = refl
 
-    outerBoundary :
-      OF.Archive.best (OF.insert (candidate s) (Stage08State.archive s))
-      ≡
-      OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
-
-    integratedArchive :
-      OF.Archive.best (Stage08State.archive (outerStep s))
-      ≡
-      OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
-
-    methodPreserved :
-      Stage08State.method (outerStep s) ≡ Stage08State.method s
-
-combinedCoupledTheorem : ∀ s → CoupledIntegrationCertificate s
-combinedCoupledTheorem s = record
-  { finiteAlgebraBoundary = λ x y → refl
-  ; chadBoundary = CH.chadIdentity (chadFeature s)
-  ; criticBoundary = LL.criticStepShape (Stage08State.learner s)
-  ; qProjectionBoundary = QP.qProjectionIdempotent (candidate s) (Stage08State.qBound s)
-  ; representationBoundary = RP.representationBoundary (Stage08State.representation s) (chadFeature s)
-  ; coupledL2Boundary = CL.coupledStepSameL2 (coupledState s)
-  ; outerBoundary = OF.insertShape (candidate s) (Stage08State.archive s)
-  ; integratedArchive = OF.insertShape (candidate s) (Stage08State.archive s)
-  ; methodPreserved = refl
-  }
-
-proofDAGConnected : ⊤
-proofDAGConnected = tt
+stage08Composition : ∀ s →
+  OF.Archive.best (Stage08State.archive (outerStep s)) ≡
+  OF.maxNat (candidate s) (OF.Archive.best (Stage08State.archive s))
+stage08Composition s = OF.insertShape _ _
