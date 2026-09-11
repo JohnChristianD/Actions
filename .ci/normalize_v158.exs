@@ -4,10 +4,12 @@ text = File.read!(path) |> String.replace("\r\n", "\n")
 text = String.replace(text,
   "_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Set",
   "data Bottom : Set where\n\n_≠_ : ∀ {A : Set} → A → A → Set\nx ≠ y = x ≡ y → Bottom")
+text = String.replace(text,
+  "hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap",
+  "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)")
 
 bodyRepairs = [
   {"r + gamma * hStepReturn rs gamma bootstrap", "r + (gamma * hStepReturn rs gamma bootstrap)"},
-  {"hStepReturn (r ∷ []) gamma bootstrap ≡ r + gamma * bootstrap", "hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)"},
   {"b * m + c * x", "(b * m) + (c * x)"},
   {"TrueOnlineTrace.alpha s * decay * featureDot", "(TrueOnlineTrace.alpha s * decay) * featureDot"},
   {"neg A", "neg _"},
