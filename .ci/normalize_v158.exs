@@ -13,22 +13,27 @@ repairs = [
   {"zero A", "zero _"},
   {"one A", "one _"},
   {"recip A", "recip _"},
+  {"addNegR A", "addNegR _"},
+  {"signIdempotent A", "signIdempotent _"},
+  {"absIdempotent A", "absIdempotent _"},
+  {"maxLeLeft A", "maxLeLeft _"},
+  {"maxLeRight A", "maxLeRight _"},
+  {"addAssoc A", "addAssoc _"},
+  {"addComm A", "addComm _"},
+  {"addZeroR A", "addZeroR _"},
+  {"mulAssoc A", "mulAssoc _"},
+  {"mulComm A", "mulComm _"},
+  {"mulOneR A", "mulOneR _"},
+  {"distrib A", "distrib _"},
+  {"zeroMulR A", "zeroMulR _"},
+  {"recipLaw A", "recipLaw _"},
   {"_*_ A", "_*_ _"},
   {"_+_ A", "_+_ _"}
 ]
 text = Enum.reduce(repairs, text, fn {from, to}, acc -> String.replace(acc, from, to) end)
 
-forbidden = [
-  "StoSignSGDv2", "StoSignSGD", "LayerNorm", "BatchNorm", "BatchRenorm",
-  "Newton", "Certificate", "postulate", "{!!}", "CReLU"
-]
-required = [
-  "--safe", "SignReLU", "signQIDBDDirection", "LionFeatureState", "qLog2",
-  "munchausenAlphaQLog2", "Tsallis2State", "hStepCEMMaxTarget", "TrueOnlineTrace",
-  "weightL1", "onePathNorm", "algorithm11L2RoundedDyad", "RepresentationOnlyState",
-  "CVTCell", "OpenESEmitter", "proximalSignLaw", "clarkeBranchLaw", "medianL1Law",
-  "tropicalMaxLaw"
-]
+forbidden = ["StoSignSGDv2", "StoSignSGD", "LayerNorm", "BatchNorm", "BatchRenorm", "Newton", "Certificate", "postulate", "{!!}", "CReLU"]
+required = ["--safe", "SignReLU", "signQIDBDDirection", "LionFeatureState", "qLog2", "munchausenAlphaQLog2", "Tsallis2State", "hStepCEMMaxTarget", "TrueOnlineTrace", "weightL1", "onePathNorm", "algorithm11L2RoundedDyad", "RepresentationOnlyState", "CVTCell", "OpenESEmitter", "proximalSignLaw", "clarkeBranchLaw", "medianL1Law", "tropicalMaxLaw"]
 Enum.each(forbidden, fn token -> if String.contains?(text, token), do: raise("forbidden v158 token remains: #{token}") end)
 Enum.each(required, fn token -> unless String.contains?(text, token), do: raise("required v158 token missing: #{token}") end)
 File.write!(path, text)
