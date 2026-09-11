@@ -1,12 +1,19 @@
 path = "Exotic/ERL/FullCoupled/EfficientCHAD_v158.agda"
-text = File.read!(path) |> String.replace("\r\n", "\n")
+raw = File.read!(path) |> String.replace("\r\n", "\n")
 
-text = if String.contains?(text, "{-# OPTIONS --safe #-}") do
-  text
-else
-  "{-# OPTIONS --safe #-}\n" <> text
+body = case String.split(raw, "\n") do
+  ["{-# OPTIONS --safe #-}", "module Exotic.ERL.FullCoupled.EfficientCHAD_v158 where" | rest] ->
+    Enum.join(rest, "\n")
+  lines ->
+    lines
+    |> Enum.drop_while(&(&1 != "module Exotic.ERL.FullCoupled.EfficientCHAD_v158 where"))
+    |> case do
+      ["module Exotic.ERL.FullCoupled.EfficientCHAD_v158 where" | rest] -> Enum.join(rest, "\n")
+      _ -> raw
+    end
 end
 
+text = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_v158 where\n\n" <> body
 text = String.replace(text, "neg abs max sign recip : R → R", "neg abs sign recip : R → R\n    max : R → R → R")
 
 feature_abs_old = ~r/featureAbsSum\s*:\s*∀ \{A : OrderedAlgebra\} → FeatureVec A → R A\s*\nfeatureAbsSum \{A\} = sumL \(_\+_ A\) \(zero A\) \(mapL \(abs A\)\)/
