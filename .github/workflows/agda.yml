@@ -5,13 +5,13 @@ on:
     branches: ['main']
     paths:
       - '**/*.agda'
-      - '.ci/normalize_v155.exs'
+      - '.ci/normalize_v156.exs'
       - '.github/workflows/agda.yml'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
-      - '.ci/normalize_v155.exs'
+      - '.ci/normalize_v156.exs'
       - '.github/workflows/agda.yml'
   workflow_dispatch:
 
@@ -32,17 +32,17 @@ jobs:
           elixir-version: '1.17'
           hexpm: true
           rebar3: false
-      - name: Normalize v155 source
-        run: elixir .ci/normalize_v155.exs
+      - name: Normalize v156 source
+        run: elixir .ci/normalize_v156.exs
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
       - name: Verify Agda executable
         run: agda --version
-      - name: Safe-check v155 finite ordered Efficient-CHAD target
-        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v155.agda
+      - name: Safe-check v156 finite ordered Efficient-CHAD target
+        run: agda --safe Exotic/ERL/FullCoupled/EfficientCHAD_v156.agda
       - name: Verify active target exclusions
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -nE 'StoSignSGDv2|StoSignSGD|LayerNorm|BatchNorm|BatchRenorm|DiagonalNewton|NewtonRaphson|Certificate|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_v155.agda
+          ! grep -nE 'StoSignSGDv2|StoSignSGD|LayerNorm|BatchNorm|BatchRenorm|DiagonalNewton|NewtonRaphson|Certificate|setup-python|ruby/setup-ruby|python3' Exotic/ERL/FullCoupled/EfficientCHAD_v156.agda
