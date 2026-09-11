@@ -195,22 +195,18 @@ runStack (push l ls) x = runStack ls (runTransformerLayer l x)
 stackComposition : ∀ {A : OrderedAlgebra} (xs ys : Stack A) x →
   runStack (appendStack xs ys) x ≡ runStack ys (runStack xs x)
 stackComposition empty ys x = refl
-stackComposition (push l xs) ys x =
-  stackComposition xs ys (runTransformerLayer l x)
+stackComposition (push l xs) ys x = stackComposition xs ys (runTransformerLayer l x)
 
 hStepReturn : ∀ {A : OrderedAlgebra} → List (R A) → R A → R A → R A
 hStepReturn {A} [] gamma bootstrap = bootstrap
-hStepReturn {A} (r ∷ rs) gamma bootstrap =
-  r + (gamma * hStepReturn rs gamma bootstrap)
+hStepReturn {A} (r ∷ rs) gamma bootstrap = r + (gamma * hStepReturn rs gamma bootstrap)
 
 hStepOne : ∀ {A : OrderedAlgebra} (r gamma bootstrap : R A) →
   hStepReturn (r ∷ []) gamma bootstrap ≡ r + (gamma * bootstrap)
 hStepOne r gamma bootstrap = refl
 
-hStepRecursionLaw : ∀ {A : OrderedAlgebra}
-  r gamma bootstrap (rs : List (R A)) →
-  hStepReturn (r ∷ rs) gamma bootstrap ≡
-  r + (gamma * hStepReturn rs gamma bootstrap)
+hStepRecursionLaw : ∀ {A : OrderedAlgebra} r gamma bootstrap (rs : List (R A)) →
+  hStepReturn (r ∷ rs) gamma bootstrap ≡ r + (gamma * hStepReturn rs gamma bootstrap)
 hStepRecursionLaw r gamma bootstrap rs = refl
 
 cemMax : ∀ {A : OrderedAlgebra} → R A → R A → R A
@@ -239,12 +235,10 @@ hStepCEMMaxDelta : ∀ {A : OrderedAlgebra} → List (R A) → R A → R A → R
 hStepCEMMaxDelta {A} rewards gamma q₁ q₂ value = hStepCEMMaxTarget rewards gamma q₁ q₂ + neg A value
 
 hStepCEMMaxTrueOnline : ∀ {A : OrderedAlgebra} (rewards : List (R A)) gamma q₁ q₂ value (s : TrueOnlineTrace A) phi → TrueOnlineTrace A
-hStepCEMMaxTrueOnline {A} rewards gamma q₁ q₂ value s phi =
-  trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
+hStepCEMMaxTrueOnline {A} rewards gamma q₁ q₂ value s phi = trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
 
 hStepCEMMaxTrueOnlineLaw : ∀ {A : OrderedAlgebra} rewards gamma q₁ q₂ value (s : TrueOnlineTrace A) phi →
-  hStepCEMMaxTrueOnline rewards gamma q₁ q₂ value s phi ≡
-  trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
+  hStepCEMMaxTrueOnline rewards gamma q₁ q₂ value s phi ≡ trueOnlineTraceStep s (hStepCEMMaxDelta rewards gamma q₁ q₂ value) phi
 hStepCEMMaxTrueOnlineLaw rewards gamma q₁ q₂ value s phi = refl
 
 record FeatureMomentum (A : OrderedAlgebra) : Set₁ where
@@ -281,11 +275,9 @@ idbdLog2 {A} = mapL (log2 A)
 idbdBase2RoundTrip : ∀ {A : OrderedAlgebra} (xs : FeatureVec A) →
   idbdLog2 A (idbdPow2 A xs) ≡ xs
 idbdBase2RoundTrip {A} [] = refl
-idbdBase2RoundTrip {A} (x ∷ xs) =
-  cong₂ _∷_ (log2Pow2 A x) (idbdBase2RoundTrip xs)
+idbdBase2RoundTrip {A} (x ∷ xs) = cong₂ _∷_ (log2Pow2 A x) (idbdBase2RoundTrip xs)
 
-idbdAlphaDefinitionLaw : ∀ {A : OrderedAlgebra}
-  (s : SignQIDBDState A) →
+idbdAlphaDefinitionLaw : ∀ {A : OrderedAlgebra} (s : SignQIDBDState A) →
   SignQIDBDState.alpha s ≡ idbdPow2 A (SignQIDBDState.beta s)
 idbdAlphaDefinitionLaw s = SignQIDBDState.alphaFromBeta s
 
@@ -309,8 +301,7 @@ lionDirection {A} s g = mapL (sign A)
     (LionFeatureState.momentum s) g)
 
 lionPerFeatureDirectionLaw : ∀ {A : OrderedAlgebra} (s : LionFeatureState A) g →
-  lionDirection s g ≡
-  mapL (sign A)
+  lionDirection s g ≡ mapL (sign A)
     (zipL4 (λ b c m x → (b * m) + (c * x))
       (LionFeatureState.beta1 s) (LionFeatureState.complement1 s)
       (LionFeatureState.momentum s) g)
@@ -327,8 +318,7 @@ signQIDBDSignIdempotent {A} x = signIdempotent A x
 signDirectionIdempotent : ∀ {A : OrderedAlgebra} (xs : FeatureVec A) →
   mapL (sign A) (mapL (sign A) xs) ≡ mapL (sign A) xs
 signDirectionIdempotent {A} [] = refl
-signDirectionIdempotent {A} (x ∷ xs) =
-  cong₂ _∷_ (signIdempotent A x) (signDirectionIdempotent xs)
+signDirectionIdempotent {A} (x ∷ xs) = cong₂ _∷_ (signIdempotent A x) (signDirectionIdempotent xs)
 
 record DyadicCode : Set where
   field numerator exponent : Nat
@@ -354,15 +344,13 @@ coupledL2Penalty p x = DyadicCoupledL2.lambda p * x
 
 coupledL2ZeroLaw : ∀ {A : OrderedAlgebra} (p : DyadicCoupledL2 A) →
   DyadicCoupledL2.lambda p ≡ zero A → coupledL2Penalty p (one A) ≡ zero A
-coupledL2ZeroLaw {A} p h =
-  trans (cong (λ z → z * one A) h) (mulOneR A (zero A))
+coupledL2ZeroLaw {A} p h = trans (cong (λ z → z * one A) h) (mulOneR A (zero A))
 
 record VEBFitness (A : OrderedAlgebra) : Set₁ where
   field centeredMedian downsideMAD widthInverse : R A
 
 vebFitnessScore : ∀ {A : OrderedAlgebra} → VEBFitness A → R A
-vebFitnessScore f =
-  (VEBFitness.centeredMedian f + VEBFitness.downsideMAD f) * VEBFitness.widthInverse f
+vebFitnessScore f = (VEBFitness.centeredMedian f + VEBFitness.downsideMAD f) * VEBFitness.widthInverse f
 
 record RepresentationGenome (A : OrderedAlgebra) : Set₁ where
   field stack : Stack A
@@ -390,13 +378,12 @@ record OpenESEmitter (A : OrderedAlgebra) : Set₁ where
         step : DyadicCode
 
 antitheticCancel : ∀ {A : OrderedAlgebra} (x : R A) → x + neg A x ≡ zero A
-antitheticCancel x = addNegR A x
+antitheticCancel {A} x = addNegR A x
 
 antitheticFeatureCancel : ∀ {A : OrderedAlgebra} (xs : FeatureVec A) →
   featureAdd xs (mapL (neg A) xs) ≡ mapL (λ _ → zero A) xs
 antitheticFeatureCancel {A} [] = refl
-antitheticFeatureCancel {A} (x ∷ xs) =
-  cong₂ _∷_ (addNegR A x) (antitheticFeatureCancel xs)
+antitheticFeatureCancel {A} (x ∷ xs) = cong₂ _∷_ (addNegR A x) (antitheticFeatureCancel xs)
 
 proximalSignLaw : ∀ {A : OrderedAlgebra} x → sign A (sign A x) ≡ sign A x
 proximalSignLaw {A} x = signIdempotent A x
@@ -464,13 +451,11 @@ record EfficientCHADState (A : OrderedAlgebra) : Set₁ where
         cvtCell : CVTCell A
         hStepRewards : List (R A)
 
-hStepAndCEMMaxCompatible : ∀ {A : OrderedAlgebra}
-  (s : EfficientCHADState A) q₁ q₂ gamma → R A
+hStepAndCEMMaxCompatible : ∀ {A : OrderedAlgebra} (s : EfficientCHADState A) q₁ q₂ gamma → R A
 hStepAndCEMMaxCompatible s q₁ q₂ gamma =
   hStepCEMMaxTarget (EfficientCHADState.hStepRewards s) gamma q₁ q₂
 
-representationCompositionLaw : ∀ {A : OrderedAlgebra}
-  (s : EfficientCHADState A) x →
+representationCompositionLaw : ∀ {A : OrderedAlgebra} (s : EfficientCHADState A) x →
   runStack (RepresentationGenome.stack (EfficientCHADState.representation s)) x ≡
   runStack (RepresentationGenome.stack (EfficientCHADState.representation s)) x
 representationCompositionLaw s x = refl
@@ -483,11 +468,9 @@ record FullFiniteOrderedRationalCoupling (A : OrderedAlgebra) : Set₁ where
         (Affine.apply (SignReLULayer.second l)
           (signReLU (SignReLULayer.activation l)
             (Affine.apply (SignReLULayer.first l) x)))
-    stack : ∀ (xs ys : Stack A) x →
-      runStack (appendStack xs ys) x ≡ runStack ys (runStack xs x)
+    stack : ∀ (xs ys : Stack A) x → runStack (appendStack xs ys) x ≡ runStack ys (runStack xs x)
     tsallis2 : ∀ (p : MunchausenTsallis2 A) reward bootstrap →
-      munchausenTsallis2Target p reward bootstrap ≡
-      (reward + munchausenAlphaQLog2 p) + bootstrap
+      munchausenTsallis2Target p reward bootstrap ≡ (reward + munchausenAlphaQLog2 p) + bootstrap
     hStep : ∀ r gamma bootstrap rs →
       hStepReturn (r ∷ rs) gamma bootstrap ≡ r + (gamma * hStepReturn rs gamma bootstrap)
     trueOnline : ∀ rewards gamma q₁ q₂ value (s : TrueOnlineTrace A) phi →
@@ -526,6 +509,5 @@ fullFiniteOrderedRationalCoupling {A} = record
   ; geometry = emergentGeometryLaw A
   }
 
-fullCouplingIdentityLaw : ∀ {A : OrderedAlgebra}
-  (c : FullFiniteOrderedRationalCoupling A) → FullFiniteOrderedRationalCoupling A
+fullCouplingIdentityLaw : ∀ {A : OrderedAlgebra} (c : FullFiniteOrderedRationalCoupling A) → FullFiniteOrderedRationalCoupling A
 fullCouplingIdentityLaw c = c
