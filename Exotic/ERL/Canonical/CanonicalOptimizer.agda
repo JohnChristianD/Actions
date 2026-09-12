@@ -13,8 +13,6 @@ canonicalOptimizer = finiteTrueOnlineInt8
 
 data ExplorationMode : Set where
   noisyNets : ExplorationMode
-  mr15GA : ExplorationMode
-  openES : ExplorationMode
 
 canonicalExploration : ExplorationMode
 canonicalExploration = noisyNets
@@ -63,5 +61,3 @@ canonical = canonicalConfig
 
 strictSingleExploration : ExplorationMode → Bool
 strictSingleExploration noisyNets = true
-strictSingleExploration mr15GA = true
-strictSingleExploration openES = true
