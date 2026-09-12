@@ -1,67 +1,70 @@
-# Dyadic Safe Agda Prune Implementation Plan
+# Int8 Safe Agda Prune Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** use the repository's Superpowers execution workflow. Keep each step kernel-checkable and delete superseded machinery.
 
-**Goal:** Replace the current Agda learner monolith and vendored Efficient-CHAD copy with a minimal `--safe` dyadic core, current official Agda setup with stdlib, and an external unchanged Tom Smeding dependency.
+**Goal:** replace the old Agda learner monolith and vendored Efficient-CHAD copy with a minimal `--safe` Int8-only surface, the official Agda toolchain, and an unchanged external Tom Smeding audit.
 
-**Architecture:** `Exotic.ERL.Dyadic` becomes the canonical mathematical core. `AllSafeCombined` becomes a thin import surface instead of embedding learner/LSTM/QD machinery. CI installs Agda through `agda/agda-setup-action`, installs the matching standard library, clones Tom Smeding's repository without rewriting it, and checks both the local core and the unchanged upstream proof with `--safe`.
+**Architecture:** `Exotic.efficient_chad.Int8` is the only active numeric representation layer. `AllSafeCombined` is a thin canonical composition root. Econlib GameTheory and Equilibrium counterparts consume the same Int8 representation. No separate dyadic module or file remains in the active Agda tree.
 
-**Tech Stack:** Agda 2.8.0, Agda standard library 2.4, GitHub Actions, Tom Smeding `efficient-chad-agda`.
+**Toolchain:** Agda 2.8.0, Agda standard library 2.4, GitHub Actions, Tom Smeding `efficient-chad-agda`.
 
-**Spec:** User request in chat dated 2026-09-12.
+**Global constraints**
 
-## Global Constraints
+- Every active Agda source uses `{-# OPTIONS --safe #-}`.
+- No `postulate`, unsafe certificate, or floating-point primitive in the canonical surface.
+- Int8 is the exclusive active numeric carrier: finite `Fin 256`, exact natural-indexed construction, and exact finite algebra.
+- Do not add a parallel dyadic type, dyadic module, or dyadic-only helper file.
+- GameTheory and Equilibrium certificates use Int8 payoffs/prices and exact finite equalities.
+- Convergence statements remain finite stabilisation theorems, not informal real-analysis claims.
+- The local repository contains no rewritten or duplicated Tom Smeding Efficient-CHAD proof.
+- Retired QD/archive/CVT/OpenES probability machinery stays outside active semantics.
 
-- Agda source must use `{-# OPTIONS --safe #-}`.
-- No `postulate`, unsafe certificate, or floating-point primitive in the new canonical surface.
-- Canonical learner state uses momentum-style sigma-delta state; other moment statistics are removed.
-- Canonical arithmetic is integer/dyadic, with an unbounded dyadic representation plus a bounded lattice view.
-- Exploration is confined to the representation/gating layer; OpenES, Noisy Nets, Gaussian/Tsallis probability machinery, MAP-Elites/CVT/archive theorems, and replay-oriented machinery are removed from the canonical surface.
-- The local repository must not contain a rewritten or duplicated Tom Smeding Efficient-CHAD proof.
+### Task 1: Int8 canonical surface
 
-### Task 1: Replace monolith with dyadic core
+**Files**
+- `Exotic/efficient_chad/Int8.agda`
+- `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
+- `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
 
-**Files:**
-- Create: `Exotic/ERL/Dyadic.agda`
-- Modify: `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
+- [x] Define `Int8` with `Fin 256`.
+- [x] Define exact finite addition and multiplication through natural-indexed construction.
+- [x] Keep CHAD primal/pullback structure on the Int8 carrier.
+- [x] Keep the affine CHAD boundary on Int8.
+- [x] Keep the active regression surface Int8-only.
 
-- [ ] Create a `Dyadic` record with integer numerator and natural exponent, exact addition, multiplication, negation, and power-of-two scaling.
-- [ ] Keep the requested bounded `𝔻 n B` record as a lattice view over integer numerators.
-- [ ] Define momentum state and a pure momentum update with one EMA state and residual carrier.
-- [ ] Define bounded dead-zone and power-of-two step representation without transcendental operations.
-- [ ] Remove the previous learner, LSTM, q-projection, exploration archive, and copied CHAD definitions from `AllSafeCombined.agda`.
-- [ ] Make `AllSafeCombined` import only the new dyadic core and the external Tom wrapper surface.
+### Task 2: Econlib counterparts
 
-### Task 2: Remove vendored/obsolete local Efficient-CHAD copies
+**Files**
+- `Exotic/econlib/GameTheory.agda`
+- `Exotic/econlib/Equilibrium.agda`
 
-**Files:**
-- Delete: `Exotic/ERL/FullCoupled/EfficientCHADSourceToSource.agda`
-- Delete: `Exotic/ERL/FullCoupled/EfficientCHAD_v164.agda`
-- Delete: `Exotic/ERL/FullCoupled/EfficientCHAD_v164_test.agda`
+- [x] Define pure Nash certificates using Int8 payoff tables.
+- [x] Prove the Prisoner's Dilemma defect-defect best-response certificate exactly.
+- [x] Prove finite best-response stabilisation from every action pair.
+- [x] Define finite Walrasian equilibrium and production-equilibrium certificates using Int8 prices/endowments/supply/demand.
+- [x] Prove exact market-clearing stabilisation and a finite production-equilibrium existence witness.
 
-- [ ] Delete each local copied proof after replacing all manifest references.
-- [ ] Preserve Tom Smeding's upstream repository as an external CI dependency, without source rewriting.
+### Task 3: Remove retired numeric and learner layers
 
-### Task 3: Update canonical manifest and workflow
+**Files**
+- Delete: standalone dyadic Agda implementation.
+- Delete: superseded copied Efficient-CHAD and old monolith modules already outside the canonical root.
+- Delete: stale CI repair scripts that target retired monolith formulations.
 
-**Files:**
-- Modify: `.ci/canonical-module.txt`
-- Modify: `.github/workflows/agda.yml`
-- Delete: `.ci/audit_tom_smeding.sh`
-- Delete obsolete normalisation scripts that only repair the deleted monolith.
+- [x] Remove active imports of the deleted dyadic layer.
+- [x] Remove the retired dyadic workflow checks.
+- [x] Keep Tom Smeding upstream as an external unchanged CI dependency.
 
-- [ ] Point the canonical manifest at `Exotic/ERL/FullCoupled/AllSafeCombined.agda` and a small safe regression module.
-- [ ] Replace any legacy Agda setup with `agda/agda-setup-action@v1` and `agda-stdlib-version: '2.4'`.
-- [ ] Add the upstream Efficient-CHAD checkout as an unmodified external include path.
-- [ ] Run `agda --safe` on the local canonical module and upstream `chad-cost.agda` using the same toolchain.
-- [ ] Fail explicitly if the unchanged upstream proof is not compatible with the current toolchain instead of rewriting it.
+### Task 4: CI and closure
 
-### Task 4: Verify and publish
+**Files**
+- `.ci/canonical-module.txt`
+- `.github/workflows/agda.yml`
+- `.github/workflows/representation-algebra-safe.yml`
 
-**Files:**
-- Modify: `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
-
-- [ ] Add exact equality checks for dyadic addition, multiplication, momentum reconstruction, and dead-zone identities.
-- [ ] Commit the implementation on `refactor/dyadic-safe-prune`.
-- [ ] Open a pull request against `main`.
-- [ ] Inspect CI results and any review feedback before claiming completion.
+- [x] Use `agda/agda-setup-action@v1`.
+- [x] Pin Agda 2.8.0 and stdlib 2.4.
+- [x] Check the Int8 module and canonical composition under `--safe`.
+- [x] Keep the unchanged Tom Smeding probe explicit; incompatibility must fail rather than trigger source rewriting.
+- [ ] Require fresh green kernel and canonical checks on the latest branch head.
+- [ ] Enable squash merge only after all required checks are green.
