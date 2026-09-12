@@ -59,6 +59,11 @@ jobs:
           agda --print-agda-app-dir
           test -f "$(agda --print-agda-app-dir)/libraries"
 
+      - name: Set up GHC for Agda2HS tooling
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+
       - name: Install Agda2HS from the existing Cabal toolchain
         shell: bash
         run: |
