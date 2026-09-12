@@ -1,2 +1,2 @@
-Exotic/ERL/FullCoupled/EfficientCHAD_v164.agda
-Exotic/ERL/FullCoupled/EfficientCHAD_v164_test.agda
+Exotic/ERL/FullCoupled/AllSafeCombined.agda
+Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
