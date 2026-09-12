@@ -4,7 +4,7 @@ module Exotic.ERL.Dyadic where
 
 open import Data.Integer using (ℤ; +_; _+_; _-_; _*_; -_)
 open import Data.Integer.Properties using (_≤?_; ≤-refl; ≤-trans)
-open import Data.Nat using (ℕ; zero; suc)
+open import Data.Nat using (ℕ; zero; suc; _^_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Relation.Nullary using (Dec; yes; no)
 
