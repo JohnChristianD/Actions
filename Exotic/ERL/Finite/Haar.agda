@@ -2,21 +2,13 @@
 
 module Exotic.ERL.Finite.Haar where
 
-open import Exotic.efficient_chad.Int8 using (Int8; int8Add; int8Mul; int8OfNat)
+open import Data.Fin using (toℕ)
+open import Data.Nat using (_+_; _∸_)
+open import Exotic.efficient_chad.Int8 using (Int8; code; int8Add; int8OfNat)
 open import Exotic.ERL.Finite.Int8Vector using (Int8Vector4; vec4; x0; x1; x2; x3)
 
 int8Sub : Int8 → Int8 → Int8
-int8Sub x y = int8OfNat
-  (256 + xNat ∸ yNat)
-  where
-  open import Data.Fin using (toℕ)
-  open import Data.Nat using (_+_; _∸_)
-  open import Exotic.efficient_chad.Int8 using (code)
-  xNat = toℕ (code x)
-  yNat = toℕ (code y)
-
-addPair : Int8 → Int8 → Int8
-addPair = int8Add
+int8Sub x y = int8OfNat (256 + toℕ (code x) ∸ toℕ (code y))
 
 haar4 : Int8Vector4 → Int8Vector4
 haar4 v = vec4
