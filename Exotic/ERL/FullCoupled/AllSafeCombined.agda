@@ -3,8 +3,8 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Nat using (ℕ; suc)
-open import Data.Product using (_,_; _×_)
+open import Data.Nat using (suc)
+open import Data.Product using (Σ; _,_)
 open import Exotic.efficient_chad.Dyadic
   using
     ( Dyadic
