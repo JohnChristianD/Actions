@@ -5,7 +5,7 @@ module Exotic.ERL.FullCoupled.AllSafeCombined where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
 open import Data.Nat using (suc)
-open import Data.Product using (Σ; _,_)
+open import Data.Product using (_×_; Σ; _,_)
 open import Exotic.efficient_chad.Int8
   using
     ( Int8
