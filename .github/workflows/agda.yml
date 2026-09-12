@@ -90,14 +90,14 @@ jobs:
           agda2hs --help >/dev/null
           agda2hs locate >> "$(agda --print-agda-app-dir)/libraries"
 
-      - name: Agda2HS extraction smoke test
+      - name: Agda2HS extraction of the implemented learner
         shell: bash
         run: |
           set -euo pipefail
           rm -rf .ci/agda2hs-out
           mkdir -p .ci/agda2hs-out
-          agda2hs Exotic/efficient_chad/Agda2HSSmoke.agda -o .ci/agda2hs-out
-          test -s .ci/agda2hs-out/Exotic/efficient_chad/Agda2HSSmoke.hs
+          agda2hs Exotic/ERL/FullCoupled/FiniteLearner.agda -o .ci/agda2hs-out
+          test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/FiniteLearner.hs
 
       - name: Audit Tom Smeding upstream proof without rewriting it
         shell: bash
@@ -152,6 +152,8 @@ jobs:
           agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
           agda --safe Exotic/ERL/Exploration/FiniteMarkov.agda
           agda --safe Exotic/ERL/Exploration/ComposedLearnerExploration.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteLearner.agda
+          agda --safe Exotic/ERL/Representation/Haar2.agda
 
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
