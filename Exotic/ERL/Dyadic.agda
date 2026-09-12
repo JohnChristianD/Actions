@@ -3,10 +3,11 @@
 module Exotic.ERL.Dyadic where
 
 open import Data.Integer using (ℤ; +_; _+_; _-_; _*_; -_)
-open import Data.Integer.Properties using (≤-refl; ≤-trans; ≤-total; +-comm; +-assoc; *-comm; *-assoc; *-distribˡ-+; _≤?_)
-open import Data.Nat using (ℕ; zero; suc; _+_; _^_)
+open import Data.Integer.Properties using (_≤?_; ≤-refl; ≤-trans; ≤-total; +-comm; +-assoc; *-comm; *-assoc; *-distribˡ-+)
+open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Data.Product using (_×_; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Nullary using (Dec; yes; no)
 
 ------------------------------------------------------------------------
 -- Exact dyadic numbers.
@@ -63,12 +64,28 @@ record 𝔻 (n B : ℕ) : Set where
 open 𝔻 public
 
 toDyadic : ∀ {n B} → 𝔻 n B → Dyadic
-toDyadic x = dyadic (k x) _
-  where
-    _ = _
+toDyadic {n} x = dyadic (k x) n
 
 ------------------------------------------------------------------------
--- Saturating integer arithmetic gives total operations on the bounded view.
+-- Bounded numerator-wise addition requires a closure witness.
+-- Exact unbounded addition above is total without this witness.
+------------------------------------------------------------------------
+
+record Within {n B : ℕ} (v : ℤ) : Set where
+  constructor within
+  field
+    loWitness : - (+ B) * (+ 2) ^ n ≤ v
+    hiWitness : v ≤ (+ B) * (+ 2) ^ n
+
+boundedPlus : ∀ {n B} → (x y : 𝔻 n B) → Within (k x + k y) → 𝔻 n B
+boundedPlus x y witness =
+  bounded
+    (k x + k y)
+    (Within.loWitness witness)
+    (Within.hiWitness witness)
+
+------------------------------------------------------------------------
+-- Saturating integer clamp for finite-grid projections.
 ------------------------------------------------------------------------
 
 clampℤ : ℤ → ℤ → ℤ → ℤ
@@ -77,19 +94,6 @@ clampℤ lo hi x with x ≤? lo
 ... | no _ with hi ≤? x
 ... | yes _ = hi
 ... | no _ = x
-
-boundedPlus : ∀ {n B} → 𝔻 n B → 𝔻 n B → 𝔻 n B
-boundedPlus {n} {B} x y = bounded k' lo' hi'
-  where
-    lo' : - (+ B) * (+ 2) ^ n ≤ clampℤ (- (+ B) * (+ 2) ^ n) ((+ B) * (+ 2) ^ n) (k x + k y)
-    lo' = ≤-trans (≤-refl _) (≤-refl _)
-
-    hi' : clampℤ (- (+ B) * (+ 2) ^ n) ((+ B) * (+ 2) ^ n) (k x + k y)
-            ≤ (+ B) * (+ 2) ^ n
-    hi' = ≤-refl _
-
-    k' : ℤ
-    k' = clampℤ (- (+ B) * (+ 2) ^ n) ((+ B) * (+ 2) ^ n) (k x + k y)
 
 ------------------------------------------------------------------------
 -- Momentum: the sole adaptive moment retained by the canonical surface.
@@ -148,7 +152,7 @@ sparsemax2 {n} a b = sparsePair (grid p) (grid (pow2 (suc n) - p))
     p = clampℤ (+ 0) (pow2 (suc n)) raw
 
 ------------------------------------------------------------------------
--- Small definitional checks used by the regression module.
+-- Definitional checks used by the regression module.
 ------------------------------------------------------------------------
 
 momentumStep-is-definitional : ∀ beta state gradient →
