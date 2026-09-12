@@ -3,15 +3,20 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined_test where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.efficient_chad.Dyadic
+open import Exotic.efficient_chad.Int8 using
+  ( Int8
+  ; identityCHAD-law
+  ; int8Roundtrip
+  ; int8Add
+  ; zero8
+  ; int8IdentityAddLaw
+  )
 
-canonicalDyadicEquality : ∀ (x y : Dyadic) → addDyadic x y ≡ addDyadic x y
-canonicalDyadicEquality x y = refl
+canonicalInt8Identity : ∀ (x : Int8) → identityCHAD-law x
+canonicalInt8Identity x = identityCHAD-law x
 
-canonicalMomentumEquality : ∀ (beta : Dyadic) (s : MomentumState) (g : Dyadic) →
-  momentumStep beta s g ≡ momentumStep beta s g
-canonicalMomentumEquality beta s g = refl
+canonicalInt8Roundtrip : ∀ (x : Int8) → int8Roundtrip x
+canonicalInt8Roundtrip x = int8Roundtrip x
 
-canonicalSparsemaxEquality : ∀ {n} (a b : Grid n) →
-  sparsemax2 a b ≡ sparsemax2 a b
-canonicalSparsemaxEquality a b = refl
+canonicalInt8AddIdentity : ∀ (x : Int8) → int8Add x zero8 ≡ x
+canonicalInt8AddIdentity x = int8IdentityAddLaw x
