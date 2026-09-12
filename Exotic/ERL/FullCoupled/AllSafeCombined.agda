@@ -160,8 +160,7 @@ testDMCPNeutral = neutral-preserves
 testMR15Ranking : Rank
 testMR15Ranking = mr15DyadicRank
 
-testMR15RankingArithmetic :
-  mr15DominanceOnFiniteCriteria
+testMR15RankingArithmetic : mr15DominanceOnFiniteCriteria
 testMR15RankingArithmetic = mr15DominanceOnFiniteCriteria
 
 testCanonicalRanking : Rank
@@ -173,8 +172,8 @@ testLearningState = trainedWitness
 testLearningNonempty : prediction trainingWitness ≡ zero8
 testLearningNonempty = trainingWitness-nonempty
 
-testLearningExact : prediction trainedWitness ≡ one8
+testLearningExact : prediction trainedWitness ≡ int8OfNat 4
 testLearningExact = trainingWitness-learns
 
-testLearningTargetValue : LearnState.target trainingWitness ≡ one8
+testLearningTargetValue : LearnState.target trainingWitness ≡ int8OfNat 4
 testLearningTargetValue = trainingWitness-target
