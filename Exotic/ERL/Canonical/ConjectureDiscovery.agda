@@ -25,6 +25,8 @@ open import Exotic.ERL.Finite.TrueOnlineTD using (TrueOnlineState; exampleStep; 
 open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos; totalWeight)
 open import Exotic.ERL.Exploration.FiniteMarkov using (transition; selfLoopExample; selfLoopWeight)
 open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep; zeroStep-is-initial)
+open import Exotic.ERL.Exploration.FullLearnerNoisyTri using (Parameters; Window2; zeroNoisePreservesLearner)
+open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2-square-scale)
 
 data SurvivingConjecture : Set where
   int8Roundtrip : SurvivingConjecture
@@ -38,6 +40,8 @@ data SurvivingConjecture : Set where
   quantizedSoftsignZero : SurvivingConjecture
   quantizedCReluZero : SurvivingConjecture
   learnerExampleExists : SurvivingConjecture
+  fullNoisyTriZeroPreserves : SurvivingConjecture
+  haar2SquareScale : SurvivingConjecture
 
 proof : ∀ c → Set
 proof int8Roundtrip = ∀ (x : Int8) →
@@ -52,6 +56,10 @@ proof composedZeroSelfLoop = zeroStep ≡ initialState
 proof quantizedSoftsignZero = softsignQ8 zero8 ≡ zero8
 proof quantizedCReluZero = cReLU8 zero8 ≡ zero8
 proof learnerExampleExists = TrueOnlineState
+proof fullNoisyTriZeroPreserves = ∀ (p : Parameters) (w : Window2) →
+  zeroNoisePreservesLearner p w
+proof haar2SquareScale = ∀ x y →
+  haar2 (haar2 (haarPair x y)) ≡ haarPair (x + x) (y + y)
 
 survives : proof int8Roundtrip
 survives = int8Roundtrip
@@ -85,3 +93,9 @@ survivesCReLUZero = refl
 
 survivesLearnerExample : proof learnerExampleExists
 survivesLearnerExample = exampleStep
+
+survivesFullNoisyTriZero : proof fullNoisyTriZeroPreserves
+survivesFullNoisyTriZero p w = zeroNoisePreservesLearner p w
+
+survivesHaar2SquareScale : proof haar2SquareScale
+survivesHaar2SquareScale = haar2-square-scale
