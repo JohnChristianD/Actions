@@ -24,7 +24,7 @@ open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
 open import Exotic.ERL.Finite.TrueOnlineTD using (TrueOnlineState; exampleStep)
 open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos; totalWeight)
 open import Exotic.ERL.Exploration.FiniteMarkov using (transition; selfLoopExample; selfLoopWeight)
-
+open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep; zeroStep-is-initial)
 
 data SurvivingConjecture : Set where
   int8Roundtrip : SurvivingConjecture
@@ -34,6 +34,7 @@ data SurvivingConjecture : Set where
   finiteNoiseNormalises : SurvivingConjecture
   concreteZeroNoiseSelfLoop : SurvivingConjecture
   concreteZeroNoiseWeight : SurvivingConjecture
+  composedZeroSelfLoop : SurvivingConjecture
   quantizedSoftsignZero : SurvivingConjecture
   quantizedCReluZero : SurvivingConjecture
   learnerExampleExists : SurvivingConjecture
@@ -47,6 +48,7 @@ proof productionExistence = Σ ProductionEconomy2 (λ e → WalrasianProductionE
 proof finiteNoiseNormalises = weight neg + weight zero + weight pos ≡ 4
 proof concreteZeroNoiseSelfLoop = transition zero one8 ≡ one8
 proof concreteZeroNoiseWeight = weight zero ≡ 2
+proof composedZeroSelfLoop = zeroStep ≡ _
 proof quantizedSoftsignZero = softsignQ8 zero8 ≡ zero8
 proof quantizedCReluZero = cReLU8 zero8 ≡ zero8
 proof learnerExampleExists = TrueOnlineState
@@ -71,6 +73,9 @@ survivesSelfLoop = selfLoopExample
 
 survivesSelfLoopWeight : proof concreteZeroNoiseWeight
 survivesSelfLoopWeight = selfLoopWeight
+
+survivesComposedSelfLoop : proof composedZeroSelfLoop
+survivesComposedSelfLoop = zeroStep-is-initial
 
 survivesSoftsignZero : proof quantizedSoftsignZero
 survivesSoftsignZero = refl
