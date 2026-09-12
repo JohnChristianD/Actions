@@ -45,7 +45,7 @@ jobs:
             echo "CANONICAL_TEST=${canonical[1]}"
           } >> "$GITHUB_ENV"
 
-      - name: Reject legacy optimizer traces
+      - name: Reject legacy optimizer traces and proof bypasses
         shell: bash
         run: |
           set -euo pipefail
@@ -54,7 +54,13 @@ jobs:
             echo 'legacy-optimizer-trace=FOUND'
             exit 1
           fi
+          if git grep -nE '\{!!\}|(^|[^A-Za-z])postulate([^A-Za-z]|$)|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
+            ':!*.md' ':!.ci/external/**'; then
+            echo 'proof-bypass-trace=FOUND'
+            exit 1
+          fi
           echo 'legacy-optimizer-trace=ABSENT'
+          echo 'proof-bypass-trace=ABSENT'
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -132,6 +138,20 @@ jobs:
           cat /tmp/canonical-test.log
           .ci/agda-repair.sh repair "$CANONICAL_TEST" /tmp/canonical-test.log
           agda --safe "$CANONICAL_TEST"
+
+      - name: Check implemented finite learner surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          agda --safe Exotic/ERL/Finite/Int8Vector.agda
+          agda --safe Exotic/ERL/Finite/Activation.agda
+          agda --safe Exotic/ERL/Finite/Haar.agda
+          agda --safe Exotic/ERL/Finite/TrueOnlineTD.agda
+          agda --safe Exotic/ERL/Finite/ComposedLearner.agda
+          agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
+          agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
+          agda --safe Exotic/ERL/Exploration/FiniteMarkov.agda
+          agda --safe Exotic/ERL/Exploration/ComposedLearnerExploration.agda
 
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
