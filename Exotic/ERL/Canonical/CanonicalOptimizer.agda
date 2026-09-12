@@ -6,10 +6,10 @@ open import Agda.Builtin.Bool using (Bool; true)
 open import Agda.Builtin.Nat using (Nat)
 
 data Optimizer : Set where
-  f4IntSoftsignQProjectedIDBD : Optimizer
+  finiteTrueOnlineInt8 : Optimizer
 
 canonicalOptimizer : Optimizer
-canonicalOptimizer = f4IntSoftsignQProjectedIDBD
+canonicalOptimizer = finiteTrueOnlineInt8
 
 data ExplorationMode : Set where
   noisyNets : ExplorationMode
@@ -34,7 +34,7 @@ data FrozenFeature : Set where
   dft : FrozenFeature
 
 canonicalFrozenFeature : FrozenFeature
-canonicalFrozenFeature = walshHadamard
+canonicalFrozenFeature = haar
 
 data AttentionScale : Set where
   local : AttentionScale
