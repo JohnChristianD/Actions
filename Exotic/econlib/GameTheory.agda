@@ -61,8 +61,8 @@ natSelfLe _ = ≤-refl
 leftBestDefect : ∀ b a' →
   leftScore prisonersDilemma a' b ≤ leftScore prisonersDilemma defect b
 leftBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-leftBestDefect cooperate defect = z≤n
-leftBestDefect defect cooperate = natSelfLe 5
+leftBestDefect cooperate defect = natSelfLe 5
+leftBestDefect defect cooperate = z≤n
 leftBestDefect defect defect = natSelfLe 1
 
 rightBestDefect : ∀ a b' →
