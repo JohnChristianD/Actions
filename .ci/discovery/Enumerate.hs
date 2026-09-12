@@ -1,6 +1,6 @@
 module Main where
 
-import System.Directory (createDirectoryIfMissing, removePathForcibly)
+import System.Directory (createDirectoryIfMissing)
 
 header :: String
 header = "{-# OPTIONS --safe #-}\n"
@@ -18,15 +18,8 @@ candidates =
 main :: IO ()
 main = do
   let root = ".ci/generated-conjectures"
-  removePathForcibly root `catchIO` pure ()
   createDirectoryIfMissing True root
   mapM_ (emit root) candidates
   where
   emit root (name, source) =
     writeFile (root ++ "/" ++ name ++ ".agda") source
-
-catchIO :: IO a -> (IOError -> IO a) -> IO a
-catchIO action handler = action `catch` handler
-
-catch :: IO a -> (IOError -> IO a) -> IO a
-catch = System.IO.Error.catchIOError
