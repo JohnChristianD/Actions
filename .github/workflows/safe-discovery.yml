@@ -1,0 +1,77 @@
+name: Safe endogenous discovery
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - '**/*.agda'
+      - '.ci/discovery/**'
+      - '.github/workflows/safe-discovery.yml'
+  schedule:
+    - cron: '41 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Agda and standard library
+        uses: agda/agda-setup-action@v1
+        with:
+          agda-version: '2.8.0'
+          agda-stdlib-version: '2.4'
+
+      - name: Set up GHC 9.6
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+
+      - name: Install Agda2HS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cabal update
+          cabal install agda2hs --install-method=copy
+          agda2hs --help >/dev/null
+          agda2hs locate >> "$(agda --print-agda-app-dir)/libraries"
+
+      - name: Discover and kernel-check candidates
+        shell: bash
+        run: bash .ci/discovery/run-safe-discovery.sh
+
+      - name: Kernel-check canonical learner
+        shell: bash
+        run: |
+          set -euo pipefail
+          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
+          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
+
+      - name: Kernel-check actual Agda2HS extraction target
+        shell: bash
+        run: |
+          set -euo pipefail
+          agda --safe Exotic/ERL/Extraction/Agda2HSMain.agda
+
+      - name: Extract actual learner
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .ci/agda2hs-learner-out
+          mkdir -p .ci/agda2hs-learner-out
+          agda2hs Exotic/ERL/Extraction/Agda2HSMain.agda -o .ci/agda2hs-learner-out
+          test -n "$(find .ci/agda2hs-learner-out -name '*.hs' -type f -print -quit)"
+
+      - name: Compile extracted learner
+        shell: bash
+        run: |
+          set -euo pipefail
+          hs=$(find .ci/agda2hs-learner-out -name '*.hs' -type f -print -quit)
+          ghc -fno-code "$hs"

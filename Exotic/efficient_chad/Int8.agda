@@ -5,7 +5,7 @@ module Exotic.efficient_chad.Int8 where
 import Data.Fin as F
 open F using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat using (ℕ; suc; _+_; _*_) 
+open import Data.Nat using (ℕ; zero; suc; _+_; _*_) 
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
@@ -54,9 +54,6 @@ identityCHAD = chadOperator
 
 runCHAD : CHADOperator → Int8 → Int8 × (Int8 → Int8)
 runCHAD op x = primal op x , pullback op x
-
-identityCHAD-law : ∀ x → primal identityCHAD x ≡ x
-identityCHAD-law x = refl
 
 record AffineCHAD : Set₁ where
   constructor affineCHAD

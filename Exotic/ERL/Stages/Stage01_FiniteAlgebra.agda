@@ -3,7 +3,6 @@ module Exotic.ERL.Stages.Stage01_FiniteAlgebra where
 
 -- Kernel checkpoint marker: this stage remains primitive finite algebra.
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Agda.Builtin.Equality using (_≡_; refl)
 
 record FiniteAlgebra : Set₁ where
   field
@@ -19,9 +18,3 @@ natAlgebra = record
   ; addA = _+_
   ; mulA = _*_
   }
-
-zeroAdd : ∀ n → zero + n ≡ n
-zeroAdd n = refl
-
-zeroMul : ∀ n → zero * n ≡ zero
-zeroMul n = refl

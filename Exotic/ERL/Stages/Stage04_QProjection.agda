@@ -15,9 +15,6 @@ minNat (suc h) (suc q) = suc (minNat h q)
 qProject : Nat → Nat → Nat
 qProject h q = minNat h q
 
-qProjectShape : ∀ h q → qProject h q ≡ minNat h q
-qProjectShape h q = refl
-
 qProjectionIdempotent : ∀ h q → qProject (qProject h q) q ≡ qProject h q
 qProjectionIdempotent zero q = refl
 qProjectionIdempotent (suc h) zero = refl

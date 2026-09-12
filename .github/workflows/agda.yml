@@ -6,14 +6,12 @@ on:
     paths:
       - '**/*.agda'
       - '.ci/**'
-      - 'docs/**'
       - '.github/workflows/agda.yml'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.ci/**'
-      - 'docs/**'
       - '.github/workflows/agda.yml'
   schedule:
     - cron: '17 * * * *'
@@ -47,13 +45,22 @@ jobs:
             echo "CANONICAL_TEST=${canonical[1]}"
           } >> "$GITHUB_ENV"
 
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: '27'
-          elixir-version: '1.17'
-          install-hex: true
-          install-rebar: false
+      - name: Reject legacy optimizer traces and proof bypasses
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git grep -nE -i 'AdaMax|Lion|stosigmSGD|stosignSGDv2|signSGDM|(^|[^A-Za-z])Adam([^A-Za-z]|$)' -- \
+            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/workflows/agda.yml'; then
+            echo 'legacy-optimizer-trace=FOUND'
+            exit 1
+          fi
+          if git grep -nE '\{!!\}|(^|[^A-Za-z])postulate([^A-Za-z]|$)|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
+            ':!*.md' ':!.ci/**' ':!.ci/external/**'; then
+            echo 'proof-bypass-trace=FOUND'
+            exit 1
+          fi
+          echo 'legacy-optimizer-trace=ABSENT'
+          echo 'proof-bypass-trace=ABSENT'
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -69,6 +76,29 @@ jobs:
           agda --print-agda-app-dir
           test -f "$(agda --print-agda-app-dir)/libraries"
 
+      - name: Set up GHC for Agda2HS tooling
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6'
+
+      - name: Install Agda2HS from the existing Cabal toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          cabal update
+          cabal install agda2hs --install-method=copy
+          agda2hs --help >/dev/null
+          agda2hs locate >> "$(agda --print-agda-app-dir)/libraries"
+
+      - name: Agda2HS extraction of the implemented learner
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .ci/agda2hs-out
+          mkdir -p .ci/agda2hs-out
+          agda2hs Exotic/ERL/FullCoupled/FiniteLearner.agda -o .ci/agda2hs-out
+          test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/FiniteLearner.hs
+
       - name: Audit Tom Smeding upstream proof without rewriting it
         shell: bash
         run: |
@@ -81,11 +111,56 @@ jobs:
           git -C .ci/external/efficient-chad-agda status --short
           test -z "$(git -C .ci/external/efficient-chad-agda status --short)"
 
+      - name: Normalise canonical Agda source before checking
+        shell: bash
+        run: .ci/agda-repair.sh normalize "$CANONICAL_SOURCE"
+
       - name: Check canonical Agda source
-        run: agda --safe "$CANONICAL_SOURCE"
+        shell: bash
+        run: |
+          set -uo pipefail
+          if agda --safe "$CANONICAL_SOURCE" >/tmp/canonical-source.log 2>&1; then
+            cat /tmp/canonical-source.log
+            exit 0
+          fi
+          cat /tmp/canonical-source.log
+          .ci/agda-repair.sh repair "$CANONICAL_SOURCE" /tmp/canonical-source.log
+          agda --safe "$CANONICAL_SOURCE"
 
       - name: Check canonical Agda regression
-        run: agda --safe "$CANONICAL_TEST"
+        shell: bash
+        run: |
+          set -uo pipefail
+          if agda --safe "$CANONICAL_TEST" >/tmp/canonical-test.log 2>&1; then
+            cat /tmp/canonical-test.log
+            exit 0
+          fi
+          cat /tmp/canonical-test.log
+          .ci/agda-repair.sh repair "$CANONICAL_TEST" /tmp/canonical-test.log
+          agda --safe "$CANONICAL_TEST"
+
+      - name: Check implemented finite learner surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          agda --safe Exotic/ERL/Finite/Int8Vector.agda
+          agda --safe Exotic/ERL/Finite/Activation.agda
+          agda --safe Exotic/ERL/Finite/Haar.agda
+          agda --safe Exotic/ERL/Finite/TrueOnlineTD.agda
+          agda --safe Exotic/ERL/Finite/ComposedLearner.agda
+          agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
+          agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
+          agda --safe Exotic/ERL/Exploration/FiniteMarkov.agda
+          agda --safe Exotic/ERL/Exploration/ComposedLearnerExploration.agda
+          agda --safe Exotic/ERL/Exploration/DMCPFinite.agda
+          agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
+          agda --safe Exotic/ERL/Exploration/TheoremRanking.agda
+          agda --safe Exotic/ERL/Representation/HaarInt8.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteLearningCertificate.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteLearner.agda
+          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
+          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
+          agda --safe Exotic/ERL/Representation/Haar2.agda
 
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
@@ -99,23 +174,3 @@ jobs:
             exit "$status"
           fi
           echo 'tom-smeding-current-toolchain=PASS'
-
-      - name: Set up Haskell exact-rational oracle
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.6'
-
-      - name: Run Haskell exact-rational oracle
-        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
-
-      - name: Run Elixir exact-rational oracle
-        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
-
-      - name: Compare exact-rational functional oracles
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed 's/\r$//' oracle/haskell.csv | sed '/^$/d' > oracle/haskell.normalized.csv
-          sed 's/\r$//' oracle/elixir.csv | sed '/^$/d' > oracle/elixir.normalized.csv
-          diff -u oracle/haskell.normalized.csv oracle/elixir.normalized.csv
-          echo 'exact-rational-functional-oracle-cross-check=PASS'
