@@ -54,6 +54,12 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
           agda --safe Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
 
+      - name: Kernel-check actual Agda2HS extraction target
+        shell: bash
+        run: |
+          set -euo pipefail
+          agda --safe Exotic/ERL/Extraction/Agda2HSMain.agda
+
       - name: Extract actual learner
         shell: bash
         run: |
