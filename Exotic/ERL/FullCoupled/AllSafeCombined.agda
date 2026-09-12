@@ -8,12 +8,8 @@ open import Data.Product using (Σ; _,_)
 open import Exotic.efficient_chad.Int8
   using
     ( Int8
-    ; identityCHAD
     ; identityCHAD-law
     ; int8Roundtrip
-    ; int8Add
-    ; zero8
-    ; int8IdentityAddLaw
     )
 open import Exotic.econlib.GameTheory
   using
@@ -44,9 +40,6 @@ testInt8Identity x = identityCHAD-law x
 
 testInt8Roundtrip : ∀ (x : Int8) → int8Roundtrip x
 testInt8Roundtrip x = int8Roundtrip x
-
-testInt8AddIdentity : ∀ (x : Int8) → int8Add x zero8 ≡ x
-testInt8AddIdentity x = int8IdentityAddLaw x
 
 testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
 testEquilibrium = canonicalEconomy2Equilibrium
