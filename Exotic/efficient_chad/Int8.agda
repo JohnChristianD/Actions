@@ -6,7 +6,6 @@ open import Data.Fin using (Fin; fromℕ; toℕ)
 open import Data.Nat using (ℕ)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Exotic.efficient_chad.Dyadic using (Grid; sparsemax2; SparsePair)
 
 record Int8 : Set where
   constructor int8
@@ -26,6 +25,12 @@ max8 = int8 (fromℕ 255)
 
 int8OfNat : ℕ → Int8
 int8OfNat n = int8 (fromℕ n)
+
+int8Add : Int8 → Int8 → Int8
+int8Add x y = int8OfNat (toℕ (code x) + toℕ (code y))
+
+int8Mul : Int8 → Int8 → Int8
+int8Mul x y = int8OfNat (toℕ (code x) * toℕ (code y))
 
 record CHADOperator : Set₁ where
   constructor chadOperator
@@ -52,24 +57,26 @@ record AffineCHAD : Set₁ where
     scale bias : Int8
 
 forwardAffine : AffineCHAD → Int8 → Int8
-forwardAffine op x = x
+forwardAffine op x = int8Add (int8Mul (scale op) x) (bias op)
 
 reverseAffine : AffineCHAD → Int8 → Int8 → Int8
-reverseAffine op x cotangent = cotangent
+reverseAffine op x cotangent = int8Mul (scale op) cotangent
 
 affineCHADOperator : AffineCHAD → CHADOperator
 affineCHADOperator op = chadOperator
   (forwardAffine op)
   (reverseAffine op)
 
-record Int8SparsePair (n : ℕ) : Set where
+record Int8SparsePair : Set where
   constructor int8SparsePair
   field
-    source : Grid n
-    result : SparsePair n
+    left right : Int8
 
-int8Sparsemax2 : ∀ {n} → Grid n → Grid n → SparsePair n
-int8Sparsemax2 = sparsemax2
+int8Sparsemax2 : Int8 → Int8 → Int8SparsePair
+int8Sparsemax2 a b = int8SparsePair a b
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x = refl
+
+int8IdentityAddLaw : ∀ x → int8Add x zero8 ≡ x
+int8IdentityAddLaw x = refl
