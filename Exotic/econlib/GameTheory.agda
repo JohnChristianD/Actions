@@ -65,8 +65,8 @@ leftBestDefect defect defect = ≤-refl
 rightBestDefect : ∀ a b' →
   rightScore prisonersDilemma a b' ≤ rightScore prisonersDilemma a defect
 rightBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-rightBestDefect cooperate defect = z≤n
-rightBestDefect defect cooperate = ≤-refl
+rightBestDefect cooperate defect = ≤-refl
+rightBestDefect defect cooperate = z≤n
 rightBestDefect defect defect = ≤-refl
 
 isNashEquilibriumDD : PureNash prisonersDilemma defect defect
