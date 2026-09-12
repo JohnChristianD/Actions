@@ -55,6 +55,5 @@ testNashConvergence n = pdIter-stabilises n (defect , defect)
 testMarketStabilisation : ∀ n e → clearIter (suc n) e ≡ clearAllocation e
 testMarketStabilisation n e = clearIter-stabilises n e
 
-testProductionExistence : WalrasianProductionEquilibrium2
-  (exists_equilibrium_prod2)
+testProductionExistence : Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
 testProductionExistence = exists_equilibrium_prod2
