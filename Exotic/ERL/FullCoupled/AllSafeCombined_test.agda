@@ -3,7 +3,7 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined_test where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.ERL.Dyadic
+open import Exotic.efficient_chad.Dyadic
 
 canonicalDyadicEquality : ∀ (x y : Dyadic) → addDyadic x y ≡ addDyadic x y
 canonicalDyadicEquality x y = refl
