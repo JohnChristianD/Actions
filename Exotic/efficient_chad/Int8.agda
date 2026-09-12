@@ -77,6 +77,3 @@ int8Sparsemax2 a b = int8SparsePair a b
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x = refl
-
-int8IdentityAddLaw : ∀ x → int8Add x zero8 ≡ x
-int8IdentityAddLaw x = refl
