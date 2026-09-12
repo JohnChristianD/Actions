@@ -3,7 +3,7 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Fin using (toℕ)
+open import Data.Fin using (Fin; toℕ)
 open import Data.Product using (Σ)
 open import Exotic.efficient_chad.Int8
   using
@@ -52,6 +52,7 @@ open import Exotic.ERL.Exploration.DyadicMR15GA using
   ( Mutation
   ; population-nonempty
   ; mr15NeutralCertificate
+  ; mr15MutationWitness
   )
 open import Exotic.ERL.Exploration.DMCPFinite using
   ( DMCPState
@@ -140,11 +141,14 @@ testComposedExplorationStable = zeroStep-is-initial
 testHaarSquare : ∀ (x y : Int8) → H8 (H8 (x , y)) ≡ (double8 x , double8 y)
 testHaarSquare = H8-square
 
-testMR15Nonempty : ∀ (x : Mutation) → population-nonempty ≡ population-nonempty
-testMR15Nonempty x = refl
+testMR15Nonempty : Mutation
+testMR15Nonempty = neutral
 
-testMR15Neutral : mr15NeutralCertificate ≡ mr15NeutralCertificate
-testMR15Neutral = refl
+testMR15Neutral : mutate neutral zero population-nonempty ≡ population-nonempty
+testMR15Neutral = mr15NeutralCertificate
+
+testMR15Mutation : mr15MutationWitness
+testMR15Mutation = mr15MutationWitness
 
 testDMCPNonempty : DMCPState
 testDMCPNonempty = finite-dmcp-nonempty
@@ -153,11 +157,10 @@ testDMCPNeutral : ∀ (s : DMCPState) → neutral-preserves s
 testDMCPNeutral = neutral-preserves
 
 testMR15Ranking : Rank
-
 testMR15Ranking = mr15DyadicRank
 
-testMR15RankingArithmetic : mr15DominanceOnFiniteCriteria ≡ mr15DominanceOnFiniteCriteria
-testMR15RankingArithmetic = refl
+testMR15RankingArithmetic : mr15DominanceOnFiniteCriteria
+ testMR15RankingArithmetic = mr15DominanceOnFiniteCriteria
 
 testCanonicalRanking : Rank
 testCanonicalRanking = canonicalTheoremClass
@@ -167,10 +170,6 @@ testLearningState = trainedWitness
 
 testLearningNonempty : prediction trainingWitness ≡ zero8
 testLearningNonempty = trainingWitness-nonempty
-
-testLearningTarget : prediction trainingWitness ≠ one8
-
-testLearningTarget = λ () → refl
 
 testLearningExact : prediction trainedWitness ≡ one8
 testLearningExact = trainingWitness-learns
