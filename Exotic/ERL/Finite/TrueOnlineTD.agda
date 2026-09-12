@@ -2,7 +2,6 @@
 
 module Exotic.ERL.Finite.TrueOnlineTD where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
 open import Data.Nat using (_+_; _∸_)
 open import Exotic.efficient_chad.Int8 using
@@ -107,6 +106,3 @@ exampleNextFeature = exampleFeature
 
 exampleStep : TrueOnlineState
 exampleStep = learnerStep one8 exampleFeature exampleNextFeature initialState
-
-exampleStep-is-defined : exampleStep ≡ exampleStep
-exampleStep-is-defined = refl
