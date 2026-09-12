@@ -152,7 +152,14 @@ jobs:
           agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
           agda --safe Exotic/ERL/Exploration/FiniteMarkov.agda
           agda --safe Exotic/ERL/Exploration/ComposedLearnerExploration.agda
+          agda --safe Exotic/ERL/Exploration/DMCPFinite.agda
+          agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
+          agda --safe Exotic/ERL/Exploration/TheoremRanking.agda
+          agda --safe Exotic/ERL/Representation/HaarInt8.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteLearningCertificate.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteLearner.agda
+          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
+          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
           agda --safe Exotic/ERL/Representation/Haar2.agda
 
       - name: Probe unchanged Tom Smeding proof under current Agda
