@@ -3,7 +3,7 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.ERL.Dyadic
+open import Exotic.efficient_chad.Dyadic
   using
     ( Dyadic
     ; 𝔻
@@ -18,20 +18,20 @@ open import Exotic.ERL.Dyadic
     ; SparsePair
     ; Grid
     )
-open import Exotic.ERL.Int8
+open import Exotic.efficient_chad.Int8
   using
     ( Int8
     ; identityCHAD
     ; identityCHAD-law
     ; int8Roundtrip
     )
-open import Exotic.Econlib.GameTheory
+open import Exotic.econlib.GameTheory
   using
     ( Action
     ; prisonersDilemma
     ; PureNash
     )
-open import Exotic.Econlib.Equilibrium
+open import Exotic.econlib.Equilibrium
   using
     ( canonicalEconomy2
     ; canonicalEconomy2Equilibrium
