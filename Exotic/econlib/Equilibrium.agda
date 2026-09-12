@@ -3,7 +3,7 @@
 module Exotic.econlib.Equilibrium where
 
 open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _*)
+open import Data.Nat using (ℕ; _*_; _+_)
 open import Data.Product using (Σ; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
