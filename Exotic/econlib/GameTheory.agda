@@ -2,35 +2,37 @@
 
 module Exotic.econlib.GameTheory where
 
-open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _≤_; z≤n; s≤s)
-open import Data.Nat.Properties using (≤-refl)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.Nat using (ℕ; suc; zero)
+open import Data.Nat.Properties using (≤-refl; z≤n; s≤s)
+open import Data.Product using (_×_; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
+open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat)
 
-data Action : Set where
-  cooperate : Action
-  defect : Action
+infix 4 _≤_
 
 record Game2 : Set₁ where
   constructor game2
   field
     payoff : Action → Action → Int8 × Int8
 
+
+data Action : Set where
+  cooperate : Action
+  defect : Action
+
 open Game2 public
 
-leftPayoff : Game2 → Action → Action → Int8
+leftPayoff : (G : Game2) → Action → Action → Int8
 leftPayoff G a b = proj₁ (payoff G a b)
 
-rightPayoff : Game2 → Action → Action → Int8
+rightPayoff : (G : Game2) → Action → Action → Int8
 rightPayoff G a b = proj₂ (payoff G a b)
 
 leftScore : Game2 → Action → Action → ℕ
-leftScore G a b = toℕ (code (leftPayoff G a b))
+leftScore G a b = Int8.code (leftPayoff G a b) |> Data.Fin.toℕ
 
 rightScore : Game2 → Action → Action → ℕ
-rightScore G a b = toℕ (code (rightPayoff G a b))
+rightScore G a b = Int8.code (rightPayoff G a b) |> Data.Fin.toℕ
 
 record PureNash (G : Game2) (a b : Action) : Set where
   constructor pureNash
@@ -40,10 +42,10 @@ record PureNash (G : Game2) (a b : Action) : Set where
 
 prisonersDilemma : Game2
 prisonersDilemma = game2 λ where
-  cooperate cooperate = int8OfNat 3 , int8OfNat 3
-  cooperate defect    = int8OfNat 0 , int8OfNat 5
-  defect    cooperate = int8OfNat 5 , int8OfNat 0
-  defect    defect    = int8OfNat 1 , int8OfNat 1
+  cooperate cooperate = (int8OfNat 3 , int8OfNat 3)
+  cooperate defect    = (int8OfNat 0 , int8OfNat 5)
+  defect    cooperate = (int8OfNat 5 , int8OfNat 0)
+  defect    defect    = (int8OfNat 1 , int8OfNat 1)
 
 record NashCertificate : Set where
   constructor nashCertificate
@@ -65,8 +67,8 @@ leftBestDefect defect defect = ≤-refl
 rightBestDefect : ∀ a b' →
   rightScore prisonersDilemma a b' ≤ rightScore prisonersDilemma a defect
 rightBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-rightBestDefect cooperate defect = z≤n
-rightBestDefect defect cooperate = ≤-refl
+rightBestDefect cooperate defect = ≤-refl
+rightBestDefect defect cooperate = z≤n
 rightBestDefect defect defect = ≤-refl
 
 isNashEquilibriumDD : PureNash prisonersDilemma defect defect
@@ -75,24 +77,21 @@ isNashEquilibriumDD = pureNash
   (rightBestDefect defect)
 
 pdBestResponse : Action → Action
-pdBestResponse _ = defect
-
-pdBestResponseFixed : pdBestResponse defect ≡ defect
-pdBestResponseFixed = refl
+aBestResponse _ = defect
 
 pdStep : Action × Action → Action × Action
 pdStep _ = defect , defect
 
 pdStep-stabilises : ∀ s → pdStep s ≡ (defect , defect)
-pdStep-stabilises _ = refl
+pdStep-stabilises s = refl
 
 pdIter : ℕ → Action × Action → Action × Action
 pdIter zero s = s
-pdIter (suc n) s = pdIter n (pdStep s)
+pdIter (suc n) s = pdStep (pdIter n s)
 
 pdIter-stabilises : ∀ n s → pdIter (suc n) s ≡ (defect , defect)
-pdIter-stabilises zero s = refl
-pdIter-stabilises (suc n) s = pdIter-stabilises n (defect , defect)
+pdIter-stabilises zero s = pdStep-stabilises s
+pdIter-stabilises (suc n) s = pdStep-stabilises (pdIter n s)
 
-nashConvergenceWitness : NashCertificate
-nashConvergenceWitness = nashCertificate defect defect isNashEquilibriumDD
+nashConvergenceWitness : PureNash prisonersDilemma defect defect
+nashConvergenceWitness = isNashEquilibriumDD
