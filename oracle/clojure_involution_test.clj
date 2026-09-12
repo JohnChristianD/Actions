@@ -5,12 +5,13 @@
 (deftest signed-permutation-involutions
   (let [swap (involution/adjacent-swap 4 0)
         flip (involution/sign-flip 4 3)
+        domain [[0 1 2 3]
+                [3 2 1 0]
+                [-1 4 2 8]]
         basis (involution/compose-local [swap flip])]
-    (is (involution/involution? swap (range 4)))
-    (is (involution/involution? flip (range 4)))
-    (is (involution/involution? basis [[0 1 2 3]
-                                       [3 2 1 0]
-                                       [-1 4 2 8]]))))
+    (is (involution/involution? swap domain))
+    (is (involution/involution? flip domain))
+    (is (involution/involution? basis domain))))
 
 (deftest rule-selection-is-finite-and-local
   (let [log "Not in scope: suc\n"
