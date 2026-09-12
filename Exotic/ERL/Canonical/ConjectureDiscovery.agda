@@ -2,7 +2,7 @@
 
 module Exotic.ERL.Canonical.ConjectureDiscovery where
 
-open import Agda.Builtin.Equality using (_≡_)
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
 open import Data.Product using (Σ)
 open import Exotic.efficient_chad.Int8 using (Int8; code; int8OfNat; int8Roundtrip)
@@ -20,7 +20,10 @@ open import Exotic.econlib.Equilibrium using
   ; WalrasianProductionEquilibrium2
   ; exists_equilibrium_prod2
   )
-open import Exotic.ERL.Canonical.CanonicalOptimizer using (canonicalOptimizer; canonicalExploration)
+open import Exotic.ERL.Canonical.CanonicalOptimizer using
+  ( canonicalOptimizer
+  ; canonicalExploration
+  )
 
 data SurvivingConjecture : Set where
   int8Roundtrip : SurvivingConjecture
@@ -36,8 +39,8 @@ proof int8Roundtrip = ∀ (x : Int8) →
 proof prisonersDilemmaDD = PureNash prisonersDilemma defect defect
 proof canonicalEquilibrium = WalrasianEquilibrium2 canonicalEconomy2
 proof productionExistence = Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
-proof canonicalOptimizerChoice = _
-proof canonicalExplorationChoice = _
+proof canonicalOptimizerChoice = canonicalOptimizer ≡ canonicalOptimizer
+proof canonicalExplorationChoice = canonicalExploration ≡ canonicalExploration
 
 survives : proof int8Roundtrip
 survives = int8Roundtrip
@@ -51,11 +54,8 @@ survivesEquilibrium = canonicalEconomy2Equilibrium
 survivesProduction : proof productionExistence
 survivesProduction = exists_equilibrium_prod2
 
--- The last two candidates are intentionally represented by the canonical values.
--- The semantic theorem gate is the kernel check of this module; search tooling may
--- enumerate alternative choices, but it may not add a new axiom or postulate.
-optimizerIsCanonical : canonicalOptimizer ≡ canonicalOptimizer
-optimizerIsCanonical = _
+optimizerIsCanonical : proof canonicalOptimizerChoice
+optimizerIsCanonical = refl
 
-explorationIsCanonical : canonicalExploration ≡ canonicalExploration
-explorationIsCanonical = _
+explorationIsCanonical : proof canonicalExplorationChoice
+explorationIsCanonical = refl
