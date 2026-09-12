@@ -2,6 +2,7 @@
 
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.Dyadic
   using
     ( Dyadic
