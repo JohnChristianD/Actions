@@ -10,13 +10,13 @@ candidates =
   , ("NoiseNormalises", "noise-normalises", "open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos)",
      "weight neg + weight zero + weight pos ≡ 4",
      "refl")
-  , ("NoiseSelfLoop", "noise-self-loop", "open import Exotic.ERL.Exploration.FiniteMarkov using (selfLoopExample)",
+  , ("NoiseSelfLoop", "noise-self-loop", "open import Exotic.ERL.Exploration.FiniteMarkov using (transition; selfLoopExample)\nopen import Exotic.ERL.Exploration.FiniteNoise using (zero)\nopen import Exotic.efficient_chad.Int8 using (one8)",
      "transition zero one8 ≡ one8",
      "selfLoopExample")
-  , ("ComposedZero", "composed-zero", "open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep-is-initial; zeroStep; initialState)",
+  , ("ComposedZero", "composed-zero", "open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep-is-initial; zeroStep)\nopen import Exotic.ERL.Finite.TrueOnlineTD using (initialState)",
      "zeroStep ≡ initialState",
      "zeroStep-is-initial")
-  , ("FullLearnerTotal", "full-learner-total", "open import Exotic.ERL.FullCoupled.FiniteLearner using (Parameters; parameters; Token; token; Window2; window2; learnForward)\nopen import Exotic.efficient_chad.Int8 using (Int8; one8; zero8)",
+  , ("FullLearnerTotal", "full-learner-total", "open import Exotic.ERL.FullCoupled.FiniteLearner using (Parameters; Window2; learnForward)\nopen import Exotic.efficient_chad.Int8 using (Int8)",
      "(p : Parameters) → (w : Window2) → Int8",
      "learnForward")
   , ("BadHaarSquare", "bad-haar-square", "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2)",
