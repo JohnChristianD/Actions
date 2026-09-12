@@ -15,6 +15,8 @@ open import Exotic.efficient_chad.Int8
     ; identityCHAD
     ; identityCHAD-law
     ; int8Roundtrip
+    ; localSwapBasis
+    ; localSwapBasis-involutive
     )
 open import Exotic.econlib.GameTheory
   using
@@ -46,6 +48,9 @@ testInt8Identity x = identityCHAD-law x
 testInt8Roundtrip : ∀ (x : Int8) →
   toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 testInt8Roundtrip x = int8Roundtrip x
+
+testLocalSwapBasis : ∀ (p : Int8 × Int8) → localSwapBasis (localSwapBasis p) ≡ p
+testLocalSwapBasis p = localSwapBasis-involutive p
 
 testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
 testEquilibrium = canonicalEconomy2Equilibrium
