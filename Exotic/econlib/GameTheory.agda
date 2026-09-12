@@ -4,6 +4,7 @@ module Exotic.econlib.GameTheory where
 
 open import Data.Fin using (toℕ)
 open import Data.Nat using (ℕ; _≤_; z≤n; s≤s)
+open import Data.Nat.Properties using (≤-refl)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
 
@@ -46,16 +47,16 @@ prisonersDilemma = game2 λ where
 leftBestDefect : ∀ b a' →
   leftScore prisonersDilemma a' b ≤ leftScore prisonersDilemma defect b
 leftBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-leftBestDefect cooperate defect = s≤s (s≤s (s≤s (s≤s (s≤n z≤n))))
+leftBestDefect cooperate defect = ≤-refl
 leftBestDefect defect cooperate = z≤n
-leftBestDefect defect defect = s≤n z≤n
+leftBestDefect defect defect = ≤-refl
 
 rightBestDefect : ∀ a b' →
   rightScore prisonersDilemma a b' ≤ rightScore prisonersDilemma a defect
 rightBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-rightBestDefect cooperate defect = s≤s (s≤s (s≤s (s≤s (s≤n z≤n))))
+rightBestDefect cooperate defect = ≤-refl
 rightBestDefect defect cooperate = z≤n
-rightBestDefect defect defect = s≤n z≤n
+rightBestDefect defect defect = ≤-refl
 
 isNashEquilibriumDD : PureNash prisonersDilemma defect defect
 isNashEquilibriumDD = pureNash
