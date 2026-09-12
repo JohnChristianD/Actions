@@ -40,10 +40,10 @@ record PureNash (G : Game2) (a b : Action) : Set where
 
 prisonersDilemma : Game2
 prisonersDilemma = game2 λ where
-  cooperate cooperate = (int8OfNat 3 , int8OfNat 3)
-  cooperate defect    = (int8OfNat 0 , int8OfNat 5)
-  defect    cooperate = (int8OfNat 5 , int8OfNat 0)
-  defect    defect    = (int8OfNat 1 , int8OfNat 1)
+  cooperate cooperate → (int8OfNat 3 , int8OfNat 3)
+  cooperate defect    → (int8OfNat 0 , int8OfNat 5)
+  defect    cooperate → (int8OfNat 5 , int8OfNat 0)
+  defect    defect    → (int8OfNat 1 , int8OfNat 1)
 
 record NashCertificate : Set where
   constructor nashCertificate
