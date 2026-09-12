@@ -23,3 +23,7 @@
         once (:source (involution/apply-safe-rule :add-suc-import source))
         twice (:source (involution/apply-safe-rule :add-suc-import once))]
     (is (= once twice))))
+
+(defn -main [& _]
+  (let [result (run-tests 'oracle.clojure-involution-test)]
+    (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1))))
