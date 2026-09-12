@@ -3,6 +3,8 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Nat using (ℕ; suc)
+open import Data.Product using (_,_; _×_)
 open import Exotic.efficient_chad.Dyadic
   using
     ( Dyadic
@@ -28,17 +30,24 @@ open import Exotic.efficient_chad.Int8
 open import Exotic.econlib.GameTheory
   using
     ( Action
+    ; defect
     ; prisonersDilemma
     ; PureNash
-    ; isNashEquilibriumDD
+    ; pdIter
     ; pdIter-stabilises
+    ; isNashEquilibriumDD
     )
 open import Exotic.econlib.Equilibrium
   using
-    ( canonicalEconomy2
+    ( Economy2
+    ; canonicalEconomy2
     ; canonicalEconomy2Equilibrium
     ; WalrasianEquilibrium2
+    ; clearAllocation
+    ; clearIter
     ; clearIter-stabilises
+    ; ProductionEconomy2
+    ; WalrasianProductionEquilibrium2
     ; exists_equilibrium_prod2
     )
 
@@ -63,23 +72,16 @@ testInt8Roundtrip x = int8Roundtrip x
 testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
 testEquilibrium = canonicalEconomy2Equilibrium
 
-testNashDD : PureNash prisonersDilemma _ _
+testNashDD : PureNash prisonersDilemma defect defect
 testNashDD = isNashEquilibriumDD
 
-testNashConvergence : ∀ {n} (a b : Action) →
-  pdIter-stabilises n (a , b) ≡ pdIter-stabilises n (a , b)
-testNashConvergence a b = refl
+testNashConvergence : ∀ n (a b : Action) →
+  pdIter (suc n) (a , b) ≡ (defect , defect)
+testNashConvergence n a b = pdIter-stabilises n (a , b)
 
-testMarketStabilisation : ∀ {n} (e : Exotic.econlib.Equilibrium.Economy2) →
-  clearIter-stabilises n e ≡ clearIter-stabilises n e
-testMarketStabilisation e = refl
+testMarketStabilisation : ∀ n (e : Economy2) →
+  clearIter (suc n) e ≡ clearAllocation e
+testMarketStabilisation n e = clearIter-stabilises n e
 
-testProductionExistence :
-  Exotic.econlib.Equilibrium.ProductionEconomy2 ×
-  Exotic.econlib.Equilibrium.WalrasianProductionEquilibrium2
-    (proj₁ exists_equilibrium_prod2)
+testProductionExistence : Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
 testProductionExistence = exists_equilibrium_prod2
-
-nashFreeBoundary :
-  ∀ {a b : Action} → PureNash prisonersDilemma a b → PureNash prisonersDilemma a b
-nashFreeBoundary w = w
