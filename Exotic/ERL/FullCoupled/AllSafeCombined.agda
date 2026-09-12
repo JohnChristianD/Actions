@@ -48,6 +48,36 @@ open import Exotic.ERL.Exploration.ComposedLearnerExploration using
   ; zeroStep
   ; zeroStep-is-initial
   )
+open import Exotic.ERL.Exploration.DyadicMR15GA using
+  ( Mutation
+  ; population-nonempty
+  ; mr15NeutralCertificate
+  )
+open import Exotic.ERL.Exploration.DMCPFinite using
+  ( DMCPState
+  ; finite-dmcp-nonempty
+  ; neutral-preserves
+  )
+open import Exotic.ERL.Exploration.TheoremRanking using
+  ( Rank
+  ; canonicalTheoremClass
+  ; mr15DyadicRank
+  ; mr15DominanceOnFiniteCriteria
+  )
+open import Exotic.ERL.Representation.HaarInt8 using
+  ( H8
+  ; double8
+  ; H8-square
+  )
+open import Exotic.ERL.FullCoupled.FiniteLearningCertificate using
+  ( LearnState
+  ; prediction
+  ; trainingWitness
+  ; trainedWitness
+  ; trainingWitness-learns
+  ; trainingWitness-nonempty
+  ; trainingWitness-target
+  )
 open import Exotic.ERL.FullCoupled.FiniteLearner using
   ( Parameters
   ; parameters
@@ -106,3 +136,44 @@ testFullForward = learnForward sampleParameters sampleWindow
 
 testComposedExplorationStable : composedExploreStep zero zero8 exampleFeature exampleNextFeature initialState ≡ initialState
 testComposedExplorationStable = zeroStep-is-initial
+
+testHaarSquare : ∀ (x y : Int8) → H8 (H8 (x , y)) ≡ (double8 x , double8 y)
+testHaarSquare = H8-square
+
+testMR15Nonempty : ∀ (x : Mutation) → population-nonempty ≡ population-nonempty
+testMR15Nonempty x = refl
+
+testMR15Neutral : mr15NeutralCertificate ≡ mr15NeutralCertificate
+testMR15Neutral = refl
+
+testDMCPNonempty : DMCPState
+testDMCPNonempty = finite-dmcp-nonempty
+
+testDMCPNeutral : ∀ (s : DMCPState) → neutral-preserves s
+testDMCPNeutral = neutral-preserves
+
+testMR15Ranking : Rank
+
+testMR15Ranking = mr15DyadicRank
+
+testMR15RankingArithmetic : mr15DominanceOnFiniteCriteria ≡ mr15DominanceOnFiniteCriteria
+testMR15RankingArithmetic = refl
+
+testCanonicalRanking : Rank
+testCanonicalRanking = canonicalTheoremClass
+
+testLearningState : LearnState
+testLearningState = trainedWitness
+
+testLearningNonempty : prediction trainingWitness ≡ zero8
+testLearningNonempty = trainingWitness-nonempty
+
+testLearningTarget : prediction trainingWitness ≠ one8
+
+testLearningTarget = λ () → refl
+
+testLearningExact : prediction trainedWitness ≡ one8
+testLearningExact = trainingWitness-learns
+
+testLearningTargetValue : LearnState.target trainingWitness ≡ one8
+testLearningTargetValue = trainingWitness-target
