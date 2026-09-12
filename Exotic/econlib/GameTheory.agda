@@ -3,7 +3,8 @@
 module Exotic.econlib.GameTheory where
 
 open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _≤_; z≤n; s≤s)
+open import Data.Nat using (ℕ; _≤_; z≤n)
+open import Data.Nat.Properties using (≤-refl)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
@@ -57,16 +58,16 @@ nashCertificateIdentity w = w
 leftBestDefect : ∀ b a' →
   leftScore prisonersDilemma a' b ≤ leftScore prisonersDilemma defect b
 leftBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-leftBestDefect cooperate defect = s≤s z≤n
-leftBestDefect defect cooperate = s≤s (s≤s z≤n)
-leftBestDefect defect defect = z≤n
+leftBestDefect cooperate defect = z≤n
+leftBestDefect defect cooperate = ≤-refl
+leftBestDefect defect defect = ≤-refl
 
 rightBestDefect : ∀ a b' →
   rightScore prisonersDilemma a b' ≤ rightScore prisonersDilemma a defect
 rightBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-rightBestDefect cooperate defect = s≤s z≤n
-rightBestDefect defect cooperate = s≤s (s≤s z≤n)
-rightBestDefect defect defect = z≤n
+rightBestDefect cooperate defect = z≤n
+rightBestDefect defect cooperate = ≤-refl
+rightBestDefect defect defect = ≤-refl
 
 isNashEquilibriumDD : PureNash prisonersDilemma defect defect
 isNashEquilibriumDD = pureNash
