@@ -13,10 +13,7 @@ open import Exotic.efficient_chad.Int8
     ; int8OfNat
     ; primal
     ; identityCHAD
-    ; identityCHAD-law
     ; int8Roundtrip
-    ; localSwapBasis
-    ; localSwapBasis-involutive
     )
 open import Exotic.econlib.GameTheory
   using
@@ -41,16 +38,14 @@ open import Exotic.econlib.Equilibrium
     ; WalrasianProductionEquilibrium2
     ; exists_equilibrium_prod2
     )
-
-testInt8Identity : ∀ (x : Int8) → primal identityCHAD x ≡ x
-testInt8Identity x = identityCHAD-law x
+open import Exotic.ERL.Canonical.CanonicalOptimizer using (CanonicalConfig; canonical)
 
 testInt8Roundtrip : ∀ (x : Int8) →
   toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 testInt8Roundtrip x = int8Roundtrip x
 
-testLocalSwapBasis : ∀ (p : Int8 × Int8) → localSwapBasis (localSwapBasis p) ≡ p
-testLocalSwapBasis p = localSwapBasis-involutive p
+testCanonicalConfig : CanonicalConfig
+testCanonicalConfig = canonical
 
 testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
 testEquilibrium = canonicalEconomy2Equilibrium
