@@ -84,6 +84,12 @@ record Int8SparsePair : Set where
 int8Sparsemax2 : Int8 → Int8 → Int8SparsePair
 int8Sparsemax2 a b = int8SparsePair a b
 
+localSwapBasis : Int8 × Int8 → Int8 × Int8
+localSwapBasis (a , b) = b , a
+
+localSwapBasis-involutive : ∀ p → localSwapBasis (localSwapBasis p) ≡ p
+localSwapBasis-involutive (a , b) = refl
+
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x = trans
   (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
