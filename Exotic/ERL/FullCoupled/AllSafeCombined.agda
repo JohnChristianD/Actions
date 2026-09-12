@@ -3,7 +3,7 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Fin using (Fin; toℕ)
+open import Data.Fin as F using (Fin; toℕ)
 open import Data.Product using (Σ)
 open import Exotic.efficient_chad.Int8
   using
@@ -50,6 +50,7 @@ open import Exotic.ERL.Exploration.ComposedLearnerExploration using
   )
 open import Exotic.ERL.Exploration.DyadicMR15GA using
   ( Mutation
+  ; mutate
   ; population-nonempty
   ; mr15NeutralCertificate
   ; mr15MutationWitness
@@ -144,7 +145,7 @@ testHaarSquare = H8-square
 testMR15Nonempty : Mutation
 testMR15Nonempty = neutral
 
-testMR15Neutral : mutate neutral zero population-nonempty ≡ population-nonempty
+testMR15Neutral : mutate neutral F.zero population-nonempty ≡ population-nonempty
 testMR15Neutral = mr15NeutralCertificate
 
 testMR15Mutation : mr15MutationWitness
@@ -159,8 +160,9 @@ testDMCPNeutral = neutral-preserves
 testMR15Ranking : Rank
 testMR15Ranking = mr15DyadicRank
 
-testMR15RankingArithmetic : mr15DominanceOnFiniteCriteria
- testMR15RankingArithmetic = mr15DominanceOnFiniteCriteria
+testMR15RankingArithmetic :
+  mr15DominanceOnFiniteCriteria
+testMR15RankingArithmetic = mr15DominanceOnFiniteCriteria
 
 testCanonicalRanking : Rank
 testCanonicalRanking = canonicalTheoremClass
