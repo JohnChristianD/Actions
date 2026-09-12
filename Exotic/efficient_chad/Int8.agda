@@ -55,9 +55,6 @@ identityCHAD = chadOperator
 runCHAD : CHADOperator → Int8 → Int8 × (Int8 → Int8)
 runCHAD op x = primal op x , pullback op x
 
-identityCHAD-law : ∀ x → primal identityCHAD x ≡ x
-identityCHAD-law x = refl
-
 record AffineCHAD : Set₁ where
   constructor affineCHAD
   field
@@ -83,12 +80,6 @@ record Int8SparsePair : Set where
 
 int8Sparsemax2 : Int8 → Int8 → Int8SparsePair
 int8Sparsemax2 a b = int8SparsePair a b
-
-localSwapBasis : Int8 × Int8 → Int8 × Int8
-localSwapBasis (a , b) = b , a
-
-localSwapBasis-involutive : ∀ p → localSwapBasis (localSwapBasis p) ≡ p
-localSwapBasis-involutive (a , b) = refl
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x = trans
