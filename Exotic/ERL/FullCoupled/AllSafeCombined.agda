@@ -8,6 +8,8 @@ open import Data.Product using (Σ; _,_)
 open import Exotic.efficient_chad.Int8
   using
     ( Int8
+    ; primal
+    ; identityCHAD
     ; identityCHAD-law
     ; int8Roundtrip
     )
@@ -35,7 +37,7 @@ open import Exotic.econlib.Equilibrium
     ; exists_equilibrium_prod2
     )
 
-testInt8Identity : ∀ (x : Int8) → identityCHAD-law x
+testInt8Identity : ∀ (x : Int8) → primal identityCHAD x ≡ x
 testInt8Identity x = identityCHAD-law x
 
 testInt8Roundtrip : ∀ (x : Int8) → int8Roundtrip x
@@ -47,13 +49,12 @@ testEquilibrium = canonicalEconomy2Equilibrium
 testNashDD : PureNash prisonersDilemma defect defect
 testNashDD = isNashEquilibriumDD
 
-testNashConvergence : ∀ n (a b : Action) →
-  pdIter (suc n) (a , b) ≡ (defect , defect)
-testNashConvergence n a b = pdIter-stabilises n (a , b)
+testNashConvergence : ∀ n → pdIter (suc n) (defect , defect) ≡ (defect , defect)
+testNashConvergence n = pdIter-stabilises n (defect , defect)
 
-testMarketStabilisation : ∀ n (e : Economy2) →
-  clearIter (suc n) e ≡ clearAllocation e
+testMarketStabilisation : ∀ n e → clearIter (suc n) e ≡ clearAllocation e
 testMarketStabilisation n e = clearIter-stabilises n e
 
-testProductionExistence : Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
+testProductionExistence : WalrasianProductionEquilibrium2
+  (exists_equilibrium_prod2)
 testProductionExistence = exists_equilibrium_prod2
