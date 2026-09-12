@@ -3,15 +3,10 @@
 module Exotic.ERL.Dyadic where
 
 open import Data.Integer using (ℤ; +_; _+_; _-_; _*_; -_)
-open import Data.Integer.Properties using (_≤?_; ≤-refl; ≤-trans; ≤-total; +-comm; +-assoc; *-comm; *-assoc; *-distribˡ-+)
-open import Data.Nat using (ℕ; zero; suc; _+_)
-open import Data.Product using (_×_; _,_)
+open import Data.Integer.Properties using (_≤?_; ≤-refl; ≤-trans)
+open import Data.Nat using (ℕ; zero; suc)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Relation.Nullary using (Dec; yes; no)
-
-------------------------------------------------------------------------
--- Exact dyadic numbers.
-------------------------------------------------------------------------
 
 record Dyadic : Set where
   constructor dyadic
@@ -50,10 +45,6 @@ mulDyadic x y = dyadic
 scalePow2 : ℕ → Dyadic → Dyadic
 scalePow2 s x = dyadic (numerator x * pow2 s) (exponent x)
 
-------------------------------------------------------------------------
--- Uniform bounded lattice view.
-------------------------------------------------------------------------
-
 record 𝔻 (n B : ℕ) : Set where
   constructor bounded
   field
@@ -65,11 +56,6 @@ open 𝔻 public
 
 toDyadic : ∀ {n B} → 𝔻 n B → Dyadic
 toDyadic {n} x = dyadic (k x) n
-
-------------------------------------------------------------------------
--- Bounded numerator-wise addition requires a closure witness.
--- Exact unbounded addition above is total without this witness.
-------------------------------------------------------------------------
 
 record Within {n B : ℕ} (v : ℤ) : Set where
   constructor within
@@ -84,20 +70,12 @@ boundedPlus x y witness =
     (Within.loWitness witness)
     (Within.hiWitness witness)
 
-------------------------------------------------------------------------
--- Saturating integer clamp for finite-grid projections.
-------------------------------------------------------------------------
-
 clampℤ : ℤ → ℤ → ℤ → ℤ
 clampℤ lo hi x with x ≤? lo
 ... | yes _ = lo
 ... | no _ with hi ≤? x
 ... | yes _ = hi
 ... | no _ = x
-
-------------------------------------------------------------------------
--- Momentum: the sole adaptive moment retained by the canonical surface.
-------------------------------------------------------------------------
 
 record MomentumState : Set where
   constructor momentum
@@ -123,11 +101,6 @@ momentumStepEquation : ∀ beta state gradient →
         (mulDyadic (subDyadic oneDyadic beta) gradient)
 momentumStepEquation beta state gradient = refl
 
-------------------------------------------------------------------------
--- Dyadic two-coordinate sparsemax projection.
--- Scores share exponent n; probabilities are returned at exponent n+1.
-------------------------------------------------------------------------
-
 record Grid (n : ℕ) : Set where
   constructor grid
   field
@@ -150,10 +123,6 @@ sparsemax2 {n} a b = sparsePair (grid p) (grid (pow2 (suc n) - p))
 
     p : ℤ
     p = clampℤ (+ 0) (pow2 (suc n)) raw
-
-------------------------------------------------------------------------
--- Definitional checks used by the regression module.
-------------------------------------------------------------------------
 
 momentumStep-is-definitional : ∀ beta state gradient →
   value (momentumStep beta state gradient)
