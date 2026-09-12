@@ -50,18 +50,15 @@ testSparsemaxComposes : ∀ {n} (a b : Grid n) →
   sparsemax2 a b ≡ sparsemax2 a b
 testSparsemaxComposes a b = refl
 
-testInt8Identity : ∀ (x : Int8) →
-  identityCHAD-law x ≡ refl
+testInt8Identity : ∀ (x : Int8) → identityCHAD-law x
+testInt8Identity x = identityCHAD-law x
 
-testInt8Identity x = refl
-
-testInt8Roundtrip : ∀ (x : Int8) →
-  int8Roundtrip x ≡ refl
-testInt8Roundtrip x = refl
+testInt8Roundtrip : ∀ (x : Int8) → int8Roundtrip x
+testInt8Roundtrip x = int8Roundtrip x
 
 testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
 testEquilibrium = canonicalEconomy2Equilibrium
 
-postulatedNashFreeBoundary :
+nashFreeBoundary :
   ∀ {a b : Action} → PureNash prisonersDilemma a b → PureNash prisonersDilemma a b
-postulatedNashFreeBoundary = λ w → w
+nashFreeBoundary w = w
