@@ -8,13 +8,11 @@ open import Exotic.efficient_chad.Int8 using
   ; int8Add
   ; int8OfNat
   ; code
-  ; one8
   ; zero8
   )
 open import Data.Fin using (toℕ)
 open import Data.Nat using (_∸_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
-open import Data.Nat using (suc)
 
 negate8 : Int8 → Int8
 negate8 x = int8OfNat (256 ∸ toℕ (code x))
@@ -41,16 +39,16 @@ update s = learnState
   (LearnState.target s)
 
 trainingWitness : LearnState
-trainingWitness = learnState zero8 one8
+trainingWitness = learnState zero8 (int8OfNat 4)
 
 trainedWitness : LearnState
 trainedWitness = update trainingWitness
 
-trainingWitness-learns : prediction trainedWitness ≡ one8
+trainingWitness-learns : prediction trainedWitness ≡ int8OfNat 4
 trainingWitness-learns = refl
 
 trainingWitness-nonempty : prediction trainingWitness ≡ zero8
 trainingWitness-nonempty = refl
 
-trainingWitness-target : LearnState.target trainingWitness ≡ one8
+trainingWitness-target : LearnState.target trainingWitness ≡ int8OfNat 4
 trainingWitness-target = refl
