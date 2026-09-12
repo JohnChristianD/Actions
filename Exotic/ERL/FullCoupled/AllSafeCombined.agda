@@ -29,6 +29,7 @@ open import Exotic.econlib.Equilibrium
     ; exists_equilibrium_prod2
     )
 open import Exotic.ERL.Canonical.CanonicalOptimizer using (CanonicalConfig; canonical)
+open import Exotic.ERL.Canonical.ConjectureDiscovery
 
 testInt8Roundtrip : ∀ (x : Int8) →
   toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
