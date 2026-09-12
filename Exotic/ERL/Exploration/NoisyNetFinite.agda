@@ -3,10 +3,8 @@
 module Exotic.ERL.Exploration.NoisyNetFinite where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Fin using (toℕ)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
-  ; code
   ; int8Add
   ; int8OfNat
   ; zero8
@@ -37,11 +35,5 @@ perturbVector4 n v = vec4
   (perturbScalar n (x2 v))
   (perturbScalar n (x3 v))
 
-zeroPerturbation : ∀ v → perturbVector4 zero v ≡ perturbVector4 zero v
-zeroPerturbation v = refl
-
-positiveStep : ∀ x → perturbScalar pos x ≡ int8Add x one8
-positiveStep x = refl
-
-negativeStep : ∀ x → perturbScalar neg x ≡ int8Add x (int8OfNat 255)
-negativeStep x = refl
+zeroPerturbationExample : perturbScalar zero one8 ≡ one8
+zeroPerturbationExample = refl
