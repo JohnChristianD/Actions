@@ -2,21 +2,37 @@ module Main where
 
 import System.Directory (createDirectoryIfMissing)
 
-candidates :: [(String, String)]
+candidates :: [(String, String, String, String, String)]
 candidates =
-  [ ("GoodZero", "good-zero", "zero ≡ zero")
-  , ("GoodSuccessor", "good-successor", "suc zero ≡ suc zero")
-  , ("BadZeroSuccessor", "bad-zero-successor", "zero ≡ suc zero")
+  [ ("HaarSquare", "haar-square", "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2-square-scale)",
+     "∀ x y → haar2 (haar2 (haarPair x y)) ≡ haarPair (x + x) (y + y)",
+     "haar2-square-scale")
+  , ("NoiseNormalises", "noise-normalises", "open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos)",
+     "weight neg + weight zero + weight pos ≡ 4",
+     "refl")
+  , ("NoiseSelfLoop", "noise-self-loop", "open import Exotic.ERL.Exploration.FiniteMarkov using (selfLoopExample)",
+     "transition zero one8 ≡ one8",
+     "selfLoopExample")
+  , ("ComposedZero", "composed-zero", "open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep-is-initial; zeroStep; initialState)",
+     "zeroStep ≡ initialState",
+     "zeroStep-is-initial")
+  , ("FullLearnerTotal", "full-learner-total", "open import Exotic.ERL.FullCoupled.FiniteLearner using (Parameters; parameters; Token; token; Window2; window2; learnForward)\nopen import Exotic.efficient_chad.Int8 using (Int8; one8; zero8)",
+     "(p : Parameters) → (w : Window2) → Int8",
+     "learnForward")
+  , ("BadHaarSquare", "bad-haar-square", "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2)",
+     "∀ x y → haar2 (haar2 (haarPair x y)) ≡ haarPair x y",
+     "refl")
   ]
 
-sourceFor :: String -> String -> String
-sourceFor moduleName proposition =
+sourceFor :: String -> String -> String -> String -> String -> String
+sourceFor moduleName imports proposition proof =
   "{-# OPTIONS --safe #-}\n"
   ++ "module " ++ moduleName ++ " where\n\n"
   ++ "open import Agda.Builtin.Equality using (_≡_; refl)\n"
-  ++ "open import Agda.Builtin.Nat using (Nat; zero; suc)\n\n"
+  ++ "open import Data.Integer.Base using (Int; _+_)\n"
+  ++ imports ++ "\n\n"
   ++ "candidate : " ++ proposition ++ "\n"
-  ++ "candidate = refl\n"
+  ++ "candidate = " ++ proof ++ "\n"
 
 main :: IO ()
 main = do
@@ -24,8 +40,8 @@ main = do
   createDirectoryIfMissing True root
   mapM_ emit candidates
   where
-  emit (moduleName, fileStem, proposition) =
+  emit (moduleName, fileStem, imports, proposition, proof) =
     writeFile
       (root ++ "/" ++ fileStem ++ ".agda")
-      (sourceFor moduleName proposition)
+      (sourceFor moduleName imports proposition proof)
   root = ".ci/generated-conjectures"
