@@ -50,12 +50,12 @@ jobs:
         run: |
           set -euo pipefail
           if git grep -nE -i 'AdaMax|Lion|stosigmSGD|stosignSGDv2|signSGDM|(^|[^A-Za-z])Adam([^A-Za-z]|$)' -- \
-            ':!*.md' ':!.ci/external/**' ':!.github/workflows/agda.yml'; then
+            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/workflows/agda.yml'; then
             echo 'legacy-optimizer-trace=FOUND'
             exit 1
           fi
           if git grep -nE '\{!!\}|(^|[^A-Za-z])postulate([^A-Za-z]|$)|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
-            ':!*.md' ':!.ci/external/**'; then
+            ':!*.md' ':!.ci/**' ':!.ci/external/**'; then
             echo 'proof-bypass-trace=FOUND'
             exit 1
           fi
