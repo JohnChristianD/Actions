@@ -55,19 +55,22 @@ nashCertificateIdentity : ∀ {a b} → PureNash prisonersDilemma a b →
   PureNash prisonersDilemma a b
 nashCertificateIdentity w = w
 
+natSelfLe : ∀ n → n ≤ n
+natSelfLe _ = ≤-refl
+
 leftBestDefect : ∀ b a' →
   leftScore prisonersDilemma a' b ≤ leftScore prisonersDilemma defect b
 leftBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
 leftBestDefect cooperate defect = z≤n
-leftBestDefect defect cooperate = ≤-refl
-leftBestDefect defect defect = ≤-refl
+leftBestDefect defect cooperate = natSelfLe 5
+leftBestDefect defect defect = natSelfLe 1
 
 rightBestDefect : ∀ a b' →
   rightScore prisonersDilemma a b' ≤ rightScore prisonersDilemma a defect
 rightBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-rightBestDefect cooperate defect = ≤-refl
+rightBestDefect cooperate defect = natSelfLe 5
 rightBestDefect defect cooperate = z≤n
-rightBestDefect defect defect = ≤-refl
+rightBestDefect defect defect = natSelfLe 1
 
 isNashEquilibriumDD : PureNash prisonersDilemma defect defect
 isNashEquilibriumDD = pureNash
