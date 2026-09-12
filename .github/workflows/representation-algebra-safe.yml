@@ -4,12 +4,16 @@ on:
   push:
     branches: ['ci/v149-representation-algebra']
     paths:
-      - 'Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda'
+      - 'Exotic/efficient_chad/Dyadic.agda'
+      - 'Exotic/efficient_chad/Int8.agda'
+      - 'Exotic/ERL/FullCoupled/AllSafeCombined.agda'
       - '.github/workflows/representation-algebra-safe.yml'
   pull_request:
     branches: ['main']
     paths:
-      - 'Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda'
+      - 'Exotic/efficient_chad/Dyadic.agda'
+      - 'Exotic/efficient_chad/Int8.agda'
+      - 'Exotic/ERL/FullCoupled/AllSafeCombined.agda'
       - '.github/workflows/representation-algebra-safe.yml'
   workflow_dispatch:
 
@@ -21,8 +25,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: agda/agda-setup-action@v1.0.0
         with:
           agda-version: '2.8.0'
       - run: agda --version
-      - run: agda --safe Exotic/ERL/FullCoupled/RepresentationPrimitiveAlgebra.agda
+      - run: agda --safe Exotic/efficient_chad/Dyadic.agda
+      - run: agda --safe Exotic/efficient_chad/Int8.agda
+      - run: agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
