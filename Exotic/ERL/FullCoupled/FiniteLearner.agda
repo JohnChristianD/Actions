@@ -3,14 +3,14 @@
 module Exotic.ERL.FullCoupled.FiniteLearner where
 
 open import Agda.Builtin.Bool using (Bool; true; false)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (zero; suc)
 open import Data.Fin as F
 open F using (Fin; toℕ)
-open import Data.Fin.Properties using (_≤?_; yes; no)
 open import Data.Nat using (ℕ; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (_/_)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
+open import Data.Nat.Properties using (_≤?_; yes; no)
+open import Data.Product using (_×_; _,_)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; code
@@ -20,13 +20,6 @@ open import Exotic.efficient_chad.Int8 using
   ; zero8
   ; one8
   ; max8
-  )
-open import Exotic.ERL.Representation.Haar2 using
-  ( HaarPair
-  ; haarPair
-  ; left
-  ; right
-  ; haar2
   )
 
 data Cmp : Set where
@@ -131,20 +124,20 @@ negEncode8 n = int8OfNat (256 ∸ n)
 signReLU8 : Int8 → Int8
 signReLU8 x with toℕ (code x) ≤? 127
 ... | yes _ = x
-... | no _ = negEncode8 ((128 * scaledMagnitude x) / (suc (scaledMagnitude x)))
+... | no _ = negEncode8 ((128 * scaledMagnitude x) / suc (scaledMagnitude x))
 
 softsign8 : Int8 → Int8
 softsign8 x with toℕ (code x) ≤? 127
-... | yes _ = int8OfNat ((128 * toℕ (code x)) / (suc (toℕ (code x))))
-... | no _ = negEncode8 ((128 * scaledMagnitude x) / (suc (scaledMagnitude x)))
+... | yes _ = int8OfNat ((128 * toℕ (code x)) / suc (toℕ (code x)))
+... | no _ = negEncode8 ((128 * scaledMagnitude x) / suc (scaledMagnitude x))
 
-fastfood2 : Int8 × Int8 → Int8 × Int8
-fastfood2 (x , y) =
-  let h₁ = haar2 (haarPair x y)
-      s₁ = left h₁
-      s₂ = right h₁
-      h₂ = haar2 (haarPair s₁ s₂)
-  in right h₂ , left h₂
+fixedHaar2 : Int8 × Int8 → Int8 × Int8
+fixedHaar2 (x , y) = int8Add x y , int8Add x (negate8 y)
+
+fixedFastfood2 : Int8 × Int8 → Int8 × Int8
+fixedFastfood2 (x , y) with fixedHaar2 (x , y)
+... | a , b with fixedHaar2 (a , b)
+...   | c , d = d , c
 
 qε : ℕ → Int8 → Int8
 qε tau x with scaledMagnitude x ≤? tau
@@ -203,7 +196,7 @@ learnForward : Parameters → Window2 → Int8
 learnForward p w =
   let h = attentionStep (previous w) (current w)
       a = ffn1 p h
-      (u , v) = fastfood2 (a , h)
+      (u , v) = fixedFastfood2 (a , h)
       b = int8Add (ffn2 p u) v
       g = softsign8 (int8Mul (w5 p) b)
       z = qε 3 g
@@ -214,6 +207,3 @@ learnStep s w = learnerState
   (parameters s)
   (learnForward (parameters s) w)
   (trace s)
-
-learnStep-total : ∀ s w → LearnerState
-learnStep-total s w = learnStep s w
