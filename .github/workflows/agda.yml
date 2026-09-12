@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           if git grep -nE -i 'AdaMax|Lion|stosigmSGD|stosignSGDv2|signSGDM|(^|[^A-Za-z])Adam([^A-Za-z]|$)' -- \
-            ':!*.md' ':!.ci/external/**'; then
+            ':!*.md' ':!.ci/external/**' ':!.github/workflows/agda.yml'; then
             echo 'legacy-optimizer-trace=FOUND'
             exit 1
           fi
