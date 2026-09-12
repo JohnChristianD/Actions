@@ -2,10 +2,13 @@
 
 module Exotic.efficient_chad.Int8 where
 
-open import Data.Fin using (Fin; fromℕ; toℕ)
-open import Data.Nat using (ℕ)
+import Data.Fin as F
+open F using (Fin; fromℕ<; toℕ)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
+open import Data.Nat using (ℕ; suc)
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
 
 record Int8 : Set where
   constructor int8
@@ -15,16 +18,20 @@ record Int8 : Set where
 open Int8 public
 
 zero8 : Int8
-zero8 = int8 (fromℕ 0)
+zero8 = int8 F.zero
 
 one8 : Int8
-one8 = int8 (fromℕ 1)
+one8 = int8 (F.suc F.zero)
+
+maxFin : ∀ {n : ℕ} → Fin (suc n)
+maxFin {n = zero} = F.zero
+maxFin {n = suc n} = F.suc (maxFin {n = n})
 
 max8 : Int8
-max8 = int8 (fromℕ 255)
+max8 = int8 maxFin
 
 int8OfNat : ℕ → Int8
-int8OfNat n = int8 (fromℕ n)
+int8OfNat n = int8 (fromℕ< (m%n<n n 256))
 
 int8Add : Int8 → Int8 → Int8
 int8Add x y = int8OfNat (toℕ (code x) + toℕ (code y))
@@ -76,4 +83,6 @@ int8Sparsemax2 : Int8 → Int8 → Int8SparsePair
 int8Sparsemax2 a b = int8SparsePair a b
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
-int8Roundtrip x = refl
+int8Roundtrip x = trans
+  (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
+  (m<n⇒m%n≡m (toℕ<n (code x)))
