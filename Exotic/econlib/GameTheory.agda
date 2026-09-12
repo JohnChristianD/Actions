@@ -3,7 +3,7 @@
 module Exotic.econlib.GameTheory where
 
 open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _≤_; z≤n)
+open import Data.Nat using (ℕ; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (≤-refl)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
