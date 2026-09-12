@@ -4,6 +4,7 @@ module Exotic.econlib.Equilibrium where
 
 open import Data.Fin using (toℕ)
 open import Data.Nat using (ℕ; _*_; zero; suc)
+open import Data.Product using (Σ; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
 
@@ -73,5 +74,5 @@ canonicalProductionEconomy2 = productionEconomy2
 canonicalProductionEquilibrium2 : WalrasianProductionEquilibrium2 canonicalProductionEconomy2
 canonicalProductionEquilibrium2 = walrasianProductionEquilibrium2 refl refl refl
 
-exists_equilibrium_prod2 : ∃ e → WalrasianProductionEquilibrium2 e
+exists_equilibrium_prod2 : Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
 exists_equilibrium_prod2 = canonicalProductionEconomy2 , canonicalProductionEquilibrium2
