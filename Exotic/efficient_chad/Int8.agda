@@ -63,6 +63,8 @@ record AffineCHAD : Set₁ where
   field
     scale bias : Int8
 
+open AffineCHAD public
+
 forwardAffine : AffineCHAD → Int8 → Int8
 forwardAffine op x = int8Add (int8Mul (scale op) x) (bias op)
 
