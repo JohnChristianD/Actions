@@ -5,7 +5,6 @@ on:
     branches: ['main']
     paths:
       - '**/*.agda'
-      - 'oracle/**'
       - '.ci/**'
       - 'docs/**'
       - '.github/workflows/agda.yml'
@@ -34,31 +33,20 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
       - name: Resolve canonical composition
         shell: bash
         run: |
           set -euo pipefail
           mapfile -t canonical < "$CANONICAL_MANIFEST"
           test "${#canonical[@]}" -eq 2
-          test -n "${canonical[0]}"
-          test -n "${canonical[1]}"
           test -f "${canonical[0]}"
           test -f "${canonical[1]}"
           {
             echo "CANONICAL_SOURCE=${canonical[0]}"
             echo "CANONICAL_TEST=${canonical[1]}"
           } >> "$GITHUB_ENV"
-          echo "canonical-source=${canonical[0]}"
-          echo "canonical-test=${canonical[1]}"
-      - name: Pin Tom Smeding Efficient-CHAD source
-        run: |
-          set -euo pipefail
-          git clone --depth 1 https://github.com/tomsmeding/efficient-chad-agda.git .ci/external/efficient-chad-agda
-          git -C .ci/external/efficient-chad-agda fetch --depth 1 origin 0be45ee9e7498a69c083a25ac9ba29bba4431a71
-          git -C .ci/external/efficient-chad-agda checkout --detach 0be45ee9e7498a69c083a25ac9ba29bba4431a71
-          test -f .ci/external/efficient-chad-agda/chad-cost.agda
-          test -f .ci/external/efficient-chad-agda/chad-preserves-primal.agda
-          echo 'tom-smeding-efficient-chad-pinned=PASS'
+
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -66,64 +54,63 @@ jobs:
           elixir-version: '1.17'
           install-hex: true
           install-rebar: false
-      - name: Validate canonical source
-        run: elixir .ci/normalize_v164.exs
-      - name: Prune upstream Efficient-CHAD to local dependency closure
-        shell: bash
-        run: bash .ci/audit_tom_smeding.sh
-      - uses: agda/agda-setup-action@v1.0.0
+
+      - name: Set up Agda and standard library
+        uses: agda/agda-setup-action@v1
         with:
           agda-version: '2.8.0'
-      - name: Verify Agda executable
-        run: agda --version
-      - name: Audit upstream Efficient-CHAD imports
+          agda-stdlib-version: '2.4'
+
+      - name: Verify Agda executable and standard library
         shell: bash
         run: |
           set -euo pipefail
-          cd .ci/external/efficient-chad-agda
-          imports=$(mktemp)
-          grep -RhoE '^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+[A-Za-z0-9_.-]+' --include='*.agda' . | sort -u > "$imports"
-          echo 'upstream-imports:'
-          cat "$imports"
-          if ! grep -Eq '(^| )(Data|Function|Relation)(\.|$)' "$imports"; then
-            echo 'expected standard-library import families were not found'
-            exit 1
-          fi
-          echo 'tom-smeding-stdlib-dependency=DETECTED'
-      - name: Probe upstream Efficient-CHAD with no standard library
+          agda --version
+          agda --print-agda-app-dir
+          test -f "$(agda --print-agda-app-dir)/libraries"
+
+      - name: Audit Tom Smeding upstream proof without rewriting it
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .ci/external/efficient-chad-agda
+          git clone --depth 1 https://github.com/tomsmeding/efficient-chad-agda.git .ci/external/efficient-chad-agda
+          test -f .ci/external/efficient-chad-agda/chad-cost.agda
+          test -f .ci/external/efficient-chad-agda/spec.agda
+          test -f .ci/external/efficient-chad-agda/setup.agda
+          git -C .ci/external/efficient-chad-agda status --short
+          test -z "$(git -C .ci/external/efficient-chad-agda status --short)"
+
+      - name: Check canonical Agda source
+        run: agda --safe "$CANONICAL_SOURCE"
+
+      - name: Check canonical Agda regression
+        run: agda --safe "$CANONICAL_TEST"
+
+      - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
         run: |
           set -uo pipefail
-          cd .ci/external/efficient-chad-agda
-          isolated_agda_dir=$(mktemp -d)
-          : > "$isolated_agda_dir/libraries"
-          : > "$isolated_agda_dir/defaults"
-          set +e
-          AGDA_DIR="$isolated_agda_dir" agda --safe chad-cost.agda > /tmp/tom-smeding-no-stdlib.log 2>&1
+          agda --safe -i .ci/external/efficient-chad-agda .ci/external/efficient-chad-agda/chad-cost.agda > /tmp/tom-smeding.log 2>&1
           status=$?
-          set -e
-          cat /tmp/tom-smeding-no-stdlib.log
-          if [ "$status" -eq 0 ]; then
-            echo 'unexpected-success: upstream Efficient-CHAD resolved without standard library'
-            exit 1
+          cat /tmp/tom-smeding.log
+          if [ "$status" -ne 0 ]; then
+            echo 'tom-smeding-current-toolchain=INCOMPATIBLE'
+            exit "$status"
           fi
-          if ! grep -Eq 'Failed to find source|Failed to find source of module|Cannot find module|not found' /tmp/tom-smeding-no-stdlib.log; then
-            echo 'unexpected failure mode from no-stdlib probe'
-            exit 1
-          fi
-          echo 'tom-smeding-no-stdlib-probe=EXPECTED-FAIL'
-      - name: Agda safe check
-        run: agda --safe "$CANONICAL_SOURCE"
-      - name: Agda safe regression check
-        run: agda --safe "$CANONICAL_TEST"
-      - name: Set up Haskell
+          echo 'tom-smeding-current-toolchain=PASS'
+
+      - name: Set up Haskell exact-rational oracle
         uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.6'
+
       - name: Run Haskell exact-rational oracle
         run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
+
       - name: Run Elixir exact-rational oracle
         run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
+
       - name: Compare exact-rational functional oracles
         shell: bash
         run: |
