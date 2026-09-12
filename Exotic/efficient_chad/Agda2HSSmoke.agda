@@ -6,5 +6,3 @@ open import Haskell.Prelude
 
 identityNat : Nat → Nat
 identityNat x = x
-
-{-# COMPILE AGDA2HS identityNat #-}
