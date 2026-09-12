@@ -21,7 +21,7 @@ open import Exotic.econlib.Equilibrium using
   ; exists_equilibrium_prod2
   )
 open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
-open import Exotic.ERL.Finite.TrueOnlineTD using (TrueOnlineState; exampleStep)
+open import Exotic.ERL.Finite.TrueOnlineTD using (TrueOnlineState; exampleStep; initialState)
 open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos; totalWeight)
 open import Exotic.ERL.Exploration.FiniteMarkov using (transition; selfLoopExample; selfLoopWeight)
 open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep; zeroStep-is-initial)
@@ -48,7 +48,7 @@ proof productionExistence = Σ ProductionEconomy2 (λ e → WalrasianProductionE
 proof finiteNoiseNormalises = weight neg + weight zero + weight pos ≡ 4
 proof concreteZeroNoiseSelfLoop = transition zero one8 ≡ one8
 proof concreteZeroNoiseWeight = weight zero ≡ 2
-proof composedZeroSelfLoop = zeroStep ≡ _
+proof composedZeroSelfLoop = zeroStep ≡ initialState
 proof quantizedSoftsignZero = softsignQ8 zero8 ≡ zero8
 proof quantizedCReluZero = cReLU8 zero8 ≡ zero8
 proof learnerExampleExists = TrueOnlineState
