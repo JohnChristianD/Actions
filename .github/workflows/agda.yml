@@ -45,6 +45,17 @@ jobs:
             echo "CANONICAL_TEST=${canonical[1]}"
           } >> "$GITHUB_ENV"
 
+      - name: Reject legacy optimizer traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git grep -nE -i 'AdaMax|Lion|stosigmSGD|stosignSGDv2|signSGDM|(^|[^A-Za-z])Adam([^A-Za-z]|$)' -- \
+            ':!*.md' ':!.ci/external/**'; then
+            echo 'legacy-optimizer-trace=FOUND'
+            exit 1
+          fi
+          echo 'legacy-optimizer-trace=ABSENT'
+
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
         with:
