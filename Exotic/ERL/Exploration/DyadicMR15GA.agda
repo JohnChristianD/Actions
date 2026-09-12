@@ -2,12 +2,12 @@
 
 module Exotic.ERL.Exploration.DyadicMR15GA where
 
-open import Agda.Builtin.Bool using (Bool; false; true)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat using (suc)
+open import Data.Nat using (_+_; suc)
 open import Data.Nat.DivMod using (m%n<n)
+open import Relation.Nullary using (yes; no)
 
 Dyadic : Set
 Dyadic = Fin 16
@@ -27,7 +27,6 @@ nextDyadic x = fromℕ< (m%n<n (suc (toℕ x)) 16)
 previousDyadic : Dyadic → Dyadic
 previousDyadic x = fromℕ< (m%n<n (toℕ x + 15) 16)
 
-
 data Mutation : Set where
   neutral increment decrement : Mutation
 
@@ -38,10 +37,10 @@ mutatePoint decrement x = previousDyadic x
 
 mutate : Mutation → MR15Index → Population → Population
 mutate neutral i p = p
-mutate increment i p with i F.≟ F.zero
+mutate increment i p with F._≟_ i F.zero
 ... | yes _ = λ j → mutatePoint increment (p j)
 ... | no _ = p
-mutate decrement i p with i F.≟ F.zero
+mutate decrement i p with F._≟_ i F.zero
 ... | yes _ = λ j → mutatePoint decrement (p j)
 ... | no _ = p
 
@@ -59,3 +58,6 @@ finite-dyadic-closure m i p = refl
 
 mr15NeutralCertificate : mutate neutral F.zero population-nonempty ≡ population-nonempty
 mr15NeutralCertificate = refl
+
+mr15MutationWitness : nextDyadic zeroDyadic ≡ F.suc F.zero
+mr15MutationWitness = refl
