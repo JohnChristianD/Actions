@@ -1,0 +1,42 @@
+name: Clojure local involution gate
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'oracle/**'
+      - '.github/workflows/clojure-involution.yml'
+      - '.ci/**'
+      - 'Exotic/**/*.agda'
+  push:
+    branches: ['main']
+    paths:
+      - 'oracle/**'
+      - '.github/workflows/clojure-involution.yml'
+      - '.ci/**'
+      - 'Exotic/**/*.agda'
+  schedule:
+    - cron: '47 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clojure:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@13.2
+        with:
+          cli: '1.11.1.1435'
+
+      - name: Run Clojure involution tests
+        run: clojure -M -m clojure.test oracle.clojure-involution-test
+
+      - name: Discover local involution basis
+        run: clojure -M -m oracle.clojure-involution
