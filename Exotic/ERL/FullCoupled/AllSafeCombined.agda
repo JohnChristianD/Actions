@@ -43,6 +43,20 @@ open import Exotic.ERL.Finite.TrueOnlineTD using
 open import Exotic.ERL.Exploration.FiniteNoise using (neg; zero; pos; weight)
 open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbScalar)
 open import Exotic.ERL.Exploration.FiniteMarkov using (selfLoopExample)
+open import Exotic.ERL.Exploration.ComposedLearnerExploration using
+  ( composedExploreStep
+  ; zeroStep
+  ; zeroStep-is-initial
+  )
+open import Exotic.ERL.FullCoupled.FiniteLearner using
+  ( Parameters
+  ; parameters
+  ; Token
+  ; token
+  ; Window2
+  ; window2
+  ; learnForward
+  )
 
 testInt8Roundtrip : ∀ (x : Int8) →
   toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
@@ -74,3 +88,21 @@ testCReLUZero = refl
 
 testFiniteLearner : TrueOnlineState
 testFiniteLearner = learnerStep one8 exampleFeature exampleNextFeature initialState
+
+testComposedExploration : TrueOnlineState
+testComposedExploration = composedExploreStep zero zero8 exampleFeature exampleNextFeature initialState
+
+sampleParameters : Parameters
+sampleParameters = parameters one8 one8 one8 one8 one8 one8
+
+sampleToken : Token
+sampleToken = token one8 zero8 zero8 one8
+
+sampleWindow : Window2
+sampleWindow = window2 sampleToken sampleToken
+
+testFullForward : Int8
+testFullForward = learnForward sampleParameters sampleWindow
+
+testComposedExplorationStable : composedExploreStep zero zero8 exampleFeature exampleNextFeature initialState ≡ initialState
+testComposedExplorationStable = zeroStep-is-initial
