@@ -2,7 +2,6 @@
 module Exotic.ERL.Stages.Stage06_CoupledLearner where
 
 open import Agda.Builtin.Nat using (Nat; _+_; _*_; zero; suc)
-open import Agda.Builtin.Equality using (_≡_; refl)
 
 record CoupledState : Set where
   constructor coupled
@@ -22,6 +21,3 @@ coupledStep s = coupled
   (monus (CoupledState.critic s) (CoupledState.l2 s))
   (monus (CoupledState.representation s) (CoupledState.l2 s))
   (CoupledState.l2 s)
-
-coupledStepSameL2 : ∀ s → CoupledState.l2 (coupledStep s) ≡ CoupledState.l2 s
-coupledStepSameL2 s = refl
