@@ -6,6 +6,7 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; fromℕ<; toℕ)
 open import Data.Nat using (_+_)
 open import Data.Nat.DivMod using (m%n<n)
+open import Relation.Nullary using (yes; no)
 
 Scale : Set
 Scale = Fin 4
@@ -31,7 +32,7 @@ dmcpStep neutral s = s
 dmcpStep (perturb c k) s = λ j → ifSame c j k s
 
 ifSame : Coordinate → Coordinate → Scale → DMCPState → Scale
-ifSame c j k s with c F.≟ j
+ifSame c j k s with F._≟_ c j
 ... | yes _ = stepScale k
 ... | no _ = s j
 
