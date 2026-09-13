@@ -18,7 +18,6 @@ open import Exotic.efficient_chad.SoftsignGatedComposition using
   )
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
   ( SoftsignGatedStep
-  ; PeriodOne
   ; softsignGatedPeriodOne
   )
 
