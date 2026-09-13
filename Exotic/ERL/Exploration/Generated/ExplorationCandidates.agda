@@ -1,17 +1,43 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 
--- Generated theorem-discovery report. Agda remains the acceptance oracle.
--- This checked snapshot records missing concrete proof terms; it is not a proof.
+-- Generated proof harness. Haskell only constructs this source; Agda --safe accepts it or rejects it.
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Irreducible
+  ; SelfLoop
+  ; PeriodOne
+  ; periodOne-from-components
+  )
 
--- method: MR15
--- status: MissingProof
--- details: mr15IrreducibilityProof | mr15SelfLoopProof
+open import Exotic.ERL.Exploration.MR15Reachability
 
--- method: OpenES
--- status: MissingProof
--- details: openESIrreducibilityProof | openESSelfLoopProof
+MR15KernelIrreducibility : Irreducible MR15Step
+MR15KernelIrreducibility = mr15IrreducibilityProof
 
--- method: NoisyNet
--- status: MissingProof
--- details: noisyNetIrreducibilityProof | noisyNetSelfLoopProof
+MR15KernelSelfLoop : SelfLoop MR15Step
+MR15KernelSelfLoop = mr15SelfLoopProof
+
+MR15KernelPeriodOne : PeriodOne MR15Step
+MR15KernelPeriodOne = periodOne-from-components MR15KernelIrreducibility MR15KernelSelfLoop
+
+open import Exotic.ERL.Exploration.OpenESDyadic
+
+OpenESKernelIrreducibility : Irreducible openESStep
+OpenESKernelIrreducibility = openESIrreducibilityProof
+
+OpenESKernelSelfLoop : SelfLoop openESStep
+OpenESKernelSelfLoop = openESSelfLoopProof
+
+OpenESKernelPeriodOne : PeriodOne openESStep
+OpenESKernelPeriodOne = periodOne-from-components OpenESKernelIrreducibility OpenESKernelSelfLoop
+
+open import Exotic.ERL.FullCoupled.NoisyNetCoupled
+
+NoisyNetKernelIrreducibility : Irreducible NoisyNetStep
+NoisyNetKernelIrreducibility = noisyNetIrreducibilityProof
+
+NoisyNetKernelSelfLoop : SelfLoop NoisyNetStep
+NoisyNetKernelSelfLoop = noisyNetSelfLoopProof
+
+NoisyNetKernelPeriodOne : PeriodOne NoisyNetStep
+NoisyNetKernelPeriodOne = periodOne-from-components NoisyNetKernelIrreducibility NoisyNetKernelSelfLoop
