@@ -42,12 +42,13 @@ data Law = Law
   { lawName :: String
   , lawCtor :: String
   , normalizationName :: String
+  , supportName :: String
   }
 
 laws :: [Law]
 laws =
-  [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized"
-  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized"
+  [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized" "law-unit-support lazyWalk"
+  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "law-unit-support dyadicLadder"
   ]
 
 generatedPath :: FilePath
@@ -63,6 +64,7 @@ renderCandidate = unlines $
   , "  ( DyadicLaw"
   , "  ; lazyWalk"
   , "  ; dyadicLadder"
+  , "  ; law-unit-support"
   , "  )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling"
@@ -83,6 +85,7 @@ renderCandidate = unlines $
           ++ lawCtor l ++ " " ++ stepName m
       , name m ++ lawName l ++ "Endogenous = composeFull "
           ++ lawCtor l ++ " " ++ normalizationName l ++ " "
+          ++ supportName l ++ " "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
       , ""
       ]
