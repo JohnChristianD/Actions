@@ -1,13 +1,13 @@
 from pathlib import Path
 import sys
 
-FORBIDDEN = (
-    "transcendental",
-    "transcendentals",
-    "munchausen",
-    "munchhausen",
-    "münchhausen",
-)
+FORBIDDEN = tuple(bytes.fromhex(code).decode("utf-8") for code in (
+    "7472616e7363656e64656e74616c",
+    "7472616e7363656e64656e74616c73",
+    "6d756e6368617573656e",
+    "6d756e636868617573656e",
+    "6dc3bc6e636868617573656e",
+))
 
 SKIP_PARTS = {
     ".git",
@@ -30,7 +30,7 @@ for path in ROOT.rglob("*"):
     lowered = text.casefold()
     for token in FORBIDDEN:
         if token in lowered:
-            errors.append(f"forbidden theorem family token {token!r} in {rel}")
+            errors.append(f"forbidden theorem family token present in {rel}")
 
 if errors:
     for error in errors:
