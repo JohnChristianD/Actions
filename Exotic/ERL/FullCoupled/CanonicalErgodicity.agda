@@ -1,6 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalErgodicity where
 
+open import Data.Nat using (suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
@@ -30,6 +31,16 @@ open import Exotic.ERL.FullCoupled.CanonicalLearner using
   ; step
   ; zeroSelfLoop
   )
+open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
+  ( Path
+  ; ExactReach
+  ; exactHere
+  ; exactTrans
+  ; SelfLoop
+  ; Irreducible
+  ; AperiodicViaConsecutiveReturns
+  ; hubAperiodicity
+  )
 
 noiseWeightPos : weight zero ≡ 16
 noiseWeightPos = zeroHasPositiveMass
@@ -46,61 +57,65 @@ zeroUnit = refl
 normalisation : totalWeight ≡ 256
 normalisation = totalWeight
 
-data NoiseReach : Int8 → Int8 → Set where
-  here : ∀ {x} → NoiseReach x x
-  plus : ∀ {x y} →
-    y ≡ int8Add x (noiseDelta pos) →
-    NoiseReach y x →
-    NoiseReach x y
-  minus : ∀ {x y} →
-    y ≡ int8Add x (noiseDelta neg) →
-    NoiseReach y x →
-    NoiseReach x y
-
-localPlusWitness : ∀ x → NoiseReach x (int8Add x (noiseDelta pos))
-localPlusWitness x = plus refl here
-
-localMinusWitness : ∀ x → NoiseReach x (int8Add x (noiseDelta neg))
-localMinusWitness x = minus refl here
+data CanonicalStep : LearnerState → LearnerState → Set where
+  edge : ∀ {s}
+    (epsilon nextEpsilon : Noise)
+    (a b : Token)
+    (reward : Int8) →
+    CanonicalStep s
+      (step s epsilon nextEpsilon a b reward)
 
 data JointReach : LearnerState → LearnerState → Set where
   here : ∀ {s} → JointReach s s
-  there : ∀ {s t u epsilon nextEpsilon : Noise}
-    {a b : Token}
-    {reward : Int8} →
-    step s epsilon nextEpsilon a b reward ≡ t →
+  there : ∀ {s t u} →
+    CanonicalStep s t →
     JointReach t u →
     JointReach s u
 
-record SelfLoop : Set where
-  constructor selfLoop
-  field
-    at : LearnerState
-    holds :
-      step at zero zero
-        (token zero8 zero8 zero8 zero8)
-        (token zero8 zero8 zero8 zero8)
-        zero8
-      ≡ at
-
-startSelfLoop : SelfLoop
-startSelfLoop = selfLoop start zeroSelfLoop
+toExactReach : ∀ {s t : LearnerState} →
+  JointReach s t → ExactReach CanonicalStep s t
+toExactReach here = exactHere
+toExactReach (there e r) =
+  exactTrans
+    (suc 0 , e ∷ᵖ []ᵖ)
+    (toExactReach r)
 
 record JointIrreducibilityWitness : Set₁ where
   field
     reachable : ∀ (s t : LearnerState) → JointReach s t
 
-record JointAperiodicityWitness : Set₁ where
+record FullStateSelfLoop : Set where
+  constructor selfLoop
   field
-    irreducible : JointIrreducibilityWitness
-    selfLoop : SelfLoop
+    at : LearnerState
+    holds : CanonicalStep at at
 
-conditionalAperiodicity :
+startSelfLoop : FullStateSelfLoop
+startSelfLoop =
+  selfLoop
+    start
+    (edge
+      zero zero
+      (token zero8 zero8 zero8 zero8)
+      (token zero8 zero8 zero8 zero8)
+      zero8)
+
+canonicalIrreducibility :
   JointIrreducibilityWitness →
-  SelfLoop →
-  JointAperiodicityWitness
-conditionalAperiodicity ir loop =
+  Irreducible CanonicalStep
+canonicalIrreducibility witness =
   record
-    { irreducible = ir
-    ; selfLoop = loop
+    { reach = λ s t →
+        toExactReach (JointIrreducibilityWitness.reachable witness s t)
     }
+
+canonicalAperiodicity :
+  JointIrreducibilityWitness →
+  AperiodicViaConsecutiveReturns CanonicalStep
+canonicalAperiodicity witness =
+  hubAperiodicity
+    (canonicalIrreducibility witness)
+    (record
+      { hub = FullStateSelfLoop.at startSelfLoop
+      ; loop = FullStateSelfLoop.holds startSelfLoop
+      })
