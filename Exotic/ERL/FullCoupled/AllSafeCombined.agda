@@ -12,7 +12,7 @@ open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
 open import Exotic.ERL.Finite.TrueOnlineTD using
   ( TrueOnlineState; initialState; exampleFeature; exampleNextFeature; learnerStep )
 open import Exotic.ERL.Exploration.FiniteNoise using
-  ( Noise; neg; zero; pos; weight; totalWeight; zeroHasPositiveMass )
+  ( Noise; neg; zero; pos; weight; sumWeights; totalWeight; zeroHasPositiveMass )
 open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbScalar)
 open import Exotic.ERL.Exploration.FiniteMarkov using (selfLoopExample)
 open import Exotic.ERL.Exploration.ComposedLearnerExploration using
@@ -20,8 +20,8 @@ open import Exotic.ERL.Exploration.ComposedLearnerExploration using
 open import Exotic.ERL.Exploration.DyadicOpenES using
   ( openESMutation; openESZeroSelfLoop )
 open import Exotic.ERL.Exploration.DyadicMR15GA using
-  ( Population; Coordinate; Exponent; StepGate
-  ; noPerturb; perturb; mutation; zeroPopulation; unitExponent
+  ( Population; Coordinate; Noise; StepGate
+  ; noPerturb; perturb; mutation; zeroPopulation
   ; noPerturbation-self-loop; canonicalZero-self-loop )
 open import Exotic.ERL.Exploration.TheoremObligations using
   ( SelfLoop; canonicalNoiseStep; canonicalNoiseSelfLoop
@@ -48,11 +48,11 @@ testInt8Roundtrip x = int8Roundtrip x
 testCanonicalConfig : CanonicalConfig
 testCanonicalConfig = canonical
 
-testNoiseWeights : totalWeight
-testNoiseWeights = refl
+testNoiseWeights : sumWeights 31 ≡ 256
+testNoiseWeights = totalWeight
 
-testNoiseZeroMass : zeroHasPositiveMass
-testNoiseZeroMass = refl
+testNoiseZeroMass : weight zero ≡ 16
+testNoiseZeroMass = zeroHasPositiveMass
 
 testNoiseUnitMinus : perturbScalar neg one8 ≡ zero8
 testNoiseUnitMinus = refl
