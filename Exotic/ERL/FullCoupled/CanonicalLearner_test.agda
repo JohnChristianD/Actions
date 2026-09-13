@@ -2,9 +2,9 @@
 module Exotic.ERL.FullCoupled.CanonicalLearner_test where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.efficient_chad.Int8 using (zero8; one8)
+open import Exotic.efficient_chad.Int8 using (zero8; one8; int8Mul)
 open import Exotic.ERL.Exploration.FiniteNoise using (zero)
-open import Exotic.ERL.FullCoupled.FiniteLearner using (token; qε)
+open import Exotic.ERL.FullCoupled.CanonicalToken using (token)
 open import Exotic.ERL.FullCoupled.CanonicalTransformer
 open import Exotic.ERL.FullCoupled.CanonicalLearner
 
