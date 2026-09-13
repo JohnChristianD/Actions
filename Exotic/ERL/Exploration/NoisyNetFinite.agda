@@ -7,7 +7,6 @@ open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; int8Add
   ; int8OfNat
-  ; zero8
   ; one8
   )
 open import Exotic.ERL.Finite.Int8Vector using
@@ -18,12 +17,10 @@ open import Exotic.ERL.Finite.Int8Vector using
   ; x2
   ; x3
   )
-open import Exotic.ERL.Exploration.FiniteNoise using (Noise; neg; zero; pos)
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; noiseCode; zero)
 
 noiseDelta : Noise → Int8
-noiseDelta neg = int8OfNat 255
-noiseDelta zero = zero8
-noiseDelta pos = one8
+noiseDelta = noiseCode
 
 perturbScalar : Noise → Int8 → Int8
 perturbScalar n x = int8Add x (noiseDelta n)
