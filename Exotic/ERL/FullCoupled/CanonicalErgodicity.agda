@@ -33,6 +33,8 @@ open import Exotic.ERL.FullCoupled.CanonicalLearner using
   )
 open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
   ( Path
+  ; []ᵖ
+  ; _∷ᵖ_
   ; ExactReach
   ; exactHere
   ; exactTrans
