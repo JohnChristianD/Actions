@@ -10,11 +10,11 @@ record name path proofs = (name, path, proofs)
 methods :: [(String, String, [String])]
 methods =
   [ record "MR15" "Exotic/ERL/Exploration/MR15Reachability.agda"
-      ["mr15Irreducible", "mr15SelfLoop"]
+      ["mr15IrreducibilityProof", "mr15SelfLoopProof"]
   , record "OpenES" "Exotic/ERL/Exploration/OpenESDyadic.agda"
-      ["openESIrreducible", "openESSelfLoop"]
+      ["openESIrreducibilityProof", "openESSelfLoopProof"]
   , record "NoisyNet" "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-      ["noisyNetIrreducible", "noisyNetSelfLoop"]
+      ["noisyNetIrreducibilityProof", "noisyNetSelfLoopProof"]
   ]
 
 data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
