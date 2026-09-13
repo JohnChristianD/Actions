@@ -7,7 +7,7 @@ open import Data.Fin as F using (Fin)
 open import Data.Product using (Σ; _×_; _,_)
 open import Exotic.efficient_chad.Int8 using (Int8; one8)
 open import Exotic.ERL.Exploration.FiniteNoise using
-  ( Noise; zero; zeroHasPositiveMass; totalWeight )
+  ( Noise; zero; weight; sumWeights; totalWeight; zeroHasPositiveMass )
 open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbScalar)
 open import Exotic.ERL.Exploration.DyadicOpenES using (openESMutation)
 open import Exotic.ERL.Exploration.DyadicMR15GA using
@@ -75,10 +75,10 @@ MR15AperiodicityObligation : Set
 MR15AperiodicityObligation =
   SelfLoop mr15Step × MR15MutationReachabilityObligation
 
-canonicalTotalWeight : totalWeight
+canonicalTotalWeight : sumWeights 31 ≡ 256
 canonicalTotalWeight = totalWeight
 
-canonicalZeroMass : zeroHasPositiveMass
+canonicalZeroMass : weight zero ≡ 16
 canonicalZeroMass = zeroHasPositiveMass
 
 data GenerationIrreducibilityObligation : Set where
