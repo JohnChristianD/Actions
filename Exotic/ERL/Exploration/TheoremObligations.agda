@@ -75,21 +75,15 @@ MR15AperiodicityObligation : Set
 MR15AperiodicityObligation =
   SelfLoop mr15Step × MR15MutationReachabilityObligation
 
-CanonicalDistributionArithmetic : Set
-CanonicalDistributionArithmetic =
-  (sumWeightWitness : totalWeight) ×
-  (sumZeroWitness : zeroHasPositiveMass)
-  where
-  sumWeightWitness : Set
-  sumWeightWitness = totalWeight
-  sumZeroWitness : Set
-  sumZeroWitness = zeroHasPositiveMass
+canonicalTotalWeight : totalWeight
+canonicalTotalWeight = totalWeight
+
+canonicalZeroMass : zeroHasPositiveMass
+canonicalZeroMass = zeroHasPositiveMass
+
+data GenerationIrreducibilityObligation : Set where
 
 MR15OneBitAperiodicityObligation : Set
 MR15OneBitAperiodicityObligation = OneBitAperiodicityObligation
 
--- Generation-chain irreducibility is deliberately not identified with mutation reachability.
--- A complete generation theorem requires the actual selection, averaging, adaptation,
--- inner-state, and tape-state transition relation.
-GenerationIrreducibilityObligation : Set
-GenerationIrreducibilityObligation = Set
+-- No numeric ranking is assigned. Mutation and generation are separate obligations.
