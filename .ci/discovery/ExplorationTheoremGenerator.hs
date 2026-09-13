@@ -1,67 +1,100 @@
 module Main where
 
-import Data.List (intercalate, isInfixOf)
+import Data.List (intercalate)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
-record :: String -> String -> [String] -> (String, String, [String])
-record name path proofs = (name, path, proofs)
+data Method = Method
+  { name :: String
+  , moduleName :: String
+  , stateName :: String
+  , stepName :: String
+  , irreducibilityName :: String
+  , selfLoopName :: String
+  }
 
-methods :: [(String, String, [String])]
+methods :: [Method]
 methods =
-  [ record "MR15" "Exotic/ERL/Exploration/MR15Reachability.agda"
-      ["mr15IrreducibilityProof", "mr15SelfLoopProof"]
-  , record "OpenES" "Exotic/ERL/Exploration/OpenESDyadic.agda"
-      ["openESIrreducibilityProof", "openESSelfLoopProof"]
-  , record "NoisyNet" "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-      ["noisyNetIrreducibilityProof", "noisyNetSelfLoopProof"]
+  [ Method
+      "MR15"
+      "Exotic.ERL.Exploration.MR15Reachability"
+      "MR15State"
+      "MR15Step"
+      "mr15IrreducibilityProof"
+      "mr15SelfLoopProof"
+  , Method
+      "OpenES"
+      "Exotic.ERL.Exploration.OpenESDyadic"
+      "OpenESState"
+      "openESStep"
+      "openESIrreducibilityProof"
+      "openESSelfLoopProof"
+  , Method
+      "NoisyNet"
+      "Exotic.ERL.FullCoupled.NoisyNetCoupled"
+      "CoupledNoisyNetState"
+      "NoisyNetStep"
+      "noisyNetIrreducibilityProof"
+      "noisyNetSelfLoopProof"
   ]
 
-data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
+generatedPath :: FilePath
+generatedPath = "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
 
-checkMethod :: (String, String, [String]) -> IO (String, Status, [String])
-checkMethod (name, path, required) = do
-  source <- readFile path
-  let missing = filter (\symbol -> not (symbol `isInfixOf` source)) required
-  if not (null missing)
-    then pure (name, MissingProof, missing)
-    else do
-      (code, _out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
-      case code of
-        ExitSuccess -> pure (name, Proven, [])
-        ExitFailure _ -> pure (name, AgdaFailure, [err])
-
-renderCandidateModule :: [(String, Status, [String])] -> String
-renderCandidateModule results =
-  unlines $
-    [ "{-# OPTIONS --safe #-}"
-    , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
-    , ""
-    , "-- Generated theorem-discovery report. Agda remains the acceptance oracle."
-    , "-- `Proven` means the named proof terms were present and the module exited successfully under `agda --safe`."
-    , ""
-    ]
-    ++ concatMap render results
+renderCandidate :: String
+renderCandidate = unlines $
+  [ "{-# OPTIONS --safe #-}"
+  , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
+  , ""
+  , "-- Generated proof harness. Haskell only constructs this source; Agda --safe accepts it or rejects it."
+  , "open import Exotic.ERL.Exploration.ExplorationTheoremSchema using"
+  , "  ( Irreducible"
+  , "  ; SelfLoop"
+  , "  ; PeriodOne"
+  , "  ; periodOne-from-components"
+  , "  )"
+  ]
+  ++ concatMap renderMethod methods
   where
-    render (name, status, details) =
-      [ "-- method: " ++ name
-      , "-- status: " ++ show status
-      , "-- details: " ++ intercalate " | " details
+    renderMethod m =
+      [ ""
+      , "open import " ++ moduleName m
+      , ""
+      , name m ++ "KernelIrreducibility : Irreducible " ++ stepName m
+      , name m ++ "KernelIrreducibility = " ++ irreducibilityName m
+      , ""
+      , name m ++ "KernelSelfLoop : SelfLoop " ++ stepName m
+      , name m ++ "KernelSelfLoop = " ++ selfLoopName m
+      , ""
+      , name m ++ "KernelPeriodOne : PeriodOne " ++ stepName m
+      , name m ++ "KernelPeriodOne = periodOne-from-components "
+          ++ name m ++ "KernelIrreducibility " ++ name m ++ "KernelSelfLoop"
       , ""
       ]
 
+runKernelCheck :: IO (ExitCode, String)
+runKernelCheck = do
+  (code, out, err) <- readProcessWithExitCode "agda" ["--safe", generatedPath] ""
+  pure (code, out ++ err)
+
 main :: IO ()
 main = do
-  results <- mapM checkMethod methods
-  writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
-    (renderCandidateModule results)
-  mapM_ printResult results
-  if any (\(_, status, _) -> status /= Proven) results
-    then exitFailure
-    else exitSuccess
+  writeFile generatedPath renderCandidate
+  (code, output) <- runKernelCheck
+  let status = case code of
+        ExitSuccess -> "PASS"
+        ExitFailure _ -> "FAIL"
+      summary = unlines
+        [ "-- generator-status: " ++ status
+        , "-- generator-check-output: " ++ squash output
+        , ""
+        , renderCandidate
+        ]
+  writeFile generatedPath summary
+  putStrLn $ "exploration-theorem-generator=" ++ status
+  if null output then pure () else putStrLn output
+  case code of
+    ExitSuccess -> exitSuccess
+    ExitFailure _ -> exitFailure
   where
-    printResult (name, status, details) =
-      putStrLn $
-        "exploration-method=" ++ name
-        ++ ",status=" ++ show status
-        ++ if null details then "" else ",details=" ++ intercalate ";" details
+    squash = intercalate " " . words
