@@ -50,6 +50,8 @@ renderCandidate = unlines $
   , "  ( FullAlgebraicCoupling; composeFull )"
   , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
   , "  ( softsignGatedForwardLaw-proof; softsignGatedPullbackLaw-proof )"
+  , "open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using"
+  , "  ( softsignGatedPeriodOne )"
   , "open import Exotic.ERL.FullCoupled.TheoremStrengthV3 using"
   , "  ( openESPeriodOneFromMR15; mr15PeriodOneFromNoisyNet"
   , "  ; openES-lt-MR15; MR15-lt-NoisyNet )"
@@ -72,6 +74,7 @@ renderCandidate = unlines $
           ++ lawCtor l ++ " " ++ normalizationName l ++ " "
           ++ unitSupportName l ++ " "
           ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
+          ++ "softsignGatedPeriodOne "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
       ]
 
