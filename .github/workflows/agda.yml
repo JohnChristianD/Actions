@@ -105,6 +105,12 @@ jobs:
         with:
           ghc-version: '9.6'
 
+      - name: Generate and check exploration theorem status
+        run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
+
+      - name: Check generated exploration theorem report
+        run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
+
       - name: Run Haskell exact-rational oracle
         run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
 
