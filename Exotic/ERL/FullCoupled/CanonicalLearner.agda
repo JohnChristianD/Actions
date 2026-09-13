@@ -18,10 +18,12 @@ open import Exotic.efficient_chad.Int8 using
   ; one8
   )
 open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
-open import Exotic.ERL.FullCoupled.FiniteLearner using
+open import Exotic.ERL.FullCoupled.CanonicalToken using
   ( Token
   ; token
-  ; qε
+  )
+open import Exotic.ERL.FullCoupled.CanonicalFinitePrimitives using
+  ( qε
   )
 open import Exotic.ERL.FullCoupled.CanonicalTransformer using
   ( Pair
@@ -32,11 +34,6 @@ open import Exotic.ERL.FullCoupled.CanonicalTransformer using
   ; gradMu
   ; gradSigma
   )
-
-------------------------------------------------------------------------
--- Finite dyadic arithmetic. The exponent is bounded by Fin 8, with exponent
--- zero as the hard ULP floor.
-------------------------------------------------------------------------
 
 twoPowNat : ℕ → ℕ
 twoPowNat zero = 1
@@ -59,10 +56,6 @@ ellMin = F.zero
 
 scaleFloor : dyadicScale ellMin ≡ one8
 scaleFloor = refl
-
-------------------------------------------------------------------------
--- F4-Int carrier with three explicit sigma-delta residual levels.
-------------------------------------------------------------------------
 
 record F4 : Set where
   constructor f4
@@ -98,12 +91,6 @@ f4Step s g =
       nq = int8Add (q s) nr3
   in f4 nq nr1 nr2 nr3 (ell s)
 
-------------------------------------------------------------------------
--- q-projected IDBD finite update. `delta` and `eligibility` are supplied by
--- the VJP/TD snapshot; F4 performs dyadic scaling, q_epsilon projection,
--- L2/norm-pair regularisation and the three residual accumulations.
-------------------------------------------------------------------------
-
 qProjectedIDBDStep : F4 → Int8 → Int8 → F4
 qProjectedIDBDStep s delta eligibility =
   f4Step s (int8Mul delta eligibility)
@@ -122,10 +109,6 @@ initialParam = f4 one8 zero8 zero8 zero8 ellMin
 f4ZeroWitness : f4Step initialZero zero8 ≡ initialZero
 f4ZeroWitness = refl
 
-------------------------------------------------------------------------
--- Exact finite signed ordering for the hard max. No real-number embedding.
-------------------------------------------------------------------------
-
 signedLess : Int8 → Int8 → Bool
 signedLess x y with toℕ (code x) ≤? 127
 ... | yes _ with toℕ (code y) ≤? 127
@@ -143,10 +126,6 @@ chooseMax : Int8 → Int8 → Int8
 chooseMax x y with signedLess x y
 ... | true = y
 ... | false = x
-
-------------------------------------------------------------------------
--- The actual learning state. There is no frozen representation/network field.
-------------------------------------------------------------------------
 
 record LearnerState : Set where
   constructor learnerState
@@ -206,10 +185,6 @@ actorValue : LearnerState → Noise → Token → Int8
 actorValue s epsilon t =
   int8Mul (q (psi s)) (representationFeature s epsilon t)
 
-------------------------------------------------------------------------
--- Standard accumulating TD(lambda) trace in finite dyadic form.
-------------------------------------------------------------------------
-
 traceStep : LearnerState → Int8 → Int8
 traceStep s feature =
   int8Add
@@ -231,11 +206,6 @@ tdError s epsilon nextEpsilon t nextT reward =
     (tdTarget s nextEpsilon nextT reward)
     (int8OfNat
       (256 ∸ toℕ (code (criticValue s epsilon t))))
-
-------------------------------------------------------------------------
--- Exact one-snapshot VJP bundle. Every gradient is computed before any
--- parameter is changed; commit is the sole state update point.
-------------------------------------------------------------------------
 
 gradientBundle : LearnerState →
   Noise → Noise → Token → Token → Int8 →
@@ -291,10 +261,6 @@ step s epsilon nextEpsilon t nextT reward =
         gradientBundle s epsilon nextEpsilon t nextT reward
   in commit s gXi gTheta gPsi gMu gSigma
        newTrace newCritic newActor
-
-------------------------------------------------------------------------
--- Snapshot/commit proof surface.
-------------------------------------------------------------------------
 
 xiCommit : ∀ (s : LearnerState)
   (epsilon nextEpsilon : Noise)
