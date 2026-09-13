@@ -57,7 +57,8 @@ jobs:
             'Exotic/ERL/FullCoupled/CanonicalErgodicity.agda' \
             'Exotic/ERL/FullCoupled/CanonicalExecutable.agda' \
             'Exotic/ERL/Exploration/CanonicalMR15GA.agda' \
-            'Exotic/ERL/Exploration/CanonicalExplorationChoice.agda'; then
+            'Exotic/ERL/Exploration/CanonicalExplorationChoice.agda' \
+            'Exotic/ERL/FullCoupled/LatticeReachability.agda'; then
             echo 'canonical-banned-mechanism-or-proof-bypass=FOUND'
             exit 1
           fi
@@ -143,6 +144,7 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerEA.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerEA_test.agda
+          agda --safe Exotic/ERL/FullCoupled/LatticeReachability.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalErgodicity.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalExecutable.agda
