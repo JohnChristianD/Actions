@@ -1,6 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.efficient_chad.SoftsignGatedComposition where
 
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; CHADOperator
