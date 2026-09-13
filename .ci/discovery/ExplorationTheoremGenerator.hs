@@ -38,6 +38,7 @@ renderCandidateModule results =
     , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
     , ""
     , "-- Generated theorem-discovery report. Agda remains the acceptance oracle."
+    , "-- `Proven` means the named proof terms were present and the module exited successfully under `agda --safe`."
     , ""
     ]
     ++ concatMap render results
@@ -55,7 +56,7 @@ main = do
   writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
     (renderCandidateModule results)
   mapM_ printResult results
-  if any (\(_, status, _) -> status == AgdaFailure) results
+  if any (\(_, status, _) -> status /= Proven) results
     then exitFailure
     else exitSuccess
   where
