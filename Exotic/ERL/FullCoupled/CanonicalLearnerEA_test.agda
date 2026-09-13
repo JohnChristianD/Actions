@@ -1,9 +1,12 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearnerEA_test where
 
-open import Agda.Builtin.Equality using (_≡_)
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.Exploration.CanonicalMR15GA using
-  ( initialMR15
+  ( StepGate
+  ; noPerturb
+  ; initialMR15
+  ; generationStep
   ; neutralGeneration
   )
 open import Exotic.ERL.Exploration.FiniteNoise using (zero)
