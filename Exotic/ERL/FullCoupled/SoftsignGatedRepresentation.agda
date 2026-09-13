@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.SoftsignGatedRepresentation where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ( GateParams
@@ -23,7 +23,7 @@ projectSoftsignGated : CoupledNoisyNetState → SoftsignGatedRepresentation
 projectSoftsignGated s = gateParameters s , learnerState s
 
 liftSoftsignGated : SoftsignGatedRepresentation → CoupledNoisyNetState
-liftSoftsignGated r = coupledNoisyNetState (r .₁) (r .₂)
+liftSoftsignGated r = coupledNoisyNetState (proj₁ r) (proj₂ r)
 
 softsignGated-retraction :
   ∀ r → projectSoftsignGated (liftSoftsignGated r) ≡ r
