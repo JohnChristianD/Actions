@@ -169,6 +169,16 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
           agda --safe Exotic/ERL/Representation/Haar2.agda
 
+      - name: Check canonical D_tri regression surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
+          agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
+          agda --safe Exotic/ERL/Exploration/DyadicOpenES.agda
+          agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
+          agda --safe Exotic/ERL/Exploration/TheoremObligations.agda
+
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
         run: |
