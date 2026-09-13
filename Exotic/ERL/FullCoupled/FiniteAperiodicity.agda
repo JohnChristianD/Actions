@@ -1,9 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.FiniteAperiodicity where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Nat using (ℕ; zero; suc; _+_)
-open import Data.Product using (Σ; _×_; _,_)
+open import Data.Product using (Σ)
 
 infixr 5 _∷ᵖ_
 
@@ -20,7 +19,7 @@ _++ᵖ_ : ∀ {S : Set} {edge : S → S → Set}
   {m n : ℕ} {x y z : S} →
   Path edge m x y →
   Path edge n y z →
-  Path edge (m + n) x z
+  Path edge (n + m) x z
 []ᵖ ++ᵖ q = q
 (e ∷ᵖ p) ++ᵖ q = e ∷ᵖ (p ++ᵖ q)
 
@@ -38,7 +37,7 @@ exactTrans : ∀ {S : Set} {edge : S → S → Set}
   ExactReach edge x y →
   ExactReach edge y z →
   ExactReach edge x z
-exactTrans (m , p) (n , q) = (m + n) , (p ++ᵖ q)
+exactTrans (m , p) (n , q) = (n + m) , (p ++ᵖ q)
 
 record SelfLoop {S : Set} (edge : S → S → Set) : Set where
   constructor selfLoop
@@ -77,7 +76,7 @@ hubAperiodicity ir loop =
       n , right = Irreducible.reach ir h x
     in
     consecutiveReturn
-      (m + n)
+      (n + m)
       ((left ++ᵖ (l ∷ᵖ []ᵖ)) ++ᵖ right)
       ((left ++ᵖ (l ∷ᵖ (l ∷ᵖ []ᵖ))) ++ᵖ right)
 
