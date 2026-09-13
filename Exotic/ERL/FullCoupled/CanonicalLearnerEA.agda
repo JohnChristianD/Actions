@@ -1,9 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearnerEA where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; toℕ)
-open import Data.Product using (_×_; _,_)
+open import Data.Nat using (ℕ)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; code
@@ -34,9 +33,10 @@ open import Exotic.ERL.FullCoupled.CanonicalLearner using
   ; criticValue
   )
 open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
-  ( Path
+  ( []ᵖ
+  ; _∷ᵖ_
   ; ExactReach
-  ; SelfLoop
+  ; exactTrans
   ; Irreducible
   ; AperiodicViaConsecutiveReturns
   ; hubAperiodicity
@@ -47,9 +47,6 @@ NoiseTape = Fin 16 → Noise
 
 CoordinateTape : Set
 CoordinateTape = Fin 16 → Coordinate
-
-rewardZero : Int8
-rewardZero = zero8
 
 genomeToken : Genome → Token
 genomeToken g =
