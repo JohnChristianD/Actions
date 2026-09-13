@@ -44,7 +44,7 @@ composeForwardMobius wf wg =
   where
     witness : ∀ x →
       act (mobiusCompose (action wg) (action wf)) (x , one8)
-      ≡ (primal (composeCHAD (actionless g) (actionless f)) x , one8)
+      ≡ (primal (composeCHAD g f) x , one8)
     witness x =
       trans
         (mobius-compose-law (action wg) (action wf) (x , one8))
@@ -53,9 +53,6 @@ composeForwardMobius wf wg =
           (trans
             (forward-one wg (primal f x))
             (sym (composeCHAD-primal g f x))))
-
-    actionless : CHADOperator → CHADOperator
-    actionless h = h
 
 softsignGatedForwardMobiusWitness : ∀ (f : SoftsignGatedForward)
   → ForwardMobiusWitness (signReLU8 f)
