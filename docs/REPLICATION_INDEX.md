@@ -19,7 +19,7 @@ Probability laws are parameters to these methods, not separate explorers.
 - `Exotic/ERL/Exploration/DyadicLadder.agda` — exact dyadic-shell law with denominator `32`, zero weight `16`, and unit mass on every signed power-of-two shell through `±128`.
 - `Exotic/ERL/Exploration/DyadicLaw.agda` exposes exactly these two retained laws.
 
-The legacy triangular family, geometric-5 candidate, Lazy Walk, and other non-flat/non-dyadic-shell candidates are permanently absent from the selectable theorem surface.
+Legacy probability families outside this retained flat or shell-structured frontier are permanently absent from the selectable theorem surface.
 
 ## Endogenous theorem boundary
 
