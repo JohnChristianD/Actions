@@ -2,12 +2,6 @@
 module Exotic.ERL.Exploration.DyadicLaw where
 
 open import Data.Product using (_×_; _,_)
-open import Exotic.ERL.Exploration.FlatDyadic using
-  ( flatWeight-normalized
-  ; flatUnit-positive
-  ; flatUnit-negative-positive
-  ; flatZero-positive
-  )
 open import Exotic.ERL.Exploration.LazyWalkDyadic using
   ( lazyWeight-sum
   ; lazyStay-positive
@@ -20,26 +14,32 @@ open import Exotic.ERL.Exploration.DyadicLadder using
   ; ladderUnit-positive
   ; ladderUnit-negative-positive
   )
+open import Exotic.ERL.Exploration.DyadicGeometric5 using
+  ( geoWeight-sum
+  ; geoZero-positive
+  ; geoUnit-positive
+  ; geoUnit-negative-positive
+  )
 
 data DyadicLaw : Set where
   lazyWalk : DyadicLaw
   dyadicLadder : DyadicLaw
-  flatDyadic : DyadicLaw
+  dyadicGeometric5 : DyadicLaw
 
 law-normalized : DyadicLaw → Set
 law-normalized lazyWalk = lazyWeight-sum
 law-normalized dyadicLadder = ladderWeight-sum
-law-normalized flatDyadic = flatWeight-normalized
+law-normalized dyadicGeometric5 = geoWeight-sum
 
 law-unit-support : DyadicLaw → Set
 law-unit-support lazyWalk = lazyForward-positive × lazyBackward-positive
 law-unit-support dyadicLadder = ladderUnit-positive × ladderUnit-negative-positive
-law-unit-support flatDyadic = flatUnit-positive × flatUnit-negative-positive
+law-unit-support dyadicGeometric5 = geoUnit-positive × geoUnit-negative-positive
 
 law-zero-support : DyadicLaw → Set
 law-zero-support lazyWalk = lazyStay-positive
 law-zero-support dyadicLadder = ladderStay-positive
-law-zero-support flatDyadic = flatZero-positive
+law-zero-support dyadicGeometric5 = geoZero-positive
 
 lazyWalkNormalized : law-normalized lazyWalk
 lazyWalkNormalized = lazyWeight-sum
@@ -59,11 +59,11 @@ dyadicLadderUnitSupport = ladderUnit-positive , ladderUnit-negative-positive
 dyadicLadderZeroSupport : law-zero-support dyadicLadder
 dyadicLadderZeroSupport = ladderStay-positive
 
-flatDyadicNormalized : law-normalized flatDyadic
-flatDyadicNormalized = flatWeight-normalized
+dyadicGeometric5Normalized : law-normalized dyadicGeometric5
+dyadicGeometric5Normalized = geoWeight-sum
 
-flatDyadicUnitSupport : law-unit-support flatDyadic
-flatDyadicUnitSupport = flatUnit-positive , flatUnit-negative-positive
+dyadicGeometric5UnitSupport : law-unit-support dyadicGeometric5
+dyadicGeometric5UnitSupport = geoUnit-positive , geoUnit-negative-positive
 
-flatDyadicZeroSupport : law-zero-support flatDyadic
-flatDyadicZeroSupport = flatZero-positive
+dyadicGeometric5ZeroSupport : law-zero-support dyadicGeometric5
+dyadicGeometric5ZeroSupport = geoZero-positive
