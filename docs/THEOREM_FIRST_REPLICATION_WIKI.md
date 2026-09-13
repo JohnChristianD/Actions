@@ -2,154 +2,125 @@
 
 Authority: Agda `--safe`.
 
-Repository CI authority: `.github/workflows/agda.yml`, which checks the canonical source, regression bundle, finite exploration modules, law modules, representation-factor theorem, finite Möbius composition, and the generated law×method theorem surface.
-
-## Permanent finite theorem scope
-
-The repository is finite, dyadic, and Int8-oriented. The CI gate permanently rejects the pruned legacy triangular distribution family and other rejected theorem families before Agda proof checking. No rejected family is selectable through source, documentation, generated candidates, or metadata.
-
-No external theorem family is accepted as a proof shortcut. External literature may inform algebraic design, but only repository-local `--safe` proofs are authoritative.
+Repository CI checks the canonical source, finite exploration kernels, admissible dyadic laws, the softsign-gated representation factor, finite CHAD/Möbius composition modules, and the generated law×method theorem surface.
 
 ## Actual exploration methods
 
-The actual exploration-method set is exactly:
+There are exactly three actual exploration methods:
 
 1. MR15 — `Exotic/ERL/Exploration/MR15Reachability.agda`
 2. OpenES — `Exotic/ERL/Exploration/OpenESDyadic.agda`
 3. Noisy Nets — `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
 
-Lazy Walk, Dyadic Ladder, and Flat Dyadic are probability-law modules, not exploration methods.
+Probability laws are parameters to those methods. Lazy Walk and Dyadic Ladder are not explorers.
 
-## Probability-law surface
+## Permanent law pruning
 
-The remaining exact finite law family is:
+The former triangular law is permanently absent from the selectable theorem surface.
 
-- Lazy Walk: stay weight 2/4, ±1 weights 1/4.
-- Dyadic Ladder: stay weight 16/32, each signed power-of-two through ±128 has weight 1/32.
-- Flat Dyadic: every Int8 code has weight 1/256.
+Flat Dyadic is also permanently pruned. Under the retained admissibility class, it is redundant: it gives full code support but contributes no scale-geometric shell law, so it does not strengthen the structural theorem class being targeted.
 
-`Exotic/ERL/Exploration/DyadicLaw.agda` exposes all three laws with exact normalization, zero support, and ±1 support. The legacy triangular law is absent from this interface.
+The retained exact finite laws are:
 
-## Endogenous theorem frontier
+- Lazy Walk: weights `2,1,1` over `{0,+1,-1}`, denominator `4`.
+- Dyadic Ladder: weight `16` at zero and weight `1` on each signed power-of-two shell through `±128`, denominator `32`.
+- Dyadic Geometric 5: weights `66,16,16,8,8,4,4,2,2,1,1` over `{0,±1,…,±5}`, denominator `128`.
 
-A theorem exists only at the full coupling boundary:
+The geometric law is the new contiguous scale-geometric candidate. Its nonzero shells halve exactly with radius, it is symmetric, strictly unimodal on contiguous integer support, dyadic, has positive zero mass for a self-loop, and has positive ±1 mass for the `Z_256` generator witness.
 
-`law + actual method + softsign-gated CHAD composition + reachability + self-loop -> PeriodOne`.
+Other natural candidates are pruned from the strict admissible class by theorem obstruction: Rademacher-only laws have no zero step and therefore lack the self-loop needed for the one-step period theorem; even-step laws have `gcd(256,S) > 1` and therefore cannot generate the full 256-state additive torus; support families missing ±1 require a different generator witness and are not minimal under the present theorem interface.
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` records the exact law normalization/unit-support facts, the forward and pullback composition laws for the `signReLU8 -> softsign8` boundary, the actual transition theorem, and the resulting period-one theorem.
+## Canonical representation boundary
 
-The generator `.ci/discovery/ExplorationTheoremGenerator.hs` now enumerates all nine permutations:
+Exploration is now attached to the softsign-gated representation layer.
 
-`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder, FlatDyadic}`.
-
-Haskell only constructs the Agda harness. `agda --safe` accepts or rejects the resulting theorem objects.
-
-## Correct representation boundary
-
-Yes: the canonical exploration theorem should be attached to the softsign-gated representation boundary, not treated as an unrelated outer heuristic state.
-
-The forward algebraic path remains:
+The forward algebra remains:
 
 `E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
 
-`Exotic/efficient_chad/SoftsignGatedComposition.agda` already proves the generic finite CHAD composition law for `softsign8 ∘ signReLU8`. This is an actual kernel theorem about composition, not an activation-specific Möbius theorem.
+The concrete finite activation definitions are in `Exotic/ERL/Finite/Activation.agda`.
 
-## Noisy-Net projection/lift theorem
+`Exotic/efficient_chad/SoftsignGatedComposition.agda` proves the exact CHAD composition law for the finite `softsign8 ∘ signReLU8` operator. This is a genuine forward/pullback composition theorem.
 
-`Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda` now defines a concrete finite representation state
+The current Möbius module, `Exotic/efficient_chad/MobiusInt8Composition.agda`, proves exact finite action composition, but it does not yet certify the concrete quantized activation pair as one global Möbius action. That promotion requires concrete finite Möbius witnesses for the actual activation semantics, and is therefore kept conditional.
 
-`SoftsignGatedRepresentation = GateParams × Int8`.
+## Why MR15 and OpenES were previously identical
 
-It proves a genuine section/retraction and step-level factorization:
+They were previously the same theorem because both were encoded as arbitrary fresh-target relations over essentially the same small finite surrogate. Their constructor proofs were therefore isomorphic copies of the same irreducibility and self-loop argument.
 
-`projectSoftsignGated (liftSoftsignGated r) ≡ r`;
+That abstraction has now been separated:
 
-`NoisyNetStep s t -> SoftsignGatedStep (project s) (project t)`;
+- OpenES is the scalar `Int8` quotient.
+- MR15 is the two-coordinate `SoftsignGatedRepresentation` state.
 
-`SoftsignGatedStep r q -> NoisyNetStep (lift r) (lift q)`.
+A concrete projection/lift factor carries MR15 down to OpenES. The projection forgets the second representation coordinate, and the section restores it at zero. The strict witness is the pair of states `(1,0)` and `(1,1)`: they have the same OpenES projection but are distinct MR15 states.
 
-That is the missing bridge needed before treating Noisy Nets as strictly stronger than a representation-only ablation. The strongest Noisy-Net theorem object is therefore a full coupling theorem plus an explicit transition factor into the softsign-gated representation.
+## Noisy-Net strict extension
 
-MR15 and OpenES still have concrete finite reachability/self-loop theorem shells, but their production-state projection/lift into this same representation boundary is not yet present. The repository therefore does not pretend to have a cross-method strict proof for them.
+`Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda` provides the canonical factor from full Noisy-Net state to the softsign-gated representation:
 
-## Strict theorem ordering
+`projectSoftsignGated : CoupledNoisyNetState -> SoftsignGatedRepresentation`
 
-The ordering is a logical theorem-class order, not a witness-count ranking.
+with a section/lift and a retraction theorem. The projection forgets `sigma3`, while preserving the visible gate signal and learner coordinate.
 
-Method axis:
+The strict witness uses two states with identical visible representation and different `sigma3`. Thus the full Noisy-Net state is a proper extension of the representation state.
 
-`base full-coupling < representation-factor full-coupling`.
+This is the missing theorem bridge that was required before calling Noisy Nets strictly stronger than representation-layer exploration.
 
-`TheoremStrengthV2.agda` proves the representation-factor implication to the base class and gives a finite singleton-state countermodel showing that a base full-coupling theorem does not imply existence of a nontrivial two-point representation factor. Thus the method strengthening is genuinely strict at the theorem-class level.
+## Real strict theorem ordering
 
-The concrete method levels are:
+The current ordering is no longer a tag or witness-count ranking. It is induced by actual theorem implication through state factors:
 
-`MR15 = OpenES = base level < Noisy Nets = representation-factor level`.
+`OpenES < MR15 < NoisyNet`.
 
-Law axis:
+The two strict links are:
 
-`LazyWalk < DyadicLadder < FlatDyadic`.
+`PeriodOne(MR15Step) -> PeriodOne(openESStep)` through the MR15 projection/lift factor, with a proper-state witness showing the factor loses a real coordinate.
 
-This is the exact finite support-strength axis: Lazy Walk proves only the unit generator; Dyadic Ladder additionally exposes power-of-two support; Flat Dyadic exposes every Int8 code directly. The ordering is algebraic support inclusion, not a statistical score.
+`PeriodOne(NoisyNetStep) -> PeriodOne(MR15Step)` through the NoisyNet-to-softsign representation factor, with a proper-state witness showing that `sigma3` is a genuinely hidden coordinate.
 
-The combined product order is componentwise. Hence the unique maximal corner currently connected by proofs is:
+Therefore the method axis has a genuine strict theorem maximum at Noisy Nets, not merely a larger bundle of witness lemmas.
 
-`Noisy Nets × Flat Dyadic`.
+The law axis is deliberately only partially ordered. Lazy Walk has minimal `{0,±1}` support; the geometric law has a strictly richer contiguous scale-geometric support; Dyadic Ladder has multiscale shell support that is incomparable with contiguous geometric support. A total law ranking would require adding a new formal criterion. No empirical/statistical comparison is used.
 
-This is a strict theorem ordering under the proved method-factor and law-support axes; it is not an empirical performance claim.
+## Full emergent theorem for every ablation
 
-## Möbius composition boundary
+Each generated object is a `FullAlgebraicCoupling law step`, so the theorem is emitted only after exact law facts, the finite activation forward/pullback composition, the actual explorer transition, and the graph theorem are all composed.
 
-`Exotic/efficient_chad/MobiusInt8Composition.agda` now proves exact composition closure for finite homogeneous-coordinate Möbius matrices over the Int8 algebra:
+Lazy Walk × MR15: full finite representation-layer coupling, irreducibility, self-loop, and PeriodOne.
 
-`M₂ ∘ M₁` is represented by the exact Int8 matrix product, and the induced projective action satisfies the composition equation definitionally.
+Lazy Walk × OpenES: the scalar quotient version of the same full coupling theorem.
 
-This is the correct algebraic composition theorem to sit beneath the activation path. It does not, by itself, prove that the concrete quantized `signReLU8` or `softsign8` operators are Möbius. That stronger claim still requires actual in-tree activation definitions plus concrete finite Möbius witnesses. The SciSpace literature search supports the general composition perspective, including modular Möbius systems and neural-network Möbius composition, but it does not substitute for those local witnesses.
+Lazy Walk × Noisy Nets: full coupled theorem plus the concrete factor to the softsign-gated representation; this is strictly above the MR15 theorem class.
 
-## Finite-state theorem class
+Dyadic Ladder × MR15: full representation-layer theorem with the ladder support witnesses.
 
-For `_—→_`:
+Dyadic Ladder × OpenES: scalar full-coupling theorem with the same ladder law.
 
-`Irreducible = ∀ s t → Reach _—→_ s t`.
+Dyadic Ladder × Noisy Nets: full coupled theorem plus the Noisy-Net representation factor and ladder support witnesses.
 
-`SelfLoop = ∀ s → s —→ s`.
+Dyadic Geometric 5 × MR15: full representation-layer theorem with contiguous symmetric scale-geometric dyadic support.
 
-`Irreducible × SelfLoop -> PeriodOne` is the reusable finite theorem package.
+Dyadic Geometric 5 × OpenES: scalar full-coupling theorem with the same geometric law.
 
-Exploration-only irreducibility never substitutes for full learner+EA reachability.
+Dyadic Geometric 5 × Noisy Nets: the strongest method theorem class currently admitted, combined with the strongest retained contiguous scale-geometric law.
 
-## Why the theorem loop is fast
+## Automated theorem generation
 
-The active carrier has exactly 256 Int8 codes, all masses are exact dyadic naturals, and the composition identities are finite definitional equalities. The remaining cost is kernel reduction over small finite structures rather than analysis over continuous domains. CI is the timing authority; no empirical benchmark is needed to establish the theorem ordering.
+`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates exactly nine law×method permutations:
 
-## Current emergent theorem for each permutation
+`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder, DyadicGeometric5}`.
 
-Lazy Walk × MR15: full finite coupling theorem, generator support, self-loop, irreducibility, PeriodOne.
+Haskell only constructs the proof harness. Agda `--safe` is the acceptance oracle. The generator also imports the strict method-order theorem surface so the generated report contains the actual factor-induced ordering rather than a hard-coded level tag.
 
-Lazy Walk × OpenES: same full finite coupling theorem class at the current shell.
+## Why the kernel should be fast
 
-Lazy Walk × Noisy Nets: the corresponding full coupling theorem plus the Noisy-Net softsign-gated transition factor.
+The active numeric carrier is finite Int8, the law masses are exact natural numerators over powers of two, and the main algebraic identities reduce definitionally. This makes the theorem checks small finite reductions rather than continuous analytic proofs. CI is the runtime authority; no performance ranking is inferred from wall-clock timing.
 
-Dyadic Ladder × MR15: the same full coupling class with the ladder law's additional power-of-two support.
+## Current automated status
 
-Dyadic Ladder × OpenES: the same full coupling class with ladder support.
-
-Dyadic Ladder × Noisy Nets: full coupling plus the Noisy-Net transition factor and ladder support.
-
-Flat Dyadic × MR15: maximal law-support theorem at the base method level.
-
-Flat Dyadic × OpenES: maximal law-support theorem at the base method level.
-
-Flat Dyadic × Noisy Nets: the maximal connected theorem corner — maximal law support plus the strictly stronger representation-factor method theorem.
-
-## Möbius status
-
-Generic finite Möbius composition: proved.
-
-Generic `signReLU8 -> softsign8` CHAD composition: proved.
-
-Concrete activation-specific Möbius correspondence: not promoted until concrete in-tree activation semantics and witnesses exist.
+The last canonical run before the latest refactor passed the permanent scope guard, canonical source, canonical regression, MR15, OpenES, and NoisyNet checks, then stopped at the Lazy Walk law because `_+_` was not imported into that module. That import has since been fixed. A fresh run is required for the new geometric-law, factor-order, and pruned-file surface.
 
 ## Replication order
 
-Keep the three actual exploration methods and three remaining law modules distinct. Generate every law×method full composition. Attach the representation theorem at the softsign-gated boundary. Require Noisy-Net projection/lift for a strict coupled-method theorem. Keep Möbius composition exact and conditional on concrete activation witnesses. Let Agda `--safe` remain the final authority.
+Keep method and law interfaces separate. Attach exploration to the softsign-gated representation state. Generate every retained law×method full composition. Require concrete projection/lift factors before claiming strict method dominance. Treat finite Möbius composition as a generic closure theorem until concrete activation witnesses close the activation-specific gap. Let Agda `--safe` remain the final authority.
