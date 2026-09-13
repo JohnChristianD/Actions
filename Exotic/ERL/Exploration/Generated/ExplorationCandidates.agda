@@ -8,11 +8,21 @@ open import Exotic.ERL.Exploration.DyadicLaw using
   ; lazyWalk
   ; dyadicLadder
   ; flatDyadic
+  ; law-normalized
   ; law-unit-support
   )
 open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using
   ( FullAlgebraicCoupling
   ; composeFull
+  )
+open import Exotic.ERL.FullCoupled.TheoremStrengthV2 using
+  ( StrongEndogenous
+  ; strongEndogenous
+  )
+open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
+  ( SoftsignGatedRepresentation
+  ; SoftsignGatedStep
+  ; noisyNetSoftsignFactor
   )
 open import Exotic.efficient_chad.SoftsignGatedComposition using
   ( softsignGatedForwardLaw-proof
@@ -78,3 +88,18 @@ NoisyNetFlatDyadicEndogenous = composeFull flatDyadic flatDyadicNormalized
   (law-unit-support flatDyadic)
   softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof
   noisyNetIrreducibilityProof noisyNetSelfLoopProof
+
+NoisyNetLazyWalkStrong :
+  StrongEndogenous {S = CoupledNoisyNetState} {R = SoftsignGatedRepresentation}
+    lazyWalk NoisyNetStep SoftsignGatedStep
+NoisyNetLazyWalkStrong = strongEndogenous NoisyNetLazyWalkEndogenous noisyNetSoftsignFactor
+
+NoisyNetDyadicLadderStrong :
+  StrongEndogenous {S = CoupledNoisyNetState} {R = SoftsignGatedRepresentation}
+    dyadicLadder NoisyNetStep SoftsignGatedStep
+NoisyNetDyadicLadderStrong = strongEndogenous NoisyNetDyadicLadderEndogenous noisyNetSoftsignFactor
+
+NoisyNetFlatDyadicStrong :
+  StrongEndogenous {S = CoupledNoisyNetState} {R = SoftsignGatedRepresentation}
+    flatDyadic NoisyNetStep SoftsignGatedStep
+NoisyNetFlatDyadicStrong = strongEndogenous NoisyNetFlatDyadicEndogenous noisyNetSoftsignFactor
