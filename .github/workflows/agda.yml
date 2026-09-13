@@ -155,6 +155,7 @@ jobs:
           agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
           agda --safe Exotic/ERL/Exploration/TheoremRanking.agda
           agda --safe Exotic/ERL/Representation/HaarInt8.agda
+          agda --safe Exotic/ERL/FullCoupled/DyadicFastfood.agda
           agda --safe Exotic/ERL/FullCoupled/F4IntKernel.agda
           agda --safe Exotic/ERL/FullCoupled/ActualCoupledLearner.agda
           agda --safe Exotic/ERL/FullCoupled/ActualCoupledLearner_test.agda
