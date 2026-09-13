@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.LazyWalkDyadic where
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 data LazyOutcome : Set where
