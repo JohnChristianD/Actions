@@ -38,7 +38,7 @@ OpenES is its scalar quotient. MR15 is the full representation-level exploration
 
 `OpenES < MR15 < NoisyNet`.
 
-MR15 projects to OpenES by forgetting the second representation coordinate. Noisy Nets projects to MR15 through the explicit bridge in `Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda`, which hides the coupled parameter fiber. Each link includes a section/retraction and a proper-fiber separator, so the order is structural rather than a witness-count comparison.
+MR15 projects to OpenES by forgetting the second representation coordinate. Noisy Nets projects to MR15 through the explicit bridge in `Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda`. The factor relation is transitive in-tree, so the Noisy-Net→OpenES factor is explicitly constructed by composition. Each strict link includes a section/retraction and a proper-fiber separator.
 
 This is a theorem-factor ordering, not an empirical performance ranking.
 
