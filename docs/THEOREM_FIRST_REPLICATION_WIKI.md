@@ -43,9 +43,9 @@ Lazy Walk, Dyadic Ladder, and Flat Dyadic are probability-law modules, not addit
 
 `Exotic/ERL/Exploration/LazyWalkDyadic.agda` defines a finite common-denominator-4 law with exact stay/forward/backward masses and proves normalization plus positive zero/unit support.
 
-`Exotic/ERL/Exploration/DyadicLadder.agda` defines a finite common-denominator-32 law with a stay mass and signed power-of-two outcomes and proves normalization plus positive unit support.
+`Exotic/ERL/Exploration/DyadicLadder.agda` defines a finite common-denominator-32 law with a stay mass and signed power-of-two outcomes and proves normalization plus positive unit and power-of-two support.
 
-`Exotic/ERL/Exploration/FlatDyadic.agda` defines the uniform finite law over all 256 Int8 codes with exact denominator 256 and positive zero/unit support.
+`Exotic/ERL/Exploration/FlatDyadic.agda` defines the uniform finite law over all 256 Int8 codes with exact denominator 256 and positive zero/unit and extended power-of-two support.
 
 `Exotic/ERL/Exploration/DyadicLaw.agda` is the law interface. It exposes exactly these three accepted finite laws to the composition generator.
 
@@ -59,7 +59,7 @@ A law is not promoted to a theorem on its own. The theorem object exists only at
 
 `law + actual explorer + representation boundary + irreducibility + self-loop -> PeriodOne`.
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` carries the exact law-normalization/support proof together with the actual explorer reachability/self-loop proof and derives `PeriodOne` through `periodOne-from-components`.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` carries the exact law-normalization/support proof together with the representation-layer CHAD laws and the actual explorer reachability/self-loop proof, then derives `PeriodOne` through `periodOne-from-components`.
 
 The Haskell discovery generator enumerates all nine permutations and writes them into `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source only; Agda `--safe` decides acceptance.
 
@@ -76,6 +76,30 @@ The nine generated theorem objects are:
 - `NoisyNetFlatDyadicEndogenous`
 
 No standalone law `PeriodOne` theorem is generated.
+
+## Strict theorem ordering
+
+The ordering is algebraic, not statistical.
+
+First, the finite probability laws admit a strict support-capacity chain. Their exact finite outcome cardinalities are 3 for Lazy Walk, 17 for Dyadic Ladder, and 256 for Flat Dyadic. Thus the one-step finite-support theorem class is strictly ordered:
+
+`LazyWalk < DyadicLadder < FlatDyadic`.
+
+The strictness is witnessed algebraically by the additional exact support facts: Dyadic Ladder adds signed power-of-two moves beyond ±1, while Flat Dyadic covers the entire 256-code Int8 space.
+
+Second, the Noisy-Net method has a genuine strict state-extension theorem over the softsign-gated representation quotient in `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda`. The projection keeps the pre-softsign Int8 signal, has a section back into the coupled state, and forgets GateParams. Two coupled states with distinct gate parameters project to the same representation signal, while the gate parameters are independently reachable in the coupled fresh-target transition.
+
+Therefore:
+
+`softsign-gated representation < NoisyNet coupled state`.
+
+This is a state-extension theorem, not a comparison of witness-record sizes.
+
+Combining the two proven strict axes gives the unique maximal corner among variants whose representation boundary is currently connected by an actual projection/lift proof:
+
+`NoisyNet × FlatDyadic`.
+
+MR15 and OpenES already have finite irreducibility/self-loop abstractions, but they do not yet have the corresponding production-state projection/lift into this softsign-gated boundary. Hence a strict theorem comparison of MR15 or OpenES against NoisyNet would currently overclaim. They remain incomparable until their own representation-lift theorems are checked by `agda --safe`.
 
 ## Full-state theorem discipline
 
@@ -95,9 +119,9 @@ The exploration theorem is attached to the representation boundary, not to an un
 
 `E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
 
-The exploration law parameterizes the finite mutation/noise at that representation boundary; the actual method determines how that finite law is consumed, and Noisy-Net noise remains endogenous to the coupled learner.
+`Exotic/ERL/Finite/Activation.agda` now supplies the concrete finite Int8 `signReLUQ8` and `softsignQ8` forward definitions. `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda` connects the coupled Noisy-Net state to the softsign-gated representation signal by an actual projection/section and derives the strict hidden-gate extension theorem.
 
-`Exotic/efficient_chad/SoftsignGatedComposition.agda` is the explicit finite CHAD boundary for `softsign8 ∘ signReLU8`. This composition is kernel-checked at the operator level. Concrete activation-specific semantics remain required before an activation-specific Möbius theorem can be accepted.
+`Exotic/efficient_chad/SoftsignGatedComposition.agda` is the finite CHAD boundary for `softsign8 ∘ signReLU8`. The generic composition law is kernel-checked. A concrete activation-specific Möbius theorem still requires concrete Möbius witnesses for these Int8 forward operators; the composition theorem does not fabricate those witnesses.
 
 ## Mutation and finite probability
 
