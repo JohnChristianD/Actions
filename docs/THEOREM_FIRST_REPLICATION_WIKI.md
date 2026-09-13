@@ -4,18 +4,11 @@ Authority: Agda `--safe`.
 
 Repository CI authority: `.github/workflows/agda.yml`, which reads `.ci/canonical-module.txt` and checks both listed files with `agda --safe`.
 
-Current manifest:
+## Permanent finite theorem scope
 
-- `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
-- `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
+The repository is finite, dyadic, and Int8-oriented. The CI gate rejects non-finite analytic families and the pruned legacy triangular distribution family before any Agda proof gate runs. The prohibition is structural: a rejected family returning in source, documentation, generated candidates, or metadata fails CI.
 
-`AllSafeCombined.agda` is a regression bundle, not by itself the complete learner+EA theorem. `Agda/README.md` describes the larger v147 closure target; do not promote that target merely from documentation.
-
-## Permanent arithmetic and theorem-scope exclusions
-
-The repository is finite, dyadic, Int8-oriented, and kernel-checked. The CI gate rejects non-finite analytic theorem families and the excluded bootstrapping family before any Agda proof gate runs. The prohibition is structural: a forbidden family returning in source, documentation, generated candidates, or metadata fails CI.
-
-No external theorem family may be imported as a proof shortcut. External references may be audited, but no external source can enlarge the accepted Agda theorem surface without a repository-local `--safe` proof.
+No external theorem family may be imported as a proof shortcut. External references may be audited, but no external source enlarges the accepted Agda theorem surface without a repository-local `--safe` proof.
 
 ## Canonical architecture
 
@@ -30,59 +23,56 @@ Intended canonical configuration:
 - mutation target: independent finite dyadic draws per tick
 - exact dyadic histogram fitness with exact sorting and rank consistency
 
-The proof authority is the exact Agda definitions that are present in-tree and checked by `agda --safe`.
+The proof authority is the exact Agda definitions present in-tree and checked by `agda --safe`.
 
-## Exploration theorem surface
+## Actual exploration methods
 
-The live exploration theorem comparison is explicitly three-method:
+The live actual exploration methods are exactly:
 
 1. MR15: `Exotic/ERL/Exploration/MR15Reachability.agda`
 2. OpenES: `Exotic/ERL/Exploration/OpenESDyadic.agda`
 3. Noisy Nets: `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
 
-The generic theorem layer is `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`.
+Noisy Nets belongs inside the coupled learner state rather than acting as a detached probability module.
 
-The former pure DMCP distribution module is removed. It is not treated as a fourth exploration mechanism or as a canonical live probability layer.
+The generic graph theorem layer is `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`.
 
-### Exact finite probability ablations
+## Probability-law layer
 
-`Exotic/ERL/Exploration/LazyWalkDyadic.agda` now gives a fully constructive lazy-walk mass law with common denominator 4: stay has numerator 2, forward has numerator 1, and backward has numerator 1. The module proves normalization and positive mass for the zero and unit steps.
+Lazy Walk and Dyadic Ladder are probability-law modules, not additional exploration methods.
 
-`Exotic/ERL/Exploration/DyadicLadder.agda` gives a finite ladder law with common denominator 32: stay has numerator 16 and each of the sixteen signed power-of-two outcomes has numerator 1. The module proves normalization and the positive ±1 support witnesses. Because ±1 is present, the usual additive generator obstruction is removed at the support level; full-state reachability still needs the actual transition theorem.
+`Exotic/ERL/Exploration/LazyWalkDyadic.agda` defines a finite common-denominator-4 law with exact stay/forward/backward masses and proves normalization plus positive zero/unit support.
 
-These laws are useful exactly because they are theorem-friendly probability interfaces. They should be compared with `D_tri` and lazy-unit laws by explicit finite criteria rather than assumed superior.
+`Exotic/ERL/Exploration/DyadicLadder.agda` defines a finite common-denominator-32 law with a stay mass and signed power-of-two outcomes and proves normalization plus positive unit support.
 
-### Automated theorem discovery
+`Exotic/ERL/Exploration/DyadicLaw.agda` is the law interface. It exposes only the two accepted finite laws to the composition generator.
 
-The discovery loop is:
+## Endogenous law × method theorem class
 
-`method metadata -> concrete proof-harness generation -> agda --safe -> theorem acceptance`
+The theorem frontier is the Cartesian product
 
-Implemented in `.ci/discovery/ExplorationTheoremGenerator.hs`, with output written to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda` and executed by `.github/workflows/agda.yml`.
+`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder}`.
 
-A method is marked proven only when its concrete proof harness passes `agda --safe`. Haskell never upgrades a conjecture into a theorem.
+A law is not promoted to a theorem on its own. The theorem object exists only at the full algebraic coupling boundary:
 
-## Strongest endogenous theorem class
+`law + actual explorer + irreducibility + self-loop -> PeriodOne`.
 
-Among the three methods, Noisy Nets has the strongest overall theorem-class frontier for the complete composition, while MR15 has the strongest dedicated outer-exploration graph theorem frontier.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` carries the exact law-normalization proof together with the actual explorer irreducibility/self-loop proofs and derives `PeriodOne` through `periodOne-from-components`.
 
-Noisy Nets is broader because its theorem surface can simultaneously range over finite Int8 noise algebra, GateNN identities, exact coupled-state transition relations, self-loop construction, learner-state reachability, full learner+EA reachability, exact VJP/CHAD equalities, the representation path containing signReLU8, softsign8, GateNN, and projection, and the final full-state period theorem.
+The Haskell discovery generator enumerates all six permutations and writes them into `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source only; Agda `--safe` decides acceptance.
 
-MR15 is the stronger pure exploration mathematics target because its repaired form naturally exposes finite mutation support, the `gcd(256,S)=1` generator theorem, positive-mass zero-step self-loop, iid finite noise-tape factorization, exact weighted expectations, population reachability, deterministic selection compatibility, and full-coupled lift conditions.
+The six generated theorem objects are:
 
-OpenES is a narrower functional ablation surface. Lazy Walk and Dyadic Ladder are now explicit probability-law surfaces that can be promoted into graph kernels once their concrete transition relations are attached.
+- `MR15LazyWalkEndogenous`
+- `MR15DyadicLadderEndogenous`
+- `OpenESLazyWalkEndogenous`
+- `OpenESDyadicLadderEndogenous`
+- `NoisyNetLazyWalkEndogenous`
+- `NoisyNetDyadicLadderEndogenous`
 
-This is a theorem-surface breadth ranking only. It does not assert empirical superiority.
+No standalone law `PeriodOne` theorem is generated.
 
-## Current method status
-
-MR15: the repaired independent-tick kernel passes `agda --safe`, but the current proof is still an abstraction over the production population mutation/selection semantics.
-
-OpenES: the finite shell passes `agda --safe`, but its current kernel remains an abstraction until the exact production transition is connected.
-
-Noisy Nets: it belongs inside the coupled learner. `NoisyNetCoupled.agda` defines finite gate state, noisy `w3`, the exact diagonal identity, and coupled irreducibility/self-loop proofs for the explicit fresh-target kernel.
-
-## Finite graph theorem class
+## Full-state theorem discipline
 
 For a transition relation `_—→_`:
 
@@ -90,83 +80,49 @@ For a transition relation `_—→_`:
 
 `SelfLoop = ∀ s → s —→ s`.
 
-The reusable sufficient period-1 package is `Irreducible × SelfLoop -> PeriodOne`.
+The reusable sufficient package is `Irreducible × SelfLoop -> PeriodOne`.
 
-This is deliberately a full-state statement. Exploration-only reachability never substitutes for learner+EA reachability.
+This is deliberately a full-state statement. Exploration-only reachability does not substitute for learner+EA reachability. The current MR15 and OpenES modules remain explicit finite kernel abstractions until their production mutation/selection transitions are connected. Noisy Nets is already represented on the coupled learner state.
 
-## Mutation theorem class
+## Mutation and finite probability
 
 For an additive coordinate over `Z_256`, the generator target is `gcd(256,S) = 1` for the effective positive-probability increment support `S`.
 
 A one-step self-loop requires effective support containing `0` with positive mass.
 
-The previous same-noise exponent repetition is not theorem-friendly globally because exponent scaling can reduce the effective support and destroy communication classes. The preferred construction is an explicit finite fresh-noise tape or an equivalent one-shot per-coordinate mutation.
-
-## Distribution theorem class
-
-`D_tri` remains the canonical design choice:
-
-`D_tri(k) = (16 - |k|) / 256`, `k ∈ {-15,…,15}`.
-
-Its useful exact facts are finite dyadic normalization, symmetry, zero center mean, positive mass at zero, Int8-range support, and exact second moment `85/2`.
-
-Do not promote the design claim that `D_tri` is universally statistically best. The strongest algebraic comparison schema remains criterion-conditioned:
-
-`Best(Φ,D*) = ∀ D ∈ Admissible → Φ(D*) >= Φ(D)`.
-
-Entropy, second moment, expected displacement, finite-horizon coverage, estimator noise, and full-coupled task utility are separate criteria.
+Fresh finite noise per tick is the theorem-friendly mutation model because it preserves explicit support witnesses and finite product constructions.
 
 ## CHAD and activation composition
 
-CHAD does not by itself prove every property of every finite exploration kernel. CHAD proves the correctness of a differential/VJP interface for a defined computation; normalization, support, irreducibility, communication classes, and period are separate finite-state theorems.
+CHAD proves the correctness of a differential/VJP interface for a defined computation. Normalization, support, irreducibility, communicating classes, and period remain separate finite-state theorems.
 
-The repository now has an exact `CHADOperator` composition theorem in `Exotic/efficient_chad/Int8.agda`. That theorem is sufficient to compose future concrete finite operators in the order:
+The repository has an exact `CHADOperator` composition theorem in `Exotic/efficient_chad/Int8.agda`. It can compose future concrete finite operators in the intended order:
 
 `signReLU8 -> softsign8 -> GateNN -> Pi`.
 
-A concrete signReLU8 or softsign8 VJP theorem still requires the corresponding in-tree operator definition. A Möbius theorem is similarly an additional algebraic theorem; the generic CHAD composition law does not invent it.
+Concrete activation-specific VJP or Möbius results still require the corresponding in-tree definitions; the generic composition theorem does not invent missing operator semantics.
 
 ## External Efficient-CHAD boundary
 
-The workflow audits Tom Smeding's upstream source in a clean `.ci/external/efficient-chad-agda` checkout and probes its existing `chad-cost.agda` under the installed Agda 2.8.0 toolchain. No new package or project-local Agda library is added by this audit. The upstream file itself imports its own checked-in dependencies, which remain outside the repository theorem authority.
+CI audits Tom Smeding's upstream source in a clean `.ci/external/efficient-chad-agda` checkout and probes the existing proof under the installed Agda toolchain. No new package or project-local Agda library is added by this audit. The upstream file and its own checked-in dependencies remain outside the repository theorem authority.
 
 ## Gating-layer counterfactual
 
-`GatingLayerCounterfactual.agda` proves two distinct facts. Gate reachability lifts through an explicit full-state lift. Conversely, if every step preserves a non-gating learner coordinate and that coordinate has two distinct values, the full product relation cannot be irreducible. Therefore exploration need not be restricted to the gate representation layer; doing so is insufficient for whole-state communication unless the remaining factors are already singleton or otherwise connected by the same transition.
-
-## Recent 3D reasoning relevance
-
-Recent 3D work surfaced by SciSpace includes CoRe3D, GaussExplorer, MILO/implicit spatial world modeling, 3DSPMR, and Map2Thought. Their useful architectural ideas are discrete spatial abstraction, relative geometric transformations, persistent spatial memory, and explicit compositional reasoning. None of those external papers becomes an Agda theorem merely by being recent, and SciSpace does not establish that their authorship was generated by ChatGPT, Gemini, or Claude.
-
-## Full coupling
-
-The whole composition remains:
-
-`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
-
-The GateNN diagonal identity is separate from the softsign theorem.
-
-Noisy Nets must be represented inside the coupled learner state when proving whole-system reachability. The target theorem is `∀ s t → CoupledReach s t` for the actual full learner+EA transition, followed by the actual full-state self-loop theorem. Exploration irreducibility alone is insufficient.
-
-## IID and expectation in `--safe`
-
-Finite iid and exact expectation are constructible from finite support, exact dyadic masses, finite products, and finite weighted sums. The missing proof is implementation-specific factorization: the actual transition must consume fresh noise coordinates/ticks as claimed.
+`GatingLayerCounterfactual.agda` proves that gate reachability can lift through an explicit full-state lift, while gate-only exploration is insufficient for global full-state irreducibility when a distinct non-gating factor is preserved. Therefore whole-state communication must be proved on the actual coupled transition.
 
 ## Fitness theorem
 
-The modified finite VEB-RL-style `-TD` fitness remains an exact finite statistic: histogram masses are exact dyadic integers; normalization is exact; ordinal/rank ordering is exact; and full sorting is retained whenever rank consistency is part of the theorem.
+The finite VEB-RL-style `-TD` fitness surface uses exact dyadic histogram masses, exact normalization, ordinal/rank ordering, and exact sorting whenever rank consistency is part of the theorem.
 
 ## Replication order
 
-1. Keep pure DMCP modules deleted.
+1. Keep pure DMCP artifacts deleted.
 2. Enforce the permanent finite/dyadic theorem-scope exclusions.
-3. Keep Lazy Walk and Dyadic Ladder as exact finite probability ablations.
-4. Put the repaired independent-tick MR15 definition in-tree.
-5. Prove MR15 generator support, self-loop, and full finite reachability for the actual transition.
-6. Prove the corresponding OpenES theorems for its actual transition.
-7. Keep Noisy Nets inside the full coupled learner state and prove its actual coupled reachability obligations.
-8. Run the automated theorem generator and require concrete proof terms plus `agda --safe` before marking a method proven.
-9. Prove full learner+EA irreducibility.
-10. Apply the actual full-state self-loop theorem for period 1.
-11. Extend CHAD through the entire representation path.
-12. Compare exploration distributions only under explicit exact finite criteria.
+3. Keep Lazy Walk and Dyadic Ladder as exact probability-law modules only.
+4. Keep MR15, OpenES, and Noisy Nets as the actual explorer set.
+5. Generate every law × method permutation through the full algebraic coupling boundary.
+6. Require concrete Agda `--safe` proof terms for every generated theorem object.
+7. Connect each finite kernel to its production transition semantics before upgrading theorem status.
+8. Prove full learner+EA irreducibility for the actual coupled transition.
+9. Apply the actual full-state self-loop theorem for period 1.
+10. Extend CHAD through the entire representation path.
