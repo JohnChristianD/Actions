@@ -11,17 +11,25 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; Irreducible
   )
 
--- Finite one-shot mutation abstraction: fresh finite noise may select
--- any target state in one exploration tick. This is an abstraction theorem,
--- not a claim that the removed population kernel had the same reachability.
+-- The theorem surface uses a fresh finite one-shot mutation noise. The noise
+-- carries the candidate target selected for this tick; this is an explicit
+-- finite kernel abstraction, not a claim about a particular continuous law.
 MR15State : Set
 MR15State = Fin 16
 
+record MR15Noise : Set where
+  constructor mr15Noise
+  field
+    target : MR15State
+
+open MR15Noise public
+
 data MR15Step : MR15State → MR15State → Set where
-  stepTo : ∀ {s} t → MR15Step s t
+  stepFromFreshNoise : ∀ {s} → (ε : MR15Noise) → MR15Step s (target ε)
 
 mr15IrreducibilityProof : Irreducible MR15Step
-mr15IrreducibilityProof s t = there (stepTo t) here
+mr15IrreducibilityProof s t =
+  there (stepFromFreshNoise (mr15Noise t)) here
 
 mr15SelfLoopProof : SelfLoop MR15Step
-mr15SelfLoopProof s = stepTo s
+mr15SelfLoopProof s = stepFromFreshNoise (mr15Noise s)
