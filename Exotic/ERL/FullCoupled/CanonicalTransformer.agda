@@ -12,7 +12,6 @@ open import Exotic.efficient_chad.Int8 using
   ; int8Mul
   ; int8OfNat
   ; one8
-  ; max8
   )
 open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
 open import Exotic.ERL.Exploration.NoisyNetFinite using (noiseDelta)
@@ -22,6 +21,8 @@ open import Exotic.ERL.FullCoupled.FiniteLearner using
   ; previousAction
   ; nextObservation
   ; tokenCode
+  ; signReLU8
+  ; softsign8
   )
 
 ------------------------------------------------------------------------
@@ -66,17 +67,12 @@ fastfood (pair x y) =
     (int8Add x (negate8 y))
 
 sR1 : Pair → Pair
-sR1 (pair x y) = pair (signed x) (signed y)
-  where
-    signed : Int8 → Int8
-    signed z with toℕ (code z) ≤? 127
-    ... | yes _ = z
-    ... | no _ = max8
+sR1 (pair x y) = pair (signReLU8 x) (signReLU8 y)
 
 sR2 : Pair → Pair
 sR2 (pair x y) = pair
-  (int8Mul x x)
-  (int8Mul y y)
+  (softsign8 x)
+  (softsign8 y)
 
 record GateParameters : Set where
   constructor gateParameters
@@ -109,7 +105,7 @@ canonicalRepresentation gp epsilon t =
       (fastfood
         (pyrTopK
           (rope
-            (embedding t)))) )
+            (embedding t)))))
 
 canonicalForward : GateParameters → Noise → Token → Int8
 canonicalForward gp epsilon t =
@@ -135,7 +131,6 @@ zeroNoiseWeight gp = refl
 
 ------------------------------------------------------------------------
 -- Explicit finite VJP for the complete noisy gate/projection node.
--- This is a discrete cotangent transport contract, not a real-analysis claim.
 ------------------------------------------------------------------------
 
 record GateVJP : Set where
