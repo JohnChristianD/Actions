@@ -15,18 +15,12 @@ open import Exotic.ERL.Finite.TrueOnlineTD using
   ; previousValue
   ; initialState
   )
-open import Exotic.ERL.Exploration.FiniteNoise using (Noise; neg; zero; pos)
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
 open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbVector4)
 
 exploreState : Noise → TrueOnlineState → TrueOnlineState
-exploreState zero s = s
-exploreState neg s = trueOnlineState
-  (perturbVector4 neg (theta s))
-  (trace s)
-  (previousFeature s)
-  (previousValue s)
-exploreState pos s = trueOnlineState
-  (perturbVector4 pos (theta s))
+exploreState n s = trueOnlineState
+  (perturbVector4 n (theta s))
   (trace s)
   (previousFeature s)
   (previousValue s)
