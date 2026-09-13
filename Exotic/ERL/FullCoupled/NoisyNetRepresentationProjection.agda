@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.NoisyNetRepresentationProjection where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Empty using (⊥)
+open import Data.Product using (_×_; _,_)
 open import Relation.Binary.PropositionalEquality using (cong)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
@@ -19,6 +20,8 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; here
   ; Irreducible
   ; SelfLoop
+  ; PeriodOne
+  ; periodOne-from-components
   )
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ( CoupledNoisyNetState
@@ -31,12 +34,13 @@ open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ; noisyNetStepFromFreshNoise
   ; NoisyNetNoise
   ; noisyNetNoise
+  ; noisyNetIrreducibilityProof
+  ; noisyNetSelfLoopProof
   )
 
--- The representation quotient is the pre-softsign signal.  The actual
--- forward observable is then softsignQ8 (signReLUQ8 signal).  GateParams are
--- deliberately omitted from the quotient so the coupled learner theorem has
--- a genuinely larger state space.
+-- The representation quotient is the pre-softsign signal. The actual forward
+-- observable is softsignQ8 (signReLUQ8 signal). GateParams are omitted from
+-- the quotient, so the coupled learner theorem has a genuinely larger state.
 SoftsignGatedRepresentationState : Set
 SoftsignGatedRepresentationState = Int8
 
@@ -70,6 +74,11 @@ representation-step-lift :
     → NoisyNetStep (fromRepresentation x) (fromRepresentation y)
 representation-step-lift step = step
 
+representation-step-project :
+  ∀ {s t} → NoisyNetStep s t
+    → softsignGatedStep (toRepresentation s) (toRepresentation t)
+representation-step-project step = step
+
 noisyNetRepresentationIrreducible :
   Irreducible softsignGatedStep
 noisyNetRepresentationIrreducible x y =
@@ -84,6 +93,13 @@ noisyNetRepresentationSelfLoop x =
   noisyNetStepFromFreshNoise
     (noisyNetNoise zeroGateParameters x)
 
+noisyNetRepresentationPeriodOne :
+  PeriodOne softsignGatedStep
+noisyNetRepresentationPeriodOne =
+  periodOne-from-components
+    noisyNetRepresentationIrreducible
+    noisyNetRepresentationSelfLoop
+
 noisyNetRepresentationReachability :
   ∀ {s t : CoupledNoisyNetState}
   → Reach NoisyNetStep s t
@@ -92,7 +108,29 @@ noisyNetRepresentationReachability :
       (toRepresentation t)
 noisyNetRepresentationReachability here = here
 noisyNetRepresentationReachability (there step rest) =
-  there step (noisyNetRepresentationReachability rest)
+  there (representation-step-project step)
+    (noisyNetRepresentationReachability rest)
+
+noisyNetCoupledReachability :
+  ∀ s t → Reach NoisyNetStep s t
+noisyNetCoupledReachability = noisyNetIrreducibilityProof
+
+noisyNetCoupledSelfLoop :
+  ∀ s → NoisyNetStep s s
+noisyNetCoupledSelfLoop = noisyNetSelfLoopProof
+
+noisyNetCoupledProjectionLift :
+  (∀ x → toRepresentation (fromRepresentation x) ≡ x)
+  ×
+  (∀ {x y} → softsignGatedStep x y
+     → NoisyNetStep (fromRepresentation x) (fromRepresentation y))
+  ×
+  (∀ {s t} → NoisyNetStep s t
+     → softsignGatedStep (toRepresentation s) (toRepresentation t))
+noisyNetCoupledProjectionLift =
+  representation-project-lift
+  , (λ step → representation-step-lift step)
+  , (λ step → representation-step-project step)
 
 one8≢zero8 : one8 ≡ zero8 → ⊥
 one8≢zero8 ()
@@ -113,10 +151,11 @@ hiddenGateDistinct :
   gateParams zero8 zero8 ≢ gateParams zero8 one8
 hiddenGateDistinct eq = gateParametersDistinct eq
 
--- Genuine strict state extension witness: the softsign-gated quotient has a
--- section into the coupled state, while two distinct coupled gate states have
--- exactly the same projected representation signal.
-noisyNetStrictlyStrongerThanRepresentation :
+-- Strict theorem extension: the full coupled theorem contains a genuine
+-- hidden-state degree of freedom that is erased by the softsign-gated
+-- representation projection. Hence representation reachability alone cannot
+-- establish full-state communication without an additional lift theorem.
+noisyNetStrictStateExtension :
   (∀ x → toRepresentation (fromRepresentation x) ≡ x)
   ×
   (toRepresentation
@@ -126,7 +165,28 @@ noisyNetStrictlyStrongerThanRepresentation :
     (coupledNoisyNetState (gateParams zero8 one8) zero8))
   ×
   (gateParams zero8 zero8 ≢ gateParams zero8 one8)
-noisyNetStrictlyStrongerThanRepresentation =
+noisyNetStrictStateExtension =
   representation-project-lift
   , hiddenGateSameRepresentation
   , hiddenGateDistinct
+
+-- The Noisy-Net theorem is therefore a coupled-state extension of the
+-- representation theorem, not merely another witness bundle.
+noisyNetFullCompositionTheorem :
+  Irreducible NoisyNetStep
+  × SelfLoop NoisyNetStep
+  × Irreducible softsignGatedStep
+  × SelfLoop softsignGatedStep
+  × PeriodOne softsignGatedStep
+  ×
+    ((∀ x → toRepresentation (fromRepresentation x) ≡ x)
+     ×
+     (∀ {x y} → softsignGatedStep x y
+        → NoisyNetStep (fromRepresentation x) (fromRepresentation y)))
+noisyNetFullCompositionTheorem =
+  noisyNetIrreducibilityProof
+  , noisyNetSelfLoopProof
+  , noisyNetRepresentationIrreducible
+  , noisyNetRepresentationSelfLoop
+  , noisyNetRepresentationPeriodOne
+  , (representation-project-lift , (λ step → representation-step-lift step))
