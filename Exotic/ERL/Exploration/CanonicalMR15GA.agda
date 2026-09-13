@@ -5,7 +5,7 @@ open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
-open import Data.Nat using (ℕ; Nat; zero; suc; _+_; _*_; _∸_)
+open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (m%n<n; _/_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Nullary using (yes; no)
@@ -15,12 +15,14 @@ open import Exotic.ERL.Exploration.FiniteNoise using
   ; neg
   ; pos
   )
-open import Exotic.ERL.Exploration.DyadicMR15GA using
-  ( StepGate
-  ; noPerturb
-  ; perturb
-  ; stepCanonical
-  )
+
+data StepGate : Set where
+  noPerturb : StepGate
+  perturb : StepGate
+
+stepCanonical : Noise → Fin 256 → Fin 256
+stepCanonical n x =
+  fromℕ< (m%n<n (toℕ x + toℕ n + 241) 256)
 
 pow2 : ℕ → ℕ
 pow2 zero = 1
@@ -115,7 +117,6 @@ natLess (suc m) (suc n) = natLess m n
 
 Fitness : Set
 Fitness = Genome → ℕ
-
 topQuarter : Fitness → Population → V Genome 4
 topQuarter fit p =
   mapV
