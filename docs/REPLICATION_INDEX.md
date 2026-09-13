@@ -10,39 +10,47 @@ Current manifest entries:
 - `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
 - `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
 
-The broader v147 closure target is described in `Agda/README.md`; promote it to CI authority only when the exact source path exists in-tree and is wired into the manifest.
+The broader v147 closure target is promoted only when the exact source path exists in-tree and is wired into the manifest.
 
-The full theorem ledger and replication rules are maintained in `docs/THEOREM_FIRST_REPLICATION_WIKI.md`.
+## Actual exploration methods
 
-The CI gate enforces a permanent finite theorem-scope exclusion check with `.ci/check-forbidden-theorems.py` before Agda verification. The repository remains finite/dyadic/Int8-oriented; excluded theorem families cannot return through source, documentation, generated candidates, or metadata.
+- `Exotic/ERL/Exploration/OpenESDyadic.agda` — scalar Int8 quotient.
+- `Exotic/ERL/Exploration/MR15Reachability.agda` — canonical two-coordinate softsign-gated representation state.
+- `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda` — whole coupled learner state with mutable GateParams.
 
-Live actual exploration methods are:
+## Retained probability laws
 
-- `Exotic/ERL/Exploration/MR15Reachability.agda`
-- `Exotic/ERL/Exploration/OpenESDyadic.agda`
-- `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
+- `Exotic/ERL/Exploration/LazyWalkDyadic.agda`.
+- `Exotic/ERL/Exploration/DyadicLadder.agda`.
+- `Exotic/ERL/Exploration/DyadicGeometric5.agda`.
+- `Exotic/ERL/Exploration/DyadicLaw.agda` exposes exactly those three laws.
 
-The canonical probability-law surface contains exactly one law:
+The former triangular family and Flat Dyadic are permanently absent from the selectable law surface. The geometric law is the retained contiguous symmetric scale-geometric candidate; Ladder remains a multiscale shell ablation.
 
-- `Exotic/ERL/Exploration/FlatDyadic.agda`
-- `Exotic/ERL/Exploration/DyadicLaw.agda`
+## Endogenous theorem boundary
 
-Flat Dyadic gives exact denominator 256 and positive support for every Int8 code. It therefore proves one-step complete code support, strictly stronger than a mere ±1 generator witness.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` composes one law with one actual method only after exact law normalization/unit-support, the finite `signReLU8 -> softsign8` forward/pullback composition, irreducibility, and self-loop are present. `PeriodOne` is then derived inside the composed object.
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` is the theorem boundary. A law and an actual explorer are accepted together; the composed object also records the softsign-gated CHAD boundary, universal law support, concrete irreducibility, self-loop, and derived `PeriodOne`.
+`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates exactly nine law×method compositions and runs the generated Agda harness under `--safe`.
 
-`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates the three actual explorers against the one retained law and writes exactly three endogenous theorem objects to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source and invokes `agda --safe`; it never upgrades a conjecture into a theorem.
+## Strict method theorem ordering
 
-The current theorem universe is:
+`Exotic/ERL/FullCoupled/TheoremStrengthV3.agda` derives the method ordering from actual state factors:
 
-`{MR15, OpenES, NoisyNet} × {FlatDyadic}`.
+`OpenES < MR15 < NoisyNet`.
 
-The Noisy-Net method now has a concrete projection/lift theorem at `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda`: the coupled state projects to the pre-softsign Int8 representation, the forward observable is `softsignQ8 (signReLUQ8 x)`, representation steps lift to coupled steps, coupled steps project back, and distinct GateParams can lie in the same representation fiber.
+The MR15-to-OpenES projection forgets one genuine representation coordinate. The NoisyNet-to-MR15 projection forgets hidden `sigma3`. Each strict link has an explicit same-projection/distinct-state witness.
 
-Thus the strict theorem frontier currently established is:
+Therefore the strict maximum on the method axis is Noisy Nets, independent of statistical comparison.
 
-`softsign-gated representation < NoisyNet coupled state`,
+## Möbius status
 
-with Flat Dyadic the unique maximal retained probability law. The maximal connected theorem corner is `NoisyNet × FlatDyadic`. MR15 and OpenES remain unranked against NoisyNet until their own production-state projection/lift theorems exist and pass `agda --safe`.
+`Exotic/efficient_chad/SoftsignGatedComposition.agda` proves finite CHAD composition for the concrete forward pair. `Exotic/efficient_chad/MobiusInt8Composition.agda` proves finite Möbius-action closure under composition.
 
-The standalone pure-DMCP distribution module was removed and is not a live canonical probability layer.
+The activation-specific implication from the concrete quantized `signReLUQ8` and `softsignQ8` definitions to a Möbius witness is not promoted until its actual finite witness is checked by Agda. Generic composition closure is not treated as that witness.
+
+## Noisy-Net representation bridge
+
+`Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda` is the canonical factor bridge from the full coupled learner to the representation exploration layer. It contains the projection, section/retraction, step projection, and step lifting the strict method ordering requires.
+
+The full theorem ledger is maintained in `docs/THEOREM_FIRST_REPLICATION_WIKI.md`.
