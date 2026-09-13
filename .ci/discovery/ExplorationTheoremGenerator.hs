@@ -31,9 +31,7 @@ data Law = Law
 
 laws :: [Law]
 laws =
-  [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized" "lazyWalkUnitSupport"
-  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "dyadicLadderUnitSupport"
-  , Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport"
+  [ Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport"
   ]
 
 generatedPath :: FilePath
@@ -44,13 +42,10 @@ renderCandidate = unlines $
   [ "{-# OPTIONS --safe #-}"
   , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
   , ""
-  , "-- Generated law × method full-composition theorem harness."
+  , "-- Generated flat-dyadic × method full-composition theorem harness."
   , "-- Haskell constructs source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
-  , "  ( DyadicLaw; lazyWalk; lazyWalkNormalized; lazyWalkUnitSupport"
-  , "  ; dyadicLadder; dyadicLadderNormalized; dyadicLadderUnitSupport"
-  , "  ; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport"
-  , "  )"
+  , "  ( DyadicLaw; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling; composeFull )"
   , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
