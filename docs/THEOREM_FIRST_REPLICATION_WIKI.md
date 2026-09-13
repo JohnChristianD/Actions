@@ -60,9 +60,7 @@ The current strict ordering is a semantic factor-extension ordering, not a witne
 
 `OpenES < MR15 < NoisyNet`.
 
-The order is read as: there is a certified projection/section factor from the stronger state theorem to the weaker theorem, the weaker theorem is recovered by factor transfer, and the stronger carrier has an explicit proper fiber. Therefore the chain is genuinely strict at the state-theorem boundary.
-
-`TheoremStrengthV3.agda` proves the transfer of irreducibility, self-loop, and `PeriodOne` through these factors. `NoisyNetSoftsignFactor.agda` is the concrete bridge that makes the Noisy-Net step strictly connected to the softsign-gated representation.
+`TheoremStrengthV3.agda` now makes the factor relation transitive: the Noisy-Net→MR15 factor composes with the MR15→OpenES factor to produce a concrete Noisy-Net→OpenES factor, and the strict fiber witness is inherited by the composite. Irreducibility, self-loop, and `PeriodOne` transfer through every factor.
 
 Ignoring statistics, Noisy Nets is therefore the strongest theorem class currently represented in-tree, MR15 is strictly intermediate, and OpenES is the scalar quotient endpoint. This is a structural theorem order only.
 
