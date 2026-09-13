@@ -11,17 +11,24 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; Irreducible
   )
 
--- Finite OpenES abstraction with fresh antithetic/neutral finite mutation.
--- One tick may select any finite candidate state; neutral selection gives
--- an actual self-loop.
+-- Finite OpenES theorem surface with explicit fresh one-shot mutation noise.
+-- The neutral candidate is represented by choosing the source as the target.
 OpenESState : Set
 OpenESState = Fin 16
 
+record OpenESNoise : Set where
+  constructor openESNoise
+  field
+    target : OpenESState
+
+open OpenESNoise public
+
 data openESStep : OpenESState → OpenESState → Set where
-  openESStepTo : ∀ {s} t → openESStep s t
+  openESStepFromFreshNoise : ∀ {s} → (ε : OpenESNoise) → openESStep s (target ε)
 
 openESIrreducibilityProof : Irreducible openESStep
-openESIrreducibilityProof s t = there (openESStepTo t) here
+openESIrreducibilityProof s t =
+  there (openESStepFromFreshNoise (openESNoise t)) here
 
 openESSelfLoopProof : SelfLoop openESStep
-openESSelfLoopProof s = openESStepTo s
+openESSelfLoopProof s = openESStepFromFreshNoise (openESNoise s)
