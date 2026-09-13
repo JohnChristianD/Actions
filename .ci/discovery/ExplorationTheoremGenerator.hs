@@ -10,6 +10,7 @@ data Method = Method
   , stepName :: String
   , irreducibilityName :: String
   , selfLoopName :: String
+  , strong :: Bool
   }
 
 methods :: [Method]
@@ -20,18 +21,21 @@ methods =
       "MR15Step"
       "mr15IrreducibilityProof"
       "mr15SelfLoopProof"
+      False
   , Method
       "OpenES"
       "Exotic.ERL.Exploration.OpenESDyadic"
       "openESStep"
       "openESIrreducibilityProof"
       "openESSelfLoopProof"
+      False
   , Method
       "NoisyNet"
       "Exotic.ERL.FullCoupled.NoisyNetCoupled"
       "NoisyNetStep"
       "noisyNetIrreducibilityProof"
       "noisyNetSelfLoopProof"
+      True
   ]
 
 data Law = Law
@@ -39,18 +43,13 @@ data Law = Law
   , lawCtor :: String
   , normalizationName :: String
   , unitSupportName :: String
-  , universalSupportName :: String
   }
 
--- Exactly one probability law remains in the canonical surface: complete
--- flat dyadic support over the 256-point Int8 code space.
 laws :: [Law]
 laws =
-  [ Law "FlatDyadic"
-      "flatDyadic"
-      "flatDyadicNormalized"
-      "flatDyadicUnitSupport"
-      "flatDyadicUniversalSupport"
+  [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized" "lazyWalkUnitSupport"
+  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "dyadicLadderUnitSupport"
+  , Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport"
   ]
 
 generatedPath :: FilePath
@@ -65,14 +64,26 @@ renderCandidate = unlines $
   , "-- Haskell constructs this source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
   , "  ( DyadicLaw"
+  , "  ; lazyWalk"
+  , "  ; lazyWalkNormalized"
+  , "  ; lazyWalkUnitSupport"
+  , "  ; dyadicLadder"
+  , "  ; dyadicLadderNormalized"
+  , "  ; dyadicLadderUnitSupport"
   , "  ; flatDyadic"
   , "  ; flatDyadicNormalized"
   , "  ; flatDyadicUnitSupport"
-  , "  ; flatDyadicUniversalSupport"
   , "  )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling"
   , "  ; composeFull"
+  , "  )"
+  , "open import Exotic.ERL.FullCoupled.TheoremStrength using"
+  , "  ( StrongEndogenous"
+  , "  )"
+  , "open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using"
+  , "  ( SoftsignGatedRepresentation"
+  , "  ; noisyNetSoftsignRetraction"
   , "  )"
   , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
   , "  ( softsignGatedForwardLaw-proof"
@@ -89,14 +100,26 @@ renderCandidate = unlines $
 
     renderPermutation m l =
       [ ""
-      , name m ++ lawName l ++ "Endogenous : FullAlgebraicCoupling "
+      , name m ++ lawName l ++ "Full : FullAlgebraicCoupling "
           ++ lawCtor l ++ " " ++ stepName m
-      , name m ++ lawName l ++ "Endogenous = composeFull "
+      , name m ++ lawName l ++ "Full = composeFull "
           ++ lawCtor l ++ " " ++ normalizationName l ++ " "
           ++ unitSupportName l ++ " "
-          ++ universalSupportName l ++ " "
           ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
+      , name m ++ lawName l ++ "Theorem : "
+          ++ (if strong m
+              then "StrongEndogenous {S = CoupledNoisyNetState} {R = SoftsignGatedRepresentation} "
+              else "FullAlgebraicCoupling ")
+          ++ lawCtor l ++ " " ++ stepName m
+      , name m ++ lawName l ++ "Theorem = "
+          ++ (if strong m
+              then "strongEndogenous "
+              else "")
+          ++ name m ++ lawName l ++ "Full "
+          ++ (if strong m
+              then "noisyNetSoftsignRetraction"
+              else "")
       , ""
       ]
 
