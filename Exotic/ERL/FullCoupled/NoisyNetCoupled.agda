@@ -1,6 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.NoisyNetCoupled where
 
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
