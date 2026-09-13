@@ -12,7 +12,7 @@
 
 - Econlib GameTheory and Equilibrium remain separate environment modules.
 - No numeric theorem ranking is canonical.
-- No Gaussian/transcendental probability law is imported into the finite learner.
+- No non-finite analytic probability law is imported into the finite learner.
 - Aperiodicity requires both a positive-support self-loop and the required communicating-class reachability theorem.
 - Causal tape/replay equivalence is a pathwise semantics theorem, not an aperiodicity theorem.
 - The current MR15 implementation must be disproved as irreducible over its full population space if its uniform-population invariant closes.
