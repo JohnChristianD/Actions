@@ -44,8 +44,8 @@ exponentIndex e = toℕ e
 stepTicks : Exponent → Nat
 stepTicks e = pow2 (exponentIndex e)
 
--- MR15 now samples exactly the canonical D_tri support. The legacy
--- exponent/sign selectors remain only as step-size state, not as a second noise law.
+-- MR15 samples exactly the canonical D_tri support. The exponent state below
+-- is retained solely for dyadic adaptation; it is not another mutation law.
 stepCanonical : Noise → Fin 256 → Fin 256
 stepCanonical n x =
   fromℕ< (m%n<n (toℕ x + toℕ n + 241) 256)
@@ -68,28 +68,28 @@ canonicalZero-self-loop : ∀ j p →
   mutation perturb zero j p ≡ p
 canonicalZero-self-loop j p = refl
 
-unitPlusMutation : ∀ j p →
-  mutation perturb pos j p ≡
-  (λ i →
-    let xi = p i in
-    mutate i xi)
+plusStep : Coordinate → Population → Population
+plusStep j p = λ i →
+  mutateCoordinate i
   where
-  mutate : Coordinate → Fin 256 → Fin 256
-  mutate i x with F._≟_ i j
-  ... | yes _ = fromℕ< (m%n<n (toℕ x + 1) 256)
-  ... | no _ = x
+  mutateCoordinate : Fin dimension → Fin 256
+  mutateCoordinate i with F._≟_ i j
+  ... | yes _ = fromℕ< (m%n<n (toℕ (p i) + 1) 256)
+  ... | no _ = p i
+
+minusStep : Coordinate → Population → Population
+minusStep j p = λ i →
+  mutateCoordinate i
+  where
+  mutateCoordinate : Fin dimension → Fin 256
+  mutateCoordinate i with F._≟_ i j
+  ... | yes _ = fromℕ< (m%n<n (256 + toℕ (p i) ∸ 1) 256)
+  ... | no _ = p i
+
+unitPlusMutation : ∀ j p → mutation perturb pos j p ≡ plusStep j p
 unitPlusMutation j p = refl
 
-unitMinusMutation : ∀ j p →
-  mutation perturb neg j p ≡
-  (λ i →
-    let xi = p i in
-    mutate i xi)
-  where
-  mutate : Coordinate → Fin 256 → Fin 256
-  mutate i x with F._≟_ i j
-  ... | yes _ = fromℕ< (m%n<n (256 + toℕ x ∸ 1) 256)
-  ... | no _ = x
+unitMinusMutation : ∀ j p → mutation perturb neg j p ≡ minusStep j p
 unitMinusMutation j p = refl
 
 data Reach : Population → Population → Set where
@@ -101,14 +101,8 @@ MutationSelfLoop = ∀ n j p → mutation noPerturb n j p ≡ p
 
 MutationGeneratorWitness : Set
 MutationGeneratorWitness =
-  (∀ j p → mutation perturb pos j p ≡
-    (λ i →
-      let xi = p i in
-      xi)) ×
-  (∀ j p → mutation perturb neg j p ≡
-    (λ i →
-      let xi = p i in
-      xi))
+  (∀ j p → mutation perturb pos j p ≡ plusStep j p) ×
+  (∀ j p → mutation perturb neg j p ≡ minusStep j p)
 
 MR15ReachabilityObligation : Set
 MR15ReachabilityObligation = ∀ p q → Reach p q
