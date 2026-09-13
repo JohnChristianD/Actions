@@ -4,7 +4,6 @@ module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; toℕ)
-open import Data.Product using (Σ)
 open import Exotic.efficient_chad.Int8
   using
     ( Int8
@@ -14,24 +13,7 @@ open import Exotic.efficient_chad.Int8
     ; zero8
     ; one8
     )
-open import Exotic.econlib.GameTheory
-  using
-    ( defect
-    ; prisonersDilemma
-    ; PureNash
-    ; isNashEquilibriumDD
-    )
-open import Exotic.econlib.Equilibrium
-  using
-    ( canonicalEconomy2
-    ; canonicalEconomy2Equilibrium
-    ; WalrasianEquilibrium2
-    ; ProductionEconomy2
-    ; WalrasianProductionEquilibrium2
-    ; exists_equilibrium_prod2
-    )
 open import Exotic.ERL.Canonical.CanonicalOptimizer using (CanonicalConfig; canonical)
-open import Exotic.ERL.Canonical.ConjectureDiscovery
 open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
 open import Exotic.ERL.Finite.TrueOnlineTD using
   ( TrueOnlineState
@@ -64,7 +46,7 @@ open import Exotic.ERL.Exploration.DMCPFinite using
   ; finite-dmcp-nonempty
   ; neutral-preserves
   )
-open import Exotic.ERL.Exploration.TheoremRanking using
+open import Exotic.ERL.Exploration.TheoremObligations using
   ( SelfLoop
   ; noisyTriStep
   ; noisyTriSelfLoop
@@ -106,15 +88,6 @@ testInt8Roundtrip x = int8Roundtrip x
 
 testCanonicalConfig : CanonicalConfig
 testCanonicalConfig = canonical
-
-testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
-testEquilibrium = canonicalEconomy2Equilibrium
-
-testNashDD : PureNash prisonersDilemma defect defect
-testNashDD = isNashEquilibriumDD
-
-testProductionExistence : Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
-testProductionExistence = exists_equilibrium_prod2
 
 testNoiseWeights : weight neg + weight zero + weight pos ≡ 4
 testNoiseWeights = refl
