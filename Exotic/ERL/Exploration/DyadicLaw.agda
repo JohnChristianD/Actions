@@ -1,6 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.DyadicLaw where
 
+open import Data.Empty using (⊥)
 open import Data.Product using (_×_; _,_)
 open import Exotic.ERL.Exploration.FlatDyadic using
   ( flatWeight-sum
@@ -33,7 +34,7 @@ law-zero-support flatDyadic = flatStay-positive
 law-zero-support dyadicLadder = ladderStay-positive
 
 law-shell-multiscale : DyadicLaw → Set
-law-shell-multiscale flatDyadic = flatWeight-sum
+law-shell-multiscale flatDyadic = ⊥
 law-shell-multiscale dyadicLadder = ladderPowerTwo-support
 
 flatDyadicNormalized : law-normalized flatDyadic
