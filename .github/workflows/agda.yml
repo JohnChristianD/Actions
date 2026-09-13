@@ -99,6 +99,12 @@ jobs:
       - name: Check coupled NoisyNet exploration proof
         run: agda --safe Exotic/ERL/FullCoupled/NoisyNetCoupled.agda
 
+      - name: Check dyadic-law composition interface
+        run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
+
+      - name: Check full algebraic coupling composition
+        run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
+
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
 
