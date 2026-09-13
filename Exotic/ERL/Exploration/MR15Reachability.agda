@@ -2,8 +2,9 @@
 
 module Exotic.ERL.Exploration.MR15Reachability where
 
-open import Data.Product using (_×_; _,_)
-open import Exotic.efficient_chad.Int8 using (Int8; zero8; one8)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Product using (_×_; _,_; proj₁)
+open import Exotic.efficient_chad.Int8 using (Int8; zero8)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
   ; there
@@ -36,13 +37,9 @@ mr15IrreducibilityProof s t =
 mr15SelfLoopProof : SelfLoop MR15Step
 mr15SelfLoopProof s = stepFromFreshNoise (mr15Noise s)
 
--- MR15 retains a genuine two-coordinate representation boundary; OpenES is
--- deliberately the scalar quotient used only for the strict factor comparison.
+-- OpenES is the scalar quotient used only for the strict factor comparison.
 openESProjection : MR15State → Int8
 openESProjection r = proj₁ r
-  where
-  proj₁ : MR15State → Int8
-  proj₁ r = Data.Product.proj₁ r
 
 openESLift : Int8 → MR15State
 openESLift x = x , zero8
