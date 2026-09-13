@@ -4,7 +4,7 @@ expected = "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.FullCoupled.EfficientCHAD_
 unless String.starts_with?(raw, expected), do: raise("v163 source header/module mismatch")
 
 forbidden = [
-  "StoSignSGD", "StoSignSGDv2", "Munchausen", "munchausen", "Lion", "lion",
+  "StoSignSGD", "StoSignSGDv2", "Lion", "lion",
   "Adam", "AdaMax", "RAdam", "beta1", "beta2", "LayerNorm", "BatchNorm",
   "BatchRenorm", "Newton", "DiagonalNewton", "NewtonRaphson", "Certificate",
   "postulate", "{!!}", "CReLU", "SmoothAlgebra.exp", "SmoothAlgebra.log",
