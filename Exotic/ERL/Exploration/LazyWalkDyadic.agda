@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.LazyWalkDyadic where
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
 data LazyOutcome : Set where
@@ -31,7 +31,6 @@ lazyForward-positive = refl
 lazyBackward-positive : lazyWeight lazyBackward ≡ 1
 lazyBackward-positive = refl
 
--- The common denominator is a power of two, so every mass is exactly dyadic.
 lazyProbability-numerator : LazyOutcome → ℕ
 lazyProbability-numerator = lazyWeight
 
