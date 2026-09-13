@@ -9,12 +9,7 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (m%n<n; _/_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Nullary using (yes; no)
-open import Exotic.ERL.Exploration.FiniteNoise using
-  ( Noise
-  ; zero
-  ; neg
-  ; pos
-  )
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
 
 data StepGate : Set where
   noPerturb : StepGate
@@ -117,6 +112,7 @@ natLess (suc m) (suc n) = natLess m n
 
 Fitness : Set
 Fitness = Genome → ℕ
+
 topQuarter : Fitness → Population → V Genome 4
 topQuarter fit p =
   mapV
@@ -204,13 +200,13 @@ countSuccess fit old new =
 
 mutatePopulation : StepGate →
   Exponent →
+  Population →
   (Fin 16 → Noise) →
   (Fin 16 → Coordinate) →
   V Genome 4 →
   Population
-mutatePopulation noPerturb e noises coords elites =
-  λ i → lookupElite F.zero elites
-mutatePopulation perturb e noises coords elites =
+mutatePopulation noPerturb e base noises coords elites = base
+mutatePopulation perturb e base noises coords elites =
   λ i →
     let j = coords i
         k = fromℕ< (m%n<n (toℕ i) 4)
@@ -225,7 +221,12 @@ mutateGeneration fit noPerturb state noises coords = population state
 mutateGeneration fit perturb state noises coords =
   let elite = topQuarter fit (population state)
       e' = oneFifthStepUpdate (exponent state) (successes state)
-  in mutatePopulation perturb e' noises coords elite
+  in mutatePopulation
+       perturb e'
+       (population state)
+       noises
+       coords
+       elite
 
 generationStep : Fitness → StepGate →
   MR15State →
@@ -236,7 +237,7 @@ generationStep fit noPerturb state noises coords = state
 generationStep fit perturb state noises coords =
   let elite = topQuarter fit (population state)
       e' = oneFifthStepUpdate (exponent state) (successes state)
-      p' = mutatePopulation perturb e' noises coords elite
+      p' = mutatePopulation perturb e' (population state) noises coords elite
       m' = meanGenome elite
       s' = countSuccess fit (population state) p'
   in mr15 p' m' e' s'
@@ -247,11 +248,6 @@ neutralGeneration : ∀ (fit : Fitness) →
     (λ _ → F.zero)
   ≡ initialMR15
 neutralGeneration fit = refl
-
-zeroMutationTicks : ∀ (k : ℕ) (x : Fin 256) →
-  mutateTicks k zero x ≡ x
-zeroMutationTicks zero x = refl
-zeroMutationTicks (suc k) x = zeroMutationTicks k x
 
 unitMutationAtMinimum : ∀ (n : Noise) (j : Coordinate) (g : Genome) →
   mutateGenome initialExponent n j g ≡
