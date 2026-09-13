@@ -33,7 +33,7 @@ start = state
 
 step : Int8 → Int8Vector4 → Int8Vector4 → State → State
 step r phi nextPhi s =
-  let g = tdError r phi nextPhi (critic s)
+  let g = tdError r nextPhi phi (critic s)
       c' = composedSoftsignStep r phi nextPhi (critic s)
       actor' = actorForward (network s) sampleWindow
       critic' = criticForward (network s) sampleWindow
