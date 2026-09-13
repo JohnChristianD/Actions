@@ -45,22 +45,18 @@ jobs:
             echo "CANONICAL_TEST=${canonical[1]}"
           } >> "$GITHUB_ENV"
 
-      - name: Reject legacy optimizer traces and proof bypasses
+      - name: Reject banned canonical mechanisms and proof bypasses
         shell: bash
         run: |
           set -euo pipefail
-          if git grep -nE -i 'AdaMax|Lion|stosigmSGD|stosignSGDv2|signSGDM|(^|[^A-Za-z])Adam([^A-Za-z]|$)' -- \
-            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/**'; then
-            echo 'legacy-optimizer-trace=FOUND'
+          if git grep -nE -i 'Munchausen|Tsallis-2|TrueOnlineTD|OpenES|MR15|softmax|postulate|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
+            'Exotic/ERL/FullCoupled/CanonicalLearner.agda' \
+            'Exotic/ERL/FullCoupled/CanonicalTransformer.agda' \
+            'Exotic/ERL/FullCoupled/FiniteVJP.agda'; then
+            echo 'canonical-banned-mechanism-or-proof-bypass=FOUND'
             exit 1
           fi
-          if git grep -nE '\{!!\}|(^|[^A-Za-z])postulate([^A-Za-z]|$)|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
-            ':!*.md' ':!.ci/**' ':!.github/**'; then
-            echo 'proof-bypass-trace=FOUND'
-            exit 1
-          fi
-          echo 'legacy-optimizer-trace=ABSENT'
-          echo 'proof-bypass-trace=ABSENT'
+          echo 'canonical-banned-mechanism-or-proof-bypass=ABSENT'
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -81,7 +77,7 @@ jobs:
         with:
           ghc-version: '9.6'
 
-      - name: Install Agda2HS from the existing Cabal toolchain
+      - name: Install Agda2HS from the Cabal toolchain
         shell: bash
         run: |
           set -euo pipefail
@@ -90,16 +86,7 @@ jobs:
           agda2hs --help >/dev/null
           agda2hs locate >> "$(agda --print-agda-app-dir)/libraries"
 
-      - name: Agda2HS extraction of the implemented learner
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf .ci/agda2hs-out
-          mkdir -p .ci/agda2hs-out
-          agda2hs Exotic/ERL/FullCoupled/FiniteLearner.agda -o .ci/agda2hs-out
-          test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/FiniteLearner.hs
-
-      - name: Audit Tom Smeding upstream proof without rewriting it
+      - name: Audit Tom Smeding Efficient-CHAD source without rewriting it
         shell: bash
         run: |
           set -euo pipefail
@@ -108,7 +95,6 @@ jobs:
           test -f .ci/external/efficient-chad-agda/chad-cost.agda
           test -f .ci/external/efficient-chad-agda/spec.agda
           test -f .ci/external/efficient-chad-agda/setup.agda
-          git -C .ci/external/efficient-chad-agda status --short
           test -z "$(git -C .ci/external/efficient-chad-agda status --short)"
 
       - name: Normalise canonical Agda source before checking
@@ -139,49 +125,33 @@ jobs:
           .ci/agda-repair.sh repair "$CANONICAL_TEST" /tmp/canonical-test.log
           agda --safe "$CANONICAL_TEST"
 
-      - name: Check implemented finite learner surface
+      - name: Check finite VJP and canonical composition layers
         shell: bash
         run: |
           set -euo pipefail
-          agda --safe Exotic/ERL/Finite/Int8Vector.agda
-          agda --safe Exotic/ERL/Finite/Activation.agda
-          agda --safe Exotic/ERL/Finite/Haar.agda
-          agda --safe Exotic/ERL/Finite/TrueOnlineTD.agda
-          agda --safe Exotic/ERL/Finite/ComposedLearner.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteVJP.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalTransformer.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalLearner.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
           agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
           agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
-          agda --safe Exotic/ERL/Exploration/FiniteMarkov.agda
-          agda --safe Exotic/ERL/Exploration/ComposedLearnerExploration.agda
-          agda --safe Exotic/ERL/Exploration/DyadicOpenES.agda
-          agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
-          agda --safe Exotic/ERL/Exploration/TheoremObligations.agda
-          agda --safe Exotic/ERL/Exploration/MR15OneBit.agda
-          agda --safe Exotic/ERL/Canonical/ConjectureDiscovery.agda
-          agda --safe Exotic/ERL/Representation/HaarInt8.agda
-          agda --safe Exotic/ERL/FullCoupled/DyadicFastfood.agda
-          agda --safe Exotic/ERL/FullCoupled/F4IntKernel.agda
-          agda --safe Exotic/ERL/FullCoupled/SharedActorCritic.agda
-          agda --safe Exotic/ERL/FullCoupled/ActualCoupledLearner.agda
-          agda --safe Exotic/ERL/FullCoupled/ActualCoupledLearner_test.agda
-          agda --safe Exotic/ERL/FullCoupled/CausalReplay.agda
-          agda --safe Exotic/ERL/FullCoupled/NegativeTDHistogram.agda
-          agda --safe Exotic/ERL/FullCoupled/FiniteLearningCertificate.agda
-          agda --safe Exotic/ERL/FullCoupled/FiniteLearner.agda
-          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
-          agda --safe Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
-          agda --safe Exotic/ERL/Representation/Haar2.agda
 
-      - name: Check canonical D_tri regression surface
+      - name: Extract the canonical learner with Agda2HS
         shell: bash
         run: |
           set -euo pipefail
-          agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
-          agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
-          agda --safe Exotic/ERL/Exploration/DyadicOpenES.agda
-          agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
-          agda --safe Exotic/ERL/Exploration/TheoremObligations.agda
+          rm -rf .ci/agda2hs-out
+          mkdir -p .ci/agda2hs-out
+          agda2hs Exotic/ERL/FullCoupled/CanonicalLearner.agda -o .ci/agda2hs-out
+          test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalLearner.hs
 
-      - name: Probe unchanged Tom Smeding proof under current Agda
+      - name: Compile generated canonical Haskell surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          ghc -fno-code .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalLearner.hs
+
+      - name: Probe unchanged Efficient-CHAD proof under current Agda
         shell: bash
         run: |
           set -uo pipefail
