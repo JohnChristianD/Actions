@@ -2,11 +2,13 @@
 
 module Exotic.ERL.Exploration.GatingLayerCounterfactual where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Equality using (_≡_; refl; trans)
+open import Data.Product using (_×_; _,_)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
   ; here
   ; there
+  ; Irreducible
   )
 
 record GatingFactorization (Full Gate : Set) where
@@ -23,10 +25,6 @@ record GatingFactorization (Full Gate : Set) where
 
 open GatingFactorization public
 
--- Counterfactual theorem: if exploration is restricted to a gate relation
--- and every gate transition has a full-state lift, gate reachability lifts
--- to reachability inside the image of `lift`. This says nothing about
--- arbitrary learner/EA states outside that image.
 gate-reach-lifts : ∀ {Full Gate : Set}
   (F : GatingFactorization Full Gate)
   {g h : Gate}
@@ -36,8 +34,34 @@ gate-reach-lifts F here = here
 gate-reach-lifts F (there step rest) =
   there (lift-step F step) (gate-reach-lifts F rest)
 
--- The gate representation is faithfully embedded by the chosen lift.
 project-after-lift : ∀ {Full Gate : Set}
   (F : GatingFactorization Full Gate)
   → ∀ g → project F (lift F g) ≡ g
 project-after-lift F = project-lift F
+
+-- If every exploration step preserves the non-gating coordinate, then every
+-- reachable pair preserves it as well. Thus gating-only exploration cannot be
+-- globally irreducible on a genuinely non-singleton non-gating factor.
+first-coordinate-preserved : ∀ {Learner Gate : Set}
+  {step : (Learner × Gate) → (Learner × Gate) → Set}
+  → (∀ {l l' : Learner} {g g' : Gate}
+      → step (l , g) (l' , g')
+      → l ≡ l')
+  → ∀ {l l' : Learner} {g g' : Gate}
+      → Reach step (l , g) (l' , g')
+      → l ≡ l'
+first-coordinate-preserved inv here = refl
+first-coordinate-preserved inv (there step rest) =
+  trans (inv step) (first-coordinate-preserved inv rest)
+
+gating-only-not-irreducible : ∀ {Learner Gate : Set}
+  {step : (Learner × Gate) → (Learner × Gate) → Set}
+  → (∀ {l l' : Learner} {g g' : Gate}
+      → step (l , g) (l' , g')
+      → l ≡ l')
+  → (l₀ l₁ : Learner)
+  → (g₀ : Gate)
+  → l₀ ≢ l₁
+  → ¬ Irreducible step
+gating-only-not-irreducible inv l₀ l₁ g₀ neq irr =
+  neq (first-coordinate-preserved inv (irr (l₀ , g₀) (l₁ , g₀)))
