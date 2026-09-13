@@ -1,2 +1,2 @@
-Exotic/ERL/FullCoupled/CanonicalLearner.agda
-Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
+Exotic/ERL/FullCoupled/CanonicalLearnerEA.agda
+Exotic/ERL/FullCoupled/CanonicalLearnerEA_test.agda
