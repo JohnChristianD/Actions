@@ -2,19 +2,16 @@
 
 module Exotic.ERL.FullCoupled.CanonicalFinitePrimitives where
 
-open import Agda.Builtin.Bool using (Bool; true; false)
 open import Data.Fin as F using (Fin; toℕ)
 open import Data.Nat using (ℕ; suc; _∸_)
+open import Data.Nat.DivMod using (_/_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; code
   ; int8OfNat
   ; int8Add
-  ; int8Mul
   ; zero8
-  ; one8
-  ; max8
   )
 open import Exotic.ERL.FullCoupled.CanonicalToken using
   ( Token
@@ -51,4 +48,3 @@ tokenCode : Token → Int8
 tokenCode t = int8Add
   (int8Add (observation t) (previousAction t))
   (int8Add (reward t) (nextObservation t))
-
