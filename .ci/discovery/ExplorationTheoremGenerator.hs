@@ -81,6 +81,7 @@ renderCandidate = unlines $
           ++ lawCtor l ++ " " ++ normalizationName l ++ " "
           ++ unitSupportName l ++ " "
           ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
+          ++ "softsignGatedForwardMobiusWitness "
           ++ "softsignGatedPeriodOne "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
       ]
