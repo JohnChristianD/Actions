@@ -6,7 +6,6 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; int8OfNat
-  ; int8Add
   ; zero8
   )
 open import Exotic.ERL.Exploration.FiniteNoise using
@@ -15,12 +14,12 @@ open import Exotic.ERL.Exploration.FiniteNoise using
   ; zero
   ; pos
   ; weight
+  ; noiseCode
   ; totalWeight
   ; zeroHasPositiveMass
   ; unitMinusWitness
   ; unitPlusWitness
   )
-open import Exotic.ERL.Exploration.NoisyNetFinite using (noiseDelta)
 open import Exotic.ERL.FullCoupled.CanonicalToken using
   ( Token
   ; token
@@ -29,16 +28,13 @@ open import Exotic.ERL.FullCoupled.CanonicalLearner using
   ( LearnerState
   ; start
   ; step
-  ; zeroSelfLoop
   )
 open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
-  ( Path
-  ; []ᵖ
+  ( []ᵖ
   ; _∷ᵖ_
   ; ExactReach
   ; exactHere
   ; exactTrans
-  ; SelfLoop
   ; Irreducible
   ; AperiodicViaConsecutiveReturns
   ; hubAperiodicity
@@ -47,13 +43,13 @@ open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
 noiseWeightPos : weight zero ≡ 16
 noiseWeightPos = zeroHasPositiveMass
 
-negativeUnit : noiseDelta neg ≡ int8OfNat 255
+negativeUnit : noiseCode neg ≡ int8OfNat 255
 negativeUnit = unitMinusWitness
 
-positiveUnit : noiseDelta pos ≡ int8OfNat 1
+positiveUnit : noiseCode pos ≡ int8OfNat 1
 positiveUnit = unitPlusWitness
 
-zeroUnit : noiseDelta zero ≡ zero8
+zeroUnit : noiseCode zero ≡ zero8
 zeroUnit = refl
 
 normalisation : totalWeight ≡ 256
