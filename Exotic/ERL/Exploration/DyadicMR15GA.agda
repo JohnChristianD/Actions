@@ -5,7 +5,7 @@ module Exotic.ERL.Exploration.DyadicMR15GA where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
-open import Data.Nat using (Nat; zero; suc; _+_; _*_ ; _∸_)
+open import Data.Nat using (Nat; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (m%n<n)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Data.Product using (_×_)
@@ -14,16 +14,12 @@ open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero; neg; pos)
 
 dimension : Nat
 dimension = 4
-
 populationSize : Nat
 populationSize = 16
-
 Population : Set
 Population = Fin dimension → Fin 256
-
 Exponent : Set
 Exponent = Fin 15
-
 Coordinate : Set
 Coordinate = Fin dimension
 
@@ -41,8 +37,7 @@ stepTicks : Exponent → Nat
 stepTicks e = pow2 (toℕ e)
 
 stepCanonical : Noise → Fin 256 → Fin 256
-stepCanonical n x =
-  fromℕ< (m%n<n (toℕ x + toℕ n + 241) 256)
+stepCanonical n x = fromℕ< (m%n<n (toℕ x + toℕ n + 241) 256)
 
 mutation : StepGate → Noise → Coordinate → Population → Population
 mutation noPerturb n j p = p
@@ -114,10 +109,8 @@ oneFifthStepUpdate m successes with 5 * toℕ successes ≤? populationSize
 ... | yes _ = lowerExponent m
 ... | no _ = raiseExponent m
 
-oneFifthBelow : ∀ m →
-  oneFifthStepUpdate m F.zero ≡ lowerExponent m
+oneFifthBelow : ∀ m → oneFifthStepUpdate m F.zero ≡ lowerExponent m
 oneFifthBelow m = refl
 
-oneFifthAbove : ∀ m →
-  oneFifthStepUpdate m (F.suc (F.suc (F.suc (F.suc F.zero)))) ≡ raiseExponent m
+oneFifthAbove : ∀ m → oneFifthStepUpdate m (F.suc (F.suc (F.suc (F.suc F.zero)))) ≡ raiseExponent m
 oneFifthAbove m = refl
