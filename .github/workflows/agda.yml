@@ -56,7 +56,8 @@ jobs:
             'Exotic/ERL/FullCoupled/FiniteVJP.agda' \
             'Exotic/ERL/FullCoupled/CanonicalErgodicity.agda' \
             'Exotic/ERL/FullCoupled/CanonicalExecutable.agda' \
-            'Exotic/ERL/Exploration/CanonicalMR15GA.agda'; then
+            'Exotic/ERL/Exploration/CanonicalMR15GA.agda' \
+            'Exotic/ERL/Exploration/CanonicalExplorationChoice.agda'; then
             echo 'canonical-banned-mechanism-or-proof-bypass=FOUND'
             exit 1
           fi
@@ -135,6 +136,7 @@ jobs:
           set -euo pipefail
           agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
           agda --safe Exotic/ERL/Exploration/CanonicalMR15GA.agda
+          agda --safe Exotic/ERL/Exploration/CanonicalExplorationChoice.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteAperiodicity.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteVJP.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalTransformer.agda
