@@ -15,33 +15,43 @@ open import Exotic.ERL.Exploration.DyadicLadder using
   ; ladderUnit-negative-positive
   ; ladderPowerTwo-support
   )
+open import Exotic.ERL.Exploration.FlatDyadic using
+  ( flatWeight-normalized
+  ; flatUnit-positive
+  )
 
 data DyadicLaw : Set where
   lazyWalk : DyadicLaw
   dyadicLadder : DyadicLaw
+  flatDyadic : DyadicLaw
 
 law-normalized : DyadicLaw → Set
-law-normalized lazyWalk =
-  lazyWeight-sum
-law-normalized dyadicLadder =
-  ladderWeight-sum
+law-normalized lazyWalk = lazyWeight-sum
+law-normalized dyadicLadder = ladderWeight-sum
+law-normalized flatDyadic = flatWeight-normalized
 
 law-unit-support : DyadicLaw → Set
 law-unit-support lazyWalk =
   lazyForward-positive × lazyBackward-positive
 law-unit-support dyadicLadder =
   ladderUnit-positive × ladderUnit-negative-positive
+law-unit-support flatDyadic = flatUnit-positive
 
 law-zero-support : DyadicLaw → Set
 law-zero-support lazyWalk = lazyStay-positive
 law-zero-support dyadicLadder = ladderStay-positive
+law-zero-support flatDyadic = flatWeight-normalized
 
 law-ladder-multiscale : DyadicLaw → Set
 law-ladder-multiscale lazyWalk = lazyWeight-sum
 law-ladder-multiscale dyadicLadder = ladderPowerTwo-support
+law-ladder-multiscale flatDyadic = flatWeight-normalized
 
 lazyWalkNormalized : law-normalized lazyWalk
 lazyWalkNormalized = lazyWeight-sum
 
 dyadicLadderNormalized : law-normalized dyadicLadder
 dyadicLadderNormalized = ladderWeight-sum
+
+flatDyadicNormalized : law-normalized flatDyadic
+flatDyadicNormalized = flatWeight-normalized
