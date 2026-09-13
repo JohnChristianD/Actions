@@ -20,7 +20,7 @@ open import Exotic.ERL.Exploration.ComposedLearnerExploration using
 open import Exotic.ERL.Exploration.DyadicOpenES using
   ( openESMutation; openESZeroSelfLoop )
 open import Exotic.ERL.Exploration.DyadicMR15GA using
-  ( Population; Coordinate; Noise; StepGate
+  ( Population; Coordinate; StepGate
   ; noPerturb; perturb; mutation; zeroPopulation
   ; noPerturbation-self-loop; canonicalZero-self-loop )
 open import Exotic.ERL.Exploration.TheoremObligations using
