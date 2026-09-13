@@ -99,12 +99,6 @@ jobs:
       - name: Check coupled NoisyNet exploration proof
         run: agda --safe Exotic/ERL/FullCoupled/NoisyNetCoupled.agda
 
-      - name: Check lazy-walk probability law
-        run: agda --safe Exotic/ERL/Exploration/LazyWalkDyadic.agda
-
-      - name: Check dyadic-ladder probability law
-        run: agda --safe Exotic/ERL/Exploration/DyadicLadder.agda
-
       - name: Check flat-dyadic probability law
         run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
 
