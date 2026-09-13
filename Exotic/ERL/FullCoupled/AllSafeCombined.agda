@@ -4,6 +4,7 @@ module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; toℕ)
+open import Data.Product using (Σ)
 open import Exotic.efficient_chad.Int8
   using
     ( Int8
@@ -48,15 +49,23 @@ open import Exotic.ERL.Exploration.DMCPFinite using
   )
 open import Exotic.ERL.Exploration.TheoremObligations using
   ( SelfLoop
+  ; Reach
   ; noisyTriStep
   ; noisyTriSelfLoop
-  ; NoisyTriAperiodicityObligation
   ; openESStep
   ; openESSelfLoop
-  ; OpenESAperiodicityObligation
   ; mr15Step
   ; mr15SelfLoop
   ; MR15AperiodicityObligation
+  )
+open import Exotic.ERL.Exploration.MR15Reachability using
+  ( currentMR15NotIrreducible
+  ; currentMR15AperiodicityImpossible
+  )
+open import Exotic.ERL.Exploration.MR15OneBit using
+  ( BitState
+  ; oneBitSupport
+  ; oneBitSelfLoop
   )
 open import Exotic.ERL.Representation.HaarInt8 using
   ( H8
@@ -80,6 +89,14 @@ open import Exotic.ERL.FullCoupled.FiniteLearner using
   ; Window2
   ; window2
   ; learnForward
+  )
+open import Exotic.ERL.FullCoupled.SharedActorCritic using
+  ( SharedActorCriticParameters
+  ; actorRepresentation
+  ; criticRepresentation
+  ; sharedRepresentation-law
+  ; sampleActorOutput
+  ; sampleCriticOutput
   )
 
 testInt8Roundtrip : ∀ (x : Int8) →
@@ -146,11 +163,30 @@ testMR15Neutral = mr15NeutralCertificate
 testMR15Mutation : mr15MutationWitness
 testMR15Mutation = mr15MutationWitness
 
+testMR15NotIrreducible : ¬ (∀ p q → Reach mr15Step p q)
+testMR15NotIrreducible = currentMR15NotIrreducible
+
+testMR15AperiodicityRejected : ¬ MR15AperiodicityObligation
+testMR15AperiodicityRejected = currentMR15AperiodicityImpossible
+
+testOneBitSelfLoop : Σ BitState (λ s → oneBitSupport s s)
+testOneBitSelfLoop = oneBitSelfLoop
+
 testDMCPNonempty : DMCPState
 testDMCPNonempty = finite-dmcp-nonempty
 
 testDMCPNeutral : ∀ (s : DMCPState) → neutral-preserves s
 testDMCPNeutral = neutral-preserves
+
+testSharedRepresentation : ∀ (p : SharedActorCriticParameters) (w : Window2) →
+  actorRepresentation p w ≡ criticRepresentation p w
+testSharedRepresentation = sharedRepresentation-law
+
+testSharedActorOutput : Window2 → Int8
+testSharedActorOutput = sampleActorOutput
+
+testSharedCriticOutput : Window2 → Int8
+testSharedCriticOutput = sampleCriticOutput
 
 testLearningState : LearnState
 testLearningState = trainedWitness
