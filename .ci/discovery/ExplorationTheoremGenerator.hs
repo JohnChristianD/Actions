@@ -54,12 +54,13 @@ renderCandidate = unlines $
   , "  ( softsignGatedPeriodOne )"
   , "open import Exotic.ERL.FullCoupled.TheoremStrengthV3 using"
   , "  ( openESPeriodOneFromMR15; mr15PeriodOneFromNoisyNet"
-  , "  ; openES-lt-MR15; MR15-lt-NoisyNet )"
+  , "  ; openES-lt-MR15; MR15-lt-NoisyNet; openES-lt-NoisyNet )"
   ]
   ++ concatMap renderMethod methods
   ++ [ ""
      , "StrictOpenESLTMR15 = openES-lt-MR15"
      , "StrictMR15LTNoisyNet = MR15-lt-NoisyNet"
+     , "StrictOpenESLTNoisyNet = openES-lt-NoisyNet"
      ]
   where
     renderMethod m =
