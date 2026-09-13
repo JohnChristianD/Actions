@@ -53,7 +53,8 @@ jobs:
             'Exotic/ERL/FullCoupled/CanonicalLearner.agda' \
             'Exotic/ERL/FullCoupled/CanonicalTransformer.agda' \
             'Exotic/ERL/FullCoupled/FiniteVJP.agda' \
-            'Exotic/ERL/FullCoupled/CanonicalErgodicity.agda'; then
+            'Exotic/ERL/FullCoupled/CanonicalErgodicity.agda' \
+            'Exotic/ERL/FullCoupled/CanonicalExecutable.agda'; then
             echo 'canonical-banned-mechanism-or-proof-bypass=FOUND'
             exit 1
           fi
@@ -135,6 +136,7 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalErgodicity.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalExecutable.agda
           agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
           agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
 
@@ -145,13 +147,29 @@ jobs:
           rm -rf .ci/agda2hs-out
           mkdir -p .ci/agda2hs-out
           agda2hs Exotic/ERL/FullCoupled/CanonicalLearner.agda -o .ci/agda2hs-out
+          agda2hs Exotic/ERL/FullCoupled/CanonicalExecutable.agda -o .ci/agda2hs-out
           test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalLearner.hs
+          test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalExecutable.hs
 
       - name: Compile generated canonical Haskell surface
         shell: bash
         run: |
           set -euo pipefail
           ghc -fno-code .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalLearner.hs
+          ghc -fno-code .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalExecutable.hs
+
+      - name: Run generated canonical executable witness
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/CanonicalMain.hs <<'EOF'
+          module Main where
+          import qualified Exotic.ERL.FullCoupled.CanonicalExecutable as C
+          main :: IO ()
+          main = print C.witness
+          EOF
+          ghc -i.ci/agda2hs-out /tmp/CanonicalMain.hs -o .ci/agda2hs-out/canonical-executable
+          .ci/agda2hs-out/canonical-executable
 
       - name: Probe unchanged Efficient-CHAD proof under current Agda
         shell: bash
