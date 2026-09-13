@@ -38,16 +38,19 @@ data Law = Law
   { lawName :: String
   , lawCtor :: String
   , normalizationName :: String
-  , supportName :: String
+  , unitSupportName :: String
+  , universalSupportName :: String
   }
 
--- Probability laws parameterize actual exploration methods. They are not
--- exploration methods themselves. The pruned triangular law is absent.
+-- Exactly one probability law remains in the canonical surface: complete
+-- flat dyadic support over the 256-point Int8 code space.
 laws :: [Law]
 laws =
-  [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized" "law-unit-support lazyWalk"
-  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "law-unit-support dyadicLadder"
-  , Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "law-unit-support flatDyadic"
+  [ Law "FlatDyadic"
+      "flatDyadic"
+      "flatDyadicNormalized"
+      "flatDyadicUnitSupport"
+      "flatDyadicUniversalSupport"
   ]
 
 generatedPath :: FilePath
@@ -62,10 +65,10 @@ renderCandidate = unlines $
   , "-- Haskell constructs this source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
   , "  ( DyadicLaw"
-  , "  ; lazyWalk"
-  , "  ; dyadicLadder"
   , "  ; flatDyadic"
-  , "  ; law-unit-support"
+  , "  ; flatDyadicNormalized"
+  , "  ; flatDyadicUnitSupport"
+  , "  ; flatDyadicUniversalSupport"
   , "  )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling"
@@ -90,7 +93,8 @@ renderCandidate = unlines $
           ++ lawCtor l ++ " " ++ stepName m
       , name m ++ lawName l ++ "Endogenous = composeFull "
           ++ lawCtor l ++ " " ++ normalizationName l ++ " "
-          ++ supportName l ++ " "
+          ++ unitSupportName l ++ " "
+          ++ universalSupportName l ++ " "
           ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
       , ""
