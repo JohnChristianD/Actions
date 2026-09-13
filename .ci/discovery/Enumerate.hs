@@ -1,78 +1,59 @@
 module Main where
 
-import System.Directory (createDirectoryIfMissing)
 import Control.Monad (forM_)
+import Data.List (intercalate)
+import System.Directory (createDirectoryIfMissing)
+import System.Environment (lookupEnv)
 
+-- The generator is intentionally a proposition emitter, not a proof oracle.
+-- Each row is: module | file | imports(; separated) | proposition | proof term
+-- A row can be added without recompiling this generator.
 data Candidate = Candidate
   { moduleName :: String
   , fileStem :: String
-  , imports :: String
+  , imports :: [String]
   , proposition :: String
   , proofTerm :: String
   }
 
-unitNoise :: Candidate
-unitNoise = Candidate
-  "DtriUnitSupport"
-  "dtri-unit-support"
-  "open import Exotic.ERL.Exploration.FiniteNoise using (unitMinusWitness; unitPlusWitness)"
-  "(noiseCode neg ≡ int8OfNat 255) × (noiseCode pos ≡ one8)"
-  "unitMinusWitness , unitPlusWitness"
+splitOn :: Char -> String -> [String]
+splitOn sep = go
+  where
+    go [] = [""]
+    go (c:cs)
+      | c == sep = "" : go cs
+      | otherwise =
+          let (x:xs) = go cs
+          in (c:x) : xs
 
--- Candidates are generated from a finite algebraic grammar, then accepted
--- only if the Agda kernel checks the resulting proposition.
-candidates :: [Candidate]
-candidates =
-  [ unitNoise
-  , Candidate
-      "DtriNormalises"
-      "dtri-normalises"
-      "open import Exotic.ERL.Exploration.FiniteNoise using (totalWeight)"
-      "totalWeight ≡ 256"
-      "totalWeight"
-  , Candidate
-      "DtriZeroMass"
-      "dtri-zero-mass"
-      "open import Exotic.ERL.Exploration.FiniteNoise using (weight; zero; zeroHasPositiveMass)"
-      "weight zero ≡ 16"
-      "zeroHasPositiveMass"
-  , Candidate
-      "PopulationAxes"
-      "population-axes"
-      "open import Exotic.ERL.Exploration.CanonicalMR15GA using (populationSize; dimension)"
-      "populationSize * dimension ≡ 64"
-      "refl"
-  , Candidate
-      "OneFifthThreshold3"
-      "one-fifth-threshold-3"
-      "open import Exotic.ERL.Exploration.CanonicalMR15GA using (oneFifthStepUpdate; initialExponent; lowerExponent)\nopen import Data.Fin using (Fin)"
-      "oneFifthStepUpdate initialExponent (Fin.suc (Fin.suc (Fin.suc Fin.zero))) ≡ lowerExponent initialExponent"
-      "refl"
-  , Candidate
-      "OneFifthThreshold4"
-      "one-fifth-threshold-4"
-      "open import Exotic.ERL.Exploration.CanonicalMR15GA using (oneFifthStepUpdate; initialExponent; raiseExponent)\nopen import Data.Fin using (Fin)"
-      "oneFifthStepUpdate initialExponent (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero)))) ≡ raiseExponent initialExponent"
-      "refl"
-  , Candidate
-      "LearnerSelfLoop"
-      "learner-self-loop"
-      "open import Exotic.ERL.FullCoupled.CanonicalLearner using (start; step; zeroSelfLoop)\nopen import Exotic.ERL.Exploration.FiniteNoise using (zero)\nopen import Exotic.ERL.FullCoupled.CanonicalToken using (token)\nopen import Exotic.efficient_chad.Int8 using (zero8)"
-      "step start zero zero (token zero8 zero8 zero8 zero8) (token zero8 zero8 zero8 zero8) zero8 ≡ start"
-      "zeroSelfLoop"
-  , Candidate
-      "CoupledSelfLoop"
-      "coupled-self-loop"
-      "open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using (startCoupled; coupledStep; noPerturb; zeroNoiseTape; zeroCoordinateTape)\nopen import Exotic.ERL.Exploration.FiniteNoise using (zero)\nopen import Exotic.efficient_chad.Int8 using (zero8)"
-      "coupledStep startCoupled noPerturb zero zero zeroNoiseTape zeroCoordinateTape zero8 ≡ startCoupled"
-      "refl"
-  , Candidate
-      "BadHaarSquare"
-      "bad-haar-square"
-      "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2)"
-      "∀ x y → haar2 (haar2 (haarPair x y)) ≡ haarPair x y"
-      "refl"
-  ]
+trim :: String -> String
+trim = f . f
+  where
+    f = reverse . dropWhile (== ' ')
+
+parseCandidate :: String -> Maybe Candidate
+parseCandidate raw
+  | null line = Nothing
+  | head line == '#' = Nothing
+  | otherwise =
+      case splitOn '|' line of
+        [m, s, imps, prop, proof] ->
+          Just
+            Candidate
+              { moduleName = trim m
+              , fileStem = trim s
+              , imports = map trim (splitOn ';' imps)
+              , proposition = trim prop
+              , proofTerm = trim proof
+              }
+        _ -> error ("invalid discovery grammar row: " ++ line)
+  where
+    line = trim raw
+
+loadCandidates :: FilePath -> IO [Candidate]
+loadCandidates path = do
+  text <- readFile path
+  pure [c | Just c <- map parseCandidate (lines text)]
 
 sourceFor :: Candidate -> String
 sourceFor c =
@@ -80,15 +61,18 @@ sourceFor c =
   ++ "module " ++ moduleName c ++ " where\n\n"
   ++ "open import Agda.Builtin.Equality using (_≡_; refl)\n"
   ++ "open import Data.Product using (_×_; _,_)\n"
-  ++ "open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; one8)\n"
-  ++ "open import Exotic.ERL.Exploration.FiniteNoise using (Noise; noiseCode; neg; pos; zero)\n"
-  ++ imports c ++ "\n\n"
+  ++ "open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; one8; zero8)\n"
+  ++ intercalate "\n" (imports c)
+  ++ "\n\n"
   ++ "candidate : " ++ proposition c ++ "\n"
   ++ "candidate = " ++ proofTerm c ++ "\n"
 
 main :: IO ()
 main = do
-  let root = ".ci/generated-conjectures"
+  configured <- lookupEnv "DISCOVERY_GRAMMAR"
+  let grammar = maybe ".ci/discovery/grammar.tsv" id configured
+      root = ".ci/generated-conjectures"
+  candidates <- loadCandidates grammar
   createDirectoryIfMissing True root
   forM_ candidates $ \c ->
     writeFile (root ++ "/" ++ fileStem c ++ ".agda") (sourceFor c)
