@@ -1,47 +1,93 @@
 module Main where
 
 import System.Directory (createDirectoryIfMissing)
+import Control.Monad (forM_)
 
-candidates :: [(String, String, String, String, String)]
+data Candidate = Candidate
+  { moduleName :: String
+  , fileStem :: String
+  , imports :: String
+  , proposition :: String
+  , proofTerm :: String
+  }
+
+unitNoise : Candidate
+unitNoise = Candidate
+  "DtriUnitSupport"
+  "dtri-unit-support"
+  "open import Exotic.ERL.Exploration.FiniteNoise using (unitMinusWitness; unitPlusWitness)"
+  "(noiseCode neg ≡ int8OfNat 255) × (noiseCode pos ≡ one8)"
+  "unitMinusWitness , unitPlusWitness"
+
+-- Candidates are generated from a small finite algebraic grammar, then accepted
+-- only if the Agda kernel checks the resulting proposition.
+candidates :: [Candidate]
 candidates =
-  [ ("HaarSquare", "haar-square", "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2-square-scale)",
-     "∀ x y → haar2 (haar2 (haarPair x y)) ≡ haarPair (x + x) (y + y)",
-     "haar2-square-scale")
-  , ("NoiseNormalises", "noise-normalises", "open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos)",
-     "weight neg + weight zero + weight pos ≡ 4",
-     "refl")
-  , ("NoiseSelfLoop", "noise-self-loop", "open import Exotic.ERL.Exploration.FiniteMarkov using (transition; selfLoopExample)\nopen import Exotic.ERL.Exploration.FiniteNoise using (zero)\nopen import Exotic.efficient_chad.Int8 using (one8)",
-     "transition zero one8 ≡ one8",
-     "selfLoopExample")
-  , ("ComposedZero", "composed-zero", "open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep-is-initial; zeroStep)\nopen import Exotic.ERL.Finite.TrueOnlineTD using (initialState)",
-     "zeroStep ≡ initialState",
-     "zeroStep-is-initial")
-  , ("FullLearnerTotal", "full-learner-total", "open import Exotic.ERL.FullCoupled.FiniteLearner using (Parameters; Window2; learnForward)\nopen import Exotic.efficient_chad.Int8 using (Int8)",
-     "(p : Parameters) → (w : Window2) → Int8",
-     "learnForward")
-  , ("BadHaarSquare", "bad-haar-square", "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2)",
-     "∀ x y → haar2 (haar2 (haarPair x y)) ≡ haarPair x y",
-     "refl")
+  [ unitNoise
+  , Candidate
+      "DtriNormalises"
+      "dtri-normalises"
+      "open import Exotic.ERL.Exploration.FiniteNoise using (totalWeight)"
+      "totalWeight ≡ 256"
+      "totalWeight"
+  , Candidate
+      "DtriZeroMass"
+      "dtri-zero-mass"
+      "open import Exotic.ERL.Exploration.FiniteNoise using (weight; zero; zeroHasPositiveMass)"
+      "weight zero ≡ 16"
+      "zeroHasPositiveMass"
+  , Candidate
+      "PopulationAxes"
+      "population-axes"
+      "open import Exotic.ERL.Exploration.CanonicalMR15GA using (populationSize; dimension)"
+      "populationSize * dimension ≡ 64"
+      "refl"
+  , Candidate
+      "OneFifthThreshold3"
+      "one-fifth-threshold-3"
+      "open import Exotic.ERL.Exploration.CanonicalMR15GA using (oneFifthStepUpdate; initialExponent; lowerExponent)\nopen import Data.Fin using (Fin)"
+      "oneFifthStepUpdate initialExponent (Fin.suc (Fin.suc (Fin.suc Fin.zero))) ≡ lowerExponent initialExponent"
+      "refl"
+  , Candidate
+      "OneFifthThreshold4"
+      "one-fifth-threshold-4"
+      "open import Exotic.ERL.Exploration.CanonicalMR15GA using (oneFifthStepUpdate; initialExponent; raiseExponent)\nopen import Data.Fin using (Fin)"
+      "oneFifthStepUpdate initialExponent (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero)))) ≡ raiseExponent initialExponent"
+      "refl"
+  , Candidate
+      "LearnerSelfLoop"
+      "learner-self-loop"
+      "open import Exotic.ERL.FullCoupled.CanonicalLearner using (start; step; zeroSelfLoop)\nopen import Exotic.ERL.Exploration.FiniteNoise using (zero)\nopen import Exotic.ERL.FullCoupled.CanonicalToken using (token)\nopen import Exotic.efficient_chad.Int8 using (zero8)"
+      "step start zero zero (token zero8 zero8 zero8 zero8) (token zero8 zero8 zero8 zero8) zero8 ≡ start"
+      "zeroSelfLoop"
+  , Candidate
+      "CoupledSelfLoop"
+      "coupled-self-loop"
+      "open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using (startCoupled; coupledStep; noPerturb; zeroNoiseTape; zeroCoordinateTape)\nopen import Exotic.ERL.Exploration.FiniteNoise using (zero)\nopen import Exotic.efficient_chad.Int8 using (zero8)"
+      "coupledStep startCoupled noPerturb zero zero zeroNoiseTape zeroCoordinateTape zero8 ≡ startCoupled"
+      "refl"
+  , Candidate
+      "BadHaarSquare"
+      "bad-haar-square"
+      "open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2)"
+      "∀ x y → haar2 (haar2 (haarPair x y)) ≡ haarPair x y"
+      "refl"
   ]
 
-sourceFor :: String -> String -> String -> String -> String -> String
-sourceFor moduleName imports proposition proof =
+sourceFor :: Candidate -> String
+sourceFor c =
   "{-# OPTIONS --safe #-}\n"
-  ++ "module " ++ moduleName ++ " where\n\n"
+  ++ "module " ++ moduleName c ++ " where\n\n"
   ++ "open import Agda.Builtin.Equality using (_≡_; refl)\n"
-  ++ "open import Data.Integer.Base using (Int; _+_)\n"
-  ++ imports ++ "\n\n"
-  ++ "candidate : " ++ proposition ++ "\n"
-  ++ "candidate = " ++ proof ++ "\n"
+  ++ "open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; one8)\n"
+  ++ "open import Exotic.ERL.Exploration.FiniteNoise using (Noise; noiseCode; neg; pos; zero)\n"
+  ++ imports c ++ "\n\n"
+  ++ "candidate : " ++ proposition c ++ "\n"
+  ++ "candidate = " ++ proofTerm c ++ "\n"
 
 main :: IO ()
 main = do
   let root = ".ci/generated-conjectures"
   createDirectoryIfMissing True root
-  mapM_ emit candidates
-  where
-  emit (moduleName, fileStem, imports, proposition, proof) =
-    writeFile
-      (root ++ "/" ++ fileStem ++ ".agda")
-      (sourceFor moduleName imports proposition proof)
-  root = ".ci/generated-conjectures"
+  forM_ candidates $ \c ->
+    writeFile (root ++ "/" ++ fileStem c ++ ".agda") (sourceFor c)
