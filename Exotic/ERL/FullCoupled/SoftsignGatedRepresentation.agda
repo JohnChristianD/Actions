@@ -7,6 +7,14 @@ open import Exotic.efficient_chad.SoftsignGatedComposition using
   ( softsignGatedForwardLaw-proof
   ; softsignGatedPullbackLaw-proof
   )
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Irreducible
+  ; SelfLoop
+  ; PeriodOne
+  ; periodOne
+  ; there
+  ; here
+  )
 
 -- Canonical exploration boundary: finite gate signal × learner signal.
 -- Coupled Noisy-Net coordinates are related through a separate factor module.
@@ -20,3 +28,13 @@ data SoftsignGatedStep :
 
 softsignGatedForward-composed = softsignGatedForwardLaw-proof
 softsignGatedPullback-composed = softsignGatedPullbackLaw-proof
+
+softsignGatedIrreducibility : Irreducible SoftsignGatedStep
+softsignGatedIrreducibility s t = there (softsignTarget t) here
+
+softsignGatedSelfLoop : SelfLoop SoftsignGatedStep
+softsignGatedSelfLoop s = softsignTarget s
+
+softsignGatedPeriodOne : PeriodOne SoftsignGatedStep
+softsignGatedPeriodOne =
+  periodOne softsignGatedIrreducibility softsignGatedSelfLoop
