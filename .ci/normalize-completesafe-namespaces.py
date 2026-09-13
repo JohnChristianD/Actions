@@ -43,7 +43,7 @@ for old, new in {
     '  natLeZero : ∀ {n} → NatLe zero n': '  natLeZero : ∀ {n} → NatLe Nat.zero n',
     'natSub_v146 zero _ = zero': 'natSub_v146 Nat.zero _ = Nat.zero',
     'natSub_v146 (suc m) zero = suc m': 'natSub_v146 (suc m) Nat.zero = suc m',
-    'natSubAddLeft_v146 zero b = refl': 'natSubAddLeft_v146 Nat.zero b = refl',
+    'natSubAddLeft_v146 Nat.zero b = refl': 'natSubAddLeft_v146 Nat.zero b = refl',
     'qRunProjectionFormFuel_v147 zero r = refl': 'qRunProjectionFormFuel_v147 Nat.zero r = refl',
     '... | nothing = qRunProjectionFormFuel_v147 zero r': '... | nothing = qRunProjectionFormFuel_v147 Nat.zero r',
     'qRunStopsWhenNoNegative_v147 zero r h = refl': 'qRunStopsWhenNoNegative_v147 Nat.zero r h = refl',
@@ -78,25 +78,25 @@ new_minus = '  Rg = OrderedRing.ring (SmoothAlgebra.orderedRing S)\n  minus : Sc
 s = s.replace(old_minus, new_minus)
 
 s = re.sub(
-    r'(Rg = OrderedRing\.ring \(SmoothAlgebra\.orderedRing S\)\n\s*)minus x y =',
-    r'\1minus : Scalar S → Scalar S → Scalar S\n  minus x y =',
+    r'(Rg = OrderedRing\\.ring \\(SmoothAlgebra\\.orderedRing S\\)\\n\\s*)minus x y =',
+    r'\\1minus : Scalar S → Scalar S → Scalar S\\n  minus x y =',
     s,
 )
 
 s = s.replace('  centered x = x + neg μ', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
 s = s.replace('  normalise x = centered x * invStd', '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
 
-s = s.replace('record RecurrentAffine (S : SmoothAlgebra) (input hidden : Nat) : Set where', 'record RecurrentAffine (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where')
-s = s.replace('MatS S hidden input', 'MatS S hiddenDim input')
-s = s.replace('MatS S hidden hidden', 'MatS S hiddenDim hiddenDim')
-s = s.replace('VecS S hidden\n    norm : LayerNorm S hidden', 'VecS S hiddenDim\n    norm : LayerNorm S hiddenDim')
-s = s.replace('record LSTMGates (S : SmoothAlgebra) (input hidden : Nat) : Set where', 'record LSTMGates (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where')
-s = s.replace('RecurrentAffine S input hidden', 'RecurrentAffine S input hiddenDim')
-s = s.replace('record LSTMBlock (S : SmoothAlgebra) (input hidden : Nat) : Set where', 'record LSTMBlock (S : SmoothAlgebra) (input hiddenDim : Nat) : Set where')
-s = s.replace('LSTMGates S input hidden', 'LSTMGates S input hiddenDim')
-s = s.replace('record LSTMState (S : SmoothAlgebra) (hidden : Nat) : Set where', 'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where')
-s = s.replace('VecS S hidden\n', 'VecS S hiddenDim\n')
-s = s.replace('∀ {S input hidden} →', '∀ {S input hiddenDim} →')
+# Keep recurrent dimension names definitionally aligned after all earlier
+# structural repairs. This pass is scoped to neural components only.
+neural_start = s.index('------------------------------------------------------------------------\n-- Neural components:')
+neural = s[neural_start:]
+neural = neural.replace('∀ {S input hidden} →', '∀ {S input hiddenDim} →')
+neural = neural.replace('RecurrentAffine S input hidden', 'RecurrentAffine S input hiddenDim')
+neural = neural.replace('VecS S hidden → VecS S hidden', 'VecS S hiddenDim → VecS S hiddenDim')
+neural = neural.replace('VecS S hidden\n', 'VecS S hiddenDim\n')
+neural = neural.replace('LSTMBlock S input hidden', 'LSTMBlock S input hiddenDim')
+neural = neural.replace('LSTMState S hidden', 'LSTMState S hiddenDim')
+s = s[:neural_start] + neural
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
 end = s.index('\n------------------------------------------------------------------------\n-- Neural components:', start)
