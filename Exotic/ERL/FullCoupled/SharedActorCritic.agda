@@ -35,32 +35,30 @@ sharedRepresentation p w =
 record ActorCriticParameters : Set where
   constructor actorCriticParameters
   field
-    shared actorHeadScale actorHeadBias : Int8
+    representation : Parameters
+    actorHeadScale actorHeadBias : Int8
     criticHeadScale criticHeadBias : Int8
 
 open ActorCriticParameters public
 
-sharedParameters : ActorCriticParameters → Parameters
-sharedParameters _ = parameters one8 one8 one8 one8 one8 one8
-
 actorForward : ActorCriticParameters → Window2 → Int8
 actorForward p w = int8Add
-  (int8Mul (actorHeadScale p) (sharedRepresentation (sharedParameters p) w))
+  (int8Mul (actorHeadScale p) (sharedRepresentation (representation p) w))
   (actorHeadBias p)
 
 criticForward : ActorCriticParameters → Window2 → Int8
 criticForward p w = int8Add
-  (int8Mul (criticHeadScale p) (sharedRepresentation (sharedParameters p) w))
+  (int8Mul (criticHeadScale p) (sharedRepresentation (representation p) w))
   (criticHeadBias p)
 
 sharedActorCriticAgreement : ∀ (p : ActorCriticParameters) (w : Window2) →
-  sharedRepresentation (sharedParameters p) w ≡
-  sharedRepresentation (sharedParameters p) w
+  sharedRepresentation (representation p) w ≡
+  sharedRepresentation (representation p) w
 sharedActorCriticAgreement p w = refl
 
 sampleSharedParameters : ActorCriticParameters
 sampleSharedParameters = actorCriticParameters
-  one8
+  (parameters one8 one8 one8 one8 one8 one8)
   one8
   zero8
   one8
