@@ -1,10 +1,10 @@
 # Law-Method Full-Coupling Theorem Permutations Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** theorem generation is endogenous: actual explorer × retained dyadic law × representation boundary, with Agda `--safe` as the acceptance oracle.
 
-**Goal:** Make the exploration theorem generator emit only endogenous theorem artifacts for every actual explorer × dyadic probability-law permutation after the full algebraic coupling composition, with the legacy triangular law permanently pruned from the selectable law universe.
+**Goal:** Make the exploration theorem generator emit only endogenous theorem artifacts for every actual explorer paired with the single retained Flat Dyadic probability law after full algebraic coupling composition.
 
-**Architecture:** `DyadicLaw` is a finite law tag plus exact normalization/support facts. Actual explorer modules remain MR15, OpenES, and coupled Noisy Nets. `FullAlgebraicCoupling` is the theorem boundary that composes one actual explorer with one law and derives PeriodOne only from the composed proof object. The Haskell generator enumerates method × law permutations and emits only those composed theorem objects; Agda `--safe` remains the acceptance authority.
+**Architecture:** `DyadicLaw` is a finite law tag plus exact normalization/support facts. Actual explorer modules remain MR15, OpenES, and coupled Noisy Nets. `FullAlgebraicCoupling` is the theorem boundary that composes one actual explorer with Flat Dyadic and derives `PeriodOne` only from the composed proof object. The representation boundary is `softsignQ8 (signReLUQ8 x)`; Noisy Nets additionally has an explicit projection/lift theorem connecting its full coupled state to that quotient.
 
 **Tech Stack:** Agda `--safe`, Haskell `runghc` generator, GitHub Actions.
 
@@ -14,178 +14,68 @@
 
 - Canonical mathematical authority is Agda `--safe`.
 - Actual exploration methods are MR15, OpenES, and coupled Noisy Nets.
-- Lazy Walk and Dyadic Ladder are probability-law modules, not exploration methods.
-- The selectable law universe contains Lazy Walk and Dyadic Ladder only.
-- The legacy triangular law is not selectable and is guarded against reintroduction by the permanent theorem-scope checker.
+- Flat Dyadic is the only selectable probability-law module.
+- Lazy Walk and Dyadic Ladder are pruned from the active theorem surface.
+- The legacy triangular law is pruned and guarded against reintroduction.
 - No empirical/data analysis is introduced.
 
 ---
 
-### Task 1: Define the dyadic-law composition surface
+### Task 1: Define the retained law and full theorem boundary
 
 **Files:**
-- Create: `Exotic/ERL/Exploration/DyadicLaw.agda`
-- Create: `Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda`
+- `Exotic/ERL/Exploration/FlatDyadic.agda`
+- `Exotic/ERL/Exploration/DyadicLaw.agda`
+- `Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda`
 
-**Interfaces:**
-- `DyadicLaw` exports `lazyWalk` and `dyadicLadder`.
-- `law-normalized` maps each law tag to its checked exact normalization proof.
-- `law-unit-support` maps each law tag to its checked positive unit-step support facts.
-- `FullAlgebraicCoupling law step` stores the law normalization theorem, explorer irreducibility theorem, explorer self-loop theorem, and derived period-one theorem.
-- `composeFull` constructs the composition from these proof components.
+- [x] Flat Dyadic is uniform over all 256 Int8 codes with exact denominator 256.
+- [x] Prove normalization, zero support, ±1 support, and universal positive support.
+- [x] Make `DyadicLaw` contain only `flatDyadic`.
+- [x] Make `FullAlgebraicCoupling` carry normalization, unit support, universal support, representation forward/pullback laws, explorer irreducibility, self-loop, and derived period one.
 
-- [ ] **Step 1: Add the law tag and exact proof interface.**
-
-```agda
-data DyadicLaw : Set where
-  lazyWalk : DyadicLaw
-  dyadicLadder : DyadicLaw
-```
-
-Each case delegates to the already checked exact law module and exposes only finite dyadic normalization/support facts.
-
-- [ ] **Step 2: Add the full algebraic coupling theorem record.**
-
-```agda
-record FullAlgebraicCoupling {S : Set}
-    (law : DyadicLaw) (_—→_ : S → S → Set) : Set where
-  constructor fullAlgebraicCoupling
-  field
-    lawNormalized : law-normalized law
-    irreducible : Irreducible _—→_
-    selfLoop : SelfLoop _—→_
-    periodOne : PeriodOne _—→_
-```
-
-- [ ] **Step 3: Make `composeFull` derive `periodOne` through the existing schema theorem.**
-
-```agda
-composeFull : ∀ {S : Set} (law : DyadicLaw) {_—→_ : S → S → Set}
-  → law-normalized law
-  → Irreducible _—→_
-  → SelfLoop _—→_
-  → FullAlgebraicCoupling law _—→_
-composeFull law normalized r loop = fullAlgebraicCoupling
-  normalized r loop (periodOne-from-components r loop)
-```
-
-- [ ] **Step 4: Check both new modules with `agda --safe`.**
-
-Run: `agda --safe Exotic/ERL/Exploration/DyadicLaw.agda` and `agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda`
-Expected: PASS.
-
-- [ ] **Step 5: Commit.**
-
-```bash
-git add Exotic/ERL/Exploration/DyadicLaw.agda Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
-git commit -m "feat: add law-aware full coupling theorem surface"
-```
-
-### Task 2: Generate every law × method permutation
+### Task 2: Generate the endogenous frontier
 
 **Files:**
-- Modify: `.ci/discovery/ExplorationTheoremGenerator.hs`
-- Modify: `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
+- `.ci/discovery/ExplorationTheoremGenerator.hs`
+- `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
 
-**Interfaces:**
-- `Method` continues to describe MR15, OpenES, and Noisy Nets.
-- `Law` describes Lazy Walk and Dyadic Ladder plus the law normalization proof name.
-- `renderPermutation` emits an `Endogenous` theorem value only through `composeFull`.
+- [x] Enumerate MR15, OpenES, and Noisy Nets against Flat Dyadic only.
+- [x] Emit exactly three `Endogenous` theorem objects through `composeFull`.
+- [x] Pass both unit and universal support proofs into the theorem boundary.
+- [x] Keep Haskell as source generation only; Agda `--safe` is the acceptance oracle.
 
-- [ ] **Step 1: Add the two-law metadata table.**
+Expected theorem names:
+`MR15FlatDyadicEndogenous`, `OpenESFlatDyadicEndogenous`, `NoisyNetFlatDyadicEndogenous`.
 
-```haskell
-data Law = Law
-  { lawName :: String
-  , lawCtor :: String
-  , normalizationName :: String
-  }
-
-laws :: [Law]
-laws =
-  [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized"
-  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized"
-  ]
-```
-
-- [ ] **Step 2: Replace method-only rendering with a method × law product.**
-
-For every `Method m` and `Law l`, emit:
-
-```agda
-MR15LazyWalkEndogenous : FullAlgebraicCoupling lazyWalk MR15Step
-MR15LazyWalkEndogenous = composeFull lazyWalk lazyWalkNormalized
-  mr15IrreducibilityProof mr15SelfLoopProof
-```
-
-and the corresponding OpenES and NoisyNet values, with no standalone law theorem output.
-
-- [ ] **Step 3: Import the law and full-coupling modules into the generated harness.**
-
-- [ ] **Step 4: Run the generator and then `agda --safe` on its generated output.**
-
-Run: `runghc .ci/discovery/ExplorationTheoremGenerator.hs`
-Expected: generator exits zero and writes six law × method theorem values.
-
-Run: `agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
-Expected: PASS.
-
-- [ ] **Step 5: Commit.**
-
-```bash
-git add .ci/discovery/ExplorationTheoremGenerator.hs Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
-git commit -m "feat: generate endogenous law-method theorem permutations"
-```
-
-### Task 3: Permanently prune the legacy triangular law
+### Task 3: Connect Noisy Nets to the representation layer
 
 **Files:**
-- Modify: `.ci/check-forbidden-theorems.py`
+- `Exotic/ERL/Finite/Activation.agda`
+- `Exotic/efficient_chad/SoftsignGatedComposition.agda`
+- `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda`
 
-**Interfaces:**
-- Existing finite/dyadic theorem-scope guard gains encoded tokens for the legacy law name and compact spelling, preventing accidental reintroduction without exposing the guard's own vocabulary.
+- [x] Concrete finite forward functions are `signReLUQ8` and `softsignQ8`.
+- [x] The representation observable is `softsignQ8 (signReLUQ8 x)`.
+- [x] Prove projection/section for the Noisy-Net coupled state.
+- [x] Prove every representation step lifts into the coupled Noisy-Net relation.
+- [x] Prove every coupled Noisy-Net step projects to the representation relation.
+- [x] Prove representation irreducibility, self-loop, and period one.
+- [x] Prove full coupled Noisy-Net irreducibility and self-loop.
+- [x] Exhibit distinct GateParams in one representation fiber, establishing a genuine strict state extension.
 
-- [ ] **Step 1: Add encoded forbidden tokens for the legacy law identifiers.**
+Concrete activation-specific Möbius closure remains conditional on concrete in-tree Möbius witnesses; generic CHAD composition does not fabricate them.
 
-- [ ] **Step 2: Run the scope guard.**
+### Task 4: Strict theorem ordering
 
-Run: `python3 .ci/check-forbidden-theorems.py`
-Expected: `finite-dyadic-theorem-scope=clean`.
+- [x] Retained Flat Dyadic is maximal in the law-support theorem class because every Int8 code has positive one-step support.
+- [x] Noisy-Net is strictly above the softsign-gated quotient theorem because the quotient has a section, every coupled step projects/lifts through the boundary, and distinct hidden GateParams collapse to the same representation signal.
+- [ ] MR15 production-state projection/lift theorem.
+- [ ] OpenES production-state projection/lift theorem.
 
-- [ ] **Step 3: Commit.**
+Until the last two are kernel-checked, do not assign a false strict cross-method ordering against Noisy Nets.
 
-```bash
-git add .ci/check-forbidden-theorems.py
-git commit -m "chore: permanently prune legacy triangular law"
-```
+### Task 5: CI acceptance
 
-### Task 4: Verify the full canonical gate
-
-**Files:**
-- Check: `.github/workflows/agda.yml`
-
-**Interfaces:**
-- Existing workflow continues to validate canonical Agda, individual explorers, law modules, generated theorem harness, and theorem-scope guard.
-
-- [ ] **Step 1: Run all directly available local checks.**
-
-Run:
-```bash
-python3 .ci/check-forbidden-theorems.py
-agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
-agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
-runghc .ci/discovery/ExplorationTheoremGenerator.hs
-agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
-```
-
-- [ ] **Step 2: Inspect the generated source for exactly six composed theorem values.**
-
-Expected pairs:
-`MR15 × LazyWalk`, `MR15 × DyadicLadder`, `OpenES × LazyWalk`, `OpenES × DyadicLadder`, `NoisyNet × LazyWalk`, `NoisyNet × DyadicLadder`.
-
-- [ ] **Step 3: Commit the final verification output if source changes are needed.**
-
-```bash
-git status --short
-git diff --check
-```
+- [x] Remove obsolete law-module workflow checks for the pruned variants.
+- [x] Add retained Flat Dyadic, full coupling, softsign-gated composition, and Noisy-Net projection checks.
+- [ ] Require a fresh green run after the latest head is pushed.
