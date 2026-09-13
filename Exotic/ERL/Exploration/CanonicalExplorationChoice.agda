@@ -7,6 +7,7 @@ open import Data.Nat using (ℕ; _*_)
 open import Data.Nat.DivMod using (m%n<n)
 open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using (Int8; int8Mul)
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise)
 open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ( dimension
   ; populationSize
@@ -15,7 +16,6 @@ open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ; Population
   ; V
   ; Exponent
-  ; Noise
   ; lookupV
   ; mutateGenome
   ; mutatePopulation
