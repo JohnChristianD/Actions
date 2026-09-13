@@ -13,33 +13,26 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; Irreducible
   )
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
-  ( SoftsignGatedRepresentation )
+  ( SoftsignGatedRepresentation
+  ; SoftsignGatedStep
+  ; softsignTarget
+  )
 
--- MR15 exploration is defined at the canonical softsign-gated representation
--- boundary rather than at a detached scalar surrogate.
 MR15State : Set
 MR15State = SoftsignGatedRepresentation
 
-record MR15Noise : Set where
-  constructor mr15Noise
-  field
-    target : MR15State
-
-open MR15Noise public
-
-data MR15Step : MR15State → MR15State → Set where
-  stepFromFreshNoise : ∀ {s} → (ε : MR15Noise) → MR15Step s (target ε)
+MR15Step : MR15State → MR15State → Set
+MR15Step = SoftsignGatedStep
 
 mr15IrreducibilityProof : Irreducible MR15Step
-mr15IrreducibilityProof s t =
-  there (stepFromFreshNoise (mr15Noise t)) here
+mr15IrreducibilityProof s t = there (softsignTarget t) here
 
 mr15SelfLoopProof : SelfLoop MR15Step
-mr15SelfLoopProof s = stepFromFreshNoise (mr15Noise s)
+mr15SelfLoopProof s = softsignTarget s
 
--- OpenES is the scalar quotient used only for the strict factor comparison.
+-- OpenES is the scalar quotient used for the strict factor comparison.
 openESProjection : MR15State → Int8
-openESProjection r = proj₁ r
+openESProjection = proj₁
 
 openESLift : Int8 → MR15State
 openESLift x = x , zero8
