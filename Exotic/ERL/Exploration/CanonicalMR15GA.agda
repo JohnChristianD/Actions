@@ -7,7 +7,7 @@ open import Data.Fin as F using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (m%n<n; _/_)
-open import Data.Nat.Properties using (_≤?_; yes; no)
+open import Data.Nat.Properties using (_≤?_) 
 open import Relation.Nullary using (yes; no)
 open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
 
@@ -49,7 +49,7 @@ mutateTicks (suc k) n x = mutateTicks k n (stepCanonical n x)
 
 mutateGenome : Exponent → Noise → Coordinate → Genome → Genome
 mutateGenome e n j g = λ i → mutateCoordinate i where
-  mutateCoordinate : Coordinate → Fin 256
+  mutateCoordinate : Coordinate → Fin dimension
   mutateCoordinate i with F._≟_ i j
   ... | yes _ = mutateTicks (pow2 (toℕ e)) n (g i)
   ... | no _ = g i
@@ -112,7 +112,6 @@ natLess (suc m) (suc n) = natLess m n
 
 Fitness : Set
 Fitness = Genome → ℕ
-
 topQuarter : Fitness → Population → V Genome 4
 topQuarter fit p =
   mapV
@@ -252,8 +251,8 @@ neutralGeneration fit = refl
 unitMutationAtMinimum : ∀ (n : Noise) (j : Coordinate) (g : Genome) →
   mutateGenome initialExponent n j g ≡
   λ i → mutateCoordinate i where
-    mutateCoordinate : Coordinate → Fin 256
+    mutateCoordinate : Coordinate → Fin dimension
     mutateCoordinate i with F._≟_ i j
-    ... | yes _ = stepCanonical n (g i)
+    ... | yes _ = mutateTicks 1 n (g i)
     ... | no _ = g i
 unitMutationAtMinimum n j g = refl
