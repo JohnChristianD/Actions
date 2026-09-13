@@ -1,43 +1,43 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 
--- Generated proof harness. Haskell only constructs this source; Agda --safe accepts it or rejects it.
-open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Irreducible
-  ; SelfLoop
-  ; PeriodOne
-  ; periodOne-from-components
+-- Generated law × method proof harness. Haskell only constructs this source; Agda --safe accepts it or rejects it.
+open import Exotic.ERL.Exploration.DyadicLaw using
+  ( DyadicLaw
+  ; lazyWalk
+  ; dyadicLadder
+  )
+open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using
+  ( FullAlgebraicCoupling
+  ; composeFull
   )
 
 open import Exotic.ERL.Exploration.MR15Reachability
 
-MR15KernelIrreducibility : Irreducible MR15Step
-MR15KernelIrreducibility = mr15IrreducibilityProof
+MR15LazyWalkEndogenous : FullAlgebraicCoupling lazyWalk MR15Step
+MR15LazyWalkEndogenous = composeFull lazyWalk lazyWalkNormalized
+  mr15IrreducibilityProof mr15SelfLoopProof
 
-MR15KernelSelfLoop : SelfLoop MR15Step
-MR15KernelSelfLoop = mr15SelfLoopProof
-
-MR15KernelPeriodOne : PeriodOne MR15Step
-MR15KernelPeriodOne = periodOne-from-components MR15KernelIrreducibility MR15KernelSelfLoop
+MR15DyadicLadderEndogenous : FullAlgebraicCoupling dyadicLadder MR15Step
+MR15DyadicLadderEndogenous = composeFull dyadicLadder dyadicLadderNormalized
+  mr15IrreducibilityProof mr15SelfLoopProof
 
 open import Exotic.ERL.Exploration.OpenESDyadic
 
-OpenESKernelIrreducibility : Irreducible openESStep
-OpenESKernelIrreducibility = openESIrreducibilityProof
+OpenESLazyWalkEndogenous : FullAlgebraicCoupling lazyWalk openESStep
+OpenESLazyWalkEndogenous = composeFull lazyWalk lazyWalkNormalized
+  openESIrreducibilityProof openESSelfLoopProof
 
-OpenESKernelSelfLoop : SelfLoop openESStep
-OpenESKernelSelfLoop = openESSelfLoopProof
-
-OpenESKernelPeriodOne : PeriodOne openESStep
-OpenESKernelPeriodOne = periodOne-from-components OpenESKernelIrreducibility OpenESKernelSelfLoop
+OpenESDyadicLadderEndogenous : FullAlgebraicCoupling dyadicLadder openESStep
+OpenESDyadicLadderEndogenous = composeFull dyadicLadder dyadicLadderNormalized
+  openESIrreducibilityProof openESSelfLoopProof
 
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled
 
-NoisyNetKernelIrreducibility : Irreducible NoisyNetStep
-NoisyNetKernelIrreducibility = noisyNetIrreducibilityProof
+NoisyNetLazyWalkEndogenous : FullAlgebraicCoupling lazyWalk NoisyNetStep
+NoisyNetLazyWalkEndogenous = composeFull lazyWalk lazyWalkNormalized
+  noisyNetIrreducibilityProof noisyNetSelfLoopProof
 
-NoisyNetKernelSelfLoop : SelfLoop NoisyNetStep
-NoisyNetKernelSelfLoop = noisyNetSelfLoopProof
-
-NoisyNetKernelPeriodOne : PeriodOne NoisyNetStep
-NoisyNetKernelPeriodOne = periodOne-from-components NoisyNetKernelIrreducibility NoisyNetKernelSelfLoop
+NoisyNetDyadicLadderEndogenous : FullAlgebraicCoupling dyadicLadder NoisyNetStep
+NoisyNetDyadicLadderEndogenous = composeFull dyadicLadder dyadicLadderNormalized
+  noisyNetIrreducibilityProof noisyNetSelfLoopProof
