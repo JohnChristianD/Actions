@@ -7,12 +7,14 @@ on:
       - '**/*.agda'
       - '.ci/**'
       - '.github/workflows/agda.yml'
+      - 'flake.nix'
   pull_request:
     branches: ['main']
     paths:
       - '**/*.agda'
       - '.ci/**'
       - '.github/workflows/agda.yml'
+      - 'flake.nix'
   schedule:
     - cron: '17 * * * *'
   workflow_dispatch:
@@ -50,6 +52,8 @@ jobs:
         run: |
           set -euo pipefail
           if git grep -nE -i 'Munchausen|Tsallis-2|TrueOnlineTD|OpenES|softmax|postulate|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
+            'Exotic/ERL/Canonical/CanonicalOptimizer.agda' \
+            'Exotic/ERL/Canonical/ConjectureDiscovery.agda' \
             'Exotic/ERL/FullCoupled/CanonicalLearnerEA.agda' \
             'Exotic/ERL/FullCoupled/CanonicalLearner.agda' \
             'Exotic/ERL/FullCoupled/CanonicalTransformer.agda' \
@@ -77,6 +81,11 @@ jobs:
           agda --version
           agda --print-agda-app-dir
           test -f "$(agda --print-agda-app-dir)/libraries"
+
+      - name: Set up Nix for reproducible discovery tooling
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
 
       - name: Set up GHC for Agda2HS tooling
         uses: haskell-actions/setup@v2
@@ -135,6 +144,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          agda --safe Exotic/ERL/Canonical/CanonicalOptimizer.agda
+          agda --safe Exotic/ERL/Canonical/ConjectureDiscovery.agda
           agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
           agda --safe Exotic/ERL/Exploration/CanonicalMR15GA.agda
           agda --safe Exotic/ERL/Exploration/CanonicalExplorationChoice.agda
@@ -148,6 +159,12 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalErgodicity.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalExecutable.agda
+
+      - name: Run generated finite conjecture discovery in Nix
+        shell: bash
+        run: |
+          set -euo pipefail
+          nix develop . -c bash .ci/discovery/run-safe-discovery.sh
 
       - name: Extract the faithful learner with Agda2HS
         shell: bash
