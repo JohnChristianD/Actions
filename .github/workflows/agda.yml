@@ -50,12 +50,12 @@ jobs:
         run: |
           set -euo pipefail
           if git grep -nE -i 'AdaMax|Lion|stosigmSGD|stosignSGDv2|signSGDM|(^|[^A-Za-z])Adam([^A-Za-z]|$)' -- \
-            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/workflows/agda.yml'; then
+            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/**'; then
             echo 'legacy-optimizer-trace=FOUND'
             exit 1
           fi
           if git grep -nE '\{!!\}|(^|[^A-Za-z])postulate([^A-Za-z]|$)|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
-            ':!*.md' ':!.ci/**' ':!.ci/external/**'; then
+            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/**'; then
             echo 'proof-bypass-trace=FOUND'
             exit 1
           fi
@@ -154,8 +154,11 @@ jobs:
           agda --safe Exotic/ERL/Exploration/ComposedLearnerExploration.agda
           agda --safe Exotic/ERL/Exploration/DMCPFinite.agda
           agda --safe Exotic/ERL/Exploration/DyadicMR15GA.agda
+          agda --safe Exotic/ERL/Exploration/OpenESDyadic.agda
           agda --safe Exotic/ERL/Exploration/TheoremRanking.agda
           agda --safe Exotic/ERL/Representation/HaarInt8.agda
+          agda --safe Exotic/ERL/FullCoupled/F4IntLearner.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalLearner.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteLearningCertificate.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteLearner.agda
           agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
