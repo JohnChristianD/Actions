@@ -49,7 +49,7 @@ mutateTicks (suc k) n x = mutateTicks k n (stepCanonical n x)
 
 mutateGenome : Exponent → Noise → Coordinate → Genome → Genome
 mutateGenome e n j g = λ i → mutateCoordinate i where
-  mutateCoordinate : Coordinate → Fin dimension
+  mutateCoordinate : Coordinate → Fin 256
   mutateCoordinate i with F._≟_ i j
   ... | yes _ = mutateTicks (pow2 (toℕ e)) n (g i)
   ... | no _ = g i
@@ -251,7 +251,7 @@ neutralGeneration fit = refl
 unitMutationAtMinimum : ∀ (n : Noise) (j : Coordinate) (g : Genome) →
   mutateGenome initialExponent n j g ≡
   λ i → mutateCoordinate i where
-    mutateCoordinate : Coordinate → Fin dimension
+    mutateCoordinate : Coordinate → Fin 256
     mutateCoordinate i with F._≟_ i j
     ... | yes _ = mutateTicks 1 n (g i)
     ... | no _ = g i
