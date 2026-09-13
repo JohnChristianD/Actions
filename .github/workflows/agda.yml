@@ -34,6 +34,9 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Reject forbidden theorem families
+        run: python3 .ci/check-forbidden-theorems.py
+
       - name: Resolve canonical composition
         shell: bash
         run: |
