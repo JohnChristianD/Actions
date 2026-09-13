@@ -32,6 +32,7 @@ data Law = Law
 laws :: [Law]
 laws =
   [ Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport"
+  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "dyadicLadderUnitSupport"
   ]
 
 generatedPath :: FilePath
@@ -42,14 +43,18 @@ renderCandidate = unlines $
   [ "{-# OPTIONS --safe #-}"
   , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
   , ""
-  , "-- Generated flat-dyadic × method full-composition theorem harness."
+  , "-- Generated law × method full-composition theorem harness."
   , "-- Haskell constructs source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
-  , "  ( DyadicLaw; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport )"
+  , "  ( DyadicLaw; flatDyadic; dyadicLadder"
+  , "  ; flatDyadicNormalized; flatDyadicUnitSupport"
+  , "  ; dyadicLadderNormalized; dyadicLadderUnitSupport )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling; composeFull )"
   , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
   , "  ( softsignGatedForwardLaw-proof; softsignGatedPullbackLaw-proof )"
+  , "open import Exotic.efficient_chad.MobiusSoftsignBridge using"
+  , "  ( softsignGatedForwardMobiusWitness )"
   , "open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using"
   , "  ( softsignGatedPeriodOne )"
   , "open import Exotic.ERL.FullCoupled.TheoremStrengthV3 using"
@@ -61,6 +66,7 @@ renderCandidate = unlines $
      , "StrictOpenESLTMR15 = openES-lt-MR15"
      , "StrictMR15LTNoisyNet = MR15-lt-NoisyNet"
      , "StrictOpenESLTNoisyNet = openES-lt-NoisyNet"
+     , "MobiusForwardComposition = softsignGatedForwardMobiusWitness"
      ]
   where
     renderMethod m =
@@ -101,6 +107,8 @@ main = do
   putStrLn $ "exploration-theorem-generator=" ++ status
   putStrLn $ "exploration-law-method-permutations=" ++ show (length methods * length laws)
   putStrLn "exploration-theorem-order=OpenES<MR15<NoisyNet"
+  putStrLn "law-frontier=FlatDyadic|DyadicLadder"
+  putStrLn "mobius-forward-composition=conditional-on-concrete-activation-witnesses"
   if null output then pure () else putStrLn output
   case code of
     ExitSuccess -> exitSuccess
