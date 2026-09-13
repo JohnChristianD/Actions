@@ -58,6 +58,23 @@ runCHAD op x = primal op x , pullback op x
 identityCHAD-law : ∀ x → primal identityCHAD x ≡ x
 identityCHAD-law x = refl
 
+-- Exact finite CHAD composition. This is the composition law to instantiate
+-- for any future signReLU8/softsign8 operators; it does not assume a
+-- differentiability theorem outside the finite pullback interface.
+composeCHAD : CHADOperator → CHADOperator → CHADOperator
+composeCHAD outer inner = chadOperator
+  (λ x → primal outer (primal inner x))
+  (λ x cotangent → pullback inner x (pullback outer (primal inner x) cotangent))
+
+composeCHAD-primal : ∀ (outer inner : CHADOperator) (x : Int8)
+  → primal (composeCHAD outer inner) x ≡ primal outer (primal inner x)
+composeCHAD-primal outer inner x = refl
+
+composeCHAD-pullback : ∀ (outer inner : CHADOperator) (x cotangent : Int8)
+  → pullback (composeCHAD outer inner) x cotangent
+    ≡ pullback inner x (pullback outer (primal inner x) cotangent)
+composeCHAD-pullback outer inner x cotangent = refl
+
 record AffineCHAD : Set₁ where
   constructor affineCHAD
   field
