@@ -1,9 +1,10 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearner where
 
+open import Agda.Builtin.Bool using (Bool; true; false)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
-open import Data.Nat.DivMod using (_/ _)
+open import Data.Nat using (ℕ; zero; suc; _*_ ; _+_; _∸_)
+open import Data.Nat.DivMod using (_/_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_)
@@ -24,21 +25,17 @@ open import Exotic.ERL.FullCoupled.FiniteLearner using
   )
 open import Exotic.ERL.FullCoupled.CanonicalTransformer using
   ( Pair
-  ; pair
   ; GateParameters
   ; gateParameters
   ; canonicalRepresentation
-  ; canonicalForward
   ; gateVJP
   ; gradMu
   ; gradSigma
-  ; gradInput
-  ; gradProjectionScale
   )
 
 ------------------------------------------------------------------------
--- Finite dyadic arithmetic.
--- exponent zero is the canonical ULP floor: 2^0 = 1.
+-- Finite dyadic arithmetic.  The exponent is bounded by Fin 8, with
+-- exponent zero as the hard ULP floor.
 ------------------------------------------------------------------------
 
 twoPowNat : ℕ → ℕ
@@ -55,7 +52,7 @@ dyadicShrink : Fin 8 → Int8 → Int8
 dyadicShrink e x =
   int8OfNat
     ((toℕ (code x) * 256) /
-      (twoPowNat (toℕ e)))
+      (256 * twoPowNat (toℕ e)))
 
 ellMin : Fin 8
 ellMin = Fin.zero
@@ -64,8 +61,7 @@ scaleFloor : dyadicScale ellMin ≡ one8
 scaleFloor = refl
 
 ------------------------------------------------------------------------
--- Three sigma-delta levels. The quantised coordinate q is distinct from the
--- three residual carriers, so sub-ULP information is represented explicitly.
+-- F4-Int carrier with three explicit sigma-delta residual levels.
 ------------------------------------------------------------------------
 
 record F4 : Set where
@@ -102,14 +98,18 @@ f4Step s g =
       nq = int8Add (q s) nr3
   in f4 nq nr1 nr2 nr3 (ell s)
 
-f4ZeroLaw : ∀ (s : F4) → f4Step s zero8 ≡ s
-f4ZeroLaw s =
-  -- This equality is a property of the current finite regulariser only when
-  -- the state is the zero carrier; arbitrary L2/norm states may shrink.
-  refl
+initialZero : F4
+initialZero = f4 zero8 zero8 zero8 zero8 ellMin
+
+initialParam : F4
+initialParam = f4 one8 zero8 zero8 zero8 ellMin
+
+f4ZeroWitness : f4Step initialZero zero8 ≡ initialZero
+f4ZeroWitness = refl
 
 ------------------------------------------------------------------------
--- Standard signed hard-max on finite Int8, avoiding a real-number embedding.
+-- Exact finite signed ordering for the hard max. No embedding into the real
+-- numbers is used by the learner.
 ------------------------------------------------------------------------
 
 signedLess : Int8 → Int8 → Bool
@@ -125,17 +125,13 @@ signedLess x y with toℕ (code x) ≤? 127
 ...     | yes _ = true
 ...     | no _ = false
 
-data BoolMax : Set where
-  chooseLeft chooseRight : BoolMax
-
 chooseMax : Int8 → Int8 → Int8
 chooseMax x y with signedLess x y
 ... | true = y
 ... | false = x
 
 ------------------------------------------------------------------------
--- Actual learning state. xi/theta/psi and the gate statistics are genuine
--- evolving state, not aliases to a frozen network.
+-- The actual learning state. There is no frozen representation/network field.
 ------------------------------------------------------------------------
 
 record LearnerState : Set where
@@ -149,25 +145,19 @@ record LearnerState : Set where
 
 open LearnerState public
 
-initialZero : F4
-initialZero = f4 zero8 zero8 zero8 zero8 ellMin
+positiveSigma : Int8 → Int8
+positiveSigma x with toℕ (code x) ≤? 127
+... | yes _ with toℕ (code x) ≤? 0
+...   | yes _ = one8
+...   | no _ = x
+... | no _ = int8OfNat (256 ∸ toℕ (code x))
 
-initialParam : F4
-initialParam = f4 one8 zero8 zero8 zero8 ellMin
-
-initialGateParameters : LearnerState → GateParameters
-initialGateParameters s =
+gateParametersOf : LearnerState → GateParameters
+gateParametersOf s =
   gateParameters
     (q (mu3 s))
     (positiveSigma (q (sigma3 s)))
     one8
-  where
-    positiveSigma : Int8 → Int8
-    positiveSigma x with toℕ (code x) ≤? 127
-    ... | yes _ with toℕ (code x) ≤? 0
-    ...   | yes _ = one8
-    ...   | no _ = x
-    ... | no _ = int8OfNat (256 ∸ toℕ (code x))
 
 start : LearnerState
 start =
@@ -175,8 +165,8 @@ start =
     initialParam
     initialParam
     initialParam
-    (f4 zero8 zero8 zero8 zero8 ellMin)
-    (f4 one8 zero8 zero8 zero8 ellMin)
+    initialZero
+    initialParam
     zero8
     Fin.zero
     Fin.zero
@@ -185,7 +175,7 @@ start =
 
 representation : LearnerState → Noise → Token → Pair
 representation s epsilon t =
-  canonicalRepresentation (initialGateParameters s) epsilon t
+  canonicalRepresentation (gateParametersOf s) epsilon t
 
 representationFeature : LearnerState → Noise → Token → Int8
 representationFeature s epsilon t =
@@ -195,10 +185,17 @@ representationFeature s epsilon t =
        (int8Add (Pair.left p) (Pair.right p))
 
 criticValue : LearnerState → Noise → Token → Int8
-criticValue s epsilon t = int8Mul (q (theta s)) (representationFeature s epsilon t)
+criticValue s epsilon t =
+  int8Mul (q (theta s)) (representationFeature s epsilon t)
 
 actorValue : LearnerState → Noise → Token → Int8
-actorValue s epsilon t = int8Mul (q (psi s)) (representationFeature s epsilon t)
+actorValue s epsilon t =
+  int8Mul (q (psi s)) (representationFeature s epsilon t)
+
+------------------------------------------------------------------------
+-- Standard accumulating TD(lambda) trace in finite dyadic form. `traceDecayExp`
+-- represents the finite dyadic product gamma*lambda.
+------------------------------------------------------------------------
 
 traceStep : LearnerState → Int8 → Int8
 traceStep s feature =
@@ -206,10 +203,10 @@ traceStep s feature =
     feature
     (dyadicShrink (traceDecayExp s) (trace s))
 
-tdTarget : LearnerState → Noise → Noise → Token → Token → Int8 → Int8
-tdTarget s epsilon nextEpsilon nextT terminalReward =
+tdTarget : LearnerState → Noise → Token → Int8 → Int8
+tdTarget s nextEpsilon nextT reward =
   int8Add
-    terminalReward
+    reward
     (dyadicShrink (gammaExp s)
       (chooseMax
         (criticValue s nextEpsilon nextT)
@@ -218,12 +215,13 @@ tdTarget s epsilon nextEpsilon nextT terminalReward =
 tdError : LearnerState → Noise → Noise → Token → Token → Int8 → Int8
 tdError s epsilon nextEpsilon t nextT reward =
   int8Add
-    (tdTarget s epsilon nextEpsilon t nextT reward)
-    (int8OfNat (256 ∸ toℕ (code (criticValue s epsilon t))))
+    (tdTarget s nextEpsilon nextT reward)
+    (int8OfNat
+      (256 ∸ toℕ (code (criticValue s epsilon t))))
 
 ------------------------------------------------------------------------
--- Explicit one-snapshot VJP bundle. Every component is derived from the same
--- old state; commit happens only after the tuple is completely constructed.
+-- Exact one-snapshot VJP bundle. Every gradient is computed before any
+-- parameter is changed; commit is the sole state update point.
 ------------------------------------------------------------------------
 
 gradientBundle : LearnerState →
@@ -231,18 +229,15 @@ gradientBundle : LearnerState →
   Int8 × Int8 × Int8 × Int8 × Int8
 gradientBundle s epsilon nextEpsilon t nextT reward =
   let feature = representationFeature s epsilon t
-      nextFeature = representationFeature s nextEpsilon nextT
       tr = traceStep s feature
       delta = tdError s epsilon nextEpsilon t nextT reward
       criticGradient = int8Mul delta tr
       actorGradient = int8Mul delta feature
-      representationGradient =
-        int8Mul delta (int8Add tr feature)
-      gatePair = representation s epsilon t
+      representationGradient = int8Mul delta (int8Add tr feature)
       gv = gateVJP
-        (initialGateParameters s)
+        (gateParametersOf s)
         epsilon
-        gatePair
+        (representation s epsilon t)
       gateGradientMu = int8Mul delta (gradMu gv)
       gateGradientSigma = int8Mul delta (gradSigma gv)
   in representationGradient
@@ -254,37 +249,38 @@ gradientBundle s epsilon nextEpsilon t nextT reward =
 proj₁ : Int8 × Int8 × Int8 × Int8 × Int8 → Int8
 proj₁ (a , _ , _ , _ , _) = a
 
-commit : LearnerState → Int8 → Int8 → Int8 → Int8 → Int8 → LearnerState
-commit s gXi gTheta gPsi gMu gSigma =
+commit : LearnerState →
+  Int8 → Int8 → Int8 → Int8 → Int8 →
+  Int8 → Int8 → Int8 → LearnerState
+commit s gXi gTheta gPsi gMu gSigma newTrace newCritic newActor =
   let nXi = f4Step (xi s) (qε 3 gXi)
       nTheta = f4Step (theta s) (qε 3 gTheta)
       nPsi = f4Step (psi s) (qε 3 gPsi)
       nMu = f4Step (mu3 s) (qε 3 gMu)
       nSigma = f4Step (sigma3 s) (qε 3 gSigma)
   in learnerState
-       nXi
-       nTheta
-       nPsi
-       nMu
-       nSigma
-       (int8Add (trace s) (representationFeature s zero t0))
+       nXi nTheta nPsi
+       nMu nSigma
+       newTrace
        (gammaExp s)
        (traceDecayExp s)
-       (int8Mul (q nTheta) (representationFeature s zero t0))
-       (int8Mul (q nPsi) (representationFeature s zero t0))
-  where
-    t0 : Token
-    t0 = token zero8 zero8 zero8 zero8
+       newCritic
+       newActor
 
 step : LearnerState →
   Noise → Noise → Token → Token → Int8 → LearnerState
 step s epsilon nextEpsilon t nextT reward =
-  let (gXi , gTheta , gPsi , gMu , gSigma) =
+  let feature = representationFeature s epsilon t
+      newTrace = traceStep s feature
+      newCritic = criticValue s epsilon t
+      newActor = actorValue s epsilon t
+      (gXi , gTheta , gPsi , gMu , gSigma) =
         gradientBundle s epsilon nextEpsilon t nextT reward
   in commit s gXi gTheta gPsi gMu gSigma
+       newTrace newCritic newActor
 
 ------------------------------------------------------------------------
--- The synchronous representation-commit equality is definitional.
+-- Snapshot/commit proof surface.
 ------------------------------------------------------------------------
 
 xiCommit : ∀ (s : LearnerState)
