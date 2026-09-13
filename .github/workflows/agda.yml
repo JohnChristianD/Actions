@@ -105,6 +105,9 @@ jobs:
       - name: Check retained flat dyadic law
         run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
 
+      - name: Check strict flat support theorem order
+        run: agda --safe Exotic/ERL/Exploration/FlatDyadicStrictOrder.agda
+
       - name: Check full algebraic coupling composition
         run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
 
