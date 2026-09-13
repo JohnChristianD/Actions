@@ -33,7 +33,7 @@ laws :: [Law]
 laws =
   [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized" "lazyWalkUnitSupport"
   , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "dyadicLadderUnitSupport"
-  , Law "DyadicGeometric5" "dyadicGeometric5" "dyadicGeometric5Normalized" "dyadicGeometric5UnitSupport"
+  , Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport"
   ]
 
 generatedPath :: FilePath
@@ -49,7 +49,7 @@ renderCandidate = unlines $
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
   , "  ( DyadicLaw; lazyWalk; lazyWalkNormalized; lazyWalkUnitSupport"
   , "  ; dyadicLadder; dyadicLadderNormalized; dyadicLadderUnitSupport"
-  , "  ; dyadicGeometric5; dyadicGeometric5Normalized; dyadicGeometric5UnitSupport"
+  , "  ; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport"
   , "  )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling; composeFull )"
