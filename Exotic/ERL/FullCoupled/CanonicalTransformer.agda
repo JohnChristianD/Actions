@@ -11,7 +11,6 @@ open import Exotic.efficient_chad.Int8 using
   ; int8Add
   ; int8Mul
   ; int8OfNat
-  ; one8
   )
 open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
 open import Exotic.ERL.Exploration.NoisyNetFinite using (noiseDelta)
@@ -20,6 +19,11 @@ open import Exotic.ERL.FullCoupled.CanonicalToken using
   ; reward
   ; previousAction
   ; nextObservation
+  )
+open import Exotic.ERL.FullCoupled.CanonicalFinitePrimitives using
+  ( tokenCode
+  ; signReLU8
+  ; softsign8
   )
 
 ------------------------------------------------------------------------
@@ -34,11 +38,6 @@ record Pair : Set where
     left right : Int8
 
 open Pair public
-
-tokenCode : Token → Int8
-tokenCode t = int8Add
-  (int8Add (observation t) (previousAction t))
-  (int8Add (reward t) (nextObservation t))
 
 negate8 : Int8 → Int8
 negate8 x = int8OfNat (256 ∸ toℕ (code x))
@@ -67,19 +66,6 @@ fastfood (pair x y) =
   pair
     (int8Add x y)
     (int8Add x (negate8 y))
-
-signReLU8 : Int8 → Int8
-signReLU8 x with toℕ (code x) ≤? 127
-... | yes _ = x
-... | no _ = int8OfNat (256 ∸ ((128 * (256 ∸ toℕ (code x))) / suc (256 ∸ toℕ (code x))))
-  where
-  suc : ℕ → ℕ
-  suc n = n + 1
-
-softsign8 : Int8 → Int8
-softsign8 x with toℕ (code x) ≤? 127
-... | yes _ = int8OfNat ((128 * toℕ (code x)) / (toℕ (code x) + 1))
-... | no _ = int8OfNat (256 ∸ ((128 * (256 ∸ toℕ (code x))) / ((256 ∸ toℕ (code x)) + 1)))
 
 sR1 : Pair → Pair
 sR1 (pair x y) = pair (signReLU8 x) (signReLU8 y)
