@@ -11,7 +11,8 @@ open import Exotic.ERL.Canonical.CanonicalOptimizer using (CanonicalConfig; cano
 open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
 open import Exotic.ERL.Finite.TrueOnlineTD using
   ( TrueOnlineState; initialState; exampleFeature; exampleNextFeature; learnerStep )
-open import Exotic.ERL.Exploration.FiniteNoise using (neg; zero; pos; weight)
+open import Exotic.ERL.Exploration.FiniteNoise using
+  ( Noise; neg; zero; pos; weight; totalWeight; zeroHasPositiveMass )
 open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbScalar)
 open import Exotic.ERL.Exploration.FiniteMarkov using (selfLoopExample)
 open import Exotic.ERL.Exploration.ComposedLearnerExploration using
@@ -19,11 +20,13 @@ open import Exotic.ERL.Exploration.ComposedLearnerExploration using
 open import Exotic.ERL.Exploration.DyadicOpenES using
   ( openESMutation; openESZeroSelfLoop )
 open import Exotic.ERL.Exploration.DyadicMR15GA using
-  ( Population; Coordinate; Exponent; Sign; StepGate
-  ; noPerturb; mutation; zeroPopulation; unitExponent; noPerturbation-self-loop )
+  ( Population; Coordinate; Exponent; StepGate
+  ; noPerturb; perturb; mutation; zeroPopulation; unitExponent
+  ; noPerturbation-self-loop; canonicalZero-self-loop )
 open import Exotic.ERL.Exploration.TheoremObligations using
-  ( SelfLoop; noisyTriStep; noisyTriSelfLoop; openESStep; openESSelfLoop
-  ; mr15Step; mr15SelfLoop; MR15AperiodicityObligation )
+  ( SelfLoop; canonicalNoiseStep; canonicalNoiseSelfLoop
+  ; openESStep; openESSelfLoop; mr15Step; mr15SelfLoop
+  ; MR15AperiodicityObligation )
 open import Exotic.ERL.Exploration.MR15OneBit using
   ( BitState; oneBitSupport; oneBitSelfLoop )
 open import Exotic.ERL.Representation.HaarInt8 using ( H8; double8; H8-square )
@@ -45,8 +48,17 @@ testInt8Roundtrip x = int8Roundtrip x
 testCanonicalConfig : CanonicalConfig
 testCanonicalConfig = canonical
 
-testNoiseWeights : weight neg + weight zero + weight pos ≡ 4
+testNoiseWeights : totalWeight
 testNoiseWeights = refl
+
+testNoiseZeroMass : zeroHasPositiveMass
+testNoiseZeroMass = refl
+
+testNoiseUnitMinus : perturbScalar neg one8 ≡ zero8
+testNoiseUnitMinus = refl
+
+testNoiseUnitPlus : perturbScalar pos zero8 ≡ one8
+testNoiseUnitPlus = refl
 
 testZeroPerturbation : perturbScalar zero one8 ≡ one8
 testZeroPerturbation = selfLoopExample
@@ -54,8 +66,8 @@ testZeroPerturbation = selfLoopExample
 testOpenESZeroPerturbation : openESMutation zero one8 ≡ one8
 testOpenESZeroPerturbation = openESZeroSelfLoop
 
-testNoisyTriSelfLoop : SelfLoop noisyTriStep
-testNoisyTriSelfLoop = noisyTriSelfLoop
+testCanonicalNoiseSelfLoop : SelfLoop canonicalNoiseStep
+testCanonicalNoiseSelfLoop = canonicalNoiseSelfLoop
 
 testOpenESSelfLoop : SelfLoop openESStep
 testOpenESSelfLoop = openESSelfLoop
@@ -63,9 +75,13 @@ testOpenESSelfLoop = openESSelfLoop
 testMR15SelfLoop : SelfLoop mr15Step
 testMR15SelfLoop = mr15SelfLoop
 
-testMR15NoPerturbation : ∀ (e : Exponent) (j : Coordinate) (s : Sign) (p : Population) →
-  mutation noPerturb e j s p ≡ p
+testMR15NoPerturbation : ∀ (n : Noise) (j : Coordinate) (p : Population) →
+  mutation noPerturb n j p ≡ p
 testMR15NoPerturbation = noPerturbation-self-loop
+
+testMR15CanonicalZero : ∀ (j : Coordinate) (p : Population) →
+  mutation perturb zero j p ≡ p
+testMR15CanonicalZero = canonicalZero-self-loop
 
 testSoftsignZero : softsignQ8 zero8 ≡ zero8
 testSoftsignZero = refl
@@ -118,12 +134,9 @@ testCriticForward = criticForward sampleSharedParameters sampleWindow
 
 testLearningState : LearnState
 testLearningState = trainedWitness
-
 testLearningNonempty : prediction trainingWitness ≡ zero8
 testLearningNonempty = trainingWitness-nonempty
-
 testLearningExact : prediction trainedWitness ≡ int8OfNat 4
 testLearningExact = trainingWitness-learns
-
 testLearningTargetValue : LearnState.target trainingWitness ≡ int8OfNat 4
 testLearningTargetValue = trainingWitness-target
