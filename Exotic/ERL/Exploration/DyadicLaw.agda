@@ -18,6 +18,9 @@ open import Exotic.ERL.Exploration.DyadicLadder using
 open import Exotic.ERL.Exploration.FlatDyadic using
   ( flatWeight-normalized
   ; flatUnit-positive
+  ; flatUnit-negative-positive
+  ; flatZero-positive
+  ; flatPowerTwo-support
   )
 
 data DyadicLaw : Set where
@@ -35,17 +38,18 @@ law-unit-support lazyWalk =
   lazyForward-positive × lazyBackward-positive
 law-unit-support dyadicLadder =
   ladderUnit-positive × ladderUnit-negative-positive
-law-unit-support flatDyadic = flatUnit-positive
+law-unit-support flatDyadic =
+  flatUnit-positive × flatUnit-negative-positive
 
 law-zero-support : DyadicLaw → Set
 law-zero-support lazyWalk = lazyStay-positive
 law-zero-support dyadicLadder = ladderStay-positive
-law-zero-support flatDyadic = flatWeight-normalized
+law-zero-support flatDyadic = flatZero-positive
 
 law-ladder-multiscale : DyadicLaw → Set
 law-ladder-multiscale lazyWalk = lazyWeight-sum
 law-ladder-multiscale dyadicLadder = ladderPowerTwo-support
-law-ladder-multiscale flatDyadic = flatWeight-normalized
+law-ladder-multiscale flatDyadic = flatPowerTwo-support
 
 lazyWalkNormalized : law-normalized lazyWalk
 lazyWalkNormalized = lazyWeight-sum
