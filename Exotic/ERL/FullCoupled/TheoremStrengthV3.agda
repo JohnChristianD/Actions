@@ -42,7 +42,9 @@ open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
   ( SoftsignGatedStep
   ; softsignTarget
-  ; RepresentationFactor
+  )
+open import Exotic.ERL.FullCoupled.NoisyNetSoftsignFactor using
+  ( RepresentationFactor
   ; noisyNetSoftsignFactor
   )
 
@@ -145,7 +147,7 @@ noisyNetStrictWitness =
       (cong (λ s → GateParams.sigma3 (gateParameters s)) eq)
 
 record StrictTheoremExtension {S R : Set}
-    (stepS : S → S → Set) (stepR : R → R → Set)
+    (stepS : S → R → Set) (stepR : R → R → Set)
     (s₁ s₂ : S) : Set₁ where
   constructor strictTheoremExtension
   field
@@ -165,5 +167,5 @@ MR15-lt-NoisyNet = strictTheoremExtension noisyNetToMR15 refl
   (λ eq → one8≢zero8
     (cong (λ s → GateParams.sigma3 (gateParameters s)) eq))
 
--- Genuine strict theorem implication order:
+-- Genuine strict factor-theorem chain at the finite state boundary:
 -- OpenES < MR15 < NoisyNet.
