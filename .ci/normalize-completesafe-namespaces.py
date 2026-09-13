@@ -86,16 +86,20 @@ s = re.sub(
 s = s.replace('  centered x = x + neg μ', '  centered : Scalar S → Scalar S\n  centered x = x + neg μ')
 s = s.replace('  normalise x = centered x * invStd', '  normalise : Scalar S → Scalar S\n  normalise x = centered x * invStd')
 
-# Keep recurrent dimension names definitionally aligned after all earlier
-# structural repairs. This pass is scoped to neural components only.
 neural_start = s.index('------------------------------------------------------------------------\n-- Neural components:')
 neural = s[neural_start:]
 neural = neural.replace('∀ {S input hidden} →', '∀ {S input hiddenDim} →')
 neural = neural.replace('RecurrentAffine S input hidden', 'RecurrentAffine S input hiddenDim')
 neural = neural.replace('VecS S hidden → VecS S hidden', 'VecS S hiddenDim → VecS S hiddenDim')
-neural = neural.replace('VecS S hidden\n', 'VecS S hiddenDim\n')
 neural = neural.replace('LSTMBlock S input hidden', 'LSTMBlock S input hiddenDim')
 neural = neural.replace('LSTMState S hidden', 'LSTMState S hiddenDim')
+neural = re.sub(
+    r'record LSTMState \(S : SmoothAlgebra\) \(hiddenDim : Nat\) : Set where\n.*?\n\n',
+    'record LSTMState (S : SmoothAlgebra) (hiddenDim : Nat) : Set where\n  field\n    hidden : VecS S hiddenDim\n    cell : VecS S hiddenDim\n\n',
+    neural,
+    count=1,
+    flags=re.S,
+)
 s = s[:neural_start] + neural
 
 start = s.index('module EfficientCHAD (S : SmoothAlgebra) (n : Nat) where')
@@ -109,4 +113,4 @@ for name in ('dexp', 'dlog', 'dtanh', 'dsigmoid'):
 s = s[:start] + segment + s[end:]
 
 p.write_text(s)
-print('completesafe-namespace-normalization=qualified-orderedring-block-equality-basis-layernorm-local-signatures-recurrent-hiddenDim-binders')
+print('completesafe-namespace-normalization=canonical-neural-state-record-and-recurrent-hiddenDim-binders')
