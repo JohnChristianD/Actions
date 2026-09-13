@@ -2,7 +2,7 @@
 module Exotic.efficient_chad.MobiusInt8Composition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using (Int8; int8Add; int8Mul)
 
 record FiniteMobiusMatrix : Set where
