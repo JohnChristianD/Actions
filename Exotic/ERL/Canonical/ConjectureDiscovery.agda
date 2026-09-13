@@ -4,68 +4,112 @@ module Exotic.ERL.Canonical.ConjectureDiscovery where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
-open import Exotic.efficient_chad.Int8 using (Int8; code; int8OfNat; int8Roundtrip; one8; zero8)
-open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
-open import Exotic.ERL.Finite.TrueOnlineTD using (TrueOnlineState; exampleStep; initialState)
-open import Exotic.ERL.Exploration.FiniteNoise using (weight; neg; zero; pos; totalWeight)
-open import Exotic.ERL.Exploration.FiniteMarkov using (transition; selfLoopExample; selfLoopWeight)
-open import Exotic.ERL.Exploration.ComposedLearnerExploration using (zeroStep; zeroStep-is-initial)
-open import Exotic.ERL.Exploration.FullLearnerNoisyTri using (Parameters; Window2; zeroNoisePreservesLearner)
-open import Exotic.ERL.Representation.Haar2 using (HaarPair; haarPair; haar2-square-scale)
+open import Data.Nat using (_≤_; _+_; _*_)
+open import Exotic.efficient_chad.Int8 using
+  ( Int8
+  ; code
+  ; int8OfNat
+  ; int8Roundtrip
+  ; one8
+  ; zero8
+  )
+open import Exotic.ERL.Exploration.FiniteNoise using
+  ( Noise
+  ; weight
+  ; neg
+  ; zero
+  ; pos
+  ; totalWeight
+  ; zeroHasPositiveMass
+  ; unitMinusWitness
+  ; unitPlusWitness
+  )
+open import Exotic.ERL.Exploration.CanonicalMR15GA using
+  ( populationSize
+  ; dimension
+  ; oneFifthStepUpdate
+  ; lowerExponent
+  ; raiseExponent
+  ; initialExponent
+  )
+open import Exotic.ERL.FullCoupled.CanonicalLearner using
+  ( LearnerState
+  ; start
+  ; step
+  ; zeroSelfLoop
+  )
+open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using
+  ( CoupledState
+  ; startCoupled
+  ; coupledStep
+  ; noPerturb
+  ; zeroNoiseTape
+  ; zeroCoordinateTape
+  )
+open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
+  ( ExactReach
+  ; SelfLoop
+  ; Irreducible
+  ; AperiodicViaConsecutiveReturns
+  ; hubAperiodicity
+  )
 
-data SurvivingConjecture : Set where
-  int8Roundtrip : SurvivingConjecture
-  finiteNoiseNormalises : SurvivingConjecture
-  concreteZeroNoiseSelfLoop : SurvivingConjecture
-  concreteZeroNoiseWeight : SurvivingConjecture
-  composedZeroSelfLoop : SurvivingConjecture
-  quantizedSoftsignZero : SurvivingConjecture
-  quantizedCReluZero : SurvivingConjecture
-  learnerExampleExists : SurvivingConjecture
-  fullNoisyTriZeroPreserves : SurvivingConjecture
-  haar2SquareScale : SurvivingConjecture
+DtriNormalises :
+totalWeight ≡ 256
+DtriNormalises = totalWeight
 
-proof : ∀ c → Set
-proof int8Roundtrip = ∀ (x : Int8) →
-  toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
-proof finiteNoiseNormalises = weight neg + weight zero + weight pos ≡ 4
-proof concreteZeroNoiseSelfLoop = transition zero one8 ≡ one8
-proof concreteZeroNoiseWeight = weight zero ≡ 2
-proof composedZeroSelfLoop = zeroStep ≡ initialState
-proof quantizedSoftsignZero = softsignQ8 zero8 ≡ zero8
-proof quantizedCReluZero = cReLU8 zero8 ≡ zero8
-proof learnerExampleExists = TrueOnlineState
-proof fullNoisyTriZeroPreserves = ∀ (p : Parameters) (w : Window2) →
-  zeroNoisePreservesLearner p w
-proof haar2SquareScale = ∀ x y →
-  haar2 (haar2 (haarPair x y)) ≡ haarPair (x + x) (y + y)
+DtriZeroMass :
+weight zero ≡ 16
+DtriZeroMass = zeroHasPositiveMass
 
-survives : proof int8Roundtrip
-survives = int8Roundtrip
+DtriMinusUnit :
+  let _ = neg
+  in weight neg ≡ 15
+DtriMinusUnit = refl
 
-survivesNoise : proof finiteNoiseNormalises
-survivesNoise = totalWeight
+DtriPlusUnit :
+  let _ = pos
+  in weight pos ≡ 15
+DtriPlusUnit = refl
 
-survivesSelfLoop : proof concreteZeroNoiseSelfLoop
-survivesSelfLoop = selfLoopExample
+DtriUnitCodes :
+  noiseCodeNeg × noiseCodePos
+  where
+  noiseCodeNeg : Noise → Int8
+  noiseCodeNeg n = int8OfNat (toℕ n + 241)
+  noiseCodePos : Noise → Int8
+  noiseCodePos n = int8OfNat (toℕ n + 241)
 
-survivesSelfLoopWeight : proof concreteZeroNoiseWeight
-survivesSelfLoopWeight = selfLoopWeight
+oneFifthExactAtThree :
+oneFifthStepUpdate initialExponent (Fin.suc (Fin.suc (Fin.suc Fin.zero)))
+  ≡ lowerExponent initialExponent
+oneFifthExactAtThree = refl
 
-survivesComposedSelfLoop : proof composedZeroSelfLoop
-survivesComposedSelfLoop = zeroStep-is-initial
+oneFifthExactAtFour :
+oneFifthStepUpdate initialExponent (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero))))
+  ≡ raiseExponent initialExponent
+oneFifthExactAtFour = refl
 
-survivesSoftsignZero : proof quantizedSoftsignZero
-survivesSoftsignZero = refl
+populationAxisCount :
+populationSize * dimension ≡ 64
+populationAxisCount = refl
 
-survivesCReLUZero : proof quantizedCReluZero
-survivesCReLUZero = refl
+canonicalLearnerSelfLoop :
+  step start zero zero
+    (token zero8 zero8 zero8 zero8)
+    (token zero8 zero8 zero8 zero8)
+    zero8
+  ≡ start
+canonicalLearnerSelfLoop = zeroSelfLoop
 
-survivesLearnerExample : proof learnerExampleExists
-survivesLearnerExample = exampleStep
-
-survivesFullNoisyTriZero : proof fullNoisyTriZeroPreserves
-survivesFullNoisyTriZero p w = zeroNoisePreservesLearner p w
-
-survivesHaar2SquareScale : proof haar2SquareScale
-survivesHaar2SquareScale = haar2-square-scale
+canonicalComposedSelfLoop :
+  coupledStep
+    startCoupled
+    noPerturb
+    zero
+    zero
+    zeroNoiseTape
+    zeroCoordinateTape
+    zero8
+  ≡ startCoupled
+canonicalComposedSelfLoop = refl
