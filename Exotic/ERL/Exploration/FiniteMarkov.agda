@@ -13,7 +13,7 @@ transition = perturbScalar
 selfLoopExample : transition zero one8 ≡ one8
 selfLoopExample = zeroPerturbationExample
 
-selfLoopWeight : weight zero ≡ 2
+selfLoopWeight : weight zero ≡ 16
 selfLoopWeight = refl
 
 finiteStateCarrier : Set
