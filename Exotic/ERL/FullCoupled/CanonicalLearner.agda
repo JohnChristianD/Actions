@@ -164,10 +164,7 @@ commit s t gXi gTheta gPsi gMu gSigma =
       nPsi = f4Step (psi s) (qε 3 gPsi)
       nMu = f4Step (mu3 s) (qε 3 gMu)
       nSigma = f4Step (sigma3 s) (qε 3 gSigma)
-      newGate = gateParameters
-        (q nMu)
-        (q nSigma)
-        one8
+      newGate = gateParameters (q nMu) (q nSigma) one8
       f = representationFeature s t
   in learnerState
        nXi nTheta nPsi
@@ -182,6 +179,9 @@ step s t nextT reward =
         gradientBundle s t nextT reward
   in commit s t gXi gTheta gPsi gMu gSigma
 
+proj₁ : Int8 × Int8 × Int8 × Int8 × Int8 → Int8
+proj₁ (a , _ , _ , _ , _) = a
+
 ------------------------------------------------------------------------
 -- Concrete update-shape theorem: the representation block is committed from
 -- the pre-step snapshot and the first component of the explicit VJP bundle.
@@ -190,9 +190,5 @@ step s t nextT reward =
 xiCommit : ∀ (s : LearnerState) (t nextT : Token) (reward : Int8) →
   xi (step s t nextT reward) ≡
   f4Step (xi s)
-    (qε 3
-      (proj₁ (gradientBundle s t nextT reward)))
+    (qε 3 (proj₁ (gradientBundle s t nextT reward)))
 xiCommit s t nextT reward = refl
-
-proj₁ : Int8 × Int8 × Int8 × Int8 × Int8 → Int8
-proj₁ (a , _ , _ , _ , _) = a
