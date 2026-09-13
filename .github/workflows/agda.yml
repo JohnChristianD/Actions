@@ -102,6 +102,12 @@ jobs:
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
 
+      - name: Check lazy-walk dyadic law
+        run: agda --safe Exotic/ERL/Exploration/LazyWalkDyadic.agda
+
+      - name: Check dyadic-ladder law
+        run: agda --safe Exotic/ERL/Exploration/DyadicLadder.agda
+
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
         run: |
