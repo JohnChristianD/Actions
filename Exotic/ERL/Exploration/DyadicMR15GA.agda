@@ -10,7 +10,7 @@ open import Data.Nat.DivMod using (m%n<n)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Data.Product using (_×_)
 open import Relation.Nullary using (yes; no)
-open import Exotic.ERL.Exploration.FiniteNoise using (Noise; noise; zero; neg; pos)
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero; neg; pos)
 
 dimension : Nat
 dimension = 4
@@ -67,7 +67,6 @@ plusStep j p = λ i → mutate i where
 
 minusStep : Coordinate → Population → Population
 minusStep j p = λ i → mutate i where
-  mutate : Fin dimension → Fin 256
   mutate i with F._≟_ i j
   ... | yes _ = fromℕ< (m%n<n (256 + toℕ (p i) ∸ 1) 256)
   ... | no _ = p i
@@ -109,12 +108,6 @@ neutralNoPerturb = noPerturbation-self-loop
 
 neutralZero : ∀ j p → mutation perturb zero j p ≡ p
 neutralZero = canonicalZero-self-loop
-
--- The population-selection and utility layer remains a separate obligation.
--- It is deliberately not asserted here until its exact finite ranking semantics
--- are represented by types that can be checked by Agda --safe.
-SelectionAndMeanUpdateObligation : Set
-SelectionAndMeanUpdateObligation = Set
 
 oneFifthStepUpdate : Exponent → Fin (suc populationSize) → Exponent
 oneFifthStepUpdate m successes with 5 * toℕ successes ≤? populationSize
