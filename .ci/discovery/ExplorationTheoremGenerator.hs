@@ -42,8 +42,7 @@ data Law = Law
   }
 
 -- Probability laws parameterize actual exploration methods. They are not
--- exploration methods themselves. The legacy triangular law is intentionally
--- absent from this finite theorem enumeration.
+-- exploration methods themselves. The pruned triangular law is absent.
 laws :: [Law]
 laws =
   [ Law "LazyWalk" "lazyWalk" "lazyWalkNormalized" "law-unit-support lazyWalk"
@@ -59,8 +58,8 @@ renderCandidate = unlines $
   [ "{-# OPTIONS --safe #-}"
   , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
   , ""
-  , "-- Generated method × probability-law proof harness."
-  , "-- Haskell only constructs this source; Agda --safe is the acceptance oracle."
+  , "-- Generated method × probability-law full-composition proof harness."
+  , "-- Haskell constructs this source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
   , "  ( DyadicLaw"
   , "  ; lazyWalk"
@@ -71,6 +70,10 @@ renderCandidate = unlines $
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling"
   , "  ; composeFull"
+  , "  )"
+  , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
+  , "  ( softsignGatedForwardLaw-proof"
+  , "  ; softsignGatedPullbackLaw-proof"
   , "  )"
   ]
   ++ concatMap renderMethod methods
@@ -88,6 +91,7 @@ renderCandidate = unlines $
       , name m ++ lawName l ++ "Endogenous = composeFull "
           ++ lawCtor l ++ " " ++ normalizationName l ++ " "
           ++ supportName l ++ " "
+          ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
       , ""
       ]
