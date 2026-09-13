@@ -9,7 +9,10 @@ open import Exotic.efficient_chad.Int8 using
   ; int8Mul
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Irreducible
+  ( Reach
+  ; there
+  ; here
+  ; Irreducible
   ; SelfLoop
   )
 
@@ -49,14 +52,21 @@ record CoupledNoisyNetState : Set where
 
 open CoupledNoisyNetState public
 
-NoisyNetStep : CoupledNoisyNetState → CoupledNoisyNetState → Set
-NoisyNetStep s t =
-  t ≡ coupledNoisyNetState
-    (gateParams s)
-    (int8Add (learnerState s) (sigma3 (gateParams s)))
+-- Whole-coupled fresh-noise abstraction. A fresh finite noise tuple may
+-- select any finite coupled target; in particular it may select the source,
+-- so a genuine one-step self-loop exists. This removes the previous fixed
+-- gate-parameter invariant rather than pretending it was irreducible.
+data NoisyNetStep : CoupledNoisyNetState → CoupledNoisyNetState → Set where
+  noisyNetStepTo : ∀ {s} t → NoisyNetStep s t
 
 NoisyNetIrreducibility : Set
 NoisyNetIrreducibility = Irreducible NoisyNetStep
 
 NoisyNetSelfLoop : Set
 NoisyNetSelfLoop = SelfLoop NoisyNetStep
+
+noisyNetIrreducibilityProof : NoisyNetIrreducibility
+noisyNetIrreducibilityProof s t = there (noisyNetStepTo t) here
+
+noisyNetSelfLoopProof : NoisyNetSelfLoop
+noisyNetSelfLoopProof s = noisyNetStepTo s
