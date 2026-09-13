@@ -47,7 +47,7 @@ gate-diagonal gp ε x = refl
 record CoupledNoisyNetState : Set where
   constructor coupledNoisyNetState
   field
-    gateParams : GateParams
+    gateParameters : GateParams
     learnerState : Int8
 
 open CoupledNoisyNetState public
@@ -77,10 +77,10 @@ noisyNetIrreducibilityProof : NoisyNetIrreducibility
 noisyNetIrreducibilityProof s t =
   there
     (noisyNetStepFromFreshNoise
-      (noisyNetNoise (gateParams t) (learnerState t)))
+      (noisyNetNoise (gateParameters t) (learnerState t)))
     here
 
 noisyNetSelfLoopProof : NoisyNetSelfLoop
 noisyNetSelfLoopProof s =
   noisyNetStepFromFreshNoise
-    (noisyNetNoise (gateParams s) (learnerState s))
+    (noisyNetNoise (gateParameters s) (learnerState s))
