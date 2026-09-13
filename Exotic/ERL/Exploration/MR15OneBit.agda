@@ -3,8 +3,8 @@
 module Exotic.ERL.Exploration.MR15OneBit where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Bool using (Bool; false; true)
-open import Data.Fin using (Fin)
+open import Agda.Builtin.Bool using (Bool; false; true)
+open import Data.Fin as F using (Fin; _≟_)
 open import Data.Product using (Σ; _×_; _,_)
 
 BitState : Set
@@ -15,7 +15,7 @@ data OneBitAction : Set where
   flip : Fin 8 → OneBitAction
 
 flipAt : Fin 8 → BitState → BitState
-flipAt i s j with i Data.Fin.≟ j
+flipAt i s j with F._≟_ i j
 ... | yes _ with s j
 ...   | false = true
 ...   | true = false
@@ -35,7 +35,7 @@ data Reach {S : Set} (step : S → S → Set) : S → S → Set where
 oneBitSupport : BitState → BitState → Set
 oneBitSupport s t = Σ OneBitAction (λ a → oneBitStep a s ≡ t)
 
-oneBitSelfLoop : BitState → Σ BitState (λ s → oneBitSupport s s)
+oneBitSelfLoop : Σ BitState (λ s → oneBitSupport s s)
 oneBitSelfLoop = (λ _ → false) , (hold , refl)
 
 OneBitAperiodicityObligation : Set
@@ -43,5 +43,5 @@ OneBitAperiodicityObligation =
   (Σ BitState (λ s → oneBitSupport s s)) ×
   (∀ s t → Reach oneBitSupport s t)
 
--- The first factor is proved here.  Connectivity is intentionally an
--- independent obligation rather than being inferred from the neutral move.
+-- The neutral self-loop is proved. Connectivity remains an independent
+-- finite reachability theorem and is not inferred from the hold transition.
