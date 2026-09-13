@@ -5,7 +5,7 @@ module Exotic.ERL.Canonical.ConjectureDiscovery where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (Fin)
 open import Data.Nat using (_*_)
-open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; one8; zero8)
+open import Exotic.efficient_chad.Int8 using (one8; zero8)
 open import Exotic.ERL.Exploration.FiniteNoise using
   ( weight
   ; neg
@@ -33,7 +33,6 @@ open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using
   ( startCoupled
   ; coupledStep
   ; noPerturb
-  ; zero
   ; zeroNoiseTape
   ; zeroCoordinateTape
   )
@@ -48,12 +47,12 @@ weight zero ≡ 16
 DtriZeroMass = zeroHasPositiveMass
 
 DtriMinusUnitCode :
-unitMinusWitness ≡ unitMinusWitness
-DtriMinusUnitCode = refl
+  noiseCode neg ≡ int8OfNat 255
+DtriMinusUnitCode = unitMinusWitness
 
 DtriPlusUnitCode :
-unitPlusWitness ≡ unitPlusWitness
-DtriPlusUnitCode = refl
+  noiseCode pos ≡ one8
+DtriPlusUnitCode = unitPlusWitness
 
 oneFifthExactAtThree :
 oneFifthStepUpdate initialExponent
