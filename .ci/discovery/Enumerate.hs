@@ -11,7 +11,7 @@ data Candidate = Candidate
   , proofTerm :: String
   }
 
-unitNoise : Candidate
+unitNoise :: Candidate
 unitNoise = Candidate
   "DtriUnitSupport"
   "dtri-unit-support"
@@ -19,7 +19,7 @@ unitNoise = Candidate
   "(noiseCode neg ≡ int8OfNat 255) × (noiseCode pos ≡ one8)"
   "unitMinusWitness , unitPlusWitness"
 
--- Candidates are generated from a small finite algebraic grammar, then accepted
+-- Candidates are generated from a finite algebraic grammar, then accepted
 -- only if the Agda kernel checks the resulting proposition.
 candidates :: [Candidate]
 candidates =
@@ -79,6 +79,7 @@ sourceFor c =
   "{-# OPTIONS --safe #-}\n"
   ++ "module " ++ moduleName c ++ " where\n\n"
   ++ "open import Agda.Builtin.Equality using (_≡_; refl)\n"
+  ++ "open import Data.Product using (_×_; _,_)\n"
   ++ "open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; one8)\n"
   ++ "open import Exotic.ERL.Exploration.FiniteNoise using (Noise; noiseCode; neg; pos; zero)\n"
   ++ imports c ++ "\n\n"
