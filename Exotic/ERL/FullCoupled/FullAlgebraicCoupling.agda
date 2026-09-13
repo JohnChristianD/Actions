@@ -16,6 +16,10 @@ open import Exotic.efficient_chad.SoftsignGatedComposition using
   ( softsignGatedForwardLaw
   ; softsignGatedPullbackLaw
   )
+open import Exotic.efficient_chad.MobiusSoftsignBridge using
+  ( ForwardMobiusWitness
+  ; softsignGatedForwardMobiusWitness
+  )
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
   ( SoftsignGatedStep
   ; softsignGatedPeriodOne
@@ -29,6 +33,12 @@ record FullAlgebraicCoupling {S : Set}
     lawUnitSupport : law-unit-support law
     representationForward : softsignGatedForwardLaw
     representationPullback : softsignGatedPullbackLaw
+    representationMobiusComposition :
+      ∀ (f : _) →
+        ForwardMobiusWitness (Exotic.efficient_chad.SoftsignGatedComposition.signReLU8 f)
+        → ForwardMobiusWitness (Exotic.efficient_chad.SoftsignGatedComposition.softsign8 f)
+        → ForwardMobiusWitness
+            (Exotic.efficient_chad.SoftsignGatedComposition.softsignGatedOperator f)
     canonicalRepresentation : PeriodOne SoftsignGatedStep
     irreducible : Irreducible _—→_
     selfLoop : SelfLoop _—→_
@@ -39,16 +49,22 @@ composeFull : ∀ {S : Set} (law : DyadicLaw) {_—→_ : S → S → Set}
   → law-unit-support law
   → softsignGatedForwardLaw
   → softsignGatedPullbackLaw
+  → (∀ (f : Exotic.efficient_chad.SoftsignGatedComposition.SoftsignGatedForward)
+      → ForwardMobiusWitness (Exotic.efficient_chad.SoftsignGatedComposition.signReLU8 f)
+      → ForwardMobiusWitness (Exotic.efficient_chad.SoftsignGatedComposition.softsign8 f)
+      → ForwardMobiusWitness
+          (Exotic.efficient_chad.SoftsignGatedComposition.softsignGatedOperator f))
   → PeriodOne SoftsignGatedStep
   → Irreducible _—→_
   → SelfLoop _—→_
   → FullAlgebraicCoupling law _—→
-composeFull law normalized support representationForward representationPullback canonicalRepresentation r loop =
+composeFull law normalized support representationForward representationPullback representationMobiusComposition canonicalRepresentation r loop =
   fullAlgebraicCoupling
     normalized
     support
     representationForward
     representationPullback
+    representationMobiusComposition
     canonicalRepresentation
     r
     loop
