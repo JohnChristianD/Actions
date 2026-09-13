@@ -17,8 +17,8 @@ open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ; Exponent
   ; Noise
   ; lookupV
+  ; mutateGenome
   ; mutatePopulation
-  ; initialExponent
   ; StepGate
   ; perturb
   )
