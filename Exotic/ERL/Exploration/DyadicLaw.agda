@@ -32,9 +32,9 @@ law-zero-support : DyadicLaw → Set
 law-zero-support flatDyadic = flatStay-positive
 law-zero-support dyadicLadder = ladderStay-positive
 
-law-scale-shell : DyadicLaw → Set
-law-scale-shell flatDyadic = flatWeight-sum
-law-scale-shell dyadicLadder = ladderPowerTwo-support
+law-shell-multiscale : DyadicLaw → Set
+law-shell-multiscale flatDyadic = flatWeight-sum
+law-shell-multiscale dyadicLadder = ladderPowerTwo-support
 
 flatDyadicNormalized : law-normalized flatDyadic
 flatDyadicNormalized = flatWeight-sum
