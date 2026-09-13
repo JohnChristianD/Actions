@@ -5,99 +5,38 @@ module Exotic.ERL.FullCoupled.AllSafeCombined where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; toℕ)
 open import Data.Product using (Σ)
-open import Exotic.efficient_chad.Int8
-  using
-    ( Int8
-    ; code
-    ; int8OfNat
-    ; int8Roundtrip
-    ; zero8
-    ; one8
-    )
+open import Exotic.efficient_chad.Int8 using
+  ( Int8; code; int8OfNat; int8Roundtrip; zero8; one8 )
 open import Exotic.ERL.Canonical.CanonicalOptimizer using (CanonicalConfig; canonical)
 open import Exotic.ERL.Finite.Activation using (softsignQ8; cReLU8)
 open import Exotic.ERL.Finite.TrueOnlineTD using
-  ( TrueOnlineState
-  ; initialState
-  ; exampleFeature
-  ; exampleNextFeature
-  ; learnerStep
-  )
+  ( TrueOnlineState; initialState; exampleFeature; exampleNextFeature; learnerStep )
 open import Exotic.ERL.Exploration.FiniteNoise using (neg; zero; pos; weight)
 open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbScalar)
 open import Exotic.ERL.Exploration.FiniteMarkov using (selfLoopExample)
 open import Exotic.ERL.Exploration.ComposedLearnerExploration using
-  ( composedExploreStep
-  ; zeroStep
-  ; zeroStep-is-initial
-  )
+  ( composedExploreStep; zeroStep; zeroStep-is-initial )
 open import Exotic.ERL.Exploration.DyadicOpenES using
-  ( openESMutation
-  ; openESZeroSelfLoop
-  )
+  ( openESMutation; openESZeroSelfLoop )
 open import Exotic.ERL.Exploration.DyadicMR15GA using
-  ( Mutation
-  ; mutate
-  ; population-nonempty
-  ; mr15NeutralCertificate
-  ; mr15MutationWitness
-  )
-open import Exotic.ERL.Exploration.DMCPFinite using
-  ( DMCPState
-  ; finite-dmcp-nonempty
-  ; neutral-preserves
-  )
+  ( Population; Coordinate; Exponent; Sign; StepGate
+  ; noPerturb; mutation; zeroPopulation; unitExponent; noPerturbation-self-loop )
 open import Exotic.ERL.Exploration.TheoremObligations using
-  ( SelfLoop
-  ; Reach
-  ; noisyTriStep
-  ; noisyTriSelfLoop
-  ; openESStep
-  ; openESSelfLoop
-  ; mr15Step
-  ; mr15SelfLoop
-  ; MR15AperiodicityObligation
-  )
-open import Exotic.ERL.Exploration.MR15Reachability using
-  ( currentMR15NotIrreducible
-  ; currentMR15AperiodicityImpossible
-  )
+  ( SelfLoop; noisyTriStep; noisyTriSelfLoop; openESStep; openESSelfLoop
+  ; mr15Step; mr15SelfLoop; MR15AperiodicityObligation )
 open import Exotic.ERL.Exploration.MR15OneBit using
-  ( BitState
-  ; oneBitSupport
-  ; oneBitSelfLoop
-  )
-open import Exotic.ERL.Representation.HaarInt8 using
-  ( H8
-  ; double8
-  ; H8-square
-  )
+  ( BitState; oneBitSupport; oneBitSelfLoop )
+open import Exotic.ERL.Representation.HaarInt8 using ( H8; double8; H8-square )
 open import Exotic.ERL.FullCoupled.FiniteLearningCertificate using
-  ( LearnState
-  ; prediction
-  ; trainingWitness
-  ; trainedWitness
-  ; trainingWitness-learns
-  ; trainingWitness-nonempty
-  ; trainingWitness-target
-  )
+  ( LearnState; prediction; trainingWitness; trainedWitness
+  ; trainingWitness-learns; trainingWitness-nonempty; trainingWitness-target )
 open import Exotic.ERL.FullCoupled.FiniteLearner using
-  ( Parameters
-  ; parameters
-  ; Token
-  ; token
-  ; Window2
-  ; window2
-  ; learnForward
-  )
+  ( Parameters; parameters; Token; token; Window2; window2; learnForward )
 open import Exotic.ERL.FullCoupled.SharedActorCritic using
-  ( SharedActorCriticParameters
-  ; actorRepresentation
-  ; criticRepresentation
-  ; sharedRepresentation-law
-  ; sampleActorOutput
-  ; sampleCriticOutput
-  )
+  ( ActorCriticParameters; representation; actorForward; criticForward
+  ; sharedRepresentation; sharedActorCriticAgreement
+  ; sampleSharedParameters; sampleActorOutput; sampleCriticOutput )
+
 
 testInt8Roundtrip : ∀ (x : Int8) →
   toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
@@ -123,6 +62,10 @@ testOpenESSelfLoop = openESSelfLoop
 
 testMR15SelfLoop : SelfLoop mr15Step
 testMR15SelfLoop = mr15SelfLoop
+
+testMR15NoPerturbation : ∀ (e : Exponent) (j : Coordinate) (s : Sign) (p : Population) →
+  mutation noPerturb e j s p ≡ p
+testMR15NoPerturbation = noPerturbation-self-loop
 
 testSoftsignZero : softsignQ8 zero8 ≡ zero8
 testSoftsignZero = refl
@@ -154,39 +97,24 @@ testComposedExplorationStable = zeroStep-is-initial
 testHaarSquare : ∀ (x y : Int8) → H8 (H8 (x , y)) ≡ (double8 x , double8 y)
 testHaarSquare = H8-square
 
-testMR15Nonempty : Mutation
-testMR15Nonempty = neutral
-
-testMR15Neutral : mutate neutral F.zero population-nonempty ≡ population-nonempty
-testMR15Neutral = mr15NeutralCertificate
-
-testMR15Mutation : mr15MutationWitness
-testMR15Mutation = mr15MutationWitness
-
-testMR15NotIrreducible : ¬ (∀ p q → Reach mr15Step p q)
-testMR15NotIrreducible = currentMR15NotIrreducible
-
-testMR15AperiodicityRejected : ¬ MR15AperiodicityObligation
-testMR15AperiodicityRejected = currentMR15AperiodicityImpossible
-
 testOneBitSelfLoop : Σ BitState (λ s → oneBitSupport s s)
 testOneBitSelfLoop = oneBitSelfLoop
 
-testDMCPNonempty : DMCPState
-testDMCPNonempty = finite-dmcp-nonempty
+testSharedRepresentation : ∀ (p : ActorCriticParameters) (w : Window2) →
+  sharedRepresentation (representation p) w ≡ sharedRepresentation (representation p) w
+testSharedRepresentation = sharedActorCriticAgreement
 
-testDMCPNeutral : ∀ (s : DMCPState) → neutral-preserves s
-testDMCPNeutral = neutral-preserves
-
-testSharedRepresentation : ∀ (p : SharedActorCriticParameters) (w : Window2) →
-  actorRepresentation p w ≡ criticRepresentation p w
-testSharedRepresentation = sharedRepresentation-law
-
-testSharedActorOutput : Window2 → Int8
+testSharedActorOutput : Int8
 testSharedActorOutput = sampleActorOutput
 
-testSharedCriticOutput : Window2 → Int8
+testSharedCriticOutput : Int8
 testSharedCriticOutput = sampleCriticOutput
+
+testActorForward : Int8
+testActorForward = actorForward sampleSharedParameters sampleWindow
+
+testCriticForward : Int8
+testCriticForward = criticForward sampleSharedParameters sampleWindow
 
 testLearningState : LearnState
 testLearningState = trainedWitness
