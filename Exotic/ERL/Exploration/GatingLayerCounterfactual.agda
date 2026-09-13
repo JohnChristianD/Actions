@@ -22,7 +22,7 @@ record GatingFactorization (Full Gate : Set) where
     GateStep : Gate → Gate → Set
     FullStep : Full → Full → Set
 
-    lift-step : ∀ {g h} → GateStep g h → FullStep (lift g) (FullStep F (lift h))
+    lift-step : ∀ {g h} → GateStep g h → FullStep (lift g) (lift h)
 
 open GatingFactorization public
 
