@@ -16,6 +16,7 @@ open import Exotic.ERL.Exploration.DyadicMR15GA using
   ; emptyPopulation
   ; mutate
   )
+open import Exotic.ERL.Exploration.MR15OneBit using (OneBitAperiodicityObligation)
 
 data Reach {S : Set} (step : S → S → Set) : S → S → Set where
   here : ∀ {x} → Reach step x x
@@ -55,5 +56,7 @@ MR15AperiodicityObligation : Set
 MR15AperiodicityObligation =
   SelfLoop mr15Step × (∀ p q → Reach mr15Step p q)
 
--- The three candidates above are obligations only.
--- No numeric ranking is assigned until the corresponding theorem is proved.
+MR15OneBitAperiodicityObligation : Set
+MR15OneBitAperiodicityObligation = OneBitAperiodicityObligation
+
+-- These candidates are obligations only.  No numeric ranking is assigned.
