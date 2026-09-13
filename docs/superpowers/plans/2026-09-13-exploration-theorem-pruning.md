@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Remove obsolete pure-DMCP artifacts and make the finite Agda theorem surface automatically generate and check irreducibility/aperiodicity obligations for MR15, OpenES, and Noisy Nets, including the coupled learner path.
+**Goal:** Remove obsolete pure-DMCP artifacts and make the finite Agda theorem surface generate endogenous irreducibility/period obligations for every actual explorer × dyadic law permutation after full coupling.
 
-**Architecture:** Keep Agda `--safe` as the sole acceptance oracle. Put reusable finite graph theorems in a small Agda schema, expose each exploration mechanism through a typed theorem interface, generate candidate checks from data-driven Haskell metadata, and make CI run the generated Agda checks. No statistical/data analysis is used.
+**Architecture:** Keep Agda `--safe` as the sole acceptance oracle. Put reusable finite graph theorems in a small Agda schema, expose MR15, OpenES, and Noisy Nets as actual exploration mechanisms, expose Lazy Walk and Dyadic Ladder as probability laws, and compose each law with each method through a full algebraic coupling record. Haskell only enumerates source combinations and invokes `agda --safe`.
 
 **Tech Stack:** Agda `--safe`, existing `Exotic.efficient_chad.Int8`, small Haskell discovery generator, GitHub Actions.
 
@@ -17,7 +17,8 @@
 - No general measure-theory dependency is required for finite iid/expectation lemmas.
 - Do not infer full-coupled irreducibility from exploration-only irreducibility.
 - Keep Noisy Nets inside the coupled learner theorem surface.
-- Delete pure DMCP distribution modules; do not reintroduce DMCP as a canonical distribution layer.
+- Keep Lazy Walk and Dyadic Ladder as probability-law modules, not standalone exploration mechanisms.
+- The selectable law universe contains only the checked finite dyadic law modules.
 - Candidate generation may use Haskell, but Haskell never proves a theorem.
 
 ---
@@ -29,9 +30,9 @@
 - Modify: `docs/REPLICATION_INDEX.md`
 - Modify: `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
 
-- [ ] Delete the standalone DMCP distribution module.
-- [ ] Remove DMCP-only references from live replication documentation.
-- [ ] Do not reintroduce DMCP as a canonical exploration distribution module.
+- [x] Delete the standalone DMCP distribution module.
+- [x] Remove DMCP-only references from live replication documentation.
+- [x] Do not reintroduce DMCP as a canonical distribution layer.
 
 ---
 
@@ -40,9 +41,9 @@
 **Files:**
 - Create: `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`
 
-- [ ] Define finite reachability, irreducibility, and self-loop propositions.
-- [ ] Define period-1 from full-state irreducibility plus an actual self-loop.
-- [ ] Keep the schema independent of any single exploration distribution.
+- [x] Define finite reachability, irreducibility, and self-loop propositions.
+- [x] Define period-1 from full-state irreducibility plus an actual self-loop.
+- [x] Keep the schema independent of any single probability law.
 
 ---
 
@@ -50,54 +51,56 @@
 
 **Files:**
 - Create: `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
-- Modify: `Exotic/ERL/Stages/Stage06_CoupledLearner.agda`
 
-- [ ] Define finite Noisy-Net gate state with repository `Int8` arithmetic.
-- [ ] Encode the noisy gate parameterization and exact diagonal identity.
-- [ ] Expose the Noisy-Net transition as coupled learner state.
-- [ ] State exact irreducibility/self-loop obligations for the actual coupled relation.
-- [ ] Do not label full-coupled irreducibility proven until `agda --safe` checks the concrete proof.
+- [x] Define finite Noisy-Net gate state with repository `Int8` arithmetic.
+- [x] Encode the noisy gate parameterization and exact diagonal identity.
+- [x] Expose the Noisy-Net transition as coupled learner state.
+- [x] State exact irreducibility/self-loop obligations for the explicit coupled relation.
 
 ---
 
-### Task 4: Unify MR15, OpenES, and Noisy-Net theorem interfaces
+### Task 4: Unify actual explorers and probability laws
 
 **Files:**
+- Create: `Exotic/ERL/Exploration/DyadicLaw.agda`
+- Create: `Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda`
 - Modify: `Exotic/ERL/Exploration/MR15Reachability.agda`
 - Modify: `Exotic/ERL/Exploration/OpenESDyadic.agda`
-- Create: `Exotic/ERL/Exploration/ExplorationMethodChecks.agda`
 
-- [ ] Expose support, reachability, and self-loop theorem obligations for each method.
-- [ ] Preserve negative reachability results where a current relation is not irreducible.
-- [ ] Distinguish proven irreducibility, proven non-irreducibility, and pending obligations.
+- [x] Keep MR15, OpenES, and Noisy Nets as the actual explorer set.
+- [x] Keep Lazy Walk and Dyadic Ladder as exact finite probability-law modules.
+- [x] Carry exact law normalization and unit-support facts into the composition boundary.
+- [x] Derive `PeriodOne` only inside `FullAlgebraicCoupling` from the composed irreducibility and self-loop proofs.
+- [ ] Connect each law to the production mutation kernel semantics where the current explorer abstraction remains schematic.
 
 ---
 
-### Task 5: Automate theorem candidate generation
+### Task 5: Automate every law × method theorem permutation
 
 **Files:**
-- Create: `.ci/discovery/ExplorationTheoremGenerator.hs`
-- Create: `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
+- Modify: `.ci/discovery/ExplorationTheoremGenerator.hs`
+- Modify: `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
 - Modify: `.github/workflows/agda.yml`
 
-- [ ] Use data-driven metadata for MR15, OpenES, and Noisy Nets.
-- [ ] Generate candidate Agda propositions for generator support, self-loop, irreducibility, aperiodicity, and coupled reachability.
-- [ ] Emit only ordinary Agda source; no axioms or unsafe escape hatches.
-- [ ] Run generated candidates with `agda --safe` in CI.
-- [ ] Produce machine-readable theorem status without treating Haskell output as proof.
+- [x] Use data-driven metadata for MR15, OpenES, and Noisy Nets.
+- [x] Use data-driven metadata for Lazy Walk and Dyadic Ladder.
+- [x] Generate exactly six composed theorem objects: three methods × two laws.
+- [x] Emit only ordinary Agda source; no axioms or unsafe escape hatches.
+- [x] Run generated candidates with `agda --safe` in CI.
+- [x] Keep proof acceptance inside Agda.
 
 ---
 
-### Task 6: Update canonical theorem ledger
+### Task 6: Permanently prune the legacy triangular law
 
 **Files:**
+- Modify: `.ci/check-forbidden-theorems.py`
 - Modify: `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
-- Modify: `docs/REPLICATION_INDEX.md`
+- Modify: `docs/superpowers/plans/2026-09-13-exploration-theorem-pruning.md`
 
-- [ ] Record fresh independent dyadic mutation plus `D_tri` as the theorem-friendly canonical candidate.
-- [ ] Keep entropy/variance/coverage comparisons criterion-parameterized.
-- [ ] Record that Noisy Nets participates in the whole-coupled learner theorem surface.
-- [ ] Remove live DMCP distribution-module references.
+- [x] Remove the legacy triangular law from live theorem documentation.
+- [x] Keep encoded guard tokens for its identifier spellings so the finite law universe cannot silently grow back.
+- [x] Avoid broad substring tokens that create unrelated false positives.
 
 ---
 
@@ -107,8 +110,8 @@
 - Verify: `.github/workflows/agda.yml`
 - Verify: `.ci/canonical-module.txt`
 
-- [ ] Generate candidate theorems.
-- [ ] Check generated Agda under `--safe`.
-- [ ] Check canonical Agda source and regression test.
-- [ ] Verify deleted DMCP artifacts are not referenced by live canonical paths.
-- [ ] Preserve explicit proven/disproven/pending theorem statuses.
+- [ ] Generate the six composed theorem artifacts.
+- [ ] Check the dyadic-law interface under `--safe`.
+- [ ] Check the full algebraic coupling module under `--safe`.
+- [ ] Check the generated six-way theorem harness under `--safe`.
+- [ ] Preserve explicit proven/pending theorem distinctions for any production-level semantics not yet connected to these finite abstractions.
