@@ -55,7 +55,7 @@ jobs:
             exit 1
           fi
           if git grep -nE '\{!!\}|(^|[^A-Za-z])postulate([^A-Za-z]|$)|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
-            ':!*.md' ':!.ci/**' ':!.ci/external/**' ':!.github/**'; then
+            ':!*.md' ':!.ci/**' ':!.github/**'; then
             echo 'proof-bypass-trace=FOUND'
             exit 1
           fi
@@ -163,6 +163,8 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/SharedActorCritic.agda
           agda --safe Exotic/ERL/FullCoupled/ActualCoupledLearner.agda
           agda --safe Exotic/ERL/FullCoupled/ActualCoupledLearner_test.agda
+          agda --safe Exotic/ERL/FullCoupled/CausalReplay.agda
+          agda --safe Exotic/ERL/FullCoupled/NegativeTDHistogram.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteLearningCertificate.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteLearner.agda
           agda --safe Exotic/ERL/FullCoupled/AllSafeCombined.agda
