@@ -30,14 +30,18 @@ record BaseEndogenous {S : Set} (law : DyadicLaw) (stepS : S → S → Set) : Se
   field
     fullTheorem : FullAlgebraicCoupling law stepS
 
-record StrongEndogenous {S R : Set} (law : DyadicLaw) (stepS : S → S → Set) : Set₂ where
+record StrongEndogenous {S R : Set}
+    (law : DyadicLaw)
+    (stepS : S → S → Set)
+    (stepR : R → R → Set) : Set₂ where
   constructor strongEndogenous
   field
     fullTheorem : FullAlgebraicCoupling law stepS
-    representationFactor : RepresentationFactor stepS (λ _ _ → ⊤)
+    representationFactor : RepresentationFactor stepS stepR
 
-forgetRepresentation : ∀ {S R : Set} {law : DyadicLaw} {stepS : S → S → Set}
-  → StrongEndogenous {S = S} {R = R} law stepS
+forgetRepresentation : ∀ {S R : Set} {law : DyadicLaw}
+    {stepS : S → S → Set} {stepR : R → R → Set}
+  → StrongEndogenous {S = S} {R = R} law stepS stepR
   → BaseEndogenous law stepS
 forgetRepresentation (strongEndogenous f _) = baseEndogenous f
 
@@ -97,7 +101,7 @@ no-two-point-factor (representationFactor p l r _ _) =
       (sym (r true))))
 
 strictBaseNotStrong : ¬ (BaseEndogenous lazyWalk one-state-loop →
-  StrongEndogenous {S = OneState} {R = Bool} lazyWalk one-state-loop)
+  StrongEndogenous {S = OneState} {R = Bool} lazyWalk one-state-loop bool-loop)
 strictBaseNotStrong _ = no-two-point-factor
 
 data LawLevel : Set where
