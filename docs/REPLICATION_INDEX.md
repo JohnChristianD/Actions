@@ -14,24 +14,30 @@ The broader v147 closure target is described in `Agda/README.md`; promote it to 
 
 The full theorem ledger and replication rules are maintained in `docs/THEOREM_FIRST_REPLICATION_WIKI.md`.
 
-The CI gate now enforces a permanent theorem-scope exclusion check with `.ci/check-forbidden-theorems.py` before Agda verification. The repository is strictly finite/dyadic/Int8-oriented; excluded external theorem families cannot return through source, documentation, generated candidates, or metadata.
+The CI gate enforces a permanent finite theorem-scope exclusion check with `.ci/check-forbidden-theorems.py` before Agda verification. The repository remains finite/dyadic/Int8-oriented; excluded theorem families cannot return through source, documentation, generated candidates, or metadata.
 
-Live theorem surfaces center on three exploration mechanisms:
+Live actual exploration methods are:
 
 - `Exotic/ERL/Exploration/MR15Reachability.agda`
 - `Exotic/ERL/Exploration/OpenESDyadic.agda`
 - `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
 
+Probability-law modules are separate from exploration methods:
+
+- `Exotic/ERL/Exploration/LazyWalkDyadic.agda`
+- `Exotic/ERL/Exploration/DyadicLadder.agda`
+- `Exotic/ERL/Exploration/DyadicLaw.agda`
+
 The reusable graph theorem schema is `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`.
 
-`.ci/discovery/ExplorationTheoremGenerator.hs` automatically checks each method for concrete irreducibility/self-loop proof symbols and runs `agda --safe` when those proofs exist. The generated report is `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` is the theorem boundary. A law and an actual explorer are accepted together; `PeriodOne` is derived only inside that composed object from the concrete irreducibility and self-loop proofs.
 
-For theorem breadth, Noisy Nets is the strongest whole-composition candidate because its theorem surface can span finite noise algebra, GateNN identities, coupled-state reachability, full learner+EA reachability, exact VJP/CHAD, and the full-state period theorem. MR15 is the strongest specialized outer-exploration target because its repaired form naturally exposes support/gcd, fresh-tape factorization, self-loop, population reachability, selection compatibility, and coupled-lift obligations. OpenES remains a narrower functional ablation surface.
+`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates the three actual explorers against the two checked probability laws and writes exactly six endogenous theorem objects to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source and invokes `agda --safe`; it never upgrades a conjecture into a theorem.
 
-This ranking is theorem-surface breadth only. It does not assert empirical superiority and does not mark any theorem proven before a concrete Agda `--safe` proof exists.
+The current finite theorem universe is therefore the Cartesian product:
 
-The status distinction remains deliberate: `Proven` requires a concrete proof surface plus successful `agda --safe`; `MissingProof` means the theorem obligation is not yet closed; `AgdaFailure` means the claimed proof surface does not typecheck safely.
+`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder}`.
 
-The standalone pure-DMCP distribution module was removed. It is not a live canonical exploration module.
+The standalone pure-DMCP distribution module was removed and is not a live canonical probability layer.
 
-Noisy Nets is part of the coupled learner theorem surface, not a detached distribution file. `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda` carries the finite gate identity and explicit irreducibility/self-loop theorem types; concrete proof terms remain required before those properties are marked proven.
+Noisy Nets remains part of the coupled learner theorem surface, not a detached law file. The current coupled module carries the finite gate identity and explicit whole-state irreducibility/self-loop proof terms for its fresh-target abstraction.
