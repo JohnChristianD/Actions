@@ -48,6 +48,10 @@ open import Exotic.ERL.Exploration.ComposedLearnerExploration using
   ; zeroStep
   ; zeroStep-is-initial
   )
+open import Exotic.ERL.Exploration.DyadicOpenES using
+  ( openESMutation
+  ; openESZeroSelfLoop
+  )
 open import Exotic.ERL.Exploration.DyadicMR15GA using
   ( Mutation
   ; mutate
@@ -61,10 +65,16 @@ open import Exotic.ERL.Exploration.DMCPFinite using
   ; neutral-preserves
   )
 open import Exotic.ERL.Exploration.TheoremRanking using
-  ( Rank
-  ; canonicalTheoremClass
-  ; mr15DyadicRank
-  ; mr15DominanceOnFiniteCriteria
+  ( SelfLoop
+  ; noisyTriStep
+  ; noisyTriSelfLoop
+  ; NoisyTriAperiodicityObligation
+  ; openESStep
+  ; openESSelfLoop
+  ; OpenESAperiodicityObligation
+  ; mr15Step
+  ; mr15SelfLoop
+  ; MR15AperiodicityObligation
   )
 open import Exotic.ERL.Representation.HaarInt8 using
   ( H8
@@ -112,6 +122,18 @@ testNoiseWeights = refl
 testZeroPerturbation : perturbScalar zero one8 ≡ one8
 testZeroPerturbation = selfLoopExample
 
+testOpenESZeroPerturbation : openESMutation zero one8 ≡ one8
+testOpenESZeroPerturbation = openESZeroSelfLoop
+
+testNoisyTriSelfLoop : SelfLoop noisyTriStep
+testNoisyTriSelfLoop = noisyTriSelfLoop
+
+testOpenESSelfLoop : SelfLoop openESStep
+testOpenESSelfLoop = openESSelfLoop
+
+testMR15SelfLoop : SelfLoop mr15Step
+testMR15SelfLoop = mr15SelfLoop
+
 testSoftsignZero : softsignQ8 zero8 ≡ zero8
 testSoftsignZero = refl
 
@@ -157,14 +179,10 @@ testDMCPNonempty = finite-dmcp-nonempty
 testDMCPNeutral : ∀ (s : DMCPState) → neutral-preserves s
 testDMCPNeutral = neutral-preserves
 
-testMR15Ranking : Rank
-testMR15Ranking = mr15DyadicRank
-
-testMR15RankingArithmetic : mr15DominanceOnFiniteCriteria
-testMR15RankingArithmetic = mr15DominanceOnFiniteCriteria
-
-testCanonicalRanking : Rank
-testCanonicalRanking = canonicalTheoremClass
+testAperiodicityObligationTypes :
+  NoisyTriAperiodicityObligation ×
+  (OpenESAperiodicityObligation × MR15AperiodicityObligation) → Set
+testAperiodicityObligationTypes _ = Set
 
 testLearningState : LearnState
 testLearningState = trainedWitness
