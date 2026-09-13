@@ -3,6 +3,7 @@
 module Exotic.ERL.Exploration.GatingLayerCounterfactual where
 
 open import Agda.Builtin.Equality using (_≡_; refl; trans)
+open import Data.Empty using (⊥)
 open import Data.Product using (_×_; _,_)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
@@ -21,7 +22,7 @@ record GatingFactorization (Full Gate : Set) where
     GateStep : Gate → Gate → Set
     FullStep : Full → Full → Set
 
-    lift-step : ∀ {g h} → GateStep g h → FullStep (lift g) (lift h)
+    lift-step : ∀ {g h} → GateStep g h → FullStep (lift g) (FullStep F (lift h))
 
 open GatingFactorization public
 
@@ -39,9 +40,6 @@ project-after-lift : ∀ {Full Gate : Set}
   → ∀ g → project F (lift F g) ≡ g
 project-after-lift F = project-lift F
 
--- If every exploration step preserves the non-gating coordinate, then every
--- reachable pair preserves it as well. Thus gating-only exploration cannot be
--- globally irreducible on a genuinely non-singleton non-gating factor.
 first-coordinate-preserved : ∀ {Learner Gate : Set}
   {step : (Learner × Gate) → (Learner × Gate) → Set}
   → (∀ {l l' : Learner} {g g' : Gate}
@@ -61,7 +59,7 @@ gating-only-not-irreducible : ∀ {Learner Gate : Set}
       → l ≡ l')
   → (l₀ l₁ : Learner)
   → (g₀ : Gate)
-  → l₀ ≢ l₁
+  → (l₀ ≡ l₁ → ⊥)
   → ¬ Irreducible step
 gating-only-not-irreducible inv l₀ l₁ g₀ neq irr =
   neq (first-coordinate-preserved inv (irr (l₀ , g₀) (l₁ , g₀)))
