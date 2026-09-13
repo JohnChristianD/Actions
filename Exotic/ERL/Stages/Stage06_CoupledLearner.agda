@@ -3,6 +3,16 @@ module Exotic.ERL.Stages.Stage06_CoupledLearner where
 
 open import Agda.Builtin.Nat using (Nat; _+_; _*_; zero; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
+  ( GateParams
+  ; Noise
+  ; gate
+  ; gate-diagonal
+  ; CoupledNoisyNetState
+  ; NoisyNetStep
+  ; NoisyNetIrreducibility
+  ; NoisyNetSelfLoop
+  )
 
 record CoupledState : Set where
   constructor coupled
