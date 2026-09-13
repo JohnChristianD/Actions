@@ -13,13 +13,11 @@ open import Exotic.ERL.Exploration.FiniteNoise using
   ( Noise
   ; zero
   )
-open import Exotic.ERL.Exploration.DyadicMR15GA using
-  ( StepGate
-  ; noPerturb
-  )
 open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ( Coordinate
   ; MR15State
+  ; StepGate
+  ; noPerturb
   ; initialMR15
   ; Genome
   ; generationStep
