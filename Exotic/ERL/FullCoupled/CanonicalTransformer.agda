@@ -1,11 +1,11 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalTransformer where
 
-open import Agda.Builtin.Nat using (zero; suc)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (ℕ; _∸_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; code
@@ -15,6 +15,8 @@ open import Exotic.efficient_chad.Int8 using
   ; one8
   ; max8
   )
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
+open import Exotic.ERL.Exploration.NoisyNetFinite using (noiseDelta)
 open import Exotic.ERL.FullCoupled.FiniteLearner using
   ( Token
   ; observation
@@ -25,9 +27,9 @@ open import Exotic.ERL.FullCoupled.FiniteLearner using
   )
 
 ------------------------------------------------------------------------
--- Canonical order:
+-- Canonical finite Transformer instance:
 -- E -> RoPE -> Pyr^top-k -> Fastfood -> sR1 -> sR2 -> GateNN -> Pi.
--- The stages are deliberately named and nested in this order.
+-- W = 2 is the finite 2-token proof instance of W = 2^q.
 ------------------------------------------------------------------------
 
 record Pair : Set where
@@ -85,19 +87,27 @@ record GateParameters : Set where
 
 open GateParameters public
 
-gate : GateParameters → Pair → Pair
-gate gp (pair x y) =
-  let epsilon = one8
-      w3 = int8Add (mu3 gp) (int8Mul (sigma3 gp) epsilon)
-  in pair (int8Mul w3 x) (int8Mul w3 y)
+gateWeight : GateParameters → Noise → Int8
+gateWeight gp epsilon =
+  int8Add
+    (mu3 gp)
+    (int8Mul (sigma3 gp) (noiseDelta epsilon))
 
-projection : Pair → Int8
-projection (pair x y) = int8Add x y
+gate : GateParameters → Noise → Pair → Pair
+gate gp epsilon (pair x y) =
+  let w3 = gateWeight gp epsilon
+  in pair
+       (int8Mul w3 x)
+       (int8Mul w3 y)
 
-canonicalForward : GateParameters → Token → Int8
-canonicalForward gp t =
-  projection
-    (gate gp
+projection : GateParameters → Pair → Int8
+projection gp (pair x y) =
+  int8Mul (projectionScale gp) (int8Add x y)
+
+canonicalForward : GateParameters → Noise → Token → Int8
+canonicalForward gp epsilon t =
+  projection gp
+    (gate gp epsilon
       (sR2
         (sR1
           (fastfood
@@ -105,54 +115,75 @@ canonicalForward gp t =
               (rope
                 (embedding t)))))))
 
-canonicalOrder : ∀ (gp : GateParameters) (t : Token) →
-  canonicalForward gp t ≡
-  projection
-    (gate gp
+canonicalOrder : ∀ (gp : GateParameters) (epsilon : Noise) (t : Token) →
+  canonicalForward gp epsilon t ≡
+  projection gp
+    (gate gp epsilon
       (sR2
         (sR1
           (fastfood
             (pyrTopK
               (rope
                 (embedding t)))))))
-canonicalOrder gp t = refl
+canonicalOrder gp epsilon t = refl
+
+zeroNoiseWeight : ∀ (gp : GateParameters) →
+  gateWeight gp zero ≡ mu3 gp
+zeroNoiseWeight gp = refl
 
 ------------------------------------------------------------------------
--- Exact local finite VJP for the noisy gate.  The pullback functions consume
--- an output cotangent; they are not inferred by an external AD system.
+-- Explicit finite VJP for the complete scalar gate/projection node.
+-- This is a discrete cotangent transport contract, not a real-analysis claim.
 ------------------------------------------------------------------------
 
 record GateVJP : Set where
   constructor gateVjp
   field
     primalGate : Int8
-    gradMu gradSigma gradInput : Int8 → Int8
+    gradMu gradSigma gradInput gradProjectionScale : Int8
 
 open GateVJP public
 
-gateScalarVJP : Int8 → Int8 → Int8 → GateVJP
-gateScalarVJP mu sigma x =
-  let w = int8Add mu (int8Mul sigma one8)
+gateVJP : GateParameters → Noise → Pair → GateVJP
+gateVJP gp epsilon (pair x y) =
+  let w = gateWeight gp epsilon
+      inner = int8Add x y
+      p = int8Mul (projectionScale gp) (int8Mul w inner)
+      gateScale = int8Mul (projectionScale gp) inner
+      inputScale = int8Mul (projectionScale gp) w
   in gateVjp
-       (int8Mul w x)
-       (λ c → int8Mul c x)
-       (λ c → int8Mul c x)
-       (λ c → int8Mul c w)
+       p
+       gateScale
+       (int8Mul gateScale (noiseDelta epsilon))
+       inputScale
+       (int8Mul w inner)
 
-gateScalarVJPPrimal : ∀ (mu sigma x : Int8) →
-  primalGate (gateScalarVJP mu sigma x) ≡
-  int8Mul (int8Add mu (int8Mul sigma one8)) x
-gateScalarVJPPrimal mu sigma x = refl
+gateVJPPrimal : ∀ (gp : GateParameters) (epsilon : Noise) (x y : Int8) →
+  primalGate (gateVJP gp epsilon (pair x y)) ≡
+  projection gp (gate gp epsilon (pair x y))
+gateVJPPrimal gp epsilon x y = refl
 
-gateScalarVJPPullback : ∀ (mu sigma x c : Int8) →
-  gradMu (gateScalarVJP mu sigma x) c ≡ int8Mul c x
-gateScalarVJPPullback mu sigma x c = refl
+gateVJPMu : ∀ (gp : GateParameters) (epsilon : Noise) (x y c : Int8) →
+  gradMu (gateVJP gp epsilon (pair x y)) ≡
+  int8Mul c (int8Mul (projectionScale gp) (int8Add x y))
+gateVJPMu gp epsilon x y c =
+  refl
 
-gateScalarVJPSigma : ∀ (mu sigma x c : Int8) →
-  gradSigma (gateScalarVJP mu sigma x) c ≡ int8Mul c x
-gateScalarVJPSigma mu sigma x c = refl
+gateVJPSigma : ∀ (gp : GateParameters) (epsilon : Noise) (x y c : Int8) →
+  gradSigma (gateVJP gp epsilon (pair x y)) ≡
+  int8Mul c
+    (int8Mul
+      (int8Mul (projectionScale gp) (int8Add x y))
+      (noiseDelta epsilon))
+gateVJPSigma gp epsilon x y c = refl
 
-gateScalarVJPInput : ∀ (mu sigma x c : Int8) →
-  gradInput (gateScalarVJP mu sigma x) c ≡
-  int8Mul c (int8Add mu (int8Mul sigma one8))
-gateScalarVJPInput mu sigma x c = refl
+gateVJPInput : ∀ (gp : GateParameters) (epsilon : Noise) (x y c : Int8) →
+  gradInput (gateVJP gp epsilon (pair x y)) ≡
+  int8Mul c
+    (int8Mul (projectionScale gp) (gateWeight gp epsilon))
+gateVJPInput gp epsilon x y c = refl
+
+gateVJPProjection : ∀ (gp : GateParameters) (epsilon : Noise) (x y c : Int8) →
+  gradProjectionScale (gateVJP gp epsilon (pair x y)) ≡
+  int8Mul c (int8Mul (gateWeight gp epsilon) (int8Add x y))
+gateVJPProjection gp epsilon x y c = refl
