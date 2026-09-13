@@ -8,23 +8,24 @@ Current canonical manifest: `.ci/canonical-module.txt`.
 ## Actual exploration methods
 
 - `Exotic/ERL/Exploration/OpenESDyadic.agda` — scalar `Int8` quotient.
-- `Exotic/ERL/Exploration/MR15Reachability.agda` — two-coordinate softsign-gated representation state.
-- `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda` — whole coupled learner state.
+- `Exotic/ERL/Exploration/MR15Reachability.agda` — full two-coordinate softsign-gated representation state.
+- `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda` — whole coupled learner/noise state; Noisy Nets is a coupled ablation, not a detached explorer.
 
 Probability laws are parameters to these methods, not separate explorers.
 
-## Retained law
+## Retained law frontier
 
 - `Exotic/ERL/Exploration/FlatDyadic.agda` — uniform weight `1` over all `256` Int8 residues.
-- `Exotic/ERL/Exploration/DyadicLaw.agda` exposes exactly this retained law.
+- `Exotic/ERL/Exploration/DyadicLadder.agda` — exact dyadic-shell law with denominator `32`, zero weight `16`, and unit mass on every signed power-of-two shell through `±128`.
+- `Exotic/ERL/Exploration/DyadicLaw.agda` exposes exactly these two retained laws.
 
-The legacy triangular family, geometric-5 candidate, and all currently removed non-flat dyadic laws are permanently absent from the selectable theorem surface.
+The legacy triangular family, geometric-5 candidate, Lazy Walk, and other non-flat/non-dyadic-shell candidates are permanently absent from the selectable theorem surface.
 
 ## Endogenous theorem boundary
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` composes the retained law with one actual method only after exact law normalization/unit-support, finite `signReLU8 -> softsign8` forward/pullback composition, the canonical softsign-gated `PeriodOne`, irreducibility, and self-loop are present. `PeriodOne` is derived inside the composed object.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` composes a retained law with one actual method only after exact law normalization/unit-support, finite `signReLU8 -> softsign8` forward/pullback composition, conditional Möbius forward closure, the canonical softsign-gated `PeriodOne`, irreducibility, and self-loop are present. `PeriodOne` is derived inside the composed object.
 
-`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates exactly three retained law×method compositions and runs the generated Agda harness under `--safe`.
+`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates exactly six retained law×method compositions and runs the generated Agda harness under `--safe`.
 
 ## Canonical exploration boundary
 
@@ -46,7 +47,7 @@ This is a theorem-factor ordering, not an empirical performance ranking.
 
 `Exotic/efficient_chad/SoftsignGatedComposition.agda` proves finite CHAD composition for the abstract finite `softsign8 ∘ signReLU8` operator boundary. `Exotic/efficient_chad/MobiusInt8Composition.agda` proves finite Möbius-action closure under composition.
 
-`Exotic/efficient_chad/MobiusSoftsignBridge.agda` proves conditional forward Möbius closure for the composed activation from concrete signReLU8 and softsign8 witnesses. It does not fabricate activation-specific witnesses.
+`Exotic/efficient_chad/MobiusSoftsignBridge.agda` proves conditional forward Möbius closure for the composed activation from concrete signReLU8 and softsign8 witnesses. The full-coupling record now carries this composition theorem; activation-specific witnesses are still required before an actual activation-specific Möbius certificate can be claimed.
 
 ## Noisy-Net representation bridge
 
