@@ -3,10 +3,15 @@ module Exotic.ERL.FullCoupled.SoftsignGatedRepresentation where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Exotic.efficient_chad.Int8 using (Int8)
+open import Exotic.efficient_chad.Int8 using (Int8; zero8)
+open import Exotic.efficient_chad.SoftsignGatedComposition using
+  ( softsignGatedForwardLaw-proof
+  ; softsignGatedPullbackLaw-proof
+  )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using (there; here)
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ( GateParams
+  ; mu3
   ; CoupledNoisyNetState
   ; coupledNoisyNetState
   ; gateParameters
@@ -17,21 +22,27 @@ open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ; noisyNetNoise
   )
 
+-- Canonical exploration boundary: the two finite coordinates entering the
+-- gated representation are observable; sigma3 remains a coupled hidden
+-- learner coordinate and therefore supplies the strict state extension.
 SoftsignGatedRepresentation : Set
-SoftsignGatedRepresentation = GateParams × Int8
+SoftsignGatedRepresentation = Int8 × Int8
 
 projectSoftsignGated : CoupledNoisyNetState → SoftsignGatedRepresentation
-projectSoftsignGated s = gateParameters s , learnerState s
+projectSoftsignGated s = mu3 (gateParameters s) , learnerState s
 
 liftSoftsignGated : SoftsignGatedRepresentation → CoupledNoisyNetState
-liftSoftsignGated r = coupledNoisyNetState (proj₁ r) (proj₂ r)
+liftSoftsignGated r = coupledNoisyNetState (gateParams (proj₁ r) zero8) (proj₂ r)
+  where
+  gateParams : Int8 → Int8 → GateParams
+  gateParams = NoisyNetCoupled.gateParams
 
 softsignGated-retraction :
   ∀ r → projectSoftsignGated (liftSoftsignGated r) ≡ r
 softsignGated-retraction r = refl
 
--- Exploration at the canonical representation boundary uses a fresh target
--- in the same finite representation state space.
+-- The representation-layer exploration relation is a fresh finite target
+-- relation on the exact softsign-gated boundary state.
 data SoftsignGatedStep : SoftsignGatedRepresentation → SoftsignGatedRepresentation → Set where
   softsignTarget : ∀ {s} → (r : SoftsignGatedRepresentation)
     → SoftsignGatedStep s r
@@ -48,7 +59,10 @@ lift-softsign-step : ∀ {r q}
   → SoftsignGatedStep r q
   → NoisyNetStep (liftSoftsignGated r) (liftSoftsignGated q)
 lift-softsign-step (softsignTarget q) =
-  noisyNetStepFromFreshNoise (noisyNetNoise (proj₁ q) (proj₂ q))
+  noisyNetStepFromFreshNoise
+    (noisyNetNoise
+      (NoisyNetCoupled.gateParams (proj₁ q) zero8)
+      (proj₂ q))
 
 record RepresentationFactor {S R : Set}
     (stepS : S → S → Set) (stepR : R → R → Set) : Set₁ where
@@ -69,3 +83,8 @@ noisyNetSoftsignFactor =
     softsignGated-retraction
     project-noisyNet-step
     lift-softsign-step
+
+-- The forward/pullback composition is part of the same representation-boundary
+-- theorem surface; these names are imported by the full-coupling composition.
+softsignGatedForward-composed = softsignGatedForwardLaw-proof
+softsignGatedPullback-composed = softsignGatedPullbackLaw-proof
