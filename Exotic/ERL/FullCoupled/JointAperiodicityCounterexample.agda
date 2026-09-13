@@ -4,9 +4,9 @@ module Exotic.ERL.FullCoupled.JointAperiodicityCounterexample where
 
 open import Agda.Builtin.Bool using (Bool; false; true; not)
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (Σ; _×_; _,_)
+open import Relation.Nullary using (¬_)
 
--- A causal replay witness can exist independently of the joint learner chain.
 record Transition : Set where
   constructor transition
   field payload : Bool
@@ -21,8 +21,6 @@ causalOnlineReplay : ∀ (t : Transition) (s : Bool) →
   replayOne t s ≡ online (Transition.payload t) s
 causalOnlineReplay t s = refl
 
--- Exploration is maximally irreducible here: every exploration state can
--- reach every other state in one step, and every state has a self-loop.
 data ExploreStep : Bool → Bool → Set where
   explore : ∀ {x y} → ExploreStep x y
 
@@ -35,9 +33,6 @@ explorationIrreducible x y = explore
 explorationSelfLoop : ∀ x → ExploreStep x x
 explorationSelfLoop x = explore
 
--- Joint state = exploration state × learner state.
--- The learner component deterministically toggles on every update.
--- Exploration itself remains completely irreducible.
 Joint : Set
 Joint = Bool × Bool
 
@@ -61,34 +56,21 @@ jointIrreducible (e , false) (e' , true) = oneStep
 jointIrreducible (e , true) (e' , false) = oneStep
 jointIrreducible (e , true) (e' , true) = twoStep
 
--- There is no joint self-loop: the learner bit always toggles.
 jointNoSelf : ∀ {x : Joint} → ¬ JointStep x x
 jointNoSelf {false , false} ()
 jointNoSelf {false , true} ()
 jointNoSelf {true , false} ()
 jointNoSelf {true , true} ()
 
+JointSelfLoop : Set
+JointSelfLoop = Σ Joint (λ x → JointStep x x)
+
 JointAperiodicity : Set
-JointAperiodicity =
-  (∃ λ x → JointStep x x) × (∀ x y → Reach JointStep x y)
-  where
-  data _∃_ (A : Set) (P : A → Set) : Set where
-    witness : (x : A) → P x → A ∃ P
+JointAperiodicity = JointSelfLoop × (∀ x y → Reach JointStep x y)
 
 notJointAperiodic : ¬ JointAperiodicity
-notJointAperiodic (pair p r) =
-  jointNoSelf (witness-proof p)
-  where
-  data Witness (A : Set) (P : A → Set) : Set where
-    witnessProof : (x : A) → P x → Witness A P
+notJointAperiodic ((x , p) , r) = jointNoSelf p
 
-  witness-proof :
-    (x : Joint × (JointStep x x)) → JointStep (x .proj₁) (x .proj₁)
-  witness-proof p = p .proj₂
-
--- Constructive counterexample to:
---   causal-online-equivalence + exploration-irreducibility
---   ==> joint aperiodicity.
 counterexample :
   (∀ (t : Transition) (s : Bool) →
      replayOne t s ≡ online (Transition.payload t) s)
