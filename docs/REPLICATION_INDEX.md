@@ -22,27 +22,27 @@ Live actual exploration methods are:
 - `Exotic/ERL/Exploration/OpenESDyadic.agda`
 - `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
 
-Probability-law modules are separate from exploration methods:
+The canonical probability-law surface contains exactly one law:
 
-- `Exotic/ERL/Exploration/LazyWalkDyadic.agda`
-- `Exotic/ERL/Exploration/DyadicLadder.agda`
 - `Exotic/ERL/Exploration/FlatDyadic.agda`
 - `Exotic/ERL/Exploration/DyadicLaw.agda`
 
-The reusable graph theorem schema is `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`.
+Flat Dyadic gives exact denominator 256 and positive support for every Int8 code. It therefore proves one-step complete code support, strictly stronger than a mere ±1 generator witness.
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` is the theorem boundary. A law and an actual explorer are accepted together; the composed object also records the representation-layer CHAD boundary, and `PeriodOne` is derived only from the concrete irreducibility and self-loop proofs.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` is the theorem boundary. A law and an actual explorer are accepted together; the composed object also records the softsign-gated CHAD boundary, universal law support, concrete irreducibility, self-loop, and derived `PeriodOne`.
 
-`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates the three actual explorers against all three checked probability laws and writes exactly nine endogenous theorem objects to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source and invokes `agda --safe`; it never upgrades a conjecture into a theorem.
+`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates the three actual explorers against the one retained law and writes exactly three endogenous theorem objects to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source and invokes `agda --safe`; it never upgrades a conjecture into a theorem.
 
-The current finite theorem universe is therefore the Cartesian product:
+The current theorem universe is:
 
-`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder, FlatDyadic}`.
+`{MR15, OpenES, NoisyNet} × {FlatDyadic}`.
 
-Strict algebraic ordering is now recorded at two layers. The law support-capacity chain is `LazyWalk < DyadicLadder < FlatDyadic` (3, 17, and 256 exact finite outcomes). The method state boundary is `softsign-gated representation < NoisyNet coupled state`, witnessed by an actual projection section plus two distinct reachable GateParams with the same projected representation signal in `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda`.
+The Noisy-Net method now has a concrete projection/lift theorem at `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda`: the coupled state projects to the pre-softsign Int8 representation, the forward observable is `softsignQ8 (signReLUQ8 x)`, representation steps lift to coupled steps, coupled steps project back, and distinct GateParams can lie in the same representation fiber.
 
-Therefore the unique maximal variant among the currently representation-connected theorem corners is `NoisyNet × FlatDyadic`. MR15 and OpenES remain incomparable to NoisyNet until their own production-state projection/lift theorems are kernel-checked; assigning them a cross-method strict rank earlier would overclaim.
+Thus the strict theorem frontier currently established is:
+
+`softsign-gated representation < NoisyNet coupled state`,
+
+with Flat Dyadic the unique maximal retained probability law. The maximal connected theorem corner is `NoisyNet × FlatDyadic`. MR15 and OpenES remain unranked against NoisyNet until their own production-state projection/lift theorems exist and pass `agda --safe`.
 
 The standalone pure-DMCP distribution module was removed and is not a live canonical probability layer.
-
-Noisy Nets remains part of the coupled learner theorem surface, not a detached law file. The representation boundary is the finite `softsign8 ∘ signReLU8` composition, with concrete Int8 forward definitions in `Exotic/ERL/Finite/Activation.agda` and the Noisy-Net state projection/lift in `Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda`.
