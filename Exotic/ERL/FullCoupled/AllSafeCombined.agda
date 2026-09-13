@@ -179,11 +179,6 @@ testDMCPNonempty = finite-dmcp-nonempty
 testDMCPNeutral : ∀ (s : DMCPState) → neutral-preserves s
 testDMCPNeutral = neutral-preserves
 
-testAperiodicityObligationTypes :
-  NoisyTriAperiodicityObligation ×
-  (OpenESAperiodicityObligation × MR15AperiodicityObligation) → Set
-testAperiodicityObligationTypes _ = Set
-
 testLearningState : LearnState
 testLearningState = trainedWitness
 
