@@ -26,6 +26,9 @@ open import Exotic.ERL.Exploration.MR15Reachability using
 open import Exotic.ERL.Exploration.OpenESDyadic using
   ( OpenESState
   ; openESStep
+  ; openESStepFromFreshNoise
+  ; openESNoise
+  ; target
   )
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ( CoupledNoisyNetState
@@ -35,15 +38,13 @@ open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ; gateParameters
   ; learnerState
   ; NoisyNetStep
-  ; noisyNetIrreducibilityProof
-  ; noisyNetSelfLoopProof
   )
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
   ( SoftsignGatedStep
+  ; softsignTarget
   ; RepresentationFactor
   ; noisyNetSoftsignFactor
   )
-open import Exotic.ERL.Exploration.OpenESDyadic as OpenES
 
 record TheoremFactor {S R : Set}
     (stepS : S → S → Set) (stepR : R → R → Set) : Set₁ where
@@ -97,14 +98,11 @@ mr15ToOpenES = theoremFactor
   lift-step
   where
   project-step : ∀ {s t} → MR15Step s t → openESStep (openESProjection s) (openESProjection t)
-  project-step _ =
-    OpenES.openESStepFromFreshNoise
-      (OpenES.openESNoise (openESProjection (openESLift (openESProjection (openESLift zero8)))))
+  project-step (softsignTarget q) =
+    openESStepFromFreshNoise (openESNoise (proj₁ q))
 
   lift-step : ∀ {r q} → openESStep r q → MR15Step (openESLift r) (openESLift q)
-  lift-step _ = softsignTarget (openESLift q)
-    where
-    open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using (softsignTarget)
+  lift-step (openESStepFromFreshNoise ε) = softsignTarget (target ε , zero8)
 
 noisyNetToMR15 : TheoremFactor NoisyNetStep MR15Step
 noisyNetToMR15 = theoremFactor
@@ -147,27 +145,25 @@ noisyNetStrictWitness =
       (cong (λ s → GateParams.sigma3 (gateParameters s)) eq)
 
 record StrictTheoremExtension {S R : Set}
-    (stepS : S → S → Set) (stepR : R → R → Set) : Set₁ where
+    (stepS : S → S → Set) (stepR : R → R → Set)
+    (s₁ s₂ : S) : Set₁ where
   constructor strictTheoremExtension
   field
     factor : TheoremFactor stepS stepR
-    proper : Set
+    sameProjection : TheoremFactor.project factor s₁ ≡ TheoremFactor.project factor s₂
+    distinct : s₁ ≢ s₂
 
 openES-lt-MR15 : StrictTheoremExtension MR15State OpenESState MR15Step openESStep
-openES-lt-MR15 = strictTheoremExtension mr15ToOpenES
-  ((openESProjection (one8 , zero8) ≡ openESProjection (one8 , one8)) × ((one8 , zero8) ≢ (one8 , one8)))
+  (one8 , zero8) (one8 , one8)
+openES-lt-MR15 = strictTheoremExtension mr15ToOpenES refl
+  (λ eq → one8≢zero8 (cong proj₂ eq))
 
 MR15-lt-NoisyNet : StrictTheoremExtension CoupledNoisyNetState MR15State NoisyNetStep MR15Step
-MR15-lt-NoisyNet = strictTheoremExtension noisyNetToMR15
-  ((RepresentationFactor.project noisyNetSoftsignFactor
-    (coupledNoisyNetState (gateParams zero8 zero8) zero8)
-    ≡
-    RepresentationFactor.project noisyNetSoftsignFactor
-    (coupledNoisyNetState (gateParams zero8 one8) zero8))
-   ×
-   (coupledNoisyNetState (gateParams zero8 zero8) zero8
-    ≢
-    coupledNoisyNetState (gateParams zero8 one8) zero8))
+  (coupledNoisyNetState (gateParams zero8 zero8) zero8)
+  (coupledNoisyNetState (gateParams zero8 one8) zero8)
+MR15-lt-NoisyNet = strictTheoremExtension noisyNetToMR15 refl
+  (λ eq → one8≢zero8
+    (cong (λ s → GateParams.sigma3 (gateParameters s)) eq))
 
--- The theorem implication order is therefore genuinely strict:
+-- Genuine strict theorem implication order:
 -- OpenES < MR15 < NoisyNet.
