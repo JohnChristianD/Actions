@@ -1,11 +1,19 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.TheoremStrength where
 
-open import Agda.Builtin.Equality using (_≡_; refl; cong; trans)
+open import Agda.Builtin.Equality using (_≡_; refl; cong; trans; sym)
 open import Data.Bool using (Bool; false; true)
-open import Data.Empty using (⊥; ⊥-elim)
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
 open import Exotic.ERL.Exploration.DyadicLaw using (DyadicLaw; lazyWalk; dyadicLadder; flatDyadic)
-open import Exotic.ERL.Exploration.ExplorationTheoremSchema using (Irreducible; SelfLoop; PeriodOne)
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Irreducible
+  ; SelfLoop
+  ; PeriodOne
+  ; periodOne
+  ; there
+  ; here
+  )
 open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using (FullAlgebraicCoupling)
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using (RepresentationRetraction)
 
@@ -35,25 +43,38 @@ baseLevel ≤method representationLevel = ⊤
 representationLevel ≤method representationLevel = ⊤
 representationLevel ≤method baseLevel = ⊥
 
-open import Data.Unit using (⊤; tt)
-
 method-level-trans : ∀ {a b c} → a ≤method b → b ≤method c → a ≤method c
 method-level-trans tt tt = tt
 
 strict-method-representation : baseLevel ≤method representationLevel
 strict-method-representation = tt
 
--- A real separation model: a singleton state has a full self-loop, but it
--- cannot retract onto a two-point representation. Thus the base theorem does
--- not imply the representation-factor theorem.
 data OneState : Set where
   oneState : OneState
 
 one-state-loop : OneState → OneState → Set
 one-state-loop oneState oneState = ⊤
 
+one-state-irreducible : Irreducible one-state-loop
+one-state-irreducible oneState oneState = there tt here
+
+one-state-selfLoop : SelfLoop one-state-loop
+one-state-selfLoop oneState = tt
+
+one-state-periodOne : PeriodOne one-state-loop
+one-state-periodOne = periodOne one-state-irreducible one-state-selfLoop
+
 one-state-base : BaseEndogenous lazyWalk one-state-loop
-one-state-base = baseEndogenous ⊥-elim
+one-state-base = baseEndogenous
+  (record
+    { lawNormalized = tt
+    ; lawUnitSupport = tt
+    ; representationForward = tt
+    ; representationPullback = tt
+    ; irreducible = one-state-irreducible
+    ; selfLoop = one-state-selfLoop
+    ; periodOne = one-state-periodOne
+    })
 
 one-unique : ∀ x y → x ≡ y
 one-unique oneState oneState = refl
@@ -63,10 +84,12 @@ false≠true ()
 
 no-two-point-retraction : ¬ RepresentationRetraction {S = OneState} {R = Bool}
 no-two-point-retraction (representationRetraction p l r) =
-  false≠true (trans (r false) (trans (cong p (one-unique (l false) (l true))) (sym (r true))))
+  false≠true (trans (r false)
+    (trans (cong p (one-unique (l false) (l true)))
+      (sym (r true))))
 
-
-strictBaseNotStrong : ¬ (BaseEndogenous lazyWalk one-state-loop → StrongEndogenous lazyWalk one-state-loop)
+strictBaseNotStrong : ¬ (BaseEndogenous lazyWalk one-state-loop →
+  StrongEndogenous lazyWalk one-state-loop)
 strictBaseNotStrong _ = no-two-point-retraction
 
 data LawLevel : Set where
@@ -92,10 +115,10 @@ strict-lazy-ladder = tt
 strict-ladder-flat : ladderLevel ≤law flatLevel
 strict-ladder-flat = tt
 
-law-level-lazy : DyadicLaw → LawLevel
-law-level-lazy lazyWalk = lazyLevel
-law-level-lazy dyadicLadder = ladderLevel
-law-level-lazy flatDyadic = flatLevel
+law-level : DyadicLaw → LawLevel
+law-level lazyWalk = lazyLevel
+law-level dyadicLadder = ladderLevel
+law-level flatDyadic = flatLevel
 
 data MethodTag : Set where
   mr15Tag : MethodTag
@@ -107,13 +130,13 @@ method-level mr15Tag = baseLevel
 method-level openESTag = baseLevel
 method-level noisyNetTag = representationLevel
 
-record VariantOrder : Set where
-  constructor variantOrder
-  field
-    methodPart : MethodLevel
-    lawPart : LawLevel
-    methodProof : method-level noisyNetTag ≤method methodPart
-    lawProof : flatLevel ≤law lawPart
+_≤variant_ : MethodTag → DyadicLaw → MethodTag → DyadicLaw → Set
+m₁ ≤variant l₁ m₂ l₂ =
+  method-level m₁ ≤method method-level m₂ ×
+  law-level l₁ ≤law law-level l₂
 
-strongest-variant-order : VariantOrder
-strongest-variant-order = variantOrder representationLevel flatLevel tt tt
+strongestDominates : ∀ (m : MethodTag) (l : DyadicLaw)
+  → m ≤variant l noisyNetTag flatDyadic
+strongestDominates mr15Tag l = tt , tt
+strongestDominates openESTag l = tt , tt
+strongestDominates noisyNetTag l = tt , tt
