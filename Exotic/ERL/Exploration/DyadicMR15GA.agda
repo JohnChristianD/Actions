@@ -7,11 +7,15 @@ open import Data.Fin as F using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
 open import Data.Nat using (Nat; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (m%n<n)
+open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Data.Product using (Σ; _,_)
 open import Relation.Nullary using (yes; no)
 
 dimension : Nat
 dimension = 4
+
+populationSize : Nat
+populationSize = 16
 
 Population : Set
 Population = Fin dimension → Fin 256
@@ -35,7 +39,7 @@ pow2 : Nat → Nat
 pow2 zero = 1
 pow2 (suc n) = pow2 n * 2
 
--- A common 2^-7 fixed-point grid represents dyadic exponents -7..+7.
+-- A common 2^-7 fixed-point grid represents the finite dyadic exponent levels.
 exponentIndex : Exponent → Nat
 exponentIndex e = toℕ e
 
@@ -82,3 +86,27 @@ unitPlusWitness = refl
 
 unitMinusWitness : stepSigned minus unitExponent (F.suc F.zero) ≡ F.zero
 unitMinusWitness = refl
+
+raiseExponent : Exponent → Exponent
+raiseExponent e with toℕ e ≤? 13
+... | yes _ = fromℕ< (toℕ<n (suc (toℕ e)) 15)
+... | no _ = e
+
+lowerExponent : Exponent → Exponent
+lowerExponent e with toℕ e ≤? 0
+... | yes _ = e
+... | no _ = fromℕ< (toℕ<n (toℕ e ∸ 1) 15)
+
+-- Exact finite 1/5 rule: compare 5s with N, avoiding a non-dyadic 1/5 value.
+oneFifthStepUpdate : Exponent → Fin (suc populationSize) → Exponent
+oneFifthStepUpdate m successes with 5 * toℕ successes ≤? populationSize
+... | yes _ = lowerExponent m
+... | no _ = raiseExponent m
+
+oneFifthBelow : ∀ m →
+  oneFifthStepUpdate m F.zero ≡ lowerExponent m
+oneFifthBelow m = refl
+
+oneFifthAbove : ∀ m →
+  oneFifthStepUpdate m (F.suc (F.suc (F.suc (F.suc F.zero)))) ≡ raiseExponent m
+oneFifthAbove m = refl
