@@ -14,6 +14,14 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; there
   ; here
   )
+open import Exotic.efficient_chad.SoftsignGatedComposition using
+  ( softsignGatedForwardLaw-proof
+  ; softsignGatedPullbackLaw-proof
+  )
+open import Exotic.ERL.Exploration.DyadicLaw using
+  ( lazyWalkNormalized
+  ; lazyWalkUnitSupport
+  )
 open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using (FullAlgebraicCoupling)
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using (RepresentationRetraction)
 
@@ -67,10 +75,10 @@ one-state-periodOne = periodOne one-state-irreducible one-state-selfLoop
 one-state-base : BaseEndogenous lazyWalk one-state-loop
 one-state-base = baseEndogenous
   (record
-    { lawNormalized = tt
-    ; lawUnitSupport = tt
-    ; representationForward = tt
-    ; representationPullback = tt
+    { lawNormalized = lazyWalkNormalized
+    ; lawUnitSupport = lazyWalkUnitSupport
+    ; representationForward = softsignGatedForwardLaw-proof
+    ; representationPullback = softsignGatedPullbackLaw-proof
     ; irreducible = one-state-irreducible
     ; selfLoop = one-state-selfLoop
     ; periodOne = one-state-periodOne
