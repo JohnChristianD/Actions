@@ -34,8 +34,8 @@ open import Exotic.ERL.FullCoupled.CanonicalTransformer using
   )
 
 ------------------------------------------------------------------------
--- Finite dyadic arithmetic.  The exponent is bounded by Fin 8, with
--- exponent zero as the hard ULP floor.
+-- Finite dyadic arithmetic. The exponent is bounded by Fin 8, with exponent
+-- zero as the hard ULP floor.
 ------------------------------------------------------------------------
 
 twoPowNat : ℕ → ℕ
@@ -98,6 +98,21 @@ f4Step s g =
       nq = int8Add (q s) nr3
   in f4 nq nr1 nr2 nr3 (ell s)
 
+------------------------------------------------------------------------
+-- q-projected IDBD finite update. `delta` and `eligibility` are supplied by
+-- the VJP/TD snapshot, while F4 performs dyadic scaling, q_epsilon projection,
+-- L2/norm-pair regularisation and the three residual accumulations.
+------------------------------------------------------------------------
+
+qProjectedIDBDStep : F4 → Int8 → Int8 → F4
+qProjectedIDBDStep s delta eligibility =
+  f4Step s (int8Mul delta eligibility)
+
+qProjectedIDBDLaw : ∀ (s : F4) (delta eligibility : Int8) →
+  qProjectedIDBDStep s delta eligibility ≡
+  f4Step s (int8Mul delta eligibility)
+qProjectedIDBDLaw s delta eligibility = refl
+
 initialZero : F4
 initialZero = f4 zero8 zero8 zero8 zero8 ellMin
 
@@ -108,8 +123,7 @@ f4ZeroWitness : f4Step initialZero zero8 ≡ initialZero
 f4ZeroWitness = refl
 
 ------------------------------------------------------------------------
--- Exact finite signed ordering for the hard max. No embedding into the real
--- numbers is used by the learner.
+-- Exact finite signed ordering for the hard max. No real-number embedding.
 ------------------------------------------------------------------------
 
 signedLess : Int8 → Int8 → Bool
@@ -193,8 +207,7 @@ actorValue s epsilon t =
   int8Mul (q (psi s)) (representationFeature s epsilon t)
 
 ------------------------------------------------------------------------
--- Standard accumulating TD(lambda) trace in finite dyadic form. `traceDecayExp`
--- represents the finite dyadic product gamma*lambda.
+-- Standard accumulating TD(lambda) trace in finite dyadic form.
 ------------------------------------------------------------------------
 
 traceStep : LearnerState → Int8 → Int8
@@ -253,11 +266,11 @@ commit : LearnerState →
   Int8 → Int8 → Int8 → Int8 → Int8 →
   Int8 → Int8 → Int8 → LearnerState
 commit s gXi gTheta gPsi gMu gSigma newTrace newCritic newActor =
-  let nXi = f4Step (xi s) (qε 3 gXi)
-      nTheta = f4Step (theta s) (qε 3 gTheta)
-      nPsi = f4Step (psi s) (qε 3 gPsi)
-      nMu = f4Step (mu3 s) (qε 3 gMu)
-      nSigma = f4Step (sigma3 s) (qε 3 gSigma)
+  let nXi = qProjectedIDBDStep (xi s) gXi one8
+      nTheta = qProjectedIDBDStep (theta s) gTheta one8
+      nPsi = qProjectedIDBDStep (psi s) gPsi one8
+      nMu = qProjectedIDBDStep (mu3 s) gMu one8
+      nSigma = qProjectedIDBDStep (sigma3 s) gSigma one8
   in learnerState
        nXi nTheta nPsi
        nMu nSigma
@@ -288,9 +301,9 @@ xiCommit : ∀ (s : LearnerState)
   (t nextT : Token)
   (reward : Int8) →
   xi (step s epsilon nextEpsilon t nextT reward) ≡
-  f4Step (xi s)
-    (qε 3
-      (proj₁ (gradientBundle s epsilon nextEpsilon t nextT reward)))
+  qProjectedIDBDStep (xi s)
+    (proj₁ (gradientBundle s epsilon nextEpsilon t nextT reward))
+    one8
 xiCommit s epsilon nextEpsilon t nextT reward = refl
 
 zeroSelfLoop :
