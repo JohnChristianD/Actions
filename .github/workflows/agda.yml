@@ -105,8 +105,8 @@ jobs:
       - name: Check dyadic-ladder probability law
         run: agda --safe Exotic/ERL/Exploration/DyadicLadder.agda
 
-      - name: Check dyadic-geometric probability law
-        run: agda --safe Exotic/ERL/Exploration/DyadicGeometric5.agda
+      - name: Check flat-dyadic probability law
+        run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
 
       - name: Check dyadic-law composition interface
         run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
@@ -120,8 +120,11 @@ jobs:
       - name: Check finite Int8 Mobius composition
         run: agda --safe Exotic/efficient_chad/MobiusInt8Composition.agda
 
-      - name: Check softsign-gated representation projection and factor
+      - name: Check softsign-gated representation boundary
         run: agda --safe Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda
+
+      - name: Check noisy-net representation factor
+        run: agda --safe Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda
 
       - name: Check strict theorem-strength order
         run: agda --safe Exotic/ERL/FullCoupled/TheoremStrengthV3.agda
