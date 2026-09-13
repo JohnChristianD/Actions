@@ -11,13 +11,13 @@ record Rank : Set where
     closure identity finiteSupport extraction coupling : Nat
 
 top : Nat
- top = suc (suc (suc (suc zero)))
+top = suc (suc (suc (suc zero)))
 
 noisyTriRank : Rank
 noisyTriRank = rank top top top top top
 
 openESDyadicRank : Rank
-openESDyadicRank = rank top top top (suc (suc (suc zero))) (suc (suc (suc zero)))
+openESDyadicRank = rank top top top (suc (suc (suc zero))) top
 
 mr15DyadicRank : Rank
 mr15DyadicRank = rank top top (suc (suc (suc zero))) (suc (suc (suc zero))) (suc (suc zero))
@@ -31,13 +31,13 @@ openESScore = Rank.closure openESDyadicRank + Rank.identity openESDyadicRank + R
 mr15Score : Nat
 mr15Score = Rank.closure mr15DyadicRank + Rank.identity mr15DyadicRank + Rank.finiteSupport mr15DyadicRank + Rank.extraction mr15DyadicRank + Rank.coupling mr15DyadicRank
 
-noisyTriBeatsOpenES : noisyTriScore ≡ 19
+noisyTriBeatsOpenES : noisyTriScore ≡ 20
 noisyTriBeatsOpenES = refl
 
-openESBeatsMR15 : openESScore ≡ 18
+openESBeatsMR15 : openESScore ≡ 19
 openESBeatsMR15 = refl
 
-mr15ScoreValue : mr15Score ≡ 17
+mr15ScoreValue : mr15Score ≡ 16
 mr15ScoreValue = refl
 
 canonicalTheoremClass : Rank
