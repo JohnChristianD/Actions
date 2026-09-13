@@ -34,6 +34,12 @@ jobs:
         with:
           ghc-version: '9.6'
 
+      - name: Check exact semantic port of deleted Clojure discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          runghc .ci/discovery/ClojureInvolutionCompat.hs
+
       - name: Install Agda2HS
         shell: bash
         run: |
