@@ -2,43 +2,61 @@
 
 module Exotic.ERL.Exploration.TheoremRanking where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Fin as F using (Fin)
+open import Data.Product using (Σ; _×_; _,_)
+open import Exotic.efficient_chad.Int8 using (Int8; one8)
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
+open import Exotic.ERL.Exploration.NoisyNetFinite using (perturbScalar)
+open import Exotic.ERL.Exploration.DyadicOpenES using (openESMutation)
+open import Exotic.ERL.Exploration.DyadicMR15GA using
+  ( MR15Index
+  ; Population
+  ; Mutation
+  ; emptyPopulation
+  ; mutate
+  ; Dyadic
+  )
 
-record Rank : Set where
-  constructor rank
-  field
-    closure identity finiteSupport extraction coupling : Nat
+-- A candidate is aperiodic only after both obligations below are discharged:
+-- a positive-support self-loop and irreducibility of the finite support graph.
+data Reach {S : Set} (step : S → S → Set) : S → S → Set where
+  here : ∀ {x} → Reach step x x
+  there : ∀ {x y z} → step x y → Reach step y z → Reach step x z
 
-top : Nat
-top = suc (suc (suc (suc zero)))
+SelfLoop : {S : Set} → (S → S → Set) → Set
+SelfLoop {S} step = Σ S (λ s → step s s)
 
-noisyTriRank : Rank
-noisyTriRank = rank top top top top top
+noisyTriStep : Int8 → Int8 → Set
+noisyTriStep x y = Σ Noise (λ n → perturbScalar n x ≡ y)
 
-openESDyadicRank : Rank
-openESDyadicRank = rank top top top (suc (suc (suc zero))) top
+noisyTriSelfLoop : SelfLoop noisyTriStep
+noisyTriSelfLoop = one8 , (zero , refl)
 
-mr15DyadicRank : Rank
-mr15DyadicRank = rank top top (suc (suc (suc zero))) (suc (suc (suc zero))) (suc (suc zero))
+NoisyTriAperiodicityObligation : Set
+NoisyTriAperiodicityObligation =
+  SelfLoop noisyTriStep × (∀ x y → Reach noisyTriStep x y)
 
-noisyTriScore : Nat
-noisyTriScore = Rank.closure noisyTriRank + Rank.identity noisyTriRank + Rank.finiteSupport noisyTriRank + Rank.extraction noisyTriRank + Rank.coupling noisyTriRank
+openESStep : Int8 → Int8 → Set
+openESStep x y = Σ Noise (λ n → openESMutation n x ≡ y)
 
-openESScore : Nat
-openESScore = Rank.closure openESDyadicRank + Rank.identity openESDyadicRank + Rank.finiteSupport openESDyadicRank + Rank.extraction openESDyadicRank + Rank.coupling openESDyadicRank
+openESSelfLoop : SelfLoop openESStep
+openESSelfLoop = one8 , (zero , refl)
 
-mr15Score : Nat
-mr15Score = Rank.closure mr15DyadicRank + Rank.identity mr15DyadicRank + Rank.finiteSupport mr15DyadicRank + Rank.extraction mr15DyadicRank + Rank.coupling mr15DyadicRank
+OpenESAperiodicityObligation : Set
+OpenESAperiodicityObligation =
+  SelfLoop openESStep × (∀ x y → Reach openESStep x y)
 
-noisyTriBeatsOpenES : noisyTriScore ≡ 20
-noisyTriBeatsOpenES = refl
+mr15Step : Population → Population → Set
+mr15Step p q =
+  Σ Mutation (λ m → Σ MR15Index (λ i → mutate m i p ≡ q))
 
-openESBeatsMR15 : openESScore ≡ 19
-openESBeatsMR15 = refl
+mr15SelfLoop : SelfLoop mr15Step
+mr15SelfLoop = emptyPopulation , (neutral , (F.zero , refl))
 
-mr15ScoreValue : mr15Score ≡ 16
-mr15ScoreValue = refl
+MR15AperiodicityObligation : Set
+MR15AperiodicityObligation =
+  SelfLoop mr15Step × (∀ p q → Reach mr15Step p q)
 
-canonicalTheoremClass : Rank
-canonicalTheoremClass = noisyTriRank
+-- These are intentionally obligations, not ranking claims.  No numeric score
+-- is canonically assigned until the corresponding kernel theorem exists.
