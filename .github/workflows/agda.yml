@@ -102,8 +102,14 @@ jobs:
       - name: Check dyadic-law composition interface
         run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
 
+      - name: Check flat dyadic law
+        run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
+
       - name: Check full algebraic coupling composition
         run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
+
+      - name: Check softsign-gated CHAD composition
+        run: agda --safe Exotic/efficient_chad/SoftsignGatedComposition.agda
 
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
