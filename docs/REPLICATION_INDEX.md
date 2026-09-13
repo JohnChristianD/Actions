@@ -5,11 +5,6 @@ Authoritative mathematical layer: Agda `--safe`.
 Current GitHub Actions safe gate: `.github/workflows/agda.yml`.
 Current canonical manifest: `.ci/canonical-module.txt`.
 
-Current manifest entries:
-
-- `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
-- `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
-
 ## Actual exploration methods
 
 - `Exotic/ERL/Exploration/OpenESDyadic.agda` — scalar `Int8` quotient.
