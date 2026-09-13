@@ -10,14 +10,14 @@ MR15 and OpenES are the actual representation-level exploration ablations. Noisy
 
 ## Permanent law pruning
 
-The triangular law, `DyadicGeometric5`, Lazy Walk, and every implemented law that is neither flat dyadic nor a dyadic-shell law are permanently absent from the selectable theorem surface.
+The obsolete triangular family, the geometric-5 candidate, Lazy Walk, and every present law outside the retained flat or shell-structured dyadic frontier are permanently absent from the selectable theorem surface.
 
 The retained exact law frontier has two members:
 
 - Flat Dyadic: uniform weight `1` over all `256` Int8 residues, denominator `256`. It is exact dyadic, symmetric, constant-profile unimodal, aperiodic through positive zero mass, and irreducible at the additive `Z_256` support level because ±1 are present. It is the flat baseline; it is not an exact scale-shell law.
-- Dyadic Ladder: denominator `32`, stay weight `16`, and weight `1` on each signed shell `±1, ±2, …, ±128`. It is exact dyadic, symmetric, unimodal, aperiodic, irreducible, and internally dyadic-shell self-similar away from the finite boundary. The ±1 shell supplies the generator witness, while the full ladder preserves all dyadic scales as support.
+- Dyadic Ladder: denominator `32`, stay weight `16`, and weight `1` on each signed shell `±1, ±2, …, ±128`. It is exact dyadic, symmetric, unimodal, aperiodic, irreducible, and internally shell-structured across the available finite powers of two. The ±1 shell supplies the generator witness, while the full ladder preserves all available dyadic scales as support.
 
-The ladder is the natural exact finite candidate for the requested scale-shell property. A stronger globally scale-invariant finite law is impossible without specifying a boundary convention because doubling eventually leaves the finite Int8 support. The kernel-friendly formulation is therefore truncated shell covariance plus exact finite closure.
+The ladder is the natural exact finite candidate for the requested shell-scaling property. A globally scale-invariant finite law needs an explicit boundary convention because repeated doubling eventually reaches the Int8 boundary. The kernel-friendly formulation is therefore finite shell covariance together with exact closure.
 
 ## Canonical exploration boundary
 
@@ -59,7 +59,7 @@ The current semantic theorem order, ignoring statistics, is:
 
 This is a real factor-extension ordering. It is not a count of witnesses: each `<` is backed by a projection/lift theorem plus an explicit proper-fiber witness, and the composite NoisyNet→OpenES factor is derived in Agda.
 
-The law dimension is orthogonal: Flat Dyadic and Dyadic Ladder are alternative exact probability laws. At the present abstraction, they do not change the graph relation itself, so they must not be ranked as stronger graph theorems merely from normalization/support facts. Their theorem-bearing difference is algebraic law structure: Flat gives uniform one-step target universality; Ladder gives explicit dyadic-shell scale structure.
+The law dimension is orthogonal: Flat Dyadic and Dyadic Ladder are alternative exact probability laws. At the present abstraction, they do not change the graph relation itself, so they must not be ranked as stronger graph theorems merely from normalization/support facts. Their theorem-bearing difference is algebraic law structure: Flat gives uniform one-step target universality; Ladder gives explicit finite shell structure across dyadic scales.
 
 ## Full emergent theorem surface
 
@@ -69,7 +69,7 @@ The generator now emits six endogenous full-composition objects:
 
 Each object contains exact law normalization and ±1 support, the signReLU8→softsign8 CHAD forward/pullback composition, the conditional Möbius forward-closure theorem, the canonical softsign-gated `PeriodOne`, and the method/coupled-state irreducibility and self-loop facts that Agda actually proves.
 
-The current graph kernels are still theorem abstractions over their production stochastic semantics. The next strict boundary is law-dependent transition instantiation: the selected law must become the actual finite support used by the representation transition, not merely an attached normalization witness. That is the only point at which the law can change the graph theorem itself.
+The current graph kernels are still theorem abstractions over their production stochastic semantics. The next strict boundary is law-dependent transition instantiation: the selected law must become the actual finite support used by the representation transition, not merely an attached normalization witness. That is the only point at which law choice can change the graph theorem itself.
 
 ## Automated validation
 
@@ -81,6 +81,6 @@ CI runtime is validation plumbing. It is not a statistical performance measureme
 
 Flat Dyadic is eligible for symmetry, unimodality, aperiodicity, irreducibility, and exact dyadic closure, but not for exact global scale-shell invariance. Dyadic Ladder is the stronger structural candidate for the requested scale property because its positive support is organized by signed powers of two with equal shell mass and positive zero/±1 mass.
 
-The most economical future addition is not another arbitrary distribution family. If a new law is admitted, it should be a dyadic-shell construction with exact power-of-two weights, explicit finite boundary behavior, positive zero mass, positive ±1 mass, symmetry, and a kernel-checked truncated scale law. Continuous or non-shell candidates do not belong in the retained frontier.
+The most economical future addition is not another arbitrary distribution family. If a new law is admitted, it should be a finite dyadic-shell construction with exact power-of-two weights, explicit boundary behavior, positive zero mass, positive ±1 mass, symmetry, and a kernel-checked finite shell-scaling theorem. Continuous or unrelated candidate families do not belong in the retained frontier.
 
 No data analysis or empirical ranking is used anywhere in these conclusions.
