@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.DyadicLadder where
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; _+_)
 open import Data.Product using (_×_; _,_)
 open import Agda.Builtin.Equality using (_≡_; refl)
 
