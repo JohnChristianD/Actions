@@ -5,7 +5,6 @@ open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (ℕ; _∸_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; code
@@ -19,9 +18,8 @@ open import Exotic.ERL.Exploration.FiniteNoise using (Noise; zero)
 open import Exotic.ERL.Exploration.NoisyNetFinite using (noiseDelta)
 open import Exotic.ERL.FullCoupled.FiniteLearner using
   ( Token
-  ; observation
-  ; previousAction
   ; reward
+  ; previousAction
   ; nextObservation
   ; tokenCode
   )
@@ -104,16 +102,20 @@ projection : GateParameters → Pair → Int8
 projection gp (pair x y) =
   int8Mul (projectionScale gp) (int8Add x y)
 
+canonicalRepresentation : GateParameters → Noise → Token → Pair
+canonicalRepresentation gp epsilon t =
+  sR2
+    (sR1
+      (fastfood
+        (pyrTopK
+          (rope
+            (embedding t)))) )
+
 canonicalForward : GateParameters → Noise → Token → Int8
 canonicalForward gp epsilon t =
   projection gp
     (gate gp epsilon
-      (sR2
-        (sR1
-          (fastfood
-            (pyrTopK
-              (rope
-                (embedding t)))))))
+      (canonicalRepresentation gp epsilon t))
 
 canonicalOrder : ∀ (gp : GateParameters) (epsilon : Noise) (t : Token) →
   canonicalForward gp epsilon t ≡
@@ -132,7 +134,7 @@ zeroNoiseWeight : ∀ (gp : GateParameters) →
 zeroNoiseWeight gp = refl
 
 ------------------------------------------------------------------------
--- Explicit finite VJP for the complete scalar gate/projection node.
+-- Explicit finite VJP for the complete noisy gate/projection node.
 -- This is a discrete cotangent transport contract, not a real-analysis claim.
 ------------------------------------------------------------------------
 
@@ -166,8 +168,7 @@ gateVJPPrimal gp epsilon x y = refl
 gateVJPMu : ∀ (gp : GateParameters) (epsilon : Noise) (x y c : Int8) →
   gradMu (gateVJP gp epsilon (pair x y)) ≡
   int8Mul c (int8Mul (projectionScale gp) (int8Add x y))
-gateVJPMu gp epsilon x y c =
-  refl
+gateVJPMu gp epsilon x y c = refl
 
 gateVJPSigma : ∀ (gp : GateParameters) (epsilon : Noise) (x y c : Int8) →
   gradSigma (gateVJP gp epsilon (pair x y)) ≡
