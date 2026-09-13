@@ -147,7 +147,7 @@ noisyNetStrictWitness =
       (cong (λ s → GateParams.sigma3 (gateParameters s)) eq)
 
 record StrictTheoremExtension {S R : Set}
-    (stepS : S → R → Set) (stepR : R → R → Set)
+    (stepS : S → S → Set) (stepR : R → R → Set)
     (s₁ s₂ : S) : Set₁ where
   constructor strictTheoremExtension
   field
