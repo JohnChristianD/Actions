@@ -111,6 +111,9 @@ jobs:
       - name: Check softsign-gated CHAD composition
         run: agda --safe Exotic/efficient_chad/SoftsignGatedComposition.agda
 
+      - name: Check NoisyNet softsign representation projection
+        run: agda --safe Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda
+
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
 
