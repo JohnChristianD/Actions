@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.CanonicalLearner where
 
 open import Data.Fin using (Fin; toℕ)
-open import Data.Nat using (ℕ; _∸_)
+open import Data.Nat using (ℕ; zero; suc; _∸_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_)
@@ -34,8 +34,8 @@ open import Exotic.ERL.FullCoupled.CanonicalTransformer using
 ------------------------------------------------------------------------
 
 twoPow : ℕ → Int8
-twoPow 0 = one8
-twoPow (n) = int8Add (twoPow (n ∸ 1)) (twoPow (n ∸ 1))
+twoPow zero = one8
+twoPow (suc n) = int8Add (twoPow n) (twoPow n)
 
 dyadicScale : Fin 8 → Int8
 dyadicScale e = twoPow (toℕ e)
@@ -145,19 +145,15 @@ gradientBundle s t nextT reward =
       gTheta = int8Mul delta tr
       gPsi = int8Mul delta feature
       gXi = int8Mul delta (int8Add tr feature)
-      gateInput = canonicalForward (gateParams s) t
       gv = gateScalarVJP
-        (mu3 (gateParamsState s))
-        (sigma3 (gateParamsState s))
-        gateInput
+        (mu3 (gateParams s))
+        (sigma3 (gateParams s))
+        (canonicalForward (gateParams s) t)
   in gXi
    , gTheta
    , gPsi
    , int8Mul delta (gradMu gv one8)
    , int8Mul delta (gradSigma gv one8)
-  where
-    gateParamsState : LearnerState → GateParameters
-    gateParamsState = gateParams
 
 commit : LearnerState → Token →
   Int8 → Int8 → Int8 → Int8 → Int8 →
@@ -187,18 +183,16 @@ step s t nextT reward =
   in commit s t gXi gTheta gPsi gMu gSigma
 
 ------------------------------------------------------------------------
--- Concrete update-shape theorem: the representation block of `step` is the
--- F4 commit computed from the pre-step snapshot and its VJP-derived gradient.
+-- Concrete update-shape theorem: the representation block is committed from
+-- the pre-step snapshot and the first component of the explicit VJP bundle.
 ------------------------------------------------------------------------
 
 xiCommit : ∀ (s : LearnerState) (t nextT : Token) (reward : Int8) →
   xi (step s t nextT reward) ≡
   f4Step (xi s)
     (qε 3
-      (let (gXi , _ , _ , _ , _) = gradientBundle s t nextT reward
-       in gXi))
+      (proj₁ (gradientBundle s t nextT reward)))
 xiCommit s t nextT reward = refl
 
-noFrozenNetworkField : ∀ (s : LearnerState) (t nextT : Token) (reward : Int8) →
-  xi (step s t nextT reward) ≡ xi (step s t nextT reward)
-noFrozenNetworkField s t nextT reward = refl
+proj₁ : Int8 × Int8 × Int8 × Int8 × Int8 → Int8
+proj₁ (a , _ , _ , _ , _) = a
