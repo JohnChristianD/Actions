@@ -90,6 +90,18 @@ jobs:
       - name: Check canonical Agda regression
         run: agda --safe "$CANONICAL_TEST"
 
+      - name: Check MR15 exploration proof
+        run: agda --safe Exotic/ERL/Exploration/MR15Reachability.agda
+
+      - name: Check OpenES exploration proof
+        run: agda --safe Exotic/ERL/Exploration/OpenESDyadic.agda
+
+      - name: Check coupled NoisyNet exploration proof
+        run: agda --safe Exotic/ERL/FullCoupled/NoisyNetCoupled.agda
+
+      - name: Check gating-layer counterfactual theorem
+        run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
+
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
         run: |
