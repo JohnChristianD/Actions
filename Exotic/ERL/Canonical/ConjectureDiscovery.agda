@@ -5,9 +5,11 @@ module Exotic.ERL.Canonical.ConjectureDiscovery where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (Fin)
 open import Data.Nat using (_*_)
-open import Exotic.efficient_chad.Int8 using (one8; zero8)
+open import Exotic.efficient_chad.Int8 using (int8OfNat; one8; zero8)
 open import Exotic.ERL.Exploration.FiniteNoise using
-  ( weight
+  ( Noise
+  ; noiseCode
+  ; weight
   ; neg
   ; zero
   ; pos
