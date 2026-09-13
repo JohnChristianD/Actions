@@ -2,7 +2,7 @@
 module Exotic.ERL.Exploration.FlatDyadic where
 
 open import Data.Fin using (Fin; fromℕ<)
-open import Data.Nat using (ℕ; suc)
+open import Data.Nat using (ℕ; suc; zero)
 open import Data.Fin.Properties using (toℕ<n)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Product using (_×_; _,_)
@@ -77,7 +77,10 @@ flatPowerTwo-support :
 flatPowerTwo-support =
   (refl , refl) , (refl , refl) , (refl , refl) , (refl , refl)
 
--- Every one of the 256 outcomes has the same exact dyadic numerator.
+-- Every possible Int8 code is positive support.
+flatUniversal-positive : ∀ x → flatWeight x ≡ 1
+flatUniversal-positive _ = refl
+
 flatCommonDenominator : ℕ
 flatCommonDenominator = 256
 
