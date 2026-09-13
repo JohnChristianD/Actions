@@ -2,7 +2,8 @@
 
 module Exotic.ERL.Exploration.MR15Reachability where
 
-open import Data.Fin using (Fin)
+open import Data.Product using (_×_; _,_)
+open import Exotic.efficient_chad.Int8 using (Int8; zero8; one8)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
   ; there
@@ -10,12 +11,13 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; SelfLoop
   ; Irreducible
   )
+open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
+  ( SoftsignGatedRepresentation )
 
--- The theorem surface uses a fresh finite one-shot mutation noise. The noise
--- carries the candidate target selected for this tick; this is an explicit
--- finite kernel abstraction, not a claim about a particular continuous law.
+-- MR15 exploration is defined at the canonical softsign-gated representation
+-- boundary rather than at a detached scalar surrogate.
 MR15State : Set
-MR15State = Fin 16
+MR15State = SoftsignGatedRepresentation
 
 record MR15Noise : Set where
   constructor mr15Noise
@@ -33,3 +35,18 @@ mr15IrreducibilityProof s t =
 
 mr15SelfLoopProof : SelfLoop MR15Step
 mr15SelfLoopProof s = stepFromFreshNoise (mr15Noise s)
+
+-- MR15 retains a genuine two-coordinate representation boundary; OpenES is
+-- deliberately the scalar quotient used only for the strict factor comparison.
+openESProjection : MR15State → Int8
+openESProjection r = proj₁ r
+  where
+  proj₁ : MR15State → Int8
+  proj₁ r = Data.Product.proj₁ r
+
+openESLift : Int8 → MR15State
+openESLift x = x , zero8
+
+mr15-openES-retraction :
+  ∀ x → openESProjection (openESLift x) ≡ x
+mr15-openES-retraction x = refl
