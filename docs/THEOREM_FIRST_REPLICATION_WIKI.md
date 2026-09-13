@@ -39,36 +39,41 @@ The generic graph theorem layer is `Exotic/ERL/Exploration/ExplorationTheoremSch
 
 ## Probability-law layer
 
-Lazy Walk and Dyadic Ladder are probability-law modules, not additional exploration methods.
+Lazy Walk, Dyadic Ladder, and Flat Dyadic are probability-law modules, not additional exploration methods.
 
 `Exotic/ERL/Exploration/LazyWalkDyadic.agda` defines a finite common-denominator-4 law with exact stay/forward/backward masses and proves normalization plus positive zero/unit support.
 
 `Exotic/ERL/Exploration/DyadicLadder.agda` defines a finite common-denominator-32 law with a stay mass and signed power-of-two outcomes and proves normalization plus positive unit support.
 
-`Exotic/ERL/Exploration/DyadicLaw.agda` is the law interface. It exposes only the two accepted finite laws to the composition generator.
+`Exotic/ERL/Exploration/FlatDyadic.agda` defines the uniform finite law over all 256 Int8 codes with exact denominator 256 and positive zero/unit support.
+
+`Exotic/ERL/Exploration/DyadicLaw.agda` is the law interface. It exposes exactly these three accepted finite laws to the composition generator.
 
 ## Endogenous law × method theorem class
 
 The theorem frontier is the Cartesian product
 
-`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder}`.
+`{MR15, OpenES, NoisyNet} × {LazyWalk, DyadicLadder, FlatDyadic}`.
 
 A law is not promoted to a theorem on its own. The theorem object exists only at the full algebraic coupling boundary:
 
-`law + actual explorer + irreducibility + self-loop -> PeriodOne`.
+`law + actual explorer + representation boundary + irreducibility + self-loop -> PeriodOne`.
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` carries the exact law-normalization proof together with the actual explorer irreducibility/self-loop proofs and derives `PeriodOne` through `periodOne-from-components`.
+`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` carries the exact law-normalization/support proof together with the actual explorer reachability/self-loop proof and derives `PeriodOne` through `periodOne-from-components`.
 
-The Haskell discovery generator enumerates all six permutations and writes them into `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source only; Agda `--safe` decides acceptance.
+The Haskell discovery generator enumerates all nine permutations and writes them into `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`. Haskell constructs source only; Agda `--safe` decides acceptance.
 
-The six generated theorem objects are:
+The nine generated theorem objects are:
 
 - `MR15LazyWalkEndogenous`
 - `MR15DyadicLadderEndogenous`
+- `MR15FlatDyadicEndogenous`
 - `OpenESLazyWalkEndogenous`
 - `OpenESDyadicLadderEndogenous`
+- `OpenESFlatDyadicEndogenous`
 - `NoisyNetLazyWalkEndogenous`
 - `NoisyNetDyadicLadderEndogenous`
+- `NoisyNetFlatDyadicEndogenous`
 
 No standalone law `PeriodOne` theorem is generated.
 
@@ -84,6 +89,16 @@ The reusable sufficient package is `Irreducible × SelfLoop -> PeriodOne`.
 
 This is deliberately a full-state statement. Exploration-only reachability does not substitute for learner+EA reachability. The current MR15 and OpenES modules remain explicit finite kernel abstractions until their production mutation/selection transitions are connected. Noisy Nets is already represented on the coupled learner state.
 
+## Representation-layer exploration boundary
+
+The exploration theorem is attached to the representation boundary, not to an unrelated outer state. The intended forward composition is:
+
+`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
+
+The exploration law parameterizes the finite mutation/noise at that representation boundary; the actual method determines how that finite law is consumed, and Noisy-Net noise remains endogenous to the coupled learner.
+
+`Exotic/efficient_chad/SoftsignGatedComposition.agda` is the explicit finite CHAD boundary for `softsign8 ∘ signReLU8`. This composition is kernel-checked at the operator level. Concrete activation-specific semantics remain required before an activation-specific Möbius theorem can be accepted.
+
 ## Mutation and finite probability
 
 For an additive coordinate over `Z_256`, the generator target is `gcd(256,S) = 1` for the effective positive-probability increment support `S`.
@@ -96,11 +111,11 @@ Fresh finite noise per tick is the theorem-friendly mutation model because it pr
 
 CHAD proves the correctness of a differential/VJP interface for a defined computation. Normalization, support, irreducibility, communicating classes, and period remain separate finite-state theorems.
 
-The repository has an exact `CHADOperator` composition theorem in `Exotic/efficient_chad/Int8.agda`. It can compose future concrete finite operators in the intended order:
+The repository has an exact `CHADOperator` composition theorem in `Exotic/efficient_chad/Int8.agda`. It composes finite operators in the intended order:
 
 `signReLU8 -> softsign8 -> GateNN -> Pi`.
 
-Concrete activation-specific VJP or Möbius results still require the corresponding in-tree definitions; the generic composition theorem does not invent missing operator semantics.
+The `softsign8 ∘ signReLU8` forward composition has its own kernel-checked boundary. An activation-specific Möbius result is generated only when concrete in-tree Int8 activation definitions supply the corresponding Möbius laws; the generic CHAD composition theorem does not fabricate that witness.
 
 ## External Efficient-CHAD boundary
 
@@ -114,15 +129,19 @@ CI audits Tom Smeding's upstream source in a clean `.ci/external/efficient-chad-
 
 The finite VEB-RL-style `-TD` fitness surface uses exact dyadic histogram masses, exact normalization, ordinal/rank ordering, and exact sorting whenever rank consistency is part of the theorem.
 
+## Why the Int8 theorem loop is fast
+
+The finite Int8 surface is computationally small: the primary code space has 256 values, the law numerators are small exact naturals, and many normalization/composition identities reduce by definitional equality. That makes the finite algebraic kernel checks fast once the dependency graph is warmed. The expensive-looking part is usually library loading or broad dependency checking, not the finite theorem itself. The target remains proof speed from finite exact reduction, not an empirical performance claim.
+
 ## Replication order
 
 1. Keep pure DMCP artifacts deleted.
 2. Enforce the permanent finite/dyadic theorem-scope exclusions.
-3. Keep Lazy Walk and Dyadic Ladder as exact probability-law modules only.
+3. Keep Lazy Walk, Dyadic Ladder, and Flat Dyadic as exact probability-law modules only.
 4. Keep MR15, OpenES, and Noisy Nets as the actual explorer set.
-5. Generate every law × method permutation through the full algebraic coupling boundary.
+5. Generate every law × method permutation through the full algebraic coupling and representation boundary.
 6. Require concrete Agda `--safe` proof terms for every generated theorem object.
 7. Connect each finite kernel to its production transition semantics before upgrading theorem status.
 8. Prove full learner+EA irreducibility for the actual coupled transition.
 9. Apply the actual full-state self-loop theorem for period 1.
-10. Extend CHAD through the entire representation path.
+10. Extend CHAD through the entire representation path and close concrete activation-specific Möbius laws.
