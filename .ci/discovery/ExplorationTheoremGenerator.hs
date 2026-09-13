@@ -15,27 +15,12 @@ data Method = Method
 
 methods :: [Method]
 methods =
-  [ Method
-      "MR15"
-      "Exotic.ERL.Exploration.MR15Reachability"
-      "MR15Step"
-      "mr15IrreducibilityProof"
-      "mr15SelfLoopProof"
-      False
-  , Method
-      "OpenES"
-      "Exotic.ERL.Exploration.OpenESDyadic"
-      "openESStep"
-      "openESIrreducibilityProof"
-      "openESSelfLoopProof"
-      False
-  , Method
-      "NoisyNet"
-      "Exotic.ERL.FullCoupled.NoisyNetCoupled"
-      "NoisyNetStep"
-      "noisyNetIrreducibilityProof"
-      "noisyNetSelfLoopProof"
-      True
+  [ Method "MR15" "Exotic.ERL.Exploration.MR15Reachability" "MR15Step"
+      "mr15IrreducibilityProof" "mr15SelfLoopProof" False
+  , Method "OpenES" "Exotic.ERL.Exploration.OpenESDyadic" "openESStep"
+      "openESIrreducibilityProof" "openESSelfLoopProof" False
+  , Method "NoisyNet" "Exotic.ERL.FullCoupled.NoisyNetCoupled" "NoisyNetStep"
+      "noisyNetIrreducibilityProof" "noisyNetSelfLoopProof" True
   ]
 
 data Law = Law
@@ -60,42 +45,26 @@ renderCandidate = unlines $
   [ "{-# OPTIONS --safe #-}"
   , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
   , ""
-  , "-- Generated method × probability-law full-composition proof harness."
-  , "-- Haskell constructs this source; Agda --safe is the acceptance oracle."
+  , "-- Generated method × law full-composition theorem harness."
+  , "-- Haskell constructs source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
-  , "  ( DyadicLaw"
-  , "  ; lazyWalk"
-  , "  ; lazyWalkNormalized"
-  , "  ; lazyWalkUnitSupport"
-  , "  ; dyadicLadder"
-  , "  ; dyadicLadderNormalized"
-  , "  ; dyadicLadderUnitSupport"
-  , "  ; flatDyadic"
-  , "  ; flatDyadicNormalized"
-  , "  ; flatDyadicUnitSupport"
+  , "  ( DyadicLaw; lazyWalk; lazyWalkNormalized; lazyWalkUnitSupport"
+  , "  ; dyadicLadder; dyadicLadderNormalized; dyadicLadderUnitSupport"
+  , "  ; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport"
   , "  )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
-  , "  ( FullAlgebraicCoupling"
-  , "  ; composeFull"
-  , "  )"
-  , "open import Exotic.ERL.FullCoupled.TheoremStrength using"
-  , "  ( StrongEndogenous"
-  , "  )"
+  , "  ( FullAlgebraicCoupling; composeFull )"
+  , "open import Exotic.ERL.FullCoupled.TheoremStrengthV2 using"
+  , "  ( StrongEndogenous; strongEndogenous )"
   , "open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using"
-  , "  ( SoftsignGatedRepresentation"
-  , "  ; noisyNetSoftsignRetraction"
-  , "  )"
+  , "  ( SoftsignGatedRepresentation; SoftsignGatedStep; noisyNetSoftsignFactor )"
   , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
-  , "  ( softsignGatedForwardLaw-proof"
-  , "  ; softsignGatedPullbackLaw-proof"
-  , "  )"
+  , "  ( softsignGatedForwardLaw-proof; softsignGatedPullbackLaw-proof )"
   ]
   ++ concatMap renderMethod methods
   where
     renderMethod m =
-      [ ""
-      , "open import " ++ moduleName m
-      ]
+      [ "", "open import " ++ moduleName m ]
       ++ concatMap (renderPermutation m) laws
 
     renderPermutation m l =
@@ -107,21 +76,21 @@ renderCandidate = unlines $
           ++ unitSupportName l ++ " "
           ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
           ++ irreducibilityName m ++ " " ++ selfLoopName m
-      , name m ++ lawName l ++ "Theorem : "
-          ++ (if strong m
-              then "StrongEndogenous {S = CoupledNoisyNetState} {R = SoftsignGatedRepresentation} "
-              else "FullAlgebraicCoupling ")
-          ++ lawCtor l ++ " " ++ stepName m
-      , name m ++ lawName l ++ "Theorem = "
-          ++ (if strong m
-              then "strongEndogenous "
-              else "")
-          ++ name m ++ lawName l ++ "Full "
-          ++ (if strong m
-              then "noisyNetSoftsignRetraction"
-              else "")
-      , ""
       ]
+      ++ if strong m
+           then
+             [ name m ++ lawName l ++ "Theorem : "
+                 ++ "StrongEndogenous {S = CoupledNoisyNetState} {R = SoftsignGatedRepresentation} "
+                 ++ lawCtor l ++ " " ++ stepName m ++ " SoftsignGatedStep"
+             , name m ++ lawName l ++ "Theorem = strongEndogenous "
+                 ++ name m ++ lawName l ++ "Full noisyNetSoftsignFactor"
+             ]
+           else
+             [ name m ++ lawName l ++ "Theorem : FullAlgebraicCoupling "
+                 ++ lawCtor l ++ " " ++ stepName m
+             , name m ++ lawName l ++ "Theorem = "
+                 ++ name m ++ lawName l ++ "Full"
+             ]
 
 runKernelCheck :: IO (ExitCode, String)
 runKernelCheck = do
