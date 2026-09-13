@@ -2,7 +2,6 @@
 module Exotic.ERL.FullCoupled.CanonicalLearnerEA_test where
 
 open import Agda.Builtin.Equality using (_≡_)
-open import Data.Fin as F using (Fin)
 open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ( initialMR15
   ; neutralGeneration
@@ -27,10 +26,14 @@ coupledSelfLoopWitnessTest :
 coupledSelfLoopWitnessTest = startCoupledSelfLoop
 
 neutralGenerationTest :
-  neutralGeneration
+  generationStep
     (λ _ → 0)
-  ≡ neutralGeneration (λ _ → 0)
-neutralGenerationTest = refl
+    noPerturb
+    initialMR15
+    (λ _ → zero)
+    (λ _ → 0)
+  ≡ initialMR15
+neutralGenerationTest = neutralGeneration (λ _ → 0)
 
 coupledReachReflexive : ∀ (s : CoupledState) →
   CoupledReach s s
