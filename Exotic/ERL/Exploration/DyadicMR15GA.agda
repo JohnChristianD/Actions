@@ -10,6 +10,8 @@ open import Data.Nat.DivMod using (m%n<n)
 open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Data.Product using (Σ; _,_)
 open import Relation.Nullary using (yes; no)
+open import Exotic.ERL.Exploration.FiniteNoise using
+  ( Noise; noise; zero; neg; pos )
 
 dimension : Nat
 dimension = 4
@@ -26,9 +28,6 @@ Exponent = Fin 15
 Coordinate : Set
 Coordinate = Fin dimension
 
-data Sign : Set where
-  minus plus : Sign
-
 data StepGate : Set where
   noPerturb perturb : StepGate
 
@@ -39,53 +38,87 @@ pow2 : Nat → Nat
 pow2 zero = 1
 pow2 (suc n) = pow2 n * 2
 
--- A common 2^-7 fixed-point grid represents the finite dyadic exponent levels.
 exponentIndex : Exponent → Nat
 exponentIndex e = toℕ e
 
 stepTicks : Exponent → Nat
 stepTicks e = pow2 (exponentIndex e)
 
-stepSigned : Sign → Exponent → Fin 256 → Fin 256
-stepSigned minus e x = fromℕ< (m%n<n (256 + toℕ x ∸ stepTicks e) 256)
-stepSigned plus e x = fromℕ< (m%n<n (toℕ x + stepTicks e) 256)
+-- MR15 now samples exactly the canonical D_tri support. The legacy
+-- exponent/sign selectors remain only as step-size state, not as a second noise law.
+stepCanonical : Noise → Fin 256 → Fin 256
+stepCanonical n x =
+  fromℕ< (m%n<n (toℕ x + toℕ n + 241) 256)
 
-mutation : StepGate → Exponent → Coordinate → Sign → Population → Population
-mutation noPerturb e j s p = p
-mutation perturb e j s p = λ i →
+mutation : StepGate → Noise → Coordinate → Population → Population
+mutation noPerturb n j p = p
+mutation perturb n j p = λ i →
   mutateCoordinate i
   where
   mutateCoordinate : Fin dimension → Fin 256
   mutateCoordinate i with F._≟_ i j
-  ... | yes _ = stepSigned s e (p i)
+  ... | yes _ = stepCanonical n (p i)
   ... | no _ = p i
 
-noPerturbation-self-loop : ∀ e j s p →
-  mutation noPerturb e j s p ≡ p
-noPerturbation-self-loop e j s p = refl
+noPerturbation-self-loop : ∀ n j p →
+  mutation noPerturb n j p ≡ p
+noPerturbation-self-loop n j p = refl
 
-mutation-support-self-loop : ∀ e j s p →
-  mutation noPerturb e j s p ≡ p
-mutation-support-self-loop = noPerturbation-self-loop
+canonicalZero-self-loop : ∀ j p →
+  mutation perturb zero j p ≡ p
+canonicalZero-self-loop j p = refl
+
+unitPlusMutation : ∀ j p →
+  mutation perturb pos j p ≡
+  (λ i →
+    let xi = p i in
+    mutate i xi)
+  where
+  mutate : Coordinate → Fin 256 → Fin 256
+  mutate i x with F._≟_ i j
+  ... | yes _ = fromℕ< (m%n<n (toℕ x + 1) 256)
+  ... | no _ = x
+unitPlusMutation j p = refl
+
+unitMinusMutation : ∀ j p →
+  mutation perturb neg j p ≡
+  (λ i →
+    let xi = p i in
+    mutate i xi)
+  where
+  mutate : Coordinate → Fin 256 → Fin 256
+  mutate i x with F._≟_ i j
+  ... | yes _ = fromℕ< (m%n<n (256 + toℕ x ∸ 1) 256)
+  ... | no _ = x
+unitMinusMutation j p = refl
 
 data Reach : Population → Population → Set where
   here : ∀ {p} → Reach p p
   there : ∀ {p q r} → Reach p q → Reach q r → Reach p r
 
+MutationSelfLoop : Set
+MutationSelfLoop = ∀ n j p → mutation noPerturb n j p ≡ p
+
+MutationGeneratorWitness : Set
+MutationGeneratorWitness =
+  (∀ j p → mutation perturb pos j p ≡
+    (λ i →
+      let xi = p i in
+      xi)) ×
+  (∀ j p → mutation perturb neg j p ≡
+    (λ i →
+      let xi = p i in
+      xi))
+
+MR15ReachabilityObligation : Set
+MR15ReachabilityObligation = ∀ p q → Reach p q
+
 MR15AperiodicityObligation : Set
 MR15AperiodicityObligation =
-  (∀ p → Σ Coordinate (λ j → Σ Exponent (λ e → Σ Sign (λ s →
-    mutation noPerturb e j s p ≡ p))))
-  × (∀ p q → Reach p q)
+  MutationSelfLoop × MR15ReachabilityObligation
 
 unitExponent : Exponent
 unitExponent = F.zero
-
-unitPlusWitness : stepSigned plus unitExponent F.zero ≡ F.suc F.zero
-unitPlusWitness = refl
-
-unitMinusWitness : stepSigned minus unitExponent (F.suc F.zero) ≡ F.zero
-unitMinusWitness = refl
 
 raiseExponent : Exponent → Exponent
 raiseExponent e with toℕ e ≤? 13
