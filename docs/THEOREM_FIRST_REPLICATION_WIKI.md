@@ -105,7 +105,7 @@ The kernel should be fast because the active carrier is finite Int8 and all prob
 
 ## Current validation signal
 
-The last completed canonical run before the latest refactor passed the permanent scope guard, canonical source, regression, MR15, OpenES, and NoisyNet gates, then stopped at Lazy Walk because natural addition was not imported. That import has been fixed. The subsequent commits add the geometric law, prune Flat Dyadic, replace the fake tag ordering with factor-induced ordering, and move MR15 onto the softsign-gated state, so a fresh canonical run must validate the new surface before it is declared green.
+A completed canonical run passed the permanent scope guard, canonical source, regression, MR15, OpenES, and NoisyNet gates; the pre-refactor failure was the Lazy Walk `_+_` import, which is fixed. The new geometric law, flat-law removal, representation-boundary refactor, and strict-factor theorem require the fresh canonical run on the current head before being called green.
 
 ## Replication order
 
