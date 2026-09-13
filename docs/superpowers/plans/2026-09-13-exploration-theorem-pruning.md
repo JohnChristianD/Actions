@@ -1,10 +1,10 @@
 # Exploration Theorem Pruning Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** theorem generation is endogenous: actual explorer × retained dyadic law × softsign-gated representation boundary, with Agda `--safe` as the acceptance oracle.
 
-**Goal:** Remove obsolete pure-DMCP artifacts and make the finite Agda theorem surface generate endogenous irreducibility/period obligations for every actual explorer × dyadic law permutation after full coupling.
+**Goal:** Remove obsolete probability-law artifacts and make the finite Agda theorem surface generate endogenous irreducibility/period obligations for every actual explorer paired with the sole retained Flat Dyadic law after full coupling.
 
-**Architecture:** Keep Agda `--safe` as the sole acceptance oracle. Put reusable finite graph theorems in a small Agda schema, expose MR15, OpenES, and Noisy Nets as actual exploration mechanisms, expose Lazy Walk and Dyadic Ladder as probability laws, and compose each law with each method through a full algebraic coupling record. Haskell only enumerates source combinations and invokes `agda --safe`.
+**Architecture:** Keep Agda `--safe` as the sole acceptance oracle. Put reusable finite graph theorems in a small Agda schema, expose MR15, OpenES, and Noisy Nets as actual exploration mechanisms, retain only Flat Dyadic as the active probability law, and compose the law with each method through a full algebraic coupling record anchored at the softsign-gated representation. Haskell only enumerates source combinations and invokes `agda --safe`.
 
 **Tech Stack:** Agda `--safe`, existing `Exotic.efficient_chad.Int8`, small Haskell discovery generator, GitHub Actions.
 
@@ -17,8 +17,7 @@
 - No general measure-theory dependency is required for finite iid/expectation lemmas.
 - Do not infer full-coupled irreducibility from exploration-only irreducibility.
 - Keep Noisy Nets inside the coupled learner theorem surface.
-- Keep Lazy Walk and Dyadic Ladder as probability-law modules, not standalone exploration mechanisms.
-- The selectable law universe contains only the checked finite dyadic law modules.
+- Retain only the checked Flat Dyadic probability law.
 - Candidate generation may use Haskell, but Haskell never proves a theorem.
 
 ---
@@ -51,67 +50,100 @@
 
 **Files:**
 - Create: `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
+- Modify: `Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda`
 
 - [x] Define finite Noisy-Net gate state with repository `Int8` arithmetic.
 - [x] Encode the noisy gate parameterization and exact diagonal identity.
 - [x] Expose the Noisy-Net transition as coupled learner state.
-- [x] State exact irreducibility/self-loop obligations for the explicit coupled relation.
+- [x] Prove the concrete projection/section/retraction and step projection/lift into `SoftsignGatedRepresentation`.
+- [x] Exhibit a proper coupled-state fiber over the representation boundary.
 
 ---
 
-### Task 4: Unify actual explorers and probability laws
+### Task 4: Make the softsign-gated representation the canonical exploration boundary
 
 **Files:**
-- Create: `Exotic/ERL/Exploration/DyadicLaw.agda`
-- Create: `Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda`
+- Modify: `Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda`
 - Modify: `Exotic/ERL/Exploration/MR15Reachability.agda`
 - Modify: `Exotic/ERL/Exploration/OpenESDyadic.agda`
+- Modify: `Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda`
 
-- [x] Keep MR15, OpenES, and Noisy Nets as the actual explorer set.
-- [x] Keep Lazy Walk and Dyadic Ladder as exact finite probability-law modules.
-- [x] Carry exact law normalization and unit-support facts into the composition boundary.
-- [x] Derive `PeriodOne` only inside `FullAlgebraicCoupling` from the composed irreducibility and self-loop proofs.
-- [ ] Connect each law to the production mutation kernel semantics where the current explorer abstraction remains schematic.
+- [x] Make MR15 state exactly `SoftsignGatedRepresentation = Int8 × Int8`.
+- [x] Define OpenES as the scalar quotient/section of that representation.
+- [x] Carry the canonical representation `PeriodOne` into `FullAlgebraicCoupling`.
+- [x] Derive each method `PeriodOne` only inside the full coupling object.
 
 ---
 
-### Task 5: Automate every law × method theorem permutation
+### Task 5: Permanently retain only Flat Dyadic
+
+**Files:**
+- `Exotic/ERL/Exploration/FlatDyadic.agda`
+- `Exotic/ERL/Exploration/DyadicLaw.agda`
+- `.ci/check-forbidden-theorems.py`
+- `.github/workflows/agda.yml`
+- `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
+- `docs/REPLICATION_INDEX.md`
+
+- [x] `DyadicLaw` contains only `flatDyadic`.
+- [x] Remove obsolete non-flat law modules from the active source tree.
+- [x] Remove obsolete law workflow checks.
+- [x] Encode guard tokens for retired law identifiers so they cannot silently return.
+- [x] Keep Flat Dyadic normalization, zero support, ±1 support, and universal support kernel-checked.
+
+---
+
+### Task 6: Automate the endogenous frontier
 
 **Files:**
 - Modify: `.ci/discovery/ExplorationTheoremGenerator.hs`
 - Modify: `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
 - Modify: `.github/workflows/agda.yml`
 
-- [x] Use data-driven metadata for MR15, OpenES, and Noisy Nets.
-- [x] Use data-driven metadata for Lazy Walk and Dyadic Ladder.
-- [x] Generate exactly six composed theorem objects: three methods × two laws.
-- [x] Emit only ordinary Agda source; no axioms or unsafe escape hatches.
-- [x] Run generated candidates with `agda --safe` in CI.
+- [x] Use metadata for MR15, OpenES, and Noisy Nets.
+- [x] Use Flat Dyadic as the sole law metadata entry.
+- [x] Generate exactly three composed theorem objects: one per actual method.
+- [x] Require exact law normalization and unit-generator support in each object.
+- [x] Require the canonical softsign-gated `PeriodOne` in each object.
 - [x] Keep proof acceptance inside Agda.
 
 ---
 
-### Task 6: Permanently prune the legacy triangular law
+### Task 7: Prove the strict method theorem order
 
 **Files:**
-- Modify: `.ci/check-forbidden-theorems.py`
-- Modify: `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
-- Modify: `docs/superpowers/plans/2026-09-13-exploration-theorem-pruning.md`
+- `Exotic/ERL/FullCoupled/TheoremStrengthV3.agda`
+- `Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda`
 
-- [x] Remove the legacy triangular law from live theorem documentation.
-- [x] Keep encoded guard tokens for its identifier spellings so the finite law universe cannot silently grow back.
-- [x] Avoid broad substring tokens that create unrelated false positives.
+- [x] Prove the OpenES quotient factor from MR15.
+- [x] Prove the Noisy-Net factor from the coupled learner to MR15.
+- [x] Transfer irreducibility, self-loop, and `PeriodOne` through both factors.
+- [x] Exhibit explicit proper fibers for strictness.
+- [x] Use the resulting semantic factor-extension chain `OpenES < MR15 < NoisyNet` as the structural theorem ordering.
 
 ---
 
-### Task 7: CI acceptance
+### Task 8: Conditional Möbius composition
+
+**Files:**
+- `Exotic/efficient_chad/MobiusInt8Composition.agda`
+- Create: `Exotic/efficient_chad/MobiusSoftsignBridge.agda`
+- `Exotic/efficient_chad/SoftsignGatedComposition.agda`
+
+- [x] Keep generic finite Möbius action composition kernel-checked.
+- [x] Keep generic signReLU8→softsign8 CHAD forward/pullback composition kernel-checked.
+- [x] Prove conditional composed Möbius closure from concrete activation witnesses.
+- [x] Do not fabricate activation-specific signReLU8 or softsign8 Möbius witnesses.
+
+---
+
+### Task 9: CI acceptance
 
 **Files:**
 - Verify: `.github/workflows/agda.yml`
 - Verify: `.ci/canonical-module.txt`
 
-- [ ] Generate the six composed theorem artifacts.
-- [ ] Check the dyadic-law interface under `--safe`.
-- [ ] Check the full algebraic coupling module under `--safe`.
-- [ ] Check the generated six-way theorem harness under `--safe`.
-- [ ] Preserve explicit proven/pending theorem distinctions for any production-level semantics not yet connected to these finite abstractions.
+- [ ] Run a fresh current-head canonical gate.
+- [ ] Check the strict factor theorem and conditional Möbius bridge under `--safe`.
+- [ ] Check the generated three-way Flat Dyadic theorem harness under `--safe`.
+- [ ] Preserve explicit proven/pending distinctions for any production semantics not connected to the finite kernels.
