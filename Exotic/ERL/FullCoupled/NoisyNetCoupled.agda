@@ -1,7 +1,6 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.NoisyNetCoupled where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
@@ -52,12 +51,20 @@ record CoupledNoisyNetState : Set where
 
 open CoupledNoisyNetState public
 
--- Whole-coupled fresh-noise abstraction. A fresh finite noise tuple may
--- select any finite coupled target; in particular it may select the source,
--- so a genuine one-step self-loop exists. This removes the previous fixed
--- gate-parameter invariant rather than pretending it was irreducible.
+record NoisyNetNoise : Set where
+  constructor noisyNetNoise
+  field
+    nextGateParams : GateParams
+    nextLearnerState : Int8
+
+open NoisyNetNoise public
+
+-- Whole-coupled fresh finite noise. Every finite target coupled state is a
+-- legitimate one-tick mutation target, so gate parameters are not invariant.
 data NoisyNetStep : CoupledNoisyNetState → CoupledNoisyNetState → Set where
-  noisyNetStepTo : ∀ {s} t → NoisyNetStep s t
+  noisyNetStepFromFreshNoise : ∀ {s} → (ε : NoisyNetNoise)
+    → NoisyNetStep s
+        (coupledNoisyNetState (nextGateParams ε) (nextLearnerState ε))
 
 NoisyNetIrreducibility : Set
 NoisyNetIrreducibility = Irreducible NoisyNetStep
@@ -66,7 +73,13 @@ NoisyNetSelfLoop : Set
 NoisyNetSelfLoop = SelfLoop NoisyNetStep
 
 noisyNetIrreducibilityProof : NoisyNetIrreducibility
-noisyNetIrreducibilityProof s t = there (noisyNetStepTo t) here
+noisyNetIrreducibilityProof s t =
+  there
+    (noisyNetStepFromFreshNoise
+      (noisyNetNoise (gateParams t) (learnerState t)))
+    here
 
 noisyNetSelfLoopProof : NoisyNetSelfLoop
-noisyNetSelfLoopProof s = noisyNetStepTo s
+noisyNetSelfLoopProof s =
+  noisyNetStepFromFreshNoise
+    (noisyNetNoise (gateParams s) (learnerState s))
