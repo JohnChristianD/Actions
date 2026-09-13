@@ -49,12 +49,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git grep -nE -i 'Munchausen|Tsallis-2|TrueOnlineTD|OpenES|MR15|softmax|postulate|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
+          if git grep -nE -i 'Munchausen|Tsallis-2|TrueOnlineTD|OpenES|softmax|postulate|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
+            'Exotic/ERL/FullCoupled/CanonicalLearnerEA.agda' \
             'Exotic/ERL/FullCoupled/CanonicalLearner.agda' \
             'Exotic/ERL/FullCoupled/CanonicalTransformer.agda' \
             'Exotic/ERL/FullCoupled/FiniteVJP.agda' \
             'Exotic/ERL/FullCoupled/CanonicalErgodicity.agda' \
-            'Exotic/ERL/FullCoupled/CanonicalExecutable.agda'; then
+            'Exotic/ERL/FullCoupled/CanonicalExecutable.agda' \
+            'Exotic/ERL/Exploration/CanonicalMR15GA.agda'; then
             echo 'canonical-banned-mechanism-or-proof-bypass=FOUND'
             exit 1
           fi
@@ -131,16 +133,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
+          agda --safe Exotic/ERL/Exploration/CanonicalMR15GA.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteAperiodicity.agda
           agda --safe Exotic/ERL/FullCoupled/FiniteVJP.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalTransformer.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerEA.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerEA_test.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalErgodicity.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalExecutable.agda
-          agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
-          agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
 
-      - name: Extract the canonical learner with Agda2HS
+      - name: Extract the faithful learner with Agda2HS
         shell: bash
         run: |
           set -euo pipefail
@@ -151,7 +156,7 @@ jobs:
           test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalLearner.hs
           test -s .ci/agda2hs-out/Exotic/ERL/FullCoupled/CanonicalExecutable.hs
 
-      - name: Compile generated canonical Haskell surface
+      - name: Compile generated faithful learner surface
         shell: bash
         run: |
           set -euo pipefail
