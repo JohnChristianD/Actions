@@ -2,20 +2,16 @@
 module Exotic.ERL.FullCoupled.LatticeReachability where
 
 open import Data.Fin using (Fin)
+open import Exotic.ERL.Exploration.FiniteNoise using (Noise; pos; neg)
 open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ( Coordinate
   ; Genome
   ; Fitness
   ; MR15State
   ; StepGate
-  ; Noise
   ; mutateGenome
   ; generationStep
   ; initialExponent
-  )
-open import Exotic.ERL.Exploration.FiniteNoise using
-  ( pos
-  ; neg
   )
 open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using
   ( CoupledState
