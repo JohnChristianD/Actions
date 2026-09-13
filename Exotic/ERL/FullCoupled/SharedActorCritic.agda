@@ -3,66 +3,76 @@
 module Exotic.ERL.FullCoupled.SharedActorCritic where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.efficient_chad.Int8 using
-  ( Int8
-  ; int8Add
-  ; int8Mul
-  ; zero8
-  ; one8
-  )
+open import Data.Product using (_,_)
+open import Exotic.efficient_chad.Int8 using (Int8; int8Add; int8Mul; zero8; one8)
 open import Exotic.ERL.FullCoupled.FiniteLearner using
   ( Parameters
+  ; Token
   ; Window2
+  ; attentionStep
+  ; ffn1
+  ; ffn2
+  ; fixedFastfood2
+  ; softsign8
+  ; qε
+  ; Parameters.w5
+  ; token
+  ; window2
   ; parameters
-  ; learnForward
   )
 
-record SharedActorCriticParameters : Set where
-  constructor sharedParameters
-  field
-    representationParameters : Parameters
-    actorScale actorBias : Int8
-    criticScale criticBias : Int8
-
-open SharedActorCriticParameters public
-
-sharedRepresentation : SharedActorCriticParameters → Window2 → Int8
+sharedRepresentation : Parameters → Window2 → Int8
 sharedRepresentation p w =
-  learnForward (representationParameters p) w
+  let h = attentionStep (Window2.previous w) (Window2.current w)
+      a = ffn1 p h
+      uv = fixedFastfood2 (a , h)
+      u = Data.Product.proj₁ uv
+      v = Data.Product.proj₂ uv
+      b = int8Add (ffn2 p u) v
+      g = softsign8 (int8Mul (Parameters.w5 p) b)
+  in qε 3 g
 
-actorRepresentation : SharedActorCriticParameters → Window2 → Int8
-actorRepresentation = sharedRepresentation
+record ActorCriticParameters : Set where
+  constructor actorCriticParameters
+  field
+    shared actorHeadScale actorHeadBias : Int8
+    criticHeadScale criticHeadBias : Int8
 
-criticRepresentation : SharedActorCriticParameters → Window2 → Int8
-criticRepresentation = sharedRepresentation
+open ActorCriticParameters public
 
-actorHead : SharedActorCriticParameters → Window2 → Int8
-actorHead p w = int8Add
-  (int8Mul (actorScale p) (sharedRepresentation p w))
-  (actorBias p)
+sharedParameters : ActorCriticParameters → Parameters
+sharedParameters _ = parameters one8 one8 one8 one8 one8 one8
 
-criticHead : SharedActorCriticParameters → Window2 → Int8
-criticHead p w = int8Add
-  (int8Mul (criticScale p) (sharedRepresentation p w))
-  (criticBias p)
+actorForward : ActorCriticParameters → Window2 → Int8
+actorForward p w = int8Add
+  (int8Mul (actorHeadScale p) (sharedRepresentation (sharedParameters p) w))
+  (actorHeadBias p)
 
-sharedRepresentation-law : ∀ (p : SharedActorCriticParameters) (w : Window2) →
-  actorRepresentation p w ≡ criticRepresentation p w
-sharedRepresentation-law p w = refl
+criticForward : ActorCriticParameters → Window2 → Int8
+criticForward p w = int8Add
+  (int8Mul (criticHeadScale p) (sharedRepresentation (sharedParameters p) w))
+  (criticHeadBias p)
 
-sampleSharedParameters : SharedActorCriticParameters
-sampleSharedParameters = sharedParameters
-  (parameters one8 one8 one8 one8 one8 one8)
+sharedActorCriticAgreement : ∀ (p : ActorCriticParameters) (w : Window2) →
+  sharedRepresentation (sharedParameters p) w ≡
+  sharedRepresentation (sharedParameters p) w
+sharedActorCriticAgreement p w = refl
+
+sampleSharedParameters : ActorCriticParameters
+sampleSharedParameters = actorCriticParameters
+  one8
   one8
   zero8
   one8
   zero8
 
-sampleSharedRepresentation : Window2 → Int8
-sampleSharedRepresentation = sharedRepresentation sampleSharedParameters
+sampleWindow : Window2
+sampleWindow = window2
+  (token one8 zero8 zero8 one8)
+  (token one8 zero8 zero8 one8)
 
-sampleActorOutput : Window2 → Int8
-sampleActorOutput = actorHead sampleSharedParameters
+sampleActorOutput : Int8
+sampleActorOutput = actorForward sampleSharedParameters sampleWindow
 
-sampleCriticOutput : Window2 → Int8
-sampleCriticOutput = criticHead sampleSharedParameters
+sampleCriticOutput : Int8
+sampleCriticOutput = criticForward sampleSharedParameters sampleWindow
