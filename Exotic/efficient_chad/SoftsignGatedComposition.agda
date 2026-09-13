@@ -5,14 +5,15 @@ open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; CHADOperator
   ; primal
+  ; pullback
   ; composeCHAD
   ; composeCHAD-primal
+  ; composeCHAD-pullback
   )
 
--- The forward representation boundary is deliberately explicit:
--- signReLU is the forward activation, and softsign is the gate applied to
--- its representation. Concrete activation-specific laws are supplied by
--- their operators rather than being fabricated here.
+-- The finite representation boundary is explicit: signReLU is the forward
+-- activation and softsign gates its representation. Concrete operators are
+-- supplied by the eventual in-tree activation definitions.
 record SoftsignGatedForward : Set₁ where
   constructor softsignGatedForward
   field
@@ -30,18 +31,32 @@ softsignGated-primal : ∀ (f : SoftsignGatedForward) (x : Int8)
 softsignGated-primal f x =
   composeCHAD-primal (softsign8 f) (signReLU8 f) x
 
--- Any activation-specific Möbius theorem must enter through the concrete
--- signReLU8/softsign8 operators. Composition itself is kernel-checked here.
-record MobiusLaw : Set₁ where
-  constructor mobiusLaw
-  field
-    operator : CHADOperator
-    mobiusWitness : Set
+softsignGated-pullback : ∀ (f : SoftsignGatedForward) (x cotangent : Int8)
+  → pullback (softsignGatedOperator f) x cotangent
+    ≡ pullback (signReLU8 f) x
+        (pullback (softsign8 f) (primal (signReLU8 f) x) cotangent)
+softsignGated-pullback f x cotangent =
+  composeCHAD-pullback (softsign8 f) (signReLU8 f) x cotangent
 
-open MobiusLaw public
+softsignGatedForwardLaw : Set₁
+softsignGatedForwardLaw =
+  ∀ (f : SoftsignGatedForward) (x : Int8) →
+    primal (softsignGatedOperator f) x
+      ≡ primal (softsign8 f) (primal (signReLU8 f) x)
 
-composeMobiusLaw : (outer inner : MobiusLaw) → MobiusLaw
-composeMobiusLaw outer inner =
-  mobiusLaw
-    (composeCHAD (operator outer) (operator inner))
-    (mobiusWitness outer)
+softsignGatedPullbackLaw : Set₁
+softsignGatedPullbackLaw =
+  ∀ (f : SoftsignGatedForward) (x cotangent : Int8) →
+    pullback (softsignGatedOperator f) x cotangent
+      ≡ pullback (signReLU8 f) x
+          (pullback (softsign8 f) (primal (signReLU8 f) x) cotangent)
+
+softsignGatedForwardLaw-proof : softsignGatedForwardLaw
+softsignGatedForwardLaw-proof = softsignGated-primal
+
+softsignGatedPullbackLaw-proof : softsignGatedPullbackLaw
+softsignGatedPullbackLaw-proof = softsignGated-pullback
+
+-- A concrete activation-specific Möbius theorem must enter through concrete
+-- Int8 activation definitions and their checked Möbius witnesses. The generic
+-- composition law above does not fabricate such a witness.
