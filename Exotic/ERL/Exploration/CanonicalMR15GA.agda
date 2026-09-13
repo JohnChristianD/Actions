@@ -1,11 +1,13 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.CanonicalMR15GA where
 
+open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin as F using (Fin; fromℕ<; toℕ)
-open import Data.Nat using (ℕ; Nat; zero; suc; _+_; _*_ ; _∸_)
+open import Data.Fin.Properties using (toℕ<n)
+open import Data.Nat using (ℕ; Nat; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.DivMod using (m%n<n; _/_)
-open import Data.Product using (_×_; _,_)
+open import Data.Nat.Properties using (_≤?_; yes; no)
 open import Relation.Nullary using (yes; no)
 open import Exotic.ERL.Exploration.FiniteNoise using
   ( Noise
@@ -13,25 +15,30 @@ open import Exotic.ERL.Exploration.FiniteNoise using
   ; neg
   ; pos
   )
-open import Exotic.ERL.Exploration.DyadicMR15GA using (StepGate; noPerturb; perturb; stepCanonical)
+open import Exotic.ERL.Exploration.DyadicMR15GA using
+  ( StepGate
+  ; noPerturb
+  ; perturb
+  ; stepCanonical
+  )
 
 pow2 : ℕ → ℕ
 pow2 zero = 1
 pow2 (suc n) = pow2 n * 2
 
-Dimension : ℕ
-Dimension = 4
-PopulationSize : ℕ
-PopulationSize = 16
+dimension : ℕ
+dimension = 4
+populationSize : ℕ
+populationSize = 16
 
 Coordinate : Set
-Coordinate = Fin Dimension
+Coordinate = Fin dimension
 
 Genome : Set
-Genome = Fin Dimension → Fin 256
+Genome = Fin dimension → Fin 256
 
 Population : Set
-Population = Fin PopulationSize → Genome
+Population = Fin populationSize → Genome
 
 Exponent : Set
 Exponent = Fin 15
@@ -50,23 +57,7 @@ mutateGenome e n j g = λ i → mutateCoordinate i where
   ... | yes _ = mutateTicks (pow2 (toℕ e)) n (g i)
   ... | no _ = g i
 
-mutatePopulation : StepGate → Exponent → (Fin PopulationSize → Noise) →
-  (Fin PopulationSize → Coordinate) →
-  Fin 4 → (Fin 4 → Genome) → Population
-mutatePopulation noPerturb e noises coords _ elites =
-  λ _ → lookupElite F.zero elites
-mutatePopulation perturb e noises coords _ elites =
-  λ i →
-    let j = coords i
-        k = F.fromℕ< (m%n<n (toℕ i) 4)
-    in mutateGenome e (noises i) j (lookupElite k elites)
-
-record Vec (A : Set) : ℕ → Set where
-  constructor _::_
-  field head : A
-
 infixr 5 _∷ᵛ_
-
 data V (A : Set) : ℕ → Set where
   []ᵛ : V A zero
   _∷ᵛ_ : ∀ {n} → A → V A n → V A (suc n)
@@ -88,8 +79,10 @@ lookupV F.zero (x ∷ᵛ xs) = x
 lookupV (F.suc i) (x ∷ᵛ xs) = lookupV i xs
 
 insertV : ∀ {n : ℕ} →
-  (Fin 16 → Fin 16 → Bool) → Fin 16 →
-  V (Fin 16) n → V (Fin 16) (suc n)
+  (Fin 16 → Fin 16 → Bool) →
+  Fin 16 →
+  V (Fin 16) n →
+  V (Fin 16) (suc n)
 insertV cmp x []ᵛ = x ∷ᵛ []ᵛ
 insertV cmp x (y ∷ᵛ ys) with cmp x y
 ... | true = x ∷ᵛ y ∷ᵛ ys
@@ -97,13 +90,16 @@ insertV cmp x (y ∷ᵛ ys) with cmp x y
 
 sortV : ∀ {n : ℕ} →
   (Fin 16 → Fin 16 → Bool) →
-  V (Fin 16) n → V (Fin 16) n
+  V (Fin 16) n →
+  V (Fin 16) n
 sortV cmp []ᵛ = []ᵛ
 sortV cmp (x ∷ᵛ xs) = insertV cmp x (sortV cmp xs)
 
 first4 : ∀ {A : Set} {n : ℕ} →
-  V A (suc (suc (suc (suc n)))) → V A 4
-first4 (a ∷ᵛ b ∷ᵛ c ∷ᵛ d ∷ᵛ xs) = a ∷ᵛ b ∷ᵛ c ∷ᵛ d ∷ᵛ []ᵛ
+  V A (suc (suc (suc (suc n)))) →
+  V A 4
+first4 (a ∷ᵛ b ∷ᵛ c ∷ᵛ d ∷ᵛ xs) =
+  a ∷ᵛ b ∷ᵛ c ∷ᵛ d ∷ᵛ []ᵛ
 
 natEq : ℕ → ℕ → Bool
 natEq zero zero = true
@@ -117,8 +113,8 @@ natLess zero (suc n) = true
 natLess (suc m) zero = false
 natLess (suc m) (suc n) = natLess m n
 
-type Fitness : Set
-type Fitness = Genome → ℕ
+Fitness : Set
+Fitness = Genome → ℕ
 
 topQuarter : Fitness → Population → V Genome 4
 topQuarter fit p =
@@ -127,31 +123,23 @@ topQuarter fit p =
     (first4 (sortV (better fit p) indices16))
   where
   better : Fitness → Population → Fin 16 → Fin 16 → Bool
-  better f q i j =
-    let fi = f (q i)
-        fj = f (q j)
-    in if natLess fj fi
-       then true
-       else if natEq fi fj
-       then natLess (toℕ i) (toℕ j)
-       else false
+  better f q i j with natLess (f (q j)) (f (q i))
+  ... | true = true
+  ... | false with natEq (f (q i)) (f (q j))
+  ...   | true = natLess (toℕ i) (toℕ j)
+  ...   | false = false
 
 lookupElite : Fin 4 → V Genome 4 → Genome
 lookupElite = lookupV
 
-sum4 : (Genome → Coordinate → ℕ) → V Genome 4 → Coordinate → ℕ
-sum4 f (a ∷ᵛ b ∷ᵛ c ∷ᵛ d ∷ᵛ []ᵛ) j =
-  f a j + f b j + f c j + f d j
-
 meanCoordinate : V Genome 4 → Coordinate → Fin 256
-meanCoordinate elite j =
-  fromℕ< (m%n<n (sum4 (λ g i → toℕ (g i)) elite j / 4) 256)
+meanCoordinate (a ∷ᵛ b ∷ᵛ c ∷ᵛ d ∷ᵛ []ᵛ) j =
+  fromℕ< (m%n<n
+    ((toℕ (a j) + toℕ (b j) + toℕ (c j) + toℕ (d j)) / 4)
+    256)
 
 meanGenome : V Genome 4 → Genome
 meanGenome elite = λ j → meanCoordinate elite j
-
-meanPopulation : Fitness → Population → Genome
-meanPopulation fit p = meanGenome (topQuarter fit p)
 
 initialPopulation : Population
 initialPopulation _ _ = F.zero
@@ -176,37 +164,17 @@ record MR15State : Set where
 open MR15State public
 
 initialMR15 : MR15State
-initialMR15 = mr15 initialPopulation initialMean initialExponent initialSuccesses
-
-stepTicksZero : mutateTicks 1 pos ≡ stepCanonical pos
-stepTicksZero = refl
-
-unitPlusMutation : ∀ (j : Coordinate) (g : Genome) →
-  mutateGenome initialExponent pos j g ≡
-  λ i → mutate i where
-    mutate : Coordinate → Fin 256
-    mutate i with F._≟_ i j
-    ... | yes _ = fromℕ< (m%n<n (toℕ (g i) + 1) 256)
-    ... | no _ = g i
-unitPlusMutation j g = refl
-
-unitMinusMutation : ∀ (j : Coordinate) (g : Genome) →
-  mutateGenome initialExponent neg j g ≡
-  λ i → mutate i where
-    mutate : Coordinate → Fin 256
-    mutate i with F._≟_ i j
-    ... | yes _ = fromℕ< (m%n<n (256 + toℕ (g i) ∸ 1) 256)
-    ... | no _ = g i
-unitMinusMutation j g = refl
+initialMR15 =
+  mr15 initialPopulation initialMean initialExponent initialSuccesses
 
 lowerExponent : Exponent → Exponent
 lowerExponent e with toℕ e ≤? 0
 ... | yes _ = e
-... | no _ = F.fromℕ< (F.toℕ<n (toℕ e ∸ 1) 15)
+... | no _ = fromℕ< (toℕ<n (toℕ e ∸ 1) 15)
 
 raiseExponent : Exponent → Exponent
 raiseExponent e with toℕ e ≤? 13
-... | yes _ = F.fromℕ< (F.toℕ<n (suc (toℕ e)) 15)
+... | yes _ = fromℕ< (toℕ<n (suc (toℕ e)) 15)
 ... | no _ = e
 
 oneFifthStepUpdate : Exponent → Successes → Exponent
@@ -223,35 +191,40 @@ oneFifthAbove : ∀ e →
   raiseExponent e
 oneFifthAbove e = refl
 
-betterThan : Fitness → Genome → Genome → Bool
-betterThan fit a b = natLess (fit b) (fit a)
-
 countSuccessVec : Fitness → Population → Population → V (Fin 16) 16 → ℕ
 countSuccessVec fit old new []ᵛ = zero
-countSuccessVec fit old new (i ∷ᵛ is) with betterThan fit (new i) (old i)
+countSuccessVec fit old new (i ∷ᵛ is) with natLess (fit (old i)) (fit (new i))
 ... | true = suc (countSuccessVec fit old new is)
 ... | false = countSuccessVec fit old new is
 
 countSuccess : Fitness → Population → Population → Successes
 countSuccess fit old new =
-  F.fromℕ< (m%n<n (countSuccessVec fit old new indices16) 17)
+  fromℕ< (m%n<n (countSuccessVec fit old new indices16) 17)
 
-mutationPopulation : Fitness → StepGate →
+mutatePopulation : StepGate →
+  Exponent →
+  (Fin 16 → Noise) →
+  (Fin 16 → Coordinate) →
+  V Genome 4 →
+  Population
+mutatePopulation noPerturb e noises coords elites =
+  λ i → lookupElite F.zero elites
+mutatePopulation perturb e noises coords elites =
+  λ i →
+    let j = coords i
+        k = fromℕ< (m%n<n (toℕ i) 4)
+    in mutateGenome e (noises i) j (lookupElite k elites)
+
+mutateGeneration : Fitness → StepGate →
   MR15State →
   (Fin 16 → Noise) →
   (Fin 16 → Coordinate) →
   Population
-mutationPopulation fit noPerturb state noises coords =
-  population state
-mutationPopulation fit perturb state noises coords =
+mutateGeneration fit noPerturb state noises coords = population state
+mutateGeneration fit perturb state noises coords =
   let elite = topQuarter fit (population state)
-  in mutatePopulation
-       perturb
-       (oneFifthStepUpdate (exponent state) (successes state))
-       noises
-       coords
-       F.zero
-       elite
+      e' = oneFifthStepUpdate (exponent state) (successes state)
+  in mutatePopulation perturb e' noises coords elite
 
 generationStep : Fitness → StepGate →
   MR15State →
@@ -262,7 +235,7 @@ generationStep fit noPerturb state noises coords = state
 generationStep fit perturb state noises coords =
   let elite = topQuarter fit (population state)
       e' = oneFifthStepUpdate (exponent state) (successes state)
-      p' = mutatePopulation perturb e' noises coords F.zero elite
+      p' = mutatePopulation perturb e' noises coords elite
       m' = meanGenome elite
       s' = countSuccess fit (population state) p'
   in mr15 p' m' e' s'
@@ -274,14 +247,16 @@ neutralGeneration : ∀ (fit : Fitness) →
   ≡ initialMR15
 neutralGeneration fit = refl
 
-latticeUnitPlus : ∀ (fit : Fitness) (state : MR15State)
-  (j : Coordinate) (g : Genome) →
-  mutateGenome (exponent state) pos j g ≡
-  mutateGenome (exponent state) pos j g
-latticeUnitPlus fit state j g = refl
+zeroMutationTicks : ∀ (k : ℕ) (x : Fin 256) →
+  mutateTicks k zero x ≡ x
+zeroMutationTicks zero x = refl
+zeroMutationTicks (suc k) x = zeroMutationTicks k x
 
-latticeUnitMinus : ∀ (fit : Fitness) (state : MR15State)
-  (j : Coordinate) (g : Genome) →
-  mutateGenome (exponent state) neg j g ≡
-  mutateGenome (exponent state) neg j g
-latticeUnitMinus fit state j g = refl
+unitMutationAtMinimum : ∀ (n : Noise) (j : Coordinate) (g : Genome) →
+  mutateGenome initialExponent n j g ≡
+  λ i → mutateCoordinate i where
+    mutateCoordinate : Coordinate → Fin 256
+    mutateCoordinate i with F._≟_ i j
+    ... | yes _ = stepCanonical n (g i)
+    ... | no _ = g i
+unitMutationAtMinimum n j g = refl
