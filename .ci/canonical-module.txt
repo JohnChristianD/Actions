@@ -1,2 +1,4 @@
 Exotic/ERL/FullCoupled/CanonicalLearner.agda
 Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
+Exotic/ERL/FullCoupled/CanonicalFinitePrimitives.agda
+Exotic/ERL/FullCoupled/CanonicalToken.agda
