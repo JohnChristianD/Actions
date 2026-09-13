@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.CanonicalLearner where
 
 open import Agda.Builtin.Bool using (Bool; true; false)
-open import Data.Fin using (Fin; toℕ)
+open import Data.Fin as F using (Fin; toℕ)
 open import Data.Nat using (ℕ; zero; suc; _*_ ; _+_; _∸_)
 open import Data.Nat.DivMod using (_/_)
 open import Data.Nat.Properties using (_≤?_; yes; no)
@@ -55,7 +55,7 @@ dyadicShrink e x =
       (256 * twoPowNat (toℕ e)))
 
 ellMin : Fin 8
-ellMin = Fin.zero
+ellMin = F.zero
 
 scaleFloor : dyadicScale ellMin ≡ one8
 scaleFloor = refl
@@ -73,7 +73,7 @@ record F4 : Set where
 open F4 public
 
 l2Exp : Fin 8
-l2Exp = Fin.zero
+l2Exp = F.zero
 
 normPairTerm : F4 → Int8
 normPairTerm s = int8Add (q s) (r1 s)
@@ -100,7 +100,7 @@ f4Step s g =
 
 ------------------------------------------------------------------------
 -- q-projected IDBD finite update. `delta` and `eligibility` are supplied by
--- the VJP/TD snapshot, while F4 performs dyadic scaling, q_epsilon projection,
+-- the VJP/TD snapshot; F4 performs dyadic scaling, q_epsilon projection,
 -- L2/norm-pair regularisation and the three residual accumulations.
 ------------------------------------------------------------------------
 
@@ -182,8 +182,8 @@ start =
     initialZero
     initialParam
     zero8
-    Fin.zero
-    Fin.zero
+    F.zero
+    F.zero
     zero8
     zero8
 
