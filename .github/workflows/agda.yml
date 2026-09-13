@@ -52,7 +52,8 @@ jobs:
           if git grep -nE -i 'Munchausen|Tsallis-2|TrueOnlineTD|OpenES|MR15|softmax|postulate|--unsafe|OPTIONS[[:space:]]+--unsafe' -- \
             'Exotic/ERL/FullCoupled/CanonicalLearner.agda' \
             'Exotic/ERL/FullCoupled/CanonicalTransformer.agda' \
-            'Exotic/ERL/FullCoupled/FiniteVJP.agda'; then
+            'Exotic/ERL/FullCoupled/FiniteVJP.agda' \
+            'Exotic/ERL/FullCoupled/CanonicalErgodicity.agda'; then
             echo 'canonical-banned-mechanism-or-proof-bypass=FOUND'
             exit 1
           fi
@@ -113,7 +114,7 @@ jobs:
           .ci/agda-repair.sh repair "$CANONICAL_SOURCE" /tmp/canonical-source.log
           agda --safe "$CANONICAL_SOURCE"
 
-      - name: Check canonical Agda regression
+      - name: Check canonical regression
         shell: bash
         run: |
           set -uo pipefail
@@ -125,7 +126,7 @@ jobs:
           .ci/agda-repair.sh repair "$CANONICAL_TEST" /tmp/canonical-test.log
           agda --safe "$CANONICAL_TEST"
 
-      - name: Check finite VJP and canonical composition layers
+      - name: Check canonical proof layers
         shell: bash
         run: |
           set -euo pipefail
@@ -133,6 +134,7 @@ jobs:
           agda --safe Exotic/ERL/FullCoupled/CanonicalTransformer.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner.agda
           agda --safe Exotic/ERL/FullCoupled/CanonicalLearner_test.agda
+          agda --safe Exotic/ERL/FullCoupled/CanonicalErgodicity.agda
           agda --safe Exotic/ERL/Exploration/FiniteNoise.agda
           agda --safe Exotic/ERL/Exploration/NoisyNetFinite.agda
 
