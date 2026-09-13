@@ -114,6 +114,9 @@ jobs:
       - name: Check finite Int8 Mobius composition
         run: agda --safe Exotic/efficient_chad/MobiusInt8Composition.agda
 
+      - name: Check conditional softsign-gated Mobius composition
+        run: agda --safe Exotic/efficient_chad/MobiusSoftsignBridge.agda
+
       - name: Check softsign-gated representation boundary
         run: agda --safe Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda
 
