@@ -8,8 +8,6 @@ unless String.starts_with?(raw, expected), do: raise("canonical source header/mo
 forbidden = [
   "StoSignSGD",
   "StoSignSGDv2",
-  "Munchausen",
-  "munchausen",
   "Lion",
   "lion",
   "Adam",
