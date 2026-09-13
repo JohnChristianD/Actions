@@ -99,14 +99,17 @@ jobs:
       - name: Check coupled NoisyNet exploration proof
         run: agda --safe Exotic/ERL/FullCoupled/NoisyNetCoupled.agda
 
-      - name: Check dyadic-law composition interface
-        run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
+      - name: Check lazy-walk probability law
+        run: agda --safe Exotic/ERL/Exploration/LazyWalkDyadic.agda
+
+      - name: Check dyadic-ladder probability law
+        run: agda --safe Exotic/ERL/Exploration/DyadicLadder.agda
 
       - name: Check retained flat dyadic law
         run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
 
-      - name: Check strict flat support theorem order
-        run: agda --safe Exotic/ERL/Exploration/FlatDyadicStrictOrder.agda
+      - name: Check dyadic-law composition interface
+        run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
 
       - name: Check full algebraic coupling composition
         run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
@@ -115,7 +118,10 @@ jobs:
         run: agda --safe Exotic/efficient_chad/SoftsignGatedComposition.agda
 
       - name: Check NoisyNet softsign representation projection
-        run: agda --safe Exotic/ERL/FullCoupled/NoisyNetRepresentationProjection.agda
+        run: agda --safe Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda
+
+      - name: Check strict theorem-strength order
+        run: agda --safe Exotic/ERL/FullCoupled/TheoremStrength.agda
 
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
