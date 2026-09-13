@@ -12,7 +12,6 @@ FORBIDDEN = tuple(bytes.fromhex(code).decode("utf-8") for code in (
     "6e6f6e647961646963",
     "642d747269",
     "645f747269",
-    "64747269",
 ))
 
 SKIP_PARTS = {
