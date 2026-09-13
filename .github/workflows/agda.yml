@@ -117,11 +117,14 @@ jobs:
       - name: Check softsign-gated CHAD composition
         run: agda --safe Exotic/efficient_chad/SoftsignGatedComposition.agda
 
-      - name: Check NoisyNet softsign representation projection
+      - name: Check finite Int8 Mobius composition
+        run: agda --safe Exotic/efficient_chad/MobiusInt8Composition.agda
+
+      - name: Check NoisyNet softsign representation projection and factor
         run: agda --safe Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda
 
       - name: Check strict theorem-strength order
-        run: agda --safe Exotic/ERL/FullCoupled/TheoremStrength.agda
+        run: agda --safe Exotic/ERL/FullCoupled/TheoremStrengthV2.agda
 
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
