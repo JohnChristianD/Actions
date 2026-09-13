@@ -1,26 +1,24 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.LatticeReachability where
 
-open import Data.Fin using (Fin)
-open import Data.Product using (_×_)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Nat using (ℕ)
+open import Data.Product using (Σ)
 open import Exotic.ERL.Exploration.CanonicalMR15GA using
   ( Coordinate
   ; Genome
   ; Population
+  ; Fitness
   ; MR15State
   ; StepGate
-  ; Exponent
-  ; Successes
+  ; Noise
   ; mutateGenome
   ; generationStep
   ; initialExponent
-  ; initialMR15
   )
 open import Exotic.ERL.Exploration.FiniteNoise using
-  ( Noise
-  ; pos
+  ( pos
   ; neg
-  ; zero
   )
 open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using
   ( CoupledState
@@ -28,40 +26,60 @@ open import Exotic.ERL.FullCoupled.CanonicalLearnerEA using
   ; CoupledIrreducibility
   ; coupledIrreducibility
   ; coupledAperiodicity
+  ; CoupledEdge
   )
 open import Exotic.ERL.FullCoupled.FiniteAperiodicity using
-  ( Irreducible
+  ( ExactReach
   ; AperiodicViaConsecutiveReturns
   )
 
-CoordinateLatticeReachability : Set
-CoordinateLatticeReachability =
-  ∀ (g h : Genome) →
-  ∀ (j : Coordinate) →
-  ∀ (n : Noise) →
-  mutateGenome initialExponent n j g ≡ mutateGenome initialExponent n j h
+data GenomeStep : Genome → Genome → Set where
+  plus : ∀ (g : Genome) (j : Coordinate) →
+    GenomeStep g (mutateGenome initialExponent pos j g)
+  minus : ∀ (g : Genome) (j : Coordinate) →
+    GenomeStep g (mutateGenome initialExponent neg j g)
 
-UnitCoordinateSupport : Set
-UnitCoordinateSupport =
-  ∀ (g : Genome) (j : Coordinate) →
-  (mutateGenome initialExponent pos j g ,
-   mutateGenome initialExponent neg j g)
-  ≡
-  (mutateGenome initialExponent pos j g ,
-   mutateGenome initialExponent neg j g)
+data GenomeReach : Genome → Genome → Set where
+  here : ∀ {g} → GenomeReach g g
+  there : ∀ {g h k} →
+    GenomeStep g h →
+    GenomeReach h k →
+    GenomeReach g k
 
-EAStateReachability : Set
-EAStateReachability =
-  ∀ (s t : MR15State) →
-  ∃λ (n : _) →
-  s ≡ t
+GenomeLatticeReachabilityObligation : Set
+GenomeLatticeReachabilityObligation =
+  ∀ (g h : Genome) → GenomeReach g h
 
-FullCoupledIrreducibility : Set
-FullCoupledIrreducibility =
+data EAEdge : MR15State → MR15State → Set where
+  edge : ∀ {s}
+    (fit : Fitness)
+    (gate : StepGate)
+    (noises : (Fin 16) → Noise)
+    (coords : (Fin 16) → Coordinate) →
+    EAEdge s (generationStep fit gate s noises coords)
+
+data EAReach : MR15State → MR15State → Set where
+  here : ∀ {s} → EAReach s s
+  there : ∀ {s t u} →
+    EAEdge s t →
+    EAReach t u →
+    EAReach s u
+
+EAStateReachabilityObligation : Set
+EAStateReachabilityObligation =
+  ∀ (s t : MR15State) → EAReach s t
+
+FullCoupledReachabilityObligation : Set
+FullCoupledReachabilityObligation =
   CoupledIrreducibility
 
+fullCoupledIrreducibility :
+  FullCoupledReachabilityObligation →
+  ∀ (s t : CoupledState) → CoupledReach s t
+fullCoupledIrreducibility h = h
+
 fullCoupledAperiodicity :
-  FullCoupledIrreducibility →
-  AperiodicViaConsecutiveReturns _
-fullCoupledAperiodicity reach =
-  CoupledAperiodicity.witness (coupledAperiodicity reach)
+  FullCoupledReachabilityObligation →
+  AperiodicViaConsecutiveReturns CoupledEdge
+fullCoupledAperiodicity h =
+  coupledAperiodicity h .witness
