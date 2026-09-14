@@ -1,8 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.Int8StabilityComposition where
 
-open import Agda.Builtin.Equality using (_≡_; sym; subst)
-open import Agda.Builtin.Nat using (Nat)
+open import Agda.Builtin.Equality using (_≡_; refl; sym; subst; cong)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Empty using (⊥)
 open import Data.Nat using (_<_ ; _≤_; _+_)
 open import Data.Nat.Properties using (<-irrefl; <-trans)
@@ -24,6 +24,92 @@ record LyapunovCertificate (S : Set) (step : S → S) : Set₁ where
 open LyapunovCertificate public
 
 ------------------------------------------------------------------------
+-- Strict Nat-valued Lyapunov descent is constructive and well-founded.
+------------------------------------------------------------------------
+
+iterate : ∀ {S : Set} → (S → S) → Nat → S → S
+iterate step zero s = s
+iterate step (suc n) s = step (iterate step n s)
+
+iterate-shift :
+  ∀ {S : Set} (step : S → S) (n : Nat) (s : S) →
+  iterate step n (step s) ≡ iterate step (suc n) s
+iterate-shift step zero s = refl
+iterate-shift step (suc n) s = cong step (iterate-shift step n s)
+
+OrbitNonFixed :
+  ∀ {S : Set} {step : S → S} → S → Set
+OrbitNonFixed {step = step} s =
+  ∀ n → iterate step n s ≢ step (iterate step n s)
+
+shiftOrbitNonFixed :
+  ∀ {S : Set} {step : S → S} {s : S} →
+  OrbitNonFixed s → OrbitNonFixed (step s)
+shiftOrbitNonFixed nf n =
+  subst
+    (λ z → z ≢ step z)
+    (iterate-shift step n _) 
+    (nf (suc n))
+
+iterate-energy-decrease :
+  ∀ {S : Set} {step : S → S}
+  (L : LyapunovCertificate S step)
+  {s : S} →
+  OrbitNonFixed s →
+  ∀ n →
+  energy L (iterate step (suc n) s) < energy L s
+iterate-energy-decrease L nf zero =
+  strictDecrease L _ (nf zero)
+iterate-energy-decrease L nf (suc n) =
+  let
+    next : OrbitNonFixed (step _) 
+    next = shiftOrbitNonFixed nf
+
+    ih :
+      energy L (iterate step (suc n) (step _))
+      < energy L (step _)
+    ih = iterate-energy-decrease L next n
+
+    ih' :
+      energy L (iterate step (suc (suc n)) _)
+      < energy L (step _)
+    ih' =
+      subst
+        (λ z → energy L z < energy L (step _))
+        (iterate-shift step (suc n) _)
+        ih
+  in
+    <-trans ih' (strictDecrease L _ (nf zero))
+
+------------------------------------------------------------------------
+-- Exact finite-cycle exclusion: any positive-length closed orbit whose
+-- states are all non-fixed would force a strict Nat decrease from a state
+-- back to itself. Therefore no nontrivial finite n-cycle survives a strict
+-- Lyapunov certificate.
+------------------------------------------------------------------------
+
+noNontrivialFiniteCycle :
+  ∀ {S : Set} {step : S → S}
+  (L : LyapunovCertificate S step)
+  {s : S} (n : Nat) →
+  iterate step (suc n) s ≡ s →
+  OrbitNonFixed s →
+  ⊥
+noNontrivialFiniteCycle L {s = s} n cyc nf =
+  let
+    desc : energy L (iterate step (suc n) s) < energy L s
+    desc = iterate-energy-decrease L nf n
+
+    closed : energy L s < energy L s
+    closed =
+      subst
+        (λ z → energy L z < energy L s)
+        cyc
+        desc
+  in
+    <-irrefl (energy L s) closed
+
+------------------------------------------------------------------------
 -- A strict Nat-valued Lyapunov law really does exclude a nontrivial
 -- 2-cycle, constructively.
 ------------------------------------------------------------------------
@@ -36,25 +122,19 @@ noNontrivialTwoCycle :
   step s ≢ s →
   ⊥
 noNontrivialTwoCycle L {s = s} cyc not-fixed =
-  let
-    first : energy L (step s) < energy L s
-    first = strictDecrease L s not-fixed
-
-    step-not-fixed : step (step s) ≢ step s
-    step-not-fixed eq =
-      not-fixed (subst (λ z → step s ≡ z) (sym cyc) eq)
-
-    second : energy L (step (step s)) < energy L (step s)
-    second = strictDecrease L (step s) step-not-fixed
-
-    second' : energy L s < energy L (step s)
-    second' =
-      subst
-        (λ z → energy L z < energy L (step s))
-        cyc
-        second
-  in
-    <-irrefl (energy L s) (<-trans second' first)
+  noNontrivialFiniteCycle
+    L
+    1
+    cyc
+    nf
+  where
+  nf : OrbitNonFixed s
+  nf zero = not-fixed
+  nf (suc n) eq =
+    not-fixed
+      (trans
+        (sym (iterate-shift step n s))
+        (trans eq (iterate-shift step n s)))
 
 ------------------------------------------------------------------------
 -- Finite metric contraction also gives a direct constructive theorem:
