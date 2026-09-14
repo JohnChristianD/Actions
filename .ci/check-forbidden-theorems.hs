@@ -26,8 +26,11 @@ walk root = do
   where
     descend entry = do
       let path = root </> entry
-      directory <- doesDirectoryExist path
-      if directory then walk path else pure [path]
+      if skipPath path
+        then pure []
+        else do
+          directory <- doesDirectoryExist path
+          if directory then walk path else pure [path]
 
 isAgdaSource :: FilePath -> Bool
 isAgdaSource path = takeExtension path == ".agda"
