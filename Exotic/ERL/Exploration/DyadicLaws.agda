@@ -2,7 +2,7 @@
 module Exotic.ERL.Exploration.DyadicLaws where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat)
+open import Agda.Builtin.Nat using (Nat; _+_; _*_; suc)
 open import Exotic.efficient_chad.Int8 using (Int8; zero8; one8; int8OfNat)
 
 ------------------------------------------------------------------------
