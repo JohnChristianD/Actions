@@ -3,7 +3,6 @@ module Exotic.ERL.FullCoupled.FiniteErgodicComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Sigma using (Σ; _,_)
-open import Agda.Builtin.Unit using (⊤; tt)
 open import Data.Nat using (Nat; zero; suc)
 
 ------------------------------------------------------------------------
@@ -74,10 +73,9 @@ permutationCountingInvariant P =
     (λ _ → refl)
 
 ------------------------------------------------------------------------
--- Aperiodicity is exactly represented as return-time arithmetic. A
--- self-loop is the canonical finite certificate for period one at its state;
--- irreducibility is kept explicit because propagation to all states is a
--- genuine graph theorem, not an Int8 arithmetic identity.
+-- A self-loop is an exact period-one witness at one state. Propagation of
+-- this period-one property to every state is intentionally a theorem about
+-- irreducible finite graphs, not an arithmetic identity.
 ------------------------------------------------------------------------
 
 record SelfLoopWitness (S : Set) (T : FiniteTransition S) : Set where
@@ -88,11 +86,11 @@ record SelfLoopWitness (S : Set) (T : FiniteTransition S) : Set where
 
 open SelfLoopWitness public
 
-selfLoopReturnWitness :
-  ∀ {S : Set} {T : FiniteTransition S} →
-  SelfLoopWitness S T →
-  Σ Nat (λ n → iterate T (suc n) (state0 (refl))) ≡ state0 (refl)
-selfLoopReturnWitness w = zero , loop w
+selfLoopIsPeriodOne :
+  ∀ {S : Set} {T : FiniteTransition S}
+  (w : SelfLoopWitness S T) →
+  iterate T 1 (state0 w) ≡ state0 w
+selfLoopIsPeriodOne w = loop w
 
 ------------------------------------------------------------------------
 -- Endogenous finite ergodic package.
