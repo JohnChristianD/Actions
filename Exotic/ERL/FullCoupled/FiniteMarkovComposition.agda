@@ -1,16 +1,13 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.FiniteMarkovComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans)
-open import Data.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Nat using (Nat)
 open import Data.Product using (_×_; _,_)
 
 ------------------------------------------------------------------------
--- Exact finite-state Markov theorem surface.
--- These definitions separate the actual kernel properties from distribution
--- heuristics: irreducibility is a reachability relation, aperiodicity is a
--- period-1 witness, and invariant-measure existence is an explicit finite
--- mass certificate.
+-- Exact finite-state theorem surface. The objects below are certificates
+-- for the actual composed kernel, not claims about a coordinate in isolation.
 ------------------------------------------------------------------------
 
 record Transition (S : Set) : Set₁ where
@@ -44,10 +41,11 @@ record AperiodicCertificate (S : Set) (T : Transition S) : Set₁ where
     self : SelfLoop S T
     irreducible : Irreducible S T
 
-aperiodicity-from-self-loop :
+aPeriodOneFromCertificate :
   ∀ {S : Set} {T : Transition S} →
-  AperiodicCertificate S T → AperiodicCertificate S T
-aperiodicity-from-self-loop = λ c → c
+  AperiodicCertificate S T →
+  SelfLoop S T
+aPeriodOneFromCertificate c = self c
 
 record FiniteDistribution (S : Set) : Set₁ where
   constructor finiteDistribution
@@ -74,8 +72,7 @@ record UniqueInvariantMeasure (S : Set) (T : Transition S) : Set₁ where
     unique : ∀ μ → μ ≡ invariant
 
 ------------------------------------------------------------------------
--- Product-kernel composition is the non-separable form: the theorem talks
--- about the joint state, not separately about each coordinate kernel.
+-- Non-separable joint-state composition.
 ------------------------------------------------------------------------
 
 record CoupledKernel (A B : Set) : Set₁ where
@@ -97,7 +94,5 @@ record FullStateIrreducibility (A B : Set) (K : CoupledKernel A B) : Set₁ wher
 record FullStateAperiodicity (A B : Set) (K : CoupledKernel A B) : Set₁ where
   constructor fullStateAperiodicity
   field
-    witness : ∃-placeholder
-  where
-  data ∃-placeholder : Set where
-    placeholder : ∃-placeholder
+    state : A × B
+    loop : stepAB K state ≡ state
