@@ -70,6 +70,27 @@ open import Exotic.ERL.FullCoupled.DPGBellmanHaarComposition using
   ; commonPrefixThenHeads
   ; commonPrefix-factorization
   )
+open import Exotic.ERL.FullCoupled.PromotionComposition using
+  ( DiscretePQNVariant
+  ; discretePQNTarget
+  ; discretePQN-target-common
+  ; promotedDPGActor
+  ; promotedDPGActor-total
+  ; promotedActorOptimizer
+  ; promotedActorL2
+  ; promotedCriticOptimizer
+  ; promotedCriticL2
+  ; promotedActor-under-perturbation
+  ; promotedCritic-under-perturbation
+  ; promotedActorCompose
+  ; promotedCriticCompose
+  ; promotedComposition-law
+  ; promotedComposition-actor-optimizer
+  ; promotedComposition-actor-L2
+  ; promotedComposition-critic-optimizer
+  ; promotedComposition-critic-L2
+  ; promotedGreedyTarget
+  )
 
 canonicalLaw0 : Law
 canonicalLaw0 = flatDyadic
@@ -191,3 +212,52 @@ canonicalCommonPrefix :
   ( Exotic.ERL.FullCoupled.Int8DPG.sharedActor b (frontEndToGRU p)
   , Exotic.ERL.FullCoupled.Int8DPG.sharedCritic b (frontEndToGRU p) )
 canonicalCommonPrefix = commonPrefix-factorization
+
+------------------------------------------------------------------------
+-- Promoted discrete-PQN / deterministic-DPG / global-control composition.
+------------------------------------------------------------------------
+
+canonicalDiscretePQNTarget :
+  ∀ (v : DiscretePQNVariant) (reward : ℕ) (δ : ℕ → ℕ) (q : Q) →
+  ∀ s → discretePQNTarget v reward δ q s ≡ maxQBootstrap reward δ q s
+canonicalDiscretePQNTarget = discretePQN-target-common
+
+canonicalPromotedActor :
+  ∀ (a : DPGActor) (x : Int8) → promotedDPGActor a x ≡ actorForward a x
+canonicalPromotedActor = promotedDPGActor-total
+
+canonicalPromotedActorOptimizer : promotedActorOptimizer
+canonicalPromotedActorOptimizer = promotedActorOptimizer
+
+canonicalPromotedActorL2 : promotedActorL2
+canonicalPromotedActorL2 = promotedActorL2
+
+canonicalPromotedCriticOptimizer : promotedCriticOptimizer
+canonicalPromotedCriticOptimizer = promotedCriticOptimizer
+
+canonicalPromotedCriticL2 : promotedCriticL2
+canonicalPromotedCriticL2 = promotedCriticL2
+
+canonicalPromotedActorPerturbation : promotedActor-under-perturbation
+canonicalPromotedActorPerturbation = promotedActor-under-perturbation
+
+canonicalPromotedCriticPerturbation : promotedCritic-under-perturbation
+canonicalPromotedCriticPerturbation = promotedCritic-under-perturbation
+
+canonicalPromotedComposition : promotedComposition-law
+canonicalPromotedComposition = promotedComposition-law
+
+canonicalPromotedCompositionActorOptimizer : promotedComposition-actor-optimizer
+canonicalPromotedCompositionActorOptimizer = promotedComposition-actor-optimizer
+
+canonicalPromotedCompositionActorL2 : promotedComposition-actor-L2
+canonicalPromotedCompositionActorL2 = promotedComposition-actor-L2
+
+canonicalPromotedCompositionCriticOptimizer : promotedComposition-critic-optimizer
+canonicalPromotedCompositionCriticOptimizer = promotedComposition-critic-optimizer
+
+canonicalPromotedCompositionCriticL2 : promotedComposition-critic-L2
+canonicalPromotedCompositionCriticL2 = promotedComposition-critic-L2
+
+canonicalPromotedGreedyTarget : promotedGreedyTarget
+canonicalPromotedGreedyTarget = promotedGreedyTarget
