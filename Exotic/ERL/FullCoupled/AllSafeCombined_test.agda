@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined_test where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( flatDyadic
   ; mr15GA
@@ -26,12 +27,16 @@ open import Exotic.ERL.FullCoupled.AllSafeCombined using
   )
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ( noisyNetProjectionLift
+  ; noisyNetRecurrentProjection
+  )
+open import Exotic.ERL.FullCoupled.DyadicRepresentation using
+  ( representationCompose
   )
 open import Exotic.ERL.FullCoupled.MobiusGRU using
   ( Mobius
   )
-open import Exotic.ERL.FullCoupled.DyadicRepresentation using
-  ( representationCompose
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( RecurrentProjection
   )
 
 mr15FlatReach :
@@ -50,7 +55,10 @@ representationClosed :
   ∀ x → representationCompose x ≡ representationCompose x
 representationClosed x = canonicalRepresentationLaw x
 
-projectionLiftClosed : ∀ x → noisyNetProjectionLift x
+projectionLiftClosed :
+  ∀ x →
+  RecurrentProjection.project noisyNetRecurrentProjection
+    (RecurrentProjection.lift noisyNetRecurrentProjection x) ≡ x
 projectionLiftClosed x = noisyNetProjectionLift x
 
 mobiusClosed : ∀ (a b c : Mobius) → canonicalMobiusAssoc a b c
