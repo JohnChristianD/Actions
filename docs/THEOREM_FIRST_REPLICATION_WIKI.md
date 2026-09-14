@@ -38,45 +38,45 @@ The canonical composition packages the learner boundaries rather than presenting
 
 The finite operator-family skeleton includes sparsemax, frozen Haar, dyadic RoPE, and the finite Mobius/GRU composition layer. Embedding removal is formalized as preserving that operator-class family; embedding remains a distinct learnable parameter block.
 
-The finite Mobius modules prove associative function composition and identity laws. They do not claim a completed coefficient-level `PSL(2,R)` formalization. Likewise, the current Haar object is a finite integer Hadamard/Haar-like operator, not an Agda proof object for the full continuous group `O(2^n)`.
+## Sparsemax: clean base versus strongest theorem class
 
-## Sparsemax canonical versus stronger optional class
+Fixed Sparsemax is the **clean deterministic proof base**, not the strongest exploration theorem class. It is clean because the existing finite front-end has already closed hard-sparsity and boundary-idempotence laws for that operator, while a deterministic GRU preserves a simple finite transition semantics. That makes it a stable baseline for proving downstream composition, not an exploration claim.
 
-The canonical Sparsemax remains fixed because that surface already has exact finite hard-sparsity and boundary-idempotence theorems. This is the cleaner closed theorem surface.
+The strict theorem-surface hierarchy is instead:
 
-A strictly richer optional endogenous parameterization now exists in `Exotic/ERL/FullCoupled/SparsemaxF4Composition.agda`. It gives Sparsemax its own F4-learned bias/temperature state and a further variant with separate Noisy-Net-style `mu`/`sigma` F4 states. This enlarges the coupled parameter graph, but its concrete application must independently prove finite closure, hard-sparsity, and idempotence. Those properties do not follow automatically once Sparsemax itself is perturbed.
+`fixed Sparsemax + deterministic GRU`
 
-Thus the intended hierarchy is:
+`< F4-learned Sparsemax + global optimizer/L2 + path-norm/L1`
 
-`fixed Sparsemax` = canonical closed theorem surface;
+`< F4-learned + Noisy-Net Sparsemax + global optimizer/L2 + path-norm/L1`
 
-`F4-learned Sparsemax` = stronger learnable theorem class/ablation;
+`< F4-learned + Noisy-Net Sparsemax + Efficient CHAD boundary`
 
-`F4-learned + Noisy-Net Sparsemax` = strongest parameter-coupled exploration variant once its finite closure theorems are concrete;
+`< previous class + finite irreducibility/aperiodicity/invariant-measure layer`.
 
-`F4-learned + Noisy-Net Sparsemax + CHAD pullback certificate` = strongest currently meaningful differentiable-composition class, because it strictly contains the parameter/noise surface and adds a source/primal/pullback correctness obligation.
+The final entries are broader theorem **surfaces**, not evidence that every listed theorem has already been instantiated with concrete numerical witnesses.
 
-This is a theorem-breadth distinction, not an empirical-performance ranking.
+## Global path-norm + L1 pairing
+
+`Exotic/ERL/FullCoupled/LearnedRegularizationComposition.agda` now gives every learned parameter/nonlinearity block an explicit path-norm certificate and L1-weight certificate, including Sparsemax and Noisy-Net `mu3`/`sigma3`. The global optimizer/L2 state is paired with this bank rather than treating regularization as a local exception.
+
+At present these are certificate interfaces, not completed inequalities such as a proved path-norm bound on every concrete weight tensor. A concrete norm formula and the corresponding arithmetic bound remain the next strengthening point.
 
 ## Efficient CHAD, CHAD, and iterative CHAD
 
 The external CHAD literature motivates the highest compositional layer. CHAD is explicitly a structure-preserving source transformation with compositional correctness; Efficient CHAD adds efficient reverse-mode structure and an Agda complexity formalization; iterative CHAD extends the compositional framework to iteration. The repository therefore treats Efficient CHAD as the algebraic composition substrate rather than as an unrelated utility.
 
-`Exotic/efficient_chad/DyadicCHAD.agda` now carries explicit source/primal/pullback contracts and a compositional cost law. `Exotic/efficient_chad/ParallelPrefix.agda` supplies the finite associative scan theorem. `Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda` connects these to the endogenous learner and learned Sparsemax boundary.
+`Exotic/efficient_chad/DyadicCHAD.agda` carries explicit source/primal/pullback contracts and a compositional cost law. `Exotic/efficient_chad/ParallelPrefix.agda` supplies the finite associative scan theorem. `Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda` connects these to the endogenous learner and learned Sparsemax boundary.
 
 The strongest honest interpretation is: Efficient CHAD is the best existing **composition algebra** in this repository, but it does not automatically differentiate a concrete learned Int8/dyadic Sparsemax. That concrete operator still has to supply the appropriate primal/pullback certificate.
 
-## Flat-dyadic exploration comparison status
+## Flat-dyadic non-separable exploration composition
 
-Flat-dyadic law remains the common finite exploration law across the three comparison mechanisms:
+The old replication table correctly treats flat-dyadic exploration as a common law compared across MR15, OpenES, and Noisy Nets, and it explicitly warns that coordinate-level reachability does not imply full learner+EA irreducibility. fileciteturn128file0
 
-1. MR15: `Exotic/ERL/Exploration/MR15Reachability.agda`
-2. OpenES: `Exotic/ERL/Exploration/OpenESDyadic.agda`
-3. Noisy Nets: `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
+The intended composition theorem is now joint-state rather than “one theorem per coordinate”: the exploration kernel, learner state, population/selection state, optimizer residual state, and recurrent state are all part of the coupled transition relation. `FiniteMarkovComposition.agda` supplies the exact finite theorem surface for irreducibility, self-loop/period-1 evidence, invariant-measure certificates, and coupled-state composition.
 
-Flat-dyadic Noisy Nets are the broadest theorem-class surface among the three when judged by endogenous coupling, because the noise state participates inside the learner and can compose with recurrent GRU algebra, global optimizer/L2 control, representation, Watkins traces, DPG actor/critic, Sparsemax/Haar/RoPE, and Mobius associative composition. MR15 and OpenES remain comparison ablations rather than alternate canonical learner semantics.
-
-This is a theorem-surface comparison, not a claim that Noisy Nets empirically outperform MR15 or OpenES.
+The three exploration methods remain theorem-comparison variants. The current repository does **not** promote one of them to a universal empirical winner.
 
 ## Associative scan and window semantics
 
@@ -84,55 +84,54 @@ This is a theorem-surface comparison, not a claim that Noisy Nets empirically ou
 
 This is not a theorem about an actually infinite sequence or an infinite cardinality window. “Unbounded window” here means no fixed finite window length is hard-coded into the algebra: every finite list length is handled by the same associative scan law.
 
-## Precision and imported dyadic carrier boundary
+## Precision, division, and imported carrier boundary
 
-Keep the imported recurrent/action libraries Int8. The imported dyadic carrier does **not** mean the learner is secretly using unbounded dyadic precision.
+The imported dyadic carrier does not mean the learner is secretly using unbounded dyadic precision. It exists because literal signed Int8 cannot represent exact residuals such as `1/2`.
 
-It exists because literal signed Int8 cannot represent exact residuals such as `1/2`. The additional carrier therefore supplies only the finite-precision dyadic representation and the operations required by the exact finite proofs. Depending on the operator, those operations can include exact fractional residual addition/subtraction, bounded scaling, quantization, rounding, or finite-domain division/reciprocal/normalization.
+The minimum additional exact division surface is now `Exotic/efficient_chad/FiniteDivision.agda`. It adds only a positive finite denominator and a fractional carrier, with division restricted to a provably positive finite denominator. This is intentionally smaller than importing a general rational/field hierarchy.
 
-The finite Haar theorem demonstrates the same boundary explicitly: exact `1/sqrt(2)` normalization is not imported because it is non-dyadic. The finite Sparsemax implementation can still use integer division on its 255-grid formula.
+The correct division boundary is therefore:
 
-A dedicated dyadic-rational library should be added only when such an operation cannot be represented cleanly in the existing Int8-facing libraries. It is not a license to introduce unrestricted real analysis.
+`Int8 storage -> exact finite fraction -> quantization/storage code`.
 
-## Exact finite-state ergodic layer
+General division by an arbitrary signed value is deliberately **not** claimed until a nonzero-sign/field-style algebra is supplied. This prevents Softsign or normalization formulas from smuggling in an unproved denominator assumption.
 
-`Exotic/ERL/FullCoupled/FiniteErgodicComposition.agda` now separates three concepts that had previously been merely discussed:
+The finite Haar theorem similarly avoids importing the non-dyadic `1/sqrt(2)` normalization. Sparsemax can remain exact on its finite integer grid.
 
-- **irreducibility** is explicit finite reachability by iterates;
-- **aperiodicity** is explicit return-time data plus a gcd-one certificate;
-- **invariant measure** is explicit pointwise invariance of a nonzero counting weight.
+## Exact finite-state irreducibility, aperiodicity, and invariant measure
 
-For a bijective finite transition, the constant counting weight is an exact invariant measure, proved without division. A normalized invariant probability distribution is deliberately a stronger target because it needs an exact normalization/division structure absent from literal Int8.
+`Exotic/ERL/FullCoupled/FiniteMarkovComposition.agda` now separates:
 
-A self-loop is an exact period-one witness at a state; propagation of period one to every state remains a graph theorem requiring irreducibility. Thus the module does not accidentally equate “finite” with “ergodic.”
+- full-state irreducibility as a joint reachability certificate;
+- aperiodicity as an explicit self-loop/period-1 certificate attached to the joint kernel;
+- invariant-measure existence as an explicit finite mass/invariance witness;
+- unique invariant measure as an explicit uniqueness certificate rather than an unsupported assertion.
 
-Finite-state Markov-chain formalization literature independently supports this decomposition into exact finite-state transition, Chapman-Kolmogorov/steady-state, and ergodic reasoning rather than treating those properties as automatic. The current Agda layer is intentionally smaller and constructive.
+This is deliberately stricter than saying “the state space is finite.” Finite deterministic systems can cycle, and finite stochastic kernels need an actual stochastic/invariant witness before that theorem is promoted.
 
-## Path norm and finite semidirect-product layer
+Formal finite-state Markov-chain literature independently supports this decomposition into exact transition, Chapman-Kolmogorov/steady-state, and ergodic reasoning. The current Agda layer is intentionally smaller and constructive.
 
-`Exotic/ERL/FullCoupled/PathNormSemidirectComposition.agda` adds two further algebraic surfaces.
+## Finite semidirect-product layer
 
-The path-norm layer factors a composed operator through an explicit exact norm law:
+`Exotic/ERL/FullCoupled/FiniteSemidirectComposition.agda` provides the correct finite crossed/semidirect-product architecture: an operator monoid acts on a state monoid, and the coupled pair gets semidirect multiplication.
 
-`pathNorm(composite) = pathNorm(left) * pathNorm(right)`.
+This is the precise landing zone for the earlier “crossed product / semidirect product” intuition. It is not a claim that every F4 parameter bank is already a nontrivial group. Inverses and action laws must be instantiated before a genuine group theorem is asserted.
 
-The semidirect layer exposes the correct architecture for coupling an operator component with a state/optimizer component: an operator acts on the state, the action respects the operator monoid, and the pair gets a semidirect-product composition contract.
+## Theorem-variant comparison automation
 
-This is the right formal landing zone for the earlier “crossed-product / semidirect-product” intuition. It is **not** yet a claim that every F4 parameter bank forms a nontrivial group. The current F4 storage state is a finite/dyadic arithmetic carrier; inverses and action laws must be instantiated before a genuine group theorem is asserted.
+`Exotic/ERL/FullCoupled/TheoremVariantComparison.agda` makes the comparison axes explicit: fixed versus learned Sparsemax, noise, CHAD, Markov/ergodic structure, path/L1 regularization, and semidirect coupling. The canonical workflow checks this comparison surface under `agda --safe` alongside the underlying modules.
 
-Path-norm and semidirect certificates therefore strengthen the theorem *surface* without pretending to have proved an unrequested continuous norm or Lie-group theorem.
+The correct ranking is by theorem-surface inclusion and declared finite criteria, not by a universal “best model” claim. The old replication table already states the stronger form: compare candidates only after full irreducibility, full self-loop, and exact arithmetic are admitted. fileciteturn128file6
 
 ## Quantization and convergence claims
 
-A statement such as “the optimizer converges with minimal quantization effect to the closest quantized fixed point to the L2-biased Bellman optimum” is a strong target theorem, not an automatic consequence of F4 residual reconstruction.
+A statement such as “the optimizer converges with minimal quantization effect to the closest quantized fixed point to the L2-biased Bellman optimum” remains a strong target theorem, not an automatic consequence of F4 reconstruction.
 
-To promote that statement to a kernel theorem, the repository must provide an explicit Bellman or regularized fixed-point operator, an explicit L2-biased fixed point, a concrete quantizer and finite metric/order, a nearest-quantized-fixed-point law, and a Lyapunov or contraction argument excluding nontrivial cycles. The present global optimizer/L2 preservation theorems do not by themselves establish those facts.
-
-Recent SciSpace results are consistent with this separation: low-precision adaptive-optimizer convergence can be proved under explicit quantization-error assumptions, while sparse policy parameterizations can carry their own convergence structure. Those results motivate the theorem shapes but do not transfer automatically to this F4/Int8/Watkins/DPG system.
+To promote it to a kernel theorem, the repository still needs an explicit Bellman or regularized fixed-point operator, an explicit L2-biased fixed point, a concrete quantizer and finite metric/order, a nearest-quantized-fixed-point law, and a Lyapunov or contraction argument excluding nontrivial cycles. The present global optimizer/L2 preservation theorems do not by themselves establish those facts.
 
 ## Stability theorem frontier
 
-`Exotic/ERL/FullCoupled/Int8StabilityComposition.agda` is now part of the `--safe` workflow. It contains:
+`Exotic/ERL/FullCoupled/Int8StabilityComposition.agda` is part of the `--safe` workflow. It contains:
 
 - a constructive theorem that a strict Nat-valued Lyapunov law excludes nontrivial 2-cycles;
 - a finite metric/contraction certificate surface for Banach-style reasoning;
@@ -148,15 +147,3 @@ None is intrinsically impossible in dyadic or Int8 state spaces. What is unavail
 A strict well-founded Lyapunov ranking can exclude cycles and establish convergence when combined with an appropriate reachability argument. A finite metric is complete, so a genuine contraction theorem can support a Banach-style fixed-point result. KKT requires an explicitly defined discrete/dyadic optimization problem and its necessary optimality conditions. Bare modular Int8 arithmetic is not itself a Lyapunov function, metric contraction, or KKT system.
 
 For finite deterministic state spaces, eventual periodicity is the default consequence of finiteness. Therefore the canonical route to genuine fixed-point convergence is a concrete cycle-exclusion or contraction/descent theorem, not an assumption that finite precision removes cycles.
-
-## Replication contract
-
-Replication means reproducing the current canonical definitions and checking them with `agda --safe`. Generated theorem candidates are only candidate text until the Agda kernel accepts concrete proof terms. Discovery tooling cannot upgrade a conjecture into a theorem.
-
-The active theorem graph remains connected to the endogenous aggregate. Disconnected historical lemmas, superseded v147/v149 recipes, and retired optimizer variants are pruned rather than maintained as parallel semantics.
-
-The active connected theorem surface is:
-
-`F4-Int-U-Softsign + global optimizer + global L2 + norm-pair boundary + finite Mobius composition + associative scan/GRU composition + Efficient CHAD + Noisy Nets + sparsemax/Haar/RoPE front end + Watkins trace carrier + DPG actor/critic + greedy max-Q bridge + finite ergodic certificates + path norm + semidirect action + finite representation support`.
-
-The comparison-only surfaces are the finite MR15 and OpenES exploration variants. They remain ablation gates when explicitly checked, but they do not define the learner.
