@@ -89,6 +89,9 @@ jobs:
       - name: Check finite Haar sparsemax RoPE composition
         run: agda --safe Exotic/ERL/FullCoupled/FiniteHaarSparsemaxRoPE.agda
 
+      - name: Check Int8 curse-of-dimensionality accounting
+        run: agda --safe Exotic/ERL/FullCoupled/Int8CurseDimensionality.agda
+
       - name: Check Mobius recurrent composition
         run: agda --safe Exotic/ERL/FullCoupled/MobiusGRU.agda
 
