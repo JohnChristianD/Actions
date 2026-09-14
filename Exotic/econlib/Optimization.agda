@@ -38,11 +38,3 @@ canonicalArgmax : IsArgmax canonicalProblem (suc zero)
 canonicalArgmax = isArgmax λ where
   zero → s≤s (s≤s (s≤s (s≤s z≤n)))
   suc zero → refl
-
-finiteOptimizer : FiniteProblem2 → Fin 2
-finiteOptimizer p = if score p zero ≤ score p (suc zero)
-  then suc zero
-  else zero
-
-canonicalOptimizer : finiteOptimizer canonicalProblem ≡ suc zero
-canonicalOptimizer = refl
