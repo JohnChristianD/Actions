@@ -147,12 +147,12 @@ frontEnd-hard-boundary-right = refl
 gruInputProjection : Int8Pair → Int8
 gruInputProjection = proj₁
 
-gruInputProjection-closed : ∀ p : Int8Pair → Int8
+gruInputProjection-closed : (p : Int8Pair) → Int8
 gruInputProjection-closed (x , y) = x
 
 frontEndToGRU : Int8Pair → Int8
 frontEndToGRU p = gruInputProjection (frontEnd p)
 
 frontEndToGRU-law :
-  ∀ p : Int8Pair → frontEndToGRU p ≡ proj₁ (ropeQuarter (haar2 (sparsemax2 p)))
+  (p : Int8Pair) → frontEndToGRU p ≡ proj₁ (ropeQuarter (haar2 (sparsemax2 p)))
 frontEndToGRU-law p = refl
