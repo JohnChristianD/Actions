@@ -74,6 +74,9 @@ jobs:
       - name: Check GRU composition algebra and invariant
         run: agda --safe Exotic/ERL/FullCoupled/GRUCompositionAlgebra.agda
 
+      - name: Check DPG recurrent parameter perturbation
+        run: agda --safe Exotic/ERL/FullCoupled/DPGRecurrentPerturbation.agda
+
       - name: Check global optimizer invariant
         run: agda --safe Exotic/ERL/FullCoupled/GlobalOptimizer.agda
 
