@@ -3,12 +3,12 @@ module Exotic.ERL.FullCoupled.GRUNoisyNetState where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (Fin)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Exotic.efficient_chad.Int8 using (Int8; int8Add)
+open import Data.Product using (_×_; _,_)
+open import Exotic.efficient_chad.Int8 using (Int8; int8Add; int8OfNat)
 
 -- A standard GRU has three recurrent matrices U_z,U_r,U_h. The input side
 -- contains three additional affine matrices, but exploration noise here is
--- attached only to the three recurrent matrices as requested.
+-- attached only to the three recurrent matrices.
 HiddenIndex : Set
 HiddenIndex = Fin 2
 
@@ -67,14 +67,8 @@ recurrentProjection-step : ∀ {s t}
   → recurrentProjection t ≡ recurrentProjection t
 recurrentProjection-step step = refl
 
--- For hidden width 2, the noisy persistent state has 3*2*2 + 2 = 14 Int8
--- coordinates. Hence the carrier has exactly 256^14 possible states before
--- any optimizer, input, or auxiliary state is adjoined.
+-- For hidden width 2, the persistent recurrent-noise state has
+-- 3*2*2 + 2 = 14 Int8 coordinates, hence 256^14 states before optimizer,
+-- input, or auxiliary state is adjoined.
 gruNoisyCoordinateCount : Int8
--- The count is kept as an Int8 theorem witness rather than a host integer.
-gruNoisyCoordinateCount = int8Add
-  (int8Add (int8Add
-    (int8Add 1 1)
-    (int8Add 1 1))
-    (int8Add 1 1))
-  (int8Add 1 1)
+gruNoisyCoordinateCount = int8OfNat 14
