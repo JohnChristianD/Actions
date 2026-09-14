@@ -8,6 +8,8 @@ open import Exotic.efficient_chad.GRURecurrentMobius using
   ( GRUWindow )
 open import Exotic.ERL.FullCoupled.GRUNoisyNetState using
   ( GRUNoisyNetState )
+open import Exotic.ERL.FullCoupled.GRUDPG using
+  ( GRUDPGBoundary )
 
 -- Canonical representation order:
 -- dyadic Walsh-Rademacher RoPE -> sparsemax -> frozen Haar -> specialized GRU.
@@ -55,17 +57,6 @@ record GlobalOptimizerBoundary : Set₁ where
     integerF4InputLaw : Set
     softsignQIDBDLaw : Set
 
--- The repository already contains an Int8 actor/critic head boundary. The
--- finite DPG update law remains an explicit theorem obligation rather than an
--- inferred consequence of the Int8 carrier.
-record Int8ActorCriticBoundary : Set₁ where
-  constructor int8ActorCriticBoundary
-  field
-    actor : GRUNoisyNetState → Int8
-    critic : GRUNoisyNetState → Int8
-    actorCriticCouplingLaw : Set
-    dpgUpdateLaw : Set
-
 record GRUComposition : Set₂ where
   constructor gruComposition
   field
@@ -77,5 +68,5 @@ record GRUComposition : Set₂ where
     gruNormPair : NormPair
     sparsemaxNormPair : NormPair
     optimizer : GlobalOptimizerBoundary
-    actorCritic : Int8ActorCriticBoundary
+    actorCritic : GRUDPGBoundary GRUNoisyNetState
     exactDecorrelatedFeatures : Set
