@@ -8,10 +8,28 @@ import System.Exit (exitFailure)
 import System.FilePath ((</>), splitDirectories, takeExtension)
 
 forbidden :: [String]
-forbidden = ["trans" ++ "cendental", "trans" ++ "cendentals", "mun" ++ "chausen", "munch" ++ "hausen", "mün" ++ "chhausen"]
+forbidden =
+  [ "trans" ++ "cendental"
+  , "trans" ++ "cendentals"
+  , "mun" ++ "chausen"
+  , "munch" ++ "hausen"
+  , "mün" ++ "chhausen"
+  , "mlp"
+  , "lstm"
+  ]
 
 forbiddenImports :: [String]
-forbiddenImports = ["Data." ++ "Float", "Data." ++ "Rational", "Data." ++ "Real", "Agda.Builtin.Float", "Complex", "Rational", "Float", "Real", "Trans" ++ "cendental"]
+forbiddenImports =
+  [ "Data." ++ "Float"
+  , "Data." ++ "Rational"
+  , "Data." ++ "Real"
+  , "Agda.Builtin.Float"
+  , "Complex"
+  , "Rational"
+  , "Float"
+  , "Real"
+  , "Trans" ++ "cendental"
+  ]
 
 skipPath :: FilePath -> Bool
 skipPath path =
@@ -43,7 +61,7 @@ checkFile path = do
     Right text -> do
       let lowered = map toLower text
           theoremErrors =
-            ["forbidden theorem family token present in " ++ path
+            [ "forbidden theorem/model family token present in " ++ path
             | token <- forbidden
             , token `isInfixOf` lowered]
           importLines =
@@ -53,7 +71,7 @@ checkFile path = do
                 in "open import" `isInfixOf` l || "import " `isInfixOf` l)
               (lines text)
           importErrors =
-            ["forbidden non-dyadic import in " ++ path ++ ": " ++ line
+            [ "forbidden non-dyadic import in " ++ path ++ ": " ++ line
             | line <- importLines
             , token <- forbiddenImports
             , token `isInfixOf` line]
@@ -65,7 +83,7 @@ main = do
   paths <- if exotic then walk "Exotic" else pure []
   errors <- concat <$> mapM checkFile (filter isAgdaSource paths)
   if null errors
-    then putStrLn "flat-dyadic-import-policy=pass"
+    then putStrLn "flat-dyadic-pruning-policy=pass"
     else do
       putStrLn (intercalate "\n" (map ("ERROR: " ++) errors))
       exitFailure
