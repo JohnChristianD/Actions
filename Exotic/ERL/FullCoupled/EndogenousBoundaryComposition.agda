@@ -169,6 +169,60 @@ endogenousWatkinsDPGMaxQBoundary :
 endogenousWatkinsDPGMaxQBoundary reward δ q π greedy s s₀ =
   DPG-maxQ-bootstrap-equivalence reward δ q π greedy s₀
 
+------------------------------------------------------------------------
+-- One proposition now packages the genuinely composed proof surface:
+-- recurrent/global-control invariants, Watkins trace cutting, and the
+-- DPG/max-Q equality all hold simultaneously under their respective
+-- premises. The component proofs are imported, not duplicated.
+------------------------------------------------------------------------
+
+record EndogenousWatkinsDPGMaxQResult
+  (s : EndogenousBoundaryState)
+  (p : Int8Pair)
+  (reward : ℕ)
+  (δ : Discount)
+  (q : Q)
+  (π : GreedyPolicy)
+  (greedy : IsGreedy π q)
+  (s₀ : State) : Set₁ where
+  constructor endogenousWatkinsDPGMaxQResult
+  field
+    pipeline :
+      ( endogenousActorOutput s p
+      , endogenousCriticOutput s p )
+      ≡
+      ( actorForward (actorComponent (dpg s)) (frontEndToGRU p)
+      , criticForward (criticComponent (dpg s)) (frontEndToGRU p) )
+    optimizerCarrier :
+      optimizerToken (global (gruStep (recurrent s) zero8))
+      ≡ optimizerToken (global (recurrent s))
+    l2Carrier :
+      l2Token (global (gruStep (recurrent s) zero8))
+      ≡ l2Token (global (recurrent s))
+    traceCut :
+      watkinsRegime (cutTrace ∷ []) ≡ oneStep
+    targetEquality :
+      greedyPolicyBootstrap reward δ q π s₀
+      ≡ maxQBootstrap reward δ q s₀
+
+endogenousWatkinsDPGMaxQ :
+  ∀ (s : EndogenousBoundaryState)
+    (p : Int8Pair)
+    (reward : ℕ)
+    (δ : Discount)
+    (q : Q)
+    (π : GreedyPolicy)
+  → IsGreedy π q
+  → (s₀ : State)
+  → EndogenousWatkinsDPGMaxQResult s p reward δ q π _ s₀
+endogenousWatkinsDPGMaxQ s p reward δ q π greedy s₀ =
+  endogenousWatkinsDPGMaxQResult
+    (endogenousPipelineFactorization s p)
+    (endogenousOptimizerCarrier s zero8)
+    (endogenousL2Carrier s zero8)
+    (endogenousWatkinsCutRegime s)
+    (endogenousDPGMaxQBoundary reward δ q π greedy s₀)
+
 record ComposedProofSurface : Set₁ where
   constructor composedProofSurface
   field
