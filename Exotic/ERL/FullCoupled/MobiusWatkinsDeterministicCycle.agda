@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.MobiusWatkinsDeterministicCycle where
 
-open import Agda.Builtin.Equality using (_≡_; refl; subst)
+open import Agda.Builtin.Equality using (_≡_; refl; cong)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
 open import Data.Nat using (_<_) 
@@ -100,10 +100,7 @@ activatedStep-fixed-from-hidden :
   run a (hidden (gruStep (gruState h m n g) x)) ≡ h →
   mobiusActivatedStep a (gruState h m n g) x ≡ gruState h m n g
 activatedStep-fixed-from-hidden a x h m n g q =
-  subst
-    (λ z → gruState z m n g)
-    q
-    refl
+  cong (λ z → gruState z m n g) q
 
 mobiusActivatedLyapunov :
   ∀ {a : Mobius} {x : Int8} →
