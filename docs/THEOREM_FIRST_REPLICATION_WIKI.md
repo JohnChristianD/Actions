@@ -2,85 +2,125 @@
 
 Authority: Agda `--safe`.
 
-Repository CI checks the canonical source, finite exploration kernels, the retained exact dyadic law frontier, the softsign-gated representation, the Noisy-Net representation factor, finite CHAD/Möbius composition modules, and the generated method×law theorem surface.
+## Canonical composition
 
-## Actual exploration methods
+The active representation theorem is now ordered as
 
-MR15 and OpenES are the actual representation-level exploration ablations. Noisy Nets is a coupled learner/noise ablation inside the full learner state, not a detached explorer. Probability laws are parameters to the exploration boundary.
+`E -> dyadic RoPE (Walsh-Rademacher) -> sparsemax -> frozen Haar -> specialized GRU -> Pi`.
 
-## Permanent law pruning
+There is no standalone pointwise forward-activation layer and no MLP between sparsemax and the recurrent representation. The only nonlinear activation maps retained in the representation path are the GRU's internal gates.
 
-The obsolete triangular family, the geometric-5 candidate, Lazy Walk, and every present law outside the retained flat or shell-structured dyadic frontier are permanently absent from the selectable theorem surface.
+The GRU uses
 
-The retained exact law frontier has two members:
+`g_z = 0.5 * (1 + softsign)`
+`g_r = 0.5 * (1 + softsign)`
+`h~  = signReLU`
 
-- Flat Dyadic: uniform weight `1` over all `256` Int8 residues, denominator `256`. It is exact dyadic, symmetric, constant-profile unimodal, aperiodic through positive zero mass, and irreducible at the additive `Z_256` support level because ±1 are present. It is the flat baseline; it is not an exact scale-shell law.
-- Dyadic Ladder: denominator `32`, stay weight `16`, and weight `1` on each signed shell `±1, ±2, …, ±128`. It is exact dyadic, symmetric, unimodal, aperiodic, irreducible, and internally shell-structured across the available finite powers of two. The ±1 shell supplies the generator witness, while the full ladder preserves all available dyadic scales as support.
+so the nonlinearities are sequentially recurrent rather than independent feed-forward layers. The finite midpoint operator is an Int8 CHAD boundary; its concrete exact semantics must be supplied by the implementation witness.
 
-The ladder is the natural exact finite candidate for the requested shell-scaling property. A globally scale-invariant finite law needs an explicit boundary convention because repeated doubling eventually reaches the Int8 boundary. The kernel-friendly formulation is therefore finite shell covariance together with exact closure.
+## Recurrent exploration noise
 
-## Canonical exploration boundary
+A standard GRU has six affine matrices: three input matrices and three recurrent matrices. The retained exploration perturbation is restricted to the three recurrent matrices
 
-Exploration is attached algebraically to the softsign-gated representation layer:
+`U_z, U_r, U_h`.
 
-`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
+Thus the answer is three recurrent noise matrices, not six. Bias vectors are separate parameters and are not counted as matrices.
 
-`SoftsignGatedRepresentation = Int8 × Int8` is the canonical representation theorem carrier. MR15 uses that full carrier. OpenES is the first-coordinate `Int8` quotient and is intentionally a lower-dimensional factor theorem. Noisy Nets projects to the same softsign-gated representation and admits an explicit section/retraction, so the coupled learner theorem strictly extends the representation theorem by a proper fiber.
+For the concrete theorem carrier with hidden width `2`, the persistent noisy recurrent state has
 
-## CHAD and Möbius composition
+`3 * 2 * 2 + 2 = 14`
 
-`Exotic/efficient_chad/SoftsignGatedComposition.agda` proves the exact CHAD forward and pullback composition for `softsign8 ∘ signReLU8` at the finite operator boundary.
+Int8 coordinates: twelve recurrent-matrix entries plus two hidden-state entries. Before optimizer or auxiliary coordinates are adjoined, the carrier therefore has `256^14` possible states. The general hidden-width `d` form is `3d^2 + d` Int8 coordinates.
 
-`Exotic/efficient_chad/MobiusInt8Composition.agda` proves finite homogeneous-coordinate action closure under composition.
+## Global optimizer remains coupled
 
-`Exotic/efficient_chad/MobiusSoftsignBridge.agda` proves the actual emergent composition theorem: once concrete forward Möbius witnesses exist for signReLU8 and softsign8, the composed `softsign8 ∘ signReLU8` operator receives a derived Möbius witness. The full algebraic coupling record now carries that closure theorem. The repository still does not fabricate the missing activation-specific witnesses.
+The recurrent theorem surface retains the global optimizer and global L2 regularization as one coupled optimization boundary. The optimizer ledger also carries the global F4-Int(U) input law and softsign-q-IDBD boundary. No local optimizer substitution is introduced merely because recurrence was added.
 
-## Why MR15 and OpenES are not the same theorem
+The GRU and sparsemax attention are the nonlinear components carrying the paired L1/path-one norm obligations. Global L2 remains a separate global regularizer and is not absorbed into the recurrent gate definition.
 
-The old unrestricted fresh-target shells made them look identical. That abstraction has now been split by carrier.
+## Dyadic positional and frozen features
 
-- OpenES state is `Int8`.
-- MR15 state is `SoftsignGatedRepresentation = Int8 × Int8`.
-- OpenES is the first-coordinate quotient of MR15.
-- MR15 has a section `x ↦ (x,0)`.
-- `(1,0)` and `(1,1)` have equal OpenES projection but are distinct MR15 states.
+RoPE is retained structurally as the positional-composition boundary, but Fourier/trigonometric phase coordinates are not required by the finite theorem surface. The canonical dyadic form uses a frozen Walsh-Rademacher basis and exact dyadic signed actions.
 
-Therefore OpenES and MR15 share the same graph-theorem shape (`Irreducible`, `SelfLoop`, `PeriodOne`) but are not logically equivalent theorem classes. MR15 strictly refines the state theorem through a proper factor extension.
+The Haar stage is frozen before the GRU. Exact decorrelation is a theorem field of that frozen feature layer rather than an empirical covariance claim.
 
-## Noisy-Net representation factor
+Frozen random features remain frozen theorem witnesses; no additional named stochastic-feature construction is inserted into the active representation path.
 
-`NoisyNetSoftsignFactor.agda` is the concrete bridge from the whole coupled Noisy-Net state to the softsign-gated representation. It proves projection, lift, retraction, step projection, and step lift. The coupled gate-parameter fiber supplies the strictness witness. `TheoremStrengthV3.agda` composes that factor with the MR15→OpenES factor.
+## Möbius composition
 
-## Strict theorem ordering
+`Exotic/efficient_chad/GRUGatedComposition.agda` places the CHAD and Möbius theorem boundary inside the GRU gates. The composition law is pointwise in the sequential forward value: the outer recurrent gate receives the actual finite output of the preceding gate.
 
-The current semantic theorem order, ignoring statistics, is:
+`Exotic/efficient_chad/GRURecurrentMobius.agda` adds the new recurrence theorem class. A recurrent window is a finite homogeneous action and window composition is associative. The exact identity
 
-`OpenES < MR15 < NoisyNet`.
+`(A * B) * C = A * (B * C)`
 
-This is a real factor-extension ordering. It is not a count of witnesses: each `<` is backed by a projection/lift theorem plus an explicit proper-fiber witness, and the composite NoisyNet→OpenES factor is derived in Agda.
+is kernel-checked for the finite action composition, giving the algebraic basis for parallel associative scan over recurrent windows/depths.
 
-The law dimension is orthogonal: Flat Dyadic and Dyadic Ladder are alternative exact probability laws. At the present abstraction, they do not change the graph relation itself, so they must not be ranked as stronger graph theorems merely from normalization/support facts. Their theorem-bearing difference is algebraic law structure: Flat gives uniform one-step target universality; Ladder gives explicit finite shell structure across dyadic scales.
+This is stronger algebraic structure than a one-step feed-forward composition theorem because the recurrence is now a finite action monoid/semigroup under sequential composition. It is not automatically a stronger state-reachability theorem until an explicit projection/lift theorem connects the recurrent state to the previous coupled learner state.
 
-## Full emergent theorem surface
+## Theorem ordering
 
-The generator now emits six endogenous full-composition objects:
+The previous structural relation
 
-`OpenES × Flat`, `OpenES × DyadicLadder`, `MR15 × Flat`, `MR15 × DyadicLadder`, `NoisyNet × Flat`, and `NoisyNet × DyadicLadder`.
+`OpenES < MR15 < NoisyNet`
 
-Each object contains exact law normalization and ±1 support, the signReLU8→softsign8 CHAD forward/pullback composition, the conditional Möbius forward-closure theorem, the canonical softsign-gated `PeriodOne`, and the method/coupled-state irreducibility and self-loop facts that Agda actually proves.
+continues to describe the old finite factor chain. The GRU recurrence introduces a new class above that chain only after a concrete factor is supplied from the prior coupled state into the GRU state.
 
-The current graph kernels are still theorem abstractions over their production stochastic semantics. The next strict boundary is law-dependent transition instantiation: the selected law must become the actual finite support used by the representation transition, not merely an attached normalization witness. That is the only point at which law choice can change the graph theorem itself.
+The current safe theorem is therefore:
 
-## Automated validation
+`old feed-forward factor class  <  finite recurrent-Möbius class`
 
-The canonical workflow now checks the retained Flat Dyadic and Dyadic Ladder modules, the full algebraic coupling record, CHAD/Möbius composition, the softsign representation factor, the strict theorem ordering, and the generated six-permutation report under `agda --safe`.
+as an algebraic-structure statement, while
 
-CI runtime is validation plumbing. It is not a statistical performance measurement.
+`NoisyNet < GRU-NoisyNet`
 
-## Current mathematical answer on candidate laws
+remains conditional on the missing proper projection/lift between those concrete state carriers. The repository deliberately does not fake that bridge.
 
-Flat Dyadic is eligible for symmetry, unimodality, aperiodicity, irreducibility, and exact dyadic closure, but not for exact global scale-shell invariance. Dyadic Ladder is the stronger structural candidate for the requested scale property because its positive support is organized by signed powers of two with equal shell mass and positive zero/±1 mass.
+## Scan theorem and recurrent depth
 
-The most economical future addition is not another arbitrary distribution family. If a new law is admitted, it should be a finite dyadic-shell construction with exact power-of-two weights, explicit boundary behavior, positive zero mass, positive ±1 mass, symmetry, and a kernel-checked finite shell-scaling theorem. Continuous or unrelated candidate families do not belong in the retained frontier.
+Parallel scan is exact whenever each recurrent window has a finite homogeneous-coordinate action witness and window multiplication is associative. A balanced tree can therefore precompute recurrent products without changing the serial recurrence semantics.
 
-No data analysis or empirical ranking is used anywhere in these conclusions.
+The theorem applies per finite recurrent window/depth. It does not require an infinite recurrent tape.
+
+## Mamba / SSRN relation
+
+The scan theorem is in the same broad algebraic family as input-dependent state-transition scans: sequential state evolution is compiled into associative products of finite transition operators. That is Mamba/structured-state-space-like at the theorem level, but the present object remains a GRU recurrence with finite Int8 Möbius witnesses; it is not asserted to be a Mamba or SSRN implementation.
+
+## Infinite-width and tropical limits
+
+The canonical mathematical authority remains finite Int8. Consequently, a literal infinite-input, infinite-width, or real-valued limit is not admitted as a primitive theorem object.
+
+The admissible derived forms are finite dyadic tropical/idempotent shadows and finite-width diagonal Jacobian factorization theorems. Any genuine limit theorem would require a separately constructed finite-family/limit object and cannot be smuggled in through an informal analytic limit.
+
+## Norm, decorrelation, and derivation ledger
+
+The retained derivation stack is
+
+`Tom Smeding norm-pair -> global L2 -> global F4-Int(U) -> softsign-q-IDBD -> Efficient-CHAD -> GRU recurrence -> Möbius window composition -> sparsemax -> exact decorrelation -> frozen Haar/Walsh-Rademacher features -> dyadic finite exploration`.
+
+Each stage is a theorem interface. None is accepted merely because an external implementation uses the corresponding name.
+
+## Probability law
+
+Flat Dyadic remains the sole active probability law. It has exact denominator `256`, positive zero support, positive `±1` support, symmetry, constant profile, finite unimodality, aperiodicity, and full additive `Z_256` generator support.
+
+The earlier non-flat law frontier is retired from the active theorem surface. No law is ranked by statistics.
+
+## Current emergent theorem
+
+The current canonical theorem is therefore a finite recurrent composition theorem:
+
+`flat dyadic law`
+`+ dyadic Walsh-Rademacher positional action`
+`+ sparsemax attention`
+`+ frozen Haar decorrelation`
+`+ internal GRU {0.5*(1+softsign), signReLU}`
+`+ three-matrix recurrent noise`
+`+ global optimizer + global L2`
+`+ Efficient-CHAD`
+`+ pointwise sequential Möbius composition`
+`+ associative recurrent window products`
+
+with Agda `--safe` as the acceptance oracle.
+
+No empirical ranking or data analysis is used.
