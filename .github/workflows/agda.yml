@@ -74,6 +74,15 @@ jobs:
       - name: Check GRU composition algebra and invariant
         run: agda --safe Exotic/ERL/FullCoupled/GRUCompositionAlgebra.agda
 
+      - name: Check global optimizer invariant
+        run: agda --safe Exotic/ERL/FullCoupled/GlobalOptimizer.agda
+
+      - name: Check global L2 invariant
+        run: agda --safe Exotic/ERL/FullCoupled/GlobalL2.agda
+
+      - name: Check finite norm-pair boundary
+        run: agda --safe Exotic/ERL/FullCoupled/NormPair.agda
+
       - name: Check finite Mobius group algebra
         run: agda --safe Exotic/ERL/FullCoupled/MobiusGroup.agda
 
@@ -91,7 +100,7 @@ jobs:
 
       - name: Check Econlib equilibrium fragment
         run: agda --safe Exotic/econlib/Equilibrium.agda
-        
+
       - name: Check Econlib equilibrium folder port
         run: agda --safe Exotic/econlib/Equilibrium/Finite.agda
 
