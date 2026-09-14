@@ -134,11 +134,26 @@ To promote it to a kernel theorem, the repository still needs an explicit Bellma
 `Exotic/ERL/FullCoupled/Int8StabilityComposition.agda` is part of the `--safe` workflow. It contains:
 
 - a constructive theorem that a strict Nat-valued Lyapunov law excludes nontrivial 2-cycles;
+- a constructive theorem that the same strict-descent law excludes **every positive-length finite cycle** whose orbit states are non-fixed;
 - a finite metric/contraction certificate surface for Banach-style reasoning;
 - a discrete KKT certificate surface with explicit primal, dual, stationarity, and complementarity components;
 - an explicit quantized-fixed-point certificate surface.
 
-These are deliberately hypothesis-driven. The CI gate will reject any attempt to turn them into stronger global convergence claims without concrete witnesses.
+The all-cycle theorem is constructive because it uses an explicit finite iterate, transports the non-fixed hypothesis along the deterministic orbit, repeatedly accumulates strict decreases in `Nat`, and closes the cycle to derive `energy s < energy s`, contradicted by `Nat` irreflexivity. No classical choice, probabilistic assumption, or infinity argument is used.
+
+## Deterministic versus stochastic theorem promotion
+
+`Exotic/ERL/FullCoupled/EndogenousLyapunovComposition.agda` packages the Lyapunov result over an explicit `EndogenousF4State` transition. This is the directly promotable **deterministic special case**. It proves cycle-freedom only after an actual deterministic step function and strict Lyapunov certificate are supplied.
+
+Finite state alone does not make Markovian exploration ergodic. Irreducibility, aperiodicity, invariant-measure existence, and ergodicity require an explicit stochastic transition kernel and the corresponding finite certificates. Adding action noise or parameter noise can help construct those hypotheses, but noise is not logically automatic and is not required for the deterministic Lyapunov theorem.
+
+## QSA / Bellman strengthening boundary
+
+The same finite machinery makes stronger QSA-style proofs feasible, but only through an explicit update operator. A quantized Q-table or Bellman state can be placed under the same finite metric/Lyapunov/contraction interfaces. A useful promotable route is:
+
+`finite Q-state -> explicit Bellman/QSA step -> contraction or strict Lyapunov certificate -> unique fixed point / cycle exclusion -> quantized fixed-point comparison`.
+
+The existing greedy DPG/max-Q theorem remains a one-step equivalence under `IsGreedy`; it is not yet a convergence theorem for QSA. A stochastic approximation claim additionally needs explicit transition/noise and step-size assumptions.
 
 ## KKT, Banach, fixed points, and cycles in Int8
 
@@ -146,4 +161,4 @@ None is intrinsically impossible in dyadic or Int8 state spaces. What is unavail
 
 A strict well-founded Lyapunov ranking can exclude cycles and establish convergence when combined with an appropriate reachability argument. A finite metric is complete, so a genuine contraction theorem can support a Banach-style fixed-point result. KKT requires an explicitly defined discrete/dyadic optimization problem and its necessary optimality conditions. Bare modular Int8 arithmetic is not itself a Lyapunov function, metric contraction, or KKT system.
 
-For finite deterministic state spaces, eventual periodicity is the default consequence of finiteness. Therefore the canonical route to genuine fixed-point convergence is a concrete cycle-exclusion or contraction/descent theorem, not an assumption that finite precision removes cycles.
+For finite deterministic state spaces, eventual periodicity is the default consequence of finiteness. Therefore the canonical route to genuine fixed-point convergence is a concrete all-cycle-exclusion or contraction/descent theorem, not an assumption that finite precision removes cycles.
