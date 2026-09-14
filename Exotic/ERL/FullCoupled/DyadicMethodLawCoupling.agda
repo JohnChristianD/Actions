@@ -120,17 +120,11 @@ open RecurrentProjection public
 noisyNetProjection : RecurrentProjection
 noisyNetProjection =
   recurrentProjection
-    (λ s → projectRepresentation s)
+    (λ s → RepresentationState.sparseValue (representation s))
     (λ x → canonicalLift x)
     (λ x → refl)
     (λ {x} {y} → coupledTarget (canonicalLift y))
   where
-    projectRepresentation : CoupledState → Int8
-    projectRepresentation s = representationCode (representation s)
-
-    representationCode : RepresentationState → Int8
-    representationCode r = RepresentationState.sparseValue r
-
     canonicalRepresentation : Int8 → RepresentationState
     canonicalRepresentation x =
       record
