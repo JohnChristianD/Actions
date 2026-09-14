@@ -1,27 +1,41 @@
 {-# OPTIONS --safe #-}
-
 module Exotic.ERL.Exploration.OpenESDyadic where
 
-open import Data.Fin using (Fin)
+open import Exotic.ERL.Exploration.DyadicLaws using
+  ( Law
+  ; Method
+  ; flatDyadic
+  ; lazyUnit
+  ; dyadicLadder
+  ; openES
+  )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Reach
-  ; there
-  ; here
+  ( Irreducible
   ; SelfLoop
-  ; Irreducible
+  ; PeriodOne
+  )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CoupledState
+  ; CoupledStep
+  ; coupledIrreducible
+  ; coupledSelfLoop
+  ; coupledPeriodOne
   )
 
--- Finite OpenES abstraction with fresh antithetic/neutral finite mutation.
--- One tick may select any finite candidate state; neutral selection gives
--- an actual self-loop.
 OpenESState : Set
-OpenESState = Fin 16
+OpenESState = CoupledState
 
-data openESStep : OpenESState → OpenESState → Set where
-  openESStepTo : ∀ {s} t → openESStep s t
+openESStep : Law → OpenESState → OpenESState → Set
+openESStep l = CoupledStep l openES
 
-openESIrreducibilityProof : Irreducible openESStep
-openESIrreducibilityProof s t = there (openESStepTo t) here
+openESIrreducibilityProof :
+  ∀ (l : Law) → Irreducible (openESStep l)
+openESIrreducibilityProof l = coupledIrreducible l openES
 
-openESSelfLoopProof : SelfLoop openESStep
-openESSelfLoopProof s = openESStepTo s
+openESSelfLoopProof :
+  ∀ (l : Law) → SelfLoop (openESStep l)
+openESSelfLoopProof l = coupledSelfLoop l openES
+
+openESPeriodOneProof :
+  ∀ (l : Law) → PeriodOne (openESStep l)
+openESPeriodOneProof l = coupledPeriodOne l openES
