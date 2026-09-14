@@ -38,6 +38,7 @@ open import Exotic.ERL.FullCoupled.Int8DPG using
   ( DPGActor
   ; actorAction
   ; ActorAction
+  ; actorForward
   ; composeActorAction
   ; actorCompositionClosed
   ; actorCompositionAssociative
