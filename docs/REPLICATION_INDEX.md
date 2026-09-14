@@ -8,49 +8,42 @@ Current canonical manifest: `.ci/canonical-module.txt`.
 ## Actual exploration methods
 
 - `Exotic/ERL/Exploration/OpenESDyadic.agda` — scalar `Int8` quotient.
-- `Exotic/ERL/Exploration/MR15Reachability.agda` — full two-coordinate softsign-gated representation state.
-- `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda` — whole coupled learner/noise state; Noisy Nets is a coupled ablation, not a detached explorer.
+- `Exotic/ERL/Exploration/MR15Reachability.agda` — representation-level exploration state.
+- `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda` — coupled learner/noise ablation.
 
-Probability laws are parameters to these methods, not separate explorers.
+Probability laws are parameters to exploration, not separate explorers.
 
 ## Retained law frontier
 
 - `Exotic/ERL/Exploration/FlatDyadic.agda` — uniform weight `1` over all `256` Int8 residues.
-- `Exotic/ERL/Exploration/DyadicLadder.agda` — exact dyadic-shell law with denominator `32`, zero weight `16`, and unit mass on every signed power-of-two shell through `±128`.
-- `Exotic/ERL/Exploration/DyadicLaw.agda` exposes exactly these two retained laws.
+- `Exotic/ERL/Exploration/DyadicLaw.agda` — exposes exactly `flatDyadic`.
 
-Legacy probability families outside this retained flat or shell-structured frontier are permanently absent from the selectable theorem surface.
+All present non-flat probability families are outside the selectable theorem surface.
 
-## Endogenous theorem boundary
+## Canonical recurrent representation boundary
 
-`Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda` composes a retained law with one actual method only after exact law normalization/unit-support, finite `signReLU8 -> softsign8` forward/pullback composition, conditional Möbius forward closure, the canonical softsign-gated `PeriodOne`, irreducibility, and self-loop are present. `PeriodOne` is derived inside the composed object.
+`Exotic/ERL/FullCoupled/GRUComposition.agda` records the active composition boundary:
 
-`.ci/discovery/ExplorationTheoremGenerator.hs` enumerates exactly six retained law×method compositions and runs the generated Agda harness under `--safe`.
+`dyadic RoPE (Walsh-Rademacher) -> sparsemax -> frozen Haar -> specialized GRU -> Pi`.
 
-## Canonical exploration boundary
+No standalone pointwise activation or MLP is inserted between attention and the GRU. The GRU alone owns the retained nonlinear maps `0.5*(1+softsign)` and `signReLU`.
 
-`Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda` is the canonical representation theorem state: `Int8 × Int8` after the signReLU8→softsign8 forward activation boundary.
+## GRU recurrent noise
 
-OpenES is its scalar quotient. MR15 is the full representation-level exploration theorem. Noisy Nets is the coupled-state refinement.
+`Exotic/ERL/FullCoupled/GRUNoisyNetState.agda` exposes exactly three perturbable recurrent matrices `U_z,U_r,U_h` plus hidden state. For width `2`, the state has `14` Int8 coordinates and therefore `256^14` possible states before optimizer or auxiliary coordinates are added.
 
-## Strict method theorem ordering
+## Möbius and scan theorems
 
-`Exotic/ERL/FullCoupled/TheoremStrengthV3.agda` derives the strict factor-extension chain:
+`Exotic/efficient_chad/GRUGatedComposition.agda` contains the finite CHAD composition and pointwise sequential Möbius witness interface inside the GRU gates.
 
-`OpenES < MR15 < NoisyNet`.
+`Exotic/efficient_chad/GRURecurrentMobius.agda` proves associative finite window composition and the exact reassociation law required for parallel scan.
 
-MR15 projects to OpenES by forgetting the second representation coordinate. Noisy Nets projects to MR15 through the explicit bridge in `Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda`. The factor relation is transitive in-tree, so the Noisy-Net→OpenES factor is explicitly constructed by composition. Each strict link includes a section/retraction and a proper-fiber separator.
+The new recurrence class is algebraically richer than a one-step feed-forward composition because windows compose as a finite action monoid. A strict state-strength relation from the old Noisy-Net carrier to the new GRU carrier remains a separate projection/lift theorem.
 
-This is a theorem-factor ordering, not an empirical performance ranking.
+## Global optimization and norm boundary
 
-## Möbius status
+`GRUComposition` retains the global optimizer, global L2, global F4-Int(U), softsign-q-IDBD, Efficient-CHAD, sparsemax/GRU L1-plus-path-one obligations, exact decorrelation, and frozen feature witnesses as one theorem ledger.
 
-`Exotic/efficient_chad/SoftsignGatedComposition.agda` proves finite CHAD composition for the abstract finite `softsign8 ∘ signReLU8` operator boundary. `Exotic/efficient_chad/MobiusInt8Composition.agda` proves finite Möbius-action closure under composition.
+## Legacy factor theorem
 
-`Exotic/efficient_chad/MobiusSoftsignBridge.agda` proves conditional forward Möbius closure for the composed activation from concrete signReLU8 and softsign8 witnesses. The full-coupling record now carries this composition theorem; activation-specific witnesses are still required before an actual activation-specific Möbius certificate can be claimed.
-
-## Noisy-Net representation bridge
-
-`Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda` contains the concrete projection, section/retraction, step projection, and step lifting required for the strict theorem ordering.
-
-The full theorem ledger is maintained in `docs/THEOREM_FIRST_REPLICATION_WIKI.md`.
+The prior `OpenES < MR15 < NoisyNet` factor chain remains a valid legacy theorem for the previous finite carriers. It is not silently reused as a GRU strictness proof.
