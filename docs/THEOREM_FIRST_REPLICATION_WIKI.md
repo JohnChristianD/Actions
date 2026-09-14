@@ -52,9 +52,19 @@ Thus the intended hierarchy is:
 
 `F4-learned Sparsemax` = stronger learnable theorem class/ablation;
 
-`F4-learned + Noisy-Net Sparsemax` = strongest parameter-coupled exploration variant once its finite closure theorems are concrete.
+`F4-learned + Noisy-Net Sparsemax` = strongest parameter-coupled exploration variant once its finite closure theorems are concrete;
+
+`F4-learned + Noisy-Net Sparsemax + CHAD pullback certificate` = strongest currently meaningful differentiable-composition class, because it strictly contains the parameter/noise surface and adds a source/primal/pullback correctness obligation.
 
 This is a theorem-breadth distinction, not an empirical-performance ranking.
+
+## Efficient CHAD, CHAD, and iterative CHAD
+
+The external CHAD literature motivates the highest compositional layer. CHAD is explicitly a structure-preserving source transformation with compositional correctness; Efficient CHAD adds efficient reverse-mode structure and an Agda complexity formalization; iterative CHAD extends the compositional framework to iteration. The repository therefore treats Efficient CHAD as the algebraic composition substrate rather than as an unrelated utility.
+
+`Exotic/efficient_chad/DyadicCHAD.agda` now carries explicit source/primal/pullback contracts and a compositional cost law. `Exotic/efficient_chad/ParallelPrefix.agda` supplies the finite associative scan theorem. `Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda` connects these to the endogenous learner and learned Sparsemax boundary.
+
+The strongest honest interpretation is: Efficient CHAD is the best existing **composition algebra** in this repository, but it does not automatically differentiate a concrete learned Int8/dyadic Sparsemax. That concrete operator still has to supply the appropriate primal/pullback certificate.
 
 ## Flat-dyadic exploration comparison status
 
@@ -83,6 +93,34 @@ It exists because literal signed Int8 cannot represent exact residuals such as `
 The finite Haar theorem demonstrates the same boundary explicitly: exact `1/sqrt(2)` normalization is not imported because it is non-dyadic. The finite Sparsemax implementation can still use integer division on its 255-grid formula.
 
 A dedicated dyadic-rational library should be added only when such an operation cannot be represented cleanly in the existing Int8-facing libraries. It is not a license to introduce unrestricted real analysis.
+
+## Exact finite-state ergodic layer
+
+`Exotic/ERL/FullCoupled/FiniteErgodicComposition.agda` now separates three concepts that had previously been merely discussed:
+
+- **irreducibility** is explicit finite reachability by iterates;
+- **aperiodicity** is explicit return-time data plus a gcd-one certificate;
+- **invariant measure** is explicit pointwise invariance of a nonzero counting weight.
+
+For a bijective finite transition, the constant counting weight is an exact invariant measure, proved without division. A normalized invariant probability distribution is deliberately a stronger target because it needs an exact normalization/division structure absent from literal Int8.
+
+A self-loop is an exact period-one witness at a state; propagation of period one to every state remains a graph theorem requiring irreducibility. Thus the module does not accidentally equate “finite” with “ergodic.”
+
+Finite-state Markov-chain formalization literature independently supports this decomposition into exact finite-state transition, Chapman-Kolmogorov/steady-state, and ergodic reasoning rather than treating those properties as automatic. The current Agda layer is intentionally smaller and constructive.
+
+## Path norm and finite semidirect-product layer
+
+`Exotic/ERL/FullCoupled/PathNormSemidirectComposition.agda` adds two further algebraic surfaces.
+
+The path-norm layer factors a composed operator through an explicit exact norm law:
+
+`pathNorm(composite) = pathNorm(left) * pathNorm(right)`.
+
+The semidirect layer exposes the correct architecture for coupling an operator component with a state/optimizer component: an operator acts on the state, the action respects the operator monoid, and the pair gets a semidirect-product composition contract.
+
+This is the right formal landing zone for the earlier “crossed-product / semidirect-product” intuition. It is **not** yet a claim that every F4 parameter bank forms a nontrivial group. The current F4 storage state is a finite/dyadic arithmetic carrier; inverses and action laws must be instantiated before a genuine group theorem is asserted.
+
+Path-norm and semidirect certificates therefore strengthen the theorem *surface* without pretending to have proved an unrequested continuous norm or Lie-group theorem.
 
 ## Quantization and convergence claims
 
@@ -119,6 +157,6 @@ The active theorem graph remains connected to the endogenous aggregate. Disconne
 
 The active connected theorem surface is:
 
-`F4-Int-U-Softsign + global optimizer + global L2 + norm-pair boundary + finite Mobius composition + associative scan/GRU composition + Noisy Nets + sparsemax/Haar/RoPE front end + Watkins trace carrier + DPG actor/critic + greedy max-Q bridge + finite representation/CHAD support`.
+`F4-Int-U-Softsign + global optimizer + global L2 + norm-pair boundary + finite Mobius composition + associative scan/GRU composition + Efficient CHAD + Noisy Nets + sparsemax/Haar/RoPE front end + Watkins trace carrier + DPG actor/critic + greedy max-Q bridge + finite ergodic certificates + path norm + semidirect action + finite representation support`.
 
 The comparison-only surfaces are the finite MR15 and OpenES exploration variants. They remain ablation gates when explicitly checked, but they do not define the learner.
