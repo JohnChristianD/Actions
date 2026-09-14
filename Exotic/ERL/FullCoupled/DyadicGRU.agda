@@ -2,9 +2,13 @@
 module Exotic.ERL.FullCoupled.DyadicGRU where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Fin using (toℕ)
+open import Data.Nat using (ℕ; _+_; _*_; _≤?_; _-_)
+open import Data.Nat.DivMod using (_/_)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
+  ; code
   ; int8Add
   ; int8Mul
   ; int8OfNat
@@ -13,8 +17,8 @@ open import Exotic.efficient_chad.Int8 using
   )
 
 ------------------------------------------------------------------------
--- Finite recurrent representation.  The three recurrent matrices are
--- explicit state components.  Exploration noise is attached to all three,
+-- Finite recurrent representation. The three recurrent matrices are
+-- explicit state components. Exploration noise is attached to all three,
 -- while optimizer and L2 remain global to every learned component.
 ------------------------------------------------------------------------
 
@@ -55,8 +59,11 @@ record GRUState : Set where
 open GRUState public
 
 ------------------------------------------------------------------------
--- Finite nonlinearities are represented as explicit finite maps.  This
--- keeps the theorem layer entirely inside the finite algebra.
+-- Finite nonlinearities. Int8 code n is interpreted on the finite dyadic
+-- unit grid n/255. The gate is the dyadic approximation
+--   softsign(x) = x/(1+x)
+-- followed by the GRU gate affine shift 1/2*(1+softsign).
+-- The candidate is the finite ReLU-style positive branch on that grid.
 ------------------------------------------------------------------------
 
 record FiniteUnary : Set₁ where
@@ -69,11 +76,16 @@ open FiniteUnary public
 identity8 : FiniteUnary
 identity8 = finiteUnary (λ x → x)
 
-softsign8 : FiniteUnary
-softsign8 = identity8
+unitNumerator : Int8 → ℕ
+unitNumerator x = toℕ (code x)
 
-signReLU8 : FiniteUnary
-signReLU8 = identity8
+softsignNumerator : ℕ → ℕ
+softsignNumerator n = (255 * n) / (255 + n)
+
+softsign8 : FiniteUnary
+softsign8 =
+  finiteUnary
+    (λ x → int8OfNat (softsignNumerator (unitNumerator x)))
 
 half8 : Int8
 half8 = int8OfNat 128
@@ -81,11 +93,30 @@ half8 = int8OfNat 128
 onePlusSoftsign8 : FiniteUnary
 onePlusSoftsign8 =
   finiteUnary
-    (λ x → int8Add half8 (int8Mul half8 (apply softsign8 x)))
+    (λ x →
+      int8OfNat
+        ((255 + softsignNumerator (unitNumerator x)) / 2))
+
+signReLU8 : FiniteUnary
+signReLU8 =
+  finiteUnary
+    (λ x →
+      let n = unitNumerator x
+      in int8OfNat (n - 128))
+
+softsign8-nontrivial : apply softsign8 (int8OfNat 255) ≡ int8OfNat 127
+softsign8-nontrivial = refl
+
+signReLU8-zero : apply signReLU8 (int8OfNat 128) ≡ zero8
+signReLU8-zero = refl
+
+onePlusSoftsign8-zero : apply onePlusSoftsign8 zero8 ≡ int8OfNat 127
+onePlusSoftsign8-zero = refl
 
 ------------------------------------------------------------------------
--- The named gate substitutions are finite maps; no real-valued sigmoid or
--- tanh theorem is imported into this layer.
+-- The gate substitution is explicitly distinguished from the reference
+-- sigmoid: this module formalizes a finite dyadic candidate, not a universal
+-- real-valued sigmoid identity.
 ------------------------------------------------------------------------
 
 gruUpdateGate : Int8 → Int8
@@ -123,13 +154,22 @@ gruNoiseHasThreeMatrices :
   ≡ (updateNoise n , resetNoise n , candidateNoise n)
 gruNoiseHasThreeMatrices n = refl
 
+gruMatricesPersist :
+  ∀ (s : GRUState) (x : Int8) →
+  matrices (gruStep s x) ≡ matrices s
+gruMatricesPersist s x = refl
+
+gruNoisePersists :
+  ∀ (s : GRUState) (x : Int8) →
+  noise (gruStep s x) ≡ noise s
+gruNoisePersists s x = refl
+
 gruGlobalControlPersists :
   ∀ (s : GRUState) (x : Int8) →
   global (gruStep s x) ≡ global s
 gruGlobalControlPersists s x = refl
 
 ------------------------------------------------------------------------
--- Sequential recurrence is the primitive.  Parallel scan is supplied by
--- MobiusGRU through function composition, so no commutativity assumption is
--- introduced.
+-- Sequential recurrence is the primitive. Parallel scan is supplied by the
+-- composition algebra; no commutativity assumption is introduced.
 ------------------------------------------------------------------------
