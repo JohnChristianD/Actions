@@ -1,8 +1,10 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.NoisyNetCoupled where
 
+open import Agda.Builtin.Equality using (_≡_)
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
+  ; flatDyadic
   ; noisyNetGRU
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
@@ -12,7 +14,6 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   )
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState
-  ; gruStep
   ; gruGlobalControlPersists
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
@@ -29,16 +30,16 @@ NoisyNetState : Set
 NoisyNetState = GRUState
 
 noisyNetGRUIrreducible :
-  ∀ (l : Law) → Irreducible (CoupledStep l noisyNetGRU)
-noisyNetGRUIrreducible l = coupledIrreducible l noisyNetGRU
+  Irreducible (CoupledStep flatDyadic noisyNetGRU)
+noisyNetGRUIrreducible = coupledIrreducible noisyNetGRU
 
 noisyNetGRUSelfLoop :
-  ∀ (l : Law) → SelfLoop (CoupledStep l noisyNetGRU)
-noisyNetGRUSelfLoop l = coupledSelfLoop l noisyNetGRU
+  SelfLoop (CoupledStep flatDyadic noisyNetGRU)
+noisyNetGRUSelfLoop = coupledSelfLoop noisyNetGRU
 
 noisyNetGRUPeriodOne :
-  ∀ (l : Law) → PeriodOne (CoupledStep l noisyNetGRU)
-noisyNetGRUPeriodOne l = coupledPeriodOne l noisyNetGRU
+  PeriodOne (CoupledStep flatDyadic noisyNetGRU)
+noisyNetGRUPeriodOne = coupledPeriodOne noisyNetGRU
 
 noisyNetRecurrentProjection : RecurrentProjection
 noisyNetRecurrentProjection = noisyNetProjection
