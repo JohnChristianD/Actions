@@ -10,6 +10,7 @@ open import Exotic.ERL.FullCoupled.EndogenousBoundaryComposition using
   )
 open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
   ( LyapunovCertificate
+  ; iterate
   ; OrbitNonFixed
   ; noNontrivialFiniteCycle
   )
@@ -33,12 +34,12 @@ endogenous-no-nontrivial-cycle :
   ∀ {A : F4Arithmetic}
   (C : DeterministicEndogenousStability A)
   {s : EndogenousF4State A} (n : Nat) →
-  step C s ≡ step C s →
-  OrbitNonFixed (step C s) →
+  iterate (step C) (suc n) s ≡ s →
+  OrbitNonFixed s →
   ⊥
-endogenous-no-nontrivial-cycle C n _ nf =
+endogenous-no-nontrivial-cycle C n cyc nf =
   noNontrivialFiniteCycle
     (lyapunov C)
     n
-    refl
+    cyc
     nf
