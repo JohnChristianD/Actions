@@ -28,8 +28,6 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
   )
 open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
   ( LyapunovCertificate
-  ; energy
-  ; strictDecrease
   ; iterate
   ; noNontrivialFiniteCycle
   ; OrbitNonFixed
@@ -70,8 +68,6 @@ mobiusActivatedStep-hidden a s x = refl
 
 ------------------------------------------------------------------------
 -- Identity activation recovers the original deterministic GRU action.
--- Thus the theorem below explicitly separates the bare GRU from its Mobius
--- modification instead of treating activation as an unnamed side condition.
 ------------------------------------------------------------------------
 
 mobiusActivatedStep-identity :
@@ -130,7 +126,7 @@ mobiusActivatedLyapunov {a} {x} D =
 ------------------------------------------------------------------------
 -- The composed deterministic theorem: a Mobius-activated GRU has no
 -- nontrivial finite n-cycle once the composed hidden transition satisfies
--- the strict finite Lyapunov descent law above.
+-- the strict finite descent law above.
 ------------------------------------------------------------------------
 
 mobiusActivatedNoNontrivialFiniteCycle :
