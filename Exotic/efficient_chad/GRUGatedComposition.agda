@@ -1,8 +1,9 @@
 {-# OPTIONS --safe #-}
 module Exotic.efficient_chad.GRUGatedComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; trans)
-open import Relation.Binary.PropositionalEquality using (cong; sym)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Product using (_,_)
+open import Relation.Binary.PropositionalEquality using (cong; sym; trans)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; CHADOperator
@@ -39,8 +40,7 @@ onePlus8 = affineCHADOperator (affineCHAD one8 one8)
 onePlusSoftsign8 : GRUActivations → CHADOperator
 onePlusSoftsign8 a = composeCHAD onePlus8 (softsign8 a)
 
--- Finite realization of 0.5 * (1 + softsign). The exact midpoint map is a
--- concrete Int8 CHAD operator supplied by the implementation boundary.
+-- Finite realization of 0.5 * (1 + softsign).
 sigmoidLike8 : GRUActivations → CHADOperator
 sigmoidLike8 a = composeCHAD (half8 a) (onePlusSoftsign8 a)
 
@@ -75,8 +75,8 @@ gruReset8 : GRUSequentialBoundary → CHADOperator
 gruReset8 g = sigmoidLike8 (activations g)
 
 -- Möbius closure is pointwise in the sequential forward value. Concrete
--- witnesses are required for the finite signReLU8, softsign8, midpoint, and
--- affine +1 maps; composition itself is kernel-checked.
+-- witnesses are required for the finite operators; composition is checked
+-- by the Agda kernel.
 record PointwiseForwardMobiusWitness (op : CHADOperator) : Set₁ where
   constructor pointwiseForwardMobiusWitness
   field
