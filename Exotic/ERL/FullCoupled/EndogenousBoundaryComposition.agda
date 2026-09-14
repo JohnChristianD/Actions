@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EndogenousBoundaryComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
 open import Agda.Builtin.Int using (Int)
 open import Data.List using (List; []; _∷_)
 open import Data.Nat using (ℕ; zero; suc)
@@ -143,13 +143,15 @@ f4LogIntegratorReconstruction {A} s g =
       rℓ* = rL s + e*
       Δℓ = roundLog A rℓ*
   in trans
-       (addComm A (embedInt A (ell s + Δℓ))
-         (rℓ* - embedInt A Δℓ))
+       (cong (λ x → x + (rℓ* - embedInt A Δℓ))
+         (embedAdd A (ell s) Δℓ))
        (trans
-         (addAssoc A (rℓ* - embedInt A Δℓ)
-           (embedInt A (ell s + Δℓ))
+         (addAssoc A (embedInt A (ell s)) (embedInt A Δℓ)
            (rℓ* - embedInt A Δℓ))
-         refl)
+         (trans
+           (cong (λ x → embedInt A (ell s) + x)
+             (subAdd A rℓ* (embedInt A Δℓ)))
+           (sym (addAssoc A (embedInt A (ell s)) (rL s) e*))))
 
 ------------------------------------------------------------------------
 -- q-budget and uniform parameter-bank layer.
