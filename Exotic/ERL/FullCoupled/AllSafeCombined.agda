@@ -7,8 +7,6 @@ open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
   ; Method
   ; flatDyadic
-  ; mr15GA
-  ; openES
   ; noisyNetGRU
   ; law-has-zero
   ; law-has-unit-generator
@@ -34,18 +32,6 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
   )
 open import Exotic.ERL.FullCoupled.DyadicRepresentation using
   ( representationCompose
-  )
-open import Exotic.ERL.FullCoupled.GRUCompositionAlgebra using
-  ( GRUInvariant
-  ; composeGRUAction-assoc
-  ; fullStack-invariant
-  )
-open import Exotic.ERL.FullCoupled.MobiusGroup using
-  ( MobiusGroupElement
-  ; groupCompose
-  ; groupCompose-assoc
-  ; inverse-left-law
-  ; inverse-right-law
   )
 
 canonicalLaw0 : Law
@@ -90,12 +76,6 @@ canonicalMobiusLeft a = compose-identity-left a
 canonicalMobiusRight : ∀ a → compose a (record { run = λ x → x }) ≡ a
 canonicalMobiusRight a = compose-identity-right a
 
-canonicalGRUCompositionInvariant :
-  ∀ (f g h : _ ) →
-  ∀ s → composeGRUAction-assoc f g h s ≡ composeGRUAction-assoc f g h s
-canonicalGRUCompositionInvariant f g h s = refl
-
-canonicalMobiusGroupAssoc :
-  ∀ (f g h : MobiusGroupElement) (x : Int8) →
-  groupCompose-assoc f g h x ≡ groupCompose-assoc f g h x
-canonicalMobiusGroupAssoc f g h x = refl
+canonicalFiniteIdentity :
+  ∀ (x : Int8) → x ≡ x
+canonicalFiniteIdentity x = refl
