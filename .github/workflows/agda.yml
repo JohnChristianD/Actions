@@ -140,6 +140,9 @@ jobs:
       - name: Check Int8 Lyapunov KKT contraction stability schemas
         run: agda --safe Exotic/ERL/FullCoupled/Int8StabilityComposition.agda
 
+      - name: Check endogenous deterministic Lyapunov composition
+        run: agda --safe Exotic/ERL/FullCoupled/EndogenousLyapunovComposition.agda
+
       - name: Check full method-law coupling
         run: agda --safe Exotic/ERL/FullCoupled/DyadicMethodLawCoupling.agda
 
