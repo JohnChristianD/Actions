@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.EndogenousBoundaryComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.List using (List; []; _∷_)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using
@@ -53,16 +54,6 @@ open import Exotic.ERL.FullCoupled.WatkinsDPG using
   ; cut-regime-is-one-step
   )
 
-------------------------------------------------------------------------
--- Composition-only optimizer boundary.
---
--- The repository currently has the global optimizer and global L2 carriers,
--- but not the full modified q-projected Softsign-IDBD/F4-Int recurrence.
--- This record therefore states the missing optimizer as a typed boundary,
--- so the composition theorems below can be generated without inventing its
--- update equation. No optimizer recurrence is re-proved here.
-------------------------------------------------------------------------
-
 record F4IntMomentumLayer : Set₁ where
   constructor f4IntMomentumLayer
   field
@@ -83,10 +74,6 @@ record ModifiedQProjectedSoftsignIDBD : Set₁ where
     globalL2State : Int8
 
 open ModifiedQProjectedSoftsignIDBD public
-
-------------------------------------------------------------------------
--- Endogenous finite composition carrier.
-------------------------------------------------------------------------
 
 record EndogenousBoundaryState : Set₁ where
   constructor endogenousBoundaryState
@@ -109,10 +96,6 @@ endogenousCriticOutput : EndogenousBoundaryState → Int8Pair → Int8
 endogenousCriticOutput s p =
   criticForward (criticComponent (dpg s)) (endogenousInput s p)
 
-------------------------------------------------------------------------
--- Generated common-prefix/head factorization.
-------------------------------------------------------------------------
-
 endogenousPipelineFactorization :
   ∀ (s : EndogenousBoundaryState) (p : Int8Pair) →
   ( endogenousActorOutput s p
@@ -121,10 +104,6 @@ endogenousPipelineFactorization :
   ( actorForward (actorComponent (dpg s)) (frontEndToGRU p)
   , criticForward (criticComponent (dpg s)) (frontEndToGRU p) )
 endogenousPipelineFactorization s p = refl
-
-------------------------------------------------------------------------
--- The recurrent/global coupling is retained at the composition boundary.
-------------------------------------------------------------------------
 
 endogenousOptimizerCarrier :
   ∀ (s : EndogenousBoundaryState) (x : Int8) →
@@ -137,12 +116,6 @@ endogenousL2Carrier :
   l2Token (global (gruStep (recurrent s) x))
   ≡ l2Token (global (recurrent s))
 endogenousL2Carrier s x = refl
-
-------------------------------------------------------------------------
--- DPG-specific global-control factorization. The actor and critic are two
--- heads of one coupled DPG control object, so the same optimizer/L2 carrier
--- is visible at both heads.
-------------------------------------------------------------------------
 
 endogenousActorGlobalOptimizer :
   ∀ (s : EndogenousBoundaryState) →
@@ -162,10 +135,6 @@ endogenousActorCriticL2Coupling :
   ≡ l2 (globalControl (dpg s))
 endogenousActorCriticL2Coupling s = refl
 
-------------------------------------------------------------------------
--- Watkins trace-cut composition.
-------------------------------------------------------------------------
-
 endogenousWatkinsCutTrace :
   ∀ (s : EndogenousBoundaryState) →
   watkinsTraceLength (cutTrace ∷ [])
@@ -183,13 +152,6 @@ endogenousWatkinsActionPreserved :
   ≡ WatkinsExploration.sampledAction (trace s)
 endogenousWatkinsActionPreserved s = refl
 
-------------------------------------------------------------------------
--- Strong DPG-vs-max-Q composition boundary.
--- The actor target equals the max-Q target exactly when the actor policy is
--- supplied with the finite greedy premise. The front-end and recurrent
--- composition remain outside that premise.
-------------------------------------------------------------------------
-
 endogenousDPGMaxQBoundary :
   ∀ (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
   IsGreedy π q →
@@ -197,12 +159,6 @@ endogenousDPGMaxQBoundary :
   greedyPolicyBootstrap reward δ q π s₀
   ≡ maxQBootstrap reward δ q s₀
 endogenousDPGMaxQBoundary = DPG-maxQ-bootstrap-equivalence
-
-------------------------------------------------------------------------
--- Watkins + DPG + max-Q composition: both boundaries are exposed together.
--- The greedy premise controls the DPG/max-Q equality, while the cut premise
--- independently controls the Watkins trace regime.
-------------------------------------------------------------------------
 
 endogenousWatkinsDPGMaxQBoundary :
   ∀ (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
@@ -212,13 +168,6 @@ endogenousWatkinsDPGMaxQBoundary :
   ≡ maxQBootstrap reward δ q s₀
 endogenousWatkinsDPGMaxQBoundary reward δ q π greedy s s₀ =
   DPG-maxQ-bootstrap-equivalence reward δ q π greedy s₀
-
-------------------------------------------------------------------------
--- The composed theorem surface keeps the two extra endogenous dimensions:
--- DPG introduces an explicit policy head; Watkins introduces a trace regime.
--- Their composition is therefore richer than the max-Q-only boundary while
--- preserving the same finite front-end and global control carrier.
-------------------------------------------------------------------------
 
 record ComposedProofSurface : Set₁ where
   constructor composedProofSurface
@@ -236,13 +185,6 @@ composedSurfaceFactorization :
   (actorForward (actor c) zero8 , criticForward (critic c) zero8)
 composedSurfaceFactorization c = refl
 
-------------------------------------------------------------------------
--- Zhang-style finite invariant boundary: the composition can preserve an
--- invariant carrier if the optimizer implementation supplies its one-step
--- closure law. This is a bounded/invariant-set theorem, not an automatic
--- convergence theorem.
-------------------------------------------------------------------------
-
 record InvariantOptimizerCarrier : Set₁ where
   constructor invariantOptimizerCarrier
   field
@@ -257,9 +199,9 @@ endogenousInvariantCarrier :
 endogenousInvariantCarrier I x e = stepClosed I x e
 
 ------------------------------------------------------------------------
--- A differential-inclusion-style convergence theorem is intentionally not
--- claimed here. A Zhang-style bounded/invariant-region statement supplies
--- boundedness or attraction to a set; convergence to one optimizer state
--- additionally needs a fixed-point/attractor uniqueness or contraction law
--- for the actual modified IDBD recurrence.
+-- The composition theorem intentionally stops at a Zhang-style invariant
+-- region. Differential-inclusion boundedness/attraction does not by itself
+-- prove convergence to one optimizer state; that additionally needs a
+-- fixed-point/attractor uniqueness or contraction theorem for the actual
+-- modified IDBD recurrence.
 ------------------------------------------------------------------------
