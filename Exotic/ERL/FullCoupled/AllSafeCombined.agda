@@ -44,6 +44,9 @@ open import Exotic.ERL.FullCoupled.Int8DPG using
   ; actorCompositionAssociative
   ; actorComposition-left-identity
   ; actorComposition-right-identity
+  ; SharedDPGBand
+  ; sharedActor
+  ; sharedCritic
   )
 open import Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE using
   ( Int8Pair
@@ -92,6 +95,30 @@ open import Exotic.ERL.FullCoupled.PromotionComposition using
   ; promotedComposition-critic-L2
   ; promotedGreedyTarget
   )
+open import Exotic.ERL.FullCoupled.WatkinsDPG using
+  ( TraceDecision
+  ; keepTrace
+  ; cutTrace
+  ; watkinsTraceLength
+  ; watkinsTraceLength-cut-head
+  ; watkinsTraceLength-empty
+  ; watkinsTraceLength-keep
+  ; WatkinsExploration
+  ; watkinsCut
+  ; watkinsCut-preserves-action
+  ; watkinsActorPreserved
+  ; watkinsCriticPreserved
+  ; allCuts
+  ; allCuts-length-suc
+  ; watkins-one-step-under-cut
+  ; dpgWatkinsCriticStep
+  ; dpgWatkinsCriticStep-law
+  ; TraceRegime
+  ; multiStep
+  ; oneStep
+  ; watkinsRegime
+  ; cut-regime-is-one-step
+  )
 
 canonicalLaw0 : Law
 canonicalLaw0 = flatDyadic
@@ -139,10 +166,6 @@ canonicalFiniteIdentity :
   ∀ (x : Int8) → x ≡ x
 canonicalFiniteIdentity x = refl
 
-------------------------------------------------------------------------
--- DPG actor action closure is part of the canonical composition surface.
-------------------------------------------------------------------------
-
 canonicalActorClosure :
   ∀ (a b : DPGActor) (x : Int8) →
   composeActorAction (actorAction a) (actorAction b) x ≡
@@ -165,10 +188,6 @@ canonicalActorRightId :
   composeActorAction f (λ y → y) x ≡ f x
 canonicalActorRightId = actorComposition-right-identity
 
-------------------------------------------------------------------------
--- Finite front-end closure and hard-sparsity boundary.
-------------------------------------------------------------------------
-
 canonicalFrontEndLaw :
   ∀ (p : Int8Pair) →
   frontEnd p ≡ ropeQuarter (haar2 (sparsemax2 p))
@@ -183,10 +202,6 @@ canonicalHardSparseRight = sparsemax2-hard-sparsity-right
 canonicalFrontEndToGRU :
   ∀ (p : Int8Pair) → frontEndToGRU p ≡ frontEndToGRU p
 canonicalFrontEndToGRU p = refl
-
-------------------------------------------------------------------------
--- Finite Bellman/DPG and Haar composition are part of the checked surface.
-------------------------------------------------------------------------
 
 canonicalDPGGreedyTarget :
   ∀ (reward : ℕ) (δ : ℕ → ℕ) (q : Q) (π : GreedyPolicy) →
@@ -207,16 +222,12 @@ canonicalHaarRightNorm :
 canonicalHaarRightNorm = haar-column-right-norm
 
 canonicalCommonPrefix :
-  ∀ (b : Exotic.ERL.FullCoupled.Int8DPG.SharedDPGBand) (p : Int8Pair) →
+  ∀ (b : SharedDPGBand) (p : Int8Pair) →
   commonPrefixThenHeads b p
   ≡
-  ( Exotic.ERL.FullCoupled.Int8DPG.sharedActor b (frontEndToGRU p)
-  , Exotic.ERL.FullCoupled.Int8DPG.sharedCritic b (frontEndToGRU p) )
+  ( sharedActor b (frontEndToGRU p)
+  , sharedCritic b (frontEndToGRU p) )
 canonicalCommonPrefix = commonPrefix-factorization
-
-------------------------------------------------------------------------
--- Promoted discrete-PQN / deterministic-DPG / global-control composition.
-------------------------------------------------------------------------
 
 canonicalDiscretePQNTarget :
   ∀ (v : DiscretePQNVariant) (reward : ℕ) (δ : ℕ → ℕ) (q : Q) →
@@ -262,3 +273,52 @@ canonicalPromotedCompositionCriticL2 = promotedComposition-critic-L2
 
 canonicalPromotedGreedyTarget : promotedGreedyTarget
 canonicalPromotedGreedyTarget = promotedGreedyTarget
+
+------------------------------------------------------------------------
+-- Watkins/DPG trace surface.
+------------------------------------------------------------------------
+
+canonicalWatkinsCut :
+  ∀ (xs : List TraceDecision) →
+  watkinsTraceLength (cutTrace ∷ xs) ≡ suc zero
+canonicalWatkinsCut = watkinsTraceLength-cut-head
+
+canonicalWatkinsEmpty : watkinsTraceLength [] ≡ zero
+canonicalWatkinsEmpty = watkinsTraceLength-empty
+
+canonicalWatkinsKeep :
+  ∀ (xs : List TraceDecision) →
+  watkinsTraceLength (keepTrace ∷ xs) ≡ suc (watkinsTraceLength xs)
+canonicalWatkinsKeep = watkinsTraceLength-keep
+
+canonicalWatkinsExploration :
+  ∀ (e : WatkinsExploration) →
+  sampledAction (watkinsCut e) ≡ sampledAction e
+canonicalWatkinsExploration = watkinsCut-preserves-action
+
+canonicalWatkinsActor :
+  ∀ (a : DPGActor) (x : Int8) →
+  actorForward a x ≡ actorForward a x
+canonicalWatkinsActor a x = watkinsActorPreserved a x
+
+canonicalWatkinsCritic :
+  ∀ (c : Exotic.ERL.FullCoupled.Int8DPG.DPGCritic) (x : Int8) →
+  criticForward c x ≡ criticForward c x
+canonicalWatkinsCritic c x = watkinsCriticPreserved c x
+
+canonicalWatkinsAllCuts :
+  ∀ n → watkinsTraceLength (allCuts (suc n)) ≡ suc zero
+canonicalWatkinsAllCuts = allCuts-length-suc
+
+canonicalWatkinsOneStep : watkinsTraceLength (cutTrace ∷ []) ≡ suc zero
+canonicalWatkinsOneStep = watkins-one-step-under-cut
+
+canonicalWatkinsDPGStep :
+  ∀ (c : Exotic.ERL.FullCoupled.Int8DPG.DPGCritic)
+    (a : DPGActor) (x : Int8) →
+  dpgWatkinsCriticStep c a x ≡ criticForward c (actorForward a x)
+canonicalWatkinsDPGStep = dpgWatkinsCriticStep-law
+
+canonicalWatkinsCutRegime :
+  ∀ xs → watkinsRegime (cutTrace ∷ xs) ≡ oneStep
+canonicalWatkinsCutRegime = cut-regime-is-one-step
