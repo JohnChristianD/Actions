@@ -21,11 +21,23 @@ record PeriodOne {S : Set} (_—→_ : S → S → Set) : Set where
     irreducible : Irreducible _—→_
     selfLoop : SelfLoop _—→_
 
+-- In this finite theorem ledger, aperiodicity is certified by irreducibility
+-- together with a reachable one-step return. No limit or statistical theorem
+-- is used.
+Aperiodic : ∀ {S : Set} → (S → S → Set) → Set
+Aperiodic _—→_ = PeriodOne _—→_
+
 periodOne-from-components : ∀ {S : Set} {_—→_ : S → S → Set}
   → Irreducible _—→_
   → SelfLoop _—→_
   → PeriodOne _—→_
 periodOne-from-components r l = periodOne r l
+
+a-periodic-from-components : ∀ {S : Set} {_—→_ : S → S → Set}
+  → Irreducible _—→_
+  → SelfLoop _—→_
+  → Aperiodic _—→_
+a-periodic-from-components = periodOne-from-components
 
 same-state-reachable : ∀ {S : Set} {_—→_ : S → S → Set} (s : S)
   → Reach _—→_ s s
