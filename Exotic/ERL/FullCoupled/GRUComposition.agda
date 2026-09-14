@@ -1,18 +1,23 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.GRUComposition where
 
-open import Agda.Builtin.Equality using (_≡_)
+open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.efficient_chad.GRUGatedComposition using
   ( GRUSequentialBoundary )
 open import Exotic.efficient_chad.GRURecurrentMobius using
   ( GRUWindow )
+open import Exotic.ERL.FullCoupled.GRUNoisyNetState using
+  ( GRUNoisyNetState )
 
--- Architecture boundary after sparsemax: no MLP is inserted between attention
--- and the frozen Haar/GRU representation.
+-- Canonical representation order:
+-- dyadic Walsh-Rademacher RoPE -> sparsemax -> frozen Haar -> specialized GRU.
+-- No standalone pointwise activation or MLP layer is admitted here.
 record SparsemaxLayer : Set₁ where
   constructor sparsemaxLayer
   field
     applySparsemax : Set → Set
+    normalized : Set
+    finiteSupport : Set
 
 record FrozenHaar2016Layer : Set₁ where
   constructor frozenHaar2016Layer
@@ -29,6 +34,8 @@ record DyadicRoPERelation : Set₁ where
     dyadicRotationLaw : Set
     frozenFeatures : Set
 
+-- Only GRU and attention-side components receive the paired L1/path-one
+-- obligations. The global L2 law is kept separate and coupled globally.
 record NormPair : Set₁ where
   constructor normPair
   field
@@ -48,6 +55,17 @@ record GlobalOptimizerBoundary : Set₁ where
     integerF4InputLaw : Set
     softsignQIDBDLaw : Set
 
+-- The repository already contains an Int8 actor/critic head boundary. The
+-- finite DPG update law remains an explicit theorem obligation rather than an
+-- inferred consequence of the Int8 carrier.
+record Int8ActorCriticBoundary : Set₁ where
+  constructor int8ActorCriticBoundary
+  field
+    actor : GRUNoisyNetState → Int8
+    critic : GRUNoisyNetState → Int8
+    actorCriticCouplingLaw : Set
+    dpgUpdateLaw : Set
+
 record GRUComposition : Set₂ where
   constructor gruComposition
   field
@@ -59,8 +77,5 @@ record GRUComposition : Set₂ where
     gruNormPair : NormPair
     sparsemaxNormPair : NormPair
     optimizer : GlobalOptimizerBoundary
+    actorCritic : Int8ActorCriticBoundary
     exactDecorrelatedFeatures : Set
-
--- The record is a theorem surface, not a data-analysis result. Every field is
--- a proof obligation or a finite operator witness supplied by the canonical
--- Agda layer; no hidden MLP or extra pointwise forward activation is admitted.
