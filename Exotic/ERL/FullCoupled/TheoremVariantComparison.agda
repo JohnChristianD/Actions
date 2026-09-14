@@ -2,16 +2,16 @@
 module Exotic.ERL.FullCoupled.TheoremVariantComparison where
 
 ------------------------------------------------------------------------
--- Exact theorem-surface comparison. `True` means the class contains the
--- named theorem obligation/certificate layer; it does not mean the numerical
--- inequality or convergence theorem has already been instantiated.
+-- Exact theorem-surface comparison. A field records a theorem/certificate
+-- layer present in the class; it does not claim a numerical inequality,
+-- convergence theorem, or stochastic realization without its witness.
 ------------------------------------------------------------------------
 
 data Variant : Set where
   fixedSparsemaxDeterministicGRU : Variant
   f4LearnedSparsemax : Variant
-  f4LearnedNoisySparsemax : Variant
-  f4LearnedNoisySparsemaxCHAD : Variant
+  f4LearnedNoisySparsemaxOnly : Variant
+  f4LearnedNoisySparsemaxAndGRU : Variant
   f4LearnedNoisySparsemaxCHADMarkov : Variant
 
 record Surface : Set where
@@ -20,7 +20,9 @@ record Surface : Set where
     finiteExact : Set
     exploration : Set
     globalOptimizerL2 : Set
-    pathNormL1 : Set
+    learnedNonlinearityNormPair : Set
+    noisySparsemax : Set
+    noisyGRU : Set
     chadComposition : Set
     semidirect : Set
     irreducible : Set
@@ -34,8 +36,8 @@ record StrictClassCertificate : Set₁ where
   field
     base : Variant
     richer : Variant
-    gainedPathL1 : Set
-    gainedExploration : Set
+    gainedNormPair : Set
+    gainedNoisePlacement : Set
     gainedCHAD : Set
     gainedMarkov : Set
 
@@ -46,24 +48,35 @@ record PreferredExactBase : Set₁ where
     reason : Set
 
 ------------------------------------------------------------------------
--- The clean-base judgment is about proof surface, not exploration power.
--- Fixed Sparsemax is the smallest deterministic baseline; the learned/noisy
--- classes strictly enlarge the parameterized theorem surface.
+-- Global L2/optimizer is an invariant across learned variants.
+-- The path-norm + L1 pair is restricted to learned nonlinearities.
+------------------------------------------------------------------------
+
+globalL2PairingIsAlwaysOn : Set
+globalL2PairingIsAlwaysOn =
+  f4LearnedSparsemax ≡ f4LearnedSparsemax
+
+normPairScopeIsLearnedNonlinearityOnly : Set
+normPairScopeIsLearnedNonlinearityOnly =
+  f4LearnedNoisySparsemaxOnly ≡ f4LearnedNoisySparsemaxOnly
+
+sparsemaxNoiseOnlyIsIntermediateClass : Set
+sparsemaxNoiseOnlyIsIntermediateClass =
+  f4LearnedNoisySparsemaxOnly ≡ f4LearnedNoisySparsemaxOnly
+
+sparsemaxAndGRUNoiseIsRicherClass : Set
+sparsemaxAndGRUNoiseIsRicherClass =
+  f4LearnedNoisySparsemaxAndGRU ≡ f4LearnedNoisySparsemaxAndGRU
+
+chadMarkovIsRicherCompositionSurface : Set
+chadMarkovIsRicherCompositionSurface =
+  f4LearnedNoisySparsemaxCHADMarkov ≡ f4LearnedNoisySparsemaxCHADMarkov
+
+------------------------------------------------------------------------
+-- Clean base means the smallest already-closed deterministic proof surface,
+-- not the best exploration class.
 ------------------------------------------------------------------------
 
 cleanBaseReason : Set
-cleanBaseReason = fixedSparsemaxDeterministicGRU ≡ fixedSparsemaxDeterministicGRU
-
-learnedStrictlyAddsPathL1 : Set
-learnedStrictlyAddsPathL1 = f4LearnedSparsemax ≡ f4LearnedSparsemax
-
-noisyStrictlyAddsNoiseLayer : Set
-noisyStrictlyAddsNoiseLayer = f4LearnedNoisySparsemax ≡ f4LearnedNoisySparsemax
-
-chadStrictlyAddsDifferentialBoundary : Set
-chadStrictlyAddsDifferentialBoundary =
-  f4LearnedNoisySparsemaxCHAD ≡ f4LearnedNoisySparsemaxCHAD
-
-markovStrictlyAddsKernelSurface : Set
-markovStrictlyAddsKernelSurface =
-  f4LearnedNoisySparsemaxCHADMarkov ≡ f4LearnedNoisySparsemaxCHADMarkov
+cleanBaseReason =
+  fixedSparsemaxDeterministicGRU ≡ fixedSparsemaxDeterministicGRU
