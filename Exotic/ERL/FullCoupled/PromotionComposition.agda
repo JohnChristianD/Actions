@@ -1,14 +1,13 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.PromotionComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Equality using (_≡_; refl; cong)
+open import Data.Nat using (ℕ)
 open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.FullCoupled.Int8DPG using
   ( DPGCoupled
   ; DPGActor
-  ; DPGCritic
-  ; DPGGlobal
   ; actorComponent
   ; criticComponent
   ; actorForward
@@ -16,19 +15,17 @@ open import Exotic.ERL.FullCoupled.Int8DPG using
   ; actorGlobalCoherence
   ; criticGlobalCoherence
   ; globalControl
-  ; actorWeight0
-  ; criticWeight0
+  ; globalActor
+  ; globalCritic
   ; optimizer
   ; l2
   )
 open import Exotic.ERL.FullCoupled.DPGRecurrentPerturbation using
   ( dpgPerturb
-  ; dpgPerturb-global
-  ; dpgPerturb-actor
-  ; dpgPerturb-critic
   )
 open import Exotic.ERL.FullCoupled.DPGBellmanHaarComposition using
-  ( Q
+  ( State
+  ; Q
   ; GreedyPolicy
   ; IsGreedy
   ; maxQBootstrap
@@ -44,10 +41,10 @@ open import Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE using
 ------------------------------------------------------------------------
 -- Common discrete PQN target surface.
 --
--- The external discrete PQN variants all use the same semantic operation:
--- the next-state bootstrap scalar is max_a Q(s',a), wrapped here by the
--- already formalized finite max-Q target. The variants differ in network,
--- observation, and recurrent machinery, not in this target equation.
+-- The inspected discrete PQN variants use the same semantic bootstrap:
+-- the next-state scalar is max_a Q(s',a), with λ-return machinery wrapped
+-- around that bootstrap. Their architectures and recurrent handling differ,
+-- but their target operator is the same max-Q operator.
 ------------------------------------------------------------------------
 
 data DiscretePQNVariant : Set where
@@ -57,30 +54,21 @@ data DiscretePQNVariant : Set where
   recurrentGymnax : DiscretePQNVariant
 
 discretePQNTarget :
-  DiscretePQNVariant → ℕ → Discount → Q → FiniteStateTarget
+  DiscretePQNVariant → ℕ → Discount → Q → State → ℕ
+discretePQNTarget v reward δ q s = maxQBootstrap reward δ q s
 
-discretePQNTarget v reward δ q = maxQBootstrap reward δ q
-
--- Small finite wrapper keeps variant-indexed targets a single semantic law.
-record FiniteStateTarget : Set₁ where
-  constructor finiteStateTarget
-  field
-    run : ∀ (s : Exotic.ERL.FullCoupled.DPGBellmanHaarComposition.State) → Int8
-
--- Promotion theorem: every variant chooses the same max-Q target shape.
--- The target carrier in this promotion is structural; the ordered Q theorem
--- itself remains in DPGBellmanHaarComposition.
 discretePQN-target-common :
-  ∀ (v : DiscretePQNVariant) (reward : ℕ) (δ : Discount) (q : Q) →
-  maxQBootstrap reward δ q ≡ maxQBootstrap reward δ q
-discretePQN-target-common v reward δ q = refl
+  ∀ (v : DiscretePQNVariant) (reward : ℕ) (δ : Discount) (q : Q)
+    (s : State) →
+  discretePQNTarget v reward δ q s ≡ maxQBootstrap reward δ q s
+discretePQN-target-common v reward δ q s = refl
 
 ------------------------------------------------------------------------
 -- Promoted deterministic actor.
 --
 -- No Gaussian actor noise, no clipping, no tanh/action squashing, and no
--- action-bound parameters are introduced here. Exploration remains solely in
--- the separately proved recurrent perturbation/noise carrier theorems.
+-- action-bound parameters are introduced here. Exploration stays in the
+-- separately canonical recurrent perturbation/noise carrier theorems.
 ------------------------------------------------------------------------
 
 promotedDPGActor : DPGActor → Int8 → Int8
@@ -91,43 +79,36 @@ promotedDPGActor-total :
 promotedDPGActor-total a x = refl
 
 ------------------------------------------------------------------------
--- The DPG actor/critic pair shares one global optimizer and coupled L2
--- control object at the Int8 carrier level.
+-- Global optimizer and coupled L2 are shared by actor and critic.
 ------------------------------------------------------------------------
-
-promotedActorGlobal :
-  ∀ (s : DPGCoupled) →
-  actorComponent s ≡ actorComponent s
-promotedActorGlobal s = refl
-
-promotedCriticGlobal :
-  ∀ (s : DPGCoupled) →
-  criticComponent s ≡ criticComponent s
-promotedCriticGlobal s = refl
 
 promotedActorOptimizer :
   ∀ (s : DPGCoupled) →
-  optimizer (globalControl s) ≡ optimizer (globalControl s)
-promotedActorOptimizer s = refl
+  optimizer (globalActor (actorComponent s))
+  ≡ optimizer (globalControl s)
+promotedActorOptimizer s = cong optimizer (actorGlobalCoherence s)
 
 promotedActorL2 :
   ∀ (s : DPGCoupled) →
-  l2 (globalControl s) ≡ l2 (globalControl s)
-promotedActorL2 s = refl
+  l2 (globalActor (actorComponent s))
+  ≡ l2 (globalControl s)
+promotedActorL2 s = cong l2 (actorGlobalCoherence s)
 
 promotedCriticOptimizer :
   ∀ (s : DPGCoupled) →
-  optimizer (globalControl s) ≡ optimizer (globalControl s)
-promotedCriticOptimizer s = refl
+  optimizer (globalCritic (criticComponent s))
+  ≡ optimizer (globalControl s)
+promotedCriticOptimizer s = cong optimizer (criticGlobalCoherence s)
 
 promotedCriticL2 :
   ∀ (s : DPGCoupled) →
-  l2 (globalControl s) ≡ l2 (globalControl s)
-promotedCriticL2 s = refl
+  l2 (globalCritic (criticComponent s))
+  ≡ l2 (globalControl s)
+promotedCriticL2 s = cong l2 (criticGlobalCoherence s)
 
 ------------------------------------------------------------------------
 -- Recurrent perturbation commutes with the promoted actor/critic carrier:
--- the actor and critic weights and the shared global controls are unchanged.
+-- actor and critic weights/global controls are unchanged by the perturbation.
 ------------------------------------------------------------------------
 
 promotedActor-under-perturbation :
@@ -164,10 +145,34 @@ promotedComposition-law :
   , criticForward (criticComponent s) (frontEndToGRU p) )
 promotedComposition-law s p = refl
 
-promotedComposition-actor-global :
+------------------------------------------------------------------------
+-- The promoted actor/critic composition preserves the same global controls
+-- because the two heads are constructed from one DPGCoupled globalControl.
+------------------------------------------------------------------------
+
+promotedComposition-actor-optimizer :
   ∀ (s : DPGCoupled) (p : Int8Pair) →
-  globalControl s ≡ globalControl s
-promotedComposition-actor-global s p = refl
+  optimizer (globalActor (actorComponent s))
+  ≡ optimizer (globalControl s)
+promotedComposition-actor-optimizer s p = promotedActorOptimizer s
+
+promotedComposition-actor-L2 :
+  ∀ (s : DPGCoupled) (p : Int8Pair) →
+  l2 (globalActor (actorComponent s))
+  ≡ l2 (globalControl s)
+promotedComposition-actor-L2 s p = promotedActorL2 s
+
+promotedComposition-critic-optimizer :
+  ∀ (s : DPGCoupled) (p : Int8Pair) →
+  optimizer (globalCritic (criticComponent s))
+  ≡ optimizer (globalControl s)
+promotedComposition-critic-optimizer s p = promotedCriticOptimizer s
+
+promotedComposition-critic-L2 :
+  ∀ (s : DPGCoupled) (p : Int8Pair) →
+  l2 (globalCritic (criticComponent s))
+  ≡ l2 (globalControl s)
+promotedComposition-critic-L2 s p = promotedCriticL2 s
 
 ------------------------------------------------------------------------
 -- Greedy DPG/max-Q bridge reused at the promoted composition boundary.
