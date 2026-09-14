@@ -2,21 +2,17 @@
 module Exotic.ERL.FullCoupled.LearnedRegularizationComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Nat using (Nat; _+_)
+open import Data.Nat using (Nat)
 open import Data.Product using (_×_; _,_)
 open import Exotic.ERL.FullCoupled.EndogenousBoundaryComposition using
   ( F4Arithmetic
   ; F4IntState
-  ; F4ParameterBank
   ; EndogenousF4State
-  ; optimizerBank
   )
 
 ------------------------------------------------------------------------
--- Global regularization law for every learned nonlinear/parameter block.
--- The certificate carries both a path norm and an L1 weight norm. The
--- repository can therefore require the same regularization pairing that it
--- already requires globally for optimizer + L2 state.
+-- Every learned block receives the same two regularization coordinates:
+-- path norm + L1 weight norm. This mirrors the global optimizer + L2 pair.
 ------------------------------------------------------------------------
 
 record PathNormCertificate : Set₁ where
@@ -63,7 +59,7 @@ record GlobalOptimizerL2PathL1 (A : F4Arithmetic) : Set₁ where
   constructor globalOptimizerL2PathL1
   field
     optimizerState : F4IntState A
-    pathL1 : F4LearnedRegularizationBank A
+    regularization : F4LearnedRegularizationBank A
 
 open GlobalOptimizerL2PathL1 public
 
@@ -71,23 +67,12 @@ regularizationPair :
   ∀ {A : F4Arithmetic}
   (b : F4LearnedRegularizationBank A) →
   LearnedNonlinearityCertificate × LearnedNonlinearityCertificate
-regularizationPair b =
-  sparsemax b , noisySigma3 b
-
-------------------------------------------------------------------------
--- The regularized theorem class is deliberately parametric: exact numeric
--- inequalities can be strengthened later without changing the global shape.
-------------------------------------------------------------------------
+regularizationPair b = sparsemax b , noisySigma3 b
 
 record RegularizedEndogenousComposition (A : F4Arithmetic) : Set₁ where
   constructor regularizedEndogenousComposition
   field
     state : EndogenousF4State A
-    regularization : F4LearnedRegularizationBank A
-    globalCoupling : F4IntState A ≡ optimizerState
-      (globalOptimizerL2PathL1
-        (optimizerState globalCouplingDummy)
-        regularization)
-  where
-  postulate
-    globalCouplingDummy : GlobalOptimizerL2PathL1 A
+    optimizerAndRegularization : GlobalOptimizerL2PathL1 A
+
+open RegularizedEndogenousComposition public
