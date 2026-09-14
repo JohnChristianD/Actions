@@ -24,11 +24,17 @@ flat-denominator = 256
 flat-weight : Int8 → Nat
 flat-weight _ = 1
 
+data FlatSupport : Int8 → Set where
+  flat-supported : ∀ {x} → FlatSupport x
+
+flat-support : ∀ (x : Int8) → FlatSupport x
+flat-support x = flat-supported
+
 flat-normalized : flat-denominator ≡ 256
 flat-normalized = refl
 
-flat-support : ∀ (x : Int8) → flat-weight x ≡ 1
-flat-support x = refl
+flat-support-weight : ∀ {x} → FlatSupport x → flat-weight x ≡ 1
+flat-support-weight flat-supported = refl
 
 flat-scale-invariant :
   ∀ (f : Int8 → Int8) (x : Int8) → flat-weight (f x) ≡ flat-weight x
