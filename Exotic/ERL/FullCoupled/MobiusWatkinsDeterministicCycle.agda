@@ -133,8 +133,8 @@ mobiusActivatedNoNontrivialFiniteCycle :
   ∀ {a : Mobius} {x : Int8}
   (D : MobiusHiddenDescent a x)
   {s : GRUState} (n : Nat) →
-  iterate (mobiusActivatedStep a · x) (suc n) s ≡ s →
-  OrbitNonFixed (mobiusActivatedStep a · x) s →
+  iterate (λ s → mobiusActivatedStep a s x) (suc n) s ≡ s →
+  OrbitNonFixed (λ s → mobiusActivatedStep a s x) s →
   ⊥
 mobiusActivatedNoNontrivialFiniteCycle {a} {x} D =
   noNontrivialFiniteCycle (mobiusActivatedLyapunov {a = a} {x = x} D)
