@@ -2,17 +2,15 @@
 module Exotic.ERL.Exploration.DyadicLaws where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _<_; z≤n)
-open import Exotic.efficient_chad.Int8 using (Int8; zero8; one8; int8OfNat; code)
-open import Data.Fin using (Fin; zero; suc)
+open import Agda.Builtin.Nat using (Nat)
+open import Exotic.efficient_chad.Int8 using (Int8; zero8; one8; int8OfNat)
 
 ------------------------------------------------------------------------
 -- Probability laws are finite modules for the existing exploration
 -- methods.  They are not exploration methods themselves.
 --
 -- Every canonical probability is represented by an integer numerator over
--- denominator 256.  No transcendental, irrational, or non-dyadic value is
--- present in this theorem surface.
+-- denominator 256.  The theorem surface is finite and dyadic.
 ------------------------------------------------------------------------
 
 data Law : Set where
