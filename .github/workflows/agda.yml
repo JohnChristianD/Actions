@@ -90,27 +90,6 @@ jobs:
       - name: Check canonical Agda regression
         run: agda --safe "$CANONICAL_TEST"
 
-      - name: Check MR15 exploration proof
-        run: agda --safe Exotic/ERL/Exploration/MR15Reachability.agda
-
-      - name: Check OpenES exploration proof
-        run: agda --safe Exotic/ERL/Exploration/OpenESDyadic.agda
-
-      - name: Check coupled NoisyNet exploration proof
-        run: agda --safe Exotic/ERL/FullCoupled/NoisyNetCoupled.agda
-
-      - name: Check flat-dyadic probability law
-        run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
-
-      - name: Check flat-dyadic finite eligibility
-        run: agda --safe Exotic/ERL/Exploration/FlatDyadicEligibility.agda
-
-      - name: Check dyadic-law composition interface
-        run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
-
-      - name: Check full algebraic coupling composition
-        run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
-
       - name: Check finite Int8 Mobius composition
         run: agda --safe Exotic/efficient_chad/MobiusInt8Composition.agda
 
@@ -123,11 +102,29 @@ jobs:
       - name: Check Int8 GRU three-matrix noisy state
         run: agda --safe Exotic/ERL/FullCoupled/GRUNoisyNetState.agda
 
+      - name: Check GRU OpenES/MR15/NoisyNet perturbation class
+        run: agda --safe Exotic/ERL/Exploration/GRUPerturbationMethods.agda
+
+      - name: Check Flat Dyadic law and eligibility
+        run: |
+          agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
+          agda --safe Exotic/ERL/Exploration/FlatDyadicEligibility.agda
+          agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
+
       - name: Check sparsemax Haar dyadic-RoPE GRU theorem boundary
         run: agda --safe Exotic/ERL/FullCoupled/GRUComposition.agda
 
+      - name: Check full GRU algebraic coupling
+        run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
+
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
+
+      - name: Check GRU theorem generator
+        run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
+
+      - name: Check generated GRU theorem report
+        run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
 
       - name: Probe unchanged Tom Smeding proof under current Agda
         shell: bash
@@ -146,12 +143,6 @@ jobs:
         uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.6'
-
-      - name: Generate and check exploration theorem status
-        run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
-
-      - name: Check generated exploration theorem report
-        run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
 
       - name: Run Haskell exact-rational oracle
         run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
