@@ -1,6 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 
+open import Agda.Builtin.Nat using (Nat)
+
 -- Generated law x method theorem-discovery report.
 -- Agda remains the only acceptance oracle.
 
