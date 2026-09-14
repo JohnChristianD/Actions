@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.efficient_chad.MobiusSoftsignBridge where
 
-open import Agda.Builtin.Equality using (_≡_; refl; trans; cong; sym)
+open import Agda.Builtin.Equality using (_≡_; trans; cong; sym)
 open import Data.Product using (_,_)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
@@ -24,39 +24,50 @@ open import Exotic.efficient_chad.SoftsignGatedComposition using
   ; softsignGatedOperator
   )
 
-record ForwardMobiusWitness (op : CHADOperator) : Set₁ where
-  constructor forwardMobiusWitness
+record PointwiseForwardMobiusWitness (op : CHADOperator) : Set₁ where
+  constructor pointwiseForwardMobiusWitness
   field
-    action : FiniteMobiusAction
+    action : Int8 → FiniteMobiusAction
     forward-one : ∀ x →
-      act action (x , one8) ≡ (primal op x , one8)
+      act (action x) (x , one8) ≡ (primal op x , one8)
 
-open ForwardMobiusWitness public
+open PointwiseForwardMobiusWitness public
 
-composeForwardMobius : ∀ {f g : CHADOperator}
-  → ForwardMobiusWitness f
-  → ForwardMobiusWitness g
-  → ForwardMobiusWitness (composeCHAD g f)
-composeForwardMobius wf wg =
-  forwardMobiusWitness
-    (mobiusCompose (action wg) (action wf))
+composePointwiseForwardMobius : ∀ {f g : CHADOperator}
+  → PointwiseForwardMobiusWitness f
+  → PointwiseForwardMobiusWitness g
+  → PointwiseForwardMobiusWitness (composeCHAD g f)
+composePointwiseForwardMobius wf wg =
+  pointwiseForwardMobiusWitness
+    (λ x → mobiusCompose (action wg (primal f x)) (action wf x))
     witness
   where
     witness : ∀ x →
-      act (mobiusCompose (action wg) (action wf)) (x , one8)
+      act
+        (mobiusCompose (action wg (primal f x)) (action wf x))
+        (x , one8)
       ≡ (primal (composeCHAD g f) x , one8)
     witness x =
       trans
-        (mobius-compose-law (action wg) (action wf) (x , one8))
+        (mobius-compose-law
+          (action wg (primal f x))
+          (action wf x)
+          (x , one8))
         (trans
-          (cong (act (action wg)) (forward-one wf x))
+          (cong
+            (act (action wg (primal f x)))
+            (forward-one wf x))
           (trans
             (forward-one wg (primal f x))
             (sym (composeCHAD-primal g f x))))
 
 softsignGatedForwardMobiusWitness : ∀ (f : SoftsignGatedForward)
-  → ForwardMobiusWitness (signReLU8 f)
-  → ForwardMobiusWitness (softsign8 f)
-  → ForwardMobiusWitness (softsignGatedOperator f)
+  → PointwiseForwardMobiusWitness (signReLU8 f)
+  → PointwiseForwardMobiusWitness (softsign8 f)
+  → PointwiseForwardMobiusWitness (softsignGatedOperator f)
 softsignGatedForwardMobiusWitness f signWitness softsignWitness =
-  composeForwardMobius signWitness softsignWitness
+  composePointwiseForwardMobius signWitness softsignWitness
+
+-- The composition theorem is pointwise in the forward signReLU output. A
+-- concrete Möbius certificate for the actual Int8 activation must still
+-- provide the pointwise witnesses for signReLU8 and softsign8.
