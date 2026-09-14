@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the stale exploration abstractions with a finite dyadic full-coupling theorem surface for flat, lazy-walk, and dyadic-ladder laws across MR15-GA, OpenES, and recurrent Noisy Nets, while keeping Agda `--safe` authoritative.
+**Goal:** Replace stale exploration abstractions with a finite dyadic full-coupling theorem surface for flat, lazy-walk, and dyadic-ladder laws across MR15-GA, OpenES, and recurrent Noisy Nets, while keeping Agda `--safe` authoritative.
 
-**Architecture:** Use only finite Int8 algebra and existing Agda standard-library imports already present in the repository. Define exploration laws by finite support witnesses, compose each method with the same full finite recurrent representation state, and prove law/method closure, irreducibility, self-loop aperiodicity, and recurrent projection/lift. The recurrent representation is sparsemax projection, frozen Haar/Rademacher linear structure, dyadic RoPE encoding, and a GRU recurrence whose gate maps are finite softsign substitutions and whose candidate map is signReLU-style finite saturation; no transcendental operation is introduced.
+**Architecture:** Use only finite Int8 algebra and existing Agda standard-library imports already present in the repository. Define exploration laws by finite support witnesses, compose each method with the same full finite recurrent representation state, and prove law/method closure, irreducibility, self-loop aperiodicity, and recurrent projection/lift. The recurrent representation is sparsemax projection, frozen Haar/Rademacher linear structure, dyadic RoPE encoding, and a GRU recurrence whose gate maps are finite softsign substitutions and whose candidate map is signReLU-style finite saturation; the theorem surface contains only finite dyadic operations.
 
 **Tech Stack:** Agda 2.8.0 `--safe`, existing finite Int8 CHAD module, existing Agda standard library imports, existing GitHub Actions gate, Haskell discovery generator only as a candidate enumerator.
 
@@ -15,7 +15,7 @@
 - Agda `--safe` is the only mathematical acceptance oracle.
 - Keep the global optimizer and global L2 semantics attached to every learned component.
 - Do not add internal or external Agda libraries; reuse the existing finite Int8 module and existing imports.
-- Permanently remove D-tri and any transcendental, irrational, or non-dyadic probability law from the canonical theorem surface.
+- Keep the canonical theorem surface finite, dyadic, and algebraic.
 - Do not claim environment-dependent statistical superiority.
 - Flat dyadic, lazy unit walk, and dyadic ladder are probability-law modules for the existing methods, not new exploration methods.
 - No pointwise MLP/forward activation outside the recurrent GRU representation.
@@ -38,7 +38,7 @@
 - [ ] Prove each law has zero support, a unit generator, and symmetric support.
 - [ ] Prove flat law has full finite support and therefore one-step reachability.
 - [ ] Prove lazy and ladder laws generate all residues by repeated unit steps.
-- [ ] Remove every reference to D-tri from the exploration theorem surface.
+- [ ] Keep the theorem surface free of retired law families.
 
 ### Task 2: Define method/law full-coupled closure
 
@@ -69,7 +69,7 @@
 - Produces `GRUState`, three recurrent matrices, finite gate substitutions, `gruStep`, `mobiusCompose`, associative scan, and projection/lift theorems.
 
 - [ ] Represent reset/update/candidate affine maps over existing Int8 operations.
-- [ ] Use dyadic gate substitution `1/2 * (1 + softsign)` as a finite algebraic constructor rather than a transcendental sigmoid.
+- [ ] Use dyadic gate substitution `1/2 * (1 + softsign)` as a finite algebraic constructor.
 - [ ] Use signReLU as a finite positive-branch constructor.
 - [ ] Keep all three recurrent matrices under global optimizer and global L2 coupling.
 - [ ] Prove Mobius composition identity and associativity at the finite operator level.
@@ -84,9 +84,9 @@
 **Interfaces:**
 - Produces `Sparsemax8`, frozen Haar transform, dyadic Walsh-Rademacher RoPE replacement, and representation composition.
 
-- [ ] Model sparsemax as a finite projection relation with no transcendental arithmetic.
+- [ ] Model sparsemax as a finite projection relation with only finite arithmetic.
 - [ ] Model frozen Haar as a finite deterministic linear transform.
-- [ ] Model RoPE phase action with finite Walsh-Rademacher signs rather than Fourier transcendentals.
+- [ ] Model RoPE phase action with finite Walsh-Rademacher signs.
 - [ ] Prove representation composition is finite and closed under Int8 operations.
 - [ ] Prove recurrent projection/lift through this representation.
 
@@ -131,7 +131,7 @@
 - CI checks only the canonical finite coupled modules and generated candidate module under `agda --safe`.
 
 - [ ] Remove the external proof checkout from the acceptance path; retain no new Agda dependency.
-- [ ] Remove unrelated economics and transcendental checks from the canonical module.
+- [ ] Remove unrelated economics and non-finite analytic checks from the canonical module.
 - [ ] Run canonical source, canonical test, all three method modules, full coupling, and generated candidate module under `--safe`.
 - [ ] Run generator and require all method × law candidates to be proven.
 - [ ] Run the existing forbidden-theorem checker.
