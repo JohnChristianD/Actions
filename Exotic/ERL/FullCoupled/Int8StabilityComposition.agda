@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.Int8StabilityComposition where
 
-open import Agda.Builtin.Equality using (_≡_; sym; trans; subst)
+open import Agda.Builtin.Equality using (_≡_; sym; subst)
 open import Agda.Builtin.Nat using (Nat)
 open import Data.Empty using (⊥)
 open import Data.Nat using (_<_ ; _≤_; _+_)
@@ -42,7 +42,7 @@ noNontrivialTwoCycle L {s = s} cyc not-fixed =
 
     step-not-fixed : step (step s) ≢ step s
     step-not-fixed eq =
-      not-fixed (trans (sym eq) cyc)
+      not-fixed (subst (λ z → step s ≡ z) (sym cyc) eq)
 
     second : energy L (step (step s)) < energy L (step s)
     second = strictDecrease L (step s) step-not-fixed
@@ -91,10 +91,18 @@ contractive-no-distinct-fixed :
   x ≢ y →
   ⊥
 contractive-no-distinct-fixed C fx fy neq =
-  <-irrefl (distance M x y)
-    (trans
-      (contract C neq)
-      (fixed-distance-equality fx fy))
+  let
+    h : distance M (step x) (step y) < distance M x y
+    h = contract C neq
+
+    h' : distance M (step x) (step y) < distance M (step x) (step y)
+    h' =
+      subst
+        (λ d → distance M (step x) (step y) < d)
+        (fixed-distance-equality fx fy)
+        h
+  in
+    <-irrefl (distance M (step x) (step y)) h'
   where
   fixed-distance-equality :
     ∀ {u v : S} →
