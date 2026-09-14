@@ -8,12 +8,9 @@ open import Exotic.efficient_chad.Int8 using (Int8)
 
 ------------------------------------------------------------------------
 -- Endogenous finite parallel-prefix algebra.
---
 -- Modern SSM/scan work motivates the shape: a recurrent update is useful
 -- for parallel execution when its transition-composition law is associative.
--- The theorem below does not import an external SSM claim.  It constructs
--- the finite transition algebra itself and proves the scan invariant from
--- its definitions.
+-- No external SSM theorem is imported as an axiom here.
 ------------------------------------------------------------------------
 
 record Step : Set₁ where
@@ -49,7 +46,7 @@ serial-append :
     ≡ run (composeStep (serial ys) (serial xs)) x
 serial-append [] ys x = refl
 serial-append (s ∷ xs) ys x =
-  composeStep-associative (serial ys) (serial xs) s x
+  serial-append xs ys (run s x)
 
 ------------------------------------------------------------------------
 -- A binary reduction tree is the algebraic parallel-prefix substrate.
@@ -75,10 +72,9 @@ treeProduct-correct (node l r) x =
   serial-append (flatten l) (flatten r) x
 
 ------------------------------------------------------------------------
--- Endogenous parallel-prefix theorem: any binary parenthesization of the
--- same finite transition sequence computes the same state at every input.
--- This is the algebraic core needed before adding a concrete work/depth
--- schedule; no external SSM semantics are assumed.
+-- Endogenous parallel-prefix theorem: any binary reduction of the same
+-- finite transition sequence computes the same state at every input.
+-- A concrete work/depth schedule can now be layered on top of this law.
 ------------------------------------------------------------------------
 
 parallelPrefix-correct :
