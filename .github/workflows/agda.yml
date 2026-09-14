@@ -119,7 +119,7 @@ jobs:
       - name: Check endogenous Efficient CHAD and scan composition
         run: agda --safe Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda
 
-      - name: Check global path-norm and L1 learned regularization class
+      - name: Check global optimizer/L2 plus learned-nonlinearity path/L1 regularization class
         run: agda --safe Exotic/ERL/FullCoupled/LearnedRegularizationComposition.agda
 
       - name: Check finite irreducibility aperiodicity invariant-measure layer
@@ -130,6 +130,9 @@ jobs:
 
       - name: Check theorem variant comparison surface
         run: agda --safe Exotic/ERL/FullCoupled/TheoremVariantComparison.agda
+
+      - name: Check flat-dyadic exploration ablation surface
+        run: agda --safe Exotic/ERL/FullCoupled/FlatDyadicExplorationAblations.agda
 
       - name: Check minimal exact division carrier
         run: agda --safe Exotic/efficient_chad/FiniteDivision.agda
