@@ -3,16 +3,10 @@ module Exotic.ERL.FullCoupled.AllSafeCombined_test where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.Exploration.DyadicLaws using
-  ( Law
-  ; Method
-  ; flatDyadic
-  ; lazyUnit
-  ; dyadicLadder
+  ( flatDyadic
   ; mr15GA
   ; openES
   ; noisyNetGRU
-  ; lazy-normalized
-  ; ladder-normalized
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
@@ -20,7 +14,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; PeriodOne
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
-  ( CoupledState
+  ( CanonicalState
   ; CoupledStep
   )
 open import Exotic.ERL.FullCoupled.AllSafeCombined using
@@ -37,23 +31,17 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
   ( Mobius
   )
 
-flatLazyNormalization : lazy-normalized
-flatLazyNormalization = refl
-
-ladderNormalization : ladder-normalized
-ladderNormalization = refl
-
 mr15FlatReach :
-  ∀ (s t : CoupledState) → Reach (CoupledStep flatDyadic mr15GA) s t
-mr15FlatReach s t = canonicalIrreducible flatDyadic mr15GA s t
+  ∀ (s t : CanonicalState) → Reach (CoupledStep flatDyadic mr15GA) s t
+mr15FlatReach s t = canonicalIrreducible mr15GA s t
 
-openESLazyLoop :
-  ∀ (s : CoupledState) → SelfLoop (CoupledStep lazyUnit openES) s
-openESLazyLoop s = canonicalSelfLoop lazyUnit openES s
+openESFlatLoop :
+  ∀ (s : CanonicalState) → SelfLoop (CoupledStep flatDyadic openES) s
+openESFlatLoop s = canonicalSelfLoop openES s
 
-noisyNetLadderPeriodOne :
-  PeriodOne (CoupledStep dyadicLadder noisyNetGRU)
-noisyNetLadderPeriodOne = canonicalPeriodOne dyadicLadder noisyNetGRU
+noisyNetFlatPeriodOne :
+  PeriodOne (CoupledStep flatDyadic noisyNetGRU)
+noisyNetFlatPeriodOne = canonicalPeriodOne noisyNetGRU
 
 representationClosed : ∀ x → canonicalRepresentationLaw x
 representationClosed x = refl
