@@ -4,7 +4,6 @@ module Exotic.ERL.FullCoupled.FlatDyadicExplorationAblations where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
-  ; Method
   ; flatDyadic
   ; mr15GA
   ; openES
@@ -16,24 +15,24 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; PeriodOne
   )
 open import Exotic.ERL.Exploration.MR15Reachability using
-  ( MR15Step
+  ( MR15State
+  ; MR15Step
   ; mr15IrreducibilityProof
   ; mr15SelfLoopProof
   ; mr15PeriodOneProof
   )
 open import Exotic.ERL.Exploration.OpenESDyadic using
-  ( openESStep
+  ( OpenESState
+  ; openESStep
   ; openESIrreducibilityProof
   ; openESSelfLoopProof
   ; openESPeriodOneProof
   )
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
-  ( noisyNetGRUIrreducible
+  ( NoisyNetState
+  ; noisyNetGRUIrreducible
   ; noisyNetGRUSelfLoop
   ; noisyNetGRUPeriodOne
-  )
-open import Exotic.ERL.FullCoupled.LearnedRegularizationComposition using
-  ( LearnedNonlinearityNormBank
   )
 
 ------------------------------------------------------------------------
@@ -41,26 +40,29 @@ open import Exotic.ERL.FullCoupled.LearnedRegularizationComposition using
 -- Noise placement changes the model variant, not the underlying flat law.
 ------------------------------------------------------------------------
 
-record FlatExplorationCertificate (method : Method) : Set₁ where
+record FlatExplorationCertificate (S : Set) (step : S → S → Set) : Set₁ where
   constructor flatExplorationCertificate
   field
-    irreducible : Irreducible _
-    selfLoop : SelfLoop _
-    periodOne : PeriodOne _
+    irreducible : Irreducible step
+    selfLoop : SelfLoop step
+    periodOne : PeriodOne step
 
-mr15FlatSurface : FlatExplorationCertificate mr15GA
+mr15FlatSurface : FlatExplorationCertificate MR15State (MR15Step flatDyadic)
 mr15FlatSurface = flatExplorationCertificate
   mr15IrreducibilityProof
   mr15SelfLoopProof
   mr15PeriodOneProof
 
-openESFlatSurface : FlatExplorationCertificate openES
+openESFlatSurface : FlatExplorationCertificate OpenESState (openESStep flatDyadic)
 openESFlatSurface = flatExplorationCertificate
   openESIrreducibilityProof
   openESSelfLoopProof
   openESPeriodOneProof
 
-noisyNetFlatSurface : FlatExplorationCertificate noisyNetGRU
+noisyNetFlatSurface :
+  FlatExplorationCertificate NoisyNetState
+    (λ x y → Exotic.ERL.FullCoupled.DyadicMethodLawCoupling.CoupledStep
+      flatDyadic noisyNetGRU x y)
 noisyNetFlatSurface = flatExplorationCertificate
   noisyNetGRUIrreducible
   noisyNetGRUSelfLoop
@@ -136,15 +138,3 @@ allAblationsRemainFlatDyadic a = refl
 allAblationsCarryGlobalOptimizerL2 :
   ∀ (a : FlatDyadicAblation) → optimizerL2Global a ≡ optimizerL2Global a
 allAblationsCarryGlobalOptimizerL2 a = refl
-
-------------------------------------------------------------------------
--- Norm certificates are restricted to learned nonlinearities. The global
--- optimizer/L2 pairing remains independent and global.
-------------------------------------------------------------------------
-
-normScope-is-not-global :
-  ∀ (n : NormScope) →
-  n ≡ noNormPair ⊎ n ≡ sparsemaxOnlyNormPair ⊎ n ≡ sparsemaxAndGRUNormPair
-normScope-is-not-global noNormPair = inj₁ refl
-normScope-is-not-global sparsemaxOnlyNormPair = inj₂ (inj₁ refl)
-normScope-is-not-global sparsemaxAndGRUNormPair = inj₂ (inj₂ refl)
