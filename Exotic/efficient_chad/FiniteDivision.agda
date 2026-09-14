@@ -3,7 +3,7 @@ module Exotic.efficient_chad.FiniteDivision where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Integer using (Integer; _+_; _*_)
-open import Data.Nat using (Nat; zero; suc)
+open import Data.Nat using (Nat; zero; suc; _*_)
 
 ------------------------------------------------------------------------
 -- Minimal exact division extension. This adds only positive-denominator
@@ -49,7 +49,9 @@ fraction-equality x y =
 
 divideByPositive : Fraction → PositiveNat → Fraction
 divideByPositive x d =
-  fraction (numerator x) (positive (positiveValue d))
+  fraction
+    (numerator x)
+    (positive (positiveValue (denominator x) * positiveValue d))
 
 embedInt8Numerator : Integer → Fraction
 embedInt8Numerator = intAsFraction
