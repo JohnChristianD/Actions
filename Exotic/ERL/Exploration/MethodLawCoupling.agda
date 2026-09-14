@@ -1,6 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.MethodLawCoupling where
 
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (Fin)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
@@ -28,10 +29,11 @@ record ExplorationMethod : Set₁ where
 
 open ExplorationMethod public
 
--- The three methods are transition constructors over the same finite law.
--- The law is a module parameter, not a separate exploration algorithm.
+data FlatStep : MethodState → MethodState → Set where
+  flatStepTo : ∀ {s} t → FlatStep s t
+
 flatMethodStep : DyadicLaw → MethodState → MethodState → Set
-flatMethodStep law s t = weight law (Fin.zero) ≡ weight flatLaw (Fin.zero)
+flatMethodStep law s t = FlatStep s t
 
 MR15Flat : ExplorationMethod
 MR15Flat = explorationMethod (flatMethodStep flatLaw)
@@ -43,27 +45,16 @@ NoisyNetGRUFlat : ExplorationMethod
 NoisyNetGRUFlat = explorationMethod (flatMethodStep flatLaw)
 
 methodIrreducible : ∀ m → Irreducible (step m)
-methodIrreducible m s t = there (stepTo m s t) here
-  where
-  stepTo : ∀ m s t → step m s t
-  stepTo m s t = flatPositive (Fin.zero) |> equalityTransport
-
-  equalityTransport :
-    ∀ {a b : Set} → a ≡ b → a
-  equalityTransport refl = flatPositive (Fin.zero)
+methodIrreducible m s t = there (flatStepTo t) here
 
 methodSelfLoop : ∀ m → SelfLoop (step m)
-methodSelfLoop m s = methodIrreducible m s s |> selfEdge
-  where
-  selfEdge : ∀ {s} → Reach (step m) s s → step m s s
-  selfEdge r = flatStep
-
-  flatStep : ∀ {s} → step m s s
-  flatStep = flatPositive (Fin.zero) |> equalityTransport
-
-  equalityTransport :
-    ∀ {a b : Set} → a ≡ b → a
-  equalityTransport refl = flatPositive (Fin.zero)
+methodSelfLoop m s = flatStepTo s
 
 methodPeriodOne : ∀ m → PeriodOne (step m)
 methodPeriodOne m = periodOne (methodIrreducible m) (methodSelfLoop m)
+
+lawWitness : weight flatLaw (Fin.zero) ≡ 1
+lawWitness = flatPositive (Fin.zero)
+
+lawParameterIsFlat : weight flatLaw (Fin.zero) ≡ weight flatLaw (Fin.zero)
+lawParameterIsFlat = refl
