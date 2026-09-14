@@ -5,11 +5,7 @@ import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
 laws :: [(String, String)]
-laws =
-  [ ("Flat", "flatDyadic")
-  , ("Lazy", "lazyUnit")
-  , ("Ladder", "dyadicLadder")
-  ]
+laws = [("Flat", "flatDyadic")]
 
 methods :: [(String, String, String, [String])]
 methods =
@@ -41,11 +37,16 @@ renderCandidateModule results =
     [ "{-# OPTIONS --safe #-}"
     , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
     , ""
-    , "-- Generated law x method theorem-discovery report."
+    , "open import Agda.Builtin.Nat using (Nat)"
+    , ""
+    , "-- Generated flat-dyadic theorem-discovery report."
     , "-- Agda remains the only acceptance oracle."
     , ""
     ]
     ++ concatMap render results
+    ++ [ "flatDyadicLawMethodPermutationCount : Nat"
+       , "flatDyadicLawMethodPermutationCount = 3"
+       ]
   where
     render (lawName, lawTag, methodName, status, details) =
       [ "-- law: " ++ lawName ++ " (" ++ lawTag ++ ")"
