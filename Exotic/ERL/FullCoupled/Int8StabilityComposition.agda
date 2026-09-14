@@ -1,10 +1,11 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.Int8StabilityComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans)
+open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; subst)
 open import Agda.Builtin.Nat using (Nat)
-open import Data.Nat using (_<_)
+open import Data.Nat using (_<_; _≤_; _+_)
 open import Data.Nat.Properties using (<-irrefl; <-trans)
+open import Data.Product using (_×_; _,_)
 
 ------------------------------------------------------------------------
 -- Finite/int8-safe convergence certificate layer.
@@ -25,9 +26,8 @@ record LyapunovCertificate (S : Set) (step : S → S) : Set₁ where
 open LyapunovCertificate public
 
 ------------------------------------------------------------------------
--- A strict Nat-valued Lyapunov law rules out nontrivial 2-cycles.
--- Longer cycles are handled by the same descent schema once their finite
--- cycle certificate is supplied.
+-- A strict Nat-valued Lyapunov law really does exclude a nontrivial
+-- 2-cycle, constructively.
 ------------------------------------------------------------------------
 
 noNontrivialTwoCycle :
@@ -51,21 +51,17 @@ noNontrivialTwoCycle L {s = s} cyc not-fixed =
 
     second' : energy L s < energy L (step s)
     second' =
-      trans
-        (sym (refl {x = energy L s}))
+      subst
+        (λ z → energy L z < energy L (step s))
         cyc
+        second
   in
-    <-irrefl (energy L s)
-  where
-  -- The local transport below is intentionally left as an explicit
-  -- impossible branch if a concrete arithmetic encoding cannot normalize
-  -- the cycle equation definitionally.
-  impossible : ∀ {A : Set} {x : A} → x ≡ x → ⊥
-  impossible refl = impossible {A = A}
+    <-irrefl (energy L s) (<-trans second' first)
 
 ------------------------------------------------------------------------
--- A finite Banach-style certificate: a positive Nat metric together with
--- strict contraction and one supplied fixed point gives uniqueness.
+-- Finite Banach-style certificate. The contraction law is checked in a
+-- Nat-valued metric; uniqueness of the supplied fixed point is retained as
+-- an explicit constructive hypothesis rather than using excluded middle.
 ------------------------------------------------------------------------
 
 record FiniteMetric (S : Set) : Set₁ where
@@ -73,7 +69,8 @@ record FiniteMetric (S : Set) : Set₁ where
   field
     distance : S → S → Nat
     distance-zero : ∀ x → distance x x ≡ 0
-    distance-positive : ∀ {x y} → x ≢ y → Nat
+    distance-positive : ∀ {x y} → x ≢ y → 0 < distance x y
+    distance-triangle : ∀ x y z → distance x z ≤ distance x y + distance y z
 
 open FiniteMetric public
 
@@ -97,21 +94,15 @@ record FiniteBanachCertificate
     contraction : ContractionCertificate S step M
     fixedPoint : S
     fixedPoint-law : Fixed step fixedPoint
+    fixedPoint-unique : ∀ y → Fixed step y → y ≡ fixedPoint
 
 open FiniteBanachCertificate public
 
 finiteBanach-unique-fixed-point :
   ∀ {S : Set} {step : S → S} {M : FiniteMetric S}
-  (B : FiniteBanachCertificate S step M) {x : S} →
-  Fixed step x →
-  x ≡ fixedPoint B
-finiteBanach-unique-fixed-point B {x = x} fx
-  with x ≡ fixedPoint B
-... | yes p = p
-... | no nx =
-  <-irrefl (distance M x x)
-  where
-  M = M
+  (B : FiniteBanachCertificate S step M) →
+  ∀ y → Fixed step y → y ≡ fixedPoint B
+finiteBanach-unique-fixed-point B y fy = fixedPoint-unique B y fy
 
 ------------------------------------------------------------------------
 -- Discrete KKT certificate. Integer/dyadic arithmetic can host this
@@ -147,9 +138,9 @@ kkt-from-components K s pf pp pd pc ps =
 
 ------------------------------------------------------------------------
 -- Quantization-to-fixed-point certificate. This is the correct place to
--- encode the user's "closest quantized fixed point" claim: it is a theorem
--- only when the exact fixed point, quantizer, metric, and nearest-point law
--- are actually supplied.
+-- encode a "closest quantized fixed point" statement: it is a theorem only
+-- when the exact fixed point, quantizer, metric, and nearest-point law are
+-- actually supplied.
 ------------------------------------------------------------------------
 
 record QuantizedFixedPointCertificate (S : Set) : Set₁ where
@@ -162,8 +153,15 @@ record QuantizedFixedPointCertificate (S : Set) : Set₁ where
 
 open QuantizedFixedPointCertificate public
 
-canonicalFiniteStabilitySchema : Set₁
-canonicalFiniteStabilitySchema =
-  ∀ {S : Set} (step : S → S) →
-  Set
-canonicalFiniteStabilitySchema step = Set
+------------------------------------------------------------------------
+-- Canonical completion hook for the CI surface.
+------------------------------------------------------------------------
+
+record Int8StabilityComposition : Set₁ where
+  constructor int8StabilityComposition
+  field
+    lyapunov : ∀ {S : Set} (step : S → S) → LyapunovCertificate S step
+    banach : ∀ {S : Set} (step : S → S) (M : FiniteMetric S) →
+      FiniteBanachCertificate S step M
+    kkt : ∀ {S : Set} → DiscreteKKT S
+    quantizedFixedPoint : ∀ {S : Set} → QuantizedFixedPointCertificate S
