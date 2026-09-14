@@ -113,6 +113,9 @@ jobs:
       - name: Check Watkins DPG critic trace theorem
         run: agda --safe Exotic/ERL/FullCoupled/WatkinsDPG.agda
 
+      - name: Check endogenous Watkins DPG optimizer composition theorem
+        run: agda --safe Exotic/ERL/FullCoupled/EndogenousBoundaryComposition.agda
+
       - name: Check full method-law coupling
         run: agda --safe Exotic/ERL/FullCoupled/DyadicMethodLawCoupling.agda
 
