@@ -1,9 +1,10 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.PathNormSemidirectComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; trans; cong)
-open import Data.Nat using (Nat; zero; suc; _*_)
-open import Data.List using (List; []; _∷_)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Nat using (Nat; _*_)
+open import Data.List using (List; []; _∷_; _++_)
+open import Data.Product using (_×_)
 
 ------------------------------------------------------------------------
 -- Finite path-norm factorization.
@@ -34,17 +35,18 @@ pathNorm-factorization :
 pathNorm-factorization C = factorLaw C
 
 ------------------------------------------------------------------------
--- Iterated path products inherit the factorization law.
+-- Iterated path products inherit factorization exactly at the list level.
 ------------------------------------------------------------------------
 
 layerProduct : List NormedLayer → Nat
 layerProduct [] = 1
 layerProduct (l ∷ ls) = pathNorm l * layerProduct ls
 
-pathNorm-window-factorization :
-  ∀ (xs : List NormedLayer) (ys : List NormedLayer) →
-  layerProduct (xs ∷ ys) ≡ pathNorm xs * pathNorm ys
-pathNorm-window-factorization xs ys = refl
+layerProduct-append :
+  ∀ xs ys →
+  layerProduct (xs ++ ys) ≡ layerProduct xs * layerProduct ys
+layerProduct-append [] ys = refl
+layerProduct-append (x ∷ xs) ys = refl
 
 ------------------------------------------------------------------------
 -- Finite semidirect-product contract.
@@ -63,16 +65,21 @@ record Monoid (G : Set) : Set₁ where
 
 open Monoid public
 
-record Action (G H : Set) : Set₁ where
+record Action (G H : Set) (MG : Monoid G) : Set₁ where
   constructor action
   field
     act : G → H → H
-    unitAct : ∀ h → act (ε) h ≡ h
-    mulAct : ∀ g₁ g₂ h → act (g₁ ∙ g₂) h ≡ act g₁ (act g₂ h)
+    unitAct : ∀ h → act (ε MG) h ≡ h
+    mulAct : ∀ g₁ g₂ h →
+      act ((_∙_ MG) g₁ g₂) h ≡ act g₁ (act g₂ h)
 
 open Action public
 
-record SemidirectProduct (G H : Set) (MG : Monoid G) (MH : Monoid H) (AG : Action G H) : Set₁ where
+record SemidirectProduct
+  (G H : Set)
+  (MG : Monoid G)
+  (MH : Monoid H)
+  (AG : Action G H MG) : Set₁ where
   constructor semidirectProduct
   field
     pair : Set
@@ -86,23 +93,21 @@ record SemidirectProduct (G H : Set) (MG : Monoid G) (MH : Monoid H) (AG : Actio
 open SemidirectProduct public
 
 ------------------------------------------------------------------------
--- Canonical binary law for (g,h) ⋊ (k,l):
--- (g∙k, act g l ∙ h), with the associativity proof discharged from the
--- action/monoid laws by the containing certificate.
+-- A finite semidirect theorem class records the finite carrier witness
+-- separately from the algebraic law. This avoids claiming that the current
+-- F4 carrier is already a nontrivial group when it is presently a dyadic
+-- arithmetic state space.
 ------------------------------------------------------------------------
 
-record FiniteSemidirectCertificate (G H : Set) (MG : Monoid G) (MH : Monoid H) (AG : Action G H) : Set₁ where
+record FiniteSemidirectCertificate
+  (G H : Set)
+  (MG : Monoid G)
+  (MH : Monoid H)
+  (AG : Action G H MG) : Set₁ where
   constructor finiteSemidirectCertificate
   field
     semidirect : SemidirectProduct G H MG MH AG
-    finiteCarrier : Set
-    finiteWitness : Set
-
-------------------------------------------------------------------------
--- The F4 optimizer state is therefore representable as an H-side extension
--- in a semidirect theorem class, without claiming the current repo already
--- proves a concrete nontrivial group action for every F4 parameter bank.
-------------------------------------------------------------------------
+    finiteCarrier : List (G × H)
 
 record SemidirectTheoremClass : Set₁ where
   constructor semidirectTheoremClass
