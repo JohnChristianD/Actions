@@ -15,6 +15,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   )
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState
+  ; global
   ; gruStep
   ; gruGlobalControlPersists
   )
@@ -53,5 +54,5 @@ noisyNetProjectionLift = noisyNet-project-lift
 
 noisyNetGlobalControlPreserved :
   ∀ (s : GRUState) (x : Int8) →
-  gruStep s x |>.global ≡ GRUState.global s
+  global (gruStep s x) ≡ global s
 noisyNetGlobalControlPreserved s x = gruGlobalControlPersists s x
