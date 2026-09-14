@@ -2,7 +2,8 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Nat using (ℕ)
+open import Data.List using (List; []; _∷_)
+open import Data.Nat using (ℕ; zero; suc)
 open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
@@ -36,9 +37,11 @@ open import Exotic.ERL.FullCoupled.DyadicRepresentation using
   )
 open import Exotic.ERL.FullCoupled.Int8DPG using
   ( DPGActor
+  ; DPGCritic
   ; actorAction
   ; ActorAction
   ; actorForward
+  ; criticForward
   ; composeActorAction
   ; actorCompositionClosed
   ; actorCompositionAssociative
@@ -104,6 +107,7 @@ open import Exotic.ERL.FullCoupled.WatkinsDPG using
   ; watkinsTraceLength-empty
   ; watkinsTraceLength-keep
   ; WatkinsExploration
+  ; sampledAction
   ; watkinsCut
   ; watkinsCut-preserves-action
   ; watkinsActorPreserved
@@ -302,7 +306,7 @@ canonicalWatkinsActor :
 canonicalWatkinsActor a x = watkinsActorPreserved a x
 
 canonicalWatkinsCritic :
-  ∀ (c : Exotic.ERL.FullCoupled.Int8DPG.DPGCritic) (x : Int8) →
+  ∀ (c : DPGCritic) (x : Int8) →
   criticForward c x ≡ criticForward c x
 canonicalWatkinsCritic c x = watkinsCriticPreserved c x
 
@@ -314,8 +318,7 @@ canonicalWatkinsOneStep : watkinsTraceLength (cutTrace ∷ []) ≡ suc zero
 canonicalWatkinsOneStep = watkins-one-step-under-cut
 
 canonicalWatkinsDPGStep :
-  ∀ (c : Exotic.ERL.FullCoupled.Int8DPG.DPGCritic)
-    (a : DPGActor) (x : Int8) →
+  ∀ (c : DPGCritic) (a : DPGActor) (x : Int8) →
   dpgWatkinsCriticStep c a x ≡ criticForward c (actorForward a x)
 canonicalWatkinsDPGStep = dpgWatkinsCriticStep-law
 
