@@ -2,9 +2,9 @@
 module Exotic.efficient_chad.FiniteDivision where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Fin using (toℕ)
-open import Data.Nat using (Nat; suc)
-open import Data.Nat.DivMod using (_/_)
+open import Data.Nat.DivMod using (_/_) 
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; code
@@ -15,7 +15,7 @@ open import Exotic.efficient_chad.Int8 using
 -- Minimal finite division layer.
 -- This is not a field or local-ring construction. It exposes exactly the
 -- finite quotient operation needed by the Int8 normalization layer:
--- positive Nat denominator, Nat quotient, and Int8 storage projection.
+-- a positive Nat denominator, Nat quotient, and Int8 storage projection.
 ------------------------------------------------------------------------
 
 data PositiveNat : Set where
