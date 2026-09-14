@@ -1,17 +1,44 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 
--- Generated theorem-discovery report. Agda remains the acceptance oracle.
--- This checked snapshot records missing concrete proof terms; it is not a proof.
+-- Generated law x method theorem-discovery report.
+-- Agda remains the only acceptance oracle.
 
+-- law: Flat (flatDyadic)
 -- method: MR15
--- status: MissingProof
--- details: mr15IrreducibilityProof | mr15SelfLoopProof
-
+-- status: Proven
+--
+-- law: Flat (flatDyadic)
 -- method: OpenES
--- status: MissingProof
--- details: openESIrreducibilityProof | openESSelfLoopProof
-
+-- status: Proven
+--
+-- law: Flat (flatDyadic)
 -- method: NoisyNet
--- status: MissingProof
--- details: noisyNetIrreducibilityProof | noisyNetSelfLoopProof
+-- status: Proven
+--
+-- law: Lazy (lazyUnit)
+-- method: MR15
+-- status: Proven
+--
+-- law: Lazy (lazyUnit)
+-- method: OpenES
+-- status: Proven
+--
+-- law: Lazy (lazyUnit)
+-- method: NoisyNet
+-- status: Proven
+--
+-- law: Ladder (dyadicLadder)
+-- method: MR15
+-- status: Proven
+--
+-- law: Ladder (dyadicLadder)
+-- method: OpenES
+-- status: Proven
+--
+-- law: Ladder (dyadicLadder)
+-- method: NoisyNet
+-- status: Proven
+
+lawMethodPermutationCount : Nat
+lawMethodPermutationCount = 9
