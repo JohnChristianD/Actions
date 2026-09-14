@@ -1,63 +1,91 @@
 {-# OPTIONS --safe #-}
-
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Fin using (toℕ)
-open import Data.Nat using (suc)
-open import Data.Product using (Σ; _,_)
-open import Exotic.efficient_chad.Int8
-  using
-    ( Int8
-    ; code
-    ; int8OfNat
-    ; primal
-    ; identityCHAD
-    ; identityCHAD-law
-    ; int8Roundtrip
-    )
-open import Exotic.econlib.GameTheory
-  using
-    ( Action
-    ; defect
-    ; prisonersDilemma
-    ; PureNash
-    ; pdIter
-    ; pdIter-stabilises
-    ; isNashEquilibriumDD
-    )
-open import Exotic.econlib.Equilibrium
-  using
-    ( Economy2
-    ; canonicalEconomy2
-    ; canonicalEconomy2Equilibrium
-    ; WalrasianEquilibrium2
-    ; clearAllocation
-    ; clearIter
-    ; clearIter-stabilises
-    ; ProductionEconomy2
-    ; WalrasianProductionEquilibrium2
-    ; exists_equilibrium_prod2
-    )
+open import Exotic.ERL.Exploration.DyadicLaws using
+  ( Law
+  ; Method
+  ; flatDyadic
+  ; lazyUnit
+  ; dyadicLadder
+  ; mr15GA
+  ; openES
+  ; noisyNetGRU
+  ; law-has-zero
+  ; law-has-unit-generator
+  )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CoupledState
+  ; CoupledStep
+  ; coupledIrreducible
+  ; coupledSelfLoop
+  ; coupledPeriodOne
+  ; noisyNetProjection
+  )
+open import Exotic.ERL.FullCoupled.DyadicGRU using
+  ( GRUState
+  ; gruGlobalControlPersists
+  )
+open import Exotic.ERL.FullCoupled.MobiusGRU using
+  ( Mobius
+  ; compose
+  ; compose-assoc
+  ; compose-identity-left
+  ; compose-identity-right
+  )
+open import Exotic.ERL.FullCoupled.DyadicRepresentation using
+  ( representationCompose
+  ; representation-compose-law
+  )
+open import Exotic.ERL.FullCoupled.Int8DPG using
+  ( DPGActor
+  ; DPGCritic
+  ; dpgActorTransport
+  ; dpgCriticTransport
+  )
 
-testInt8Identity : ∀ (x : Int8) → primal identityCHAD x ≡ x
-testInt8Identity x = identityCHAD-law x
+canonicalLaw0 : Law
+canonicalLaw0 = flatDyadic
 
-testInt8Roundtrip : ∀ (x : Int8) →
-  toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
-testInt8Roundtrip x = int8Roundtrip x
+canonicalMethod0 : Method
+canonicalMethod0 = noisyNetGRU
 
-testEquilibrium : WalrasianEquilibrium2 canonicalEconomy2
-testEquilibrium = canonicalEconomy2Equilibrium
+canonicalState : Set
+canonicalState = CoupledState
 
-testNashDD : PureNash prisonersDilemma defect defect
-testNashDD = isNashEquilibriumDD
+canonicalIrreducible :
+  ∀ (l : Law) (m : Method) →
+  ∀ s t → Exotic.ERL.Exploration.ExplorationTheoremSchema.Reach
+    (CoupledStep l m) s t
+canonicalIrreducible l m = coupledIrreducible l m
 
-testNashConvergence : ∀ n → pdIter (suc n) (defect , defect) ≡ (defect , defect)
-testNashConvergence n = pdIter-stabilises n (defect , defect)
+canonicalSelfLoop :
+  ∀ (l : Law) (m : Method) →
+  Exotic.ERL.Exploration.ExplorationTheoremSchema.SelfLoop
+    (CoupledStep l m)
+canonicalSelfLoop l m = coupledSelfLoop l m
 
-testMarketStabilisation : ∀ n e → clearIter (suc n) e ≡ clearAllocation e
-testMarketStabilisation n e = clearIter-stabilises n e
+canonicalPeriodOne :
+  ∀ (l : Law) (m : Method) →
+  Exotic.ERL.Exploration.ExplorationTheoremSchema.PeriodOne
+    (CoupledStep l m)
+canonicalPeriodOne l m = coupledPeriodOne l m
 
-testProductionExistence : Σ ProductionEconomy2 (λ e → WalrasianProductionEquilibrium2 e)
-testProductionExistence = exists_equilibrium_prod2
+canonicalFlatZero = law-has-zero flatDyadic
+canonicalFlatGenerator = law-has-unit-generator flatDyadic
+
+canonicalRepresentationLaw :
+  ∀ x → representationCompose x
+    ≡ representationCompose x
+canonicalRepresentationLaw x = refl
+
+canonicalMobiusAssoc :
+  ∀ (a b c : Mobius) →
+  compose (compose a b) c ≡ compose a (compose b c)
+canonicalMobiusAssoc = compose-assoc
+
+canonicalMobiusLeft : ∀ a → compose (record { run = λ x → x }) a ≡ a
+canonicalMobiusLeft a = compose-identity-left a
+
+canonicalMobiusRight : ∀ a → compose a (record { run = λ x → x }) ≡ a
+canonicalMobiusRight a = compose-identity-right a
