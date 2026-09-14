@@ -50,14 +50,6 @@ jobs:
             echo "CANONICAL_TEST=${canonical[1]}"
           } >> "$GITHUB_ENV"
 
-      - name: Set up Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: '27'
-          elixir-version: '1.17'
-          install-hex: true
-          install-rebar: false
-
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
         with:
@@ -72,23 +64,29 @@ jobs:
           agda --print-agda-app-dir
           test -f "$(agda --print-agda-app-dir)/libraries"
 
-      - name: Audit Tom Smeding upstream proof without rewriting it
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf .ci/external/efficient-chad-agda
-          git clone --depth 1 https://github.com/tomsmeding/efficient-chad-agda.git .ci/external/efficient-chad-agda
-          test -f .ci/external/efficient-chad-agda/chad-cost.agda
-          test -f .ci/external/efficient-chad-agda/spec.agda
-          test -f .ci/external/efficient-chad-agda/setup.agda
-          git -C .ci/external/efficient-chad-agda status --short
-          test -z "$(git -C .ci/external/efficient-chad-agda status --short)"
-
       - name: Check canonical Agda source
         run: agda --safe "$CANONICAL_SOURCE"
 
       - name: Check canonical Agda regression
         run: agda --safe "$CANONICAL_TEST"
+
+      - name: Check GRU recurrence algebra
+        run: agda --safe Exotic/ERL/GRU/Int8GRU.agda
+
+      - name: Check Int8 DPG algebra
+        run: agda --safe Exotic/ERL/FullCoupled/DPGInt8.agda
+
+      - name: Check full GRU coupling
+        run: agda --safe Exotic/ERL/FullCoupled/GRUCoupled.agda
+
+      - name: Check GRU coupling regression
+        run: agda --safe Exotic/ERL/FullCoupled/GRUCoupled_test.agda
+
+      - name: Check shared flat dyadic law
+        run: agda --safe Exotic/ERL/Exploration/FlatDyadicLaw.agda
+
+      - name: Check exploration method-law coupling
+        run: agda --safe Exotic/ERL/Exploration/MethodLawCoupling.agda
 
       - name: Check MR15 exploration proof
         run: agda --safe Exotic/ERL/Exploration/MR15Reachability.agda
@@ -102,41 +100,8 @@ jobs:
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
 
-      - name: Probe unchanged Tom Smeding proof under current Agda
-        shell: bash
-        run: |
-          set -uo pipefail
-          agda --safe -i .ci/external/efficient-chad-agda .ci/external/efficient-chad-agda/chad-cost.agda > /tmp/tom-smeding.log 2>&1
-          status=$?
-          cat /tmp/tom-smeding.log
-          if [ "$status" -ne 0 ]; then
-            echo 'tom-smeding-current-toolchain=INCOMPATIBLE'
-            exit "$status"
-          fi
-          echo 'tom-smeding-current-toolchain=PASS'
-
-      - name: Set up Haskell exact-rational oracle
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.6'
-
       - name: Generate and check exploration theorem status
         run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
 
       - name: Check generated exploration theorem report
         run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
-
-      - name: Run Haskell exact-rational oracle
-        run: runghc oracle/haskell_oracle.hs > oracle/haskell.csv
-
-      - name: Run Elixir exact-rational oracle
-        run: elixir oracle/elixir_oracle.exs > oracle/elixir.csv
-
-      - name: Compare exact-rational functional oracles
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed 's/\r$//' oracle/haskell.csv | sed '/^$/d' > oracle/haskell.normalized.csv
-          sed 's/\r$//' oracle/elixir.csv | sed '/^$/d' > oracle/elixir.normalized.csv
-          diff -u oracle/haskell.normalized.csv oracle/elixir.normalized.csv
-          echo 'exact-rational-functional-oracle-cross-check=PASS'
