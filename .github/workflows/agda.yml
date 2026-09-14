@@ -102,8 +102,8 @@ jobs:
       - name: Check flat-dyadic probability law
         run: agda --safe Exotic/ERL/Exploration/FlatDyadic.agda
 
-      - name: Check dyadic-shell ladder probability law
-        run: agda --safe Exotic/ERL/Exploration/DyadicLadder.agda
+      - name: Check flat-dyadic finite eligibility
+        run: agda --safe Exotic/ERL/Exploration/FlatDyadicEligibility.agda
 
       - name: Check dyadic-law composition interface
         run: agda --safe Exotic/ERL/Exploration/DyadicLaw.agda
