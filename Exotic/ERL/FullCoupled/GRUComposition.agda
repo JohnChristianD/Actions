@@ -12,14 +12,16 @@ open import Exotic.ERL.FullCoupled.GRUDPG using
   ( GRUDPGBoundary )
 
 -- Canonical representation order:
--- dyadic Walsh-Rademacher RoPE -> sparsemax -> frozen Haar -> specialized GRU.
--- No standalone pointwise activation or MLP layer is admitted here.
+-- dyadic Walsh-Rademacher positional action -> sparsemax -> frozen Haar
+-- -> specialized recurrent GRU.
+-- There is no standalone pointwise activation or MLP representation path.
 record SparsemaxLayer : Set₁ where
   constructor sparsemaxLayer
   field
     applySparsemax : Set → Set
     normalized : Set
     finiteSupport : Set
+    fixed : Set
 
 record FrozenHaar2016Layer : Set₁ where
   constructor frozenHaar2016Layer
@@ -36,8 +38,8 @@ record DyadicRoPERelation : Set₁ where
     dyadicRotationLaw : Set
     frozenFeatures : Set
 
--- Only GRU and attention-side components receive the paired L1/path-one
--- obligations. The global L2 law is kept separate and coupled globally.
+-- The paired L1/path-one certificate is retained only for learned GRU
+-- components. Sparsemax is fixed here and therefore has no norm-pair field.
 record NormPair : Set₁ where
   constructor normPair
   field
@@ -49,6 +51,8 @@ record GlobalL2Regularizer : Set₁ where
   field
     l2Law : Set
 
+-- Optimizer and L2 remain global to every learned component in the coupled
+-- composition. The optimizer boundary is not localised to the GRU.
 record GlobalOptimizerBoundary : Set₁ where
   constructor globalOptimizerBoundary
   field
@@ -56,6 +60,9 @@ record GlobalOptimizerBoundary : Set₁ where
     globalL2Coupling : GlobalL2Regularizer
     integerF4InputLaw : Set
     softsignQIDBDLaw : Set
+
+data GRUPerturbationMethod : Set where
+  gruOpenES gruMR15 gruNoisyNet : GRUPerturbationMethod
 
 record GRUComposition : Set₂ where
   constructor gruComposition
@@ -66,7 +73,7 @@ record GRUComposition : Set₂ where
     gru : GRUSequentialBoundary
     recurrenceWindow : GRUWindow
     gruNormPair : NormPair
-    sparsemaxNormPair : NormPair
     optimizer : GlobalOptimizerBoundary
     actorCritic : GRUDPGBoundary GRUNoisyNetState
+    perturbationMethod : GRUPerturbationMethod
     exactDecorrelatedFeatures : Set
