@@ -110,6 +110,9 @@ jobs:
       - name: Check promoted PQN DPG composition theorem
         run: agda --safe Exotic/ERL/FullCoupled/PromotionComposition.agda
 
+      - name: Check Watkins DPG critic trace theorem
+        run: agda --safe Exotic/ERL/FullCoupled/WatkinsDPG.agda
+
       - name: Check full method-law coupling
         run: agda --safe Exotic/ERL/FullCoupled/DyadicMethodLawCoupling.agda
 
