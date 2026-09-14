@@ -5,7 +5,7 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Product using (_×_; _,_)
 open import Data.Nat using (Nat; zero; suc; _+_)
 open import Exotic.efficient_chad.Int8 using (Int8)
-open import Exotic.econlib.dyadic.Dyadic using
+open import Exotic.efficient_chad.Dyadic using
   ( Dyadic
   ; zeroᵈ
   ; oneᵈ
@@ -53,11 +53,6 @@ record PreservesPrimal (op : Operator) : Set where
 identity-preserves-primal : PreservesPrimal identity
 identity-preserves-primal = preservesPrimal (λ _ → refl)
 
-------------------------------------------------------------------------
--- Composition is the finite analogue of the closure composition used by
--- Efficient CHAD.  No real analysis or transcendental primitive is present.
-------------------------------------------------------------------------
-
 compose : Operator → Operator → Operator
 compose f g =
   operator
@@ -76,8 +71,7 @@ compose-cost :
 compose-cost f g x = refl
 
 ------------------------------------------------------------------------
--- Canonical theorem shape: primal preservation plus an explicit dyadic
--- cost witness.  Concrete operators instantiate this without Float/Real.
+-- Concrete operators instantiate this without Float/Real.
 ------------------------------------------------------------------------
 
 record EfficientCHADTheorem (op : Operator) : Set₁ where
