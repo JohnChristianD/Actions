@@ -128,6 +128,9 @@ jobs:
       - name: Check finite semidirect-product composition layer
         run: agda --safe Exotic/ERL/FullCoupled/FiniteSemidirectComposition.agda
 
+      - name: Check theorem variant comparison surface
+        run: agda --safe Exotic/ERL/FullCoupled/TheoremVariantComparison.agda
+
       - name: Check minimal exact division carrier
         run: agda --safe Exotic/efficient_chad/FiniteDivision.agda
 
