@@ -31,9 +31,7 @@ data Law = Law
 
 laws :: [Law]
 laws =
-  [ Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport"
-  , Law "DyadicLadder" "dyadicLadder" "dyadicLadderNormalized" "dyadicLadderUnitSupport"
-  ]
+  [ Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport" ]
 
 generatedPath :: FilePath
 generatedPath = "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
@@ -43,12 +41,9 @@ renderCandidate = unlines $
   [ "{-# OPTIONS --safe #-}"
   , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
   , ""
-  , "-- Generated law × method full-composition theorem harness."
-  , "-- Haskell constructs source; Agda --safe is the acceptance oracle."
+  , "-- Generated full-composition theorem harness. Haskell constructs source; Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
-  , "  ( DyadicLaw; flatDyadic; dyadicLadder"
-  , "  ; flatDyadicNormalized; flatDyadicUnitSupport"
-  , "  ; dyadicLadderNormalized; dyadicLadderUnitSupport )"
+  , "  ( DyadicLaw; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport )"
   , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
   , "  ( FullAlgebraicCoupling; composeFull )"
   , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
@@ -58,15 +53,20 @@ renderCandidate = unlines $
   , "open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using"
   , "  ( softsignGatedPeriodOne )"
   , "open import Exotic.ERL.FullCoupled.TheoremStrengthV3 using"
-  , "  ( openESPeriodOneFromMR15; mr15PeriodOneFromNoisyNet"
-  , "  ; openES-lt-MR15; MR15-lt-NoisyNet; openES-lt-NoisyNet )"
+  , "  ( OpenES-lt-MR15; MR15-lt-NoisyNet; openES-lt-NoisyNet"
+  , "  ; openESFullFromMR15Full; mr15FullFromNoisyNetFull )"
+  , "open import Exotic.ERL.Exploration.FlatDyadicEligibility using"
+  , "  ( flatDyadicAllFiniteEligibility )"
+  , ""
+  , "FlatDyadicEligibility = flatDyadicAllFiniteEligibility"
   ]
   ++ concatMap renderMethod methods
   ++ [ ""
-     , "StrictOpenESLTMR15 = openES-lt-MR15"
+     , "StrictOpenESLTMR15 = OpenES-lt-MR15"
      , "StrictMR15LTNoisyNet = MR15-lt-NoisyNet"
      , "StrictOpenESLTNoisyNet = openES-lt-NoisyNet"
-     , "MobiusForwardComposition = softsignGatedForwardMobiusWitness"
+     , "FullOpenESLTMR15 = openESFullFromMR15Full"
+     , "FullMR15LTNoisyNet = mr15FullFromNoisyNetFull"
      ]
   where
     renderMethod m =
@@ -108,8 +108,9 @@ main = do
   putStrLn $ "exploration-theorem-generator=" ++ status
   putStrLn $ "exploration-law-method-permutations=" ++ show (length methods * length laws)
   putStrLn "exploration-theorem-order=OpenES<MR15<NoisyNet"
-  putStrLn "law-frontier=FlatDyadic|DyadicLadder"
-  putStrLn "mobius-forward-composition=conditional-on-concrete-activation-witnesses"
+  putStrLn "law-frontier=FlatDyadic"
+  putStrLn "mobius-forward-composition=pointwise-witness-composition"
+  putStrLn "full-coupling-order=OpenES<MR15<NoisyNet"
   if null output then pure () else putStrLn output
   case code of
     ExitSuccess -> exitSuccess
