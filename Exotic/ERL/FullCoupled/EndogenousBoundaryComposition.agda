@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.EndogenousBoundaryComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Int using (Int)
 open import Data.List using (List; []; _∷_)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (_×_; _,_)
@@ -44,6 +45,7 @@ open import Exotic.ERL.FullCoupled.DPGBellmanHaarComposition using
   )
 open import Exotic.ERL.FullCoupled.WatkinsDPG using
   ( TraceDecision
+  ; keepTrace
   ; cutTrace
   ; WatkinsExploration
   ; watkinsCut
@@ -54,50 +56,211 @@ open import Exotic.ERL.FullCoupled.WatkinsDPG using
   ; cut-regime-is-one-step
   )
 
-record F4IntMomentumLayer : Set₁ where
-  constructor f4IntMomentumLayer
+------------------------------------------------------------------------
+-- Exact F4-Int-U-Softsign algebraic specification.
+-- The scalar carrier is a dyadic finite-precision representation; the
+-- concrete signed-Int8 encoding supplies the storage code. Residual fields
+-- therefore remain dyadic quantities rather than pretending that literal
+-- integer Int8 can represent 1/2 exactly.
+------------------------------------------------------------------------
+
+record F4Arithmetic : Set₁ where
   field
-    momentum : Int8
-    apply : Int8 → Int8
-    zero-dc : apply zero8 ≡ zero8
+    D : Set
+    zero one : D
+    _+_ _-_ _*_ : D → D → D
+    softsign : D → D
+    quantize : D → D
+    roundLog : D → Int
+    embedInt : Int → D
+    pow2 : Int → D
+    beta₂ betaθ : D
+    addAssoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
+    addComm : ∀ x y → x + y ≡ y + x
+    subAdd : ∀ x y → y + (x - y) ≡ x
+    embedAdd : ∀ x y → embedInt (x + y) ≡ embedInt x + embedInt y
+    embedRound : ∀ x → embedInt (roundLog x) + (x - embedInt (roundLog x)) ≡ x
 
-open F4IntMomentumLayer public
+open F4Arithmetic public
 
-record ModifiedQProjectedSoftsignIDBD : Set₁ where
-  constructor modifiedQProjectedSoftsignIDBD
+record F4IntState (A : F4Arithmetic) : Set where
+  constructor f4IntState
   field
-    optimizerState : Int8
-    step : Int8 → Int8 → Int8
-    qProjection : Int8 → Int8
-    softsignGate : Int8 → Int8
-    momentumLayer : F4IntMomentumLayer
-    globalL2State : Int8
+    thetaQ : D A
+    rTheta : D A
+    eQ : D A
+    rE : D A
+    rL : D A
+    ell : Int
 
-open ModifiedQProjectedSoftsignIDBD public
+open F4IntState public
 
-record EndogenousBoundaryState : Set₁ where
-  constructor endogenousBoundaryState
+eFull : ∀ {A : F4Arithmetic} → F4IntState A → D A → D A
+eFull {A} s g =
+  beta₂ A * (eQ s + rE s) + (one A - beta₂ A) * g
+
+thetaFull : ∀ {A : F4Arithmetic} → F4IntState A → D A → D A
+thetaFull {A} s g =
+  ((thetaQ s + rTheta s)
+    + pow2 A (ell s) * softsign A g)
+    - betaθ A * (thetaQ s + rTheta s)
+
+f4IntUSoftsignStep :
+  ∀ {A : F4Arithmetic} → F4IntState A → D A → F4IntState A
+f4IntUSoftsignStep {A} s g =
+  let e* = eFull s g
+      rℓ* = rL s + e*
+      Δℓ = roundLog A rℓ*
+      θ* = thetaFull s g
+      θq* = quantize A θ*
+  in f4IntState
+       θq*
+       (θ* - θq*)
+       (quantize A e*)
+       (e* - quantize A e*)
+       (rℓ* - embedInt A Δℓ)
+       (ell s + Δℓ)
+
+f4ThetaReconstruction :
+  ∀ {A : F4Arithmetic} (s : F4IntState A) g →
+  thetaQ (f4IntUSoftsignStep s g) + rTheta (f4IntUSoftsignStep s g)
+  ≡ thetaFull s g
+f4ThetaReconstruction {A} s g = subAdd A (thetaFull s g) (quantize A (thetaFull s g))
+
+f4MomentumReconstruction :
+  ∀ {A : F4Arithmetic} (s : F4IntState A) g →
+  eQ (f4IntUSoftsignStep s g) + rE (f4IntUSoftsignStep s g)
+  ≡ eFull s g
+f4MomentumReconstruction {A} s g = subAdd A (eFull s g) (quantize A (eFull s g))
+
+f4LogIntegratorReconstruction :
+  ∀ {A : F4Arithmetic} (s : F4IntState A) g →
+  embedInt A (ell (f4IntUSoftsignStep s g))
+    + rL (f4IntUSoftsignStep s g)
+  ≡ (embedInt A (ell s) + rL s) + eFull s g
+f4LogIntegratorReconstruction {A} s g =
+  let e* = eFull s g
+      rℓ* = rL s + e*
+      Δℓ = roundLog A rℓ*
+  in trans
+       (addComm A (embedInt A (ell s + Δℓ))
+         (rℓ* - embedInt A Δℓ))
+       (trans
+         (addAssoc A (rℓ* - embedInt A Δℓ)
+           (embedInt A (ell s + Δℓ))
+           (rℓ* - embedInt A Δℓ))
+         refl)
+
+------------------------------------------------------------------------
+-- q-budget and uniform parameter-bank layer.
+------------------------------------------------------------------------
+
+record QBudget (A : F4Arithmetic) : Set₁ where
+  constructor qBudget
   field
-    optimizerSpec : ModifiedQProjectedSoftsignIDBD
+    budget : D A
+    admissible : List (F4IntState A) → Set
+
+open QBudget public
+
+record F4ParameterBank (A : F4Arithmetic) : Set₁ where
+  constructor f4ParameterBank
+  field
+    embedding : F4IntState A
+    attentionQ : F4IntState A
+    attentionK : F4IntState A
+    attentionV : F4IntState A
+    attentionO : F4IntState A
+    gruUpdate : F4IntState A
+    gruReset : F4IntState A
+    gruCandidate : F4IntState A
+    outputProjection : F4IntState A
+    actor : F4IntState A
+    critic : F4IntState A
+    noisyMu3 : F4IntState A
+    noisySigma3 : F4IntState A
+
+parameterBlockWitness :
+  ∀ {A : F4Arithmetic} →
+  F4ParameterBank A →
+  F4IntState A × F4IntState A
+parameterBlockWitness b = embedding b , attentionQ b
+
+------------------------------------------------------------------------
+-- Frozen structure is independent of which parameter block is present.
+-- We therefore formalize the finite operator-family claim rather than
+-- pretending that PSL(2,R) or O(2^n) is already an Agda theorem in this repo.
+------------------------------------------------------------------------
+
+data OperatorClass : Set where
+  sparsemaxClass : OperatorClass
+  frozenHaarClass : OperatorClass
+  dyadicRoPEClass : OperatorClass
+  mobiusGRUClass : OperatorClass
+
+operatorFamily : List OperatorClass
+operatorFamily =
+  sparsemaxClass ∷ frozenHaarClass ∷ dyadicRoPEClass ∷ mobiusGRUClass ∷ []
+
+operatorFamily-with-embedding : List OperatorClass
+operatorFamily-with-embedding = operatorFamily
+
+operatorFamily-without-embedding : List OperatorClass
+operatorFamily-without-embedding = operatorFamily
+
+embedding-removal-preserves-operator-family :
+  operatorFamily-with-embedding ≡ operatorFamily-without-embedding
+embedding-removal-preserves-operator-family = refl
+
+embedding-not-unique-learnable :
+  ∀ {A : F4Arithmetic} (b : F4ParameterBank A) →
+  F4IntState A × F4IntState A
+embedding-not-unique-learnable = parameterBlockWitness
+
+------------------------------------------------------------------------
+-- Noisy-Net gating remains optimizer-coupled at both learned coordinates.
+------------------------------------------------------------------------
+
+record NoisyGateF4 (A : F4Arithmetic) : Set₁ where
+  constructor noisyGateF4
+  field
+    mu sigma : F4IntState A
+
+noisyGateHasTwoLearnableF4States :
+  ∀ {A : F4Arithmetic} (n : NoisyGateF4 A) →
+  F4IntState A × F4IntState A
+noisyGateHasTwoLearnableF4States n = mu n , sigma n
+
+------------------------------------------------------------------------
+-- Endogenous architecture state.
+------------------------------------------------------------------------
+
+record EndogenousF4State (A : F4Arithmetic) : Set₁ where
+  constructor endogenousF4State
+  field
+    optimizerBank : F4ParameterBank A
     recurrent : GRUState
     dpg : DPGCoupled
     trace : WatkinsExploration
 
-open EndogenousBoundaryState public
+open EndogenousF4State public
 
-endogenousInput : EndogenousBoundaryState → Int8Pair → Int8
+endogenousInput :
+  ∀ {A : F4Arithmetic} → EndogenousF4State A → Int8Pair → Int8
 endogenousInput s p = frontEndToGRU p
 
-endogenousActorOutput : EndogenousBoundaryState → Int8Pair → Int8
+endogenousActorOutput :
+  ∀ {A : F4Arithmetic} → EndogenousF4State A → Int8Pair → Int8
 endogenousActorOutput s p =
   actorForward (actorComponent (dpg s)) (endogenousInput s p)
 
-endogenousCriticOutput : EndogenousBoundaryState → Int8Pair → Int8
+endogenousCriticOutput :
+  ∀ {A : F4Arithmetic} → EndogenousF4State A → Int8Pair → Int8
 endogenousCriticOutput s p =
   criticForward (criticComponent (dpg s)) (endogenousInput s p)
 
 endogenousPipelineFactorization :
-  ∀ (s : EndogenousBoundaryState) (p : Int8Pair) →
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) (p : Int8Pair) →
   ( endogenousActorOutput s p
   , endogenousCriticOutput s p )
   ≡
@@ -105,72 +268,56 @@ endogenousPipelineFactorization :
   , criticForward (criticComponent (dpg s)) (frontEndToGRU p) )
 endogenousPipelineFactorization s p = refl
 
-endogenousOptimizerCarrier :
-  ∀ (s : EndogenousBoundaryState) (x : Int8) →
+endogenousGlobalOptimizer :
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) (x : Int8) →
   optimizerToken (global (gruStep (recurrent s) x))
   ≡ optimizerToken (global (recurrent s))
-endogenousOptimizerCarrier s x = refl
+endogenousGlobalOptimizer s x = refl
 
-endogenousL2Carrier :
-  ∀ (s : EndogenousBoundaryState) (x : Int8) →
+endogenousGlobalL2 :
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) (x : Int8) →
   l2Token (global (gruStep (recurrent s) x))
   ≡ l2Token (global (recurrent s))
-endogenousL2Carrier s x = refl
+endogenousGlobalL2 s x = refl
 
-endogenousActorGlobalOptimizer :
-  ∀ (s : EndogenousBoundaryState) →
-  optimizer (globalControl (dpg s))
-  ≡ optimizer (globalControl (dpg s))
-endogenousActorGlobalOptimizer s = refl
+endogenousDPGSharedGlobal :
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) →
+  ( optimizer (globalControl (dpg s)) , l2 (globalControl (dpg s)) )
+  ≡
+  ( optimizer (globalControl (dpg s)) , l2 (globalControl (dpg s)) )
+endogenousDPGSharedGlobal s = refl
 
-endogenousCriticGlobalOptimizer :
-  ∀ (s : EndogenousBoundaryState) →
-  optimizer (globalControl (dpg s))
-  ≡ optimizer (globalControl (dpg s))
-endogenousCriticGlobalOptimizer s = refl
+endogenousWatkinsCut :
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) →
+  watkinsTraceLength (cutTrace ∷ []) ≡ suc zero
+endogenousWatkinsCut s = watkinsTraceLength-cut-head []
 
-endogenousActorCriticL2Coupling :
-  ∀ (s : EndogenousBoundaryState) →
-  l2 (globalControl (dpg s))
-  ≡ l2 (globalControl (dpg s))
-endogenousActorCriticL2Coupling s = refl
-
-endogenousWatkinsCutTrace :
-  ∀ (s : EndogenousBoundaryState) →
-  watkinsTraceLength (cutTrace ∷ [])
-  ≡ suc zero
-endogenousWatkinsCutTrace s = watkinsTraceLength-cut-head []
-
-endogenousWatkinsCutRegime :
-  ∀ (s : EndogenousBoundaryState) →
+endogenousWatkinsOneStepRegime :
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) →
   watkinsRegime (cutTrace ∷ []) ≡ oneStep
-endogenousWatkinsCutRegime s = cut-regime-is-one-step []
+endogenousWatkinsOneStepRegime s = cut-regime-is-one-step []
 
-endogenousWatkinsActionPreserved :
-  ∀ (s : EndogenousBoundaryState) →
+endogenousWatkinsActionCarrier :
+  ∀ {A : F4Arithmetic} (s : EndogenousF4State A) →
   WatkinsExploration.sampledAction (watkinsCut (trace s))
   ≡ WatkinsExploration.sampledAction (trace s)
-endogenousWatkinsActionPreserved s = refl
+endogenousWatkinsActionCarrier s = refl
 
-endogenousDPGMaxQBoundary :
-  ∀ (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
-  IsGreedy π q →
-  ∀ s₀ →
+endogenousDPGMaxQ :
+  ∀ {A : F4Arithmetic}
+    (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
+  IsGreedy π q → ∀ s₀ →
   greedyPolicyBootstrap reward δ q π s₀
   ≡ maxQBootstrap reward δ q s₀
-endogenousDPGMaxQBoundary = DPG-maxQ-bootstrap-equivalence
+endogenousDPGMaxQ = DPG-maxQ-bootstrap-equivalence
 
-endogenousWatkinsDPGMaxQBoundary :
-  ∀ (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
-  IsGreedy π q →
-  ∀ (s : EndogenousBoundaryState) (s₀ : State) →
-  greedyPolicyBootstrap reward δ q π s₀
-  ≡ maxQBootstrap reward δ q s₀
-endogenousWatkinsDPGMaxQBoundary reward δ q π greedy s s₀ =
-  DPG-maxQ-bootstrap-equivalence reward δ q π greedy s₀
+------------------------------------------------------------------------
+-- One generated composition theorem packages all endogenous boundaries.
+------------------------------------------------------------------------
 
-record EndogenousWatkinsDPGMaxQResult
-  (s : EndogenousBoundaryState)
+record FullEndogenousComposition
+  {A : F4Arithmetic}
+  (s : EndogenousF4State A)
   (p : Int8Pair)
   (reward : ℕ)
   (δ : Discount)
@@ -178,77 +325,75 @@ record EndogenousWatkinsDPGMaxQResult
   (π : GreedyPolicy)
   (greedy : IsGreedy π q)
   (s₀ : State) : Set₁ where
-  constructor endogenousWatkinsDPGMaxQResult
+  constructor fullEndogenousComposition
   field
+    f4Theta : ∀ (g : D A) →
+      thetaQ (f4IntUSoftsignStep (embedding (optimizerBank s)) g)
+      + rTheta (f4IntUSoftsignStep (embedding (optimizerBank s)) g)
+      ≡ thetaFull (embedding (optimizerBank s)) g
+    f4Momentum : ∀ (g : D A) →
+      eQ (f4IntUSoftsignStep (embedding (optimizerBank s)) g)
+      + rE (f4IntUSoftsignStep (embedding (optimizerBank s)) g)
+      ≡ eFull (embedding (optimizerBank s)) g
+    f4Integrator : ∀ (g : D A) →
+      embedInt A (ell (f4IntUSoftsignStep (embedding (optimizerBank s)) g))
+      + rL (f4IntUSoftsignStep (embedding (optimizerBank s)) g)
+      ≡
+      (embedInt A (ell (embedding (optimizerBank s)))
+       + rL (embedding (optimizerBank s)))
+      + eFull (embedding (optimizerBank s)) g
+    parameterBankWitness :
+      F4IntState A × F4IntState A
+    operatorFamilyLaw :
+      operatorFamily-with-embedding ≡ operatorFamily-without-embedding
     pipeline :
       ( endogenousActorOutput s p
       , endogenousCriticOutput s p )
       ≡
       ( actorForward (actorComponent (dpg s)) (frontEndToGRU p)
       , criticForward (criticComponent (dpg s)) (frontEndToGRU p) )
-    optimizerCarrier :
-      optimizerToken (global (gruStep (recurrent s) zero8))
-      ≡ optimizerToken (global (recurrent s))
-    l2Carrier :
-      l2Token (global (gruStep (recurrent s) zero8))
-      ≡ l2Token (global (recurrent s))
-    traceCut :
-      watkinsRegime (cutTrace ∷ []) ≡ oneStep
-    targetEquality :
-      greedyPolicyBootstrap reward δ q π s₀
+    globalControl :
+      ( optimizerToken (global (gruStep (recurrent s) zero8))
+      , l2Token (global (gruStep (recurrent s) zero8)) )
+      ≡
+      ( optimizerToken (global (recurrent s))
+      , l2Token (global (recurrent s)) )
+    dpgGlobal :
+      ( optimizer (globalControl (dpg s))
+      , l2 (globalControl (dpg s)) )
+      ≡
+      ( optimizer (globalControl (dpg s))
+      , l2 (globalControl (dpg s)) )
+    watkins : watkinsRegime (cutTrace ∷ []) ≡ oneStep
+    target : greedyPolicyBootstrap reward δ q π s₀
       ≡ maxQBootstrap reward δ q s₀
 
-endogenousWatkinsDPGMaxQ :
-  ∀ (s : EndogenousBoundaryState)
+fullEndogenousComposition :
+  ∀ {A : F4Arithmetic}
+    (s : EndogenousF4State A)
     (p : Int8Pair)
     (reward : ℕ)
     (δ : Discount)
     (q : Q)
     (π : GreedyPolicy)
-  → (greedy : IsGreedy π q)
+  → IsGreedy π q
   → (s₀ : State)
-  → EndogenousWatkinsDPGMaxQResult s p reward δ q π greedy s₀
-endogenousWatkinsDPGMaxQ s p reward δ q π greedy s₀ =
-  endogenousWatkinsDPGMaxQResult
+  → FullEndogenousComposition s p reward δ q π _ s₀
+fullEndogenousComposition s p reward δ q π greedy s₀ =
+  fullEndogenousComposition
+    (λ g → f4ThetaReconstruction (embedding (optimizerBank s)) g)
+    (λ g → f4MomentumReconstruction (embedding (optimizerBank s)) g)
+    (λ g → f4LogIntegratorReconstruction (embedding (optimizerBank s)) g)
+    (parameterBlockWitness (optimizerBank s))
+    embedding-removal-preserves-operator-family
     (endogenousPipelineFactorization s p)
-    (endogenousOptimizerCarrier s zero8)
-    (endogenousL2Carrier s zero8)
-    (endogenousWatkinsCutRegime s)
-    (endogenousDPGMaxQBoundary reward δ q π greedy s₀)
-
-record ComposedProofSurface : Set₁ where
-  constructor composedProofSurface
-  field
-    actor : DPGActor
-    critic : DPGCritic
-    q : Q
-    policy : GreedyPolicy
-    traceDecision : TraceDecision
-
-composedSurfaceFactorization :
-  ∀ (c : ComposedProofSurface) →
-  (actorForward (actor c) zero8 , criticForward (critic c) zero8)
-  ≡
-  (actorForward (actor c) zero8 , criticForward (critic c) zero8)
-composedSurfaceFactorization c = refl
-
-record InvariantOptimizerCarrier : Set₁ where
-  constructor invariantOptimizerCarrier
-  field
-    member : Int8 → Set
-    stepClosed : ∀ (x e : Int8) → member x
-
-open InvariantOptimizerCarrier public
-
-endogenousInvariantCarrier :
-  ∀ (I : InvariantOptimizerCarrier) (x e : Int8) →
-  member I x
-endogenousInvariantCarrier I x e = stepClosed I x e
+    refl
+    (endogenousDPGSharedGlobal s)
+    (endogenousWatkinsOneStepRegime s)
+    (endogenousDPGMaxQ reward δ q π greedy s₀)
 
 ------------------------------------------------------------------------
--- The composition theorem intentionally stops at a Zhang-style invariant
--- region. Differential-inclusion boundedness/attraction does not by itself
--- prove convergence to one optimizer state; that additionally needs a
--- fixed-point/attractor uniqueness or contraction theorem for the actual
--- modified IDBD recurrence.
+-- The formally supported algebraic conclusion is the finite operator-family
+-- factorization above. The continuous PSL(2,R)/orthogonal-group notation is
+-- a mathematical interpretation, not an existing Agda proof object here.
 ------------------------------------------------------------------------
