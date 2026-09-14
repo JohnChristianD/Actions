@@ -4,7 +4,18 @@ module Exotic.ERL.FullCoupled.GRUNoisyNetState where
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (Fin)
 open import Data.Product using (_×_; _,_)
-open import Exotic.efficient_chad.Int8 using (Int8; int8Add; int8OfNat)
+open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat)
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Aperiodic
+  ; Irreducible
+  ; PeriodOne
+  ; SelfLoop
+  ; a-periodic-from-components
+  ; periodOne-from-components
+  ; Reach
+  ; there
+  ; here
+  )
 
 -- A standard GRU has three recurrent matrices U_z,U_r,U_h. The input side
 -- contains three additional affine matrices, but exploration noise here is
@@ -44,6 +55,18 @@ gruNoise-target-agrees : ∀ ε →
     (nextUz ε , nextUr ε , nextUh ε)
 gruNoise-target-agrees ε = refl
 
+gruNoiseForState : GRUNoisyNetState → GRUNoise
+gruNoiseForState s =
+  gruNoise
+    (proj₁ (recurrentMatrices s))
+    (proj₂ (recurrentMatrices s))
+    (proj₃ (recurrentMatrices s))
+  where
+    open import Data.Product using (proj₁; proj₂)
+
+    proj₃ : ∀ {A B C : Set} → A × B × C → C
+    proj₃ (_ , _ , c) = c
+
 record GRUHiddenStep : Set₁ where
   constructor gruHiddenStep
   field
@@ -57,8 +80,26 @@ data GRUNoisyStep : GRUNoisyNetState → GRUNoisyNetState → Set where
     → GRUNoisyStep s
         (gruNoisyNetState (gruNoise-target ε) h)
 
--- Parameter projection sees all three independently mutable recurrent
--- matrices. Hidden-state evolution remains a separate recurrence theorem.
+-- The fresh target shell reaches any finite target and can target the source
+-- itself, so it is irreducible and aperiodic in the finite theorem sense.
+gruNoisyIrreducible : Irreducible GRUNoisyStep
+gruNoisyIrreducible s t =
+  there
+    (gruNoisyStepFromFreshNoise (gruNoiseForState t) (hiddenState t))
+    here
+
+gruNoisySelfLoop : SelfLoop GRUNoisyStep
+gruNoisySelfLoop s =
+  gruNoisyStepFromFreshNoise (gruNoiseForState s) (hiddenState s)
+
+gruNoisyPeriodOne : PeriodOne GRUNoisyStep
+gruNoisyPeriodOne =
+  periodOne-from-components gruNoisyIrreducible gruNoisySelfLoop
+
+gruNoisyAperiodic : Aperiodic GRUNoisyStep
+gruNoisyAperiodic =
+  a-periodic-from-components gruNoisyIrreducible gruNoisySelfLoop
+
 recurrentProjection : GRUNoisyNetState → RecurrentMatrices
 recurrentProjection = recurrentMatrices
 
