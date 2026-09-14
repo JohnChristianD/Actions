@@ -6,17 +6,12 @@ open import Agda.Builtin.Nat using (Nat)
 open import Data.Fin using (Fin)
 open import Exotic.econlib.dyadic.Dyadic using
   ( Dyadic
-  ; zeroᵈ
   ; _≤ᵈ_
   )
 
 ------------------------------------------------------------------------
 -- Finite fragment selected from Econlib's Equilibrium, GameTheory, and
 -- Optimization folders.  Continuous/real analysis is deliberately absent.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Optimization
 ------------------------------------------------------------------------
 
 record DyadicObjective (n : Nat) : Set where
@@ -35,18 +30,14 @@ optimal-self :
   ∀ {n} {f : DyadicObjective n} {x} → Maximizes f x → value f x ≤ᵈ value f x
 optimal-self h = dominates h _
 
-------------------------------------------------------------------------
--- Game theory
-------------------------------------------------------------------------
-
 record FiniteGame (players strategies : Nat) : Set where
   constructor finiteGame
   field
-    payoff : Fin players → (Fin strategies → Fin strategies) → Dyadic
+    payoff : Fin players → (Fin players → Fin strategies) → Dyadic
     deviate :
-      (Fin strategies → Fin strategies) →
+      (Fin players → Fin strategies) →
       Fin players → Fin strategies →
-      Fin strategies → Fin strategies
+      (Fin players → Fin strategies)
 
 open FiniteGame public
 
@@ -54,7 +45,7 @@ record BestResponse
   {players strategies : Nat}
   (g : FiniteGame players strategies)
   (p : Fin players)
-  (profile : Fin strategies → Fin strategies)
+  (profile : Fin players → Fin strategies)
   (choice : Fin strategies) : Set where
   constructor bestResponse
   field
@@ -66,7 +57,7 @@ record BestResponse
 record NashEquilibrium
   {players strategies : Nat}
   (g : FiniteGame players strategies)
-  (profile : Fin strategies → Fin strategies) : Set where
+  (profile : Fin players → Fin strategies) : Set where
   constructor nashEquilibrium
   field
     eachPlayerBest : ∀ p → BestResponse g p profile (profile p)
@@ -76,10 +67,6 @@ nash-implies-best-response :
     {profile} → NashEquilibrium g profile →
     ∀ p → BestResponse g p profile (profile p)
 nash-implies-best-response h = eachPlayerBest h
-
-------------------------------------------------------------------------
--- Equilibrium / market clearing
-------------------------------------------------------------------------
 
 record Market (agents goods : Nat) : Set where
   constructor market
@@ -101,10 +88,6 @@ market-equilibrium-clears :
   MarketEquilibrium m →
   ∀ good → aggregateDemand m good ≡ supply m good
 market-equilibrium-clears h = clears h
-
-------------------------------------------------------------------------
--- Pure dyadic welfare comparison.
-------------------------------------------------------------------------
 
 record WelfareWitness (n : Nat) : Set where
   constructor welfareWitness
