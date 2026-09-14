@@ -50,6 +50,9 @@ open import Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE using
   ; sparsemax2-hard-sparsity-left
   ; sparsemax2-hard-sparsity-right
   ; frontEndToGRU
+  ; ropeQuarter
+  ; haar2
+  ; sparsemax2
   )
 
 canonicalLaw0 : Law
@@ -130,20 +133,13 @@ canonicalActorRightId = actorComposition-right-identity
 
 canonicalFrontEndLaw :
   ∀ (p : Int8Pair) →
-  frontEnd p ≡ frontEnd p
-canonicalFrontEndLaw p = refl
+  frontEnd p ≡ ropeQuarter (haar2 (sparsemax2 p))
+canonicalFrontEndLaw = frontEnd-expanded
 
-canonicalFrontEndExpanded :
-  ∀ (p : Int8Pair) →
-  frontEnd p ≡ frontEnd p
-canonicalFrontEndExpanded p = frontEnd-expanded p
-
-canonicalHardSparseLeft :
-  sparsemax2-hard-sparsity-left
+canonicalHardSparseLeft : sparsemax2-hard-sparsity-left
 canonicalHardSparseLeft = sparsemax2-hard-sparsity-left
 
-canonicalHardSparseRight :
-  sparsemax2-hard-sparsity-right
+canonicalHardSparseRight : sparsemax2-hard-sparsity-right
 canonicalHardSparseRight = sparsemax2-hard-sparsity-right
 
 canonicalFrontEndToGRU :
