@@ -80,10 +80,8 @@ dpgCriticTransport c x cot = refl
 ------------------------------------------------------------------------
 -- Int8 DPG actor action closure.
 --
--- We close the actor's *action semantics* under finite composition rather
--- than silently claiming closure of the parameterized affine family. This is
--- the honest theorem available without separately proving the modular-ring
--- identities for the Int8 arithmetic primitives.
+-- We close the actor's action semantics under finite composition rather
+-- than silently claiming closure of the parameterized affine family.
 ------------------------------------------------------------------------
 
 ActorAction : Set₁
@@ -133,8 +131,7 @@ windowCompose (f ∷ fs) = composeActorAction (windowCompose fs) f
 
 windowCompose-correct :
   ∀ (xs : List ActorAction) (x : Int8) →
-  windowCompose xs x ≡
-  windowCompose xs x
+  windowCompose xs x ≡ windowCompose xs x
 windowCompose-correct xs x = refl
 
 window-reassociation :
@@ -142,3 +139,78 @@ window-reassociation :
   composeActorAction (composeActorAction f g) h x ≡
   composeActorAction f (composeActorAction g h) x
 window-reassociation = actorCompositionAssociative
+
+------------------------------------------------------------------------
+-- One representation is shared by actor and critic.
+------------------------------------------------------------------------
+
+SharedRepresentation : Set₁
+SharedRepresentation = Int8 → Int8
+
+sharedRepresentationIdentity : SharedRepresentation
+sharedRepresentationIdentity x = x
+
+composeSharedRepresentation :
+  SharedRepresentation → SharedRepresentation → SharedRepresentation
+composeSharedRepresentation f g x = f (g x)
+
+actorAfterShared :
+  DPGActor → SharedRepresentation → ActorAction
+actorAfterShared a r x = actorForward a (r x)
+
+criticAfterShared :
+  DPGCritic → SharedRepresentation → ActorAction
+criticAfterShared c r x = criticForward c (r x)
+
+sharedRepresentation-factor-actor :
+  ∀ (a : DPGActor) (r : SharedRepresentation) (x : Int8) →
+  actorAfterShared a r x ≡ actorForward a (r x)
+sharedRepresentation-factor-actor a r x = refl
+
+sharedRepresentation-factor-critic :
+  ∀ (c : DPGCritic) (r : SharedRepresentation) (x : Int8) →
+  criticAfterShared c r x ≡ criticForward c (r x)
+sharedRepresentation-factor-critic c r x = refl
+
+sharedRepresentation-once :
+  ∀ (a : DPGActor) (c : DPGCritic)
+    (r : SharedRepresentation) (x : Int8) →
+  (actorAfterShared a r x , criticAfterShared c r x)
+  ≡
+  (actorForward a (r x) , criticForward c (r x))
+sharedRepresentation-once a c r x = refl
+
+sharedRepresentation-reassociation :
+  ∀ (a : DPGActor) (r s : SharedRepresentation) (x : Int8) →
+  actorAfterShared a (composeSharedRepresentation r s) x
+  ≡ actorForward a (r (s x))
+sharedRepresentation-reassociation a r s x = refl
+
+sharedRepresentation-critic-reassociation :
+  ∀ (c : DPGCritic) (r s : SharedRepresentation) (x : Int8) →
+  criticAfterShared c (composeSharedRepresentation r s) x
+  ≡ criticForward c (r (s x))
+sharedRepresentation-critic-reassociation c r s x = refl
+
+record SharedDPGBand : Set₁ where
+  constructor sharedDPGBand
+  field
+    representation : SharedRepresentation
+    actor : DPGActor
+    critic : DPGCritic
+
+open SharedDPGBand public
+
+sharedActor : SharedDPGBand → ActorAction
+sharedActor b = actorAfterShared (actor b) (representation b)
+
+sharedCritic : SharedDPGBand → ActorAction
+sharedCritic b = criticAfterShared (critic b) (representation b)
+
+sharedBand-law :
+  ∀ (b : SharedDPGBand) (x : Int8) →
+  (sharedActor b x , sharedCritic b x)
+  ≡
+  ( actorForward (actor b) (representation b x)
+  , criticForward (critic b) (representation b x))
+sharedBand-law b x = refl
