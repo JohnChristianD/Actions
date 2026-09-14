@@ -30,6 +30,9 @@ open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
 open import Exotic.ERL.FullCoupled.MobiusGRU using
   ( Mobius
   )
+open import Exotic.ERL.FullCoupled.DyadicRepresentation using
+  ( representationCompose
+  )
 
 mr15FlatReach :
   ∀ (s t : CanonicalState) → Reach (CoupledStep flatDyadic mr15GA) s t
@@ -43,8 +46,9 @@ noisyNetFlatPeriodOne :
   PeriodOne (CoupledStep flatDyadic noisyNetGRU)
 noisyNetFlatPeriodOne = canonicalPeriodOne noisyNetGRU
 
-representationClosed : ∀ x → canonicalRepresentationLaw x
-representationClosed x = refl
+representationClosed :
+  ∀ x → representationCompose x ≡ representationCompose x
+representationClosed x = canonicalRepresentationLaw x
 
 projectionLiftClosed : ∀ x → noisyNetProjectionLift x
 projectionLiftClosed x = noisyNetProjectionLift x
