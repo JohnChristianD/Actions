@@ -4,72 +4,84 @@ Authority: Agda `--safe`.
 
 ## Canonical composition
 
-The active representation theorem is ordered as
+`E -> dyadic RoPE (Walsh-Rademacher) -> sparsemax attention -> frozen Haar -> specialized recurrent GRU -> Pi`.
 
-`E -> dyadic RoPE (Walsh-Rademacher) -> sparsemax -> frozen Haar -> specialized GRU -> Pi`.
+The old standalone pointwise activation/MLP path is retired. The only retained nonlinear representation operations are the GRU's internal gates:
 
-There is no standalone pointwise forward-activation layer and no MLP between sparsemax and the recurrent representation. The only nonlinear maps retained in the representation path are internal GRU gates:
+`z = 0.5 * (1 + softsign)`
+`r = 0.5 * (1 + softsign)`
+`h~ = signReLU`.
 
-`g_z = 0.5 * (1 + softsign)`
-`g_r = 0.5 * (1 + softsign)`
-`h~  = signReLU`.
+The GRU is recurrent, not an MLP merely repeated by convention. Its finite window actions compose associatively; finite sequential actions therefore admit exact scan/reassociation theorems.
+
+## Transformer-like classification
+
+The front half has the structural ingredients needed for a finite Transformer-like composition theorem: positional action, sparse attention, and frozen linear mixing. The whole architecture is a hybrid recurrent attention composition, not a literal claim of identity with a Transformer implementation. A task-agnostic expressivity theorem requires an explicit carrier-lifting theorem from the attention representation into the recurrent state and is therefore stated separately.
+
+## Log-pyramid hierarchy
+
+A log-pyramid theorem requires an explicit hierarchy of context windows or scales, together with a refinement/coarsening map between adjacent levels. The recurrent scan theorem supplies associative window composition but does not by itself prove logarithmic depth. The canonical target is an adaptive window schedule whose composition tree has logarithmic height and whose restriction/refinement maps commute with the sparsemax/Haar/GRU transition.
 
 ## GRU perturbation methods
 
-`Exotic/ERL/Exploration/GRUPerturbationMethods.agda` is the active method theorem class:
+`GRU-OpenES`, `GRU-MR15`, and `GRU-NoisyNet` remain the actual perturbation-method family. The probability law is a separate parameter of each method.
 
-`GRU-OpenES`, `GRU-MR15`, `GRU-NoisyNet`.
+A standard GRU has six affine matrices. Exploration is restricted to the three recurrent matrices `U_z`, `U_r`, and `U_h`; input-side matrices are not perturbed. For hidden width `d`, the persistent recurrent noisy carrier contains `3*d^2 + d` Int8 coordinates before optimizer and auxiliary state.
 
-All three currently use the same finite `GRUNoisyNetState` carrier and fresh-target recurrent-noise shell. Consequently all three have exact irreducibility, self-loop, period-one, and aperiodicity witnesses.
+No strict method ordering is admitted unless Agda proves method-specific projection, lift/section, retraction, and proper-fiber theorems on the *full coupled carrier*. A common witness bundle is not a strict ordering theorem.
 
-A strict ranking is not inferred from the names of the methods. It requires explicit method-specific state maps, projection/lift/retraction, and a proper fiber witness. The old `OpenES < MR15 < NoisyNet` theorem has been removed rather than relabeled.
+## Global optimization boundary
 
-## Recurrent exploration noise
+The optimizer and global L2 regularization are always global to every learned component. No local exception is introduced for the GRU, sparsemax-adjacent learned maps, actor, or critic.
 
-A standard GRU has six affine matrices: three input matrices and three recurrent matrices. The retained exploration perturbation is restricted to `U_z`, `U_r`, and `U_h`.
+The canonical optimizer remains `standardTDLambdaInt8`. Global coupling records must quantify over the complete learned parameter state, including actor, critic, recurrent matrices, and any learned attention parameters.
 
-For hidden width `2`, the persistent noisy recurrent state has `3 * 2 * 2 + 2 = 14` Int8 coordinates. Before optimizer or auxiliary coordinates are adjoined, the finite carrier therefore has `256^14` states. The general hidden-width `d` count is `3d^2 + d`.
+## Norm-pair boundary
 
-## Aperiodicity
+Only genuinely learned nonlinear/attention operators retain their local L1/path-one norm-pair obligation. Frozen Haar does not acquire a learnable norm-pair obligation. If sparsemax is fixed, its norm-pair is pruned; if sparsemax is learned, its norm-pair remains part of the theorem interface.
 
-The finite theorem schema now exposes `Aperiodic` explicitly as the irreducible-plus-self-loop witness. The GRU fresh-target shell reaches every target state in one step and can target its source state, giving the aperiodicity witness exactly and finitely.
+## Möbius recurrence and scan
 
-No limiting or environment-dependent statistical theorem is involved.
+The internal GRU gates are expressed through finite dyadic `softsign` and `signReLU` operations. Pointwise Möbius witnesses compose sequentially at the actual intermediate value; the theorem is pointwise in the recurrent state and never replaces the entire recurrent map by one unsupported global Möbius map.
 
-## Dyadic positional and frozen features
+The finite recurrent window action forms an associative composition algebra. A parallel scan theorem follows once the concrete GRU update is given a homogeneous finite action witness. The scan theorem establishes reassociation and parallel-precomputation correctness, not a performance claim.
 
-RoPE and Haar are structurally complementary rather than arithmetically redundant.
+## Flat Dyadic law
 
-Dyadic RoPE supplies positional action: a finite Walsh-Rademacher signed/permutation law that moves or reindexes coordinates before attention. Haar supplies a fixed linear transform and an exact decorrelation witness after sparse support selection. They can both be finite and dyadic, but they certify different maps and commute only under additional concrete hypotheses; neither is redundant merely because both are linear/finitary.
+Flat Dyadic is the sole active probability law. Its finite mass is constant across the 256 Int8 residues. Its algebraic specialness comes from exact full support, exact normalization, positive zero/self-loop support, and positive unit-step support. Those facts make the finite communication and aperiodicity witnesses collapse cleanly.
 
-The Haar stage is frozen before the GRU. Exact decorrelation is a theorem witness, not an empirical covariance result.
+Unimodality is secondary here. Uniformity implies weak and strong finite-profile monotonicity predicates that are useful as derived corollaries, but neither is the source of the reachability theorem. No environment-dependent distribution comparison is admitted.
 
-## Transformer-like algebraic class
+## Actor-critic boundary
 
-The architecture is close to the Transformer-family theorem surface because it combines positional encoding, sparse attention, and a representation block operating over a context window. With recurrence, however, the exact algebraic kernel is a finite state-transition/action composition rather than a standard parallel self-attention theorem.
+The actor and critic are finite Int8 functions. The deterministic-policy-gradient theorem is expressed as an exact finite chain-rule/CHAD theorem over the declared actor/action carrier rather than importing a continuous-action result by name.
 
-The recurrence can provide arbitrarily many finite windows semantically, but the canonical theorem remains finite: each concrete window has a finite action witness and products reassociate exactly. That is the right proof-level relation to JAX state-transition/sequence models and associative state-space scans, without claiming a literal Transformer, Mamba, or SSRN implementation.
+The critic target retains the declared max-bootstrap operator. A full coupled actor-critic theorem requires exact proofs for actor transport, critic target transport, optimizer/L2 coupling, and composition with the recurrent representation. Jensen or local max inequalities alone do not certify the whole coupling.
 
-## Möbius composition and scan
+## Endogenous theorem frontier
 
-`Exotic/efficient_chad/GRUGatedComposition.agda` contains the sequential gate CHAD/Möbius witness boundary.
+The active theorem generator should emit only full-composition propositions of the form
 
-`Exotic/efficient_chad/GRURecurrentMobius.agda` proves associative finite window composition, giving the exact algebraic kernel for parallel scan. A concrete full-GRU matrix-product theorem still requires a homogeneous/action witness for the actual bilinear update/reset recurrence.
+`FullCoupled(method, flatDyadic, representation, optimizer, L2, actor, critic)`.
 
-## Global optimizer, norms, and actor-critic
+Subtheorems for law normalization or local gate identities are admissibility premises, not final theorem candidates. Every final candidate is checked by `agda --safe`.
 
-`GRUComposition` keeps the global optimizer and global L2 boundaries coupled to the recurrent learner. The GRU and sparsemax-side components retain the paired L1/path-one obligation surface, while global L2 stays global.
+The desired strict-strength ordering is a logical implication order on theorem records, not a statistic:
 
-The repository has an Int8 shared actor/critic construction. The GRU boundary now names an explicit DPG-update proof obligation, because an Int8 carrier by itself does not prove the DPG update semantics.
+`T_OpenES  <  T_MR15  <  T_NoisyNet`
 
-## Probability law
+only after explicit carrier maps establish strict factor extensions. The recurrent GRU class is a separate stronger-structure candidate. A theorem `T_NoisyNet -> T_GRUNoisyNet` requires an actual projection/lift/retraction from the old coupled carrier into the recurrent carrier.
 
-Flat Dyadic remains the sole active law: exact uniform weight `1` over the `256` Int8 residues. Its algebraic cleanliness comes from constant full support, exact normalization, positive zero/self-loop support, and positive unit moves—not from strong unimodality as a separate ingredient.
+## Algebraic expressivity classification
 
-A weak or strong unimodality predicate is a derived property here, not the source of the finite collapse.
+The architecture is task-agnostic in the finite algebraic sense: all operators act on finite Int8 carriers and compose exactly. It should be called `quantized Transformer-like + recurrent state-space composition`, not a generic universal approximation theorem. Unbounded kuya terminology replaces limiting terminology in the specification: recurrent depth and window depth may be unbounded in the specification, while every checked theorem instance is finite.
 
-## Pruned surfaces
+## Runtime/toolchain pruning
 
-The standalone softsign-gated representation, standalone pointwise activation helper, softsign-specific pointwise Möbius bridge, legacy Noisy-Net toy state, and legacy strict-factor theorem modules have been removed from the active tree.
+The mathematical authority surface contains Agda `--safe` plus only the existing minimal support needed by the repository's theorem generator. No extra proof library is required for the finite dyadic results. Python/Ruby/Elixir/Erlang/Clojure/CMD/Bash-style runtime logic is not part of the mathematical authority. Pull requests remain GitHub delivery objects, not mathematical dependencies. No active Nix source dependency is present on this branch; Guix is therefore not required. Where a reproducible environment is needed later, pin one declarative environment rather than maintaining two competing package-manager authorities.
 
-No empirical ranking or environment-dependent statistical theorem is used.
+## Validation boundary
+
+The representation primitive gate is green for commit `3382f71eb2e36f7d6839daae563f3acfb03d6f4e`; the canonical Agda gate for that same commit was still failing. Therefore repository-wide green status is not yet claimed. The next accepted head must show the canonical Agda `--safe` workflow passing before the PR is treated as complete.
+
+No empirical performance theorem, environment-conditioned statistical ranking, or external mathematical library becomes an acceptance oracle.
