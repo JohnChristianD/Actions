@@ -56,7 +56,7 @@ open GRUState public
 
 ------------------------------------------------------------------------
 -- Finite nonlinearities are represented as explicit finite maps.  This
--- keeps the theorem layer independent of transcendental definitions.
+-- keeps the theorem layer entirely inside the finite algebra.
 ------------------------------------------------------------------------
 
 record FiniteUnary : Set₁ where
@@ -84,9 +84,8 @@ onePlusSoftsign8 =
     (λ x → int8Add half8 (int8Mul half8 (apply softsign8 x)))
 
 ------------------------------------------------------------------------
--- The names above denote the finite dyadic substitutions.  The algebraic
--- theorem surface only uses their finite maps; no real-valued sigmoid/tanh
--- theorem is imported.
+-- The named gate substitutions are finite maps; no real-valued sigmoid or
+-- tanh theorem is imported into this layer.
 ------------------------------------------------------------------------
 
 gruUpdateGate : Int8 → Int8
