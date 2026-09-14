@@ -104,6 +104,12 @@ jobs:
       - name: Check finite DPG theorem
         run: agda --safe Exotic/ERL/FullCoupled/Int8DPG.agda
 
+      - name: Check finite Bellman DPG and integer Haar composition theorem
+        run: agda --safe Exotic/ERL/FullCoupled/DPGBellmanHaarComposition.agda
+
+      - name: Check promoted PQN DPG composition theorem
+        run: agda --safe Exotic/ERL/FullCoupled/PromotionComposition.agda
+
       - name: Check full method-law coupling
         run: agda --safe Exotic/ERL/FullCoupled/DyadicMethodLawCoupling.agda
 
