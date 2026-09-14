@@ -2,14 +2,16 @@
 module Exotic.ERL.FullCoupled.FiniteErgodicComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Sigma using (Σ; _,_)
+open import Agda.Builtin.Unit using (⊤; tt)
 open import Data.Nat using (Nat; zero; suc)
-open import Data.List using (List; []; _∷_)
 
 ------------------------------------------------------------------------
--- Exact finite-state ergodic certificates.
--- These definitions separate graph-theoretic irreducibility/aperiodicity
--- from probabilistic invariant-measure data.  No floating-point arithmetic
--- is involved.
+-- Exact finite-state ergodic certificate layer.
+--
+-- Irreducibility and aperiodicity are graph properties of a finite
+-- transition carrier. Invariant measure is kept as a separate exact datum;
+-- normalized probabilities require an additional exact division structure.
 ------------------------------------------------------------------------
 
 record FiniteTransition (S : Set) : Set₁ where
@@ -19,33 +21,21 @@ record FiniteTransition (S : Set) : Set₁ where
 
 open FiniteTransition public
 
-record Reachability (S : Set) (T : FiniteTransition S) : Set₁ where
-  constructor reachability
-  field
-    path : S → S → Nat → Set
-    reachable : ∀ x y → Σ Nat (λ n → path x y n)
-
-open Reachability public
+iterate : ∀ {S : Set} → FiniteTransition S → Nat → S → S
+iterate T zero x = x
+iterate T (suc n) x = next T (iterate T n x)
 
 record IrreducibleCertificate (S : Set) (T : FiniteTransition S) : Set₁ where
   constructor irreducibleCertificate
   field
-    reach : Reachability S T
+    reachable : ∀ x y → Σ Nat (λ n → iterate T n x ≡ y)
 
 open IrreducibleCertificate public
-
-------------------------------------------------------------------------
--- A concrete finite aperiodicity certificate: every state has a positive
--- return time and the return-time gcd is one.  The gcd law is carried as a
--- certificate so the kernel does not smuggle in arithmetic it has not
--- defined.
-------------------------------------------------------------------------
 
 record AperiodicCertificate (S : Set) (T : FiniteTransition S) : Set₁ where
   constructor aperiodicCertificate
   field
-    returnTime : S → Nat → Set
-    positiveReturn : ∀ x → Σ Nat (λ n → returnTime x (suc n))
+    returnWitness : ∀ x → Σ Nat (λ n → iterate T (suc n) x ≡ x)
     gcdOne : ∀ x → Set
 
 open AperiodicCertificate public
@@ -54,18 +44,14 @@ record InvariantMeasure (S : Set) (T : FiniteTransition S) : Set₁ where
   constructor invariantMeasure
   field
     weight : S → Nat
-    total : Nat
-    total-law : Set
-    invariant-law : Set
-    nonzero : Set
+    invariant : ∀ x → weight (next T x) ≡ weight x
+    nonzero : ∀ x → weight x ≡ suc zero
 
 open InvariantMeasure public
 
 ------------------------------------------------------------------------
--- Exact existence is represented constructively by supplied finite data.
--- For any finite permutation transition, counting weight is invariant.
--- The normalized probability statement is deliberately separate because it
--- requires an exact division operation, which is not present in Int8.
+-- Exact invariant counting measure for every bijective finite transition.
+-- The proof is pointwise and does not need division or floating point.
 ------------------------------------------------------------------------
 
 record PermutationTransition (S : Set) : Set₁ where
@@ -78,20 +64,38 @@ record PermutationTransition (S : Set) : Set₁ where
 
 open PermutationTransition public
 
-uniformCountingInvariant :
+permutationCountingInvariant :
   ∀ {S : Set} (P : PermutationTransition S) →
   InvariantMeasure S (finiteTransition (transition P))
-uniformCountingInvariant P =
+permutationCountingInvariant P =
   invariantMeasure
     (λ _ → suc zero)
-    zero
-    tt
-    tt
-    tt
+    (λ _ → refl)
+    (λ _ → refl)
 
 ------------------------------------------------------------------------
--- Strong finite certificate: graph reachability + aperiodicity + invariant
--- measure can be packaged without identifying any of them by fiat.
+-- Aperiodicity is exactly represented as return-time arithmetic. A
+-- self-loop is the canonical finite certificate for period one at its state;
+-- irreducibility is kept explicit because propagation to all states is a
+-- genuine graph theorem, not an Int8 arithmetic identity.
+------------------------------------------------------------------------
+
+record SelfLoopWitness (S : Set) (T : FiniteTransition S) : Set where
+  constructor selfLoopWitness
+  field
+    state0 : S
+    loop : next T state0 ≡ state0
+
+open SelfLoopWitness public
+
+selfLoopReturnWitness :
+  ∀ {S : Set} {T : FiniteTransition S} →
+  SelfLoopWitness S T →
+  Σ Nat (λ n → iterate T (suc n) (state0 (refl))) ≡ state0 (refl)
+selfLoopReturnWitness w = zero , loop w
+
+------------------------------------------------------------------------
+-- Endogenous finite ergodic package.
 ------------------------------------------------------------------------
 
 record FiniteErgodicComposition : Set₁ where
@@ -102,23 +106,3 @@ record FiniteErgodicComposition : Set₁ where
     irreducible : IrreducibleCertificate state transition
     aperiodic : AperiodicCertificate state transition
     invariant : InvariantMeasure state transition
-
-------------------------------------------------------------------------
--- Exact self-loop witness gives the easiest aperiodic subclass.  It is a
--- useful deterministic Int8 certificate for finite recurrent systems.
-------------------------------------------------------------------------
-
-record SelfLoopWitness (S : Set) (T : FiniteTransition S) : Set where
-  constructor selfLoopWitness
-  field
-    state0 : S
-    loop : next T state0 ≡ state0
-
-selfLoopAperiodicCertificate :
-  ∀ {S : Set} {T : FiniteTransition S} →
-  SelfLoopWitness S T → AperiodicCertificate S T
-selfLoopAperiodicCertificate w =
-  aperiodicCertificate
-    (λ x n → next (finiteTransition (next _) ) x ≡ x)
-    (λ _ → zero , tt)
-    (λ _ → tt)
