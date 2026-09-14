@@ -4,34 +4,12 @@ import Data.List (intercalate)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
-data Method = Method
-  { name :: String
-  , moduleName :: String
-  , stepName :: String
-  , irreducibilityName :: String
-  , selfLoopName :: String
-  }
-
-methods :: [Method]
+methods :: [(String, String)]
 methods =
-  [ Method "MR15" "Exotic.ERL.Exploration.MR15Reachability" "MR15Step"
-      "mr15IrreducibilityProof" "mr15SelfLoopProof"
-  , Method "OpenES" "Exotic.ERL.Exploration.OpenESDyadic" "openESStep"
-      "openESIrreducibilityProof" "openESSelfLoopProof"
-  , Method "NoisyNet" "Exotic.ERL.FullCoupled.NoisyNetCoupled" "NoisyNetStep"
-      "noisyNetIrreducibilityProof" "noisyNetSelfLoopProof"
+  [ ("GRUOpenES", "gruOpenES")
+  , ("GRUMR15", "gruMR15")
+  , ("GRUNoisyNet", "gruNoisyNet")
   ]
-
-data Law = Law
-  { lawName :: String
-  , lawCtor :: String
-  , normalizationName :: String
-  , unitSupportName :: String
-  }
-
-laws :: [Law]
-laws =
-  [ Law "FlatDyadic" "flatDyadic" "flatDyadicNormalized" "flatDyadicUnitSupport" ]
 
 generatedPath :: FilePath
 generatedPath = "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
@@ -41,49 +19,28 @@ renderCandidate = unlines $
   [ "{-# OPTIONS --safe #-}"
   , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
   , ""
-  , "-- Generated full-composition theorem harness. Haskell constructs source; Agda --safe is the acceptance oracle."
+  , "-- Generated GRU exploration theorem harness. Haskell constructs source;"
+  , "-- Agda --safe is the acceptance oracle."
   , "open import Exotic.ERL.Exploration.DyadicLaw using"
-  , "  ( DyadicLaw; flatDyadic; flatDyadicNormalized; flatDyadicUnitSupport )"
-  , "open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using"
-  , "  ( FullAlgebraicCoupling; composeFull )"
-  , "open import Exotic.efficient_chad.SoftsignGatedComposition using"
-  , "  ( softsignGatedForwardLaw-proof; softsignGatedPullbackLaw-proof )"
-  , "open import Exotic.efficient_chad.MobiusSoftsignBridge using"
-  , "  ( softsignGatedForwardMobiusWitness )"
-  , "open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using"
-  , "  ( softsignGatedPeriodOne )"
-  , "open import Exotic.ERL.FullCoupled.TheoremStrengthV3 using"
-  , "  ( OpenES-lt-MR15; MR15-lt-NoisyNet; openES-lt-NoisyNet"
-  , "  ; openESFullFromMR15Full; mr15FullFromNoisyNetFull )"
+  , "  ( flatDyadicNormalized; flatDyadicUnitSupport )"
   , "open import Exotic.ERL.Exploration.FlatDyadicEligibility using"
   , "  ( flatDyadicAllFiniteEligibility )"
+  , "open import Exotic.ERL.Exploration.GRUPerturbationMethods using"
+  , "  ( GRUPerturbationMethod"
+  , "  ; GRUStep"
+  , "  ; gruAperiodic"
+  , "  )"
   , ""
   , "FlatDyadicEligibility = flatDyadicAllFiniteEligibility"
+  , "FlatDyadicNormalized = flatDyadicNormalized"
+  , "FlatDyadicUnitSupport = flatDyadicUnitSupport"
   ]
   ++ concatMap renderMethod methods
-  ++ [ ""
-     , "StrictOpenESLTMR15 = OpenES-lt-MR15"
-     , "StrictMR15LTNoisyNet = MR15-lt-NoisyNet"
-     , "StrictOpenESLTNoisyNet = openES-lt-NoisyNet"
-     , "FullOpenESLTMR15 = openESFullFromMR15Full"
-     , "FullMR15LTNoisyNet = mr15FullFromNoisyNetFull"
-     ]
   where
-    renderMethod m =
-      [ "", "open import " ++ moduleName m ]
-      ++ concatMap (renderPermutation m) laws
-
-    renderPermutation m l =
+    renderMethod (label, ctor) =
       [ ""
-      , name m ++ lawName l ++ "Endogenous : FullAlgebraicCoupling "
-          ++ lawCtor l ++ " " ++ stepName m
-      , name m ++ lawName l ++ "Endogenous = composeFull "
-          ++ lawCtor l ++ " " ++ normalizationName l ++ " "
-          ++ unitSupportName l ++ " "
-          ++ "softsignGatedForwardLaw-proof softsignGatedPullbackLaw-proof "
-          ++ "softsignGatedForwardMobiusWitness "
-          ++ "softsignGatedPeriodOne "
-          ++ irreducibilityName m ++ " " ++ selfLoopName m
+      , label ++ "Aperiodic = gruAperiodic " ++ ctor
+      , label ++ "Step = GRUStep " ++ ctor
       ]
 
 runKernelCheck :: IO (ExitCode, String)
@@ -106,11 +63,11 @@ main = do
         ]
   writeFile generatedPath summary
   putStrLn $ "exploration-theorem-generator=" ++ status
-  putStrLn $ "exploration-law-method-permutations=" ++ show (length methods * length laws)
-  putStrLn "exploration-theorem-order=OpenES<MR15<NoisyNet"
+  putStrLn $ "gru-method-count=" ++ show (length methods)
+  putStrLn "exploration-theorem-class=GRU-OpenES,GRU-MR15,GRU-NoisyNet"
+  putStrLn "strict-method-order=requires-explicit-projection-lift-retraction"
   putStrLn "law-frontier=FlatDyadic"
-  putStrLn "mobius-forward-composition=pointwise-witness-composition"
-  putStrLn "full-coupling-order=OpenES<MR15<NoisyNet"
+  putStrLn "aperiodicity=irreducible-plus-self-loop"
   if null output then pure () else putStrLn output
   case code of
     ExitSuccess -> exitSuccess
