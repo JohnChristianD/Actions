@@ -116,6 +116,12 @@ jobs:
       - name: Check endogenous Watkins DPG optimizer composition theorem
         run: agda --safe Exotic/ERL/FullCoupled/EndogenousBoundaryComposition.agda
 
+      - name: Check learnable and noisy Sparsemax F4 composition class
+        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxF4Composition.agda
+
+      - name: Check Int8 Lyapunov KKT contraction stability schemas
+        run: agda --safe Exotic/ERL/FullCoupled/Int8StabilityComposition.agda
+
       - name: Check full method-law coupling
         run: agda --safe Exotic/ERL/FullCoupled/DyadicMethodLawCoupling.agda
 
