@@ -3,7 +3,7 @@ module Exotic.efficient_chad.FiniteDivision where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
-open import Data.Nat using (Nat; zero; suc)
+open import Data.Nat using (Nat; zero; suc; _*_) 
 open import Data.Nat.DivMod using (_/_)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
@@ -50,8 +50,6 @@ fraction-equality : Fraction → Fraction → Set
 fraction-equality x y =
   numerator x * positiveValue (denominator y)
   ≡ numerator y * positiveValue (denominator x)
-  where
-  open import Data.Nat using (_*_) 
 
 int8AsFraction : Int8 → Fraction
 int8AsFraction x = fraction (toℕ (code x)) (positive zero)
