@@ -18,7 +18,7 @@ open import Exotic.ERL.FullCoupled.DyadicGRU using
 ------------------------------------------------------------------------
 -- Representation stack: sparsemax projection -> frozen Haar -> dyadic
 -- Walsh-Rademacher phase carrier -> recurrent GRU.  There is no Fourier
--- exponential and no standalone pointwise MLP activation.
+-- exponential and no standalone learned pointwise activation node.
 ------------------------------------------------------------------------
 
 sparsemax8 : FiniteUnary
