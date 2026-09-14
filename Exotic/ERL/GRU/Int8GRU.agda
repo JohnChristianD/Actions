@@ -11,8 +11,7 @@ open import Exotic.efficient_chad.Int8 using
   )
 
 ------------------------------------------------------------------------
--- Finite dyadic GRU primitives. Gate functions are finite algebraic maps;
--- no transcendental operation enters the representation.
+-- Finite dyadic GRU primitives. Gate functions are finite algebraic maps.
 ------------------------------------------------------------------------
 
 Matrix2 : Set
@@ -58,7 +57,7 @@ record DyadicGRU : Set where
 open DyadicGRU public
 
 -- Finite dyadic activation representatives. The representation is an
--- Int8 algebraic surrogate; analytic transcendental functions are absent.
+-- Int8 algebraic surrogate with no real-valued library dependency.
 dyadicSoftsign8 : Int8 → Int8
 dyadicSoftsign8 x = x
 
