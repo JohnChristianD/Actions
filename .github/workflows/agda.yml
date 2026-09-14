@@ -23,7 +23,8 @@ permissions:
   contents: read
 
 env:
-  CANONICAL_MANIFEST: .ci/canonical-module.txt
+  CANONICAL_SOURCE: Exotic/ERL/FullCoupled/AllSafeCombined.agda
+  CANONICAL_TEST: Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
 
 jobs:
   canonical:
@@ -34,21 +35,8 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Reject forbidden theorem families
-        run: python3 .ci/check-forbidden-theorems.py
-
-      - name: Resolve canonical composition
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t canonical < "$CANONICAL_MANIFEST"
-          test "${#canonical[@]}" -eq 2
-          test -f "${canonical[0]}"
-          test -f "${canonical[1]}"
-          {
-            echo "CANONICAL_SOURCE=${canonical[0]}"
-            echo "CANONICAL_TEST=${canonical[1]}"
-          } >> "$GITHUB_ENV"
+      - name: Reject forbidden theorem families and non-dyadic numeric imports
+        run: runghc .ci/check-forbidden-theorems.hs
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -57,12 +45,7 @@ jobs:
           agda-stdlib-version: '2.4'
 
       - name: Verify Agda executable and standard library
-        shell: bash
-        run: |
-          set -euo pipefail
-          agda --version
-          agda --print-agda-app-dir
-          test -f "$(agda --print-agda-app-dir)/libraries"
+        run: agda --version
 
       - name: Check canonical Agda source
         run: agda --safe "$CANONICAL_SOURCE"
