@@ -34,6 +34,9 @@ open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ; noisyNetGRUSelfLoop
   ; noisyNetGRUPeriodOne
   )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CoupledStep
+  )
 
 ------------------------------------------------------------------------
 -- One flat-dyadic exploration theorem surface, shared by all ablations.
@@ -60,9 +63,7 @@ openESFlatSurface = flatExplorationCertificate
   openESPeriodOneProof
 
 noisyNetFlatSurface :
-  FlatExplorationCertificate NoisyNetState
-    (λ x y → Exotic.ERL.FullCoupled.DyadicMethodLawCoupling.CoupledStep
-      flatDyadic noisyNetGRU x y)
+  FlatExplorationCertificate NoisyNetState (CoupledStep flatDyadic noisyNetGRU)
 noisyNetFlatSurface = flatExplorationCertificate
   noisyNetGRUIrreducible
   noisyNetGRUSelfLoop
