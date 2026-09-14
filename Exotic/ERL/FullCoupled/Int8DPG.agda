@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.Int8DPG where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.List using (List; []; _∷_)
+open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; int8Add
@@ -38,11 +39,18 @@ actorForward a x = int8Add (int8Mul (actorWeight a) x) x
 criticForward : DPGCritic → Int8 → Int8
 criticForward c x = int8Add (int8Mul (criticWeight c) x) x
 
-data CriticMaxBootstrap : Int8 → Int8 → Set where
-  maxBootstrap : ∀ q → CriticMaxBootstrap q q
+------------------------------------------------------------------------
+-- This relation is intentionally only self-consistency. It is not a
+-- max-Q/Bellman theorem. The genuine finite Q-argmax connection lives in
+-- DPGBellmanHaarComposition, where the action space is ordered explicitly.
+------------------------------------------------------------------------
 
-criticMaxBootstrap-self : ∀ q → CriticMaxBootstrap q q
-criticMaxBootstrap-self q = maxBootstrap q
+data CriticValueSelfConsistency : Int8 → Int8 → Set where
+  valueSelfConsistent : ∀ q → CriticValueSelfConsistency q q
+
+criticValueSelfConsistency-self :
+  ∀ q → CriticValueSelfConsistency q q
+criticValueSelfConsistency-self q = valueSelfConsistent q
 
 record DPGCoupled : Set where
   constructor dpgCoupled
