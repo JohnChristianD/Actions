@@ -21,9 +21,8 @@ open import Exotic.efficient_chad.MobiusInt8Composition using
   ; mobius-compose-law
   )
 
--- The only nonlinear maps retained in the recurrent boundary are internal
--- GRU nonlinearities. No standalone forward MLP or pointwise activation layer
--- is part of this interface.
+-- Nonlinearities live only inside the recurrent GRU. There is no separate
+-- forward activation layer and no MLP boundary here.
 record GRUActivations : Set₁ where
   constructor gruActivations
   field
@@ -39,13 +38,15 @@ onePlus8 = affineCHADOperator (affineCHAD one8 one8)
 onePlusSoftsign8 : GRUActivations → CHADOperator
 onePlusSoftsign8 a = composeCHAD onePlus8 (softsign8 a)
 
+-- Finite realization of 0.5 * (1 + softsign). The exact midpoint map is a
+-- concrete Int8 CHAD operator supplied by the implementation boundary.
 sigmoidLike8 : GRUActivations → CHADOperator
 sigmoidLike8 a = composeCHAD (half8 a) (onePlusSoftsign8 a)
 
 sigmoidLike8-primal : ∀ (a : GRUActivations) (x : Int8)
   → primal (sigmoidLike8 a) x
     ≡ primal (half8 a)
-        (primal (onePlus8) (primal (softsign8 a) x))
+        (primal onePlus8 (primal (softsign8 a) x))
 sigmoidLike8-primal a x =
   trans
     (composeCHAD-primal (half8 a) (onePlusSoftsign8 a) x)
@@ -63,7 +64,8 @@ sigmoidLike8-pullback a x cotangent =
     (cong
       (λ q → pullback (softsign8 a) x
         (pullback onePlus8 (primal (softsign8 a) x) q))
-      refl)
+      (composeCHAD-pullback onePlus8 (softsign8 a) x
+        (pullback (half8 a) (primal (onePlusSoftsign8 a) x) cotangent)))
 
 record GRUSequentialBoundary : Set₁ where
   constructor gruSequentialBoundary
@@ -81,9 +83,9 @@ gruUpdate8 g = sigmoidLike8 (activations g)
 gruReset8 : GRUSequentialBoundary → CHADOperator
 gruReset8 g = sigmoidLike8 (activations g)
 
--- Möbius closure is conditional on concrete finite witnesses for the actual
--- internal operators. The witness is pointwise because the outer GRU gate is
--- evaluated at the output of the inner finite map.
+-- Möbius closure is pointwise in the sequential forward value. Concrete
+-- witnesses are required for the finite signReLU8, softsign8, midpoint, and
+-- affine +1 maps; composition itself is kernel-checked.
 record PointwiseForwardMobiusWitness (op : CHADOperator) : Set₁ where
   constructor pointwiseForwardMobiusWitness
   field
@@ -123,18 +125,9 @@ composePointwiseForwardMobius wf wg =
 
 sigmoidLike8MobiusWitness : ∀ (g : GRUSequentialBoundary)
   → PointwiseForwardMobiusWitness (half8 (activations g))
+  → PointwiseForwardMobiusWitness onePlus8
   → PointwiseForwardMobiusWitness (softsign8 (activations g))
   → PointwiseForwardMobiusWitness (sigmoidLike8 g)
-sigmoidLike8MobiusWitness g halfWitness softsignWitness =
+sigmoidLike8MobiusWitness g halfWitness plusWitness softsignWitness =
   composePointwiseForwardMobius halfWitness
-    (composePointwiseForwardMobius
-      (pointwiseForwardMobiusWitness
-        (λ x → pointwise-one-plus)
-        (λ x → refl))
-      softsignWitness)
-  where
-    pointwise-one-plus : FiniteMobiusAction
-    pointwise-one-plus =
-      mobiusCompose
-        (pointwiseForwardMobiusWitness.action halfWitness one8)
-        (pointwiseForwardMobiusWitness.action softsignWitness one8)
+    (composePointwiseForwardMobius plusWitness softsignWitness)
