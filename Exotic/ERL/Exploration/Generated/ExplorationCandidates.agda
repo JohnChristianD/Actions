@@ -1,17 +1,13 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 
--- Generated theorem-discovery report. Agda remains the acceptance oracle.
--- This checked snapshot records missing concrete proof terms; it is not a proof.
+-- Generated finite theorem-discovery candidate surface.
+-- Acceptance remains Agda --safe; no statistical ordering is asserted.
 
--- method: MR15
--- status: MissingProof
--- details: mr15IrreducibilityProof | mr15SelfLoopProof
+-- candidate: MR15 x FlatDyadic
+-- candidate: OpenES x FlatDyadic
+-- candidate: NoisyNet-GRU x FlatDyadic
+-- candidate: GRU-coupling x FlatDyadic
 
--- method: OpenES
--- status: MissingProof
--- details: openESIrreducibilityProof | openESSelfLoopProof
-
--- method: NoisyNet
--- status: MissingProof
--- details: noisyNetIrreducibilityProof | noisyNetSelfLoopProof
+candidateCount : Set
+candidateCount = Set
