@@ -1,98 +1,100 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.FiniteMarkovComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Nat using (Nat)
-open import Data.Product using (_×_; _,_)
+open import Agda.Builtin.Equality using (_≡_)
+open import Data.Empty using (⊥)
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Irreducible
+  ; PeriodOne
+  ; SelfLoop
+  )
+open import Exotic.ERL.Exploration.DyadicLaws using
+  ( Law
+  ; Method
+  ; flatDyadic
+  ; mr15GA
+  ; openES
+  ; noisyNetGRU
+  )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CanonicalState
+  ; CoupledStep
+  ; coupledIrreducible
+  ; coupledPeriodOne
+  ; coupledSelfLoop
+  )
 
 ------------------------------------------------------------------------
--- Exact finite-state theorem surface. The objects below are certificates
--- for the actual composed kernel, not claims about a coordinate in isolation.
+-- Exact boundary of the current formalization.
+-- `CoupledStep` is a finite support relation. Its reachability and
+-- period-one laws are genuine, but a support relation alone is not a
+-- stochastic kernel and therefore does not by itself prove invariant-measure
+-- existence, uniqueness, or Markov-chain convergence.
 ------------------------------------------------------------------------
 
-record Transition (S : Set) : Set₁ where
-  constructor transition
-  field
-    step : S → S
-    weight : S → S → Nat
+mr15SupportIrreducible :
+  Irreducible (CoupledStep flatDyadic mr15GA)
+mr15SupportIrreducible = coupledIrreducible mr15GA
 
-open Transition public
+openESSupportIrreducible :
+  Irreducible (CoupledStep flatDyadic openES)
+openESSupportIrreducible = coupledIrreducible openES
 
-record Path (S : Set) (T : Transition S) (x y : S) : Set where
-  constructor path
-  field
-    length : Nat
-    reaches : step T x ≡ y
+noisyNetSupportIrreducible :
+  Irreducible (CoupledStep flatDyadic noisyNetGRU)
+noisyNetSupportIrreducible = coupledIrreducible noisyNetGRU
 
-record Irreducible (S : Set) (T : Transition S) : Set₁ where
-  constructor irreducible
-  field
-    reaches : ∀ x y → Path S T x y
+mr15SupportPeriodOne :
+  PeriodOne (CoupledStep flatDyadic mr15GA)
+mr15SupportPeriodOne = coupledPeriodOne mr15GA
 
-record SelfLoop (S : Set) (T : Transition S) : Set₁ where
-  constructor selfLoop
-  field
-    state : S
-    loop : step T state ≡ state
+openESSupportPeriodOne :
+  PeriodOne (CoupledStep flatDyadic openES)
+openESSupportPeriodOne = coupledPeriodOne openES
 
-record AperiodicCertificate (S : Set) (T : Transition S) : Set₁ where
-  constructor aperiodicCertificate
-  field
-    self : SelfLoop S T
-    irreducible : Irreducible S T
-
-aPeriodOneFromCertificate :
-  ∀ {S : Set} {T : Transition S} →
-  AperiodicCertificate S T →
-  SelfLoop S T
-aPeriodOneFromCertificate c = self c
-
-record FiniteDistribution (S : Set) : Set₁ where
-  constructor finiteDistribution
-  field
-    mass : S → Nat
-    total : Nat
-    total-law : total ≡ total
-
-record InvariantMeasure (S : Set) (T : Transition S) : Set₁ where
-  constructor invariantMeasure
-  field
-    distribution : FiniteDistribution S
-    invariant : ∀ x → x ≡ x
-
-record InvariantMeasureExistence (S : Set) (T : Transition S) : Set₁ where
-  constructor invariantMeasureExistence
-  field
-    witness : InvariantMeasure S T
-
-record UniqueInvariantMeasure (S : Set) (T : Transition S) : Set₁ where
-  constructor uniqueInvariantMeasure
-  field
-    invariant : InvariantMeasure S T
-    unique : ∀ μ → μ ≡ invariant
+noisyNetSupportPeriodOne :
+  PeriodOne (CoupledStep flatDyadic noisyNetGRU)
+noisyNetSupportPeriodOne = coupledPeriodOne noisyNetGRU
 
 ------------------------------------------------------------------------
--- Non-separable joint-state composition.
+-- Deterministic counterexample: noise is not required for a Markov chain
+-- to exist, but deterministic finite dynamics do not automatically give the
+-- irreducible + period-one combination used by the repository.
 ------------------------------------------------------------------------
 
-record CoupledKernel (A B : Set) : Set₁ where
-  constructor coupledKernel
-  field
-    stepAB : A × B → A × B
+data Two : Set where
+  leftState : Two
+  rightState : Two
 
-open CoupledKernel public
+toggle : Two → Two
+toggle leftState = rightState
+toggle rightState = leftState
 
-composeCoupled :
-  ∀ {A B : Set} → CoupledKernel A B → CoupledKernel A B
-composeCoupled k = k
+toggleStep : Two → Two → Set
+toggleStep x y = toggle x ≡ y
 
-record FullStateIrreducibility (A B : Set) (K : CoupledKernel A B) : Set₁ where
-  constructor fullStateIrreducibility
-  field
-    witness : ∀ x y → stepAB K x ≡ y
+not-left-right-eq : rightState ≢ leftState
+not-left-right-eq ()
 
-record FullStateAperiodicity (A B : Set) (K : CoupledKernel A B) : Set₁ where
-  constructor fullStateAperiodicity
-  field
-    state : A × B
-    loop : stepAB K state ≡ state
+notToggleSelfLoop :
+  ¬ (∀ x → toggleStep x x)
+notToggleSelfLoop self =
+  not-left-right-eq (self leftState)
+
+notTogglePeriodOne :
+  ¬ PeriodOne toggleStep
+notTogglePeriodOne p =
+  notToggleSelfLoop (SelfLoop.selfLoop p)
+
+------------------------------------------------------------------------
+-- Therefore the broad claim "deterministic GRU + finite carrier implies
+-- Markovian ergodicity" is false. The existing finite support laws must be
+-- accompanied by an actual normalized stochastic kernel if invariant measure
+-- and convergence theorems are desired.
+------------------------------------------------------------------------
+
+fullCompositionMarkovErgodicityNotAutomatic :
+  ¬ (∀ (S : Set) (step : S → S) →
+      PeriodOne (λ x y → step x ≡ y))
+fullCompositionMarkovErgodicityNotAutomatic witness =
+  notTogglePeriodOne (witness Two toggle)
