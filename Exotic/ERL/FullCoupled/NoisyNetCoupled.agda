@@ -1,7 +1,6 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.NoisyNetCoupled where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
   ; noisyNetGRU
@@ -13,19 +12,11 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   )
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState
-  ; GRUMatrices
-  ; GRUNoise
-  ; GlobalControl
-  ; gruState
-  ; gruMatrices
-  ; gruNoise
-  ; globalControl
   ; gruStep
   ; gruGlobalControlPersists
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
-  ( CoupledState
-  ; CoupledStep
+  ( CoupledStep
   ; coupledIrreducible
   ; coupledSelfLoop
   ; coupledPeriodOne
@@ -36,10 +27,6 @@ open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
 
 NoisyNetState : Set
 NoisyNetState = GRUState
-
-NoisyNetStep : NoisyNetState → NoisyNetState → Set
-NoisyNetStep s t =
-  ∀ x → t ≡ gruStep s x
 
 noisyNetGRUIrreducible :
   ∀ (l : Law) → Irreducible (CoupledStep l noisyNetGRU)
@@ -63,6 +50,5 @@ noisyNetProjectionLift = noisyNet-project-lift
 
 noisyNetGlobalControlPreserved :
   ∀ (s : GRUState) (x : _)
-  → GlobalControl.optimizerToken (Exotic.ERL.FullCoupled.DyadicGRU.global s)
-    ≡ GlobalControl.optimizerToken (Exotic.ERL.FullCoupled.DyadicGRU.global (gruStep s x))
-noisyNetGlobalControlPreserved s x = refl
+  → gruGlobalControlPersists s x
+noisyNetGlobalControlPreserved s x = gruGlobalControlPersists s x
