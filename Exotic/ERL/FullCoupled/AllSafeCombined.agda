@@ -6,13 +6,16 @@ open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
   ; Method
   ; flatDyadic
-  ; lazyUnit
-  ; dyadicLadder
   ; mr15GA
   ; openES
   ; noisyNetGRU
   ; law-has-zero
   ; law-has-unit-generator
+  )
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Reach
+  ; SelfLoop
+  ; PeriodOne
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
   ( CoupledState
@@ -20,11 +23,6 @@ open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
   ; coupledIrreducible
   ; coupledSelfLoop
   ; coupledPeriodOne
-  ; noisyNetProjection
-  )
-open import Exotic.ERL.FullCoupled.DyadicGRU using
-  ( GRUState
-  ; gruGlobalControlPersists
   )
 open import Exotic.ERL.FullCoupled.MobiusGRU using
   ( Mobius
@@ -35,13 +33,6 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
   )
 open import Exotic.ERL.FullCoupled.DyadicRepresentation using
   ( representationCompose
-  ; representation-compose-law
-  )
-open import Exotic.ERL.FullCoupled.Int8DPG using
-  ( DPGActor
-  ; DPGCritic
-  ; dpgActorTransport
-  ; dpgCriticTransport
   )
 
 canonicalLaw0 : Law
@@ -55,28 +46,24 @@ canonicalState = CoupledState
 
 canonicalIrreducible :
   ∀ (l : Law) (m : Method) →
-  ∀ s t → Exotic.ERL.Exploration.ExplorationTheoremSchema.Reach
-    (CoupledStep l m) s t
+  ∀ s t → Reach (CoupledStep l m) s t
 canonicalIrreducible l m = coupledIrreducible l m
 
 canonicalSelfLoop :
   ∀ (l : Law) (m : Method) →
-  Exotic.ERL.Exploration.ExplorationTheoremSchema.SelfLoop
-    (CoupledStep l m)
+  SelfLoop (CoupledStep l m)
 canonicalSelfLoop l m = coupledSelfLoop l m
 
 canonicalPeriodOne :
   ∀ (l : Law) (m : Method) →
-  Exotic.ERL.Exploration.ExplorationTheoremSchema.PeriodOne
-    (CoupledStep l m)
+  PeriodOne (CoupledStep l m)
 canonicalPeriodOne l m = coupledPeriodOne l m
 
 canonicalFlatZero = law-has-zero flatDyadic
 canonicalFlatGenerator = law-has-unit-generator flatDyadic
 
 canonicalRepresentationLaw :
-  ∀ x → representationCompose x
-    ≡ representationCompose x
+  ∀ x → representationCompose x ≡ representationCompose x
 canonicalRepresentationLaw x = refl
 
 canonicalMobiusAssoc :
