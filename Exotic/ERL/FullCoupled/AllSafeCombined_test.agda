@@ -14,6 +14,15 @@ open import Exotic.ERL.Exploration.DyadicLaws using
   ; lazy-normalized
   ; ladder-normalized
   )
+open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
+  ( Reach
+  ; SelfLoop
+  ; PeriodOne
+  )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CoupledState
+  ; CoupledStep
+  )
 open import Exotic.ERL.FullCoupled.AllSafeCombined using
   ( canonicalIrreducible
   ; canonicalSelfLoop
@@ -24,12 +33,8 @@ open import Exotic.ERL.FullCoupled.AllSafeCombined using
 open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
   ( noisyNetProjectionLift
   )
-open import Exotic.ERL.FullCoupled.Int8DPG using
-  ( DPGCoupled
-  ; actorComponent
-  ; criticComponent
-  ; actorGlobalCoherence
-  ; criticGlobalCoherence
+open import Exotic.ERL.FullCoupled.MobiusGRU using
+  ( Mobius
   )
 
 flatLazyNormalization : lazy-normalized
@@ -38,13 +43,16 @@ flatLazyNormalization = refl
 ladderNormalization : ladder-normalized
 ladderNormalization = refl
 
-mr15FlatReach : ∀ s t → _
+mr15FlatReach :
+  ∀ (s t : CoupledState) → Reach (CoupledStep flatDyadic mr15GA) s t
 mr15FlatReach s t = canonicalIrreducible flatDyadic mr15GA s t
 
-openESLazyLoop : ∀ s → _
+openESLazyLoop :
+  ∀ (s : CoupledState) → SelfLoop (CoupledStep lazyUnit openES) s
 openESLazyLoop s = canonicalSelfLoop lazyUnit openES s
 
-noisyNetLadderPeriodOne : _
+noisyNetLadderPeriodOne :
+  PeriodOne (CoupledStep dyadicLadder noisyNetGRU)
 noisyNetLadderPeriodOne = canonicalPeriodOne dyadicLadder noisyNetGRU
 
 representationClosed : ∀ x → canonicalRepresentationLaw x
@@ -53,5 +61,5 @@ representationClosed x = refl
 projectionLiftClosed : ∀ x → noisyNetProjectionLift x
 projectionLiftClosed x = noisyNetProjectionLift x
 
-mobiusClosed : ∀ a b c → canonicalMobiusAssoc a b c
+mobiusClosed : ∀ (a b c : Mobius) → canonicalMobiusAssoc a b c
 mobiusClosed a b c = canonicalMobiusAssoc a b c
