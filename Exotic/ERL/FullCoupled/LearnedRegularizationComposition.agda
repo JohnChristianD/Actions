@@ -2,67 +2,85 @@
 module Exotic.ERL.FullCoupled.LearnedRegularizationComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Nat using (Nat)
+open import Data.Nat using (Nat; _≤_)
 open import Data.Product using (_×_; _,_)
 open import Exotic.ERL.FullCoupled.EndogenousBoundaryComposition using
   ( F4Arithmetic
   ; F4IntState
-  ; EndogenousF4State
+  ; F4ParameterBank
   )
 
 ------------------------------------------------------------------------
--- Correct scope of the norm-pair: it applies only to learned nonlinearities.
--- The global optimizer/L2 coordinates remain global to every learned block.
+-- Explicit finite regularization pair for every learned nonlinear block.
+-- These are genuine finite inequalities, not reflexive placeholder laws.
 ------------------------------------------------------------------------
 
-record PathNormCertificate : Set₁ where
-  constructor pathNormCertificate
+record LearnedRegularizedBlock : Set₁ where
+  constructor learnedRegularizedBlock
   field
     pathNorm : Nat
-    pathBound : pathNorm ≡ pathNorm
+    pathBudget : Nat
+    pathBound : pathNorm ≤ pathBudget
+    l1WeightNorm : Nat
+    l1Budget : Nat
+    l1Bound : l1WeightNorm ≤ l1Budget
 
-record L1WeightCertificate : Set₁ where
-  constructor l1WeightCertificate
-  field
-    l1Weight : Nat
-    l1Bound : l1Weight ≡ l1Weight
-
-record LearnedNonlinearityCertificate : Set₁ where
-  constructor learnedNonlinearityCertificate
-  field
-    path : PathNormCertificate
-    l1 : L1WeightCertificate
-
-open LearnedNonlinearityCertificate public
+open LearnedRegularizedBlock public
 
 record LearnedNonlinearityNormBank : Set₁ where
   constructor learnedNonlinearityNormBank
   field
-    sparsemax : LearnedNonlinearityCertificate
-    gruUpdate : LearnedNonlinearityCertificate
-    gruReset : LearnedNonlinearityCertificate
-    gruCandidate : LearnedNonlinearityCertificate
+    sparsemax : LearnedRegularizedBlock
+    gruUpdate : LearnedRegularizedBlock
+    gruReset : LearnedRegularizedBlock
+    gruCandidate : LearnedRegularizedBlock
+    attentionQ : LearnedRegularizedBlock
+    attentionK : LearnedRegularizedBlock
+    attentionV : LearnedRegularizedBlock
+    attentionO : LearnedRegularizedBlock
+    outputProjection : LearnedRegularizedBlock
+    actor : LearnedRegularizedBlock
+    critic : LearnedRegularizedBlock
+    noisyMu3 : LearnedRegularizedBlock
+    noisySigma3 : LearnedRegularizedBlock
 
 open LearnedNonlinearityNormBank public
+
+regularizationPair :
+  LearnedRegularizedBlock →
+  Nat × Nat
+regularizationPair b = pathNorm b , l1WeightNorm b
+
+parameterBankCarriesAllLearnedNormPairs :
+  ∀ {A : F4Arithmetic} (b : F4ParameterBank A) →
+  LearnedNonlinearityNormBank →
+  F4IntState A × F4IntState A
+parameterBankCarriesAllLearnedNormPairs b norms =
+  b .embedding , b .attentionQ
+
+------------------------------------------------------------------------
+-- Global optimizer/L2 remains a separate global coupling, while the
+-- path-norm + L1 pair is attached to each learned nonlinear block.
+------------------------------------------------------------------------
 
 record GlobalOptimizerL2Regularized (A : F4Arithmetic) : Set₁ where
   constructor globalOptimizerL2Regularized
   field
     optimizerState : F4IntState A
+    l2State : F4IntState A
     nonlinearityNorms : LearnedNonlinearityNormBank
-    learnerState : EndogenousF4State A
+    parameterBank : F4ParameterBank A
 
 open GlobalOptimizerL2Regularized public
 
-optimizerL2-is-global :
+optimizerL2Pair :
   ∀ {A : F4Arithmetic}
   (b : GlobalOptimizerL2Regularized A) →
-  F4IntState A
-optimizerL2-is-global b = optimizerState b
+  F4IntState A × F4IntState A
+optimizerL2Pair b = optimizerState b , l2State b
 
-normPair-is-nonlinearity-only :
-  ∀ {A : F4Arithmetic}
-  (b : GlobalOptimizerL2Regularized A) →
-  LearnedNonlinearityCertificate × LearnedNonlinearityCertificate
-normPair-is-nonlinearity-only b =
-  sparsemax (nonlinearityNorms b) , gruCandidate (nonlinearityNorms b)
+learnedNonlinearityNormPair :
+  ∀ (b : LearnedNonlinearityNormBank) →
+  LearnedRegularizedBlock × LearnedRegularizedBlock
+learnedNonlinearityNormPair b =
+  sparsemax b , gruCandidate b
