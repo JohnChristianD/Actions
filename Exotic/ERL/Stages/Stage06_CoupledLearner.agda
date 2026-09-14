@@ -2,6 +2,7 @@
 module Exotic.ERL.Stages.Stage06_CoupledLearner where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.FullCoupled.DPGInt8 using
   ( GlobalOptimizer
   ; GlobalL2
@@ -22,13 +23,13 @@ record CoupledLearner : Set where
 
 open CoupledLearner public
 
-learnerActor : CoupledLearner → _
+learnerActor : CoupledLearner → Int8 → Int8
 learnerActor c = actorForward (state c)
 
-learnerCritic : CoupledLearner → _
+learnerCritic : CoupledLearner → Int8 → Int8
 learnerCritic c = criticForward (state c)
 
-learnerTarget : CoupledLearner → _
+learnerTarget : CoupledLearner → Int8 → Int8 → Int8
 learnerTarget c = criticTarget (state c)
 
 actorTransport-law : ∀ c x → actorTransport (state c) x ≡ actorTransport (state c) x
