@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.Int8StabilityComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; sym; subst; cong)
+open import Agda.Builtin.Equality using (_≡_; refl; sym; subst; cong; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Empty using (⊥)
 open import Data.Nat using (_<_ ; _≤_; _+_)
@@ -45,11 +45,12 @@ OrbitNonFixed {step = step} s =
 shiftOrbitNonFixed :
   ∀ {S : Set} {step : S → S} {s : S} →
   OrbitNonFixed s → OrbitNonFixed (step s)
-shiftOrbitNonFixed nf n =
-  subst
-    (λ z → z ≢ step z)
-    (iterate-shift step n _) 
-    (nf (suc n))
+shiftOrbitNonFixed {step = step} {s = s} nf n =
+  let p = iterate-shift step n s
+  in nf (suc n)
+       λ eq →
+         (nf (suc n))
+           (trans (sym p) (trans eq (cong step p)))
 
 iterate-energy-decrease :
   ∀ {S : Set} {step : S → S}
@@ -58,28 +59,15 @@ iterate-energy-decrease :
   OrbitNonFixed s →
   ∀ n →
   energy L (iterate step (suc n) s) < energy L s
-iterate-energy-decrease L nf zero =
-  strictDecrease L _ (nf zero)
-iterate-energy-decrease L nf (suc n) =
-  let
-    next : OrbitNonFixed (step _) 
-    next = shiftOrbitNonFixed nf
-
-    ih :
-      energy L (iterate step (suc n) (step _))
-      < energy L (step _)
-    ih = iterate-energy-decrease L next n
-
-    ih' :
-      energy L (iterate step (suc (suc n)) _)
-      < energy L (step _)
-    ih' =
-      subst
-        (λ z → energy L z < energy L (step _))
-        (iterate-shift step (suc n) _)
-        ih
-  in
-    <-trans ih' (strictDecrease L _ (nf zero))
+iterate-energy-decrease L {s = s} nf zero =
+  strictDecrease L s (nf zero)
+iterate-energy-decrease L {s = s} nf (suc n) =
+  <-trans
+    (subst
+      (λ z → energy L z < energy L (step s))
+      (iterate-shift step (suc n) s)
+      (iterate-energy-decrease L (shiftOrbitNonFixed nf) n))
+    (strictDecrease L s (nf zero))
 
 ------------------------------------------------------------------------
 -- Exact finite-cycle exclusion: any positive-length closed orbit whose
@@ -96,18 +84,11 @@ noNontrivialFiniteCycle :
   OrbitNonFixed s →
   ⊥
 noNontrivialFiniteCycle L {s = s} n cyc nf =
-  let
-    desc : energy L (iterate step (suc n) s) < energy L s
-    desc = iterate-energy-decrease L nf n
-
-    closed : energy L s < energy L s
-    closed =
-      subst
-        (λ z → energy L z < energy L s)
-        cyc
-        desc
-  in
-    <-irrefl (energy L s) closed
+  <-irrefl (energy L s)
+    (subst
+      (λ z → energy L z < energy L s)
+      cyc
+      (iterate-energy-decrease L nf n))
 
 ------------------------------------------------------------------------
 -- A strict Nat-valued Lyapunov law really does exclude a nontrivial
@@ -122,19 +103,25 @@ noNontrivialTwoCycle :
   step s ≢ s →
   ⊥
 noNontrivialTwoCycle L {s = s} cyc not-fixed =
-  noNontrivialFiniteCycle
-    L
-    1
-    cyc
-    nf
-  where
-  nf : OrbitNonFixed s
-  nf zero = not-fixed
-  nf (suc n) eq =
-    not-fixed
-      (trans
-        (sym (iterate-shift step n s))
-        (trans eq (iterate-shift step n s)))
+  let
+    first : energy L (step s) < energy L s
+    first = strictDecrease L s not-fixed
+
+    step-not-fixed : step (step s) ≢ step s
+    step-not-fixed eq =
+      not-fixed (trans (sym eq) cyc)
+
+    second : energy L (step (step s)) < energy L (step s)
+    second = strictDecrease L (step s) step-not-fixed
+
+    second' : energy L s < energy L (step s)
+    second' =
+      subst
+        (λ z → energy L z < energy L (step s))
+        cyc
+        second
+  in
+    <-irrefl (energy L s) (<-trans second' first)
 
 ------------------------------------------------------------------------
 -- Finite metric contraction also gives a direct constructive theorem:
