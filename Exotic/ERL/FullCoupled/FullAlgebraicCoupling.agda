@@ -7,27 +7,14 @@ open import Exotic.ERL.Exploration.DyadicLaw using
   ; law-unit-support
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Irreducible
+  ( Aperiodic
+  ; Irreducible
   ; SelfLoop
   ; PeriodOne
   ; periodOne-from-components
   )
-open import Exotic.efficient_chad.SoftsignGatedComposition using
-  ( SoftsignGatedForward
-  ; signReLU8
-  ; softsign8
-  ; softsignGatedOperator
-  ; softsignGatedForwardLaw
-  ; softsignGatedPullbackLaw
-  )
-open import Exotic.efficient_chad.MobiusSoftsignBridge using
-  ( PointwiseForwardMobiusWitness
-  ; softsignGatedForwardMobiusWitness
-  )
-open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
-  ( SoftsignGatedStep
-  ; softsignGatedPeriodOne
-  )
+open import Exotic.ERL.FullCoupled.GRUComposition using
+  ( GRUComposition )
 
 record FullAlgebraicCoupling {S : Set}
     (law : DyadicLaw) (_—→_ : S → S → Set) : Set₂ where
@@ -35,39 +22,25 @@ record FullAlgebraicCoupling {S : Set}
   field
     lawNormalized : law-normalized law
     lawUnitSupport : law-unit-support law
-    representationForward : softsignGatedForwardLaw
-    representationPullback : softsignGatedPullbackLaw
-    representationMobiusComposition :
-      ∀ (f : SoftsignGatedForward)
-      → PointwiseForwardMobiusWitness (signReLU8 f)
-      → PointwiseForwardMobiusWitness (softsign8 f)
-      → PointwiseForwardMobiusWitness (softsignGatedOperator f)
-    canonicalRepresentation : PeriodOne SoftsignGatedStep
+    architecture : GRUComposition
     irreducible : Irreducible _—→_
     selfLoop : SelfLoop _—→_
     periodOne : PeriodOne _—→_
+    aperiodic : Aperiodic _—→_
 
 composeFull : ∀ {S : Set} (law : DyadicLaw) {_—→_ : S → S → Set}
   → law-normalized law
   → law-unit-support law
-  → softsignGatedForwardLaw
-  → softsignGatedPullbackLaw
-  → (∀ (f : SoftsignGatedForward)
-      → PointwiseForwardMobiusWitness (signReLU8 f)
-      → PointwiseForwardMobiusWitness (softsign8 f)
-      → PointwiseForwardMobiusWitness (softsignGatedOperator f))
-  → PeriodOne SoftsignGatedStep
+  → GRUComposition
   → Irreducible _—→_
   → SelfLoop _—→_
   → FullAlgebraicCoupling law _—→
-composeFull law normalized support representationForward representationPullback representationMobiusComposition canonicalRepresentation r loop =
+composeFull law normalized support architecture r loop =
   fullAlgebraicCoupling
     normalized
     support
-    representationForward
-    representationPullback
-    representationMobiusComposition
-    canonicalRepresentation
+    architecture
     r
     loop
+    (periodOne-from-components r loop)
     (periodOne-from-components r loop)
