@@ -5,6 +5,11 @@ open import Agda.Builtin.Equality using (_≡_; refl; trans)
 open import Data.Product using (_×_; _,_)
 open import Data.Nat using (Nat; zero; suc; _+_)
 open import Exotic.efficient_chad.Int8 using (Int8)
+open import Exotic.efficient_chad.FiniteDivision using
+  ( PositiveNat
+  ; finiteDivideInt8
+  ; finiteDivide-two-step
+  )
 open import Exotic.efficient_chad.Dyadic using
   ( Dyadic
   ; zeroᵈ
@@ -112,3 +117,38 @@ record EfficientCHADTheorem (op : Operator) : Set₁ where
   field
     primal-preserved : PreservesPrimal op
     cost-witness : ∀ x → CostWitness
+
+------------------------------------------------------------------------
+-- Minimal exact division extension.
+-- This is an Int8 quotient stage layered on top of CHAD; it does not add
+-- field axioms, inverses, or non-dyadic arithmetic.
+------------------------------------------------------------------------
+
+dividedSource : Operator → PositiveNat → Int8 → Int8
+dividedSource op d x = finiteDivideInt8 (source op x) d
+
+dividedPrimal : Operator → PositiveNat → Int8 → Int8
+dividedPrimal op d x = finiteDivideInt8 (primal op x) d
+
+dividedPrimal-correct :
+  ∀ (op : Operator) (d : PositiveNat) (x : Int8) →
+  dividedPrimal op d x ≡ dividedSource op d x
+dividedPrimal-correct op d x =
+  trans
+    (finiteDivide-two-step (primal op x) d)
+    (cong-divide (primal-correct op x))
+  where
+  cong-divide : ∀ {u v} → u ≡ v →
+    finiteDivideInt8 u d ≡ finiteDivideInt8 v d
+  cong-divide refl = refl
+
+runDivided :
+  Operator → PositiveNat → Int8 → Int8 × (Int8 → Int8)
+runDivided op d x =
+  dividedPrimal op d x , pullback op x
+
+dividedCostWitness :
+  ∀ (op : Operator) (d : PositiveNat) (x : Int8) → CostWitness
+dividedCostWitness op d x = costWitness
+  (cost op x)
+  (costAsDyadic (cost op x))
