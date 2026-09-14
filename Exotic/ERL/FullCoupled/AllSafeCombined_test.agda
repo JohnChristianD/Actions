@@ -17,6 +17,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
   ( CanonicalState
   ; CoupledStep
+  ; RecurrentProjection
   )
 open import Exotic.ERL.FullCoupled.AllSafeCombined using
   ( canonicalIrreducible
@@ -34,9 +35,7 @@ open import Exotic.ERL.FullCoupled.DyadicRepresentation using
   )
 open import Exotic.ERL.FullCoupled.MobiusGRU using
   ( Mobius
-  )
-open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
-  ( RecurrentProjection
+  ; compose
   )
 
 mr15FlatReach :
@@ -61,5 +60,7 @@ projectionLiftClosed :
     (RecurrentProjection.lift noisyNetRecurrentProjection x) ≡ x
 projectionLiftClosed x = noisyNetProjectionLift x
 
-mobiusClosed : ∀ (a b c : Mobius) → canonicalMobiusAssoc a b c
+mobiusClosed :
+  ∀ (a b c : Mobius) →
+  compose (compose a b) c ≡ compose a (compose b c)
 mobiusClosed a b c = canonicalMobiusAssoc a b c
