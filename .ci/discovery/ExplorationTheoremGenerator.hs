@@ -17,6 +17,16 @@ methods =
     , ["noisyNetGRUIrreducible", "noisyNetGRUSelfLoop", "noisyNetGRUPeriodOne", "noisyNetProjectionLift"])
   ]
 
+chadReferences :: [(String, String, String)]
+chadReferences =
+  [ ("CHAD", "original combinatory homomorphic automatic differentiation line"
+    , "semantic AD correctness and compositionality discovery reference")
+  , ("Efficient CHAD", "tomsmeding/efficient-chad-agda"
+    , "efficiency-oriented implementation and cost-model specification reference")
+  , ("Iterative CHAD", "iterative CHAD / recursive-iteration extension literature"
+    , "iteration and recursion discovery reference")
+  ]
+
 data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
 
 checkMethod :: (String, String, String, [String]) -> IO (String, Status, [String])
@@ -41,13 +51,23 @@ renderCandidateModule results =
     , ""
     , "-- Generated flat-dyadic theorem-discovery report."
     , "-- Agda remains the only acceptance oracle."
+    , "-- External CHAD references below are discovery/specification metadata only."
     , ""
     ]
+    ++ concatMap renderCHADReference chadReferences
+    ++ [ "" ]
     ++ concatMap render results
     ++ [ "flatDyadicLawMethodPermutationCount : Nat"
        , "flatDyadicLawMethodPermutationCount = 3"
        ]
   where
+    renderCHADReference (variant, reference, role) =
+      [ "-- CHAD variant: " ++ variant
+      , "-- reference: " ++ reference
+      , "-- role: " ++ role
+      , ""
+      ]
+
     render (lawName, lawTag, methodName, status, details) =
       [ "-- law: " ++ lawName ++ " (" ++ lawTag ++ ")"
       , "-- method: " ++ methodName
