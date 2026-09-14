@@ -11,8 +11,8 @@ open import Exotic.ERL.FullCoupled.EndogenousBoundaryComposition using
   )
 
 ------------------------------------------------------------------------
--- Every learned block receives the same two regularization coordinates:
--- path norm + L1 weight norm. This mirrors the global optimizer + L2 pair.
+-- Correct scope of the norm-pair: it applies only to learned nonlinearities.
+-- The global optimizer/L2 coordinates remain global to every learned block.
 ------------------------------------------------------------------------
 
 record PathNormCertificate : Set₁ where
@@ -35,44 +35,34 @@ record LearnedNonlinearityCertificate : Set₁ where
 
 open LearnedNonlinearityCertificate public
 
-record F4LearnedRegularizationBank (A : F4Arithmetic) : Set₁ where
-  constructor f4LearnedRegularizationBank
+record LearnedNonlinearityNormBank : Set₁ where
+  constructor learnedNonlinearityNormBank
   field
-    embedding : LearnedNonlinearityCertificate
-    attentionQ : LearnedNonlinearityCertificate
-    attentionK : LearnedNonlinearityCertificate
-    attentionV : LearnedNonlinearityCertificate
-    attentionO : LearnedNonlinearityCertificate
+    sparsemax : LearnedNonlinearityCertificate
     gruUpdate : LearnedNonlinearityCertificate
     gruReset : LearnedNonlinearityCertificate
     gruCandidate : LearnedNonlinearityCertificate
-    outputProjection : LearnedNonlinearityCertificate
-    actor : LearnedNonlinearityCertificate
-    critic : LearnedNonlinearityCertificate
-    noisyMu3 : LearnedNonlinearityCertificate
-    noisySigma3 : LearnedNonlinearityCertificate
-    sparsemax : LearnedNonlinearityCertificate
 
-open F4LearnedRegularizationBank public
+open LearnedNonlinearityNormBank public
 
-record GlobalOptimizerL2PathL1 (A : F4Arithmetic) : Set₁ where
-  constructor globalOptimizerL2PathL1
+record GlobalOptimizerL2Regularized (A : F4Arithmetic) : Set₁ where
+  constructor globalOptimizerL2Regularized
   field
     optimizerState : F4IntState A
-    regularization : F4LearnedRegularizationBank A
+    nonlinearityNorms : LearnedNonlinearityNormBank
+    learnerState : EndogenousF4State A
 
-open GlobalOptimizerL2PathL1 public
+open GlobalOptimizerL2Regularized public
 
-regularizationPair :
+optimizerL2-is-global :
   ∀ {A : F4Arithmetic}
-  (b : F4LearnedRegularizationBank A) →
+  (b : GlobalOptimizerL2Regularized A) →
+  F4IntState A
+optimizerL2-is-global b = optimizerState b
+
+normPair-is-nonlinearity-only :
+  ∀ {A : F4Arithmetic}
+  (b : GlobalOptimizerL2Regularized A) →
   LearnedNonlinearityCertificate × LearnedNonlinearityCertificate
-regularizationPair b = sparsemax b , noisySigma3 b
-
-record RegularizedEndogenousComposition (A : F4Arithmetic) : Set₁ where
-  constructor regularizedEndogenousComposition
-  field
-    state : EndogenousF4State A
-    optimizerAndRegularization : GlobalOptimizerL2PathL1 A
-
-open RegularizedEndogenousComposition public
+normPair-is-nonlinearity-only b =
+  sparsemax (nonlinearityNorms b) , gruCandidate (nonlinearityNorms b)
