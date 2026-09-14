@@ -83,6 +83,12 @@ jobs:
       - name: Check full method-law coupling
         run: agda --safe Exotic/ERL/FullCoupled/DyadicMethodLawCoupling.agda
 
+      - name: Check dyadic Econlib fragment
+        run: agda --safe Exotic/econlib/dyadic/Dyadic.agda && agda --safe Exotic/econlib/dyadic/Econlib.agda
+
+      - name: Check dyadic Efficient CHAD fragment
+        run: agda --safe Exotic/efficient_chad/DyadicCHAD.agda
+
       - name: Set up Haskell discovery compiler
         uses: haskell-actions/setup@v2
         with:
