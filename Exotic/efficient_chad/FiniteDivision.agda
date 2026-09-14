@@ -6,10 +6,10 @@ open import Data.Integer using (Integer; _+_; _*_)
 open import Data.Nat using (Nat; zero; suc)
 
 ------------------------------------------------------------------------
--- Minimal exact rational extension for the finite dyadic kernel.
--- Only positive natural denominators are admitted. This keeps division total
--- without importing a larger field/rational hierarchy, while preserving an
--- explicit boundary before Int8 quantization.
+-- Minimal exact division extension. This adds only positive-denominator
+-- fractions and division by a provably positive finite integer. It is enough
+-- to model exact pre-quantization quotients without importing a large field
+-- hierarchy or pretending every quotient is Int8.
 ------------------------------------------------------------------------
 
 data PositiveNat : Set where
@@ -47,15 +47,17 @@ fraction-equality x y =
   numerator x * positiveAsInteger (denominator y)
     ≡ numerator y * positiveAsInteger (denominator x)
 
-divide : Fraction → Fraction → Fraction
-divide x y =
-  fraction
-    (numerator x * positiveAsInteger (denominator y))
-    (positive zero)
+divideByPositive : Fraction → PositiveNat → Fraction
+divideByPositive x d =
+  fraction (numerator x) (positive (positiveValue d))
+
+embedInt8Numerator : Integer → Fraction
+embedInt8Numerator = intAsFraction
 
 ------------------------------------------------------------------------
--- The boundary is deliberately exact but not silently quantized. A caller
--- supplies a finite storage code separately after evaluating the rational.
+-- Softsign-style exact division can live here whenever its denominator is
+-- represented by PositiveNat. The eventual quantizer remains an explicit
+-- downstream operation.
 ------------------------------------------------------------------------
 
 record FiniteDivisionBoundary : Set₁ where
