@@ -111,23 +111,20 @@ jobs:
       - name: Check full algebraic coupling composition
         run: agda --safe Exotic/ERL/FullCoupled/FullAlgebraicCoupling.agda
 
-      - name: Check softsign-gated CHAD composition
-        run: agda --safe Exotic/efficient_chad/SoftsignGatedComposition.agda
-
       - name: Check finite Int8 Mobius composition
         run: agda --safe Exotic/efficient_chad/MobiusInt8Composition.agda
 
-      - name: Check conditional softsign-gated Mobius composition
-        run: agda --safe Exotic/efficient_chad/MobiusSoftsignBridge.agda
+      - name: Check recurrent GRU internal activations
+        run: agda --safe Exotic/efficient_chad/GRUGatedComposition.agda
 
-      - name: Check softsign-gated representation boundary
-        run: agda --safe Exotic/ERL/FullCoupled/SoftsignGatedRepresentation.agda
+      - name: Check recurrent GRU Mobius window algebra
+        run: agda --safe Exotic/efficient_chad/GRURecurrentMobius.agda
 
-      - name: Check noisy-net representation factor
-        run: agda --safe Exotic/ERL/FullCoupled/NoisyNetSoftsignFactor.agda
+      - name: Check Int8 GRU three-matrix noisy state
+        run: agda --safe Exotic/ERL/FullCoupled/GRUNoisyNetState.agda
 
-      - name: Check strict theorem-strength order
-        run: agda --safe Exotic/ERL/FullCoupled/TheoremStrengthV3.agda
+      - name: Check sparsemax Haar dyadic-RoPE GRU theorem boundary
+        run: agda --safe Exotic/ERL/FullCoupled/GRUComposition.agda
 
       - name: Check gating-layer counterfactual theorem
         run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
