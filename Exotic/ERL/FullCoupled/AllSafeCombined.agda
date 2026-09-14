@@ -33,6 +33,16 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
 open import Exotic.ERL.FullCoupled.DyadicRepresentation using
   ( representationCompose
   )
+open import Exotic.ERL.FullCoupled.Int8DPG using
+  ( DPGActor
+  ; actorAction
+  ; ActorAction
+  ; composeActorAction
+  ; actorCompositionClosed
+  ; actorCompositionAssociative
+  ; actorComposition-left-identity
+  ; actorComposition-right-identity
+  )
 
 canonicalLaw0 : Law
 canonicalLaw0 = flatDyadic
@@ -79,3 +89,29 @@ canonicalMobiusRight a = compose-identity-right a
 canonicalFiniteIdentity :
   ∀ (x : Int8) → x ≡ x
 canonicalFiniteIdentity x = refl
+
+------------------------------------------------------------------------
+-- DPG actor action closure is part of the canonical composition surface.
+------------------------------------------------------------------------
+
+canonicalActorClosure :
+  ∀ (a b : DPGActor) (x : Int8) →
+  composeActorAction (actorAction a) (actorAction b) x ≡
+  actorAction a (actorAction b x)
+canonicalActorClosure = actorCompositionClosed
+
+canonicalActorAssoc :
+  ∀ (f g h : ActorAction) (x : Int8) →
+  composeActorAction (composeActorAction f g) h x ≡
+  composeActorAction f (composeActorAction g h) x
+canonicalActorAssoc = actorCompositionAssociative
+
+canonicalActorLeftId :
+  ∀ (f : ActorAction) (x : Int8) →
+  composeActorAction (λ y → y) f x ≡ f x
+canonicalActorLeftId = actorComposition-left-identity
+
+canonicalActorRightId :
+  ∀ (f : ActorAction) (x : Int8) →
+  composeActorAction f (λ y → y) x ≡ f x
+canonicalActorRightId = actorComposition-right-identity
