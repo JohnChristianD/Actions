@@ -71,6 +71,12 @@ jobs:
       - name: Check recurrent GRU algebra
         run: agda --safe Exotic/ERL/FullCoupled/DyadicGRU.agda
 
+      - name: Check GRU composition algebra and invariant
+        run: agda --safe Exotic/ERL/FullCoupled/GRUCompositionAlgebra.agda
+
+      - name: Check finite Mobius group algebra
+        run: agda --safe Exotic/ERL/FullCoupled/MobiusGroup.agda
+
       - name: Check Mobius recurrent composition
         run: agda --safe Exotic/ERL/FullCoupled/MobiusGRU.agda
 
@@ -85,12 +91,24 @@ jobs:
 
       - name: Check Econlib equilibrium fragment
         run: agda --safe Exotic/econlib/Equilibrium.agda
+        
+      - name: Check Econlib equilibrium folder port
+        run: agda --safe Exotic/econlib/Equilibrium/Finite.agda
 
       - name: Check Econlib game-theory fragment
         run: agda --safe Exotic/econlib/GameTheory.agda
 
+      - name: Check Econlib game-theory folder port
+        run: agda --safe Exotic/econlib/GameTheory/Finite.agda
+
       - name: Check Econlib optimization fragment
         run: agda --safe Exotic/econlib/Optimization.agda
+
+      - name: Check Econlib optimization folder port
+        run: agda --safe Exotic/econlib/Optimization/Finite.agda
+
+      - name: Check finite Econlib dyadic umbrella
+        run: agda --safe Exotic/econlib/dyadic/Econlib.agda
 
       - name: Check dyadic algebra
         run: agda --safe Exotic/efficient_chad/Dyadic.agda
