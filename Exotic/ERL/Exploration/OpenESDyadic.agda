@@ -3,11 +3,7 @@ module Exotic.ERL.Exploration.OpenESDyadic where
 
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
-  ; Method
   ; flatDyadic
-  ; lazyUnit
-  ; dyadicLadder
-  ; openES
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Irreducible
@@ -15,7 +11,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; PeriodOne
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
-  ( CoupledState
+  ( CanonicalState
   ; CoupledStep
   ; coupledIrreducible
   ; coupledSelfLoop
@@ -23,19 +19,24 @@ open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
   )
 
 OpenESState : Set
-OpenESState = CoupledState
+OpenESState = CanonicalState
 
 openESStep : Law → OpenESState → OpenESState → Set
-openESStep l = CoupledStep l openES
+openESStep flatDyadic = CoupledStep flatDyadic openES
+  where
+  openES = record {}
 
-openESIrreducibilityProof :
-  ∀ (l : Law) → Irreducible (openESStep l)
-openESIrreducibilityProof l = coupledIrreducible l openES
+openESIrreducibilityProof : Irreducible (openESStep flatDyadic)
+openESIrreducibilityProof = coupledIrreducible openES
+  where
+  openES = record {}
 
-openESSelfLoopProof :
-  ∀ (l : Law) → SelfLoop (openESStep l)
-openESSelfLoopProof l = coupledSelfLoop l openES
+openESSelfLoopProof : SelfLoop (openESStep flatDyadic)
+openESSelfLoopProof = coupledSelfLoop openES
+  where
+  openES = record {}
 
-openESPeriodOneProof :
-  ∀ (l : Law) → PeriodOne (openESStep l)
-openESPeriodOneProof l = coupledPeriodOne l openES
+openESPeriodOneProof : PeriodOne (openESStep flatDyadic)
+openESPeriodOneProof = coupledPeriodOne openES
+  where
+  openES = record {}
