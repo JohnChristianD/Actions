@@ -2,8 +2,8 @@
 module Exotic.ERL.FullCoupled.DPGBellmanHaarComposition where
 
 open import Agda.Builtin.Equality using (_≡_; refl; cong)
-open import Data.Fin using (Fin; zero; suc)
-open import Data.Nat using (ℕ; _+_; _*_; _≤?_)
+open import Data.Fin using (Fin; zero; suc; toℕ)
+open import Data.Nat using (ℕ; _+_; _*_; _≤?_; _∸_)
 open import Data.Product using (_×_; _,_)
 open import Relation.Nullary using (yes; no)
 open import Exotic.efficient_chad.Int8 using
@@ -14,10 +14,6 @@ open import Exotic.efficient_chad.Int8 using
   ; int8Mul
   ; zero8
   ; one8
-  )
-open import Exotic.ERL.FullCoupled.Int8DPG using
-  ( DPGActor
-  ; actorAction
   )
 open import Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE using
   ( Int8Pair
@@ -97,8 +93,9 @@ DPG-maxQ-bootstrap-equivalence reward δ q π greedy s =
   cong (discountedBoot reward δ) (greedy s)
 
 ------------------------------------------------------------------------
--- The important limitation: a deterministic actor does not become a
--- Bellman-optimal actor merely because a critic exists.
+-- A deterministic actor is not automatically greedy. The equality above
+-- therefore has a real optimization premise rather than smuggling argmax
+-- behavior into the critic type.
 ------------------------------------------------------------------------
 
 DPG-actor-is-greedy-is-an-extra-assumption :
@@ -120,10 +117,7 @@ two8 : Int8
 two8 = int8OfNat 2
 
 neg8 : Int8 → Int8
-neg8 x = int8OfNat (256 ∸ codeNat x)
-  where
-  codeNat : Int8 → ℕ
-  codeNat x = Data.Fin.toℕ (code x)
+neg8 x = int8OfNat (256 ∸ toℕ (code x))
 
 haarInt8 : Int8Pair → Int8Pair
 haarInt8 (x , y) =
