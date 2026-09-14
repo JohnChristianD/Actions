@@ -3,7 +3,8 @@ module Exotic.econlib.dyadic.Dyadic where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Data.Integer using (Integer; _+_; _*_; -_; _≤_)
-open import Data.Fin using (Fin; toℕ)
+open import Data.Fin using (toℕ)
+open import Exotic.efficient_chad.Int8 using (Int8; code)
 
 ------------------------------------------------------------------------
 -- Dyadic rationals only.
@@ -48,8 +49,8 @@ _≤ᵈ_ (dyadic n₁ e₁) (dyadic n₂ e₂) =
 -- Fixed-denominator embedding of the existing finite Int8 carrier.
 ------------------------------------------------------------------------
 
-int8AsDyadic : Fin 256 → Dyadic
-int8AsDyadic x = dyadic (toInteger (toℕ x)) 8
+int8AsDyadic : Int8 → Dyadic
+int8AsDyadic x = dyadic (toInteger (toℕ (code x))) 8
   where
   toInteger : Nat → Integer
   toInteger zero = 0
