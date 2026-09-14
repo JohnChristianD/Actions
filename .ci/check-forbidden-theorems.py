@@ -34,6 +34,7 @@ FORBIDDEN_PATHS = (
 SKIP_PARTS = {
     ".git",
     ".ci/external",
+    ".ci/check-forbidden-theorems.py",
 }
 
 ROOT = Path(".")
