@@ -25,6 +25,8 @@ jobs:
         run: python3 .ci/normalize-completesafe-namespaces.py
       - name: Normalize LSTMState record
         run: python3 .ci/normalize-lstm-state-record.py
+      - name: Normalize LSTMState record v2
+        run: python3 .ci/normalize-lstm-state-record-v2.py
       - name: Normalize CompleteSafe typed let bindings
         run: python3 .ci/normalize-completesafe-let-bindings.py
       - name: Normalize CompleteSafe initialForm binding
