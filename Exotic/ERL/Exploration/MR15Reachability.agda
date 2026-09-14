@@ -1,27 +1,46 @@
 {-# OPTIONS --safe #-}
-
 module Exotic.ERL.Exploration.MR15Reachability where
 
-open import Data.Fin using (Fin)
+open import Exotic.ERL.Exploration.DyadicLaws using
+  ( Law
+  ; Method
+  ; flatDyadic
+  ; lazyUnit
+  ; dyadicLadder
+  ; mr15GA
+  )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Reach
-  ; there
-  ; here
+  ( Irreducible
   ; SelfLoop
-  ; Irreducible
+  ; PeriodOne
+  )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CoupledState
+  ; CoupledStep
+  ; coupledIrreducible
+  ; coupledSelfLoop
+  ; coupledPeriodOne
+  ; method-law-closure
   )
 
--- Finite one-shot mutation abstraction: fresh finite noise may select
--- any target state in one exploration tick. This is an abstraction theorem,
--- not a claim that the removed population kernel had the same reachability.
 MR15State : Set
-MR15State = Fin 16
+MR15State = CoupledState
 
-data MR15Step : MR15State → MR15State → Set where
-  stepTo : ∀ {s} t → MR15Step s t
+MR15Step : Law → MR15State → MR15State → Set
+MR15Step l = CoupledStep l mr15GA
 
-mr15IrreducibilityProof : Irreducible MR15Step
-mr15IrreducibilityProof s t = there (stepTo t) here
+mr15IrreducibilityProof :
+  ∀ (l : Law) → Irreducible (MR15Step l)
+mr15IrreducibilityProof l = coupledIrreducible l mr15GA
 
-mr15SelfLoopProof : SelfLoop MR15Step
-mr15SelfLoopProof s = stepTo s
+mr15SelfLoopProof :
+  ∀ (l : Law) → SelfLoop (MR15Step l)
+mr15SelfLoopProof l = coupledSelfLoop l mr15GA
+
+mr15PeriodOneProof :
+  ∀ (l : Law) → PeriodOne (MR15Step l)
+mr15PeriodOneProof l = coupledPeriodOne l mr15GA
+
+mr15AllLawClosure :
+  ∀ (l : Law) → Irreducible (MR15Step l)
+mr15AllLawClosure = mr15IrreducibilityProof
