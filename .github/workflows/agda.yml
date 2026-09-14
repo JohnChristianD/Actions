@@ -86,6 +86,9 @@ jobs:
       - name: Check finite Mobius group algebra
         run: agda --safe Exotic/ERL/FullCoupled/MobiusGroup.agda
 
+      - name: Check finite Haar sparsemax RoPE composition
+        run: agda --safe Exotic/ERL/FullCoupled/FiniteHaarSparsemaxRoPE.agda
+
       - name: Check Mobius recurrent composition
         run: agda --safe Exotic/ERL/FullCoupled/MobiusGRU.agda
 
