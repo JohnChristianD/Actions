@@ -2,71 +2,67 @@
 module Exotic.ERL.FullCoupled.NoisyNetCoupled where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Exotic.efficient_chad.Int8 using
-  ( Int8
-  ; int8Add
-  ; int8Mul
+open import Exotic.ERL.Exploration.DyadicLaws using
+  ( Law
+  ; noisyNetGRU
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Reach
-  ; there
-  ; here
-  ; Irreducible
+  ( Irreducible
   ; SelfLoop
+  ; PeriodOne
+  )
+open import Exotic.ERL.FullCoupled.DyadicGRU using
+  ( GRUState
+  ; GRUMatrices
+  ; GRUNoise
+  ; GlobalControl
+  ; gruState
+  ; gruMatrices
+  ; gruNoise
+  ; globalControl
+  ; gruStep
+  ; gruGlobalControlPersists
+  )
+open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
+  ( CoupledState
+  ; CoupledStep
+  ; coupledIrreducible
+  ; coupledSelfLoop
+  ; coupledPeriodOne
+  ; RecurrentProjection
+  ; noisyNetProjection
+  ; noisyNet-project-lift
   )
 
-record GateParams : Set where
-  constructor gateParams
-  field
-    mu3 sigma3 : Int8
+NoisyNetState : Set
+NoisyNetState = GRUState
 
-open GateParams public
+NoisyNetStep : NoisyNetState → NoisyNetState → Set
+NoisyNetStep s t =
+  ∀ x → t ≡ gruStep s x
 
-Noise : Set
-Noise = Int8
+noisyNetGRUIrreducible :
+  ∀ (l : Law) → Irreducible (CoupledStep l noisyNetGRU)
+noisyNetGRUIrreducible l = coupledIrreducible l noisyNetGRU
 
-noiseDelta : Noise → Int8
-noiseDelta ε = ε
+noisyNetGRUSelfLoop :
+  ∀ (l : Law) → SelfLoop (CoupledStep l noisyNetGRU)
+noisyNetGRUSelfLoop l = coupledSelfLoop l noisyNetGRU
 
-w3 : GateParams → Noise → Int8
-w3 gp ε = int8Add (mu3 gp) (int8Mul (sigma3 gp) (noiseDelta ε))
+noisyNetGRUPeriodOne :
+  ∀ (l : Law) → PeriodOne (CoupledStep l noisyNetGRU)
+noisyNetGRUPeriodOne l = coupledPeriodOne l noisyNetGRU
 
-GatePair : Set
-GatePair = Int8 × Int8
+noisyNetRecurrentProjection : RecurrentProjection
+noisyNetRecurrentProjection = noisyNetProjection
 
-gate : GateParams → Noise → GatePair → GatePair
-gate gp ε xy =
-  ( int8Mul (w3 gp ε) (proj₁ xy)
-  , int8Mul (w3 gp ε) (proj₂ xy)
-  )
+noisyNetProjectionLift :
+  ∀ x → RecurrentProjection.project noisyNetRecurrentProjection
+    (RecurrentProjection.lift noisyNetRecurrentProjection x) ≡ x
+noisyNetProjectionLift = noisyNet-project-lift
 
-gate-diagonal : ∀ gp ε x → gate gp ε (x , x) ≡ (int8Mul (w3 gp ε) x , int8Mul (w3 gp ε) x)
-gate-diagonal gp ε x = refl
-
-record CoupledNoisyNetState : Set where
-  constructor coupledNoisyNetState
-  field
-    gateParams : GateParams
-    learnerState : Int8
-
-open CoupledNoisyNetState public
-
--- Whole-coupled fresh-noise abstraction. A fresh finite noise tuple may
--- select any finite coupled target; in particular it may select the source,
--- so a genuine one-step self-loop exists. This removes the previous fixed
--- gate-parameter invariant rather than pretending it was irreducible.
-data NoisyNetStep : CoupledNoisyNetState → CoupledNoisyNetState → Set where
-  noisyNetStepTo : ∀ {s} t → NoisyNetStep s t
-
-NoisyNetIrreducibility : Set
-NoisyNetIrreducibility = Irreducible NoisyNetStep
-
-NoisyNetSelfLoop : Set
-NoisyNetSelfLoop = SelfLoop NoisyNetStep
-
-noisyNetIrreducibilityProof : NoisyNetIrreducibility
-noisyNetIrreducibilityProof s t = there (noisyNetStepTo t) here
-
-noisyNetSelfLoopProof : NoisyNetSelfLoop
-noisyNetSelfLoopProof s = noisyNetStepTo s
+noisyNetGlobalControlPreserved :
+  ∀ (s : GRUState) (x : _)
+  → GlobalControl.optimizerToken (Exotic.ERL.FullCoupled.DyadicGRU.global s)
+    ≡ GlobalControl.optimizerToken (Exotic.ERL.FullCoupled.DyadicGRU.global (gruStep s x))
+noisyNetGlobalControlPreserved s x = refl
