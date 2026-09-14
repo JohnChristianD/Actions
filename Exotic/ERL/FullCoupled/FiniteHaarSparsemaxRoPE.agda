@@ -18,8 +18,11 @@ open import Exotic.efficient_chad.Int8 using
 ------------------------------------------------------------------------
 -- Genuine finite arithmetic front-end.
 --
--- Haar is the integer-scaled two-point Haar transform, sparsemax is a
--- two-coordinate simplex projection rounded to the 0..255 dyadic grid,
+-- Haar is now the exact integer-scaled two-point Haar/Hadamard transform
+-- H = [[1,1],[1,-1]], so its columns are orthogonal with squared norm 2.
+-- It is intentionally not orthonormal: the missing 1/sqrt(2) normalization
+-- is non-dyadic and is therefore not injected into the finite carrier.
+-- Sparsemax is a two-coordinate simplex projection rounded to the 255-grid,
 -- and RoPE is the exact quarter-turn available without trigonometric
 -- constants. These are finite substitutes, not claims about arbitrary real
 -- vectors or arbitrary RoPE angles.
@@ -34,20 +37,14 @@ neg8 x = int8OfNat (256 ∸ toℕ (code x))
 neg8-zero : neg8 zero8 ≡ zero8
 neg8-zero = refl
 
-half8 : Int8 → Int8
-half8 x = int8OfNat (toℕ (code x) / 2)
-
-sub8 : Int8 → Int8 → Int8
-sub8 x y = int8OfNat (toℕ (code x) + 256 ∸ toℕ (code y))
-
 ------------------------------------------------------------------------
--- Two-point Haar.
+-- Unnormalized two-point Haar/Hadamard.
 ------------------------------------------------------------------------
 
 haar2 : Int8Pair → Int8Pair
 haar2 (x , y) =
-  ( half8 (int8Add x y)
-  , half8 (sub8 x y)
+  ( int8Add x y
+  , int8Add x (neg8 y)
   )
 
 haar2-closed : ∀ p → Int8Pair
@@ -108,8 +105,8 @@ ropeQuarter-left-zero-boundary = refl
 ------------------------------------------------------------------------
 -- Composition exposes an exact finite sparsity transition: sparsemax can
 -- create a one-coordinate boundary, then the quarter-turn transports that
--- boundary to the opposite coordinate. Haar is intentionally kept separate
--- because its integer halving need not preserve hard sparsity.
+-- boundary to the opposite coordinate. Haar is intentionally unnormalized;
+-- it can turn a one-sparse input into a two-nonzero output.
 ------------------------------------------------------------------------
 
 frontEnd : Int8Pair → Int8Pair
