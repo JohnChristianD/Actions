@@ -56,17 +56,8 @@ windowStep-run :
   run (windowStep s) x ≡ hidden (gruStep s x)
 windowStep-run s x = refl
 
-window : GRUState → Int8 → Mobius
-window s x = windowStep s
-
-window-ignore-input :
-  ∀ (s : GRUState) (x : Int8) →
-  window s x ≡ windowStep s
-window-ignore-input s x = refl
-
 ------------------------------------------------------------------------
--- Two-step recurrence.  The composed operator executes the later window
--- after the earlier window without introducing a commutativity premise.
+-- Two-step recurrence. compose f g executes g first and f second.
 ------------------------------------------------------------------------
 
 twoStepWindow : GRUState → GRUState → Mobius
@@ -77,6 +68,20 @@ twoStepWindow-run :
   run (twoStepWindow s₁ s₂) x
   ≡ hidden (gruStep s₁ (hidden (gruStep s₂ x)))
 twoStepWindow-run s₁ s₂ x = refl
+
+-- Forward-time form: s₁ is executed first, then s₂.
+twoStepForward : GRUState → GRUState → Mobius
+twoStepForward s₁ s₂ = compose (windowStep s₂) (windowStep s₁)
+
+twoStepForward-run :
+  ∀ (s₁ s₂ : GRUState) (x : Int8) →
+  run (twoStepForward s₁ s₂) x
+  ≡ hidden (gruStep s₂ (hidden (gruStep s₁ x)))
+twoStepForward-run s₁ s₂ x = refl
+
+------------------------------------------------------------------------
+-- Three-step recurrence and its forward-time parenthesization.
+------------------------------------------------------------------------
 
 threeStepWindow : GRUState → GRUState → GRUState → Mobius
 threeStepWindow s₁ s₂ s₃ =
@@ -92,10 +97,59 @@ threeStepWindow-run :
             (hidden (gruStep s₃ x)))))
 threeStepWindow-run s₁ s₂ s₃ x = refl
 
+threeStepForward : GRUState → GRUState → GRUState → Mobius
+threeStepForward s₁ s₂ s₃ =
+  compose
+    (windowStep s₃)
+    (compose (windowStep s₂) (windowStep s₁))
+
+threeStepForward-run :
+  ∀ (s₁ s₂ s₃ : GRUState) (x : Int8) →
+  run (threeStepForward s₁ s₂ s₃) x
+  ≡ hidden
+      (gruStep s₃
+        (hidden
+          (gruStep s₂
+            (hidden (gruStep s₁ x)))))
+threeStepForward-run s₁ s₂ s₃ x = refl
+
 ------------------------------------------------------------------------
--- Associative scan.  The scan operation is exactly recurrent composition;
--- sequential and balanced regroupings therefore have the same pointwise
--- result.
+-- Endogenous regrouping. The same recurrent window may be regrouped without
+-- introducing a commutativity assumption. This is the finite scan hook.
+------------------------------------------------------------------------
+
+threeStepForward-left :
+  ∀ (s₁ s₂ s₃ : GRUState) →
+  threeStepForward s₁ s₂ s₃
+  ≡ compose
+      (compose (windowStep s₃) (windowStep s₂))
+      (windowStep s₁)
+threeStepForward-left s₁ s₂ s₃ = refl
+
+threeStepForward-right :
+  ∀ (s₁ s₂ s₃ : GRUState) →
+  threeStepForward s₁ s₂ s₃
+  ≡ compose
+      (windowStep s₃)
+      (compose (windowStep s₂) (windowStep s₁))
+threeStepForward-right s₁ s₂ s₃ = refl
+
+threeStep-regroup-pointwise :
+  ∀ (s₁ s₂ s₃ : GRUState) (x : Int8) →
+  run
+    (compose
+      (compose (windowStep s₃) (windowStep s₂))
+      (windowStep s₁)) x
+  ≡
+  run
+    (compose
+      (windowStep s₃)
+      (compose (windowStep s₂) (windowStep s₁))) x
+threeStep-regroup-pointwise s₁ s₂ s₃ x = refl
+
+------------------------------------------------------------------------
+-- Associative scan. The scan operation is exactly recurrent composition;
+-- sequential and balanced regroupings have the same pointwise result.
 ------------------------------------------------------------------------
 
 scan2 : Mobius → Mobius → Mobius
