@@ -1,7 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.efficient_chad.GRUGatedComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; trans; cong; sym)
+open import Agda.Builtin.Equality using (_≡_; refl; trans)
+open import Relation.Binary.PropositionalEquality using (cong; sym)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
   ; CHADOperator
