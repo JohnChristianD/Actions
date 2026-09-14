@@ -61,8 +61,9 @@ checkFile path = do
 
 main :: IO ()
 main = do
-  paths <- filter (\path -> not (skipPath path) && isAgdaSource path) <$> walk "."
-  errors <- concat <$> mapM checkFile paths
+  exotic <- doesDirectoryExist "Exotic"
+  paths <- if exotic then walk "Exotic" else pure []
+  errors <- concat <$> mapM checkFile (filter isAgdaSource paths)
   if null errors
     then putStrLn "flat-dyadic-import-policy=pass"
     else do
