@@ -2,7 +2,7 @@
 module Exotic.ERL.Exploration.FlatDyadic where
 
 open import Data.Fin using (Fin; zero; suc)
-open import Data.Nat using (ℕ; zero; suc)
+open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Agda.Builtin.Equality using (_≡_; refl; cong)
 
 flatWeight : Fin 256 → ℕ
