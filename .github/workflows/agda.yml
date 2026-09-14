@@ -119,6 +119,9 @@ jobs:
       - name: Check learnable and noisy Sparsemax F4 composition class
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxF4Composition.agda
 
+      - name: Check endogenous Efficient CHAD and scan composition
+        run: agda --safe Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda
+
       - name: Check Int8 Lyapunov KKT contraction stability schemas
         run: agda --safe Exotic/ERL/FullCoupled/Int8StabilityComposition.agda
 
