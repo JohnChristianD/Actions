@@ -3,8 +3,12 @@ module Exotic.ERL.FullCoupled.FiniteMarkovComposition where
 
 open import Agda.Builtin.Equality using (_≡_)
 open import Data.Empty using (⊥)
+open import Relation.Nullary using (¬_)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Irreducible
+  ( Reach
+  ; there
+  ; here
+  ; Irreducible
   ; PeriodOne
   ; SelfLoop
   ; periodOne-from-components
@@ -75,10 +79,7 @@ open FullSupportNoise public
 noise-support-irreducible :
   ∀ {S : Set} (N : FullSupportNoise S) →
   Irreducible (support N)
-noise-support-irreducible N x y =
-  there (full-support N x y) here
-  where
-  open import Exotic.ERL.Exploration.ExplorationTheoremSchema using (Reach; there; here)
+noise-support-irreducible N x y = there (full-support N x y) here
 
 noise-support-period-one :
   ∀ {S : Set} (N : FullSupportNoise S) →
@@ -121,7 +122,7 @@ notTogglePeriodOne p =
 ------------------------------------------------------------------------
 -- Therefore the broad claim "deterministic GRU + finite carrier implies
 -- Markovian ergodicity" is false. The existing finite support laws must be
--- accompanied by an actual normalized stochastic kernel if invariant measure
+-- accompanied by an actual normalized stochastic kernel if invariant-measure
 -- and convergence theorems are desired.
 ------------------------------------------------------------------------
 
