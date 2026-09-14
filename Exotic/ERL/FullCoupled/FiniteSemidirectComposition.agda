@@ -6,9 +6,8 @@ open import Data.Product using (_×_; _,_)
 
 ------------------------------------------------------------------------
 -- Finite semidirect-product theorem surface.
--- A monoid B acts on A by endomorphisms. The combined carrier is A × B
--- with the standard semidirect multiplication. No continuous group object
--- is smuggled into the finite kernel.
+-- A monoid B acts on A by monoid endomorphisms. The combined carrier is
+-- A × B with the standard semidirect multiplication.
 ------------------------------------------------------------------------
 
 record Monoid (A : Set) : Set₁ where
@@ -29,6 +28,8 @@ record Action (A B : Set) (MA : Monoid A) (MB : Monoid B) : Set₁ where
     unit-law : ∀ a → act (unit MB) a ≡ a
     mul-law : ∀ b₁ b₂ a →
       act (mul MB b₁ b₂) a ≡ act b₁ (act b₂ a)
+    hom-law : ∀ b a₁ a₂ →
+      act b (mul MA a₁ a₂) ≡ mul MA (act b a₁) (act b a₂)
 
 open Action public
 
@@ -48,6 +49,11 @@ semidirectMul S (a₁ , b₁) (a₂ , b₂) =
   mul (left S) a₁ (act (actionLaw S) b₁ a₂) ,
   mul (right S) b₁ b₂
 
+pair-cong :
+  ∀ {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} →
+  a₁ ≡ a₂ → b₁ ≡ b₂ → (a₁ , b₁) ≡ (a₂ , b₂)
+pair-cong refl refl = refl
+
 semidirect-left-factor :
   ∀ {A B : Set} (S : Semidirect A B) (a₁ a₂ : A) (b₁ : B) →
   semidirectMul S (a₁ , b₁) (a₂ , unit (right S))
@@ -62,59 +68,70 @@ semidirect-assoc :
   ≡
   semidirectMul S x (semidirectMul S y z)
 semidirect-assoc S (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
-  cong
-    (λ a → a , mul (right S) (mul (right S) b₁ b₂) b₃)
-    first
+  pair-cong first-final second-final
   where
-  actS = actionLaw S
   MA = left S
   MB = right S
+  α = actionLaw S
 
   first₀ :
     mul MA
-      (mul MA a₁ (act actS b₁ a₂))
-      (act actS (mul MB b₁ b₂) a₃)
+      (mul MA a₁ (act α b₁ a₂))
+      (act α (mul MB b₁ b₂) a₃)
     ≡
     mul MA a₁
-      (mul MA (act actS b₁ a₂)
-        (act actS (mul MB b₁ b₂) a₃))
-  first₀ = assoc MA a₁ (act actS b₁ a₂) (act actS (mul MB b₁ b₂) a₃)
+      (mul MA (act α b₁ a₂)
+        (act α (mul MB b₁ b₂) a₃))
+  first₀ = assoc MA a₁ (act α b₁ a₂) (act α (mul MB b₁ b₂) a₃)
 
   first₁ :
     mul MA a₁
-      (mul MA (act actS b₁ a₂)
-        (act actS (mul MB b₁ b₂) a₃))
+      (mul MA (act α b₁ a₂)
+        (act α (mul MB b₁ b₂) a₃))
     ≡
     mul MA a₁
-      (mul MA (act actS b₁ a₂)
-        (act actS b₁ (act actS b₂ a₃)))
+      (mul MA (act α b₁ a₂)
+        (act α b₁ (act α b₂ a₃)))
   first₁ =
     cong
-      (λ q → mul MA a₁
-        (mul MA (act actS b₁ a₂) q))
-      (mul-law actS b₁ b₂ a₃)
+      (λ q → mul MA a₁ (mul MA (act α b₁ a₂) q))
+      (mul-law α b₁ b₂ a₃)
 
   first₂ :
     mul MA a₁
-      (mul MA (act actS b₁ a₂)
-        (act actS b₁ (act actS b₂ a₃)))
+      (mul MA (act α b₁ a₂)
+        (act α b₁ (act α b₂ a₃)))
     ≡
     mul MA a₁
-      (act actS b₁
-        (mul MA a₂ (act actS b₂ a₃)))
+      (act α b₁ (mul MA a₂ (act α b₂ a₃)))
   first₂ =
     cong
       (λ q → mul MA a₁ q)
-      (sym (mul-law-act-internal actS MA b₁ a₂ (act actS b₂ a₃)))
+      (sym (hom-law α b₁ a₂ (act α b₂ a₃)))
 
-  mul-law-act-internal :
-    ∀ (actS : Action A B MA MB) (MA : Monoid A)
-      (b : B) (a c : A) →
-    mul MA (act actS b a) (act actS b c)
-    ≡ act actS b (mul MA a c)
-  mul-law-act-internal actS′ MA′ b a c =
-    -- The standard semidirect multiplication requires the action to be a
-    -- monoid endomorphism of A. The original Action record deliberately did
-    -- not contain that axiom, so associativity is not derivable yet.
-    -- Keep this boundary explicit rather than postulating it.
-    {!!}
+  first-final :
+    mul MA
+      (mul MA a₁ (act α b₁ a₂))
+      (act α (mul MB b₁ b₂) a₃)
+    ≡
+    mul MA a₁
+      (act α b₁ (mul MA a₂ (act α b₂ a₃)))
+  first-final = trans first₀ (trans first₁ first₂)
+
+  second-final :
+    mul MB (mul MB b₁ b₂) b₃
+    ≡
+    mul MB b₁ (mul MB b₂ b₃)
+  second-final = assoc MB b₁ b₂ b₃
+
+semidirect-unit-right :
+  ∀ {A B : Set} (S : Semidirect A B) (a : A) (b : B) →
+  semidirectMul S (a , b) (unit (left S) , unit (right S))
+  ≡ (a , b)
+semidirect-unit-right S a b =
+  pair-cong
+    (trans
+      (cong (λ q → mul (left S) a q)
+        (unit-law (actionLaw S) (unit (left S))))
+      (right-id (left S) a))
+    (right-id (right S) b)
