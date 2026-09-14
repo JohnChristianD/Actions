@@ -2,24 +2,26 @@
 module Exotic.ERL.Stages.Stage05_Representation where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Exotic.ERL.GRU.Int8GRU using
+  ( Vec2
+  ; DyadicGRU
+  ; haar2016
+  ; dyadicRoPE
+  ; representationPreprocess
+  )
 
-------------------------------------------------------------------------
--- Representation semantics are the pre-recurrent feature transform.
--- There is deliberately no standalone representation-level tanh layer:
--- recurrent cells own their nonlinearities, and any output nonlinearity is
--- an explicit head in the shared CHAD network.
-------------------------------------------------------------------------
-
-record Representation (A B : Set) : Set₁ where
+record Representation : Set₁ where
+  constructor representation
   field
-    affine : A → B
-    layerNorm : B → B
+    gru : DyadicGRU
 
-applyRepresentation : ∀ {A B : Set} → Representation A B → A → B
+open Representation public
+
+applyRepresentation : Representation → Vec2 → Vec2
 applyRepresentation r x =
-  Representation.layerNorm r (Representation.affine r x)
+  representationPreprocess haar2016 dyadicRoPE x
 
-representationBoundary : ∀ {A B : Set} (r : Representation A B) x →
+representationBoundary : ∀ (r : Representation) x →
   applyRepresentation r x ≡
-    Representation.layerNorm r (Representation.affine r x)
+  representationPreprocess haar2016 dyadicRoPE x
 representationBoundary r x = refl
