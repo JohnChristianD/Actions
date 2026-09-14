@@ -3,10 +3,7 @@ module Exotic.ERL.Exploration.MR15Reachability where
 
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
-  ; Method
   ; flatDyadic
-  ; lazyUnit
-  ; dyadicLadder
   ; mr15GA
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
@@ -15,7 +12,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; PeriodOne
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
-  ( CoupledState
+  ( CanonicalState
   ; CoupledStep
   ; coupledIrreducible
   ; coupledSelfLoop
@@ -24,23 +21,19 @@ open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
   )
 
 MR15State : Set
-MR15State = CoupledState
+MR15State = CanonicalState
 
 MR15Step : Law → MR15State → MR15State → Set
-MR15Step l = CoupledStep l mr15GA
+MR15Step flatDyadic = CoupledStep flatDyadic mr15GA
 
-mr15IrreducibilityProof :
-  ∀ (l : Law) → Irreducible (MR15Step l)
-mr15IrreducibilityProof l = coupledIrreducible l mr15GA
+mr15IrreducibilityProof : Irreducible (MR15Step flatDyadic)
+mr15IrreducibilityProof = coupledIrreducible mr15GA
 
-mr15SelfLoopProof :
-  ∀ (l : Law) → SelfLoop (MR15Step l)
-mr15SelfLoopProof l = coupledSelfLoop l mr15GA
+mr15SelfLoopProof : SelfLoop (MR15Step flatDyadic)
+mr15SelfLoopProof = coupledSelfLoop mr15GA
 
-mr15PeriodOneProof :
-  ∀ (l : Law) → PeriodOne (MR15Step l)
-mr15PeriodOneProof l = coupledPeriodOne l mr15GA
+mr15PeriodOneProof : PeriodOne (MR15Step flatDyadic)
+mr15PeriodOneProof = coupledPeriodOne mr15GA
 
-mr15AllLawClosure :
-  ∀ (l : Law) → Irreducible (MR15Step l)
-mr15AllLawClosure = mr15IrreducibilityProof
+mr15AllLawClosure : Irreducible (MR15Step flatDyadic)
+mr15AllLawClosure = method-law-closure mr15GA
