@@ -35,20 +35,6 @@ pathNorm-factorization :
 pathNorm-factorization C = factorLaw C
 
 ------------------------------------------------------------------------
--- Iterated path products inherit factorization exactly at the list level.
-------------------------------------------------------------------------
-
-layerProduct : List NormedLayer → Nat
-layerProduct [] = 1
-layerProduct (l ∷ ls) = pathNorm l * layerProduct ls
-
-layerProduct-append :
-  ∀ xs ys →
-  layerProduct (xs ++ ys) ≡ layerProduct xs * layerProduct ys
-layerProduct-append [] ys = refl
-layerProduct-append (x ∷ xs) ys = refl
-
-------------------------------------------------------------------------
 -- Finite semidirect-product contract.
 -- G is the operator/group-like component and H is the optimizer/state
 -- component acted on by G. The action laws are explicit.
@@ -108,11 +94,3 @@ record FiniteSemidirectCertificate
   field
     semidirect : SemidirectProduct G H MG MH AG
     finiteCarrier : List (G × H)
-
-record SemidirectTheoremClass : Set₁ where
-  constructor semidirectTheoremClass
-  field
-    baseComposition : Set
-    actionCompatibility : Set
-    semidirectLaw : Set
-    pathNormLaw : Set
