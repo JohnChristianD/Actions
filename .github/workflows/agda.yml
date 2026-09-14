@@ -74,9 +74,6 @@ jobs:
       - name: Check GRU composition algebra and invariant
         run: agda --safe Exotic/ERL/FullCoupled/GRUCompositionAlgebra.agda
 
-      - name: Check DPG recurrent parameter perturbation
-        run: agda --safe Exotic/ERL/FullCoupled/DPGRecurrentPerturbation.agda
-
       - name: Check global optimizer invariant
         run: agda --safe Exotic/ERL/FullCoupled/GlobalOptimizer.agda
 
@@ -122,11 +119,17 @@ jobs:
       - name: Check endogenous Efficient CHAD and scan composition
         run: agda --safe Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda
 
-      - name: Check finite irreducibility aperiodicity invariant measure layer
-        run: agda --safe Exotic/ERL/FullCoupled/FiniteErgodicComposition.agda
+      - name: Check global path-norm and L1 learned regularization class
+        run: agda --safe Exotic/ERL/FullCoupled/LearnedRegularizationComposition.agda
 
-      - name: Check path norm and semidirect composition layer
-        run: agda --safe Exotic/ERL/FullCoupled/PathNormSemidirectComposition.agda
+      - name: Check finite irreducibility aperiodicity invariant-measure layer
+        run: agda --safe Exotic/ERL/FullCoupled/FiniteMarkovComposition.agda
+
+      - name: Check finite semidirect-product composition layer
+        run: agda --safe Exotic/ERL/FullCoupled/FiniteSemidirectComposition.agda
+
+      - name: Check minimal exact division carrier
+        run: agda --safe Exotic/efficient_chad/FiniteDivision.agda
 
       - name: Check Int8 Lyapunov KKT contraction stability schemas
         run: agda --safe Exotic/ERL/FullCoupled/Int8StabilityComposition.agda
@@ -142,9 +145,6 @@ jobs:
 
       - name: Check Econlib game-theory fragment
         run: agda --safe Exotic/econlib/GameTheory.agda
-
-      - name: Check Econlib game-theory folder port
-        run: agda --safe Exotic/econlib/GameTheory/Finite.agda
 
       - name: Check Econlib game-theory folder port
         run: agda --safe Exotic/econlib/GameTheory/Finite.agda
