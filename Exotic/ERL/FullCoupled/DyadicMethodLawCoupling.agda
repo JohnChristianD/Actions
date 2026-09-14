@@ -23,6 +23,7 @@ open import Exotic.ERL.Exploration.DyadicLaws using
   ; HasUnitGenerator
   ; law-has-zero
   ; law-has-unit-generator
+  ; FlatSupport
   ; flat-support
   )
 open import Exotic.ERL.FullCoupled.DyadicGRU using
@@ -65,9 +66,9 @@ CanonicalState : Set
 CanonicalState = Int8
 
 data CoupledStep : Law → Method → CanonicalState → CanonicalState → Set where
-  flatTarget : ∀ {s t} → flat-support t → CoupledStep flatDyadic mr15GA s t
-  openESTarget : ∀ {s t} → flat-support t → CoupledStep flatDyadic openES s t
-  noisyNetTarget : ∀ {s t} → flat-support t → CoupledStep flatDyadic noisyNetGRU s t
+  flatTarget : ∀ {s t} → FlatSupport t → CoupledStep flatDyadic mr15GA s t
+  openESTarget : ∀ {s t} → FlatSupport t → CoupledStep flatDyadic openES s t
+  noisyNetTarget : ∀ {s t} → FlatSupport t → CoupledStep flatDyadic noisyNetGRU s t
 
 coupledIrreducible :
   ∀ (m : Method) → Irreducible (CoupledStep flatDyadic m)
@@ -142,7 +143,7 @@ canonicalProjection-lift x = refl
 
 data CoupledStateStep : Law → Method → CoupledState → CoupledState → Set where
   canonicalFlatStateTarget :
-    ∀ {m s t} → flat-support t →
+    ∀ {m s t} → FlatSupport t →
     CoupledStateStep flatDyadic m (canonicalLift s) (canonicalLift t)
 
 record RecurrentProjection : Set₁ where
