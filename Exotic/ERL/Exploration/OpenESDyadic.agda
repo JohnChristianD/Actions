@@ -3,7 +3,9 @@ module Exotic.ERL.Exploration.OpenESDyadic where
 
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
+  ; Method
   ; flatDyadic
+  ; openES
   )
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Irreducible
@@ -23,20 +25,12 @@ OpenESState = CanonicalState
 
 openESStep : Law → OpenESState → OpenESState → Set
 openESStep flatDyadic = CoupledStep flatDyadic openES
-  where
-  openES = record {}
 
 openESIrreducibilityProof : Irreducible (openESStep flatDyadic)
 openESIrreducibilityProof = coupledIrreducible openES
-  where
-  openES = record {}
 
 openESSelfLoopProof : SelfLoop (openESStep flatDyadic)
 openESSelfLoopProof = coupledSelfLoop openES
-  where
-  openES = record {}
 
 openESPeriodOneProof : PeriodOne (openESStep flatDyadic)
 openESPeriodOneProof = coupledPeriodOne openES
-  where
-  openES = record {}
