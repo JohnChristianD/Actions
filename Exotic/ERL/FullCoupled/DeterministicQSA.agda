@@ -5,6 +5,7 @@ open import Agda.Builtin.Equality using (_≡_; refl; sym; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Empty using (⊥)
 open import Data.Nat using (_<_; _≤_; z≤n; s≤s)
+open import Relation.Nullary using (¬_)
 open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Reach
@@ -31,7 +32,7 @@ open import Exotic.ERL.FullCoupled.GRUCompositionAlgebra using
   )
 
 ------------------------------------------------------------------------
--- Small constructive sum used for finite decidable state equality.
+-- Small constructive sum used for decidable state equality.
 ------------------------------------------------------------------------
 
 infixr 1 _⊎_
@@ -47,11 +48,9 @@ record HasDecidableEquality (S : Set) : Set₁ where
 open HasDecidableEquality public
 
 ------------------------------------------------------------------------
--- Finite/deterministic QSA-style convergence certificate.
---
--- This is deliberately not a stochastic-approximation theorem. It is the
--- exact finite deterministic contract available from strict Nat-valued
--- descent: every non-fixed step spends one unit of a well-founded rank.
+-- Deterministic QSA-style convergence.
+-- This is an exact finite/dyadic theorem contract, not a stochastic
+-- approximation theorem and not an environment-dependent statistical claim.
 ------------------------------------------------------------------------
 
 record EventuallyFixed {S : Set} (step : S → S) (s : S) : Set where
@@ -77,14 +76,19 @@ le-refl-nat : ∀ n → n ≤ n
 le-refl-nat zero = z≤n
 le-refl-nat (suc n) = s≤s (le-refl-nat n)
 
+le-trans-nat :
+  ∀ {m n k : Nat} → m ≤ n → n ≤ k → m ≤ k
+le-trans-nat z≤n q = q
+le-trans-nat (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
+
 le-zero-is-zero : ∀ {n : Nat} → n ≤ zero → n ≡ zero
 le-zero-is-zero z≤n = refl
 le-zero-is-zero (s≤s ())
 
 lt-le-trans :
   ∀ {m n k : Nat} → m < n → n ≤ k → m < k
-lt-le-trans {m} {zero} {k} p z≤n = zeroCannotDescend p
-lt-le-trans p (s≤s q) = s≤s (lt-le-trans p q)
+lt-le-trans (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
+lt-le-trans {n = zero} p z≤n = zeroCannotDescend p
 
 lt-suc-to-le :
   ∀ {m n : Nat} → m < suc n → m ≤ n
@@ -140,8 +144,7 @@ eventuallyFixedFromLyapunov L D s =
     in eventuallyFixed (suc k) terminal'
 
 ------------------------------------------------------------------------
--- Unique-fixed-point form: this is the clean finite deterministic
--- convergence statement to use when the optimizer has a unique terminal.
+-- Unique fixed point gives exact convergence to the optimizer terminal.
 ------------------------------------------------------------------------
 
 record UniqueFixedPoint
@@ -180,16 +183,9 @@ deterministicQSAStyleConvergence C s =
       s
     k = steps ev
     fixed-at-k = terminal ev
-    reaches-target :
-      iterate step k s ≡ target C
+    reaches-target : iterate step k s ≡ target C
     reaches-target = uniqueFixed C fixed-at-k
   in convergesTo k reaches-target
-
-------------------------------------------------------------------------
--- The n-cycle theorem is exactly the deterministic component of the QSA
--- certificate. Once a Lyapunov certificate exists, no nontrivial finite
--- cycle is possible independently of the application architecture.
-------------------------------------------------------------------------
 
 deterministicQSAStyleNoNontrivialCycle :
   ∀ {S : Set} {step : S → S}
@@ -202,11 +198,8 @@ deterministicQSAStyleNoNontrivialCycle C =
   noNontrivialFiniteCycle (lyapunov C)
 
 ------------------------------------------------------------------------
--- Companion stochastic theorem.
--- A pathwise strict Lyapunov law cannot coexist with a supported two-cycle.
--- This is the exact obstruction behind stochastic exploration: noise can
--- preserve irreducibility/period one only by allowing some non-decreasing
--- support edges (unless the carrier collapses to a trivial state).
+-- Companion stochastic theorem: a pathwise strict support Lyapunov law
+-- conflicts with any supported nontrivial two-cycle.
 ------------------------------------------------------------------------
 
 record SupportLyapunov (S : Set) (R : S → S → Set) : Set₁ where
@@ -237,9 +230,9 @@ noStrongSupportLyapunovTwoCycle L distinct xy yx =
   in <-irrefl (supportEnergy L x) (<-trans downYX downXY)
 
 ------------------------------------------------------------------------
--- Minimal finite stochastic/support counterexample.
--- The relation is fully supported, irreducible, and period-one, while the
--- strong support-wide Lyapunov law is impossible.
+-- Minimal exact finite stochastic/support counterexample. It is fully
+-- supported, irreducible, and period-one, yet cannot carry the strong
+-- support-wide Lyapunov property. No probability or environment model is used.
 ------------------------------------------------------------------------
 
 data UnitSupport : Set where
@@ -267,26 +260,24 @@ twoPeriodOne = periodOne-from-components twoIrreducible twoSelfLoop
 twoDistinct : leftState ≢ rightState
 twoDistinct ()
 
-twoSupportHasTwoCycle :
-  twoSupport leftState rightState
-  × twoSupport rightState leftState
--- The product witness is intentionally structural and contains no probability
--- or environment assumptions.
-twoSupportHasTwoCycle = unitSupport , unitSupport
+twoSupportLeftToRight : twoSupport leftState rightState
+twoSupportLeftToRight = twoSupportWitness leftState rightState
+
+twoSupportRightToLeft : twoSupport rightState leftState
+twoSupportRightToLeft = twoSupportWitness rightState leftState
 
 noTwoStateStrongSupportLyapunov :
   ¬ (SupportLyapunov Two twoSupport)
 noTwoStateStrongSupportLyapunov L =
   noStrongSupportLyapunovTwoCycle
     L twoDistinct
-    (twoSupportWitness leftState rightState)
-    (twoSupportWitness rightState leftState)
+    twoSupportLeftToRight
+    twoSupportRightToLeft
 
 ------------------------------------------------------------------------
--- GRU-specific scope.
--- The n-cycle theorem is not a theorem of GRU architecture by itself. A GRU
--- step is simply a deterministic action here; it inherits the cycle theorem
--- only after a Lyapunov certificate for that particular action is supplied.
+-- GRU scope: the n-cycle theorem is not a theorem that every GRU has.
+-- A deterministic GRU action inherits the theorem only after a Lyapunov
+-- certificate for that specific action has been supplied.
 ------------------------------------------------------------------------
 
 gruNoNontrivialFiniteCycle :
@@ -300,6 +291,6 @@ gruNoNontrivialFiniteCycle x L =
   noNontrivialFiniteCycle L
 
 ------------------------------------------------------------------------
--- Explicitly, no environment, reward-distribution, empirical-performance,
--- or asymptotic-statistical premise appears anywhere in these certificates.
+-- No environment-dependent reward/statistical/asymptotic premise occurs in
+-- any theorem above. QSA is used only as a deterministic finite contract name.
 ------------------------------------------------------------------------
