@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.DyadicGRU where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _+_; _*_; _≤?_; _-_)
+open import Data.Nat using (ℕ; _+_; _*_; _≤?_; _∸_)
 open import Data.Nat.DivMod using (_/_)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using
@@ -102,7 +102,7 @@ signReLU8 =
   finiteUnary
     (λ x →
       let n = unitNumerator x
-      in int8OfNat (n - 128))
+      in int8OfNat (n ∸ 128))
 
 softsign8-nontrivial : apply softsign8 (int8OfNat 255) ≡ int8OfNat 127
 softsign8-nontrivial = refl
