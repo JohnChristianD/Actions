@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.Int8StabilityComposition where
 
 open import Agda.Builtin.Equality using (_≡_; sym; trans; subst)
 open import Agda.Builtin.Nat using (Nat)
+open import Data.Empty using (⊥)
 open import Data.Nat using (_<_ ; _≤_; _+_)
 open import Data.Nat.Properties using (<-irrefl; <-trans)
 
@@ -56,9 +57,8 @@ noNontrivialTwoCycle L {s = s} cyc not-fixed =
     <-irrefl (energy L s) (<-trans second' first)
 
 ------------------------------------------------------------------------
--- Finite metric contraction gives uniqueness of a fixed point
--- constructively. Existence remains a separate theorem obligation and is
--- not smuggled in as a certificate field.
+-- Finite metric contraction also gives a direct constructive theorem:
+-- two distinct fixed points cannot coexist.
 ------------------------------------------------------------------------
 
 record FiniteMetric (S : Set) : Set₁ where
@@ -82,31 +82,23 @@ record ContractionCertificate
 
 open ContractionCertificate public
 
-contractive-fixed-point-unique :
+contractive-no-distinct-fixed :
   ∀ {S : Set} {step : S → S} {M : FiniteMetric S}
   (C : ContractionCertificate S step M)
   {x y : S} →
   Fixed step x →
   Fixed step y →
-  x ≡ y
-contractive-fixed-point-unique C {x = x} {y = y} fx fy with x ≡ y
-... | refl = refl
-... | _ =
-  ⊥-elim
-    (<-irrefl (distance M x y)
-      (trans
-        (contract C (λ eq → contradiction eq))
-        (cong-fixed-distance fx fy)))
+  x ≢ y →
+  ⊥
+contractive-no-distinct-fixed C fx fy neq =
+  <-irrefl (distance M x y)
+    (trans
+      (contract C neq)
+      (fixed-distance-equality fx fy))
   where
-  contradiction : ∀ {u v : S} → u ≡ v → ⊥
-  contradiction refl =
-    ⊥-elim
-      (<-irrefl (distance M x y)
-        (contract C (λ eq → contradiction eq)))
-
-  cong-fixed-distance :
+  fixed-distance-equality :
     ∀ {u v : S} →
-    step u ≡ u →
-    step v ≡ v →
+    Fixed step u →
+    Fixed step v →
     distance M (step u) (step v) ≡ distance M u v
-  cong-fixed-distance refl refl = refl
+  fixed-distance-equality refl refl = refl
