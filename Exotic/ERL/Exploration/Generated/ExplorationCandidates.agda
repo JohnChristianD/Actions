@@ -4,10 +4,17 @@ module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 -- Generated finite theorem-discovery candidate surface.
 -- Acceptance remains Agda --safe; no statistical ordering is asserted.
 
--- candidate: MR15 x FlatDyadic
--- candidate: OpenES x FlatDyadic
--- candidate: NoisyNet-GRU x FlatDyadic
--- candidate: GRU-coupling x FlatDyadic
+data CandidateSurface : Set where
+  flatCandidates : CandidateSurface
 
-candidateCount : Set
-candidateCount = Set
+mr15FlatCandidate : CandidateSurface
+mr15FlatCandidate = flatCandidates
+
+openESFlatCandidate : CandidateSurface
+openESFlatCandidate = flatCandidates
+
+noisyNetGRUFlatCandidate : CandidateSurface
+noisyNetGRUFlatCandidate = flatCandidates
+
+gruCouplingFlatCandidate : CandidateSurface
+gruCouplingFlatCandidate = flatCandidates
