@@ -26,6 +26,7 @@ record Action (A B : Set) (MA : Monoid A) (MB : Monoid B) : Set₁ where
   field
     act : B → A → A
     unit-law : ∀ a → act (unit MB) a ≡ a
+    unit-preserving : ∀ b → act b (unit MA) ≡ unit MA
     mul-law : ∀ b₁ b₂ a →
       act (mul MB b₁ b₂) a ≡ act b₁ (act b₂ a)
     hom-law : ∀ b a₁ a₂ →
@@ -124,6 +125,18 @@ semidirect-assoc S (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
     mul MB b₁ (mul MB b₂ b₃)
   second-final = assoc MB b₁ b₂ b₃
 
+semidirect-unit-left :
+  ∀ {A B : Set} (S : Semidirect A B) (a : A) (b : B) →
+  semidirectMul S (unit (left S) , unit (right S)) (a , b)
+  ≡ (a , b)
+semidirect-unit-left S a b =
+  pair-cong
+    (trans
+      (cong (λ q → mul (left S) q (act (actionLaw S) (unit (right S)) a))
+        (unit-law (actionLaw S) a))
+      (left-id (left S) a))
+    (left-id (right S) b)
+
 semidirect-unit-right :
   ∀ {A B : Set} (S : Semidirect A B) (a : A) (b : B) →
   semidirectMul S (a , b) (unit (left S) , unit (right S))
@@ -132,6 +145,6 @@ semidirect-unit-right S a b =
   pair-cong
     (trans
       (cong (λ q → mul (left S) a q)
-        (unit-law (actionLaw S) (unit (left S))))
+        (unit-preserving (actionLaw S) b))
       (right-id (left S) a))
     (right-id (right S) b)
