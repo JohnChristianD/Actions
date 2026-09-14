@@ -15,7 +15,17 @@ FORBIDDEN = tuple(bytes.fromhex(code).decode("utf-8") for code in (
     "64796164696367656f6d657472696335",
     "6c617a7977616c6b647961646963",
     "6c617a7977616c6b",
+    "6479616469636c6164646572",
+    "63656d",
+    "715f657073696c6f6e",
+    "71757073696c6f6e",
+    "71ceb5",
 ))
+
+FORBIDDEN_PATHS = (
+    "LazyWalkDyadic.agda",
+    "DyadicLadder.agda",
+)
 
 SKIP_PARTS = {
     ".git",
@@ -30,6 +40,9 @@ for path in ROOT.rglob("*"):
         continue
     rel = path.as_posix()
     if any(part in rel.split("/") for part in SKIP_PARTS):
+        continue
+    if any(rel.endswith(bad_path) for bad_path in FORBIDDEN_PATHS):
+        errors.append(f"forbidden finite-scope path present: {rel}")
         continue
     try:
         text = path.read_text(encoding="utf-8")
