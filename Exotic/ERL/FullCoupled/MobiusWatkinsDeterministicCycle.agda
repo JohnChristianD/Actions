@@ -4,9 +4,13 @@ module Exotic.ERL.FullCoupled.MobiusWatkinsDeterministicCycle where
 open import Agda.Builtin.Equality using (_≡_; refl; subst)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
+open import Data.Nat using (_<_) 
 open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState
+  ; GRUMatrices
+  ; GRUNoise
+  ; GlobalControl
   ; gruState
   ; hidden
   ; matrices
@@ -23,8 +27,7 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
   ; identityMobius
   )
 open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
-  ( Fixed
-  ; LyapunovCertificate
+  ( LyapunovCertificate
   ; energy
   ; strictDecrease
   ; iterate
@@ -41,7 +44,7 @@ open import Exotic.ERL.FullCoupled.WatkinsDPG using
 ------------------------------------------------------------------------
 -- The deterministic transition under discussion is the GRU recurrence
 -- followed by a finite Mobius endomorphism of the newly produced hidden
--- coordinate.  The parameter/noise/global carrier is otherwise unchanged.
+-- coordinate. The parameter/noise/global carrier is otherwise unchanged.
 ------------------------------------------------------------------------
 
 mobiusActivatedStep :
@@ -97,7 +100,7 @@ open MobiusHiddenDescent public
 
 activatedStep-fixed-from-hidden :
   ∀ (a : Mobius) (x : Int8)
-  (h : Int8) (m : _) (n : _) (g : _) →
+  (h : Int8) (m : GRUMatrices) (n : GRUNoise) (g : GlobalControl) →
   run a (hidden (gruStep (gruState h m n g) x)) ≡ h →
   mobiusActivatedStep a (gruState h m n g) x ≡ gruState h m n g
 activatedStep-fixed-from-hidden a x h m n g q =
@@ -109,25 +112,25 @@ activatedStep-fixed-from-hidden a x h m n g q =
 mobiusActivatedLyapunov :
   ∀ {a : Mobius} {x : Int8} →
   MobiusHiddenDescent a x →
-  LyapunovCertificate GRUState (mobiusActivatedStep a · x)
-mobiusActivatedLyapunov D =
+  LyapunovCertificate GRUState (λ s → mobiusActivatedStep a s x)
+mobiusActivatedLyapunov {a} {x} D =
   record
     { energy = λ s → hiddenEnergy D (hidden s)
     ; strictDecrease = λ s not-fixed →
         let
           hidden-not-fixed :
-            mobiusActivatedHidden _ s _ ≢ hidden s
+            mobiusActivatedHidden a s x ≢ hidden s
           hidden-not-fixed q =
             not-fixed
               (activatedStep-fixed-from-hidden
-                 _ _ (hidden s) (matrices s) (noise s) (global s) q)
+                 a x (hidden s) (matrices s) (noise s) (global s) q)
         in hiddenStrictDecrease D s hidden-not-fixed
     }
 
 ------------------------------------------------------------------------
 -- The composed deterministic theorem: a Mobius-activated GRU has no
--- nontrivial finite n-cycle exactly when the composed hidden transition
--- admits the strict finite Lyapunov descent law above.
+-- nontrivial finite n-cycle once the composed hidden transition satisfies
+-- the strict finite Lyapunov descent law above.
 ------------------------------------------------------------------------
 
 mobiusActivatedNoNontrivialFiniteCycle :
@@ -137,8 +140,8 @@ mobiusActivatedNoNontrivialFiniteCycle :
   iterate (mobiusActivatedStep a · x) (suc n) s ≡ s →
   OrbitNonFixed (mobiusActivatedStep a · x) s →
   ⊥
-mobiusActivatedNoNontrivialFiniteCycle D =
-  noNontrivialFiniteCycle (mobiusActivatedLyapunov D)
+mobiusActivatedNoNontrivialFiniteCycle {a} {x} D =
+  noNontrivialFiniteCycle (mobiusActivatedLyapunov {a = a} {x = x} D)
 
 ------------------------------------------------------------------------
 -- Watkins ceteris-paribus: the cut changes trace classification but preserves
