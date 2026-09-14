@@ -10,6 +10,9 @@ import System.FilePath ((</>), splitDirectories)
 forbidden :: [String]
 forbidden = ["transcendental", "transcendentals", "munchausen", "munchhausen", "münchhausen"]
 
+forbiddenImports :: [String]
+forbiddenImports = ["Data.Float", "Data.Rational", "Data.Real", "Complex", "Rational", "Float", "Real", "Transcendental"]
+
 skipPath :: FilePath -> Bool
 skipPath path = any (`elem` splitDirectories path) [".git", ".ci" </> "external"]
 
@@ -28,16 +31,19 @@ checkFile path = do
   result <- try (readFile path) :: IO (Either IOException String)
   case result of
     Left _ -> pure []
-    Right text ->
+    Right text -> do
       let lowered = map toLower text
-      in pure ["forbidden theorem family token present in " ++ path | token <- forbidden, token `isInfixOf` lowered]
+          theoremErrors = ["forbidden theorem family token present in " ++ path | token <- forbidden, token `isInfixOf` lowered]
+          importLines = filter ("open import" `isInfixOf` . map toLower) (lines text)
+          importErrors = ["forbidden non-dyadic import in " ++ path ++ ": " ++ line | line <- importLines, token <- forbiddenImports, token `isInfixOf` line]
+      pure (theoremErrors ++ importErrors)
 
 main :: IO ()
 main = do
   paths <- filter (not . skipPath) <$> walk "."
   errors <- concat <$> mapM checkFile paths
   if null errors
-    then putStrLn "forbidden-theorem-families=absent"
+    then putStrLn "flat-dyadic-import-policy=pass"
     else do
       putStrLn (intercalate "\n" (map ("ERROR: " ++) errors))
       exitFailure
