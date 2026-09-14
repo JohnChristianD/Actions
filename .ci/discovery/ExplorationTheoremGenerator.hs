@@ -17,6 +17,15 @@ methods =
     , ["noisyNetGRUIrreducible", "noisyNetGRUSelfLoop", "noisyNetGRUPeriodOne", "noisyNetProjectionLift"])
   ]
 
+ablations :: [(String, String)]
+ablations =
+  [ ("NoisyNet-GRU", "noisyNetGRUAblation")
+  , ("NoisyNet-Sparsemax-only", "noisyNetSparsemaxOnlyAblation")
+  , ("NoisyNet-Sparsemax+GRU", "noisyNetSparsemaxAndGRUAblation")
+  , ("MR15-flat", "mr15Ablation")
+  , ("OpenES-flat", "openESAblation")
+  ]
+
 chadReferences :: [(String, String, String)]
 chadReferences =
   [ ("CHAD", "original combinatory homomorphic automatic differentiation line"
@@ -41,8 +50,22 @@ checkMethod (name, path, _methodTag, required) = do
         ExitSuccess -> pure (name, Proven, [])
         ExitFailure _ -> pure (name, AgdaFailure, [err])
 
-renderCandidateModule :: [(String, String, String, Status, [String])] -> String
-renderCandidateModule results =
+checkAblationFile :: IO (Status, [String])
+checkAblationFile = do
+  let path = "Exotic/ERL/FullCoupled/FlatDyadicExplorationAblations.agda"
+      required = map snd ablations ++ ["allAblationsRemainFlatDyadic", "allAblationsCarryGlobalOptimizerL2"]
+  source <- readFile path
+  let missing = filter (\symbol -> not (symbol `isInfixOf` source)) required
+  if not (null missing)
+    then pure (MissingProof, missing)
+    else do
+      (code, _out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
+      case code of
+        ExitSuccess -> pure (Proven, [])
+        ExitFailure _ -> pure (AgdaFailure, [err])
+
+renderCandidateModule :: [(String, String, String, Status, [String])] -> Status -> String -> String
+renderCandidateModule results ablationStatus ablationDetails =
   unlines $
     [ "{-# OPTIONS --safe #-}"
     , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
@@ -57,8 +80,14 @@ renderCandidateModule results =
     ++ concatMap renderCHADReference chadReferences
     ++ [ "" ]
     ++ concatMap render results
+    ++ [ "-- ablation surface status: " ++ show ablationStatus
+       , "-- ablation surface details: " ++ intercalate " | " ablationDetails
+       ]
+    ++ concatMap renderAblation ablations
     ++ [ "flatDyadicLawMethodPermutationCount : Nat"
        , "flatDyadicLawMethodPermutationCount = 3"
+       , "flatDyadicAblationVariantCount : Nat"
+       , "flatDyadicAblationVariantCount = 5"
        ]
   where
     renderCHADReference (variant, reference, role) =
@@ -76,6 +105,14 @@ renderCandidateModule results =
       , ""
       ]
 
+    renderAblation (name, constructorName) =
+      [ "-- flat-dyadic ablation: " ++ name
+      , "-- constructor: " ++ constructorName
+      , "-- global optimizer/L2: always-on"
+      , "-- norm-pair scope: learned nonlinearities only"
+      , ""
+      ]
+
 main :: IO ()
 main = do
   methodResults <- mapM checkMethod methods
@@ -88,10 +125,15 @@ main = do
                   Nothing -> (AgdaFailure, ["missing method result"])
                   Just (s, d) -> (s, d)
         ]
+  (ablationStatus, ablationDetails) <- checkAblationFile
   writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
-    (renderCandidateModule results)
+    (renderCandidateModule results ablationStatus ablationDetails)
   mapM_ printResult results
+  putStrLn $
+    "ablations=status=" ++ show ablationStatus
+    ++ if null ablationDetails then "" else ",details=" ++ intercalate ";" ablationDetails
   if any (\(_, _, _, status, _) -> status /= Proven) results
+      || ablationStatus /= Proven
     then exitFailure
     else exitSuccess
   where
