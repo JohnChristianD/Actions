@@ -48,10 +48,7 @@ sigmoidLike8-primal : ∀ (a : GRUActivations) (x : Int8)
   → primal (sigmoidLike8 a) x
     ≡ primal (half8 a)
         (primal onePlus8 (primal (softsign8 a) x))
-sigmoidLike8-primal a x =
-  trans
-    (composeCHAD-primal (half8 a) (onePlusSoftsign8 a) x)
-    (cong (primal (half8 a)) (composeCHAD-primal onePlus8 (softsign8 a) x))
+sigmoidLike8-primal a x = refl
 
 sigmoidLike8-pullback : ∀ (a : GRUActivations) (x cotangent : Int8)
   → pullback (sigmoidLike8 a) x cotangent
@@ -59,14 +56,7 @@ sigmoidLike8-pullback : ∀ (a : GRUActivations) (x cotangent : Int8)
         (pullback onePlus8 (primal (softsign8 a) x)
           (pullback (half8 a)
             (primal (onePlusSoftsign8 a) x) cotangent))
-sigmoidLike8-pullback a x cotangent =
-  trans
-    (composeCHAD-pullback (half8 a) (onePlusSoftsign8 a) x cotangent)
-    (cong
-      (λ q → pullback (softsign8 a) x
-        (pullback onePlus8 (primal (softsign8 a) x) q))
-      (composeCHAD-pullback onePlus8 (softsign8 a) x
-        (pullback (half8 a) (primal (onePlusSoftsign8 a) x) cotangent)))
+sigmoidLike8-pullback a x cotangent = refl
 
 record GRUSequentialBoundary : Set₁ where
   constructor gruSequentialBoundary
