@@ -21,7 +21,7 @@ open import Exotic.efficient_chad.SoftsignGatedComposition using
   ; softsignGatedPullbackLaw
   )
 open import Exotic.efficient_chad.MobiusSoftsignBridge using
-  ( ForwardMobiusWitness
+  ( PointwiseForwardMobiusWitness
   ; softsignGatedForwardMobiusWitness
   )
 open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
@@ -39,9 +39,9 @@ record FullAlgebraicCoupling {S : Set}
     representationPullback : softsignGatedPullbackLaw
     representationMobiusComposition :
       ∀ (f : SoftsignGatedForward)
-      → ForwardMobiusWitness (signReLU8 f)
-      → ForwardMobiusWitness (softsign8 f)
-      → ForwardMobiusWitness (softsignGatedOperator f)
+      → PointwiseForwardMobiusWitness (signReLU8 f)
+      → PointwiseForwardMobiusWitness (softsign8 f)
+      → PointwiseForwardMobiusWitness (softsignGatedOperator f)
     canonicalRepresentation : PeriodOne SoftsignGatedStep
     irreducible : Irreducible _—→_
     selfLoop : SelfLoop _—→_
@@ -53,9 +53,9 @@ composeFull : ∀ {S : Set} (law : DyadicLaw) {_—→_ : S → S → Set}
   → softsignGatedForwardLaw
   → softsignGatedPullbackLaw
   → (∀ (f : SoftsignGatedForward)
-      → ForwardMobiusWitness (signReLU8 f)
-      → ForwardMobiusWitness (softsign8 f)
-      → ForwardMobiusWitness (softsignGatedOperator f))
+      → PointwiseForwardMobiusWitness (signReLU8 f)
+      → PointwiseForwardMobiusWitness (softsign8 f)
+      → PointwiseForwardMobiusWitness (softsignGatedOperator f))
   → PeriodOne SoftsignGatedStep
   → Irreducible _—→_
   → SelfLoop _—→_
