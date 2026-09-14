@@ -54,6 +54,21 @@ open import Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE using
   ; haar2
   ; sparsemax2
   )
+open import Exotic.ERL.FullCoupled.DPGBellmanHaarComposition using
+  ( Q
+  ; GreedyPolicy
+  ; IsGreedy
+  ; maxQ
+  ; maxQBootstrap
+  ; greedyPolicyBootstrap
+  ; DPG-maxQ-bootstrap-equivalence
+  ; haarInt8
+  ; haar-columns-orthogonal
+  ; haar-column-left-norm
+  ; haar-column-right-norm
+  ; commonPrefixThenHeads
+  ; commonPrefix-factorization
+  )
 
 canonicalLaw0 : Law
 canonicalLaw0 = flatDyadic
@@ -145,3 +160,33 @@ canonicalHardSparseRight = sparsemax2-hard-sparsity-right
 canonicalFrontEndToGRU :
   ∀ (p : Int8Pair) → frontEndToGRU p ≡ frontEndToGRU p
 canonicalFrontEndToGRU p = refl
+
+------------------------------------------------------------------------
+-- Finite Bellman/DPG and Haar composition are part of the checked surface.
+------------------------------------------------------------------------
+
+canonicalDPGGreedyTarget :
+  ∀ (reward : ℕ) (δ : ℕ → ℕ) (q : Q) (π : GreedyPolicy) →
+  IsGreedy π q →
+  ∀ s → greedyPolicyBootstrap reward δ q π s ≡ maxQBootstrap reward δ q s
+canonicalDPGGreedyTarget = DPG-maxQ-bootstrap-equivalence
+
+canonicalHaarOrthogonal :
+  haar-columns-orthogonal
+canonicalHaarOrthogonal = haar-columns-orthogonal
+
+canonicalHaarLeftNorm :
+  haar-column-left-norm
+canonicalHaarLeftNorm = haar-column-left-norm
+
+canonicalHaarRightNorm :
+  haar-column-right-norm
+canonicalHaarRightNorm = haar-column-right-norm
+
+canonicalCommonPrefix :
+  ∀ (b : Exotic.ERL.FullCoupled.Int8DPG.SharedDPGBand) (p : Int8Pair) →
+  commonPrefixThenHeads b p
+  ≡
+  ( Exotic.ERL.FullCoupled.Int8DPG.sharedActor b (frontEndToGRU p)
+  , Exotic.ERL.FullCoupled.Int8DPG.sharedCritic b (frontEndToGRU p) )
+canonicalCommonPrefix = commonPrefix-factorization
