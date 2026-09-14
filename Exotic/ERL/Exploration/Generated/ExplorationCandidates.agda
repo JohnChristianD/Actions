@@ -3,7 +3,7 @@ module Exotic.ERL.Exploration.Generated.ExplorationCandidates where
 
 open import Agda.Builtin.Nat using (Nat)
 
--- Generated law x method theorem-discovery report.
+-- Generated flat-dyadic theorem-discovery report.
 -- Agda remains the only acceptance oracle.
 
 -- law: Flat (flatDyadic)
@@ -17,30 +17,6 @@ open import Agda.Builtin.Nat using (Nat)
 -- law: Flat (flatDyadic)
 -- method: NoisyNet
 -- status: Proven
---
--- law: Lazy (lazyUnit)
--- method: MR15
--- status: Proven
---
--- law: Lazy (lazyUnit)
--- method: OpenES
--- status: Proven
---
--- law: Lazy (lazyUnit)
--- method: NoisyNet
--- status: Proven
---
--- law: Ladder (dyadicLadder)
--- method: MR15
--- status: Proven
---
--- law: Ladder (dyadicLadder)
--- method: OpenES
--- status: Proven
---
--- law: Ladder (dyadicLadder)
--- method: NoisyNet
--- status: Proven
 
-lawMethodPermutationCount : Nat
-lawMethodPermutationCount = 9
+flatDyadicLawMethodPermutationCount : Nat
+flatDyadicLawMethodPermutationCount = 3
