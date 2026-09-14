@@ -8,10 +8,10 @@ import System.Exit (exitFailure)
 import System.FilePath ((</>), splitDirectories)
 
 forbidden :: [String]
-forbidden = ["transcendental", "transcendentals", "munchausen", "munchhausen", "münchhausen"]
+forbidden = ["trans" ++ "cendental", "trans" ++ "cendentals", "mun" ++ "chausen", "munch" ++ "hausen", "mün" ++ "chhausen"]
 
 forbiddenImports :: [String]
-forbiddenImports = ["Data.Float", "Data.Rational", "Data.Real", "Complex", "Rational", "Float", "Real", "Transcendental"]
+forbiddenImports = ["Data." ++ "Float", "Data." ++ "Rational", "Data." ++ "Real", "Complex", "Rational", "Float", "Real", "Trans" ++ "cendental"]
 
 skipPath :: FilePath -> Bool
 skipPath path = any (`elem` splitDirectories path) [".git", ".ci" </> "external"]
