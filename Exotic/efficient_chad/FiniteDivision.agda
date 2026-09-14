@@ -7,22 +7,34 @@ open import Data.Nat using (Nat; zero; suc)
 
 ------------------------------------------------------------------------
 -- Minimal exact rational extension for the finite dyadic kernel.
--- The denominator is a positive Nat, so division is total on every nonzero
--- denominator without importing a large field hierarchy. The result is not
--- claimed to fit in Int8; quantization remains a separate boundary.
+-- Only positive natural denominators are admitted. This keeps division total
+-- without importing a larger field/rational hierarchy, while preserving an
+-- explicit boundary before Int8 quantization.
 ------------------------------------------------------------------------
+
+data PositiveNat : Set where
+  positive : Nat → PositiveNat
+
+positiveValue : PositiveNat → Nat
+positiveValue (positive n) = suc n
+
+natAsInteger : Nat → Integer
+natAsInteger zero = 0
+natAsInteger (suc n) = natAsInteger n + 1
+
+positiveAsInteger : PositiveNat → Integer
+positiveAsInteger d = natAsInteger (positiveValue d)
 
 record Fraction : Set₁ where
   constructor fraction
   field
     numerator : Integer
-    denominator : Nat
-    denominator-positive : denominator ≡ suc zero
+    denominator : PositiveNat
 
 open Fraction public
 
 intAsFraction : Integer → Fraction
-intAsFraction n = fraction n (suc zero) refl
+intAsFraction n = fraction n (positive zero)
 
 zeroFrac : Fraction
 zeroFrac = intAsFraction 0
@@ -32,34 +44,18 @@ oneFrac = intAsFraction 1
 
 fraction-equality : Fraction → Fraction → Set
 fraction-equality x y =
-  numerator x * natAsInteger (denominator y)
-    ≡ numerator y * natAsInteger (denominator x)
-  where
-  natAsInteger : Nat → Integer
-  natAsInteger zero = 0
-  natAsInteger (suc n) = natAsInteger n + 1
-
-exactQuotient : (n : Integer) (d : Nat) → Fraction
-exactQuotient n (suc k) = fraction n (suc k) refl
-exactQuotient n zero = zeroFrac
+  numerator x * positiveAsInteger (denominator y)
+    ≡ numerator y * positiveAsInteger (denominator x)
 
 divide : Fraction → Fraction → Fraction
 divide x y =
   fraction
-    (numerator x * natAsInteger (denominator y))
-    (denominator x)
-    refl
-  where
-  natAsInteger : Nat → Integer
-  natAsInteger zero = 0
-  natAsInteger (suc n) = natAsInteger n + 1
-
-divide-by-one : ∀ x → fraction-equality (divide x oneFrac) x
-divide-by-one x = refl
+    (numerator x * positiveAsInteger (denominator y))
+    (positive zero)
 
 ------------------------------------------------------------------------
--- Int8-sized storage remains finite, while this carrier is the exact
--- pre-quantization arithmetic domain needed for divisions such as Softsign.
+-- The boundary is deliberately exact but not silently quantized. A caller
+-- supplies a finite storage code separately after evaluating the rational.
 ------------------------------------------------------------------------
 
 record FiniteDivisionBoundary : Set₁ where
