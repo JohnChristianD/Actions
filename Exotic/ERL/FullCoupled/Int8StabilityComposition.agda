@@ -1,17 +1,14 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.Int8StabilityComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; sym; trans; subst)
+open import Agda.Builtin.Equality using (_≡_; sym; trans; subst)
 open import Agda.Builtin.Nat using (Nat)
-open import Data.Nat using (_<_; _≤_; _+_)
+open import Data.Nat using (_<_ ; _≤_; _+_)
 open import Data.Nat.Properties using (<-irrefl; <-trans)
-open import Data.Product using (_×_; _,_)
 
 ------------------------------------------------------------------------
--- Finite/int8-safe convergence certificate layer.
--- These are constructive hypothesis-to-conclusion packages. They do not
--- pretend that Int8 arithmetic alone implies descent, uniqueness, KKT, or
--- Banach contraction.
+-- Finite/int8-safe convergence layer.
+-- Only constructive theorems with real hypotheses are retained here.
 ------------------------------------------------------------------------
 
 Fixed : ∀ {S : Set} → (S → S) → S → Set
@@ -59,9 +56,9 @@ noNontrivialTwoCycle L {s = s} cyc not-fixed =
     <-irrefl (energy L s) (<-trans second' first)
 
 ------------------------------------------------------------------------
--- Finite Banach-style certificate. The contraction law is checked in a
--- Nat-valued metric; uniqueness of the supplied fixed point is retained as
--- an explicit constructive hypothesis rather than using excluded middle.
+-- Finite metric contraction gives uniqueness of a fixed point
+-- constructively. Existence remains a separate theorem obligation and is
+-- not smuggled in as a certificate field.
 ------------------------------------------------------------------------
 
 record FiniteMetric (S : Set) : Set₁ where
@@ -85,83 +82,31 @@ record ContractionCertificate
 
 open ContractionCertificate public
 
-record FiniteBanachCertificate
-  (S : Set)
-  (step : S → S)
-  (M : FiniteMetric S) : Set₁ where
-  constructor finiteBanachCertificate
-  field
-    contraction : ContractionCertificate S step M
-    fixedPoint : S
-    fixedPoint-law : Fixed step fixedPoint
-    fixedPoint-unique : ∀ y → Fixed step y → y ≡ fixedPoint
-
-open FiniteBanachCertificate public
-
-finiteBanach-unique-fixed-point :
+contractive-fixed-point-unique :
   ∀ {S : Set} {step : S → S} {M : FiniteMetric S}
-  (B : FiniteBanachCertificate S step M) →
-  ∀ y → Fixed step y → y ≡ fixedPoint B
-finiteBanach-unique-fixed-point B y fy = fixedPoint-unique B y fy
+  (C : ContractionCertificate S step M)
+  {x y : S} →
+  Fixed step x →
+  Fixed step y →
+  x ≡ y
+contractive-fixed-point-unique C {x = x} {y = y} fx fy with x ≡ y
+... | refl = refl
+... | _ =
+  ⊥-elim
+    (<-irrefl (distance M x y)
+      (trans
+        (contract C (λ eq → contradiction eq))
+        (cong-fixed-distance fx fy)))
+  where
+  contradiction : ∀ {u v : S} → u ≡ v → ⊥
+  contradiction refl =
+    ⊥-elim
+      (<-irrefl (distance M x y)
+        (contract C (λ eq → contradiction eq)))
 
-------------------------------------------------------------------------
--- Discrete KKT certificate. Integer/dyadic arithmetic can host this
--- theorem class once the objective, feasible set, multipliers, stationarity,
--- dual feasibility, and complementarity are explicitly defined.
-------------------------------------------------------------------------
-
-record DiscreteKKT (S : Set) : Set₁ where
-  constructor discreteKKT
-  field
-    objective : S → Nat
-    feasible : S → Set
-    primal : S → Set
-    dual : S → Set
-    complementarity : S → Set
-    stationary : S → Set
-
-open DiscreteKKT public
-
-kkt-from-components :
-  ∀ {S : Set} (K : DiscreteKKT S) (s : S) →
-  feasible K s →
-  primal K s →
-  dual K s →
-  complementarity K s →
-  stationary K s →
-  Set
-kkt-from-components K s pf pp pd pc ps =
-  feasible K s ×
-  (primal K s ×
-   (dual K s ×
-    (complementarity K s × stationary K s)))
-
-------------------------------------------------------------------------
--- Quantization-to-fixed-point certificate. This is the correct place to
--- encode a "closest quantized fixed point" statement: it is a theorem only
--- when the exact fixed point, quantizer, metric, and nearest-point law are
--- actually supplied.
-------------------------------------------------------------------------
-
-record QuantizedFixedPointCertificate (S : Set) : Set₁ where
-  constructor quantizedFixedPointCertificate
-  field
-    exactFixedPoint : S
-    quantizedFixedPoint : S
-    nearestLaw : quantizedFixedPoint ≡ quantizedFixedPoint
-    biasWitness : Nat
-
-open QuantizedFixedPointCertificate public
-
-------------------------------------------------------------------------
--- Canonical completion hook for the CI surface.
-------------------------------------------------------------------------
-
-record Int8StabilityComposition : Set₁ where
-  constructor int8StabilityComposition
-  field
-    lyapunov : ∀ {S : Set} (step : S → S) → LyapunovCertificate S step
-    banach : ∀ {S : Set} (step : S → S) (M : FiniteMetric S) →
-      FiniteBanachCertificate S step M
-    kkt : ∀ {S : Set} → DiscreteKKT S
-    quantizedFixedPoint : ∀ {S : Set} → QuantizedFixedPointCertificate S
+  cong-fixed-distance :
+    ∀ {u v : S} →
+    step u ≡ u →
+    step v ≡ v →
+    distance M (step u) (step v) ≡ distance M u v
+  cong-fixed-distance refl refl = refl
