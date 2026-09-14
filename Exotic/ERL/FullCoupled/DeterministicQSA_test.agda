@@ -5,6 +5,7 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 open import Exotic.ERL.FullCoupled.DeterministicQSA using
   ( HasDecidableEquality
   ; decidableEquality
+  ; inj₁
   ; LyapunovCertificate
   ; lyapunovCertificate
   ; UniqueFixedPoint
@@ -22,7 +23,6 @@ open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
   ; iterate
   )
 
--- Minimal constructive deterministic certificate.
 data OneState : Set where
   onlyState : OneState
 
