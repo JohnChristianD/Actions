@@ -7,6 +7,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Irreducible
   ; PeriodOne
   ; SelfLoop
+  ; periodOne-from-components
   )
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
@@ -28,8 +29,8 @@ open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
 -- Exact boundary of the current formalization.
 -- `CoupledStep` is a finite support relation. Its reachability and
 -- period-one laws are genuine, but a support relation alone is not a
--- stochastic kernel and therefore does not by itself prove invariant-measure
--- existence, uniqueness, or Markov-chain convergence.
+-- stochastic kernel and therefore does not prove invariant-measure
+-- existence, uniqueness, or convergence.
 ------------------------------------------------------------------------
 
 mr15SupportIrreducible :
@@ -55,6 +56,37 @@ openESSupportPeriodOne = coupledPeriodOne openES
 noisyNetSupportPeriodOne :
   PeriodOne (CoupledStep flatDyadic noisyNetGRU)
 noisyNetSupportPeriodOne = coupledPeriodOne noisyNetGRU
+
+------------------------------------------------------------------------
+-- This is the clean place for a genuine noise/exploration support law:
+-- it sits at the transition boundary and can feed a deterministic GRU map.
+-- Full support gives irreducibility and a self-loop gives period one.
+------------------------------------------------------------------------
+
+record FullSupportNoise (S : Set) : Set₁ where
+  constructor fullSupportNoise
+  field
+    support : S → S → Set
+    full-support : ∀ x y → support x y
+    self-support : ∀ x → support x x
+
+open FullSupportNoise public
+
+noise-support-irreducible :
+  ∀ {S : Set} (N : FullSupportNoise S) →
+  Irreducible (support N)
+noise-support-irreducible N x y =
+  there (full-support N x y) here
+  where
+  open import Exotic.ERL.Exploration.ExplorationTheoremSchema using (Reach; there; here)
+
+noise-support-period-one :
+  ∀ {S : Set} (N : FullSupportNoise S) →
+  PeriodOne (support N)
+noise-support-period-one N =
+  periodOne-from-components
+    (noise-support-irreducible N)
+    (self-support N)
 
 ------------------------------------------------------------------------
 -- Deterministic counterexample: noise is not required for a Markov chain
@@ -84,7 +116,7 @@ notToggleSelfLoop self =
 notTogglePeriodOne :
   ¬ PeriodOne toggleStep
 notTogglePeriodOne p =
-  notToggleSelfLoop (SelfLoop.selfLoop p)
+  notToggleSelfLoop (PeriodOne.selfLoop p)
 
 ------------------------------------------------------------------------
 -- Therefore the broad claim "deterministic GRU + finite carrier implies
