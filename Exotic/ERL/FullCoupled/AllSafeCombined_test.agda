@@ -36,8 +36,8 @@ mr15FlatReach :
 mr15FlatReach s t = canonicalIrreducible mr15GA s t
 
 openESFlatLoop :
-  ∀ (s : CanonicalState) → SelfLoop (CoupledStep flatDyadic openES) s
-openESFlatLoop s = canonicalSelfLoop openES s
+  SelfLoop (CoupledStep flatDyadic openES)
+openESFlatLoop = canonicalSelfLoop openES
 
 noisyNetFlatPeriodOne :
   PeriodOne (CoupledStep flatDyadic noisyNetGRU)
