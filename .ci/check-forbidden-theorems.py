@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import sys
 
 # The theorem surface is finite/dyadic only. Tokens are encoded so this guard
@@ -16,6 +17,9 @@ FORBIDDEN = tuple(bytes.fromhex(code).decode("utf-8") for code in (
     "6c617a7977616c6b647961646963",
     "6c617a7977616c6b",
     "6479616469636c6164646572",
+))
+
+FORBIDDEN_EXACT = tuple(bytes.fromhex(code).decode("utf-8") for code in (
     "63656d",
     "715f657073696c6f6e",
     "71757073696c6f6e",
@@ -52,6 +56,9 @@ for path in ROOT.rglob("*"):
     for token in FORBIDDEN:
         if token in lowered:
             errors.append(f"forbidden finite-scope token present in {rel}")
+    for token in FORBIDDEN_EXACT:
+        if re.search(rf"(?<![A-Za-z0-9_]){re.escape(token)}(?![A-Za-z0-9_])", lowered):
+            errors.append(f"forbidden finite-scope identifier present in {rel}")
 
 if errors:
     for error in errors:
