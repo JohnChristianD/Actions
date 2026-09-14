@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Fin using (toℕ)
 open import Data.Nat using (ℕ; _+_; _∸_; _/_; _≤?_; _*_)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Relation.Nullary using (yes; no)
@@ -10,7 +11,6 @@ open import Exotic.efficient_chad.Int8 using
   ; code
   ; int8OfNat
   ; int8Add
-  ; zero8
   )
 
 ------------------------------------------------------------------------
@@ -29,18 +29,12 @@ Int8Pair = Int8 × Int8
 
 neg8 : Int8 → Int8
 neg8 x = int8OfNat (256 ∸ toℕ (code x))
-  where
-    open import Data.Fin using (toℕ)
 
 half8 : Int8 → Int8
 half8 x = int8OfNat (toℕ (code x) / 2)
-  where
-    open import Data.Fin using (toℕ)
 
 sub8 : Int8 → Int8 → Int8
 sub8 x y = int8OfNat (toℕ (code x) + 256 ∸ toℕ (code y))
-  where
-    open import Data.Fin using (toℕ)
 
 ------------------------------------------------------------------------
 -- Two-point Haar.
@@ -63,8 +57,6 @@ haar2-closed p = haar2 p
 
 sparsemax2 : Int8Pair → Int8Pair
 sparsemax2 (x , y) with toℕ (code x) ≤? toℕ (code y)
-  where
-    open import Data.Fin using (toℕ)
 ... | yes p =
   let d = toℕ (code y) ∸ toℕ (code x)
       q = (255 ∸ d) / 2
