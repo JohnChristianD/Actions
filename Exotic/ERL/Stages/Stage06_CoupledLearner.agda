@@ -1,37 +1,38 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.Stages.Stage06_CoupledLearner where
 
-open import Agda.Builtin.Nat using (Nat; _+_; _*_; zero; suc)
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Exotic.ERL.FullCoupled.NoisyNetCoupled using
-  ( GateParams
-  ; Noise
-  ; gate
-  ; gate-diagonal
-  ; CoupledNoisyNetState
-  ; NoisyNetStep
-  ; NoisyNetIrreducibility
-  ; NoisyNetSelfLoop
+open import Exotic.ERL.FullCoupled.DPGInt8 using
+  ( GlobalOptimizer
+  ; GlobalL2
+  ; DPGState
+  ; actorForward
+  ; criticForward
+  ; criticTarget
+  ; actorTransport
+  ; criticTransport
   )
 
-record CoupledState : Set where
-  constructor coupled
+record CoupledLearner : Set where
+  constructor coupledLearner
   field
-    critic representation l2 : Nat
+    state : DPGState
+    optimizer : GlobalOptimizer
+    globalL2 : GlobalL2
 
-monus : Nat → Nat → Nat
-monus a zero = a
-monus zero (suc b) = zero
-monus (suc a) (suc b) = monus a b
+open CoupledLearner public
 
-coupledPenalty : CoupledState → Nat
-coupledPenalty s = CoupledState.l2 s * (CoupledState.critic s + CoupledState.representation s)
+learnerActor : CoupledLearner → _
+learnerActor c = actorForward (state c)
 
-coupledStep : CoupledState → CoupledState
-coupledStep s = coupled
-  (monus (CoupledState.critic s) (CoupledState.l2 s))
-  (monus (CoupledState.representation s) (CoupledState.l2 s))
-  (CoupledState.l2 s)
+learnerCritic : CoupledLearner → _
+learnerCritic c = criticForward (state c)
 
-coupledStepSameL2 : ∀ s → CoupledState.l2 (coupledStep s) ≡ CoupledState.l2 s
-coupledStepSameL2 s = refl
+learnerTarget : CoupledLearner → _
+learnerTarget c = criticTarget (state c)
+
+actorTransport-law : ∀ c x → actorTransport (state c) x ≡ actorTransport (state c) x
+actorTransport-law c x = refl
+
+criticTransport-law : ∀ c x → criticTransport (state c) x ≡ criticTransport (state c) x
+criticTransport-law c x = refl
