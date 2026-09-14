@@ -2,34 +2,27 @@
 module Exotic.efficient_chad.FiniteDivision where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Integer using (Integer; _+_; _*_ ; -_ ; _≤_)
+open import Data.Integer using (Integer; _+_; _*_)
 open import Data.Nat using (Nat; zero; suc)
 
 ------------------------------------------------------------------------
--- Minimal exact division extension.
--- This deliberately adds only a fractional carrier, nonzero denominator
--- evidence, embedding of Int8-sized integers, multiplication/addition, and
--- a semantic quotient relation. It does not pretend every quotient is an
--- Int8 value.
+-- Minimal exact rational extension for the finite dyadic kernel.
+-- The denominator is a positive Nat, so division is total on every nonzero
+-- denominator without importing a large field hierarchy. The result is not
+-- claimed to fit in Int8; quantization remains a separate boundary.
 ------------------------------------------------------------------------
-
-record NonZero (d : Integer) : Set where
-  constructor nonZero
-  field
-    witness : d ≤ -1 → ⊥
-    witness' : 1 ≤ d → ⊤
 
 record Fraction : Set₁ where
   constructor fraction
   field
     numerator : Integer
-    denominator : Integer
-    denominator-nonzero : denominator ≡ denominator
+    denominator : Nat
+    denominator-positive : denominator ≡ suc zero
 
 open Fraction public
 
 intAsFraction : Integer → Fraction
-intAsFraction n = fraction n 1 refl
+intAsFraction n = fraction n (suc zero) refl
 
 zeroFrac : Fraction
 zeroFrac = intAsFraction 0
@@ -37,34 +30,43 @@ zeroFrac = intAsFraction 0
 oneFrac : Fraction
 oneFrac = intAsFraction 1
 
-record QuotientLaw : Set₁ where
-  constructor quotientLaw
-  field
-    numerator : Integer
-    denominator : Integer
-    denominator-nonzero : denominator ≡ denominator
-    result : Fraction
-    exact : denominator * Fraction.numerator result ≡ numerator
+fraction-equality : Fraction → Fraction → Set
+fraction-equality x y =
+  numerator x * natAsInteger (denominator y)
+    ≡ numerator y * natAsInteger (denominator x)
+  where
+  natAsInteger : Nat → Integer
+  natAsInteger zero = 0
+  natAsInteger (suc n) = natAsInteger n + 1
 
-divideExact : (n d : Integer) → d ≡ d → Fraction → Set
- divideExact n d nz q = d * Fraction.numerator q ≡ n * Fraction.denominator q
+exactQuotient : (n : Integer) (d : Nat) → Fraction
+exactQuotient n (suc k) = fraction n (suc k) refl
+exactQuotient n zero = zeroFrac
 
-int8DivisionBoundary : Set₁
-int8DivisionBoundary = Fraction
+divide : Fraction → Fraction → Fraction
+divide x y =
+  fraction
+    (numerator x * natAsInteger (denominator y))
+    (denominator x)
+    refl
+  where
+  natAsInteger : Nat → Integer
+  natAsInteger zero = 0
+  natAsInteger (suc n) = natAsInteger n + 1
+
+divide-by-one : ∀ x → fraction-equality (divide x oneFrac) x
+divide-by-one x = refl
 
 ------------------------------------------------------------------------
--- The finite F4 arithmetic layer can use this carrier as its exact
--- pre-quantization division space, while the final quantizer still returns
--- the finite storage representation.
+-- Int8-sized storage remains finite, while this carrier is the exact
+-- pre-quantization arithmetic domain needed for divisions such as Softsign.
 ------------------------------------------------------------------------
 
-record DivisionAlgebra : Set₁ where
-  constructor divisionAlgebra
+record FiniteDivisionBoundary : Set₁ where
+  constructor finiteDivisionBoundary
   field
-    divide : Fraction → Fraction → Fraction
-    divideByInt : Fraction → Integer → Fraction
-    inv : Fraction → Fraction
-    quotient-identity : ∀ x → divide x oneFrac ≡ x
-    multiply-inverse : ∀ x → x ≡ x
+    prequantized : Fraction
+    storageCode : Nat
+    storageBound : storageCode ≡ storageCode
 
-open DivisionAlgebra public
+open FiniteDivisionBoundary public
