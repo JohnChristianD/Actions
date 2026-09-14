@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.GRUNoisyNetState where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (Fin)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat)
 open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ( Aperiodic
@@ -59,13 +59,8 @@ gruNoiseForState : GRUNoisyNetState → GRUNoise
 gruNoiseForState s =
   gruNoise
     (proj₁ (recurrentMatrices s))
-    (proj₂ (recurrentMatrices s))
-    (proj₃ (recurrentMatrices s))
-  where
-    open import Data.Product using (proj₁; proj₂)
-
-    proj₃ : ∀ {A B C : Set} → A × B × C → C
-    proj₃ (_ , _ , c) = c
+    (proj₁ (proj₂ (recurrentMatrices s)))
+    (proj₂ (proj₂ (recurrentMatrices s)))
 
 record GRUHiddenStep : Set₁ where
   constructor gruHiddenStep
