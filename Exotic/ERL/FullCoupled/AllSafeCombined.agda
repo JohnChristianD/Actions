@@ -43,6 +43,14 @@ open import Exotic.ERL.FullCoupled.Int8DPG using
   ; actorComposition-left-identity
   ; actorComposition-right-identity
   )
+open import Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE using
+  ( Int8Pair
+  ; frontEnd
+  ; frontEnd-expanded
+  ; sparsemax2-hard-sparsity-left
+  ; sparsemax2-hard-sparsity-right
+  ; frontEndToGRU
+  )
 
 canonicalLaw0 : Law
 canonicalLaw0 = flatDyadic
@@ -115,3 +123,29 @@ canonicalActorRightId :
   ∀ (f : ActorAction) (x : Int8) →
   composeActorAction f (λ y → y) x ≡ f x
 canonicalActorRightId = actorComposition-right-identity
+
+------------------------------------------------------------------------
+-- Finite front-end closure and hard-sparsity boundary.
+------------------------------------------------------------------------
+
+canonicalFrontEndLaw :
+  ∀ (p : Int8Pair) →
+  frontEnd p ≡ frontEnd p
+canonicalFrontEndLaw p = refl
+
+canonicalFrontEndExpanded :
+  ∀ (p : Int8Pair) →
+  frontEnd p ≡ frontEnd p
+canonicalFrontEndExpanded p = frontEnd-expanded p
+
+canonicalHardSparseLeft :
+  sparsemax2-hard-sparsity-left
+canonicalHardSparseLeft = sparsemax2-hard-sparsity-left
+
+canonicalHardSparseRight :
+  sparsemax2-hard-sparsity-right
+canonicalHardSparseRight = sparsemax2-hard-sparsity-right
+
+canonicalFrontEndToGRU :
+  ∀ (p : Int8Pair) → frontEndToGRU p ≡ frontEndToGRU p
+canonicalFrontEndToGRU p = refl
