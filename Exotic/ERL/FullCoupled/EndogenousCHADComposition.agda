@@ -1,16 +1,17 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EndogenousCHADComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.Nat using (Nat)
+open import Agda.Builtin.Equality using (_≡_)
 open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.efficient_chad.DyadicCHAD using
   ( Operator
   ; source
   ; primal
+  ; cost
   ; compose
   ; compose-primal
   ; compose-cost
+  ; PreservesPrimal
   ; EfficientCHADTheorem
   )
 open import Exotic.efficient_chad.ParallelPrefix using
@@ -50,7 +51,8 @@ endogenousCHADPrimal :
   ∀ (w : EndogenousCHADWitness) (x : Int8) →
   primal (operator w) x ≡ source (operator w) x
 endogenousCHADPrimal w x =
-  EfficientCHADTheorem.primal-preserved (theorem w) .PreservesPrimal.theorem x
+  PreservesPrimal.theorem
+    (EfficientCHADTheorem.primal-preserved (theorem w)) x
 
 endogenousCHADCompositePrimal :
   ∀ (w : EndogenousCHADWitness) (x : Int8) →
@@ -61,7 +63,8 @@ endogenousCHADCompositePrimal w x =
 
 endogenousCHADCompositeCost :
   ∀ (w : EndogenousCHADWitness) (x : Int8) →
-  _ ≡ _
+  cost (compose (operator w) (operator w)) x
+  ≡ cost (operator w) (primal (operator w) x) + cost (operator w) x
 endogenousCHADCompositeCost w x =
   compose-cost (operator w) (operator w) x
 
