@@ -3,7 +3,8 @@ module Exotic.ERL.Exploration.FlatDyadic where
 
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Nat using (ℕ; zero; suc; _+_)
-open import Agda.Builtin.Equality using (_≡_; refl; cong)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (cong)
 
 flatWeight : Fin 256 → ℕ
 flatWeight _ = 1
@@ -33,3 +34,6 @@ flatForward-positive = flatAny-positive 1
 
 flatBackward-positive : flatWeight 255 ≡ 1
 flatBackward-positive = flatAny-positive 255
+
+flatConstant : ∀ (x y : Fin 256) → flatWeight x ≡ flatWeight y
+flatConstant x y = refl
