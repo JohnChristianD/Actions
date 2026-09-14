@@ -66,6 +66,14 @@ sparsemax2 (x , y) with toℕ (code x) ≤? toℕ (code y)
       q = (255 + d) / 2
   in int8OfNat q , int8OfNat (255 ∸ q)
 
+sparsemax2-hard-sparsity-left :
+  proj₂ (sparsemax2 (int8OfNat 255 , int8OfNat 0)) ≡ int8OfNat 0
+sparsemax2-hard-sparsity-left = refl
+
+sparsemax2-hard-sparsity-right :
+  proj₁ (sparsemax2 (int8OfNat 0 , int8OfNat 255)) ≡ int8OfNat 0
+sparsemax2-hard-sparsity-right = refl
+
 ------------------------------------------------------------------------
 -- Discrete RoPE special angle pi/2: (x,y) |-> (-y,x).
 ------------------------------------------------------------------------
