@@ -1,7 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.EndogenousBoundaryComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; cong)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
@@ -31,8 +32,10 @@ open import Exotic.ERL.FullCoupled.Int8DPG using
   ; l2
   )
 open import Exotic.ERL.FullCoupled.DPGBellmanHaarComposition using
-  ( Q
+  ( State
+  ; Q
   ; GreedyPolicy
+  ; Discount
   ; IsGreedy
   ; maxQBootstrap
   ; greedyPolicyBootstrap
@@ -46,7 +49,6 @@ open import Exotic.ERL.FullCoupled.WatkinsDPG using
   ; watkinsTraceLength
   ; watkinsTraceLength-cut-head
   ; watkinsRegime
-  ; TraceRegime
   ; oneStep
   ; cut-regime-is-one-step
   )
@@ -58,7 +60,7 @@ open import Exotic.ERL.FullCoupled.WatkinsDPG using
 -- but not the full modified q-projected Softsign-IDBD/F4-Int recurrence.
 -- This record therefore states the missing optimizer as a typed boundary,
 -- so the composition theorems below can be generated without inventing its
--- update equation.  No optimizer recurrence is re-proved here.
+-- update equation. No optimizer recurrence is re-proved here.
 ------------------------------------------------------------------------
 
 record F4IntMomentumLayer : Set₁ where
@@ -137,7 +139,7 @@ endogenousL2Carrier :
 endogenousL2Carrier s x = refl
 
 ------------------------------------------------------------------------
--- DPG-specific global-control factorization.  The actor and critic are two
+-- DPG-specific global-control factorization. The actor and critic are two
 -- heads of one coupled DPG control object, so the same optimizer/L2 carrier
 -- is visible at both heads.
 ------------------------------------------------------------------------
@@ -166,9 +168,8 @@ endogenousActorCriticL2Coupling s = refl
 
 endogenousWatkinsCutTrace :
   ∀ (s : EndogenousBoundaryState) →
-  watkinsTraceLength
-    (cutTrace ∷ [])
-  ≡ 1
+  watkinsTraceLength (cutTrace ∷ [])
+  ≡ suc zero
 endogenousWatkinsCutTrace s = watkinsTraceLength-cut-head []
 
 endogenousWatkinsCutRegime :
@@ -185,15 +186,12 @@ endogenousWatkinsActionPreserved s = refl
 ------------------------------------------------------------------------
 -- Strong DPG-vs-max-Q composition boundary.
 -- The actor target equals the max-Q target exactly when the actor policy is
--- supplied with the finite greedy premise.  The front-end and recurrent
+-- supplied with the finite greedy premise. The front-end and recurrent
 -- composition remain outside that premise.
 ------------------------------------------------------------------------
 
 endogenousDPGMaxQBoundary :
-  ∀ (reward : _)
-    (δ : _)
-    (q : Q)
-    (π : GreedyPolicy) →
+  ∀ (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
   IsGreedy π q →
   ∀ s₀ →
   greedyPolicyBootstrap reward δ q π s₀
@@ -201,27 +199,25 @@ endogenousDPGMaxQBoundary :
 endogenousDPGMaxQBoundary = DPG-maxQ-bootstrap-equivalence
 
 ------------------------------------------------------------------------
--- Watkins + DPG + max-Q composition: both boundaries commute at once.
+-- Watkins + DPG + max-Q composition: both boundaries are exposed together.
+-- The greedy premise controls the DPG/max-Q equality, while the cut premise
+-- independently controls the Watkins trace regime.
 ------------------------------------------------------------------------
 
 endogenousWatkinsDPGMaxQBoundary :
-  ∀ (reward : _)
-    (δ : _)
-    (q : Q)
-    (π : GreedyPolicy) →
+  ∀ (reward : ℕ) (δ : Discount) (q : Q) (π : GreedyPolicy) →
   IsGreedy π q →
-  ∀ (s : EndogenousBoundaryState) (s₀ : _) →
-  watkinsRegime (cutTrace ∷ [])
-  ≡ oneStep
+  ∀ (s : EndogenousBoundaryState) (s₀ : State) →
+  greedyPolicyBootstrap reward δ q π s₀
+  ≡ maxQBootstrap reward δ q s₀
 endogenousWatkinsDPGMaxQBoundary reward δ q π greedy s s₀ =
-  cut-regime-is-one-step []
+  DPG-maxQ-bootstrap-equivalence reward δ q π greedy s₀
 
 ------------------------------------------------------------------------
--- The composed theorem class exposes the extra proof surface introduced by
--- Watkins: max-Q contributes an ordered action premise, DPG contributes a
--- policy factor, and Watkins contributes a trace regime.  The conjunction is
--- strictly richer in structure than either boundary in isolation, while the
--- individual component proofs remain imported rather than duplicated.
+-- The composed theorem surface keeps the two extra endogenous dimensions:
+-- DPG introduces an explicit policy head; Watkins introduces a trace regime.
+-- Their composition is therefore richer than the max-Q-only boundary while
+-- preserving the same finite front-end and global control carrier.
 ------------------------------------------------------------------------
 
 record ComposedProofSurface : Set₁ where
@@ -243,7 +239,7 @@ composedSurfaceFactorization c = refl
 ------------------------------------------------------------------------
 -- Zhang-style finite invariant boundary: the composition can preserve an
 -- invariant carrier if the optimizer implementation supplies its one-step
--- closure law.  This is a bounded/invariant-set theorem, not an automatic
+-- closure law. This is a bounded/invariant-set theorem, not an automatic
 -- convergence theorem.
 ------------------------------------------------------------------------
 
@@ -251,8 +247,7 @@ record InvariantOptimizerCarrier : Set₁ where
   constructor invariantOptimizerCarrier
   field
     member : Int8 → Set
-    stepClosed :
-      ∀ (x e : Int8) → member x
+    stepClosed : ∀ (x e : Int8) → member x
 
 open InvariantOptimizerCarrier public
 
