@@ -14,6 +14,9 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; there
   ; here
   )
+open import Exotic.ERL.Exploration.DyadicLaw using
+  ( flatDyadic
+  )
 open import Exotic.ERL.Exploration.MR15Reachability using
   ( MR15State
   ; MR15Step
@@ -44,6 +47,10 @@ open import Exotic.ERL.FullCoupled.SoftsignGatedRepresentation using
 open import Exotic.ERL.FullCoupled.NoisyNetSoftsignFactor using
   ( RepresentationFactor
   ; noisyNetSoftsignFactor
+  )
+open import Exotic.ERL.FullCoupled.FullAlgebraicCoupling using
+  ( FullAlgebraicCoupling
+  ; fullAlgebraicCoupling
   )
 
 record TheoremFactor {S R : Set}
@@ -221,6 +228,34 @@ MR15-lt-NoisyNet = noisyNetStrict
 openES-lt-NoisyNet : StrictFactorExtension NoisyNetStep openESStep
 openES-lt-NoisyNet = noisyNetStrictOverOpenES
 
--- The strict ordering is now a transitive semantic factor theorem:
--- OpenES < MR15 < NoisyNet, with the composite NoisyNet→OpenES factor
--- and its inherited proper fiber explicitly constructed in Agda.
+fullFactor : ∀ {S R : Set}
+    {stepS : S → S → Set} {stepR : R → R → Set}
+  → TheoremFactor stepS stepR
+  → FullAlgebraicCoupling flatDyadic stepS
+  → FullAlgebraicCoupling flatDyadic stepR
+fullFactor f c =
+  fullAlgebraicCoupling
+    (FullAlgebraicCoupling.lawNormalized c)
+    (FullAlgebraicCoupling.lawUnitSupport c)
+    (FullAlgebraicCoupling.representationForward c)
+    (FullAlgebraicCoupling.representationPullback c)
+    (FullAlgebraicCoupling.representationMobiusComposition c)
+    (FullAlgebraicCoupling.canonicalRepresentation c)
+    (factorIrreducible f (FullAlgebraicCoupling.irreducible c))
+    (factorSelfLoop f (FullAlgebraicCoupling.selfLoop c))
+    (factorPeriodOne f (FullAlgebraicCoupling.periodOne c))
+
+mr15FullFromNoisyNetFull :
+  FullAlgebraicCoupling flatDyadic NoisyNetStep
+  → FullAlgebraicCoupling flatDyadic MR15Step
+mr15FullFromNoisyNetFull = fullFactor noisyNetToMR15
+
+openESFullFromMR15Full :
+  FullAlgebraicCoupling flatDyadic MR15Step
+  → FullAlgebraicCoupling flatDyadic openESStep
+openESFullFromMR15Full = fullFactor mr15ToOpenES
+
+-- OpenES < MR15 < NoisyNet is a strict semantic factor order on the full
+-- composition boundary: every stronger full theorem projects to the weaker
+-- full theorem, while the underlying NoisyNet/MR15 and MR15/OpenES fibers
+-- contain distinct states with identical projections.
