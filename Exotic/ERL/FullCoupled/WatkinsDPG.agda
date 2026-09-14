@@ -1,8 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.WatkinsDPG where
 
-open import Agda.Builtin.Equality using (_≡_; refl; cong)
-open import Data.Bool using (Bool; true; false)
+open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.List using (List; []; _∷_)
 open import Data.Nat using (ℕ; zero; suc)
 open import Exotic.efficient_chad.Int8 using (Int8)
@@ -14,31 +13,19 @@ open import Exotic.ERL.FullCoupled.Int8DPG using
   )
 
 ------------------------------------------------------------------------
--- Watkins-style trace carrier, kept algebraically separate from the
--- DPG actor.  A greedy continuation keeps the trace; a nongreedy action
--- cuts it.  This is the ceteris-paribus surface: the actor implementation
--- itself is unchanged.
+-- Watkins-style trace carrier.
+-- keepTrace is the greedy continuation case; cutTrace is the Watkins
+-- nongreedy-action trace cut.  The DPG actor remains unchanged.
 ------------------------------------------------------------------------
 
-TraceDecision : Set
-actionTrace : TraceDecision
-
--- The two constructors are deliberately semantic rather than a computed
--- argmax.  The finite DPG actor remains Int8 -> Int8 and callers supply the
--- greedy/nongreedy fact at the boundary where the ordered action semantics
--- are available.
 data TraceDecision : Set where
   keepTrace : TraceDecision
   cutTrace : TraceDecision
 
-actionTrace = keepTrace
-
 traceStep : TraceDecision → ℕ → ℕ
-actionTrace = keepTrace
 traceStep keepTrace n = suc n
 traceStep cutTrace n = suc zero
 
--- Canonical recursive carrier for the active Watkins suffix length.
 watkinsTraceLength : List TraceDecision → ℕ
 watkinsTraceLength [] = zero
 watkinsTraceLength (keepTrace ∷ xs) = suc (watkinsTraceLength xs)
@@ -59,9 +46,8 @@ watkinsTraceLength-keep :
 watkinsTraceLength-keep xs = refl
 
 ------------------------------------------------------------------------
--- Noisy-Net exploration interface.
--- The exploration mechanism is allowed to classify the sampled action as
--- nongreedy without changing the actor or critic carrier.
+-- Noisy-Net exploration may classify the sampled action as nongreedy
+-- without mutating the actor/critic carrier.
 ------------------------------------------------------------------------
 
 record WatkinsExploration : Set where
@@ -81,7 +67,7 @@ watkinsCut-preserves-action :
 watkinsCut-preserves-action e = refl
 
 ------------------------------------------------------------------------
--- DPG actor/critic are retained ceteris paribus.
+-- Ceteris-paribus DPG actor/critic boundary.
 ------------------------------------------------------------------------
 
 typeActor : DPGActor → Int8 → Int8
@@ -101,31 +87,27 @@ watkinsCriticPreserved :
 watkinsCriticPreserved c x = refl
 
 ------------------------------------------------------------------------
--- The TD(0) degeneration is an algebraic trace statement, not an
--- architectural statement: once every continuation is cut, the active
--- suffix has length one.  Thus no earlier TD errors can be carried by the
--- Watkins trace.
+-- TD(0) degeneration is caused by trace truncation, not by the number of
+-- recurrent matrices.  Once the head transition is cut, the active suffix
+-- length is exactly one, so no earlier TD errors can be carried.
 ------------------------------------------------------------------------
 
 allCuts : ℕ → List TraceDecision
 allCuts zero = []
 allCuts (suc n) = cutTrace ∷ allCuts n
 
-allCuts-length :
-  ∀ n →
-  n ≡ zero →
+allCuts-length-suc :
+  ∀ (n : ℕ) →
   watkinsTraceLength (allCuts (suc n)) ≡ suc zero
-allCuts-length n p = refl
+allCuts-length-suc n = refl
 
 watkins-one-step-under-cut :
-  ∀ (x : Int8) →
   watkinsTraceLength (cutTrace ∷ []) ≡ suc zero
-watkins-one-step-under-cut x = refl
+watkins-one-step-under-cut = refl
 
 ------------------------------------------------------------------------
--- A compact DPG-backed critic boundary.  This is intentionally the
--- one-step critic evaluation of the actor-selected action; it does not
--- claim optimality of the actor by construction.
+-- Compact Watkins/DPG critic boundary.  This is actor-conditioned critic
+-- evaluation; it intentionally does not assert that the actor is greedy.
 ------------------------------------------------------------------------
 
 dpgWatkinsCriticStep :
@@ -140,9 +122,7 @@ dpgWatkinsCriticStep-law :
 dpgWatkinsCriticStep-law c a x = refl
 
 ------------------------------------------------------------------------
--- Counterfactual distinction: a three-matrix recurrent architecture does
--- not force TD(0).  The only formal route to the one-step collapse here is
--- trace truncation/cutting (or choosing the one-step lambda boundary).
+-- Regime classification makes the counterfactual explicit.
 ------------------------------------------------------------------------
 
 data TraceRegime : Set where
@@ -152,9 +132,9 @@ data TraceRegime : Set where
 watkinsRegime : List TraceDecision → TraceRegime
 watkinsRegime [] = oneStep
 watkinsRegime (cutTrace ∷ xs) = oneStep
-watkinsRegime (keepTrace ∷ xs) =
-  multiStep
+watkinsRegime (keepTrace ∷ xs) = multiStep
 
 cut-regime-is-one-step :
-  ∀ xs → watkinsRegime (cutTrace ∷ xs) ≡ oneStep
+  ∀ (xs : List TraceDecision) →
+  watkinsRegime (cutTrace ∷ xs) ≡ oneStep
 cut-regime-is-one-step xs = refl
