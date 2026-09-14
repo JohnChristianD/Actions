@@ -122,6 +122,12 @@ jobs:
       - name: Check endogenous Efficient CHAD and scan composition
         run: agda --safe Exotic/ERL/FullCoupled/EndogenousCHADComposition.agda
 
+      - name: Check finite irreducibility aperiodicity invariant measure layer
+        run: agda --safe Exotic/ERL/FullCoupled/FiniteErgodicComposition.agda
+
+      - name: Check path norm and semidirect composition layer
+        run: agda --safe Exotic/ERL/FullCoupled/PathNormSemidirectComposition.agda
+
       - name: Check Int8 Lyapunov KKT contraction stability schemas
         run: agda --safe Exotic/ERL/FullCoupled/Int8StabilityComposition.agda
 
@@ -136,6 +142,9 @@ jobs:
 
       - name: Check Econlib game-theory fragment
         run: agda --safe Exotic/econlib/GameTheory.agda
+
+      - name: Check Econlib game-theory folder port
+        run: agda --safe Exotic/econlib/GameTheory/Finite.agda
 
       - name: Check Econlib game-theory folder port
         run: agda --safe Exotic/econlib/GameTheory/Finite.agda
