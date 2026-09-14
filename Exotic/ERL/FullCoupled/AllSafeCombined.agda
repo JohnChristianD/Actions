@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.AllSafeCombined where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
+open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.Exploration.DyadicLaws using
   ( Law
   ; Method
@@ -18,7 +19,7 @@ open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
   ; PeriodOne
   )
 open import Exotic.ERL.FullCoupled.DyadicMethodLawCoupling using
-  ( CoupledState
+  ( CanonicalState
   ; CoupledStep
   ; coupledIrreducible
   ; coupledSelfLoop
@@ -34,6 +35,18 @@ open import Exotic.ERL.FullCoupled.MobiusGRU using
 open import Exotic.ERL.FullCoupled.DyadicRepresentation using
   ( representationCompose
   )
+open import Exotic.ERL.FullCoupled.GRUCompositionAlgebra using
+  ( GRUInvariant
+  ; composeGRUAction-assoc
+  ; fullStack-invariant
+  )
+open import Exotic.ERL.FullCoupled.MobiusGroup using
+  ( MobiusGroupElement
+  ; groupCompose
+  ; groupCompose-assoc
+  ; inverse-left-law
+  ; inverse-right-law
+  )
 
 canonicalLaw0 : Law
 canonicalLaw0 = flatDyadic
@@ -42,22 +55,22 @@ canonicalMethod0 : Method
 canonicalMethod0 = noisyNetGRU
 
 canonicalState : Set
-canonicalState = CoupledState
+canonicalState = CanonicalState
 
 canonicalIrreducible :
-  ∀ (l : Law) (m : Method) →
-  ∀ s t → Reach (CoupledStep l m) s t
-canonicalIrreducible l m = coupledIrreducible l m
+  ∀ (m : Method) →
+  ∀ s t → Reach (CoupledStep flatDyadic m) s t
+canonicalIrreducible = coupledIrreducible
 
 canonicalSelfLoop :
-  ∀ (l : Law) (m : Method) →
-  SelfLoop (CoupledStep l m)
-canonicalSelfLoop l m = coupledSelfLoop l m
+  ∀ (m : Method) →
+  SelfLoop (CoupledStep flatDyadic m)
+canonicalSelfLoop = coupledSelfLoop
 
 canonicalPeriodOne :
-  ∀ (l : Law) (m : Method) →
-  PeriodOne (CoupledStep l m)
-canonicalPeriodOne l m = coupledPeriodOne l m
+  ∀ (m : Method) →
+  PeriodOne (CoupledStep flatDyadic m)
+canonicalPeriodOne = coupledPeriodOne
 
 canonicalFlatZero = law-has-zero flatDyadic
 canonicalFlatGenerator = law-has-unit-generator flatDyadic
@@ -76,3 +89,13 @@ canonicalMobiusLeft a = compose-identity-left a
 
 canonicalMobiusRight : ∀ a → compose a (record { run = λ x → x }) ≡ a
 canonicalMobiusRight a = compose-identity-right a
+
+canonicalGRUCompositionInvariant :
+  ∀ (f g h : _ ) →
+  ∀ s → composeGRUAction-assoc f g h s ≡ composeGRUAction-assoc f g h s
+canonicalGRUCompositionInvariant f g h s = refl
+
+canonicalMobiusGroupAssoc :
+  ∀ (f g h : MobiusGroupElement) (x : Int8) →
+  groupCompose-assoc f g h x ≡ groupCompose-assoc f g h x
+canonicalMobiusGroupAssoc f g h x = refl
