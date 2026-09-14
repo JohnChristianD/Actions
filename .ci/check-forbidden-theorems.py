@@ -2,8 +2,6 @@ from pathlib import Path
 import re
 import sys
 
-# The theorem surface is finite/dyadic only. Tokens are encoded so this guard
-# cannot trip over its own literal vocabulary.
 FORBIDDEN = tuple(bytes.fromhex(code).decode("utf-8") for code in (
     "7472616e7363656e64656e74616c",
     "7472616e7363656e64656e74616c73",
@@ -34,6 +32,8 @@ FORBIDDEN_PATHS = (
 SKIP_PARTS = {
     ".git",
     ".ci/external",
+}
+SKIP_EXACT_PATHS = {
     ".ci/check-forbidden-theorems.py",
 }
 
@@ -44,6 +44,8 @@ for path in ROOT.rglob("*"):
     if not path.is_file():
         continue
     rel = path.as_posix()
+    if rel in SKIP_EXACT_PATHS:
+        continue
     if any(part in rel.split("/") for part in SKIP_PARTS):
         continue
     if any(rel.endswith(bad_path) for bad_path in FORBIDDEN_PATHS):
