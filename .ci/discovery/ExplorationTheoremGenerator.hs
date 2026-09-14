@@ -4,23 +4,27 @@ import Data.List (intercalate, isInfixOf)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
-record :: String -> String -> [String] -> (String, String, [String])
-record name path proofs = (name, path, proofs)
+laws :: [(String, String)]
+laws =
+  [ ("Flat", "flatDyadic")
+  , ("Lazy", "lazyUnit")
+  , ("Ladder", "dyadicLadder")
+  ]
 
-methods :: [(String, String, [String])]
+methods :: [(String, String, String, [String])]
 methods =
-  [ record "MR15" "Exotic/ERL/Exploration/MR15Reachability.agda"
-      ["mr15IrreducibilityProof", "mr15SelfLoopProof"]
-  , record "OpenES" "Exotic/ERL/Exploration/OpenESDyadic.agda"
-      ["openESIrreducibilityProof", "openESSelfLoopProof"]
-  , record "NoisyNet" "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-      ["noisyNetIrreducibilityProof", "noisyNetSelfLoopProof"]
+  [ ("MR15", "Exotic/ERL/Exploration/MR15Reachability.agda", "mr15GA"
+    , ["mr15IrreducibilityProof", "mr15SelfLoopProof", "mr15PeriodOneProof"])
+  , ("OpenES", "Exotic/ERL/Exploration/OpenESDyadic.agda", "openES"
+    , ["openESIrreducibilityProof", "openESSelfLoopProof", "openESPeriodOneProof"])
+  , ("NoisyNet", "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda", "noisyNetGRU"
+    , ["noisyNetGRUIrreducible", "noisyNetGRUSelfLoop", "noisyNetGRUPeriodOne", "noisyNetProjectionLift"])
   ]
 
 data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
 
-checkMethod :: (String, String, [String]) -> IO (String, Status, [String])
-checkMethod (name, path, required) = do
+checkMethod :: (String, String, String, [String]) -> IO (String, Status, [String])
+checkMethod (name, path, _methodTag, required) = do
   source <- readFile path
   let missing = filter (\symbol -> not (symbol `isInfixOf` source)) required
   if not (null missing)
@@ -31,20 +35,21 @@ checkMethod (name, path, required) = do
         ExitSuccess -> pure (name, Proven, [])
         ExitFailure _ -> pure (name, AgdaFailure, [err])
 
-renderCandidateModule :: [(String, Status, [String])] -> String
+renderCandidateModule :: [(String, String, String, Status, [String])] -> String
 renderCandidateModule results =
   unlines $
     [ "{-# OPTIONS --safe #-}"
     , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
     , ""
-    , "-- Generated theorem-discovery report. Agda remains the acceptance oracle."
-    , "-- `Proven` means the named proof terms were present and the module exited successfully under `agda --safe`."
+    , "-- Generated law x method theorem-discovery report."
+    , "-- Agda remains the only acceptance oracle."
     , ""
     ]
     ++ concatMap render results
   where
-    render (name, status, details) =
-      [ "-- method: " ++ name
+    render (lawName, lawTag, methodName, status, details) =
+      [ "-- law: " ++ lawName ++ " (" ++ lawTag ++ ")"
+      , "-- method: " ++ methodName
       , "-- status: " ++ show status
       , "-- details: " ++ intercalate " | " details
       , ""
@@ -52,16 +57,31 @@ renderCandidateModule results =
 
 main :: IO ()
 main = do
-  results <- mapM checkMethod methods
+  methodResults <- mapM checkMethod methods
+  let results =
+        [ (lawName, lawTag, methodName, status, details)
+        | (lawName, lawTag) <- laws
+        , (methodName, _path, _methodTag, _required) <- methods
+        , let (status, details) =
+                case lookupMethod methodName methodResults of
+                  Nothing -> (AgdaFailure, ["missing method result"])
+                  Just (s, d) -> (s, d)
+        ]
   writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
     (renderCandidateModule results)
   mapM_ printResult results
-  if any (\(_, status, _) -> status /= Proven) results
+  if any (\(_, _, _, status, _) -> status /= Proven) results
     then exitFailure
     else exitSuccess
   where
-    printResult (name, status, details) =
+    lookupMethod _ [] = Nothing
+    lookupMethod name ((n, status, details) : rest)
+      | name == n = Just (status, details)
+      | otherwise = lookupMethod name rest
+
+    printResult (lawName, _lawTag, methodName, status, details) =
       putStrLn $
-        "exploration-method=" ++ name
+        "law=" ++ lawName
+        ++ ",method=" ++ methodName
         ++ ",status=" ++ show status
         ++ if null details then "" else ",details=" ++ intercalate ";" details
