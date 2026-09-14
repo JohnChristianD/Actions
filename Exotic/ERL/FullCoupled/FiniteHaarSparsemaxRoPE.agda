@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.FiniteHaarSparsemaxRoPE where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _+_; _∸_; _/_; _≤?_; _*_)
+open import Data.Nat using (ℕ; _+_; _∸_; _≤?)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Relation.Nullary using (yes; no)
 open import Exotic.efficient_chad.Int8 using
@@ -12,7 +12,11 @@ open import Exotic.efficient_chad.Int8 using
   ; int8OfNat
   ; int8Add
   ; zero8
-  ; max8
+  )
+open import Exotic.efficient_chad.FiniteDivision using
+  ( PositiveNat
+  ; positive
+  ; finiteDivideNat
   )
 
 ------------------------------------------------------------------------
@@ -56,15 +60,18 @@ haar2-closed p = haar2 p
 -- hard sparsity inside the finite arithmetic carrier.
 ------------------------------------------------------------------------
 
+two : PositiveNat
+two = positive 1
+
 sparsemax2 : Int8Pair → Int8Pair
 sparsemax2 (x , y) with toℕ (code x) ≤? toℕ (code y)
 ... | yes p =
   let d = toℕ (code y) ∸ toℕ (code x)
-      q = (255 ∸ d) / 2
+      q = finiteDivideNat (255 ∸ d) two
   in int8OfNat q , int8OfNat (255 ∸ q)
 ... | no p =
   let d = toℕ (code x) ∸ toℕ (code y)
-      q = (255 + d) / 2
+      q = finiteDivideNat (255 + d) two
   in int8OfNat q , int8OfNat (255 ∸ q)
 
 sparsemax2-hard-sparsity-left :
@@ -141,7 +148,7 @@ gruInputProjection : Int8Pair → Int8
 gruInputProjection = proj₁
 
 gruInputProjection-closed : ∀ p → Int8
-gruInputProjection-closed p = proj₁ p
+gruInputProjection-closed (x , y) = x
 
 frontEndToGRU : Int8Pair → Int8
 frontEndToGRU p = gruInputProjection (frontEnd p)
