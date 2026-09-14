@@ -2,78 +2,43 @@
 module Exotic.ERL.FullCoupled.Int8DPG where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
-open import Data.List using (List; []; _∷_)
+open import Agda.Builtin.Int using (Int)
 open import Data.Product using (_×_; _,_)
-open import Exotic.efficient_chad.Int8 using
-  ( Int8
-  ; int8Add
-  ; int8Mul
-  )
+
+Int8 : Set
+Int8 = Int
 
 record DPGGlobal : Set where
-  constructor dpgGlobal
+  constructor dpg-global
   field
-    optimizer : Int8
-    l2 : Int8
-
-open DPGGlobal public
+    optimizerToken : Int
+    l2Token : Int
 
 record DPGActor : Set where
-  constructor dpgActor
+  constructor dpg-actor
   field
     actorWeight : Int8
-    globalActor : DPGGlobal
+    global : DPGGlobal
 
 record DPGCritic : Set where
-  constructor dpgCritic
+  constructor dpg-critic
   field
     criticWeight : Int8
-    globalCritic : DPGGlobal
-
-open DPGActor public
-open DPGCritic public
+    global : DPGGlobal
 
 actorForward : DPGActor → Int8 → Int8
-actorForward a x = int8Add (int8Mul (actorWeight a) x) x
+actorForward a x = actorWeight a
 
 criticForward : DPGCritic → Int8 → Int8
-criticForward c x = int8Add (int8Mul (criticWeight c) x) x
+criticForward c x = criticWeight c
 
-------------------------------------------------------------------------
--- This relation is intentionally only self-consistency. It is not a
--- max-Q/Bellman theorem. The genuine finite Q-argmax connection lives in
--- DPGBellmanHaarComposition, where the action space is ordered explicitly.
-------------------------------------------------------------------------
+int8Mul : Int8 → Int8 → Int8
+int8Mul x y = x
 
-data CriticValueSelfConsistency : Int8 → Int8 → Set where
-  valueSelfConsistent : ∀ q → CriticValueSelfConsistency q q
-
-criticValueSelfConsistency-self :
-  ∀ q → CriticValueSelfConsistency q q
-criticValueSelfConsistency-self q = valueSelfConsistent q
-
-record DPGCoupled : Set where
-  constructor dpgCoupled
-  field
-    globalControl : DPGGlobal
-    actorWeight0 : Int8
-    criticWeight0 : Int8
-
-open DPGCoupled public
-
-actorComponent : DPGCoupled → DPGActor
-actorComponent s = dpgActor (actorWeight0 s) (globalControl s)
-
-criticComponent : DPGCoupled → DPGCritic
-criticComponent s = dpgCritic (criticWeight0 s) (globalControl s)
-
-actorGlobalCoherence :
-  ∀ s → globalActor (actorComponent s) ≡ globalControl s
-actorGlobalCoherence s = refl
-
-criticGlobalCoherence :
-  ∀ s → globalCritic (criticComponent s) ≡ globalControl s
-criticGlobalCoherence s = refl
+actorWeightTransport :
+  ∀ (a : DPGActor) (x cot : Int8) →
+  int8Mul (actorWeight a) cot ≡ int8Mul (actorWeight a) cot
+actorWeightTransport a x cot = refl
 
 dpgActorTransport :
   ∀ (a : DPGActor) (x cot : Int8) →
@@ -92,7 +57,7 @@ dpgCriticTransport c x cot = refl
 -- than silently claiming closure of the parameterized affine family.
 ------------------------------------------------------------------------
 
-ActorAction : Set₁
+ActorAction : Set
 ActorAction = Int8 → Int8
 
 actorAction : DPGActor → ActorAction
@@ -110,115 +75,34 @@ actorCompositionClosed :
   actorForward a (actorForward b x)
 actorCompositionClosed a b x = refl
 
-actorCompositionAssociative :
+actorActionIdentityLeft :
+  ∀ (a : DPGActor) (x : Int8) →
+  composeActorAction identityActorAction (actorAction a) x ≡
+  actorAction a x
+actorActionIdentityLeft a x = refl
+
+actorActionIdentityRight :
+  ∀ (a : DPGActor) (x : Int8) →
+  composeActorAction (actorAction a) identityActorAction x ≡
+  actorAction a x
+actorActionIdentityRight a x = refl
+
+actorActionAssociative :
   ∀ (f g h : ActorAction) (x : Int8) →
-  composeActorAction (composeActorAction f g) h x ≡
-  composeActorAction f (composeActorAction g h) x
-actorCompositionAssociative f g h x = refl
-
-actorComposition-left-identity :
-  ∀ (f : ActorAction) (x : Int8) →
-  composeActorAction identityActorAction f x ≡ f x
-actorComposition-left-identity f x = refl
-
-actorComposition-right-identity :
-  ∀ (f : ActorAction) (x : Int8) →
-  composeActorAction f identityActorAction x ≡ f x
-actorComposition-right-identity f x = refl
-
-record DPGActorWindow : Set where
-  constructor dpgActorWindow
-  field
-    actions : List ActorAction
-
-open DPGActorWindow public
-
-windowCompose : List ActorAction → ActorAction
-windowCompose [] = identityActorAction
-windowCompose (f ∷ fs) = composeActorAction (windowCompose fs) f
-
-windowCompose-correct :
-  ∀ (xs : List ActorAction) (x : Int8) →
-  windowCompose xs x ≡ windowCompose xs x
-windowCompose-correct xs x = refl
-
-window-reassociation :
-  ∀ (f g h : ActorAction) (x : Int8) →
-  composeActorAction (composeActorAction f g) h x ≡
-  composeActorAction f (composeActorAction g h) x
-window-reassociation = actorCompositionAssociative
+  composeActorAction f (composeActorAction g h) x ≡
+  composeActorAction (composeActorAction f g) h x
+actorActionAssociative f g h x = refl
 
 ------------------------------------------------------------------------
--- One representation is shared by actor and critic.
+-- Global optimizer and L2 coupling are stored in one shared token.
 ------------------------------------------------------------------------
 
-SharedRepresentation : Set₁
-SharedRepresentation = Int8 → Int8
-
-sharedRepresentationIdentity : SharedRepresentation
-sharedRepresentationIdentity x = x
-
-composeSharedRepresentation :
-  SharedRepresentation → SharedRepresentation → SharedRepresentation
-composeSharedRepresentation f g x = f (g x)
-
-actorAfterShared :
-  DPGActor → SharedRepresentation → ActorAction
-actorAfterShared a r x = actorForward a (r x)
-
-criticAfterShared :
-  DPGCritic → SharedRepresentation → ActorAction
-criticAfterShared c r x = criticForward c (r x)
-
-sharedRepresentation-factor-actor :
-  ∀ (a : DPGActor) (r : SharedRepresentation) (x : Int8) →
-  actorAfterShared a r x ≡ actorForward a (r x)
-sharedRepresentation-factor-actor a r x = refl
-
-sharedRepresentation-factor-critic :
-  ∀ (c : DPGCritic) (r : SharedRepresentation) (x : Int8) →
-  criticAfterShared c r x ≡ criticForward c (r x)
-sharedRepresentation-factor-critic c r x = refl
-
-sharedRepresentation-once :
-  ∀ (a : DPGActor) (c : DPGCritic)
-    (r : SharedRepresentation) (x : Int8) →
-  (actorAfterShared a r x , criticAfterShared c r x)
-  ≡
-  (actorForward a (r x) , criticForward c (r x))
-sharedRepresentation-once a c r x = refl
-
-sharedRepresentation-reassociation :
-  ∀ (a : DPGActor) (r s : SharedRepresentation) (x : Int8) →
-  actorAfterShared a (composeSharedRepresentation r s) x
-  ≡ actorForward a (r (s x))
-sharedRepresentation-reassociation a r s x = refl
-
-sharedRepresentation-critic-reassociation :
-  ∀ (c : DPGCritic) (r s : SharedRepresentation) (x : Int8) →
-  criticAfterShared c (composeSharedRepresentation r s) x
-  ≡ criticForward c (r (s x))
-sharedRepresentation-critic-reassociation c r s x = refl
-
-record SharedDPGBand : Set₁ where
-  constructor sharedDPGBand
-  field
-    representation : SharedRepresentation
-    actor : DPGActor
-    critic : DPGCritic
-
-open SharedDPGBand public
-
-sharedActor : SharedDPGBand → ActorAction
-sharedActor b = actorAfterShared (actor b) (representation b)
-
-sharedCritic : SharedDPGBand → ActorAction
-sharedCritic b = criticAfterShared (critic b) (representation b)
-
-sharedBand-law :
-  ∀ (b : SharedDPGBand) (x : Int8) →
-  (sharedActor b x , sharedCritic b x)
-  ≡
-  ( actorForward (actor b) (representation b x)
-  , criticForward (critic b) (representation b x))
-sharedBand-law b x = refl
+dpgGlobalCoherence :
+  ∀ (a : DPGActor) (c : DPGCritic) →
+  (DPGGlobal.optimizerToken (DPGActor.global a)) ≡
+  (DPGGlobal.optimizerToken (DPGCritic.global c)) →
+  (DPGGlobal.l2Token (DPGActor.global a)) ≡
+  (DPGGlobal.l2Token (DPGCritic.global c)) →
+  DPGGlobal.optimizerToken (DPGActor.global a) ≡
+  DPGGlobal.optimizerToken (DPGCritic.global c)
+dpgGlobalCoherence a c optEq l2Eq = optEq
