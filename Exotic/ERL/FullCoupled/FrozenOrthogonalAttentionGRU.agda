@@ -3,9 +3,8 @@ module Exotic.ERL.FullCoupled.FrozenOrthogonalAttentionGRU where
 
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Int as I
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Data.Product using (_×_; _,_)
 open import Data.Fin using (toℕ)
+open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using (Int8; code)
 
 ------------------------------------------------------------------------
@@ -52,7 +51,7 @@ haar01 = refl
 ------------------------------------------------------------------------
 -- Dimension-two unnormalised Helmert has the same contrast decomposition,
 -- up to row/sign convention. Consequently Haar is the cleaner canonical
--- choice here, but the two transforms have the same algebraic theorem.
+-- choice here, but the orthogonality theorem is equally elementary.
 ------------------------------------------------------------------------
 
 helmertRow0 : IntVec2
@@ -71,8 +70,8 @@ helmert01 : dot2 helmertRow0 helmertRow1 ≡ zeroI
 helmert01 = refl
 
 ------------------------------------------------------------------------
--- The sparsemax output is first lifted from its Int8/Q7 representation to
--- exact integer coordinates before this frozen linear map is applied.
+-- Sparsemax attention is lifted from its finite Int8/Q7 representation to
+-- exact integer coordinates before the frozen linear map is applied.
 ------------------------------------------------------------------------
 
 liftInt8 : Int8 → I.Int
@@ -82,20 +81,15 @@ liftAttention : Int8 × Int8 → IntVec2
 liftAttention (x , y) = liftInt8 x , liftInt8 y
 
 haarApply : IntVec2 → IntVec2
-haarApply (x , y) = I._+_ x y , I._- _ x y
+haarApply (x , y) = I._+_ x y , I._-_ x y
 
 helmertApply : IntVec2 → IntVec2
-helmertApply (x , y) = I._+_ x y , I._- _ y x
-
-haarHelmertEquivalent2 :
-  ∀ x → helmertApply x ≡
-    let h = haarApply x in I.pos 0 , I.pos 0
-haarHelmertEquivalent2 x = refl
+helmertApply (x , y) = I._+_ x y , I._-_ y x
 
 ------------------------------------------------------------------------
 -- Explicit sandwich boundary: sparsemax attention -> frozen transform ->
 -- recurrent interface. The recurrent stage receives the transformed vector;
--- no transform parameters are learned.
+-- no transform parameters are learned here.
 ------------------------------------------------------------------------
 
 record AttentionGRUSandwich : Set₁ where
@@ -110,7 +104,6 @@ sandwichTransform : Int8 × Int8 → IntVec2
 sandwichTransform p = haarApply (liftAttention p)
 
 canonicalSandwich :
-  ∀ p →
-  AttentionGRUSandwich
+  ∀ p → AttentionGRUSandwich
 canonicalSandwich p =
   attentionGRUSandwich p (sandwichTransform p) haarApply
