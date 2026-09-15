@@ -9,8 +9,7 @@ open import Data.Fin using (toℕ)
 open import Data.Nat using (_+_; _*_; _∸_; _<ᵇ_)
 open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using (Int8; code; int8OfNat; int8Add; zero8)
-open import Exotic.ERL.FullCoupled.Int8SparsemaxLiteral using (ActionScore; actionScore; Sparsemax2Pair)
-open import Exotic.ERL.FullCoupled.Int8StabilityComposition using (OrbitNonFixed; noNontrivialFiniteCycle; iterate)
+open import Exotic.ERL.FullCoupled.Int8StabilityComposition using (OrbitNonFixed; noNontrivialFiniteCycle)
 open import Exotic.ERL.FullCoupled.MobiusGroup using (MobiusAction; composeAction; composeAction-assoc)
 open import Exotic.ERL.FullCoupled.SparsemaxCriticWatkins using
   ( CriticState; criticState; qLeft; qRight; BoolLike; enabled; disabled
@@ -19,6 +18,14 @@ open import Exotic.ERL.FullCoupled.SparsemaxCriticWatkins using
   ; SparsemaxCriticWatkinsKernel; wholeStep )
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState; gruStep; persistentGRU; persistent-preservation )
+
+record ActionScore : Set where
+  constructor actionScore
+  field left right : Int8
+open ActionScore public
+
+Sparsemax2Pair : Set
+Sparsemax2Pair = Int8 × Int8
 
 sparsemaxTemperature : Int8
 sparsemaxTemperature = int8OfNat 16
@@ -52,8 +59,8 @@ scaledTwoActionLeft d = q7Clamp (halfInt (I._+_ (I.pos 128) (I._*_ (I.pos 8) d))
 temperatureScaledSparsemax : ActionScore → Sparsemax2Pair
 temperatureScaledSparsemax (actionScore l r) =
   let d = I._-_ (signedCode l) (signedCode r)
-      left = scaledTwoActionLeft d
-  in left , q7Complement128 left
+      leftWeight = scaledTwoActionLeft d
+  in leftWeight , q7Complement128 leftWeight
 
 temperatureCodeLaw : sparsemaxTemperature ≡ int8OfNat 16
 temperatureCodeLaw = refl
@@ -138,8 +145,8 @@ lcbActionScore L counts c = actionScore
 
 scheduledActionScore : LCBCountKernel → Nat → LCBCountState → CriticState → ActionScore
 scheduledActionScore L r counts c = let s = lcbActionScore L counts c in actionScore
-  (int8Add (ActionScore.left s) (int8OfNat ((r * 37) + 17)))
-  (int8Add (ActionScore.right s) (int8OfNat (((suc r) * 37) + 17)))
+  (int8Add (left s) (int8OfNat ((r * 37) + 17)))
+  (int8Add (right s) (int8OfNat (((suc r) * 37) + 17)))
 
 policyLeftWeight : Sparsemax2Pair → Int8
 policyLeftWeight (l , r) = l
