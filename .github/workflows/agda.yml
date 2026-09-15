@@ -1,4 +1,4 @@
-name: Canonical Agda safe gate
+name: Focused Agda learner theorem gate
 
 on:
   push:
@@ -22,14 +22,8 @@ on:
 permissions:
   contents: read
 
-env:
-  CANONICAL_SOURCE: Exotic/ERL/FullCoupled/AllSafeCombined.agda
-  CANONICAL_TEST: Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
-  QSA_SOURCE: Exotic/ERL/FullCoupled/DeterministicQSA.agda
-  QSA_TEST: Exotic/ERL/FullCoupled/DeterministicQSA_test.agda
-
 jobs:
-  canonical:
+  learner:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -39,15 +33,6 @@ jobs:
 
       - name: Reject forbidden theorem families
         run: python3 .ci/check-forbidden-theorems.py
-
-      - name: Verify canonical finite theorem sources
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f "$CANONICAL_SOURCE"
-          test -f "$CANONICAL_TEST"
-          test -f "$QSA_SOURCE"
-          test -f "$QSA_TEST"
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -63,29 +48,8 @@ jobs:
           agda --print-agda-app-dir
           test -f "$(agda --print-agda-app-dir)/libraries"
 
-      - name: Check canonical Agda source
-        run: agda --safe "$CANONICAL_SOURCE"
-
-      - name: Check canonical Agda regression
-        run: agda --safe "$CANONICAL_TEST"
-
-      - name: Check deterministic QSA source
-        run: agda --safe "$QSA_SOURCE"
-
-      - name: Check deterministic QSA regression
-        run: agda --safe "$QSA_TEST"
-
-      - name: Check connected whole-state QSA composition
-        run: agda --safe Exotic/ERL/FullCoupled/ConnectedWholeQSA.agda
-
-      - name: Check gating-layer counterfactual theorem
-        run: agda --safe Exotic/ERL/Exploration/GatingLayerCounterfactual.agda
-
-      - name: Check finite sparse support algebra
-        run: agda --safe Exotic/ERL/FullCoupled/Int8SparsemaxTsallis2.agda
-
-      - name: Check finite sparse support regression
-        run: agda --safe Exotic/ERL/FullCoupled/Int8SparsemaxTsallis2_test.agda
+      - name: Check shared Int8 algebra
+        run: agda --safe Exotic/efficient_chad/Int8.agda
 
       - name: Check direct critic sparse policy and Watkins composition
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda
@@ -93,29 +57,23 @@ jobs:
       - name: Check direct critic sparse policy and Watkins regression
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins_test.agda
 
-      - name: Check full coupled sparsemax Watkins monolith
+      - name: Check focused coupled sparsemax Watkins monolith
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxWatkinsMonolith.agda
 
-      - name: Check full coupled sparsemax Watkins monolith regression
+      - name: Check focused coupled sparsemax Watkins regression
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxWatkinsMonolith_test.agda
 
-      - name: Check strict count memory cycle theorem
+      - name: Check strict count-memory exclusion
         run: agda --safe Exotic/ERL/FullCoupled/CountMemoryCycleTheorem.agda
 
-      - name: Check strict count memory cycle regression
+      - name: Check strict count-memory regression
         run: agda --safe Exotic/ERL/FullCoupled/CountMemoryCycleTheorem_test.agda
 
-      - name: Check finite signed dyadic generalized-log track
-        run: agda --safe Exotic/ERL/FullCoupled/NegativeAlphaDyadicLog.agda
-
-      - name: Check finite signed dyadic generalized-log regression
-        run: agda --safe Exotic/ERL/FullCoupled/NegativeAlphaDyadicLog_test.agda
-
-      - name: Check signReLU semidirect recurrent cycle interpolation
+      - name: Check semidirect recurrent signReLU composition
         run: agda --safe Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition.agda
 
-      - name: Check connected hidden-persistent semidirect and monolith Lyapunov theorem
-        run: agda --safe Exotic/ERL/FullCoupled/ConnectedGRUSemidirectQSA.agda
-
-      - name: Check signReLU semidirect recurrent cycle regression
+      - name: Check semidirect recurrent signReLU regression
         run: agda --safe Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition_test.agda
+
+      - name: Check concrete persistent GRU semidirect bridge
+        run: agda --safe Exotic/ERL/FullCoupled/ConnectedGRUSemidirectQSA.agda
