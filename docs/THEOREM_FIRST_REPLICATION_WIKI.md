@@ -10,12 +10,12 @@ The single canonical learner is:
 
 Its endogenous state composes:
 
-1. learned sparsemax attention parameters;
-2. fixed-temperature sparsemax pseudo-policy with `tau = 1/8 = 16/128` in Q7 Int8 units;
+1. a learned sparsemax attention/representation component;
+2. a fixed-temperature sparsemax action-selection map with `tau = 1/8 = 16/128` in Q7 Int8 units;
 3. Watkins critic as the only learned Q/policy source;
 4. deterministic count-memory LCB exploration correction;
 5. exact finite-rational negative q-log shaping boundary;
-6. frozen unnormalised Haar transform between sparsemax attention output and recurrent input;
+6. frozen unnormalised Haar transform;
 7. persistent signReLU GRU;
 8. global F4-style optimizer with the actual coupled L2 subtraction;
 9. norm-pair state (`l1`, `path`);
@@ -24,9 +24,9 @@ Its endogenous state composes:
 
 The old duplicate monolith sources were retired after CI exposed a namespace collision between their exported `criticKernel` field names. The canonical V2 surface uses the shared Watkins-only critic and shared Dyadic GRU definitions instead of redeclaring them.
 
-## Sparsemax policy theorem boundary
+## Sparsemax action-selection theorem boundary
 
-The policy temperature is fixed configuration, not learned state:
+The fixed sparsemax temperature is configuration, not learned policy state:
 
 `SparsemaxTemperature = 16/128 = 1/8`.
 
@@ -42,9 +42,11 @@ Checked finite cases include:
 - one-code left advantage: `(68,60)`;
 - one-code right advantage: `(60,68)`.
 
-No learned actor parameterization is introduced. The pseudo-policy is derived from the current Watkins critic/LCB score surface.
+No independently optimized actor exists in the canonical carrier. The action-selection pair is computed from the Watkins critic and deterministic LCB/count surface.
 
-The standalone `Int8SparsemaxLiteral` module is not the promoted theorem boundary. It is used only for the shared score/pair type surface; the canonical policy semantics live in V2.
+The separate learned sparsemax attention component is not this action-selection policy. It is representation/attention state, analogous in role to a Transformer attention component, and it must not be described as a second actor.
+
+The standalone `Int8SparsemaxLiteral` module is not the promoted theorem boundary. The canonical policy semantics live in V2.
 
 ## Finite-rational negative q-log boundary
 
@@ -60,6 +62,8 @@ and for positive integer code `n`:
 
 The negative shaping value negates the numerator. The theorem is finite and deterministic, with no floating-point or real-analysis dependency.
 
+The current implementation also exposes a signed q-log shaping control used by the learner signal. This is a finite algebraic q-log variant. It should not be advertised as a full real-valued Munchausen derivation or as a Bayesian/posterior construction.
+
 ## LCB exploration
 
 LCB is deterministic count-memory algebra. The canonical finite bonus table is:
@@ -68,21 +72,29 @@ LCB is deterministic count-memory algebra. The canonical finite bonus table is:
 
 for counts `0,1,...,>=7`.
 
-The endogenous policy pipeline is:
+The action-selection path is:
 
-`Watkins Q -> LCB score correction -> fixed-temperature sparsemax -> q-log-shaped policy signal -> critic/attention/GRU/optimizer/count updates`.
+`Watkins Q -> LCB score correction -> fixed-temperature sparsemax -> deterministic learner signal -> critic/attention/GRU/optimizer/count updates`.
 
 No posterior or statistical-confidence interpretation is asserted.
 
-## Learned attention versus pseudo-policy
+## Learned attention versus action selection
 
-The learned attention state is separate from the Watkins pseudo-policy boundary. Its parameters are part of the same canonical endogenous state and are advanced by `attentionStep` inside `canonicalFullStep`.
+The learned attention state is separate from the Watkins action-selection boundary. Its parameters are part of the same endogenous state and are advanced by `attentionStep` inside `canonicalFullStep`.
 
-The Watkins critic remains the only learned Q/policy source. Sparsemax attention is representation/selection machinery, not a second actor optimizer.
+The key semantic separation is:
 
-## Haar sandwich
+`learnedSparsemaxAttentionWeights` = learned representation/attention coordinates;
 
-The frozen two-coordinate matrix is the unnormalised Haar transform
+`canonicalPolicy` = Watkins/LCB-derived action-selection coordinates.
+
+There is no separate actor optimizer and no second policy learner hidden inside sparsemax attention.
+
+Current V2 detail: the learned attention state is updated inside the monolith, but the present `canonicalGRUStep` feeds Haar with `canonicalPolicy`, not with `learnedSparsemaxAttentionWeights`. Therefore the current source should **not** be documented as an already-connected learned-attention-to-GRU path. That connection is a distinct future composition change, not a theorem that the current code already proves.
+
+## Haar transform
+
+The frozen two-coordinate matrix used in the present recurrent path is the unnormalised Haar transform
 
 `H = [[1,1],[1,-1]]`
 
@@ -91,8 +103,6 @@ with
 `H H^T = 2 I`.
 
 The rows have squared norm `2` and zero cross-inner-product. It is orthogonal up to the fixed scale factor and is not orthonormal.
-
-The canonical monolith computes the sparsemax output, applies Haar, then feeds the transformed result through the explicit recurrent-input projection before the persistent GRU step.
 
 ## GRU and Mobius representation laws
 
@@ -116,7 +126,13 @@ which contains a Nat-valued energy and strict decrease for moved states of the a
 
 The reusable finite-state consequence is then the existing strict-descent exclusion of nontrivial cycles. Independently, the Nat clock gives deterministic aperiodicity of the actual canonical map.
 
-The current formal surface does not silently turn the witness field into a theorem about all parameter choices: the Haskell generator merely checks that the proof symbols exist and that the complete Agda module typechecks under `--safe`.
+The current formal surface does **not** turn the witness field into a theorem about all parameter choices: the Haskell generator merely checks that the proof symbols exist and that the complete Agda module typechecks under `--safe`.
+
+## Tsallis-2 / entmax note
+
+For the relevant attention/action map, merely renaming sparsemax as Tsallis-2 entmax does not buy a stronger theorem. The useful upgrade would be a new proved variational or entropy-optimality characterization of the exact finite map. Without that additional theorem, the algebraic kernel and composition laws are unchanged, so the canonical surface remains sparsemax.
+
+SciSpace literature also places sparsemax within the sparse/alpha-entmax attention family and discusses the alpha = 2 connection to Tsallis statistics. The stronger formal claim would therefore have to be proved in Agda rather than imported by terminology.
 
 ## Automated theorem generation
 
@@ -145,9 +161,9 @@ Generation cannot upgrade an absent proof to `Proven`.
 - installs GHC for the Haskell generator;
 - generates the canonical theorem report;
 - checks shared Int8 algebra;
-- checks the frozen Haar/Helmert attention-GRU boundary;
+- checks the frozen Haar/Helmert boundary;
 - checks the Watkins critic-only layer and regression;
-- checks the V2 canonical fixed-temperature learner monolith and regression;
+- checks the V2 canonical fixed-temperature learner and regression;
 - checks the generated report;
 - checks count-memory, signReLU semidirect, and persistent-GRU component gates.
 
@@ -159,7 +175,9 @@ The canonical surface does **not** claim:
 - statistical validity of the LCB table;
 - posterior sampling equivalence;
 - equilibrium uniqueness;
-- general regret or global optimality.
+- general regret or global optimality;
+- that learned sparsemax attention is an independent actor;
+- that the current GRU is already connected to the learned attention weights.
 
 Those require semantics and assumptions not present in this finite deterministic learner.
 
