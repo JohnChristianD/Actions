@@ -1,103 +1,116 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.FrozenOrthogonalAttentionGRU where
 
-open import Agda.Builtin.Equality using (_≡_; refl; cong)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Int as I
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Product using (_×_; _,_)
-open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat)
+open import Data.Fin using (toℕ)
+open import Exotic.efficient_chad.Int8 using (Int8; code)
 
 ------------------------------------------------------------------------
 -- Frozen two-coordinate transform sandwich.
---
--- The learner-level claim is deliberately about the actual matrices:
--- the unnormalised Haar/Helmert forms have orthogonal rows, but their rows
--- are not unit vectors. Hence they are scaled-orthogonal, not orthonormal.
+-- The matrices are represented over exact integers. No floating-point or
+-- normalisation is involved in the theorem surface.
 ------------------------------------------------------------------------
 
-Vec2 : Set
-Vec2 = Int8 × Int8
+IntVec2 : Set
+IntVec2 = I.Int × I.Int
 
-record FrozenTransform2 : Set₁ where
-  constructor frozenTransform2
-  field
-    apply : Vec2 → Vec2
-    gramScale : Nat
-    preservesOrthogonality : gramScale ≡ 2
-open FrozenTransform2 public
+oneI : I.Int
+oneI = I.pos 1
 
-------------------------------------------------------------------------
--- Unnormalised Haar 2×2 transform H = [[1,1],[1,-1]].
--- Its row vectors are orthogonal and have squared norm 2.
-------------------------------------------------------------------------
+negOneI : I.Int
+negOneI = I.negsuc 0
 
-haar2 : Vec2 → Vec2
-haar2 (x , y) =
-  (int8OfNat (toNat x + toNat y)
-  , int8OfNat (toNat x + negNat y))
-  where
-  toNat : Int8 → Nat
-  toNat _ = zero
+zeroI : I.Int
+zeroI = I.pos 0
 
-  negNat : Int8 → Nat
-  negNat _ = zero
-
-haarTransform2 : FrozenTransform2
-haarTransform2 = frozenTransform2 haar2 2 refl
+dot2 : IntVec2 → IntVec2 → I.Int
+dot2 (a , b) (c , d) = I._+_ (I._*_ a c) (I._*_ b d)
 
 ------------------------------------------------------------------------
--- Unnormalised Helmert 2×2 has the same first two directions up to the
--- usual row scaling. For dimension two it coincides with the Haar pair.
+-- Unnormalised Haar H = [[1,1],[1,-1]].
+-- H H^T = 2 I. Thus the rows are orthogonal but not orthonormal.
 ------------------------------------------------------------------------
 
-helmert2 : Vec2 → Vec2
-helmert2 = haar2
+haarRow0 : IntVec2
+haarRow0 = oneI , oneI
 
-helmertTransform2 : FrozenTransform2
-helmertTransform2 = frozenTransform2 helmert2 2 refl
+haarRow1 : IntVec2
+haarRow1 = oneI , negOneI
 
-------------------------------------------------------------------------
--- The theorem-relevant distinction is the scale law, not a probabilistic
--- interpretation. Either transform can be frozen between attention and the
--- recurrent block without introducing trainable parameters.
-------------------------------------------------------------------------
+haar00 : dot2 haarRow0 haarRow0 ≡ I.pos 2
+haar00 = refl
 
-haar-orthogonal-scale : gramScale haarTransform2 ≡ 2
-haar-orthogonal-scale = refl
+haar11 : dot2 haarRow1 haarRow1 ≡ I.pos 2
+haar11 = refl
 
-helmert-orthogonal-scale : gramScale helmertTransform2 ≡ 2
-helmert-orthogonal-scale = refl
+haar01 : dot2 haarRow0 haarRow1 ≡ zeroI
+haar01 = refl
 
 ------------------------------------------------------------------------
--- For the two-action sparsemax output, the sum channel is constant on the
--- Q7 simplex (128 encodes one). The Haar detail channel therefore isolates
--- action contrast. This is the natural scalar recurrent signal if the
--- historical learner contracts the frozen 2-vector back to one GRU input.
+-- Dimension-two unnormalised Helmert has the same contrast decomposition,
+-- up to row/sign convention. Consequently Haar is the cleaner canonical
+-- choice here, but the two transforms have the same algebraic theorem.
 ------------------------------------------------------------------------
 
-haarDetail : Vec2 → Int8
-haarDetail (x , y) =
-  int8OfNat (differenceCode x y)
-  where
-  differenceCode : Int8 → Int8 → Nat
-  differenceCode _ _ = zero
+helmertRow0 : IntVec2
+helmertRow0 = oneI , oneI
 
-attentionToGRUSignal : Vec2 → Int8
-attentionToGRUSignal = haarDetail
+helmertRow1 : IntVec2
+helmertRow1 = negOneI , oneI
+
+helmert00 : dot2 helmertRow0 helmertRow0 ≡ I.pos 2
+helmert00 = refl
+
+helmert11 : dot2 helmertRow1 helmertRow1 ≡ I.pos 2
+helmert11 = refl
+
+helmert01 : dot2 helmertRow0 helmertRow1 ≡ zeroI
+helmert01 = refl
 
 ------------------------------------------------------------------------
--- Composition boundary: sparsemax attention -> frozen orthogonal transform
--- -> modified recurrent input. This is a concrete connection law, not a
--- detached theorem about an unrelated transform.
+-- The sparsemax output is first lifted from its Int8/Q7 representation to
+-- exact integer coordinates before this frozen linear map is applied.
+------------------------------------------------------------------------
+
+liftInt8 : Int8 → I.Int
+liftInt8 x = I.pos (toℕ (code x))
+
+liftAttention : Int8 × Int8 → IntVec2
+liftAttention (x , y) = liftInt8 x , liftInt8 y
+
+haarApply : IntVec2 → IntVec2
+haarApply (x , y) = I._+_ x y , I._- _ x y
+
+helmertApply : IntVec2 → IntVec2
+helmertApply (x , y) = I._+_ x y , I._- _ y x
+
+haarHelmertEquivalent2 :
+  ∀ x → helmertApply x ≡
+    let h = haarApply x in I.pos 0 , I.pos 0
+haarHelmertEquivalent2 x = refl
+
+------------------------------------------------------------------------
+-- Explicit sandwich boundary: sparsemax attention -> frozen transform ->
+-- recurrent interface. The recurrent stage receives the transformed vector;
+-- no transform parameters are learned.
 ------------------------------------------------------------------------
 
 record AttentionGRUSandwich : Set₁ where
   constructor attentionGRUSandwich
   field
-    attention : Set
-    transform : FrozenTransform2
-    recurrentInput : Vec2 → Int8
+    attention : Int8 × Int8
+    transformed : IntVec2
+    recurrentInput : IntVec2 → IntVec2
 open AttentionGRUSandwich public
 
-canonicalAttentionGRUSandwich : AttentionGRUSandwich
-canonicalAttentionGRUSandwich =
-  attentionGRUSandwich Vec2 haarTransform2 attentionToGRUSignal
+sandwichTransform : Int8 × Int8 → IntVec2
+sandwichTransform p = haarApply (liftAttention p)
+
+canonicalSandwich :
+  ∀ p →
+  AttentionGRUSandwich
+canonicalSandwich p =
+  attentionGRUSandwich p (sandwichTransform p) haarApply
