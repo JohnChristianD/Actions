@@ -1,0 +1,34 @@
+{-# OPTIONS --safe #-}
+module Exotic.ERL.FullCoupled.CanonicalSparsemaxLearner_test where
+
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Exotic.ERL.FullCoupled.CanonicalSparsemaxLearner
+
+check-temperature : sparsemaxTemperature ≡ int8OfNat 16
+check-temperature = temperatureCodeLaw
+
+check-tie :
+  temperatureScaledSparsemax (actionScore (int8OfNat 0) (int8OfNat 0))
+    ≡ int8OfNat 64 , int8OfNat 64
+check-tie = temperatureTieLaw
+
+check-positive-unit :
+  temperatureScaledSparsemax (actionScore (int8OfNat 1) (int8OfNat 0))
+    ≡ int8OfNat 68 , int8OfNat 60
+check-positive-unit = temperaturePositiveUnitLaw
+
+check-negative-unit :
+  temperatureScaledSparsemax (actionScore (int8OfNat 0) (int8OfNat 1))
+    ≡ int8OfNat 60 , int8OfNat 68
+check-negative-unit = temperatureNegativeUnitLaw
+
+check-qlog :
+  ∀ x →
+  negativeFiniteQLog8 x
+    ≡ finiteRational (negInt (numerator (finiteQLog8 x)))
+                     (denominator (finiteQLog8 x))
+check-qlog = negativeFiniteQLogLaw
+
+check-haar :
+  dot2 haarRow0 haarRow0 ≡ I.pos 2
+check-haar = haar00
