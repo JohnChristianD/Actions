@@ -62,7 +62,7 @@ and for positive integer code `n`:
 
 The negative shaping value negates the numerator. The theorem is finite and deterministic, with no floating-point or real-analysis dependency.
 
-The current implementation also exposes a signed q-log shaping control used by the learner signal. This is a finite algebraic q-log variant. It should not be advertised as a full real-valued Munchausen derivation or as a Bayesian/posterior construction.
+The current implementation also exposes a signed q-log shaping control used by the learner signal. This is a finite algebraic q-log variant. It should not be advertised as a full real-valued derivation or as a Bayesian/posterior construction.
 
 ## LCB exploration
 
@@ -132,7 +132,7 @@ The current formal surface does **not** turn the witness field into a theorem ab
 
 For the relevant attention/action map, merely renaming sparsemax as Tsallis-2 entmax does not buy a stronger theorem. The useful upgrade would be a new proved variational or entropy-optimality characterization of the exact finite map. Without that additional theorem, the algebraic kernel and composition laws are unchanged, so the canonical surface remains sparsemax.
 
-SciSpace literature also places sparsemax within the sparse/alpha-entmax attention family and discusses the alpha = 2 connection to Tsallis statistics. The stronger formal claim would therefore have to be proved in Agda rather than imported by terminology.
+SciSpace literature places sparsemax within the sparse/alpha-entmax attention family and discusses the alpha = 2 connection to Tsallis statistics. The stronger formal claim would therefore have to be proved in Agda rather than imported by terminology.
 
 ## Automated theorem generation
 
@@ -158,6 +158,7 @@ Generation cannot upgrade an absent proof to `Proven`.
 
 - installs Agda 2.8.0 and stdlib 2.4;
 - runs the theorem-scope guard;
+- audits the active q-log shaping boundary and duplicate q-log implementations;
 - installs GHC for the Haskell generator;
 - generates the canonical theorem report;
 - checks shared Int8 algebra;
