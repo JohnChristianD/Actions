@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.CanonicalSparsemaxLearner_test where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+import Agda.Builtin.Int as I
 open import Exotic.ERL.FullCoupled.CanonicalSparsemaxLearner
 
 check-temperature : sparsemaxTemperature ≡ int8OfNat 16
