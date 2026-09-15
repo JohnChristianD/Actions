@@ -51,6 +51,12 @@ jobs:
       - name: Check shared Int8 algebra
         run: agda --safe Exotic/efficient_chad/Int8.agda
 
+      - name: Check literal integer-lattice sparsemax
+        run: agda --safe Exotic/ERL/FullCoupled/Int8SparsemaxLiteral.agda
+
+      - name: Check frozen Haar/Helmert attention-GRU sandwich
+        run: agda --safe Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda
+
       - name: Check direct critic sparse policy and Watkins composition
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda
 
