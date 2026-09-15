@@ -40,10 +40,10 @@ checkMethod (name, path, required) = do
   if not (null missing)
     then pure (name, MissingProof, missing)
     else do
-      (code, _out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
+      (code, out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
       case code of
         ExitSuccess -> pure (name, Proven, [])
-        ExitFailure _ -> pure (name, AgdaFailure, [err])
+        ExitFailure _ -> pure (name, AgdaFailure, [err ++ out])
 
 renderCandidateModule :: [(String, Status, [String])] -> String
 renderCandidateModule results =
