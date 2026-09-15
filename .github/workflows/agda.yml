@@ -48,23 +48,27 @@ jobs:
           agda --print-agda-app-dir
           test -f "$(agda --print-agda-app-dir)/libraries"
 
+      - name: Set up Haskell generator runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ghc
+
+      - name: Generate canonical learner theorem report
+        run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
+
       - name: Check shared Int8 algebra
         run: agda --safe Exotic/efficient_chad/Int8.agda
 
-      - name: Check literal integer-lattice sparsemax
-        run: agda --safe Exotic/ERL/FullCoupled/Int8SparsemaxLiteral.agda
+      - name: Check canonical fixed-temperature sparsemax learner monolith
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda
 
-      - name: Check frozen Haar/Helmert attention-GRU sandwich
-        run: agda --safe Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda
+      - name: Check canonical fixed-temperature sparsemax learner regression
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner_test.agda
 
-      - name: Check direct critic sparse policy and Watkins composition
-        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda
-
-      - name: Check direct critic sparse policy and Watkins regression
-        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins_test.agda
-
-      - name: Check focused coupled sparsemax Watkins monolith
-        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxWatkinsMonolith.agda
+      - name: Check canonical generated theorem report
+        run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
 
       - name: Check focused coupled sparsemax Watkins regression
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxWatkinsMonolith_test.agda
