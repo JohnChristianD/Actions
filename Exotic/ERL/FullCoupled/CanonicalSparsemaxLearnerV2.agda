@@ -10,13 +10,15 @@ open import Data.Nat using (_+_; _*_; _∸_; _<ᵇ_)
 open import Data.Product using (_×_; _,_)
 open import Exotic.efficient_chad.Int8 using (Int8; code; int8OfNat; int8Add; zero8)
 open import Exotic.ERL.FullCoupled.Int8SparsemaxLiteral using (ActionScore; actionScore; Sparsemax2Pair)
-open import Exotic.ERL.FullCoupled.Int8StabilityComposition using (OrbitNonFixed; noNontrivialFiniteCycle)
+open import Exotic.ERL.FullCoupled.Int8StabilityComposition using (OrbitNonFixed; noNontrivialFiniteCycle; iterate)
+open import Exotic.ERL.FullCoupled.MobiusGroup using (MobiusAction; composeAction; composeAction-assoc)
 open import Exotic.ERL.FullCoupled.SparsemaxCriticWatkins using
   ( CriticState; criticState; qLeft; qRight; BoolLike; enabled; disabled
   ; SignedQLogControl; signedQLogControl; SparsemaxCriticWatkinsState
   ; sparsemaxCriticWatkinsState; critic; learnerSignal; traceSignal; trace
   ; SparsemaxCriticWatkinsKernel; wholeStep )
-open import Exotic.ERL.FullCoupled.DyadicGRU using (GRUState; gruStep)
+open import Exotic.ERL.FullCoupled.DyadicGRU using
+  ( GRUState; gruStep; persistentGRU; persistent-preservation )
 
 sparsemaxTemperature : Int8
 sparsemaxTemperature = int8OfNat 16
@@ -189,6 +191,17 @@ haar11 = refl
 
 haar01 : dot2 haarRow0 haarRow1 ≡ I.pos 0
 haar01 = refl
+
+mobiusAssociativity :
+  ∀ (f g h : MobiusAction) (x : Int8) →
+    MobiusAction.run (composeAction (composeAction f g) h) x
+      ≡ MobiusAction.run (composeAction f (composeAction g h)) x
+mobiusAssociativity = composeAction-assoc
+
+persistentGRUMonolith :
+  ∀ (s : GRUState) (x : Int8) →
+    persistentGRU (gruStep s x) ≡ persistentGRU s
+persistentGRUMonolith = persistent-preservation
 
 record F4Scalar : Set₁ where
   field
