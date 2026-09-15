@@ -34,6 +34,9 @@ jobs:
       - name: Reject forbidden theorem families
         run: python3 .ci/check-forbidden-theorems.py
 
+      - name: Audit active q-log shaping boundary
+        run: python3 .ci/prune-qlog-variants.py
+
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
         with:
