@@ -5,7 +5,7 @@ open import Agda.Builtin.Equality using (_≡_)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
 open import Exotic.efficient_chad.Int8 using (Int8)
-open import Exotic.ERL.FullCoupled.Int8SparsemaxTsallis2 using
+open import Exotic.ERL.FullCoupled.Int8SparsemaxLiteral using
   ( ActionScore
   ; actionScore
   ; Sparsemax2Pair
@@ -35,8 +35,7 @@ criticSparsemaxPolicy c = sparsemax2Weights (criticScores c)
 data BoolLike : Set where
 enabled disabled : BoolLike
 
--- A finite signed q-log control is an explicit critic-side modifier. Its
--- concrete dyadic law is supplied by the separate generalized-log module.
+-- The current monolith keeps this as an explicit finite critic-side control.
 record SignedQLogControl : Set where
   constructor signedQLogControl
   field
