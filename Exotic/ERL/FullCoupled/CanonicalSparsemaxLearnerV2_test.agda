@@ -33,3 +33,8 @@ check-persistent-gru :
   ∀ (s : GRUState) (x : Int8) →
     persistentGRU (gruStep s x) ≡ persistentGRU s
 check-persistent-gru = persistentGRUMonolith
+
+check-canonical-persistent-gru :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+    persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
+check-canonical-persistent-gru = canonicalPersistentGRUPreservation
