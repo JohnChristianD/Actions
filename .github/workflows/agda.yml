@@ -61,6 +61,15 @@ jobs:
       - name: Check shared Int8 algebra
         run: agda --safe Exotic/efficient_chad/Int8.agda
 
+      - name: Check frozen Haar/Helmert attention-GRU boundary
+        run: agda --safe Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda
+
+      - name: Check direct Watkins critic-only layer
+        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda
+
+      - name: Check direct Watkins critic-only regression
+        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins_test.agda
+
       - name: Check canonical fixed-temperature sparsemax learner monolith
         run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda
 
@@ -70,7 +79,7 @@ jobs:
       - name: Check canonical generated theorem report
         run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
 
-      - name: Check focused coupled sparsemax Watkins regression
+      - name: Check focused coupled sparsemax Watkins core regression
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxWatkinsMonolith_test.agda
 
       - name: Check strict count-memory exclusion
