@@ -1,14 +1,14 @@
 # Theorem-first canonical learner wiki
 
-Authority: Agda `--safe` proof terms. Haskell generation is only theorem discovery/status automation.
+Authority: Agda `--safe` proof terms. Haskell generation is theorem discovery/status automation only.
 
 ## Canonical monolith
 
-The current canonical learner is:
+The single canonical learner is:
 
-`Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda`
+`Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
 
-Its single endogenous state composes:
+Its endogenous state composes:
 
 1. learned sparsemax attention parameters;
 2. fixed-temperature sparsemax pseudo-policy with `tau = 1/8 = 16/128` in Q7 Int8 units;
@@ -17,38 +17,40 @@ Its single endogenous state composes:
 5. exact finite-rational negative q-log shaping boundary;
 6. frozen unnormalised Haar transform between sparsemax attention output and recurrent input;
 7. persistent signReLU GRU;
-8. global F4-Int-U(p) optimizer with the actual coupled L2 term;
+8. global F4-style optimizer with the actual coupled L2 subtraction;
 9. norm-pair state (`l1`, `path`);
 10. Nat clock for deterministic aperiodicity;
-11. an explicit whole-learner coercive-quadratic witness boundary.
+11. a whole-learner coercive-quadratic witness boundary.
 
-The previous `SparsemaxWatkinsMonolith.agda` remains the lower-level core used by the canonical wrapper. The wrapper replaces its policy boundary with exact fixed-temperature Q7 sparsemax while retaining the Watkins-only critic and the shared endogenous signal flow.
+The old duplicate monolith sources were retired after CI exposed a namespace collision between their exported `criticKernel` field names. The canonical V2 surface uses the shared Watkins-only critic and shared Dyadic GRU definitions instead of redeclaring them.
 
 ## Sparsemax policy theorem boundary
 
-The policy temperature is not learned and is not stored as actor state:
+The policy temperature is fixed configuration, not learned state:
 
 `SparsemaxTemperature = 16/128 = 1/8`.
 
-For the signed Q7 score difference `d`, the two-action map is implemented exactly as the clipped Q7 weight
+For signed Q7 score difference `d`, the canonical two-action map is the exact clipped Q7 weight
 
 `p_left = clip((128 + 8*d)/2, 0, 128)`
 
 with `p_right = 128 - p_left`.
 
-This produces exact finite cases such as:
+Checked finite cases include:
 
 - equal scores: `(64,64)`;
 - one-code left advantage: `(68,60)`;
 - one-code right advantage: `(60,68)`.
 
-No separate learned actor parameterization is present.
+No learned actor parameterization is introduced. The pseudo-policy is derived from the current Watkins critic/LCB score surface.
+
+The standalone `Int8SparsemaxLiteral` module is not the promoted theorem boundary. It is used only for the shared score/pair type surface; the canonical policy semantics live in V2.
 
 ## Finite-rational negative q-log boundary
 
-The canonical finite-rational layer uses an exact numerator/denominator representation over `Agda.Builtin.Int`.
+The canonical shaping value is represented by an exact numerator/denominator pair over `Agda.Builtin.Int`.
 
-With the finite reciprocal convention `recip(0) = 0`:
+With finite reciprocal convention `recip(0) = 0`:
 
 `qLog(0) = 1`,
 
@@ -56,27 +58,27 @@ and for positive integer code `n`:
 
 `qLog(n) = (n - 1) / n`.
 
-The negative shaping value is exactly `-qLog(n)`. This is represented without floating point and without real-analysis infrastructure.
+The negative shaping value negates the numerator. The theorem is finite and deterministic, with no floating-point or real-analysis dependency.
 
 ## LCB exploration
 
-LCB is deterministic count-memory algebra. The canonical finite bonus table remains:
+LCB is deterministic count-memory algebra. The canonical finite bonus table is:
 
 `127, 63, 31, 15, 7, 3, 1, 0`
 
 for counts `0,1,...,>=7`.
 
-The policy pipeline is:
+The endogenous policy pipeline is:
 
-`Watkins Q -> LCB score correction -> fixed-temperature sparsemax -> policy signal -> critic/GRU/optimizer/count updates`.
+`Watkins Q -> LCB score correction -> fixed-temperature sparsemax -> q-log-shaped policy signal -> critic/attention/GRU/optimizer/count updates`.
 
 No posterior or statistical-confidence interpretation is asserted.
 
 ## Learned attention versus pseudo-policy
 
-The learned attention state is separate from the Watkins pseudo-policy boundary. Its parameters are part of the same canonical endogenous state and are updated by an explicit attention-step kernel.
+The learned attention state is separate from the Watkins pseudo-policy boundary. Its parameters are part of the same canonical endogenous state and are advanced by `attentionStep` inside `canonicalFullStep`.
 
-The Watkins critic remains the only learned Q/policy source. Sparsemax attention is representation/selection machinery, not a second policy optimizer.
+The Watkins critic remains the only learned Q/policy source. Sparsemax attention is representation/selection machinery, not a second actor optimizer.
 
 ## Haar sandwich
 
@@ -90,48 +92,64 @@ with
 
 The rows have squared norm `2` and zero cross-inner-product. It is orthogonal up to the fixed scale factor and is not orthonormal.
 
-The canonical monolith explicitly computes the sparsemax output, applies Haar, then feeds an explicit recurrent-input projection into the persistent GRU. No transform parameters are learned.
+The canonical monolith computes the sparsemax output, applies Haar, then feeds the transformed result through the explicit recurrent-input projection before the persistent GRU step.
 
-## Global optimizer and coercive quadratic boundary
+## GRU and Mobius representation laws
 
-The actual optimizer step is inherited from the F4-Int-U(p) core and includes the global L2 subtraction in the parameter update. The norm pair remains in the same learner state.
+The canonical monolith imports the shared Dyadic GRU and exposes the exact persistence law:
+
+`persistentGRUMonolith`.
+
+It also exposes `mobiusAssociativity`, inherited from the definitional associativity of the shared `MobiusGroup` composition operator.
+
+These are component laws inside the same generated theorem family rather than separate disconnected demonstrations.
+
+## Global optimizer, norm pair, and coercive quadratic boundary
+
+The actual optimizer transition contains the global L2 subtraction term. The norm-pair remains in the same monolithic state and is therefore part of the complete learner carrier.
 
 The canonical theorem boundary is:
 
 `FullLearnerCoerciveQuadratic K`
 
-which provides a Nat-valued energy and a strict decrease theorem for moved states of the actual `canonicalFullStep`. This witness is a theorem input, not an undeclared postulate.
+which contains a Nat-valued energy and strict decrease for moved states of the actual `canonicalFullStep`. This is an explicit witness boundary, not an undeclared postulate.
 
-The direct consequence is the reusable finite-state result that a strict Lyapunov descent certificate excludes nontrivial finite cycles. Independently, the Nat clock gives deterministic aperiodicity for the actual canonical map.
+The reusable finite-state consequence is then the existing strict-descent exclusion of nontrivial cycles. Independently, the Nat clock gives deterministic aperiodicity of the actual canonical map.
+
+The current formal surface does not silently turn the witness field into a theorem about all parameter choices: the Haskell generator merely checks that the proof symbols exist and that the complete Agda module typechecks under `--safe`.
 
 ## Automated theorem generation
 
-The existing generator remains authoritative for discovery/status:
+The existing generator is:
 
 `.ci/discovery/ExplorationTheoremGenerator.hs`
 
-It now enumerates only the canonical learner theorem family and checks concrete proof symbols before invoking:
+It enumerates one canonical theorem family and requires concrete proof symbols for temperature laws, finite-rational q-log, Haar orthogonality, Mobius associativity, persistent GRU, optimizer reconstruction, endogenous one-step composition, coercive decay, aperiodicity, and finite-cycle exclusion.
 
-`agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda`
+It then runs:
 
-CI then checks the generated report:
+`agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
+
+CI subsequently checks the generated status source:
 
 `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
 
-The generator cannot promote a missing proof into a theorem. A theorem family is accepted only when the required proof symbols exist and the actual Agda module exits successfully under `--safe`.
+Generation cannot upgrade an absent proof to `Proven`.
 
 ## CI gate
 
 `.github/workflows/agda.yml` now:
 
 - installs Agda 2.8.0 and stdlib 2.4;
-- runs the permanent theorem-scope guard;
-- installs GHC for the existing Haskell generator;
-- runs the generator;
+- runs the theorem-scope guard;
+- installs GHC for the Haskell generator;
+- generates the canonical theorem report;
 - checks shared Int8 algebra;
-- checks the canonical fixed-temperature learner monolith and regression;
-- checks the generated theorem report;
-- checks the retained Watkins, count-memory, signReLU semidirect, and persistent-GRU component gates.
+- checks the frozen Haar/Helmert attention-GRU boundary;
+- checks the Watkins critic-only layer and regression;
+- checks the V2 canonical fixed-temperature learner monolith and regression;
+- checks the generated report;
+- checks count-memory, signReLU semidirect, and persistent-GRU component gates.
 
 ## Theorem-status limits
 
@@ -141,8 +159,8 @@ The canonical surface does **not** claim:
 - statistical validity of the LCB table;
 - posterior sampling equivalence;
 - equilibrium uniqueness;
-- general regret or optimality.
+- general regret or global optimality.
 
-Those would require additional semantics and assumptions not present in the finite deterministic learner.
+Those require semantics and assumptions not present in this finite deterministic learner.
 
-The accepted theorem class is therefore deliberately algebraic, finite, endogenous, and kernel-checked.
+The accepted theorem class is deliberately algebraic, finite, endogenous, and kernel-checked.
