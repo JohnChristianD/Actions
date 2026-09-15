@@ -291,6 +291,15 @@ canonicalGRUStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledSta
 canonicalGRUStep K s = let transformed = haarApply (liftAttention (canonicalPolicy K s)); extra = attentionToGRU K transformed
                          in gruStep (gru s) (int8Add (canonicalSignal K s) extra)
 
+canonicalPersistentGRUPreservation :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+    persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
+canonicalPersistentGRUPreservation K s =
+  persistent-preservation (gru s)
+    (int8Add
+      (canonicalSignal K s)
+      (attentionToGRU K (haarApply (liftAttention (canonicalPolicy K s)))))
+
 canonicalOptimizerStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → F4IntUState A
 canonicalOptimizerStep {A} K s = f4ThetaStep (optimizerKernel K) (optimizer s) (intToR A (I.pos (toℕ (code (canonicalSignal K s)))))
 
