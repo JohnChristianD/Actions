@@ -9,12 +9,30 @@ record name path proofs = (name, path, proofs)
 
 methods :: [(String, String, [String])]
 methods =
-  [ record "MR15" "Exotic/ERL/Exploration/MR15Reachability.agda"
-      ["mr15IrreducibilityProof", "mr15SelfLoopProof"]
-  , record "OpenES" "Exotic/ERL/Exploration/OpenESDyadic.agda"
-      ["openESIrreducibilityProof", "openESSelfLoopProof"]
-  , record "NoisyNet" "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-      ["noisyNetIrreducibilityProof", "noisyNetSelfLoopProof"]
+  [ record "CanonicalLearner" "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda"
+      [ "temperatureCodeLaw"
+      , "temperatureTieLaw"
+      , "temperaturePositiveUnitLaw"
+      , "temperatureNegativeUnitLaw"
+      , "negativeFiniteQLogLaw"
+      , "haar00"
+      , "haar11"
+      , "haar01"
+      , "mobiusAssociativity"
+      , "persistentGRUMonolith"
+      , "canonicalPersistentGRUPreservation"
+      , "f4ParameterInvariant"
+      , "canonicalFullStep-clock"
+      , "canonicalFullStep-critic"
+      , "canonicalFullStep-attention"
+      , "canonicalFullStep-gru"
+      , "canonicalFullStep-optimizer"
+      , "canonicalFullStep-counts"
+      , "canonicalFullStep-qLog"
+      , "canonicalQuadraticDecay"
+      , "canonicalAperiodic"
+      , "canonicalCoerciveNoCycle"
+      ]
   ]
 
 data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
@@ -26,10 +44,10 @@ checkMethod (name, path, required) = do
   if not (null missing)
     then pure (name, MissingProof, missing)
     else do
-      (code, _out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
+      (code, out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
       case code of
         ExitSuccess -> pure (name, Proven, [])
-        ExitFailure _ -> pure (name, AgdaFailure, [err])
+        ExitFailure _ -> pure (name, AgdaFailure, [err ++ out])
 
 renderCandidateModule :: [(String, Status, [String])] -> String
 renderCandidateModule results =
@@ -37,14 +55,14 @@ renderCandidateModule results =
     [ "{-# OPTIONS --safe #-}"
     , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
     , ""
-    , "-- Generated theorem-discovery report. Agda remains the acceptance oracle."
-    , "-- `Proven` means the named proof terms were present and the module exited successfully under `agda --safe`."
+    , "-- Generated theorem-status report for the canonical endogenous learner."
+    , "-- Agda remains the acceptance oracle; generation never upgrades missing proof terms."
     , ""
     ]
     ++ concatMap render results
   where
     render (name, status, details) =
-      [ "-- method: " ++ name
+      [ "-- theorem-family: " ++ name
       , "-- status: " ++ show status
       , "-- details: " ++ intercalate " | " details
       , ""
@@ -62,6 +80,6 @@ main = do
   where
     printResult (name, status, details) =
       putStrLn $
-        "exploration-method=" ++ name
+        "theorem-family=" ++ name
         ++ ",status=" ++ show status
         ++ if null details then "" else ",details=" ++ intercalate ";" details
