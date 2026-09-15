@@ -104,6 +104,6 @@ sandwichTransform : Int8 × Int8 → IntVec2
 sandwichTransform p = haarApply (liftAttention p)
 
 canonicalSandwich :
-  ∀ p → AttentionGRUSandwich
+  (p : Int8 × Int8) → AttentionGRUSandwich
 canonicalSandwich p =
   attentionGRUSandwich p (sandwichTransform p) haarApply
