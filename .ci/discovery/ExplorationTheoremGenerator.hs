@@ -18,6 +18,8 @@ methods =
       , "haar00"
       , "haar11"
       , "haar01"
+      , "mobiusAssociativity"
+      , "persistentGRUMonolith"
       , "f4ParameterInvariant"
       , "canonicalFullStep-clock"
       , "canonicalFullStep-critic"
