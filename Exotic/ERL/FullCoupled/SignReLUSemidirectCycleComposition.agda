@@ -1,23 +1,21 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.SignReLUSemidirectCycleComposition where
 
-open import Agda.Builtin.Equality using (_≡_; refl; cong; trans)
+open import Agda.Builtin.Equality using (_≡_; refl; trans; sym; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Empty using (⊥)
 open import Data.Product using (_×_; _,_)
+open import Data.Nat using (_<_; _≤_)
+open import Data.Nat.Properties using (<-trans)
 open import Exotic.efficient_chad.Int8 using
   ( Int8
-  ; int8OfNat
   ; zero8
-  ; code
   )
-open import Data.Fin using (toℕ)
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState
   ; GRUMatrices
   ; GRUNoise
   ; GlobalControl
-  ; hidden
   ; matrices
   ; noise
   ; global
@@ -35,25 +33,22 @@ open import Exotic.ERL.FullCoupled.MobiusGroup using
   ; identityAction
   ; composeAction
   ; composeAction-assoc
-  ; composeAction-left-id
-  ; composeAction-right-id
   )
 open import Exotic.ERL.FullCoupled.FiniteSemidirectComposition using
   ( Semidirect
   ; semidirectMul
   )
 open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
-  ( Fixed
-  ; LyapunovCertificate
+  ( LyapunovCertificate
   ; iterate
   ; noNontrivialFiniteCycle
   ; OrbitNonFixed
   )
 
 ------------------------------------------------------------------------
--- SignReLU is the recurrent candidate activation actually used by DyadicGRU.
+-- signReLU is the recurrent candidate activation actually used by DyadicGRU.
 -- It is represented here as a finite endomorphism. Associativity belongs to
--- composition of the resulting operators, not to a claim that the map is an
+-- composition of the resulting operators, not to a claim that this map is an
 -- invertible Mobius-group element.
 ------------------------------------------------------------------------
 
@@ -70,9 +65,8 @@ signReLUWindow-zero :
 signReLUWindow-zero = refl
 
 ------------------------------------------------------------------------
--- Deep window composition. This is the operator-level meaning of a learned
--- recurrent window: one can regroup the same sequential composition without
--- changing its pointwise result.
+-- Deep window composition. This is the operator-level content of recurrent
+-- windowing: the same sequential operator can be regrouped associatively.
 ------------------------------------------------------------------------
 
 deepWindow : Nat → MobiusAction → MobiusAction
@@ -105,9 +99,7 @@ deepSignReLU-zero (suc n) =
 ------------------------------------------------------------------------
 -- Compositionally supplied Lyapunov law. Every primitive window shares one
 -- energy, never increases it, and strictly decreases it on a moving state.
--- Then any finite composition has the same strict descent law. This is the
--- interpolation missing between associative window composition and the
--- global n-cycle theorem.
+-- Then any two-window composition has the same strict descent law.
 ------------------------------------------------------------------------
 
 record WindowDescent (W : Set) : Set₁ where
@@ -137,24 +129,36 @@ composed-window-strict :
   energy second (window first x) < energy x
 composed-window-strict C x moving =
   let
-    e₁ = energy first C
-    e₂ = energy second C
-    drop₂ : e₂ (window (second C) (window (first C) x)) <
-            e₂ (window (first C) x)
-    drop₂ = strictMove (second C) (window (first C) x) moving
-    transport : e₂ (window (first C) x) ≤ e₂ x
-    transport =
+    drop₂ :
+      energy (second C) (window (second C) (window (first C) x))
+      < energy (second C) (window (first C) x)
+    drop₂ =
+      strictMove (second C) (window (first C) x) moving
+
+    nonIncrease₁ :
+      energy (first C) (window (first C) x)
+      ≤ energy (first C) x
+    nonIncrease₁ = nonIncrease (first C) x
+
+    nonIncrease₂ :
+      energy (second C) (window (first C) x)
+      ≤ energy (second C) x
+    nonIncrease₂ =
       subst
         (λ E → E (window (first C) x) ≤ E x)
         (sameEnergy C)
-        (nonIncrease (first C) x)
+        nonIncrease₁
   in
-    Nat.s≤s (transport)
+    subst
+      (λ E →
+        E (window (second C) (window (first C) x)) < E x)
+      (sameEnergy C)
+      (<-trans drop₂ nonIncrease₂)
 
 ------------------------------------------------------------------------
--- A finite composed deterministic step can therefore be discharged to the
--- existing exact no-nontrivial-cycle theorem, without mentioning a critic,
--- reward model, probability law, or asymptotic statistical premise.
+-- Existing exact finite-cycle theorem discharges the composed window as soon
+-- as its strict descent is constructed. No critic or stochastic assumption is
+-- involved.
 ------------------------------------------------------------------------
 
 composed-window-no-cycle :
@@ -170,23 +174,27 @@ composed-window-no-cycle C F F-law n cyc nf =
   let
     L : LyapunovCertificate _ F
     L = record
-      { energy = energy second C
+      { energy = energy (second C)
       ; strictDecrease = λ x moving →
+          let
+            targetMoving :
+              window (second C) (window (first C) x) ≢ x
+            targetMoving q =
+              moving (trans (F-law x) q)
+          in
           subst
-            (λ q → energy second C q < energy second C x)
-            (trans
-              (sym (F-law x))
-              refl)
-            (composed-window-strict C x moving)
+            (λ E → E (F x) < E x)
+            (sym (F-law x))
+            (composed-window-strict C x targetMoving)
       }
-  in noNontrivialFiniteCycle L n cyc nf
+  in
+    noNontrivialFiniteCycle L n cyc nf
 
 ------------------------------------------------------------------------
--- Semidirect transfer contract. If a concrete GRU recurrent step is shown to
--- be the action of one fixed semidirect product element under an embedding,
--- the semidirect operator theorem transfers the same finite-cycle result.
--- This is an explicit bridge contract, not an assertion that the present
--- GRU file has already supplied such an embedding.
+-- Semidirect transfer contract. A genuine GRU semidirect theorem needs an
+-- explicit embedding of the concrete recurrent state into A × B. This record
+-- makes that obligation executable instead of silently assuming the model is
+-- a semidirect product.
 ------------------------------------------------------------------------
 
 record SemidirectCycleEmbedding
@@ -202,15 +210,28 @@ record SemidirectCycleEmbedding
     fixedElement : A × B
     carrierStep-law :
       ∀ p → carrierStep p ≡ semidirectMul S p fixedElement
-    stateStep-law :
-      ∀ x → decode (carrierStep (encode x)) ≡ decode (encode x)
-        -- kept as an explicit hook for a concrete state-update embedding
+    step : X → X
+    step-law :
+      ∀ x → decode (carrierStep (encode x)) ≡ step x
+
+open SemidirectCycleEmbedding public
+
+semidirect-embedded-no-cycle :
+  ∀ {A B X : Set} {S : Semidirect A B}
+  (E : SemidirectCycleEmbedding S X)
+  (L : LyapunovCertificate X (step E))
+  {x : X} (n : Nat) →
+  iterate (step E) (suc n) x ≡ x →
+  OrbitNonFixed (step E) x →
+  ⊥
+semidirect-embedded-no-cycle E L =
+  noNontrivialFiniteCycle L
 
 ------------------------------------------------------------------------
 -- Actual GRU persistent-state factorization. The recurrent step changes the
 -- hidden coordinate while preserving matrices, exploration-noise coordinates,
--- and global optimizer/L2 control. This is exactly the invariant needed before
--- a genuine semidirect embedding can be instantiated.
+-- and global optimizer/L2 control. This is the structural carrier needed by a
+-- future concrete semidirect embedding.
 ------------------------------------------------------------------------
 
 PersistentGRU : Set
@@ -233,21 +254,19 @@ windowCarrier-persistent :
 windowCarrier-persistent x s = gruStep-persistent s x
 
 ------------------------------------------------------------------------
--- Final theorem interpolation statement: a real semidirect GRU n-cycle theorem
--- requires exactly one remaining architecture-specific ingredient, namely a
--- valid semidirect embedding of the recurrent state. Once supplied, the
--- associative signReLU window algebra and the finite Lyapunov composition law
--- discharge the arbitrary-n cycle obstruction.
+-- Final interpolation: associative signReLU windows give the operator
+-- composition algebra; the componentwise descent theorem turns that algebra
+-- into a strict Lyapunov law; the semidirect embedding transfers it to the
+-- concrete GRU only when the remaining state-action factorization is supplied.
 ------------------------------------------------------------------------
 
 signReLU-semidirect-interpolation :
-  ∀ {X A B : Set}
-  {S : Semidirect A B}
+  ∀ {A B X : Set} {S : Semidirect A B}
   (E : SemidirectCycleEmbedding S X)
-  (L : LyapunovCertificate X (λ x → decode E (carrierStep E (encode E x))))
+  (L : LyapunovCertificate X (step E))
   {x : X} (n : Nat) →
-  iterate (λ y → decode E (carrierStep E (encode E y))) (suc n) x ≡ x →
-  OrbitNonFixed (λ y → decode E (carrierStep E (encode E y))) x →
+  iterate (step E) (suc n) x ≡ x →
+  OrbitNonFixed (step E) x →
   ⊥
 signReLU-semidirect-interpolation E L =
-  noNontrivialFiniteCycle L
+  semidirect-embedded-no-cycle E L
