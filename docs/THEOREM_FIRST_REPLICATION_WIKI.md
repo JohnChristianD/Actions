@@ -44,7 +44,7 @@ Checked finite cases include:
 
 No independently optimized actor exists in the canonical carrier. The action-selection pair is computed from the Watkins critic and deterministic LCB/count surface.
 
-The separate learned sparsemax attention component is not this action-selection policy. It is representation/attention state, analogous in role to a Transformer attention component, and it must not be described as a second actor.
+The separate learned sparsemax attention component is not this action-selection policy. It is representation/attention state, analogous in role to a Transformer attention component, and must not be described as a second actor.
 
 The standalone `Int8SparsemaxLiteral` module is not the promoted theorem boundary. The canonical policy semantics live in V2.
 
@@ -90,9 +90,9 @@ The key semantic separation is:
 
 There is no separate actor optimizer and no second policy learner hidden inside sparsemax attention.
 
-Current V2 detail: the learned attention state is updated inside the monolith, but the present `canonicalGRUStep` feeds Haar with `canonicalPolicy`, not with `learnedSparsemaxAttentionWeights`. Therefore the current source should **not** be documented as an already-connected learned-attention-to-GRU path. That connection is a distinct future composition change, not a theorem that the current code already proves.
+Current V2 detail: the learned attention state is updated inside the monolith, but the present `canonicalGRUStep` feeds Haar with `canonicalPolicy`, not with `learnedSparsemaxAttentionWeights`. Therefore the current source is **not** documented as an already-connected learned-attention-to-GRU path. That connection would be a distinct future composition change.
 
-## Haar transform
+## Haar transform and GRU composition
 
 The frozen two-coordinate matrix used in the present recurrent path is the unnormalised Haar transform
 
@@ -104,15 +104,27 @@ with
 
 The rows have squared norm `2` and zero cross-inner-product. It is orthogonal up to the fixed scale factor and is not orthonormal.
 
+Haar is a linear transform here, not an associative algebra operation. The associativity theorem belongs to the separate Mobius composition operator.
+
+The canonical monolith now exposes the composed theorem `canonicalPersistentGRUPreservation`:
+
+`persistentGRU (canonicalGRUStep K s) = persistentGRU (gru s)`.
+
+This is a composed theorem about the actual canonical Watkins/LCB action-selection signal, its Haar transform, the recurrent input projection, and the GRU step. It strengthens the standalone persistence lemma by instantiating it on the real endogenous canonical composition.
+
 ## GRU and Mobius representation laws
 
-The canonical monolith imports the shared Dyadic GRU and exposes the exact persistence law:
+The canonical monolith imports the shared Dyadic GRU and exposes the exact persistence laws:
 
-`persistentGRUMonolith`.
+`persistentGRUMonolith`
+
+and the composed
+
+`canonicalPersistentGRUPreservation`.
 
 It also exposes `mobiusAssociativity`, inherited from the definitional associativity of the shared `MobiusGroup` composition operator.
 
-These are component laws inside the same generated theorem family rather than separate disconnected demonstrations.
+These are component laws inside the same generated theorem family rather than disconnected demonstrations.
 
 ## Global optimizer, norm pair, and coercive quadratic boundary
 
@@ -134,13 +146,19 @@ For the relevant attention/action map, merely renaming sparsemax as Tsallis-2 en
 
 SciSpace literature places sparsemax within the sparse/alpha-entmax attention family and discusses the alpha = 2 connection to Tsallis statistics. The stronger formal claim would therefore have to be proved in Agda rather than imported by terminology.
 
-## Automated theorem generation
+## Automated theorem generation and redundancy audit
 
-The existing generator is:
+The theorem generator is:
 
 `.ci/discovery/ExplorationTheoremGenerator.hs`
 
-It enumerates one canonical theorem family and requires concrete proof symbols for temperature laws, finite-rational q-log, Haar orthogonality, Mobius associativity, persistent GRU, optimizer reconstruction, endogenous one-step composition, coercive decay, aperiodicity, and finite-cycle exclusion.
+The redundancy audit is:
+
+`.ci/discovery/PruneRedundantComponents.hs`
+
+The audit covers the canonical q-log boundary, action-selection surface, learned attention representation, Haar, GRU composition, optimizer, whole-step definitions, and retired duplicate component paths. It reports actionable duplication without performing destructive mathematical source deletion automatically.
+
+The theorem generator enumerates one canonical theorem family and requires concrete proof symbols for temperature laws, finite-rational q-log, Haar orthogonality, Mobius associativity, standalone and composed persistent GRU, optimizer reconstruction, endogenous one-step composition, coercive decay, aperiodicity, and finite-cycle exclusion.
 
 It then runs:
 
@@ -156,9 +174,9 @@ Generation cannot upgrade an absent proof to `Proven`.
 
 `.github/workflows/agda.yml` now:
 
+- runs the forbidden-theorem guard;
+- runs the Haskell redundancy audit;
 - installs Agda 2.8.0 and stdlib 2.4;
-- runs the theorem-scope guard;
-- audits the active q-log shaping boundary and duplicate q-log implementations;
 - installs GHC for the Haskell generator;
 - generates the canonical theorem report;
 - checks shared Int8 algebra;
@@ -178,7 +196,8 @@ The canonical surface does **not** claim:
 - equilibrium uniqueness;
 - general regret or global optimality;
 - that learned sparsemax attention is an independent actor;
-- that the current GRU is already connected to the learned attention weights.
+- that the current GRU is connected to learned attention weights;
+- that Haar itself is associative.
 
 Those require semantics and assumptions not present in this finite deterministic learner.
 
