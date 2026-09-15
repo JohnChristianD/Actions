@@ -1,226 +1,148 @@
-# Theorem-first finite ERL/EA replication wiki
+# Theorem-first canonical learner wiki
 
-Authority: Agda `--safe`.
+Authority: Agda `--safe` proof terms. Haskell generation is only theorem discovery/status automation.
 
-Repository CI authority: `.github/workflows/agda.yml`, which reads `.ci/canonical-module.txt` and checks both listed files with `agda --safe`.
+## Canonical monolith
 
-Current manifest:
+The current canonical learner is:
 
-- `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
-- `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
+`Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda`
 
-`AllSafeCombined.agda` is a regression bundle, not by itself the complete learner+EA theorem. `Agda/README.md` describes the larger v147 closure target; do not promote that target merely from documentation.
+Its single endogenous state composes:
 
-## Permanent arithmetic and theorem-scope exclusions
+1. learned sparsemax attention parameters;
+2. fixed-temperature sparsemax pseudo-policy with `tau = 1/8 = 16/128` in Q7 Int8 units;
+3. Watkins critic as the only learned Q/policy source;
+4. deterministic count-memory LCB exploration correction;
+5. exact finite-rational negative q-log shaping boundary;
+6. frozen unnormalised Haar transform between sparsemax attention output and recurrent input;
+7. persistent signReLU GRU;
+8. global F4-Int-U(p) optimizer with the actual coupled L2 term;
+9. norm-pair state (`l1`, `path`);
+10. Nat clock for deterministic aperiodicity;
+11. an explicit whole-learner coercive-quadratic witness boundary.
 
-The repository is finite, dyadic, Int8-oriented, and kernel-checked. The CI gate rejects non-finite analytic theorem families and the excluded bootstrapping family before any Agda proof gate runs. The prohibition is structural: a forbidden family returning in source, documentation, generated candidates, or metadata fails CI.
+The previous `SparsemaxWatkinsMonolith.agda` remains the lower-level core used by the canonical wrapper. The wrapper replaces its policy boundary with exact fixed-temperature Q7 sparsemax while retaining the Watkins-only critic and the shared endogenous signal flow.
 
-No external theorem family may be imported as a proof shortcut. External references may be audited, but no external source can enlarge the accepted Agda theorem surface without a repository-local `--safe` proof.
+## Sparsemax policy theorem boundary
 
-## Canonical architecture
+The policy temperature is not learned and is not stored as actor state:
 
-Intended canonical configuration:
+`SparsemaxTemperature = 16/128 = 1/8`.
 
-- optimizer: `standardTDLambdaInt8`
-- explorer: `modifiedDyadicMR15GA`
-- precision: 8 bits
-- context window power: 4
-- frozen Haar feature
-- local attention scale
-- mutation target: independent finite dyadic draws per tick
-- exact dyadic histogram fitness with exact sorting and rank consistency
+For the signed Q7 score difference `d`, the two-action map is implemented exactly as the clipped Q7 weight
 
-The proof authority is the exact Agda definitions that are present in-tree and checked by `agda --safe`.
+`p_left = clip((128 + 8*d)/2, 0, 128)`
 
-## Exploration theorem surface
+with `p_right = 128 - p_left`.
 
-The live exploration theorem comparison is explicitly three-method:
+This produces exact finite cases such as:
 
-1. MR15: `Exotic/ERL/Exploration/MR15Reachability.agda`
-2. OpenES: `Exotic/ERL/Exploration/OpenESDyadic.agda`
-3. Noisy Nets: `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
+- equal scores: `(64,64)`;
+- one-code left advantage: `(68,60)`;
+- one-code right advantage: `(60,68)`.
 
-The generic theorem layer is `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`.
+No separate learned actor parameterization is present.
 
-The former pure DMCP distribution module is removed. It is not treated as a fourth exploration mechanism or as a canonical live probability layer.
+## Finite-rational negative q-log boundary
 
-### Automated theorem discovery
+The canonical finite-rational layer uses an exact numerator/denominator representation over `Agda.Builtin.Int`.
 
-The discovery loop is:
+With the finite reciprocal convention `recip(0) = 0`:
 
-`method metadata -> concrete proof-symbol test -> agda --safe -> theorem-status report`
+`qLog(0) = 1`,
 
-Implemented in `.ci/discovery/ExplorationTheoremGenerator.hs`, with output written to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda` and executed by `.github/workflows/agda.yml`.
+and for positive integer code `n`:
 
-A method is marked `Proven` only when concrete proof terms are present and its Agda file passes `agda --safe`. `MissingProof` means the theorem target has not been closed. `AgdaFailure` means the claimed proof surface does not typecheck safely. Haskell never upgrades a conjecture into a theorem.
+`qLog(n) = (n - 1) / n`.
 
-The generator is extensible by theorem-family metadata. It can enumerate support conditions, self-loop conditions, finite-tape factorization, coupled reachability, exact expectations, rank identities, VJP identities, and ablation combinations. Its output is always ordinary Agda source subject to the same `--safe` gate.
+The negative shaping value is exactly `-qLog(n)`. This is represented without floating point and without real-analysis infrastructure.
 
-## Strongest endogenous theorem class
+## LCB exploration
 
-Among the three methods, Noisy Nets has the strongest overall theorem-class frontier for the complete composition, while MR15 has the strongest dedicated outer-exploration graph theorem frontier.
+LCB is deterministic count-memory algebra. The canonical finite bonus table remains:
 
-Noisy Nets is broader because its theorem surface can simultaneously range over:
+`127, 63, 31, 15, 7, 3, 1, 0`
 
-- finite Int8 noise algebra;
-- GateNN parameter/noise identities;
-- exact coupled-state transition relations;
-- self-loop construction;
-- learner-state reachability;
-- full learner+EA reachability;
-- exact VJP/CHAD equalities;
-- the representation path containing signReLU8, softsign8, GateNN, and projection;
-- the final full-state period-1 theorem.
+for counts `0,1,...,>=7`.
 
-That breadth makes Noisy Nets the strongest candidate for the endogenous theorem class that crosses subsystem boundaries and reaches the whole finite composition.
+The policy pipeline is:
 
-MR15 is the stronger pure exploration mathematics target because its repaired form naturally exposes:
+`Watkins Q -> LCB score correction -> fixed-temperature sparsemax -> policy signal -> critic/GRU/optimizer/count updates`.
 
-- finite mutation support;
-- the `gcd(256,S)=1` generator theorem;
-- positive-mass zero-step self-loop;
-- iid finite noise-tape factorization;
-- exact weighted expectations;
-- population reachability;
-- deterministic selection compatibility;
-- full-coupled lift conditions.
+No posterior or statistical-confidence interpretation is asserted.
 
-OpenES is the narrowest current frontier. Its finite ask/tell shell can support exact mutation, antithetic, involution, and reachability theorems, but its present source is much smaller and currently lacks a global irreducibility proof.
+## Learned attention versus pseudo-policy
 
-Therefore the theorem-first ranking is:
+The learned attention state is separate from the Watkins pseudo-policy boundary. Its parameters are part of the same canonical endogenous state and are updated by an explicit attention-step kernel.
 
-`Noisy Nets` — broadest whole-composition endogenous theorem class.
+The Watkins critic remains the only learned Q/policy source. Sparsemax attention is representation/selection machinery, not a second policy optimizer.
 
-`MR15` — strongest specialized exploration-kernel theorem class.
+## Haar sandwich
 
-`OpenES` — narrower functional exploration theorem class.
+The frozen two-coordinate matrix is the unnormalised Haar transform
 
-This is a theorem-breadth ranking, not a claim of empirical performance.
+`H = [[1,1],[1,-1]]`
 
-## Current method status
+with
 
-MR15: the existing negative reachability theorem must not be confused with the repaired independent-tick definition. The repository still needs the actual repaired transition plus concrete generator, self-loop, and global reachability proofs.
+`H H^T = 2 I`.
 
-OpenES: the current finite shell does not contain an irreducibility proof. Its definitions remain useful as an ablation surface, but global reachability must be proved for the exact transition relation.
+The rows have squared norm `2` and zero cross-inner-product. It is orthogonal up to the fixed scale factor and is not orthonormal.
 
-Noisy Nets: it belongs inside the coupled learner. `NoisyNetCoupled.agda` defines finite gate state, noisy `w3`, the exact diagonal identity, and explicit theorem types for coupled irreducibility and self-loop. Those properties remain obligations until concrete proof terms pass `agda --safe`.
+The canonical monolith explicitly computes the sparsemax output, applies Haar, then feeds an explicit recurrent-input projection into the persistent GRU. No transform parameters are learned.
 
-## Finite graph theorem class
+## Global optimizer and coercive quadratic boundary
 
-For a transition relation `_—→_`:
+The actual optimizer step is inherited from the F4-Int-U(p) core and includes the global L2 subtraction in the parameter update. The norm pair remains in the same learner state.
 
-`Irreducible = ∀ s t → Reach s t`.
+The canonical theorem boundary is:
 
-`SelfLoop = ∀ s → s —→ s`.
+`FullLearnerCoerciveQuadratic K`
 
-The reusable sufficient period-1 package is:
+which provides a Nat-valued energy and a strict decrease theorem for moved states of the actual `canonicalFullStep`. This witness is a theorem input, not an undeclared postulate.
 
-`Irreducible × SelfLoop -> PeriodOne`.
+The direct consequence is the reusable finite-state result that a strict Lyapunov descent certificate excludes nontrivial finite cycles. Independently, the Nat clock gives deterministic aperiodicity for the actual canonical map.
 
-This is deliberately a full-state statement. Exploration-only reachability never substitutes for learner+EA reachability.
+## Automated theorem generation
 
-## Mutation theorem class
+The existing generator remains authoritative for discovery/status:
 
-For an additive coordinate over `Z_256`, the generator target is:
+`.ci/discovery/ExplorationTheoremGenerator.hs`
 
-`gcd(256,S) = 1`
+It now enumerates only the canonical learner theorem family and checks concrete proof symbols before invoking:
 
-for the effective positive-probability increment support `S`.
+`agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda`
 
-A one-step self-loop requires effective support containing `0` with positive mass.
+CI then checks the generated report:
 
-The previous same-noise exponent repetition is not theorem-friendly globally because exponent scaling can reduce the effective support and destroy communication classes. The preferred construction is an explicit finite fresh-noise tape or an equivalent one-shot per-coordinate mutation.
+`Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
 
-## Distribution theorem class
+The generator cannot promote a missing proof into a theorem. A theorem family is accepted only when the required proof symbols exist and the actual Agda module exits successfully under `--safe`.
 
-`D_tri` remains the canonical design choice:
+## CI gate
 
-`D_tri(k) = (16 - |k|) / 256`, `k ∈ {-15,…,15}`.
+`.github/workflows/agda.yml` now:
 
-Its useful exact facts are finite dyadic normalization, symmetry, zero center mean, positive mass at zero, Int8-range support, and exact second moment `85/2`.
+- installs Agda 2.8.0 and stdlib 2.4;
+- runs the permanent theorem-scope guard;
+- installs GHC for the existing Haskell generator;
+- runs the generator;
+- checks shared Int8 algebra;
+- checks the canonical fixed-temperature learner monolith and regression;
+- checks the generated theorem report;
+- checks the retained Watkins, count-memory, signReLU semidirect, and persistent-GRU component gates.
 
-Do not promote the design claim that `D_tri` is universally statistically best. The strongest algebraic comparison schema remains criterion-conditioned:
+## Theorem-status limits
 
-`Best(Φ,D*) = ∀ D ∈ Admissible → Φ(D*) >= Φ(D)`.
+The canonical surface does **not** claim:
 
-Entropy, second moment, expected displacement, finite-horizon coverage, estimator noise, and full-coupled task utility are separate criteria.
+- general neural Watkins convergence to `Q*`;
+- statistical validity of the LCB table;
+- posterior sampling equivalence;
+- equilibrium uniqueness;
+- general regret or optimality.
 
-The canonical choice is therefore theorem-driven, not a universal max-entropy rule.
+Those would require additional semantics and assumptions not present in the finite deterministic learner.
 
-## Ablation classes
-
-Triangular `D_tri`: broad symmetric dyadic support with positive zero mass.
-
-Flat dyadic: useful entropy ablation; no universal task-superiority consequence follows from flatter mass.
-
-Center-heavy: can remain graph-theoretically eligible while having much smaller exploration scale.
-
-Lazy unit: `{-1,0,+1}` is a simple irreducibility+aperiodicity target under independent additive sampling.
-
-Rademacher: `{-1,+1}` has generator support but no lazy self-loop, so the basic walk is periodic.
-
-Even-step laws: self-loop can exist, but gcd generation fails on `Z_256`.
-
-Noisy Nets: parameter noise belongs inside the coupled learner theorem rather than being treated as an unrelated outer distribution. The finite noise law may be `D_tri`, but coupled reachability must still be established from the complete transition.
-
-## Full coupling
-
-The whole composition remains:
-
-`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
-
-The GateNN diagonal identity is separate from the softsign theorem.
-
-Noisy Nets must be represented inside the coupled learner state when proving whole-system reachability. The target theorem is:
-
-`∀ s t → CoupledReach s t`
-
-for the actual full learner+EA transition, followed by the actual full-state self-loop theorem. Exploration irreducibility alone is insufficient.
-
-## IID and expectation in `--safe`
-
-Finite iid and exact expectation are constructible from finite support, exact dyadic masses, finite products, and finite weighted sums. The missing proof is implementation-specific factorization: the actual transition must consume fresh noise coordinates/ticks as claimed.
-
-No general measure-theory layer is logically needed merely for these finite statements.
-
-## Fitness theorem
-
-The modified finite VEB-RL-style `-TD` fitness remains an exact finite statistic:
-
-- histogram masses are exact dyadic integers;
-- normalization is exact;
-- ordinal/rank ordering is exact;
-- full sorting is retained whenever rank consistency is part of the theorem;
-- comparison cost remains `O(N log N)` unless a tighter exact finite count is formally established.
-
-Approximate quantile structures are not silently substituted.
-
-## Forward CHAD status
-
-The intended path is:
-
-`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
-
-Exact CHAD for the finite GateNN/projection node is not equivalent to an end-to-end theorem. The full chain still requires VJP rules and a chain-rule proof through every upstream primitive.
-
-Iterative CHAD is useful for generating differential/VJP candidates, but Agda remains the final acceptance oracle.
-
-## Toolchain boundary
-
-The current workflow installs Agda and GHC and runs the Haskell oracle directly with `runghc`. Cabal is a build driver, not a logical proof dependency. Agda2HS does not turn Cabal into a mathematical requirement.
-
-Nix or Guix is an environment-reproducibility choice, not a proof authority. Exact inputs and Agda/stdlib versions must be pinned.
-
-## Replication order
-
-1. Keep pure DMCP modules deleted.
-2. Enforce the permanent CI theorem-scope exclusions.
-3. Put the repaired independent-tick MR15 definition in-tree.
-4. Prove MR15 generator support, self-loop, and full finite reachability.
-5. Prove the corresponding OpenES theorems for its actual transition.
-6. Keep Noisy Nets inside the full coupled learner state and prove its actual coupled reachability obligations.
-7. Run the automated theorem generator and require concrete proof terms plus `agda --safe` before marking a method proven.
-8. Prove full learner+EA irreducibility.
-9. Apply the actual full-state self-loop theorem for period 1.
-10. Extend CHAD through the entire representation path.
-11. Compare distributions only under explicit exact finite criteria.
+The accepted theorem class is therefore deliberately algebraic, finite, endogenous, and kernel-checked.
