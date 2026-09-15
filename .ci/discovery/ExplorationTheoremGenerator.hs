@@ -20,6 +20,7 @@ methods =
       , "haar01"
       , "mobiusAssociativity"
       , "persistentGRUMonolith"
+      , "canonicalPersistentGRUPreservation"
       , "f4ParameterInvariant"
       , "canonicalFullStep-clock"
       , "canonicalFullStep-critic"
