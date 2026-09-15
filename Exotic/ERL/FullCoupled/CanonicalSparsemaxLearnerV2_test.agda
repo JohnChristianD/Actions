@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.CanonicalSparsemaxLearnerV2_test where
 
 open import Relation.Binary.PropositionalEquality using (_≡_)
+import Agda.Builtin.Int as I
 open import Exotic.ERL.FullCoupled.CanonicalSparsemaxLearnerV2
 
 check-temperature : sparsemaxTemperature ≡ int8OfNat 16
@@ -21,3 +22,14 @@ check-qlog = negativeFiniteQLogLaw
 
 check-haar : dot2 haarRow0 haarRow0 ≡ I.pos 2
 check-haar = haar00
+
+check-mobius :
+  ∀ (f g h : MobiusAction) (x : Int8) →
+    MobiusAction.run (composeAction (composeAction f g) h) x
+      ≡ MobiusAction.run (composeAction f (composeAction g h)) x
+check-mobius = mobiusAssociativity
+
+check-persistent-gru :
+  ∀ (s : GRUState) (x : Int8) →
+    persistentGRU (gruStep s x) ≡ persistentGRU s
+check-persistent-gru = persistentGRUMonolith
