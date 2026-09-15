@@ -34,8 +34,8 @@ jobs:
       - name: Reject forbidden theorem families
         run: python3 .ci/check-forbidden-theorems.py
 
-      - name: Audit active q-log shaping boundary
-        run: python3 .ci/prune-qlog-variants.py
+      - name: Audit redundant canonical components
+        run: runghc .ci/discovery/PruneRedundantComponents.hs
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -44,19 +44,10 @@ jobs:
           agda-stdlib-version: '2.4'
 
       - name: Verify Agda executable and standard library
-        shell: bash
-        run: |
-          set -euo pipefail
-          agda --version
-          agda --print-agda-app-dir
-          test -f "$(agda --print-agda-app-dir)/libraries"
+        run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
 
       - name: Set up Haskell generator runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y ghc
+        run: sudo apt-get update && sudo apt-get install -y ghc
 
       - name: Generate canonical learner theorem report
         run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
