@@ -9,12 +9,26 @@ record name path proofs = (name, path, proofs)
 
 methods :: [(String, String, [String])]
 methods =
-  [ record "MR15" "Exotic/ERL/Exploration/MR15Reachability.agda"
-      ["mr15IrreducibilityProof", "mr15SelfLoopProof"]
-  , record "OpenES" "Exotic/ERL/Exploration/OpenESDyadic.agda"
-      ["openESIrreducibilityProof", "openESSelfLoopProof"]
-  , record "NoisyNet" "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-      ["noisyNetIrreducibilityProof", "noisyNetSelfLoopProof"]
+  [ record "CanonicalLearner" "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda"
+      [ "temperatureCodeLaw"
+      , "temperatureTieLaw"
+      , "temperaturePositiveUnitLaw"
+      , "temperatureNegativeUnitLaw"
+      , "negativeFiniteQLogLaw"
+      , "haar00"
+      , "haar11"
+      , "haar01"
+      , "canonicalFullStep-clock"
+      , "canonicalFullStep-critic"
+      , "canonicalFullStep-gru"
+      , "canonicalFullStep-optimizer"
+      , "canonicalFullStep-attention"
+      , "canonicalFullStep-counts"
+      , "canonicalFullStep-qLog"
+      , "canonicalQuadraticDecay"
+      , "canonicalAperiodic"
+      , "canonicalCoerciveNoCycle"
+      ]
   ]
 
 data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
@@ -37,14 +51,14 @@ renderCandidateModule results =
     [ "{-# OPTIONS --safe #-}"
     , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
     , ""
-    , "-- Generated theorem-discovery report. Agda remains the acceptance oracle."
-    , "-- `Proven` means the named proof terms were present and the module exited successfully under `agda --safe`."
+    , "-- Generated theorem-status report for the canonical endogenous learner."
+    , "-- Agda remains the acceptance oracle; generation never upgrades missing proof terms."
     , ""
     ]
     ++ concatMap render results
   where
     render (name, status, details) =
-      [ "-- method: " ++ name
+      [ "-- theorem-family: " ++ name
       , "-- status: " ++ show status
       , "-- details: " ++ intercalate " | " details
       , ""
@@ -62,6 +76,6 @@ main = do
   where
     printResult (name, status, details) =
       putStrLn $
-        "exploration-method=" ++ name
+        "theorem-family=" ++ name
         ++ ",status=" ++ show status
         ++ if null details then "" else ",details=" ++ intercalate ";" details
