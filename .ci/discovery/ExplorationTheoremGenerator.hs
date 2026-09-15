@@ -9,7 +9,7 @@ record name path proofs = (name, path, proofs)
 
 methods :: [(String, String, [String])]
 methods =
-  [ record "CanonicalLearner" "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda"
+  [ record "CanonicalLearner" "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda"
       [ "temperatureCodeLaw"
       , "temperatureTieLaw"
       , "temperaturePositiveUnitLaw"
@@ -18,11 +18,12 @@ methods =
       , "haar00"
       , "haar11"
       , "haar01"
+      , "f4ParameterInvariant"
       , "canonicalFullStep-clock"
       , "canonicalFullStep-critic"
+      , "canonicalFullStep-attention"
       , "canonicalFullStep-gru"
       , "canonicalFullStep-optimizer"
-      , "canonicalFullStep-attention"
       , "canonicalFullStep-counts"
       , "canonicalFullStep-qLog"
       , "canonicalQuadraticDecay"
