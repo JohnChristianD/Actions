@@ -11,7 +11,7 @@ open import Data.Nat.DivMod using (m%n<n)
 open import Data.Product using (_×_; _,_)
 
 ------------------------------------------------------------------------
--- Int8 and finite sparsemax
+-- Int8 and exact two-action sparsemax on the integer score lattice
 ------------------------------------------------------------------------
 
 maxFin : ∀ {n : Nat} → Fin (suc n)
@@ -46,13 +46,10 @@ open ActionScore public
 data TwoActionSupport : Set where
   leftOnly rightOnly both : TwoActionSupport
 
-scoreBucket : Int8 → Fin 5
-scoreBucket x = fromℕ< (m%n<n (toℕ (code x)) 5)
-
 support2 : ActionScore → TwoActionSupport
-support2 (actionScore l r) with toℕ (scoreBucket l) <ᵇ toℕ (scoreBucket r)
+support2 (actionScore l r) with toℕ (code l) <ᵇ toℕ (code r)
 ... | true = rightOnly
-... | false with toℕ (scoreBucket r) <ᵇ toℕ (scoreBucket l)
+... | false with toℕ (code r) <ᵇ toℕ (code l)
 ... | true = leftOnly
 ... | false = both
 
@@ -178,16 +175,8 @@ persistent-preservation (gruState h m n g) x = refl
 negativeAlpha8 : Int8
 negativeAlpha8 = int8OfNat 255
 
-negativeAlphaBonus : Fin 8 → Int8
-negativeAlphaBonus k = int8Mul negativeAlpha8 (int8OfNat (toℕ k))
-
-negativeAlphaDyadicLogLaw :
-  ∀ k → negativeAlphaBonus k ≡ negativeAlphaBonus k
-negativeAlphaDyadicLogLaw k = refl
-
-pessimisticInit optimisticInit : Int8
+pessimisticInit : Int8
 pessimisticInit = zero8
-optimisticInit = max8
 
 ------------------------------------------------------------------------
 -- F4-Int-U(p): optimizer state, coupled global L2, norm-pair, q-budget
@@ -205,7 +194,6 @@ record F4Scalar : Set₁ where
     softsignS : R → R
     quantize8 : R → R
     roundInt : R → I.Int
-    reciprocalS : R → R
     addSubS : ∀ x y → subS (addS x y) y ≡ x
     subAddS : ∀ x y → addS (subS x y) y ≡ x
     quantizedReconstruction :
@@ -228,20 +216,28 @@ record F4IntUKernel (A : F4Scalar) : Set₁ where
 open F4IntUKernel public
 
 ------------------------------------------------------------------------
--- Deterministic dyadic LCB count bonus. This is algebraic, not a
--- statistical-confidence theorem. The exact rational lives in R A and
--- only its policy-facing Int8 encoding is quantized.
+-- Minimal finite Int8 count bonus. This is an exact deterministic
+-- exploration correction; it is not a confidence or posterior theorem.
 ------------------------------------------------------------------------
 
-record LCBCountKernel (A : F4Scalar) : Set₁ where
+finiteLCBBonus8 : Nat → Int8
+finiteLCBBonus8 zero = int8OfNat 127
+finiteLCBBonus8 (suc zero) = int8OfNat 63
+finiteLCBBonus8 (suc (suc zero)) = int8OfNat 31
+finiteLCBBonus8 (suc (suc (suc zero))) = int8OfNat 15
+finiteLCBBonus8 (suc (suc (suc (suc zero)))) = int8OfNat 7
+finiteLCBBonus8 (suc (suc (suc (suc (suc zero))))) = int8OfNat 3
+finiteLCBBonus8 (suc (suc (suc (suc (suc (suc zero)))))) = int8OfNat 1
+finiteLCBBonus8 _ = zero8
+
+record LCBCountKernel : Set where
   constructor lcbCountKernel
   field
-    bonus : Nat → R A
-    encode8 : R A → Int8
-    exponent : Nat → Nat
-    dyadicLaw :
-      ∀ n → bonus n ≡
-        reciprocalS A (pow2S A (I.pos (exponent n)))
+    bonus : Nat → Int8
+open LCBCountKernel public
+
+canonicalLCBKernel : LCBCountKernel
+canonicalLCBKernel = lcbCountKernel finiteLCBBonus8
 
 record LCBCountState : Set where
   constructor lcbCountState
@@ -316,40 +312,6 @@ record NormPair (A : F4Scalar) : Set₁ where
   constructor normPair
   field l1 path : R A
 
-record F4QBudget (A : F4Scalar) : Set₁ where
-  constructor f4QBudget
-  field budget usage : R A
-        admissible : leS A usage budget
-
-------------------------------------------------------------------------
--- Full-composition minimax rounding theorem class
-------------------------------------------------------------------------
-
-record FullCompositionRoundingTheorem (A : F4Scalar) : Set₁ where
-  constructor fullCompositionRoundingTheorem
-  field
-    exactComposition quantizedComposition : R A → R A
-    lipschitzProduct : R A
-    propagatedBound :
-      ∀ x →
-      leS A
-        (absS A (subS A (quantizedComposition x) (exactComposition x)))
-        (mulS A (lipschitzProduct) (halfULP A))
-    sharpPoint : R A
-    sharpEquality :
-      absS A (subS A (quantizedComposition sharpPoint) (exactComposition sharpPoint))
-      ≡ mulS A (lipschitzProduct) (halfULP A)
-
-fullCompositionMinimaxRoundingBound :
-  ∀ {A : F4Scalar} (T : FullCompositionRoundingTheorem A) b →
-  (∀ x →
-    leS A
-      (absS A (subS A (quantizedComposition T x) (exactComposition T x)))
-      b) →
-  leS A (mulS A (lipschitzProduct T) (halfULP A)) b
-fullCompositionMinimaxRoundingBound T b candidate =
-  subst (λ z → leS _ z b) (sharpEquality T) (candidate (sharpPoint T))
-
 ------------------------------------------------------------------------
 -- Complete coupled sparsemax + Watkins + GRU + F4 state
 ------------------------------------------------------------------------
@@ -371,7 +333,7 @@ record FullCoupledKernel (A : F4Scalar) : Set₁ where
   field
     criticKernel : SparsemaxCriticWatkinsKernel
     optimizerKernel : F4IntUKernel A
-    lcbKernel : LCBCountKernel A
+    lcbKernel : LCBCountKernel
 open FullCoupledKernel public
 
 schedulerSignal : Nat → Int8
@@ -381,19 +343,17 @@ noLCBActionScore : CriticState → ActionScore
 noLCBActionScore c = actionScore (qLeft c) (qRight c)
 
 lcbActionScore :
-  ∀ {A : F4Scalar} →
-  LCBCountKernel A →
+  LCBCountKernel →
   LCBCountState →
   CriticState →
   ActionScore
-lcbActionScore {A} L counts c =
+lcbActionScore L counts c =
   actionScore
-    (int8Add (qLeft c) (lcbNegative (encode8 L (bonus L (leftCount counts)))))
-    (int8Add (qRight c) (lcbNegative (encode8 L (bonus L (rightCount counts)))))
+    (int8Add (qLeft c) (lcbNegative (bonus L (leftCount counts))))
+    (int8Add (qRight c) (lcbNegative (bonus L (rightCount counts))))
 
 lcbSparsemaxPolicy :
-  ∀ {A : F4Scalar} →
-  LCBCountKernel A →
+  LCBCountKernel →
   LCBCountState →
   CriticState →
   Sparsemax2Pair
@@ -401,8 +361,7 @@ lcbSparsemaxPolicy L counts c =
   sparsemax2Weights (lcbActionScore L counts c)
 
 scheduledActionScore :
-  ∀ {A : F4Scalar} →
-  LCBCountKernel A →
+  LCBCountKernel →
   Nat →
   LCBCountState →
   CriticState →
@@ -414,8 +373,7 @@ scheduledActionScore L r counts c =
        (int8Add (right s) (schedulerSignal (suc r)))
 
 scheduledSparsemaxPolicy :
-  ∀ {A : F4Scalar} →
-  LCBCountKernel A →
+  LCBCountKernel →
   Nat →
   LCBCountState →
   CriticState →
@@ -440,8 +398,7 @@ updateLCBCount p (lcbCountState l r t) with policyChoosesLeft p
 ... | disabled = lcbCountState l (suc r) (suc t)
 
 scheduledPolicySignal :
-  ∀ {A : F4Scalar} →
-  LCBCountKernel A →
+  LCBCountKernel →
   Nat →
   LCBCountState →
   CriticState →
@@ -510,31 +467,106 @@ f4GradientFromSignal :
 f4GradientFromSignal {A} x =
   intToR A (I.pos (toℕ (code x)))
 
+------------------------------------------------------------------------
+-- Endogenous component composition. Every downstream update consumes the
+-- same policy-generated signal from the current state and kernel.
+------------------------------------------------------------------------
+
+coupledPolicy :
+  ∀ {A : F4Scalar} →
+  FullCoupledKernel A → FullCoupledState A → Sparsemax2Pair
+coupledPolicy K (fullCoupledState r cw g opt norm counts qlog) =
+  scheduledSparsemaxPolicy (lcbKernel K) r counts (critic (criticWatkins cw))
+
+coupledSignal :
+  ∀ {A : F4Scalar} →
+  FullCoupledKernel A → FullCoupledState A → Int8
+coupledSignal K s =
+  let p = coupledPolicy K s
+      r = clock s
+  in signedSignal (qLogControl s)
+       (int8Add (policyLeftWeight p) (schedulerSignal r))
+
+coupledOptimizerStep :
+  ∀ {A : F4Scalar} →
+  FullCoupledKernel A → FullCoupledState A → F4IntUState A
+coupledOptimizerStep K s =
+  f4Step
+    (optimizerKernel K)
+    (optimizer s)
+    (f4GradientFromSignal (coupledSignal K s))
+
+coupledCriticStep :
+  ∀ {A : F4Scalar} →
+  FullCoupledKernel A → FullCoupledState A → SparsemaxCriticWatkinsState
+coupledCriticStep K s =
+  let x = coupledSignal K s
+      cw = criticWatkins s
+  in wholeStep (criticKernel K) (setSignals x cw)
+
+coupledGRUStep :
+  ∀ {A : F4Scalar} →
+  FullCoupledKernel A → FullCoupledState A → GRUState
+coupledGRUStep K s = gruStep (gru s) (coupledSignal K s)
+
+coupledCountStep :
+  ∀ {A : F4Scalar} →
+  FullCoupledKernel A → FullCoupledState A → LCBCountState
+coupledCountStep K s =
+  updateLCBCount (coupledPolicy K s) (lcbCounts s)
+
 fullStep :
   ∀ {A : F4Scalar} →
   FullCoupledKernel A →
   FullCoupledState A →
   FullCoupledState A
-fullStep {A} K (fullCoupledState r cw g opt norm counts qlog) =
-  let c = critic (criticWatkins cw)
-      p = scheduledSparsemaxPolicy (lcbKernel K) r counts c
-      x = signedSignal qlog
-        (int8Add
-          (policyLeftWeight p)
-          (schedulerSignal r))
-      opt' = f4Step
-        (optimizerKernel K)
-        opt
-        (f4GradientFromSignal x)
-      counts' = updateLCBCount p counts
-  in fullCoupledState
-       (suc r)
-       (wholeStep (criticKernel K) (setSignals x cw))
-       (gruStep g x)
-       opt'
-       norm
-       counts'
-       qlog
+fullStep {A} K s =
+  fullCoupledState
+    (suc (clock s))
+    (coupledCriticStep K s)
+    (coupledGRUStep K s)
+    (coupledOptimizerStep K s)
+    (norm s)
+    (coupledCountStep K s)
+    (qLogControl s)
+
+fullStep-clock :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+  clock (fullStep K s) ≡ suc (clock s)
+fullStep-clock K s = refl
+
+fullStep-critic :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+  criticWatkins (fullStep K s) ≡ coupledCriticStep K s
+fullStep-critic K s = refl
+
+fullStep-gru :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+  gru (fullStep K s) ≡ coupledGRUStep K s
+fullStep-gru K s = refl
+
+fullStep-optimizer :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+  optimizer (fullStep K s) ≡ coupledOptimizerStep K s
+fullStep-optimizer K s = refl
+
+fullStep-counts :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+  lcbCounts (fullStep K s) ≡ coupledCountStep K s
+fullStep-counts K s = refl
+
+fullStep-endogenous :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
+  fullStep K s ≡
+    fullCoupledState
+      (suc (clock s))
+      (coupledCriticStep K s)
+      (coupledGRUStep K s)
+      (coupledOptimizerStep K s)
+      (norm s)
+      (coupledCountStep K s)
+      (qLogControl s)
+fullStep-endogenous K s = refl
 
 ------------------------------------------------------------------------
 -- Aperiodicity and finite-cycle exclusion
@@ -592,45 +624,23 @@ fullCoupledNoNontrivialFiniteCycle K n cyc =
   fullCoupledAperiodicity K _ n cyc
 
 ------------------------------------------------------------------------
--- Deterministic LCB equivalence layer
+-- Deterministic equal-count LCB shift law. This is intentionally kept at
+-- the score level: policy equivalence requires an additional translation
+-- invariance theorem for the chosen finite sparsemax chart and is not
+-- silently promoted here.
 ------------------------------------------------------------------------
 
 lcbEqualCountCommonShift :
-  ∀ {A : F4Scalar}
-  (L : LCBCountKernel A)
+  ∀
+  (L : LCBCountKernel)
   (c : CriticState)
   (n : Nat) →
   lcbActionScore L (lcbCountState n n (n + n)) c ≡
   actionScore
     (int8Add
       (qLeft c)
-      (lcbNegative (encode8 L (bonus L n))))
+      (lcbNegative (bonus L n)))
     (int8Add
       (qRight c)
-      (lcbNegative (encode8 L (bonus L n))))
+      (lcbNegative (bonus L n)))
 lcbEqualCountCommonShift L c n = refl
-
-record LCBCompositionEquivalence (A : F4Scalar) : Set₁ where
-  constructor lcbCompositionEquivalence
-  field
-    policyEquivalence :
-      ∀ (L : LCBCountKernel A) (c : CriticState) (n : Nat) →
-      sparsemax2Weights
-        (lcbActionScore L (lcbCountState n n (n + n)) c) ≡
-      sparsemax2Weights (noLCBActionScore c)
-
-------------------------------------------------------------------------
--- Strong whole-composition theorem class
-------------------------------------------------------------------------
-
-record FullCoupledTheorem {A : F4Scalar} : Set₁ where
-  constructor fullCoupledTheorem
-  field
-    energy : FullCoupledState A → Nat
-    strictDecrease :
-      ∀ K s → fullStep K s ≢ s → energy (fullStep K s) < energy s
-    noFiniteCycle :
-      ∀ K {s : FullCoupledState A} n →
-      iterateFull K (suc n) s ≡ s → ⊥
-    lcbEquivalence :
-      LCBCompositionEquivalence A
