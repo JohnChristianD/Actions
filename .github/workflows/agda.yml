@@ -34,6 +34,9 @@ jobs:
       - name: Reject forbidden theorem families
         run: python3 .ci/check-forbidden-theorems.py
 
+      - name: Set up Haskell generator runtime
+        run: sudo apt-get update && sudo apt-get install -y ghc
+
       - name: Audit redundant canonical components
         run: runghc .ci/discovery/PruneRedundantComponents.hs
 
@@ -45,9 +48,6 @@ jobs:
 
       - name: Verify Agda executable and standard library
         run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
-
-      - name: Set up Haskell generator runtime
-        run: sudo apt-get update && sudo apt-get install -y ghc
 
       - name: Generate canonical learner theorem report
         run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
