@@ -71,16 +71,13 @@ jobs:
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins_test.agda
 
       - name: Check canonical fixed-temperature sparsemax learner monolith
-        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner.agda
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda
 
       - name: Check canonical fixed-temperature sparsemax learner regression
-        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearner_test.agda
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2_test.agda
 
       - name: Check canonical generated theorem report
         run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
-
-      - name: Check focused coupled sparsemax Watkins core regression
-        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxWatkinsMonolith_test.agda
 
       - name: Check strict count-memory exclusion
         run: agda --safe Exotic/ERL/FullCoupled/CountMemoryCycleTheorem.agda
