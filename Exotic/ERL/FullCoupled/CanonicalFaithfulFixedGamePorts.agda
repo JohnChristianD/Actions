@@ -38,22 +38,33 @@ record FaithfulDiscountingChainState : Set where
   field context time : Nat
 open FaithfulDiscountingChainState public
 
-discountingRewardTime : Fin 5 → Nat
-discountingRewardTime a with toℕ a
-... | zero = 1
-... | suc zero = 3
-... | suc (suc zero) = 10
-... | suc (suc (suc zero)) = 30
-... | _ = 100
+discountingRewardTime : Nat → Nat
+discountingRewardTime zero = 1
+discountingRewardTime (suc zero) = 3
+discountingRewardTime (suc (suc zero)) = 10
+discountingRewardTime (suc (suc (suc zero))) = 30
+discountingRewardTime _ = 100
 
 faithfulDiscountingChainStep : Fin 5 → FaithfulDiscountingChainState → StepResult FaithfulDiscountingChainState
-faithfulDiscountingChainStep a s with natEq (time s) (discountingRewardTime (fromℕ< (m%n<n (context s) 5)))
-... | yes = stepResult
+faithfulDiscountingChainStep a s with natEq (time s) zero
+... | yes with natEq (suc zero) (discountingRewardTime (toℕ a))
+...   | yes = stepResult
+      (int8OfNat (toℕ a))
+      (faithfulDiscountingChainState (toℕ a) (suc (time s)))
+      (int8OfNat 11)
+      no
+...   | no = stepResult
+      (int8OfNat (toℕ a))
+      (faithfulDiscountingChainState (toℕ a) (suc (time s)))
+      zero8
+      no
+... | no with natEq (suc (time s)) (discountingRewardTime (context s))
+...   | yes = stepResult
       (int8OfNat (context s))
       (faithfulDiscountingChainState (context s) (suc (time s)))
       (int8OfNat 10)
       no
-... | no = stepResult
+...   | no = stepResult
       (int8OfNat (context s))
       (faithfulDiscountingChainState (context s) (suc (time s)))
       zero8
@@ -110,7 +121,7 @@ faithfulFixedMemoryInitial : FaithfulMemoryChainState
 faithfulFixedMemoryInitial = faithfulMemoryChainState 1 1 0
 
 faithfulFixedDiscountingInitial : FaithfulDiscountingChainState
-faithfulFixedDiscountingInitial = faithfulDiscountingChainState 1 0
+faithfulFixedDiscountingInitial = faithfulDiscountingChainState 0 0
 
 faithfulFixedProjection-contract :
   FaithfulMemoryChainState × FaithfulDiscountingChainState × FaithfulKnapsackState
