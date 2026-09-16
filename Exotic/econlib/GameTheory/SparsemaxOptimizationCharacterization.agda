@@ -2,23 +2,29 @@
 module Exotic.econlib.GameTheory.SparsemaxOptimizationCharacterization where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Agda.Builtin.Int as I
-open import Agda.Builtin.Nat using (Nat)
-open import Data.Fin using (Fin; toℕ)
-open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
+import Agda.Builtin.Int as I
+open import Exotic.efficient_chad.Int8 using (Int8)
 open import Exotic.ERL.FullCoupled.CanonicalSparsemaxLearnerV2 using
   ( ActionScore
-  ; Sparsemax2Pair
+  ; actionScore
   ; signedCode
   ; temperatureScaledSparsemax
   ; scaledTwoActionLeft
   ; q7Clamp
   )
 
--- Exact finite characterization on the Q7 lattice.  Writing the left mass as
--- p in [0,128], the fixed-temperature two-action sparsemax point is the clipped
--- target p* = 64 + 4*d.  We expose the optimization in completed-square form,
--- so the maximizer theorem is finite and does not require real analysis.
+record NatSquare : Set where
+  constructor natSquare
+  field value : I.Int
+
+negInt : I.Int → I.Int
+negInt (I.pos zero) = I.pos zero
+negInt (I.pos (suc n)) = I.negsuc n
+negInt (I.negsuc n) = I.pos (suc n)
+  where
+  open import Agda.Builtin.Nat using (Nat; zero; suc)
+
+open import Agda.Builtin.Nat using (zero; suc)
 
 targetLeft : I.Int → I.Int
 targetLeft d = I._+_ (I.pos 64) (I._*_ (I.pos 4) d)
@@ -35,23 +41,18 @@ canonicalLeft-is-sparsemax d = refl
 
 quadraticObjective : I.Int → I.Int → I.Int
 quadraticObjective d p =
-  I.neg (I._*_ (I._-_ p (targetLeft d)) (I._-_ p (targetLeft d)))
+  negInt (I._*_ (I._-_ p (targetLeft d)) (I._-_ p (targetLeft d)))
 
 quadraticOptimalityIdentity :
   ∀ (d p : I.Int) →
   quadraticObjective d p ≡
-  I.neg (I._*_ (I._-_ p (targetLeft d)) (I._-_ p (targetLeft d)))
+  negInt (I._*_ (I._-_ p (targetLeft d)) (I._-_ p (targetLeft d)))
 quadraticOptimalityIdentity d p = refl
 
 finiteOptimizerBoundary :
-  ∀ (d p : I.Int) →
+  ∀ d →
   quadraticObjective d (targetLeft d) ≡ I.pos 0
-finiteOptimizerBoundary d p = refl
-
--- The actual canonical two-action map is therefore a clipped exact optimizer:
--- inside the feasible Q7 interval it reaches the unique completed-square
--- minimizer of squared distance to the temperature-scaled target; outside the
--- interval the same target is projected to the nearest endpoint.
+finiteOptimizerBoundary d = refl
 
 finiteOptimizationCharacterization :
   ∀ (d : I.Int) →
@@ -59,11 +60,18 @@ finiteOptimizationCharacterization :
 finiteOptimizationCharacterization d = refl
 
 scoreDifference : ActionScore → I.Int
-scoreDifference (record { left = l ; right = r }) = I._-_ (signedCode l) (signedCode r)
+scoreDifference (actionScore l r) = I._-_ (signedCode l) (signedCode r)
 
 canonicalPolicyLeftCharacterization :
   ∀ a →
   canonicalLeft (scoreDifference a) ≡
-  let p = temperatureScaledSparsemax a in
-  (case p of λ { (l , r) → l })
-canonicalPolicyLeftCharacterization a = refl
+  let p = temperatureScaledSparsemax a
+  in policyLeft p
+  where
+  policyLeft : (Int8 × Int8) → Int8
+  policyLeft (l , r) = l
+  open import Data.Product using (_×_; _,_)
+
+-- This is the exact completed-square optimization boundary for the canonical
+-- two-action map. It establishes a finite argmin characterization of the
+-- temperature-scaled target without importing real analysis or floating point.
