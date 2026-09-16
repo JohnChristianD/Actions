@@ -54,7 +54,7 @@
 - [x] Regression-import the canonical monolith and assert the fixed-temperature, q-log, Mobius, persistence, policy-separation, clock, count, aperiodicity, and cycle theorems.
 - [x] Require all unconditional theorem symbols from the generator.
 - [x] Reject holes and postulates before Agda type checking.
-- [x] Run both canonical source and regression through `agda --safe`.
+- [x] Run both canonical source and regression through `agda --safe` in the workflow definition.
 
 ### Task 4: Documentation
 
@@ -66,6 +66,6 @@
 
 ### Task 5: Final acceptance
 
-- [ ] Fresh GitHub Actions canonical learner gate passes.
+- [ ] Fresh GitHub Actions canonical learner gate passes. Current run: `35065377146` (in progress at `Check self-contained canonical learner`).
 - [ ] Generated theorem report is produced from the exact canonical source and passes `agda --safe`.
-- [ ] No hole/postulate scanner failure occurs.
+- [x] No hole/postulate scanner failure occurred before the Agda step on the current run.
