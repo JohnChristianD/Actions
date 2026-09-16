@@ -331,6 +331,58 @@ walshHadamardApply (a , (b , (c , d))) =
 Int8WalshVec4 : Set
 Int8WalshVec4 = Int8 × (Int8 × (Int8 × Int8))
 
+Int8Vec4 : Set
+Int8Vec4 = Int8 × (Int8 × (Int8 × Int8))
+
+h4Row0 : Int8Vec4
+h4Row0 = int8OfNat 1 , (int8OfNat 1 , (int8OfNat 1 , int8OfNat 1))
+
+h4Row1 : Int8Vec4
+h4Row1 = int8OfNat 1 , (int8OfNat 255 , (int8OfNat 1 , int8OfNat 255))
+
+h4Row2 : Int8Vec4
+h4Row2 = int8OfNat 1 , (int8OfNat 1 , (int8OfNat 255 , int8OfNat 255))
+
+h4Row3 : Int8Vec4
+h4Row3 = int8OfNat 1 , (int8OfNat 255 , (int8OfNat 255 , int8OfNat 1))
+
+int8Dot4 : Int8Vec4 → Int8Vec4 → Int8
+int8Dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
+  int8Add
+    (int8Add (int8Mul a e) (int8Mul b f))
+    (int8Add (int8Mul c g) (int8Mul d h))
+
+walshHadamardOrthogonality4 :
+  int8Dot4 h4Row0 h4Row0 ≡ int8OfNat 4 ×
+  int8Dot4 h4Row0 h4Row1 ≡ zero8 ×
+  int8Dot4 h4Row0 h4Row2 ≡ zero8 ×
+  int8Dot4 h4Row0 h4Row3 ≡ zero8 ×
+  int8Dot4 h4Row1 h4Row0 ≡ zero8 ×
+  int8Dot4 h4Row1 h4Row1 ≡ int8OfNat 4 ×
+  int8Dot4 h4Row1 h4Row2 ≡ zero8 ×
+  int8Dot4 h4Row1 h4Row3 ≡ zero8 ×
+  int8Dot4 h4Row2 h4Row0 ≡ zero8 ×
+  int8Dot4 h4Row2 h4Row1 ≡ zero8 ×
+  int8Dot4 h4Row2 h4Row2 ≡ int8OfNat 4 ×
+  int8Dot4 h4Row2 h4Row3 ≡ zero8 ×
+  int8Dot4 h4Row3 h4Row0 ≡ zero8 ×
+  int8Dot4 h4Row3 h4Row1 ≡ zero8 ×
+  int8Dot4 h4Row3 h4Row2 ≡ zero8 ×
+  int8Dot4 h4Row3 h4Row3 ≡ int8OfNat 4
+walshHadamardOrthogonality4 =
+  refl , (refl , (refl , (refl , (refl , (refl , (refl , (refl ,
+  (refl , (refl , (refl , (refl , (refl , (refl , (refl , refl)))))))))))))))
+
+data PowerOfFour : Nat → Set where
+  powerOfFour-one : PowerOfFour 1
+  powerOfFour-step : ∀ {d} → PowerOfFour d → PowerOfFour (d * 4)
+
+canonicalWalshWidth : Nat
+canonicalWalshWidth = 4
+
+canonicalWalshWidth-power4 : PowerOfFour canonicalWalshWidth
+canonicalWalshWidth-power4 = powerOfFour-step powerOfFour-one
+
 record GRUMatrices : Set where
   constructor gruMatrices
   field matrixZ matrixR matrixH : Int8
@@ -497,6 +549,12 @@ gruPersistentQuotientCoordinateCount = 8
 
 gruCriticWH8PersistentQuotientCoordinateCount : Nat
 gruCriticWH8PersistentQuotientCoordinateCount = 14
+
+fullLearnerInt8CoordinateCount : Nat
+fullLearnerInt8CoordinateCount = 23
+
+fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 23
+fullLearnerInt8CoordinateCount-law = refl
 
 gruCriticWH8CoordinateCount-law : gruCriticWH8CoordinateCount ≡ 15
 gruCriticWH8CoordinateCount-law = refl
@@ -713,7 +771,7 @@ canonicalFullStep K s =
   (canonicalQLogStep K s)
 
 canonicalFullStep-clock : ∀ K s → clock (canonicalFullStep K s) ≡ suc (clock s)
-canonicalFullStep-clock K s = trans refl (cong suc (plus-zero (clock s)))
+canonicalFullStep-clock K s = refl
 
 canonicalFullStep-watkins : ∀ K s → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
