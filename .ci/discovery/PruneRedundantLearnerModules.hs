@@ -2,11 +2,10 @@ module Main where
 
 import Control.Monad (forM_)
 import Data.List (isInfixOf, sort)
-import System.Directory (doesFileExist, listDirectory)
+import System.Directory (doesFileExist)
 import System.Environment (getArgs)
 import System.Exit (exitFailure, exitSuccess)
-import System.FilePath ((</>))
-import System.Process (callProcess)
+import System.Process (callProcess, readProcess)
 
 canonical :: FilePath
 canonical = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
@@ -40,40 +39,29 @@ moduleName p = map slashToDot (stripAgda p)
   slashToDot '/' = '.'
   slashToDot c = c
 
-allTextFiles :: FilePath -> IO [FilePath]
-allTextFiles dir = do
-  entries <- listDirectory dir
-  fmap concat $ mapM visit entries
-  where
-  visit name = do
-    let path = dir </> name
-    if name == ".git" || (dir == ".ci" && name == "external")
-      then pure []
-      else do
-        exists <- doesFileExist path
-        if exists
-          then pure [path]
-          else pure []
+trackedAgdaFiles :: IO [FilePath]
+trackedAgdaFiles = do
+  raw <- readProcess "git" ["ls-files", "*.agda"] ""
+  pure (filter (/= canonical) (lines raw))
 
 containsImport :: String -> String -> Bool
-containsImport modName txt =
-  any (matches . words) (lines txt)
+containsImport modName txt = any matches (lines txt)
   where
-  matches ws =
-    case ws of
+  matches line =
+    case words line of
       ("import" : m : _) -> m == modName
       ("open" : "import" : m : _) -> m == modName
       _ -> False
 
 usersOf :: String -> IO [FilePath]
 usersOf modName = do
-  files <- allTextFiles "."
-  hits <- fmap concat $ mapM (inspect modName) files
+  files <- trackedAgdaFiles
+  hits <- fmap concat $ mapM inspect files
   pure (sort hits)
   where
-  inspect m p = do
-    txt <- readFile p
-    pure [p | p /= canonical && p /= "./" ++ canonical && containsImport m txt]
+  inspect path = do
+    txt <- readFile path
+    pure [path | containsImport modName txt]
 
 prunable :: FilePath -> IO Bool
 prunable path = do
@@ -103,4 +91,4 @@ main = do
         else do
           putStrLn "prune-mode=dry-run"
           putStrLn "pass --apply to delete only candidates with zero repository-local import users"
-          if null safe then exitSuccess else exitSuccess
+          exitSuccess
