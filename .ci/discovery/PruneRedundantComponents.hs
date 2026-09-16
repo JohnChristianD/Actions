@@ -20,26 +20,30 @@ retiredPaths =
   , "Exotic/ERL/FullCoupled/SharedActorCritic.agda"
   , "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem.agda"
   , "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem_test.agda"
+  , "Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition.agda"
+  , "Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition_test.agda"
+  , "Exotic/ERL/FullCoupled/ConnectedGRUSemidirectQSA.agda"
+  , "Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda"
+  , "Exotic/ERL/FullCoupled/Int8SparsemaxLiteral.agda"
   , "Exotic/econlib/RockPaperScissors.agda"
   , "Exotic/econlib/RockPaperScissors_test.agda"
   ]
 
 canonicalSymbols :: [(String, [String])]
 canonicalSymbols =
-  [ ("q-log", ["finiteQLog8", "negativeFiniteQLog8", "negativeAlpha8", "canonicalQLogControl", "qLogSignal", "canonicalQLogStep"])
+  [ ("q-log", ["finiteQLog8", "negativeFiniteQLog8", "negativeAlpha8", "canonicalQLogControlStep", "endogenousNegativeScale8", "canonicalQLogStep"])
   , ("action-selection", ["temperatureScaledSparsemax", "scheduledActionScore", "canonicalPolicy", "updateLCBCount"])
   , ("learned-attention", ["LearnedSparsemaxAttention", "learnedSparsemaxAttentionWeights", "canonicalAttentionStep"])
-  , ("walsh-hadamard", ["walshHadamardApply", "walshOrthonormal", "walshNormPreservation"])
-  , ("recurrent-nonlinearity", ["quadraticActivation", "hardSign", "gruInputSeparation", "gruParametersPersistent"])
+  , ("walsh-hadamard", ["walshHadamardApply", "walshOrthonormal"])
+  , ("recurrent-nonlinearity", ["mobiusRatio8", "hardSignCode"])
   , ("canonical-gru-composition", ["canonicalGRUStep", "canonicalPersistentGRUPreservation"])
   , ("optimizer", ["F4IntUState", "F4IntUKernel", "f4ThetaStep", "f4ParameterInvariant"])
-  , ("whole-step", ["canonicalFullStep", "canonicalFullStep-clock", "canonicalFullStep-critic", "canonicalFullStep-attention", "canonicalFullStep-gru", "canonicalFullStep-optimizer", "canonicalFullStep-counts", "canonicalFullStep-qLog"])
+  , ("whole-step", ["canonicalFullStep", "canonicalFullStep-clock", "canonicalFullStep-critic", "canonicalFullStep-attention", "canonicalFullStep-gru", "canonicalFullStep-optimizer", "canonicalFullStep-counts", "canonicalFullStep-qLog", "canonicalFullStep-qLogControl"])
   ]
 
 legacyTokens :: [String]
 legacyTokens =
-  [ "signReLU"
-  , "softsign"
+  [ "softsign"
   , "haarApply"
   , "haarRow0"
   , "haarRow1"
@@ -99,8 +103,10 @@ ownerAllowed path =
   path == canonical
     || path == "Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda"
     || path == "Exotic/ERL/FullCoupled/DyadicGRU.agda"
-    || path == "Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda"
+    || path == "Exotic/ERL/FullCoupled/MobiusRational.agda"
+    || path == "Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda"
     || path == "Exotic/ERL/FullCoupled/MobiusGroup.agda"
+    || path == "Exotic/ERL/FullCoupled/MobiusSemidirectCycleComposition.agda"
     || path == "Exotic/ERL/FullCoupled/Int8StabilityComposition.agda"
 
 main :: IO ()
