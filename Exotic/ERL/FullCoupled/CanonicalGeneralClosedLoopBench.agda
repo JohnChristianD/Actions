@@ -43,17 +43,18 @@ runAux spec K zero learner env total steps =
   benchMetrics total (referenceReturn spec ∸ total) (success spec env) steps
 runAux spec K (suc n) learner env total steps with L.policyA K learner
 ... | a with step (environment spec) a env
-...   | P.stepResult observation env' reward done with done
-...     | enabled = benchMetrics
-          (total + toℕ (P.code reward))
-          (referenceReturn spec ∸ (total + toℕ (P.code reward)))
-          (success spec env')
-          (suc steps)
-    ...     | disabled = runAux spec K n
-          (L.generalLearnerStep K learner reward)
-          env'
-          (total + toℕ (P.code reward))
-          (suc steps)
+...   | P.stepResult observation env' reward P.enabled =
+      benchMetrics
+        (total + toℕ (P.code reward))
+        (referenceReturn spec ∸ (total + toℕ (P.code reward)))
+        (success spec env')
+        (suc steps)
+...   | P.stepResult observation env' reward P.disabled =
+      runAux spec K n
+        (L.generalLearnerStep K learner reward)
+        env'
+        (total + toℕ (P.code reward))
+        (suc steps)
 
 runPlain : ∀ {S : Set} {N : Nat} → GeneralBenchSpec N S → BenchMetrics
 runPlain spec = runAux spec
