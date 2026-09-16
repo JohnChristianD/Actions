@@ -63,7 +63,8 @@ plus-suc-not-self m n eq =
   lt-irrefl m (subst (λ z → m < z) eq (plus-suc-lt m n))
 
 suc-suc-lt : ∀ n → n < suc (suc n)
-suc-suc-lt n = s≤s (s≤s (le-refl n))
+suc-suc-lt zero = s≤s z≤n
+suc-suc-lt (suc n) = s≤s (suc-suc-lt n)
 
 suc-suc-not-self : ∀ n → suc (suc n) ≢ n
 suc-suc-not-self n eq =
