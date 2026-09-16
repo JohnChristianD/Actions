@@ -44,10 +44,10 @@ jobs:
         run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
 
       - name: Check self-contained canonical learner
-        run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
 
       - name: Check canonical learner regression
-        run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
 
       - name: Set up Haskell generator runtime
         run: sudo apt-get update && sudo apt-get install -y ghc
@@ -59,4 +59,4 @@ jobs:
         run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
 
       - name: Check generated theorem report
-        run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
+        run: timeout 60s agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
