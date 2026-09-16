@@ -37,6 +37,33 @@ check-persistence : ∀ (s : GRUState) (x : Int8) →
   persistentGRU (gruStep s x) ≡ persistentGRU s
 check-persistence = persistent-preservation
 
+check-gru-equivalence : ∀ (s : GRUState) → GRUEquivalent s s
+check-gru-equivalence = gruEquivalent-refl
+
+check-gru-equivalence-respect : ∀ (s t : GRUState) (x : Int8) →
+  GRUEquivalent s t → GRUEquivalent (gruStep s x) (gruStep t x)
+check-gru-equivalence-respect = gruStep-respects-equivalence
+
+check-gru-scan : ∀ x y z s →
+  runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y))
+    (inputGRUAction z)) s ≡
+  runGRU (composeGRUAction (inputGRUAction x)
+    (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
+check-gru-scan = gruInputActionAssociativity
+
+check-mobius-scan : ∀ x y z q →
+  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
+      (mobiusActivationAction z)) q ≡
+  run (composeAction (mobiusActivationAction x)
+      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
+check-mobius-scan = gruMobiusAssociativeScan
+
+check-pure-int8-count : gruCriticWH8CoordinateCount ≡ 15
+check-pure-int8-count = gruCriticWH8CoordinateCount-law
+
+check-quotient-count : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
+check-quotient-count = gruCriticWH8PersistentQuotientCoordinateCount-law
+
 check-policy-separation :
   ∀ (K : FullLearnerKernel) (s : FullLearnerState) (a : LearnedSparsemaxAttention) →
   canonicalPolicy K (replaceAttention s a) ≡ canonicalPolicy K s
@@ -46,6 +73,13 @@ check-canonical-persistence :
   ∀ (K : FullLearnerKernel) (s : FullLearnerState) →
   persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 check-canonical-persistence = canonicalPersistentGRUPreservation
+
+check-hard-sparsity-composition :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState)
+    (n : NormPair) (o : F4IntUState) →
+  HardSparseLeft (canonicalPolicy K s) →
+  HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
+check-hard-sparsity-composition = hardSparse-composition-normPair-F4-L2
 
 check-clock :
   ∀ (K : FullLearnerKernel) (s : FullLearnerState) →
