@@ -91,8 +91,8 @@ walshHadamardApply : IntVec4 → WalshVec4
 walshHadamardApply (a , (b , (c , d))) =
   halfInt (I._+_ (I._+_ a b) (I._+_ c d)) ,
   (halfInt (I._+_ (I._-_ a b) (I._-_ c d)) ,
-    (halfInt (I._+_ (I._-_ a b) (I._-_ c d)) ,
-      halfInt (I._+_ (I._-_ a b) (I._-_ c d))))
+    (halfInt (I._+_ (I._+_ a b) (I._+_ (I.negsuc 0) (I._+_ c d))) ,
+      halfInt (I._+_ (I._-_ a b) (I._+_ (I._*_ (I.negsuc 0) c) d))))
 
 walshDimension : Nat
 walshDimension = 4
