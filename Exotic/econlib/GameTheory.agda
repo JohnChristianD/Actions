@@ -2,7 +2,7 @@
 
 module Exotic.econlib.GameTheory where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Nat using (_≤_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
@@ -21,8 +21,8 @@ int8OfNat n = int8 (fromℕ< (m%n<n n 256))
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x =
-  let b = toℕ (code x) in
-  trans (toℕ-fromℕ< (m%n<n b 256)) (m<n⇒m%n≡m (toℕ<n b))
+  trans (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
+    (m<n⇒m%n≡m (toℕ<n (code x)))
 
 data Action : Set where
   cooperate : Action
