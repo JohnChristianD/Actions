@@ -20,8 +20,8 @@ No environment, reward process, replay buffer, probability space, posterior samp
 6. No holes, postulates, wildcard proof terms, or hidden theorem premises.
 7. Derive unconditional facts by definitional equality, contradiction, negation, substitution, or induction over existing finite/Nat structure.
 8. Do not silently promote finite constructors into real-analysis theorems.
-9. Do not describe the current Walsh code as fully orthonormal unless the exact matrix law has actually been proved.
-10. Treat the imports below as the convenience proof surface to minimize only after proving replacements compile.
+9. The current Walsh theorem surface must distinguish exact unnormalized Int8 orthogonality from normalized orthonormality.
+10. Keep the direct import set convenience-minimal; remove an import only after replacing every actually used symbol and re-running the same `--safe` regression surface.
 
 ## `d` and the Walsh-Hadamard constraint
 
@@ -40,9 +40,13 @@ There is, however, an important representation distinction:
 - `2^(-k)` is not an internal inverse of `2` in the modular carrier `Z/256Z`, so exact normalized orthonormality cannot be claimed merely by saying the width is a power of four;
 - exact normalized orthonormality requires an explicit dyadic/rational representation and a corresponding inner-product proof, while an Int8 implementation can still use the integer Hadamard transform plus an explicitly represented normalization boundary.
 
-The current monolith's `HalfInt` stores a natural numerator only, and its current `walshOrthonormal` theorem proves the diagonal self-dot values `4,2,2,2` for the present rows. It does not prove `H4 H4^T = 4I`, and it does not establish a normalized orthonormality theorem over the Int8 modular carrier.
+The current source now contains exact Int8 H4 Gram laws in `walshHadamardOrthogonality4`, represented by `H4GramLaw`: diagonal products are `4` and all off-diagonal products are `0` modulo `256`. This is the exact unnormalized relation `H4 H4^T = 4 I` in the Int8 carrier.
 
-The current four-coordinate mixing block is width `4 = 4^1`. Do not infer a general `d = 4^k` implementation from the scalar GRU state merely by notation. A true variable-width implementation must vectorize the hidden carrier and define the corresponding Hadamard layer.
+That theorem is **orthogonality, not normalized orthonormality**. Normalization still needs a represented factor of `1/2`, which does not exist as multiplication by a modular inverse in `Z/256Z`.
+
+The current four-coordinate mixing block is width `4 = 4^1`. `PowerOfFour` and `canonicalWalshWidth-power4` make the current width constraint explicit. A true variable-width implementation must vectorize the hidden carrier and define the corresponding Hadamard layer rather than inferring it from the scalar state by notation alone.
+
+The older `walshOrthonormal` theorem is retained because it is part of the existing source surface, but it proves only the diagonal self-dot values `4,2,2,2` for the natural-number row encoding.
 
 ## Exact state-size accounting
 
@@ -117,8 +121,8 @@ At the carrier level the canonical file uses only:
 - `Nat` with `zero`, `suc`, addition, multiplication, truncated subtraction, and the finite less-than tests needed by the definitions;
 - `Fin 256` and conversion to/from bounded naturals;
 - equality, disequality, substitution, symmetry, congruence, transitivity, and `⊥` for contradiction;
-- products for finite tuples and records;
-- ordinary total functions between the state carriers.
+- products and records for finite tuples;
+- ordinary total functions between state carriers.
 
 The modular Int8 operations are computationally induced by reduction modulo `256`, so the carrier can be identified mathematically with `Z/256Z`. But the maintained theorem surface does not require a declared ring, semiring, field, module, vector space, lattice, metric space, or normed space.
 
@@ -140,11 +144,18 @@ For the **current source as written**, yes. The direct imports are standard-libr
 
 `Relation.Binary.PropositionalEquality`, `Data.Nat`, `Data.Fin`, `Data.Fin.Properties`, `Data.Nat.DivMod`, `Data.Product`, and `Data.Empty`.
 
-The current definitions use those modules directly, so a replication of the current file needs the standard library. The CI currently verifies against Agda `2.8.0` and stdlib `2.4`.
+Every imported symbol is used by the current canonical source. Removing any of those direct module imports without first replacing the corresponding symbols would break the current executable theorem surface.
 
-For a mathematically minimal implementation, no: the model can be rebuilt using only Agda built-ins plus small local replacements for finite naturals, `Fin`, modulo, products, and the few equality/contradiction lemmas actually needed. That would be a source refactor, not a different theorem assumption.
+At the same time, the imported *module closures* are broader than the actual algebra required. The source does not require the standard library's large ring/lattice/metric hierarchy as a theorem foundation. A no-stdlib mathematical reconstruction is possible with Agda built-ins plus local definitions for bounded naturals, finite carriers, modulo normalization, products, and the small equality/contradiction lemmas used here. That would be a source refactor, not a new assumption.
 
-The current imports are therefore **not minimally exclusive at module-closure level**. CI's import trace shows broad transitive closure through algebra, lattice, relation, function-metric, induction, and related infrastructure even though the canonical file does not use those abstractions as theorem assumptions. The current imports are convenience-oriented, not minimal.
+Thus the answer is:
+
+- current replication: **yes, stdlib is required**;
+- mathematical minimum: **no, stdlib is not logically required**;
+- current direct import surface: **convenience-minimal by symbol usage**;
+- transitive library closure: **not minimal**.
+
+The replication prompt therefore keeps the seven direct imports instead of pretending that their transitive closure is algebraically necessary.
 
 ## Watkins + sparsemax + LCB
 
@@ -176,7 +187,7 @@ if the current canonical policy is already `HardSparseLeft`, replacing the NormP
 
 This is the maximum unconditional statement available from the current definitions. It is a **local structural invariance theorem**. It is not a trajectory-wide lower/upper bound on a sparsity ratio, not an analytic L1/path penalty theorem, and not a guarantee that arbitrary Watkins/LCB evolution never crosses a sparsemax boundary.
 
-The current source also does not contain a theorem that every arbitrary state can be approximated while remaining in a hard-sparse class. Such a result would require an explicit metric, approximation relation, parameterization completeness theorem, and preservation theorem for that approximation relation.
+The source does not define a metric or approximation relation on the complete state and does not define a universal parameterization theorem for arbitrary targets. Consequently there is no valid unconditional theorem saying that the maximum-weight hard-sparse class can approximate every state. For the present two-action hard-sparse witnesses, the active support is exactly one of two coordinates and its finite weight is exactly `128`, so the support is one-out-of-two. Turning that observation into an approximation ratio for arbitrary states would require a separately defined target metric.
 
 ## What arbitrary functions are actually representable?
 
@@ -235,17 +246,17 @@ These correspondences do not establish equivalence to a standard GRU, Mamba, SSM
 
 ## Branch and module pruning policy
 
-The canonical branch is `agda-theorem-first-monolith-20260916`. The currently enumerated remote branches do not contain branch names matching `Noisy Nets`, `OpenES`, or `MR15`; no such remote refs are present in the current branch inventory. They therefore have no active branch head to preserve in the canonical replication surface.
+The canonical branch is `agda-theorem-first-monolith-20260916`. The current remote branch inventory contains no active branch refs named or matching `Noisy Nets`, `OpenES`, or `MR15`; searches for those names also returned no current repository result. Consequently there is no active ref of those exact names for the connector to delete. They are absent from the canonical branch surface.
 
-The redundancy audit is `.ci/discovery/PruneRedundantLearnerModules.hs`. Its default mode is dry-run and `--apply` removes only modules with zero repository-local import users. Keep the canonical Agda monolith and the regression/test/generator surfaces synchronized with any future pruning.
+The redundancy audit is `.ci/discovery/PruneRedundantLearnerModules.hs`. Its default mode is dry-run and `--apply` removes only modules with zero repository-local import users. The current canonical surface intentionally keeps only the self-contained Agda monolith, its regression test, the theorem generator, the forbidden-family checker, and the redundancy audit as active proof/CI infrastructure.
 
 ## CI and acceptance
 
 The current workflow installs Agda `2.8.0` and stdlib `2.4`, rejects forbidden theorem families/holes/postulates first, then type-checks the canonical learner before regression, generation, and redundancy steps.
 
-The latest recorded gate for commit `d270eb0772b83215b1e54111eadcfc2ad334c1c7` failed at `canonicalFullStep-clock`: the proof used `plus-zero` in a place where the target was already definitionally reflexive. The source currently has the more direct target around `clockAfter`, but the gate must be rerun against the exact commit after fixing `canonicalFullStep-clock` itself.
+Commit `83a2d178dc848df5496da67b206e3ab59bf73c2e` passed the forbidden-family scan and Agda setup but failed to parse the first nested proof term for the new H4 theorem. That syntax has now been replaced by the `H4GramLaw` record on the current head `066ba7bb00525ee7539178c3e3c634e18b9744a3`, together with regression/generator requirements for the H4 law, the power-of-four width, and the full 23-coordinate Int8 count.
 
-Therefore the replication status must not be described as green until a fresh gate type-checks the canonical source and then completes regression, generation, redundancy, and generated-report validation.
+The fresh gate for `066ba7bb00525ee7539178c3e3c634e18b9744a3` is currently in progress. Until it completes, this replication prompt must not describe the branch as green.
 
 ## Maintained negative claims
 
@@ -257,11 +268,11 @@ The canonical surface does not establish:
 - posterior-sampling equivalence;
 - regret or global optimality;
 - Nash/Pareto/minimax equivalence;
-- full H4 orthogonality for the current Walsh rows;
+- normalized orthonormality inside modular Int8;
 - a continuous-real rational-division implementation;
 - a global analytic L1/path norm theorem;
 - arbitrary-function universal approximation over unrestricted domains;
 - CNN log-pyramid equivalence;
 - trajectory-wide hard-sparsity preservation without an explicit boundary-invariance premise.
 
-The strongest theorem-first replication prompt is therefore: preserve the exact finite executable definitions, prove only what follows by deduction from them, keep the algebra at the endomorphism-composition level rather than importing ring assumptions, and make every stronger claim conditional on a new explicit representation theorem rather than smuggling in an outside assumption.
+The strongest theorem-first replication prompt is therefore: preserve the exact finite executable definitions, prove only what follows by deduction from them, keep the algebra at the endomorphism-composition level rather than importing ring assumptions, constrain generalized Walsh widths to `4^k`, represent normalization explicitly outside the modular inverse limitation, and make every stronger claim conditional on a new explicit representation theorem rather than smuggling in an outside assumption.
