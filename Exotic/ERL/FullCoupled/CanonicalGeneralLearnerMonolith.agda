@@ -59,7 +59,8 @@ plus-suc-lt zero n = s≤s z≤n
 plus-suc-lt (suc m) n = s≤s (plus-suc-lt m n)
 
 plus-suc-not-self : ∀ m n → m + suc n ≢ m
-plus-suc-not-self m n eq = lt-irrefl m (subst (λ z → m < z) eq (plus-suc-lt m n))
+plus-suc-not-self m n eq = lt-irrefl m
+  (subst (λ z → m < z) eq (plus-suc-lt m n))
 
 BoolLike : Set
 data BoolLike where
@@ -139,10 +140,13 @@ zeroAttention {A} = learnedAttention (λ _ → zero8)
 attentionSignal : ∀ {A : Nat} → LearnedAttention A → Fin A → Int8
 attentionSignal a i = parameter a i
 
-attentionStep : ∀ {A : Nat} → LearnedAttention A → Fin A → Int8 → LearnedAttention A
-attentionStep a i r = learnedAttention (λ j with finEq j i
+attentionUpdate : ∀ {A : Nat} → LearnedAttention A → Fin A → Int8 → Fin A → Int8
+attentionUpdate a i r j with finEq j i
 ... | enabled = int8Add (parameter a j) r
-... | disabled = parameter a j)
+... | disabled = parameter a j
+
+attentionStep : ∀ {A : Nat} → LearnedAttention A → Fin A → Int8 → LearnedAttention A
+attentionStep a i r = learnedAttention (attentionUpdate a i r)
 
 record GRUState : Set where
   constructor gruState
@@ -157,12 +161,8 @@ hardGate8 x with toℕ (code x) <ᵇ 128
 ... | true = zero8
 ... | false = one8
 
-mobiusActivation8 : Int8 → FiniteRational
-mobiusActivation8 x = finiteRational 1 (toℕ (code x)) (suc (256 ∸ toℕ (code x)))
-
 mobiusCode8 : Int8 → Int8
-mobiusCode8 x with mobiusActivation8 x
-... | finiteRational s n d = int8OfNat (n + d)
+mobiusCode8 x = int8OfNat (toℕ (code x) + suc (256 ∸ toℕ (code x)))
 
 gruCandidate : Int8 → Int8 → Int8
 gruCandidate h x = int8Add h x
@@ -251,7 +251,7 @@ sparsemaxDecision-law : ∀ {A : Nat} (f : Fin (suc A) → Int8) →
 sparsemaxDecision-law f = refl
 
 oneHotWeight : ∀ {A : Nat} → Fin A → Fin A → Int8
-oneHotWeight a i with finEq a i
+oneHotWeight a i with finEq i a
 ... | enabled = int8OfNat 128
 ... | disabled = zero8
 
@@ -264,10 +264,7 @@ record MunchausenMode : Set where
 munchausenReward : MunchausenMode → Int8 → FiniteRational → Int8
 munchausenReward noMunchausen r q = r
 munchausenReward useMunchausen r (finiteRational s n d) =
-  int8Add r (int8Mul (int8OfNat 16) (lcbNegate (int8OfNat n)))
-  where
-    lcbNegate : Int8 → Int8
-    lcbNegate x = int8OfNat (256 ∸ toℕ (code x))
+  int8Add r (int8Mul (int8OfNat 16) (int8Neg (int8OfNat n)))
 
 record GeneralLearnerState (A : Nat) : Set where
   constructor generalLearnerState
@@ -285,21 +282,19 @@ open GeneralLearnerState public
 
 record GeneralLearnerKernel (A : Nat) : Set₁ where
   constructor generalLearnerKernel
-  field
-    mode : MunchausenMode
-    optimizerKernel : F4IntUKernel
+  field mode : MunchausenMode
+        optimizerKernel : F4IntUKernel
 open GeneralLearnerKernel public
 
 policyA : ∀ {A : Nat} → GeneralLearnerKernel A → GeneralLearnerState A → Fin A
 policyA {zero} K s = lastAction s
-policyA {suc A} K s =
-  sparsemaxDecisionA (λ i → scoreA (qValues s) (counts s) (attention s) i)
+policyA {suc A} K s = sparsemaxDecisionA
+  (λ i → scoreA (qValues s) (counts s) (attention s) i)
 
-learnerSignal : ∀ {A : Nat} → GeneralLearnerKernel A → GeneralLearnerState A → Fin A → Int8 → Int8
-learnerSignal K s a r =
-  munchausenReward (mode K)
-    r
-    (finiteQLog8 (oneHotWeight a a))
+learnerSignal : ∀ {A : Nat} → GeneralLearnerKernel A →
+  GeneralLearnerState A → Fin A → Int8 → Int8
+learnerSignal K s a r = munchausenReward (mode K) r
+  (finiteQLog8 (oneHotWeight a a))
 
 generalLearnerStep : ∀ {A : Nat} →
   GeneralLearnerKernel A → GeneralLearnerState A → Int8 → GeneralLearnerState A
@@ -313,12 +308,7 @@ generalLearnerStep K s r with policyA K s
     (suc (clock s))
     (updateQ (qValues s) a signal)
     (updateCount (counts s) a)
-    att'
-    gru'
-    opt'
-    (norm s)
-    signal
-    a
+    att' gru' opt' (norm s) signal a
 
 generalLearnerStep-clock : ∀ {A : Nat} K s r →
   clock (generalLearnerStep K s r) ≡ suc (clock s)
@@ -340,7 +330,8 @@ generalIterate K (suc n) s r = generalLearnerStep K (generalIterate K n s r) r
 generalClockAfter : ∀ {A : Nat} K n s r →
   clock (generalIterate K n s r) ≡ clock s + n
 generalClockAfter K zero s r = plus-zero (clock s)
-generalClockAfter K (suc n) s r = trans (cong suc (generalClockAfter K n s r))
+generalClockAfter K (suc n) s r = trans
+  (cong suc (generalClockAfter K n s r))
   (sym (plus-suc (clock s) n))
 
 generalAperiodic : ∀ {A : Nat} K s n r →
@@ -355,8 +346,7 @@ defaultActionArity-law : defaultActionArity ≡ 64
 defaultActionArity-law = refl
 
 fullCompositionInvariant : ∀ {A : Nat} K s r →
-  normPairPlusOne (norm (generalLearnerStep K s r)) ≡
-  normPairPlusOne (norm s)
+  normPairPlusOne (norm (generalLearnerStep K s r)) ≡ normPairPlusOne (norm s)
 fullCompositionInvariant K s r = refl
 
 gruPersistenceInFullComposition : ∀ {A : Nat} K s r →
