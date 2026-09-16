@@ -15,10 +15,8 @@ open LoopResult public
 
 record BenchEnv (A : Nat) (S : Set) : Set where
   constructor benchEnv
-  field actionSpace initial reference step :
-    -- actionSpace is typed separately below so the record remains explicit.
-    L.ActionSpace A
-  field initialState : S
+  field actionSpace : L.ActionSpace A
+        initialState : S
         referenceReturn : Nat
         stepEnv : Fin A → S → P.StepResult S
 open BenchEnv public
