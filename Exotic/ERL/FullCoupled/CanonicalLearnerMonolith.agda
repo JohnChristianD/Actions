@@ -577,7 +577,7 @@ fullLearnerInt8CoordinateCount-law = refl
 gruCriticWH8CoordinateCount-law : gruCriticWH8CoordinateCount ≡ 15
 gruCriticWH8CoordinateCount-law = refl
 
-gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
+gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCount ≡ 14
 gruCriticWH8PersistentQuotientCoordinateCount-law = refl
 
 record GRUCriticWH8State : Set where
@@ -631,7 +631,7 @@ normPairWeight n = int8Add (l1 n) (path n)
 normPairWeightPlusOne : NormPair → Int8
 normPairWeightPlusOne n = int8Add one8 (normPairWeight n)
 
-record FullLearnerState : Set where
+record FullLearnerState : Set₁ where
   constructor fullLearnerState
   field
     clock : Nat
@@ -824,7 +824,8 @@ canonicalStep-not-fixed K s eq =
   plus-suc-not-self (clock s) zero
     (trans (plus-suc (clock s) zero)
       (trans (cong suc (plus-zero (clock s)))
-        (trans (sym (canonicalFullStep-clock K s)) (cong clock eq))))
+        (trans (sym (canonicalFullStep-clock K s))
+          (cong (λ t → clock t) eq))))
 
 canonicalTotalCountStep : ∀ K s → totalCount (canonicalFullStep K s) ≡ suc (totalCount s)
 canonicalTotalCountStep K s = refl
