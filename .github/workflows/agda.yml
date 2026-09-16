@@ -49,6 +49,21 @@ jobs:
       - name: Check canonical learner regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
 
+      - name: Check finite environment ports
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalGamePorts.agda
+
+      - name: Check finite parameter completeness
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda
+
+      - name: Check CNN log-pyramid preservation
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda
+
+      - name: Check GameTheory port
+        run: timeout 90s agda --safe Exotic/econlib/GameTheory.agda
+
+      - name: Check learner game execution regression
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
+
       - name: Set up Haskell generator runtime
         run: sudo apt-get update && sudo apt-get install -y ghc
 
