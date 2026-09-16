@@ -81,7 +81,7 @@ The signed Q7 semantic carrier has values `-128 ... 127`, so raw Int8 code `128`
 
 `maxPessimisticCritic = criticState (int8OfNat 128) (int8OfNat 128)`.
 
-The formal surface distinguishes this initialization theorem from cycle exclusion. Pessimistic initialization alone does not imply that every later update is descending.
+This initialization theorem is deliberately separate from cycle exclusion. Pessimistic initialization alone does not imply that every later update is descending.
 
 ## Walsh-Hadamard boundary
 
@@ -131,7 +131,51 @@ No statistical-confidence or posterior-sampling theorem is claimed.
 
 `persistentGRUMonolith`, `canonicalPersistentGRUPreservation`, and the Mobius recurrent input laws place persistence and associativity in the same theorem family.
 
-The finite-cycle theorem remains conditional on an actual `LyapunovCertificate` or equivalent discharged monotone invariant for the concrete update. Mobius associativity and pessimistic initialization alone do not establish a global no-cycle theorem.
+The existing strict-descent finite-cycle exclusion theorem remains structurally preserved: `noNontrivialFiniteCycle` still derives the contradiction from a `LyapunovCertificate`. What is **not** yet proved is a new unconditional certificate specifically from the Mobius replacement or pessimistic initialization.
+
+## Ring algebra: deliberately not required
+
+The present algebra needs a monoid of endomorphisms under composition, not a ring. Adding additive inverses, distributivity, and a ring carrier would be mathematically interesting only if the learner needs those operations in an actual theorem.
+
+For the ratio `x / (1 - x)`, an ordered field or exact rational carrier is more natural than forcing the recurrence into a ring abstraction. The singular boundary also means that an unrestricted ring statement would be the wrong abstraction unless a domain predicate is carried explicitly.
+
+Therefore the current theorem surface keeps:
+
+`MobiusAction + composeAction + identityAction + associativity`
+
+rather than inventing ring structure for its own sake.
+
+## Min-max, Jensen, regret, Pareto, and Nash boundary
+
+These concepts are related but not interchangeable.
+
+A Jensen inequality can provide a convexity/concavity bound or a variational sandwich. A saddle point is a stronger structural condition for a two-player objective, and in a zero-sum setting the saddle condition is the local algebraic core behind minimax equality when the required convexity/compactness or finite-game assumptions hold.
+
+A Nash equilibrium is the no-unilateral-deviation condition for a general game. In a two-player zero-sum game, saddle points and Nash equilibria coincide at equilibrium values, but a general Nash equilibrium is not synonymous with a saddle condition.
+
+Regret bounds are performance statements over play sequences, not themselves saddle certificates. Pareto efficiency concerns multi-objective dominance and likewise is not a synonym for zero-sum minimax optimality.
+
+Nothing in the present deterministic learner automatically supplies a convex-concave payoff, two-player game, Jensen sandwich, regret process, or Pareto order. Adding those labels without a newly defined game functional would weaken theorem hygiene rather than strengthen the composition theorem.
+
+## Variational Tsallis-2 / entmax question
+
+Sparsemax is the alpha=2 member of the alpha-entmax family, and the literature gives variational/Fenchel-Young/Tsallis characterizations. Those are genuinely new mathematical statements relative to the current exact finite code map when formalized.
+
+However, the variational theorem is worth adding only if it proves something that the existing sparsemax algebra cannot already prove. A useful non-trading upgrade would be an Agda theorem of the form:
+
+1. the canonical finite sparsemax map is the unique optimizer of a precisely stated finite quadratic/Tsallis-2 objective;
+2. the optimizer satisfies an exact simplex/projection characterization;
+3. that variational certificate composes with the actual Watkins/LCB policy state without replacing the existing action-selection or cycle theorems.
+
+That would add a new theorem rather than trade away an existing one. It would not by itself prove Mobius associativity, Walsh orthonormality, regret, Pareto efficiency, Nash equilibrium, or finite-cycle exclusion.
+
+## Hard-sign + F4/L2 theorem boundary
+
+Hard-sign changes the activation algebra. The global optimizer still contains the explicit coupled L2 subtraction.
+
+A genuinely new theorem would require a discharged statement such as monotone energy decrease, parameter reconstruction, or a finite invariant for the **new** hard-sign update. The existing `f4ParameterInvariant` proves exact reconstruction of the F4 update, but it is not itself a convergence theorem.
+
+The strongest non-trading target is therefore a theorem connecting the hard-sign recurrent update and the F4/L2 state transition to one explicitly defined finite energy. Once that certificate is proved, the existing finite-cycle exclusion theorem can consume it without sacrificing the older component identities.
 
 ## Strongest theorem gains currently available
 
@@ -144,13 +188,7 @@ The strongest unconditional algebraic gains introduced by this refactor are:
 - endogenous q-log control and its one-step composition law;
 - maximal signed-Q7 pessimistic critic initialization.
 
-A stronger whole-learner finite-cycle exclusion remains a conditional theorem until a concrete strict-decrease measure for the new update is discharged. The existing `FullLearnerCoerciveQuadratic` witness is still the formal boundary for that result.
-
-## Tsallis-2 / entmax
-
-SciSpace literature identifies sparsemax as the `alpha = 2` member of the alpha-entmax family and connects the corresponding regularization to Tsallis statistics and Fenchel-Young formulations.
-
-That gives a potentially useful *new theorem boundary* if formalized: a finite variational or entropy-optimality characterization of the exact sparsemax map. It does not automatically imply stronger Mobius associativity, Walsh orthonormality, or finite-cycle exclusion. Therefore the computational kernel remains sparsemax until the additional variational theorem is actually discharged in Agda.
+The existing strict-descent finite-cycle theorem remains available through a concrete `LyapunovCertificate`, but a new unconditional global certificate still needs to be proved for the refactored update.
 
 ## Automation and pruning
 
@@ -168,6 +206,17 @@ The repository's active automation is Agda/Haskell/declarative-environment orien
 
 The generated theorem report remains accepted only when the named terms exist and the corresponding modules pass `agda --safe`.
 
+## What to do next after the refactor is complete
+
+1. Run the complete `agda --safe` gate and treat any failure as a semantic/type-level defect, not as a documentation problem.
+2. Discharge the new hard-sign/F4/L2 whole-learner energy certificate, if one exists without assuming extra structure. Feed it into the existing `noNontrivialFiniteCycle` theorem.
+3. Prove the exact finite variational characterization of the fixed-temperature sparsemax map if it adds a new optimizer/projection theorem without replacing an existing identity.
+4. Strengthen the Walsh-Hadamard result from the base four-dimensional Gram identities to the actual active recurrent-input carrier and norm preservation.
+5. Replace any remaining stale component names in tests/gates only after their replacement theorem compiles.
+6. Re-run the consolidated Haskell redundancy audit and delete only sources it identifies as genuinely unreachable or superseded.
+7. Keep the merge history atomic: after the final green theorem gate, a squash merge is the cleanest PR automation path for this branch because the branch contains many repair/refactor commits.
+8. Only then close/remove obsolete exploration branches and mark the canonical PR ready for review. Do not delete a branch merely because its name is old; first verify that its commit is fully subsumed by the canonical head.
+
 ## Theorem-status limits
 
 The canonical surface does **not** claim:
@@ -181,6 +230,7 @@ The canonical surface does **not** claim:
 - that learned attention currently drives the recurrent path;
 - that Walsh-Hadamard multiplication itself is associative;
 - that initialization alone proves absence of cycles;
-- that the endogenous q-log scale automatically gives a global Lyapunov function.
+- that the endogenous q-log scale automatically gives a global Lyapunov function;
+- that a Jensen inequality alone establishes minimax, regret, Pareto efficiency, or Nash equilibrium.
 
 The accepted theorem class is finite, algebraic, endogenous, and kernel-checked.
