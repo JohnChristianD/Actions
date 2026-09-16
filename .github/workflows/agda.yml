@@ -76,8 +76,17 @@ jobs:
       - name: Check Jensen convex-concave sandwich
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/JensenMinMaxSandwich.agda
 
+      - name: Check finite Sion saddle sandwich
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteSionSaddleSandwich.agda
+
       - name: Check Gymnax CartPole closed loop
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GymnaxCartPoleClosedLoop_test.agda
+
+      - name: Check canonical policy CartPole closed loop
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GymnaxCartPolePolicyClosedLoop_test.agda
+
+      - name: Check canonical policy closed-loop benchmark metrics
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalPolicyClosedLoopBench.agda
 
       - name: Check GameTheory port
         run: timeout 90s agda --safe Exotic/econlib/GameTheory.agda

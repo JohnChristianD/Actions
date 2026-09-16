@@ -533,24 +533,6 @@ gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
 gruInputActionAssociativity x y z s = refl
 
-mobiusActivationAction : Int8 → MobiusAction
-mobiusActivationAction x =
-  mobiusAction (λ y → int8Add y (rationalCode (mobiusActivation8 x)))
-
-gruMobiusActivationAssociativity : ∀ x y z q →
-  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
-      (mobiusActivationAction z)) q ≡
-  run (composeAction (mobiusActivationAction x)
-      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
-gruMobiusActivationAssociativity x y z q = refl
-
-gruMobiusAssociativeScan : ∀ x y z q →
-  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
-      (mobiusActivationAction z)) q ≡
-  run (composeAction (mobiusActivationAction x)
-      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
-gruMobiusAssociativeScan = gruMobiusActivationAssociativity
-
 gruStateInt8CoordinateCount : Nat
 gruStateInt8CoordinateCount = 9
 
@@ -562,7 +544,6 @@ walshInt8CoordinateCount = 4
 
 gruCriticWH8CoordinateCount : Nat
 gruCriticWH8CoordinateCount = 15
-
 gruPersistentQuotientCoordinateCount : Nat
 gruPersistentQuotientCoordinateCount = 8
 gruCriticWH8PersistentQuotientCoordinateCount : Nat
@@ -838,7 +819,7 @@ iterateCanonical K zero s = s
 iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
 
 clockAfter : ∀ K n s → clock (iterateCanonical K n s) ≡ clock s + n
-clockAfter K zero s = refl
+clockAfter K zero s = plus-zero (clock s)
 clockAfter K (suc n) s = trans (cong suc (clockAfter K n s)) (sym (plus-suc (clock s) n))
 
 canonicalAperiodic : ∀ K s n → iterateCanonical K (suc n) s ≢ s
