@@ -3,7 +3,7 @@
 module Exotic.ERL.FullCoupled.CanonicalLearnerGameExecution_test where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong; sym)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*__)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
@@ -73,13 +73,6 @@ learnerRewardStep-clock s r =
   trans (canonicalFullStep-clock learnerKernel (injectReward s r))
     (cong suc (sym (plus-zero (clock s))))
 
-greaterInt8 : Int8 → Int8 → BoolLike
-greaterInt8 x y with toℕ (code x) <ᵇ toℕ (code y)
-... | true = disabled
-... | false with toℕ (code x) <ᵇ toℕ (code y)
-...   | true = disabled
-...   | false = enabled
-
 maxCriticValue : CriticState → Int8
 maxCriticValue q with toℕ (code (qLeft q)) <ᵇ toℕ (code (qRight q))
 ... | true = qRight q
@@ -87,11 +80,6 @@ maxCriticValue q with toℕ (code (qLeft q)) <ᵇ toℕ (code (qRight q))
 
 halfInt8 : Int8 → Int8
 halfInt8 x = int8OfNat (halfNat (toℕ (code x)))
-
-selectedCriticValue : CriticState → Fin 2 → Int8
-selectedCriticValue q a with toℕ a
-... | zero = qLeft q
-... | _ = qRight q
 
 closedLoopTarget : CriticState → Int8 → Int8
 closedLoopTarget q r = int8Add r (halfInt8 (maxCriticValue q))
@@ -166,13 +154,15 @@ closedLoopStep-clock K s a r = refl
 
 closedLoopInput-roundtrip : ∀ a r →
   decodeAction (encodeActionReward a r) ≡ a
-closedLoopInput-roundtrip zero r = refl
-closedLoopInput-roundtrip (suc ()) r = refl
+closedLoopInput-roundtrip a r with toℕ a
+... | zero = refl
+... | suc zero = refl
 
 closedLoopReward-roundtrip : ∀ a r →
   decodeReward (encodeActionReward a r) ≡ r
-closedLoopReward-roundtrip zero r = refl
-closedLoopReward-roundtrip (suc ()) r = refl
+closedLoopReward-roundtrip a r with toℕ a
+... | zero = refl
+... | suc zero = refl
 
 closedLoopLeftRewardLearns :
   qLeft (critic (closedLoopStep learnerKernel learnerInitial
@@ -210,11 +200,12 @@ runBench spec learner = loop (horizon spec) learner (initial spec) zero zero
     loop zero l e total steps = benchRun e l total steps
     loop (suc n) l e total steps with step spec (choose spec l) e
     ... | P.stepResult obs e' r done with done
-    ...   | P.yes = benchRun e' (closedLoopStep learnerKernel l (learnerAction spec l) (portReward r))
-            (total + toℕ (P.code r)) (suc steps)
+    ...   | P.yes = benchRun e'
+          (closedLoopStep learnerKernel l (learnerAction spec l) (portReward r))
+          (total + toℕ (P.code r)) (suc steps)
     ...   | P.no = loop n
-            (closedLoopStep learnerKernel l (learnerAction spec l) (portReward r))
-            e' (total + toℕ (P.code r)) (suc steps)
+          (closedLoopStep learnerKernel l (learnerAction spec l) (portReward r))
+          e' (total + toℕ (P.code r)) (suc steps)
 
 record BenchMetrics (S : Set) : Set where
   constructor benchMetrics
@@ -250,8 +241,29 @@ cycle3 (suc (suc (suc n))) = cycle3 n
 lift4 : FullLearnerState → Fin 4
 lift4 s = fromℕ< (m%n<n ((cycle2 (clock s) * 2) + toℕ (canonicalBit learnerKernel s)) 4)
 
-lift6 : FullLearnerState → Fin 6
-lift6 s = fromℕ< (m%n<n ((cycle3 (clock s) * 2) + toℕ (canonicalBit learnerKernel s)) 6)
+knapsackSuccess : Nat → P.KnapsackState → Nat
+knapsackSuccess total e with P.natEq (P.value e) 16
+... | P.yes = 1
+... | P.no = 0
+
+mazeSuccess : Nat → P.MazeState → Nat
+mazeSuccess total e with P.natEq (P.row e) (P.goalRow e)
+... | P.yes with P.natEq (P.col e) (P.goalCol e)
+...   | P.yes = 1
+...   | P.no = 0
+... | P.no = 0
+
+metaMazeSuccess : Nat → P.MetaMazeState → Nat
+metaMazeSuccess total e with P.natEq (P.row e) (P.goalRow e)
+... | P.yes with P.natEq (P.col e) (P.goalCol e)
+...   | P.yes = 1
+...   | P.no = 0
+... | P.no = 0
+
+banditSuccess : Nat → P.BernoulliBanditState → Nat
+banditSuccess total e with P.natEq total 16
+... | P.yes = 1
+... | P.no = 0
 
 knapsackSpec : BenchSpec 2 P.KnapsackState
 knapsackSpec = benchSpec
@@ -260,7 +272,7 @@ knapsackSpec = benchSpec
   P.knapsackStep
   (λ s → canonicalBit learnerKernel s)
   (λ s → canonicalBit learnerKernel s)
-  (λ total e → 1)
+  knapsackSuccess
 
 mazeSpec : BenchSpec 4 P.MazeState
 mazeSpec = benchSpec
@@ -269,9 +281,7 @@ mazeSpec = benchSpec
   P.mazeStep
   lift4
   (λ s → canonicalBit learnerKernel s)
-  (λ total e with P.done (P.mazeStep (lift4 learnerInitial) (P.initial mazeSpec))
-  ... | P.yes = 1
-  ... | P.no = 0)
+  mazeSuccess
 
 metaMazeSpec : BenchSpec 4 P.MetaMazeState
 metaMazeSpec = benchSpec
@@ -280,8 +290,7 @@ metaMazeSpec = benchSpec
   P.metaMazeStep
   lift4
   (λ s → canonicalBit learnerKernel s)
-  (λ total e →
-    ifNat (natEq total 10) 1 0)
+  metaMazeSuccess
 
 fourRoomsSpec : BenchSpec 4 P.MazeState
 fourRoomsSpec = benchSpec
@@ -290,7 +299,7 @@ fourRoomsSpec = benchSpec
   P.fourRoomsStep
   lift4
   (λ s → canonicalBit learnerKernel s)
-  (λ total e → 1)
+  mazeSuccess
 
 cartPoleSpec : BenchSpec 2 P.CartPoleQuantizedState
 cartPoleSpec = benchSpec
@@ -308,8 +317,7 @@ banditBest0Spec = benchSpec
   P.bernoulliBanditStep
   (λ s → canonicalBit learnerKernel s)
   (λ s → canonicalBit learnerKernel s)
-  (λ total e →
-    ifNat (natEq total 16) 1 0)
+  banditSuccess
 
 banditBest1Spec : BenchSpec 2 P.BernoulliBanditState
 banditBest1Spec = benchSpec
@@ -318,8 +326,7 @@ banditBest1Spec = benchSpec
   P.bernoulliBanditStep
   (λ s → canonicalBit learnerKernel s)
   (λ s → canonicalBit learnerKernel s)
-  (λ total e →
-    ifNat (natEq total 16) 1 0)
+  banditSuccess
 
 knapsackMetrics : BenchMetrics P.KnapsackState
 knapsackMetrics = metrics knapsackSpec learnerInitial
