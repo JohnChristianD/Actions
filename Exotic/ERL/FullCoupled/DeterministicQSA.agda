@@ -219,6 +219,38 @@ deterministicQSAStyleFixedStatesCollapse C =
   uniqueFixed (terminal C)
 
 ------------------------------------------------------------------------
+-- Companion stochastic theorem: a pathwise strict support Lyapunov law
+-- conflicts with any supported nontrivial two-cycle.
+------------------------------------------------------------------------
+
+record SupportLyapunov (S : Set) (R : S → S → Set) : Set₁ where
+  constructor supportLyapunov
+  field
+    supportEnergy : S → Nat
+    strictSupportDecrease :
+      ∀ {s t} → R s t → s ≢ t → supportEnergy t < supportEnergy s
+
+open SupportLyapunov public
+
+noStrongSupportLyapunovTwoCycle :
+  ∀ {S : Set} {R : S → S → Set}
+  (L : SupportLyapunov S R)
+  {x y : S} →
+  x ≢ y →
+  R x y →
+  R y x →
+  ⊥
+noStrongSupportLyapunovTwoCycle L distinct xy yx =
+  let
+    reverseDistinct : y ≢ x
+    reverseDistinct eq = distinct (sym eq)
+    downXY : supportEnergy L y < supportEnergy L x
+    downXY = strictSupportDecrease L xy distinct
+    downYX : supportEnergy L x < supportEnergy L y
+    downYX = strictSupportDecrease L yx reverseDistinct
+  in <-irrefl (supportEnergy L x) (<-trans downYX downXY)
+
+------------------------------------------------------------------------
 -- A closed finite support orbit is incompatible with a strict-support
 -- Lyapunov ranking. The orbit is encoded directly over Nat, so no list,
 -- vector, finite-set, quotient, probability, or arithmetic library is needed.
@@ -281,38 +313,6 @@ supportRelationAntisymmetricOffDiagonal :
 supportRelationAntisymmetricOffDiagonal L distinct xy yx =
   noStrongSupportLyapunovTwoCycle
     L distinct xy yx
-
-------------------------------------------------------------------------
--- Companion stochastic theorem: a pathwise strict support Lyapunov law
--- conflicts with any supported nontrivial two-cycle.
-------------------------------------------------------------------------
-
-record SupportLyapunov (S : Set) (R : S → S → Set) : Set₁ where
-  constructor supportLyapunov
-  field
-    supportEnergy : S → Nat
-    strictSupportDecrease :
-      ∀ {s t} → R s t → s ≢ t → supportEnergy t < supportEnergy s
-
-open SupportLyapunov public
-
-noStrongSupportLyapunovTwoCycle :
-  ∀ {S : Set} {R : S → S → Set}
-  (L : SupportLyapunov S R)
-  {x y : S} →
-  x ≢ y →
-  R x y →
-  R y x →
-  ⊥
-noStrongSupportLyapunovTwoCycle L distinct xy yx =
-  let
-    reverseDistinct : y ≢ x
-    reverseDistinct eq = distinct (sym eq)
-    downXY : supportEnergy L y < supportEnergy L x
-    downXY = strictSupportDecrease L xy distinct
-    downYX : supportEnergy L x < supportEnergy L y
-    downYX = strictSupportDecrease L yx reverseDistinct
-  in <-irrefl (supportEnergy L x) (<-trans downYX downXY)
 
 ------------------------------------------------------------------------
 -- Minimal exact finite stochastic/support counterexample. It is fully
