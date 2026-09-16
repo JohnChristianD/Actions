@@ -62,8 +62,7 @@ plus-suc-not-self : ∀ m n → m + suc n ≢ m
 plus-suc-not-self m n eq = lt-irrefl m
   (subst (λ z → m < z) eq (plus-suc-lt m n))
 
-BoolLike : Set
-data BoolLike where
+data BoolLike : Set where
   enabled : BoolLike
   disabled : BoolLike
 
