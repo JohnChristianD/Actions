@@ -46,6 +46,12 @@ jobs:
       - name: Check self-contained canonical learner
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
 
+      - name: Check generalized finite-action learner
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralActionLearnerMonolith.agda
+
+      - name: Check generalized closed-loop benchmark
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBench.agda
+
       - name: Check canonical learner regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
 
