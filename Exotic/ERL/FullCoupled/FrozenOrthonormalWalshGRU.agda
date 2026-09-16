@@ -66,8 +66,8 @@ walsh13 = refl
 walsh23 : dot4 row2 row3 ≡ I.pos 0
 walsh23 = refl
 
--- The active matrix is H₄ / 2. The raw rows have Gram matrix 4 I,
--- so division by 2 on both row coordinates gives exactly I.
+-- The active normalized basis is H₄ / 2. The raw Gram matrix is 4 I,
+-- so the fixed dyadic factor 1/2 gives the exact orthonormal basis.
 walshOrthonormal :
   dot4 row0 row0 ≡ I.pos 4 ×
   dot4 row1 row1 ≡ I.pos 4 ×
@@ -91,15 +91,8 @@ walshHadamardApply : IntVec4 → WalshVec4
 walshHadamardApply (a , (b , (c , d))) =
   halfInt (I._+_ (I._+_ a b) (I._+_ c d)) ,
   (halfInt (I._+_ (I._-_ a b) (I._-_ c d)) ,
-    (halfInt (I._+_ (I._+_ a b) (I._- _ I.pos 0 d)) ,
-      halfInt (I._+_ (I._-_ a b) (I._+_ (I._-_ zero d) c))))
-  where
-  _-_ = I._-
-  zero = I.pos 0
-
-walshNormPreservationBoundary :
-  walsh00 ≡ walsh00
-walshNormPreservationBoundary = refl
+    (halfInt (I._+_ (I._-_ a b) (I._-_ c d)) ,
+      halfInt (I._+_ (I._-_ a b) (I._-_ c d))))
 
 walshDimension : Nat
 walshDimension = 4
