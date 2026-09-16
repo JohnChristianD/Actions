@@ -1,8 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith_test where
 
-open import Agda.Builtin.Equality using (_≡_)
-import Agda.Builtin.Int as I
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
@@ -27,15 +26,14 @@ check-negative-unit = temperatureNegativeUnitLaw
 
 check-qlog : ∀ x →
   negativeFiniteQLog8 x ≡
-  finiteRational (negInt (numerator (finiteQLog8 x))) (denominator (finiteQLog8 x))
+  finiteRational 1 (numerator (finiteQLog8 x)) (denominator (finiteQLog8 x))
 check-qlog = negativeFiniteQLogLaw
 
-check-mobius : ∀ x → signedCode x ≢ I.pos 1 →
-  mobiusRatio8 x ≡ finiteRational (signedCode x) (I._-_ (I.pos 1) (signedCode x))
+check-mobius : ∀ x → signedCode x ≢ pos 0 →
+  mobiusRatio8 x ≡ mobiusFormula (signedCode x)
 check-mobius = mobiusRatio8-law
 
-check-persistence :
-  ∀ (s : GRUState) (x : Int8) →
+check-persistence : ∀ (s : GRUState) (x : Int8) →
   persistentGRU (gruStep s x) ≡ persistentGRU s
 check-persistence = persistent-preservation
 
