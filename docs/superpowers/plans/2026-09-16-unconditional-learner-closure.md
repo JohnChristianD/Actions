@@ -1,108 +1,64 @@
 # Unconditional Canonical Learner Closure Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement the plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+Authority: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` plus the synchronized replication wiki.
 
-**Goal:** Maintain the canonical learner as a self-contained Agda `--safe` composition with unconditional contradiction/negation/deduction theorems, exact finite-carrier bookkeeping, a non-ring composition algebra, and a synchronized replication prompt.
+## Closed theorem surface
 
-**Architecture:** The canonical Agda file owns every active learner definition and imports no project-local module. Unconditional theorem strength comes from definitional equalities, persistent-state projection, endofunction composition, and Nat monotonicity of `clock` and `totalCount`. No environment law, probability assumption, Lyapunov premise, or postulate is added.
+- [x] Environment-agnostic Watkins/LCB/sparsemax/negative-q-log/attention/Walsh/hard-sign-Möbius-GRU/F4-L2/NormPair learner.
+- [x] Persistent-GRU quotient and transition-action endomorphism monoid.
+- [x] Associative GRU and Möbius-labelled scan laws.
+- [x] Exact H4 Int8 Gram law `H4 H4ᵀ = 4I (mod 256)`.
+- [x] Power-of-four width witness.
+- [x] Full stored Int8 accounting including F4 and NormPair: 23 scalar coordinates.
+- [x] Width-`d` bookkeeping: `d + 22` stored Int8 coordinates under scalar persistent layout.
+- [x] NormPair/F4/L2 hard-sparsity structural invariance theorem.
+- [x] Exact Nat rank `V = clock`, unit increment, fixed-point and finite-cycle exclusion.
 
-**Tech Stack:** Agda 2.8.0, stdlib 2.4, `--safe`; Haskell theorem generator and redundancy audit.
+## Width and algebra
 
-**Spec:** `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
+- [x] Replication default `d = 64`.
+- [x] `FiniteParameterCompleteness.agda` proves `64 = 4^3` and finite function-table completeness.
+- [x] Effective theorem algebra documented below ring level: finite data, Nat arithmetic, equality/negation, products, and endomorphism composition.
+- [x] Current source retained on the eight direct standard-library imports it actually uses.
 
-## Global Constraints
+## Environment replication
 
-- Canonical learner file has zero project-local Agda imports.
-- No environment, replay, probability, posterior, or statistical carrier occurs in canonical state.
-- Watkins is the sole learned action-selection source.
-- Learned sparsemax attention remains representation state and feeds the recurrent path.
-- F4 optimizer, global L2 control, and NormPair remain explicit components of complete learner state.
-- No holes, postulates, or wildcard proof terms in maintained Agda sources.
-- No canonical theorem gains strength through an unstated certificate premise.
-- Generalized Walsh/hidden mixing width is constrained to `4^k`.
-- Exact normalized Walsh orthonormality is not asserted inside `Z/256Z`; the exact maintained Int8 theorem is unnormalized `H4 H4^T = 4I`, with normalization requiring an explicit dyadic representation.
+- [x] Finite executable ports for Jumanji Knapsack, Maze, LevelBasedForaging.
+- [x] Finite executable ports for Gymnax MetaMaze, FourRooms, Pong, MemoryChain, DiscountingChain, CartPole, Bernoulli Bandit.
+- [x] Finite executable Pobax RockSample projection.
+- [x] Exact fixed Jumanji Toy Maze connectivity predicate.
+- [x] Exact Gymnax FourRooms 13x13 connectivity predicate.
+- [x] Explicitly distinguish deterministic finite projections from upstream stochastic/continuous numerical implementations.
 
-### Task 1: Endogenous complete learner
+## Learner execution
 
-- [x] Keep Watkins, LCB, fixed-temperature sparsemax, negative q-log shaping, learned attention, Walsh, hard-sign Mobius GRU, F4/L2, NormPair, and complete state in one file.
-- [x] Route `canonicalSignal` through endogenous q-log control.
-- [x] Route learned attention through Walsh into `canonicalGRUStep`.
-- [x] Keep environment/statistical types absent.
-- [x] Keep GRU state-field names distinct from optimizer/L2 control accessors.
+- [x] `CanonicalLearnerGameExecution_test.agda` injects every port reward through an explicit `Fin 256` adapter.
+- [x] Canonical learner step executes after every reward injection.
+- [x] Clock-progress proof is checked for every listed environment.
+- [ ] Empirical learning quality/convergence remains intentionally unclaimed because the current theorem surface has no statistical or continuous-performance metric.
 
-### Task 2: Contradiction, negation, and exact rank
+## CNN/log-pyramid preservation
 
-- [x] `canonicalStep-not-fixed` from `clock := suc clock`.
-- [x] `clockAfter` by induction.
-- [x] `canonicalAperiodic` and orbit non-fixedness by deduction.
-- [x] `canonicalNoNontrivialFiniteCycle` without an external Lyapunov premise.
-- [x] `canonicalTotalCountStep` and `canonicalNoCountedTwoCycle`.
-- [x] `canonicalFullStep-clock` corrected to `refl`.
+- [x] `CNNLogPyramid64` explicit 64-index representation.
+- [x] `cnnToAttention` decoder.
+- [x] GRU-input preservation under equal decoded attention state.
+- [x] Commuting theorem from CNN pyramid representation into the existing `canonicalGRUStep`.
+- [ ] A theorem for arbitrary CNN convolution/pooling architectures remains outside the current source because no CNN layer algebra is defined.
 
-### Task 3: GRU quotient and associative scan
+## GameTheory and retired branches
 
-- [x] Persistent quotient `GRUEquivalent`.
-- [x] `gruStep-respects-equivalence`.
-- [x] Endomorphism action composition and associativity.
-- [x] Input scan and Mobius-labelled scan.
-- [x] Pure-Int8 GRU/critic/Walsh counts and quotient counts.
+- [x] `GameTheory.agda` moved to the canonical eight-import surface and removed `efficient_chad.Int8` dependency.
+- [x] Current repository search finds no active `MR15Reachability`, `OpenESDyadic`, or `NoisyNetCoupled` references on the canonical branch.
+- [x] Current branch inventory has no active remote refs named Noisy Nets, OpenES, or MR15.
 
-### Task 4: Walsh width and exact H4 Int8 law
+## Synchronization
 
-- [x] Add `PowerOfFour`.
-- [x] Prove `canonicalWalshWidth-power4` for current width `4`.
-- [x] Add explicit Int8 rows with `255` representing `-1 mod 256`.
-- [x] Prove exact 16-entry Int8 Gram law through `H4GramLaw` and `walshHadamardOrthogonality4`.
-- [x] Keep normalized orthonormality explicitly outside the modular inverse limitations.
+- [x] Forbidden-theorem scanner covers learner, game ports, faithful map variants, completeness, CNN preservation, execution regression, GameTheory, and generated report.
+- [x] Haskell theorem generator checks all required surfaces and runs Agda safe checks.
+- [x] Workflow compiles all maintained Agda surfaces before generation.
+- [x] Replication wiki synchronized to d64, finite functional completeness, game ports, CNN preservation, state accounting, and exact Nat rank.
+- [x] Main-branch pushes, PRs, schedules, and manual workflow dispatch use the same canonical gate, so merges automatically re-enter the synchronization/verification path.
 
-### Task 5: Full-composition state accounting
+## Acceptance
 
-- [x] F4 optimizer contributes five Int8 coordinates.
-- [x] NormPair contributes two.
-- [x] Watkins signal and attention coordinates included.
-- [x] Walsh is transient in `FullLearnerState`, not stored.
-- [x] Complete current stored Int8 projection is `23` coordinates.
-- [x] Current full state is countably infinite because several `Nat` fields are unbounded.
-- [x] Under scalar-persistent width generalization, Int8 storage is `d + 22`.
-
-### Task 6: Hard sparsity
-
-- [x] Exact hard-sparse witnesses.
-- [x] Policy invariance under NormPair replacement.
-- [x] Policy invariance under F4 state replacement carrying global L2.
-- [x] Composition theorem `hardSparse-composition-normPair-F4-L2`.
-- [x] Keep theorem explicitly local/structural, not a trajectory-wide sparsity-ratio or approximation theorem.
-
-### Task 7: Minimum algebra and imports
-
-- [x] Effective algebra identified as finite many-sorted data + Nat arithmetic + equality/negation + products + endomorphism monoid.
-- [x] Ring/module/lattice/metric abstractions identified as unnecessary theorem premises.
-- [x] Current direct imports audited: every imported symbol is used.
-- [x] Current source requires stdlib as written.
-- [x] Mathematical no-stdlib reconstruction recognized as possible only through a source-level replacement foundation.
-- [ ] Replace stdlib imports only if an equivalent local foundation is actually compiled and passes the same safe regression surface.
-
-### Task 8: Replication and pruning
-
-- [x] Wiki is the replication authority.
-- [x] Wiki corrected to exact H4 theorem, not a false full-orthogonality claim.
-- [x] Wiki includes full state, quotient, and width bookkeeping.
-- [x] Wiki records minimum effective algebra and current stdlib requirement.
-- [x] Wiki records maximum unconditional hard-sparsity theorem.
-- [x] Wiki records exact `V(s) = clock s`, unit increment, and `omega` ordering.
-- [x] Current branch inventory contains no active `Noisy Nets`, `OpenES`, or `MR15` refs.
-- [x] Redundancy audit remains dry-run by default and only zero-local-import candidates are eligible for deletion.
-
-### Task 9: Regression, generation, and final acceptance
-
-- [x] Regression test checks H4 law, power-of-four width, full 23-coordinate count, quotient, persistence, scan, hard sparsity, clock, and cycle exclusions.
-- [x] Generator now requires the H4 theorem, width law, and full state count in addition to the existing closure.
-- [x] Wiki synchronized with current source and CI fact.
-- [x] Plan synchronized with current source and CI fact.
-- [x] Forbidden-family/hole scan passed on commit `83a2...`; H4 parse failure was isolated.
-- [ ] Fresh gate for current head `066ba7bb00525ee7539178c3e3c634e18b9744a3` must complete canonical Agda check.
-- [ ] Same-head regression, theorem generation, redundancy audit, and generated report must complete before calling the branch green.
-
-## Current acceptance fact
-
-The prior `83a2...` gate passed the forbidden-family scan and Agda setup, then failed only because the initial nested 16-way H4 proof term had a parse error. The current source replaces that term with the local `H4GramLaw` record and the current test/generator surfaces require it. The fresh gate is `35079729383` and is currently in progress; its final result is the acceptance authority.
+The active PR is `#36`, branch `agda-theorem-first-monolith-20260916`. The previous authoritative gate failed only after the canonical clock proof and before the new environment surface existed. A failed-job rerun has now been requested against the current PR checkout. Do not mark the branch green until canonical Agda, all port/faithful-map surfaces, completeness, CNN preservation, learner execution regression, generator, redundancy audit, and generated report all pass on the current PR head.
