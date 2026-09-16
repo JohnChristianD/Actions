@@ -43,13 +43,11 @@ le-refl zero = z≤n
 le-refl (suc n) = s≤s (le-refl n)
 
 le-trans : ∀ {m n k : Nat} → m ≤ n → n ≤ k → m ≤ k
-le-trans {m = zero} z≤n q = z≤n
-le-trans {m = suc m} {n = suc n} {k = suc k} (s≤s p) (s≤s q) =
-  s≤s (le-trans {m = m} {n = n} {k = k} p q)
+le-trans z≤n q = z≤n
+le-trans (s≤s p) (s≤s q) = s≤s (le-trans p q)
 
 lt-trans : ∀ {a b c : Nat} → a < b → b < c → a < c
-lt-trans {a = suc a} {b = suc b} {c = suc c} (s≤s p) (s≤s q) =
-  s≤s (le-trans p q)
+lt-trans (s≤s p) (s≤s q) = s≤s (le-trans p q)
 
 lt-irrefl : ∀ n → (n < n) → ⊥
 lt-irrefl zero ()
