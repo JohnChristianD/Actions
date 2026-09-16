@@ -1,57 +1,59 @@
-# Deterministic QSA monolith
+# Deterministic theorem monolith
 
-## Scope
+## Canonical source
 
-`Exotic/ERL/FullCoupled/DeterministicQSA.agda` is the canonical theorem monolith. The source is intended to be environment-agnostic: it does not quantify over rewards, transition probabilities, observations, action spaces, environments, random variables, estimators, replay buffers, target networks, or asymptotic statistical limits.
+`Exotic/ERL/FullCoupled/DeterministicQSA.agda` is the canonical self-contained theorem source. It is checked with `{-# OPTIONS --safe #-}` and has no Agda imports.
 
-The theorem contracts are instead stated over an arbitrary state type, an arbitrary deterministic step function, or an arbitrary support relation. A named QSA certificate is only a record packaging these mathematical premises. The name does not assert that any particular learning algorithm instantiates the certificate.
+The source therefore does not depend on a separately defined environment, reward process, probability space, observation kernel, action type, neural architecture, optimizer implementation, replay mechanism, target network, estimator, or statistical limit.
 
-## Self-contained surface
+The identifier `DeterministicQSAStyleCertificate` is only a mathematical packaging record. It does not assert that a particular reinforcement-learning implementation satisfies the record.
 
-The canonical file defines its own `Nat`, propositional equality, bottom, negation, sum, natural-number `<` and `≤`, reachability, decidable equality contracts, iteration, fixed points, Lyapunov certificates, convergence records, support-Lyapunov certificates, and all helper lemmas needed by its main theorems.
+## Definitions included in the monolith
 
-No external Agda module is required by the canonical theorem source. `--safe` remains enabled.
+The file defines its own natural numbers, propositional equality, substitution, contradiction, negation, constructive sum, natural-number `<` and `≤`, decidable-equality certificates, iteration, fixed points, natural Lyapunov certificates, exact finite convergence records, support relations, reachability, irreducibility, self-loops, period-one certificates, support-Lyapunov certificates, and the finite structural counterexample.
 
-## Deterministic theorem family
+No external theorem module is required by the canonical source.
 
-`eventuallyFixedFromLyapunov` proves finite-time arrival at a fixed state whenever a natural-valued energy strictly decreases at every nonfixed step and state equality is decidable.
+## Deterministic results
 
-`deterministicQSAStyleConvergence` strengthens this with a unique-fixed-point certificate. Every initial state reaches the distinguished target after a finite number of iterations, with an explicit equality proof.
+`eventuallyFixedFromLyapunov` proves finite-time arrival at a fixed state from three explicit premises: a deterministic step function, decidable state equality, and a natural-valued energy that strictly decreases on every nonfixed step.
 
-`deterministicQSAStyleTargetFixed` extracts the target's fixed-point proof from the certificate.
+`deterministicQSAStyleConvergence` adds a unique-fixed-point certificate and proves exact finite convergence of every initial state to the distinguished target.
 
-`deterministicQSAStyleFixedStatesCollapse` proves that every fixed state equals the distinguished target.
+`deterministicQSAStyleTargetFixed` extracts the target fixed-point proof.
 
-`deterministicQSAStyleNoNontrivialCycle` rules out every finite return from a nonfixed state under the Lyapunov premise.
+`deterministicQSAStyleFixedStatesCollapse` proves that any fixed state equals the distinguished target.
 
-## Support theorem family
+These are constructive finite theorems. They do not infer that an arbitrary learning system possesses the required certificates.
 
-`SupportLyapunov` assigns a natural-valued support energy and requires strict decrease on every supported off-diagonal edge.
+## Support results
 
-`noStrongSupportLyapunovTwoCycle` proves that mutual supported edges between distinct states are incompatible with this strict decrease law.
+`SupportLyapunov` gives a natural-valued energy for an arbitrary binary support relation and requires strict energy decrease on every supported off-diagonal edge.
 
-`ClosedSupportOrbit` encodes a finite closed supported orbit directly as a natural-indexed path. It requires a supported edge and an off-diagonal proof at every path position, together with a final equality returning to the initial state.
+`noStrongSupportLyapunovTwoCycle` proves that two distinct states cannot support edges in both directions under such a certificate.
 
-`closedSupportOrbitImpossible` proves that such a closed finite orbit cannot exist under a strict support-Lyapunov law. The proof is constructive: iterated `<` transitivity produces a strict self-descent of one natural number, then natural irreflexivity closes the contradiction.
+`ClosedSupportOrbit` encodes a finite closed supported orbit using only a natural index, an edge proof at each index, off-diagonal proofs, and a closing equality.
 
-`supportRelationAntisymmetricOffDiagonal` packages the two-cycle obstruction as the reusable rule
+`closedSupportOrbitImpossible` proves that a strict support-Lyapunov law cannot coexist with such a closed finite orbit. The proof composes strict natural-number inequalities until it obtains `E < E` and closes the contradiction with natural irreflexivity.
+
+`supportRelationAntisymmetricOffDiagonal` exposes the reusable off-diagonal consequence
 
 `x ≢ y -> R x y -> ¬ R y x`.
 
-The theorem is relational, not probabilistic. “Support” means only membership in the supplied relation.
+No probability semantics are attached to the word “support”. It denotes membership in the explicitly supplied relation.
 
-## Finite structural counterexample
+## Structural counterexample
 
-The monolith contains a two-state relation with every edge supported. It has an explicit irreducibility proof, explicit self-loops, and a `PeriodOne` certificate, while `noTwoStateStrongSupportLyapunov` proves that no strict support-wide Lyapunov certificate can exist for that relation.
+The monolith defines a two-state relation whose every edge is supported. It has explicit irreducibility, self-loop, and period-one proofs. The theorem `noTwoStateStrongSupportLyapunov` proves that this relation cannot admit the strong support-wide strict Lyapunov certificate.
 
-This separates structural recurrence properties from strict support-wide descent assumptions.
+This demonstrates that recurrence properties and strict support-wide descent are separate assumptions.
 
-## Exact boundaries
+## What is not claimed
 
-The file proves finite, constructive consequences of explicit certificates. It does not prove that arbitrary reinforcement-learning, stochastic-process, GRU, neural-network, environment, reward, or empirical training systems satisfy those certificates.
+The monolith does not establish statistical convergence, almost-sure convergence, expected convergence, asymptotic rates, reward optimality, environment-specific properties, neural-network properties, GRU properties, or properties of any empirical training run.
 
-No probabilistic conclusion follows merely from the names `QSA`, `support`, or `Lyapunov`. An application theorem must explicitly supply the relevant certificate.
+Any application must instantiate the generic state, step, equality, relation, Lyapunov, and terminal certificates explicitly.
 
-## Repository maintenance
+## Pruning policy
 
-The canonical monolith is dependency-free at the Agda source level. Former helper modules are pruned only when a repository-wide reference scan establishes that they are no longer needed elsewhere. Unrelated exploration, economic, and CI modules are not silently deleted merely because the canonical theorem source no longer imports them.
+`.ci/prune-monolith-redundancies.py` performs a repository-wide Agda import scan. A candidate file is deleted only when its declared module is no longer imported anywhere else. This prevents consolidation of the canonical source from silently breaking unrelated exploration or economic modules.
