@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.SparsemaxCriticWatkins where
 
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Equality using (_≡_; _≢_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Agda.Builtin.Int as I
 open import Data.Empty using (⊥)
@@ -53,8 +53,6 @@ sparsemax2Weights (actionScore l r) =
       leftWeight = clampQ7 (halfInt (I._+_ (I.pos 128) (I._*_ (I.pos 8) d)))
   in leftWeight , complement128 leftWeight
 
--- The critic is the sole learned action-selection source. There is no actor
--- parameter block in this carrier.
 record CriticState : Set where
   constructor criticState
   field
@@ -115,6 +113,15 @@ wholeStep K s =
       (trace s)
       (Watkins1Kernel.greedy (SparsemaxCriticWatkinsKernel.traceKernel K)
         (critic s) (learnerSignal s)))
+
+-- Least semantic value of signed Q7 Int8 is -128, represented by code 128.
+maxPessimisticCritic : CriticState
+maxPessimisticCritic = criticState (int8OfNat 128) (int8OfNat 128)
+
+maxPessimisticCritic-law :
+  qLeft maxPessimisticCritic ≡ int8OfNat 128 ×
+  qRight maxPessimisticCritic ≡ int8OfNat 128
+maxPessimisticCritic-law = refl , refl
 
 record WholeCriticWatkinsLyapunov (K : SparsemaxCriticWatkinsKernel) : Set₁ where
   constructor wholeCriticWatkinsLyapunov
