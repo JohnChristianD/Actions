@@ -21,12 +21,15 @@ surfaces =
   , Surface "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
       [ "learnerDefaultD", "learnerDefaultD-power4", "parameterize-complete"
       , "parameterizeFin-complete", "finiteStateFunctionalCompleteness" ]
+  , Surface "Exotic/ERL/FullCoupled/FiniteNormAlgebra.agda"
+      [ "l1WeightNorm", "onePathNorm", "finiteNormOrder", "finiteNormAlgebra-is-ordered" ]
   , Surface "Exotic/ERL/FullCoupled/CanonicalControlObservability.agda"
       [ "canonicalOrbitReachable", "canonicalOrbitControllable"
       , "fullStateObservation-injective", "clockObservation-after-iterate" ]
   , Surface "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
-      [ "CNNLogPyramid64", "cnnToAttention", "cnnLogPyramidGRUInputPreservation"
-      , "cnnLogPyramidCommutesWithCanonicalGRU" ]
+      [ "CNNLogPyramid64", "cnnToAttention", "cnnLogPyramidEquivalent-trans"
+      , "cnnLogPyramidGRUInputPreservation", "cnnLogPyramidCommutesWithCanonicalGRU"
+      , "cnnLogPyramidEncoding-preserves-input" ]
   , Surface "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
       [ "learnerRewardStep-clock", "check-knapsack", "check-maze", "check-lbf"
       , "check-meta-maze", "check-four-rooms", "check-pong", "check-memory-chain"
@@ -56,6 +59,7 @@ main = do
     then do
       putStrLn "canonical-surfaces=complete"
       putStrLn "finite-function-parameter-theorem=complete"
+      putStrLn "finite-norm-algebra=complete"
       putStrLn "control-observability-surface=complete"
       putStrLn "cnn-log-pyramid-preservation=complete"
       putStrLn "game-execution-regression=complete"
