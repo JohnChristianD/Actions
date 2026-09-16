@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
+open import Data.Nat using (_∸_; _<ᵇ_)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
@@ -38,36 +38,20 @@ int8Roundtrip x = trans
   (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
   (m<n⇒m%n≡m (toℕ<n (code x)))
 
-le-refl : ∀ n → n ≤ n
-le-refl zero = z≤n
-le-refl (suc n) = s≤s (le-refl n)
-
-lt-irrefl : ∀ n → (n < n) → ⊥
-lt-irrefl zero ()
-lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
+suc-injective : ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+suc-injective refl = refl
 
 plus-suc : ∀ (m n : Nat) → m + suc n ≡ suc (m + n)
 plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
 
-plus-le-suc : ∀ (m n : Nat) → m ≤ m + suc n
-plus-le-suc m zero = s≤s (le-refl m)
-plus-le-suc m (suc n) = s≤s (plus-le-suc m n)
-
-plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
-plus-suc-lt m zero = le-refl (suc m)
-plus-suc-lt m (suc n) = s≤s (plus-le-suc m n)
-
 plus-suc-not-self : ∀ (m n : Nat) → m + suc n ≢ m
-plus-suc-not-self m n eq =
-  lt-irrefl m (subst (λ z → m < z) eq (plus-suc-lt m n))
-
-suc-suc-lt : ∀ n → n < suc (suc n)
-suc-suc-lt n = s≤s (s≤s (le-refl n))
+plus-suc-not-self zero n ()
+plus-suc-not-self (suc m) n eq = plus-suc-not-self m n (suc-injective eq)
 
 suc-suc-not-self : ∀ n → suc (suc n) ≢ n
-suc-suc-not-self n eq =
-  lt-irrefl n (subst (λ z → n < z) (sym eq) (suc-suc-lt n))
+suc-suc-not-self zero ()
+suc-suc-not-self (suc n) eq = suc-suc-not-self n (suc-injective eq)
 
 iterate : ∀ {S : Set} → (S → S) → Nat → S → S
 iterate step zero s = s
@@ -432,6 +416,12 @@ GRUEquivalent s t = persistentGRU s ≡ persistentGRU t
 gruEquivalent-refl : ∀ s → GRUEquivalent s s
 gruEquivalent-refl s = refl
 
+gruEquivalent-sym : ∀ s t → GRUEquivalent s t → GRUEquivalent t s
+gruEquivalent-sym s t eq = sym eq
+
+gruEquivalent-trans : ∀ s t u → GRUEquivalent s t → GRUEquivalent t u → GRUEquivalent s u
+gruEquivalent-trans s t u eq₁ eq₂ = trans eq₁ eq₂
+
 gruStep-respects-equivalence : ∀ (s t : GRUState) (x : Int8) →
   GRUEquivalent s t → GRUEquivalent (gruStep s x) (gruStep t x)
 gruStep-respects-equivalence s t x eq =
@@ -462,6 +452,13 @@ gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
 gruInputActionAssociativity x y z s = refl
 
+gruInputScan : ∀ (x : Int8) (m n : Nat) (s : GRUState) →
+  iterate (λ t → gruStep t x) (m + n) s ≡
+  iterate (λ t → gruStep t x) m (iterate (λ t → gruStep t x) n s)
+gruInputScan x zero n s = refl
+gruInputScan x (suc m) n s =
+  cong (λ t → gruStep t x) (gruInputScan x m n s)
+
 mobiusActivationAction : Int8 → MobiusAction
 mobiusActivationAction x =
   mobiusAction (λ y → int8Add y (rationalCode (mobiusActivation8 x)))
@@ -472,6 +469,14 @@ gruMobiusActivationAssociativity : ∀ x y z q →
   run (composeAction (mobiusActivationAction x)
       (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
 gruMobiusActivationAssociativity x y z q = refl
+
+gruMobiusScan : ∀ (x : Int8) (m n : Nat) (q : Int8) →
+  iterate (run (mobiusActivationAction x)) (m + n) q ≡
+  iterate (run (mobiusActivationAction x)) m
+    (iterate (run (mobiusActivationAction x)) n q)
+gruMobiusScan x zero n q = refl
+gruMobiusScan x (suc m) n q =
+  cong (run (mobiusActivationAction x)) (gruMobiusScan x m n q)
 
 record F4IntUState : Set where
   constructor f4IntUState
@@ -569,6 +574,24 @@ HardSparseLeft p = p ≡ (int8OfNat 128 , zero8)
 HardSparseRight : Sparsemax2Pair → Set
 HardSparseRight p = p ≡ (zero8 , int8OfNat 128)
 
+hardSparseLeft16 : HardSparseLeft
+  (fixedTemperatureSparsemax (actionScore (int8OfNat 16) (int8OfNat 0)))
+hardSparseLeft16 = refl
+
+hardSparseRight16 : HardSparseRight
+  (fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 16)))
+hardSparseRight16 = refl
+
+hardSparseLeft15 :
+  fixedTemperatureSparsemax (actionScore (int8OfNat 15) (int8OfNat 0)) ≡
+  (int8OfNat 124 , int8OfNat 4)
+hardSparseLeft15 = refl
+
+hardSparseRight15 :
+  fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 15)) ≡
+  (int8OfNat 4 , int8OfNat 124)
+hardSparseRight15 = refl
+
 hardSparseLeft32 : HardSparseLeft
   (fixedTemperatureSparsemax (actionScore (int8OfNat 32) (int8OfNat 0)))
 hardSparseLeft32 = refl
@@ -586,6 +609,13 @@ hardSparse-norm-optimizer-invariant K s n o h =
     (trans (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o)
       (canonicalPolicy-norm-invariant K s n))
     h
+
+hardSparse-composition-invariant :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) →
+  HardSparseLeft (canonicalPolicy K s) →
+  HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
+hardSparse-composition-invariant K s n o h =
+  hardSparse-norm-optimizer-invariant K s n o h
 
 endogenousNegativeScale8 : Sparsemax2Pair → Int8
 endogenousNegativeScale8 (l , r) = lcbNegate l
