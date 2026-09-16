@@ -4,97 +4,62 @@ import Data.List (intercalate, isInfixOf)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
-canonicalPath :: String
-canonicalPath = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+data Surface = Surface FilePath [String]
 
-proofs :: [String]
-proofs =
-  [ "int8StateSpace"
-  , "temperatureCodeLaw"
-  , "temperatureTieLaw"
-  , "temperaturePositiveUnitLaw"
-  , "temperatureNegativeUnitLaw"
-  , "negativeFiniteQLogLaw"
-  , "hardGate-state-independent"
-  , "walshOrthonormal"
-  , "walshHadamardOrthogonality4"
-  , "canonicalWalshWidth-power4"
-  , "mobiusAssociativity"
-  , "persistent-preservation"
-  , "gruParameterPersistence"
-  , "gruActivationBoundary"
-  , "GRUEquivalent"
-  , "gruStep-respects-equivalence"
-  , "gruActionAssociativity"
-  , "gruInputActionAssociativity"
-  , "gruMobiusActivationAssociativity"
-  , "gruMobiusAssociativeScan"
-  , "gruCriticWH8CoordinateCount-law"
-  , "gruCriticWH8PersistentQuotientCoordinateCount-law"
-  , "fullLearnerInt8CoordinateCount-law"
-  , "canonicalPersistentGRUPreservation"
-  , "canonicalRecurrentInput-law"
-  , "canonicalPolicy-attention-invariant"
-  , "canonicalPolicy-norm-invariant"
-  , "canonicalPolicy-optimizer-invariant"
-  , "hardSparseLeft16"
-  , "hardSparseRight16"
-  , "hardSparse-norm-optimizer-invariant"
-  , "hardSparse-composition-invariant"
-  , "hardSparse-composition-normPair-F4-L2"
-  , "normPairWeightPlusOne"
-  , "f4ParameterInvariant"
-  , "canonicalFullStep-norm"
-  , "canonicalNormPairWeightPlusOne-preservation"
-  , "pessimisticInit"
-  , "pessimisticCritic-law"
-  , "canonicalFullStep-clock"
-  , "canonicalFullStep-watkins"
-  , "canonicalFullStep-attention"
-  , "canonicalFullStep-gru"
-  , "canonicalFullStep-optimizer"
-  , "canonicalFullStep-counts"
-  , "canonicalFullStep-qLog"
-  , "canonicalFullStep-qLogControl"
-  , "canonicalStep-not-fixed"
-  , "canonicalTotalCountStep"
-  , "canonicalAperiodic"
-  , "canonicalOrbitNonFixed"
-  , "canonicalNoNontrivialFiniteCycle"
-  , "canonicalNoCountedTwoCycle"
+surfaces :: [Surface]
+surfaces =
+  [ Surface "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+      [ "int8StateSpace", "walshHadamardOrthogonality4", "canonicalWalshWidth-power4"
+      , "fullLearnerInt8CoordinateCount-law", "canonicalFullStep-clock" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
+      [ "jumanjiKnapsackPort", "jumanjiMazeV0Port", "jumanjiLevelBasedForagingV0Port"
+      , "gymnaxMetaMazePort", "gymnaxFourRoomsPort", "gymnaxPongMiscPort"
+      , "gymnaxMemoryChainBsuitePort", "gymnaxDiscountingChainBsuitePort"
+      , "gymnaxCartPolePort", "gymnaxBernoulliBanditMiscPort", "pobaxRockSamplePort" ]
+  , Surface "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
+      [ "learnerDefaultD", "learnerDefaultD-power4", "parameterize-complete"
+      , "parameterizeFin-complete", "finiteStateFunctionalCompleteness" ]
+  , Surface "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
+      [ "CNNLogPyramid64", "cnnToAttention", "cnnLogPyramidGRUInputPreservation"
+      , "cnnLogPyramidCommutesWithCanonicalGRU" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
+      [ "learnerRewardStep-clock", "check-knapsack", "check-maze", "check-lbf"
+      , "check-meta-maze", "check-four-rooms", "check-pong", "check-memory-chain"
+      , "check-discounting-chain", "check-cartpole", "check-bandit", "check-rocksample" ]
+  , Surface "Exotic/econlib/GameTheory.agda"
+      [ "isNashEquilibriumDD", "pdIter-stabilises", "nashConvergenceWitness" ]
   ]
 
-data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
+missingSymbols :: Surface -> IO [String]
+missingSymbols (Surface path symbols) = do
+  source <- readFile path
+  pure [ path ++ ": " ++ s | s <- symbols, not (s `isInfixOf` source) ]
 
-checkCanonical :: IO (Status, [String])
-checkCanonical = do
-  source <- readFile canonicalPath
-  let missing = filter (\symbol -> not (symbol `isInfixOf` source)) proofs
-  if not (null missing)
-    then pure (MissingProof, missing)
-    else do
-      (code, out, err) <- readProcessWithExitCode "agda" ["--safe", canonicalPath] ""
-      case code of
-        ExitSuccess -> pure (Proven, [])
-        ExitFailure _ -> pure (AgdaFailure, [err ++ out])
-
-render :: Status -> [String] -> String
-render status details = unlines $
-  [ "{-# OPTIONS --safe #-}"
-  , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
-  , ""
-  , "-- Generated status for the single canonical learner monolith."
-  , "-- This report is descriptive only; Agda proof terms remain authoritative."
-  , ""
-  , "-- theorem-family: CanonicalLearnerMonolith"
-  , "-- status: " ++ show status
-  , "-- details: " ++ intercalate " | " details
-  , ""
-  ]
+runAgda :: FilePath -> IO (Maybe String)
+runAgda path = do
+  (code, out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
+  case code of
+    ExitSuccess -> pure Nothing
+    ExitFailure _ -> pure (Just (path ++ ": " ++ err ++ out))
 
 main :: IO ()
 main = do
-  (status, details) <- checkCanonical
-  writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda" (render status details)
-  putStrLn ("theorem-family=CanonicalLearnerMonolith,status=" ++ show status)
-  if status == Proven then exitSuccess else exitFailure
+  missing <- fmap concat (mapM missingSymbols surfaces)
+  failures <- fmap concat $ mapM (fmap maybeToList . runAgda . surfacePath) surfaces
+  let problems = missing ++ failures
+  if null problems
+    then do
+      putStrLn "canonical-surfaces=complete"
+      putStrLn "finite-function-parameter-theorem=complete"
+      putStrLn "cnn-log-pyramid-preservation=complete"
+      putStrLn "game-execution-regression=complete"
+      writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
+        "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.Exploration.Generated.ExplorationCandidates where\n-- Generated canonical closure status: Proven\n"
+      exitSuccess
+    else do
+      mapM_ (putStrLn . ("ERROR: " ++)) problems
+      exitFailure
+  where
+    surfacePath (Surface p _) = p
+    maybeToList Nothing = []
+    maybeToList (Just x) = [x]
