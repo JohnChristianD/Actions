@@ -22,10 +22,10 @@ data DyadicTree (A : Set) : Nat → Set where
   leaf : A → DyadicTree A zero
   node : ∀ {n} → DyadicTree A n → DyadicTree A n → DyadicTree A (suc n)
 
-dyadicMean : ∀ {M : MidpointOrder} {n : Nat} →
+dyadicMean : (M : MidpointOrder) → ∀ {n : Nat} →
   DyadicTree (Carrier M) n → Carrier M
-dyadicMean (M) {zero} (leaf x) = x
-dyadicMean M {suc n} (node xs ys) = midpoint M (dyadicMean M xs) (dyadicMean M ys)
+dyadicMean M (leaf x) = x
+dyadicMean M (node xs ys) = midpoint M (dyadicMean M xs) (dyadicMean M ys)
 
 mapDyadicTree : ∀ {A B : Set} {n : Nat} →
   (A → B) → DyadicTree A n → DyadicTree B n
@@ -53,10 +53,7 @@ jensenDyadicConvex :
   ∀ {n : Nat} (xs : DyadicTree (Carrier A) n) →
   _≤_ B (f (dyadicMean A xs))
     (dyadicMean B (mapDyadicTree f xs))
-jensenDyadicConvex C (leaf x) = le-refl B (f x)
-  where
-    open MidpointConvex C
-    f = _
+jensenDyadicConvex {f = f} C (leaf x) = le-refl B (f x)
 jensenDyadicConvex C (node xs ys) =
   le-trans B
     (convexStep C (dyadicMean A xs) (dyadicMean A ys))
@@ -71,10 +68,7 @@ jensenDyadicConcave :
   ∀ {n : Nat} (xs : DyadicTree (Carrier A) n) →
   _≤_ B (dyadicMean B (mapDyadicTree f xs))
     (f (dyadicMean A xs))
-jensenDyadicConcave C (leaf x) = le-refl B (f x)
-  where
-    open MidpointConcave C
-    f = _
+jensenDyadicConcave {f = f} C (leaf x) = le-refl B (f x)
 jensenDyadicConcave C (node xs ys) =
   le-trans B
     (midpoint-mono B
