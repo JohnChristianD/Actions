@@ -9,7 +9,6 @@ open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_)
-open import Data.Empty using (⊥)
 
 record Int8 : Set where
   constructor int8
