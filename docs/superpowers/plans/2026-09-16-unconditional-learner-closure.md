@@ -66,6 +66,6 @@
 
 ### Task 5: Final acceptance
 
-- [ ] Fresh GitHub Actions canonical learner gate passes. Current run: `35065377146` (in progress at `Check self-contained canonical learner`).
+- [ ] Fresh GitHub Actions canonical learner gate passes. Current run: `35065377146` was started from the pre-ledger head; a fresh run for the latest head is expected from the push event.
 - [ ] Generated theorem report is produced from the exact canonical source and passes `agda --safe`.
-- [x] No hole/postulate scanner failure occurred before the Agda step on the current run.
+- [x] No hole/postulate scanner failure occurred before the Agda step on the prior exact head.
