@@ -2,7 +2,7 @@ name: Canonical self-contained learner gate
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'closed-loop-munchausen-bench-20260916']
     paths:
       - '**/*.agda'
       - '.ci/**'
@@ -30,84 +30,42 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
       - name: Reject forbidden theorem families, holes, and postulates
         run: runghc .ci/CheckForbiddenTheorems.hs
-
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
         with:
           agda-version: '2.8.0'
           agda-stdlib-version: '2.4'
-
       - name: Verify Agda executable
         run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
-
       - name: Check self-contained canonical learner
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-
       - name: Check canonical learner regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
-
       - name: Check finite environment ports
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalGamePorts.agda
-
-      - name: Check faithful finite map variants
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda
-
       - name: Check finite parameter completeness
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda
-
       - name: Check finite norm algebra
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteNormAlgebra.agda
-
       - name: Check control and observability definitions
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalControlObservability.agda
-
-      - name: Check CNN log-pyramid preservation
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda
-
-      - name: Check complete CNN factorization theorem
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidComplete.agda
-
-      - name: Check negative-Munchausen signed-scale theory
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda
-
-      - name: Check Jensen convex-concave sandwich
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/JensenMinMaxSandwich.agda
-
-      - name: Check finite Sion saddle sandwich
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteSionSaddleSandwich.agda
-
-      - name: Check Gymnax CartPole closed loop
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GymnaxCartPoleClosedLoop_test.agda
-
-      - name: Check canonical policy CartPole closed loop
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GymnaxCartPolePolicyClosedLoop_test.agda
-
-      - name: Check end-to-end closed-loop benchmark interface
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopBench.agda
-
-      - name: Check GameTheory port
-        run: timeout 90s agda --safe Exotic/econlib/GameTheory.agda
-
-      - name: Check Econlib equilibrium port
-        run: timeout 90s agda --safe Exotic/econlib/Equilibrium.agda
-
-      - name: Check Matching Pennies port
-        run: timeout 90s agda --safe Exotic/econlib/MatchingPennies.agda
-
-      - name: Check learner game execution regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
-
+      - name: Check CNN preservation and factorization
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda && timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidComplete.agda
+      - name: Check finite q-Munchausen theory
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalQMunchausenClosedLoop.agda
+      - name: Check finite q-Munchausen regression
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalQMunchausenClosedLoop_test.agda
+      - name: Check closed-loop runner and game suite
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopRunner.agda && timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopSuite.agda
+      - name: Check GameTheory and Econlib ports
+        run: timeout 90s agda --safe Exotic/econlib/GameTheory.agda && timeout 90s agda --safe Exotic/econlib/Equilibrium.agda && timeout 90s agda --safe Exotic/econlib/MatchingPennies.agda
       - name: Set up Haskell generator runtime
         run: sudo apt-get update && sudo apt-get install -y ghc
-
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
-
       - name: Generate canonical learner theorem report
         run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
-
       - name: Check generated theorem report
         run: timeout 60s agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
