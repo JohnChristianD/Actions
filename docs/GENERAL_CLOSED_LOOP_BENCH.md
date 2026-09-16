@@ -1,57 +1,71 @@
-# General finite-action learner benchmark
+# General closed-loop learner bench
 
-Default action arity: 64.
+## Canonical boundary
 
-The learner monolith is `Exotic/ERL/FullCoupled/GeneralActionLearnerMonolith.agda`. Games remain separate in `Exotic/ERL/FullCoupled/CanonicalGamePorts.agda`; the benchmark adapter is `Exotic/ERL/FullCoupled/GeneralClosedLoopBench.agda`.
+`Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda` is the learner kernel. It is environment-agnostic and uses the finite-action surfaces `QVec A = Fin A -> Int8` and `CountVec A = Fin A -> Nat`. Environment definitions remain external in `CanonicalGamePorts.agda`.
+
+Default width is `d = 64`, and `powerOfFour64` constructs the witness `64 = 4^3`.
+
+## Sparsemax action arity
+
+The old 2-action interface is no longer the type boundary. `actionSpace2`, `actionSpace4`, and `defaultActionSpace : ActionSpace 64` are all instances of the same `ActionSpace A` interface.
+
+The kernel performs finite score ordering and a finite support-size search and exposes the exact threshold-style numerator/denominator representation in `SparseWeight`. The closed-loop action selector currently uses the maximal sorted score, so the repository must not describe this as a fully proved Euclidean sparsemax projection until the KKT/simplex normalization theorem is added and typechecked.
+
+`Data.Fin` is the essential finite-index convenience. A commutative semiring-with-no-zero-divisors is not required and would in fact describe the wrong arithmetic carrier for modulo-256 Int8, which has zero divisors. `Data.Nat.Properties`, vector/list functional modules, semiring property bundles, and sorting libraries are optional proof conveniences rather than logical necessities of the present kernel.
 
 ## Closed-loop semantics
 
-Each step is threaded as
+The intended loop is:
 
-```text
-learner state
-  -> generalPolicy
-  -> finite action
-  -> game step
-  -> reward + next game state
-  -> generalStep
-  -> next learner state
-```
+`learner state -> generalPolicy -> finite action -> modular game step -> reward/next game state -> learnerStep -> next learner state`.
 
-The learner is not reinitialized between environment steps. `generalStep-clock` and `generalNoFixedPoint` are checked on the learner transition.
+`GeneralClosedLoopBenchV2.agda` now implements that learner-selected loop and records exact finite values:
 
-## Action arity
+- `return`: cumulative encoded reward,
+- `regret`: `referenceReturn - return` under Nat subtraction,
+- `success`: terminal-success bit,
+- `steps`: actual transitions executed.
 
-The old canonical learner exposes an exact two-action sparsemax surface. The generalized monolith removes that architectural bottleneck at the interface level: `QVec A = Fin A -> Int8`, `CountVec A = Fin A -> Nat`, and the policy consumes arbitrary positive finite action arity.
+The Munchausen and no-Munchausen pair uses the same environment, horizon, initial learner state, action space, action decoder, optimizer, GRU, NormPair, and reward adapter. Only `MunchausenMode` changes.
 
-The generalized selector is explicitly named `sparsemaxExtremeA`: it returns a simplex vertex with one-hot Int8 weight 128. This is an extreme-point sparse policy, not a claim that the finite Int8 implementation is the full Euclidean sparsemax projection for arbitrary A. The old exact two-action sparsemax equations remain separately checked.
+These are deterministic finite projections. They are not numerically interchangeable with floating-point/stochastic Gymnax when an upstream environment uses continuous dynamics, transcendental functions, or random resets.
 
-## Munchausen ceteris paribus
+## Environment suite
 
-Every game has two symbolic benchmark records:
+The bench instantiates CartPole, BernoulliBandit, MetaMaze, FourRooms, Maze, Jumanji Knapsack, LevelBasedForaging, Pong, MemoryChain, DiscountingChain, and Pobax RockSample through external modular ports.
 
-- `*-plain` uses `noMunchausen`.
-- `*-munchausen` uses `useMunchausen`.
+The formal learner does not import those game modules. Only the benchmark adapter imports the game ports.
 
-Everything else in the generalized kernel is unchanged. The current finite kernel's Munchausen term is the repository's negative finite Int8 shaping term, `int8Neg reward`; it is not asserted here as a floating-point log-policy implementation.
+## Gymnax published reference points
 
-## Metrics
+Gymnax's current README lists checkpoint returns of:
 
-`LoopResult` records:
+- CartPole-v1: `500`
+- BernoulliBandit-misc: `90`
+- MetaMaze-misc: `32`
+- FourRooms-misc: `1`
+- MemoryChain-bsuite: `0.1`
+- DiscountingChain-bsuite: `1.1`
 
-- `return`: accumulated finite reward code.
-- `regret`: `optimalReturn - return`, truncated at zero in `Nat`.
-- `success`: 1 when a terminal success transition is observed, else 0.
-- `steps`: actual closed-loop transitions executed.
+The same table lists Pong-misc without a checkpoint return. Gymnax says its displayed throughput figures are estimated for 1M random-policy transitions on an NVIDIA A100 using JIT-compiled episode rollouts with 2000 workers. Those figures are not used as claims about this Agda learner.
 
-These are raw finite benchmark values. No statistical aggregation, significance testing, or external data analysis is part of the Agda source.
+The Gymnax README also describes its functional rollout pattern as policy action selection followed by `env.step`, with complete episode loops expressible through `jax.lax.scan`. That is the closest execution-level comparison with the Agda closed-loop interface.
 
-## External references
+## Munchausen ablation
 
-CleanRL documents classic-control DQN separately from its Atari DQN. Its `dqn.py` supports CartPole-v1 with a discrete action network and uses replay/target-network DQN machinery. The maintained documentation exposes CartPole learning curves and benchmark scripts, but those experiments are not directly comparable to this deterministic finite Agda projection without matching environment dynamics, network, horizon, optimizer, exploration, and seeds.
+`AblationPair` contains `plain` and `munchausen` runs from exactly the same initial state and horizon. A usefulness statement is valid only after the current Agda gate has typechecked the benchmark and the exact `LoopResult` values have been observed. No statistical aggregation is encoded in the formal source.
 
-Gymnax reports accelerated environment baselines in its README and `gymnax-blines`. The README lists, among others, CartPole-v1 PPO/ES with reported return 500, FourRooms-misc PPO/ES with return 1, MemoryChain-bsuite PPO/ES with return 0.1, and DiscountingChain-bsuite PPO/ES with return 1.1. Those are external reference reports, not measurements of this Agda learner.
+## CNN theorem boundary
+
+The learner contains no CNN component. `ExternalCNNTransitionBisimulation.agda` defines the minimal external adapter chain:
+
+`ExternalCNN.encode -> RepresentationAdapter.decode -> LearnerTransition.input -> next-state`.
+
+The proven content is representation-equality propagation through the learner input map and arbitrary next-state map. A stronger bisimulation theorem requires a relation on external CNN representations that is preserved by the representation map and learner transition; an approximate version additionally needs an explicit metric/pseudometric and error bound.
+
+For theorem-level comparison, a finite CNN should be specified independently as a finite composition of shared local linear/convolution operators, pointwise nonlinearities, and optional stride/pooling/readout operators. This keeps CNN structure external to the learner while making any later function-class theorem precise.
 
 ## Evidence status
 
-The source changes in this branch have been wired into `.github/workflows/agda.yml`, but the current ChatGPT execution environment does not contain an Agda executable and the GitHub connector cannot create a pull request or dispatch a workflow run from this branch. Consequently the exact numeric normalization of the benchmark records has not been externally observed here. The source is treated as pending CI verification rather than silently promoted to a completed benchmark.
+No local Agda compiler is present in this execution environment. The branch workflow has therefore been configured to run on the development branch itself, allowing Agda 2.8.0 + stdlib 2.4 to be the external proof oracle. Until that branch run returns success, the generalized sparsemax and closed-loop benchmark are pending external typecheck rather than silently treated as complete.
