@@ -1,4 +1,4 @@
-name: Focused Agda learner theorem gate
+name: Canonical self-contained learner gate
 
 on:
   push:
@@ -34,56 +34,26 @@ jobs:
       - name: Reject forbidden theorem families
         run: runghc .ci/CheckForbiddenTheorems.hs
 
-      - name: Set up Haskell generator runtime
-        run: sudo apt-get update && sudo apt-get install -y ghc
-
-      - name: Audit redundant canonical components
-        run: runghc .ci/discovery/PruneRedundantComponents.hs
-
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
         with:
           agda-version: '2.8.0'
           agda-stdlib-version: '2.4'
 
-      - name: Verify Agda executable and standard library
+      - name: Verify Agda executable
         run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
+
+      - name: Check self-contained canonical learner
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+
+      - name: Set up Haskell generator runtime
+        run: sudo apt-get update && sudo apt-get install -y ghc
+
+      - name: Audit redundant learner modules
+        run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
 
       - name: Generate canonical learner theorem report
         run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
 
-      - name: Check shared Int8 algebra
-        run: agda --safe Exotic/efficient_chad/Int8.agda
-
-      - name: Check finite Mobius rational boundary
-        run: agda --safe Exotic/ERL/FullCoupled/MobiusRational.agda
-
-      - name: Check finite Mobius recurrent state
-        run: agda --safe Exotic/ERL/FullCoupled/DyadicGRU.agda
-
-      - name: Check normalized Walsh-Hadamard boundary
-        run: agda --safe Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda
-
-      - name: Check direct Watkins critic-only layer
-        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda
-
-      - name: Check direct Watkins critic-only regression
-        run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins_test.agda
-
-      - name: Check canonical fixed-temperature sparsemax learner monolith
-        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda
-
-      - name: Check canonical fixed-temperature sparsemax learner regression
-        run: agda --safe Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2_test.agda
-
-      - name: Check canonical generated theorem report
+      - name: Check generated theorem report
         run: agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
-
-      - name: Check strict count-memory exclusion
-        run: agda --safe Exotic/ERL/FullCoupled/CountMemoryCycleTheorem.agda
-
-      - name: Check strict count-memory regression
-        run: agda --safe Exotic/ERL/FullCoupled/CountMemoryCycleTheorem_test.agda
-
-      - name: Check Mobius semidirect recurrent composition
-        run: agda --safe Exotic/ERL/FullCoupled/MobiusSemidirectCycleComposition.agda
