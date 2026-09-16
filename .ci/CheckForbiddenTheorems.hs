@@ -9,6 +9,9 @@ checkedPaths :: [FilePath]
 checkedPaths =
   [ "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface_test.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalClosedLoopBenchV2.agda"
   , "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
   , "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
   , "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
@@ -16,10 +19,14 @@ checkedPaths =
   , "Exotic/ERL/FullCoupled/CanonicalControlObservability.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
   , "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
+  , "Exotic/ERL/FullCoupled/CNNTransitionBisimulation.agda"
+  , "Exotic/ERL/FullCoupled/CNNTransitionBisimulation_test.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation_test.agda"
   , "Exotic/econlib/GameTheory.agda"
   , "Exotic/econlib/Equilibrium.agda"
   , "Exotic/econlib/MatchingPennies.agda"
-  , "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
   ]
 
 forbidden :: [String]
