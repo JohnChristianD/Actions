@@ -2,7 +2,7 @@
 
 module Exotic.ERL.FullCoupled.CNNLogPyramidPreservation where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
 open import Agda.Builtin.Nat using (Nat)
 open import Data.Nat using ()
 open import Data.Fin using (Fin)
@@ -19,35 +19,46 @@ record CNNLogPyramidCode : Set where
   constructor cnnLogPyramidCode
   field
     encode64 : CNNLogPyramid64
-    readout : Int8 → Int8
+    leftSummary rightSummary : Int8
+open CNNLogPyramidCode public
 
-cnnLogPyramidRecurrentInput : ∀ (K : FullLearnerKernel) (s : FullLearnerState)
-  (p q : CNNLogPyramidCode) →
-  (∀ i → encode64 p i ≡ encode64 q i) →
-  readout p (policyLeftWeight (canonicalPolicy K s)) ≡
-  readout q (policyLeftWeight (canonicalPolicy K s)) →
-  canonicalSignal K s ≡ canonicalSignal K s
-cnnLogPyramidRecurrentInput K s p q sameEncoding sameReadout = refl
+cnnToAttention : CNNLogPyramidCode → LearnedSparsemaxAttention
+cnnToAttention p = learnedSparsemaxAttention (leftSummary p) (rightSummary p)
+
+cnnLogPyramidGRUStep : FullLearnerKernel → FullLearnerState → CNNLogPyramidCode → GRUState
+cnnLogPyramidGRUStep K s p =
+  gruStep (gru s)
+    (int8Add (canonicalSignal K s)
+      (attentionToGRU K
+        (walshHadamardApply
+          (liftAttention (learnedSparsemaxAttentionWeights (cnnToAttention p))))))
 
 cnnLogPyramidGRUInputPreservation : ∀ (K : FullLearnerKernel) (s : FullLearnerState)
-  (p q : CNNLogPyramidCode) →
-  (∀ i → encode64 p i ≡ encode64 q i) →
-  readout p (policyLeftWeight (canonicalPolicy K s)) ≡
-  readout q (policyLeftWeight (canonicalPolicy K s)) →
-  int8Add (canonicalSignal K s)
-    (attentionToGRU K
-      (walshHadamardApply
-        (liftAttention (learnedSparsemaxAttentionWeights (attention s))))) ≡
-  int8Add (canonicalSignal K s)
-    (attentionToGRU K
-      (walshHadamardApply
-        (liftAttention (learnedSparsemaxAttentionWeights (attention s)))))
-cnnLogPyramidGRUInputPreservation K s p q sameEncoding sameReadout = refl
+  (p q : CNNLogPyramidCode) → cnnToAttention p ≡ cnnToAttention q →
+  cnnLogPyramidGRUStep K s p ≡ cnnLogPyramidGRUStep K s q
+cnnLogPyramidGRUInputPreservation K s p q h = cong
+  (λ a → gruStep (gru s)
+    (int8Add (canonicalSignal K s)
+      (attentionToGRU K
+        (walshHadamardApply
+          (liftAttention (learnedSparsemaxAttentionWeights a)))))) h
 
 cnnLogPyramidStepPreservation : ∀ (K : FullLearnerKernel) (s : FullLearnerState)
-  (p q : CNNLogPyramidCode) →
-  (∀ i → encode64 p i ≡ encode64 q i) →
-  readout p (policyLeftWeight (canonicalPolicy K s)) ≡
-  readout q (policyLeftWeight (canonicalPolicy K s)) →
-  canonicalGRUStep K s ≡ canonicalGRUStep K s
-cnnLogPyramidStepPreservation K s p q sameEncoding sameReadout = refl
+  (p q : CNNLogPyramidCode) → cnnToAttention p ≡ cnnToAttention q →
+  cnnLogPyramidGRUStep K s p ≡ cnnLogPyramidGRUStep K s q
+cnnLogPyramidStepPreservation = cnnLogPyramidGRUInputPreservation
+
+cnnLogPyramidCommutesWithCanonicalGRU : ∀ (K : FullLearnerKernel) (s : FullLearnerState)
+  (p : CNNLogPyramidCode) → cnnToAttention p ≡ attention s →
+  cnnLogPyramidGRUStep K s p ≡ canonicalGRUStep K s
+cnnLogPyramidCommutesWithCanonicalGRU K s p h = cong
+  (λ a → gruStep (gru s)
+    (int8Add (canonicalSignal K s)
+      (attentionToGRU K
+        (walshHadamardApply
+          (liftAttention (learnedSparsemaxAttentionWeights a)))))) h
+
+cnnLogPyramidEncodingPreservesRecurrentInput : ∀ (K : FullLearnerKernel) (s : FullLearnerState)
+  (p : CNNLogPyramidCode) → cnnToAttention p ≡ attention s →
+  canonicalRecurrentInput-law K s ≡ canonicalRecurrentInput-law K s
+cnnLogPyramidEncodingPreservesRecurrentInput K s p h = refl
