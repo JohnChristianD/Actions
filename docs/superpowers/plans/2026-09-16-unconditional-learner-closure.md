@@ -18,8 +18,18 @@ Authority: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` plus the synch
 
 - [x] Replication default `d = 64`.
 - [x] `FiniteParameterCompleteness.agda` proves `64 = 4^3` and finite function-table completeness.
-- [x] Effective theorem algebra documented below ring level: finite data, Nat arithmetic, equality/negation, products, and endomorphism composition.
-- [x] Current source retained on the eight direct standard-library imports it actually uses.
+- [x] Effective learner theorem algebra documented below ring level: finite data, Nat arithmetic, equality/negation, products, and endomorphism composition.
+- [x] Canonical learner remains on eight direct standard-library imports.
+- [x] `FiniteNormAlgebra.agda` defines exact finite two-weight L1 and 1-path norms with componentwise Nat order and zero-product deductions.
+- [x] Explicitly separated those finite definitions from the PSiLON/Hidden-Synergy theorem hypotheses. No theorem is claimed for the current GRU+sparsemax composition without matching hypotheses.
+
+## Reachability and observation
+
+- [x] `CanonicalControlObservability.agda` defines finite-step reachability along the canonical transition.
+- [x] Every canonical forward-orbit point is proved reachable by its iterate count.
+- [x] A deliberately weak orbit-controllability predicate is proved because no external control input exists in the learner state machine.
+- [x] Full-state observation is injective and clock observation preserves the exact `clock + n` iterate law.
+- [x] No Kalman/nonlinear steering, practical-control, environment controllability, or sensor-identification theorem is claimed.
 
 ## Environment replication
 
@@ -40,25 +50,30 @@ Authority: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` plus the synch
 ## CNN/log-pyramid preservation
 
 - [x] `CNNLogPyramid64` explicit 64-index representation.
-- [x] `cnnToAttention` decoder.
+- [x] `cnnToAttention` decoder and induced equivalence relation are explicit and prove reflexivity/symmetry/transitivity.
 - [x] GRU-input preservation under equal decoded attention state.
-- [x] Commuting theorem from CNN pyramid representation into the existing `canonicalGRUStep`.
-- [ ] A theorem for arbitrary CNN convolution/pooling architectures remains outside the current source because no CNN layer algebra is defined.
+- [x] Commuting theorem from a decoded pyramid representation into the existing `canonicalGRUStep`.
+- [ ] No bijection with an arbitrary CNN architecture is claimed.
+- [ ] No approximation metric or error bound is claimed.
+- [ ] No function-class separation from fixed-depth CNNs is claimed, because no competing CNN class/metric has been defined.
 
-## GameTheory and retired branches
+## GameTheory and pruning
 
-- [x] `GameTheory.agda` moved to the canonical eight-import surface and removed `efficient_chad.Int8` dependency.
-- [x] Current repository search finds no active `MR15Reachability`, `OpenESDyadic`, or `NoisyNetCoupled` references on the canonical branch.
-- [x] Current branch inventory has no active remote refs named Noisy Nets, OpenES, or MR15.
+- [x] `GameTheory.agda` remains an external modular theorem/test surface and now uses seven direct standard-library imports with no `efficient_chad.Int8` dependency.
+- [x] Current learner monolith does not import GameTheory.
+- [x] Prisoner’s Dilemma pure-Nash, best-response, stabilization, and finite iteration proofs remain explicit.
+- [x] `MR15Reachability`, `OpenESDyadic`, and `NoisyNetCoupled` are absent from the canonical branch.
+- [x] Broken v147 interpolation/trigger/wake marker files and the old three-file exploration schema/counterfactual cluster were pruned.
+- [ ] Remaining legacy repository tooling is retained unless a zero-user audit proves it is safe to delete; CI synchronization scripts are not pruned merely because they are old.
 
 ## Synchronization
 
-- [x] Forbidden-theorem scanner covers learner, game ports, faithful map variants, completeness, CNN preservation, execution regression, GameTheory, and generated report.
-- [x] Haskell theorem generator checks all required surfaces and runs Agda safe checks.
+- [x] Forbidden-theorem scanner covers learner, game ports, faithful map variants, completeness, finite norm algebra, control/observability, CNN preservation, execution regression, GameTheory, and generated report.
+- [x] Haskell theorem generator checks all maintained theorem surfaces and runs Agda safe checks.
 - [x] Workflow compiles all maintained Agda surfaces before generation.
-- [x] Replication wiki synchronized to d64, finite functional completeness, game ports, CNN preservation, state accounting, and exact Nat rank.
-- [x] Main-branch pushes, PRs, schedules, and manual workflow dispatch use the same canonical gate, so merges automatically re-enter the synchronization/verification path.
+- [x] Replication wiki synchronized to d64, finite functional completeness, finite norm definitions, formal control vocabulary, game ports, CNN preservation, state accounting, exact Nat rank, and pruning boundaries.
+- [x] Main-branch pushes, PRs, hourly schedule, and manual workflow dispatch use the same canonical verification path.
 
 ## Acceptance
 
-The active PR is `#36`, branch `agda-theorem-first-monolith-20260916`. The previous authoritative gate failed only after the canonical clock proof and before the new environment surface existed. A failed-job rerun has now been requested against the current PR checkout. Do not mark the branch green until canonical Agda, all port/faithful-map surfaces, completeness, CNN preservation, learner execution regression, generator, redundancy audit, and generated report all pass on the current PR head.
+The active PR is `#36`, branch `agda-theorem-first-monolith-20260916`. The previous current-head gate failed at the canonical clock normalization proof with `clock s != clock s + zero`; the proof has since been repaired. A fresh run must now compile the restored monolith plus every newly gated surface. Do not mark the branch green until current-head canonical Agda, ports, faithful maps, parameter completeness, finite norm algebra, control/observability, CNN preservation, GameTheory, learner execution regression, generator, redundancy audit, and generated report all pass.
