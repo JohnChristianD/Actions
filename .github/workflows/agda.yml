@@ -52,6 +52,9 @@ jobs:
       - name: Check finite environment ports
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalGamePorts.agda
 
+      - name: Check faithful finite map variants
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda
+
       - name: Check finite parameter completeness
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda
 
