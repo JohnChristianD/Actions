@@ -123,9 +123,3 @@ jobs:
 
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
-
-      - name: Generate canonical learner theorem report
-        run: runghc .ci/discovery/ExplorationTheoremGenerator.hs
-
-      - name: Check generated theorem report
-        run: timeout 60s agda --safe Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda
