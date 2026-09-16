@@ -1,16 +1,14 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.SparsemaxCriticWatkins where
 
-open import Agda.Builtin.Equality using (_≡_)
-open import Agda.Builtin.Nat using (Nat; suc)
+open import Agda.Builtin.Equality using (_≡_; refl)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Int as I
 open import Data.Empty using (⊥)
-open import Exotic.efficient_chad.Int8 using (Int8)
-open import Exotic.ERL.FullCoupled.Int8SparsemaxLiteral using
-  ( ActionScore
-  ; actionScore
-  ; Sparsemax2Pair
-  ; sparsemax2Weights
-  )
+open import Data.Fin using (toℕ)
+open import Data.Nat using (_∸_; _<ᵇ_)
+open import Data.Product using (_×_; _,_)
+open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
 open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
   ( LyapunovCertificate
   ; iterate
@@ -18,8 +16,45 @@ open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
   ; noNontrivialFiniteCycle
   )
 
--- The critic is the sole learned policy source. No separate deterministic
--- actor parameterization is part of the policy definition.
+record ActionScore : Set where
+  constructor actionScore
+  field left right : Int8
+open ActionScore public
+
+Sparsemax2Pair : Set
+Sparsemax2Pair = Int8 × Int8
+
+signedCode : Int8 → I.Int
+signedCode x with toℕ (code x) <ᵇ 128
+... | true = I.pos (toℕ (code x))
+... | false = I.negsuc (255 ∸ toℕ (code x))
+
+halfNat : Nat → Nat
+halfNat zero = zero
+halfNat (suc zero) = zero
+halfNat (suc (suc n)) = suc (halfNat n)
+
+halfInt : I.Int → I.Int
+halfInt (I.pos n) = I.pos (halfNat n)
+halfInt (I.negsuc n) = I.pos zero
+
+clampQ7 : I.Int → Int8
+clampQ7 (I.pos n) with n <ᵇ 129
+... | true = int8OfNat n
+... | false = int8OfNat 128
+clampQ7 (I.negsuc n) = int8OfNat 0
+
+complement128 : Int8 → Int8
+complement128 x = int8OfNat (128 ∸ toℕ (code x))
+
+sparsemax2Weights : ActionScore → Sparsemax2Pair
+sparsemax2Weights (actionScore l r) =
+  let d = I._-_ (signedCode l) (signedCode r)
+      leftWeight = clampQ7 (halfInt (I._+_ (I.pos 128) (I._*_ (I.pos 8) d)))
+  in leftWeight , complement128 leftWeight
+
+-- The critic is the sole learned action-selection source. There is no actor
+-- parameter block in this carrier.
 record CriticState : Set where
   constructor criticState
   field
@@ -35,7 +70,6 @@ criticSparsemaxPolicy c = sparsemax2Weights (criticScores c)
 data BoolLike : Set where
 enabled disabled : BoolLike
 
--- The current monolith keeps this as an explicit finite critic-side control.
 record SignedQLogControl : Set where
   constructor signedQLogControl
   field
@@ -104,7 +138,7 @@ wholeCriticWatkinsNoNontrivialFiniteCycle :
   (L : WholeCriticWatkinsLyapunov K)
   {s : SparsemaxCriticWatkinsState} (n : Nat)
   → iterate (wholeStep K) (suc n) s ≡ s
-  → OrbitNonFixed {step = wholeStep K} s
+  → OrbitNonFixed s
   → ⊥
 wholeCriticWatkinsNoNontrivialFiniteCycle L =
   noNontrivialFiniteCycle (wholeCriticWatkinsCertificate L)
