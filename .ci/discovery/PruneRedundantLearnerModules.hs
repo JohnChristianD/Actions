@@ -14,16 +14,10 @@ candidates :: [FilePath]
 candidates =
   [ "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda"
   , "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2_test.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxCriticWatkins_test.agda"
   , "Exotic/ERL/FullCoupled/DyadicGRU.agda"
-  , "Exotic/ERL/FullCoupled/MobiusRational.agda"
-  , "Exotic/ERL/FullCoupled/MobiusGroup.agda"
   , "Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda"
   , "Exotic/ERL/FullCoupled/Int8StabilityComposition.agda"
-  , "Exotic/ERL/FullCoupled/MobiusSemidirectCycleComposition.agda"
   , "Exotic/ERL/FullCoupled/FiniteSemidirectComposition.agda"
-  , "Exotic/ERL/FullCoupled/GRUCompositionAlgebra.agda"
   , "Exotic/ERL/FullCoupled/CountMemoryCycleTheorem.agda"
   , "Exotic/ERL/FullCoupled/CountMemoryCycleTheorem_test.agda"
   , "Exotic/ERL/FullCoupled/AllSafeCombined.agda"
@@ -65,9 +59,13 @@ usersOf modName = do
 
 prunable :: FilePath -> IO Bool
 prunable path = do
-  users <- usersOf (moduleName path)
-  putStrLn $ "candidate=" ++ path ++ ",module=" ++ moduleName path ++ ",users=" ++ show users
-  pure (null users)
+  exists <- doesFileExist path
+  if not exists
+    then pure False
+    else do
+      users <- usersOf (moduleName path)
+      putStrLn $ "candidate=" ++ path ++ ",module=" ++ moduleName path ++ ",users=" ++ show users
+      pure (null users)
 
 main :: IO ()
 main = do
