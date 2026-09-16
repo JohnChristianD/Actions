@@ -577,7 +577,7 @@ fullLearnerInt8CoordinateCount-law = refl
 gruCriticWH8CoordinateCount-law : gruCriticWH8CoordinateCount ≡ 15
 gruCriticWH8CoordinateCount-law = refl
 
-gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCount ≡ 14
+gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
 gruCriticWH8PersistentQuotientCoordinateCount-law = refl
 
 record GRUCriticWH8State : Set where
