@@ -40,12 +40,18 @@ Authority: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` plus the synch
 - [x] Exact Gymnax FourRooms 13x13 connectivity predicate.
 - [x] Explicitly distinguish deterministic finite projections from upstream stochastic/continuous numerical implementations.
 
-## Learner execution
+## Learner execution and closed loop
 
-- [x] `CanonicalLearnerGameExecution_test.agda` injects every port reward through an explicit `Fin 256` adapter.
-- [x] Canonical learner step executes after every reward injection.
-- [x] Clock-progress proof is checked for every listed environment.
-- [ ] Empirical learning quality/convergence remains intentionally unclaimed because the current theorem surface has no statistical or continuous-performance metric.
+- [x] The previous reward-injection regression is retained as a theorem-level diagnostic.
+- [x] `learnerRewardStep-reward-insensitive` proves that changing the injected reward does not change `canonicalFullStep`: the old integration harness was not reward-learning.
+- [x] `encodeActionReward`/`decodeAction` and `decodeReward` are exact finite round trips.
+- [x] `closedLoopCriticUpdate` supplies the missing action-conditioned critic interface and uses a finite TD target `r + 1/2 max Q`.
+- [x] `closedLoopStep` feeds the selected action and environment reward into the critic, attention signal, GRU input, optimizer input, and action-count memory.
+- [x] The closed-loop bench records total return, reference return, regret-as-reference-gap, success, and environment step count.
+- [x] Exact finite bench cases are instantiated for Knapsack, Maze, MetaMaze, FourRooms, CartPole, and both Bernoulli two-arm configurations.
+- [ ] The closed-loop transition is an explicit action-conditioned completion of the existing interfaces, not a claim that the original autonomous `canonicalFullStep` already implemented this transition semantics.
+- [ ] The `closedLoopTarget` is TD-style but is not yet a faithful implementation of a standard negative-Munchausen target-network DQN update; the existing `negativeFiniteQLog8` is not consumed by the critic update.
+- [ ] Upstream empirical convergence/sample-efficiency claims remain unmade until the finite projection and learner head match the reference environment/action-space semantics.
 
 ## CNN/log-pyramid preservation
 
@@ -76,4 +82,4 @@ Authority: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` plus the synch
 
 ## Acceptance
 
-The active PR is `#36`, branch `agda-theorem-first-monolith-20260916`. The previous current-head gate failed at the canonical clock normalization proof with `clock s != clock s + zero`; the proof has since been repaired. A fresh run must now compile the restored monolith plus every newly gated surface. Do not mark the branch green until current-head canonical Agda, ports, faithful maps, parameter completeness, finite norm algebra, control/observability, CNN preservation, GameTheory, learner execution regression, generator, redundancy audit, and generated report all pass.
+The active PR is `#36`, branch `agda-theorem-first-monolith-20260916`. The current head is being checked by workflow run `2275` (`35086935199`). Do not mark the branch green until current-head canonical Agda, ports, faithful maps, parameter completeness, finite norm algebra, control/observability, CNN preservation, GameTheory, learner execution regression, generator, redundancy audit, and generated report all pass.
