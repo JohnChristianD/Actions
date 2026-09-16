@@ -1,15 +1,21 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalMunchausenAblation where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; sym)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin; toℕ)
+open import Data.Fin.Properties using (toℕ-fromℕ<)
+open import Data.Nat using (_∸_)
+open import Data.Nat.DivMod using (m%n<n)
+open import Data.Product using (_×_; _,_)
+open import Data.Empty using (⊥)
+
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 open import Exotic.ERL.FullCoupled.CanonicalClosedLoopInterface
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
 
 finiteQLogCode8 : Int8 → Int8
-finiteQLogCode8 x = int8OfNat (numerator (finiteMaxEntQLog8 x))
+finiteQLogCode8 x = int8OfNat (numerator (finiteQLog8 x))
 
 noMunchausenReward8 : Int8 → Int8
 noMunchausenReward8 reward = reward
@@ -30,14 +36,13 @@ negativeMunchausenScale16 = refl
 
 negativeMunchausenWitness :
   negativeMunchausenReward8 zero8 16 (int8OfNat 2) ≢ noMunchausenReward8 zero8
-negativeMunchausenWitness eq =
-  let impossible : int8OfNat 240 ≡ zero8 = eq
-  in impossible
+negativeMunchausenWitness eq with cong (λ x → toℕ (code x)) eq
+... | ()
 
 selectedPolicyWeight : Fin 2 → FullLearnerState → Int8
 selectedPolicyWeight a s with learnedSparsemaxAttentionWeights identityAttention
-... | l , r with toℕ a
-...   | zero = policyLeftWeight (l , r)
+... | (l , r) with toℕ a
+...   | zero = l
 ...   | _ = r
 
 negativeMunchausenRewardForAction : FullLearnerState → Fin 2 → Int8 → Int8 → Int8
@@ -61,10 +66,10 @@ record AblationPair (S : Set) : Set where
     negativeMunchausenResult : EpisodeResult S
 open AblationPair public
 
-ablationReturnDifference : ∀ {S} (p : AblationPair S) →
+ablationReturnReflexive : ∀ {S} (p : AblationPair S) →
   totalReturn (noMunchausenResult p) ≡ totalReturn (noMunchausenResult p)
-ablationReturnDifference p = refl
+ablationReturnReflexive p = refl
 
-ablationClockParity : ∀ {S} (p : AblationPair S) →
+ablationClockInvariant : ∀ {S} (p : AblationPair S) →
   clock (finalLearner (noMunchausenResult p)) ≡ clock (finalLearner (negativeMunchausenResult p))
-ablationClockParity p = refl
+ablationClockInvariant p = refl
