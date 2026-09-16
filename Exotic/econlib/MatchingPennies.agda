@@ -46,7 +46,7 @@ natSelfLe : ∀ n → n ≤ n
 natSelfLe zero = z≤n
 natSelfLe (suc n) = s≤s (natSelfLe n)
 
-oneNotLeZero : 1 ≤ 0 → heads ≢ heads
+oneNotLeZero : ∀ {a : Action} → 1 ≤ 0 → a ≢ a
 oneNotLeZero ()
 
 matchingPennies-no-pure : ∀ {a b} → PureNash a b → a ≢ a
