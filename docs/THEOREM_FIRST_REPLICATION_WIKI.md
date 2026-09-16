@@ -1,16 +1,18 @@
 # Theorem-first canonical learner replication prompt
 
-This is the replication authority. Agda `--safe` proof terms are authoritative. Haskell generation and redundancy auditing are checks, not theorem sources.
+This document is the replication authority. Agda `--safe` proof terms are authoritative. Game environments remain external modular test fixtures. Haskell scripts are audits only.
 
-## Canonical learner
+## 1. Canonical learner boundary
 
-Source: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`.
+Canonical source:
 
-The learner is environment-agnostic and contains Watkins critic-only action selection, deterministic LCB/count memory, fixed-temperature sparsemax, finite negative q-log shaping, learned sparsemax attention, Walsh-labelled recurrent input, hard-sign/Möbius-labelled GRU, explicit F4/L2 optimizer state, NormPair, and a deterministic Nat clock.
+`Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
 
-The exact direct import surface is **eight** standard-library imports, not seven:
+The canonical learner is environment-agnostic and has no project-local Agda imports.
 
-```agda
+Direct standard-library imports:
+
+```text
 Relation.Binary.PropositionalEquality
 Agda.Builtin.Nat
 Data.Nat
@@ -21,220 +23,294 @@ Data.Product
 Data.Empty
 ```
 
-The source has no project-local Agda import.
+No additional standard-library module is currently required by the canonical learner source. Extra algebraic libraries are not needed merely because the mathematics has names such as semiring, norm, Möbius map, or sparsemax. The maintained proofs use finite data, Nat arithmetic, equality/negation, products/records, and endomorphism composition.
 
-## Default width
+## 2. Default width
 
-The replication default is `d = 64`.
+Replication default:
 
-The width constraint is:
+```text
+d = 64 = 4^3
+```
 
-`d = 4^k`.
+The width witness is separate from the current scalar `GRUState`. The current GRU carrier has one Int8 hidden coordinate. A genuine d-dimensional GRU requires a d-vector carrier and d-dimensional transition functions.
 
-`FiniteParameterCompleteness.agda` proves `learnerDefaultD = 64` and `learnerDefaultD-power4`.
+The current Int8 H4 result is the exact unnormalized relation
 
-For the present scalar GRU, this is a width specification for the generalized mixing representation, not a claim that the current `GRUState.hiddenState` has already been vectorized to 64 coordinates. A future vectorized implementation must actually change the carrier and its transition functions.
+```text
+H4 * H4^T = 4 I  (mod 256)
+```
 
-For the Int8 carrier, the exact unnormalized H4 relation is proved by `walshHadamardOrthogonality4`:
+This is orthogonality. It is not normalized orthonormality in `Z/256Z`, since 2 has no inverse modulo 256.
 
-`H4 H4ᵀ = 4 I (mod 256)`.
+## 3. Algebraic minimum
 
-This is orthogonality, not normalized orthonormality. Although `sqrt(4^k) = 2^k`, `2` has no multiplicative inverse in `Z/256Z`. Normalized orthonormality therefore requires an explicit dyadic/rational normalization representation.
+The maintained learner is below ring theory in its actual proof requirements:
 
-## State size
+```text
+finite many-sorted data
++ Nat arithmetic
++ equality and negation
++ products and records
++ End(S) under composition
+```
 
-An Int8 scalar has 256 values.
+`End(S) = S -> S` is the composition monoid used by the GRU/Möbius scan theorems. Ring laws are not required by the learner proofs.
 
-Current GRU storage: 9 Int8 coordinates, `256^9 = 2^72`.
+`FiniteRational` is a finite encoding record. It is not a proved rational field, so the current source does not claim unrestricted analytic division or real-valued rational-function completeness.
 
-Current GRU + critic + explicit Int8 Walsh carrier: 15 coordinates, `256^15 = 2^120`.
+## 4. Sparsemax action width
 
-Persistent GRU + critic + Walsh quotient: 14 coordinates, `256^14 = 2^112` equivalence classes, with 256 hidden-state fibres in the current scalar version.
+The canonical policy head is exactly
 
-Actual stored `FullLearnerState` Int8 coordinates:
+```text
+Sparsemax2Pair = Int8 × Int8
+```
 
-`3 Watkins + 2 attention + 9 GRU + 5 F4 + 2 NormPair + 2 q-log-control = 23`.
+and `policyChoosesLeft` decides between two actions.
 
-Therefore its fixed-Nat, fixed-trace Int8 projection has `256^23 = 2^184` configurations. The entire state is countably infinite because the clock, LCB counts, and finite-rational fields contain `Nat` components.
+Therefore the current canonical policy is genuinely two-action. Larger environment action spaces use explicit adapters in `CanonicalClosedLoopBenchV2.agda`; those adapters are finite test interfaces and are not a theorem that the existing sparsemax head is general-A.
 
-With only hidden state generalized to width `d`, preserving the remaining scalar layout, the stored Int8 count is `d + 22`, giving `256^(d+22) = 2^(8d+176)` for that finite projection.
+A true general-A sparsemax theorem would require an explicit A-indexed score vector, the sparsemax threshold/support construction, and a proof that the resulting weights satisfy the desired finite normalization/support laws. That theorem is not claimed yet.
 
-## Minimum algebra and library status
+## 5. Closed-loop learner interface
 
-The effective algebra is below ring level:
+The old reward-injection regression was not a genuine RL loop because its critic path ignored the injected reward. That wiring defect is now isolated and replaced by `CanonicalClosedLoopInterface.agda`.
 
-`finite many-sorted data + Nat arithmetic + equality/negation + products/records + End(S)`.
+The maintained interface is:
 
-Here `End(S) = S -> S` is the important composition monoid. Identity and function composition supply the associative scan law. A ring, field, module, lattice, metric, or normed-space structure is not required by the maintained learner proofs.
+```text
+learner state
+  -> learner chooses action
+  -> external game step(action,state)
+  -> observation, next state, reward, done
+  -> action-conditioned learner update
+  -> next learner state
+```
 
-The current learner source directly needs eight standard-library modules because those names are used. Reducing the direct import surface is a separate refactor and must preserve the same `--safe` proof surface.
+The interface records:
 
-## L1 and 1-path norm status
+```text
+return
+reference return
+regret = reference return ∸ return
+success
+steps
+```
 
-The paper `Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization` studies PSiLON-style MLPs and related residual blocks. Its 1-path-norm/Lipschitz results are not automatically theorems about this learner's recurrent sparsemax/Walsh composition.
+The learner clock theorem proves one unit of learner progress per executed update.
 
-`FiniteNormAlgebra.agda` therefore defines a deliberately explicit finite test algebra for a two-weight scalar network:
+This is an executable deterministic finite interface. It is not a claim that the current quantized game projections reproduce upstream floating-point or stochastic execution bit-for-bit.
 
-`L1(w) = |w_in| + |w_out|`
+## 6. Current finite benchmark suite
 
-`1Path(w) = |w_in| * |w_out|`
+`CanonicalClosedLoopBenchV2.agda` contains exact theorem fixtures for:
 
-with a componentwise `Nat` order and contradiction/equality-zero product lemmas. This is an exact implementation of those finite definitions, not a transcription of the paper's full PSiLON architecture and not a claim that the paper's generalization theorem applies to the learner.
+```text
+Jumanji Knapsack
+Jumanji Maze-v0 projection
+Jumanji LevelBasedForaging-v0 projection
+Gymnax MetaMaze projection
+Gymnax FourRooms projection
+Gymnax Pong-misc projection
+Gymnax MemoryChain-bsuite projection
+Gymnax DiscountingChain-bsuite projection
+Gymnax CartPole projection
+Gymnax Bernoulli-Bandit-misc projection
+Pobax RockSample projection
+```
 
-The current learner `NormPair` is still a state record with two `Int8` fields. It must not be described as the PSiLON 1-path norm unless the state transition is changed to compute that actual norm.
+The finite projections are intentionally deterministic so they remain within the canonical import surface. Some upstream environments have stochastic generation, random keys, continuous observations, floating-point dynamics, or autorestart semantics. The Agda ports are therefore explicit finite structural projections.
 
-## Finite functional parameter completeness
+For example, the current CartPole projection has discrete position updates and zero reward. Its successful completion of a fixed diagnostic horizon is not equivalent to balancing a physical CartPole.
 
-`FiniteParameterCompleteness.agda` proves the exact table-completeness theorem:
+The current FourRooms execution path still uses the finite Maze transition type. `CanonicalFaithfulGameVariants.agda` separately records the fixed FourRooms connectivity predicate. A full upstream-faithful FourRooms transition remains a distinct task.
 
-for every finite-domain function `f : Fin n -> Fin m`, `parameterizeFin f` represents exactly `f`, pointwise and as a function.
+## 7. Munchausen status
 
-It also proves the generic finite-state-kernel parameter result for arbitrary total finite-component update and choice functions.
+`CanonicalNegativeMunchausenTheory.agda` and `CanonicalMunchausenAblation.agda` define the current finite negative-Munchausen surface.
 
-This establishes **functional completeness of finite parameter slots**, not universal approximation of unrestricted continuous functions. The fixed learner wiring still constrains how those slots compose.
+The intended mathematical relationship is:
 
-The arithmetic language can express finite-domain polynomial-like, piecewise-polynomial, threshold/sign, and finite rational-shaped functions. `FiniteRational` remains an encoding record, not a proved division field, so no analytic piecewise-rational completeness theorem is asserted.
+```text
+negative scale = sign flip of standard scale
+```
 
-## Reachability, controllability, and observability
+The finite q-log carrier replaces transcendental logarithms with the existing finite `FiniteRational` code. The current learner still does not consume this q-log term inside the canonical critic target. Therefore the repository does not call the existing finite module a complete implementation of the published q-Munchausen algorithm.
 
-`CanonicalControlObservability.agda` gives formal definitions and proof terms, but the vocabulary is intentionally narrower than classical control theory because the canonical learner has no external control input.
+The maintained ceteris-paribus test compares the same finite bandit and quantized CartPole environment with the no-Munchausen and negative-Munchausen reward adapter. Equal return in a fixture is an exact finite result, not a general performance conclusion.
 
-`CanonicalReachable K s t` means exactly that there exists a natural-number iterate of `canonicalFullStep K` taking `s` to `t`.
+The literature reference is Zhu, Chen, Uchibe, and Matsubara, `q-Munchausen Reinforcement Learning`, arXiv:2205.07467:
 
-`canonicalOrbitReachable` proves every point on the learner's own forward orbit is reachable by its corresponding iterate.
+https://arxiv.org/abs/2205.07467
 
-`CanonicalOrbitControllable` is explicitly defined only as reachability of that predetermined orbit. It is **not** Kalman controllability, nonlinear controllability, steering under a free input alphabet, or a practical-control guarantee. The code does not define an external input channel, admissible controls, or a target-set steering problem, so claiming those stronger notions would add assumptions not present in the imports.
+That paper motivates q-logarithms because ordinary logarithms mismatch Tsallis/sparsemax entropy. Its numerical and statistical benchmark conclusions do not transfer automatically to this finite Int8 learner.
 
-For observability, `fullStateObservation s = s`, and `fullStateObservation-injective` proves exact full-state observability. `clockObservation` separately observes the Nat clock, with `clockObservation-after-iterate` proving the exact `clock s + n` law. These are formal identity/clock observation theorems, not a sensor-identification theorem for a hidden environment.
+## 8. CNN theorem stack
 
-## Environment ports
+The old phrase `CNN/log-pyramid equivalence` was too strong.
 
-`CanonicalGamePorts.agda` contains finite executable projections for:
+The minimum useful exact composition is now:
 
-- Jumanji Knapsack
-- Jumanji Maze
-- Jumanji LevelBasedForaging
-- Gymnax MetaMaze
-- Gymnax FourRooms
-- Gymnax Pong-misc
-- Gymnax `MemoryChain-bsuite`
-- Gymnax `DiscountingChain-bsuite`
-- Gymnax CartPole
-- Gymnax Bernoulli-Bandit-misc
-- Pobax RockSample
+```text
+CNN code C
+  -> decode : C -> A
+  -> CNN-side transition : C -> C
+  -> learner-side transition : A -> A
+  -> commute proof
+       decode(cnnStep c) = learnerStep(decode c)
+```
 
-`CanonicalFaithfulGameVariants.agda` additionally preserves the fixed Jumanji Toy Maze wall layout and the exact 13x13 Gymnax FourRooms connectivity predicate.
+From that one commuting law, `CNNTransitionBisimulation.agda` proves:
 
-The upstream Jumanji/Gymnax/Pobax environments include stochastic generation or continuous-valued dynamics in several cases. The canonical Agda ports deliberately choose deterministic finite projections so that they remain within the existing finite/Nat import surface. These are executable structural variants, not claims of bit-for-bit numerical equivalence to JAX floating-point or stochastic sampling.
+```text
+same decoded representation
+        => same learner transition
+        => same decoded representation after one step
+        => same decoded representation after n steps
+```
 
-## The old game regression versus the actual closed loop
+This is an exact finite-state transition preservation/bisimulation schema. Its practical payoff is direct: once a CNN encoder/decoder implementation satisfies the one commuting theorem, its recurrent behavior can be substituted without reproving the entire learner trajectory theorem at every time horizon.
 
-The first game-execution regression was an integration smoke test, not an RL trajectory. It used a fixed environment action, passed the resulting reward through `injectReward`, and then executed `canonicalFullStep`.
+It is not a bijection between arbitrary CNNs and the learner, not an approximation theorem, and not a function-class separation result.
 
-The maintained theorem `learnerRewardStep-reward-insensitive` now makes the defect explicit:
+A stronger CNN theorem would need an explicit CNN definition with layer types, spatial domain, convolution kernels, pooling/stride semantics, parameter constraints, and either exact equality or a declared approximation metric. The repository deliberately does not smuggle such an external CNN standard into the learner monolith.
 
-`learnerRewardStep s r₁ = learnerRewardStep s r₂`.
+## 9. Finite functional completeness
 
-The canonical autonomous step reconstructs `canonicalSignal` from critic/LCB/clock state and does not read the injected `watkins.signal`. Therefore that old path cannot learn from environment reward. This is an actual structural impossibility result for that wiring, not an impossibility theorem for reinforcement learning in general.
+`FiniteParameterCompleteness.agda` proves exact table completeness:
 
-There is a second architectural boundary: the canonical action head is `Sparsemax2Pair = Int8 × Int8`. It is intrinsically a two-action critic head. Four- or six-action environment ports therefore cannot obtain an arbitrary learned action policy from the existing head without an explicit adapter or a generalized action head.
+```text
+for every f : Fin n -> Fin m,
+there exists a finite parameter table representing f exactly.
+```
 
-## Closed-loop learner interface
+This is finite functional completeness of parameter slots. It is not universal approximation over unrestricted real-valued functions.
 
-`CanonicalLearnerGameExecution_test.agda` now contains an explicit action-conditioned transition interface:
+The current explicit arithmetic carrier can express finite-domain polynomial-like and piecewise arithmetic functions, threshold/sign behavior, and finite rational encodings. No transcendental primitive is part of the maintained learner signature.
 
-`encodeActionReward -> decodeAction/decodeReward -> closedLoopCriticUpdate -> closedLoopStep`.
+## 10. Norm pair and path norm
 
-The finite critic target used by this completion is:
+The maintained finite norm file defines explicit scalar examples of
 
-`target = reward + 1/2 maxQ`.
+```text
+L1 weight magnitude
+1-path magnitude
+```
 
-The selected action Q-value is updated from that target; LCB counts increment for the actual environment action; reward is also added to the canonical signal used by attention, GRU input, and F4 optimizer input. Exact action/reward encoding round trips and one-step critic-learning facts are proved constructively.
+with componentwise Nat ordering and finite product deductions.
 
-This completes the missing **action/reward plumbing** while leaving the original single-file learner monolith environment-agnostic. The games remain separate modules. It should not be described as an exact DQN or exact negative-Munchausen implementation: the current `negativeFiniteQLog8` record is not consumed by the critic target, there is no target network, and the fixed finite `Int8` target is a bespoke TD-style completion.
+The paper `Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization` concerns PSiLON-style MLPs and related residual blocks. Its Lipschitz and generalization results do not automatically apply to this learner's GRU + sparsemax + Walsh composition.
 
-## Closed-loop finite benchmark record
+The repository therefore does not claim that the current `NormPair` is a formal implementation of the PSiLON path norm, nor that its published bounds transfer to the learner.
 
-The maintained bench records:
+## 11. Hard sparsity
 
-`return`, `reference return`, `regret = reference return ∸ return`, `success`, and executed environment steps.
+`hardSparse-composition-normPair-F4-L2` proves the strongest unconditional local result presently justified:
 
-The deterministic finite cases instantiated in the current Agda source are:
+```text
+HardSparse(policy)
+  -> HardSparse(policy after NormPair/F4/L2 state replacement)
+```
 
-| Port | Horizon | Exact return | Reference | Regret | Success | Steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Knapsack | 8 | 16 | 16 | 0 | 1 | 5 |
-| Maze-v0 projection | 16 | 0 | 1 | 1 | 0 | 16 |
-| MetaMaze projection | 16 | 0 | 10 | 10 | 0 | 16 |
-| FourRooms projection | 16 | 0 | 1 | 1 | 0 | 16 |
-| CartPole quantized projection | 16 | 0 | 0 | 0 | 1* | 16 |
-| Bernoulli Bandit, best arm 0 | 16 | 0 | 16 | 16 | 0 | 16 |
-| Bernoulli Bandit, best arm 1 | 16 | 16 | 16 | 0 | 1 | 16 |
+This is policy invariance under specified state replacement. It is not a trajectory-wide sparsity theorem and not an arbitrary-state approximation theorem.
 
-`*` CartPole “success” here means completing the diagnostic finite horizon because the current quantized port has no terminal condition and zero reward. It is not CartPole balance success.
+## 12. Exact trajectory rank
 
-The regret column is therefore an explicit **reference-policy gap**, not a statistical regret estimator for a stochastic bandit or a claim of regret optimality. The current finite ports are deterministic projections, so these values are exact reductions of the maintained Agda program when the corresponding proofs pass CI.
+The exact learner rank is
 
-## Comparison against CleanRL and Gymnax reports
+```text
+V(s) = clock s
+```
 
-The reference numbers are useful context but are **not apples-to-apples benchmark scores**.
+with
 
-CleanRL's documented classic-control DQN configuration uses a replay buffer, target network, exploration schedule, and a neural action head. Its documented `dqn.py` result for `CartPole-v1` is `488.69 ± 16.11`, with 500,000 training timesteps. CleanRL explicitly describes this as a classic-control DQN benchmark, not an official benchmark from the original DQN paper.
+```text
+V(fullStep K s) = V(s) + 1
+V(iterate K n s) = V(s) + n
+```
 
-Gymnax's current README reports a CartPole-v1 PPO/ES checkpoint return of `500`, a FourRooms-misc checkpoint return of `1`, a MetaMaze-misc ES checkpoint return of `32`, BernoulliBandit-misc ES return `90`, GaussianBandit-misc ES return `0`, and lists SimpleBandit-bsuite and MNISTBandit-bsuite without a displayed trained-return checkpoint. Those are GPU/JAX baseline reports with upstream numerical/stochastic environment semantics, not the finite deterministic projections used here.
+This is an increasing Nat rank, not a decreasing classical Lyapunov function. It excludes fixed points and finite cycles by direct Nat contradiction. No environmental, statistical, reward-distribution, or asymptotic assumption is involved.
 
-Our current `CartPole` result of `0`, therefore, does not demonstrate that the learner is intrinsically incapable of CartPole learning. It demonstrates that the maintained quantized port has zero reward and no terminal condition, while the completed closed-loop policy remains a two-action finite adapter. A direct comparison requires first replacing that projection by a faithful CartPole state transition and matching the reference action/observation semantics.
+## 13. External benchmark references
 
-Likewise, the Maze/FourRooms/MetaMaze values cannot be read as failures against Gymnax's numbers because the current Agda ports deliberately simplify the dynamics and, for FourRooms, `fourRoomsStep` is currently the generic finite Maze transition rather than the full Gymnax FourRooms environment.
+### CleanRL
 
-## GameTheory ports
+CleanRL describes itself as a single-file implementation library and documents classic-control PPO/DQN commands and benchmark infrastructure across 7+ algorithms and 34+ games.
 
-`Exotic/econlib/GameTheory.agda` is deliberately external to the learner monolith. The canonical learner does not import it. It uses **seven** direct standard-library imports and a local `Int8 = Fin 256` encoding, so the old `efficient_chad.Int8` dependency is gone.
+https://github.com/vwxyzjn/cleanrl
 
-The module remains useful for independent theorem tests: Prisoner's Dilemma payoffs, a pure-Nash witness, best-response, stabilization, and finite iteration are explicit and safe. These game-theory modules are test fixtures and theorem-correction surfaces, not hidden learner dependencies.
+### Gymnax
 
-No current GameTheory source requires a transcendence library. The stale EfficientCHAD-related surface was instead found in an old `CIInterpolation_v147.agda` file whose imported `CompleteSafe_v147` no longer exists. That obsolete v147 interpolation file and its trigger/wake marker files have been pruned from the canonical branch.
+Current Gymnax README reports, among other entries, a CartPole-v1 PPO/ES checkpoint return of 500, FourRooms-misc checkpoint return of 1, MemoryChain-bsuite checkpoint return of 0.1, and DiscountingChain-bsuite checkpoint return of 1.1, together with displayed A100 throughput figures.
 
-## CNN/log-pyramid status
+https://github.com/RobertTLange/gymnax
 
-The previous phrase "log-pyramid equivalence" was too strong. The maintained theorem is now an explicit quotient/equality theorem.
+These are upstream JAX environment reports. They are not direct numerical baselines for the deterministic finite Agda projections unless environment and learner semantics are matched.
 
-`CNNLogPyramid64` is a concrete 64-index code. `cnnToAttention` is its decoder into the learner's attention carrier. `CNNLogPyramidEquivalent p q` is the relation `cnnToAttention p = cnnToAttention q`, and reflexivity, symmetry, and transitivity are proved.
+The precise external reference ledger is maintained in `docs/BenchmarkReferenceLedger.md`.
 
-`cnnLogPyramidGRUInputPreservation` proves equal decoded attention implies equal GRU transitions, and `cnnLogPyramidCommutesWithCanonicalGRU` proves that a code whose decoded attention equals the learner's current attention produces exactly the same `canonicalGRUStep`.
+## 14. GameTheory and Econlib boundary
 
-This is a representation-factorization/preservation theorem. There is no constructed bijection from an arbitrary CNN architecture, no inverse convolution/pooling map, and no approximation metric or error bound. Consequently the repository makes no claim that the learner's function class exceeds a fixed-depth CNN. Such a statement would require a precisely defined CNN class, input/output domain, parameter constraints, and function metric before it could even be stated as a theorem.
+Game-theory ports remain individual modular files. They are not imported into `CanonicalLearnerMonolith.agda`.
 
-## Hard sparsity
+`GameTheory.agda` now has its own finite Int8 carrier and no `efficient_chad.Int8` dependency.
 
-`hardSparse-composition-normPair-F4-L2` is the maximum unconditional sparsity result from the current definitions.
+`Equilibrium.agda` is likewise detached from EfficientCHAD.
 
-If the canonical policy is already `HardSparseLeft`, replacing NormPair and F4/L2 optimizer state preserves that hard-sparse policy result.
+`MatchingPennies.agda` is an independent finite theorem fixture.
 
-This is a local equality-invariance theorem. It is not a trajectory-wide sparsity guarantee, an analytic L1/path-norm bound, or an arbitrary-state approximation theorem.
+The learner can therefore be checked against these games without embedding them in learner state or learner transition definitions.
 
-## Exact trajectory rank
+## 15. Pruned redundancy
 
-The exact progress rank is:
+Verified redundant files removed from the canonical branch include:
 
-`V(s) = clock s`.
+```text
+CheckFiniteAlgebra_v147.agda
+CheckQProjection_v147.agda
+CheckQTerminal_v147.agda
+efficient_chad/Int8.agda
+Exploration/Generated/ExplorationCandidates.agda
+GRUCompositionAlgebra.agda
+MobiusGroup.agda
+MobiusRational.agda
+MobiusSemidirectCycleComposition.agda
+SparsemaxCriticWatkins.agda
+SparsemaxCriticWatkins_test.agda
+```
 
-`V(canonicalFullStep K s) = V(s) + 1`.
+Pruning is based on repository-local dependency closure, not filename style.
 
-`V(iterateCanonical K n s) = V(s) + n`.
+## 16. CI authority
 
-Thus every step is a strict unit increase in the well-order of `Nat`. This requires no environment, reward distribution, statistical, or convergence assumption. It yields no fixed point and no nontrivial finite cycle by contradiction. `totalCount` provides an independent increment-by-one contradiction route.
+The main branch workflow is `.github/workflows/agda.yml`.
 
-This is an exact Nat rank, not a classical decreasing Lyapunov function.
+It now checks:
 
-## Old-folder pruning
+```text
+canonical monolith
+closed-loop interface + regression
+closed-loop benchmark suite
+game ports + faithful variants
+finite parameter completeness
+finite norm algebra
+control/observability
+CNN preservation + factorization + transition bisimulation
+negative-Munchausen theory + ceteris-paribus regression
+GameTheory + Econlib + MatchingPennies
+```
 
-The canonical branch no longer carries the obsolete `MR15Reachability`, `OpenESDyadic`, or `NoisyNetCoupled` learner files. It also no longer carries the broken v147 CI interpolation/trigger/wake markers or the old three-file exploration counterfactual/schema cluster. The generated theorem report remains because the current generator writes it and the workflow checks it.
+The current main run after the latest synchronization is the acceptance oracle. A theorem or benchmark result is not treated as accepted until that current-head Agda run succeeds.
 
-The external game modules remain modular by design. They are not merged into the learner state or transition function.
+## 17. Replication rule
 
-## Synchronization and acceptance
+Use `d = 64`.
 
-The safety scanner covers the canonical learner, game ports, faithful map variants, finite parameter completeness, finite norm algebra, control/observability definitions, CNN preservation, learner execution regression, GameTheory, and generated report.
+Keep the learner monolith environment-free.
 
-Current branch acceptance is CI-gated. The closed-loop benchmark theorem surface is considered authoritative only after the current-head Agda workflow has compiled it and its exact metric theorems.
+Keep games external.
+
+Do not enlarge the direct import surface unless a proof term actually requires a module unavailable in the current eight-module closure.
+
+Do not turn structural adapter tests into claims of general-A sparsemax, full upstream environment equivalence, universal approximation, CNN expressivity separation, control-theory controllability, or statistical learning superiority.
