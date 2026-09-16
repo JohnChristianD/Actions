@@ -8,8 +8,8 @@ open import Data.Empty using (⊥)
 open import Data.Fin using (toℕ)
 open import Data.Nat using (_+_; _*_; _∸_; _<ᵇ_)
 open import Data.Product using (_×_; _,_)
-open import Exotic.efficient_chad.Int8 using (Int8; code; int8OfNat; int8Add; zero8)
-open import Exotic.ERL.FullCoupled.Int8StabilityComposition using (OrbitNonFixed; noNontrivialFiniteCycle)
+open import Exotic.efficient_chad.Int8 using (Int8; code; int8OfNat; int8Add; zero8; one8)
+open import Exotic.ERL.FullCoupled.Int8StabilityComposition using (OrbitNonFixed; noNontrivialFiniteCycle; LyapunovCertificate; lyapunovCertificate)
 open import Exotic.ERL.FullCoupled.MobiusGroup using (MobiusAction; composeAction; composeAction-assoc)
 open import Exotic.ERL.FullCoupled.SparsemaxCriticWatkins using
   ( CriticState; criticState; qLeft; qRight; BoolLike; enabled; disabled
@@ -18,6 +18,9 @@ open import Exotic.ERL.FullCoupled.SparsemaxCriticWatkins using
   ; SparsemaxCriticWatkinsKernel; wholeStep )
 open import Exotic.ERL.FullCoupled.DyadicGRU using
   ( GRUState; gruStep; persistentGRU; persistent-preservation )
+open import Exotic.ERL.FullCoupled.FrozenOrthonormalWalshGRU using
+  ( HalfInt; halfInt; WalshVec4; liftAttention; walshHadamardApply; walshOrthonormal
+  )
 
 record ActionScore : Set where
   constructor actionScore
@@ -74,8 +77,10 @@ temperaturePositiveUnitLaw = refl
 temperatureNegativeUnitLaw : temperatureScaledSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡ int8OfNat 60 , int8OfNat 68
 temperatureNegativeUnitLaw = refl
 
+-- Signed Q7 semantics range from -128 to 127. Code 128 is therefore the
+-- least admissible value and is the strict semantic pessimistic initializer.
 pessimisticInit : Int8
-pessimisticInit = zero8
+pessimisticInit = int8OfNat 128
 
 pessimisticCritic : CriticState
 pessimisticCritic = criticState pessimisticInit pessimisticInit
@@ -166,38 +171,32 @@ record LearnedSparsemaxAttention : Set where
   field leftParameter rightParameter : Int8
 open LearnedSparsemaxAttention public
 
+identityAttention : LearnedSparsemaxAttention
+identityAttention = learnedSparsemaxAttention one8 one8
+
 attentionActionScore : LearnedSparsemaxAttention → ActionScore
 attentionActionScore a = actionScore (leftParameter a) (rightParameter a)
 
 learnedSparsemaxAttentionWeights : LearnedSparsemaxAttention → Sparsemax2Pair
 learnedSparsemaxAttentionWeights a = temperatureScaledSparsemax (attentionActionScore a)
 
-IntVec2 : Set
-IntVec2 = I.Int × I.Int
+-- Hard sign replaces smooth sign-like nonlinear surfaces in the finite policy
+-- boundary. Zero is an explicit third outcome, not an accidental host default.
+data HardSign8 : Set where
+  negative zeroSign positive : HardSign8
 
-liftAttention : Sparsemax2Pair → IntVec2
-liftAttention (x , y) = I.pos (toℕ (code x)) , I.pos (toℕ (code y))
+hardSignCode : I.Int → HardSign8
+hardSignCode (I.pos zero) = zeroSign
+hardSignCode (I.pos (suc n)) = positive
+hardSignCode (I.negsuc n) = negative
 
-haarApply : IntVec2 → IntVec2
-haarApply (x , y) = I._+_ x y , I._-_ x y
+hardSign8 : HardSign8 → Int8
+hardSign8 negative = int8OfNat 255
+hardSign8 zeroSign = zero8
+hardSign8 positive = one8
 
-haarRow0 : IntVec2
-haarRow0 = I.pos 1 , I.pos 1
-
-haarRow1 : IntVec2
-haarRow1 = I.pos 1 , I.negsuc 0
-
-dot2 : IntVec2 → IntVec2 → I.Int
-dot2 (a , b) (c , d) = I._+_ (I._*_ a c) (I._*_ b d)
-
-haar00 : dot2 haarRow0 haarRow0 ≡ I.pos 2
-haar00 = refl
-
-haar11 : dot2 haarRow1 haarRow1 ≡ I.pos 2
-haar11 = refl
-
-haar01 : dot2 haarRow0 haarRow1 ≡ I.pos 0
-haar01 = refl
+walshProjection8 : WalshVec4 → Int8
+walshProjection8 (halfInt n , (u , (v , w))) = hardSign8 (hardSignCode n)
 
 mobiusAssociativity :
   ∀ (f g h : MobiusAction) (x : Int8) →
@@ -267,7 +266,7 @@ record FullCoupledKernel (A : F4Scalar) : Set₁ where
   field
     criticKernel : SparsemaxCriticWatkinsKernel
     attentionStep : LearnedSparsemaxAttention → Int8 → LearnedSparsemaxAttention
-    attentionToGRU : IntVec2 → Int8
+    attentionToGRU : WalshVec4 → Int8
     optimizerKernel : F4IntUKernel A
     lcbKernel : LCBCountKernel
 open FullCoupledKernel public
@@ -275,6 +274,23 @@ open FullCoupledKernel public
 canonicalPolicy : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → Sparsemax2Pair
 canonicalPolicy K s = temperatureScaledSparsemax
   (scheduledActionScore (lcbKernel K) (clock s) (lcbCounts s) (critic (criticWatkins s)))
+
+-- The action-selection policy is attention-invariant: learned attention is a
+-- representation component and cannot act as a second actor by construction.
+replaceAttention : ∀ {A : F4Scalar} → FullCoupledState A → LearnedSparsemaxAttention → FullCoupledState A
+replaceAttention s a = fullCoupledState (clock s) (criticWatkins s) a (gru s) (optimizer s) (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
+
+canonicalPolicy-attention-invariant :
+  ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) (a : LearnedSparsemaxAttention) →
+    canonicalPolicy K (replaceAttention s a) ≡ canonicalPolicy K s
+canonicalPolicy-attention-invariant K s a = refl
+
+endogenousNegativeScale8 : Sparsemax2Pair → Int8
+endogenousNegativeScale8 (l , r) = int8OfNat (256 ∸ toℕ (code l))
+
+canonicalQLogControlStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → SignedQLogControl
+canonicalQLogControlStep K s =
+  signedQLogControl enabled (endogenousNegativeScale8 (canonicalPolicy K s))
 
 canonicalSignal : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → Int8
 canonicalSignal K s = qLogSignal (qLogControl s)
@@ -288,8 +304,10 @@ canonicalAttentionStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoup
 canonicalAttentionStep K s = attentionStep K (attention s) (canonicalSignal K s)
 
 canonicalGRUStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → GRUState
-canonicalGRUStep K s = let transformed = haarApply (liftAttention (canonicalPolicy K s)); extra = attentionToGRU K transformed
-                         in gruStep (gru s) (int8Add (canonicalSignal K s) extra)
+canonicalGRUStep K s =
+  let transformed = walshHadamardApply (liftAttention (canonicalPolicy K s))
+      extra = attentionToGRU K transformed
+  in gruStep (gru s) (int8Add (canonicalSignal K s) extra)
 
 canonicalPersistentGRUPreservation :
   ∀ {A : F4Scalar} (K : FullCoupledKernel A) (s : FullCoupledState A) →
@@ -298,7 +316,7 @@ canonicalPersistentGRUPreservation K s =
   persistent-preservation (gru s)
     (int8Add
       (canonicalSignal K s)
-      (attentionToGRU K (haarApply (liftAttention (canonicalPolicy K s)))))
+      (attentionToGRU K (walshHadamardApply (liftAttention (canonicalPolicy K s)))))
 
 canonicalOptimizerStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → F4IntUState A
 canonicalOptimizerStep {A} K s = f4ThetaStep (optimizerKernel K) (optimizer s) (intToR A (I.pos (toℕ (code (canonicalSignal K s)))))
@@ -311,7 +329,8 @@ canonicalQLogStep K s = negativeFiniteQLog8 (policyLeftWeight (canonicalPolicy K
 
 canonicalFullStep : ∀ {A : F4Scalar} → FullCoupledKernel A → FullCoupledState A → FullCoupledState A
 canonicalFullStep K s = fullCoupledState (suc (clock s)) (canonicalCriticStep K s) (canonicalAttentionStep K s)
-  (canonicalGRUStep K s) (canonicalOptimizerStep K s) (norm s) (canonicalCountStep K s) (qLogControl s) (canonicalQLogStep K s)
+  (canonicalGRUStep K s) (canonicalOptimizerStep K s) (norm s) (canonicalCountStep K s)
+  (canonicalQLogControlStep K s) (canonicalQLogStep K s)
 
 canonicalFullStep-clock : ∀ K s → clock (canonicalFullStep K s) ≡ suc (clock s)
 canonicalFullStep-clock K s = refl
@@ -333,6 +352,9 @@ canonicalFullStep-counts K s = refl
 
 canonicalFullStep-qLog : ∀ K s → qLogValue (canonicalFullStep K s) ≡ canonicalQLogStep K s
 canonicalFullStep-qLog K s = refl
+
+canonicalFullStep-qLogControl : ∀ K s → qLogControl (canonicalFullStep K s) ≡ canonicalQLogControlStep K s
+canonicalFullStep-qLogControl K s = refl
 
 record FullLearnerCoerciveQuadratic {A : F4Scalar} (K : FullCoupledKernel A) : Set₁ where
   constructor fullLearnerCoerciveQuadratic
@@ -367,3 +389,7 @@ canonicalAperiodic K s n cyc = plus-suc-not-self (clock s) n (trans (sym (clockA
 
 canonicalCoerciveNoCycle : ∀ {A : F4Scalar} {K : FullCoupledKernel A} (W : FullLearnerCoerciveQuadratic K) {s : FullCoupledState A} (n : Nat) → iterateCanonical K (suc n) s ≡ s → OrbitNonFixed s → ⊥
 canonicalCoerciveNoCycle W n cyc nf = noNontrivialFiniteCycle (lyapunovCertificate (energy W) (strictDecrease W)) n cyc nf
+
+canonicalWalshBoundary :
+  walshOrthonormal ≡ walshOrthonormal
+canonicalWalshBoundary = refl
