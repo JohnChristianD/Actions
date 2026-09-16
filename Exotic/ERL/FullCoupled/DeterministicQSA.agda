@@ -1,59 +1,107 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.DeterministicQSA where
 
-open import Agda.Builtin.Equality using (_≡_; refl; sym; subst)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Empty using (⊥)
-open import Data.Nat using (_<_; _≤_; z≤n; s≤s)
-open import Relation.Nullary using (¬_)
-open import Exotic.efficient_chad.Int8 using (Int8)
-open import Exotic.ERL.Exploration.ExplorationTheoremSchema using
-  ( Reach
-  ; there
-  ; here
-  ; Irreducible
-  ; SelfLoop
-  ; PeriodOne
-  ; periodOne-from-components
-  )
-open import Exotic.ERL.FullCoupled.Int8StabilityComposition using
-  ( Fixed
-  ; LyapunovCertificate
-  ; energy
-  ; strictDecrease
-  ; iterate
-  ; iterate-shift
-  ; noNontrivialFiniteCycle
-  ; OrbitNonFixed
-  )
-open import Exotic.ERL.FullCoupled.GRUCompositionAlgebra using
-  ( GRUState
-  ; stepAction
-  )
+data Nat : Set where
+  zero : Nat
+  suc : Nat -> Nat
 
-------------------------------------------------------------------------
--- Small constructive sum used for decidable state equality.
-------------------------------------------------------------------------
+infix 4 _≡_
+data _≡_ {A : Set} (x : A) : A -> Set where
+  refl : x ≡ x
+
+sym : ∀ {A : Set} {x y : A} -> x ≡ y -> y ≡ x
+sym refl = refl
+
+trans : ∀ {A : Set} {x y z : A} -> x ≡ y -> y ≡ z -> x ≡ z
+trans refl q = q
+
+cong : ∀ {A B : Set} (f : A -> B) {x y : A} -> x ≡ y -> f x ≡ f y
+cong f refl = refl
+
+subst : ∀ {A : Set} {x y : A} (P : A -> Set) -> x ≡ y -> P x -> P y
+subst P refl p = p
+
+data ⊥ : Set where
+
+⊥-elim : ∀ {A : Set} -> ⊥ -> A
+⊥-elim ()
+
+¬_ : Set -> Set
+¬ A = A -> ⊥
 
 infixr 1 _⊎_
 data _⊎_ (A B : Set) : Set where
-  inj₁ : A → A ⊎ B
-  inj₂ : B → A ⊎ B
+  inj₁ : A -> A ⊎ B
+  inj₂ : B -> A ⊎ B
+
+infix 4 _≤_ _<_
+data _≤_ : Nat -> Nat -> Set where
+  z≤n : ∀ {n} -> zero ≤ n
+  s≤s : ∀ {m n} -> m ≤ n -> suc m ≤ suc n
+
+_<_ : Nat -> Nat -> Set
+m < n = suc m ≤ n
+
+le-refl-nat : ∀ n -> n ≤ n
+le-refl-nat zero = z≤n
+le-refl-nat (suc n) = s≤s (le-refl-nat n)
+
+le-trans-nat : ∀ {m n k} -> m ≤ n -> n ≤ k -> m ≤ k
+le-trans-nat z≤n q = q
+le-trans-nat (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
+
+le-zero-is-zero : ∀ {n} -> n ≤ zero -> n ≡ zero
+le-zero-is-zero z≤n = refl
+le-zero-is-zero (s≤s ())
+
+zeroCannotDescend : ∀ {n} -> n < zero -> ⊥
+zeroCannotDescend ()
+
+lt-le-trans : ∀ {m n k} -> m < n -> n ≤ k -> m < k
+lt-le-trans (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
+lt-le-trans {n = zero} p z≤n = zeroCannotDescend p
+
+lt-suc-to-le : ∀ {m n} -> m < suc n -> m ≤ n
+lt-suc-to-le (s≤s p) = p
+
+lt-trans : ∀ {m n k} -> m < n -> n < k -> m < k
+lt-trans (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
+
+lt-irrefl : ∀ n -> ¬ (n < n)
+lt-irrefl zero p = zeroCannotDescend p
+lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
 
 record HasDecidableEquality (S : Set) : Set₁ where
   constructor decidableEquality
   field
-    decide : (x y : S) → (x ≡ y) ⊎ (x ≢ y)
+    decide : (x y : S) -> (x ≡ y) ⊎ (x ≢ y)
 
 open HasDecidableEquality public
 
-------------------------------------------------------------------------
--- Deterministic QSA-style convergence.
--- This is an exact finite/dyadic theorem contract, not a stochastic
--- approximation theorem and not an environment-dependent statistical claim.
-------------------------------------------------------------------------
+Fixed : ∀ {S : Set} -> (S -> S) -> S -> Set
+Fixed step s = step s ≡ s
 
-record EventuallyFixed {S : Set} (step : S → S) (s : S) : Set where
+OrbitNonFixed : ∀ {S : Set} -> (S -> S) -> S -> Set
+OrbitNonFixed step s = s ≢ step s
+
+iterate : ∀ {S : Set} -> (S -> S) -> Nat -> S -> S
+iterate step zero s = s
+iterate step (suc n) s = step (iterate step n s)
+
+iterate-shift : ∀ {S : Set} (step : S -> S) (n : Nat) (s : S) ->
+  iterate step n (step s) ≡ iterate step (suc n) s
+iterate-shift step zero s = refl
+iterate-shift step (suc n) s = cong step (iterate-shift step n s)
+
+record LyapunovCertificate (S : Set) (step : S -> S) : Set₁ where
+  constructor lyapunovCertificate
+  field
+    energy : S -> Nat
+    strictDecrease : ∀ {s} -> s ≢ step s -> energy (step s) < energy s
+
+open LyapunovCertificate public
+
+record EventuallyFixed {S : Set} (step : S -> S) (s : S) : Set where
   constructor eventuallyFixed
   field
     steps : Nat
@@ -61,7 +109,7 @@ record EventuallyFixed {S : Set} (step : S → S) (s : S) : Set where
 
 open EventuallyFixed public
 
-record ConvergesTo {S : Set} (step : S → S) (target s : S) : Set where
+record ConvergesTo {S : Set} (step : S -> S) (target s : S) : Set where
   constructor convergesTo
   field
     stepsToTarget : Nat
@@ -69,98 +117,42 @@ record ConvergesTo {S : Set} (step : S → S) (target s : S) : Set where
 
 open ConvergesTo public
 
-zeroCannotDescend : ∀ {n : Nat} → n < zero → ⊥
-zeroCannotDescend ()
-
-le-refl-nat : ∀ n → n ≤ n
-le-refl-nat zero = z≤n
-le-refl-nat (suc n) = s≤s (le-refl-nat n)
-
-le-trans-nat :
-  ∀ {m n k : Nat} → m ≤ n → n ≤ k → m ≤ k
-le-trans-nat z≤n q = q
-le-trans-nat (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
-
-le-zero-is-zero : ∀ {n : Nat} → n ≤ zero → n ≡ zero
-le-zero-is-zero z≤n = refl
-le-zero-is-zero (s≤s ())
-
-lt-le-trans :
-  ∀ {m n k : Nat} → m < n → n ≤ k → m < k
-lt-le-trans (s≤s p) (s≤s q) = s≤s (le-trans-nat p q)
-lt-le-trans {n = zero} p z≤n = zeroCannotDescend p
-
-lt-suc-to-le :
-  ∀ {m n : Nat} → m < suc n → m ≤ n
-lt-suc-to-le {zero} p = z≤n
-lt-suc-to-le {suc m} (s≤s p) = p
-
 eventuallyFixedFromLyapunov :
-  ∀ {S : Set} {step : S → S}
+  ∀ {S : Set} {step : S -> S}
   (L : LyapunovCertificate S step)
   (D : HasDecidableEquality S)
-  (s : S) →
-  EventuallyFixed step s
-eventuallyFixedFromLyapunov L D s =
-  go (energy L s) s (le-refl-nat (energy L s))
+  (s : S) -> EventuallyFixed step s
+eventuallyFixedFromLyapunov L D s = go (energy L s) s (le-refl-nat (energy L s))
   where
-  go :
-    ∀ (bound : Nat) (s : S) →
-    energy L s ≤ bound →
-    EventuallyFixed step s
+  go : ∀ (bound : Nat) (s : S) -> energy L s ≤ bound -> EventuallyFixed step s
   go zero s bound with decide D s (step s)
   ... | inj₁ fixed = eventuallyFixed zero fixed
-  ... | inj₂ moving =
-    let
-      eq-zero : energy L s ≡ zero
-      eq-zero = le-zero-is-zero bound
-      impossible : energy L (step s) < zero
-      impossible =
-        subst
-          (λ z → energy L (step s) < z)
-          eq-zero
-          (strictDecrease L s moving)
-    in zeroCannotDescend impossible
+  ... | inj₂ moving = zeroCannotDescend
+    (subst (λ z -> energy L (step s) < z)
+      (le-zero-is-zero bound)
+      (strictDecrease L moving))
   go (suc bound) s boundProof with decide D s (step s)
   ... | inj₁ fixed = eventuallyFixed zero fixed
   ... | inj₂ moving =
     let
-      strict : energy L (step s) < energy L s
-      strict = strictDecrease L s moving
-      bounded : energy L (step s) < suc bound
-      bounded = lt-le-trans strict boundProof
-      nextBound : energy L (step s) ≤ bound
-      nextBound = lt-suc-to-le bounded
-      next : EventuallyFixed step (step s)
+      strict = strictDecrease L moving
+      nextBound = lt-suc-to-le (lt-le-trans strict boundProof)
       next = go bound (step s) nextBound
       k = steps next
-      p = iterate-shift step k s
+      shifted = iterate-shift step k s
       terminal' : Fixed step (iterate step (suc k) s)
-      terminal' =
-        subst
-          (λ z → Fixed step z)
-          p
-          (terminal next)
+      terminal' = subst (λ z -> Fixed step z) shifted (terminal next)
     in eventuallyFixed (suc k) terminal'
 
-------------------------------------------------------------------------
--- Unique fixed point gives exact convergence to the optimizer terminal.
-------------------------------------------------------------------------
-
-record UniqueFixedPoint
-  {S : Set}
-  (step : S → S)
-  (target : S) : Set where
+record UniqueFixedPoint {S : Set} (step : S -> S) (target : S) : Set where
   constructor uniqueFixedPoint
   field
     targetFixed : Fixed step target
-    uniqueFixed : ∀ {s} → Fixed step s → s ≡ target
+    uniqueFixed : ∀ {s} -> Fixed step s -> s ≡ target
 
 open UniqueFixedPoint public
 
-record DeterministicQSAStyleCertificate
-  (S : Set)
-  (step : S → S) : Set₁ where
+record DeterministicQSAStyleCertificate (S : Set) (step : S -> S) : Set₁ where
   constructor deterministicQSAStyleCertificate
   field
     lyapunov : LyapunovCertificate S step
@@ -171,154 +163,102 @@ record DeterministicQSAStyleCertificate
 open DeterministicQSAStyleCertificate public
 
 deterministicQSAStyleConvergence :
-  ∀ {S : Set} {step : S → S}
-  (C : DeterministicQSAStyleCertificate S step)
-  (s : S) →
+  ∀ {S : Set} {step : S -> S}
+  (C : DeterministicQSAStyleCertificate S step) (s : S) ->
   ConvergesTo step (target C) s
 deterministicQSAStyleConvergence C s =
   let
-    ev = eventuallyFixedFromLyapunov
-      (lyapunov C)
-      (decidableEquality C)
-      s
+    ev = eventuallyFixedFromLyapunov (lyapunov C) (decidableEquality C) s
     k = steps ev
-    fixed-at-k = terminal ev
-    reaches-target : iterate step k s ≡ target C
-    reaches-target = uniqueFixed C fixed-at-k
-  in convergesTo k reaches-target
-
-deterministicQSAStyleNoNontrivialCycle :
-  ∀ {S : Set} {step : S → S}
-  (C : DeterministicQSAStyleCertificate S step)
-  {s : S} (n : Nat) →
-  iterate step (suc n) s ≡ s →
-  OrbitNonFixed s →
-  ⊥
-deterministicQSAStyleNoNontrivialCycle C =
-  noNontrivialFiniteCycle (lyapunov C)
-
-------------------------------------------------------------------------
--- Certificate projections: target is fixed, and every fixed state is
--- definitionally trapped at that target up to propositional equality.
-------------------------------------------------------------------------
+  in convergesTo k (uniqueFixed (terminal C) (terminal ev))
 
 deterministicQSAStyleTargetFixed :
-  ∀ {S : Set} {step : S → S}
-  (C : DeterministicQSAStyleCertificate S step) →
+  ∀ {S : Set} {step : S -> S}
+  (C : DeterministicQSAStyleCertificate S step) ->
   Fixed step (target C)
-deterministicQSAStyleTargetFixed C =
-  targetFixed (terminal C)
+deterministicQSAStyleTargetFixed C = targetFixed (terminal C)
 
 deterministicQSAStyleFixedStatesCollapse :
-  ∀ {S : Set} {step : S → S}
+  ∀ {S : Set} {step : S -> S}
   (C : DeterministicQSAStyleCertificate S step)
-  {s : S} →
-  Fixed step s →
-  s ≡ target C
-deterministicQSAStyleFixedStatesCollapse C =
-  uniqueFixed (terminal C)
+  {s : S} -> Fixed step s -> s ≡ target C
+deterministicQSAStyleFixedStatesCollapse C = uniqueFixed (terminal C)
 
-------------------------------------------------------------------------
--- Companion stochastic theorem: a pathwise strict support Lyapunov law
--- conflicts with any supported nontrivial two-cycle.
-------------------------------------------------------------------------
-
-record SupportLyapunov (S : Set) (R : S → S → Set) : Set₁ where
+record SupportLyapunov (S : Set) (R : S -> S -> Set) : Set₁ where
   constructor supportLyapunov
   field
-    supportEnergy : S → Nat
+    supportEnergy : S -> Nat
     strictSupportDecrease :
-      ∀ {s t} → R s t → s ≢ t → supportEnergy t < supportEnergy s
+      ∀ {s t} -> R s t -> s ≢ t -> supportEnergy t < supportEnergy s
 
 open SupportLyapunov public
 
 noStrongSupportLyapunovTwoCycle :
-  ∀ {S : Set} {R : S → S → Set}
-  (L : SupportLyapunov S R)
-  {x y : S} →
-  x ≢ y →
-  R x y →
-  R y x →
-  ⊥
+  ∀ {S : Set} {R : S -> S -> Set}
+  (L : SupportLyapunov S R) {x y : S} ->
+  x ≢ y -> R x y -> R y x -> ⊥
 noStrongSupportLyapunovTwoCycle L distinct xy yx =
-  let
-    reverseDistinct : y ≢ x
-    reverseDistinct eq = distinct (sym eq)
-    downXY : supportEnergy L y < supportEnergy L x
-    downXY = strictSupportDecrease L xy distinct
-    downYX : supportEnergy L x < supportEnergy L y
-    downYX = strictSupportDecrease L yx reverseDistinct
-  in <-irrefl (supportEnergy L x) (<-trans downYX downXY)
+  lt-irrefl (supportEnergy L x)
+    (lt-trans
+      (strictSupportDecrease L yx (λ eq -> distinct (sym eq)))
+      (strictSupportDecrease L xy distinct))
 
-------------------------------------------------------------------------
--- A closed finite support orbit is incompatible with a strict-support
--- Lyapunov ranking. The orbit is encoded directly over Nat, so no list,
--- vector, finite-set, quotient, probability, or arithmetic library is needed.
-------------------------------------------------------------------------
-
-record ClosedSupportOrbit
-  (S : Set)
-  (R : S → S → Set)
-  (n : Nat) : Set₁ where
+record ClosedSupportOrbit (S : Set) (R : S -> S -> Set) (n : Nat) : Set₁ where
   constructor closedSupportOrbit
   field
-    point : Nat → S
-    edge : ∀ i → i ≤ n → R (point i) (point (suc i))
-    distinct : ∀ i → i ≤ n → point i ≢ point (suc i)
+    point : Nat -> S
+    edge : ∀ i -> i ≤ n -> R (point i) (point (suc i))
+    distinct : ∀ i -> i ≤ n -> point i ≢ point (suc i)
     close : point (suc n) ≡ point zero
 
 open ClosedSupportOrbit public
 
 closedSupportOrbitImpossible :
-  ∀ {S : Set} {R : S → S → Set}
-  (L : SupportLyapunov S R)
-  {n : Nat} →
-  ClosedSupportOrbit S R n →
-  ⊥
+  ∀ {S : Set} {R : S -> S -> Set}
+  (L : SupportLyapunov S R) {n : Nat} ->
+  ClosedSupportOrbit S R n -> ⊥
 closedSupportOrbitImpossible L C =
   let
-    descending :
-      ∀ n →
-      supportEnergy L (point C (suc n)) <
-      supportEnergy L (point C zero)
-    descending zero =
-      strictSupportDecrease
-        L
-        (edge C zero (le-refl-nat zero))
-        (distinct C zero (le-refl-nat zero))
-    descending (suc n) =
-      <-trans
-        (strictSupportDecrease
-          L
-          (edge C (suc n) (le-refl-nat (suc n)))
-          (distinct C (suc n) (le-refl-nat (suc n))))
-        (descending n)
-    impossible :
-      supportEnergy L (point C zero) <
-      supportEnergy L (point C zero)
-    impossible =
-      subst
-        (λ z → supportEnergy L z < supportEnergy L (point C zero))
-        (close C)
-        (descending n)
-  in <-irrefl (supportEnergy L (point C zero)) impossible
+    descending : ∀ {i} -> i ≤ _ ->
+      supportEnergy L (point C (suc i)) < supportEnergy L (point C zero)
+    descending {zero} p = strictSupportDecrease L (edge C zero p) (distinct C zero p)
+    descending {suc i} (s≤s p) =
+      lt-trans
+        (strictSupportDecrease L (edge C i p) (distinct C i p))
+        (descending p)
+    impossible = subst
+      (λ z -> supportEnergy L z < supportEnergy L (point C zero))
+      (close C)
+      (descending (le-refl-nat _))
+  in lt-irrefl (supportEnergy L (point C zero)) impossible
 
 supportRelationAntisymmetricOffDiagonal :
-  ∀ {S : Set} {R : S → S → Set}
-  (L : SupportLyapunov S R)
-  {x y : S} →
-  x ≢ y →
-  R x y →
-  ¬ R y x
+  ∀ {S : Set} {R : S -> S -> Set}
+  (L : SupportLyapunov S R) {x y : S} ->
+  x ≢ y -> R x y -> ¬ R y x
 supportRelationAntisymmetricOffDiagonal L distinct xy yx =
-  noStrongSupportLyapunovTwoCycle
-    L distinct xy yx
+  noStrongSupportLyapunovTwoCycle L distinct xy yx
 
-------------------------------------------------------------------------
--- Minimal exact finite stochastic/support counterexample. It is fully
--- supported, irreducible, and period-one, yet cannot carry the strong
--- support-wide Lyapunov property. No probability or environment model is used.
-------------------------------------------------------------------------
+data ReachPath {S : Set} (R : S -> S -> Set) : S -> S -> Set where
+  here : ∀ {s} -> ReachPath R s s
+  there : ∀ {s t u} -> R s t -> ReachPath R t u -> ReachPath R s u
+
+Irreducible : ∀ {S : Set} -> (S -> S -> Set) -> Set
+Irreducible R = ∀ s t -> ReachPath R s t
+
+SelfLoop : ∀ {S : Set} -> (S -> S -> Set) -> Set
+SelfLoop R = ∀ s -> R s s
+
+record PeriodOne {S : Set} (R : S -> S -> Set) : Set where
+  constructor periodOne
+  field
+    irreducible : Irreducible R
+    selfLoop : SelfLoop R
+
+periodOne-from-components :
+  ∀ {S : Set} {R : S -> S -> Set} ->
+  Irreducible R -> SelfLoop R -> PeriodOne R
+periodOne-from-components r l = periodOne r l
 
 data UnitSupport : Set where
   unitSupport : UnitSupport
@@ -327,11 +267,11 @@ data Two : Set where
   leftState : Two
   rightState : Two
 
-twoSupport : Two → Two → Set
+twoSupport : Two -> Two -> Set
 twoSupport _ _ = UnitSupport
 
-twoSupportWitness : ∀ x y → twoSupport x y
-twoSupportWitness x y = unitSupport
+twoSupportWitness : ∀ x y -> twoSupport x y
+twoSupportWitness _ _ = unitSupport
 
 twoIrreducible : Irreducible twoSupport
 twoIrreducible x y = there (twoSupportWitness x y) here
@@ -351,31 +291,7 @@ twoSupportLeftToRight = twoSupportWitness leftState rightState
 twoSupportRightToLeft : twoSupport rightState leftState
 twoSupportRightToLeft = twoSupportWitness rightState leftState
 
-noTwoStateStrongSupportLyapunov :
-  ¬ (SupportLyapunov Two twoSupport)
+noTwoStateStrongSupportLyapunov : ¬ (SupportLyapunov Two twoSupport)
 noTwoStateStrongSupportLyapunov L =
-  noStrongSupportLyapunovTwoCycle
-    L twoDistinct
-    twoSupportLeftToRight
-    twoSupportRightToLeft
-
-------------------------------------------------------------------------
--- GRU scope: the n-cycle theorem is not a theorem that every GRU has.
--- A deterministic GRU action inherits the theorem only after a Lyapunov
--- certificate for that specific action has been supplied.
-------------------------------------------------------------------------
-
-gruNoNontrivialFiniteCycle :
-  ∀ (x : Int8)
-  (L : LyapunovCertificate GRUState (stepAction x))
-  {s : GRUState} (n : Nat) →
-  iterate (stepAction x) (suc n) s ≡ s →
-  OrbitNonFixed s →
-  ⊥
-gruNoNontrivialFiniteCycle x L =
-  noNontrivialFiniteCycle L
-
-------------------------------------------------------------------------
--- No environment-dependent reward/statistical/asymptotic premise occurs in
--- any theorem above. QSA is used only as a deterministic finite contract name.
-------------------------------------------------------------------------
+  noStrongSupportLyapunovTwoCycle L twoDistinct
+    twoSupportLeftToRight twoSupportRightToLeft
