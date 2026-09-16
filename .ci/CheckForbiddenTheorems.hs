@@ -10,6 +10,7 @@ checkedPaths =
   [ "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
   , "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
   , "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
   , "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
