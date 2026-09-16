@@ -29,10 +29,23 @@ canonicalSymbols =
   [ ("q-log", ["finiteQLog8", "negativeFiniteQLog8", "negativeAlpha8", "canonicalQLogControl", "qLogSignal", "canonicalQLogStep"])
   , ("action-selection", ["temperatureScaledSparsemax", "scheduledActionScore", "canonicalPolicy", "updateLCBCount"])
   , ("learned-attention", ["LearnedSparsemaxAttention", "learnedSparsemaxAttentionWeights", "canonicalAttentionStep"])
-  , ("haar", ["haarApply", "haarRow0", "haarRow1", "dot2"])
+  , ("walsh-hadamard", ["walshHadamardApply", "walshOrthonormal", "walshNormPreservation"])
+  , ("recurrent-nonlinearity", ["quadraticActivation", "hardSign", "gruInputSeparation", "gruParametersPersistent"])
   , ("canonical-gru-composition", ["canonicalGRUStep", "canonicalPersistentGRUPreservation"])
   , ("optimizer", ["F4IntUState", "F4IntUKernel", "f4ThetaStep", "f4ParameterInvariant"])
   , ("whole-step", ["canonicalFullStep", "canonicalFullStep-clock", "canonicalFullStep-critic", "canonicalFullStep-attention", "canonicalFullStep-gru", "canonicalFullStep-optimizer", "canonicalFullStep-counts", "canonicalFullStep-qLog"])
+  ]
+
+legacyTokens :: [String]
+legacyTokens =
+  [ "signReLU"
+  , "softsign"
+  , "haarApply"
+  , "haarRow0"
+  , "haarRow1"
+  , "helmertApply"
+  , "SharedActorCritic"
+  , "SparsemaxActorVsCriticTheorem"
   ]
 
 normalize :: String -> String
@@ -72,6 +85,15 @@ findDefinitions path = do
     , any (isDefinitionOf symbol) (lines source)
     ]
 
+findLegacyTokens :: FilePath -> IO [(String, FilePath)]
+findLegacyTokens path = do
+  source <- readFile path
+  pure
+    [ (token, path)
+    | token <- legacyTokens
+    , token `isInfixOf` source
+    ]
+
 ownerAllowed :: FilePath -> Bool
 ownerAllowed path =
   path == canonical
@@ -95,12 +117,18 @@ main = do
       ownerFiles = filter ownerAllowed relativeFiles
 
   definitions <- fmap concat (mapM findDefinitions ownerFiles)
+  legacy <- fmap concat (mapM findLegacyTokens relativeFiles)
   let duplicates =
         [ (family, symbol, sort [path | (defined, path) <- definitions, defined == symbol, path /= canonical])
         | (family, symbols) <- canonicalSymbols
         , symbol <- symbols
         , let paths = [path | (defined, path) <- definitions, defined == symbol, path /= canonical]
         , not (null paths)
+        ]
+      legacyActive =
+        [ (token, path)
+        | (token, path) <- legacy
+        , path `notElem` retiredPaths
         ]
 
   putStrLn ("canonical-learner=" ++ canonical)
@@ -113,10 +141,17 @@ main = do
   putStrLn "canonical-owned-duplicate-audit="
   if null duplicates
     then putStrLn "  clean"
-    else mapM_ report duplicates
+    else mapM_ reportDuplicate duplicates
+
+  putStrLn "legacy-surface-audit="
+  if null legacyActive
+    then putStrLn "  clean"
+    else mapM_ reportLegacy legacyActive
 
   putStrLn "retirement-policy=report-only-until-owner-is-confirmed"
-  if null retiredPresent && null duplicates then exitSuccess else exitFailure
+  if null retiredPresent && null duplicates && null legacyActive then exitSuccess else exitFailure
   where
-    report (family, symbol, paths) =
+    reportDuplicate (family, symbol, paths) =
       putStrLn ("  DUPLICATE " ++ family ++ ":" ++ symbol ++ " -> " ++ show paths)
+    reportLegacy (token, path) =
+      putStrLn ("  LEGACY_ACTIVE " ++ token ++ " -> " ++ path)
