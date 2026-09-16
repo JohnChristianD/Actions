@@ -585,8 +585,10 @@ hardSparse-norm-optimizer-invariant :
   HardSparseLeft (canonicalPolicy K s) →
   HardSparseLeft (canonicalPolicy K (replaceOptimizer (replaceNorm s n) o))
 hardSparse-norm-optimizer-invariant K s n o h =
-  trans (sym (canonicalPolicy-norm-invariant K s n))
-    (trans (sym (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o)) h)
+  trans
+    (trans (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o)
+      (canonicalPolicy-norm-invariant K s n))
+    h
 
 endogenousNegativeScale8 : Sparsemax2Pair → Int8
 endogenousNegativeScale8 (l , r) = lcbNegate l
