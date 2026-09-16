@@ -201,7 +201,7 @@ munchausenSignal useMunchausen r = int8Neg r
 munchausenSignal noMunchausen r = zero8
 
 generalPolicy : ∀ {A : Nat} → GeneralKernel A → GeneralState A → Fin A
-generalPolicy {zero} K s = fromℕ< (m%n<n 0 1)
+generalPolicy {zero} K s = lastAction s
 generalPolicy {suc A} K s =
   sparsemaxExtremeA (λ a → scoreA (q s) (counts s) a)
 
@@ -223,10 +223,6 @@ generalNoFixedPoint K s r eq = plus-suc-not-self (clock s) zero
     (trans (cong suc (plus-zero (clock s)))
       (trans (sym (generalStep-clock K s r))
         (cong (λ t → clock t) eq))))
-
-record GeneralActionLaw (A : Nat) : Set where
-  constructor generalActionLaw
-  field actionCountPositive : A ≡ suc (toℕ (fromℕ< (m%n<n 0 (suc A))))
 
 defaultActionCount : Nat
 defaultActionCount = 64
