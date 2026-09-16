@@ -46,6 +46,10 @@ lt-irrefl : ∀ n → (n < n) → ⊥
 lt-irrefl zero ()
 lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
 
+plus-zero : ∀ n → n + zero ≡ n
+plus-zero zero = refl
+plus-zero (suc n) = cong suc (plus-zero n)
+
 plus-suc : ∀ (m n : Nat) → m + suc n ≡ suc (m + n)
 plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
@@ -699,7 +703,7 @@ iterateCanonical K zero s = s
 iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
 
 clockAfter : ∀ K n s → clock (iterateCanonical K n s) ≡ clock s + n
-clockAfter K zero s = refl
+clockAfter K zero s = plus-zero (clock s)
 clockAfter K (suc n) s = trans (cong suc (clockAfter K n s)) (sym (plus-suc (clock s) n))
 
 canonicalAperiodic : ∀ K s n → iterateCanonical K (suc n) s ≢ s
