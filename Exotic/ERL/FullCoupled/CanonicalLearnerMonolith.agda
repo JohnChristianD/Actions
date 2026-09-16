@@ -54,10 +54,6 @@ plus-suc : ∀ (m n : Nat) → m + suc n ≡ suc (m + n)
 plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
 
-plus-le-suc : ∀ (m n : Nat) → m ≤ m + suc n
-plus-le-suc zero n = z≤n
-plus-le-suc (suc m) n = s≤s (plus-le-suc m n)
-
 plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
 plus-suc-lt zero n = s≤s z≤n
 plus-suc-lt (suc m) n = s≤s (plus-suc-lt m n)
@@ -78,11 +74,6 @@ suc-suc-not-self n eq =
 iterate : ∀ {S : Set} → (S → S) → Nat → S → S
 iterate step zero s = s
 iterate step (suc n) s = step (iterate step n s)
-
-iterate-shift : ∀ {S : Set} (step : S → S) (n : Nat) (s : S) →
-  iterate step n (step s) ≡ iterate step (suc n) s
-iterate-shift step zero s = refl
-iterate-shift step (suc n) s = cong step (iterate-shift step n s)
 
 OrbitNonFixed : ∀ {S : Set} {step : S → S} → S → Set
 OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≢ step (iterate step n s)
@@ -337,6 +328,55 @@ walshHadamardApply (a , (b , (c , d))) =
   (mkHalfInt ((a + b) + (c + d)) ,
    (mkHalfInt (a + b) , mkHalfInt (c + d)))
 
+Int8WalshVec4 : Set
+Int8WalshVec4 = Int8 × (Int8 × (Int8 × Int8))
+
+record GRUMatrices : Set where
+  constructor gruMatrices
+  field matrixZ matrixR matrixH : Int8
+open GRUMatrices public
+
+record GRUNoise : Set where
+  constructor gruNoise
+  field noiseZ noiseR noiseH : Int8
+open GRUNoise public
+
+record GlobalControl : Set where
+  constructor mkGlobalControl
+  field optimizerToken l2Token : Int8
+open GlobalControl public
+
+record GRUState : Set where
+  constructor gruState
+  field hiddenState : Int8
+        matrixState : GRUMatrices
+        noiseState : GRUNoise
+        controlState : GlobalControl
+open GRUState public
+
+identityGRUMatrices : GRUMatrices
+identityGRUMatrices = gruMatrices one8 one8 one8
+
+zeroGRUNoise : GRUNoise
+zeroGRUNoise = gruNoise zero8 zero8 zero8
+
+zeroGlobalControl : GlobalControl
+zeroGlobalControl = mkGlobalControl zero8 zero8
+
+rationalCode : FiniteRational → Int8
+rationalCode (finiteRational s n d) = int8OfNat n
+
+mobiusActivation8 : Int8 → FiniteRational
+mobiusActivation8 = mobiusRatio8
+
+gruCandidate8 : Int8 → Int8 → Int8
+gruCandidate8 h x = int8Add h x
+
+mix8 : Int8 → Int8 → Int8 → Int8
+mix8 g old new = int8Add
+  (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old)
+  (int8Mul g new)
+
 data HardSign8 : Set where
   negative : HardSign8
   zeroSign : HardSign8
@@ -363,52 +403,6 @@ gateFromInput x = gateCode (signedCode x)
 hardGate-state-independent : ∀ (h₁ h₂ x : Int8) → gateFromInput x ≡ gateFromInput x
 hardGate-state-independent h₁ h₂ x = refl
 
-record GRUMatrices : Set where
-  constructor gruMatrices
-  field matrixZ matrixR matrixH : Int8
-open GRUMatrices public
-
-record GRUNoise : Set where
-  constructor gruNoise
-  field noiseZ noiseR noiseH : Int8
-open GRUNoise public
-
-record GlobalControl : Set where
-  constructor mkGlobalControl
-  field optimizerToken l2Token : Int8
-open GlobalControl public
-
-record GRUState : Set where
-  constructor gruState
-  field hidden : Int8
-        matrices : GRUMatrices
-        noise : GRUNoise
-        globalControl : GlobalControl
-open GRUState public
-
-identityGRUMatrices : GRUMatrices
-identityGRUMatrices = gruMatrices one8 one8 one8
-
-zeroGRUNoise : GRUNoise
-zeroGRUNoise = gruNoise zero8 zero8 zero8
-
-zeroGlobalControl : GlobalControl
-zeroGlobalControl = mkGlobalControl zero8 zero8
-
-rationalCode : FiniteRational → Int8
-rationalCode (finiteRational s n d) = int8OfNat n
-
-mobiusActivation8 : Int8 → FiniteRational
-mobiusActivation8 = mobiusRatio8
-
-gruCandidate8 : Int8 → Int8 → Int8
-gruCandidate8 h x = int8Add h x
-
-mix8 : Int8 → Int8 → Int8 → Int8
-mix8 g old new = int8Add
-  (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old)
-  (int8Mul g new)
-
 gruStep : GRUState → Int8 → GRUState
 gruStep (gruState h m n g) x =
   gruState
@@ -424,9 +418,9 @@ persistent-preservation : ∀ (s : GRUState) (x : Int8) →
 persistent-preservation (gruState h m n g) x = refl
 
 gruParameterPersistence : ∀ (s : GRUState) (x : Int8) →
-  matrices (gruStep s x) ≡ matrices s ×
-  noise (gruStep s x) ≡ noise s ×
-  globalControl (gruStep s x) ≡ globalControl s
+  matrixState (gruStep s x) ≡ matrixState s ×
+  noiseState (gruStep s x) ≡ noiseState s ×
+  controlState (gruStep s x) ≡ controlState s
 gruParameterPersistence (gruState h m n g) x = refl , (refl , refl)
 
 gruActivationBoundary : ∀ x → mobiusActivation8 x ≡ mobiusRatio8 x
@@ -478,6 +472,54 @@ gruMobiusActivationAssociativity : ∀ x y z q →
   run (composeAction (mobiusActivationAction x)
       (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
 gruMobiusActivationAssociativity x y z q = refl
+
+gruMobiusAssociativeScan : ∀ x y z q →
+  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
+      (mobiusActivationAction z)) q ≡
+  run (composeAction (mobiusActivationAction x)
+      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
+gruMobiusAssociativeScan = gruMobiusActivationAssociativity
+
+gruStateInt8CoordinateCount : Nat
+
+gruStateInt8CoordinateCount = 9
+
+criticInt8CoordinateCount : Nat
+criticInt8CoordinateCount = 2
+
+walshInt8CoordinateCount : Nat
+walshInt8CoordinateCount = 4
+
+gruCriticWH8CoordinateCount : Nat
+gruCriticWH8CoordinateCount = 15
+
+gruPersistentQuotientCoordinateCount : Nat
+gruPersistentQuotientCoordinateCount = 8
+
+gruCriticWH8PersistentQuotientCoordinateCount : Nat
+gruCriticWH8PersistentQuotientCoordinateCount = 14
+
+gruCriticWH8CoordinateCount-law : gruCriticWH8CoordinateCount ≡ 15
+gruCriticWH8CoordinateCount-law = refl
+
+gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
+gruCriticWH8PersistentQuotientCoordinateCount-law = refl
+
+record GRUCriticWH8State : Set where
+  constructor gruCriticWH8State
+  field gruPart : GRUState
+        criticPart : CriticState
+        walshPart : Int8WalshVec4
+open GRUCriticWH8State public
+
+GRUCriticWH8Equivalent : GRUCriticWH8State → GRUCriticWH8State → Set
+GRUCriticWH8Equivalent s t =
+  persistentGRU (gruPart s) ≡ persistentGRU (gruPart t) ×
+  criticPart s ≡ criticPart t ×
+  walshPart s ≡ walshPart t
+
+gruCriticWH8Equivalent-refl : ∀ s → GRUCriticWH8Equivalent s s
+gruCriticWH8Equivalent-refl s = refl , (refl , refl)
 
 record F4IntUState : Set where
   constructor f4IntUState
@@ -587,11 +629,27 @@ hardSparseLeft15 = refl
 hardSparseRight15 : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 15)) ≡ (int8OfNat 4 , int8OfNat 124)
 hardSparseRight15 = refl
 
-hardSparse-norm-optimizer-invariant : ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) → HardSparseLeft (canonicalPolicy K s) → HardSparseLeft (canonicalPolicy K (replaceOptimizer (replaceNorm s n) o))
-hardSparse-norm-optimizer-invariant K s n o h = trans (trans (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o) (canonicalPolicy-norm-invariant K s n)) h
+hardSparse-norm-optimizer-invariant :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) →
+  HardSparseLeft (canonicalPolicy K s) →
+  HardSparseLeft (canonicalPolicy K (replaceOptimizer (replaceNorm s n) o))
+hardSparse-norm-optimizer-invariant K s n o h =
+  trans (trans (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o)
+    (canonicalPolicy-norm-invariant K s n)) h
 
-hardSparse-composition-invariant : ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) → HardSparseLeft (canonicalPolicy K s) → HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
-hardSparse-composition-invariant K s n o h = hardSparse-norm-optimizer-invariant K s n o h
+hardSparse-composition-invariant :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) →
+  HardSparseLeft (canonicalPolicy K s) →
+  HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
+hardSparse-composition-invariant K s n o h =
+  hardSparse-norm-optimizer-invariant K s n o h
+
+hardSparse-composition-normPair-F4-L2 :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState)
+    (n : NormPair) (o : F4IntUState) →
+  HardSparseLeft (canonicalPolicy K s) →
+  HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
+hardSparse-composition-normPair-F4-L2 = hardSparse-composition-invariant
 
 endogenousNegativeScale8 : Sparsemax2Pair → Int8
 endogenousNegativeScale8 (l , r) = lcbNegate l
@@ -689,8 +747,8 @@ canonicalNormPairWeightPlusOne-preservation K s = refl
 canonicalStep-not-fixed : ∀ K s → canonicalFullStep K s ≢ s
 canonicalStep-not-fixed K s eq =
   plus-suc-not-self (clock s) zero
-  (trans (plus-suc (clock s) zero)
-    (trans (sym (canonicalFullStep-clock K s)) (cong clock eq)))
+    (trans (plus-suc (clock s) zero)
+      (trans (sym (canonicalFullStep-clock K s)) (cong clock eq)))
 
 canonicalTotalCountStep : ∀ K s → totalCount (canonicalFullStep K s) ≡ suc (totalCount s)
 canonicalTotalCountStep K s = refl
