@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.CanonicalFaithfulGameVariants where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Nat using (_≤_)
+open import Data.Nat using ()
 open import Data.Fin using (Fin)
 open import Data.Fin.Properties using ()
 open import Data.Nat.DivMod using (m%n<n)
@@ -18,13 +18,12 @@ orBool _ yes = yes
 orBool _ _ = no
 
 between : Nat → Nat → Nat → BoolLike
-between lo hi x with lo ≤ x
-... | false = no
-... | true with x ≤ hi
-...   | false = no
-...   | true = yes
+between lo hi x with leBool lo x
+... | no = no
+... | yes with leBool x hi
+...   | no = no
+...   | yes = yes
 
--- Exact connectivity of the 13x13 Gymnax FourRooms map.
 fourRoomsOpenExact : Nat → Nat → BoolLike
 fourRoomsOpenExact zero c = no
 fourRoomsOpenExact (suc zero) c = orBool (between 1 5 c) (between 7 11 c)
@@ -35,12 +34,11 @@ fourRoomsOpenExact (suc (suc (suc (suc (suc zero))))) c = orBool (between 1 5 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc zero)))))) c = orBool (between 2 2 c) (between 7 11 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc zero))))))) c = orBool (between 1 5 c) (between 9 11 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))) c = orBool (between 1 5 c) (between 7 11 c)
-fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero))))))))) c = orBool (between 1 5 c) (between 7 11 c)
-fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))))) c = between 1 11 c
-fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))) c = orBool (between 1 5 c) (between 7 11 c)
+fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc (suc zero))))))))) c = orBool (between 1 5 c) (between 7 11 c)
+fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))) c = between 1 11 c
+fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc zero))))))))) c = orBool (between 1 5 c) (between 7 11 c)
 fourRoomsOpenExact _ _ = no
 
--- Jumanji's hardcoded 5x5 ToyGenerator wall layout.
 toyMazeOpenExact : Nat → Nat → BoolLike
 toyMazeOpenExact zero c = orBool (between 0 0 c) (between 2 4 c)
 toyMazeOpenExact (suc zero) c = orBool (between 0 0 c) (between 2 2 c)
