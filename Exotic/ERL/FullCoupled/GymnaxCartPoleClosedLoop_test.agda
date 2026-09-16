@@ -10,13 +10,12 @@ open import Data.Product using (_×_; _,_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 open import Exotic.ERL.FullCoupled.CanonicalLearnerGameExecution_test
 
--- Finite deterministic CartPole projection.  The four physical coordinates
--- are stored on the same Int8 lattice as the learner.  The transition keeps
--- the standard two-action force distinction, integrates velocity into
--- position and angular velocity into angle, returns the per-step reward one,
--- and terminates on a finite safety envelope or the 500-step horizon.
--- This is an exact finite projection, not a claim of bit-for-bit float32
--- equivalence with an upstream JAX implementation.
+-- Finite deterministic CartPole projection. The four physical coordinates
+-- live on the same Int8 lattice as the learner. The transition distinguishes
+-- the two actions, integrates velocity into position and angular velocity
+-- into angle, returns the standard per-step reward-one signal, and terminates
+-- on a finite safety envelope or the 500-step horizon. This is an exact finite
+-- projection, not a bit-for-bit float32 equivalence claim for upstream JAX.
 
 record GymnaxCartPoleFiniteState : Set where
   constructor cartPoleFiniteState
@@ -47,7 +46,7 @@ finiteAbs x with signedCode x
 ... | pos n = n
 
 cartPoleDone : GymnaxCartPoleFiniteState → BoolLike
-cartPoleDone s with toℕ (code (position s)) <ᵇ 48
+cartPoleDone s with finiteAbs (position s) <ᵇ 48
 ... | false = yes
 ... | true with finiteAbs (angle s) <ᵇ 13
 ...   | false = yes
@@ -96,8 +95,9 @@ record GymnaxCartPoleLoop : Set where
 open GymnaxCartPoleLoop public
 
 cartPoleLearnerAction : FullLearnerState → CartPoleAction
-cartPoleLearnerAction s with canonicalBit learnerKernel s
-... | _ = pushRight
+cartPoleLearnerAction s with toℕ (canonicalBit learnerKernel s)
+... | zero = pushLeft
+... | suc _ = pushRight
 
 cartPoleClosedLoopStep : GymnaxCartPoleLoop → GymnaxCartPoleLoop
 cartPoleClosedLoopStep loop =
@@ -107,8 +107,7 @@ cartPoleClosedLoopStep loop =
   in gymnaxCartPoleLoop
       (stateAfter transition)
       (closedLoopStep learnerKernel (learner loop)
-        (fromℕ< (m%n<n
-          (caseAction a) 2)) r)
+        (fromℕ< (m%n<n (caseAction a) 2)) r)
       (totalReturn loop + toℕ (code r))
       (suc (steps loop))
   where
@@ -132,7 +131,7 @@ cartPoleClosedLoop-learner-clock :
   clock (learner (cartPoleClosedLoopStep cartPoleInitialLoop)) ≡ 1
 cartPoleClosedLoop-learner-clock = refl
 
--- The loop is action-conditioned: the chosen action selects the environment
--- force, the environment returns the reward, and that reward enters the same
--- finite critic/attention/GRU/optimizer update path already checked by the
--- maintained closed-loop interface.
+-- The loop is action-conditioned: the policy chooses the action, the chosen
+-- action determines the environment force, the environment emits reward, and
+-- that reward enters the maintained finite critic/attention/GRU/optimizer
+-- closed-loop update.
