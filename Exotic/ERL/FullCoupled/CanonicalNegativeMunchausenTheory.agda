@@ -46,8 +46,8 @@ policyQLog8-value : ∀ logPi →
   finiteValue (policyQLog8 logPi (finiteQLog8 logPi)) ≡ finiteQLog8 logPi
 policyQLog8-value logPi = refl
 
--- This is the finite, transcendental-free max-entropy q-log carrier used by
--- the learner.  No real logarithm or external analytic library is imported.
+-- This is the finite max-entropy q-log carrier used by the learner.
+-- No real logarithm or external analytic library is imported.
 finiteMaxEntQLog8 : Int8 → FiniteRational
 finiteMaxEntQLog8 = finiteQLog8
 
