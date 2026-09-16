@@ -127,7 +127,65 @@ For observability, `fullStateObservation s = s`, and `fullStateObservation-injec
 
 The upstream Jumanji/Gymnax/Pobax environments include stochastic generation or continuous-valued dynamics in several cases. The canonical Agda ports deliberately choose deterministic finite projections so that they remain within the existing finite/Nat import surface. These are executable structural variants, not claims of bit-for-bit numerical equivalence to JAX floating-point or stochastic sampling.
 
-The learner execution regression feeds each port's finite reward through an explicit `Fin 256` reward adapter and then executes `canonicalFullStep`. This checks executable interaction coupling, not empirical sample-efficiency or convergence.
+## The old game regression versus the actual closed loop
+
+The first game-execution regression was an integration smoke test, not an RL trajectory. It used a fixed environment action, passed the resulting reward through `injectReward`, and then executed `canonicalFullStep`.
+
+The maintained theorem `learnerRewardStep-reward-insensitive` now makes the defect explicit:
+
+`learnerRewardStep s r₁ = learnerRewardStep s r₂`.
+
+The canonical autonomous step reconstructs `canonicalSignal` from critic/LCB/clock state and does not read the injected `watkins.signal`. Therefore that old path cannot learn from environment reward. This is an actual structural impossibility result for that wiring, not an impossibility theorem for reinforcement learning in general.
+
+There is a second architectural boundary: the canonical action head is `Sparsemax2Pair = Int8 × Int8`. It is intrinsically a two-action critic head. Four- or six-action environment ports therefore cannot obtain an arbitrary learned action policy from the existing head without an explicit adapter or a generalized action head.
+
+## Closed-loop learner interface
+
+`CanonicalLearnerGameExecution_test.agda` now contains an explicit action-conditioned transition interface:
+
+`encodeActionReward -> decodeAction/decodeReward -> closedLoopCriticUpdate -> closedLoopStep`.
+
+The finite critic target used by this completion is:
+
+`target = reward + 1/2 maxQ`.
+
+The selected action Q-value is updated from that target; LCB counts increment for the actual environment action; reward is also added to the canonical signal used by attention, GRU input, and F4 optimizer input. Exact action/reward encoding round trips and one-step critic-learning facts are proved constructively.
+
+This completes the missing **action/reward plumbing** while leaving the original single-file learner monolith environment-agnostic. The games remain separate modules. It should not be described as an exact DQN or exact negative-Munchausen implementation: the current `negativeFiniteQLog8` record is not consumed by the critic target, there is no target network, and the fixed finite `Int8` target is a bespoke TD-style completion.
+
+## Closed-loop finite benchmark record
+
+The maintained bench records:
+
+`return`, `reference return`, `regret = reference return ∸ return`, `success`, and executed environment steps.
+
+The deterministic finite cases instantiated in the current Agda source are:
+
+| Port | Horizon | Exact return | Reference | Regret | Success | Steps |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Knapsack | 8 | 16 | 16 | 0 | 1 | 5 |
+| Maze-v0 projection | 16 | 0 | 1 | 1 | 0 | 16 |
+| MetaMaze projection | 16 | 0 | 10 | 10 | 0 | 16 |
+| FourRooms projection | 16 | 0 | 1 | 1 | 0 | 16 |
+| CartPole quantized projection | 16 | 0 | 0 | 0 | 1* | 16 |
+| Bernoulli Bandit, best arm 0 | 16 | 0 | 16 | 16 | 0 | 16 |
+| Bernoulli Bandit, best arm 1 | 16 | 16 | 16 | 0 | 1 | 16 |
+
+`*` CartPole “success” here means completing the diagnostic finite horizon because the current quantized port has no terminal condition and zero reward. It is not CartPole balance success.
+
+The regret column is therefore an explicit **reference-policy gap**, not a statistical regret estimator for a stochastic bandit or a claim of regret optimality. The current finite ports are deterministic projections, so these values are exact reductions of the maintained Agda program when the corresponding proofs pass CI.
+
+## Comparison against CleanRL and Gymnax reports
+
+The reference numbers are useful context but are **not apples-to-apples benchmark scores**.
+
+CleanRL's documented classic-control DQN configuration uses a replay buffer, target network, exploration schedule, and a neural action head. Its documented `dqn.py` result for `CartPole-v1` is `488.69 ± 16.11`, with 500,000 training timesteps. CleanRL explicitly describes this as a classic-control DQN benchmark, not an official benchmark from the original DQN paper.
+
+Gymnax's current README reports a CartPole-v1 PPO/ES checkpoint return of `500`, a FourRooms-misc checkpoint return of `1`, a MetaMaze-misc ES checkpoint return of `32`, BernoulliBandit-misc ES return `90`, GaussianBandit-misc ES return `0`, and lists SimpleBandit-bsuite and MNISTBandit-bsuite without a displayed trained-return checkpoint. Those are GPU/JAX baseline reports with upstream numerical/stochastic environment semantics, not the finite deterministic projections used here.
+
+Our current `CartPole` result of `0`, therefore, does not demonstrate that the learner is intrinsically incapable of CartPole learning. It demonstrates that the maintained quantized port has zero reward and no terminal condition, while the completed closed-loop policy remains a two-action finite adapter. A direct comparison requires first replacing that projection by a faithful CartPole state transition and matching the reference action/observation semantics.
+
+Likewise, the Maze/FourRooms/MetaMaze values cannot be read as failures against Gymnax's numbers because the current Agda ports deliberately simplify the dynamics and, for FourRooms, `fourRoomsStep` is currently the generic finite Maze transition rather than the full Gymnax FourRooms environment.
 
 ## GameTheory ports
 
@@ -179,8 +237,4 @@ The external game modules remain modular by design. They are not merged into the
 
 The safety scanner covers the canonical learner, game ports, faithful map variants, finite parameter completeness, finite norm algebra, control/observability definitions, CNN preservation, learner execution regression, GameTheory, and generated report.
 
-The theorem generator type-checks those surfaces with `agda --safe` and checks their required theorem names.
-
-The workflow installs Agda 2.8.0 and stdlib 2.4, compiles every maintained proof surface, runs the generator and redundancy audit, and checks the generated report. Pushes to `main`, pull requests, the hourly schedule, and manual dispatch all use the same verification path, so a merge automatically re-enters the synchronization gate without a separate manual step.
-
-The active PR is #36, branch `agda-theorem-first-monolith-20260916`. The branch must not be described as green until a fresh current-head run passes every maintained stage.
+Current branch acceptance is CI-gated. The closed-loop benchmark theorem surface is considered authoritative only after the current-head Agda workflow has compiled it and its exact metric theorems.
