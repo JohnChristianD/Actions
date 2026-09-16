@@ -10,32 +10,24 @@ record name path proofs = (name, path, proofs)
 methods :: [(String, String, [String])]
 methods =
   [ record "CanonicalLearner" "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda"
-      [ "temperatureCodeLaw"
-      , "temperatureTieLaw"
-      , "temperaturePositiveUnitLaw"
-      , "temperatureNegativeUnitLaw"
-      , "negativeFiniteQLogLaw"
-      , "hardSignCode"
-      , "walshOrthonormal"
-      , "mobiusAssociativity"
-      , "persistentGRUMonolith"
-      , "canonicalPersistentGRUPreservation"
-      , "canonicalPolicy-attention-invariant"
-      , "f4ParameterInvariant"
-      , "pessimisticInit"
-      , "pessimisticCritic"
-      , "endogenousNegativeScale8"
-      , "canonicalFullStep-clock"
-      , "canonicalFullStep-critic"
-      , "canonicalFullStep-attention"
-      , "canonicalFullStep-gru"
-      , "canonicalFullStep-optimizer"
-      , "canonicalFullStep-counts"
-      , "canonicalFullStep-qLog"
-      , "canonicalFullStep-qLogControl"
-      , "canonicalQuadraticDecay"
-      , "canonicalAperiodic"
-      , "canonicalCoerciveNoCycle"
+      [ "temperatureCodeLaw", "temperatureTieLaw", "temperaturePositiveUnitLaw", "temperatureNegativeUnitLaw"
+      , "negativeFiniteQLogLaw", "hardSignCode", "walshOrthonormal", "mobiusAssociativity"
+      , "persistentGRUMonolith", "canonicalPersistentGRUPreservation", "canonicalPolicy-attention-invariant"
+      , "f4ParameterInvariant", "pessimisticInit", "pessimisticCritic", "endogenousNegativeScale8"
+      , "canonicalFullStep-clock", "canonicalFullStep-critic", "canonicalFullStep-attention"
+      , "canonicalFullStep-gru", "canonicalFullStep-optimizer", "canonicalFullStep-counts"
+      , "canonicalFullStep-qLog", "canonicalFullStep-qLogControl", "canonicalQuadraticDecay"
+      , "canonicalAperiodic", "canonicalCoerciveNoCycle"
+      ]
+  , record "MobiusBoundary" "Exotic/ERL/FullCoupled/MobiusRational.agda"
+      [ "mobiusRatio8-law", "mobiusSingularity" ]
+  , record "WalshBoundary" "Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda"
+      [ "walshOrthonormal", "walshDimensionPowerOfFour" ]
+  , record "RecurrentBoundary" "Exotic/ERL/FullCoupled/DyadicGRU.agda"
+      [ "gruParameterPersistence", "persistent-preservation" ]
+  , record "MobiusComposition" "Exotic/ERL/FullCoupled/MobiusSemidirectCycleComposition.agda"
+      [ "mobiusAssociativityWindow", "persistentGRUWindow", "inputDrivenZeroLaw", "inputDrivenTwoLaw"
+      , "gruPersistentNoNontrivialFiniteCycle"
       ]
   ]
 
