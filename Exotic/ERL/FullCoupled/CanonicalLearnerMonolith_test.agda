@@ -2,6 +2,8 @@
 module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith_test where
 
 open import Agda.Builtin.Equality using (_≡_)
+import Agda.Builtin.Int as I
+open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 
@@ -28,7 +30,7 @@ check-qlog : ∀ x →
   finiteRational (negInt (numerator (finiteQLog8 x))) (denominator (finiteQLog8 x))
 check-qlog = negativeFiniteQLogLaw
 
-check-mobius : ∀ x → signedCode x ≢ _ →
+check-mobius : ∀ x → signedCode x ≢ I.pos 1 →
   mobiusRatio8 x ≡ finiteRational (signedCode x) (I._-_ (I.pos 1) (signedCode x))
 check-mobius = mobiusRatio8-law
 
