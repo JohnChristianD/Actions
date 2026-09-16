@@ -46,7 +46,7 @@ le-trans (s≤s p) (s≤s q) = s≤s (le-trans p q)
 lt-trans : ∀ {a b c : Nat} → a < b → b < c → a < c
 lt-trans (s≤s p) (s≤s q) = s≤s (le-trans p q)
 
-lt-irrefl : ∀ n → ¬ (n < n)
+lt-irrefl : ∀ n → (n < n) → ⊥
 lt-irrefl zero ()
 lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
 
