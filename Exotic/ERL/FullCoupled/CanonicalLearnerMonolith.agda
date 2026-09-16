@@ -1,19 +1,15 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 
-open import Agda.Builtin.Equality using (_≡_; _≢_; refl; sym; cong; subst; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; subst; trans)
 import Agda.Builtin.Int as I
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _∸_)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_;)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat using (_<_; _≤_; z≤n; s≤s)
+open import Data.Nat using (_<_; _≤_; _∸_; z≤n; s≤s)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_)
-
-------------------------------------------------------------------------
--- Entire learner kernel. No environment or statistical carrier occurs here.
-------------------------------------------------------------------------
 
 record Int8 : Set where
   constructor int8
@@ -40,10 +36,6 @@ int8Roundtrip x = trans
   (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
   (m<n⇒m%n≡m (toℕ<n (code x)))
 
-------------------------------------------------------------------------
--- Nat deductions used by contradiction theorems.
-------------------------------------------------------------------------
-
 lt-trans : ∀ {a b c : Nat} → a < b → b < c → a < c
 lt-trans (s≤s p) (s≤s q) = s≤s (le-trans p q)
   where
@@ -59,32 +51,24 @@ le-refl : ∀ n → n ≤ n
 le-refl zero = z≤n
 le-refl (suc n) = s≤s (le-refl n)
 
-le-trans : ∀ {m n k : Nat} → m ≤ n → n ≤ k → m ≤ k
-le-trans z≤n q = q
-le-trans (s≤s p) (s≤s q) = s≤s (le-trans p q)
-
 plus-suc : ∀ (m n : Nat) → m + suc n ≡ suc (m + n)
 plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
 
-suc-injective : ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
-suc-injective refl = refl
+plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
+plus-suc-lt m n = subst (λ z → m < z) (plus-suc m n)
+  (s≤s (le-refl (m + n)))
 
-plus-suc-not-self : ∀ (r n : Nat) → r + suc n ≢ r
-plus-suc-not-self zero n = λ ()
-plus-suc-not-self (suc r) n eq =
-  plus-suc-not-self r n (suc-injective eq')
-  where
-  eq' : suc r ≡ suc r
-  eq' = trans (sym (plus-suc r n)) (trans eq (plus-suc r n))
+plus-suc-not-self : ∀ (m n : Nat) → m + suc n ≢ m
+plus-suc-not-self m n eq =
+  lt-irrefl m (subst (λ z → m < z) eq (plus-suc-lt m n))
+
+suc-suc-lt : ∀ n → n < suc (suc n)
+suc-suc-lt n = s≤s (s≤s (le-refl n))
 
 suc-suc-not-self : ∀ n → suc (suc n) ≢ n
-suc-suc-not-self zero ()
-suc-suc-not-self (suc n) eq = suc-suc-not-self n (suc-injective eq)
-
-------------------------------------------------------------------------
--- Exact finite iteration.
-------------------------------------------------------------------------
+suc-suc-not-self n eq =
+  lt-irrefl n (subst (λ z → n < z) (sym eq) (suc-suc-lt n))
 
 iterate : ∀ {S : Set} → (S → S) → Nat → S → S
 iterate step zero s = s
@@ -98,10 +82,6 @@ iterate-shift step (suc n) s = cong step (iterate-shift step n s)
 
 OrbitNonFixed : ∀ {S : Set} {step : S → S} → S → Set
 OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≢ step (iterate step n s)
-
-------------------------------------------------------------------------
--- Exact finite-rational Mobius boundary x / (1 - x).
-------------------------------------------------------------------------
 
 record FiniteRational : Set where
   constructor finiteRational
@@ -147,15 +127,10 @@ identityAction = mobiusAction (λ x → x)
 composeAction : MobiusAction → MobiusAction → MobiusAction
 composeAction f g = mobiusAction (λ x → run f (run g x))
 
-mobiusAssociativity :
-  ∀ f g h x →
+mobiusAssociativity : ∀ f g h x →
   run (composeAction (composeAction f g) h) x ≡
   run (composeAction f (composeAction g h)) x
 mobiusAssociativity f g h x = refl
-
-------------------------------------------------------------------------
--- Watkins critic-only policy source, sparsemax temperature, LCB memory.
-------------------------------------------------------------------------
 
 record CriticState : Set where
   constructor criticState
@@ -171,13 +146,15 @@ Sparsemax2Pair : Set
 Sparsemax2Pair = Int8 × Int8
 
 data BoolLike : Set where
-enabled disabled : BoolLike
+  enabled : BoolLike
+  disabled : BoolLike
 
 record WatkinsKernel : Set₁ where
   constructor watkinsKernel
-  field updateCritic : CriticState → Int8 → CriticState
-        greedy : CriticState → Int8 → BoolLike
-        traceUpdate : BoolLike → BoolLike → BoolLike
+  field
+    updateCritic : CriticState → Int8 → CriticState
+    greedy : CriticState → Int8 → BoolLike
+    traceUpdate : BoolLike → BoolLike → BoolLike
 open WatkinsKernel public
 
 record WatkinsState : Set where
@@ -261,19 +238,14 @@ updateLCBCount p (lcbCountState l r t) with policyChoosesLeft p
 ... | enabled = lcbCountState (suc l) r (suc t)
 ... | disabled = lcbCountState l (suc r) (suc t)
 
-------------------------------------------------------------------------
--- Negative Munchausen-style finite q-log shaping.
-------------------------------------------------------------------------
-
 finiteQLog8 : Int8 → FiniteRational
 finiteQLog8 x with toℕ (code x)
 ... | zero = finiteRational (I.pos 1) (I.pos 1)
 ... | suc n = finiteRational (I.pos n) (I.pos (suc n))
 
 negativeFiniteQLog8 : Int8 → FiniteRational
-negativeFiniteQLog8 x =
-  let q = finiteQLog8 x
-  in finiteRational (negInt (numerator q)) (denominator q)
+negativeFiniteQLog8 x = let q = finiteQLog8 x in
+  finiteRational (negInt (numerator q)) (denominator q)
 
 negativeFiniteQLogLaw : ∀ x →
   negativeFiniteQLog8 x ≡ finiteRational (negInt (numerator (finiteQLog8 x))) (denominator (finiteQLog8 x))
@@ -293,10 +265,6 @@ canonicalQLogControl = signedQLogControl negativeAlpha8 negativeAlpha8
 qLogSignal : SignedQLogControl → Int8 → Int8
 qLogSignal c x = int8Add x (coefficient c)
 
-------------------------------------------------------------------------
--- Learned sparsemax attention stays learner-internal and actor-free.
-------------------------------------------------------------------------
-
 record LearnedSparsemaxAttention : Set where
   constructor learnedSparsemaxAttention
   field leftParameter rightParameter : Int8
@@ -311,10 +279,6 @@ attentionActionScore a = actionScore (leftParameter a) (rightParameter a)
 learnedSparsemaxAttentionWeights : LearnedSparsemaxAttention → Sparsemax2Pair
 learnedSparsemaxAttentionWeights a = fixedTemperatureSparsemax (attentionActionScore a)
 
-------------------------------------------------------------------------
--- Exact H4 / 2 Walsh boundary.
-------------------------------------------------------------------------
-
 record HalfInt : Set where
   constructor mkHalfInt
   field numerator : I.Int
@@ -328,10 +292,13 @@ WalshVec4 = HalfInt × (HalfInt × (HalfInt × HalfInt))
 
 row0 : IntVec4
 row0 = I.pos 1 , (I.pos 1 , (I.pos 1 , I.pos 1))
+
 row1 : IntVec4
 row1 = I.pos 1 , (I.negsuc 0 , (I.pos 1 , I.negsuc 0))
+
 row2 : IntVec4
 row2 = I.pos 1 , (I.pos 1 , (I.negsuc 0 , I.negsuc 0))
+
 row3 : IntVec4
 row3 = I.pos 1 , (I.negsuc 0 , (I.negsuc 0 , I.pos 1))
 
@@ -358,12 +325,10 @@ walshHadamardApply (a , (b , (c , d))) =
     (mkHalfInt (I._+_ (I._+_ a b) (I._+_ (I.negsuc 0) (I._+_ c d))) ,
       mkHalfInt (I._+_ (I._-_ a b) (I._+_ (I._*_ (I.negsuc 0) c) d))))
 
-------------------------------------------------------------------------
--- Hard-sign gate + persistent, input-driven finite-rational GRU.
-------------------------------------------------------------------------
-
 data HardSign8 : Set where
-  negative zeroSign positive : HardSign8
+  negative : HardSign8
+  zeroSign : HardSign8
+  positive : HardSign8
 
 hardSignCode : I.Int → HardSign8
 hardSignCode (I.pos zero) = zeroSign
@@ -448,12 +413,11 @@ gruStep (gruState h m n g) x =
 persistentGRU : GRUState → GRUMatrices × (GRUNoise × GlobalControl)
 persistentGRU (gruState h m n g) = m , (n , g)
 
-persistent-preservation :
-  ∀ (s : GRUState) (x : Int8) → persistentGRU (gruStep s x) ≡ persistentGRU s
+persistent-preservation : ∀ (s : GRUState) (x : Int8) →
+  persistentGRU (gruStep s x) ≡ persistentGRU s
 persistent-preservation (gruState h m n g) x = refl
 
-gruParameterPersistence :
-  ∀ (s : GRUState) (x : Int8) →
+gruParameterPersistence : ∀ (s : GRUState) (x : Int8) →
   matrices (gruStep s x) ≡ matrices s ×
   noise (gruStep s x) ≡ noise s ×
   globalControl (gruStep s x) ≡ globalControl s
@@ -461,10 +425,6 @@ gruParameterPersistence (gruState h m n g) x = refl , (refl , refl)
 
 gruActivationBoundary : ∀ x → mobiusActivation8 x ≡ mobiusRatio8 x
 gruActivationBoundary x = refl
-
-------------------------------------------------------------------------
--- Global F4-Int-U(p)-style optimizer with explicit global L2 correction.
-------------------------------------------------------------------------
 
 record F4IntUState : Set where
   constructor f4IntUState
@@ -492,10 +452,6 @@ record NormPair : Set where
   constructor normPair
   field l1 path : Int8
 open NormPair public
-
-------------------------------------------------------------------------
--- Complete learner state and deterministic endogenous one-step map.
-------------------------------------------------------------------------
 
 record FullLearnerState : Set where
   constructor fullLearnerState
@@ -538,8 +494,8 @@ endogenousNegativeScale8 : Sparsemax2Pair → Int8
 endogenousNegativeScale8 (l , r) = l2Correction l
 
 canonicalQLogControlStep : FullLearnerKernel → FullLearnerState → SignedQLogControl
-canonicalQLogControlStep K s =
-  signedQLogControl negativeAlpha8 (endogenousNegativeScale8 (canonicalPolicy K s))
+canonicalQLogControlStep K s = signedQLogControl negativeAlpha8
+  (endogenousNegativeScale8 (canonicalPolicy K s))
 
 canonicalSignal : FullLearnerKernel → FullLearnerState → Int8
 canonicalSignal K s =
@@ -583,8 +539,7 @@ canonicalRecurrentInput-law :
 canonicalRecurrentInput-law K s = refl
 
 canonicalOptimizerStep : FullLearnerKernel → FullLearnerState → F4IntUState
-canonicalOptimizerStep K s =
-  f4ThetaStep (optimizerKernel K) (optimizer s) (canonicalSignal K s)
+canonicalOptimizerStep K s = f4ThetaStep (optimizerKernel K) (optimizer s) (canonicalSignal K s)
 
 canonicalCountStep : FullLearnerKernel → FullLearnerState → LCBCountState
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
@@ -659,37 +614,36 @@ canonicalAperiodic K s n cyc =
       (sym (clockAfter K (suc n) s))
       (cong clock cyc))
 
-canonicalOrbitNonFixed : ∀ K s n → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
+canonicalOrbitNonFixed : ∀ K s n →
+  iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n = canonicalStep-not-fixed K (iterateCanonical K n s)
 
 canonicalNoNontrivialFiniteCycle : ∀ K s n →
   iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
 
-canonicalNoCountedTwoCycle : ∀ K s →
-  iterateCanonical K 2 s ≡ s → ⊥
-canonicalNoCountedTwoCycle K s cyc =
-  suc-suc-not-self (totalCount (iterateCanonical K 0 s))
-    (trans
-      (sym (cong suc (canonicalTotalCountStep K s)))
-      (trans
-        (sym (canonicalTotalCountStep K (canonicalFullStep K s)))
-        (cong totalCount cyc)))
+canonicalTotalCountIterate2 : ∀ K s →
+  totalCount (iterateCanonical K 2 s) ≡ suc (suc (totalCount s))
+canonicalTotalCountIterate2 K s = refl
 
-------------------------------------------------------------------------
--- Concrete regression laws.
-------------------------------------------------------------------------
+canonicalNoCountedTwoCycle : ∀ K s → iterateCanonical K 2 s ≡ s → ⊥
+canonicalNoCountedTwoCycle K s cyc =
+  suc-suc-not-self (totalCount s)
+    (trans (sym (canonicalTotalCountIterate2 K s)) (cong totalCount cyc))
 
 temperatureCodeLaw : sparsemaxTemperature ≡ int8OfNat 16
 temperatureCodeLaw = refl
 
-temperatureTieLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 0)) ≡ int8OfNat 64 , int8OfNat 64
+temperatureTieLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 0)) ≡
+  int8OfNat 64 , int8OfNat 64
 temperatureTieLaw = refl
 
-temperaturePositiveUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 1) (int8OfNat 0)) ≡ int8OfNat 68 , int8OfNat 60
+temperaturePositiveUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 1) (int8OfNat 0)) ≡
+  int8OfNat 68 , int8OfNat 60
 temperaturePositiveUnitLaw = refl
 
-temperatureNegativeUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡ int8OfNat 60 , int8OfNat 68
+temperatureNegativeUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡
+  int8OfNat 60 , int8OfNat 68
 temperatureNegativeUnitLaw = refl
 
 pessimisticInit : Int8
@@ -698,7 +652,8 @@ pessimisticInit = int8OfNat 128
 pessimisticCritic : CriticState
 pessimisticCritic = criticState pessimisticInit pessimisticInit
 
-pessimisticCritic-law : qLeft pessimisticCritic ≡ pessimisticInit × qRight pessimisticCritic ≡ pessimisticInit
+pessimisticCritic-law :
+  qLeft pessimisticCritic ≡ pessimisticInit × qRight pessimisticCritic ≡ pessimisticInit
 pessimisticCritic-law = refl , refl
 
 canonicalWalshBoundary : walshOrthonormal ≡ walshOrthonormal
