@@ -69,8 +69,15 @@ natEq zero (suc n) = no
 natEq (suc m) zero = no
 natEq (suc m) (suc n) = natEq m n
 
+natEq-refl : ∀ n → natEq n n ≡ yes
+natEq-refl zero = refl
+natEq-refl (suc n) = natEq-refl n
+
 finEq : ∀ {A : Nat} → Fin A → Fin A → BoolLike
 finEq i j = natEq (toℕ i) (toℕ j)
+
+finEq-refl : ∀ {A : Nat} (i : Fin A) → finEq i i ≡ yes
+finEq-refl i = natEq-refl (toℕ i)
 
 raiseFin : ∀ {A : Nat} → Fin A → Fin (suc A)
 raiseFin {A} i = fromℕ< (s≤s (toℕ<n i))
@@ -161,7 +168,7 @@ scoreA q c a = int8Add (q a) (lcbBonus (c a))
 
 argmaxA : ∀ {A : Nat} → Fin (suc A) → (Fin (suc A) → Int8) → Fin (suc A)
 argmaxA {zero} start f = start
-argmaxA {suc A} start f with argmaxA {A} (raiseFin start) (λ i → f (raiseFin i))
+argmaxA {suc A} start f with argmaxA {A} (fromℕ< (m%n<n 0 (suc A))) (λ i → f (raiseFin i))
 ... | best with toℕ (code (f start)) <ᵇ toℕ (code (f best))
 ... | yes = best
 ... | no = start
@@ -175,9 +182,7 @@ oneHotWeightA a i with finEq a i
 ... | no = zero8
 
 oneHotSupportA : ∀ {A : Nat} (a : Fin (suc A)) → oneHotWeightA a a ≡ int8OfNat 128
-oneHotSupportA a with finEq a a
-... | yes = refl
-... | no = refl
+oneHotSupportA a rewrite finEq-refl a = refl
 
 record MunchausenMode : Set where
   constructor useMunchausen noMunchausen
