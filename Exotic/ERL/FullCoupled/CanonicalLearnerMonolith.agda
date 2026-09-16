@@ -57,7 +57,7 @@ sortDesc (x ∷ xs) = insertDesc x (sortDesc xs)
 
 supportScan : ∀ {n} → Nat → Nat → V (Fin 256) (suc n) → Support
 supportScan k s [] = support k s
-supportScan k s (x ∷ xs) with natGt ((suc k) * toℕ x) (s + toℕ x)
+supportScan k s (x ∷ xs) with natGt ((suc k) * toℕ x) ((s + toℕ x) ∸ 1)
 ... | true = supportScan (suc k) (s + toℕ x) xs
 ... | false = support k s
 
@@ -102,8 +102,7 @@ record ClosedGame (A : Nat) (S : Set) : Set₁ where
 
 record LearnerState (A : Nat) : Set where
   constructor learnerState
-  field qValues : V (Fin 256) (suc A)
-        clock : Nat
+  field qValues : V (Fin 256) (suc A); clock : Nat
 
 record Learner (A : Nat) (S : Set) : Set₁ where
   constructor learner
@@ -119,10 +118,7 @@ open RunMetrics public
 
 record StepResult (A : Nat) (S : Set) : Set where
   constructor stepResult
-  field learnerState' : LearnerState A
-        envState' : S
-        reward' regret' success' : Nat
-        done' : Bool
+  field learnerState' : LearnerState A; envState' : S; reward' regret' success' : Nat; done' : Bool
 
 closedLoopStep : ∀ {A S} → ClosedGame A S → Learner A S → LearnerState A → S → StepResult A S
 closedLoopStep G L ls s with sparsemaxPolicyA (ClosedGame.observe G s)
