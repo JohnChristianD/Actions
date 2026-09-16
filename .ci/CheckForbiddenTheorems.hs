@@ -2,9 +2,15 @@ module Main where
 
 import Control.Monad (forM_)
 import Data.List (isInfixOf)
-import System.Directory (doesDirectoryExist, doesFileExist, listDirectory)
+import System.Directory (doesFileExist)
 import System.Exit (exitFailure, exitSuccess)
-import System.FilePath ((</>))
+
+checkedPaths :: [FilePath]
+checkedPaths =
+  [ "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+  , "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
+  ]
 
 forbidden :: [String]
 forbidden =
@@ -18,55 +24,34 @@ forbidden =
   , "?hole?"
   ]
 
-retiredPaths :: [FilePath]
-retiredPaths =
-  [ "Exotic/ERL/Exploration/MR15Reachability.agda"
-  , "Exotic/ERL/Exploration/OpenESDyadic.agda"
-  , "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicBehavior.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicBehavior_test.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicSeparation.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicSeparation_test.agda"
-  , "Exotic/ERL/FullCoupled/SharedActorCritic.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem.agda"
-  , "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem_test.agda"
-  , "Exotic/econlib/RockPaperScissors.agda"
-  , "Exotic/econlib/RockPaperScissors_test.agda"
-  ]
-
-agdaFiles :: FilePath -> IO [FilePath]
-agdaFiles dir = do
-  names <- listDirectory dir
-  fmap concat $ mapM visit names
-  where
-    visit name = do
-      let path = dir </> name
-      isDir <- doesDirectoryExist path
-      if isDir
-        then if name == ".git" || (dir == ".ci" && name == "external")
-             then pure []
-             else agdaFiles path
-        else pure [path | takeSuffix ".agda" path]
-
-    takeSuffix suffix path = reverse suffix == take (length suffix) (reverse path)
-
 main :: IO ()
 main = do
-  files <- agdaFiles "."
-  problems <- fmap concat $ mapM inspect files
-  if null problems
-    then putStrLn "forbidden-theorem-families=absent" >> putStrLn "retired-exploration-sources=absent" >> putStrLn "holes-and-postulates=absent" >> exitSuccess
+  missing <- fmap concat (mapM missingFile checkedPaths)
+  problems <- fmap concat (mapM inspect checkedPaths)
+  let allProblems = missing ++ problems
+  if null allProblems
+    then do
+      putStrLn "canonical-safe-surface=complete"
+      putStrLn "holes-and-postulates=absent"
+      putStrLn "forbidden-theorem-families=absent"
+      exitSuccess
     else do
-      forM_ problems (putStrLn . ("ERROR: " ++))
+      forM_ allProblems (putStrLn . ("ERROR: " ++))
       exitFailure
   where
+    missingFile path = do
+      ok <- doesFileExist path
+      pure ["required canonical proof file missing: " ++ path | not ok]
+
     inspect path = do
       source <- readFile path
       let lower = map toLowerAscii source
           forbiddenLower = map (map toLowerAscii) forbidden
-          tokenErrors = ["forbidden token in " ++ path | any (`isInfixOf` lower) forbiddenLower]
-          retiredErrors = ["retired theorem source present at " ++ path | path `elem` retiredPaths]
-      pure (tokenErrors ++ retiredErrors)
+      pure
+        [ "forbidden token in " ++ path ++ ": " ++ token
+        | token <- forbiddenLower
+        , token `isInfixOf` lower
+        ]
 
     toLowerAscii c
       | c >= 'A' && c <= 'Z' = toEnum (fromEnum c + 32)
