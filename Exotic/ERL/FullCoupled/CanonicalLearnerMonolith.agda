@@ -51,7 +51,7 @@ plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
 
 plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
-plus-suc-lt m n = subst (λ z → m < z) (plus-suc m n)
+plus-suc-lt m n = subst (λ z → m < z) (sym (plus-suc m n))
   (s≤s (le-refl (m + n)))
 
 plus-suc-not-self : ∀ (m n : Nat) → m + suc n ≢ m
