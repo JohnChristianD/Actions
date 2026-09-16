@@ -65,9 +65,23 @@ The effective algebra is below ring level:
 
 `finite many-sorted data + Nat arithmetic + equality/negation + products/records + End(S)`.
 
-Here `End(S) = S -> S` is the important composition monoid. Identity and function composition supply the associative scan law. A ring, field, module, lattice, metric, or normed-space structure is not required by the maintained proofs.
+Here `End(S) = S -> S` is the important composition monoid. Identity and function composition supply the associative scan law. A ring, field, module, lattice, metric, or normed-space structure is not required by the maintained learner proofs.
 
-The current source does need the Agda standard library because it directly imports the eight modules above. The standard library is convenience infrastructure, not the mathematical minimum. A no-stdlib reconstruction is possible only after replacing every actually used primitive and rerunning the same safe theorem surface.
+The current learner source directly needs eight standard-library modules because those names are used. Reducing the direct import surface is a separate refactor and must preserve the same `--safe` proof surface.
+
+## L1 and 1-path norm status
+
+The paper `Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization` studies PSiLON-style MLPs and related residual blocks. Its 1-path-norm/Lipschitz results are not automatically theorems about this learner's recurrent sparsemax/Walsh composition.
+
+`FiniteNormAlgebra.agda` therefore defines a deliberately explicit finite test algebra for a two-weight scalar network:
+
+`L1(w) = |w_in| + |w_out|`
+
+`1Path(w) = |w_in| * |w_out|`
+
+with a componentwise `Nat` order and contradiction/equality-zero product lemmas. This is an exact implementation of those finite definitions, not a transcription of the paper's full PSiLON architecture and not a claim that the paper's generalization theorem applies to the learner.
+
+The current learner `NormPair` is still a state record with two `Int8` fields. It must not be described as the PSiLON 1-path norm unless the state transition is changed to compute that actual norm.
 
 ## Finite functional parameter completeness
 
@@ -80,6 +94,18 @@ It also proves the generic finite-state-kernel parameter result for arbitrary to
 This establishes **functional completeness of finite parameter slots**, not universal approximation of unrestricted continuous functions. The fixed learner wiring still constrains how those slots compose.
 
 The arithmetic language can express finite-domain polynomial-like, piecewise-polynomial, threshold/sign, and finite rational-shaped functions. `FiniteRational` remains an encoding record, not a proved division field, so no analytic piecewise-rational completeness theorem is asserted.
+
+## Reachability, controllability, and observability
+
+`CanonicalControlObservability.agda` gives formal definitions and proof terms, but the vocabulary is intentionally narrower than classical control theory because the canonical learner has no external control input.
+
+`CanonicalReachable K s t` means exactly that there exists a natural-number iterate of `canonicalFullStep K` taking `s` to `t`.
+
+`canonicalOrbitReachable` proves every point on the learner's own forward orbit is reachable by its corresponding iterate.
+
+`CanonicalOrbitControllable` is explicitly defined only as reachability of that predetermined orbit. It is **not** Kalman controllability, nonlinear controllability, steering under a free input alphabet, or a practical-control guarantee. The code does not define an external input channel, admissible controls, or a target-set steering problem, so claiming those stronger notions would add assumptions not present in the imports.
+
+For observability, `fullStateObservation s = s`, and `fullStateObservation-injective` proves exact full-state observability. `clockObservation` separately observes the Nat clock, with `clockObservation-after-iterate` proving the exact `clock s + n` law. These are formal identity/clock observation theorems, not a sensor-identification theorem for a hidden environment.
 
 ## Environment ports
 
@@ -101,31 +127,25 @@ The arithmetic language can express finite-domain polynomial-like, piecewise-pol
 
 The upstream Jumanji/Gymnax/Pobax environments include stochastic generation or continuous-valued dynamics in several cases. The canonical Agda ports deliberately choose deterministic finite projections so that they remain within the existing finite/Nat import surface. These are executable structural variants, not claims of bit-for-bit numerical equivalence to JAX floating-point or stochastic sampling.
 
-The learner execution regression in `CanonicalLearnerGameExecution_test.agda` feeds each port's finite reward through an explicit `Fin 256` reward adapter and then executes `canonicalFullStep`. Thus the learner is checked as an executable interaction loop on every listed port, including the already partially completed CartPole, Bernoulli Bandit, MetaMaze, and RockSample surfaces.
-
-This proves execution and state transition, not empirical sample-efficiency or convergence.
+The learner execution regression feeds each port's finite reward through an explicit `Fin 256` reward adapter and then executes `canonicalFullStep`. This checks executable interaction coupling, not empirical sample-efficiency or convergence.
 
 ## GameTheory ports
 
-`Exotic/econlib/GameTheory.agda` now uses the same eight direct standard-library imports and no `efficient_chad.Int8` dependency. Its Prisoner's Dilemma payoffs, pure-Nash witness, best-response map, stabilization, and finite iteration theorem remain explicit.
+`Exotic/econlib/GameTheory.agda` is deliberately external to the learner monolith. The canonical learner does not import it. It uses **seven** direct standard-library imports and a local `Int8 = Fin 256` encoding, so the old `efficient_chad.Int8` dependency is gone.
 
-Repository-local search found no active `NoisyNetCoupled`, `OpenESDyadic`, or `MR15Reachability` references in the current canonical branch. Their former remote branch names are also absent from the current branch inventory. They therefore do not belong to the canonical replication surface.
+The module remains useful for independent theorem tests: Prisoner's Dilemma payoffs, a pure-Nash witness, best-response, stabilization, and finite iteration are explicit and safe. These game-theory modules are test fixtures and theorem-correction surfaces, not hidden learner dependencies.
 
-## CNN/log-pyramid preservation theorem
+No current GameTheory source requires a transcendence library. The stale EfficientCHAD-related surface was instead found in an old `CIInterpolation_v147.agda` file whose imported `CompleteSafe_v147` no longer exists. That obsolete v147 interpolation file and its trigger/wake marker files have been pruned from the canonical branch.
 
-There is now a formal representation-level theorem in `CNNLogPyramidPreservation.agda`.
+## CNN/log-pyramid status
 
-`CNNLogPyramid64` is an explicit 64-index code. `cnnToAttention` maps that code to the learner's attention carrier. `cnnLogPyramidGRUInputPreservation` proves that equal encoded attention states induce identical GRU transitions, by congruence through the existing attention -> sparsemax -> Walsh -> GRU composition.
+The previous phrase "log-pyramid equivalence" was too strong. The maintained theorem is now an explicit quotient/equality theorem.
 
-`cnnLogPyramidCommutesWithCanonicalGRU` proves:
+`CNNLogPyramid64` is a concrete 64-index code. `cnnToAttention` is its decoder into the learner's attention carrier. `CNNLogPyramidEquivalent p q` is the relation `cnnToAttention p = cnnToAttention q`, and reflexivity, symmetry, and transitivity are proved.
 
-`cnnToAttention p = attention s`
+`cnnLogPyramidGRUInputPreservation` proves equal decoded attention implies equal GRU transitions, and `cnnLogPyramidCommutesWithCanonicalGRU` proves that a code whose decoded attention equals the learner's current attention produces exactly the same `canonicalGRUStep`.
 
-implies
-
-`cnnLogPyramidGRUStep K s p = canonicalGRUStep K s`.
-
-This is the exact preservation theorem available without inventing an unimplemented CNN convolution/pooling theorem. It says an explicitly encoded 64-level pyramid representation is preserved when its decoded attention state equals the learner's current attention state. It does **not** claim that arbitrary CNN architectures are equivalent to the learner.
+This is a representation-factorization/preservation theorem. There is no constructed bijection from an arbitrary CNN architecture, no inverse convolution/pooling map, and no approximation metric or error bound. Consequently the repository makes no claim that the learner's function class exceeds a fixed-depth CNN. Such a statement would require a precisely defined CNN class, input/output domain, parameter constraints, and function metric before it could even be stated as a theorem.
 
 ## Hard sparsity
 
@@ -149,14 +169,18 @@ Thus every step is a strict unit increase in the well-order of `Nat`. This requi
 
 This is an exact Nat rank, not a classical decreasing Lyapunov function.
 
+## Old-folder pruning
+
+The canonical branch no longer carries the obsolete `MR15Reachability`, `OpenESDyadic`, or `NoisyNetCoupled` learner files. It also no longer carries the broken v147 CI interpolation/trigger/wake markers or the old three-file exploration counterfactual/schema cluster. The generated theorem report remains because the current generator writes it and the workflow checks it.
+
+The external game modules remain modular by design. They are not merged into the learner state or transition function.
+
 ## Synchronization and acceptance
 
-The safety scanner covers the canonical learner, game ports, exact finite map variants, parameter completeness theorem, CNN preservation theorem, learner execution regression, GameTheory, and generated report.
+The safety scanner covers the canonical learner, game ports, faithful map variants, finite parameter completeness, finite norm algebra, control/observability definitions, CNN preservation, learner execution regression, GameTheory, and generated report.
 
 The theorem generator type-checks those surfaces with `agda --safe` and checks their required theorem names.
 
-The workflow installs Agda 2.8.0 and stdlib 2.4, checks the canonical learner and all maintained regression surfaces, runs the generator and redundancy audit, and then checks the generated report.
+The workflow installs Agda 2.8.0 and stdlib 2.4, compiles every maintained proof surface, runs the generator and redundancy audit, and checks the generated report. Pushes to `main`, pull requests, the hourly schedule, and manual dispatch all use the same verification path, so a merge automatically re-enters the synchronization gate without a separate manual step.
 
-A merge to `main` naturally re-runs the same path-based gate because the workflow triggers on the canonical Agda, CI, and documentation paths. No background assumption is needed: synchronization is encoded as repository checks.
-
-The branch must not be described as green until the current PR-head run completes all of those stages successfully.
+The active PR is #36, branch `agda-theorem-first-monolith-20260916`. The branch must not be described as green until a fresh current-head run passes every maintained stage.
