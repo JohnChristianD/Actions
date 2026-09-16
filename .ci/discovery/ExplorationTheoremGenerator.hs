@@ -1,6 +1,6 @@
 module Main where
 
-import Data.List (intercalate, isInfixOf)
+import Data.List (isInfixOf)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
@@ -21,6 +21,9 @@ surfaces =
   , Surface "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
       [ "learnerDefaultD", "learnerDefaultD-power4", "parameterize-complete"
       , "parameterizeFin-complete", "finiteStateFunctionalCompleteness" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalControlObservability.agda"
+      [ "canonicalOrbitReachable", "canonicalOrbitControllable"
+      , "fullStateObservation-injective", "clockObservation-after-iterate" ]
   , Surface "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
       [ "CNNLogPyramid64", "cnnToAttention", "cnnLogPyramidGRUInputPreservation"
       , "cnnLogPyramidCommutesWithCanonicalGRU" ]
@@ -53,6 +56,7 @@ main = do
     then do
       putStrLn "canonical-surfaces=complete"
       putStrLn "finite-function-parameter-theorem=complete"
+      putStrLn "control-observability-surface=complete"
       putStrLn "cnn-log-pyramid-preservation=complete"
       putStrLn "game-execution-regression=complete"
       writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
