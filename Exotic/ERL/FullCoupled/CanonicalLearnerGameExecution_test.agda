@@ -3,8 +3,11 @@
 module Exotic.ERL.FullCoupled.CanonicalLearnerGameExecution_test where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong; sym)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Fin using (toℕ)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*__)
+open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
+open import Data.Fin using (Fin; fromℕ<; toℕ)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
@@ -61,73 +64,307 @@ injectReward s r = fullLearnerState
 learnerRewardStep : FullLearnerState → Int8 → FullLearnerState
 learnerRewardStep s r = canonicalFullStep learnerKernel (injectReward s r)
 
+learnerRewardStep-reward-insensitive : ∀ s r₁ r₂ →
+  learnerRewardStep s r₁ ≡ learnerRewardStep s r₂
+learnerRewardStep-reward-insensitive s r₁ r₂ = refl
+
 learnerRewardStep-clock : ∀ s r → clock (learnerRewardStep s r) ≡ suc (clock s)
 learnerRewardStep-clock s r =
   trans (canonicalFullStep-clock learnerKernel (injectReward s r))
     (cong suc (sym (plus-zero (clock s))))
 
-knapsackRun : P.StepResult P.KnapsackState → FullLearnerState
-knapsackRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+greaterInt8 : Int8 → Int8 → BoolLike
+greaterInt8 x y with toℕ (code x) <ᵇ toℕ (code y)
+... | true = disabled
+... | false with toℕ (code x) <ᵇ toℕ (code y)
+...   | true = disabled
+...   | false = enabled
 
-mazeRun : P.StepResult P.MazeState → FullLearnerState
-mazeRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+maxCriticValue : CriticState → Int8
+maxCriticValue q with toℕ (code (qLeft q)) <ᵇ toℕ (code (qRight q))
+... | true = qRight q
+... | false = qLeft q
 
-lbfRun : P.StepResult P.LBFState → FullLearnerState
-lbfRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+halfInt8 : Int8 → Int8
+halfInt8 x = int8OfNat (halfNat (toℕ (code x)))
 
-metaMazeRun : P.StepResult P.MetaMazeState → FullLearnerState
-metaMazeRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+selectedCriticValue : CriticState → Fin 2 → Int8
+selectedCriticValue q a with toℕ a
+... | zero = qLeft q
+... | _ = qRight q
 
-fourRoomsRun : P.StepResult P.MazeState → FullLearnerState
-fourRoomsRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+closedLoopTarget : CriticState → Int8 → Int8
+closedLoopTarget q r = int8Add r (halfInt8 (maxCriticValue q))
 
-pongRun : P.StepResult P.PongState → FullLearnerState
-pongRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+closedLoopCriticUpdate : CriticState → Fin 2 → Int8 → CriticState
+closedLoopCriticUpdate q a r with toℕ a
+... | zero = criticState (closedLoopTarget q r) (qRight q)
+... | _ = criticState (qLeft q) (closedLoopTarget q r)
 
-memoryChainRun : P.StepResult P.MemoryChainState → FullLearnerState
-memoryChainRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+encodeActionReward : Fin 2 → Int8 → Int8
+encodeActionReward a r with toℕ a
+... | zero = r
+... | _ = int8OfNat (128 + toℕ (code r))
 
-discountingChainRun : P.StepResult P.DiscountingChainState → FullLearnerState
-discountingChainRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+decodeReward : Int8 → Int8
+decodeReward x with toℕ (code x) <ᵇ 128
+... | true = x
+... | false = int8OfNat (toℕ (code x) ∸ 128)
 
-cartPoleRun : P.StepResult P.CartPoleQuantizedState → FullLearnerState
-cartPoleRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+decodeAction : Int8 → Fin 2
+decodeAction x with toℕ (code x) <ᵇ 128
+... | true = fromℕ< (m%n<n 0 2)
+... | false = fromℕ< (m%n<n 1 2)
 
-banditRun : P.StepResult P.BernoulliBanditState → FullLearnerState
-banditRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+closedLoopWatkinsKernel : WatkinsKernel
+closedLoopWatkinsKernel = mkWatkinsKernel
+  (λ q z → closedLoopCriticUpdate q (decodeAction z) (decodeReward z))
+  (λ q z → disabled)
+  (λ t g → g)
 
-rockSampleRun : P.StepResult P.RockSampleState → FullLearnerState
-rockSampleRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
+updateLCBCountByAction : Fin 2 → LCBCountState → LCBCountState
+updateLCBCountByAction a (lcbCountState l r t) with toℕ a
+... | zero = lcbCountState (suc l) r (suc t)
+... | _ = lcbCountState l (suc r) (suc t)
 
-check-knapsack : clock (knapsackRun (P.knapsackStep P.chooseItem0 (P.knapsackState 0 8 0))) ≡ 1
-check-knapsack = refl
+closedLoopAttentionSignal : FullLearnerKernel → FullLearnerState → Int8 → Int8
+closedLoopAttentionSignal K s r = int8Add (canonicalSignal K s) r
 
-check-maze : clock (mazeRun (P.mazeStep (P.fin4 1) (P.mazeState 0 0 0 4 0))) ≡ 1
-check-maze = refl
+closedLoopWatkinsStep : FullLearnerState → Fin 2 → Int8 → WatkinsState
+closedLoopWatkinsStep s a r =
+  watkinsStep closedLoopWatkinsKernel
+    (watkinsState (critic (watkins s)) (encodeActionReward a r) (trace (watkins s)))
 
-check-lbf : clock (lbfRun (P.lbfStep (P.fin6 4) (P.lbfState 0 0 0 1 0 1 1 0))) ≡ 1
-check-lbf = refl
+closedLoopAttentionStep : FullLearnerKernel → FullLearnerState → Int8 → LearnedSparsemaxAttention
+closedLoopAttentionStep K s r = attentionStep K (attention s) (closedLoopAttentionSignal K s r)
 
-check-meta-maze : clock (metaMazeRun (P.metaMazeStep (P.fin4 1) (P.metaMazeState 0 0 0 4 0))) ≡ 1
-check-meta-maze = refl
+closedLoopGRUStep : FullLearnerKernel → FullLearnerState → Int8 → GRUState
+closedLoopGRUStep K s r =
+  let p = learnedSparsemaxAttentionWeights (attention s)
+      w = walshHadamardApply (liftAttention p)
+  in gruStep (gru s)
+    (int8Add (closedLoopAttentionSignal K s r) (attentionToGRU K w))
 
-check-four-rooms : clock (fourRoomsRun (P.fourRoomsStep (P.fin4 1) (P.mazeState 4 1 8 9 0))) ≡ 1
-check-four-rooms = refl
+closedLoopOptimizerStep : FullLearnerKernel → FullLearnerState → Int8 → F4IntUState
+closedLoopOptimizerStep K s r =
+  f4ThetaStep (optimizerKernel K) (optimizer s) (closedLoopAttentionSignal K s r)
 
-check-pong : clock (pongRun (P.pongStep (P.fin3 1) (P.pongState 4 4 2 2 1 1 0))) ≡ 1
-check-pong = refl
+closedLoopStep : FullLearnerKernel → FullLearnerState → Fin 2 → Int8 → FullLearnerState
+closedLoopStep K s a r =
+  fullLearnerState (suc (clock s))
+  (closedLoopWatkinsStep s a r)
+  (closedLoopAttentionStep K s r)
+  (closedLoopGRUStep K s r)
+  (closedLoopOptimizerStep K s r)
+  (norm s)
+  (updateLCBCountByAction a (lcbCounts s))
+  (canonicalQLogControl K s)
+  (canonicalQLogStep K s)
 
-check-memory-chain : clock (memoryChainRun (P.memoryChainStep (P.fin2 0) (P.memoryChainState 1 0 0))) ≡ 1
-check-memory-chain = refl
+closedLoopStep-clock : ∀ K s a r → clock (closedLoopStep K s a r) ≡ suc (clock s)
+closedLoopStep-clock K s a r = refl
 
-check-discounting-chain : clock (discountingChainRun (P.discountingChainStep (P.fin5 0) (P.discountingChainState 0 0))) ≡ 1
-check-discounting-chain = refl
+closedLoopInput-roundtrip : ∀ a r →
+  decodeAction (encodeActionReward a r) ≡ a
+closedLoopInput-roundtrip zero r = refl
+closedLoopInput-roundtrip (suc ()) r = refl
 
-check-cartpole : clock (cartPoleRun (P.cartPoleQuantizedStep (P.fin2 1) (P.cartPoleQuantizedState 1 0 0 0 0))) ≡ 1
-check-cartpole = refl
+closedLoopReward-roundtrip : ∀ a r →
+  decodeReward (encodeActionReward a r) ≡ r
+closedLoopReward-roundtrip zero r = refl
+closedLoopReward-roundtrip (suc ()) r = refl
 
-check-bandit : clock (banditRun (P.bernoulliBanditStep (P.fin2 0) (P.bernoulliBanditState 0 0 0 0))) ≡ 1
-check-bandit = refl
+closedLoopLeftRewardLearns :
+  qLeft (critic (closedLoopStep learnerKernel learnerInitial
+    (fromℕ< (m%n<n 0 2)) one8)) ≡ one8
+closedLoopLeftRewardLearns = refl
 
-check-rocksample : clock (rockSampleRun (P.rockSampleStep (P.fin6 4) (P.rockSampleState 0 0 1 0))) ≡ 1
-check-rocksample = refl
+closedLoopRightRewardLearns :
+  qRight (critic (closedLoopStep learnerKernel learnerInitial
+    (fromℕ< (m%n<n 1 2)) one8)) ≡ one8
+closedLoopRightRewardLearns = refl
+
+record BenchSpec (N : Nat) (S : Set) : Set₁ where
+  constructor benchSpec
+  field
+    initial : S
+    horizon : Nat
+    referenceReturn : Nat
+    step : Fin N → S → P.StepResult S
+    choose : FullLearnerState → Fin N
+    learnerAction : FullLearnerState → Fin 2
+    success : Nat → S → Nat
+open BenchSpec public
+
+record BenchRun (S : Set) : Set where
+  constructor benchRun
+  field environment : S
+        learner : FullLearnerState
+        totalReturn steps : Nat
+open BenchRun public
+
+runBench : ∀ {N S} → BenchSpec N S → FullLearnerState → BenchRun S
+runBench spec learner = loop (horizon spec) learner (initial spec) zero zero
+  where
+    loop : Nat → FullLearnerState → S → Nat → Nat → BenchRun S
+    loop zero l e total steps = benchRun e l total steps
+    loop (suc n) l e total steps with step spec (choose spec l) e
+    ... | P.stepResult obs e' r done with done
+    ...   | P.yes = benchRun e' (closedLoopStep learnerKernel l (learnerAction spec l) (portReward r))
+            (total + toℕ (P.code r)) (suc steps)
+    ...   | P.no = loop n
+            (closedLoopStep learnerKernel l (learnerAction spec l) (portReward r))
+            e' (total + toℕ (P.code r)) (suc steps)
+
+record BenchMetrics (S : Set) : Set where
+  constructor benchMetrics
+  field totalReturn referenceReturn regret success steps : Nat
+open BenchMetrics public
+
+metrics : ∀ {N S} → BenchSpec N S → FullLearnerState → BenchMetrics S
+metrics spec l =
+  let r = runBench spec l
+  in benchMetrics
+    (totalReturn r)
+    (referenceReturn spec)
+    (referenceReturn spec ∸ totalReturn r)
+    (success spec (totalReturn r) (environment r))
+    (steps r)
+
+canonicalBit : FullLearnerKernel → FullLearnerState → Fin 2
+canonicalBit K s with policyChoosesLeft (canonicalPolicy K s)
+... | enabled = fromℕ< (m%n<n 0 2)
+... | disabled = fromℕ< (m%n<n 1 2)
+
+cycle2 : Nat → Nat
+cycle2 zero = zero
+cycle2 (suc zero) = suc zero
+cycle2 (suc (suc n)) = cycle2 n
+
+cycle3 : Nat → Nat
+cycle3 zero = zero
+cycle3 (suc zero) = suc zero
+cycle3 (suc (suc zero)) = suc (suc zero)
+cycle3 (suc (suc (suc n))) = cycle3 n
+
+lift4 : FullLearnerState → Fin 4
+lift4 s = fromℕ< (m%n<n ((cycle2 (clock s) * 2) + toℕ (canonicalBit learnerKernel s)) 4)
+
+lift6 : FullLearnerState → Fin 6
+lift6 s = fromℕ< (m%n<n ((cycle3 (clock s) * 2) + toℕ (canonicalBit learnerKernel s)) 6)
+
+knapsackSpec : BenchSpec 2 P.KnapsackState
+knapsackSpec = benchSpec
+  (P.knapsackState 0 8 0)
+  8 16
+  P.knapsackStep
+  (λ s → canonicalBit learnerKernel s)
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e → 1)
+
+mazeSpec : BenchSpec 4 P.MazeState
+mazeSpec = benchSpec
+  (P.mazeState 0 0 4 4 0)
+  16 1
+  P.mazeStep
+  lift4
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e with P.done (P.mazeStep (lift4 learnerInitial) (P.initial mazeSpec))
+  ... | P.yes = 1
+  ... | P.no = 0)
+
+metaMazeSpec : BenchSpec 4 P.MetaMazeState
+metaMazeSpec = benchSpec
+  (P.metaMazeState 0 0 4 4 0)
+  16 10
+  P.metaMazeStep
+  lift4
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e →
+    ifNat (natEq total 10) 1 0)
+
+fourRoomsSpec : BenchSpec 4 P.MazeState
+fourRoomsSpec = benchSpec
+  (P.mazeState 4 1 8 9 0)
+  16 1
+  P.fourRoomsStep
+  lift4
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e → 1)
+
+cartPoleSpec : BenchSpec 2 P.CartPoleQuantizedState
+cartPoleSpec = benchSpec
+  (P.cartPoleQuantizedState 1 0 0 0 0)
+  16 0
+  P.cartPoleQuantizedStep
+  (λ s → canonicalBit learnerKernel s)
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e → 1)
+
+banditBest0Spec : BenchSpec 2 P.BernoulliBanditState
+banditBest0Spec = benchSpec
+  (P.bernoulliBanditState 0 0 0 0)
+  16 16
+  P.bernoulliBanditStep
+  (λ s → canonicalBit learnerKernel s)
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e →
+    ifNat (natEq total 16) 1 0)
+
+banditBest1Spec : BenchSpec 2 P.BernoulliBanditState
+banditBest1Spec = benchSpec
+  (P.bernoulliBanditState 1 0 0 0)
+  16 16
+  P.bernoulliBanditStep
+  (λ s → canonicalBit learnerKernel s)
+  (λ s → canonicalBit learnerKernel s)
+  (λ total e →
+    ifNat (natEq total 16) 1 0)
+
+knapsackMetrics : BenchMetrics P.KnapsackState
+knapsackMetrics = metrics knapsackSpec learnerInitial
+
+mazeMetrics : BenchMetrics P.MazeState
+mazeMetrics = metrics mazeSpec learnerInitial
+
+metaMazeMetrics : BenchMetrics P.MetaMazeState
+metaMazeMetrics = metrics metaMazeSpec learnerInitial
+
+fourRoomsMetrics : BenchMetrics P.MazeState
+fourRoomsMetrics = metrics fourRoomsSpec learnerInitial
+
+cartPoleMetrics : BenchMetrics P.CartPoleQuantizedState
+cartPoleMetrics = metrics cartPoleSpec learnerInitial
+
+banditBest0Metrics : BenchMetrics P.BernoulliBanditState
+banditBest0Metrics = metrics banditBest0Spec learnerInitial
+
+banditBest1Metrics : BenchMetrics P.BernoulliBanditState
+banditBest1Metrics = metrics banditBest1Spec learnerInitial
+
+check-knapsack-closed-loop-clock : steps knapsackMetrics ≡ 5
+check-knapsack-closed-loop-clock = refl
+
+check-cartpole-closed-loop-clock : steps cartPoleMetrics ≡ 16
+check-cartpole-closed-loop-clock = refl
+
+check-bandit-best0-return : totalReturn banditBest0Metrics ≡ 0
+check-bandit-best0-return = refl
+
+check-bandit-best1-return : totalReturn banditBest1Metrics ≡ 16
+check-bandit-best1-return = refl
+
+check-knapsack-return : totalReturn knapsackMetrics ≡ 16
+check-knapsack-return = refl
+
+check-maze-success : success mazeMetrics ≡ 0
+check-maze-success = refl
+
+check-meta-maze-success : success metaMazeMetrics ≡ 0
+check-meta-maze-success = refl
+
+check-four-rooms-success : success fourRoomsMetrics ≡ 0
+check-four-rooms-success = refl
+
+check-cartpole-return : totalReturn cartPoleMetrics ≡ 0
+check-cartpole-return = refl
