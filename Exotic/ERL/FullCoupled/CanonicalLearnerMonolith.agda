@@ -68,7 +68,8 @@ suc-suc-lt (suc n) = s≤s (suc-suc-lt n)
 
 suc-suc-not-self : ∀ n → suc (suc n) ≢ n
 suc-suc-not-self n eq =
-  lt-irrefl n (subst (λ z → n < z) (sym eq) (suc-suc-lt n))
+  lt-irrefl (suc (suc n))
+    (subst (λ z → z < suc (suc n)) (sym eq) (suc-suc-lt n))
 
 iterate : ∀ {S : Set} → (S → S) → Nat → S → S
 iterate step zero s = s
