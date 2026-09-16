@@ -85,8 +85,8 @@ jobs:
       - name: Check canonical policy CartPole closed loop
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GymnaxCartPolePolicyClosedLoop_test.agda
 
-      - name: Check canonical policy closed-loop benchmark metrics
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalPolicyClosedLoopBench.agda
+      - name: Check end-to-end closed-loop benchmark interface
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopBench.agda
 
       - name: Check GameTheory port
         run: timeout 90s agda --safe Exotic/econlib/GameTheory.agda
