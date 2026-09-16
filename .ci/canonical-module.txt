@@ -1,4 +1,1 @@
-Exotic/ERL/FullCoupled/AllSafeCombined.agda
-Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
 Exotic/ERL/FullCoupled/DeterministicQSA.agda
-Exotic/ERL/FullCoupled/DeterministicQSA_test.agda
