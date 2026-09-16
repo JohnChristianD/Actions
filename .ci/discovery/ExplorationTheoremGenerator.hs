@@ -31,9 +31,16 @@ surfaces =
       , "cnnLogPyramidGRUInputPreservation", "cnnLogPyramidCommutesWithCanonicalGRU"
       , "cnnLogPyramidEncoding-preserves-input" ]
   , Surface "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
-      [ "learnerRewardStep-clock", "check-knapsack", "check-maze", "check-lbf"
-      , "check-meta-maze", "check-four-rooms", "check-pong", "check-memory-chain"
-      , "check-discounting-chain", "check-cartpole", "check-bandit", "check-rocksample" ]
+      [ "learnerRewardStep-reward-insensitive", "closedLoopInput-roundtrip"
+      , "closedLoopReward-roundtrip", "closedLoopLeftRewardLearns"
+      , "closedLoopRightRewardLearns", "closedLoopStep-clock"
+      , "check-knapsack-return", "check-knapsack-regret", "check-knapsack-success"
+      , "check-maze-return", "check-maze-regret", "check-maze-success"
+      , "check-meta-maze-return", "check-meta-maze-regret", "check-meta-maze-success"
+      , "check-four-rooms-return", "check-four-rooms-regret", "check-four-rooms-success"
+      , "check-cartpole-return", "check-cartpole-regret"
+      , "check-bandit-best0-return", "check-bandit-best0-regret", "check-bandit-best0-success"
+      , "check-bandit-best1-return", "check-bandit-best1-regret", "check-bandit-best1-success" ]
   , Surface "Exotic/econlib/GameTheory.agda"
       [ "isNashEquilibriumDD", "pdIter-stabilises", "nashConvergenceWitness" ]
   , Surface "Exotic/econlib/Equilibrium.agda"
@@ -66,7 +73,7 @@ main = do
       putStrLn "finite-norm-algebra=complete"
       putStrLn "control-observability-surface=complete"
       putStrLn "cnn-log-pyramid-preservation=complete"
-      putStrLn "game-execution-regression=complete"
+      putStrLn "closed-loop-game-bench=complete"
       putStrLn "econlib-game-theory=complete"
       writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
         "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.Exploration.Generated.ExplorationCandidates where\n-- Generated canonical closure status: Proven\n"
