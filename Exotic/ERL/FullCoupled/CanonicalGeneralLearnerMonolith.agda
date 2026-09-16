@@ -239,8 +239,8 @@ argmaxA : ∀ {A : Nat} → (Fin (suc A) → Int8) → Fin (suc A)
 argmaxA {zero} f = zeroFin
 argmaxA {suc A} f with argmaxA {A} (λ i → f (raiseFin i))
 ... | best with toℕ (code (f zeroFin)) <ᵇ toℕ (code (f (raiseFin best)))
-... | enabled = raiseFin best
-... | disabled = zeroFin
+... | true = raiseFin best
+... | false = zeroFin
 
 sparsemaxDecisionA : ∀ {A : Nat} → (Fin (suc A) → Int8) → Fin (suc A)
 sparsemaxDecisionA = argmaxA
