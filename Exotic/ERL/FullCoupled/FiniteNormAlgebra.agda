@@ -2,14 +2,13 @@
 
 module Exotic.ERL.FullCoupled.FiniteNormAlgebra where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Data.Nat using (_≤_; z≤n; s≤s)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong)
+open import Agda.Builtin.Nat using (Nat; zero; _+_; _*_)
+open import Data.Nat using (_≤_; z≤n)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Fin.Properties using ()
 open import Data.Nat.DivMod using ()
 open import Data.Product using (_×_; _,_)
-open import Data.Empty using (⊥)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 
 signedMagnitude : Signed → Nat
@@ -53,7 +52,7 @@ finiteNormOrder a b =
 
 finiteNormOrder-refl : ∀ a → finiteNormOrder a a
 finiteNormOrder-refl a =
-  natSelfLe (l1Value a) , natSelfLe (pathValue a)
+  z≤n , z≤n
 
 onePathNorm-zero-left : ∀ w → int8Magnitude (inputWeight w) ≡ zero →
   onePathNorm w ≡ zero
@@ -69,6 +68,6 @@ onePathNorm-zero-right w h =
     (cong (λ n → int8Magnitude (inputWeight w) * n) h)
     refl
 
-finiteNormAlgebra-is-non-ring : ∀ w →
+finiteNormAlgebra-is-ordered : ∀ w →
   finiteNormOrder (normAlgebra w) (normAlgebra w)
-finiteNormAlgebra-is-non-ring = finiteNormOrder-refl ∘ normAlgebra
+finiteNormAlgebra-is-ordered w = finiteNormOrder-refl (normAlgebra w)
