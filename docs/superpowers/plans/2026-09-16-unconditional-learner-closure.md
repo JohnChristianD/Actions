@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement the plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace assumption-bearing canonical convergence/cycle claims with source-local contradiction and deduction theorems derived directly from the clocked learner transition, while retaining the complete environment-agnostic Watkins/LCB/sparsemax/q-log/attention/Walsh/GRU/F4 learner composition.
+**Goal:** Complete the canonical learner with source-local contradiction, negation, deduction, quotient, associative-scan, and hard-sparsity theorems while retaining the complete environment-agnostic Watkins/LCB/sparsemax/q-log/attention/Walsh/GRU/F4 learner composition.
 
-**Architecture:** The canonical Agda file owns every active learner definition and imports no project-local module. Unconditional theorem strength comes from definitional equalities plus Nat monotonicity of `clock` and `totalCount`; no Lyapunov witness, environment law, probability assumption, or postulate is added.
+**Architecture:** The canonical Agda file owns every active learner definition and imports no project-local module. Unconditional theorem strength comes from definitional equalities, persistent-state projection, endofunction composition, and Nat monotonicity of `clock` and `totalCount`; no Lyapunov witness, environment law, probability assumption, or postulate is added.
 
-**Tech Stack:** Agda 2.8.0, stdlib 2.4, `--safe`; Haskell generator and redundancy audit.
+**Tech Stack:** Agda 2.8.0, stdlib 2.4, `--safe`; Haskell theorem generator and redundancy audit.
 
 **Spec:** `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
 
@@ -20,8 +20,6 @@
 - No canonical theorem may gain strength by introducing a certificate record as an extra premise.
 - Safe Agda remains the acceptance oracle.
 
----
-
 ### Task 1: Make the canonical transition fully endogenous
 
 **Files:** `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
@@ -30,6 +28,7 @@
 - [x] Route `canonicalSignal` through the current endogenous q-log control.
 - [x] Route the actual learned attention representation through Walsh into `canonicalGRUStep`.
 - [x] Keep environment/statistical types absent from the file.
+- [x] Remove the Agda 2.8 `globalControl` accessor collision by giving GRUState distinct state-field names.
 
 ### Task 2: Replace assumption-bearing cycle claims
 
@@ -43,29 +42,44 @@
 - [x] Prove `canonicalTotalCountStep` by constructor reduction.
 - [x] Prove `canonicalNoCountedTwoCycle` by contradiction from `suc (suc n) != n`.
 
-### Task 3: Regression and generated status
+### Task 3: GRU quotient, associative composition, and Mobius scan
+
+**Files:** `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
+
+- [x] Preserve the `GRUEquivalent` relation as equality of persistent matrices/noise/global-control projection.
+- [x] Prove `gruStep-respects-equivalence` by transitivity and persistence.
+- [x] Represent GRU transitions as endomorphisms with `GRUAction` and ordinary function composition.
+- [x] Prove `gruActionAssociativity` and input-action associativity for the scan law.
+- [x] Add the explicit `gruMobiusAssociativeScan` alias theorem.
+- [x] Add pure-Int8 coordinate counts for GRU, critic, Walsh, and the combined GRU+critic+Walsh carrier.
+- [x] Keep the actual `HalfInt` Walsh path distinct from the explicit pure-Int8 counting carrier.
+
+### Task 4: Hard sparsity under NormPair + F4 + coupled L2
+
+**Files:** `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
+
+- [x] Preserve exact sparsemax witnesses for left/right hard sparsity.
+- [x] Prove policy invariance under `NormPair` replacement.
+- [x] Prove policy invariance under the custom F4 state replacement carrying global L2.
+- [x] Compose those equalities into `hardSparse-composition-normPair-F4-L2` without adding assumptions.
+
+### Task 5: Regression, generation, and documentation synchronization
 
 **Files:**
 - `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda`
 - `.ci/discovery/ExplorationTheoremGenerator.hs`
-- `.ci/CheckForbiddenTheorems.hs`
-- `.github/workflows/agda.yml`
+- `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
+- `docs/superpowers/plans/2026-09-16-unconditional-learner-closure.md`
 
-- [x] Regression-import the canonical monolith and assert the fixed-temperature, q-log, Mobius, persistence, policy-separation, clock, count, aperiodicity, and cycle theorems.
-- [x] Require all unconditional theorem symbols from the generator.
-- [x] Reject holes and postulates before Agda type checking.
-- [x] Run both canonical source and regression through `agda --safe` in the workflow definition.
+- [x] Regression-test GRU quotient, input scan, Mobius scan, pure-Int8 counts, and hard-sparsity composition.
+- [x] Require the new theorem symbols from the generator.
+- [x] Synchronize the wiki with the exact finite state counts and with the non-ring/monoid distinction.
+- [x] Correct the Walsh documentation so it does not claim full H4 orthogonality unsupported by the source.
+- [x] Correct the hard-sparsity documentation to use the actual source witnesses.
 
-### Task 4: Documentation
+### Task 6: Final acceptance
 
-**Files:** `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
-
-- [x] Remove claims that require a `FullLearnerCoerciveQuadratic` assumption.
-- [x] Record the clock contradiction and count contradiction as the canonical cycle proofs.
-- [x] State explicitly that no statistical convergence theorem is implied.
-
-### Task 5: Final acceptance
-
-- [ ] Fresh GitHub Actions canonical learner gate passes. Current run: `35065377146` was started from the pre-ledger head; a fresh run for the latest head is expected from the push event.
-- [ ] Generated theorem report is produced from the exact canonical source and passes `agda --safe`.
-- [x] No hole/postulate scanner failure occurred before the Agda step on the prior exact head.
+- [x] Prior gate failure diagnosed exactly: Agda 2.8 reported a `globalControl` clashing-definition in `GRUState` on head `6fab17a3ff7e64a941f39dd40e876ab9a47f6436`.
+- [ ] Fresh latest-head canonical learner gate passes: run `35076378243` is currently the authoritative run for head `7a5ab2590582da6b6f38754d9331df84115eea8d`.
+- [ ] Regression, theorem generation, redundancy audit, and generated report pass on that same head.
+- [x] Hole/postulate/forbidden-theorem scan passed before the Agda step on the earlier exact head, and the current workflow continues to run it first.
