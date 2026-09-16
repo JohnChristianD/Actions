@@ -2,7 +2,7 @@
 
 module Exotic.ERL.FullCoupled.CanonicalLearnerGameExecution_test where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong; sym)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Fin using (toℕ)
 open import Data.Product using (_×_; _,_)
@@ -62,7 +62,9 @@ learnerRewardStep : FullLearnerState → Int8 → FullLearnerState
 learnerRewardStep s r = canonicalFullStep learnerKernel (injectReward s r)
 
 learnerRewardStep-clock : ∀ s r → clock (learnerRewardStep s r) ≡ suc (clock s)
-learnerRewardStep-clock s r = canonicalFullStep-clock learnerKernel (injectReward s r)
+learnerRewardStep-clock s r =
+  trans (canonicalFullStep-clock learnerKernel (injectReward s r))
+    (cong suc (sym (plus-zero (clock s))))
 
 knapsackRun : P.StepResult P.KnapsackState → FullLearnerState
 knapsackRun e = learnerRewardStep learnerInitial (portReward (P.reward e))
