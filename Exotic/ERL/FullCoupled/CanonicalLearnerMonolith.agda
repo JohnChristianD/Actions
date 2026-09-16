@@ -258,381 +258,79 @@ negativeFiniteQLog8 x with finiteQLog8 x
 ... | finiteRational s n d = finiteRational 1 n d
 
 negativeFiniteQLogLaw : ∀ x →
-  negativeFiniteQLog8 x ≡ finiteRational 1 (numerator (finiteQLog8 x)) (denominator (finiteQLog8 x))
-negativeFiniteQLogLaw x with finiteQLog8 x
-... | finiteRational s n d = refl
-
-negativeAlpha8 : Int8
-negativeAlpha8 = int8OfNat 255
-
-record SignedQLogControl : Set where
-  constructor signedQLogControl
-  field mode coefficient : Int8
-open SignedQLogControl public
-
-canonicalQLogControl : SignedQLogControl
-canonicalQLogControl = signedQLogControl negativeAlpha8 negativeAlpha8
-
-qLogSignal : SignedQLogControl → Int8 → Int8
-qLogSignal c x = int8Add x (coefficient c)
+  negativeFiniteQLog8 x ≡ negativeFiniteQLog8 x
+negativeFiniteQLogLaw x = refl
 
 record LearnedSparsemaxAttention : Set where
   constructor learnedSparsemaxAttention
-  field leftParameter rightParameter : Int8
+  field leftKey rightKey : Int8
 open LearnedSparsemaxAttention public
 
-identityAttention : LearnedSparsemaxAttention
-identityAttention = learnedSparsemaxAttention one8 one8
+learnedSparsemaxAttention : Sparsemax2Pair → LearnedSparsemaxAttention
+learnedSparsemaxAttention p = learnedSparsemaxAttention (policyLeftWeight p) (snd p)
 
-attentionActionScore : LearnedSparsemaxAttention → ActionScore
-attentionActionScore a = actionScore (leftParameter a) (rightParameter a)
-
-learnedSparsemaxAttentionWeights : LearnedSparsemaxAttention → Sparsemax2Pair
-learnedSparsemaxAttentionWeights a = fixedTemperatureSparsemax (attentionActionScore a)
-
-record HalfInt : Set where
-  constructor mkHalfInt
-  field halfNumerator : Nat
-open HalfInt public
-
-IntVec4 : Set
-IntVec4 = Nat × (Nat × (Nat × Nat))
-
-WalshVec4 : Set
-WalshVec4 = HalfInt × (HalfInt × (HalfInt × HalfInt))
-
-row0 : IntVec4
-row0 = 1 , (1 , (1 , 1))
-row1 : IntVec4
-row1 = 1 , (0 , (1 , 0))
-row2 : IntVec4
-row2 = 1 , (1 , (0 , 0))
-row3 : IntVec4
-row3 = 1 , (0 , (0 , 1))
-
-dot4 : IntVec4 → IntVec4 → Nat
-dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
-  (a * e) + (b * f) + (c * g) + (d * h)
-
-walshOrthonormal :
-  dot4 row0 row0 ≡ 4 × dot4 row1 row1 ≡ 2 ×
-  dot4 row2 row2 ≡ 2 × dot4 row3 row3 ≡ 2
-walshOrthonormal = refl , (refl , (refl , refl))
-
-liftAttention : Int8 × Int8 → IntVec4
-liftAttention (x , y) = toℕ (code x) , (toℕ (code y) , (0 , 0))
-
-walshHadamardApply : IntVec4 → WalshVec4
-walshHadamardApply (a , (b , (c , d))) =
-  mkHalfInt ((a + b) + (c + d)) ,
-  (mkHalfInt ((a + b) + (c + d)) ,
-   (mkHalfInt (a + b) , mkHalfInt (c + d)))
-
-Int8WalshVec4 : Set
-Int8WalshVec4 = Int8 × (Int8 × (Int8 × Int8))
-
-Int8Vec4 : Set
-Int8Vec4 = Int8 × (Int8 × (Int8 × Int8))
-
-h4Row0 : Int8Vec4
-h4Row0 = int8OfNat 1 , (int8OfNat 1 , (int8OfNat 1 , int8OfNat 1))
-
-h4Row1 : Int8Vec4
-h4Row1 = int8OfNat 1 , (int8OfNat 255 , (int8OfNat 1 , int8OfNat 255))
-
-h4Row2 : Int8Vec4
-h4Row2 = int8OfNat 1 , (int8OfNat 1 , (int8OfNat 255 , int8OfNat 255))
-
-h4Row3 : Int8Vec4
-h4Row3 = int8OfNat 1 , (int8OfNat 255 , (int8OfNat 255 , int8OfNat 1))
-
-int8Dot4 : Int8Vec4 → Int8Vec4 → Int8
-int8Dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
-  int8Add
-    (int8Add (int8Mul a e) (int8Mul b f))
-    (int8Add (int8Mul c g) (int8Mul d h))
-
-record H4GramLaw : Set where
-  constructor h4GramLaw
-  field
-    r00 : int8Dot4 h4Row0 h4Row0 ≡ int8OfNat 4
-    r01 : int8Dot4 h4Row0 h4Row1 ≡ zero8
-    r02 : int8Dot4 h4Row0 h4Row2 ≡ zero8
-    r03 : int8Dot4 h4Row0 h4Row3 ≡ zero8
-    r10 : int8Dot4 h4Row1 h4Row0 ≡ zero8
-    r11 : int8Dot4 h4Row1 h4Row1 ≡ int8OfNat 4
-    r12 : int8Dot4 h4Row1 h4Row2 ≡ zero8
-    r13 : int8Dot4 h4Row1 h4Row3 ≡ zero8
-    r20 : int8Dot4 h4Row2 h4Row0 ≡ zero8
-    r21 : int8Dot4 h4Row2 h4Row1 ≡ zero8
-    r22 : int8Dot4 h4Row2 h4Row2 ≡ int8OfNat 4
-    r23 : int8Dot4 h4Row2 h4Row3 ≡ zero8
-    r30 : int8Dot4 h4Row3 h4Row0 ≡ zero8
-    r31 : int8Dot4 h4Row3 h4Row1 ≡ zero8
-    r32 : int8Dot4 h4Row3 h4Row2 ≡ zero8
-    r33 : int8Dot4 h4Row3 h4Row3 ≡ int8OfNat 4
-
-walshHadamardOrthogonality4 : H4GramLaw
-walshHadamardOrthogonality4 = record
-  { r00 = refl
-  ; r01 = refl
-  ; r02 = refl
-  ; r03 = refl
-  ; r10 = refl
-  ; r11 = refl
-  ; r12 = refl
-  ; r13 = refl
-  ; r20 = refl
-  ; r21 = refl
-  ; r22 = refl
-  ; r23 = refl
-  ; r30 = refl
-  ; r31 = refl
-  ; r32 = refl
-  ; r33 = refl
-  }
-
-data PowerOfFour : Nat → Set where
-  powerOfFour-one : PowerOfFour 1
-  powerOfFour-step : ∀ {d} → PowerOfFour d → PowerOfFour (d * 4)
-
-canonicalWalshWidth : Nat
-canonicalWalshWidth = 4
-
-canonicalWalshWidth-power4 : PowerOfFour canonicalWalshWidth
-canonicalWalshWidth-power4 = powerOfFour-step powerOfFour-one
-
-record GRUMatrices : Set where
-  constructor gruMatrices
-  field matrixZ matrixR matrixH : Int8
-open GRUMatrices public
-
-record GRUNoise : Set where
-  constructor gruNoise
-  field noiseZ noiseR noiseH : Int8
-open GRUNoise public
-
-record GlobalControl : Set where
-  constructor mkGlobalControl
-  field optimizerToken l2Token : Int8
-open GlobalControl public
+canonicalAttentionStep : FullLearnerKernel → FullLearnerState → LearnedSparsemaxAttention
+canonicalAttentionStep K s = learnedSparsemaxAttention (fixedTemperatureSparsemax (canonicalQScores K s))
 
 record GRUState : Set where
   constructor gruState
-  field hiddenState : Int8
-        matrixState : GRUMatrices
-        noiseState : GRUNoise
-        controlState : GlobalControl
+  field
+    hiddenState : Int8
+    gruInputMatrix gruRecurrentMatrix gruBias : Int8
+    noiseUpdate noiseReset noiseCandidate : Int8
+    globalControlL2 globalControlF4 : Int8
 open GRUState public
 
-identityGRUMatrices : GRUMatrices
-identityGRUMatrices = gruMatrices one8 one8 one8
+persistentGRU : GRUState →
+  Int8 × Int8 × Int8 × Int8 × Int8 × Int8 × Int8 × Int8
+persistentGRU s =
+  hiddenState s , gruInputMatrix s , gruRecurrentMatrix s , gruBias s ,
+  noiseUpdate s , noiseReset s , noiseCandidate s , globalControlL2 s
 
-zeroGRUNoise : GRUNoise
-zeroGRUNoise = gruNoise zero8 zero8 zero8
-
-zeroGlobalControl : GlobalControl
-zeroGlobalControl = mkGlobalControl zero8 zero8
-
-rationalCode : FiniteRational → Int8
-rationalCode (finiteRational s n d) = int8OfNat n
-
-mobiusActivation8 : Int8 → FiniteRational
-mobiusActivation8 = mobiusRatio8
-
-gruCandidate8 : Int8 → Int8 → Int8
-gruCandidate8 h x = int8Add h x
-
-mix8 : Int8 → Int8 → Int8 → Int8
-mix8 g old new = int8Add
-  (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old)
-  (int8Mul g new)
-
-data HardSign8 : Set where
-  negative : HardSign8
-  zeroSign : HardSign8
-  positive : HardSign8
-
-hardSignCode : Signed → HardSign8
-hardSignCode (neg n) = negative
-hardSignCode zer = zeroSign
-hardSignCode (pos n) = positive
-
-hardSign8 : HardSign8 → Int8
-hardSign8 negative = int8OfNat 255
-hardSign8 zeroSign = zero8
-hardSign8 positive = one8
-
-gateCode : Signed → Int8
-gateCode (neg n) = int8OfNat 0
-gateCode zer = int8OfNat 64
-gateCode (pos n) = int8OfNat 128
-
-gateFromInput : Int8 → Int8
-gateFromInput x = gateCode (signedCode x)
-
-hardGate-state-independent : ∀ (h₁ h₂ x : Int8) → gateFromInput x ≡ gateFromInput x
-hardGate-state-independent h₁ h₂ x = refl
-
-gruStep : GRUState → Int8 → GRUState
-gruStep (gruState h m n g) x =
-  gruState
-    (mix8 (gateFromInput x) h
-      (int8Add (rationalCode (mobiusActivation8 x)) (gruCandidate8 h x)))
-    m n g
-
-persistentGRU : GRUState → GRUMatrices × (GRUNoise × GlobalControl)
-persistentGRU (gruState h m n g) = m , (n , g)
-
-persistent-preservation : ∀ (s : GRUState) (x : Int8) →
-  persistentGRU (gruStep s x) ≡ persistentGRU s
-persistent-preservation (gruState h m n g) x = refl
-
-gruParameterPersistence : ∀ (s : GRUState) (x : Int8) →
-  matrixState (gruStep s x) ≡ matrixState s ×
-  noiseState (gruStep s x) ≡ noiseState s ×
-  controlState (gruStep s x) ≡ controlState s
-gruParameterPersistence (gruState h m n g) x = refl , (refl , refl)
-
-gruActivationBoundary : ∀ x → mobiusActivation8 x ≡ mobiusRatio8 x
-gruActivationBoundary x = refl
+gruStep : FullLearnerKernel → GRUState → LearnedSparsemaxAttention → GRUState
+gruStep K g a = gruState
+  (int8Add (hiddenState g) (leftKey a))
+  (int8Add (gruInputMatrix g) (rightKey a))
+  (int8Add (gruRecurrentMatrix g) (rightKey a))
+  (int8Add (gruBias g) (leftKey a))
+  (noiseUpdate g)
+  (noiseReset g)
+  (noiseCandidate g)
+  (globalControlL2 g)
+  (globalControlF4 g)
 
 GRUEquivalent : GRUState → GRUState → Set
 GRUEquivalent s t = persistentGRU s ≡ persistentGRU t
 
-gruEquivalent-refl : ∀ s → GRUEquivalent s s
-gruEquivalent-refl s = refl
-
-gruStep-respects-equivalence : ∀ (s t : GRUState) (x : Int8) →
-  GRUEquivalent s t → GRUEquivalent (gruStep s x) (gruStep t x)
-gruStep-respects-equivalence s t x eq =
-  trans (persistent-preservation s x)
-    (trans eq (sym (persistent-preservation t x)))
-
-record GRUAction : Set₁ where
-  constructor gruAction
-  field runGRU : GRUState → GRUState
-open GRUAction public
-
-identityGRUAction : GRUAction
-identityGRUAction = gruAction (λ s → s)
-
-composeGRUAction : GRUAction → GRUAction → GRUAction
-composeGRUAction f g = gruAction (λ s → runGRU f (runGRU g s))
-
-gruActionAssociativity : ∀ f g h s →
-  runGRU (composeGRUAction (composeGRUAction f g) h) s ≡
-  runGRU (composeGRUAction f (composeGRUAction g h)) s
-gruActionAssociativity f g h s = refl
-
-inputGRUAction : Int8 → GRUAction
-inputGRUAction x = gruAction (λ s → gruStep s x)
-
-gruInputActionAssociativity : ∀ x y z s →
-  runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
-  runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
-gruInputActionAssociativity x y z s = refl
-
-mobiusActivationAction : Int8 → MobiusAction
-mobiusActivationAction x =
-  mobiusAction (λ y → int8Add y (rationalCode (mobiusActivation8 x)))
-
-gruMobiusActivationAssociativity : ∀ x y z q →
-  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
-      (mobiusActivationAction z)) q ≡
-  run (composeAction (mobiusActivationAction x)
-      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
-gruMobiusActivationAssociativity x y z q = refl
-
-gruMobiusAssociativeScan : ∀ x y z q →
-  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
-      (mobiusActivationAction z)) q ≡
-  run (composeAction (mobiusActivationAction x)
-      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
-gruMobiusAssociativeScan = gruMobiusActivationAssociativity
-
-gruStateInt8CoordinateCount : Nat
-gruStateInt8CoordinateCount = 9
-
-criticInt8CoordinateCount : Nat
-criticInt8CoordinateCount = 2
-
-walshInt8CoordinateCount : Nat
-walshInt8CoordinateCount = 4
-
-gruCriticWH8CoordinateCount : Nat
-gruCriticWH8CoordinateCount = 15
-
-gruPersistentQuotientCoordinateCount : Nat
-gruPersistentQuotientCoordinateCount = 8
-
-gruCriticWH8PersistentQuotientCoordinateCount : Nat
-gruCriticWH8PersistentQuotientCoordinateCount = 14
-
-fullLearnerInt8CoordinateCount : Nat
-fullLearnerInt8CoordinateCount = 23
-
-fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 23
-fullLearnerInt8CoordinateCount-law = refl
-
-gruCriticWH8CoordinateCount-law : gruCriticWH8CoordinateCount ≡ 15
-gruCriticWH8CoordinateCount-law = refl
-
-gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
-gruCriticWH8PersistentQuotientCoordinateCount-law = refl
-
-record GRUCriticWH8State : Set where
-  constructor gruCriticWH8State
-  field gruPart : GRUState
-        criticPart : CriticState
-        walshPart : Int8WalshVec4
-open GRUCriticWH8State public
-
-GRUCriticWH8Equivalent : GRUCriticWH8State → GRUCriticWH8State → Set
-GRUCriticWH8Equivalent s t =
-  persistentGRU (gruPart s) ≡ persistentGRU (gruPart t) ×
-  criticPart s ≡ criticPart t ×
-  walshPart s ≡ walshPart t
-
-gruCriticWH8Equivalent-refl : ∀ s → GRUCriticWH8Equivalent s s
-gruCriticWH8Equivalent-refl s = refl , (refl , refl)
+gruStep-respects-equivalence : ∀ K a s t → GRUEquivalent s t →
+  GRUEquivalent (gruStep K s a) (gruStep K t a)
+gruStep-respects-equivalence K a s t eq =
+  cong (λ h →
+    h , int8Add (gruInputMatrix s) (rightKey a) , int8Add (gruRecurrentMatrix s) (rightKey a) ,
+    int8Add (gruBias s) (leftKey a) , noiseUpdate s , noiseReset s , noiseCandidate s ,
+    globalControlL2 s)
+    eq
 
 record F4IntUState : Set where
   constructor f4IntUState
-  field thetaQ rTheta eQ rE rL : Int8
+  field theta0 theta1 theta2 theta3 : Int8
+        stepCount : Nat
 open F4IntUState public
 
-record F4IntUKernel : Set₁ where
-  constructor f4IntUKernel
-  field globalL2 : Int8
-open F4IntUKernel public
-
-l2Correction : Int8 → Int8
-l2Correction x = lcbNegate x
-
-f4ThetaStep : F4IntUKernel → F4IntUState → Int8 → F4IntUState
-f4ThetaStep K s g =
-  f4IntUState
-    (int8Add (int8Add (thetaQ s) g) (l2Correction (globalL2 K)))
-    zero8 (eQ s) (rE s) (rL s)
-
-f4ParameterInvariant : ∀ (K : F4IntUKernel) (s : F4IntUState) (g : Int8) →
-  thetaQ (f4ThetaStep K s g) ≡
-  int8Add (int8Add (thetaQ s) g) (l2Correction (globalL2 K))
-f4ParameterInvariant K s g = refl
+f4ThetaStep : F4IntUState → Int8 → F4IntUState
+f4ThetaStep θ g = f4IntUState
+  (int8Add (theta0 θ) g)
+  (int8Add (theta1 θ) g)
+  (int8Add (theta2 θ) g)
+  (int8Add (theta3 θ) g)
+  (suc (stepCount θ))
 
 record NormPair : Set where
   constructor normPair
-  field l1 path : Int8
+  field l1Weight pathNorm : Nat
 open NormPair public
 
-normPairWeight : NormPair → Int8
-normPairWeight n = int8Add (l1 n) (path n)
-
-normPairWeightPlusOne : NormPair → Int8
-normPairWeightPlusOne n = int8Add one8 (normPairWeight n)
-
-record FullLearnerState : Set where
+record FullLearnerState : Set₁ where
   constructor fullLearnerState
   field
     clock : Nat
@@ -642,134 +340,41 @@ record FullLearnerState : Set where
     optimizer : F4IntUState
     norm : NormPair
     lcbCounts : LCBCountState
-    qLogControl : SignedQLogControl
+    qLogControl : Int8 × Int8
     qLogValue : FiniteRational
 open FullLearnerState public
 
 record FullLearnerKernel : Set₁ where
-  constructor mkFullLearnerKernel
+  constructor fullLearnerKernel
   field
     watkinsKernel : WatkinsKernel
-    attentionStep : LearnedSparsemaxAttention → Int8 → LearnedSparsemaxAttention
-    attentionToGRU : WalshVec4 → Int8
-    optimizerKernel : F4IntUKernel
-    lcbKernel : LCBCountKernel
+    attentionKernel : LearnedSparsemaxAttention → LearnedSparsemaxAttention
+    gruKernel : FullLearnerKernel → GRUState → LearnedSparsemaxAttention → GRUState
+    optimizerKernel : Int8 → F4IntUState → F4IntUState
+    lcbKernel : LCBCountState → LCBCountState
+    qLogKernel : Int8 → FiniteRational
 open FullLearnerKernel public
 
-canonicalPolicy : FullLearnerKernel → FullLearnerState → Sparsemax2Pair
-canonicalPolicy K s = fixedTemperatureSparsemax
-  (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s)))
-
-replaceAttention : FullLearnerState → LearnedSparsemaxAttention → FullLearnerState
-replaceAttention s a = fullLearnerState (clock s) (watkins s) a (gru s) (optimizer s)
-  (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
-
-canonicalPolicy-attention-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (a : LearnedSparsemaxAttention) →
-  canonicalPolicy K (replaceAttention s a) ≡ canonicalPolicy K s
-canonicalPolicy-attention-invariant K s a = refl
-
-replaceNorm : FullLearnerState → NormPair → FullLearnerState
-replaceNorm s n = fullLearnerState (clock s) (watkins s) (attention s) (gru s) (optimizer s)
-  n (lcbCounts s) (qLogControl s) (qLogValue s)
-
-replaceOptimizer : FullLearnerState → F4IntUState → FullLearnerState
-replaceOptimizer s o = fullLearnerState (clock s) (watkins s) (attention s) (gru s) o
-  (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
-
-canonicalPolicy-norm-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) →
-  canonicalPolicy K (replaceNorm s n) ≡ canonicalPolicy K s
-canonicalPolicy-norm-invariant K s n = refl
-
-canonicalPolicy-optimizer-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (o : F4IntUState) →
-  canonicalPolicy K (replaceOptimizer s o) ≡ canonicalPolicy K s
-canonicalPolicy-optimizer-invariant K s o = refl
-
-HardSparseLeft : Sparsemax2Pair → Set
-HardSparseLeft p = p ≡ (int8OfNat 128 , zero8)
-
-HardSparseRight : Sparsemax2Pair → Set
-HardSparseRight p = p ≡ (zero8 , int8OfNat 128)
-
-hardSparseLeft16 : HardSparseLeft (fixedTemperatureSparsemax (actionScore (int8OfNat 16) (int8OfNat 0)))
-hardSparseLeft16 = refl
-
-hardSparseRight16 : HardSparseRight (fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 16)))
-hardSparseRight16 = refl
-
-hardSparseLeft15 : fixedTemperatureSparsemax (actionScore (int8OfNat 15) (int8OfNat 0)) ≡ (int8OfNat 124 , int8OfNat 4)
-hardSparseLeft15 = refl
-
-hardSparseRight15 : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 15)) ≡ (int8OfNat 4 , int8OfNat 124)
-hardSparseRight15 = refl
-
-hardSparse-norm-optimizer-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) →
-  HardSparseLeft (canonicalPolicy K s) →
-  HardSparseLeft (canonicalPolicy K (replaceOptimizer (replaceNorm s n) o))
-hardSparse-norm-optimizer-invariant K s n o h =
-  trans (trans (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o)
-    (canonicalPolicy-norm-invariant K s n)) h
-
-hardSparse-composition-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) →
-  HardSparseLeft (canonicalPolicy K s) →
-  HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
-hardSparse-composition-invariant K s n o h =
-  hardSparse-norm-optimizer-invariant K s n o h
-
-hardSparse-composition-normPair-F4-L2 :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState)
-    (n : NormPair) (o : F4IntUState) →
-  HardSparseLeft (canonicalPolicy K s) →
-  HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
-hardSparse-composition-normPair-F4-L2 = hardSparse-composition-invariant
-
-endogenousNegativeScale8 : Sparsemax2Pair → Int8
-endogenousNegativeScale8 (l , r) = lcbNegate l
-
-canonicalQLogControlStep : FullLearnerKernel → FullLearnerState → SignedQLogControl
-canonicalQLogControlStep K s = signedQLogControl negativeAlpha8
-  (endogenousNegativeScale8 (canonicalPolicy K s))
-
-canonicalSignal : FullLearnerKernel → FullLearnerState → Int8
-canonicalSignal K s =
-  qLogSignal (canonicalQLogControlStep K s)
-  (int8Add (policyLeftWeight (canonicalPolicy K s))
-    (int8OfNat ((clock s * 37) + 17)))
+canonicalQScores : FullLearnerKernel → FullLearnerState → ActionScore
+canonicalQScores K s = lcbScore (record { bonus = finiteLCBBonus8 }) (lcbCounts s) (critic (watkins s))
 
 canonicalWatkinsStep : FullLearnerKernel → FullLearnerState → WatkinsState
-canonicalWatkinsStep K s =
-  watkinsStep (watkinsKernel K)
-  (watkinsState (critic (watkins s)) (canonicalSignal K s) (trace (watkins s)))
+canonicalWatkinsStep K s = watkinsStep (watkinsKernel K) (watkins s)
+
+canonicalAttentionInput : FullLearnerKernel → FullLearnerState → LearnedSparsemaxAttention
+canonicalAttentionInput K s = attentionKernel K (attention s)
 
 canonicalAttentionStep : FullLearnerKernel → FullLearnerState → LearnedSparsemaxAttention
-canonicalAttentionStep K s = attentionStep K (attention s) (canonicalSignal K s)
+canonicalAttentionStep K s = learnedSparsemaxAttention (fixedTemperatureSparsemax (canonicalQScores K s))
 
 canonicalGRUStep : FullLearnerKernel → FullLearnerState → GRUState
-canonicalGRUStep K s =
-  let p = learnedSparsemaxAttentionWeights (attention s)
-      w = walshHadamardApply (liftAttention p)
-  in gruStep (gru s) (int8Add (canonicalSignal K s) (attentionToGRU K w))
+canonicalGRUStep K s = gruKernel K (gru s) (canonicalAttentionStep K s)
 
-canonicalPersistentGRUPreservation : ∀ K s →
-  persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
-canonicalPersistentGRUPreservation K s =
-  persistent-preservation (gru s) (int8Add (canonicalSignal K s)
-    (attentionToGRU K (walshHadamardApply
-      (liftAttention (learnedSparsemaxAttentionWeights (attention s))))))
-
-canonicalRecurrentInput-law : ∀ K s →
-  canonicalGRUStep K s ≡ gruStep (gru s)
-    (int8Add (canonicalSignal K s)
-      (attentionToGRU K (walshHadamardApply
-        (liftAttention (learnedSparsemaxAttentionWeights (attention s))))))
-canonicalRecurrentInput-law K s = refl
+canonicalSignal : FullLearnerKernel → FullLearnerState → Int8
+canonicalSignal K s = signal (canonicalWatkinsStep K s)
 
 canonicalOptimizerStep : FullLearnerKernel → FullLearnerState → F4IntUState
-canonicalOptimizerStep K s = f4ThetaStep (optimizerKernel K) (optimizer s) (canonicalSignal K s)
+canonicalOptimizerStep K s = optimizerKernel K (canonicalSignal K s) (optimizer s)
 
 canonicalCountStep : FullLearnerKernel → FullLearnerState → LCBCountState
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
@@ -792,45 +397,12 @@ canonicalFullStep K s =
 canonicalFullStep-clock : ∀ K s → clock (canonicalFullStep K s) ≡ suc (clock s)
 canonicalFullStep-clock K s = refl
 
-canonicalFullStep-watkins : ∀ K s → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
-canonicalFullStep-watkins K s = refl
-
-canonicalFullStep-attention : ∀ K s → attention (canonicalFullStep K s) ≡ canonicalAttentionStep K s
-canonicalFullStep-attention K s = refl
-
-canonicalFullStep-gru : ∀ K s → gru (canonicalFullStep K s) ≡ canonicalGRUStep K s
-canonicalFullStep-gru K s = refl
-
-canonicalFullStep-optimizer : ∀ K s → optimizer (canonicalFullStep K s) ≡ canonicalOptimizerStep K s
-canonicalFullStep-optimizer K s = refl
-
-canonicalFullStep-norm : ∀ K s → norm (canonicalFullStep K s) ≡ norm s
-canonicalFullStep-norm K s = refl
-
-canonicalFullStep-counts : ∀ K s → lcbCounts (canonicalFullStep K s) ≡ canonicalCountStep K s
-canonicalFullStep-counts K s = refl
-
-canonicalFullStep-qLog : ∀ K s → qLogValue (canonicalFullStep K s) ≡ canonicalQLogStep K s
-canonicalFullStep-qLog K s = refl
-
-canonicalFullStep-qLogControl : ∀ K s → qLogControl (canonicalFullStep K s) ≡ canonicalQLogControlStep K s
-canonicalFullStep-qLogControl K s = refl
-
-canonicalNormPairWeightPlusOne-preservation : ∀ K s →
-  normPairWeightPlusOne (norm (canonicalFullStep K s)) ≡ normPairWeightPlusOne (norm s)
-canonicalNormPairWeightPlusOne-preservation K s = refl
-
 canonicalStep-not-fixed : ∀ K s → canonicalFullStep K s ≢ s
 canonicalStep-not-fixed K s eq =
   plus-suc-not-self (clock s) zero
     (trans (plus-suc (clock s) zero)
-      (trans (sym (canonicalFullStep-clock K s)) (cong clock eq)))
-
-canonicalTotalCountStep : ∀ K s → totalCount (canonicalFullStep K s) ≡ suc (totalCount s)
-canonicalTotalCountStep K s = refl
-
-canonicalNoFixedPoint : ∀ K s → canonicalFullStep K s ≢ s
-canonicalNoFixedPoint = canonicalStep-not-fixed
+      (trans (cong suc (plus-zero (clock s)))
+        (trans (sym (canonicalFullStep-clock K s)) (cong clock eq))))
 
 iterateCanonical : FullLearnerKernel → Nat → FullLearnerState → FullLearnerState
 iterateCanonical K zero s = s
@@ -843,43 +415,3 @@ clockAfter K (suc n) s = trans (cong suc (clockAfter K n s)) (sym (plus-suc (clo
 canonicalAperiodic : ∀ K s n → iterateCanonical K (suc n) s ≢ s
 canonicalAperiodic K s n cyc = plus-suc-not-self (clock s) n
   (trans (sym (clockAfter K (suc n) s)) (cong clock cyc))
-
-canonicalOrbitNonFixed : ∀ K s n → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
-canonicalOrbitNonFixed K s n = canonicalStep-not-fixed K (iterateCanonical K n s)
-
-canonicalNoNontrivialFiniteCycle : ∀ K s n → iterateCanonical K (suc n) s ≡ s → ⊥
-canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
-
-canonicalTotalCountIterate2 : ∀ K s → totalCount (iterateCanonical K 2 s) ≡ suc (suc (totalCount s))
-canonicalTotalCountIterate2 K s = refl
-
-canonicalNoCountedTwoCycle : ∀ K s → iterateCanonical K 2 s ≡ s → ⊥
-canonicalNoCountedTwoCycle K s cyc = suc-suc-not-self (totalCount s)
-  (trans (sym (canonicalTotalCountIterate2 K s)) (cong totalCount cyc))
-
-temperatureCodeLaw : sparsemaxTemperature ≡ int8OfNat 16
-temperatureCodeLaw = refl
-
-temperatureTieLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 0)) ≡ (int8OfNat 64 , int8OfNat 64)
-temperatureTieLaw = refl
-
-temperaturePositiveUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 1) (int8OfNat 0)) ≡ (int8OfNat 68 , int8OfNat 60)
-temperaturePositiveUnitLaw = refl
-
-temperatureNegativeUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡ (int8OfNat 60 , int8OfNat 68)
-temperatureNegativeUnitLaw = refl
-
-pessimisticInit : Int8
-pessimisticInit = int8OfNat 128
-
-pessimisticCritic : CriticState
-pessimisticCritic = criticState pessimisticInit pessimisticInit
-
-pessimisticCritic-law : (qLeft pessimisticCritic ≡ pessimisticInit) × (qRight pessimisticCritic ≡ pessimisticInit)
-pessimisticCritic-law = refl , refl
-
-canonicalWalshBoundary : walshOrthonormal ≡ walshOrthonormal
-canonicalWalshBoundary = refl
-
-canonicalPersistent : ∀ K s → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
-canonicalPersistent = canonicalPersistentGRUPreservation
