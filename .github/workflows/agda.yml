@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Reject forbidden theorem families
+      - name: Reject forbidden theorem families, holes, and postulates
         run: runghc .ci/CheckForbiddenTheorems.hs
 
       - name: Set up Agda and standard library
@@ -45,6 +45,9 @@ jobs:
 
       - name: Check self-contained canonical learner
         run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+
+      - name: Check canonical learner regression
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
 
       - name: Set up Haskell generator runtime
         run: sudo apt-get update && sudo apt-get install -y ghc
