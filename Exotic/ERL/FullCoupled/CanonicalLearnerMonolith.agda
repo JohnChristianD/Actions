@@ -55,7 +55,7 @@ plus-le-suc zero n = z≤n
 plus-le-suc (suc m) n = s≤s (plus-le-suc m n)
 
 plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
-plus-suc-lt m zero = le-refl (suc m)
+plus-suc-lt m zero = subst (λ z → m < z) (sym (plus-suc m zero)) (s≤s (le-refl m))
 plus-suc-lt m (suc n) = s≤s (plus-le-suc m n)
 
 plus-suc-not-self : ∀ (m n : Nat) → m + suc n ≢ m
