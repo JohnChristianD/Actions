@@ -7,12 +7,11 @@ open import Agda.Builtin.Equality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Nat using (_+_; _*_; _∸_)
 open import Data.Fin using (Fin; zero; suc; toℕ)
-open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ; _,_)
 
 infixr 5 _∷_
 
 data V (A : Set) : Nat → Set where
-  []  : V A zero
+  [] : V A zero
   _∷_ : ∀ {n} → A → V A n → V A (suc n)
 
 lookup : ∀ {A n} → Fin n → V A n → A
@@ -50,10 +49,7 @@ open Support public
 
 insertDesc : ∀ {n} → Fin 256 → V (Fin 256) n → V (Fin 256) (suc n)
 insertDesc x [] = x ∷ []
-insertDesc x (y ∷ ys) =
-  ifB (natLe (toℕ y) (toℕ x))
-      (x ∷ y ∷ ys)
-      (y ∷ insertDesc x ys)
+insertDesc x (y ∷ ys) = ifB (natLe (toℕ y) (toℕ x)) (x ∷ y ∷ ys) (y ∷ insertDesc x ys)
 
 sortDesc : ∀ {n} → V (Fin 256) n → V (Fin 256) n
 sortDesc [] = []
@@ -84,8 +80,7 @@ argmaxFrac (x ∷ y ∷ xs) with argmaxFrac (y ∷ xs)
 sparsemaxPolicyA : ∀ {n} → V (Fin 256) (suc n) → Fin (suc n)
 sparsemaxPolicyA xs = argmaxFrac (sparsemaxA xs)
 
-sparsemax2-is-general : ∀ (a b : Fin 256) →
-  sparsemaxA (a ∷ b ∷ []) ≡ sparsemaxA (a ∷ b ∷ [])
+sparsemax2-is-general : ∀ (a b : Fin 256) → sparsemaxA (a ∷ b ∷ []) ≡ sparsemaxA (a ∷ b ∷ [])
 sparsemax2-is-general a b = refl
 
 record PowerOfFourWidth : Set where
@@ -95,60 +90,56 @@ record PowerOfFourWidth : Set where
 width64 : PowerOfFourWidth
 width64 = power4 3
 
-record Environment (A : Nat) : Set₁ where
-  constructor environment
+record ClosedGame (A : Nat) (S : Set) : Set₁ where
+  constructor closedGame
   field
-    State : Set
-    start : State
-    reward : State → Fin A → Nat
-    next : State → Fin A → State
-    terminal : State → Bool
-    optimalImmediate : State → Nat
+    start : S
+    observe : S → V (Fin 256) (suc A)
+    reward : S → Fin (suc A) → Nat
+    next : S → Fin (suc A) → S
+    terminal : S → Bool
+    optimalImmediate : S → Nat
 
 record LearnerState (A : Nat) : Set where
   constructor learnerState
-  field
-    qValues : V (Fin 256) A
-    clock : Nat
+  field qValues : V (Fin 256) (suc A)
+        clock : Nat
 
-record Learner (A : Nat) : Set₁ where
+record Learner (A : Nat) (S : Set) : Set₁ where
   constructor learner
   field
     initial : LearnerState A
-    observe : LearnerState A → Environment A .State → V (Fin 256) A
-    update : LearnerState A → Environment A .State → Fin A → Nat → LearnerState A
+    update : LearnerState A → S → Fin (suc A) → Nat → LearnerState A
 
 record RunMetrics : Set where
   constructor metrics
-  field
-    episodeReturn instantaneousRegret success steps : Nat
+  field episodeReturn instantaneousRegret success steps : Nat
 
 open RunMetrics public
 
-record StepResult (A : Nat) : Set where
+record StepResult (A : Nat) (S : Set) : Set where
   constructor stepResult
-  field
-    learnerState' : LearnerState A
-    envState' : Environment A .State
-    reward' regret' success' : Nat
-    done' : Bool
+  field learnerState' : LearnerState A
+        envState' : S
+        reward' regret' success' : Nat
+        done' : Bool
 
-closedLoopStep : ∀ {A} → Learner A → Environment A → LearnerState A → Environment A .State → StepResult A
-closedLoopStep L E ls es with sparsemaxPolicyA (Learner.observe L ls es)
+closedLoopStep : ∀ {A S} → ClosedGame A S → Learner A S → LearnerState A → S → StepResult A S
+closedLoopStep G L ls s with sparsemaxPolicyA (ClosedGame.observe G s)
 ... | a = stepResult
-  (Learner.update L ls es a (Environment.reward E es a))
-  (Environment.next E es a)
-  (Environment.reward E es a)
-  (Environment.optimalImmediate E es ∸ Environment.reward E es a)
-  (ifB (Environment.terminal E (Environment.next E es a)) 1 0)
-  (Environment.terminal E (Environment.next E es a))
+  (Learner.update L ls s a (ClosedGame.reward G s a))
+  (ClosedGame.next G s a)
+  (ClosedGame.reward G s a)
+  (ClosedGame.optimalImmediate G s ∸ ClosedGame.reward G s a)
+  (ifB (ClosedGame.terminal G (ClosedGame.next G s a)) 1 0)
+  (ClosedGame.terminal G (ClosedGame.next G s a))
 
-runSteps : ∀ {A} → Nat → Learner A → Environment A → LearnerState A → Environment A .State → RunMetrics
-runSteps zero L E ls es = metrics zero zero zero zero
-runSteps (suc n) L E ls es with Environment.terminal E es
+runSteps : ∀ {A S} → Nat → ClosedGame A S → Learner A S → LearnerState A → S → RunMetrics
+runSteps zero G L ls s = metrics zero zero zero zero
+runSteps (suc n) G L ls s with ClosedGame.terminal G s
 ... | true = metrics zero zero 1 zero
-... | false with closedLoopStep L E ls es
-... | stepResult ls' es' r g u done with runSteps n L E ls' es'
+... | false with closedLoopStep G L ls s
+... | stepResult ls' s' r g u done with runSteps n G L ls' s'
 ... | metrics r' g' u' k = metrics (r + r') (g + g') (u + u') (suc k)
 
 parameterTabulate : ∀ {X Y} → (Fin X → Fin Y) → V (Fin Y) X
@@ -165,34 +156,35 @@ lookupParameter p i = lookup i (ParameterFunction.table p)
 parameterFromFunction : ∀ {X Y} → (Fin X → Fin Y) → ParameterFunction X Y
 parameterFromFunction f = parameterFunction (parameterTabulate f)
 
-parameterExact : ∀ {X Y} (f : Fin X → Fin Y) (i : Fin X) →
-  lookupParameter (parameterFromFunction f) i ≡ f i
+parameterExact : ∀ {X Y} (f : Fin X → Fin Y) (i : Fin X) → lookupParameter (parameterFromFunction f) i ≡ f i
 parameterExact f zero = refl
 parameterExact f (suc i) = parameterExact (λ j → f (suc j)) i
-
-record TransitionSystem (S : Set) : Set₁ where
-  constructor transitionSystem
-  field step : S → S
-
-record TransitionMorphism (S T : Set) : Set₁ where
-  constructor transitionMorphism
-  field
-    source : TransitionSystem S
-    target : TransitionSystem T
-    map : S → T
-    preserves : ∀ s → map (TransitionSystem.step (TransitionMorphism.source S T)) ≡
-      TransitionSystem.step (TransitionMorphism.target S T) (map s)
 
 record TransitionBisimulation (S T : Set) : Set₁ where
   constructor transitionBisimulation
   field
     relation : S → T → Set
-    leftStep : ∀ s t → relation s t → relation (TransitionSystem.step (TransitionBisimulation.source S T s)) (TransitionSystem.step (TransitionBisimulation.target S T t))
-    source target : TransitionSystem S × TransitionSystem T
+    stepS : S → S
+    stepT : T → T
+    preserves : ∀ s t → relation s t → relation (stepS s) (stepT t)
 
-bisimStepPreserved : ∀ {S T} (B : TransitionBisimulation S T) →
-  ∀ s t → TransitionBisimulation.relation B s t →
-  TransitionBisimulation.relation B
-    (TransitionSystem.step (proj₁ (TransitionBisimulation.source B)))
-    (TransitionSystem.step (proj₂ (TransitionBisimulation.target B)))
-bisimStepPreserved B s t r = TransitionBisimulation.leftStep B s t r
+record RepresentationFactor (X Y : Set) : Set₁ where
+  constructor representationFactor
+  field
+    encode : X → Y
+    sourceStep : X → X
+    targetStep : Y → Y
+    commute : ∀ x → encode (sourceStep x) ≡ targetStep (encode x)
+
+factorPreserves : ∀ {X Y} (F : RepresentationFactor X Y) (x : X) → RepresentationFactor.encode F (RepresentationFactor.sourceStep F x) ≡ RepresentationFactor.targetStep F (RepresentationFactor.encode F x)
+factorPreserves F x = RepresentationFactor.commute F x
+
+record CNN64 : Set where
+  constructor cnn64
+  field code64 : V (Fin 256) 64
+
+cnnToLearnerInput : CNN64 → V (Fin 256) 64
+cnnToLearnerInput c = CNN64.code64 c
+
+cnnRepresentationFactor : RepresentationFactor CNN64 (V (Fin 256) 64)
+cnnRepresentationFactor = representationFactor cnnToLearnerInput (λ x → x) (λ x → x) (λ x → refl)
