@@ -656,7 +656,7 @@ canonicalFullStep K s =
   (canonicalQLogStep K s)
 
 canonicalFullStep-clock : ∀ K s → clock (canonicalFullStep K s) ≡ suc (clock s)
-canonicalFullStep-clock K s = refl
+canonicalFullStep-clock K s = trans refl (cong suc (plus-zero (clock s)))
 
 canonicalFullStep-watkins : ∀ K s → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
