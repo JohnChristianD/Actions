@@ -43,13 +43,13 @@ runAux spec K zero learner env total steps =
   benchMetrics total (referenceReturn spec ∸ total) (success spec env) steps
 runAux spec K (suc n) learner env total steps with L.policyA K learner
 ... | a with step (environment spec) a env
-...   | P.stepResult observation env' reward P.enabled =
+...   | P.stepResult observation env' reward P.yes =
       benchMetrics
         (total + toℕ (P.code reward))
         (referenceReturn spec ∸ (total + toℕ (P.code reward)))
         (success spec env')
         (suc steps)
-...   | P.stepResult observation env' reward P.disabled =
+...   | P.stepResult observation env' reward P.no =
       runAux spec K n
         (L.generalLearnerStep K learner reward)
         env'
@@ -103,8 +103,8 @@ knapsackSpec = generalBenchSpec
   (P.knapsackState 0 3 0)
   (initialGeneral (P.fin2 0)) 3 6
   (λ s with P.natEq (P.value s) 6
-  ... | P.enabled = 1
-  ... | P.disabled = 0)
+  ... | P.yes = 1
+  ... | P.no = 0)
 
 knapsackBench : AblationMetrics
 knapsackBench = runAblation knapsackSpec
@@ -113,10 +113,10 @@ mazeSpec : GeneralBenchSpec 4 P.MazeState
 mazeSpec = generalBenchSpec (generalEnv P.mazeStep)
   (P.mazeState 0 0 0 1 0) (initialGeneral (P.fin4 0)) 8 1
   (λ s with P.natEq (P.row s) (P.goalRow s)
-  ... | P.enabled with P.natEq (P.col s) (P.goalCol s)
-  ...   | P.enabled = 1
-  ...   | P.disabled = 0
-  ... | P.disabled = 0)
+  ... | P.yes with P.natEq (P.col s) (P.goalCol s)
+  ...   | P.yes = 1
+  ...   | P.no = 0
+  ... | P.no = 0)
 
 mazeBench : AblationMetrics
 mazeBench = runAblation mazeSpec
@@ -125,10 +125,10 @@ metaMazeSpec : GeneralBenchSpec 4 P.MetaMazeState
 metaMazeSpec = generalBenchSpec (generalEnv P.metaMazeStep)
   (P.metaMazeState 0 0 0 1 0) (initialGeneral (P.fin4 0)) 8 10
   (λ s with P.natEq (P.row s) (P.goalRow s)
-  ... | P.enabled with P.natEq (P.col s) (P.goalCol s)
-  ...   | P.enabled = 1
-  ...   | P.disabled = 0
-  ... | P.disabled = 0)
+  ... | P.yes with P.natEq (P.col s) (P.goalCol s)
+  ...   | P.yes = 1
+  ...   | P.no = 0
+  ... | P.no = 0)
 
 metaMazeBench : AblationMetrics
 metaMazeBench = runAblation metaMazeSpec
@@ -137,10 +137,10 @@ fourRoomsSpec : GeneralBenchSpec 4 P.MazeState
 fourRoomsSpec = generalBenchSpec (generalEnv P.fourRoomsStep)
   (P.mazeState 0 0 0 1 0) (initialGeneral (P.fin4 0)) 8 1
   (λ s with P.natEq (P.row s) (P.goalRow s)
-  ... | P.enabled with P.natEq (P.col s) (P.goalCol s)
-  ...   | P.enabled = 1
-  ...   | P.disabled = 0
-  ... | P.disabled = 0)
+  ... | P.yes with P.natEq (P.col s) (P.goalCol s)
+  ...   | P.yes = 1
+  ...   | P.no = 0
+  ... | P.no = 0)
 
 fourRoomsBench : AblationMetrics
 fourRoomsBench = runAblation fourRoomsSpec
@@ -149,8 +149,8 @@ levelBasedForagingSpec : GeneralBenchSpec 6 P.LBFState
 levelBasedForagingSpec = generalBenchSpec (generalEnv P.lbfStep)
   (P.lbfState 0 0 1 1 0 1 1 0) (initialGeneral (P.fin6 0)) 8 1
   (λ s with P.natEq (P.foodLevel s) 0
-  ... | P.enabled = 1
-  ... | P.disabled = 0)
+  ... | P.yes = 1
+  ... | P.no = 0)
 
 levelBasedForagingBench : AblationMetrics
 levelBasedForagingBench = runAblation levelBasedForagingSpec
@@ -167,8 +167,8 @@ memoryChainSpec : GeneralBenchSpec 2 P.MemoryChainState
 memoryChainSpec = generalBenchSpec (generalEnv P.memoryChainStep)
   (P.memoryChainState 1 1 0) (initialGeneral (P.fin2 0)) 6 1
   (λ s with P.natEq (P.time s) 1
-  ... | P.enabled = 1
-  ... | P.disabled = 0)
+  ... | P.yes = 1
+  ... | P.no = 0)
 
 memoryChainBench : AblationMetrics
 memoryChainBench = runAblation memoryChainSpec
@@ -193,8 +193,8 @@ banditSpec : GeneralBenchSpec 2 P.BernoulliBanditState
 banditSpec = generalBenchSpec (generalEnv P.bernoulliBanditStep)
   (P.bernoulliBanditState 1 0 0 0) (initialGeneral (P.fin2 0)) 8 8
   (λ s with P.natEq (P.lastReward s) 1
-  ... | P.enabled = 1
-  ... | P.disabled = 0)
+  ... | P.yes = 1
+  ... | P.no = 0)
 
 banditBench : AblationMetrics
 banditBench = runAblation banditSpec
@@ -203,8 +203,8 @@ rockSampleSpec : GeneralBenchSpec 6 P.RockSampleState
 rockSampleSpec = generalBenchSpec (generalEnv P.rockSampleStep)
   (P.rockSampleState 0 0 1 0) (initialGeneral (P.fin6 0)) 8 1
   (λ s with P.natEq (P.rockGood s) 0
-  ... | P.enabled = 1
-  ... | P.disabled = 0)
+  ... | P.yes = 1
+  ... | P.no = 0)
 
 rockSampleBench : AblationMetrics
 rockSampleBench = runAblation rockSampleSpec
