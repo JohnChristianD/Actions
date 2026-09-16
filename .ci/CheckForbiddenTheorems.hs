@@ -17,6 +17,8 @@ checkedPaths =
   , "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
   , "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
   , "Exotic/econlib/GameTheory.agda"
+  , "Exotic/econlib/Equilibrium.agda"
+  , "Exotic/econlib/MatchingPennies.agda"
   , "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
   ]
 
