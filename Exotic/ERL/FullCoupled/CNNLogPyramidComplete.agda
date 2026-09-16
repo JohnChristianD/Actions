@@ -2,14 +2,13 @@
 
 module Exotic.ERL.FullCoupled.CNNLogPyramidComplete where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
-open import Data.Fin using (Fin; zero; suc)
-open import Data.Product using (_×_; _,_)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
+open import Data.Fin using (Fin)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 open import Exotic.ERL.FullCoupled.CNNLogPyramidPreservation
 
 -- The minimal active composition is exactly the decoder-to-GRU path used by
--- the maintained learner.  The raw Fin-64 code is deliberately not claimed
+-- the maintained learner. The raw Fin-64 code is deliberately not claimed
 -- to affect the transition unless it changes the decoder summary.
 record CNNMinimalComposition : Set₁ where
   constructor cnnMinimalComposition
@@ -64,7 +63,7 @@ cnnLogPyramid-transition-congruence K s p q h =
   cnnLogPyramidGRUInputPreservation K s p q h
 
 -- A finite four-level hierarchy makes the word "pyramid" structural rather
--- than metaphorical.  Refinement is an explicit relation; no logarithmic
+-- than metaphorical. Refinement is an explicit relation; no logarithmic
 -- depth or compression claim is hidden in the type.
 data PyramidLevel : Set where
   level0 level1 level2 level3 : PyramidLevel
@@ -77,9 +76,6 @@ record CNNLogPyramidHierarchy : Set₁ where
     refineWitness : ∀ {l} → l ≢ level0 → parent l ≢ l
 open CNNLogPyramidHierarchy public
 
--- Decoder factorization is the semantic invariant required for the hierarchy:
--- arbitrary encodings at different levels may vary, but equal decoded
--- attention states induce exactly equal recurrent input and transition.
 cnnLogPyramidHierarchy-congruence : ∀ (H : CNNLogPyramidHierarchy)
   (K : FullLearnerKernel) (s : FullLearnerState)
   (l₁ l₂ : PyramidLevel) →
@@ -89,8 +85,6 @@ cnnLogPyramidHierarchy-congruence : ∀ (H : CNNLogPyramidHierarchy)
 cnnLogPyramidHierarchy-congruence H K s l₁ l₂ h =
   cnnLogPyramid-transition-congruence K s (levelCode H l₁) (levelCode H l₂) h
 
--- Commutation with the learner's attention state is the strongest theorem
--- justified by the current representation boundary.
 cnnLogPyramid-commutes : ∀ (K : FullLearnerKernel) (s : FullLearnerState)
   (p : CNNLogPyramidCode) →
   cnnToAttention p ≡ attention s →
