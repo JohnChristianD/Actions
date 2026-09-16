@@ -827,7 +827,7 @@ canonicalStep-not-fixed K s eq =
         (trans (sym (canonicalFullStep-clock K s))
           (cong (λ t → clock t) eq))))
 
-canonicalTotalCountStep : ∀ K s → totalCount (canonicalFullStep K s) ≡ suc (totalCount s)
+canonicalTotalCountStep : ∀ K s → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
 canonicalTotalCountStep K s = refl
 
 canonicalNoFixedPoint : ∀ K s → canonicalFullStep K s ≢ s
@@ -851,12 +851,13 @@ canonicalOrbitNonFixed K s n = canonicalStep-not-fixed K (iterateCanonical K n s
 canonicalNoNontrivialFiniteCycle : ∀ K s n → iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
 
-canonicalTotalCountIterate2 : ∀ K s → totalCount (iterateCanonical K 2 s) ≡ suc (suc (totalCount s))
+canonicalTotalCountIterate2 : ∀ K s → totalCount (lcbCounts (iterateCanonical K 2 s)) ≡ suc (suc (totalCount (lcbCounts s)))
 canonicalTotalCountIterate2 K s = refl
 
 canonicalNoCountedTwoCycle : ∀ K s → iterateCanonical K 2 s ≡ s → ⊥
-canonicalNoCountedTwoCycle K s cyc = suc-suc-not-self (totalCount s)
-  (trans (sym (canonicalTotalCountIterate2 K s)) (cong totalCount cyc))
+canonicalNoCountedTwoCycle K s cyc = suc-suc-not-self (totalCount (lcbCounts s))
+  (trans (sym (canonicalTotalCountIterate2 K s))
+    (cong (λ t → totalCount (lcbCounts t)) cyc))
 
 temperatureCodeLaw : sparsemaxTemperature ≡ int8OfNat 16
 temperatureCodeLaw = refl
