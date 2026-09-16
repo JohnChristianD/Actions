@@ -6,7 +6,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m; _%_)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
 
@@ -292,7 +292,7 @@ zeroF4 : F4State
 zeroF4 = f4State zero8 zero8 zero8 zero8 zero8
 
 f4Quantize : Int8 → Int8
-f4Quantize x = int8OfNat ((toℕ (code x) ∸ 8) + 8)
+f4Quantize x = int8OfNat (toℕ (code x) ∸ (toℕ (code x) % 16))
 
 f4Step : F4State → Int8 → F4State
 f4Step s g =
