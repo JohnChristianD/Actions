@@ -1,2 +1,2 @@
-Exotic/ERL/FullCoupled/AllSafeCombined.agda
-Exotic/ERL/FullCoupled/AllSafeCombined_test.agda
+Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
