@@ -47,12 +47,12 @@ finiteAbs x with signedCode x
 
 cartPoleDone : GymnaxCartPoleFiniteState → BoolLike
 cartPoleDone s with finiteAbs (position s) <ᵇ 48
-... | false = yes
+... | false = enabled
 ... | true with finiteAbs (angle s) <ᵇ 13
-...   | false = yes
+...   | false = enabled
 ...   | true with time s <ᵇ 500
-...     | true = no
-...     | false = yes
+...     | true = disabled
+...     | false = enabled
 
 record CartPoleTransition : Set where
   constructor cartPoleTransition
@@ -95,9 +95,9 @@ record GymnaxCartPoleLoop : Set where
 open GymnaxCartPoleLoop public
 
 cartPoleLearnerAction : FullLearnerState → CartPoleAction
-cartPoleLearnerAction s with toℕ (canonicalBit learnerKernel s)
-... | zero = pushLeft
-... | suc _ = pushRight
+cartPoleLearnerAction s with policyChoosesLeft (canonicalPolicy learnerKernel s)
+... | enabled = pushLeft
+... | disabled = pushRight
 
 cartPoleClosedLoopStep : GymnaxCartPoleLoop → GymnaxCartPoleLoop
 cartPoleClosedLoopStep loop =
@@ -131,7 +131,6 @@ cartPoleClosedLoop-learner-clock :
   clock (learner (cartPoleClosedLoopStep cartPoleInitialLoop)) ≡ 1
 cartPoleClosedLoop-learner-clock = refl
 
--- The loop is action-conditioned: the policy chooses the action, the chosen
--- action determines the environment force, the environment emits reward, and
--- that reward enters the maintained finite critic/attention/GRU/optimizer
--- closed-loop update.
+-- The loop is action-conditioned: the canonical sparsemax+LCB policy chooses
+-- an action, the environment applies its finite force, the reward returns,
+-- and that action/reward enters the maintained Watkins/attention/GRU/F4 loop.
