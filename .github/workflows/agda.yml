@@ -2,7 +2,7 @@ name: Canonical self-contained learner gate
 
 on:
   push:
-    branches: ['main']
+    branches: ['**']
     paths:
       - '**/*.agda'
       - '.ci/**'
