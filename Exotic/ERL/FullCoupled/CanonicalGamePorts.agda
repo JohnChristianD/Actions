@@ -42,6 +42,11 @@ natEq zero (suc n) = no
 natEq (suc m) zero = no
 natEq (suc m) (suc n) = natEq m n
 
+leBool : Nat → Nat → BoolLike
+leBool zero _ = yes
+leBool (suc _) zero = no
+leBool (suc m) (suc n) = leBool m n
+
 fin2 : Nat → Fin 2
 fin2 n = fromℕ< (m%n<n n 2)
 
@@ -77,12 +82,12 @@ knapsackValue1 : Nat
 knapsackValue1 = 4
 
 knapsackStep : KnapsackAction → KnapsackState → StepResult KnapsackState
-knapsackStep chooseItem0 (knapsackState i c v) with knapsackWeight0 ≤ c
-... | false = stepResult (int8OfNat i) (knapsackState i c v) zero8 yes
-... | true = stepResult (int8OfNat 0) (knapsackState (suc i) (c ∸ knapsackWeight0) (v + knapsackValue0)) (int8OfNat knapsackValue0) no
-knapsackStep chooseItem1 (knapsackState i c v) with knapsackWeight1 ≤ c
-... | false = stepResult (int8OfNat i) (knapsackState i c v) zero8 yes
-... | true = stepResult (int8OfNat 1) (knapsackState (suc i) (c ∸ knapsackWeight1) (v + knapsackValue1)) (int8OfNat knapsackValue1) no
+knapsackStep chooseItem0 (knapsackState i c v) with leBool knapsackWeight0 c
+... | no = stepResult (int8OfNat i) (knapsackState i c v) zero8 yes
+... | yes = stepResult (int8OfNat 0) (knapsackState (suc i) (c ∸ knapsackWeight0) (v + knapsackValue0)) (int8OfNat knapsackValue0) no
+knapsackStep chooseItem1 (knapsackState i c v) with leBool knapsackWeight1 c
+... | no = stepResult (int8OfNat i) (knapsackState i c v) zero8 yes
+... | yes = stepResult (int8OfNat 1) (knapsackState (suc i) (c ∸ knapsackWeight1) (v + knapsackValue1)) (int8OfNat knapsackValue1) no
 
 record MazeState : Set where
   constructor mazeState
@@ -96,11 +101,11 @@ mazeMove a (r , c) with toℕ a
 ... | _ = r , c ∸ 1
 
 mazeOpen : Nat → Nat → BoolLike
-mazeOpen r c with r ≤ 4
-... | false = no
-... | true with c ≤ 4
-...   | false = no
-...   | true = yes
+mazeOpen r c with leBool r 4
+... | no = no
+... | yes with leBool c 4
+...   | no = no
+...   | yes = yes
 
 mazeStep : Fin 4 → MazeState → StepResult MazeState
 mazeStep a (mazeState r c gr gc t) with mazeMove a (r , c)
@@ -112,35 +117,26 @@ mazeStep a (mazeState r c gr gc t) with mazeMove a (r , c)
 ...       | no = stepResult (int8OfNat (nr + nc)) (mazeState nr nc gr gc (suc t)) zero8 no
 ...     | no = stepResult (int8OfNat (nr + nc)) (mazeState nr nc gr gc (suc t)) zero8 no
 
--- Exact 5x5 Jumanji ToyGenerator layout. False means wall, true means open.
+-- Jumanji ToyGenerator's fixed 5x5 connectivity layout.
 toyMazeOpen : Nat → Nat → BoolLike
-toyMazeOpen r c with natEq r 0
-... | yes with natEq c 0
-...   | yes = yes
-...   | no with natEq c 1
-...     | yes = no
-...     | no = yes
-toyMazeOpen r c with natEq r 1
-... | yes with natEq c 0
-...   | yes = yes
-...   | no with natEq c 2
-...     | yes = yes
-...     | no = no
-toyMazeOpen r c with natEq r 2
-... | yes with natEq c 0
-...   | yes = yes
-...   | no with natEq c 2
-...     | yes = yes
-...     | no = yes
-toyMazeOpen r c with natEq r 3
-... | yes with c ≤ 2
-...   | true = yes
-...   | false = no
-toyMazeOpen r c with natEq r 4
-... | yes with c ≤ 4
-...   | true = yes
-...   | false = no
-toyMazeOpen r c = no
+toyMazeOpen zero c = orBool (between 0 0 c) (between 2 4 c)
+toyMazeOpen (suc zero) c = orBool (between 0 0 c) (between 2 2 c)
+toyMazeOpen (suc (suc zero)) c = orBool (between 0 0 c) (between 2 4 c)
+toyMazeOpen (suc (suc (suc zero))) c = between 0 2 c
+toyMazeOpen (suc (suc (suc (suc zero)))) c = between 0 4 c
+toyMazeOpen _ _ = no
+  where
+    between : Nat → Nat → Nat → BoolLike
+    between lo hi x with leBool lo x
+    ... | no = no
+    ... | yes with leBool x hi
+    ...   | no = no
+    ...   | yes = yes
+
+    orBool : BoolLike → BoolLike → BoolLike
+    orBool yes _ = yes
+    orBool _ yes = yes
+    orBool _ _ = no
 
 record LBFState : Set where
   constructor lbfState
@@ -191,9 +187,11 @@ record MemoryChainState : Set where
   field memory query time : Nat
 
 memoryChainStep : Fin 2 → MemoryChainState → StepResult MemoryChainState
-memoryChainStep a (memoryChainState m q t) with t ≤ 5
-... | true = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
-... | false with natEq (toℕ a) q
+memoryChainStep a (memoryChainState m q t) with leBool t 5
+... | yes with natEq (toℕ a) q
+...   | yes = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
+...   | no = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
+... | no with natEq (toℕ a) q
 ...   | yes = stepResult (int8OfNat m) (memoryChainState m q (suc t)) one8 no
 ...   | no = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
 
@@ -241,7 +239,6 @@ rockSampleStep a (rockSampleState r c g t) with toℕ a
 ...   | no = stepResult (int8OfNat g) (rockSampleState r c g (suc t)) zero8 no
 ... | _ = stepResult (int8OfNat g) (rockSampleState r c g (suc t)) zero8 no
 
--- Port aliases keep every requested environment visible to theorem generation.
 jumanjiKnapsackPort : Set
 jumanjiKnapsackPort = KnapsackState
 
