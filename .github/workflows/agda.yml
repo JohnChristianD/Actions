@@ -91,6 +91,9 @@ jobs:
       - name: Check finite negative-Munchausen ablation
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalMunchausenAblation.agda
 
+      - name: Check negative-Munchausen ceteris-paribus regression
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalMunchausenAblation_test.agda
+
       - name: Check Jensen convex-concave sandwich
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/JensenMinMaxSandwich.agda
 
