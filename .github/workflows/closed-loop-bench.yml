@@ -1,0 +1,44 @@
+name: Closed-loop learner benchmark
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - '**/*.agda'
+      - '.github/workflows/closed-loop-bench.yml'
+  pull_request:
+    branches: ['main']
+    paths:
+      - '**/*.agda'
+      - '.github/workflows/closed-loop-bench.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  closed-loop:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: agda/agda-setup-action@v1
+        with:
+          agda-version: '2.8.0'
+          agda-stdlib-version: '2.4'
+      - name: Reject holes and postulates
+        run: runghc .ci/CheckForbiddenTheorems.hs
+      - name: Closed-loop learner core
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopLearner.agda
+      - name: Faithful finite fixed game projections
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalFaithfulFixedGamePorts.agda
+      - name: Closed-loop benchmark reduction
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalEndToEndFaithfulBench2.agda
+      - name: Exact return-regret-success checks
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalEndToEndFaithfulBench_test.agda
+      - name: CNN behavioral equivalence
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalCNNBehavioralEquivalence.agda
+      - name: Negative Munchausen finite algebra
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda
