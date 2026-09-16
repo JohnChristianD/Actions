@@ -4,78 +4,71 @@ import Data.List (intercalate, isInfixOf)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
-record :: String -> String -> [String] -> (String, String, [String])
-record name path proofs = (name, path, proofs)
+canonicalPath :: String
+canonicalPath = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
 
-methods :: [(String, String, [String])]
-methods =
-  [ record "CanonicalLearner" "Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda"
-      [ "temperatureCodeLaw", "temperatureTieLaw", "temperaturePositiveUnitLaw", "temperatureNegativeUnitLaw"
-      , "negativeFiniteQLogLaw", "hardSignCode", "walshOrthonormal", "mobiusAssociativity"
-      , "persistentGRUMonolith", "canonicalPersistentGRUPreservation", "canonicalPolicy-attention-invariant"
-      , "f4ParameterInvariant", "pessimisticInit", "pessimisticCritic", "endogenousNegativeScale8"
-      , "canonicalFullStep-clock", "canonicalFullStep-critic", "canonicalFullStep-attention"
-      , "canonicalFullStep-gru", "canonicalFullStep-optimizer", "canonicalFullStep-counts"
-      , "canonicalFullStep-qLog", "canonicalFullStep-qLogControl", "canonicalQuadraticDecay"
-      , "canonicalAperiodic", "canonicalCoerciveNoCycle"
-      ]
-  , record "MobiusBoundary" "Exotic/ERL/FullCoupled/MobiusRational.agda"
-      [ "mobiusRatio8-law", "mobiusSingularity" ]
-  , record "WalshBoundary" "Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda"
-      [ "walshOrthonormal", "walshDimensionPowerOfFour" ]
-  , record "RecurrentBoundary" "Exotic/ERL/FullCoupled/DyadicGRU.agda"
-      [ "gruParameterPersistence", "persistent-preservation" ]
-  , record "MobiusComposition" "Exotic/ERL/FullCoupled/MobiusSemidirectCycleComposition.agda"
-      [ "mobiusAssociativityWindow", "persistentGRUWindow", "inputDrivenZeroLaw", "inputDrivenTwoLaw"
-      , "gruPersistentNoNontrivialFiniteCycle"
-      ]
+proofs :: [String]
+proofs =
+  [ "temperatureCodeLaw"
+  , "temperatureTieLaw"
+  , "temperaturePositiveUnitLaw"
+  , "temperatureNegativeUnitLaw"
+  , "negativeFiniteQLogLaw"
+  , "hardGate-state-independent"
+  , "walshOrthonormal"
+  , "mobiusAssociativity"
+  , "persistent-preservation"
+  , "gruParameterPersistence"
+  , "canonicalPersistentGRUPreservation"
+  , "canonicalPolicy-attention-invariant"
+  , "f4ParameterInvariant"
+  , "pessimisticInit"
+  , "canonicalFullStep-clock"
+  , "canonicalFullStep-watkins"
+  , "canonicalFullStep-attention"
+  , "canonicalFullStep-gru"
+  , "canonicalFullStep-optimizer"
+  , "canonicalFullStep-counts"
+  , "canonicalFullStep-qLog"
+  , "canonicalFullStep-qLogControl"
+  , "canonicalQuadraticDecay"
+  , "canonicalAperiodic"
+  , "canonicalCoerciveNoCycle"
+  , "count-two-step-increases"
+  , "noCountedTwoCycle"
   ]
 
 data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
 
-checkMethod :: (String, String, [String]) -> IO (String, Status, [String])
-checkMethod (name, path, required) = do
-  source <- readFile path
-  let missing = filter (\symbol -> not (symbol `isInfixOf` source)) required
+checkCanonical :: IO (Status, [String])
+checkCanonical = do
+  source <- readFile canonicalPath
+  let missing = filter (\symbol -> not (symbol `isInfixOf` source)) proofs
   if not (null missing)
-    then pure (name, MissingProof, missing)
+    then pure (MissingProof, missing)
     else do
-      (code, out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
+      (code, out, err) <- readProcessWithExitCode "agda" ["--safe", canonicalPath] ""
       case code of
-        ExitSuccess -> pure (name, Proven, [])
-        ExitFailure _ -> pure (name, AgdaFailure, [err ++ out])
+        ExitSuccess -> pure (Proven, [])
+        ExitFailure _ -> pure (AgdaFailure, [err ++ out])
 
-renderCandidateModule :: [(String, Status, [String])] -> String
-renderCandidateModule results =
-  unlines $
-    [ "{-# OPTIONS --safe #-}"
-    , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
-    , ""
-    , "-- Generated theorem-status report for the canonical endogenous learner."
-    , "-- Agda remains the acceptance oracle; generation never upgrades missing proof terms."
-    , ""
-    ]
-    ++ concatMap render results
-  where
-    render (name, status, details) =
-      [ "-- theorem-family: " ++ name
-      , "-- status: " ++ show status
-      , "-- details: " ++ intercalate " | " details
-      , ""
-      ]
+render :: Status -> [String] -> String
+render status details = unlines $
+  [ "{-# OPTIONS --safe #-}"
+  , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
+  , ""
+  , "-- Generated status for the single canonical learner monolith."
+  , "-- Haskell discovers status; Agda proof checking remains authoritative."
+  , ""
+  , "-- theorem-family: CanonicalLearnerMonolith"
+  , "-- status: " ++ show status
+  , "-- details: " ++ intercalate " | " details
+  , ""
+  ]
 
 main :: IO ()
 main = do
-  results <- mapM checkMethod methods
-  writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
-    (renderCandidateModule results)
-  mapM_ printResult results
-  if any (\(_, status, _) -> status /= Proven) results
-    then exitFailure
-    else exitSuccess
-  where
-    printResult (name, status, details) =
-      putStrLn $
-        "theorem-family=" ++ name
-        ++ ",status=" ++ show status
-        ++ if null details then "" else ",details=" ++ intercalate ";" details
+  (status, details) <- checkCanonical
+  writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda" (render status details)
+  putStrLn ("theorem-family=CanonicalLearnerMonolith,status=" ++ show status)
+  if status == Proven then exitSuccess else exitFailure
