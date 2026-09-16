@@ -10,6 +10,7 @@ open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
 open import Exotic.ERL.FullCoupled.CanonicalClosedLoopInterface
 open import Exotic.ERL.FullCoupled.CanonicalMunchausenAblation
+open import Exotic.ERL.FullCoupled.CanonicalClosedLoopBenchV2
 
 ablationInitialLearner : FullLearnerState
 ablationInitialLearner = fullLearnerState
@@ -27,7 +28,7 @@ negativeAgent : ClosedLoopAgent 2
 negativeAgent =
   closedLoopAgent
     binaryAction
-    (λ s a r → negativeMunchausenBinaryStep s a r 0)
+    (λ s a r → negativeMunchausenBinaryStep s a r 16)
 
 banditNoM : BenchSpec 2 P.BernoulliBanditState
 banditNoM = benchSpec
@@ -63,6 +64,10 @@ banditCeterisParibusReturn :
   return (episodeMetrics banditNoM) ≡ return (episodeMetrics banditNegativeM)
 banditCeterisParibusReturn = refl
 
+banditCeterisParibusSuccess :
+  success (episodeMetrics banditNoM) ≡ success (episodeMetrics banditNegativeM)
+banditCeterisParibusSuccess = refl
+
 cartPoleNoM : BenchSpec 2 P.CartPoleQuantizedState
 cartPoleNoM = benchSpec
   (closedLoopEnv P.cartPoleQuantizedStep)
@@ -86,3 +91,41 @@ cartPoleNegativeM = benchSpec
 cartPoleCeterisParibusReturn :
   return (episodeMetrics cartPoleNoM) ≡ return (episodeMetrics cartPoleNegativeM)
 cartPoleCeterisParibusReturn = refl
+
+mazeNegativeAgent : ClosedLoopAgent 4
+mazeNegativeAgent =
+  closedLoopAgent
+    (λ s → lift4 (binaryAction s))
+    (λ s a r → negativeMunchausenBinaryStep s (decode4 a) r 16)
+
+mazeNoM : BenchSpec 4 P.MazeState
+mazeNoM = benchSpec
+  (closedLoopEnv P.mazeStep)
+  agent4
+  (P.mazeState 0 0 0 1 0)
+  ablationInitialLearner
+  1
+  1
+  (λ s with P.natEq (P.row s) (P.goalRow s)
+   ... | P.yes with P.natEq (P.col s) (P.goalCol s)
+   ...   | P.yes = 1
+   ...   | P.no = 0
+   ... | P.no = 0)
+
+mazeNegativeM : BenchSpec 4 P.MazeState
+mazeNegativeM = benchSpec
+  (closedLoopEnv P.mazeStep)
+  mazeNegativeAgent
+  (P.mazeState 0 0 0 1 0)
+  ablationInitialLearner
+  1
+  1
+  (λ s with P.natEq (P.row s) (P.goalRow s)
+   ... | P.yes with P.natEq (P.col s) (P.goalCol s)
+   ...   | P.yes = 1
+   ...   | P.no = 0
+   ... | P.no = 0)
+
+mazeCeterisParibusReturn :
+  return (episodeMetrics mazeNoM) ≡ return (episodeMetrics mazeNegativeM)
+mazeCeterisParibusReturn = refl
