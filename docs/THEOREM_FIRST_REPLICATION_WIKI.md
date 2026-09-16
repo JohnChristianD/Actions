@@ -1,226 +1,240 @@
-# Theorem-first finite ERL/EA replication wiki
+# Theorem-first canonical learner replication prompt
 
-Authority: Agda `--safe`.
+This is the replication authority. Agda `--safe` proof terms are authoritative. Haskell generation and redundancy auditing are checks, not theorem sources.
 
-Repository CI authority: `.github/workflows/agda.yml`, which reads `.ci/canonical-module.txt` and checks both listed files with `agda --safe`.
+## Canonical learner
 
-Current manifest:
+Source: `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`.
 
-- `Exotic/ERL/FullCoupled/AllSafeCombined.agda`
-- `Exotic/ERL/FullCoupled/AllSafeCombined_test.agda`
+The learner is environment-agnostic and contains Watkins critic-only action selection, deterministic LCB/count memory, fixed-temperature sparsemax, finite negative q-log shaping, learned sparsemax attention, Walsh-labelled recurrent input, hard-sign/Möbius-labelled GRU, explicit F4/L2 optimizer state, NormPair, and a deterministic Nat clock.
 
-`AllSafeCombined.agda` is a regression bundle, not by itself the complete learner+EA theorem. `Agda/README.md` describes the larger v147 closure target; do not promote that target merely from documentation.
+The exact direct import surface is **eight** standard-library imports, not seven:
 
-## Permanent arithmetic and theorem-scope exclusions
+```agda
+Relation.Binary.PropositionalEquality
+Agda.Builtin.Nat
+Data.Nat
+Data.Fin
+Data.Fin.Properties
+Data.Nat.DivMod
+Data.Product
+Data.Empty
+```
 
-The repository is finite, dyadic, Int8-oriented, and kernel-checked. The CI gate rejects non-finite analytic theorem families and the excluded bootstrapping family before any Agda proof gate runs. The prohibition is structural: a forbidden family returning in source, documentation, generated candidates, or metadata fails CI.
+The source has no project-local Agda import.
 
-No external theorem family may be imported as a proof shortcut. External references may be audited, but no external source can enlarge the accepted Agda theorem surface without a repository-local `--safe` proof.
+## Default width
 
-## Canonical architecture
+The replication default is `d = 64`.
 
-Intended canonical configuration:
+The width constraint is:
 
-- optimizer: `standardTDLambdaInt8`
-- explorer: `modifiedDyadicMR15GA`
-- precision: 8 bits
-- context window power: 4
-- frozen Haar feature
-- local attention scale
-- mutation target: independent finite dyadic draws per tick
-- exact dyadic histogram fitness with exact sorting and rank consistency
+`d = 4^k`.
 
-The proof authority is the exact Agda definitions that are present in-tree and checked by `agda --safe`.
+`FiniteParameterCompleteness.agda` proves `learnerDefaultD = 64` and `learnerDefaultD-power4`.
 
-## Exploration theorem surface
+For the present scalar GRU, this is a width specification for the generalized mixing representation, not a claim that the current `GRUState.hiddenState` has already been vectorized to 64 coordinates. A future vectorized implementation must actually change the carrier and its transition functions.
 
-The live exploration theorem comparison is explicitly three-method:
+For the Int8 carrier, the exact unnormalized H4 relation is proved by `walshHadamardOrthogonality4`:
 
-1. MR15: `Exotic/ERL/Exploration/MR15Reachability.agda`
-2. OpenES: `Exotic/ERL/Exploration/OpenESDyadic.agda`
-3. Noisy Nets: `Exotic/ERL/FullCoupled/NoisyNetCoupled.agda`
+`H4 H4ᵀ = 4 I (mod 256)`.
 
-The generic theorem layer is `Exotic/ERL/Exploration/ExplorationTheoremSchema.agda`.
+This is orthogonality, not normalized orthonormality. Although `sqrt(4^k) = 2^k`, `2` has no multiplicative inverse in `Z/256Z`. Normalized orthonormality therefore requires an explicit dyadic/rational normalization representation.
 
-The former pure DMCP distribution module is removed. It is not treated as a fourth exploration mechanism or as a canonical live probability layer.
+## State size
 
-### Automated theorem discovery
+An Int8 scalar has 256 values.
 
-The discovery loop is:
+Current GRU storage: 9 Int8 coordinates, `256^9 = 2^72`.
 
-`method metadata -> concrete proof-symbol test -> agda --safe -> theorem-status report`
+Current GRU + critic + explicit Int8 Walsh carrier: 15 coordinates, `256^15 = 2^120`.
 
-Implemented in `.ci/discovery/ExplorationTheoremGenerator.hs`, with output written to `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda` and executed by `.github/workflows/agda.yml`.
+Persistent GRU + critic + Walsh quotient: 14 coordinates, `256^14 = 2^112` equivalence classes, with 256 hidden-state fibres in the current scalar version.
 
-A method is marked `Proven` only when concrete proof terms are present and its Agda file passes `agda --safe`. `MissingProof` means the theorem target has not been closed. `AgdaFailure` means the claimed proof surface does not typecheck safely. Haskell never upgrades a conjecture into a theorem.
+Actual stored `FullLearnerState` Int8 coordinates:
 
-The generator is extensible by theorem-family metadata. It can enumerate support conditions, self-loop conditions, finite-tape factorization, coupled reachability, exact expectations, rank identities, VJP identities, and ablation combinations. Its output is always ordinary Agda source subject to the same `--safe` gate.
+`3 Watkins + 2 attention + 9 GRU + 5 F4 + 2 NormPair + 2 q-log-control = 23`.
 
-## Strongest endogenous theorem class
+Therefore its fixed-Nat, fixed-trace Int8 projection has `256^23 = 2^184` configurations. The entire state is countably infinite because the clock, LCB counts, and finite-rational fields contain `Nat` components.
 
-Among the three methods, Noisy Nets has the strongest overall theorem-class frontier for the complete composition, while MR15 has the strongest dedicated outer-exploration graph theorem frontier.
+With only hidden state generalized to width `d`, preserving the remaining scalar layout, the stored Int8 count is `d + 22`, giving `256^(d+22) = 2^(8d+176)` for that finite projection.
 
-Noisy Nets is broader because its theorem surface can simultaneously range over:
+## Minimum algebra and library status
 
-- finite Int8 noise algebra;
-- GateNN parameter/noise identities;
-- exact coupled-state transition relations;
-- self-loop construction;
-- learner-state reachability;
-- full learner+EA reachability;
-- exact VJP/CHAD equalities;
-- the representation path containing signReLU8, softsign8, GateNN, and projection;
-- the final full-state period-1 theorem.
+The effective algebra is below ring level:
 
-That breadth makes Noisy Nets the strongest candidate for the endogenous theorem class that crosses subsystem boundaries and reaches the whole finite composition.
+`finite many-sorted data + Nat arithmetic + equality/negation + products/records + End(S)`.
 
-MR15 is the stronger pure exploration mathematics target because its repaired form naturally exposes:
+Here `End(S) = S -> S` is the important composition monoid. Identity and function composition supply the associative scan law. A ring, field, module, lattice, metric, or normed-space structure is not required by the maintained learner proofs.
 
-- finite mutation support;
-- the `gcd(256,S)=1` generator theorem;
-- positive-mass zero-step self-loop;
-- iid finite noise-tape factorization;
-- exact weighted expectations;
-- population reachability;
-- deterministic selection compatibility;
-- full-coupled lift conditions.
+The current learner source directly needs eight standard-library modules because those names are used. Reducing the direct import surface is a separate refactor and must preserve the same `--safe` proof surface.
 
-OpenES is the narrowest current frontier. Its finite ask/tell shell can support exact mutation, antithetic, involution, and reachability theorems, but its present source is much smaller and currently lacks a global irreducibility proof.
+## L1 and 1-path norm status
 
-Therefore the theorem-first ranking is:
+The paper `Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization` studies PSiLON-style MLPs and related residual blocks. Its 1-path-norm/Lipschitz results are not automatically theorems about this learner's recurrent sparsemax/Walsh composition.
 
-`Noisy Nets` — broadest whole-composition endogenous theorem class.
+`FiniteNormAlgebra.agda` therefore defines a deliberately explicit finite test algebra for a two-weight scalar network:
 
-`MR15` — strongest specialized exploration-kernel theorem class.
+`L1(w) = |w_in| + |w_out|`
 
-`OpenES` — narrower functional exploration theorem class.
+`1Path(w) = |w_in| * |w_out|`
 
-This is a theorem-breadth ranking, not a claim of empirical performance.
+with a componentwise `Nat` order and contradiction/equality-zero product lemmas. This is an exact implementation of those finite definitions, not a transcription of the paper's full PSiLON architecture and not a claim that the paper's generalization theorem applies to the learner.
 
-## Current method status
+The current learner `NormPair` is still a state record with two `Int8` fields. It must not be described as the PSiLON 1-path norm unless the state transition is changed to compute that actual norm.
 
-MR15: the existing negative reachability theorem must not be confused with the repaired independent-tick definition. The repository still needs the actual repaired transition plus concrete generator, self-loop, and global reachability proofs.
+## Finite functional parameter completeness
 
-OpenES: the current finite shell does not contain an irreducibility proof. Its definitions remain useful as an ablation surface, but global reachability must be proved for the exact transition relation.
+`FiniteParameterCompleteness.agda` proves the exact table-completeness theorem:
 
-Noisy Nets: it belongs inside the coupled learner. `NoisyNetCoupled.agda` defines finite gate state, noisy `w3`, the exact diagonal identity, and explicit theorem types for coupled irreducibility and self-loop. Those properties remain obligations until concrete proof terms pass `agda --safe`.
+for every finite-domain function `f : Fin n -> Fin m`, `parameterizeFin f` represents exactly `f`, pointwise and as a function.
 
-## Finite graph theorem class
+It also proves the generic finite-state-kernel parameter result for arbitrary total finite-component update and choice functions.
 
-For a transition relation `_—→_`:
+This establishes **functional completeness of finite parameter slots**, not universal approximation of unrestricted continuous functions. The fixed learner wiring still constrains how those slots compose.
 
-`Irreducible = ∀ s t → Reach s t`.
+The arithmetic language can express finite-domain polynomial-like, piecewise-polynomial, threshold/sign, and finite rational-shaped functions. `FiniteRational` remains an encoding record, not a proved division field, so no analytic piecewise-rational completeness theorem is asserted.
 
-`SelfLoop = ∀ s → s —→ s`.
+## Reachability, controllability, and observability
 
-The reusable sufficient period-1 package is:
+`CanonicalControlObservability.agda` gives formal definitions and proof terms, but the vocabulary is intentionally narrower than classical control theory because the canonical learner has no external control input.
 
-`Irreducible × SelfLoop -> PeriodOne`.
+`CanonicalReachable K s t` means exactly that there exists a natural-number iterate of `canonicalFullStep K` taking `s` to `t`.
 
-This is deliberately a full-state statement. Exploration-only reachability never substitutes for learner+EA reachability.
+`canonicalOrbitReachable` proves every point on the learner's own forward orbit is reachable by its corresponding iterate.
 
-## Mutation theorem class
+`CanonicalOrbitControllable` is explicitly defined only as reachability of that predetermined orbit. It is **not** Kalman controllability, nonlinear controllability, steering under a free input alphabet, or a practical-control guarantee. The code does not define an external input channel, admissible controls, or a target-set steering problem, so claiming those stronger notions would add assumptions not present in the imports.
 
-For an additive coordinate over `Z_256`, the generator target is:
+For observability, `fullStateObservation s = s`, and `fullStateObservation-injective` proves exact full-state observability. `clockObservation` separately observes the Nat clock, with `clockObservation-after-iterate` proving the exact `clock s + n` law. These are formal identity/clock observation theorems, not a sensor-identification theorem for a hidden environment.
 
-`gcd(256,S) = 1`
+## Environment ports
 
-for the effective positive-probability increment support `S`.
+`CanonicalGamePorts.agda` contains finite executable projections for:
 
-A one-step self-loop requires effective support containing `0` with positive mass.
+- Jumanji Knapsack
+- Jumanji Maze
+- Jumanji LevelBasedForaging
+- Gymnax MetaMaze
+- Gymnax FourRooms
+- Gymnax Pong-misc
+- Gymnax `MemoryChain-bsuite`
+- Gymnax `DiscountingChain-bsuite`
+- Gymnax CartPole
+- Gymnax Bernoulli-Bandit-misc
+- Pobax RockSample
 
-The previous same-noise exponent repetition is not theorem-friendly globally because exponent scaling can reduce the effective support and destroy communication classes. The preferred construction is an explicit finite fresh-noise tape or an equivalent one-shot per-coordinate mutation.
+`CanonicalFaithfulGameVariants.agda` additionally preserves the fixed Jumanji Toy Maze wall layout and the exact 13x13 Gymnax FourRooms connectivity predicate.
 
-## Distribution theorem class
+The upstream Jumanji/Gymnax/Pobax environments include stochastic generation or continuous-valued dynamics in several cases. The canonical Agda ports deliberately choose deterministic finite projections so that they remain within the existing finite/Nat import surface. These are executable structural variants, not claims of bit-for-bit numerical equivalence to JAX floating-point or stochastic sampling.
 
-`D_tri` remains the canonical design choice:
+## The old game regression versus the actual closed loop
 
-`D_tri(k) = (16 - |k|) / 256`, `k ∈ {-15,…,15}`.
+The first game-execution regression was an integration smoke test, not an RL trajectory. It used a fixed environment action, passed the resulting reward through `injectReward`, and then executed `canonicalFullStep`.
 
-Its useful exact facts are finite dyadic normalization, symmetry, zero center mean, positive mass at zero, Int8-range support, and exact second moment `85/2`.
+The maintained theorem `learnerRewardStep-reward-insensitive` now makes the defect explicit:
 
-Do not promote the design claim that `D_tri` is universally statistically best. The strongest algebraic comparison schema remains criterion-conditioned:
+`learnerRewardStep s r₁ = learnerRewardStep s r₂`.
 
-`Best(Φ,D*) = ∀ D ∈ Admissible → Φ(D*) >= Φ(D)`.
+The canonical autonomous step reconstructs `canonicalSignal` from critic/LCB/clock state and does not read the injected `watkins.signal`. Therefore that old path cannot learn from environment reward. This is an actual structural impossibility result for that wiring, not an impossibility theorem for reinforcement learning in general.
 
-Entropy, second moment, expected displacement, finite-horizon coverage, estimator noise, and full-coupled task utility are separate criteria.
+There is a second architectural boundary: the canonical action head is `Sparsemax2Pair = Int8 × Int8`. It is intrinsically a two-action critic head. Four- or six-action environment ports therefore cannot obtain an arbitrary learned action policy from the existing head without an explicit adapter or a generalized action head.
 
-The canonical choice is therefore theorem-driven, not a universal max-entropy rule.
+## Closed-loop learner interface
 
-## Ablation classes
+`CanonicalLearnerGameExecution_test.agda` now contains an explicit action-conditioned transition interface:
 
-Triangular `D_tri`: broad symmetric dyadic support with positive zero mass.
+`encodeActionReward -> decodeAction/decodeReward -> closedLoopCriticUpdate -> closedLoopStep`.
 
-Flat dyadic: useful entropy ablation; no universal task-superiority consequence follows from flatter mass.
+The finite critic target used by this completion is:
 
-Center-heavy: can remain graph-theoretically eligible while having much smaller exploration scale.
+`target = reward + 1/2 maxQ`.
 
-Lazy unit: `{-1,0,+1}` is a simple irreducibility+aperiodicity target under independent additive sampling.
+The selected action Q-value is updated from that target; LCB counts increment for the actual environment action; reward is also added to the canonical signal used by attention, GRU input, and F4 optimizer input. Exact action/reward encoding round trips and one-step critic-learning facts are proved constructively.
 
-Rademacher: `{-1,+1}` has generator support but no lazy self-loop, so the basic walk is periodic.
+This completes the missing **action/reward plumbing** while leaving the original single-file learner monolith environment-agnostic. The games remain separate modules. It should not be described as an exact DQN or exact negative-Munchausen implementation: the current `negativeFiniteQLog8` record is not consumed by the critic target, there is no target network, and the fixed finite `Int8` target is a bespoke TD-style completion.
 
-Even-step laws: self-loop can exist, but gcd generation fails on `Z_256`.
+## Closed-loop finite benchmark record
 
-Noisy Nets: parameter noise belongs inside the coupled learner theorem rather than being treated as an unrelated outer distribution. The finite noise law may be `D_tri`, but coupled reachability must still be established from the complete transition.
+The maintained bench records:
 
-## Full coupling
+`return`, `reference return`, `regret = reference return ∸ return`, `success`, and executed environment steps.
 
-The whole composition remains:
+The deterministic finite cases instantiated in the current Agda source are:
 
-`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
+| Port | Horizon | Exact return | Reference | Regret | Success | Steps |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Knapsack | 8 | 16 | 16 | 0 | 1 | 5 |
+| Maze-v0 projection | 16 | 0 | 1 | 1 | 0 | 16 |
+| MetaMaze projection | 16 | 0 | 10 | 10 | 0 | 16 |
+| FourRooms projection | 16 | 0 | 1 | 1 | 0 | 16 |
+| CartPole quantized projection | 16 | 0 | 0 | 0 | 1* | 16 |
+| Bernoulli Bandit, best arm 0 | 16 | 0 | 16 | 16 | 0 | 16 |
+| Bernoulli Bandit, best arm 1 | 16 | 16 | 16 | 0 | 1 | 16 |
 
-The GateNN diagonal identity is separate from the softsign theorem.
+`*` CartPole “success” here means completing the diagnostic finite horizon because the current quantized port has no terminal condition and zero reward. It is not CartPole balance success.
 
-Noisy Nets must be represented inside the coupled learner state when proving whole-system reachability. The target theorem is:
+The regret column is therefore an explicit **reference-policy gap**, not a statistical regret estimator for a stochastic bandit or a claim of regret optimality. The current finite ports are deterministic projections, so these values are exact reductions of the maintained Agda program when the corresponding proofs pass CI.
 
-`∀ s t → CoupledReach s t`
+## Comparison against CleanRL and Gymnax reports
 
-for the actual full learner+EA transition, followed by the actual full-state self-loop theorem. Exploration irreducibility alone is insufficient.
+The reference numbers are useful context but are **not apples-to-apples benchmark scores**.
 
-## IID and expectation in `--safe`
+CleanRL's documented classic-control DQN configuration uses a replay buffer, target network, exploration schedule, and a neural action head. Its documented `dqn.py` result for `CartPole-v1` is `488.69 ± 16.11`, with 500,000 training timesteps. CleanRL explicitly describes this as a classic-control DQN benchmark, not an official benchmark from the original DQN paper.
 
-Finite iid and exact expectation are constructible from finite support, exact dyadic masses, finite products, and finite weighted sums. The missing proof is implementation-specific factorization: the actual transition must consume fresh noise coordinates/ticks as claimed.
+Gymnax's current README reports a CartPole-v1 PPO/ES checkpoint return of `500`, a FourRooms-misc checkpoint return of `1`, a MetaMaze-misc ES checkpoint return of `32`, BernoulliBandit-misc ES return `90`, GaussianBandit-misc ES return `0`, and lists SimpleBandit-bsuite and MNISTBandit-bsuite without a displayed trained-return checkpoint. Those are GPU/JAX baseline reports with upstream numerical/stochastic environment semantics, not the finite deterministic projections used here.
 
-No general measure-theory layer is logically needed merely for these finite statements.
+Our current `CartPole` result of `0`, therefore, does not demonstrate that the learner is intrinsically incapable of CartPole learning. It demonstrates that the maintained quantized port has zero reward and no terminal condition, while the completed closed-loop policy remains a two-action finite adapter. A direct comparison requires first replacing that projection by a faithful CartPole state transition and matching the reference action/observation semantics.
 
-## Fitness theorem
+Likewise, the Maze/FourRooms/MetaMaze values cannot be read as failures against Gymnax's numbers because the current Agda ports deliberately simplify the dynamics and, for FourRooms, `fourRoomsStep` is currently the generic finite Maze transition rather than the full Gymnax FourRooms environment.
 
-The modified finite VEB-RL-style `-TD` fitness remains an exact finite statistic:
+## GameTheory ports
 
-- histogram masses are exact dyadic integers;
-- normalization is exact;
-- ordinal/rank ordering is exact;
-- full sorting is retained whenever rank consistency is part of the theorem;
-- comparison cost remains `O(N log N)` unless a tighter exact finite count is formally established.
+`Exotic/econlib/GameTheory.agda` is deliberately external to the learner monolith. The canonical learner does not import it. It uses **seven** direct standard-library imports and a local `Int8 = Fin 256` encoding, so the old `efficient_chad.Int8` dependency is gone.
 
-Approximate quantile structures are not silently substituted.
+The module remains useful for independent theorem tests: Prisoner's Dilemma payoffs, a pure-Nash witness, best-response, stabilization, and finite iteration are explicit and safe. These game-theory modules are test fixtures and theorem-correction surfaces, not hidden learner dependencies.
 
-## Forward CHAD status
+No current GameTheory source requires a transcendence library. The stale EfficientCHAD-related surface was instead found in an old `CIInterpolation_v147.agda` file whose imported `CompleteSafe_v147` no longer exists. That obsolete v147 interpolation file and its trigger/wake marker files have been pruned from the canonical branch.
 
-The intended path is:
+## CNN/log-pyramid status
 
-`E -> RoPE -> Pyr^top-k -> Fastfood_frozen -> signReLU8 -> softsign8 -> GateNN -> Pi`.
+The previous phrase "log-pyramid equivalence" was too strong. The maintained theorem is now an explicit quotient/equality theorem.
 
-Exact CHAD for the finite GateNN/projection node is not equivalent to an end-to-end theorem. The full chain still requires VJP rules and a chain-rule proof through every upstream primitive.
+`CNNLogPyramid64` is a concrete 64-index code. `cnnToAttention` is its decoder into the learner's attention carrier. `CNNLogPyramidEquivalent p q` is the relation `cnnToAttention p = cnnToAttention q`, and reflexivity, symmetry, and transitivity are proved.
 
-Iterative CHAD is useful for generating differential/VJP candidates, but Agda remains the final acceptance oracle.
+`cnnLogPyramidGRUInputPreservation` proves equal decoded attention implies equal GRU transitions, and `cnnLogPyramidCommutesWithCanonicalGRU` proves that a code whose decoded attention equals the learner's current attention produces exactly the same `canonicalGRUStep`.
 
-## Toolchain boundary
+This is a representation-factorization/preservation theorem. There is no constructed bijection from an arbitrary CNN architecture, no inverse convolution/pooling map, and no approximation metric or error bound. Consequently the repository makes no claim that the learner's function class exceeds a fixed-depth CNN. Such a statement would require a precisely defined CNN class, input/output domain, parameter constraints, and function metric before it could even be stated as a theorem.
 
-The current workflow installs Agda and GHC and runs the Haskell oracle directly with `runghc`. Cabal is a build driver, not a logical proof dependency. Agda2HS does not turn Cabal into a mathematical requirement.
+## Hard sparsity
 
-Nix or Guix is an environment-reproducibility choice, not a proof authority. Exact inputs and Agda/stdlib versions must be pinned.
+`hardSparse-composition-normPair-F4-L2` is the maximum unconditional sparsity result from the current definitions.
 
-## Replication order
+If the canonical policy is already `HardSparseLeft`, replacing NormPair and F4/L2 optimizer state preserves that hard-sparse policy result.
 
-1. Keep pure DMCP modules deleted.
-2. Enforce the permanent CI theorem-scope exclusions.
-3. Put the repaired independent-tick MR15 definition in-tree.
-4. Prove MR15 generator support, self-loop, and full finite reachability.
-5. Prove the corresponding OpenES theorems for its actual transition.
-6. Keep Noisy Nets inside the full coupled learner state and prove its actual coupled reachability obligations.
-7. Run the automated theorem generator and require concrete proof terms plus `agda --safe` before marking a method proven.
-8. Prove full learner+EA irreducibility.
-9. Apply the actual full-state self-loop theorem for period 1.
-10. Extend CHAD through the entire representation path.
-11. Compare distributions only under explicit exact finite criteria.
+This is a local equality-invariance theorem. It is not a trajectory-wide sparsity guarantee, an analytic L1/path-norm bound, or an arbitrary-state approximation theorem.
+
+## Exact trajectory rank
+
+The exact progress rank is:
+
+`V(s) = clock s`.
+
+`V(canonicalFullStep K s) = V(s) + 1`.
+
+`V(iterateCanonical K n s) = V(s) + n`.
+
+Thus every step is a strict unit increase in the well-order of `Nat`. This requires no environment, reward distribution, statistical, or convergence assumption. It yields no fixed point and no nontrivial finite cycle by contradiction. `totalCount` provides an independent increment-by-one contradiction route.
+
+This is an exact Nat rank, not a classical decreasing Lyapunov function.
+
+## Old-folder pruning
+
+The canonical branch no longer carries the obsolete `MR15Reachability`, `OpenESDyadic`, or `NoisyNetCoupled` learner files. It also no longer carries the broken v147 CI interpolation/trigger/wake markers or the old three-file exploration counterfactual/schema cluster. The generated theorem report remains because the current generator writes it and the workflow checks it.
+
+The external game modules remain modular by design. They are not merged into the learner state or transition function.
+
+## Synchronization and acceptance
+
+The safety scanner covers the canonical learner, game ports, faithful map variants, finite parameter completeness, finite norm algebra, control/observability definitions, CNN preservation, learner execution regression, GameTheory, and generated report.
+
+Current branch acceptance is CI-gated. The closed-loop benchmark theorem surface is considered authoritative only after the current-head Agda workflow has compiled it and its exact metric theorems.

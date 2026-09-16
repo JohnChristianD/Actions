@@ -1,67 +1,87 @@
 module Main where
 
-import Data.List (intercalate, isInfixOf)
+import Data.List (isInfixOf)
 import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Process (readProcessWithExitCode)
 
-record :: String -> String -> [String] -> (String, String, [String])
-record name path proofs = (name, path, proofs)
+data Surface = Surface FilePath [String]
 
-methods :: [(String, String, [String])]
-methods =
-  [ record "MR15" "Exotic/ERL/Exploration/MR15Reachability.agda"
-      ["mr15IrreducibilityProof", "mr15SelfLoopProof"]
-  , record "OpenES" "Exotic/ERL/Exploration/OpenESDyadic.agda"
-      ["openESIrreducibilityProof", "openESSelfLoopProof"]
-  , record "NoisyNet" "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda"
-      ["noisyNetIrreducibilityProof", "noisyNetSelfLoopProof"]
+surfaces :: [Surface]
+surfaces =
+  [ Surface "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+      [ "int8StateSpace", "walshHadamardOrthogonality4", "canonicalWalshWidth-power4"
+      , "fullLearnerInt8CoordinateCount-law", "canonicalFullStep-clock" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
+      [ "jumanjiKnapsackPort", "jumanjiMazeV0Port", "jumanjiLevelBasedForagingV0Port"
+      , "gymnaxMetaMazePort", "gymnaxFourRoomsPort", "gymnaxPongMiscPort"
+      , "gymnaxMemoryChainBsuitePort", "gymnaxDiscountingChainBsuitePort"
+      , "gymnaxCartPolePort", "gymnaxBernoulliBanditMiscPort", "pobaxRockSamplePort" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
+      [ "fourRoomsOpenExact", "toyMazeOpenExact" ]
+  , Surface "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
+      [ "learnerDefaultD", "learnerDefaultD-power4", "parameterize-complete"
+      , "parameterizeFin-complete", "finiteStateFunctionalCompleteness" ]
+  , Surface "Exotic/ERL/FullCoupled/FiniteNormAlgebra.agda"
+      [ "l1WeightNorm", "onePathNorm", "finiteNormOrder", "finiteNormAlgebra-is-ordered" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalControlObservability.agda"
+      [ "canonicalOrbitReachable", "canonicalOrbitControllable"
+      , "fullStateObservation-injective", "clockObservation-after-iterate" ]
+  , Surface "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
+      [ "CNNLogPyramid64", "cnnToAttention", "cnnLogPyramidEquivalent-trans"
+      , "cnnLogPyramidGRUInputPreservation", "cnnLogPyramidCommutesWithCanonicalGRU"
+      , "cnnLogPyramidEncoding-preserves-input" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
+      [ "learnerRewardStep-reward-insensitive", "closedLoopInput-roundtrip"
+      , "closedLoopReward-roundtrip", "closedLoopLeftRewardLearns"
+      , "closedLoopRightRewardLearns", "closedLoopStep-clock"
+      , "check-knapsack-return", "check-knapsack-regret", "check-knapsack-success"
+      , "check-maze-return", "check-maze-regret", "check-maze-success"
+      , "check-meta-maze-return", "check-meta-maze-regret", "check-meta-maze-success"
+      , "check-four-rooms-return", "check-four-rooms-regret", "check-four-rooms-success"
+      , "check-cartpole-return", "check-cartpole-regret"
+      , "check-bandit-best0-return", "check-bandit-best0-regret", "check-bandit-best0-success"
+      , "check-bandit-best1-return", "check-bandit-best1-regret", "check-bandit-best1-success" ]
+  , Surface "Exotic/econlib/GameTheory.agda"
+      [ "isNashEquilibriumDD", "pdIter-stabilises", "nashConvergenceWitness" ]
+  , Surface "Exotic/econlib/Equilibrium.agda"
+      [ "canonicalEconomy2Equilibrium", "clearIter-stabilises", "canonicalProductionEquilibrium2" ]
+  , Surface "Exotic/econlib/MatchingPennies.agda"
+      [ "matchingPennies", "matchingPennies-no-pure", "matchingPennies-no-stable-pure-profile" ]
   ]
 
-data Status = Proven | MissingProof | AgdaFailure deriving (Eq, Show)
-
-checkMethod :: (String, String, [String]) -> IO (String, Status, [String])
-checkMethod (name, path, required) = do
+missingSymbols :: Surface -> IO [String]
+missingSymbols (Surface path symbols) = do
   source <- readFile path
-  let missing = filter (\symbol -> not (symbol `isInfixOf` source)) required
-  if not (null missing)
-    then pure (name, MissingProof, missing)
-    else do
-      (code, _out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
-      case code of
-        ExitSuccess -> pure (name, Proven, [])
-        ExitFailure _ -> pure (name, AgdaFailure, [err])
+  pure [ path ++ ": " ++ s | s <- symbols, not (s `isInfixOf` source) ]
 
-renderCandidateModule :: [(String, Status, [String])] -> String
-renderCandidateModule results =
-  unlines $
-    [ "{-# OPTIONS --safe #-}"
-    , "module Exotic.ERL.Exploration.Generated.ExplorationCandidates where"
-    , ""
-    , "-- Generated theorem-discovery report. Agda remains the acceptance oracle."
-    , "-- `Proven` means the named proof terms were present and the module exited successfully under `agda --safe`."
-    , ""
-    ]
-    ++ concatMap render results
-  where
-    render (name, status, details) =
-      [ "-- method: " ++ name
-      , "-- status: " ++ show status
-      , "-- details: " ++ intercalate " | " details
-      , ""
-      ]
+runAgda :: FilePath -> IO (Maybe String)
+runAgda path = do
+  (code, out, err) <- readProcessWithExitCode "agda" ["--safe", path] ""
+  case code of
+    ExitSuccess -> pure Nothing
+    ExitFailure _ -> pure (Just (path ++ ": " ++ err ++ out))
 
 main :: IO ()
 main = do
-  results <- mapM checkMethod methods
-  writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
-    (renderCandidateModule results)
-  mapM_ printResult results
-  if any (\(_, status, _) -> status /= Proven) results
-    then exitFailure
-    else exitSuccess
+  missing <- fmap concat (mapM missingSymbols surfaces)
+  failures <- fmap concat $ mapM (fmap maybeToList . runAgda . surfacePath) surfaces
+  let problems = missing ++ failures
+  if null problems
+    then do
+      putStrLn "canonical-surfaces=complete"
+      putStrLn "finite-function-parameter-theorem=complete"
+      putStrLn "finite-norm-algebra=complete"
+      putStrLn "control-observability-surface=complete"
+      putStrLn "cnn-log-pyramid-preservation=complete"
+      putStrLn "closed-loop-game-bench=complete"
+      putStrLn "econlib-game-theory=complete"
+      writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
+        "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.Exploration.Generated.ExplorationCandidates where\n-- Generated canonical closure status: Proven\n"
+      exitSuccess
+    else do
+      mapM_ (putStrLn . ("ERROR: " ++)) problems
+      exitFailure
   where
-    printResult (name, status, details) =
-      putStrLn $
-        "exploration-method=" ++ name
-        ++ ",status=" ++ show status
-        ++ if null details then "" else ",details=" ++ intercalate ";" details
+    surfacePath (Surface p _) = p
+    maybeToList Nothing = []
+    maybeToList (Just x) = [x]

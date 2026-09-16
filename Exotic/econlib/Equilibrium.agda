@@ -2,11 +2,26 @@
 
 module Exotic.econlib.Equilibrium where
 
-open import Data.Fin using (toℕ)
-open import Data.Nat using (ℕ; _*_; zero; suc)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _*_; _+_)
+open import Data.Nat using ()
+open import Data.Fin using (Fin; fromℕ<; toℕ)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _,_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Exotic.efficient_chad.Int8 using (Int8; int8OfNat; code)
+
+record Int8 : Set where
+  constructor int8
+  field code : Fin 256
+open Int8 public
+
+int8OfNat : Nat → Int8
+int8OfNat n = int8 (fromℕ< (m%n<n n 256))
+
+int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
+int8Roundtrip x =
+  trans (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
+    (m<n⇒m%n≡m (toℕ<n (code x)))
 
 record Economy2 : Set where
   constructor economy2
@@ -15,10 +30,10 @@ record Economy2 : Set where
 
 open Economy2 public
 
-marketValue : Economy2 → ℕ
+marketValue : Economy2 → Nat
 marketValue e = toℕ (code (price e)) * toℕ (code (endowment e))
 
-allocationValue : Economy2 → ℕ
+allocationValue : Economy2 → Nat
 allocationValue e = toℕ (code (price e)) * toℕ (code (allocation e))
 
 record WalrasianEquilibrium2 (e : Economy2) : Set where
@@ -42,7 +57,7 @@ clearAllocation e = economy2 (price e) (endowment e) (endowment e)
 clearAllocationEquilibrium : ∀ e → WalrasianEquilibrium2 (clearAllocation e)
 clearAllocationEquilibrium e = walrasianEquilibrium2 refl refl
 
-clearIter : ℕ → Economy2 → Economy2
+clearIter : Nat → Economy2 → Economy2
 clearIter zero e = e
 clearIter (suc n) e = clearIter n (clearAllocation e)
 
