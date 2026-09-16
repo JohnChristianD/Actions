@@ -1,236 +1,248 @@
 # Theorem-first canonical learner wiki
 
-Authority: Agda `--safe` proof terms. Haskell generation and auditing are automation only.
+Authority: Agda `--safe` proof terms. Haskell discovery and redundancy auditing are automation only.
 
-## Canonical monolith
+## Canonical source
 
-The single canonical learner is:
+The learner monolith is:
 
-`Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
+`Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
 
-Its endogenous state composes:
+It has no project-local Agda imports. Its learner state is endogenous. No environment type, reward process, observation kernel, transition-probability space, random-variable model, posterior sampler, replay buffer, or statistical limit is included.
 
-1. a learned sparsemax attention/representation component;
-2. a fixed-temperature sparsemax action-selection map with `tau = 1/8 = 16/128` in Q7 Int8 units;
-3. Watkins critic as the only learned Q/action-selection source;
-4. deterministic count-memory LCB exploration correction;
-5. exact finite-rational negative q-log state and an endogenous signed shaping control;
-6. an exactly dyadically normalized 4-dimensional Walsh-Hadamard boundary;
-7. a finite-rational Mobius recurrent carrier using `x / (1 - x)` away from its singular input boundary;
-8. persistent recurrent parameter coordinates;
-9. global F4-style optimizer with the coupled L2 subtraction;
-10. norm-pair state (`l1`, `path`);
-11. Nat clock for deterministic aperiodicity;
-12. a whole-learner coercive-quadratic witness boundary.
+The environment remains an external concern: an application may feed finite learner inputs into the learner's `FullLearnerKernel`, but the canonical theorem source does not contain a separable environment model.
 
-## Learned sparsemax attention is not an actor
+## Learner architecture
 
-This distinction is theorem-level, not terminology:
+The monolith contains, in one state transition:
 
-`learnedSparsemaxAttentionWeights` belongs to the learned representation state;
+1. Watkins critic state as the only learned Q/action-selection source;
+2. deterministic count-memory LCB correction;
+3. fixed-temperature sparsemax with Int8 dyadic temperature code `16`, representing `1/8` on the Q7 scale;
+4. negative finite-rational q-log / Munchausen-style shaping;
+5. learned sparsemax attention as representation state, not an independently optimized actor;
+6. a four-dimensional Walsh-Hadamard representation boundary;
+7. a custom recurrent GRU carrier with a state-independent hard-sign-derived gate;
+8. finite-rational Mobius activation `x / (1 - x)` with an explicit singular boundary;
+9. persistent recurrent parameter, noise, optimizer-token, and L2-token coordinates;
+10. global F4-Int-U-style optimizer state with an explicit coupled L2 subtraction;
+11. `NormPair` state carrying `l1` and `path` components;
+12. deterministic Nat clock and complete `canonicalFullStep` composition.
 
-`canonicalPolicy` is computed only from Watkins critic scores plus deterministic LCB/count scheduling.
+This is learner-internal structure. None of these components is an environment definition.
 
-The canonical carrier has no independently optimized actor parameter block. The theorem
+## Watkins + sparsemax + LCB
 
-`canonicalPolicy-attention-invariant`
+`canonicalPolicy` consumes the Watkins critic and LCB count state, then applies `sparsemax2`.
 
-states that replacing the learned attention state leaves `canonicalPolicy` unchanged. Thus learned sparsemax attention cannot secretly become a second actor through the policy definition.
+The canonical sparsemax temperature is fixed:
 
-The learner does update the attention representation through `attentionStep`, but action selection does not consume that learned attention state. The current recurrent path likewise receives the canonical action-selection transform, not learned attention weights. This is an explicit architectural boundary, not an accidental omission.
+`16 / 128 = 1 / 8`.
 
-## Fixed-temperature sparsemax
+The checked finite regression laws are:
 
-The temperature is fixed configuration:
+`(0,0) -> (64,64)`
 
-`16/128 = 1/8`.
+`(1,0) -> (68,60)`
 
-For signed Q7 score difference `d`:
+`(0,1) -> (60,68)`
 
-`p_left = clip((128 + 8*d)/2, 0, 128)`
+The count-memory bonus table is finite and dyadic:
 
-and
+`127, 63, 31, 15, 7, 3, 1, 0`.
 
-`p_right = 128 - p_left`.
+No statistical-confidence interpretation is attached to these finite corrections by theorem naming alone.
 
-Checked finite cases are `(64,64)`, `(68,60)`, and `(60,68)` for tie, unit-left, and unit-right differences.
+## Negative q-log / Munchausen-style boundary
 
-The duplicate standalone sparsemax literal surface is retired. The canonical policy algebra is owned by V2 and the actor-free Watkins layer.
+`finiteQLog8` stores a finite numerator/denominator pair.
 
-## Finite-rational Mobius recurrent carrier
+`negativeFiniteQLog8` negates the numerator exactly in the finite carrier.
 
-The recurrent hidden coordinate is represented over an exact numerator/denominator carrier.
+`negativeFiniteQLogLaw` proves the corresponding constructor equality.
 
-The active boundary is the Mobius ratio
+`canonicalQLogControlStep` and `canonicalQLogStep` place the shaping control and value inside the complete learner state transition.
 
-`x / (1 - x)`
+The theorem surface does not claim a continuous-real q-log identity, Bayesian interpretation, or statistical optimality result.
 
-with a total finite boundary at the singular input `x = 1`.
+## Learned attention is not an actor
 
-`mobiusRatio8-law` proves the exact rational form away from the singular point, while `mobiusSingularity` records the explicit totalization at that point.
+`LearnedSparsemaxAttention` is learner representation state.
 
-The recurrent parameter coordinates are independent of the previous hidden state and persist under `gruStep`; the recurrence remains input-dependent because its hidden output is defined from the current input through `mobiusRatio8`.
+`canonicalPolicy-attention-invariant` proves that replacing the learned attention state leaves `canonicalPolicy` unchanged.
 
-`persistent-preservation` and `canonicalPersistentGRUPreservation` expose the component and whole-canonical persistence laws.
+Therefore action selection has one learned Q source: Watkins. The learned attention block remains inside the learner and can have its own update through `attentionStep`, while its stored value does not create a second policy head through the canonical policy definition.
 
-## Identity and pessimistic initialization
+## Custom GRU boundary
 
-Identity initialization is explicit for the recurrent parameter block.
+The recurrent carrier is learner-internal:
 
-The signed Q7 semantic carrier has values `-128 ... 127`, so raw Int8 code `128` denotes the least semantic Q7 value. The critic therefore uses:
+`GRUState = hidden × matrices × noise × globalControl`.
 
-`maxPessimisticCritic = criticState (int8OfNat 128) (int8OfNat 128)`.
+The recurrent gate is state-independent in the sense formalized by:
 
-This initialization theorem is deliberately separate from cycle exclusion. Pessimistic initialization alone does not imply that every later update is descending.
+`gateFromInput : Int8 -> Int8`.
+
+Its hard-sign branch is the total finite three-way map:
+
+`negative | zeroSign | positive`.
+
+The gate codes are the finite Q7 representation of `(1 + hardSign) / 2`:
+
+`-1 -> 0`, `0 -> 64`, `+1 -> 128`.
+
+`gruStep` depends on the current input through that gate and through the finite Mobius activation. The persistent parameter/noise/global-control coordinates are structurally preserved.
+
+`persistent-preservation` and `gruParameterPersistence` record those preservation laws.
+
+This is a custom finite GRU-style recurrence. The theorem does not claim identity with every textbook GRU implementation.
+
+## Mobius algebra
+
+`mobiusRatio8-law` proves the exact rational boundary for inputs away from the singular point.
+
+`mobiusSingularity` totalizes the singular input `x = 1` at an explicit finite boundary.
+
+`MobiusAction` and `composeAction` provide an endomorphism carrier under ordinary composition, with:
+
+`mobiusAssociativity`.
+
+This is a genuine associative composition theorem. It does not imply that Walsh-Hadamard multiplication, sparsemax, or the entire learner update is itself an associative operation.
 
 ## Walsh-Hadamard boundary
 
-The old unnormalised two-coordinate transform has been retired from the canonical path.
+The monolith includes the dimension-four Walsh basis and explicit Gram equalities:
 
-The active transform uses the dimension-four Walsh-Hadamard basis `H₄ / 2`. The raw basis satisfies
+`H₄ H₄ᵀ = 4 I`.
 
-`H₄ H₄ᵀ = 4 I`,
+`walshOrthonormal` records the diagonal norm and off-diagonal orthogonality laws used by the finite boundary. The corresponding factor-of-two normalization is dyadic.
 
-so the fixed factor `1/2` gives the exact orthonormal basis. Dimension four is `4^1`, keeping normalization dyadic and exact.
+The canonical recurrent path lifts two action coordinates into the four-dimensional carrier before applying the Walsh transform.
 
-`walshOrthonormal` records all diagonal norm and off-diagonal orthogonality equalities for the base basis. The canonical learner lifts the two action coordinates into the 4-dimensional representation before applying the transform.
+## Global optimizer, L2, and norm-pair
 
-The transform is a linear map, not an associative algebra operation. Associativity remains the separate theorem of the Mobius composition operator.
+`F4IntUState` is the optimizer state.
 
-## Negative q-log shaping
+`F4IntUKernel.globalL2` is part of the optimizer kernel rather than a detached annotation.
 
-The q-log value remains an exact finite numerator/denominator pair, while the signed scale used by the learner is now an endogenous state function of the current canonical policy surface:
+`f4ThetaStep` performs the coupled update:
 
-`endogenousNegativeScale8`
+`base + gradient - L2 * base`,
 
-and
+followed by quantization and residual reconstruction.
 
-`canonicalQLogControlStep`.
+`f4ParameterInvariant` proves the exact reconstruction equality supplied by the finite scalar contract.
 
-The full one-step map exposes `canonicalFullStep-qLogControl`, so the shaping scale is not merely a fixed unused constant.
+`NormPair` stores the paired `l1` and `path` components inside the complete learner state.
 
-This remains a finite deterministic algebraic shaping variant. No Bayesian posterior interpretation or continuous-real identity is asserted by naming alone.
+The existence of these fields is not itself a convergence theorem. A global strict energy law still requires an explicit `FullLearnerCoerciveQuadratic` witness.
 
-## LCB action-selection pipeline
+## Complete learner transition
 
-The canonical path is:
+`canonicalFullStep` updates, in one endogenous state transition:
 
-`Watkins Q -> deterministic LCB/count correction -> fixed-temperature sparsemax -> endogenous q-log learner signal -> Walsh-Hadamard recurrent input -> finite Mobius GRU update -> optimizer/count/q-log updates`.
+`clock`
 
-LCB uses the finite table
+`Watkins`
 
-`127, 63, 31, 15, 7, 3, 1, 0`
+`attention`
 
-for counts `0,1,...,>=7`.
+`GRU`
 
-No statistical-confidence or posterior-sampling theorem is claimed.
+`optimizer`
 
-## Mobius composition and semidirect boundary
+`LCB counts`
 
-`mobiusAssociativity` and `mobiusAssociativityWindow` are exact consequences of the definitional associativity of `composeAction`.
+`q-log control`
 
-`persistentGRUMonolith`, `canonicalPersistentGRUPreservation`, and the Mobius recurrent input laws place persistence and associativity in the same theorem family.
+`q-log value`
 
-The existing strict-descent finite-cycle exclusion theorem remains structurally preserved: `noNontrivialFiniteCycle` still derives the contradiction from a `LyapunovCertificate`. What is **not** yet proved is a new unconditional certificate specifically from the Mobius replacement or pessimistic initialization.
+while retaining the `NormPair` in the monolithic state boundary.
 
-## Ring algebra: deliberately not required
+The component projection theorems are:
 
-The present algebra needs a monoid of endomorphisms under composition, not a ring. Adding additive inverses, distributivity, and a ring carrier would be mathematically interesting only if the learner needs those operations in an actual theorem.
+`canonicalFullStep-clock`
 
-For the ratio `x / (1 - x)`, an ordered field or exact rational carrier is more natural than forcing the recurrence into a ring abstraction. The singular boundary also means that an unrestricted ring statement would be the wrong abstraction unless a domain predicate is carried explicitly.
+`canonicalFullStep-watkins`
 
-Therefore the current theorem surface keeps:
+`canonicalFullStep-attention`
 
-`MobiusAction + composeAction + identityAction + associativity`
+`canonicalFullStep-gru`
 
-rather than inventing ring structure for its own sake.
+`canonicalFullStep-optimizer`
 
-## Min-max, Jensen, regret, Pareto, and Nash boundary
+`canonicalFullStep-counts`
 
-These concepts are related but not interchangeable.
+`canonicalFullStep-qLog`
 
-A Jensen inequality can provide a convexity/concavity bound or a variational sandwich. A saddle point is a stronger structural condition for a two-player objective, and in a zero-sum setting the saddle condition is the local algebraic core behind minimax equality when the required convexity/compactness or finite-game assumptions hold.
+`canonicalFullStep-qLogControl`
 
-A Nash equilibrium is the no-unilateral-deviation condition for a general game. In a two-player zero-sum game, saddle points and Nash equilibria coincide at equilibrium values, but a general Nash equilibrium is not synonymous with a saddle condition.
+`canonicalPersistentGRUPreservation` connects the actual canonical action-selection -> Walsh -> recurrent path with the persistent GRU theorem.
 
-Regret bounds are performance statements over play sequences, not themselves saddle certificates. Pareto efficiency concerns multi-objective dominance and likewise is not a synonym for zero-sum minimax optimality.
+## Finite-cycle and convergence boundary
 
-Nothing in the present deterministic learner automatically supplies a convex-concave payoff, two-player game, Jensen sandwich, regret process, or Pareto order. Adding those labels without a newly defined game functional would weaken theorem hygiene rather than strengthen the composition theorem.
+`LyapunovCertificate` expresses a Nat-valued strict-decrease law on an actual deterministic step function.
 
-## Variational Tsallis-2 / entmax question
+`noNontrivialFiniteCycle` proves arbitrary finite-cycle exclusion from that law.
 
-Sparsemax is the alpha=2 member of the alpha-entmax family, and the literature gives variational/Fenchel-Young/Tsallis characterizations. Those are genuinely new mathematical statements relative to the current exact finite code map when formalized.
+`DeterministicLearnerCertificate` packages Lyapunov, decidable state equality, and a unique fixed target. `deterministicLearnerConvergence` derives exact finite arrival at that target.
 
-However, the variational theorem is worth adding only if it proves something that the existing sparsemax algebra cannot already prove. A useful non-trading upgrade would be an Agda theorem of the form:
+`FullLearnerCoerciveQuadratic` is the whole-learner certificate boundary. `canonicalQuadraticDecay` exposes its strict-decrease premise, and `canonicalCoerciveNoCycle` feeds that concrete certificate into `noNontrivialFiniteCycle`.
 
-1. the canonical finite sparsemax map is the unique optimizer of a precisely stated finite quadratic/Tsallis-2 objective;
-2. the optimizer satisfies an exact simplex/projection characterization;
-3. that variational certificate composes with the actual Watkins/LCB policy state without replacing the existing action-selection or cycle theorems.
+The monolith does **not** claim that pessimistic initialization, sparsemax, LCB, Mobius activation, the optimizer, L2, norm-pair, or hard-sign alone imply a global Lyapunov inequality.
 
-That would add a new theorem rather than trade away an existing one. It would not by itself prove Mobius associativity, Walsh orthonormality, regret, Pareto efficiency, Nash equilibrium, or finite-cycle exclusion.
+## Aperiodicity
 
-## Hard-sign + F4/L2 theorem boundary
+`canonicalAperiodic` derives an exact no-return theorem from the Nat clock component of the augmented learner state.
 
-Hard-sign changes the activation algebra. The global optimizer still contains the explicit coupled L2 subtraction.
+This is an aperiodicity statement about the complete clocked learner carrier. It is not a stochastic Markov-chain aperiodicity theorem and does not establish convergence.
 
-A genuinely new theorem would require a discharged statement such as monotone energy decrease, parameter reconstruction, or a finite invariant for the **new** hard-sign update. The existing `f4ParameterInvariant` proves exact reconstruction of the F4 update, but it is not itself a convergence theorem.
+## Count-memory obstruction
 
-The strongest non-trading target is therefore a theorem connecting the hard-sign recurrent update and the F4/L2 state transition to one explicitly defined finite energy. Once that certificate is proved, the existing finite-cycle exclusion theorem can consume it without sacrificing the older component identities.
+`StrictCountSystem`, `count-two-step-increases`, and `noCountedTwoCycle` retain the finite count-memory obstruction family inside the monolith.
 
-## Strongest theorem gains currently available
+These are pure deterministic order theorems. They do not assert statistical validity of the LCB schedule.
 
-The strongest unconditional algebraic gains introduced by this refactor are:
+## Architecture-class boundary
 
-- attention/policy separation by the exact `canonicalPolicy-attention-invariant` theorem;
-- exact finite-rational Mobius ratio boundary with an explicit singularity theorem;
-- state-independent recurrent parameter persistence with explicit input-driven hidden output;
-- exact dyadic Walsh-Hadamard orthogonality at dimension `4 = 4^1`;
-- endogenous q-log control and its one-step composition law;
-- maximal signed-Q7 pessimistic critic initialization.
+The monolith now proves an associative Mobius composition law and a concrete custom GRU recurrence, but it does **not** prove exact equivalence with Mamba, SSRN, Transformer, or the general RNN class.
 
-The existing strict-descent finite-cycle theorem remains available through a concrete `LyapunovCertificate`, but a new unconditional global certificate still needs to be proved for the refactored update.
+Those would require explicit encoding/decoding maps and step-compatibility theorems for the relevant architecture. Associativity alone is insufficient evidence of architectural equivalence.
 
-## Automation and pruning
+## Environment and statistics boundary
 
-The canonical theorem generator is:
+Environment semantics are intentionally external.
 
-`.ci/discovery/ExplorationTheoremGenerator.hs`
+Statistical dependence is intentionally absent.
 
-The consolidated redundancy audit is:
+No theorem in this canonical source should be read as a claim of:
 
-`.ci/discovery/PruneRedundantComponents.hs`
+- almost-sure convergence;
+- expected convergence;
+- posterior correctness;
+- confidence-bound calibration;
+- empirical reward optimality;
+- Watkins convergence to `Q*` for arbitrary environments;
+- general regret bounds;
+- Nash equilibrium;
+- Pareto efficiency;
+- minimax equality;
+- Transformer/Mamba/SSRN equivalence.
 
-The audit covers q-log, action selection, learned attention, Walsh-Hadamard, recurrent nonlinearities, GRU persistence, optimizer, whole-step definitions, and retired duplicate component paths. It does not ban or delete the q-log algorithm family by naming it.
+## Redundancy pruning
 
-The repository's active automation is Agda/Haskell/declarative-environment oriented. The retired Python theorem guard is no longer part of the gate.
+The automatic redundancy audit is:
 
-The generated theorem report remains accepted only when the named terms exist and the corresponding modules pass `agda --safe`.
+`.ci/discovery/PruneRedundantLearnerModules.hs`
 
-## What to do next after the refactor is complete
+It scans tracked Agda sources for imports of candidate learner modules. With no arguments it is a dry run. With `--apply`, it invokes `git rm` only on candidates whose module name has zero repository-local import users.
 
-1. Run the complete `agda --safe` gate and treat any failure as a semantic/type-level defect, not as a documentation problem.
-2. Discharge the new hard-sign/F4/L2 whole-learner energy certificate, if one exists without assuming extra structure. Feed it into the existing `noNontrivialFiniteCycle` theorem.
-3. Prove the exact finite variational characterization of the fixed-temperature sparsemax map if it adds a new optimizer/projection theorem without replacing an existing identity.
-4. Strengthen the Walsh-Hadamard result from the base four-dimensional Gram identities to the actual active recurrent-input carrier and norm preservation.
-5. Replace any remaining stale component names in tests/gates only after their replacement theorem compiles.
-6. Re-run the consolidated Haskell redundancy audit and delete only sources it identifies as genuinely unreachable or superseded.
-7. Keep the merge history atomic: after the final green theorem gate, a squash merge is the cleanest PR automation path for this branch because the branch contains many repair/refactor commits.
-8. Only then close/remove obsolete exploration branches and mark the canonical PR ready for review. Do not delete a branch merely because its name is old; first verify that its commit is fully subsumed by the canonical head.
+The policy deliberately protects unrelated modules rather than assuming that every historical learner file is redundant.
 
-## Theorem-status limits
+## Generated theorem status
 
-The canonical surface does **not** claim:
+`.ci/discovery/ExplorationTheoremGenerator.hs` checks the single canonical monolith for its required theorem symbols, invokes `agda --safe`, and writes the generated theorem-status report:
 
-- general neural Watkins convergence to `Q*`;
-- statistical validity of the LCB table;
-- posterior sampling equivalence;
-- equilibrium uniqueness;
-- general regret or global optimality;
-- that learned sparsemax attention is an independent actor;
-- that learned attention currently drives the recurrent path;
-- that Walsh-Hadamard multiplication itself is associative;
-- that initialization alone proves absence of cycles;
-- that the endogenous q-log scale automatically gives a global Lyapunov function;
-- that a Jensen inequality alone establishes minimax, regret, Pareto efficiency, or Nash equilibrium.
+`Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
 
-The accepted theorem class is finite, algebraic, endogenous, and kernel-checked.
+Agda remains the proof authority. Haskell never upgrades a missing proof into a theorem.
