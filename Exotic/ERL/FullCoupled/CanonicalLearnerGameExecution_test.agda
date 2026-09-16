@@ -4,19 +4,16 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerGameExecution_test where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Fin using (fromℕ<)
-open import Data.Fin.DivMod using ()
-open import Data.Nat.DivMod using (m%n<n)
+open import Data.Fin using (Fin)
+open import Data.Nat.DivMod using (m%n<n;)
+open import Data.Fin using ()
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
 
 portReward : P.Int8 → Int8
-portReward r = int8OfNat (P.Int8.code r |> toℕ)
-  where
-    _|>_ : Fin 256 → Nat
-    x |> f = f x
+portReward r = int8OfNat (toℕ (P.code r))
 
 learnerWatkinsKernel : WatkinsKernel
 learnerWatkinsKernel = mkWatkinsKernel
