@@ -49,6 +49,15 @@ jobs:
       - name: Check canonical learner regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
 
+      - name: Check closed-loop interface
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda
+
+      - name: Check closed-loop interface regression
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface_test.agda
+
+      - name: Check exact closed-loop benchmark suite
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopBenchV2.agda
+
       - name: Check finite environment ports
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalGamePorts.agda
 
@@ -70,8 +79,17 @@ jobs:
       - name: Check complete CNN factorization theorem
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidComplete.agda
 
+      - name: Check CNN transition bisimulation
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNTransitionBisimulation.agda
+
+      - name: Check CNN transition bisimulation regression
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNTransitionBisimulation_test.agda
+
       - name: Check negative-Munchausen signed-scale theory
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda
+
+      - name: Check finite negative-Munchausen ablation
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalMunchausenAblation.agda
 
       - name: Check Jensen convex-concave sandwich
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/JensenMinMaxSandwich.agda
