@@ -153,7 +153,7 @@ data BoolLike : Set where
   disabled : BoolLike
 
 record WatkinsKernel : Set₁ where
-  constructor watkinsKernel
+  constructor mkWatkinsKernel
   field
     updateCritic : CriticState → Int8 → CriticState
     greedy : CriticState → Int8 → BoolLike
@@ -526,7 +526,7 @@ record FullLearnerState : Set where
 open FullLearnerState public
 
 record FullLearnerKernel : Set₁ where
-  constructor fullLearnerKernel
+  constructor mkFullLearnerKernel
   field
     watkinsKernel : WatkinsKernel
     attentionStep : LearnedSparsemaxAttention → Int8 → LearnedSparsemaxAttention
