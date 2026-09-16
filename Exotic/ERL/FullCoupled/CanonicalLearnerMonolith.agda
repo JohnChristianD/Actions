@@ -298,7 +298,7 @@ learnedSparsemaxAttentionWeights a = fixedTemperatureSparsemax (attentionActionS
 
 record HalfInt : Set where
   constructor mkHalfInt
-  field numerator : Nat
+  field halfNumerator : Nat
 open HalfInt public
 
 IntVec4 : Set
