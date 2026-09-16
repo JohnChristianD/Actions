@@ -49,6 +49,9 @@ jobs:
       - name: Check general closed-loop benchmark
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda
 
+      - name: Check external CNN transition bisimulation
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/ExternalCNNTransitionBisimulation.agda
+
       - name: Check self-contained canonical learner
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
 
