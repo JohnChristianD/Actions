@@ -151,9 +151,9 @@ The projection equalities are:
 
 ## Unconditional contradiction and negation theorems
 
-The earlier coercive/Lyapunov certificate boundary is deliberately not used as an assumption for the canonical learner.
+The canonical learner does not need a coercive or Lyapunov certificate premise for its cycle exclusions.
 
-The canonical state carries a Nat `clock`, and every `canonicalFullStep` applies `suc` to that clock. Therefore:
+The complete state carries a Nat `clock`, and every `canonicalFullStep` applies `suc` to that clock. Therefore:
 
 `canonicalStep-not-fixed`
 
@@ -171,7 +171,7 @@ From that, `canonicalAperiodic` proves:
 
 `canonicalNoNontrivialFiniteCycle` turns a hypothetical finite return directly into `⊥` by contradiction through the clock equation.
 
-No Lyapunov witness, stochastic assumption, environment condition, or convergence hypothesis is supplied.
+No Lyapunov witness, environment condition, stochastic assumption, or convergence hypothesis is supplied.
 
 ## Count-memory contradiction
 
@@ -183,7 +183,7 @@ This is a deterministic count-memory theorem, not a statistical claim about LCB 
 
 ## What is and is not proved
 
-Proved unconditionally in the monolith:
+Proved unconditionally by the source definitions and the generated regression surface, subject to the fresh `agda --safe` gate:
 
 - environment-agnostic learner state;
 - Watkins-only action-selection source;
@@ -212,8 +212,6 @@ Not claimed merely from those facts:
 - Nash equilibrium, Pareto efficiency, or minimax equality;
 - Mamba, SSRN, Transformer, or generic-RNN equivalence;
 - a global Nat-valued strict Lyapunov decrease theorem for this clocked transition.
-
-The last exclusion is structural: the canonical learner clock increases forever, so a globally decreasing Nat potential cannot itself be the source of the canonical no-cycle theorem.
 
 ## Redundancy pruning
 
