@@ -219,7 +219,7 @@ closedSupportOrbitImpossible :
   ClosedSupportOrbit S R n -> ⊥
 closedSupportOrbitImpossible L C =
   let
-    descending : ∀ {i} -> i ≤ _ ->
+    descending : ∀ {i} -> i ≤ n ->
       supportEnergy L (point C (suc i)) < supportEnergy L (point C zero)
     descending {zero} p = strictSupportDecrease L (edge C zero p) (distinct C zero p)
     descending {suc i} (s≤s p) =
@@ -229,7 +229,7 @@ closedSupportOrbitImpossible L C =
     impossible = subst
       (λ z -> supportEnergy L z < supportEnergy L (point C zero))
       (close C)
-      (descending (le-refl-nat _))
+      (descending (le-refl-nat n))
   in lt-irrefl (supportEnergy L (point C zero)) impossible
 
 supportRelationAntisymmetricOffDiagonal :
