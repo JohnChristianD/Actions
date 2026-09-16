@@ -15,6 +15,9 @@ record Int8 : Set where
   field code : Fin 256
 open Int8 public
 
+int8StateSpace : Set
+int8StateSpace = Fin 256
+
 zero8 : Int8
 zero8 = int8 (fromℕ< (m%n<n 0 256))
 
@@ -113,7 +116,7 @@ mobiusRatio8-law : ∀ x → signedCode x ≢ pos 0 →
   mobiusRatio8 x ≡ mobiusFormula (signedCode x)
 mobiusRatio8-law x neq = refl
 
-mobiusSingularity : mobiusRatio8 (int8OfNat 1) ≡ finiteRational 0 0 1
+mobiusSingularity : mobiusRatio8 (int8OfNat 1) ≡ finiteRational 1 1 1
 mobiusSingularity = refl
 
 record MobiusAction : Set₁ where
@@ -368,7 +371,7 @@ record GRUNoise : Set where
 open GRUNoise public
 
 record GlobalControl : Set where
-  constructor globalControl
+  constructor mkGlobalControl
   field optimizerToken l2Token : Int8
 open GlobalControl public
 
@@ -387,7 +390,7 @@ zeroGRUNoise : GRUNoise
 zeroGRUNoise = gruNoise zero8 zero8 zero8
 
 zeroGlobalControl : GlobalControl
-zeroGlobalControl = globalControl zero8 zero8
+zeroGlobalControl = mkGlobalControl zero8 zero8
 
 rationalCode : FiniteRational → Int8
 rationalCode (finiteRational s n d) = int8OfNat n
@@ -399,7 +402,9 @@ gruCandidate8 : Int8 → Int8 → Int8
 gruCandidate8 h x = int8Add h x
 
 mix8 : Int8 → Int8 → Int8 → Int8
-mix8 g old new = int8Add (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old) (int8Mul g new)
+mix8 g old new = int8Add
+  (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old)
+  (int8Mul g new)
 
 gruStep : GRUState → Int8 → GRUState
 gruStep (gruState h m n g) x =
@@ -424,12 +429,59 @@ gruParameterPersistence (gruState h m n g) x = refl , (refl , refl)
 gruActivationBoundary : ∀ x → mobiusActivation8 x ≡ mobiusRatio8 x
 gruActivationBoundary x = refl
 
+GRUEquivalent : GRUState → GRUState → Set
+GRUEquivalent s t = persistentGRU s ≡ persistentGRU t
+
+gruEquivalent-refl : ∀ s → GRUEquivalent s s
+gruEquivalent-refl s = refl
+
+gruStep-respects-equivalence : ∀ (s t : GRUState) (x : Int8) →
+  GRUEquivalent s t → GRUEquivalent (gruStep s x) (gruStep t x)
+gruStep-respects-equivalence s t x eq =
+  trans (persistent-preservation s x)
+    (trans eq (sym (persistent-preservation t x)))
+
+record GRUAction : Set₁ where
+  constructor gruAction
+  field runGRU : GRUState → GRUState
+open GRUAction public
+
+identityGRUAction : GRUAction
+identityGRUAction = gruAction (λ s → s)
+
+composeGRUAction : GRUAction → GRUAction → GRUAction
+composeGRUAction f g = gruAction (λ s → runGRU f (runGRU g s))
+
+gruActionAssociativity : ∀ f g h s →
+  runGRU (composeGRUAction (composeGRUAction f g) h) s ≡
+  runGRU (composeGRUAction f (composeGRUAction g h)) s
+gruActionAssociativity f g h s = refl
+
+inputGRUAction : Int8 → GRUAction
+inputGRUAction x = gruAction (λ s → gruStep s x)
+
+gruInputActionAssociativity : ∀ x y z s →
+  runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
+  runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
+gruInputActionAssociativity x y z s = refl
+
+mobiusActivationAction : Int8 → MobiusAction
+mobiusActivationAction x =
+  mobiusAction (λ y → int8Add y (rationalCode (mobiusActivation8 x)))
+
+gruMobiusActivationAssociativity : ∀ x y z q →
+  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
+      (mobiusActivationAction z)) q ≡
+  run (composeAction (mobiusActivationAction x)
+      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
+gruMobiusActivationAssociativity x y z q = refl
+
 record F4IntUState : Set where
   constructor f4IntUState
   field thetaQ rTheta eQ rE rL : Int8
 open F4IntUState public
 
-record F4IntUKernel : Set where
+record F4IntUKernel : Set₁ where
   constructor f4IntUKernel
   field globalL2 : Int8
 open F4IntUKernel public
@@ -452,6 +504,12 @@ record NormPair : Set where
   constructor normPair
   field l1 path : Int8
 open NormPair public
+
+normPairWeight : NormPair → Int8
+normPairWeight n = int8Add (l1 n) (path n)
+
+normPairWeightPlusOne : NormPair → Int8
+normPairWeightPlusOne n = int8Add one8 (normPairWeight n)
 
 record FullLearnerState : Set where
   constructor fullLearnerState
@@ -489,6 +547,46 @@ canonicalPolicy-attention-invariant :
   ∀ (K : FullLearnerKernel) (s : FullLearnerState) (a : LearnedSparsemaxAttention) →
   canonicalPolicy K (replaceAttention s a) ≡ canonicalPolicy K s
 canonicalPolicy-attention-invariant K s a = refl
+
+replaceNorm : FullLearnerState → NormPair → FullLearnerState
+replaceNorm s n = fullLearnerState (clock s) (watkins s) (attention s) (gru s) (optimizer s)
+  n (lcbCounts s) (qLogControl s) (qLogValue s)
+
+replaceOptimizer : FullLearnerState → F4IntUState → FullLearnerState
+replaceOptimizer s o = fullLearnerState (clock s) (watkins s) (attention s) (gru s) o
+  (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
+
+canonicalPolicy-norm-invariant :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) →
+  canonicalPolicy K (replaceNorm s n) ≡ canonicalPolicy K s
+canonicalPolicy-norm-invariant K s n = refl
+
+canonicalPolicy-optimizer-invariant :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (o : F4IntUState) →
+  canonicalPolicy K (replaceOptimizer s o) ≡ canonicalPolicy K s
+canonicalPolicy-optimizer-invariant K s o = refl
+
+HardSparseLeft : Sparsemax2Pair → Set
+HardSparseLeft p = p ≡ (int8OfNat 128 , zero8)
+
+HardSparseRight : Sparsemax2Pair → Set
+HardSparseRight p = p ≡ (zero8 , int8OfNat 128)
+
+hardSparseLeft32 : HardSparseLeft
+  (fixedTemperatureSparsemax (actionScore (int8OfNat 32) (int8OfNat 0)))
+hardSparseLeft32 = refl
+
+hardSparseRight32 : HardSparseRight
+  (fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 32)))
+hardSparseRight32 = refl
+
+hardSparse-norm-optimizer-invariant :
+  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) (o : F4IntUState) →
+  HardSparseLeft (canonicalPolicy K s) →
+  HardSparseLeft (canonicalPolicy K (replaceOptimizer (replaceNorm s n) o))
+hardSparse-norm-optimizer-invariant K s n o h =
+  trans (sym (canonicalPolicy-norm-invariant K s n))
+    (trans (sym (canonicalPolicy-optimizer-invariant K (replaceNorm s n) o)) h)
 
 endogenousNegativeScale8 : Sparsemax2Pair → Int8
 endogenousNegativeScale8 (l , r) = lcbNegate l
