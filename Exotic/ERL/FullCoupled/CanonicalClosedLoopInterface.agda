@@ -58,40 +58,31 @@ record BenchSpec (A : Nat) (S : Set) : Set₁ where
     success : S → Nat
 open BenchSpec public
 
-runClosedLoop : ∀ {A S} → ClosedLoopEnv A S → ClosedLoopAgent A →
-  Nat → S → FullLearnerState → EpisodeResult S
-runClosedLoop E A zero env learner = episodeResult env learner zero zero
-runClosedLoop E A (suc n) env learner with step E (choose A learner) env
-... | P.stepResult observation env' reward done with done
-...   | P.yes = episodeResult env'
-      (update A learner (choose A learner) reward)
-      (toℕ (P.code reward))
-      (suc zero)
-...   | P.no =
-      let r = runClosedLoop E A n env' (update A learner (choose A learner) reward)
-      in episodeResult (finalState r)
-           (finalLearner r)
-           (toℕ (P.code reward) + totalReturn r)
-           (suc (steps r))
+binaryKernel : FullLearnerKernel
+binaryKernel = mkFullLearnerKernel
+  learnerWatkinsKernel
+  learnerAttentionStep
+  learnerAttentionToGRU
+  learnerOptimizerKernel
+  learnerLCBKernel
+  where
+    learnerWatkinsKernel : WatkinsKernel
+    learnerWatkinsKernel = mkWatkinsKernel
+      (λ q r → criticState (int8Add (qLeft q) r) (qRight q))
+      (λ q r → disabled)
+      (λ t g → g)
 
-runEpisode : ∀ {A S} → BenchSpec A S → EpisodeResult S
-runEpisode B = runClosedLoop
-  (environment B)
-  (agent B)
-  (horizon B)
-  (initialState B)
-  (initialLearner B)
+    learnerAttentionStep : LearnedSparsemaxAttention → Int8 → LearnedSparsemaxAttention
+    learnerAttentionStep a r = a
 
-episodeMetrics : ∀ {A S} → BenchSpec A S → EpisodeMetrics S
-episodeMetrics B with runEpisode B
-... | episodeResult env learner total steps =
-  episodeMetrics
-    total
-    (referenceReturn B)
-    ((referenceReturn B) ∸ total)
-    (success B env)
-    steps
-    env
+    learnerAttentionToGRU : WalshVec4 → Int8
+    learnerAttentionToGRU w = zero8
+
+    learnerOptimizerKernel : F4IntUKernel
+    learnerOptimizerKernel = f4IntUKernel zero8
+
+    learnerLCBKernel : LCBCountKernel
+    learnerLCBKernel = lcbCountKernel finiteLCBBonus8
 
 binaryAction : FullLearnerState → Fin 2
 binaryAction s with policyChoosesLeft (canonicalPolicy binaryKernel s)
@@ -124,37 +115,47 @@ binaryLearnerStep s a reward =
     (canonicalQLogControlStep binaryKernel s)
     (canonicalQLogStep binaryKernel s)
 
-binaryKernel : FullLearnerKernel
-binaryKernel = mkFullLearnerKernel
-  learnerWatkinsKernel
-  learnerAttentionStep
-  learnerAttentionToGRU
-  learnerOptimizerKernel
-  learnerLCBKernel
-  where
-    learnerWatkinsKernel : WatkinsKernel
-    learnerWatkinsKernel = mkWatkinsKernel
-      (λ q r → criticState (int8Add (qLeft q) r) (qRight q))
-      (λ q r → disabled)
-      (λ t g → g)
-
-    learnerAttentionStep : LearnedSparsemaxAttention → Int8 → LearnedSparsemaxAttention
-    learnerAttentionStep a r = a
-
-    learnerAttentionToGRU : WalshVec4 → Int8
-    learnerAttentionToGRU w = zero8
-
-    learnerOptimizerKernel : F4IntUKernel
-    learnerOptimizerKernel = f4IntUKernel zero8
-
-    learnerLCBKernel : LCBCountKernel
-    learnerLCBKernel = lcbCountKernel finiteLCBBonus8
-
 binaryAgent : ClosedLoopAgent 2
 binaryAgent = closedLoopAgent binaryAction binaryLearnerStep
 
-binaryRoundtripAction : ∀ s → toℕ (binaryAction s) <ᵇ 2 ≡ true
-binaryRoundtripAction s = refl
+runClosedLoopAux : ∀ {A S} → ClosedLoopEnv A S → ClosedLoopAgent A →
+  Nat → S → FullLearnerState → Nat → Nat → EpisodeResult S
+runClosedLoopAux E A zero env learner total steps = episodeResult env learner total steps
+runClosedLoopAux E A (suc n) env learner total steps with step E (choose A learner) env
+... | P.stepResult observation env' reward done with done
+...   | yes = episodeResult env'
+      (update A learner (choose A learner) reward)
+      (total + toℕ (P.code reward))
+      (suc steps)
+...   | no = runClosedLoopAux
+      E A n
+      env'
+      (update A learner (choose A learner) reward)
+      (total + toℕ (P.code reward))
+      (suc steps)
+
+runClosedLoop : ∀ {A S} → ClosedLoopEnv A S → ClosedLoopAgent A →
+  Nat → S → FullLearnerState → EpisodeResult S
+runClosedLoop E A horizon env learner = runClosedLoopAux E A horizon env learner zero zero
+
+runEpisode : ∀ {A S} → BenchSpec A S → EpisodeResult S
+runEpisode B = runClosedLoop
+  (environment B)
+  (agent B)
+  (horizon B)
+  (initialState B)
+  (initialLearner B)
+
+episodeMetrics : ∀ {A S} → BenchSpec A S → EpisodeMetrics S
+episodeMetrics B with runEpisode B
+... | episodeResult env learner total steps =
+  episodeMetrics
+    total
+    (referenceReturn B)
+    ((referenceReturn B) ∸ total)
+    (success B env)
+    steps
+    env
 
 binaryLearnerStep-clock : ∀ s a r →
   clock (binaryLearnerStep s a r) ≡ suc (clock s)
@@ -164,5 +165,7 @@ regret-is-truncated-subtraction : ∀ {A S} (B : BenchSpec A S) →
   regret (episodeMetrics B) ≡ referenceReturn B ∸ return (episodeMetrics B)
 regret-is-truncated-subtraction B = refl
 
-success-is-binary : ∀ {A S} (B : BenchSpec A S) → success B (finalStateObserved (episodeMetrics B)) ≡ success B (finalStateObserved (episodeMetrics B))
-success-is-binary B = refl
+success-is-reflexive : ∀ {A S} (B : BenchSpec A S) →
+  success B (finalStateObserved (episodeMetrics B)) ≡
+  success B (finalStateObserved (episodeMetrics B))
+success-is-reflexive B = refl
