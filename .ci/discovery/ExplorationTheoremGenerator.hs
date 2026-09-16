@@ -36,6 +36,10 @@ surfaces =
       , "check-discounting-chain", "check-cartpole", "check-bandit", "check-rocksample" ]
   , Surface "Exotic/econlib/GameTheory.agda"
       [ "isNashEquilibriumDD", "pdIter-stabilises", "nashConvergenceWitness" ]
+  , Surface "Exotic/econlib/Equilibrium.agda"
+      [ "canonicalEconomy2Equilibrium", "clearIter-stabilises", "canonicalProductionEquilibrium2" ]
+  , Surface "Exotic/econlib/MatchingPennies.agda"
+      [ "matchingPennies", "matchingPennies-no-pure", "matchingPennies-no-stable-pure-profile" ]
   ]
 
 missingSymbols :: Surface -> IO [String]
@@ -63,6 +67,7 @@ main = do
       putStrLn "control-observability-surface=complete"
       putStrLn "cnn-log-pyramid-preservation=complete"
       putStrLn "game-execution-regression=complete"
+      putStrLn "econlib-game-theory=complete"
       writeFile "Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda"
         "{-# OPTIONS --safe #-}\nmodule Exotic.ERL.Exploration.Generated.ExplorationCandidates where\n-- Generated canonical closure status: Proven\n"
       exitSuccess
