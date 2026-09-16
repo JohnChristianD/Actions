@@ -209,7 +209,7 @@ runBench spec learner = loop (horizon spec) learner (initial spec) zero zero
 
 record BenchMetrics (S : Set) : Set where
   constructor benchMetrics
-  field totalReturn referenceReturn regret success steps : Nat
+  field metricReturn metricReference metricRegret metricSuccess metricSteps : Nat
 open BenchMetrics public
 
 metrics : ∀ {N S} → BenchSpec N S → FullLearnerState → BenchMetrics S
@@ -231,12 +231,6 @@ cycle2 : Nat → Nat
 cycle2 zero = zero
 cycle2 (suc zero) = suc zero
 cycle2 (suc (suc n)) = cycle2 n
-
-cycle3 : Nat → Nat
-cycle3 zero = zero
-cycle3 (suc zero) = suc zero
-cycle3 (suc (suc zero)) = suc (suc zero)
-cycle3 (suc (suc (suc n))) = cycle3 n
 
 lift4 : FullLearnerState → Fin 4
 lift4 s = fromℕ< (m%n<n ((cycle2 (clock s) * 2) + toℕ (canonicalBit learnerKernel s)) 4)
@@ -349,29 +343,68 @@ banditBest0Metrics = metrics banditBest0Spec learnerInitial
 banditBest1Metrics : BenchMetrics P.BernoulliBanditState
 banditBest1Metrics = metrics banditBest1Spec learnerInitial
 
-check-knapsack-closed-loop-clock : steps knapsackMetrics ≡ 5
-check-knapsack-closed-loop-clock = refl
+check-knapsack-closed-loop-steps : metricSteps knapsackMetrics ≡ 5
+check-knapsack-closed-loop-steps = refl
 
-check-cartpole-closed-loop-clock : steps cartPoleMetrics ≡ 16
-check-cartpole-closed-loop-clock = refl
+check-cartpole-closed-loop-steps : metricSteps cartPoleMetrics ≡ 16
+check-cartpole-closed-loop-steps = refl
 
-check-bandit-best0-return : totalReturn banditBest0Metrics ≡ 0
+check-bandit-best0-return : metricReturn banditBest0Metrics ≡ 0
 check-bandit-best0-return = refl
 
-check-bandit-best1-return : totalReturn banditBest1Metrics ≡ 16
+check-bandit-best0-regret : metricRegret banditBest0Metrics ≡ 16
+check-bandit-best0-regret = refl
+
+check-bandit-best0-success : metricSuccess banditBest0Metrics ≡ 0
+check-bandit-best0-success = refl
+
+check-bandit-best1-return : metricReturn banditBest1Metrics ≡ 16
 check-bandit-best1-return = refl
 
-check-knapsack-return : totalReturn knapsackMetrics ≡ 16
+check-bandit-best1-regret : metricRegret banditBest1Metrics ≡ 0
+check-bandit-best1-regret = refl
+
+check-bandit-best1-success : metricSuccess banditBest1Metrics ≡ 1
+check-bandit-best1-success = refl
+
+check-knapsack-return : metricReturn knapsackMetrics ≡ 16
 check-knapsack-return = refl
 
-check-maze-success : success mazeMetrics ≡ 0
+check-knapsack-regret : metricRegret knapsackMetrics ≡ 0
+check-knapsack-regret = refl
+
+check-knapsack-success : metricSuccess knapsackMetrics ≡ 1
+check-knapsack-success = refl
+
+check-maze-return : metricReturn mazeMetrics ≡ 0
+check-maze-return = refl
+
+check-maze-regret : metricRegret mazeMetrics ≡ 1
+check-maze-regret = refl
+
+check-maze-success : metricSuccess mazeMetrics ≡ 0
 check-maze-success = refl
 
-check-meta-maze-success : success metaMazeMetrics ≡ 0
+check-meta-maze-return : metricReturn metaMazeMetrics ≡ 0
+check-meta-maze-return = refl
+
+check-meta-maze-regret : metricRegret metaMazeMetrics ≡ 10
+check-meta-maze-regret = refl
+
+check-meta-maze-success : metricSuccess metaMazeMetrics ≡ 0
 check-meta-maze-success = refl
 
-check-four-rooms-success : success fourRoomsMetrics ≡ 0
+check-four-rooms-return : metricReturn fourRoomsMetrics ≡ 0
+check-four-rooms-return = refl
+
+check-four-rooms-regret : metricRegret fourRoomsMetrics ≡ 1
+check-four-rooms-regret = refl
+
+check-four-rooms-success : metricSuccess fourRoomsMetrics ≡ 0
 check-four-rooms-success = refl
 
-check-cartpole-return : totalReturn cartPoleMetrics ≡ 0
+check-cartpole-return : metricReturn cartPoleMetrics ≡ 0
 check-cartpole-return = refl
+
+check-cartpole-regret : metricRegret cartPoleMetrics ≡ 0
+check-cartpole-regret = refl
