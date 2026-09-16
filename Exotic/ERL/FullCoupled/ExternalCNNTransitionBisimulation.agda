@@ -1,8 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.ExternalCNNTransitionBisimulation where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
-open import Data.Product using (_×_; _,_)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
 
 record ExternalCNN (X R : Set) : Set where
   constructor externalCNN
@@ -64,7 +63,7 @@ cnn-class-lift :
   (D : RepresentationAdapter R H)
   (T : LearnerTransition H S)
   (N : S → S) →
-  (X → S)
+  X → S
 cnn-class-lift C D T N x = N (input T (decode D (encode C x)))
 
 cnn-class-lift-factorization :
