@@ -1,0 +1,24 @@
+name: Canonical learner feature gate
+
+on:
+  push:
+    branches:
+      - feat/endogenous-int8-safe-learner
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  agda-safe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: agda/agda-setup-action@v1
+        with:
+          agda-version: '2.8.0'
+          agda-stdlib-version: '2.4'
+      - name: Check canonical sparsemax monolith
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+      - name: Check arbitrary-action sparsemax regression
+        run: agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
