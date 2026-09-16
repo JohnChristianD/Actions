@@ -2,11 +2,13 @@
 
 module Exotic.econlib.Equilibrium where
 
-open import Agda.Builtin.Nat using (Nat; _+_; _*_; zero; suc)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _*_; _+_)
+open import Data.Nat using ()
 open import Data.Fin using (Fin; fromℕ<; toℕ)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _,_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
 
 record Int8 : Set where
   constructor int8
@@ -18,8 +20,8 @@ int8OfNat n = int8 (fromℕ< (m%n<n n 256))
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x =
-  trans (Agda.Builtin.Nat.refl)
-    (m<n⇒m%n≡m {m = toℕ (code x)} {n = 256} (Data.Fin.Properties.toℕ<n (code x)))
+  trans (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
+    (m<n⇒m%n≡m (toℕ<n (code x)))
 
 record Economy2 : Set where
   constructor economy2
