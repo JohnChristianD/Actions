@@ -352,26 +352,45 @@ int8Dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
     (int8Add (int8Mul a e) (int8Mul b f))
     (int8Add (int8Mul c g) (int8Mul d h))
 
-walshHadamardOrthogonality4 :
-  int8Dot4 h4Row0 h4Row0 ≡ int8OfNat 4 ×
-  int8Dot4 h4Row0 h4Row1 ≡ zero8 ×
-  int8Dot4 h4Row0 h4Row2 ≡ zero8 ×
-  int8Dot4 h4Row0 h4Row3 ≡ zero8 ×
-  int8Dot4 h4Row1 h4Row0 ≡ zero8 ×
-  int8Dot4 h4Row1 h4Row1 ≡ int8OfNat 4 ×
-  int8Dot4 h4Row1 h4Row2 ≡ zero8 ×
-  int8Dot4 h4Row1 h4Row3 ≡ zero8 ×
-  int8Dot4 h4Row2 h4Row0 ≡ zero8 ×
-  int8Dot4 h4Row2 h4Row1 ≡ zero8 ×
-  int8Dot4 h4Row2 h4Row2 ≡ int8OfNat 4 ×
-  int8Dot4 h4Row2 h4Row3 ≡ zero8 ×
-  int8Dot4 h4Row3 h4Row0 ≡ zero8 ×
-  int8Dot4 h4Row3 h4Row1 ≡ zero8 ×
-  int8Dot4 h4Row3 h4Row2 ≡ zero8 ×
-  int8Dot4 h4Row3 h4Row3 ≡ int8OfNat 4
-walshHadamardOrthogonality4 =
-  refl , (refl , (refl , (refl , (refl , (refl , (refl , (refl ,
-  (refl , (refl , (refl , (refl , (refl , (refl , (refl , refl)))))))))))))))
+record H4GramLaw : Set where
+  constructor h4GramLaw
+  field
+    r00 : int8Dot4 h4Row0 h4Row0 ≡ int8OfNat 4
+    r01 : int8Dot4 h4Row0 h4Row1 ≡ zero8
+    r02 : int8Dot4 h4Row0 h4Row2 ≡ zero8
+    r03 : int8Dot4 h4Row0 h4Row3 ≡ zero8
+    r10 : int8Dot4 h4Row1 h4Row0 ≡ zero8
+    r11 : int8Dot4 h4Row1 h4Row1 ≡ int8OfNat 4
+    r12 : int8Dot4 h4Row1 h4Row2 ≡ zero8
+    r13 : int8Dot4 h4Row1 h4Row3 ≡ zero8
+    r20 : int8Dot4 h4Row2 h4Row0 ≡ zero8
+    r21 : int8Dot4 h4Row2 h4Row1 ≡ zero8
+    r22 : int8Dot4 h4Row2 h4Row2 ≡ int8OfNat 4
+    r23 : int8Dot4 h4Row2 h4Row3 ≡ zero8
+    r30 : int8Dot4 h4Row3 h4Row0 ≡ zero8
+    r31 : int8Dot4 h4Row3 h4Row1 ≡ zero8
+    r32 : int8Dot4 h4Row3 h4Row2 ≡ zero8
+    r33 : int8Dot4 h4Row3 h4Row3 ≡ int8OfNat 4
+
+walshHadamardOrthogonality4 : H4GramLaw
+walshHadamardOrthogonality4 = record
+  { r00 = refl
+  ; r01 = refl
+  ; r02 = refl
+  ; r03 = refl
+  ; r10 = refl
+  ; r11 = refl
+  ; r12 = refl
+  ; r13 = refl
+  ; r20 = refl
+  ; r21 = refl
+  ; r22 = refl
+  ; r23 = refl
+  ; r30 = refl
+  ; r31 = refl
+  ; r32 = refl
+  ; r33 = refl
+  }
 
 data PowerOfFour : Nat → Set where
   powerOfFour-one : PowerOfFour 1
