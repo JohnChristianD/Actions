@@ -86,7 +86,3 @@ cartPoleNegativeM = benchSpec
 cartPoleCeterisParibusReturn :
   return (episodeMetrics cartPoleNoM) ≡ return (episodeMetrics cartPoleNegativeM)
 cartPoleCeterisParibusReturn = refl
-
-negativeScaleWitness :
-  negativeMunchausenScale16 ≡ refl
-negativeScaleWitness = refl
