@@ -1,287 +1,79 @@
-# Nonlinear, Walsh-Hadamard, GRU, and Pessimistic Monolith Refactor Implementation Plan
+# Mobius, Walsh-Hadamard, input-driven GRU, and pessimistic monolith
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Agentic implementation plan. Agda `--safe` is the acceptance oracle; Haskell is the automation language for theorem discovery and redundancy auditing.
 
-**Goal:** Replace the legacy nonlinear/transform vocabulary with exact finite algebra, make the recurrent interface input-dependent with state-independent parameters, move the attention transform to an exactly orthonormal power-of-four Walsh-Hadamard basis, strengthen initialization and finite-cycle reasoning where the algebra actually permits it, and consolidate redundancy automation into Haskell.
+**Goal:** Make the canonical deterministic learner actor-free and theorem-first while replacing the recurrent nonlinear boundary with an exact finite-rational Mobius ratio `x / (1 - x)`, replacing smooth sign-like surfaces with finite hard sign, replacing the old unnormalised transform with an exactly dyadic-normalized Walsh-Hadamard basis at dimension `4^k`, making recurrent parameter coordinates state-independent while keeping the update input-driven, making the q-log scale endogenous, and consolidating pruning automation.
 
-**Architecture:** The canonical learner remains deterministic, actor-free, finite, and accepted only by `agda --safe`. Watkins remains the sole learned Q/action-selection source; learned sparsemax attention remains representation state. The transform layer becomes an exactly orthonormal normalized Walsh-Hadamard transform at dimensions `4^k`, so its normalization is dyadic rather than irrational. The old activation changes are implemented as exact finite definitions with explicit carriers and boundary proofs rather than string substitutions.
+**Canonical architecture:** Watkins is the only learned Q/action-selection source. Learned sparsemax attention is representation state, not an actor. The action-selection policy is derived from Watkins Q plus deterministic LCB/count correction and fixed-temperature sparsemax. The recurrent path consumes the action-selection signal through the normalized Walsh boundary and the finite Mobius recurrent carrier.
 
-**Tech Stack:** Agda 2.8.0, Agda stdlib 2.4, Haskell for discovery/pruning, optional Guix/Nix environment declaration, GitHub Actions safe gate.
+## Global constraints
 
-**Spec:** Current canonical source is `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`; shared recurrent source is `Exotic/ERL/FullCoupled/DyadicGRU.agda`; transform boundary is `Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda`.
+- No independently learned actor parameterization.
+- Learned sparsemax attention must remain representation/attention state.
+- `canonicalPolicy` must be invariant under replacement of learned attention state.
+- Recurrent parameter coordinates remain unchanged by the recurrent step.
+- The recurrent output remains a function of the current input.
+- `x / (1 - x)` is represented over an exact finite-rational boundary rather than being approximated by modular `Int8` arithmetic.
+- The singular input `x = 1` receives an explicit total finite boundary, and the non-singular rational law is separately proved.
+- Walsh-Hadamard dimension is a power of four so normalization is dyadic.
+- Maximum pessimism is defined relative to the signed Q7 semantic order, not by raw modular code zero.
+- Identity initialization is explicit only where the carrier actually has an identity element.
+- Pessimistic initialization alone must never be presented as a no-cycle theorem.
+- A no-cycle theorem requires a discharged Lyapunov/order witness or another exact invariant for the concrete update.
+- Mobius associativity is the associativity of `MobiusGroup.composeAction`, not of Walsh-Hadamard multiplication.
+- Negative q-log shaping stays finite and deterministic; its endogenous control must be a proved total state function.
+- No automation pruning rule may ban the q-log algorithm name by text.
+- New helper automation is Haskell or declarative Guix/Nix, not Python or Bash source scripts.
 
-## Global Constraints
+## Work completed by this plan
 
-- No independently learned actor may be introduced.
-- Learned sparsemax attention is representation state, not an actor.
-- Watkins remains the only learned Q/action-selection source.
-- All activation replacements must be mathematically defined in the finite carrier, not textual aliases.
-- The recurrent update must depend on its current input; removing dependence on the input is forbidden by theorem gate.
-- GRU parameters and persistent auxiliary coordinates must be state-independent under the step.
-- Walsh-Hadamard dimensions are powers of four so exact normalization stays dyadic.
-- Maximum pessimism must be defined relative to the critic's ordered semantic carrier, not guessed from raw modular `Int8` codes.
-- Finite-cycle exclusion must come from a discharged Lyapunov/order theorem or exact finite dynamical invariant; initialization alone is not allowed to masquerade as a global no-cycle proof.
-- The compositional Mobius theorem must remain an actual associativity theorem of `composeAction`, not a claim about unrelated transforms.
-- The active negative q-log shaping variant may remain during the migration; its exact finite-rational value and signed control must stay distinct until a stronger composed theorem is proved.
-- Remove obsolete pruning implementations instead of accumulating multiple audit scripts.
-- New automation code is Haskell or declarative Guix/Nix. No new Bash/Python helper script is introduced.
+### Mobius recurrent carrier
 
----
+`Exotic/ERL/FullCoupled/MobiusRational.agda` defines an exact numerator/denominator carrier and proves `mobiusRatio8-law` away from the explicit singularity boundary.
 
-### Task 1: Replace the recurrent nonlinear surface exactly
+`Exotic/ERL/FullCoupled/DyadicGRU.agda` uses that carrier for the hidden coordinate, defines identity recurrent parameter initialization, proves persistent parameter coordinates, and preserves explicit input dependence.
 
-**Files:**
-- Modify: `Exotic/ERL/FullCoupled/DyadicGRU.agda`
-- Modify: `Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition.agda`
-- Modify: `Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition_test.agda`
-- Modify: `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
-- Modify: `.ci/discovery/ExplorationTheoremGenerator.hs`
+### Hard sign
 
-**Interfaces:**
-- Replace the current finite recurrent activation definition while preserving `gruStep` input dependence.
-- Remove legacy activation theorem names from active canonical ownership.
+`CanonicalSparsemaxLearnerV2.agda` defines `HardSign8`, `hardSignCode`, and `hardSign8` as a total finite three-way sign surface with explicit zero behavior.
 
-- [ ] **Step 1: Define the finite semantic carrier for the quadratic activation.**
+### Orthonormal Walsh-Hadamard
 
-Use the signed integer interpretation already used by policy arithmetic. Define the activation semantically as `x * (1 - x)` on that carrier, then provide the explicit finite projection back to the recurrent coordinate carrier. Do not encode the replacement as an accidental modular `Int8` multiplication whose semantic range is unstated.
+`Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda` defines the dimension-four basis `H₄ / 2`, records the exact raw Gram identities `H₄ H₄ᵀ = 4I`, and uses the fixed dyadic factor `1/2` to obtain the orthonormal basis. The learner lifts the two action coordinates into four dimensions before the transform.
 
-- [ ] **Step 2: Prove input dependence directly.**
+### Pessimistic critic
 
-Add a theorem witnessing two explicit inputs that produce different recurrent outputs for a fixed parameter/state configuration. The theorem must fail if the recurrent step becomes input-independent.
+The signed Q7 carrier interprets code `128` as semantic `-128`, the least admissible Q7 value. The critic therefore exposes `maxPessimisticCritic` with both Q coordinates at code `128`.
 
-- [ ] **Step 3: Make recurrent parameters state-independent.**
+### Endogenous q-log scale
 
-Keep matrices, noise, and global control fixed across `gruStep`; only the hidden/input-dependent coordinate may change. State-independent means the parameter coordinates are not functions of the previous hidden state, not that the recurrent output ignores the input.
+`endogenousNegativeScale8` derives the signed shaping coefficient from the current canonical policy surface, and `canonicalQLogControlStep` updates the scale as part of `canonicalFullStep`.
 
-- [ ] **Step 4: Port the semidirect-window theorems to the new activation.**
+### Attention/actor separation
 
-Rename the active operator surface so that the semidirect theorem no longer asserts legacy activation terminology. Preserve exact operator associativity through `MobiusGroup.composeAction-assoc`.
+`canonicalPolicy-attention-invariant` proves that changing learned sparsemax attention state does not change action selection. Learned attention is therefore formally representation state, not a second actor.
 
-- [ ] **Step 5: Add regression cases.**
+### Composition theorem family
 
-Check zero input, a nonzero input, parameter persistence, and input separation under `--safe`.
+The Haskell generator now reports independent theorem families for the canonical monolith, finite Mobius boundary, Walsh boundary, recurrent boundary, and Mobius composition/persistence boundary.
 
----
+## Remaining acceptance gate
 
-### Task 2: Replace softsign surfaces with hard sign
+The branch must pass:
 
-**Files:**
-- Modify every active Agda source containing a live softsign definition.
-- Modify corresponding `_test.agda` sources.
-- Modify `.ci/discovery/PruneRedundantComponents.hs`.
+1. the Haskell theorem-scope guard;
+2. the Haskell redundancy audit;
+3. `agda --safe` on Int8, Mobius rational boundary, recurrent boundary, Walsh boundary, Watkins critic, canonical monolith, canonical regression, count-memory theorem, and Mobius composition;
+4. generated theorem-status compilation.
 
-- [ ] **Step 1: Enumerate active definitions rather than relying on a repository-wide text replace.**
+The generated report may say `Proven` only when the named proof terms exist and their corresponding Agda source modules compile under `--safe`.
 
-The code-search endpoint currently returns no complete softsign result on the feature branch, so ownership must be established from the branch tree and active imports before editing. A name occurrence in retired or generated documentation is not enough to establish a semantic replacement target.
+## Strongest justified theorem claims
 
-- [ ] **Step 2: Define one finite hard-sign primitive.**
+The current refactor provides stronger algebraic boundaries for attention/policy separation, exact finite-rational Mobius evaluation, persistent input-driven recurrent coordinates, dyadic normalized Walsh orthogonality, endogenous q-log control, and maximal semantic pessimistic initialization.
 
-Use the existing signed Int8 semantic interpretation and define the sign result as the finite two-point carrier. Zero must be specified explicitly rather than inferred from a host-language comparison.
+A stronger unconditional whole-learner finite-cycle theorem is not justified merely by those ingredients. The formal route remains a concrete strict-decrease witness for the actual `canonicalFullStep`, followed by `noNontrivialFiniteCycle`. Initialization and Mobius associativity do not substitute for that witness.
 
-- [ ] **Step 3: Replace live softsign calls with the hard-sign primitive.**
+## Tsallis-2 note
 
-Each replacement must preserve totality and expose a concrete regression theorem for negative, zero, and positive inputs.
-
-- [ ] **Step 4: Extend the redundancy audit.**
-
-The Haskell audit must flag duplicate activation definitions and stale softsign sources after migration.
-
----
-
-### Task 3: Replace the frozen Haar boundary by exactly orthonormal normalized Walsh-Hadamard
-
-**Files:**
-- Modify: `Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda`
-- Modify: `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
-- Modify: corresponding canonical regression/test module.
-
-**Interfaces:**
-- Input vectors have dimension `4^k`.
-- Transform is an exact normalized Walsh-Hadamard matrix over a dyadic finite/integer-scaled carrier.
-
-- [ ] **Step 1: Establish the dimension invariant.**
-
-Represent the dimension by `FourPower k = 4 ^ k` or an equivalent recursively defined finite dimension. Prove `sqrt (4 ^ k) = 2 ^ k` in the chosen exact carrier, so the normalization factor is dyadic.
-
-- [ ] **Step 2: Define the base normalized transform.**
-
-For dimension four use the exact `1/2` normalized Walsh-Hadamard basis. Do not use floating-point square roots.
-
-- [ ] **Step 3: Define the recursive Kronecker/Walsh construction.**
-
-The `4^k` transform must remain exact and orthonormal by construction. Prove row norm one and pairwise row orthogonality.
-
-- [ ] **Step 4: Replace the canonical two-coordinate Haar lift with the smallest power-of-four embedding.**
-
-Embed the two sparsemax coordinates into the canonical four-dimensional representation using explicit zero coordinates. The normalized transform must operate on the four-dimensional vector, preserving exact orthonormality.
-
-- [ ] **Step 5: Add the strongest local theorem available.**
-
-Prove `W W^T = I` for the active finite dimension and expose norm preservation for the canonical recurrent input projection. This is strictly stronger than the present `H H^T = 2I` result.
-
-- [ ] **Step 6: Remove old Haar theorem ownership.**
-
-Retire old `haarRow*`, unnormalised-transform definitions, and corresponding audit entries after the new transform passes `--safe`.
-
----
-
-### Task 4: Identity initialization and semantically maximal pessimistic critic initialization
-
-**Files:**
-- Modify: `Exotic/ERL/FullCoupled/DyadicGRU.agda`
-- Modify: `Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda`
-- Modify: `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
-- Modify: corresponding tests.
-
-- [ ] **Step 1: Define identity initialization for nonlinear parameter blocks.**
-
-Use explicit identity elements for every parameter block where the carrier has a genuine identity. Do not call a zero vector an identity unless the operation proves that it is the identity.
-
-- [ ] **Step 2: Define critic semantic order.**
-
-Introduce the ordered semantic critic carrier first. Then define `maxPessimisticCritic` as its least admissible semantic value, instead of assuming raw code zero is pessimistic under modular arithmetic.
-
-- [ ] **Step 3: Prove initial pessimism.**
-
-Prove that every admissible initial critic coordinate is above or equal to the chosen pessimistic initialization in the semantic order.
-
-- [ ] **Step 4: Separate initialization from cycle exclusion.**
-
-Do not claim that pessimistic initialization itself proves finite-cycle exclusion. Add a distinct monotonicity/invariant theorem. If the chosen initialization plus the update gives a global descending measure, discharge the resulting no-cycle theorem through `Int8StabilityComposition.noNontrivialFiniteCycle`.
-
----
-
-### Task 5: Strengthen the whole connected no-actor composition theorem
-
-**Files:**
-- Modify: `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
-- Modify: `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2_test.agda`
-- Modify: `.ci/discovery/ExplorationTheoremGenerator.hs`
-- Modify: `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
-
-- [ ] **Step 1: Preserve the actual canonical path.**
-
-The active composition remains:
-
-`Watkins critic -> deterministic LCB -> fixed-temperature sparsemax action-selection -> learner signal -> normalized Walsh-Hadamard -> input projection -> recurrent step`.
-
-Learned sparsemax attention remains a separate representation state and is not relabeled as an actor.
-
-- [ ] **Step 2: Prove composed persistent-coordinate preservation after the transform change.**
-
-The theorem should instantiate the real canonical GRU step and prove preservation of matrices/noise/global controls after the exact normalized Walsh-Hadamard transformation.
-
-- [ ] **Step 3: Prove norm preservation of the transformed recurrent input.**
-
-Use the exact orthonormal theorem from Task 3 to establish a new finite norm-invariance boundary. This is a stronger algebraic result than the previous orthogonality-up-to-scale theorem.
-
-- [ ] **Step 4: Prove the strongest finite-cycle theorem actually discharged by the new order/invariant.**
-
-Possible outcomes are a global strict-descent no-cycle theorem or an exact invariant-fiber decomposition. Do not label either result as global convergence unless the proof actually establishes convergence.
-
-- [ ] **Step 5: Keep Mobius associativity separate but composed.**
-
-Expose the existing definitional associativity theorem and the new transform/recurrent composition theorem as separate lemmas inside one canonical theorem family. Neither theorem should falsely attribute associativity to Walsh-Hadamard multiplication.
-
----
-
-### Task 6: Make the negative q-log scale endogenous and fully finite
-
-**Files:**
-- Modify: `Exotic/ERL/FullCoupled/CanonicalSparsemaxLearnerV2.agda`
-- Modify: canonical regression.
-
-- [ ] **Step 1: Keep the exact finite-rational value separate from its Int8 control representation.**
-
-The rational value remains a numerator/denominator pair. The signed control is an explicit finite parameter derived from learner state or fixed configuration, but the two must not be conflated.
-
-- [ ] **Step 2: Define the scale as endogenous only through a proved state function.**
-
-The scale may depend on canonical learner state, such as the finite policy/critic surface, only through a total definition whose codomain and boundedness are explicit.
-
-- [ ] **Step 3: Prove finite totality and composition.**
-
-Show the scale is defined for every canonical state and the q-log shaping signal is total over the finite carrier.
-
-- [ ] **Step 4: Keep the model free of posterior semantics.**
-
-No Bayesian interpretation, continuous-log identity, or statistical claim is added merely because the shaping factor is called q-log.
-
----
-
-### Task 7: Consolidate redundancy pruning into the existing Haskell audit
-
-**Files:**
-- Modify: `.ci/discovery/PruneRedundantComponents.hs`
-- Modify: `.github/workflows/agda.yml`
-- Delete obsolete pruning-only scripts once usage is verified.
-
-- [ ] **Step 1: Extend the existing audit instead of adding another language/tool.**
-
-Audit q-log, action-selection, learned attention, Walsh-Hadamard, recurrent nonlinearities, GRU, LCB, optimizer, full-step, and retired source paths from one Haskell program.
-
-- [ ] **Step 2: Add explicit stale-token families.**
-
-The audit must flag legacy signReLU, softsign, unnormalised-Haar, duplicate action/actor surfaces, duplicate q-log implementations, and retired component modules.
-
-- [ ] **Step 3: Keep pruning non-destructive by default.**
-
-The audit reports a path for retirement and exits nonzero; source deletion remains a separate reviewed Git operation.
-
-- [ ] **Step 4: Remove superseded standalone pruning scripts.**
-
-Delete only scripts that are actually redundant with the consolidated Haskell audit and no longer referenced by CI or documentation.
-
----
-
-### Task 8: Reproducible environment without new shell helper code
-
-**Files:**
-- Create: `flake.nix` and/or `guix.scm` only if the repository does not already contain an equivalent environment declaration.
-- Modify: `.github/workflows/agda.yml` only to consume the declarative environment or existing setup action.
-
-- [ ] **Step 1: Pin Agda and stdlib versions in the declarative environment.**
-
-Match the current CI versions: Agda 2.8.0 and stdlib 2.4.
-
-- [ ] **Step 2: Pin the Haskell compiler needed by the generator.**
-
-Use the existing supported GHC release used by CI, and keep generator execution in `.hs` rather than introducing a shell wrapper.
-
-- [ ] **Step 3: Remove new Bash/Python helper logic.
-
-All repository automation introduced by this refactor must remain Agda, Haskell, or declarative environment configuration.
-
----
-
-### Task 9: Final theorem/report gate
-
-**Files:**
-- Modify: `.ci/discovery/ExplorationTheoremGenerator.hs`
-- Modify: `Exotic/ERL/Exploration/Generated/ExplorationCandidates.agda`
-- Modify: `.github/workflows/agda.yml`
-- Modify: `docs/THEOREM_FIRST_REPLICATION_WIKI.md`
-
-- [ ] **Step 1: Require the new normalized-Walsh, activation, input-dependence, pessimistic-order, q-log, and cycle theorems.**
-
-The generator must mark the family `Proven` only when all named proof terms exist and the complete canonical source succeeds under `agda --safe`.
-
-- [ ] **Step 2: Add regression declarations that distinguish representation attention from action selection.**
-
-The generated report must never imply that learned sparsemax attention is an independently trained actor.
-
-- [ ] **Step 3: Update the theorem-first wiki only after the new source compiles.**
-
-State exact proven identities and explicit non-claims. Do not promote proposed stronger theorems merely because their intended definitions exist.
-
-- [ ] **Step 4: Run the full safe gate.**
-
-Run the unified redundancy audit, all active component modules, canonical regression, generated theorem report, count-memory theorem, semidirect theorem, and persistent-GRU bridge.
-
----
-
-## Expected theorem gains
-
-The mathematically strongest low-risk gain is the normalized Walsh-Hadamard result at dimension `4^k`: exact orthonormality and norm preservation with dyadic normalization. The composed persistent-GRU theorem is also strengthened because it can be instantiated after that exact transform. A strictly stronger finite-cycle theorem is conditional on finding a discharged monotone measure/invariant for the *new* update. Pessimistic initialization alone does not imply absence of cycles, and Mobius associativity alone does not imply absence of cycles.
-
-The current repository already has `canonicalPersistentGRUPreservation` and `mobiusAssociativity`; the refactor should preserve and strengthen their composition rather than duplicate them.
+The literature identifies sparsemax as the alpha-2 member of the alpha-entmax/Tsallis-regularized family. Formalizing its variational or entropy-optimality characterization could add a new theorem boundary. It does not by itself strengthen the learner's Mobius, Walsh, persistence, or finite-cycle composition theorems, so the computational kernel remains the exact sparsemax map until that additional theorem is discharged.
