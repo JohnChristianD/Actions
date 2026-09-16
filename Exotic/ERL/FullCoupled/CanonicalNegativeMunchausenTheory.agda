@@ -35,15 +35,27 @@ negativeMunchausenScale8-law :
   negativeMunchausenScale8 ≡ signedFiniteScale negativeScale (int8OfNat 16)
 negativeMunchausenScale8-law = refl
 
+record PolicyQLog8 : Set where
+  constructor policyQLog8
+  field
+    source : Int8
+    finiteValue : FiniteRational
+open PolicyQLog8 public
+
+policyQLog8-value : ∀ logPi →
+  finiteValue (policyQLog8 logPi (finiteQLog8 logPi)) ≡ finiteQLog8 logPi
+policyQLog8-value logPi = refl
+
 data MunchausenRewardTerm : Set where
   baseReward : Int8 → MunchausenRewardTerm
-  policyQLog : Int8 → MunchausenRewardTerm
+  policyQLog : PolicyQLog8 → MunchausenRewardTerm
   scaleBy : SignedFiniteScale → MunchausenRewardTerm → MunchausenRewardTerm
   addTerm : MunchausenRewardTerm → MunchausenRewardTerm → MunchausenRewardTerm
 
 munchausenShapedReward : Int8 → SignedFiniteScale → Int8 → MunchausenRewardTerm
 munchausenShapedReward reward α logPi =
-  addTerm (baseReward reward) (scaleBy α (policyQLog logPi))
+  addTerm (baseReward reward)
+    (scaleBy α (policyQLog (policyQLog8 logPi (finiteQLog8 logPi))))
 
 negativeMunchausenShapedReward : Int8 → Int8 → Int8 → MunchausenRewardTerm
 negativeMunchausenShapedReward reward magnitude logPi =
@@ -57,6 +69,10 @@ negativeMunchausen-is-sign-flipped : ∀ reward magnitude logPi →
       (flipScale (signedFiniteScale positiveScale magnitude))
       logPi
 negativeMunchausen-is-sign-flipped reward magnitude logPi = refl
+
+negativeMunchausen-keeps-qLog : ∀ reward magnitude logPi →
+  finiteValue (policyQLog8 logPi (finiteQLog8 logPi)) ≡ finiteQLog8 logPi
+negativeMunchausen-keeps-qLog reward magnitude logPi = refl
 
 record MunchausenBellmanTarget : Set where
   constructor munchausenBellmanTarget
@@ -99,9 +115,11 @@ endogenousNegativeMunchausenScale-law K s = refl
 
 negativeMunchausenQLogTerm : FullLearnerKernel → FullLearnerState → Int8 → MunchausenRewardTerm
 negativeMunchausenQLogTerm K s logPi =
-  scaleBy (endogenousNegativeMunchausenScale8 K s) (policyQLog logPi)
+  scaleBy (endogenousNegativeMunchausenScale8 K s)
+    (policyQLog (policyQLog8 logPi (finiteQLog8 logPi)))
 
 negativeMunchausenQLogTerm-law : ∀ (K : FullLearnerKernel) (s : FullLearnerState) (logPi : Int8) →
   negativeMunchausenQLogTerm K s logPi ≡
-  scaleBy (endogenousNegativeMunchausenScale8 K s) (policyQLog logPi)
+  scaleBy (endogenousNegativeMunchausenScale8 K s)
+    (policyQLog (policyQLog8 logPi (finiteQLog8 logPi)))
 negativeMunchausenQLogTerm-law K s logPi = refl
