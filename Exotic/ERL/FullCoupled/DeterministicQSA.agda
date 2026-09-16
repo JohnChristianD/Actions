@@ -198,6 +198,91 @@ deterministicQSAStyleNoNontrivialCycle C =
   noNontrivialFiniteCycle (lyapunov C)
 
 ------------------------------------------------------------------------
+-- Certificate projections: target is fixed, and every fixed state is
+-- definitionally trapped at that target up to propositional equality.
+------------------------------------------------------------------------
+
+deterministicQSAStyleTargetFixed :
+  ∀ {S : Set} {step : S → S}
+  (C : DeterministicQSAStyleCertificate S step) →
+  Fixed step (target C)
+deterministicQSAStyleTargetFixed C =
+  targetFixed (terminal C)
+
+deterministicQSAStyleFixedStatesCollapse :
+  ∀ {S : Set} {step : S → S}
+  (C : DeterministicQSAStyleCertificate S step)
+  {s : S} →
+  Fixed step s →
+  s ≡ target C
+deterministicQSAStyleFixedStatesCollapse C =
+  uniqueFixed (terminal C)
+
+------------------------------------------------------------------------
+-- A closed finite support orbit is incompatible with a strict-support
+-- Lyapunov ranking. The orbit is encoded directly over Nat, so no list,
+-- vector, finite-set, quotient, probability, or arithmetic library is needed.
+------------------------------------------------------------------------
+
+record ClosedSupportOrbit
+  (S : Set)
+  (R : S → S → Set)
+  (n : Nat) : Set₁ where
+  constructor closedSupportOrbit
+  field
+    point : Nat → S
+    edge : ∀ i → i ≤ n → R (point i) (point (suc i))
+    distinct : ∀ i → i ≤ n → point i ≢ point (suc i)
+    close : point (suc n) ≡ point zero
+
+open ClosedSupportOrbit public
+
+closedSupportOrbitImpossible :
+  ∀ {S : Set} {R : S → S → Set}
+  (L : SupportLyapunov S R)
+  {n : Nat} →
+  ClosedSupportOrbit S R n →
+  ⊥
+closedSupportOrbitImpossible L C =
+  let
+    descending :
+      ∀ n →
+      supportEnergy L (point C (suc n)) <
+      supportEnergy L (point C zero)
+    descending zero =
+      strictSupportDecrease
+        L
+        (edge C zero (le-refl-nat zero))
+        (distinct C zero (le-refl-nat zero))
+    descending (suc n) =
+      <-trans
+        (strictSupportDecrease
+          L
+          (edge C (suc n) (le-refl-nat (suc n)))
+          (distinct C (suc n) (le-refl-nat (suc n))))
+        (descending n)
+    impossible :
+      supportEnergy L (point C zero) <
+      supportEnergy L (point C zero)
+    impossible =
+      subst
+        (λ z → supportEnergy L z < supportEnergy L (point C zero))
+        (close C)
+        (descending n)
+  in <-irrefl (supportEnergy L (point C zero)) impossible
+
+supportRelationAntisymmetricOffDiagonal :
+  ∀ {S : Set} {R : S → S → Set}
+  (L : SupportLyapunov S R)
+  {x y : S} →
+  x ≢ y →
+  R x y →
+  ¬ R y x
+supportRelationAntisymmetricOffDiagonal L distinct xy yx =
+  noStrongSupportLyapunovTwoCycle
+    L distinct xy yx
+
+------------------------------------------------------------------------
 -- Companion stochastic theorem: a pathwise strict support Lyapunov law
 -- conflicts with any supported nontrivial two-cycle.
 ------------------------------------------------------------------------
