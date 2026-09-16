@@ -2,7 +2,7 @@ name: Canonical self-contained learner gate
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'general-fininteger-policy-closedloop-20260916']
     paths:
       - '**/*.agda'
       - '.ci/**'
