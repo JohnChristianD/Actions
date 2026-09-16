@@ -43,6 +43,12 @@ jobs:
       - name: Verify Agda executable
         run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
 
+      - name: Check canonical general-action learner monolith
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalGeneralLearnerMonolith.agda
+
+      - name: Check canonical general-action closed-loop bench
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalGeneralClosedLoopBench.agda
+
       - name: Check self-contained canonical learner
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
 
