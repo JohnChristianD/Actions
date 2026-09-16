@@ -258,8 +258,9 @@ oneHotWeight a i with finEq i a
 oneHotSupport : ∀ {A : Nat} (a : Fin A) → oneHotWeight a a ≡ int8OfNat 128
 oneHotSupport a rewrite finEq-refl a = refl
 
-record MunchausenMode : Set where
-  constructor useMunchausen noMunchausen
+data MunchausenMode : Set where
+  useMunchausen : MunchausenMode
+  noMunchausen : MunchausenMode
 
 munchausenReward : MunchausenMode → Int8 → FiniteRational → Int8
 munchausenReward noMunchausen r q = r
