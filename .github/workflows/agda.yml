@@ -32,7 +32,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Reject forbidden theorem families
-        run: python3 .ci/check-forbidden-theorems.py
+        run: runghc .ci/CheckForbiddenTheorems.hs
 
       - name: Set up Haskell generator runtime
         run: sudo apt-get update && sudo apt-get install -y ghc
@@ -55,8 +55,14 @@ jobs:
       - name: Check shared Int8 algebra
         run: agda --safe Exotic/efficient_chad/Int8.agda
 
-      - name: Check frozen Haar/Helmert attention-GRU boundary
-        run: agda --safe Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda
+      - name: Check finite Mobius rational boundary
+        run: agda --safe Exotic/ERL/FullCoupled/MobiusRational.agda
+
+      - name: Check finite Mobius recurrent state
+        run: agda --safe Exotic/ERL/FullCoupled/DyadicGRU.agda
+
+      - name: Check normalized Walsh-Hadamard boundary
+        run: agda --safe Exotic/ERL/FullCoupled/FrozenOrthonormalWalshGRU.agda
 
       - name: Check direct Watkins critic-only layer
         run: agda --safe Exotic/ERL/FullCoupled/SparsemaxCriticWatkins.agda
@@ -79,11 +85,5 @@ jobs:
       - name: Check strict count-memory regression
         run: agda --safe Exotic/ERL/FullCoupled/CountMemoryCycleTheorem_test.agda
 
-      - name: Check semidirect recurrent signReLU composition
-        run: agda --safe Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition.agda
-
-      - name: Check semidirect recurrent signReLU regression
-        run: agda --safe Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition_test.agda
-
-      - name: Check concrete persistent GRU semidirect bridge
-        run: agda --safe Exotic/ERL/FullCoupled/ConnectedGRUSemidirectQSA.agda
+      - name: Check Mobius semidirect recurrent composition
+        run: agda --safe Exotic/ERL/FullCoupled/MobiusSemidirectCycleComposition.agda
