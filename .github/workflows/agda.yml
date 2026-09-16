@@ -58,6 +58,9 @@ jobs:
       - name: Check finite parameter completeness
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda
 
+      - name: Check control and observability definitions
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalControlObservability.agda
+
       - name: Check CNN log-pyramid preservation
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda
 
