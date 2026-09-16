@@ -50,9 +50,13 @@ plus-suc : ∀ (m n : Nat) → m + suc n ≡ suc (m + n)
 plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
 
+plus-right-le : ∀ (m n : Nat) → m ≤ m + n
+plus-right-le zero n = z≤n
+plus-right-le (suc m) n = s≤s (plus-right-le m n)
+
 plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
 plus-suc-lt m n = subst (λ z → m < z) (sym (plus-suc m n))
-  (s≤s (le-refl (m + n)))
+  (s≤s (plus-right-le m n))
 
 plus-suc-not-self : ∀ (m n : Nat) → m + suc n ≢ m
 plus-suc-not-self m n eq =
