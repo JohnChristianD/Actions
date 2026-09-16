@@ -35,6 +35,20 @@ negativeMunchausenScale8-law :
   negativeMunchausenScale8 ≡ signedFiniteScale negativeScale (int8OfNat 16)
 negativeMunchausenScale8-law = refl
 
+standardMunchausenScaleCode8 : Int8
+standardMunchausenScaleCode8 = int8OfNat 16
+
+negativeMunchausenScaleCode8 : Int8
+negativeMunchausenScaleCode8 = lcbNegate standardMunchausenScaleCode8
+
+negativeMunchausenScaleCode8-law :
+  code negativeMunchausenScaleCode8 ≡ fromℕ< (m%n<n 240 256)
+negativeMunchausenScaleCode8-law = refl
+
+negativeMunchausenScaleCode8-cancels-standard :
+  int8Add standardMunchausenScaleCode8 negativeMunchausenScaleCode8 ≡ zero8
+negativeMunchausenScaleCode8-cancels-standard = refl
+
 record PolicyQLog8 : Set where
   constructor policyQLog8
   field
@@ -46,14 +60,19 @@ policyQLog8-value : ∀ logPi →
   finiteValue (policyQLog8 logPi (finiteQLog8 logPi)) ≡ finiteQLog8 logPi
 policyQLog8-value logPi = refl
 
--- This is the finite, transcendental-free max-entropy q-log carrier used by
--- the learner.  No real logarithm or external analytic library is imported.
 finiteMaxEntQLog8 : Int8 → FiniteRational
 finiteMaxEntQLog8 = finiteQLog8
 
 finiteMaxEntQLog8-identical : ∀ x →
   finiteMaxEntQLog8 x ≡ finiteQLog8 x
 finiteMaxEntQLog8-identical x = refl
+
+finiteMaxEntQLog8-transcendental-free : ∀ x →
+  finiteMaxEntQLog8 x ≡ finiteRational
+    (rationalSign (finiteMaxEntQLog8 x))
+    (rationalNumerator (finiteMaxEntQLog8 x))
+    (rationalDenominator (finiteMaxEntQLog8 x))
+finiteMaxEntQLog8-transcendental-free x = refl
 
 data MunchausenRewardTerm : Set where
   baseReward : Int8 → MunchausenRewardTerm
@@ -83,6 +102,33 @@ negativeMunchausen-keeps-qLog : ∀ reward magnitude logPi →
   finiteValue (policyQLog8 logPi (finiteMaxEntQLog8 logPi)) ≡ finiteMaxEntQLog8 logPi
 negativeMunchausen-keeps-qLog reward magnitude logPi = refl
 
+standardMunchausenBonus8 : Int8 → Int8
+standardMunchausenBonus8 logPi =
+  int8Mul standardMunchausenScaleCode8
+    (rationalCode (finiteMaxEntQLog8 logPi))
+
+negativeMunchausenBonus8 : Int8 → Int8
+negativeMunchausenBonus8 logPi =
+  int8Mul negativeMunchausenScaleCode8
+    (rationalCode (finiteMaxEntQLog8 logPi))
+
+negativeMunchausenBonus8-law : ∀ logPi →
+  negativeMunchausenBonus8 logPi ≡
+  int8Mul (lcbNegate standardMunchausenScaleCode8)
+    (rationalCode (finiteMaxEntQLog8 logPi))
+negativeMunchausenBonus8-law logPi = refl
+
+negativeMunchausenReward8 : Int8 → Int8 → Int8
+negativeMunchausenReward8 reward logPi =
+  int8Add reward (negativeMunchausenBonus8 logPi)
+
+negativeMunchausenReward8-law : ∀ reward logPi →
+  negativeMunchausenReward8 reward logPi ≡
+  int8Add reward
+    (int8Mul (lcbNegate standardMunchausenScaleCode8)
+      (rationalCode (finiteMaxEntQLog8 logPi)))
+negativeMunchausenReward8-law reward logPi = refl
+
 record MunchausenBellmanTarget : Set where
   constructor munchausenBellmanTarget
   field
@@ -100,7 +146,7 @@ negativeMunchausenTarget : Int8 → Int8 → Int8 → Int8 → MunchausenBellman
 negativeMunchausenTarget reward magnitude logPi bootstrap =
   standardMunchausenTarget reward
     (signedFiniteScale negativeScale magnitude)
-    logPi
+    logPi bootstrap
 
 negativeMunchausenTarget-is-standard-flip : ∀ reward magnitude logPi bootstrap →
   negativeMunchausenTarget reward magnitude logPi bootstrap
