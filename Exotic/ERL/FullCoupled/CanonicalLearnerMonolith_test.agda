@@ -55,14 +55,23 @@ check-mobius-scan : ∀ x y z q →
   run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
       (mobiusActivationAction z)) q ≡
   run (composeAction (mobiusActivationAction x)
-      (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
+    (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
 check-mobius-scan = gruMobiusAssociativeScan
+
+check-h4-orthogonality : H4GramLaw
+check-h4-orthogonality = walshHadamardOrthogonality4
+
+check-power4-width : PowerOfFour canonicalWalshWidth
+check-power4-width = canonicalWalshWidth-power4
 
 check-pure-int8-count : gruCriticWH8CoordinateCount ≡ 15
 check-pure-int8-count = gruCriticWH8CoordinateCount-law
 
 check-quotient-count : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
 check-quotient-count = gruCriticWH8PersistentQuotientCoordinateCount-law
+
+check-full-int8-count : fullLearnerInt8CoordinateCount ≡ 23
+check-full-int8-count = fullLearnerInt8CoordinateCount-law
 
 check-policy-separation :
   ∀ (K : FullLearnerKernel) (s : FullLearnerState) (a : LearnedSparsemaxAttention) →
