@@ -48,7 +48,7 @@ iterate-preserves-equivalence : ∀ {C A} (W : TransitionWitness C A) n {x y : C
   CNNEquivalent W x y →
   decode W (iterateCNN W n x) ≡ decode W (iterateCNN W n y)
 iterate-preserves-equivalence W n eq =
-  trans (commute-iterate W n _) 
+  trans (commute-iterate W n _)
     (trans (cong (iterateLearner W n) eq) (sym (commute-iterate W n _)))
 
 record CNNBisimulationClaim (C A : Set) : Set₁ where
@@ -62,3 +62,44 @@ bisimulation-claim : ∀ {C A} → CNNBisimulationClaim C A →
   decode (witness _) (iterateCNN (witness _) n x) ≡
   decode (witness _) (iterateCNN (witness _) n y)
 bisimulation-claim B n x y eq = iterate-preserves-equivalence (witness B) n eq
+
+record CNNKernelBisimulation (C A : Set) : Set₁ where
+  constructor cnnKernelBisimulation
+  field
+    witness : TransitionWitness C A
+    related : C → C → Set
+    related-is-decode-equality : ∀ x y → related x y → CNNEquivalent witness x y
+    step-closed : ∀ x y → related x y → related (cnnStep witness x) (cnnStep witness y)
+open CNNKernelBisimulation public
+
+kernel-relation : ∀ {C A} (B : CNNKernelBisimulation C A) → C → C → Set
+kernel-relation B = related B
+
+kernel-relation-preserved : ∀ {C A} (B : CNNKernelBisimulation C A)
+  (x y : C) → kernel-relation B x y →
+  kernel-relation B (cnnStep (witness B) x) (cnnStep (witness B) y)
+kernel-relation-preserved B x y r = step-closed B x y r
+
+kernel-iterate-preserved : ∀ {C A} (B : CNNKernelBisimulation C A)
+  (n : Nat) (x y : C) → kernel-relation B x y →
+  kernel-relation B (iterateCNN (witness B) n x) (iterateCNN (witness B) n y)
+kernel-iterate-preserved B zero x y r = r
+kernel-iterate-preserved B (suc n) x y r =
+  kernel-iterate-preserved B n
+    (cnnStep (witness B) x)
+    (cnnStep (witness B) y)
+    (step-closed B x y r)
+
+kernel-decodes-identically : ∀ {C A} (B : CNNKernelBisimulation C A)
+  (x y : C) → kernel-relation B x y →
+  decode (witness B) x ≡ decode (witness B) y
+kernel-decodes-identically B x y r =
+  related-is-decode-equality B x y r
+
+kernel-bisimulation-learner-invariant : ∀ {C A} (B : CNNKernelBisimulation C A)
+  (n : Nat) (x y : C) → kernel-relation B x y →
+  decode (witness B) (iterateCNN (witness B) n x) ≡
+  decode (witness B) (iterateCNN (witness B) n y)
+kernel-bisimulation-learner-invariant B n x y r =
+  iterate-preserves-equivalence (witness B) n
+    (related-is-decode-equality B x y (kernel-iterate-preserved B n x y r))
