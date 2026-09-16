@@ -21,6 +21,9 @@ cnnFullStep K s p =
 cnnBehaviorallyEquivalent : CNNLogPyramidCode → CNNLogPyramidCode → Set
 cnnBehaviorallyEquivalent = CNNLogPyramidEquivalent
 
+replaceAttention-self : ∀ s → replaceAttention s (attention s) ≡ s
+replaceAttention-self s = refl
+
 cnnFullStep-preserves-equivalence : ∀ (K : FullLearnerKernel)
   (s : FullLearnerState) (p q : CNNLogPyramidCode) →
   cnnBehaviorallyEquivalent p q →
@@ -34,7 +37,9 @@ cnnFullStep-commutes : ∀ (K : FullLearnerKernel)
   cnnToAttention p ≡ attention s →
   cnnFullStep K s p ≡ canonicalFullStep K s
 cnnFullStep-commutes K s p h =
-  cong (canonicalFullStep K) (sym (cong (replaceAttention s) h))
+  trans
+    (cong (canonicalFullStep K) (cong (replaceAttention s) h))
+    (cong (canonicalFullStep K) (replaceAttention-self s))
 
 iterateCNN : FullLearnerKernel → CNNLogPyramidCode → Nat → FullLearnerState → FullLearnerState
 iterateCNN K p zero s = s
@@ -47,10 +52,9 @@ cnnTrajectory-preserves-equivalence : ∀ (K : FullLearnerKernel)
 cnnTrajectory-preserves-equivalence K p q h zero s = refl
 cnnTrajectory-preserves-equivalence K p q h (suc n) s =
   trans
-    (cnnFullStep-preserves-equivalence K (iterateCNN K p n s)
-      p q h)
+    (cnnFullStep-preserves-equivalence K (iterateCNN K p n s) p q h)
     (cong
-      (cnnFullStep K (iterateCNN K q n s) p)
+      (λ x → cnnFullStep K x q)
       (cnnTrajectory-preserves-equivalence K p q h n s))
 
 cnnBehavioralInterchangeability : ∀ (K : FullLearnerKernel)
@@ -67,9 +71,7 @@ cnnDecoderIsMinimalInterface : ∀ (K : FullLearnerKernel)
 cnnDecoderIsMinimalInterface K s p q h =
   trans
     (canonicalPolicy-attention-invariant K s (cnnToAttention p))
-    (trans
-      (refl)
-      (sym (canonicalPolicy-attention-invariant K s (cnnToAttention q))))
+    (sym (canonicalPolicy-attention-invariant K s (cnnToAttention q)))
 
 cnnEncoderSwapNoBehaviorChange : ∀ (K : FullLearnerKernel)
   (s : FullLearnerState) (p q : CNNLogPyramidCode) →
