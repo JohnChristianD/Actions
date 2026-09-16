@@ -23,7 +23,6 @@ between lo hi x with lo ≤ x
 ... | true with x ≤ hi
 ...   | false = no
 ...   | true = yes
-...   | false = no
 
 -- Exact connectivity of the 13x13 Gymnax FourRooms map.
 fourRoomsOpenExact : Nat → Nat → BoolLike
@@ -36,9 +35,9 @@ fourRoomsOpenExact (suc (suc (suc (suc (suc zero))))) c = orBool (between 1 5 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc zero)))))) c = orBool (between 2 2 c) (between 7 11 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc zero))))))) c = orBool (between 1 5 c) (between 9 11 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))) c = orBool (between 1 5 c) (between 7 11 c)
-fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc (suc zero))))))))) c = orBool (between 1 5 c) (between 7 11 c)
+fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero))))))))) c = orBool (between 1 5 c) (between 7 11 c)
 fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))))) c = between 1 11 c
-fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc (suc zero))))))))))) c = orBool (between 1 5 c) (between 7 11 c)
+fourRoomsOpenExact (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))) c = orBool (between 1 5 c) (between 7 11 c)
 fourRoomsOpenExact _ _ = no
 
 -- Jumanji's hardcoded 5x5 ToyGenerator wall layout.
