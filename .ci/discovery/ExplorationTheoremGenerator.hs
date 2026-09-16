@@ -16,6 +16,8 @@ surfaces =
       , "gymnaxMetaMazePort", "gymnaxFourRoomsPort", "gymnaxPongMiscPort"
       , "gymnaxMemoryChainBsuitePort", "gymnaxDiscountingChainBsuitePort"
       , "gymnaxCartPolePort", "gymnaxBernoulliBanditMiscPort", "pobaxRockSamplePort" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
+      [ "fourRoomsOpenExact", "toyMazeOpenExact" ]
   , Surface "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
       [ "learnerDefaultD", "learnerDefaultD-power4", "parameterize-complete"
       , "parameterizeFin-complete", "finiteStateFunctionalCompleteness" ]
