@@ -716,13 +716,13 @@ canonicalNoCountedTwoCycle K s cyc = suc-suc-not-self (totalCount s)
 temperatureCodeLaw : sparsemaxTemperature ≡ int8OfNat 16
 temperatureCodeLaw = refl
 
-temperatureTieLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 0)) ≡ int8OfNat 64 , int8OfNat 64
+temperatureTieLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 0)) ≡ (int8OfNat 64 , int8OfNat 64)
 temperatureTieLaw = refl
 
-temperaturePositiveUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 1) (int8OfNat 0)) ≡ int8OfNat 68 , int8OfNat 60
+temperaturePositiveUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 1) (int8OfNat 0)) ≡ (int8OfNat 68 , int8OfNat 60)
 temperaturePositiveUnitLaw = refl
 
-temperatureNegativeUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡ int8OfNat 60 , int8OfNat 68
+temperatureNegativeUnitLaw : fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡ (int8OfNat 60 , int8OfNat 68)
 temperatureNegativeUnitLaw = refl
 
 pessimisticInit : Int8
@@ -731,7 +731,7 @@ pessimisticInit = int8OfNat 128
 pessimisticCritic : CriticState
 pessimisticCritic = criticState pessimisticInit pessimisticInit
 
-pessimisticCritic-law : qLeft pessimisticCritic ≡ pessimisticInit × qRight pessimisticCritic ≡ pessimisticInit
+pessimisticCritic-law : (qLeft pessimisticCritic ≡ pessimisticInit) × (qRight pessimisticCritic ≡ pessimisticInit)
 pessimisticCritic-law = refl , refl
 
 canonicalWalshBoundary : walshOrthonormal ≡ walshOrthonormal
