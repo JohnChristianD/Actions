@@ -110,10 +110,10 @@ scoreA q c a = int8Add (q a) (lcbBonus (c a))
 ScoreEntry : Nat → Set
 ScoreEntry A = Int8 × Fin A
 
-int8Order : DecTotalOrder Int8
+int8Order : DecTotalOrder 0 0 0
 int8Order = On.decTotalOrder (≤-decTotalOrder 256) code
 
-scoreEntryOrder : ∀ A → DecTotalOrder (ScoreEntry A)
+scoreEntryOrder : ∀ A → DecTotalOrder 0 0 0
 scoreEntryOrder A =
   Flip.decTotalOrder
     (Lex.×-decTotalOrder int8Order (≤-decTotalOrder A))
