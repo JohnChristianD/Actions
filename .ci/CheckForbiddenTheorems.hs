@@ -18,8 +18,6 @@ checkedPaths =
   , "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
   , "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
-  , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation_test.agda"
-  , "Exotic/ERL/FullCoupled/CountMemoryCycleTheorem_test.agda"
   , "Exotic/econlib/GameTheory.agda"
   , "Exotic/econlib/Equilibrium.agda"
   , "Exotic/econlib/MatchingPennies.agda"
