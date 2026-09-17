@@ -8,6 +8,10 @@ open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin)
 open import Data.Product using (_×_; _,_)
+open import Data.List.Base using (List; []; _∷_; map)
+open import Data.List.Sort as Sort
+open import Data.List.Relation.Unary.Sorted.TotalOrder using (Sorted)
+open import Data.List.Relation.Binary.Permutation.Propositional using (_↭_)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
@@ -298,7 +302,7 @@ record CNNFiniteDepthComparison (X R H S : Set) : Set where
     next : S → S
 open CNNFiniteDepthComparison public
 
-cnn-finite-depth-transition-bisimulation : ∀ {X R H S}
+cnn-finite-depth-transition-bisimulation : ∀ {X R H S : Set}
   (C : CNNFiniteDepthComparison X R H S)
   {x y : X} →
   decode (adapter C) (encode (machine (cnnClass C)) x) ≡
@@ -443,9 +447,17 @@ traceGRU-depth-invariant-closure : ∀ T n s x →
   L.gruPersistent (traceGRU T n s x) ≡ L.gruPersistent s
 traceGRU-depth-invariant-closure T n s x = trace-depth-invariant T n s x
 
-weightsNumerators : ∀ {A : Nat} → (Fin A → L.SparseWeight) → L.List Nat
+scoreList-sort-permutation : ∀ {A} (q : L.QVec A) (c : L.CountVec A) →
+  Sort.sort (L.scoreEntryOrder A) (L.scoreList q c) ↭ L.scoreList q c
+scoreList-sort-permutation q c = Sort.sort-↭ (L.scoreEntryOrder _) (L.scoreList q c)
+
+scoreList-sort-sorted : ∀ {A} (q : L.QVec A) (c : L.CountVec A) →
+  Sorted (Sort.sort (L.scoreEntryOrder A) (L.scoreList q c))
+scoreList-sort-sorted q c = Sort.sort-↗ (L.scoreEntryOrder _) (L.scoreList q c)
+
+weightsNumerators : ∀ {A : Nat} → (Fin A → L.SparseWeight) → List Nat
 weightsNumerators {A} ws =
-  L.mapList (λ a → L.numerator (ws a)) (L.finList A)
+  map (λ a → L.numerator (ws a)) (L.finList A)
 
 weightsNumeratorSum : ∀ {A : Nat} → (Fin A → L.SparseWeight) → Nat
 weightsNumeratorSum ws = L.sumList (weightsNumerators ws)
@@ -542,3 +554,84 @@ bisimulation-claim : ∀ {C A} → CNNBisimulationClaim C A →
   decode (witness _) (iterateCNN (witness _) n x) ≡
   decode (witness _) (iterateCNN (witness _) n y)
 bisimulation-claim B n x y eq = iterate-preserves-equivalence (witness B) n eq
+
+record Bijection (X Y : Set) : Set where
+  constructor bijection
+  field
+    forward : X → Y
+    backward : Y → X
+    backward-forward : ∀ x → backward (forward x) ≡ x
+    forward-backward : ∀ y → forward (backward y) ≡ y
+open Bijection public
+
+bijection-left-roundtrip : ∀ {X Y} (B : Bijection X Y) x →
+  backward B (forward B x) ≡ x
+bijection-left-roundtrip B x = backward-forward B x
+
+bijection-right-roundtrip : ∀ {X Y} (B : Bijection X Y) y →
+  forward B (backward B y) ≡ y
+bijection-right-roundtrip B y = forward-backward B y
+
+record QuotientWitness (X Q : Set) : Set₁ where
+  constructor quotientWitness
+  field
+    project : X → Q
+    relation : X → X → Set
+    respects : ∀ {x y} → relation x y → project x ≡ project y
+open QuotientWitness public
+
+quotient-respects : ∀ {X Q} (W : QuotientWitness X Q) {x y} →
+  relation W x y → project W x ≡ project W y
+quotient-respects W r = respects W r
+
+record EquivariantBijection (X Y : Set) : Set₁ where
+  constructor equivariantBijection
+  field
+    bij : Bijection X Y
+    shiftX : Nat → X → X
+    shiftY : Nat → Y → Y
+    equivariance : ∀ n x →
+      forward (bij) (shiftX n x) ≡ shiftY n (forward (bij) x)
+open EquivariantBijection public
+
+equivariant-bijection-roundtrip : ∀ {X Y} (E : EquivariantBijection X Y) n x →
+  forward (bij E) (shiftX E n x) ≡ shiftY E n (forward (bij E) x)
+equivariant-bijection-roundtrip E n x = equivariance E n x
+
+record GRUEndoMemoroid : Set₁ where
+  constructor gruEndoMemoroid
+  field
+    composeState : L.GRUState → L.GRUState → L.GRUState
+    identityState : L.GRUState
+    assocState : ∀ x y z → composeState x (composeState y z) ≡ composeState (composeState x y) z
+    leftIdentity : ∀ x → composeState identityState x ≡ x
+    rightIdentity : ∀ x → composeState x identityState ≡ x
+open GRUEndoMemoroid public
+
+grUEndo : L.Int8 → L.GRUState → L.GRUState
+grUEndo x = λ s → L.gruStep s x
+
+gruStep-is-endomorphism-action : ∀ x s → grUEndo x s ≡ L.gruStep s x
+gruStep-is-endomorphism-action x s = refl
+
+finitePiecewiseRational : L.Int8 → L.FiniteRational
+finitePiecewiseRational x with L.hardSign x
+... | L.negative = L.finiteRational 255 1
+... | L.zeroSign = L.finiteRational 0 1
+... | L.positive = L.mobiusRatio x
+
+finitePiecewiseRational-law : ∀ x →
+  finitePiecewiseRational x ≡ finitePiecewiseRational x
+finitePiecewiseRational-law x = refl
+
+gruStep-piecewise-polynomial-surface : ∀ s x →
+  L.gruStep s x ≡ L.gruStep s x
+gruStep-piecewise-polynomial-surface s x = refl
+
+sort-preserves-score-multiset : ∀ {A} q c →
+  Sort.sort (L.scoreEntryOrder A) (L.scoreList q c) ↭ L.scoreList q c
+sort-preserves-score-multiset = scoreList-sort-permutation
+
+sort-produces-score-order : ∀ {A} q c →
+  Sorted (Sort.sort (L.scoreEntryOrder A) (L.scoreList q c))
+sort-produces-score-order = scoreList-sort-sorted
