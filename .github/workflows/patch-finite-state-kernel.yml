@@ -38,3 +38,4 @@ jobs:
           git add Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda .github/workflows/patch-finite-state-kernel.yml
           git commit -m "fix: type finite state kernel fields for Agda 2.8"
           git push origin HEAD:main
+
