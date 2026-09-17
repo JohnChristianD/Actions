@@ -136,21 +136,15 @@ traceSemidirect-step : ∀ w n →
     (traceInput (trace w) n (input w))
 traceSemidirect-step w n = traceGRU-step-law (trace w) n (seed w) (input w)
 
-trace-prefix-factor : ∀ T n s x →
+trace-prefix-factor : ∀ T n x →
   traceInput T (suc n) x ≡
   L.run (L.atDepth T n) (traceInput T n x)
 trace-prefix-factor T n x = prefixAction-law T n x
 
-trace-append-factor : ∀ T n m s x →
-  traceGRU T (n + suc m) s x ≡
-  traceGRU T (n + suc m) s x
-trace-append-factor T n m s x = refl
-
--- Exact finite KKT boundary data.  This is deliberately a theorem-layer
--- boundary: the learner monolith exposes only its finite threshold weights.
--- The boundary records the support/non-support separation needed to discharge
--- the algebraic sparsemax KKT equations without embedding a real-valued CNN or
--- optimizer into learner semantics.
+-- This is the exact theorem-layer KKT boundary for the finite threshold
+-- representation.  It intentionally does not pretend that the learner's
+-- Int8 scan has already been proven equivalent to the real-valued sparsemax
+-- Euclidean projection.  No postulate or filled theorem-hole is used.
 record SparsemaxKKTBoundary (A : Nat) : Set where
   constructor sparsemaxKKTBoundary
   field
@@ -173,11 +167,7 @@ sparsemaxKKT-simplex W = numeratorSumLaw W
 
 sparsemaxKKT-denominator : ∀ {A} (W : SparsemaxKKTBoundary A) →
   simplexDenominator W ≡ supportSizeK W * temperatureK W
-autoSparsemaxKKT-denominator W = denominatorLaw W
-
-autoSparsemaxKKT-denominator : ∀ {A} (W : SparsemaxKKTBoundary A) →
-  simplexDenominator W ≡ supportSizeK W * temperatureK W
-autoSparsemaxKKT-denominator W = denominatorLaw W
+sparsemaxKKT-denominator W = denominatorLaw W
 
 record SparsemaxKKTConditions (A : Nat) : Set where
   constructor sparsemaxKKTConditions
@@ -189,11 +179,6 @@ record SparsemaxKKTConditions (A : Nat) : Set where
     stationarity : Set
     complementarity : Set
 open SparsemaxKKTConditions public
-
--- The exact arbitrary-A implementation bridge is intentionally isolated here:
--- the learner can supply a KKTConditions witness only after its finite scan is
--- connected to the boundary inequalities.  No postulate is used and no such
--- witness is fabricated here.
 
 record FormalCNNMachine (X R : Set) : Set where
   constructor formalCNNMachine
