@@ -52,3 +52,4 @@ jobs:
 # ci: re-run closure on the Agda-2.8 typed finite-state kernel repair
 # ci: re-run closure after TransitionWitness field rename
 # ci: re-run closure after theorem-local order relation rename
+# ci: re-run closure after Sion carrier scope repair
