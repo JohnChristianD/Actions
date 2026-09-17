@@ -121,12 +121,12 @@ discountingChainEnv = benchEnv
   1
   P.discountingChainStep
 
-rockSampleEnv : BenchEnv 6 P.RockSampleState
-rockSampleEnv = benchEnv
-  (L.actionSpace (fromℕ< (m%n<n 0 6)))
-  (P.rockSampleState 0 0 1 0)
-  255
-  P.rockSampleStep
+pobaxTMazeEnv : BenchEnv 3 P.PobaxTMazeState
+pobaxTMazeEnv = benchEnv
+  (L.actionSpace (fromℕ< (m%n<n 0 3)))
+  (P.pobaxTMazeState 0 0 0)
+  1
+  P.pobaxTMazeStep
 
 banditAblation : AblationPair
 banditAblation = mkAblation bernoulliBanditEnv 16
@@ -158,5 +158,5 @@ memoryChainAblation = mkAblation memoryChainEnv 16
 discountingChainAblation : AblationPair
 discountingChainAblation = mkAblation discountingChainEnv 16
 
-rockSampleAblation : AblationPair
-rockSampleAblation = mkAblation rockSampleEnv 16
+pobaxTMazeAblation : AblationPair
+pobaxTMazeAblation = mkAblation pobaxTMazeEnv 8
