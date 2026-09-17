@@ -57,6 +57,11 @@ leBool zero _ = yes
 leBool (suc _) zero = no
 leBool (suc m) (suc n) = leBool m n
 
+maxNat : Nat → Nat → Nat
+maxNat zero n = n
+maxNat (suc m) zero = suc m
+maxNat (suc m) (suc n) = suc (maxNat m n)
+
 raiseFin : ∀ {A} → Fin A → Fin (suc A)
 raiseFin i = fromℕ< (s≤s (toℕ<n i))
 
@@ -153,7 +158,7 @@ supportValid xs temperature k with natAt (k ∸ 1) (topCodes k xs)
 searchSupport : ∀ {A : Nat} → List (Fin A × Int8) → Nat → Nat → Nat → Nat → Nat
 searchSupport xs temperature zero current best = best
 searchSupport xs temperature (suc n) current best with supportValid xs temperature current
-... | yes = searchSupport xs temperature n (suc current) current
+... | yes = searchSupport xs temperature n (suc current) (maxNat current best)
 ... | no = searchSupport xs temperature n (suc current) best
 
 supportSize : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Nat
