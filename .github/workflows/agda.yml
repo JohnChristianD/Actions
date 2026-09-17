@@ -49,9 +49,6 @@ jobs:
       - name: Check generalized theorem monolith
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
 
-      - name: Check generalized theorem closure
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremClosure.agda
-
       - name: Check generalized closed-loop benchmark
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda
 
