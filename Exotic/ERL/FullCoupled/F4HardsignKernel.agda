@@ -52,9 +52,8 @@ addZ (zn m) (zn n) = zn (m + n + 1)
 
 mulZ : Z → Z → Z
 mulZ (zp m) (zp n) = zp (m * n)
-mulZ (zp zero) (zn n) = zp zero
-mulZ (zp (suc m)) (zn n) = zn (suc m * suc n ∸ 1)
-mulZ (zn m) (zp n) = mulZ (zp n) (zn m)
+mulZ (zp m) (zn n) = negZ (zp (m * suc n))
+mulZ (zn m) (zp n) = negZ (zp (suc m * n))
 mulZ (zn m) (zn n) = zp (suc m * suc n)
 
 toZ : Int8 → Z
@@ -204,7 +203,7 @@ f4StepWithGateExactL2 p s g gate =
 clip-add-boundary : int8OfNat 127 +₈ one8 ≡ int8OfNat 127
 clip-add-boundary = refl
 
-scaled-mul-example : scaledMul8 (int8OfNat 64) (int8OfNat 64) ≡ int8OfNat 32
+scaled-mul-example : toℕ (code (scaledMul8 (int8OfNat 64) (int8OfNat 64))) ≡ 32
 scaled-mul-example = refl
 
 identity-gate-example : identityGate (int8OfNat 2) ≡ one8
