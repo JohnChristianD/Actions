@@ -38,26 +38,39 @@ wellFormedMobiusWitness =
     T.prMobiusWitness
     (λ x → λ ())
 
+branchFunction :
+  ∀ {f g h : L.Int8 → L.FiniteRational} →
+  L.Int8 → L.FiniteRational
+branchFunction {f = f} {g = g} {h = h} x with L.hardSign x
+... | L.negative = f x
+... | L.zeroSign = g x
+... | L.positive = h x
+
+branchDenominatorProof :
+  ∀ {f g h : L.Int8 → L.FiniteRational} →
+  FinitePiecewiseRationalClosed f →
+  FinitePiecewiseRationalClosed g →
+  FinitePiecewiseRationalClosed h →
+  WellFormedPiecewiseRational (branchFunction {f = f} {g = g} {h = h})
+branchDenominatorProof F G H x with L.hardSign x
+... | L.negative = denominator-nonzero F x
+... | L.zeroSign = denominator-nonzero G x
+... | L.positive = denominator-nonzero H x
+
 wellFormedBranchClosure :
   ∀ {f g h}
   → FinitePiecewiseRationalClosed f
   → FinitePiecewiseRationalClosed g
   → FinitePiecewiseRationalClosed h
   → FinitePiecewiseRationalClosed
-      (λ x with L.hardSign x
-       ... | L.negative = f x
-       ... | L.zeroSign = g x
-       ... | L.positive = h x)
+      (branchFunction {f = f} {g = g} {h = h})
 wellFormedBranchClosure F G H =
   finitePiecewiseRationalClosed
     (T.prBranch-closure
       (representation F)
       (representation G)
       (representation H))
-    (λ x with L.hardSign x
-     ... | L.negative = denominator-nonzero F x
-     ... | L.zeroSign = denominator-nonzero G x
-     ... | L.positive = denominator-nonzero H x)
+    (branchDenominatorProof F G H)
 
 wellFormedInputCompositionClosure :
   ∀ {f}
