@@ -6,7 +6,6 @@ on:
     paths:
       - '**/*.agda'
       - '.ci/**'
-      - '*.cabal'
       - 'docs/**'
       - '.github/workflows/agda.yml'
   pull_request:
@@ -14,7 +13,6 @@ on:
     paths:
       - '**/*.agda'
       - '.ci/**'
-      - '*.cabal'
       - 'docs/**'
       - '.github/workflows/agda.yml'
   schedule:
@@ -108,18 +106,16 @@ jobs:
       - name: Check learner game execution regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
 
-      - name: Set up Haskell and Cabal
-        uses: haskell-actions/setup@v2
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          ghc-version: latest
-          cabal-version: latest
-          cabal-update: false
+          python-version: '3.12'
 
-      - name: Set up theorem-search runtime
-        run: python -m pip install --disable-pip-version-check "mctx==0.0.71" "evosax==0.3.1"
+      - name: Set up JAxtar A* theorem-search runtime
+        run: python -m pip install --disable-pip-version-check "jaxtar @ git+https://github.com/tinker495/JAxtar@d886571b116d7ca4de1f91a715cf2e73ee3b5acd"
 
-      - name: Run kernel-checked hybrid theorem search
-        run: python .ci/discovery/ProofSearch.py --backend auto --budget 24
+      - name: Run kernel-checked JAxtar A* theorem search
+        run: python .ci/discovery/ProofSearch.py --backend astar --budget 64
 
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
