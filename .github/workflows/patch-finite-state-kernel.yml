@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   patch:
-    if: startsWith(github.event.head_commit.message, 'bootstrap: patch finite state kernel')
+    if: "startsWith(github.event.head_commit.message, 'bootstrap: patch finite state kernel')"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
