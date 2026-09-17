@@ -6,6 +6,8 @@ open import Agda.Builtin.Nat using (Nat; zero; suc)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith as T
+open import Exotic.ERL.FullCoupled.GeneralReservoirAttractorTheorems as R
+open R public
 
 WellFormedFiniteRational : L.FiniteRational → Set
 WellFormedFiniteRational q = L.denominator q ≢ zero
