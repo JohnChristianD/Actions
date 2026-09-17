@@ -50,3 +50,4 @@ jobs:
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda
 
 # ci: re-run closure on the Agda-2.8 typed finite-state kernel repair
+# ci: re-run closure after TransitionWitness field rename
