@@ -48,6 +48,9 @@ jobs:
       - name: Check generalized self-contained learner monolith
         run: timeout 180s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda
 
+      - name: Check finite piecewise-rational closure
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FinitePiecewiseRationalClosure.agda
+
       - name: Check generalized theorem monolith
         run: timeout 180s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
 
