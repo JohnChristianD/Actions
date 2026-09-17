@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_) 
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Level using (0ℓ)
 open import Data.Nat using (_∸_; _≤_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
@@ -231,11 +231,14 @@ prefixAction T (suc n) = composeMobius (atDepth T n) (prefixAction T n)
 data HardSign : Set where
   negative zeroSign positive : HardSign
 
+hardSignNonnegative : Int8 → HardSign
+hardSignNonnegative x with natEq (toℕ (code x)) zero
+... | yes = zeroSign
+... | no = positive
+
 hardSign : Int8 → HardSign
 hardSign x with natLt (toℕ (code x)) 128
-... | yes with natEq (toℕ (code x)) zero
-...   | yes = zeroSign
-...   | no = positive
+... | yes = hardSignNonnegative x
 ... | no = negative
 
 hardSignGate : Int8 → Int8
@@ -365,8 +368,5 @@ learnerStep K s reward =
     (normStep (normState s) (q s a) shaped)
 
 iterateLearner : ∀ {A} → LearnerKernel A → Nat → LearnerState A → Int8 → LearnerState A
-iterateLearner K zero s r = s
-iterateLearner K (suc n) s r = learnerStep K (iterateLearner K n s r) r
-
-finiteFunctionKernel : ∀ {A B} → (Fin A → Fin B) → (Fin A → Fin B)
-finiteFunctionKernel f = f
+iterateLearner K zero s reward = s
+iterateLearner K (suc n) s reward = learnerStep K (iterateLearner K n s reward) reward
