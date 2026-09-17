@@ -1,8 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.StandardCNNComparison where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; trans)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; sym; trans)
+open import Agda.Builtin.Nat using (Nat)
 
 open import Exotic.ERL.FullCoupled.ExternalCNNTransitionBisimulation as E
 
@@ -44,25 +44,26 @@ record CNNTransitionClass (X R H S : Set) : Set where
 
 cnnDepthFactorization : ∀ {X R H S : Set}
   (C : CNNTransitionClass X R H S) n x →
-  E.CNNEquivalent (cnn C) (adapter C) x x
-cnnDepthFactorization C n x =
-  refl
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C) x x
+cnnDepthFactorization C n x = refl
 
 cnnTransitionStep : ∀ {X R H S : Set}
   (C : CNNTransitionClass X R H S) n x y →
-  E.CNNEquivalent (cnn C) (adapter C) x y →
-  E.CNNEquivalent (cnn C) (adapter C)
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C) x y →
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C)
     (shift (translation (cnn C)) n x)
     (shift (translation (cnn C)) n y)
 cnnTransitionStep C n x y e =
-  trans
-    (cong (E.RepresentationAdapter.decode (adapter C)) e)
-    refl
+  cong
+    (E.RepresentationAdapter.decode (adapter C))
+    (trans
+      (ConvolutionalEquivariance.featureShift (equivariance C) n x)
+      (trans e (sym (ConvolutionalEquivariance.featureShift (equivariance C) n y))))
 
 standardCNNComparison : ∀ {X R H S : Set}
   (C : CNNTransitionClass X R H S) n x y →
-  E.CNNEquivalent (cnn C) (adapter C) x y →
-  E.CNNEquivalent (cnn C) (adapter C)
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C) x y →
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C)
     (shift (translation (cnn C)) n x)
     (shift (translation (cnn C)) n y)
 standardCNNComparison C n x y e =
@@ -70,23 +71,22 @@ standardCNNComparison C n x y e =
 
 cnnMachineTransitionPreserves : ∀ {X R H S : Set}
   (C : CNNTransitionClass X R H S) n x y →
-  E.CNNEquivalent (cnn C) (adapter C) x y →
-  transition C (
-    E.RepresentationAdapter.decode (adapter C)
-      (encode (cnn C) x)) ≡
-  transition C (
-    E.RepresentationAdapter.decode (adapter C)
-      (encode (cnn C) y))
-cnnMachineTransitionPreserves C n x y e =
-  cong (transition C) (cong (E.RepresentationAdapter.decode (adapter C)) e)
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C) x y →
+  E.LearnerTransition.input (transition C)
+    (E.RepresentationAdapter.decode (adapter C) (encode (cnn C) x)) ≡
+  E.LearnerTransition.input (transition C)
+    (E.RepresentationAdapter.decode (adapter C) (encode (cnn C) y))
+cnnMachineTransitionPreserves C n x y e = cong (E.LearnerTransition.input (transition C)) e
 
 cnnNextPreserves : ∀ {X R H S : Set}
   (C : CNNTransitionClass X R H S) n x y →
-  E.CNNEquivalent (cnn C) (adapter C) x y →
+  E.CNNEquivalent (E.externalCNN (encode (cnn C))) (adapter C) x y →
   nextState C
-    (transition C (E.RepresentationAdapter.decode (adapter C) (encode (cnn C) x))) ≡
+    (E.LearnerTransition.input (transition C)
+      (E.RepresentationAdapter.decode (adapter C) (encode (cnn C) x))) ≡
   nextState C
-    (transition C (E.RepresentationAdapter.decode (adapter C) (encode (cnn C) y)))
+    (E.LearnerTransition.input (transition C)
+      (E.RepresentationAdapter.decode (adapter C) (encode (cnn C) y)))
 cnnNextPreserves C n x y e =
   cong (nextState C) (cnnMachineTransitionPreserves C n x y e)
 
