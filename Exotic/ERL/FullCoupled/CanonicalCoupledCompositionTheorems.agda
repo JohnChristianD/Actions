@@ -94,9 +94,9 @@ signGRUScan-depth : ∀ n s x →
   signGRUScan n s x ≡ signGRUScan n s x
 signGRUScan-depth n s x = refl
 
-signGRUScan-depth-unbounded : ∀ B s x →
+signGRUScan-depth-unbounded : ∀ B →
   B < suc B
-signGRUScan-depth-unbounded B s x = s≤s (natLeRefl B)
+signGRUScan-depth-unbounded B = s≤s (natLeRefl B)
 
 ------------------------------------------------------------------------
 -- Associative triple composition for the canonical sign-GRU scan action.
@@ -141,5 +141,5 @@ simultaneous-coupled-closure : ∀ A → SimultaneousCoupledClosure A
 simultaneous-coupled-closure A =
   simultaneousCoupledClosure
     canonical-reservoir-condition
-    (λ B → signGRUScan-depth-unbounded B L.zeroGRU L.zero8)
+    signGRUScan-depth-unbounded
     associative-scan-triple
