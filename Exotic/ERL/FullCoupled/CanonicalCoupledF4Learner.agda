@@ -2,8 +2,11 @@
 module Exotic.ERL.FullCoupled.CanonicalCoupledF4Learner where
 
 open import Agda.Builtin.Bool using (Bool; true; false)
-open import Data.Nat using (Nat; zero; suc; _+_; _*_; _∸_; _/_)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Data.Nat using (_+_; _*_; _∸_; _/_)
 open import Data.Fin using (Fin)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
 data Signed8 : Set where
@@ -103,8 +106,7 @@ record CanonicalF4Params : Set where
 open CanonicalF4Params public
 
 zeroCanonicalF4 : CanonicalF4State
-zeroCanonicalF4 = canonicalF4State
-  L.zero8 L.zero8 L.zero8 L.zero8 L.zero8 (pos8 zero)
+zeroCanonicalF4 = canonicalF4State L.zero8 L.zero8 L.zero8 L.zero8 L.zero8 (pos8 zero)
 
 thetaFull : CanonicalF4State → L.Int8
 thetaFull s = qTheta s +f4 rTheta s
@@ -113,55 +115,41 @@ errorFull : CanonicalF4State → L.Int8
 errorFull s = qE s +f4 rE s
 
 eNew : CanonicalF4Params → CanonicalF4State → L.Int8 → L.Int8
-eNew p s g =
-  scaledMulF4 (beta₂ p) (errorFull s) +f4
-  scaledMulF4 (L.one8 -f4 beta₂ p) g
+eNew p s g = scaledMulF4 (beta₂ p) (errorFull s) +f4 scaledMulF4 (L.one8 -f4 beta₂ p) g
 
 ellUpdated : CanonicalF4State → L.Int8 → Signed8
-ellUpdated s enew =
-  signedAdd (ell s) (sgnF4Z (rL s +f4 enew))
+ellUpdated s enew = signedAdd (ell s) (sgnF4Z (rL s +f4 enew))
 
 rLUpdated : CanonicalF4State → L.Int8 → L.Int8
-rLUpdated s enew =
-  let rL′ = rL s +f4 enew
-  in rL′ -f4 sgnF4 rL′
+rLUpdated s enew = let rL′ = rL s +f4 enew in rL′ -f4 sgnF4 rL′
 
 canonicalSign : L.Int8 → L.Int8
 canonicalSign = L.hardSignGate
 
-canonicalSign-state-independent : ∀ {S : Set} (s t : S) x →
-  canonicalSign x ≡ canonicalSign x
+canonicalSign-state-independent : ∀ {S : Set} (s t : S) x → canonicalSign x ≡ canonicalSign x
 canonicalSign-state-independent s t x = refl
 
 deltaTheta : CanonicalF4Params → CanonicalF4State → L.Int8 → L.Int8
-deltaTheta p s g =
-  scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4
-  scaledMulF4 (betaTheta p) (thetaFull s)
+deltaTheta p s g = scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4 scaledMulF4 (betaTheta p) (thetaFull s)
 
 canonicalF4Step : CanonicalF4Params → CanonicalF4State → L.Int8 → CanonicalF4State
-canonicalF4Step p s g =
-  canonicalF4State
-    qTheta′ rTheta′ qE′ rE′ rL′′ ell′
+canonicalF4Step p s g = canonicalF4State qTheta′ rTheta′ qE′ rE′ rL′′ ell′
   where
-    θ = thetaFull s
-    e = errorFull s
-    e′ = eNew p s g
-    rL′′ = rLUpdated s e′
-    ell′ = ellUpdated s e′
-    Δθ = deltaTheta p s g
-    qTheta′ = θ +f4 Δθ
-    rTheta′ = θ -f4 qTheta′
-    qE′ = e′
-    rE′ = e -f4 e′
+  θ = thetaFull s
+  e = errorFull s
+  e′ = eNew p s g
+  rL′′ = rLUpdated s e′
+  ell′ = ellUpdated s e′
+  Δθ = deltaTheta p s g
+  qTheta′ = θ +f4 Δθ
+  rTheta′ = θ -f4 qTheta′
+  qE′ = e′
+  rE′ = e -f4 e′
 
-canonicalF4-global-L2-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) g →
-  deltaTheta p s g ≡
-  scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4
-  scaledMulF4 (betaTheta p) (thetaFull s)
+canonicalF4-global-L2-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) g → deltaTheta p s g ≡ scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4 scaledMulF4 (betaTheta p) (thetaFull s)
 canonicalF4-global-L2-law p s g = refl
 
-canonicalF4-old-ell-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) g →
-  pow2Ell8 (ell s) ≡ pow2Ell8 (ell s)
+canonicalF4-old-ell-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) g → pow2Ell8 (ell s) ≡ pow2Ell8 (ell s)
 canonicalF4-old-ell-law p s g = refl
 
 record CanonicalCoupledKernel (A : Nat) : Set where
@@ -185,31 +173,15 @@ record CanonicalCoupledState (A : Nat) : Set where
 open CanonicalCoupledState public
 
 initialCanonicalCoupled : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A
-initialCanonicalCoupled K =
-  canonicalCoupledState
-    zero
-    L.zeroQ
-    L.zeroCounts
-    (L.witness (actionSpaceC K))
-    L.zeroGRU
-    zeroCanonicalF4
-    L.zeroNorm
+initialCanonicalCoupled K = canonicalCoupledState zero L.zeroQ L.zeroCounts (L.witness (actionSpaceC K)) L.zeroGRU zeroCanonicalF4 L.zeroNorm
 
 coupledPolicy : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A → Fin A
-coupledPolicy K s =
-  L.sparsemaxPolicy
-    (actionSpaceC K)
-    (coupledQ s)
-    (coupledCounts s)
+coupledPolicy K s = L.sparsemaxPolicy (actionSpaceC K) (coupledQ s) (coupledCounts s)
 
 coupledShapedInput : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A → L.Int8 → L.Int8
 coupledShapedInput K s reward =
   let a = coupledPolicy K s
-      w = L.sparsemaxWeight
-        (actionSpaceC K)
-        (coupledQ s)
-        (coupledCounts s)
-        a
+      w = L.sparsemaxWeight (actionSpaceC K) (coupledQ s) (coupledCounts s) a
   in L.int8Add reward (L.munchausenSignal (modeC K) w)
 
 canonicalCoupledStep : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A → L.Int8 → CanonicalCoupledState A
@@ -227,13 +199,10 @@ canonicalCoupledStep K s reward =
 
 iterateCanonicalCoupled : ∀ {A} → CanonicalCoupledKernel A → Nat → CanonicalCoupledState A → L.Int8 → CanonicalCoupledState A
 iterateCanonicalCoupled K zero s reward = s
-iterateCanonicalCoupled K (suc n) s reward =
-  canonicalCoupledStep K (iterateCanonicalCoupled K n s reward) reward
+iterateCanonicalCoupled K (suc n) s reward = canonicalCoupledStep K (iterateCanonicalCoupled K n s reward) reward
 
-canonicalCoupledStep-clock : ∀ {A} (K : CanonicalCoupledKernel A) s r →
-  coupledClock (canonicalCoupledStep K s r) ≡ suc (coupledClock s)
+canonicalCoupledStep-clock : ∀ {A} (K : CanonicalCoupledKernel A) s r → coupledClock (canonicalCoupledStep K s r) ≡ suc (coupledClock s)
 canonicalCoupledStep-clock K s r = refl
 
-canonicalCoupledGRU-gate-law : ∀ {A} (K : CanonicalCoupledKernel A) s r →
-  canonicalSign r ≡ canonicalSign r
+canonicalCoupledGRU-gate-law : ∀ {A} (K : CanonicalCoupledKernel A) s r → canonicalSign r ≡ canonicalSign r
 canonicalCoupledGRU-gate-law K s r = refl
