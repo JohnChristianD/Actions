@@ -347,7 +347,7 @@ open LearnerKernel public
 
 record LearnerState (A : Nat) : Set where
   constructor learnerState
-  field clock q counts lastAction gru optimizer norm
+  field clock q counts lastAction gru optimizer normState
 open LearnerState public
 
 initialLearner : ∀ {A} → ActionSpace A → LearnerState A
@@ -368,7 +368,7 @@ learnerStep K s reward =
     a
     (gruStep (gru s) shaped)
     (f4Step (optimizer s) shaped)
-    (normStep (norm s) (q s a) shaped)
+    (normStep (normState s) (q s a) shaped)
 
 learnerStep-clock : ∀ {A} K s r → clock (learnerStep K s r) ≡ suc (clock s)
 learnerStep-clock K s r = refl
