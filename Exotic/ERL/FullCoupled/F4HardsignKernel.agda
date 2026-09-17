@@ -8,6 +8,7 @@ open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
 open import Data.Nat using (_+_; _*_; _∸_; _/_)
 open import Data.Nat.DivMod using (m%n<n)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 record Int8 : Set where
   constructor int8
