@@ -28,7 +28,7 @@ canonicalCoupled-no-fixed-point : ∀ {A} (K : C.CanonicalCoupledKernel A) s r �
   C.canonicalCoupledStep K s r ≢ s
 canonicalCoupled-no-fixed-point K s r eq =
   let lhs = cong C.coupledClock eq
-      rhs = C.canonicalCoupled-step-clock K s r
+      rhs = C.canonicalCoupledStep-clock K s r
   in suc-not-self (C.coupledClock s) (trans (sym rhs) lhs)
   where
   suc-not-self : ∀ n → suc n ≢ n
