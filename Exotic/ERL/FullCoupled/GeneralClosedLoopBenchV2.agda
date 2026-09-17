@@ -7,6 +7,7 @@ open import Data.Nat.DivMod using (m%n<n)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
+open import Exotic.ERL.FullCoupled.AdditionalBenchmarkPorts as B
 
 record LoopResult : Set where
   constructor loopResult
@@ -82,9 +83,6 @@ knapsackEnv = benchEnv
     ... | zero = P.chooseItem0
     ... | _ = P.chooseItem1
 
-mazeEnv : BenchEnv 4 P.MazeState
-mazeEnv = benchEnv L.actionSpace4 (P.mazeState 0 0 0 4 0) 1 P.mazeStep
-
 metaMazeEnv : BenchEnv 4 P.MetaMazeState
 metaMazeEnv = benchEnv L.actionSpace4 (P.metaMazeState 0 0 0 4 0) 10 P.metaMazeStep
 
@@ -121,21 +119,35 @@ discountingChainEnv = benchEnv
   1
   P.discountingChainStep
 
-pobaxTMazeEnv : BenchEnv 3 P.PobaxTMazeState
+pobaxTMazeEnv : BenchEnv 3 B.TMazeState
 pobaxTMazeEnv = benchEnv
   (L.actionSpace (fromℕ< (m%n<n 0 3)))
-  (P.pobaxTMazeState 0 0 0)
+  B.tMazeInitial
   1
-  P.pobaxTMazeStep
+  B.tMazeStep
+
+uniformGaussianBanditEnv : BenchEnv 2 B.UniformBanditState
+uniformGaussianBanditEnv = benchEnv
+  L.actionSpace2
+  B.uniformBanditInitial
+  16
+  B.uniformBanditStep
+
+game2048Env : BenchEnv 4 B.Game2048State
+game2048Env = benchEnv
+  L.actionSpace4
+  B.game2048Initial
+  32
+  B.game2048Step
 
 banditAblation : AblationPair
 banditAblation = mkAblation bernoulliBanditEnv 16
 
+uniformGaussianBanditAblation : AblationPair
+uniformGaussianBanditAblation = mkAblation uniformGaussianBanditEnv 16
+
 cartPoleAblation : AblationPair
 cartPoleAblation = mkAblation cartPoleEnv 16
-
-mazeAblation : AblationPair
-mazeAblation = mkAblation mazeEnv 32
 
 metaMazeAblation : AblationPair
 metaMazeAblation = mkAblation metaMazeEnv 32
@@ -160,3 +172,6 @@ discountingChainAblation = mkAblation discountingChainEnv 16
 
 pobaxTMazeAblation : AblationPair
 pobaxTMazeAblation = mkAblation pobaxTMazeEnv 8
+
+game2048Ablation : AblationPair
+game2048Ablation = mkAblation game2048Env 32
