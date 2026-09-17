@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.CanonicalCoupledCompositionTheorems where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Nat using (_<_; z≤n; s≤s)
+open import Data.Nat using (_<_; _≤_; z≤n; s≤s)
 
 open import Exotic.ERL.FullCoupled.CanonicalCoupledF4Learner as C
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
