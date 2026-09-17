@@ -4,6 +4,7 @@ module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
+open import Data.Nat.Properties using (≤-refl; ≤-trans; +-assoc; +-comm; +-identityʳ; *-assoc; *-comm; *-distribˡ-+; m∸n≤m)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m; _%_)
@@ -173,14 +174,14 @@ supportValid xs temperature k with natAt (k ∸ 1) (topCodes k xs)
 ...     | true = yes
 ...     | false = no
 
-searchSupport : ∀ {A : Nat} → List (Fin A × Int8) → Nat → Nat → Nat → Nat
-searchSupport xs temperature zero best = best
-searchSupport xs temperature (suc n) best with supportValid xs temperature (suc n)
-... | yes = searchSupport xs temperature n (suc n)
-... | no = searchSupport xs temperature n best
+searchSupport : ∀ {A : Nat} → List (Fin A × Int8) → Nat → Nat → Nat → Nat → Nat
+searchSupport xs temperature zero current best = best
+searchSupport xs temperature (suc n) current best with supportValid xs temperature current
+... | yes = searchSupport xs temperature n (suc current) current
+... | no = searchSupport xs temperature n (suc current) best
 
 supportSize : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Nat
-supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemperature A (suc zero)
+supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemperature A (suc zero) (suc zero)
 
 sparsemaxWeight : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Fin A → SparseWeight
 sparsemaxWeight {A} K q c a =
@@ -192,10 +193,21 @@ sparsemaxWeight {A} K q c a =
     k = supportSize K q c
     s = sumList (topCodes k xs)
 
-sparsemaxPolicy : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Fin A
-sparsemaxPolicy {A} K q c = headAction (witness K) (sortScores (scoreList q c))
+weightPositive : SparseWeight → BoolLike
+weightPositive (sparseWeight n d) with natEq n zero
+... | yes = no
+... | no = yes
 
-sparsemax-general-action : ∀ {A : Nat} K q c → sparsemaxPolicy K q c ≡ sparsemaxPolicy K q c
+selectPositive : ∀ {A} → ActionSpace A → QVec A → CountVec A → List (Fin A × Int8) → Fin A
+selectPositive K q c nil = witness K
+selectPositive K q c ((a , s) :: xs) with weightPositive (sparsemaxWeight K q c a)
+... | yes = a
+... | no = selectPositive K q c xs
+
+sparsemaxPolicy : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Fin A
+sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList q c))
+
+sparsemax-general-action : ∀ {A} K q c → sparsemaxPolicy K q c ≡ sparsemaxPolicy K q c
 sparsemax-general-action K q c = refl
 
 actionSpace2 : ActionSpace 2
