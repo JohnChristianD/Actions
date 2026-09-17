@@ -4,7 +4,7 @@ module Main where
 
 import Control.Exception (SomeException, try)
 import Control.Monad (forM, forM_, when)
-import Data.List (foldl', minimumBy, nub, sortBy)
+import Data.List (minimumBy, sortBy)
 import Data.Ord (comparing)
 import System.Directory
   ( createDirectoryIfMissing
@@ -28,6 +28,7 @@ data Candidate = Candidate
 data Goal = Goal
   { goalName :: String
   , goalStatement :: String
+  , goalArguments :: String
   , proofMacros :: [(String, String)]
   }
   deriving (Eq, Show)
@@ -46,14 +47,17 @@ goals =
   [ Goal
       "clock-lower-bound-search"
       "∀ {A} (K : L.LearnerKernel A) n s r → L.clock s ≤ L.clock (L.iterateLearner K n s r)"
+      "{A} K n s r"
       [("clock-lower-bound", "T.clock-lower-bound K n s r")]
   , Goal
       "score-sort-permutation-search"
       "∀ {A} (q : L.QVec A) (c : L.CountVec A) → Sort.sort (L.scoreEntryOrder A) (L.scoreList q c) ↭ L.scoreList q c"
+      "{A} q c"
       [("sort-permutation", "T.scoreList-sort-permutation q c")]
   , Goal
       "score-sort-sorted-search"
       "∀ {A} (q : L.QVec A) (c : L.CountVec A) → Sorted (Sort.sort (L.scoreEntryOrder A) (L.scoreList q c))"
+      "{A} q c"
       [("sort-sorted", "T.scoreList-sort-sorted q c")]
   ]
 
@@ -62,7 +66,7 @@ lookupProof :: Goal -> Candidate -> Maybe String
 lookupProof goal (Candidate [action]) = lookup action (proofMacros goal)
 lookupProof _ _ = Nothing
 
-renderModule :: Goal -> Candidate -> FilePath -> String
+renderModule :: Goal -> Candidate -> String -> String
 renderModule goal candidate moduleName =
   case lookupProof goal candidate of
     Nothing -> ""
@@ -79,7 +83,7 @@ renderModule goal candidate moduleName =
         , "open Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L"
         , ""
         , goalName goal ++ " : " ++ goalStatement goal
-        , goalName goal ++ " = " ++ proof
+        , goalName goal ++ " " ++ goalArguments goal ++ " = " ++ proof
         ]
 
 
