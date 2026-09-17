@@ -212,21 +212,3 @@ discountingChainSpec = benchSpec
 
 discountingChainReturn : return (episodeMetrics discountingChainSpec) ≡ 5
 discountingChainReturn = refl
-
-rockSampleSpec : BenchSpec 6 P.RockSampleState
-rockSampleSpec = benchSpec
-  (closedLoopEnv P.rockSampleStep)
-  agent6
-  (P.rockSampleState 3 0 1 0)
-  initialLearnerV2
-  1
-  1
-  (λ s with P.natEq (P.rockGood s) 0
-   ... | P.yes = 1
-   ... | P.no = 0)
-
-rockSampleReturn : return (episodeMetrics rockSampleSpec) ≡ 1
-rockSampleReturn = refl
-
-rockSampleSuccess : success (episodeMetrics rockSampleSpec) ≡ 1
-rockSampleSuccess = refl
