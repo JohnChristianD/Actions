@@ -329,7 +329,14 @@ open LearnerKernel public
 
 record LearnerState (A : Nat) : Set where
   constructor learnerState
-  field clock q counts lastAction gru optimizer normState
+  field
+    clock : Nat
+    q : QVec A
+    counts : CountVec A
+    lastAction : Fin A
+    gru : GRUState
+    optimizer : F4State
+    normState : NormPair
 open LearnerState public
 
 initialLearner : ∀ {A} → ActionSpace A → LearnerState A
