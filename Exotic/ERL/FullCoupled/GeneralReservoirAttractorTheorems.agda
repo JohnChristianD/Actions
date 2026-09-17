@@ -9,7 +9,6 @@ open import Data.Nat.Properties using (m≤m+n)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Fin.Properties using (pigeonhole)
 open import Data.Product using (_×_; _,_)
-open import Data.Empty using (⊥)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith as T
@@ -129,7 +128,7 @@ hiddenExactObservability =
 l1Weight-step-monotone : ∀ (n : L.NormPair) w x →
   L.l1Weight n ≤ L.l1Weight (L.normStep n w x)
 l1Weight-step-monotone n w x =
-  m≤m+n (L.l1Weight n) (L.toℕ (L.code w))
+  m≤m+n (L.l1Weight n) (toℕ (L.code w))
 
 l1Weight-is-progress-not-dissipation : ∀ n w x →
   L.l1Weight n ≤ L.l1Weight (L.normStep n w x)
@@ -171,9 +170,12 @@ basin-by-energy :
     (s : S) (n : Nat) →
     energy C s ≤ n →
     BasinHit S (step C) (attractor C) s
-basin-by-energy C s zero h with attractorDecidable C s
-... | yes a = basinHit zero a
-... | no na with strictDecrease C s na
+basin-by-energy C s zero h with energy C s
+... | zero with attractorDecidable C s
+...   | yes a = basinHit zero a
+...   | no na with strictDecrease C s na
+...     | ()
+... | suc e with h
 ...   | ()
 basin-by-energy C s (suc n) h with attractorDecidable C s
 ... | yes a = basinHit zero a
