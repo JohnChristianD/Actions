@@ -172,11 +172,11 @@ composeMonolith : ∀ {A} (K : L.LearnerKernel A) (reward : L.Int8)
 composeMonolith K reward normKKT lyapunov attractor reservoir =
   certifiedCompositeConclusion
     (λ s → learnerStep-no-fixed-point K s reward)
-    (λ s →
+    (λ (s : L.LearnerState _) →
       norm-l1-monotone (L.normState s) (L.q s (L.generalPolicy K s)) reward ,
       norm-path-monotone (L.normState s) (L.q s (L.generalPolicy K s)) reward)
-    (λ s → f4-l2-preserved (L.optimizer s) reward)
-    (λ s → gru-persistent-invariant (L.gru s) reward)
+    (λ (s : L.LearnerState _) → f4-l2-preserved (L.optimizer s) reward)
+    (λ (s : L.LearnerState _) → gru-persistent-invariant (L.gru s) reward)
     normKKT
     lyapunov
     attractor
