@@ -146,10 +146,10 @@ canonicalF4Step p s g = canonicalF4State qTheta′ rTheta′ qE′ rE′ rL′�
   qE′ = e′
   rE′ = e -f4 e′
 
-canonicalF4-global-L2-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) g → deltaTheta p s g ≡ scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4 scaledMulF4 (betaTheta p) (thetaFull s)
+canonicalF4-global-L2-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) (g : L.Int8) → deltaTheta p s g ≡ scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4 scaledMulF4 (betaTheta p) (thetaFull s)
 canonicalF4-global-L2-law p s g = refl
 
-canonicalF4-old-ell-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) g → pow2Ell8 (ell s) ≡ pow2Ell8 (ell s)
+canonicalF4-old-ell-law : ∀ (p : CanonicalF4Params) (s : CanonicalF4State) (g : L.Int8) → pow2Ell8 (ell s) ≡ pow2Ell8 (ell s)
 canonicalF4-old-ell-law p s g = refl
 
 record CanonicalCoupledKernel (A : Nat) : Set where
