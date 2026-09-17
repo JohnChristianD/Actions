@@ -9,7 +9,6 @@ open import Data.Nat.DivMod using (m%n<n; _%_)
 open import Data.Product using (_×_; _,_)
 
 infixr 5 _::_
-
 data List (A : Set) : Set where
   nil : List A
   _::_ : A → List A → List A
@@ -224,27 +223,21 @@ prefixAction : MobiusTrace → Nat → MobiusAction
 prefixAction T zero = identityMobius
 prefixAction T (suc n) = composeMobius (atDepth T n) (prefixAction T n)
 
-HardSign : Set
-HardSign = BoolLike
+data HardSign : Set where
+  negative zeroSign positive : HardSign
 
 hardSign : Int8 → HardSign
 hardSign x with toℕ (code x) <ᵇ 128
 ... | yes with toℕ (code x)
 ...   | zero = zeroSign
 ...   | suc n = positive
-  where
-    zeroSign : HardSign
-    zeroSign = yes
-    positive : HardSign
-    positive = yes
-... | no = no
+... | no = negative
 
 hardSignGate : Int8 → Int8
 hardSignGate x with hardSign x
-... | no = int8OfNat 255
-... | yes with toℕ (code x)
-...   | zero = zero8
-...   | suc n = one8
+... | negative = int8OfNat 255
+... | zeroSign = zero8
+... | positive = one8
 
 record GRUState : Set where
   constructor gruState
@@ -269,15 +262,12 @@ gruPersistent s = matrixZ s , (matrixR s , (matrixH s , optimizerToken s))
 gruTransitionFamily : Set
 gruTransitionFamily = Int8 → GRUState → GRUState
 
-gruTransitionFamilyStep : GRUTransitionFamily → Int8 → GRUState → GRUState
-gruTransitionFamilyStep T x s = T x s
-
-mobiusTransport : MobiusAction → GRUTransitionFamily → GRUTransitionFamily
+mobiusTransport : MobiusAction → gruTransitionFamily → gruTransitionFamily
 mobiusTransport f T x s = T (run f x) s
 
 record SemidirectToken : Set where
   constructor semidirectToken
-  field transitionPart : GRUTransitionFamily
+  field transitionPart : gruTransitionFamily
         mobiusPart : MobiusAction
 open SemidirectToken public
 
