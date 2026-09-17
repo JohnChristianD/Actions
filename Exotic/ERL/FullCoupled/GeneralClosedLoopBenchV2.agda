@@ -4,6 +4,7 @@ module Exotic.ERL.FullCoupled.GeneralClosedLoopBenchV2 where
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Nat.DivMod using (m%n<n)
+open import Data.List.Base using ([]; _∷_)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
@@ -35,8 +36,8 @@ runLoopAux E K zero ls es total steps success seen =
     countDistinct : ∀ {A} → L.CountVec A → Nat
     countDistinct {A} c = countDistinctFin (L.finList A) c
     countDistinctFin : ∀ {A} → L.List (Fin A) → L.CountVec A → Nat
-    countDistinctFin L.nil c = zero
-    countDistinctFin (a L.:: as) c with L.natEq (c a) zero
+    countDistinctFin [] c = zero
+    countDistinctFin (a ∷ as) c with L.natEq (c a) zero
     ... | L.yes = countDistinctFin as c
     ... | L.no = suc (countDistinctFin as c)
 runLoopAux E K (suc n) ls es total steps success seen with L.generalPolicy K ls
@@ -49,8 +50,8 @@ runLoopAux E K (suc n) ls es total steps success seen with L.generalPolicy K ls
     countDistinct : ∀ {A} → L.CountVec A → Nat
     countDistinct {A} c = countDistinctFin (L.finList A) c
     countDistinctFin : ∀ {A} → L.List (Fin A) → L.CountVec A → Nat
-    countDistinctFin L.nil c = zero
-    countDistinctFin (a L.:: as) c with L.natEq (c a) zero
+    countDistinctFin [] c = zero
+    countDistinctFin (a ∷ as) c with L.natEq (c a) zero
     ... | L.yes = countDistinctFin as c
     ... | L.no = suc (countDistinctFin as c)
 ...   | P.stepResult obs es' r P.no =
