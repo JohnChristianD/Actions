@@ -2,10 +2,8 @@
 module Exotic.ERL.FullCoupled.CanonicalCoupledF4Learner where
 
 open import Agda.Builtin.Bool using (Bool; true; false)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _∸_; _/_)
+open import Data.Nat using (Nat; zero; suc; _+_; _*_; _∸_; _/_)
 open import Data.Fin using (Fin)
-open import Data.Product using (_×_; _,_)
-
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
 data Signed8 : Set where
