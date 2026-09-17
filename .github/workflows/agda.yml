@@ -49,8 +49,20 @@ jobs:
       - name: Check general closed-loop benchmark
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda
 
+      - name: Check negative-Q-Munchausen benchmark
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/NegativeQMunchausenBench.agda
+
+      - name: Check trace-valued Mobius semidirect law
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/MobiusTraceSemidirect.agda
+
+      - name: Check additional finite benchmark ports
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/AdditionalBenchmarkPorts.agda
+
       - name: Check external CNN transition bisimulation
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/ExternalCNNTransitionBisimulation.agda
+
+      - name: Check abstract standard CNN comparison
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/StandardCNNComparison.agda
 
       - name: Check self-contained canonical learner
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
