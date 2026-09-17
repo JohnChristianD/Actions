@@ -4,7 +4,7 @@ This repository documents the coupled ERL/GRU/F4/reservoir formalization directl
 
 > Wiki availability note: the separate GitHub \`Actions.wiki\` repository is not exposed by the current GitHub connection. These pages are therefore kept as an in-repository wiki mirror under \`docs/wiki/\` rather than pretending that the hosted wiki was updated.
 
-Documentation baseline: commit \`09e263b77bb92a3a0d6123382edee895bc73b179\`.
+Semantic source baseline: commit \`09e263b77bb92a3a0d6123382edee895bc73b179\`.
 
 ## Canonical semantic surface
 
