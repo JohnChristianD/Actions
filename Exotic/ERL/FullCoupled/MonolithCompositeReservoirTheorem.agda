@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.MonolithCompositeReservoirTheorem where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Nat using (_<_; _≤_)
+open import Data.Nat using (_<_; _≤_; _*_)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Fin using (toℕ)
 open import Data.Fin.Properties using (toℕ<n)
