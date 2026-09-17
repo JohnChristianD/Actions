@@ -1,8 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremClosure where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_) 
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Fin using (Fin)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
@@ -34,7 +34,7 @@ learnerStep-q-closure : ∀ {A} K s r →
         (L.mode K)
         (L.sparsemaxWeight
           (L.actionSpaceK K) (L.q s) (L.counts s)
-          (L.generalPolicy K s)))
+          (L.generalPolicy K s))))
 learnerStep-q-closure K s r = refl
 
 learnerStep-count-closure : ∀ {A} K s r →
@@ -98,9 +98,9 @@ weightsNumerators {A} ws =
 weightsNumeratorSum : ∀ {A : Nat} → (Fin A → L.SparseWeight) → Nat
 weightsNumeratorSum ws = L.sumList (weightsNumerators ws)
 
--- Exact finite KKT certificate for the discrete sparsemax representation.
--- The weights are tied to L.sparsemaxWeight and the simplex equation sums
--- their actual Nat numerators over every Fin A action.
+-- Certificate carrier for the discrete finite-A KKT target. The simplex,
+-- stationarity, and complementarity fields are obligations until the learner's
+-- support scan is proved correct. This prevents a fake completed-KKT theorem.
 record SparsemaxKKTRealization (A : Nat) : Set where
   constructor sparsemaxKKTRealization
   field
@@ -127,7 +127,7 @@ sparsemaxKKT-realized-weight-law : ∀ {A} (W : SparsemaxKKTRealization A) a →
 sparsemaxKKT-realized-weight-law W a = weights-law W a
 
 -- Exact policy/attention separation marker. The policy consumes the scalar
--- LCB score vector; no attention matrix or softmax-attention theorem is used.
+-- LCB score vector; no attention matrix theorem is used here.
 sparsemax-policy-not-attention-surface : ∀ {A} K s →
   L.generalPolicy K s ≡
   L.sparsemaxPolicy (L.actionSpaceK K) (L.q s) (L.counts s)
