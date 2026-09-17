@@ -127,8 +127,11 @@ jobs:
       - name: Check learner game execution regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
 
-      - name: Set up Haskell generator runtime
-        run: sudo apt-get update && sudo apt-get install -y ghc
+      - name: Set up hybrid theorem-search runtime
+        run: python -m pip install --disable-pip-version-check "mctx==0.0.71" "evosax==0.3.1"
+
+      - name: Run kernel-checked hybrid theorem search
+        run: python .ci/discovery/ProofSearch.py --backend auto --budget 24
 
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
