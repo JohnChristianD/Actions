@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.MobiusGRUSemidirect where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
 open import Agda.Builtin.Nat using (Nat; zero)
 
 infixr 5 _::_
@@ -89,11 +89,14 @@ scanAction : Trace → MobiusAction
 scanAction nil = identityMobius
 scanAction (m :: ms) = composeMobius (scanAction ms) m
 
-scanAction-append : ∀ xs ys →
-  scanAction (xs ++ ys) ≡ composeMobius (scanAction ys) (scanAction xs)
-scanAction-append nil ys = refl
-scanAction-append (m :: xs) ys =
-  cong (λ z → composeMobius z m) (scanAction-append xs ys)
+scanAction-append : ∀ xs ys x →
+  run (scanAction (xs ++ ys)) x ≡
+  run (composeMobius (scanAction ys) (scanAction xs)) x
+scanAction-append nil ys x = refl
+scanAction-append (m :: xs) ys x =
+  trans
+    (scanAction-append xs ys (run m x))
+    (mobiusAssociative (scanAction ys) (scanAction xs) m x)
 
 trace-semidirect-law : ∀ xs ys s x →
   iterateMobiusGRU (xs ++ ys) s x ≡
