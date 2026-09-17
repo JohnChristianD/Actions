@@ -41,7 +41,7 @@ int8Neg : Int8 → Int8
 int8Neg x = int8OfNat (256 ∸ toℕ (code x))
 
 data BoolLike : Set where
-yes no : BoolLike
+  yes no : BoolLike
 
 natEq : Nat → Nat → BoolLike
 natEq zero zero = yes
@@ -110,10 +110,10 @@ scoreA q c a = int8Add (q a) (lcbBonus (c a))
 ScoreEntry : Nat → Set
 ScoreEntry A = Int8 × Fin A
 
-int8Order : DecTotalOrder
+int8Order : DecTotalOrder Int8
 int8Order = On.decTotalOrder (≤-decTotalOrder 256) code
 
-scoreEntryOrder : ∀ A → DecTotalOrder
+scoreEntryOrder : ∀ A → DecTotalOrder (ScoreEntry A)
 scoreEntryOrder A =
   Flip.decTotalOrder
     (Lex.×-decTotalOrder int8Order (≤-decTotalOrder A))
