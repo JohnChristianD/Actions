@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.CanonicalCoupledF4Learner where
 open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Nat using (_+_; _*_; _∸_; _/_)
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin; toℕ)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
@@ -38,9 +38,9 @@ signedMul (neg8 m) (pos8 n) = signedNeg (pos8 (suc m * n))
 signedMul (neg8 m) (neg8 n) = pos8 (suc m * suc n)
 
 fromInt8 : L.Int8 → Signed8
-fromInt8 x with natLE (L.toℕ (L.code x)) 127
-... | true = pos8 (L.toℕ (L.code x))
-... | false = neg8 (255 ∸ L.toℕ (L.code x))
+fromInt8 x with natLE (toℕ (L.code x)) 127
+... | true = pos8 (toℕ (L.code x))
+... | false = neg8 (255 ∸ toℕ (L.code x))
 
 signedClip : Signed8 → L.Int8
 signedClip (pos8 n) with natLE n 127
