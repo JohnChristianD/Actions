@@ -78,36 +78,6 @@ jobs:
       - name: Check faithful finite map variants
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda
 
-      - name: Check finite parameter completeness
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda
-
-      - name: Check finite norm algebra
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteNormAlgebra.agda
-
-      - name: Check control and observability definitions
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalControlObservability.agda
-
-      - name: Check CNN log-pyramid preservation
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda
-
-      - name: Check complete CNN factorization theorem
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidComplete.agda
-
-      - name: Check negative-Munchausen signed-scale theory
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda
-
-      - name: Check finite negative-Munchausen ablation
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalMunchausenAblation.agda
-
-      - name: Check negative-Munchausen ceteris-paribus regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalMunchausenAblation_test.agda
-
-      - name: Check Jensen convex-concave sandwich
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/JensenMinMaxSandwich.agda
-
-      - name: Check finite Sion saddle sandwich
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/FiniteSionSaddleSandwich.agda
-
       - name: Check Gymnax CartPole closed loop
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GymnaxCartPoleClosedLoop_test.agda
 

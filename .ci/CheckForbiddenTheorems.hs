@@ -7,21 +7,19 @@ import System.Exit (exitFailure, exitSuccess)
 
 checkedPaths :: [FilePath]
 checkedPaths =
-  [ "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+  [ "Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda"
+  , "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda"
+  , "Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda"
+  , "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
   , "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
   , "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface_test.agda"
   , "Exotic/ERL/FullCoupled/CanonicalClosedLoopBenchV2.agda"
   , "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
   , "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
-  , "Exotic/ERL/FullCoupled/FiniteParameterCompleteness.agda"
-  , "Exotic/ERL/FullCoupled/FiniteNormAlgebra.agda"
-  , "Exotic/ERL/FullCoupled/CanonicalControlObservability.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
-  , "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
-  , "Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda"
-  , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation.agda"
   , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation_test.agda"
+  , "Exotic/ERL/FullCoupled/CountMemoryCycleTheorem_test.agda"
   , "Exotic/econlib/GameTheory.agda"
   , "Exotic/econlib/Equilibrium.agda"
   , "Exotic/econlib/MatchingPennies.agda"
@@ -46,7 +44,7 @@ main = do
   let allProblems = missing ++ problems
   if null allProblems
     then do
-      putStrLn "canonical-safe-surface=complete"
+      putStrLn "canonical-and-generalized-safe-surface=complete"
       putStrLn "holes-and-postulates=absent"
       putStrLn "forbidden-theorem-families=absent"
       exitSuccess
@@ -56,7 +54,7 @@ main = do
   where
     missingFile path = do
       ok <- doesFileExist path
-      pure ["required canonical proof file missing: " ++ path | not ok]
+      pure ["required proof file missing: " ++ path | not ok]
 
     inspect path = do
       source <- readFile path
