@@ -11,7 +11,7 @@ open import Exotic.ERL.FullCoupled.AdditionalBenchmarkPorts as B
 
 record LoopResult : Set where
   constructor loopResult
-  field return regret success steps distinctActions : Nat
+  field return success steps distinctActions : Nat
 open LoopResult public
 
 record BenchEnv (A : Nat) (S : Set) : Set where
@@ -31,7 +31,7 @@ markAction c a = L.incAt c a
 runLoopAux : ∀ {A S} →
   BenchEnv A S → L.LearnerKernel A → Nat → L.LearnerState A → S → Nat → Nat → Nat → L.CountVec A → LoopResult
 runLoopAux E K zero ls es total steps success seen =
-  loopResult total (referenceReturn E ∸ total) success steps (countDistinct seen)
+  loopResult total success steps (countDistinct seen)
   where
     countDistinct : ∀ {A} → L.CountVec A → Nat
     countDistinct {A} c = countDistinctFin (L.finList A) c
@@ -44,7 +44,7 @@ runLoopAux E K (suc n) ls es total steps success seen with L.generalPolicy K ls
 ... | a with stepEnv E a es
 ...   | P.stepResult obs es' r P.yes =
   let total' = total + toℕ (P.code r)
-  in loopResult total' (referenceReturn E ∸ total') 1 (suc steps)
+  in loopResult total' 1 (suc steps)
        (countDistinct (markAction a seen))
   where
     countDistinct : ∀ {A} → L.CountVec A → Nat
