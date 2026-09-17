@@ -141,10 +141,37 @@ trace-prefix-factor : ∀ T n x →
   L.run (L.atDepth T n) (traceInput T n x)
 trace-prefix-factor T n x = prefixAction-law T n x
 
--- This is the exact theorem-layer KKT boundary for the finite threshold
--- representation.  It intentionally does not pretend that the learner's
--- Int8 scan has already been proven equivalent to the real-valued sparsemax
--- Euclidean projection.  No postulate or filled theorem-hole is used.
+-- The unbounded trace is now tied directly to the GRU transition. Each depth
+-- chooses its own MobiusAction, the prefix scan supplies the input, and the
+-- GRU consumes that prefix input at every finite Nat depth.
+traceStep : L.MobiusTrace → Nat → L.GRUState → L.Int8 → L.GRUState
+traceStep T n s x = semidirectMobiusStep (L.atDepth T n) s (traceInput T n x)
+
+traceIterate : L.MobiusTrace → Nat → L.GRUState → L.Int8 → L.GRUState
+traceIterate T zero s x = s
+traceIterate T (suc n) s x = traceStep T n (traceIterate T n s x) x
+
+traceGRU-unbounded : ∀ T n s x →
+  traceGRU T n s x ≡ traceIterate T n s x
+traceGRU-unbounded T zero s x = refl
+traceGRU-unbounded T (suc n) s x =
+  trans
+    (traceGRU-step-law T n s x)
+    (cong
+      (λ st → L.gruStep st (L.run (L.atDepth T n) (traceInput T n x)))
+      (traceGRU-unbounded T n s x))
+
+trace-prefix-semidirect-composition : ∀ T n m s x →
+  semidirectMobiusStep
+    (L.composeMobius (L.prefixAction T n) (L.prefixAction T m))
+    s x ≡
+  L.gruStep s
+    (L.run (L.prefixAction T n)
+      (L.run (L.prefixAction T m) x))
+trace-prefix-semidirect-composition T n m s x = refl
+
+-- This is the theorem-layer KKT boundary. It intentionally does not claim
+-- equivalence between the Int8 scan and real-valued sparsemax projection.
 record SparsemaxKKTBoundary (A : Nat) : Set where
   constructor sparsemaxKKTBoundary
   field
@@ -179,6 +206,9 @@ record SparsemaxKKTConditions (A : Nat) : Set where
     stationarity : Set
     complementarity : Set
 open SparsemaxKKTConditions public
+
+-- Conditional certificate only. The missing theorem remains the construction
+-- of this certificate from L.sparsemaxWeight/L.sparsemaxPolicy for every A.
 
 record FormalCNNMachine (X R : Set) : Set where
   constructor formalCNNMachine
@@ -279,3 +309,54 @@ cnn-depth-factorization : ∀ {X R H S}
   decode (adapter C) (cnnDepthEncode (cnnClass C) n x) ≡
   decode (adapter C) (cnnDepthEncode (cnnClass C) n x)
 cnn-depth-factorization C n x = refl
+
+-- Stronger theorem-only CNN class. No concrete CNN implementation is added
+-- to learner semantics. Equivariance composes across arbitrary finite depth.
+record StandardCNNStack (R : Set) : Set where
+  constructor standardCNNStack
+  field
+    layer : Nat → R → R
+    shift : Nat → R → R
+    layer-equivariant : ∀ d n x →
+      layer d (shift n x) ≡ shift n (layer d x)
+open StandardCNNStack public
+
+iterateLayers : ∀ {R : Set} → (Nat → R → R) → Nat → R → R
+iterateLayers layer zero x = x
+iterateLayers layer (suc n) x = layer n (iterateLayers layer n x)
+
+standardCNN-depth-equivariant : ∀ {R : Set}
+  (C : StandardCNNStack R) d n x →
+  iterateLayers (layer C) d (shift C n x) ≡
+  shift C n (iterateLayers (layer C) d x)
+standardCNN-depth-equivariant C zero n x = refl
+standardCNN-depth-equivariant C (suc d) n x =
+  trans
+    (cong (layer C) (standardCNN-depth-equivariant C d n x))
+    (layer-equivariant C d n (iterateLayers (layer C) d x))
+
+record CNNLearnerComparison (X R H : Set) : Set where
+  constructor cnnLearnerComparison
+  field
+    input : X → R
+    decodeState : R → H
+    cnnStep : R → R
+    learnerStep : H → H
+    commute : ∀ x →
+      decodeState (cnnStep (input x)) ≡
+      learnerStep (decodeState (input x))
+open CNNLearnerComparison public
+
+iterateEndo : ∀ {S : Set} → (S → S) → Nat → S → S
+iterateEndo step zero s = s
+iterateEndo step (suc n) s = step (iterateEndo step n s)
+
+cnnLearner-trajectory-bisimulation : ∀ {X R H : Set}
+  (C : CNNLearnerComparison X R H) n x →
+  decodeState C (iterateEndo (cnnStep C) n (input C x)) ≡
+  iterateEndo (learnerStep C) n (decodeState C (input C x))
+cnnLearner-trajectory-bisimulation C zero x = refl
+cnnLearner-trajectory-bisimulation C (suc n) x =
+  trans
+    (commute C (iterateEndo (cnnStep C) n (input C x)))
+    (cong (learnerStep C) (cnnLearner-trajectory-bisimulation C n x))
