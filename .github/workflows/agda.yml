@@ -6,6 +6,7 @@ on:
     paths:
       - '**/*.agda'
       - '.ci/**'
+      - '*.cabal'
       - 'docs/**'
       - '.github/workflows/agda.yml'
   pull_request:
@@ -13,6 +14,7 @@ on:
     paths:
       - '**/*.agda'
       - '.ci/**'
+      - '*.cabal'
       - 'docs/**'
       - '.github/workflows/agda.yml'
   schedule:
@@ -127,8 +129,15 @@ jobs:
       - name: Check learner game execution regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
 
+      - name: Set up Haskell and Cabal
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: latest
+          cabal-version: latest
+          cabal-update: false
+
       - name: Run kernel-checked hybrid theorem search
-        run: runghc .ci/discovery/ProofSearch.hs --backend auto --budget 24
+        run: cabal run actions-proof-search -- --backend auto --budget 24
 
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
