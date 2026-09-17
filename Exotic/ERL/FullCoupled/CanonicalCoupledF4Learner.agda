@@ -172,21 +172,21 @@ record CanonicalCoupledState (A : Nat) : Set where
     coupledNorm : L.NormPair
 open CanonicalCoupledState public
 
-initialCanonicalCoupled : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A
+initialCanonicalCoupled : ∀ {A : Nat} → CanonicalCoupledKernel A → CanonicalCoupledState A
 initialCanonicalCoupled {A} K =
   canonicalCoupledState
     zero L.zeroQ L.zeroCounts (L.witness (actionSpaceC K)) L.zeroGRU zeroCanonicalF4 L.zeroNorm
 
-coupledPolicy : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A → Fin A
+coupledPolicy : ∀ {A : Nat} → CanonicalCoupledKernel A → CanonicalCoupledState A → Fin A
 coupledPolicy {A} K s = L.sparsemaxPolicy (actionSpaceC K) (coupledQ s) (coupledCounts s)
 
-coupledShapedInput : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A → L.Int8 → L.Int8
+coupledShapedInput : ∀ {A : Nat} → CanonicalCoupledKernel A → CanonicalCoupledState A → L.Int8 → L.Int8
 coupledShapedInput {A} K s reward =
   let a = coupledPolicy K s
       w = L.sparsemaxWeight (actionSpaceC K) (coupledQ s) (coupledCounts s) a
   in L.int8Add reward (L.munchausenSignal (modeC K) w)
 
-canonicalCoupledStep : ∀ {A} → CanonicalCoupledKernel A → CanonicalCoupledState A → L.Int8 → CanonicalCoupledState A
+canonicalCoupledStep : ∀ {A : Nat} → CanonicalCoupledKernel A → CanonicalCoupledState A → L.Int8 → CanonicalCoupledState A
 canonicalCoupledStep {A} K s reward =
   let a = coupledPolicy K s
       shaped = coupledShapedInput K s reward
@@ -199,12 +199,12 @@ canonicalCoupledStep {A} K s reward =
     (canonicalF4Step (f4ParamsC K) (coupledF4 s) shaped)
     (L.normStep (coupledNorm s) (coupledQ s a) shaped)
 
-iterateCanonicalCoupled : ∀ {A} → CanonicalCoupledKernel A → Nat → CanonicalCoupledState A → L.Int8 → CanonicalCoupledState A
+iterateCanonicalCoupled : ∀ {A : Nat} → CanonicalCoupledKernel A → Nat → CanonicalCoupledState A → L.Int8 → CanonicalCoupledState A
 iterateCanonicalCoupled {A} K zero s reward = s
 iterateCanonicalCoupled {A} K (suc n) s reward = canonicalCoupledStep K (iterateCanonicalCoupled K n s reward) reward
 
-canonicalCoupledStep-clock : ∀ {A} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) r → coupledClock (canonicalCoupledStep K s r) ≡ suc (coupledClock s)
+canonicalCoupledStep-clock : ∀ {A : Nat} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) r → coupledClock (canonicalCoupledStep K s r) ≡ suc (coupledClock s)
 canonicalCoupledStep-clock {A} K s r = refl
 
-canonicalCoupledGRU-gate-law : ∀ {A} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) r → canonicalSign r ≡ canonicalSign r
+canonicalCoupledGRU-gate-law : ∀ {A : Nat} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) r → canonicalSign r ≡ canonicalSign r
 canonicalCoupledGRU-gate-law {A} K s r = refl
