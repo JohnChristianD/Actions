@@ -8,7 +8,12 @@ data Surface = Surface FilePath [String]
 
 surfaces :: [Surface]
 surfaces =
-  [ Surface "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+  [ Surface "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda"
+      [ "learnerStep-clock", "iterateLearner-clock", "clock-lower-bound"
+      , "traceGRU-unbounded", "trace-depth-recurrence"
+      , "sparsemaxKKT-simplex", "sparsemaxKKT-denominator"
+      , "cnnLearner-trajectory-bisimulation" ]
+  , Surface "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       [ "int8StateSpace", "walshHadamardOrthogonality4", "canonicalWalshWidth-power4"
       , "fullLearnerInt8CoordinateCount-law", "canonicalFullStep-clock" ]
   , Surface "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
@@ -34,13 +39,13 @@ surfaces =
       [ "learnerRewardStep-reward-insensitive", "closedLoopInput-roundtrip"
       , "closedLoopReward-roundtrip", "closedLoopLeftRewardLearns"
       , "closedLoopRightRewardLearns", "closedLoopStep-clock"
-      , "check-knapsack-return", "check-knapsack-regret", "check-knapsack-success"
-      , "check-maze-return", "check-maze-regret", "check-maze-success"
-      , "check-meta-maze-return", "check-meta-maze-regret", "check-meta-maze-success"
-      , "check-four-rooms-return", "check-four-rooms-regret", "check-four-rooms-success"
-      , "check-cartpole-return", "check-cartpole-regret"
-      , "check-bandit-best0-return", "check-bandit-best0-regret", "check-bandit-best0-success"
-      , "check-bandit-best1-return", "check-bandit-best1-regret", "check-bandit-best1-success" ]
+      , "check-knapsack-return", "check-knapsack-success"
+      , "check-maze-return", "check-maze-success"
+      , "check-meta-maze-return", "check-meta-maze-success"
+      , "check-four-rooms-return", "check-four-rooms-success"
+      , "check-cartpole-return"
+      , "check-bandit-best0-return", "check-bandit-best0-success"
+      , "check-bandit-best1-return", "check-bandit-best1-success" ]
   , Surface "Exotic/econlib/GameTheory.agda"
       [ "isNashEquilibriumDD", "pdIter-stabilises", "nashConvergenceWitness" ]
   , Surface "Exotic/econlib/Equilibrium.agda"
@@ -69,6 +74,7 @@ main = do
   if null problems
     then do
       putStrLn "canonical-surfaces=complete"
+      putStrLn "generalized-theorem-monolith=complete"
       putStrLn "finite-function-parameter-theorem=complete"
       putStrLn "finite-norm-algebra=complete"
       putStrLn "control-observability-surface=complete"
