@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.GeneralClosedLoopBenchV2 where
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Nat.DivMod using (m%n<n)
-open import Data.List.Base using ([]; _∷_)
+open import Data.List.Base using (List; []; _∷_)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
@@ -12,7 +12,7 @@ open import Exotic.ERL.FullCoupled.AdditionalBenchmarkPorts as B
 
 record LoopResult : Set where
   constructor loopResult
-  field return success steps distinctActions : Nat
+  field return referenceReturn success steps distinctActions : Nat
 open LoopResult public
 
 record BenchEnv (A : Nat) (S : Set) : Set where
@@ -32,11 +32,11 @@ markAction c a = L.incAt c a
 runLoopAux : ∀ {A S} →
   BenchEnv A S → L.LearnerKernel A → Nat → L.LearnerState A → S → Nat → Nat → Nat → L.CountVec A → LoopResult
 runLoopAux E K zero ls es total steps success seen =
-  loopResult total success steps (countDistinct seen)
+  loopResult total (referenceReturn E) success steps (countDistinct seen)
   where
     countDistinct : ∀ {A} → L.CountVec A → Nat
     countDistinct {A} c = countDistinctFin (L.finList A) c
-    countDistinctFin : ∀ {A} → L.List (Fin A) → L.CountVec A → Nat
+    countDistinctFin : ∀ {A} → List (Fin A) → L.CountVec A → Nat
     countDistinctFin [] c = zero
     countDistinctFin (a ∷ as) c with L.natEq (c a) zero
     ... | L.yes = countDistinctFin as c
@@ -45,12 +45,12 @@ runLoopAux E K (suc n) ls es total steps success seen with L.generalPolicy K ls
 ... | a with stepEnv E a es
 ...   | P.stepResult obs es' r P.yes =
   let total' = total + toℕ (P.code r)
-  in loopResult total' 1 (suc steps)
+  in loopResult total' (referenceReturn E) 1 (suc steps)
        (countDistinct (markAction a seen))
   where
     countDistinct : ∀ {A} → L.CountVec A → Nat
     countDistinct {A} c = countDistinctFin (L.finList A) c
-    countDistinctFin : ∀ {A} → L.List (Fin A) → L.CountVec A → Nat
+    countDistinctFin : ∀ {A} → List (Fin A) → L.CountVec A → Nat
     countDistinctFin [] c = zero
     countDistinctFin (a ∷ as) c with L.natEq (c a) zero
     ... | L.yes = countDistinctFin as c
@@ -81,6 +81,15 @@ mkAblation E h =
   ablationPair
     (runLoop E (L.learnerKernel (actionSpace E) L.noMunchausen) h)
     (runLoop E (L.learnerKernel (actionSpace E) L.munchausen) h)
+
+record ReturnReferencePair : Set where
+  constructor returnReferencePair
+  field observedReturn referenceReturnValue : Nat
+open ReturnReferencePair public
+
+returnReferencePairOf : LoopResult → ReturnReferencePair
+returnReferencePairOf r =
+  returnReferencePair (return r) (referenceReturn r)
 
 knapsackEnv : BenchEnv 2 P.KnapsackState
 knapsackEnv = benchEnv
@@ -176,3 +185,50 @@ uniformGaussianBanditAblation = mkAblation uniformGaussianBanditEnv 16
 
 game2048Ablation : AblationPair
 game2048Ablation = mkAblation game2048Env 32
+
+data ActiveGame : Set where
+  knapsackGame : ActiveGame
+  metaMazeGame : ActiveGame
+  fourRoomsGame : ActiveGame
+  cartPoleGame : ActiveGame
+  bernoulliBanditGame : ActiveGame
+  lbfGame : ActiveGame
+  pongGame : ActiveGame
+  memoryChainGame : ActiveGame
+  discountingChainGame : ActiveGame
+  pobaxTMazeGame : ActiveGame
+  uniformGaussianBanditGame : ActiveGame
+  game2048Game : ActiveGame
+
+data LearnerVariant : Set where
+  plainVariant : LearnerVariant
+  munchausenVariant : LearnerVariant
+
+activeGameRun : ActiveGame → LearnerVariant → LoopResult
+activeGameRun knapsackGame plainVariant = plain knapsackAblation
+activeGameRun knapsackGame munchausenVariant = munchausen knapsackAblation
+activeGameRun metaMazeGame plainVariant = plain metaMazeAblation
+activeGameRun metaMazeGame munchausenVariant = munchausen metaMazeAblation
+activeGameRun fourRoomsGame plainVariant = plain fourRoomsAblation
+activeGameRun fourRoomsGame munchausenVariant = munchausen fourRoomsAblation
+activeGameRun cartPoleGame plainVariant = plain cartPoleAblation
+activeGameRun cartPoleGame munchausenVariant = munchausen cartPoleAblation
+activeGameRun bernoulliBanditGame plainVariant = plain bernoulliBanditAblation
+activeGameRun bernoulliBanditGame munchausenVariant = munchausen bernoulliBanditAblation
+activeGameRun lbfGame plainVariant = plain lbfAblation
+activeGameRun lbfGame munchausenVariant = munchausen lbfAblation
+activeGameRun pongGame plainVariant = plain pongAblation
+activeGameRun pongGame munchausenVariant = munchausen pongAblation
+activeGameRun memoryChainGame plainVariant = plain memoryChainAblation
+activeGameRun memoryChainGame munchausenVariant = munchausen memoryChainAblation
+activeGameRun discountingChainGame plainVariant = plain discountingChainAblation
+activeGameRun discountingChainGame munchausenVariant = munchausen discountingChainAblation
+activeGameRun pobaxTMazeGame plainVariant = plain pobaxTMazeAblation
+activeGameRun pobaxTMazeGame munchausenVariant = munchausen pobaxTMazeAblation
+activeGameRun uniformGaussianBanditGame plainVariant = plain uniformGaussianBanditAblation
+activeGameRun uniformGaussianBanditGame munchausenVariant = munchausen uniformGaussianBanditAblation
+activeGameRun game2048Game plainVariant = plain game2048Ablation
+activeGameRun game2048Game munchausenVariant = munchausen game2048Ablation
+
+activeGameReturnReference : ActiveGame → LearnerVariant → ReturnReferencePair
+activeGameReturnReference game variant = returnReferencePairOf (activeGameRun game variant)
