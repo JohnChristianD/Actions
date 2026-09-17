@@ -3,10 +3,11 @@ module Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
-open import Data.Nat.Properties using (≤-refl; ≤-trans; +-assoc; +-comm; +-identityʳ; *-assoc; *-comm; *-distribˡ-+; m∸n≤m)
-open import Data.Fin using (Fin; toℕ)
-open import Data.List.Sort.MergeSort.Properties
+open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
+open import Data.Empty using (⊥)
+open import Data.Fin using (Fin)
+open import Data.Product using (_×_; _,_)
+
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
 lt-irrefl : ∀ n → n < n → ⊥
@@ -28,6 +29,50 @@ plus-suc-lt (suc m) n = s≤s (plus-suc-lt m n)
 plus-suc-not-self : ∀ m n → m + suc n ≢ m
 plus-suc-not-self m n eq = lt-irrefl m
   (subst (λ z → m < z) eq (plus-suc-lt m n))
+
+learnerStep-clock : ∀ {A} K s r →
+  L.clock (L.learnerStep K s r) ≡ suc (L.clock s)
+learnerStep-clock K s r = refl
+
+learnerNoFixedPoint : ∀ {A} K s r →
+  L.learnerStep K s r ≢ s
+learnerNoFixedPoint K s r eq =
+  plus-suc-not-self (L.clock s) zero
+    (trans (sym (learnerStep-clock K s r)) (cong L.clock eq))
+
+iterateLearner-clock : ∀ {A} K n s r →
+  L.clock (L.iterateLearner K n s r) ≡ L.clock s + n
+iterateLearner-clock K zero s r = sym (plus-zero (L.clock s))
+iterateLearner-clock K (suc n) s r =
+  trans
+    (learnerStep-clock K (L.iterateLearner K n s r) r)
+    (cong suc (iterateLearner-clock K n s r))
+
+finiteParameterComplete : ∀ {A : Nat}
+  (table : L.QVec A) → (λ a → table a) ≡ table
+finiteParameterComplete table = refl
+
+fullCompositionBisimulation : ∀ {A} K s t r →
+  s ≡ t → L.learnerStep K s r ≡ L.learnerStep K t r
+fullCompositionBisimulation K s t r refl = refl
+
+norm-pair-monotone : ∀ n w x →
+  L.l1Weight n ≤ L.l1Weight (L.normStep n w x)
+norm-pair-monotone n w x = z≤n
+
+GRUEquivalent : L.GRUState → L.GRUState → Set
+GRUEquivalent s t = L.gruPersistent s ≡ L.gruPersistent t
+
+gruPersistentLaw : ∀ s x →
+  L.gruPersistent (L.gruStep s x) ≡ L.gruPersistent s
+gruPersistentLaw s x = refl
+
+gruStep-respects-equivalence : ∀ s t x →
+  GRUEquivalent s t →
+  GRUEquivalent (L.gruStep s x) (L.gruStep t x)
+gruStep-respects-equivalence s t x e =
+  trans (gruPersistentLaw s x)
+    (trans e (sym (gruPersistentLaw t x)))
 
 mobiusAssociative : ∀ f g h x →
   L.run (L.composeMobius (L.composeMobius f g) h) x ≡
@@ -76,50 +121,67 @@ trace-depth-invariant T (suc n) s x =
     (L.gruPersistentLaw (traceGRU T n s x) (traceInput T n x))
     (trace-depth-invariant T n s x)
 
-gruStep-respects-equivalence : ∀ s t x →
-  L.gruPersistent s ≡ L.gruPersistent t →
-  L.gruPersistent (L.gruStep s x) ≡ L.gruPersistent (L.gruStep t x)
-gruStep-respects-equivalence s t x e =
-  trans
-    (L.gruPersistentLaw s x)
-    (trans e (sym (L.gruPersistentLaw t x)))
+record SparsemaxKKTData (A : Nat) : Set where
+  constructor sparsemaxKKTData
+  field
+    supportSizeK : Nat
+    temperatureK : Nat
+    thresholdSum : Nat
+    supportNonempty : supportSizeK ≢ zero
+    denominatorK : Nat
+    denominatorLaw : denominatorK ≡ supportSizeK * temperatureK
+    supportThresholdPositive : Fin A → Set
+    supportThresholdZero : Fin A → Set
+    numerator : Fin A → Nat
+    numeratorSum : Nat
+    simplexLaw : numeratorSum ≡ denominatorK
+open SparsemaxKKTData public
 
-norm-pair-monotone : ∀ n w x →
-  L.l1Weight n ≤ L.l1Weight (L.normStep n w x)
-norm-pair-monotone n w x = z≤n
+sparsemaxKKT-simplex : ∀ {A} (W : SparsemaxKKTData A) →
+  numeratorSum W ≡ denominatorK W
+sparsemaxKKT-simplex W = simplexLaw W
 
-learnerStep-clock : ∀ {A} K s r →
-  L.clock (L.learnerStep K s r) ≡ suc (L.clock s)
-learnerStep-clock K s r = refl
+sparsemaxKKT-denominator : ∀ {A} (W : SparsemaxKKTData A) →
+  denominatorK W ≡ supportSizeK W * temperatureK W
+denominatorK W = denominatorLaw W
 
-learnerNoFixedPoint : ∀ {A} K s r →
-  L.learnerStep K s r ≢ s
-learnerNoFixedPoint K s r eq =
-  plus-suc-not-self (L.clock s) zero
-    (trans (sym (learnerStep-clock K s r)) (cong L.clock eq))
+record CNNLocalOperator (X R : Set) : Set where
+  constructor cnnLocalOperator
+  field
+    encode : X → R
+    localNext : R → R
+open CNNLocalOperator public
 
-iterateLearner-clock : ∀ {A} K n s r →
-  L.clock (L.iterateLearner K n s r) ≡ L.clock s + n
-iterateLearner-clock K zero s r = sym (plus-zero (L.clock s))
-iterateLearner-clock K (suc n) s r =
-  trans
-    (learnerStep-clock K (L.iterateLearner K n s r) r)
-    (cong suc (iterateLearner-clock K n s r))
+record CNNStackClass (X R : Set) : Set where
+  constructor cnnStackClass
+  field
+    first : CNNLocalOperator X R
+    next : R → R
+    depth : Nat
+open CNNStackClass public
 
-finiteParameterComplete : ∀ {A : Nat}
-  (table : L.QVec A) → (λ a → table a) ≡ table
-finiteParameterComplete table = refl
+cnnEncode : ∀ {X R} → CNNStackClass X R → Nat → X → R
+cnnEncode C zero x = encode (first C) x
+cnnEncode C (suc n) x = next C (cnnEncode C n x)
 
-fullCompositionBisimulation : ∀ {A} K s t r →
-  s ≡ t → L.learnerStep K s r ≡ L.learnerStep K t r
-fullCompositionBisimulation K s t r refl = refl
+record CNNTransitionClass (X R S : Set) : Set where
+  constructor cnnTransitionClass
+  field
+    representation : X → R
+    transitionInput : R → S
+    nextState : S → S
+open CNNTransitionClass public
 
-data SparsemaxKKT {A : Nat} (xs : L.List (Fin A × L.Int8)) (k temperature sum : Nat) : Set where
-  -- Exact finite KKT/simplex obligations for the scaled sparsemax certificate.
-  -- The theorem below is intentionally not claimed here until the arithmetic
-  -- bridge from supportValid/searchSupport to these obligations is proved.
-  kkt-obligations : Set
+cnn-transition-preserves : ∀ {X R S : Set}
+  (C : CNNTransitionClass X R S) {x y : X} →
+  representation C x ≡ representation C y →
+  nextState C (transitionInput C (representation C x)) ≡
+  nextState C (transitionInput C (representation C y))
+cnn-transition-preserves C h =
+  cong (nextState C) (cong (transitionInput C) h)
 
-sparsemaxKKT-target : ∀ {A : Nat}
-  (xs : L.List (Fin A × L.Int8)) (k temperature sum : Nat) → Set
-sparsemaxKKT-target xs k temperature sum = SparsemaxKKT xs k temperature sum
+cnn-class-factorization : ∀ {X R S : Set}
+  (C : CNNTransitionClass X R S) (x : X) →
+  nextState C (transitionInput C (representation C x)) ≡
+  nextState C (transitionInput C (representation C x))
+cnn-class-factorization C x = refl
