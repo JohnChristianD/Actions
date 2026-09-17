@@ -45,7 +45,10 @@ jobs:
       - name: Verify Agda executable
         run: agda --version && agda --print-agda-app-dir && test -f "$(agda --print-agda-app-dir)/libraries"
 
-      - name: Check generalized self-contained theorem+learner monolith
+      - name: Check generalized self-contained learner monolith
+        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda
+
+      - name: Check generalized theorem monolith
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
 
       - name: Check generalized closed-loop benchmark
