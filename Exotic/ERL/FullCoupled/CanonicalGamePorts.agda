@@ -12,7 +12,7 @@ open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
 
 data BoolLike : Set where
-  yes no : BoolLike
+a  yes no : BoolLike
 
 record Int8 : Set where
   constructor int8
@@ -222,22 +222,25 @@ bernoulliBanditStep a (bernoulliBanditState best la lr t) with natEq (toℕ a) b
 ... | yes = stepResult (int8OfNat best) (bernoulliBanditState best (toℕ a) 1 (suc t)) one8 no
 ... | no = stepResult (int8OfNat best) (bernoulliBanditState best (toℕ a) 0 (suc t)) zero8 no
 
-record RockSampleState : Set where
-  constructor rockSampleState
-  field row col rockGood time : Nat
+record PobaxTMazeState : Set where
+  constructor pobaxTMazeState
+  field corridor goalCue time : Nat
 
-rockSampleStep : Fin 6 → RockSampleState → StepResult RockSampleState
-rockSampleStep a (rockSampleState r c g t) with toℕ a
-... | zero = stepResult (int8OfNat r) (rockSampleState (r ∸ 1) c g (suc t)) zero8 no
-... | suc zero = stepResult (int8OfNat c) (rockSampleState r (suc c) g (suc t)) zero8 no
-... | suc (suc zero) = stepResult (int8OfNat r) (rockSampleState (suc r) c g (suc t)) zero8 no
-... | suc (suc (suc zero)) = stepResult (int8OfNat c) (rockSampleState r (c ∸ 1) g (suc t)) zero8 no
-... | suc (suc (suc (suc zero))) with natEq r 3
-...   | yes with natEq g 1
-...     | yes = stepResult (int8OfNat c) (rockSampleState r c 0 (suc t)) one8 no
-...     | no = stepResult (int8OfNat c) (rockSampleState r c 0 (suc t)) (int8OfNat 255) no
-...   | no = stepResult (int8OfNat g) (rockSampleState r c g (suc t)) zero8 no
-... | _ = stepResult (int8OfNat g) (rockSampleState r c g (suc t)) zero8 no
+pobaxTMazeStep : Fin 3 → PobaxTMazeState → StepResult PobaxTMazeState
+pobaxTMazeStep a (pobaxTMazeState p g t) with toℕ a
+... | zero with leBool p 3
+...   | yes = stepResult (int8OfNat g) (pobaxTMazeState (suc p) g (suc t)) zero8 no
+...   | no = stepResult (int8OfNat g) (pobaxTMazeState p g (suc t)) zero8 no
+... | suc zero with leBool p 3
+...   | yes = stepResult (int8OfNat g) (pobaxTMazeState (suc p) g (suc t)) zero8 no
+...   | no with natEq g 0
+...     | yes = stepResult (int8OfNat g) (pobaxTMazeState p g (suc t)) one8 yes
+...     | no = stepResult (int8OfNat g) (pobaxTMazeState p g (suc t)) zero8 yes
+... | _ with leBool p 3
+...   | yes = stepResult (int8OfNat g) (pobaxTMazeState (suc p) g (suc t)) zero8 no
+...   | no with natEq g 1
+...     | yes = stepResult (int8OfNat g) (pobaxTMazeState p g (suc t)) one8 yes
+...     | no = stepResult (int8OfNat g) (pobaxTMazeState p g (suc t)) zero8 yes
 
 jumanjiKnapsackPort : Set
 jumanjiKnapsackPort = KnapsackState
@@ -269,5 +272,5 @@ gymnaxCartPolePort = CartPoleQuantizedState
 gymnaxBernoulliBanditMiscPort : Set
 gymnaxBernoulliBanditMiscPort = BernoulliBanditState
 
-pobaxRockSamplePort : Set
-pobaxRockSamplePort = RockSampleState
+pobaxTMazePort : Set
+pobaxTMazePort = PobaxTMazeState
