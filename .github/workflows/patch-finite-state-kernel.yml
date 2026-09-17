@@ -1,0 +1,40 @@
+name: One-shot Agda 2.8 field patch
+
+on:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: startsWith(github.event.head_commit.message, 'bootstrap: patch finite state kernel')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply minimal Agda 2.8 field typing repair
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda')
+          text = path.read_text()
+          old = '''record FiniteStateKernel (S A O : Set) : Set₁ where\n  constructor finiteStateKernel\n  field update choose\n'''
+          new = '''record FiniteStateKernel (S A O : Set) : Set₁ where\n  constructor finiteStateKernel\n  field\n    update : S → A → S\n    choose : S → A → O\n'''
+          if text.count(old) != 1:
+              raise SystemExit('expected exactly one FiniteStateKernel declaration to patch')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Commit source repair and remove patcher
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/patch-finite-state-kernel.yml
+          git add Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda .github/workflows/patch-finite-state-kernel.yml
+          git commit -m "fix: type finite state kernel fields for Agda 2.8"
+          git push origin HEAD:main
