@@ -126,7 +126,7 @@ rLUpdated s enew = let rL′ = rL s +f4 enew in rL′ -f4 sgnF4 rL′
 canonicalSign : L.Int8 → L.Int8
 canonicalSign = L.hardSignGate
 
-canonicalSign-state-independent : ∀ {S : Set} (s t : S) x → canonicalSign x ≡ canonicalSign x
+canonicalSign-state-independent : ∀ {S : Set} (s t : S) (x : L.Int8) → canonicalSign x ≡ canonicalSign x
 canonicalSign-state-independent s t x = refl
 
 deltaTheta : CanonicalF4Params → CanonicalF4State → L.Int8 → L.Int8
@@ -203,8 +203,8 @@ iterateCanonicalCoupled : ∀ {A : Nat} → CanonicalCoupledKernel A → Nat →
 iterateCanonicalCoupled {A} K zero s reward = s
 iterateCanonicalCoupled {A} K (suc n) s reward = canonicalCoupledStep K (iterateCanonicalCoupled K n s reward) reward
 
-canonicalCoupledStep-clock : ∀ {A : Nat} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) r → coupledClock (canonicalCoupledStep K s r) ≡ suc (coupledClock s)
+canonicalCoupledStep-clock : ∀ {A : Nat} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) (r : L.Int8) → coupledClock (canonicalCoupledStep K s r) ≡ suc (coupledClock s)
 canonicalCoupledStep-clock {A} K s r = refl
 
-canonicalCoupledGRU-gate-law : ∀ {A : Nat} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) r → canonicalSign r ≡ canonicalSign r
+canonicalCoupledGRU-gate-law : ∀ {A : Nat} (K : CanonicalCoupledKernel A) (s : CanonicalCoupledState A) (r : L.Int8) → canonicalSign r ≡ canonicalSign r
 canonicalCoupledGRU-gate-law {A} K s r = refl
