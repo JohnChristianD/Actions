@@ -91,11 +91,16 @@ traceGRU-depth-invariant-closure : ∀ T n s x →
   L.gruPersistent (T.traceGRU T n s x) ≡ L.gruPersistent s
 traceGRU-depth-invariant-closure T n s x = T.trace-depth-invariant T n s x
 
+weightsNumerators : ∀ {A : Nat} → (Fin A → L.SparseWeight) → L.List Nat
+weightsNumerators {A} ws =
+  L.mapList (λ a → L.numerator (ws a)) (L.finList A)
+
+weightsNumeratorSum : ∀ {A : Nat} → (Fin A → L.SparseWeight) → Nat
+weightsNumeratorSum ws = L.sumList (weightsNumerators ws)
+
 -- Exact finite KKT certificate for the discrete sparsemax representation.
--- It records the actual learner weights, their common denominator, simplex
--- normalization, support non-emptiness, and the two KKT-side predicates.
--- This is deliberately stronger than the old placeholder record: the weights
--- are tied to L.sparsemaxWeight, not merely existentially named.
+-- The weights are tied to L.sparsemaxWeight and the simplex equation sums
+-- their actual Nat numerators over every Fin A action.
 record SparsemaxKKTRealization (A : Nat) : Set where
   constructor sparsemaxKKTRealization
   field
@@ -108,26 +113,18 @@ record SparsemaxKKTRealization (A : Nat) : Set where
     supportNonempty : supportSizeK ≢ zero
     denominatorK : Nat
     denominator-law : ∀ a → L.denominator (weights a) ≡ denominatorK
-    simplex-numerator : L.List L.Int8 → Set
+    simplexLaw : weightsNumeratorSum weights ≡ denominatorK
     stationarity : Fin A → Set
     complementarity : Fin A → Set
-    primalSimplex : Set
 open SparsemaxKKTRealization public
 
--- The finite simplex consequence is now a direct theorem from the actual
--- weight surface, while stationarity/complementarity remain explicit inputs.
 sparsemaxKKT-realized-simplex : ∀ {A} (W : SparsemaxKKTRealization A) →
-  L.sparsemaxWeight-numerator-sum-law
-  where
-  -- Kept as a named completion boundary until the actual scan certificate is
-  -- connected. No postulate or unsafe axiom is introduced here.
-  L.sparsemaxWeight-numerator-sum-law : Set
-  L.sparsemaxWeight-numerator-sum-law =
-    L.sparsemaxWeight (kernel W) (q W) (counts W)
-      (L.witness (kernel W)) ≡
-    L.sparsemaxWeight (kernel W) (q W) (counts W)
-      (L.witness (kernel W))
-sparsemaxKKT-realized-simplex W = refl
+  weightsNumeratorSum (weights W) ≡ denominatorK W
+sparsemaxKKT-realized-simplex W = simplexLaw W
+
+sparsemaxKKT-realized-weight-law : ∀ {A} (W : SparsemaxKKTRealization A) a →
+  weights W a ≡ L.sparsemaxWeight (kernel W) (q W) (counts W) a
+sparsemaxKKT-realized-weight-law W a = weights-law W a
 
 -- Exact policy/attention separation marker. The policy consumes the scalar
 -- LCB score vector; no attention matrix or softmax-attention theorem is used.
@@ -136,8 +133,6 @@ sparsemax-policy-not-attention-surface : ∀ {A} K s →
   L.sparsemaxPolicy (L.actionSpaceK K) (L.q s) (L.counts s)
 sparsemax-policy-not-attention-surface K s = refl
 
--- The existing finite-depth CNN theorem is lifted verbatim into this closure
--- module so downstream users have a single theorem-closure import point.
 cnn-depth-closure : ∀ {R : Set}
   (C : T.StandardCNNStack R) d n x →
   T.iterateLayers (T.layer C) d (T.shift C n x) ≡
