@@ -90,7 +90,7 @@ scaledMul8 : Int8 → Int8 → Int8
 scaledMul8 x y = clipZ (zdiv128 (mulZ (toZ x) (toZ y)))
 
 ------------------------------------------------------------------------
--- State-independent input gate and two activation branches.
+-- State-independent input gate and activation branches.
 ------------------------------------------------------------------------
 
 sgn8 : Int8 → Int8
@@ -170,31 +170,6 @@ f4StepMobius : F4Params → F4State → Int8 → Maybe F4State
 f4StepMobius p s g with mobiusGate g
 ... | nothing = nothing
 ... | just gate = just (f4StepWithGate p s g gate)
-
-------------------------------------------------------------------------
--- Exact-integer L2 alternative corresponding to the stronger §21 reading.
-------------------------------------------------------------------------
-
-exactL2Penalty8 : Int8 → Int8 → Int8
-exactL2Penalty8 βθ θfull = clipZ (negZ (mulZ (toZ βθ) (toZ θfull)))
-
-f4StepWithGateExactL2 : F4Params → F4State → Int8 → Int8 → F4State
-f4StepWithGateExactL2 p s g gate =
-  f4State qθ' rθ' qe' re' rℓ'' ell'
-  where
-  θfull = qθ s +₈ rθ s
-  efull = qe s +₈ re s
-  oneMinusβ₂ = one8 -₈ β₂ p
-  enew = scaledMul8 (β₂ p) efull +₈ scaledMul8 oneMinusβ₂ g
-  rℓ' = rℓ s +₈ enew
-  ell' = addZ (ell s) (sgnZ rℓ')
-  rℓ'' = rℓ' -₈ sgn8 rℓ'
-  h = pow2-ell8 (ell s)
-  Δθ = scaledMul8 h gate +₈ exactL2Penalty8 (βθ p) θfull
-  qθ' = θfull +₈ Δθ
-  rθ' = θfull -₈ qθ'
-  qe' = enew
-  re' = efull -₈ enew
 
 ------------------------------------------------------------------------
 -- Kernel-checked semantics.
