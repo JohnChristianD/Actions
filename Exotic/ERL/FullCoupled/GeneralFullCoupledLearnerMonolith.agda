@@ -177,7 +177,7 @@ supportValid xs temperature k with natAt (k ∸ 1) (topCodes k xs)
 searchSupport : ∀ {A : Nat} → List (Fin A × Int8) → Nat → Nat → Nat → Nat → Nat
 searchSupport xs temperature zero current best = best
 searchSupport xs temperature (suc n) current best with supportValid xs temperature current
-... | yes = searchSupport xs temperature n (suc current) current
+... | yes = searchSupport xs temperature n (suc current) (suc current)
 ... | no = searchSupport xs temperature n (suc current) best
 
 supportSize : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Nat
@@ -210,21 +210,9 @@ sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList q c))
 sparsemax-general-action : ∀ {A} K q c → sparsemaxPolicy K q c ≡ sparsemaxPolicy K q c
 sparsemax-general-action K q c = refl
 
--- KKT certificate surface. The certificate records the exact active-set
--- inequalities and simplex normalization required by Euclidean sparsemax.
-record SparsemaxKKT (k total threshold : Nat) : Set where
-  constructor sparsemaxKKT
-  field
-    positiveSupport : suc zero ≤ k
-    thresholdLaw : total ≤ k * threshold
-    simplexScale : k * threshold ≡ k * threshold
-
-sparsemaxKKT-refl : ∀ {k total threshold} → SparsemaxKKT k total threshold → SparsemaxKKT k total threshold
-sparsemaxKKT-refl p = p
-
--- The computational selector above remains finite/Nat-valued. A complete
--- Euclidean simplex/KKT bridge requires this certificate to be constructed
--- from the sorted Int8 score list; no postulate or hole is used here.
+-- The support scan now preserves the largest valid support encountered.
+-- The exact arbitrary-A Euclidean simplex/KKT theorem is deliberately not
+-- represented by a shell or postulate; its arithmetic bridge remains open.
 
 actionSpace2 : ActionSpace 2
 actionSpace2 = actionSpace (fromℕ< (m%n<n 0 2))
