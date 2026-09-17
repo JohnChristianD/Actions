@@ -627,8 +627,8 @@ jensenDyadicConvex : ∀ {A B : MidpointOrder}
   {f : Carrier A → Carrier B} → MidpointConvex f →
   ∀ {n} (xs : DyadicTree (Carrier A) n) →
   midpoint≤ B (f (dyadicMean A xs)) (dyadicMean B (mapDyadicTree f xs))
-jensenDyadicConvex {f = f} C (leaf x) = le-refl B (f x)
-jensenDyadicConvex {f = f} C (node xs ys) =
+jensenDyadicConvex {A = A} {B = B} {f = f} C (leaf x) = le-refl B (f x)
+jensenDyadicConvex {A = A} {B = B} {f = f} C (node xs ys) =
   le-trans B
     (convexStep C (dyadicMean A xs) (dyadicMean A ys))
     (midpoint-mono B (jensenDyadicConvex C xs) (jensenDyadicConvex C ys))
@@ -637,8 +637,8 @@ jensenDyadicConcave : ∀ {A B : MidpointOrder}
   {f : Carrier A → Carrier B} → MidpointConcave f →
   ∀ {n} (xs : DyadicTree (Carrier A) n) →
   midpoint≤ B (dyadicMean B (mapDyadicTree f xs)) (f (dyadicMean A xs))
-jensenDyadicConcave {f = f} C (leaf x) = le-refl B (f x)
-jensenDyadicConcave {f = f} C (node xs ys) =
+jensenDyadicConcave {A = A} {B = B} {f = f} C (leaf x) = le-refl B (f x)
+jensenDyadicConcave {A = A} {B = B} {f = f} C (node xs ys) =
   le-trans B
     (midpoint-mono B (jensenDyadicConcave C xs) (jensenDyadicConcave C ys))
     (concaveStep C (dyadicMean A xs) (dyadicMean A ys))
