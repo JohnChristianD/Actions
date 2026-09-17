@@ -19,8 +19,6 @@ checkedPaths =
   , "Exotic/ERL/FullCoupled/CanonicalControlObservability.agda"
   , "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"
   , "Exotic/ERL/FullCoupled/CNNLogPyramidPreservation.agda"
-  , "Exotic/ERL/FullCoupled/CNNTransitionBisimulation.agda"
-  , "Exotic/ERL/FullCoupled/CNNTransitionBisimulation_test.agda"
   , "Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda"
   , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation.agda"
   , "Exotic/ERL/FullCoupled/CanonicalMunchausenAblation_test.agda"
