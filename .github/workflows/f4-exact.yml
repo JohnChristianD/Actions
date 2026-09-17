@@ -4,7 +4,7 @@ on:
   push:
     branches: ['main']
     paths:
-      - 'Exotic/ERL/FullCoupled/F4HardsignExact.agda'
+      - 'Exotic/ERL/FullCoupled/F4HardsignKernel.agda'
       - '.github/workflows/f4-exact.yml'
   workflow_dispatch:
 
@@ -26,5 +26,5 @@ jobs:
           agda-version: '2.8.0'
           agda-stdlib-version: '2.4'
 
-      - name: Check exact six-state hardsign F4
-        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/F4HardsignExact.agda
+      - name: Check standalone six-state hardsign F4 kernel
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/F4HardsignKernel.agda
