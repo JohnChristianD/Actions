@@ -15,11 +15,11 @@ sparsemaxPolicy : ActionSpace A -> QVec A -> CountVec A -> Fin A
 
 `actionSpace2`, `actionSpace4`, and the 64-action default are concrete fixtures, not a restriction on the policy type. The old `CanonicalLearnerMonolith.agda` remains a legacy two-action architecture and should not be read as the definition of the generalized policy.
 
-The generalized monolith currently has six direct standard-library imports. It still uses its own finite list/sort and finite arithmetic definitions. Adding a sorting or rational library is therefore a deliberate proof-scope decision, not a requirement of the learner surface.
+The generalized monolith now uses the standard-library finite list sorting/order surface (`Data.List.Sort`, `DecTotalOrder`, lexicographic product order) rather than its former handwritten list/sort carrier. `FiniteRational` is still handwritten in the learner monolith; it is not a standard-library rational type.
 
 ## Theorem monolith
 
-`GeneralFullCoupledTheoremsMonolith.agda` depends only on the generalized learner monolith. It now contains:
+`Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda` depends only on the generalized learner monolith. It now contains:
 
 ```text
 gruPersistentLaw
@@ -33,6 +33,18 @@ trace-depth-invariant
 ```
 
 `traceGRU-unbounded` identifies the recursively iterated GRU transition with the depth-indexed semidirect Mobius scan, so a different `MobiusAction` can occur at every depth.
+
+The theorem surface also contains a finite piecewise-rational syntax and closure under hard-sign branching, input-map composition, and arbitrary finite natural depth. The stronger `Exotic/ERL/FullCoupled/FinitePiecewiseRationalClosure.agda` module adds a well-formedness invariant: every denominator produced by the finite surface is provably nonzero, including every finite-depth iterate. This is a closure theorem for a finite piecewise-rational representation surface, not a universal-approximation theorem.
+
+## GRU activation boundary
+
+The generalized `gruStep` implementation itself consumes `hardSignGate` and finite `Int8` arithmetic. The learner separately defines `FiniteRational` and `mobiusRatio`, and the theorem surface uses `mobiusRatio` to build the piecewise-rational representation, but `gruStep` does not directly consume `mobiusRatio` or a `FiniteRational` activation. Therefore the implementation should not be described as a literally Möbius-activated rational GRU without an explicit bridge definition.
+
+## Reservoir-computing boundary
+
+The current Agda surface does not establish the reservoir-universality or attractor-storage theorems from the associative neuronal-assembly literature. To apply those results to the GRU, the formalization would still need a reservoir dynamical-system contract, a readout/training model, and the paper-specific assumptions such as the relevant recurrence/coupling structure, memory or synchronization condition, and an attractor-storage/retrieval theorem. The 2025 necessary-and-sufficient reservoir result is especially useful as a checklist because it characterizes universality through explicit reservoir conditions rather than equating finite-depth recurrence with universality.
+
+The current finite `GRUState` carrier and the natural-number depth index therefore give an unbounded family of finite-depth computations, but they do not by themselves establish universal approximation of arbitrary dynamical systems or storage of an arbitrary family of attractors.
 
 ## KKT status
 
@@ -98,7 +110,7 @@ The negative-Q-Munchausen arm remains the repository's canonical finite sign-fli
 Therefore the current minimal path is:
 
 ```text
-keep the learner's existing finite sort
+keep the generalized learner's standard-library Data.List.Sort surface
 add Relation.Binary.Properties.DecTotalOrder only if order-structure proofs
 actually replace handwritten order lemmas
 add Data.Rational only if the KKT proof is intentionally promoted from
@@ -106,3 +118,7 @@ finite Nat/Int8 certificates into exact rational semantics
 ```
 
 Adding both sorting-property stacks solely for KKT would enlarge the import graph without closing the KKT construction gap.
+
+## Maintenance boundary
+
+This page should be reviewed whenever the generalized learner changes its carrier types, the theorem monolith changes its finite-piecewise-rational grammar, or the reservoir formalization gains actual universality/attractor hypotheses. The benchmark-results block is historical evidence and must be replaced only when the corresponding benchmark semantics and result ledger are regenerated.
