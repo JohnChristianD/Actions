@@ -54,11 +54,12 @@ cnnTransitionStep : ∀ {X R H S : Set}
     (shift (translation (cnn C)) n x)
     (shift (translation (cnn C)) n y)
 cnnTransitionStep C n x y e =
-  cong
-    (E.RepresentationAdapter.decode (adapter C))
-    (trans
-      (ConvolutionalEquivariance.featureShift (equivariance C) n x)
-      (trans e (sym (ConvolutionalEquivariance.featureShift (equivariance C) n y))))
+  trans
+    (cong (E.RepresentationAdapter.decode (adapter C))
+      (ConvolutionalEquivariance.featureShift (equivariance C) n x))
+    (trans e
+      (cong (E.RepresentationAdapter.decode (adapter C))
+        (sym (ConvolutionalEquivariance.featureShift (equivariance C) n y))))
 
 standardCNNComparison : ∀ {X R H S : Set}
   (C : CNNTransitionClass X R H S) n x y →
