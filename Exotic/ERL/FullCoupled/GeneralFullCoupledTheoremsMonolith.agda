@@ -563,9 +563,9 @@ semidirectMul S (a , b) (a' , b') =
 record OrderedCarrier : Set₁ where
   constructor orderedCarrier
   field Carrier : Set
-        _≤_ : Carrier → Carrier → Set
-        refl≤ : ∀ x → _≤_ x x
-        trans≤ : ∀ {x y z} → _≤_ x y → _≤_ y z → _≤_ x z
+        carrier≤ : Carrier → Carrier → Set
+        refl≤ : ∀ x → carrier≤ x x
+        trans≤ : ∀ {x y z} → carrier≤ x y → carrier≤ y z → carrier≤ x z
 open OrderedCarrier public
 
 record SaddlePoint (X Y Z : OrderedCarrier)
@@ -574,8 +574,8 @@ record SaddlePoint (X Y Z : OrderedCarrier)
   field
     xStar : Carrier X
     yStar : Carrier Y
-    leftSaddle : ∀ x → _≤_ Z (payoff x yStar) (payoff xStar yStar)
-    rightSaddle : ∀ y → _≤_ Z (payoff xStar yStar) (payoff xStar y)
+    leftSaddle : ∀ x → carrier≤ Z (payoff x yStar) (payoff xStar yStar)
+    rightSaddle : ∀ y → carrier≤ Z (payoff xStar yStar) (payoff xStar y)
 open SaddlePoint public
 
 record FiniteSionWitness (X Y Z : OrderedCarrier)
@@ -587,7 +587,7 @@ open FiniteSionWitness public
 finiteSionSandwich : ∀ {X Y Z : OrderedCarrier}
   {payoff : Carrier X → Carrier Y → Carrier Z}
   (W : FiniteSionWitness X Y Z payoff) →
-  _≤_ Z (payoff (xStar (saddle W)) (yStar (saddle W)))
+  carrier≤ Z (payoff (xStar (saddle W)) (yStar (saddle W)))
     (payoff (xStar (saddle W)) (yStar (saddle W)))
 finiteSionSandwich W = refl≤ Z (payoff (xStar (saddle W)) (yStar (saddle W)))
 
@@ -598,11 +598,11 @@ data DyadicTree (A : Set) : Nat → Set where
 record MidpointOrder : Set₁ where
   constructor midpointOrder
   field Carrier : Set
-        _≤_ : Carrier → Carrier → Set
+        midpoint≤ : Carrier → Carrier → Set
         midpoint : Carrier → Carrier → Carrier
-        le-refl : ∀ x → _≤_ x x
-        le-trans : ∀ {x y z} → _≤_ x y → _≤_ y z → _≤_ x z
-        midpoint-mono : ∀ {a b c d} → _≤_ a c → _≤_ b d → _≤_ (midpoint a b) (midpoint c d)
+        le-refl : ∀ x → midpoint≤ x x
+        le-trans : ∀ {x y z} → midpoint≤ x y → midpoint≤ y z → midpoint≤ x z
+        midpoint-mono : ∀ {a b c d} → midpoint≤ a c → midpoint≤ b d → midpoint≤ (midpoint a b) (midpoint c d)
 open MidpointOrder public
 
 dyadicMean : (M : MidpointOrder) → ∀ {n} → DyadicTree (Carrier M) n → Carrier M
@@ -615,18 +615,18 @@ mapDyadicTree f (node xs ys) = node (mapDyadicTree f xs) (mapDyadicTree f ys)
 
 record MidpointConvex {A B : MidpointOrder} (f : Carrier A → Carrier B) : Set₁ where
   constructor midpointConvex
-  field convexStep : ∀ x y → _≤_ B (f (midpoint A x y)) (midpoint B (f x) (f y))
+  field convexStep : ∀ x y → midpoint≤ B (f (midpoint A x y)) (midpoint B (f x) (f y))
 open MidpointConvex public
 
 record MidpointConcave {A B : MidpointOrder} (f : Carrier A → Carrier B) : Set₁ where
   constructor midpointConcave
-  field concaveStep : ∀ x y → _≤_ B (midpoint B (f x) (f y)) (f (midpoint A x y))
+  field concaveStep : ∀ x y → midpoint≤ B (midpoint B (f x) (f y)) (f (midpoint A x y))
 open MidpointConcave public
 
 jensenDyadicConvex : ∀ {A B : MidpointOrder}
   {f : Carrier A → Carrier B} → MidpointConvex f →
   ∀ {n} (xs : DyadicTree (Carrier A) n) →
-  _≤_ B (f (dyadicMean A xs)) (dyadicMean B (mapDyadicTree f xs))
+  midpoint≤ B (f (dyadicMean A xs)) (dyadicMean B (mapDyadicTree f xs))
 jensenDyadicConvex {f = f} C (leaf x) = le-refl B (f x)
 jensenDyadicConvex {f = f} C (node xs ys) =
   le-trans B
@@ -636,7 +636,7 @@ jensenDyadicConvex {f = f} C (node xs ys) =
 jensenDyadicConcave : ∀ {A B : MidpointOrder}
   {f : Carrier A → Carrier B} → MidpointConcave f →
   ∀ {n} (xs : DyadicTree (Carrier A) n) →
-  _≤_ B (dyadicMean B (mapDyadicTree f xs)) (f (dyadicMean A xs))
+  midpoint≤ B (dyadicMean B (mapDyadicTree f xs)) (f (dyadicMean A xs))
 jensenDyadicConcave {f = f} C (leaf x) = le-refl B (f x)
 jensenDyadicConcave {f = f} C (node xs ys) =
   le-trans B
