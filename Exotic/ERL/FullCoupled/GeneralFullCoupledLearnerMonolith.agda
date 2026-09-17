@@ -4,18 +4,15 @@ module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_) 
 open import Data.Nat using (_∸_; _≤_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ<n)
+open import Data.Fin.Properties using (toℕ<n; ≤-decTotalOrder)
 open import Data.Nat.DivMod using (m%n<n; _%_)
+open import Data.List.Base using (List; []; _∷_; map)
+open import Data.List.Sort as Sort
 open import Data.Product using (_×_; _,_)
-
-infixr 5 _::_
-data List (A : Set) : Set where
-  nil : List A
-  _::_ : A → List A → List A
-
-mapList : ∀ {A B : Set} → (A → B) → List A → List B
-mapList f nil = nil
-mapList f (x :: xs) = f x :: mapList f xs
+open import Relation.Binary.Bundles using (DecTotalOrder)
+open import Relation.Binary.Construct.On as On
+open import Relation.Binary.Construct.Flip.EqAndOrd as Flip
+open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
 
 record Int8 : Set where
   constructor int8
@@ -67,8 +64,8 @@ raiseFin : ∀ {A} → Fin A → Fin (suc A)
 raiseFin i = fromℕ< (s≤s (toℕ<n i))
 
 finList : (A : Nat) → List (Fin A)
-finList zero = nil
-finList (suc A) = fromℕ< (m%n<n 0 (suc A)) :: mapList raiseFin (finList A)
+finList zero = []
+finList (suc A) = fromℕ< (m%n<n 0 (suc A)) ∷ map raiseFin (finList A)
 
 record ActionSpace (A : Nat) : Set where
   constructor actionSpace
@@ -110,18 +107,25 @@ lcbBonus _ = zero8
 scoreA : ∀ {A} → QVec A → CountVec A → Fin A → Int8
 scoreA q c a = int8Add (q a) (lcbBonus (c a))
 
-insertScore : ∀ {A} → Fin A × Int8 → List (Fin A × Int8) → List (Fin A × Int8)
-insertScore x nil = x :: nil
-insertScore (a , s) ((b , t) :: xs) with natLt (toℕ (code s)) (toℕ (code t))
-... | yes = (b , t) :: insertScore (a , s) xs
-... | no = (a , s) :: (b , t) :: xs
+ScoreEntry : Nat → Set
+ScoreEntry A = Int8 × Fin A
 
-sortScores : ∀ {A} → List (Fin A × Int8) → List (Fin A × Int8)
-sortScores nil = nil
-sortScores (x :: xs) = insertScore x (sortScores xs)
+int8Order : DecTotalOrder
+int8Order = On.decTotalOrder (≤-decTotalOrder 256) code
 
-scoreList : ∀ {A} → QVec A → CountVec A → List (Fin A × Int8)
-scoreList {A} q c = mapList (λ a → a , scoreA q c a) (finList A)
+scoreEntryOrder : ∀ A → DecTotalOrder
+scoreEntryOrder A =
+  Flip.decTotalOrder
+    (Lex.×-decTotalOrder int8Order (≤-decTotalOrder A))
+
+scoreEntry : ∀ {A} → QVec A → CountVec A → Fin A → ScoreEntry A
+scoreEntry q c a = scoreA q c a , a
+
+scoreList : ∀ {A} → QVec A → CountVec A → List (ScoreEntry A)
+scoreList {A} q c = map (scoreEntry q c) (finList A)
+
+sortScores : ∀ {A} → List (ScoreEntry A) → List (ScoreEntry A)
+sortScores {A} = Sort.sort (scoreEntryOrder A)
 
 sparsemaxTemperature : Nat
 sparsemaxTemperature = 16
@@ -132,25 +136,25 @@ record SparseWeight : Set where
 open SparseWeight public
 
 natAt : Nat → List Nat → Nat
-natAt k nil = zero
-natAt zero (x :: xs) = x
-natAt (suc k) (x :: xs) = natAt k xs
+natAt k [] = zero
+natAt zero (x ∷ xs) = x
+natAt (suc k) (x ∷ xs) = natAt k xs
 
 sumList : List Nat → Nat
-sumList nil = zero
-sumList (x :: xs) = x + sumList xs
+sumList [] = zero
+sumList (x ∷ xs) = x + sumList xs
 
-topCodes : ∀ {A} → Nat → List (Fin A × Int8) → List Nat
-topCodes zero xs = nil
-topCodes (suc k) nil = nil
-topCodes (suc k) ((a , x) :: xs) = toℕ (code x) :: topCodes k xs
+topCodes : ∀ {A} → Nat → List (ScoreEntry A) → List Nat
+topCodes zero xs = []
+topCodes (suc k) [] = []
+topCodes (suc k) ((x , a) ∷ xs) = toℕ (code x) ∷ topCodes k xs
 
-supportValid : ∀ {A} → List (Fin A × Int8) → Nat → Nat → BoolLike
+supportValid : ∀ {A} → List (ScoreEntry A) → Nat → Nat → BoolLike
 supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
 ... | yes = yes
 ... | no = no
 
-searchSupport : ∀ {A} → List (Fin A × Int8) → Nat → Nat → Nat → Nat → Nat
+searchSupport : ∀ {A} → List (ScoreEntry A) → Nat → Nat → Nat → Nat → Nat
 searchSupport xs temperature zero current best = best
 searchSupport xs temperature (suc n) current best with supportValid xs temperature current
 ... | yes = searchSupport xs temperature n (suc current) (maxNat best current)
@@ -174,9 +178,9 @@ weightPositive (sparseWeight n d) with natEq n zero
 ... | yes = no
 ... | no = yes
 
-selectPositive : ∀ {A} → ActionSpace A → QVec A → CountVec A → List (Fin A × Int8) → Fin A
-selectPositive K q c nil = witness K
-selectPositive K q c ((a , s) :: xs) with weightPositive (sparsemaxWeight K q c a)
+selectPositive : ∀ {A} → ActionSpace A → QVec A → CountVec A → List (ScoreEntry A) → Fin A
+selectPositive K q c [] = witness K
+selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c a)
 ... | yes = a
 ... | no = selectPositive K q c xs
 
