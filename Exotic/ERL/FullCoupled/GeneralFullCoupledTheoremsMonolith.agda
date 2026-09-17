@@ -508,7 +508,9 @@ parameterize-complete f a = refl
 
 record FiniteStateKernel (S A O : Set) : Set₁ where
   constructor finiteStateKernel
-  field update choose
+  field
+    update : S → A → S
+    choose : S → A → O
 open FiniteStateKernel public
 
 finiteStateParameterComplete : ∀ {S A O : Set} (u : S → A → S) (c : S → A → O) →
