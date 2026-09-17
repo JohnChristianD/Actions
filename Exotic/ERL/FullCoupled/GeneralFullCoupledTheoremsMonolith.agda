@@ -118,7 +118,7 @@ trace-depth-invariant : ∀ T n s x →
 trace-depth-invariant T zero s x = refl
 trace-depth-invariant T (suc n) s x =
   trans
-    (L.gruPersistentLaw (traceGRU T n s x) (traceInput T n x))
+    (gruPersistentLaw (traceGRU T n s x) (traceInput T n x))
     (trace-depth-invariant T n s x)
 
 record SparsemaxKKTData (A : Nat) : Set where
@@ -145,43 +145,73 @@ sparsemaxKKT-denominator : ∀ {A} (W : SparsemaxKKTData A) →
   denominatorK W ≡ supportSizeK W * temperatureK W
 denominatorK W = denominatorLaw W
 
-record CNNLocalOperator (X R : Set) : Set where
-  constructor cnnLocalOperator
+record CNNTranslationAction (X : Set) : Set where
+  constructor cnnTranslationAction
+  field
+    shift : Nat → X → X
+open CNNTranslationAction public
+
+record FormalCNNLayer (X R : Set) : Set where
+  constructor formalCNNLayer
   field
     encode : X → R
     localNext : R → R
-open CNNLocalOperator public
+open FormalCNNLayer public
 
-record CNNStackClass (X R : Set) : Set where
-  constructor cnnStackClass
+record FormalCNNClass (X R : Set) : Set where
+  constructor formalCNNClass
   field
-    first : CNNLocalOperator X R
-    next : R → R
+    layer : FormalCNNLayer X R
+    translation : CNNTranslationAction X
+    equivariant : ∀ n x →
+      encode layer (shift translation n x) ≡ encode layer x
     depth : Nat
-open CNNStackClass public
+open FormalCNNClass public
 
-cnnEncode : ∀ {X R} → CNNStackClass X R → Nat → X → R
-cnnEncode C zero x = encode (first C) x
-cnnEncode C (suc n) x = next C (cnnEncode C n x)
+cnnDepthEncode : ∀ {X R} → FormalCNNClass X R → Nat → X → R
+cnnDepthEncode C zero x = encode (layer C) x
+cnnDepthEncode C (suc n) x = localNext (layer C) (cnnDepthEncode C n x)
 
-record CNNTransitionClass (X R S : Set) : Set where
+record CNNRepresentationAdapter (X R H : Set) : Set where
+  constructor cnnRepresentationAdapter
+  field
+    cnn : FormalCNNClass X R
+    decode : R → H
+    representationInput : H → X → H
+open CNNRepresentationAdapter public
+
+cnnEquivariantRepresentation : ∀ {X R H : Set}
+  (C : CNNRepresentationAdapter X R H) n x →
+  decode C (encode (layer (cnn C)) (shift (translation (cnn C)) n x)) ≡
+  decode C (encode (layer (cnn C)) x)
+cnnEquivariantRepresentation C n x =
+  cong (decode C) (equivariant (cnn C) n x)
+
+record CNNTransitionClass (X R H S : Set) : Set where
   constructor cnnTransitionClass
   field
     representation : X → R
-    transitionInput : R → S
+    decodeRepresentation : R → H
+    transitionInput : H → S
     nextState : S → S
 open CNNTransitionClass public
 
-cnn-transition-preserves : ∀ {X R S : Set}
-  (C : CNNTransitionClass X R S) {x y : X} →
-  representation C x ≡ representation C y →
-  nextState C (transitionInput C (representation C x)) ≡
-  nextState C (transitionInput C (representation C y))
+cnn-transition-preserves : ∀ {X R H S : Set}
+  (C : CNNTransitionClass X R H S) {x y : X} →
+  decodeRepresentation C (representation C x) ≡
+  decodeRepresentation C (representation C y) →
+  nextState C (transitionInput C (decodeRepresentation C (representation C x))) ≡
+  nextState C (transitionInput C (decodeRepresentation C (representation C y)))
 cnn-transition-preserves C h =
   cong (nextState C) (cong (transitionInput C) h)
 
-cnn-class-factorization : ∀ {X R S : Set}
-  (C : CNNTransitionClass X R S) (x : X) →
-  nextState C (transitionInput C (representation C x)) ≡
-  nextState C (transitionInput C (representation C x))
-cnn-class-factorization C x = refl
+cnn-spatial-bisimulation : ∀ {X R H S : Set}
+  (C : CNNRepresentationAdapter X R H)
+  (T : H → S)
+  (N : S → S)
+  n x y →
+  decode C (encode (layer (cnn C)) x) ≡ decode C (encode (layer (cnn C)) y) →
+  N (T (decode C (encode (layer (cnn C)) x))) ≡
+  N (T (decode C (encode (layer (cnn C)) y)))
+cnn-spatial-bisimulation C T N n x y h =
+  cong N (cong T h)
