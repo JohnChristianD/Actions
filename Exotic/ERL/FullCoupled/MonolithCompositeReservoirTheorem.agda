@@ -11,6 +11,9 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; con
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
+stepAt : ∀ {A} → L.LearnerKernel A → L.Int8 → L.LearnerState A → L.LearnerState A
+stepAt K reward s = L.learnerStep K s reward
+
 nat-suc-not-self : ∀ n → suc n ≢ n
 nat-suc-not-self zero ()
 nat-suc-not-self (suc n) eq = nat-suc-not-self n (cong pred eq)
@@ -139,7 +142,7 @@ record CertifiedCompositeConclusion
   constructor certifiedCompositeConclusion
   field
     currentComposition :
-      ∀ s → L.learnerStep K s reward ≢ s
+      ∀ s → stepAt K reward s ≢ s
     l1PathProgress :
       ∀ s →
         (L.l1Weight (L.normState s) ≤
@@ -154,16 +157,16 @@ record CertifiedCompositeConclusion
       ∀ s →
         L.gruPersistent (L.gruStep (L.gru s) reward) ≡ L.gruPersistent (L.gru s)
     normKKT : KKTPathCertificate KKTStatement
-    lyapunov : LyapunovCertificate (L.LearnerState A) (L.learnerStep K)
-    attractor : AttractorRecallCertificate (L.LearnerState A) (L.learnerStep K)
+    lyapunov : LyapunovCertificate (L.LearnerState A) (stepAt K reward)
+    attractor : AttractorRecallCertificate (L.LearnerState A) (stepAt K reward)
     reservoir : ReservoirConditionCertificate (L.LearnerState A)
 open CertifiedCompositeConclusion public
 
 composeMonolith : ∀ {A} (K : L.LearnerKernel A) (reward : L.Int8)
   {KKTStatement : Set} →
   (normKKT : KKTPathCertificate KKTStatement) →
-  (lyapunov : LyapunovCertificate (L.LearnerState A) (L.learnerStep K)) →
-  (attractor : AttractorRecallCertificate (L.LearnerState A) (L.learnerStep K)) →
+  (lyapunov : LyapunovCertificate (L.LearnerState A) (stepAt K reward)) →
+  (attractor : AttractorRecallCertificate (L.LearnerState A) (stepAt K reward)) →
   (reservoir : ReservoirConditionCertificate (L.LearnerState A)) →
   CertifiedCompositeConclusion A K reward KKTStatement
 composeMonolith K reward normKKT lyapunov attractor reservoir =
