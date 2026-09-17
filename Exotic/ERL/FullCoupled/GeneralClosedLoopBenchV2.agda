@@ -6,7 +6,7 @@ open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Nat.DivMod using (m%n<n)
 open import Data.List.Base using ([]; _∷_)
 
-open import Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith as L
+open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
 open import Exotic.ERL.FullCoupled.AdditionalBenchmarkPorts as B
 
