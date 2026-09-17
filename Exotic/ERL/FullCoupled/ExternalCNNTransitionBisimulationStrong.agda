@@ -42,14 +42,17 @@ step-preserves W e = cong (next W) (cong (input (transition W)) e)
 
 iterateStepMap : ∀ {X R H S : Set} → Nat → CNNTransitionClass X R H S → X → S → S
 iterateStepMap zero W x s = s
-iterateStepMap (suc n) W x s = next W (input (transition W) (decode (adapter W) (encode (cnn W) x)))
+iterateStepMap (suc n) W x s = iterateStepMap n W x (stepMap W x)
 
 iterate-preserves :
   ∀ {X R H S : Set} (W : CNNTransitionClass X R H S) {x y : X}
   (e : CNNEquivalent (cnn W) (adapter W) x y) n s →
   iterateStepMap n W x s ≡ iterateStepMap n W y s
 iterate-preserves W e zero s = refl
-iterate-preserves W e (suc n) s = step-preserves W e
+iterate-preserves W e (suc n) s =
+  trans
+    (iterate-preserves W e n (stepMap W x))
+    (cong (λ z → iterateStepMap n W y z) (step-preserves W e))
 
 same-class-next-preserves :
   ∀ {X R H S : Set} (W : CNNTransitionClass X R H S) {x y : X} →
@@ -64,10 +67,10 @@ cnn-factorization W x = refl
 
 cnn-architecture-independence :
   ∀ {X R H S : Set}
-  (C D : ExternalCNN X R)
+  (C : ExternalCNN X R)
   (A : RepresentationAdapter R H)
   (T : LearnerTransition H S)
   (N : S → S) x y →
   decode A (encode C x) ≡ decode A (encode C y) →
   N (input T (decode A (encode C x))) ≡ N (input T (decode A (encode C y)))
-cnn-architecture-independence C D A T N x y e = cong N (cong (input T) e)
+cnn-architecture-independence C A T N x y e = cong N (cong (input T) e)
