@@ -2,6 +2,7 @@
 module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_) 
+open import Level using (0ℓ)
 open import Data.Nat using (_∸_; _≤_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n; ≤-decTotalOrder)
