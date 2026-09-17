@@ -6,6 +6,7 @@ open import Data.Nat using (_<_; _≤_; _*_)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Fin using (toℕ)
 open import Data.Fin.Properties using (toℕ<n)
+open import Data.Product using (_×_; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; trans; sym)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
