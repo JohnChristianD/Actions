@@ -440,6 +440,15 @@ rationalCode (finiteRational s n d) = int8OfNat n
 mobiusActivation8 : Int8 → FiniteRational
 mobiusActivation8 = mobiusRatio8
 
+identityActivation8 : Int8 → Int8
+identityActivation8 x = x
+
+identityActivation8-law : ∀ x → identityActivation8 x ≡ x
+identityActivation8-law x = refl
+
+identityActivation8-zero : identityActivation8 zero8 ≡ zero8
+identityActivation8-zero = refl
+
 gruCandidate8 : Int8 → Int8 → Int8
 gruCandidate8 h x = int8Add h x
 
@@ -478,7 +487,7 @@ gruStep : GRUState → Int8 → GRUState
 gruStep (gruState h m n g) x =
   gruState
     (mix8 (gateFromInput x) h
-      (int8Add (rationalCode (mobiusActivation8 x)) (gruCandidate8 h x)))
+      (int8Add (identityActivation8 x) (gruCandidate8 h x)))
     m n g
 
 persistentGRU : GRUState → GRUMatrices × (GRUNoise × GlobalControl)
