@@ -245,7 +245,7 @@ record GRUState : Set where
 open GRUState public
 
 zeroGRU : GRUState
-zeroGRU = gruState zero8 one8 one8 one8 zero8 zero8 zero8 zero8
+zeroGRU = gruState zero8 one8 one8 one8 zero8 zero8 zero8 zero8 zero8
 
 gruStep : GRUState → Int8 → GRUState
 gruStep s x =
