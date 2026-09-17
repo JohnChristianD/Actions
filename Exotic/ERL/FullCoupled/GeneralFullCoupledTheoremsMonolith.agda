@@ -680,8 +680,8 @@ shiftOrbitNonFixed nf n eq =
 iterate-energy-decrease : ∀ {S : Set} {step : S → S}
   (Lyc : LyapunovCertificate S step) {s : S} →
   OrbitNonFixed s → ∀ n → energy Lyc (iterateGeneric step (suc n) s) < energy Lyc s
-iterate-energy-decrease Lyc {s = s} nf zero = strictDecrease Lyc s (nf zero)
-iterate-energy-decrease Lyc {s = s} nf (suc n) =
+iterate-energy-decrease {S = S} {step = step} Lyc {s = s} nf zero = strictDecrease Lyc s (nf zero)
+iterate-energy-decrease {S = S} {step = step} Lyc {s = s} nf (suc n) =
   lt-trans-nat
     (subst (λ z → energy Lyc z < energy Lyc (step s))
       (iterateGeneric-shift step n s)
