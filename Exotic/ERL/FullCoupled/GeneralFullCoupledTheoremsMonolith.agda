@@ -426,21 +426,37 @@ prConstWitness q = piecewiseRationalWitness (prConst q) (λ x → refl)
 prMobiusWitness : PiecewiseRationalWitness L.mobiusRatio
 prMobiusWitness = piecewiseRationalWitness prMobius (λ x → refl)
 
+prBranchFunction :
+  ∀ {f g h : L.Int8 → L.FiniteRational} →
+  L.Int8 → L.FiniteRational
+prBranchFunction {f = f} {g = g} {h = h} x with L.hardSign x
+... | L.negative = f x
+... | L.zeroSign = g x
+... | L.positive = h x
+
+prBranch-sound :
+  ∀ {f g h : L.Int8 → L.FiniteRational}
+  (F : PiecewiseRationalWitness f)
+  (G : PiecewiseRationalWitness g)
+  (H : PiecewiseRationalWitness h)
+  (x : L.Int8) →
+  evalFinitePiecewiseRational
+    (prBranch (term F) (term G) (term H)) x ≡
+  prBranchFunction {f = f} {g = g} {h = h} x
+prBranch-sound F G H x with L.hardSign x
+... | L.negative = sound F x
+... | L.zeroSign = sound G x
+... | L.positive = sound H x
+
 prBranch-closure : ∀ {f g h}
   → PiecewiseRationalWitness f
   → PiecewiseRationalWitness g
   → PiecewiseRationalWitness h
   → PiecewiseRationalWitness
-      (λ x with L.hardSign x
-       ... | L.negative = f x
-       ... | L.zeroSign = g x
-       ... | L.positive = h x)
+      (prBranchFunction {f = f} {g = g} {h = h})
 prBranch-closure F G H = piecewiseRationalWitness
   (prBranch (term F) (term G) (term H))
-  (λ x with L.hardSign x
-   ... | L.negative = sound F x
-   ... | L.zeroSign = sound G x
-   ... | L.positive = sound H x)
+  (prBranch-sound F G H)
 
 prComposeInput-closure : ∀ {f}
   → (m : FinitePiecewiseInt8Map)
