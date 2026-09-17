@@ -1,9 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_
-)
-open import Data.Nat using (_∸_)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_) 
+open import Data.Nat using (_∸_; _≤_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; _%_)
@@ -66,9 +65,6 @@ maxNat (suc m) (suc n) = suc (maxNat m n)
 
 raiseFin : ∀ {A} → Fin A → Fin (suc A)
 raiseFin i = fromℕ< (s≤s (toℕ<n i))
-  where
-  s≤s : ∀ {n m} → n ≤ m → suc n ≤ suc m
-  s≤s p = p
 
 finList : (A : Nat) → List (Fin A)
 finList zero = nil
