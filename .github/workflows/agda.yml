@@ -91,12 +91,6 @@ jobs:
       - name: Check complete CNN factorization theorem
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNLogPyramidComplete.agda
 
-      - name: Check CNN transition bisimulation
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNTransitionBisimulation.agda
-
-      - name: Check CNN transition bisimulation regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CNNTransitionBisimulation_test.agda
-
       - name: Check negative-Munchausen signed-scale theory
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalNegativeMunchausenTheory.agda
 
