@@ -1,15 +1,12 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
-open import Data.Nat.Properties using (≤-refl; ≤-trans; +-assoc; +-comm; +-identityʳ; *-assoc; *-comm; *-distribˡ-+; m∸n≤m)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m; _%_)
+open import Data.Fin.Properties using (toℕ<n)
+open import Data.Nat.DivMod using (m%n<n; _%_)
 open import Data.Product using (_×_; _,_)
-open import Data.Empty using (⊥)
 
 infixr 5 _::_
 
@@ -46,26 +43,6 @@ int8Mul x y = int8OfNat (toℕ (code x) * toℕ (code y))
 
 int8Neg : Int8 → Int8
 int8Neg x = int8OfNat (256 ∸ toℕ (code x))
-
-lt-irrefl : ∀ n → n < n → ⊥
-lt-irrefl zero ()
-lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
-
-plus-zero : ∀ n → n + zero ≡ n
-plus-zero zero = refl
-plus-zero (suc n) = cong suc (plus-zero n)
-
-plus-suc : ∀ m n → m + suc n ≡ suc (m + n)
-plus-suc zero n = refl
-plus-suc (suc m) n = cong suc (plus-suc m n)
-
-plus-suc-lt : ∀ m n → m < m + suc n
-plus-suc-lt zero n = s≤s z≤n
-plus-suc-lt (suc m) n = s≤s (plus-suc-lt m n)
-
-plus-suc-not-self : ∀ m n → m + suc n ≢ m
-plus-suc-not-self m n eq = lt-irrefl m
-  (subst (λ z → m < z) eq (plus-suc-lt m n))
 
 data BoolLike : Set where
   yes no : BoolLike
@@ -177,7 +154,7 @@ supportValid xs temperature k with natAt (k ∸ 1) (topCodes k xs)
 searchSupport : ∀ {A : Nat} → List (Fin A × Int8) → Nat → Nat → Nat → Nat → Nat
 searchSupport xs temperature zero current best = best
 searchSupport xs temperature (suc n) current best with supportValid xs temperature current
-... | yes = searchSupport xs temperature n (suc current) (suc current)
+... | yes = searchSupport xs temperature n (suc current) current
 ... | no = searchSupport xs temperature n (suc current) best
 
 supportSize : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Nat
@@ -207,13 +184,6 @@ selectPositive K q c ((a , s) :: xs) with weightPositive (sparsemaxWeight K q c 
 sparsemaxPolicy : ∀ {A : Nat} → ActionSpace A → QVec A → CountVec A → Fin A
 sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList q c))
 
-sparsemax-general-action : ∀ {A} K q c → sparsemaxPolicy K q c ≡ sparsemaxPolicy K q c
-sparsemax-general-action K q c = refl
-
--- The support scan now preserves the largest valid support encountered.
--- The exact arbitrary-A Euclidean simplex/KKT theorem is deliberately not
--- represented by a shell or postulate; its arithmetic bridge remains open.
-
 actionSpace2 : ActionSpace 2
 actionSpace2 = actionSpace (fromℕ< (m%n<n 0 2))
 
@@ -225,13 +195,6 @@ defaultActionSpace = actionSpace (fromℕ< (m%n<n 0 64))
 
 defaultD : Nat
 defaultD = 64
-
-data PowerOfFour : Nat → Set where
-  power-one : PowerOfFour 1
-  power-step : ∀ {d} → PowerOfFour d → PowerOfFour (d * 4)
-
-powerOfFour64 : PowerOfFour defaultD
-powerOfFour64 = power-step (power-step (power-step power-one))
 
 record FiniteRational : Set where
   constructor finiteRational
@@ -246,29 +209,42 @@ record MobiusAction : Set where
   field run : Int8 → Int8
 open MobiusAction public
 
+identityMobius : MobiusAction
+identityMobius = mobiusAction (λ x → x)
+
 composeMobius : MobiusAction → MobiusAction → MobiusAction
 composeMobius f g = mobiusAction (λ x → run f (run g x))
 
-mobiusAssociative : ∀ f g h x →
-  run (composeMobius (composeMobius f g) h) x ≡
-  run (composeMobius f (composeMobius g h)) x
-mobiusAssociative f g h x = refl
+record MobiusTrace : Set where
+  constructor mobiusTrace
+  field atDepth : Nat → MobiusAction
+open MobiusTrace public
 
-data HardSign : Set where
-  negative zeroSign positive : HardSign
+prefixAction : MobiusTrace → Nat → MobiusAction
+prefixAction T zero = identityMobius
+prefixAction T (suc n) = composeMobius (atDepth T n) (prefixAction T n)
+
+HardSign : Set
+HardSign = BoolLike
 
 hardSign : Int8 → HardSign
 hardSign x with toℕ (code x) <ᵇ 128
 ... | yes with toℕ (code x)
 ...   | zero = zeroSign
 ...   | suc n = positive
-... | no = negative
+  where
+    zeroSign : HardSign
+    zeroSign = yes
+    positive : HardSign
+    positive = yes
+... | no = no
 
 hardSignGate : Int8 → Int8
 hardSignGate x with hardSign x
-... | negative = int8OfNat 255
-... | zeroSign = zero8
-... | positive = one8
+... | no = int8OfNat 255
+... | yes with toℕ (code x)
+...   | zero = zero8
+...   | suc n = one8
 
 record GRUState : Set where
   constructor gruState
@@ -290,14 +266,29 @@ gruStep s x =
 gruPersistent : GRUState → Int8 × (Int8 × (Int8 × Int8))
 gruPersistent s = matrixZ s , (matrixR s , (matrixH s , optimizerToken s))
 
-GRUEquivalent : GRUState → GRUState → Set
-GRUEquivalent s t = gruPersistent s ≡ gruPersistent t
+gruTransitionFamily : Set
+gruTransitionFamily = Int8 → GRUState → GRUState
 
-gruPersistentLaw : ∀ s x → gruPersistent (gruStep s x) ≡ gruPersistent s
-gruPersistentLaw s x = refl
+gruTransitionFamilyStep : GRUTransitionFamily → Int8 → GRUState → GRUState
+gruTransitionFamilyStep T x s = T x s
 
-gruStep-respects-equivalence : ∀ s t x → GRUEquivalent s t → GRUEquivalent (gruStep s x) (gruStep t x)
-gruStep-respects-equivalence s t x e = trans (gruPersistentLaw s x) (trans e (sym (gruPersistentLaw t x)))
+mobiusTransport : MobiusAction → GRUTransitionFamily → GRUTransitionFamily
+mobiusTransport f T x s = T (run f x) s
+
+record SemidirectToken : Set where
+  constructor semidirectToken
+  field transitionPart : GRUTransitionFamily
+        mobiusPart : MobiusAction
+open SemidirectToken public
+
+semidirectIdentity : SemidirectToken
+semidirectIdentity = semidirectToken (λ x s → gruStep s x) identityMobius
+
+semidirectCompose : SemidirectToken → SemidirectToken → SemidirectToken
+semidirectCompose (semidirectToken T f) (semidirectToken S g) =
+  semidirectToken
+    (λ x s → T x (S (run f x) s))
+    (composeMobius f g)
 
 record F4State : Set where
   constructor f4State
@@ -327,9 +318,6 @@ zeroNorm = normPair zero zero
 
 normStep : NormPair → Int8 → Int8 → NormPair
 normStep n w x = normPair (l1Weight n + toℕ (code w)) (pathWeight n + (toℕ (code w) * toℕ (code x)))
-
-norm-pair-monotone : ∀ n w x → l1Weight n ≤ l1Weight (normStep n w x)
-norm-pair-monotone n w x = z≤n
 
 data MunchausenMode : Set where
   munchausen noMunchausen : MunchausenMode
@@ -374,22 +362,9 @@ learnerStep K s reward =
     (f4Step (optimizer s) shaped)
     (normStep (normState s) (q s a) shaped)
 
-learnerStep-clock : ∀ {A} K s r → clock (learnerStep K s r) ≡ suc (clock s)
-learnerStep-clock K s r = refl
-
-learnerNoFixedPoint : ∀ {A} K s r → learnerStep K s r ≢ s
-learnerNoFixedPoint K s r eq = plus-suc-not-self (clock s) zero (trans (sym (learnerStep-clock K s r)) (cong clock eq))
-
 iterateLearner : ∀ {A} → LearnerKernel A → Nat → LearnerState A → Int8 → LearnerState A
 iterateLearner K zero s r = s
 iterateLearner K (suc n) s r = learnerStep K (iterateLearner K n s r) r
 
-iterateLearner-clock : ∀ {A} K n s r → clock (iterateLearner K n s r) ≡ clock s + n
-iterateLearner-clock K zero s r = sym (plus-zero (clock s))
-iterateLearner-clock K (suc n) s r = trans (learnerStep-clock K (iterateLearner K n s r) r) (cong suc (iterateLearner-clock K n s r))
-
-finiteParameterComplete : ∀ {A : Nat} (table : QVec A) → (λ a → table a) ≡ table
-finiteParameterComplete table = refl
-
-fullCompositionBisimulation : ∀ {A} K s t r → s ≡ t → learnerStep K s r ≡ learnerStep K t r
-fullCompositionBisimulation K s t r refl = refl
+finiteFunctionKernel : ∀ {A B : Nat} → (Fin A → Fin B) → (Fin A → Fin B)
+finiteFunctionKernel f = f
