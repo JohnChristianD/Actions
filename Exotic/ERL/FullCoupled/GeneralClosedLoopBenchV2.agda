@@ -19,6 +19,7 @@ record BenchEnv (A : Nat) (S : Set) : Set where
   constructor benchEnv
   field actionSpace : L.ActionSpace A
         initialState : S
+        referenceReturn : Nat
         stepEnv : Fin A → S → P.StepResult S
 open BenchEnv public
 
@@ -85,6 +86,7 @@ knapsackEnv : BenchEnv 2 P.KnapsackState
 knapsackEnv = benchEnv
   L.actionSpace2
   (P.knapsackState 0 8 0)
+  16
   (λ a s → P.knapsackStep (choose a) s)
   where
     choose : Fin 2 → P.KnapsackAction
@@ -93,51 +95,51 @@ knapsackEnv = benchEnv
     ... | _ = P.chooseItem1
 
 metaMazeEnv : BenchEnv 4 P.MetaMazeState
-metaMazeEnv = benchEnv L.actionSpace4 (P.metaMazeState 0 0 0 4 0) P.metaMazeStep
+metaMazeEnv = benchEnv L.actionSpace4 (P.metaMazeState 0 0 0 4 0) 10 P.metaMazeStep
 
 fourRoomsEnv : BenchEnv 4 P.MazeState
-fourRoomsEnv = benchEnv L.actionSpace4 (P.mazeState 4 1 8 9 0) P.fourRoomsStep
+fourRoomsEnv = benchEnv L.actionSpace4 (P.mazeState 4 1 8 9 0) 1 P.fourRoomsStep
 
 cartPoleEnv : BenchEnv 2 P.CartPoleQuantizedState
-cartPoleEnv = benchEnv L.actionSpace2 (P.cartPoleQuantizedState 0 0 0 0 0) P.cartPoleQuantizedStep
+cartPoleEnv = benchEnv L.actionSpace2 (P.cartPoleQuantizedState 0 0 0 0 0) 500 P.cartPoleQuantizedStep
 
 bernoulliBanditEnv : BenchEnv 2 P.BernoulliBanditState
-bernoulliBanditEnv = benchEnv L.actionSpace2 (P.bernoulliBanditState 0 0 0 0) P.bernoulliBanditStep
+bernoulliBanditEnv = benchEnv L.actionSpace2 (P.bernoulliBanditState 0 0 0 0) 90 P.bernoulliBanditStep
 
 lbfEnv : BenchEnv 6 P.LBFState
 lbfEnv = benchEnv
   (L.actionSpace (fromℕ< (m%n<n 0 6)))
   (P.lbfState 0 0 0 1 0 1 1 0)
-  P.lbfStep
+  1 P.lbfStep
 
 pongEnv : BenchEnv 3 P.PongState
 pongEnv = benchEnv
   (L.actionSpace (fromℕ< (m%n<n 0 3)))
   (P.pongState 4 4 2 2 1 1 0)
-  P.pongStep
+  8 P.pongStep
 
 memoryChainEnv : BenchEnv 2 P.MemoryChainState
-memoryChainEnv = benchEnv L.actionSpace2 (P.memoryChainState 1 0 0) P.memoryChainStep
+memoryChainEnv = benchEnv L.actionSpace2 (P.memoryChainState 1 0 0) 1 P.memoryChainStep
 
 discountingChainEnv : BenchEnv 5 P.DiscountingChainState
 discountingChainEnv = benchEnv
   (L.actionSpace (fromℕ< (m%n<n 0 5)))
   (P.discountingChainState 0 0)
-  P.discountingChainStep
+  1 P.discountingChainStep
 
 pobaxTMazeEnv : BenchEnv 3 B.TMazeState
 pobaxTMazeEnv = benchEnv
   (L.actionSpace (fromℕ< (m%n<n 0 3)))
   B.tMazeInitial
-  B.tMazeStep
+  1 B.tMazeStep
 
 uniformGaussianBanditEnv : BenchEnv 2 B.UniformBanditState
 uniformGaussianBanditEnv = benchEnv
-  L.actionSpace2 B.uniformBanditInitial B.uniformBanditStep
+  L.actionSpace2 B.uniformBanditInitial 16 B.uniformBanditStep
 
 game2048Env : BenchEnv 4 B.Game2048State
 game2048Env = benchEnv
-  L.actionSpace4 B.game2048Initial B.game2048Step
+  L.actionSpace4 B.game2048Initial 32 B.game2048Step
 
 knapsackAblation : AblationPair
 knapsackAblation = mkAblation knapsackEnv 16
