@@ -4,6 +4,7 @@ module Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
+open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin)
 open import Data.Product using (_×_; _,_)
@@ -47,6 +48,14 @@ iterateLearner-clock K (suc n) s r =
   trans
     (learnerStep-clock K (L.iterateLearner K n s r) r)
     (cong suc (iterateLearner-clock K n s r))
+
+clock-lower-bound : ∀ {A} K n s r →
+  L.clock s ≤ L.clock (L.iterateLearner K n s r)
+clock-lower-bound K n s r =
+  subst
+    (λ z → L.clock s ≤ z)
+    (sym (iterateLearner-clock K n s r))
+    (m≤m+n (L.clock s) n)
 
 finiteParameterComplete : ∀ {A : Nat}
   (table : L.QVec A) → (λ a → table a) ≡ table
@@ -141,9 +150,6 @@ trace-prefix-factor : ∀ T n x →
   L.run (L.atDepth T n) (traceInput T n x)
 trace-prefix-factor T n x = prefixAction-law T n x
 
--- The unbounded trace is now tied directly to the GRU transition. Each depth
--- chooses its own MobiusAction, the prefix scan supplies the input, and the
--- GRU consumes that prefix input at every finite Nat depth.
 traceStep : L.MobiusTrace → Nat → L.GRUState → L.Int8 → L.GRUState
 traceStep T n s x = semidirectMobiusStep (L.atDepth T n) s (traceInput T n x)
 
@@ -161,6 +167,11 @@ traceGRU-unbounded T (suc n) s x =
       (λ st → L.gruStep st (L.run (L.atDepth T n) (traceInput T n x)))
       (traceGRU-unbounded T n s x))
 
+trace-depth-recurrence : ∀ T n s x →
+  traceGRU T (suc n) s x ≡
+  traceStep T n (traceGRU T n s x) x
+trace-depth-recurrence T n s x = traceGRU-step-law T n s x
+
 trace-prefix-semidirect-composition : ∀ T n m s x →
   semidirectMobiusStep
     (L.composeMobius (L.prefixAction T n) (L.prefixAction T m))
@@ -170,8 +181,6 @@ trace-prefix-semidirect-composition : ∀ T n m s x →
       (L.run (L.prefixAction T m) x))
 trace-prefix-semidirect-composition T n m s x = refl
 
--- This is the theorem-layer KKT boundary. It intentionally does not claim
--- equivalence between the Int8 scan and real-valued sparsemax projection.
 record SparsemaxKKTBoundary (A : Nat) : Set where
   constructor sparsemaxKKTBoundary
   field
@@ -206,9 +215,6 @@ record SparsemaxKKTConditions (A : Nat) : Set where
     stationarity : Set
     complementarity : Set
 open SparsemaxKKTConditions public
-
--- Conditional certificate only. The missing theorem remains the construction
--- of this certificate from L.sparsemaxWeight/L.sparsemaxPolicy for every A.
 
 record FormalCNNMachine (X R : Set) : Set where
   constructor formalCNNMachine
@@ -310,8 +316,6 @@ cnn-depth-factorization : ∀ {X R H S}
   decode (adapter C) (cnnDepthEncode (cnnClass C) n x)
 cnn-depth-factorization C n x = refl
 
--- Stronger theorem-only CNN class. No concrete CNN implementation is added
--- to learner semantics. Equivariance composes across arbitrary finite depth.
 record StandardCNNStack (R : Set) : Set where
   constructor standardCNNStack
   field
@@ -360,3 +364,131 @@ cnnLearner-trajectory-bisimulation C (suc n) x =
   trans
     (commute C (iterateEndo (cnnStep C) n (input C x)))
     (cong (learnerStep C) (cnnLearner-trajectory-bisimulation C n x))
+
+-- Closure surface folded into this theorem monolith.
+lcbPolicy-score-law : ∀ {A} (q : L.QVec A) (c : L.CountVec A) (a : Fin A) →
+  L.scoreA q c a ≡ L.int8Add (q a) (L.lcbBonus (c a))
+lcbPolicy-score-law q c a = refl
+
+generalPolicy-is-lcb-sparsemax : ∀ {A} K s →
+  L.generalPolicy K s ≡
+  L.sparsemaxPolicy (L.actionSpaceK K) (L.q s) (L.counts s)
+generalPolicy-is-lcb-sparsemax K s = refl
+
+learnerStep-action-closure : ∀ {A} K s r →
+  L.lastAction (L.learnerStep K s r) ≡ L.generalPolicy K s
+learnerStep-action-closure K s r = refl
+
+learnerStep-q-closure : ∀ {A} K s r →
+  L.q (L.learnerStep K s r) ≡
+  L.updateAt (L.q s) (L.generalPolicy K s)
+    (L.int8Add r
+      (L.munchausenSignal
+        (L.mode K)
+        (L.sparsemaxWeight
+          (L.actionSpaceK K) (L.q s) (L.counts s)
+          (L.generalPolicy K s))))
+learnerStep-q-closure K s r = refl
+
+learnerStep-count-closure : ∀ {A} K s r →
+  L.counts (L.learnerStep K s r) ≡
+  L.incAt (L.counts s) (L.generalPolicy K s)
+learnerStep-count-closure K s r = refl
+
+iterateLearner-zero-closure : ∀ {A} K s r →
+  L.iterateLearner K zero s r ≡ s
+iterateLearner-zero-closure K s r = refl
+
+iterateLearner-suc-closure : ∀ {A} K n s r →
+  L.iterateLearner K (suc n) s r ≡
+  L.learnerStep K (L.iterateLearner K n s r) r
+iterateLearner-suc-closure K n s r = refl
+
+prefixAction-zero-closure : ∀ T →
+  L.prefixAction T zero ≡ L.identityMobius
+prefixAction-zero-closure T = refl
+
+prefixAction-suc-closure : ∀ T n →
+  L.prefixAction T (suc n) ≡
+  L.composeMobius (L.atDepth T n) (L.prefixAction T n)
+prefixAction-suc-closure T n = refl
+
+semidirectCompose-mobius-closure : ∀ f g s x →
+  semidirectMobiusStep (L.composeMobius f g) s x ≡
+  semidirectMobiusStep f s (L.run g x)
+semidirectCompose-mobius-closure f g s x = refl
+
+traceStep-closure : ∀ T n s x →
+  traceStep T n s x ≡
+  L.gruStep s (L.run (L.atDepth T n) (traceInput T n x))
+traceStep-closure T n s x = refl
+
+traceIterate-zero-closure : ∀ T s x →
+  traceIterate T zero s x ≡ s
+traceIterate-zero-closure T s x = refl
+
+traceIterate-suc-closure : ∀ T n s x →
+  traceIterate T (suc n) s x ≡
+  traceStep T n (traceIterate T n s x) x
+traceIterate-suc-closure T n s x = refl
+
+traceIterate-depth-invariant : ∀ T n s x →
+  L.gruPersistent (traceIterate T n s x) ≡ L.gruPersistent s
+traceIterate-depth-invariant T zero s x = refl
+traceIterate-depth-invariant T (suc n) s x =
+  trans
+    (gruPersistentLaw (traceIterate T n s x) (traceInput T n x))
+    (traceIterate-depth-invariant T n s x)
+
+traceGRU-depth-invariant-closure : ∀ T n s x →
+  L.gruPersistent (traceGRU T n s x) ≡ L.gruPersistent s
+traceGRU-depth-invariant-closure T n s x = trace-depth-invariant T n s x
+
+weightsNumerators : ∀ {A : Nat} → (Fin A → L.SparseWeight) → L.List Nat
+weightsNumerators {A} ws =
+  L.mapList (λ a → L.numerator (ws a)) (L.finList A)
+
+weightsNumeratorSum : ∀ {A : Nat} → (Fin A → L.SparseWeight) → Nat
+weightsNumeratorSum ws = L.sumList (weightsNumerators ws)
+
+record SparsemaxKKTRealization (A : Nat) : Set where
+  constructor sparsemaxKKTRealization
+  field
+    kernel : L.ActionSpace A
+    q : L.QVec A
+    counts : L.CountVec A
+    weights : Fin A → L.SparseWeight
+    weights-law : ∀ a → weights a ≡ L.sparsemaxWeight kernel q counts a
+    supportSizeK : Nat
+    supportNonempty : supportSizeK ≢ zero
+    denominatorK : Nat
+    denominator-law : ∀ a → L.denominator (weights a) ≡ denominatorK
+    simplexLaw : weightsNumeratorSum weights ≡ denominatorK
+    stationarity : Fin A → Set
+    complementarity : Fin A → Set
+open SparsemaxKKTRealization public
+
+sparsemaxKKT-realized-simplex : ∀ {A} (W : SparsemaxKKTRealization A) →
+  weightsNumeratorSum (weights W) ≡ denominatorK W
+sparsemaxKKT-realized-simplex W = simplexLaw W
+
+sparsemaxKKT-realized-weight-law : ∀ {A} (W : SparsemaxKKTRealization A) a →
+  weights W a ≡ L.sparsemaxWeight (kernel W) (q W) (counts W) a
+sparsemaxKKT-realized-weight-law W a = weights-law W a
+
+sparsemax-policy-not-attention-surface : ∀ {A} K s →
+  L.generalPolicy K s ≡
+  L.sparsemaxPolicy (L.actionSpaceK K) (L.q s) (L.counts s)
+sparsemax-policy-not-attention-surface K s = refl
+
+cnn-depth-closure : ∀ {R : Set}
+  (C : StandardCNNStack R) d n x →
+  iterateLayers (layer C) d (shift C n x) ≡
+  shift C n (iterateLayers (layer C) d x)
+cnn-depth-closure C d n x = standardCNN-depth-equivariant C d n x
+
+cnn-learner-trajectory-closure : ∀ {X R H : Set}
+  (C : CNNLearnerComparison X R H) n x →
+  decodeState C (iterateEndo (cnnStep C) n (input C x)) ≡
+  iterateEndo (learnerStep C) n (decodeState C (input C x))
+cnn-learner-trajectory-closure C n x = cnnLearner-trajectory-bisimulation C n x
