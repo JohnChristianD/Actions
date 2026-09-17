@@ -323,8 +323,8 @@ record TransitionWitness (C A : Set) : Set₁ where
   field
     decode : C → A
     cnnStep : C → C
-    learnerStep : A → A
-    commute : ∀ c → decode (cnnStep c) ≡ learnerStep (decode c)
+    transitionStep : A → A
+    commute : ∀ c → decode (cnnStep c) ≡ transitionStep (decode c)
 open TransitionWitness public
 
 CNNEquivalent : ∀ {C A} → TransitionWitness C A → C → C → Set
@@ -333,7 +333,7 @@ CNNEquivalent W x y = decode W x ≡ decode W y
 cnnStep-preserves-equivalence : ∀ {C A} (W : TransitionWitness C A) {x y : C} →
   CNNEquivalent W x y → CNNEquivalent W (cnnStep W x) (cnnStep W y)
 cnnStep-preserves-equivalence W eq =
-  trans (commute W _) (trans (cong (learnerStep W) eq) (sym (commute W _)))
+  trans (commute W _) (trans (cong (transitionStep W) eq) (sym (commute W _)))
 
 iterateCNN : ∀ {C A} (W : TransitionWitness C A) → Nat → C → C
 iterateCNN W zero c = c
@@ -341,7 +341,7 @@ iterateCNN W (suc n) c = cnnStep W (iterateCNN W n c)
 
 iterateLearnerWitness : ∀ {C A} (W : TransitionWitness C A) → Nat → A → A
 iterateLearnerWitness W zero a = a
-iterateLearnerWitness W (suc n) a = learnerStep W (iterateLearnerWitness W n a)
+iterateLearnerWitness W (suc n) a = transitionStep W (iterateLearnerWitness W n a)
 
 commute-iterate : ∀ {C A} (W : TransitionWitness C A) n c →
   decode W (iterateCNN W n c) ≡ iterateLearnerWitness W n (decode W c)
