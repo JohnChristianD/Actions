@@ -2,14 +2,30 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 from pathlib import Path
 
 import jax.numpy as jnp
 from puxle.core.puzzle_base import Puzzle
 from xtructure import FieldDescriptor, xtructure_dataclass
 
-from JAxtar.stars.astar import astar_builder
-from heuristic.heuristic_base import Heuristic
+try:
+    from JAxtar.stars.astar import astar_builder
+    from heuristic.heuristic_base import Heuristic
+except ImportError:
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--disable-pip-version-check",
+            "jaxtar @ git+https://github.com/tinker495/JAxtar@d886571b116d7ca4de1f91a715cf2e73ee3b5acd",
+        ],
+        check=True,
+    )
+    from JAxtar.stars.astar import astar_builder
+    from heuristic.heuristic_base import Heuristic
 
 
 @xtructure_dataclass(bitpack="off")
@@ -82,8 +98,12 @@ def build_distances(requirements, bits, goal_mask):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--backend", default="astar")
     parser.add_argument("--budget", type=int, default=64)
     args = parser.parse_args()
+
+    if args.backend not in {"astar", "auto"}:
+        raise SystemExit("only JAxtar A* is retained as theorem-search controller")
 
     names = (
         "exact learner composition",
