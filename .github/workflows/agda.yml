@@ -115,8 +115,11 @@ jobs:
           cabal-version: latest
           cabal-update: false
 
+      - name: Set up theorem-search runtime
+        run: python -m pip install --disable-pip-version-check "mctx==0.0.71" "evosax==0.3.1"
+
       - name: Run kernel-checked hybrid theorem search
-        run: cabal run actions-proof-search -- --backend auto --budget 24
+        run: python .ci/discovery/ProofSearch.py --backend auto --budget 24
 
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
