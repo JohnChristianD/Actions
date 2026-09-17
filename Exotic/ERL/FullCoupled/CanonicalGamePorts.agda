@@ -12,7 +12,7 @@ open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
 
 data BoolLike : Set where
-a  yes no : BoolLike
+  yes no : BoolLike
 
 record Int8 : Set where
   constructor int8
