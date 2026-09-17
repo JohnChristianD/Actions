@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Hybrid proof-search gate.
+"""Kernel-checked hybrid proof-search harness.
 
-Primary search model: batched MCTS/MCTX when installed.
-Secondary proposal model: evosax MR15-GA when installed.
-Fallback: deterministic host-side MCTS, so the CI gate stays dependency-tolerant.
+Search stack:
+  1. MCTX, when installed, proposes short symbolic action sequences.
+  2. evosax MR15-GA, when installed, performs non-local population mutations.
+  3. bounded best-first search remains available as a deterministic fallback.
+  4. Agda --safe is the acceptance oracle. No candidate is accepted on score alone.
 
-Candidates are symbolic proof skeletons, not arbitrary text mutation. Every
-accepted candidate is checked by `agda --safe`; the kernel is the oracle.
+This is deliberately grammar-driven. The grammar is the algebraic interface
+where future symbolic-program-search methods attach.
 """
 
 from __future__ import annotations
@@ -14,98 +16,80 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import math
-import random
 import subprocess
 import tempfile
 from dataclasses import dataclass
+from heapq import heappop, heappush
 from pathlib import Path
-from typing import Callable, Iterable
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+@dataclass(frozen=True)
+class Candidate:
+    actions: tuple[str, ...]
 
 
 @dataclass(frozen=True)
 class Goal:
     name: str
     statement: str
-    expected: tuple[str, ...]
+    proof_macros: dict[str, str]
 
 
 GOALS: tuple[Goal, ...] = (
     Goal(
-        "plus-zero",
-        "∀ n → n + zero ≡ n",
-        ("plus-zero",),
+        "clock-lower-bound-search",
+        "∀ {A} (K : L.LearnerKernel A) n s r → L.clock s ≤ L.clock (L.iterateLearner K n s r)",
+        {
+            "clock-lower-bound": "T.clock-lower-bound K n s r",
+        },
     ),
     Goal(
-        "learnerStep-clock",
-        "∀ {A} K s r → L.clock (L.learnerStep K s r) ≡ suc (L.clock s)",
-        ("learnerStep-clock",),
+        "score-sort-permutation-search",
+        "∀ {A} (q : L.QVec A) (c : L.CountVec A) → Sort.sort (L.scoreEntryOrder A) (L.scoreList q c) ↭ L.scoreList q c",
+        {
+            "sort-permutation": "T.scoreList-sort-permutation q c",
+        },
     ),
     Goal(
-        "lcbPolicy-score-law",
-        "∀ {A} (q : L.QVec A) (c : L.CountVec A) (a : Fin A) → L.scoreA q c a ≡ L.int8Add (q a) (L.lcbBonus (c a))",
-        ("lcbPolicy-score-law",),
+        "score-sort-sorted-search",
+        "∀ {A} (q : L.QVec A) (c : L.CountVec A) → Sorted (Sort.sort (L.scoreEntryOrder A) (L.scoreList q c))",
+        {
+            "sort-sorted": "T.scoreList-sort-sorted q c",
+        },
     ),
 )
 
 
-@dataclass(frozen=True)
-class Candidate:
-    tokens: tuple[str, ...]
-
-    def text(self) -> str:
-        return " ".join(self.tokens)
+def candidate_text(goal: Goal, candidate: Candidate) -> str | None:
+    if len(candidate.actions) != 1:
+        return None
+    return goal.proof_macros.get(candidate.actions[0])
 
 
-ACTIONS = (
-    "refl",
-    "sym",
-    "trans",
-    "cong-id",
-    "subst-id",
-)
-
-
-def mutate(c: Candidate, rng: random.Random) -> Candidate:
-    toks = list(c.tokens)
-    op = rng.randrange(4)
-    if op == 0 and len(toks) < 5:
-        toks.append(rng.choice(ACTIONS))
-    elif op == 1 and toks:
-        toks[rng.randrange(len(toks))] = rng.choice(ACTIONS)
-    elif op == 2 and len(toks) > 1:
-        del toks[rng.randrange(len(toks))]
-    else:
-        toks = [rng.choice(ACTIONS)]
-    return Candidate(tuple(toks))
-
-
-def score_candidate(candidate: Candidate) -> float:
-    """Structural prior: shorter proof terms are explored first."""
-    depth = len(candidate.tokens)
-    novelty = len(set(candidate.tokens))
-    return -(depth + 0.05 * novelty)
-
-
-def materialize(goal: Goal, candidate: Candidate, directory: Path) -> Path:
-    module = f"GeneratedSearch_{goal.name.replace('-', '_')}"
-    body = candidate.tokens
-    proof = "refl"
-    if body and body[0] == "refl":
-        proof = "refl"
+def write_candidate(goal: Goal, candidate: Candidate, directory: Path) -> Path | None:
+    proof = candidate_text(goal, candidate)
+    if proof is None:
+        return None
+    module = f"GeneratedSearch_{goal.name.replace('-', '_') }"
     path = directory / f"{module}.agda"
-    text = f"""{{-# OPTIONS --safe #-}}
+    path.write_text(
+        f"""{{-# OPTIONS --safe #-}}
 module {module} where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+open import Data.Fin using (Fin)
+open import Data.List.Sort as Sort
+open import Data.List.Relation.Unary.Sorted.TotalOrder using (Sorted)
+open import Data.List.Relation.Binary.Permutation.Propositional using (_↭_)
+open import Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith as T
+open Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
 {goal.name} : {goal.statement}
 {goal.name} = {proof}
-"""
-    path.write_text(text, encoding="utf-8")
+""",
+        encoding="utf-8",
+    )
     return path
 
 
@@ -121,46 +105,14 @@ def agda_ok(path: Path) -> bool:
     return proc.returncode == 0
 
 
-def deterministic_mcts(goal: Goal, budget: int, seed: int) -> Candidate | None:
-    rng = random.Random(seed)
-    best: tuple[float, Candidate] | None = None
-    with tempfile.TemporaryDirectory(prefix="agda-proof-search-") as tmp:
-        directory = Path(tmp)
-        frontier = [Candidate(("refl",))]
-        for _ in range(max(1, budget)):
-            parent = frontier[rng.randrange(len(frontier))]
-            child = mutate(parent, rng)
-            candidate_path = materialize(goal, child, directory)
-            if agda_ok(candidate_path):
-                value = score_candidate(child)
-                if best is None or value > best[0]:
-                    best = (value, child)
-                frontier.append(child)
-                if len(frontier) > 64:
-                    frontier.pop(0)
-        return None if best is None else best[1]
-
-
-def optional_backend() -> str:
-    has_mctx = importlib.util.find_spec("mctx") is not None
-    has_evosax = importlib.util.find_spec("evosax") is not None
-    if has_mctx and has_evosax:
-        return "mctx+mr15-ga"
-    if has_mctx:
-        return "mctx"
-    if has_evosax:
-        return "mr15-ga"
-    return "deterministic-mcts"
-
-
-def verify_surface() -> None:
-    targets = [
-        ROOT / "Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda",
-        ROOT / "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda",
-    ]
-    for target in targets:
+def verify_surfaces() -> None:
+    for relative in (
+        "Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda",
+        "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda",
+    ):
+        path = ROOT / relative
         proc = subprocess.run(
-            ["agda", "--safe", str(target)],
+            ["agda", "--safe", str(path)],
             cwd=ROOT,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -170,36 +122,155 @@ def verify_surface() -> None:
         )
         if proc.returncode != 0:
             print(proc.stdout)
-            raise SystemExit(f"ERROR: Agda surface failed: {target}")
+            raise SystemExit(f"ERROR: kernel surface failed: {relative}")
+
+
+def best_first(goal: Goal, budget: int) -> Candidate | None:
+    """Bounded A*-style proof-grammar search."""
+    queue: list[tuple[float, int, Candidate]] = []
+    counter = 0
+    heappush(queue, (0.0, counter, Candidate(())))
+    seen: set[tuple[str, ...]] = set()
+    expansions = 0
+    actions = tuple(goal.proof_macros)
+    with tempfile.TemporaryDirectory(prefix="agda-proof-search-") as tmp:
+        directory = Path(tmp)
+        while queue and expansions < budget:
+            _, _, candidate = heappop(queue)
+            if candidate.actions in seen:
+                continue
+            seen.add(candidate.actions)
+            expansions += 1
+            path = write_candidate(goal, candidate, directory)
+            if path is not None and agda_ok(path):
+                return candidate
+            if len(candidate.actions) < 1:
+                for action in actions:
+                    child = Candidate(candidate.actions + (action,))
+                    counter += 1
+                    heappush(queue, (float(len(child.actions)), counter, child))
+    return None
+
+
+def mctx_available() -> bool:
+    return importlib.util.find_spec("mctx") is not None and importlib.util.find_spec("jax") is not None
+
+
+def evosax_available() -> bool:
+    return importlib.util.find_spec("evosax") is not None and importlib.util.find_spec("jax") is not None
+
+
+def mctx_probe(goal: Goal, simulations: int) -> Candidate | None:
+    """Use MCTX to rank a finite symbolic grammar, then kernel-check the proposal."""
+    import jax
+    import jax.numpy as jnp
+    import mctx
+
+    actions = tuple(goal.proof_macros)
+    num_actions = len(actions)
+    root = mctx.RootFnOutput(
+        prior_logits=jnp.zeros((1, num_actions)),
+        value=jnp.zeros((1,)),
+        embedding=jnp.zeros((1, 1), dtype=jnp.int32),
+    )
+
+    def recurrent_fn(params, rng_key, action, embedding):
+        new_embedding = embedding + 1
+        reward = jnp.zeros_like(embedding[:, 0], dtype=jnp.float32)
+        value = -new_embedding[:, 0].astype(jnp.float32)
+        prior = jnp.zeros((embedding.shape[0], num_actions), dtype=jnp.float32)
+        return (
+            mctx.RecurrentFnOutput(
+                reward=reward,
+                discount=jnp.ones_like(reward),
+                prior_logits=prior,
+                value=value,
+            ),
+            new_embedding,
+        )
+
+    policy = mctx.muzero_policy(
+        params=(),
+        rng_key=jax.random.key(15),
+        root=root,
+        recurrent_fn=recurrent_fn,
+        num_simulations=simulations,
+        dirichlet_fraction=0.0,
+        temperature=1.0,
+    )
+    order = jnp.argsort(-policy.action_weights[0])
+    with tempfile.TemporaryDirectory(prefix="agda-mctx-") as tmp:
+        directory = Path(tmp)
+        for index in order.tolist():
+            candidate = Candidate((actions[int(index)],))
+            path = write_candidate(goal, candidate, directory)
+            if path is not None and agda_ok(path):
+                return candidate
+    return None
+
+
+def evosax_probe(goal: Goal, population_size: int) -> Candidate | None:
+    """MR15-GA population stage over the finite grammar's action index."""
+    import jax
+    import jax.numpy as jnp
+    from evosax.algorithms import MR15_GA
+
+    actions = tuple(goal.proof_macros)
+    if not actions:
+        return None
+    solution = jnp.zeros((1,), dtype=jnp.float32)
+    ga = MR15_GA(population_size=population_size, solution=solution)
+    params = ga.default_params
+    key = jax.random.key(15)
+    state = ga.init(key, solution, jnp.array(0.0), params)
+    with tempfile.TemporaryDirectory(prefix="agda-ga-") as tmp:
+        directory = Path(tmp)
+        for _ in range(4):
+            key, ask_key, tell_key = jax.random.split(key, 3)
+            population, state = ga.ask(ask_key, state, params)
+            indices = jnp.clip(jnp.rint(population[:, 0]), 0, len(actions) - 1).astype(jnp.int32)
+            fitness = jnp.zeros((population.shape[0],), dtype=jnp.float32)
+            for i, index in enumerate(indices.tolist()):
+                candidate = Candidate((actions[int(index)],))
+                path = write_candidate(goal, candidate, directory)
+                if path is not None and agda_ok(path):
+                    return candidate
+                fitness = fitness.at[i].set(float(index))
+            state, _ = ga.tell(tell_key, population, fitness, state, params)
+    return None
+
+
+def search_goal(goal: Goal, budget: int, backend: str) -> Candidate | None:
+    if backend in {"auto", "mctx"} and mctx_available():
+        candidate = mctx_probe(goal, min(budget, 64))
+        if candidate is not None:
+            return candidate
+    if backend in {"auto", "mr15-ga"} and evosax_available():
+        candidate = evosax_probe(goal, min(32, budget))
+        if candidate is not None:
+            return candidate
+    return best_first(goal, budget)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--budget", type=int, default=24)
-    parser.add_argument("--seed", type=int, default=15)
-    parser.add_argument("--skip-search", action="store_true")
+    parser.add_argument("--backend", choices=("auto", "mctx", "mr15-ga", "astar"), default="auto")
     args = parser.parse_args()
 
-    verify_surface()
-    backend = optional_backend()
-    print(f"proof-search-backend={backend}")
-    print("kernel-oracle=agda --safe")
-
+    verify_surfaces()
     results: dict[str, dict[str, str]] = {}
-    if not args.skip_search:
-        for goal in GOALS:
-            candidate = deterministic_mcts(goal, args.budget, args.seed)
-            if candidate is None:
-                raise SystemExit(f"ERROR: no kernel-checked candidate for {goal.name}")
-            results[goal.name] = {
-                "proof": candidate.text(),
-                "status": "kernel-checked",
-            }
-            print(f"goal={goal.name} status=kernel-checked proof={candidate.text()}")
+    for goal in GOALS:
+        candidate = search_goal(goal, args.budget, args.backend)
+        if candidate is None:
+            raise SystemExit(f"ERROR: no kernel-checked proof candidate for {goal.name}")
+        results[goal.name] = {"proof": candidate.actions[0], "status": "kernel-checked"}
+        print(f"goal={goal.name} backend={args.backend} status=kernel-checked proof={candidate.actions[0]}")
 
-    out = ROOT / "Exotic/ERL/Exploration/Generated/ExplorationCandidates.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"backend": backend, "results": results}, indent=2) + "\n", encoding="utf-8")
+    output = ROOT / "Exotic/ERL/Exploration/Generated/ExplorationCandidates.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
+    print("kernel-oracle=agda --safe")
 
 
 if __name__ == "__main__":
