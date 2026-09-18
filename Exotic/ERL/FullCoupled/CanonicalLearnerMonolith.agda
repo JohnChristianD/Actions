@@ -393,7 +393,7 @@ walshHadamardOrthogonality4 = record
 -- Exact finite Walsh-Rademacher phase layer.
 --
 -- This is a finite, proof-friendly rotary analogue: each phase is a
--- signed permutation of two 2D planes. It is not transcendental RoPE.
+-- signed permutation of two 2D planes. It is not sine-cosine RoPE.
 ------------------------------------------------------------------------
 
 data Phase4 : Set where
