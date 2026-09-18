@@ -46,16 +46,16 @@ gru-persistent-invariant : ∀ s x →
   L.gruPersistent (L.gruStep s x) ≡ L.gruPersistent s
 gru-persistent-invariant s x = refl
 
-f4-global-l2-law : ∀ s g →
-  L.f4DeltaTheta L.defaultF4Params s g ≡
+f4-global-l2-law : ∀ {A} (K : L.LearnerKernel A) s g →
+  L.f4DeltaTheta (L.f4ParamsK K) s g ≡
   L.f4Sub
     (L.scaledF4
       (L.f4Pow2Level (L.level s))
       (L.hardSignGate g))
     (L.scaledF4
-      (L.betaTheta L.defaultF4Params)
+      (L.betaTheta (L.f4ParamsK K))
       (L.f4ThetaFull s))
-f4-global-l2-law s g = refl
+f4-global-l2-law K s g = refl
 
 gru-hidden-state-law : ∀ s x →
   L.hiddenState (L.gruStep s x) ≡
@@ -157,13 +157,13 @@ record CertifiedCompositeConclusion
           L.pathWeight (L.normStep (L.normState s) (L.q s (L.generalPolicy K s)) reward))
     f4Coupling :
       ∀ s →
-        L.f4DeltaTheta L.defaultF4Params (L.optimizer s) reward ≡
+        L.f4DeltaTheta (L.f4ParamsK K) (L.optimizer s) reward ≡
         L.f4Sub
           (L.scaledF4
             (L.f4Pow2Level (L.level (L.optimizer s)))
             (L.hardSignGate reward))
           (L.scaledF4
-            (L.betaTheta L.defaultF4Params)
+            (L.betaTheta (L.f4ParamsK K))
             (L.f4ThetaFull (L.optimizer s)))
     gruCoupling :
       ∀ s →
@@ -187,7 +187,7 @@ composeMonolith K reward normKKT lyapunov attractor reservoir =
     (λ (s : L.LearnerState _) →
       norm-l1-monotone (L.normState s) (L.q s (L.generalPolicy K s)) reward ,
       norm-path-monotone (L.normState s) (L.q s (L.generalPolicy K s)) reward)
-    (λ (s : L.LearnerState _) → f4-global-l2-law (L.optimizer s) reward)
+    (λ (s : L.LearnerState _) → f4-global-l2-law K (L.optimizer s) reward)
     (λ (s : L.LearnerState _) → gru-persistent-invariant (L.gru s) reward)
     normKKT
     lyapunov
