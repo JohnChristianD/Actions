@@ -32,6 +32,7 @@
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
     "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
+    "Exotic/ERL/FullCoupled/LearnerComposition_Discovery_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
@@ -44,11 +45,16 @@
     "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"))
 
 (define (run-agda-safe)
+  ;; Regenerate the symbolic learner-composition program before the proof lane.
+  (run-mercury-discovery-programs)
   (for-each
    (lambda (file)
      (run! (string-append "Agda --safe " file)
            "agda" "--safe" file))
-   (agda-safe-files)))
+   (agda-safe-files))
+  (run! "Agda --safe generated symbolic learner-composition program"
+        "agda" "--safe"
+        "Exotic/ERL/FullCoupled/GeneratedLearnerCompositionDiscovery.agda"))
 
 (define (run-mercury-discovery-programs)
   (in-directory ".ci/discovery"
