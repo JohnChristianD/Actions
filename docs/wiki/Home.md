@@ -2,7 +2,7 @@
 
 Last audited: 2026-09-19.
 
-Current code head: `568f536787af6e74702b05b5b9126d7868d3419f`.
+Current code head: `7026de9010634edb22325d081a277ae6fc546969`.
 
 ## Single active theorem source
 
