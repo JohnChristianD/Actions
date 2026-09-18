@@ -72,6 +72,25 @@ The current cycle laws are:
 - `canonicalAperiodic`
 - `canonicalNoNontrivialFiniteCycle`
 
+### Finite EvoSAX OpenAI-ES composition
+
+The monolith now contains the first discovered meta-search composition certificate:
+
+- `finiteOpenESPlus`
+- `finiteOpenESMinus`
+- `finiteOpenESObjective`
+- `finiteOpenESAntitheticGradient`
+- `finiteOpenESTell`
+- `finiteOpenESProbe`
+- `finiteOpenESComposeStep`
+- `FiniteOpenESCanonicalCompositionTheorem`
+- `finite-openES-canonical-composition-theorem`
+- `finite-openES-discovered-evaluator-boundary`
+
+This is a finite symbolic specialization of EvoSAX `Open_ES`: an antithetic two-probe `ask/evaluate/tell` loop over the existing `F4IntUState`, with the canonical Agda learner as the evaluator. It is not a floating-point/JAX numerical equivalence claim.
+
+The new composition theorem proves that the optimizer variation can feed the existing executable learner while preserving the norm-pair observable and the GRU persistent quotient, and that the current policy remains invariant under an optimizer-only probe replacement.
+
 ### Mercury / JAxtar A/Q certificate
 
 The same theorem monolith now contains:
