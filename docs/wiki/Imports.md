@@ -2,13 +2,11 @@
 
 Last audited: 2026-09-19.
 
-This page records the direct library surface used by the current canonical components and the proof substrate around them.
-
-## Agda canonical learner
+## Canonical learner
 
 ### `CanonicalLearnerMonolith.agda`
 
-Direct imports:
+Direct library surface:
 
 - `Relation.Binary.PropositionalEquality`
 - `Agda.Builtin.Nat`
@@ -19,142 +17,76 @@ Direct imports:
 - `Data.Product`
 - `Data.Empty`
 
-Roles:
+The canonical learner uses concrete finite carriers, products, records, finite data declarations, and propositional equality.
 
-| Import | Role in the learner |
-| --- | --- |
-| `Relation.Binary.PropositionalEquality` | equality, symmetry, transitivity, congruence, substitution |
-| `Agda.Builtin.Nat` | primitive natural numbers and recursion |
-| `Data.Nat` | bounded arithmetic, comparisons, truncated subtraction |
-| `Data.Fin` | finite carriers such as `Fin 256` and action spaces |
-| `Data.Fin.Properties` | Fin/natural round-trip properties |
-| `Data.Nat.DivMod` | modular remainder bounds used to construct finite values |
-| `Data.Product` | binary and nested product carriers |
-| `Data.Empty` | contradiction targets and impossible finite-cycle cases |
+## Canonical theorem monolith
 
-Reference: [Agda standard library 2.3](https://agda.github.io/agda-stdlib/v2.3/).
-
-## Canonical composition theorem module
-
-### `CanonicalLearnerTheoremsMonolith.agda`
+### `TheoremsMonolith.agda`
 
 Direct imports:
 
 - `Relation.Binary.PropositionalEquality`
 - `Agda.Builtin.Nat`
 - `Data.Empty`
-- `Exotic.ERL.FullCoupled.CanonicalLearnerMonolith`
+- `Data.List.Base`
+- `CanonicalLearnerMonolith`
 
-The module deliberately keeps the composition layer thin. It imports the canonical implementation and proves/repacks equations around that implementation.
+The theorem monolith is intentionally compact at the import boundary. It proves composition over the existing learner functions instead of rebuilding the implementation.
 
 ## Closed-loop interface
 
 ### `CanonicalClosedLoopInterface.agda`
 
-Direct library imports include:
+Uses:
 
-- `Relation.Binary.PropositionalEquality`
-- `Agda.Builtin.Nat`
-- `Data.Nat`
-- `Data.Fin`
-- `Data.Fin.Properties`
-- `Data.Nat.DivMod`
-- `Data.Product`
-- `Data.Empty`
+- propositional equality;
+- natural numbers;
+- finite action/state indices;
+- product records;
+- finite division/remainder utilities;
+- `CanonicalLearnerMonolith`;
+- `CanonicalGamePorts`.
 
-Internal imports:
+## Mercury verifier surface
 
-- `CanonicalLearnerMonolith`
-- `CanonicalGamePorts`
-
-This is the seam where the learner becomes an explicit environment/agent system.
-
-## Faithful finite-game variants
-
-### `CanonicalFaithfulGameVariants.agda`
-
-Direct library imports:
-
-- `Relation.Binary.PropositionalEquality`
-- `Agda.Builtin.Nat`
-- `Data.Fin`
-- `Data.Nat.DivMod`
-- `Data.Product`
-- `Data.Empty`
-- `CanonicalGamePorts`
-
-The exact map predicates are built from finite natural-number cases and bounded comparison.
-
-## General theorem substrate
-
-### `GeneralFullCoupledLearnerMonolith.agda`
-
-The general learner substrate uses the built-in natural-number and finite libraries plus list, product, relation-bundle, sorting, and lexicographic-order modules.
-
-Its imported algebraic machinery is broader than the canonical monolith because it supports generic theorem packaging.
-
-### `GeneralFullCoupledTheoremsMonolith.agda`
-
-The general theorem module imports equality, natural/integer arithmetic, finite carriers, products, lists, sorting, permutation, total-order sorting, and the general learner monolith.
-
-The Mercury JAxtar A/Q certificate lives in this theorem source.
-
-## Mercury CI / verifier layer
-
-The migration replaces the old Haskell theorem and discovery scripts with Mercury modules under:
+Active Mercury sources:
 
 - `.ci/check_forbidden_theorems.m`
+- `.ci/discovery/jaxtar_aq_discovery.m`
 - `.ci/discovery/prune_redundant_components.m`
 - `.ci/discovery/prune_redundant_learner_modules.m`
-- `.ci/discovery/jaxtar_aq_discovery.m`
 - `.ci/discovery/clojure_involution_compat.m`
 - `oracle/mercury_oracle.m`
 
-The verifier layer uses Mercury's typed module system, determinism checking, and standard library I/O/data structures.
-
-Mercury references:
-- [Mercury documentation](https://mercurylang.org/documentation/documentation.html)
-- [Mercury Language Reference Manual](https://www.mercurylang.org/information/doc-release/mercury_ref/index.html)
-- [Mercury Library Reference Manual](https://mercurylang.org/information/doc-latest/mercury_library_manual/index.html)
+The old Python finite-search implementation has been removed.
 
 ## Guix reproducibility layer
 
 ### `.guix/channels.scm`
-
-Pins:
 
 - Guix branch: `version-1.5.0`
 - channel commit: `ac03c482b1910a1672427beaea07ddcd1d652806`
 
 ### `.guix/manifest.scm`
 
-Declares:
-
 - Agda 2.7.0.1
 - Agda standard library 2.3
 - Mercury 22.01.4
-- Python 3.11
 - Guile 3.0
 - Git
 
-The Guix channel specification fixes the package graph more tightly than a manifest alone. This matches Guix's documented reproducibility model.
+Python is no longer part of the reproducible verification environment.
 
-References:
-- [GNU Guix Reference Manual](https://guix.gnu.org/manual/en/guix/)
-- [GNU Guix Cookbook: reproducible profiles](https://guix.gnu.org/cookbook/en/)
+## Algebraic structure
 
-## Algebraic-structure note
+The canonical source is concrete rather than class-heavy:
 
-The canonical learner does not presently rely on generic `Algebra.*` interfaces.
+- `Int8` is carried through `Fin 256`;
+- small vectors use `Data.Product`;
+- closed alternatives use Agda `data` declarations;
+- state and certificates use records;
+- `GRUAction` gives explicit endomorphism composition;
+- laws use propositional equality;
+- impossibility uses `⊥`.
 
-Instead, structure is represented concretely:
-
-- finite carrier: `Fin 256`;
-- products: `Data.Product`;
-- data constructors: `Signed`, `HardSign8`, `Phase4`;
-- records: state/kernel/certificate records;
-- endomorphism composition: `GRUAction`;
-- associativity and equality laws: propositional equality;
-- contradiction: `⊥`.
-
-The standard library does contain generic algebraic consequences and definitions, but those abstractions are not the current dependency surface of the canonical learner. This keeps the active proof boundary concrete and small.
+The current architecture does not require JVM, Elm, PureScript, JavaScript, TypeScript, or Haskell abstractions.
