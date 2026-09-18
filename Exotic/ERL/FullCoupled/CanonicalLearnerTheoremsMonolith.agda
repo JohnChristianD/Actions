@@ -2,8 +2,9 @@
 
 module Exotic.ERL.FullCoupled.CanonicalLearnerTheoremsMonolith where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Agda.Builtin.Nat using (Nat; suc)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
+open import Agda.Builtin.Nat using (Nat; suc; _+_)
+open import Data.Empty using (⊥)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 phase4-period4 :
@@ -116,3 +117,46 @@ canonical-aq-loop-theorem =
     (λ K s → refl)
     (λ K s → refl)
     (λ K s → refl)
+
+canonicalClockAfter :
+  ∀ K n s →
+  C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
+canonicalClockAfter = C.clockAfter
+
+canonicalAperiodic :
+  ∀ K s n →
+  C.iterateCanonical K (suc n) s ≢ s
+canonicalAperiodic = C.canonicalAperiodic
+
+canonicalNoNontrivialFiniteCycle :
+  ∀ K s n →
+  C.iterateCanonical K (suc n) s ≡ s → ⊥
+canonicalNoNontrivialFiniteCycle = C.canonicalNoNontrivialFiniteCycle
+
+record CanonicalConnectedCompositionTheorem : Set₁ where
+  constructor canonicalConnectedCompositionTheorem
+  field
+    aqLoop :
+      CanonicalAQLoopTheorem
+    ropePhasePeriod :
+      ∀ n w →
+      C.walshRademacherRope4
+        (suc (suc (suc (suc n))))
+        w
+      ≡
+      C.walshRademacherRope4 n w
+    clockGrowth :
+      ∀ K n s →
+      C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
+    finiteCycleExclusion :
+      ∀ K s n →
+      C.iterateCanonical K (suc n) s ≡ s → ⊥
+
+canonical-connected-composition-theorem :
+  CanonicalConnectedCompositionTheorem
+canonical-connected-composition-theorem =
+  canonicalConnectedCompositionTheorem
+    canonical-aq-loop-theorem
+    walshRademacherRope4-period4
+    canonicalClockAfter
+    canonicalNoNontrivialFiniteCycle
