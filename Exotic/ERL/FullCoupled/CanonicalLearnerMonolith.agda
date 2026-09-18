@@ -97,38 +97,6 @@ record FiniteRational : Set where
   field sign numerator denominator : Nat
 open FiniteRational public
 
-mobiusFormula : Signed → FiniteRational
-mobiusFormula zer = finiteRational 0 0 1
-mobiusFormula (pos zero) = finiteRational 0 0 1
-mobiusFormula (pos (suc n)) = finiteRational 1 (suc n) (suc n)
-mobiusFormula (neg n) = finiteRational 1 n (suc (suc n))
-
-mobiusRatio8 : Int8 → FiniteRational
-mobiusRatio8 x = mobiusFormula (signedCode x)
-
-mobiusRatio8-law : ∀ x → signedCode x ≢ pos 0 →
-  mobiusRatio8 x ≡ mobiusFormula (signedCode x)
-mobiusRatio8-law x neq = refl
-
-mobiusSingularity : mobiusRatio8 (int8OfNat 1) ≡ finiteRational 1 1 1
-mobiusSingularity = refl
-
-record MobiusAction : Set₁ where
-  constructor mobiusAction
-  field run : Int8 → Int8
-open MobiusAction public
-
-identityAction : MobiusAction
-identityAction = mobiusAction (λ x → x)
-
-composeAction : MobiusAction → MobiusAction → MobiusAction
-composeAction f g = mobiusAction (λ x → run f (run g x))
-
-mobiusAssociativity : ∀ f g h x →
-  run (composeAction (composeAction f g) h) x ≡
-  run (composeAction f (composeAction g h)) x
-mobiusAssociativity f g h x = refl
-
 record CriticState : Set where
   constructor criticState
   field qLeft qRight : Int8
@@ -437,9 +405,6 @@ zeroGlobalControl = mkGlobalControl zero8 zero8
 rationalCode : FiniteRational → Int8
 rationalCode (finiteRational s n d) = int8OfNat n
 
-mobiusActivation8 : Int8 → FiniteRational
-mobiusActivation8 = mobiusRatio8
-
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
 
@@ -502,9 +467,6 @@ gruParameterPersistence : ∀ (s : GRUState) (x : Int8) →
   noiseState (gruStep s x) ≡ noiseState s ×
   controlState (gruStep s x) ≡ controlState s
 gruParameterPersistence (gruState h m n g) x = refl , (refl , refl)
-
-gruActivationBoundary : ∀ x → mobiusActivation8 x ≡ mobiusRatio8 x
-gruActivationBoundary x = refl
 
 GRUEquivalent : GRUState → GRUState → Set
 GRUEquivalent s t = persistentGRU s ≡ persistentGRU t
