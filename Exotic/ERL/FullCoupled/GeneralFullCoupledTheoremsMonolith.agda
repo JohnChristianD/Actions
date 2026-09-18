@@ -722,7 +722,7 @@ general-cnnLogPyramid-step-congruence W h = respects W h
 
 record SignedFiniteScale : Set where
   constructor signedFiniteScale
-  field negative positive : BoolLike
+  field scaleNegative scalePositive : BoolLike
 open SignedFiniteScale public
 
 record FiniteSignedRewardTheory : Set₁ where
