@@ -1,6 +1,8 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith where
 
+open import Relation.Binary.PropositionalEquality using (_≢_)
+
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Level using (0ℓ)
 open import Data.Nat using (_∸_; _≤_; _/_; z≤n; s≤s)
