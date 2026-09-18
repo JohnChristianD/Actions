@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.FiniteConnectedOperatorComplexity where
 
 open import Agda.Builtin.Nat using (Nat; zero; _+_; _≤_; z≤n; s≤s)
 open import Data.List.Base using (List; []; _∷_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong; subst)
 open import Data.Nat.Properties using (+-comm; +-mono-≤)
 
 ------------------------------------------------------------------------
@@ -161,6 +161,46 @@ application-cost-exact :
   applicationCost f ≡ applicationCost f
 application-cost-exact f s = refl
 
+sumRepresentationSizes-bound :
+  ∀ {S X}
+  (K : ConnectedOperatorFamily S X)
+  (B : Nat)
+  (xs : List X) →
+  (∀ x → representationSizeAt K x ≤ B) →
+  sumRepresentationSizes (representationSizeAt K) xs ≤
+  B * listLength xs
+sumRepresentationSizes-bound K B [] bound = z≤n
+sumRepresentationSizes-bound K B (x ∷ xs) bound =
+  subst
+    (λ n →
+      representationSizeAt K x +
+      sumRepresentationSizes (representationSizeAt K) xs
+      ≤ n)
+    (sym (*-suc B (listLength xs)))
+    (+-mono-≤
+      (bound x)
+      (sumRepresentationSizes-bound K B xs bound))
+
+sumApplicationCosts-bound :
+  ∀ {S X}
+  (K : ConnectedOperatorFamily S X)
+  (C : Nat)
+  (xs : List X) →
+  (∀ x → applicationCostAt K x ≤ C) →
+  sumApplicationCosts (applicationCostAt K) xs ≤
+  C * listLength xs
+sumApplicationCosts-bound K C [] bound = z≤n
+sumApplicationCosts-bound K C (x ∷ xs) bound =
+  subst
+    (λ n →
+      applicationCostAt K x +
+      sumApplicationCosts (applicationCostAt K) xs
+      ≤ n)
+    (sym (*-suc C (listLength xs)))
+    (+-mono-≤
+      (bound x)
+      (sumApplicationCosts-bound K C xs bound))
+
 ------------------------------------------------------------------------
 -- Explicit encoding + step simulation.
 --
@@ -203,8 +243,8 @@ simulate :
 simulate C [] s = refl
 simulate C (x ∷ xs) s =
   trans
-    (simulate C xs (sourceStep C x s))
+    (simulate C xs (sourceStep x s))
     (cong
-      (run (composeList (target C) xs))
+      (run (composeList target xs))
       (stepSimulation C x s))
 
