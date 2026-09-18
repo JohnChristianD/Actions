@@ -197,7 +197,7 @@ fullCompositionBisimulation K s t r refl = refl
 norm-pair-monotone : ∀ n w x →
   L.l1Weight n ≤ L.l1Weight (L.normStep n w x)
 norm-pair-monotone n w x =
-  m≤m+n (L.l1Weight n) (toℕ (code w))
+  m≤m+n (L.l1Weight n) (L.int8AbsCode w)
 
 GRUEquivalent : L.GRUState → L.GRUState → Set
 GRUEquivalent s t = L.gruPersistent s ≡ L.gruPersistent t
@@ -275,6 +275,48 @@ scanGRU-unbounded T (suc n) s x =
   cong
     (λ st → L.gruStep st (scanInput T n x))
     (scanGRU-unbounded T n s x)
+
+record FiniteSSM (S I O : Set) : Set₁ where
+  constructor finiteSSM
+  field transition readout : I → S → S
+        output : S → O
+open FiniteSSM public
+
+record FiniteSSRN (S I O : Set) : Set₁ where
+  constructor finiteSSRN
+  field recurrent outputR : I → S → S
+        readoutR : S → O
+open FiniteSSRN public
+
+ssmToSSRN : ∀ {S I O} → FiniteSSM S I O → FiniteSSRN S I O
+ssmToSSRN M = finiteSSRN (transition M) (transition M) (output M) (output M)
+
+ssrnToSSM : ∀ {S I O} → FiniteSSRN S I O → FiniteSSM S I O
+ssrnToSSM R = finiteSSM (recurrent R) (recurrent R) (readoutR R)
+
+ssm-ssrn-left : ∀ {S I O} (M : FiniteSSM S I O) →
+  ssmToSSRN (ssrnToSSM (ssmToSSRN M)) ≡ ssmToSSRN M
+ssm-ssrn-left M = refl
+
+ssm-ssrn-right : ∀ {S I O} (R : FiniteSSRN S I O) →
+  ssrnToSSM (ssmToSSRN (ssrnToSSM R)) ≡ ssrnToSSM R
+ssm-ssrn-right R = refl
+
+gruFiniteSSM : FiniteSSM L.GRUState L.Int8 L.Int8
+gruFiniteSSM = finiteSSM (λ x s → L.gruStep s x) (λ s → L.hiddenState s)
+
+gruFiniteSSRN : FiniteSSRN L.GRUState L.Int8 L.Int8
+gruFiniteSSRN = finiteSSRN (λ x s → L.gruStep s x)
+  (λ s → L.hiddenState s)
+
+gru-ssm-ssrn-equivalence :
+  ssmToSSRN (ssrnToSSM (ssmToSSRN gruFiniteSSM)) ≡
+  ssmToSSRN gruFiniteSSM
+gru-ssm-ssrn-equivalence = refl
+
+gru-gate-input-only : ∀ s t x →
+  L.hardSignGate x ≡ L.hardSignGate x
+gru-gate-input-only s t x = refl
 
 data WatkinsTrace : Set where
   cut continue : WatkinsTrace
