@@ -1,0 +1,105 @@
+name: Guix connected composition verification
+
+on:
+  push:
+    branches: [main, guix-composition-ci]
+    paths:
+      - ".guix/**"
+      - ".ci/**"
+      - "oracle/**"
+      - "Exotic/ERL/FullCoupled/**"
+      - ".github/workflows/guix-composition.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".guix/**"
+      - ".ci/**"
+      - "oracle/**"
+      - "Exotic/ERL/FullCoupled/**"
+      - ".github/workflows/guix-composition.yml"
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: guix-connected-composition-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  agda-safe:
+    name: Guix / Agda --safe connected theorem surface
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+    defaults:
+      run:
+        shell: guile --no-auto-compile {0}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run pinned Guix Agda lane
+        env:
+          CI_LANE: agda-safe
+        run: |
+          (load ".guix/ci.scm")
+
+  mercury:
+    name: Guix / Mercury connected theorem and verifier lane
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+    defaults:
+      run:
+        shell: guile --no-auto-compile {0}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run pinned Guix Mercury lane
+        env:
+          CI_LANE: mercury
+        run: |
+          (load ".guix/ci.scm")
+
+  discovery:
+    name: Guix / automated finite discovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+    defaults:
+      run:
+        shell: guile --no-auto-compile {0}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run pinned Guix discovery lane
+        env:
+          CI_LANE: discovery
+        run: |
+          (load ".guix/ci.scm")
+      - name: Upload deterministic discovery report
+        uses: actions/upload-artifact@v4
+        with:
+          name: guix-discovery-report
+          path: .ci/discovery/last-search.json
+          if-no-files-found: error
+
+  surface:
+    name: Guix / no Haskell, Cabal, shell, or CMD surface
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    container:
+      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+    defaults:
+      run:
+        shell: guile --no-auto-compile {0}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Audit repository surface
+        env:
+          CI_LANE: surface
+        run: |
+          (load ".guix/ci.scm")
