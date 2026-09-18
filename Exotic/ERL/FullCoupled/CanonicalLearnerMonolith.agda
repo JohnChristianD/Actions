@@ -630,6 +630,12 @@ record F4IntUKernel : Set₁ where
   field globalL2 : Int8
 open F4IntUKernel public
 
+f4ThetaFull : F4IntUState → Int8
+f4ThetaFull s = thetaQ s
+
+f4ThetaFull-law : ∀ s → f4ThetaFull s ≡ thetaQ s
+f4ThetaFull-law s = refl
+
 l2Correction : Int8 → Int8
 l2Correction x = lcbNegate x
 
