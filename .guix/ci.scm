@@ -30,6 +30,7 @@
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+    "Exotic/ERL/FullCoupled/TSTS_PVS_GESMR_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
@@ -63,6 +64,10 @@
             "mmc" "--make" "formal_openes_composition_discovery")
       (run! "run Mercury formal OpenES composition discovery"
             "./formal_openes_composition_discovery")
+      (run! "build Mercury TSTS/PVS composition discovery"
+            "mmc" "--make" "tsts_pvs_composition_discovery")
+      (run! "run Mercury TSTS/PVS composition discovery"
+            "./tsts_pvs_composition_discovery")
       (run! "build Mercury involution verifier"
             "mmc" "--make" "clojure_involution_compat")
       (run! "run Mercury involution verifier"
