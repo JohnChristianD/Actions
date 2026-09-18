@@ -7,43 +7,86 @@ open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.TheoremsMonolith
 
 tsts-selected-target-test :
-  ∀ K s d →
-  finiteTSTSSelectedTarget K s d
+  ∀ K p d s →
+  finiteTSTSSelectedTarget K p d s
   ≡
   C.canonicalWatkinsTarget K
-    (finiteTSTSSelectedProbe K s d)
+    (finiteTSTSSelectedProbe K p d s)
 tsts-selected-target-test =
-  finiteTSTSSelectedTarget-law
+  FiniteTSTSEndogenousConnectedTheorem.selectedTarget-law
+    finite-tsts-endogenous-connected-theorem
+
+tsts-selected-posterior-update-test :
+  ∀ K p d s →
+  finiteTSTSBranchSample
+    (finiteTSTSNextPosterior K p d s)
+    (finiteTSTSSelectedBranch p)
+  ≡
+  finiteTSTSBranchSample p (finiteTSTSSelectedBranch p)
+  + finiteTSTSReward K p d s
+tsts-selected-posterior-update-test =
+  FiniteTSTSEndogenousConnectedTheorem.posteriorUpdateUsesEndogenousReward
+    finite-tsts-endogenous-connected-theorem
 
 tsts-selected-gru-feed-test :
-  ∀ K s d →
-  C.canonicalGRUStep K (finiteTSTSSelectedProbe K s d)
+  ∀ K p d s →
+  C.canonicalGRUStep K (finiteTSTSSelectedProbe K p d s)
   ≡
   C.gruStep
     (C.gru s)
     (C.int8Add
-      (finiteTSTSSelectedTarget K s d)
+      (finiteTSTSSelectedTarget K p d s)
       (C.canonicalAttentionMix K s))
 tsts-selected-gru-feed-test =
   FiniteTSTSEndogenousConnectedTheorem.selectedTargetFeedsGRU
     finite-tsts-endogenous-connected-theorem
 
 tsts-selected-f4-feed-test :
-  ∀ K s d →
-  C.canonicalOptimizerStep K (finiteTSTSSelectedProbe K s d)
+  ∀ K p d s →
+  C.canonicalOptimizerStep K (finiteTSTSSelectedProbe K p d s)
   ≡
   C.f4ThetaStep
     (C.optimizerKernel K)
-    (finiteTSTSSelectedF4State K s d)
-    (finiteTSTSSelectedTarget K s d)
+    (C.optimizer (finiteTSTSSelectedProbe K p d s))
+    (finiteTSTSSelectedTarget K p d s)
 tsts-selected-f4-feed-test =
   FiniteTSTSEndogenousConnectedTheorem.selectedTargetFeedsF4
     finite-tsts-endogenous-connected-theorem
 
+tsts-f4-endogenous-expansion-test :
+  ∀ K p d s →
+  finiteTSTSSelectedBranch p ≡ tstsF4L2Branch →
+  finiteTSTSSelectedTarget K p d s
+  ≡
+  C.int8Add
+    (C.int8Add
+      (C.int8Add
+        (C.canonicalReward8 K s)
+        (C.canonicalQLogBias K s))
+      (C.int8Mul
+        C.canonicalDiscount8
+        (C.maxCriticValue8 (C.critic (C.watkins s)))))
+    (C.int8Add
+      (C.canonicalAttentionMix K s)
+      (C.int8Add
+        (C.canonicalGRUFeedback s)
+        (C.int8Add
+          (C.int8Add
+            (C.int8Add
+              (C.thetaQ (C.optimizer s))
+              d)
+            (C.l2Correction (C.globalL2 (C.optimizerKernel K))))
+          (C.int8Add
+            (C.canonicalQLogControlFeedback s)
+            (C.canonicalQLogValueFeedback s))))
+tsts-f4-endogenous-expansion-test =
+  FiniteTSTSEndogenousConnectedTheorem.f4SelectedEndogenousExpansion
+    finite-tsts-endogenous-connected-theorem
+
 tsts-selected-invariants-test :
-  ∀ K s d →
+  ∀ K p d s →
   C.normPairWeightPlusOne
-    (C.norm (finiteTSTSClosedStep K s d))
+    (C.norm (finiteTSTSClosedStep K p d s))
   ≡
   C.normPairWeightPlusOne (C.norm s)
 tsts-selected-invariants-test =
@@ -51,12 +94,12 @@ tsts-selected-invariants-test =
     finite-tsts-endogenous-connected-theorem
 
 tsts-selected-persistent-gru-test :
-  ∀ K s d →
+  ∀ K p d s →
   C.persistentGRU
-    (C.gru (finiteTSTSClosedStep K s d))
+    (C.gru (finiteTSTSClosedStep K p d s))
   ≡
   C.persistentGRU
-    (C.gru (finiteTSTSSelectedProbe K s d))
+    (C.gru (finiteTSTSSelectedProbe K p d s))
 tsts-selected-persistent-gru-test =
   FiniteTSTSEndogenousConnectedTheorem.persistentGRUPreserved
     finite-tsts-endogenous-connected-theorem
