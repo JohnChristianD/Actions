@@ -31,6 +31,7 @@
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
+    "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
