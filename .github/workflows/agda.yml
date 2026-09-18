@@ -49,6 +49,9 @@ jobs:
       - name: Check generalized theorem monolith
         run: timeout 180s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
 
+      - name: Check full-composition reservoir theorem
+        run: timeout 180s agda --safe Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda
+
       - name: Check reservoir attractor theorem module
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralReservoirAttractorTheorems.agda
 
