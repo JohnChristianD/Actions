@@ -1120,24 +1120,6 @@ learnerMinimaxRollout K (x ∷ xs) s =
     xs
     (L.learnerStep K s x)
 
--- The actual learner therefore occupies the same state-space trajectory
--- class as the minimax extension; the minimax value is an additional
--- Bellman functional over those exact action-conditioned branches.
-learner-minimax-state-class-inclusion :
-  ∀ {A : Nat}
-  (K : L.LearnerKernel A)
-  (xs : List L.Int8)
-  (s : L.LearnerState A) →
-  minimaxRollout
-    (learnerMinimaxStateSystem K)
-    (λ s reward → L.generalPolicy K s)
-    (λ s reward → singletonAction)
-    xs s
-  ≡
-  learnerHistoryState K xs s
-learner-minimax-state-class-inclusion K xs s =
-  learnerMinimaxRollout K xs s
-
 ------------------------------------------------------------------------
 -- Reservoir-form relation.
 --
