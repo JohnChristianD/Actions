@@ -171,6 +171,95 @@ canonical-connected-composition-theorem =
     canonicalNoNontrivialFiniteCycle
 
 
+
+------------------------------------------------------------------------
+-- Learner-local symbolic composition algebra.
+--
+-- This is the semantic target for automated program/theorem search:
+-- the search program composes actual learner transformations and asks
+-- the canonical Agda surface to prove the resulting observation law.
+-- The search metric is deliberately absent from this semantic layer.
+------------------------------------------------------------------------
+
+data LearnerReplacement : Set where
+  attentionReplacement : LearnedSparsemaxAttention → LearnerReplacement
+  normReplacement : NormPair → LearnerReplacement
+  optimizerReplacement : F4IntUState → LearnerReplacement
+
+applyLearnerReplacement :
+  LearnerReplacement →
+  FullLearnerState →
+  FullLearnerState
+applyLearnerReplacement (attentionReplacement a) s =
+  replaceAttention s a
+applyLearnerReplacement (normReplacement n) s =
+  replaceNorm s n
+applyLearnerReplacement (optimizerReplacement o) s =
+  replaceOptimizer s o
+
+applyLearnerReplacements :
+  List LearnerReplacement →
+  FullLearnerState →
+  FullLearnerState
+applyLearnerReplacements [] s = s
+applyLearnerReplacements (r ∷ rs) s =
+  applyLearnerReplacements rs (applyLearnerReplacement r s)
+
+canonicalPolicy-learnerReplacement-invariant :
+  ∀ K s r →
+  canonicalPolicy K (applyLearnerReplacement r s)
+  ≡
+  canonicalPolicy K s
+canonicalPolicy-learnerReplacement-invariant K s
+  (attentionReplacement a) =
+  canonicalPolicy-attention-invariant K s a
+canonicalPolicy-learnerReplacement-invariant K s
+  (normReplacement n) =
+  canonicalPolicy-norm-invariant K s n
+canonicalPolicy-learnerReplacement-invariant K s
+  (optimizerReplacement o) =
+  canonicalPolicy-optimizer-invariant K s o
+
+canonicalPolicy-learnerReplacement-composition :
+  ∀ K s rs →
+  canonicalPolicy K (applyLearnerReplacements rs s)
+  ≡
+  canonicalPolicy K s
+canonicalPolicy-learnerReplacement-composition K s [] = refl
+canonicalPolicy-learnerReplacement-composition K s (r ∷ rs) =
+  trans
+    (canonicalPolicy-learnerReplacement-composition
+      K
+      (applyLearnerReplacement r s)
+      rs)
+    (canonicalPolicy-learnerReplacement-invariant K s r)
+
+canonicalNormPair-afterFullStep-iterate :
+  ∀ K n s →
+  normPairWeightPlusOne
+    (norm (iterateCanonical K n s))
+  ≡
+  normPairWeightPlusOne (norm s)
+canonicalNormPair-afterFullStep-iterate K zero s = refl
+canonicalNormPair-afterFullStep-iterate K (suc n) s =
+  trans
+    (canonicalNormPair-afterFullStep-iterate
+      K n (canonicalFullStep K s))
+    (canonicalNormPairWeightPlusOne-preservation K s)
+
+canonicalPersistentGRU-afterFullStep-iterate :
+  ∀ K n s →
+  persistentGRU
+    (gru (iterateCanonical K n s))
+  ≡
+  persistentGRU (gru s)
+canonicalPersistentGRU-afterFullStep-iterate K zero s = refl
+canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
+  trans
+    (canonicalPersistentGRU-afterFullStep-iterate
+      K n (canonicalFullStep K s))
+    (canonicalPersistentGRUPreservation K s)
+
 ------------------------------------------------------------------------
 -- Finite TSTS-only endogenous connected composition.
 --
