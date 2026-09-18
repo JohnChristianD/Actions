@@ -2,7 +2,7 @@
 module Exotic.ERL.FullCoupled.FiniteCyclicNormPairCertificate where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; subst)
-open import Data.Nat using (Nat; zero; suc; _+_; _*_ ; _∸_; _≤_; z≤n; s≤s)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_; _∸_; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (≤-refl; ≤-trans; *-mono-≤; *-assoc; +-mono-≤)
 open import Data.Fin using (toℕ)
 
