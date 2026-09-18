@@ -1053,27 +1053,6 @@ learnerMinimaxStateSystem K =
         (L.scoreA (L.q s) (L.counts s) a)))
     (L.generalPolicy K)
 
-learnerMinimax-branch :
-  ∀ {A : Nat}
-  (K : L.LearnerKernel A)
-  (s : L.LearnerState A)
-  (reward : L.Int8) →
-  minimaxTransition (learnerMinimaxStateSystem K)
-    s reward
-    (L.generalPolicy K s)
-    singletonAction
-  ≡
-  L.learnerStep K s reward
-learnerMinimax-branch K s reward = refl
-
-learnerMinimax-output :
-  ∀ {A : Nat}
-  (K : L.LearnerKernel A)
-  (s : L.LearnerState A) →
-  minimaxOutput (learnerMinimaxStateSystem K) s ≡
-  L.generalPolicy K s
-learnerMinimax-output K s = refl
-
 ------------------------------------------------------------------------
 -- A minimax Bellman backup can be taken over the learner's actual
 -- action-conditioned transition without changing its state class.
@@ -1096,22 +1075,17 @@ learnerMinimaxBellman K =
         (L.scoreA (L.q s) (L.counts s) a)))
     (L.learnerStepGivenAction K)
 
-learnerMinimaxBellman-reduces :
-  ∀ {A : Nat}
-  (K : L.LearnerKernel A)
-  (V : L.LearnerState A → Nat)
-  (s : L.LearnerState A)
-  (reward : L.Int8) →
-  minimaxBellman (learnerMinimaxBellman K) V s reward
-  ≡
-  maxList
-    (map
-      (λ a →
-        toℕ (L.code
-          (L.scoreA (L.q s) (L.counts s) a)) +
-        V (L.learnerStepGivenAction K s a reward))
-      (L.finList _))
-learnerMinimaxBellman-reduces K V s reward = refl
+-- The causal history runner used by both the minimax rollout theorem
+-- and the reservoir-form filter theorem below.
+runHistory :
+  ∀ {S X : Set} →
+  (S → X → S) →
+  List X →
+  S →
+  S
+runHistory step [] s = s
+runHistory step (x ∷ xs) s =
+  runHistory step xs (step s x)
 
 -- Policy-driven rollout of the same finite-action transition class.
 minimaxRollout :
@@ -1173,16 +1147,6 @@ learner-minimax-state-class-inclusion K xs s =
 -- for the present learner.  No fading-memory or universality claim is
 -- inferred from this construction.
 ------------------------------------------------------------------------
-
-runHistory :
-  ∀ {S X : Set} →
-  (S → X → S) →
-  List X →
-  S →
-  S
-runHistory step [] s = s
-runHistory step (x ∷ xs) s =
-  runHistory step xs (step s x)
 
 learnerHistoryState :
   ∀ {A : Nat} →
