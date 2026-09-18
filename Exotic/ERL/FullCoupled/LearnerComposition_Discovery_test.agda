@@ -10,36 +10,36 @@ open import Exotic.ERL.FullCoupled.TheoremsMonolith
 policy-attention-norm-optimizer-composition :
   ∀ K s a n o →
   C.canonicalPolicy K
-    (C.applyLearnerReplacements
-      (C.attentionReplacement a ∷
-       C.normReplacement n ∷
-       C.optimizerReplacement o ∷ [])
+    (applyLearnerReplacements
+      (attentionReplacement a ∷
+       normReplacement n ∷
+       optimizerReplacement o ∷ [])
       s)
   ≡
   C.canonicalPolicy K s
 policy-attention-norm-optimizer-composition K s a n o =
-  C.canonicalPolicy-learnerReplacement-composition
+  canonicalPolicy-learnerReplacement-composition
     K
     s
-    (C.attentionReplacement a ∷
-     C.normReplacement n ∷
-     C.optimizerReplacement o ∷ [])
+    (attentionReplacement a ∷
+     normReplacement n ∷
+     optimizerReplacement o ∷ [])
 
 policy-optimizer-attention-composition :
   ∀ K s a o →
   C.canonicalPolicy K
-    (C.applyLearnerReplacements
-      (C.optimizerReplacement o ∷
-       C.attentionReplacement a ∷ [])
+    (applyLearnerReplacements
+      (optimizerReplacement o ∷
+       attentionReplacement a ∷ [])
       s)
   ≡
   C.canonicalPolicy K s
 policy-optimizer-attention-composition K s a o =
-  C.canonicalPolicy-learnerReplacement-composition
+  canonicalPolicy-learnerReplacement-composition
     K
     s
-    (C.optimizerReplacement o ∷
-     C.attentionReplacement a ∷ [])
+    (optimizerReplacement o ∷
+     attentionReplacement a ∷ [])
 
 norm-preservation-composition-3 :
   ∀ K s →
@@ -48,7 +48,7 @@ norm-preservation-composition-3 :
   ≡
   C.normPairWeightPlusOne (C.norm s)
 norm-preservation-composition-3 K s =
-  C.canonicalNormPair-afterFullStep-iterate K 3 s
+  canonicalNormPair-afterFullStep-iterate K 3 s
 
 persistent-gru-composition-3 :
   ∀ K s →
@@ -57,4 +57,4 @@ persistent-gru-composition-3 :
   ≡
   C.persistentGRU (C.gru s)
 persistent-gru-composition-3 K s =
-  C.canonicalPersistentGRU-afterFullStep-iterate K 3 s
+  canonicalPersistentGRU-afterFullStep-iterate K 3 s
