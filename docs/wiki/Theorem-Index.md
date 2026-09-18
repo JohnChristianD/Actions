@@ -130,6 +130,26 @@ This gives one Agda source of truth for the finite A/Q graph that Mercury discov
 
 The certificate is exact symbolic composition. It is not a proof that the external JAxtar implementation, a trained neural search system, or an external simulator is observationally equivalent.
 
+### Finite TSTS + PVS + GESMR endogenous connection
+
+The monolith now also contains:
+
+- `FiniteTSTSBranch`
+- `finiteTSTSProbe`
+- `finiteTSTSPosteriorSample`
+- `finiteTSTSSelectedProbe`
+- `finitePVSPVRecheck`
+- `FiniteTSTSPVSGESMRConnectedTheorem`
+- `finite-tsts-pvs-gesmr-connected-theorem`
+
+The finite certificate composes:
+
+`TSTS branch witness -> selected F4/L2 probe -> PVS principal-branch recheck -> canonicalFullStep -> endogenous Watkins target -> GRU/F4 tell`
+
+The theorem also proves preservation of the `NormPair` observable and persistent-GRU quotient, and explicitly records that the PVS boundary reuses the existing canonical learner evaluator rather than introducing a second optimizer model.
+
+This is a repository-local finite connected theorem, not a claim that the full external TSTS or PVS algorithms have been reimplemented. The TSTS paper supplies an external finite-time Bayesian regret result for its planning setting; the Agda theorem supplies exact deterministic composition for this repository's selected finite witness.
+
 ## B. Closed-loop faithfulness boundary
 
 `CanonicalClosedLoopInterface.agda` supplies the environment/agent/episode contract.
