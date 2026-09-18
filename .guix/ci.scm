@@ -1,12 +1,9 @@
 ;; Guix-native CI driver.
-;; The outer GitHub runner uses Guile directly.  This file then re-enters
-;; the exact Guix revision pinned in .guix/channels.scm and executes the
-;; requested lane from a pure manifest environment.  No shell language is
-;; used for orchestration.
+;; All repository orchestration is expressed in Guile.  The proof and
+;; verifier tools are supplied only by the pinned manifest below.
 
 (use-modules
  (ice-9 format)
- (ice-9 popen)
  (ice-9 rdelim)
  (srfi srfi-1)
  (srfi srfi-13))
@@ -30,27 +27,15 @@
       (lambda () (chdir old)))))
 
 (define (agda-safe-files)
-  '("Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda"
-    "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda"
-    "Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda"
-    "Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda"
-    "Exotic/ERL/FullCoupled/FunctionalWalshBridge.agda"
-    "Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda"
-    "Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda"
-    "Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda"
-    "Exotic/ERL/FullCoupled/FiniteInverseVector.agda"
-    "Exotic/ERL/FullCoupled/ConnectedOperatorComplexity.agda"
-    "Exotic/ERL/FullCoupled/ConnectedOperatorCompositionComplexity.agda"
-    "Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda"
-    "Exotic/ERL/FullCoupled/AdditionalBenchmarkPorts.agda"
-    "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-    "Exotic/ERL/FullCoupled/CanonicalLearnerTheoremsMonolith.agda"
+  '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+    "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
-    "Exotic/ERL/FullCoupled/GymnaxCartPoleClosedLoop_test.agda"
-    "Exotic/ERL/FullCoupled/GymnaxCartPolePolicyClosedLoop_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopBench.agda"
+    "Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda"
+    "Exotic/ERL/FullCoupled/AdditionalBenchmarkPorts.agda"
     "Exotic/econlib/GameTheory.agda"
     "Exotic/econlib/Equilibrium.agda"
     "Exotic/econlib/MatchingPennies.agda"
@@ -88,13 +73,14 @@
             "./mercury_oracle"))))
 
 (define (run-discovery)
-  (run! "typed finite program discovery"
-        "python3"
-        ".ci/discovery/FiniteProgramSearch.py"
-        "--backend" "auto"
-        "--require-rope"
-        "--output" ".ci/discovery/last-search.json")
-  (run-mercury))
+  ;; The finite A/Q discovery path is now Mercury-native.  The report is
+  ;; emitted directly as deterministic JSON by jaxtar_aq_discovery.m.
+  (in-directory ".ci/discovery"
+    (lambda ()
+      (run! "build Mercury finite discovery"
+            "mmc" "--make" "jaxtar_aq_discovery")
+      (run! "run Mercury finite discovery"
+            "./jaxtar_aq_discovery"))))
 
 (define (git-files)
   (let ((port (open-pipe* OPEN_READ "git" "ls-files")))
@@ -117,16 +103,25 @@
          (suffix? ".sh" file)
          (suffix? ".cmd" file)
          (suffix? ".bat" file)
-         (suffix? ".ps1" file)))
+         (suffix? ".ps1" file)
+         (suffix? ".py" file)
+         (suffix? ".js" file)
+         (suffix? ".mjs" file)
+         (suffix? ".ts" file)
+         (suffix? ".tsx" file)
+         (suffix? ".java" file)
+         (suffix? ".kt" file)
+         (suffix? ".scala" file)
+         (suffix? ".elm" file)
+         (suffix? ".purs" file)))
    (git-files)))
 
 (define (run-surface-audit)
   (let ((bad (bad-surface-files)))
     (if (null? bad)
-        (format #t
-                "surface=clean; hackage/cabal/shell/windows-script files=absent~%")
+        (format #t "surface=clean; noncanonical language/script files=absent~%")
         (begin
-          (format #t "ERROR: forbidden legacy/script files remain:~%")
+          (format #t "ERROR: forbidden legacy/noncanonical source files remain:~%")
           (for-each (lambda (file) (format #t "  ~a~%" file)) bad)
           (exit 1)))))
 
@@ -154,4 +149,4 @@
             "shell" "--pure"
             "-m" manifest-file
             "--"
-            "guile" self-file)))
+            "guile" self-file))))
