@@ -9,6 +9,7 @@
 :- implementation.
 
 :- import_module list.
+:- import_module string.
 
 :- type composition
     ---> tsts_pvs_gesmr
