@@ -65,10 +65,12 @@
             "./clojure_involution_compat"))))
 
 (define (run-mercury)
-  (in-directory "."
+  (in-directory ".ci"
     (lambda ()
       (run! "build forbidden-theorem scanner"
-            "mmc" "--make" ".ci/check_forbidden_theorems")))
+            "mmc" "--make" "check_forbidden_theorems")
+      (run! "run forbidden-theorem scanner"
+            "./check_forbidden_theorems")))
   (run-mercury-discovery-programs)
   (in-directory "oracle"
     (lambda ()
