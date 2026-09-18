@@ -142,8 +142,8 @@ trace-encoding :
 trace-encoding step [] s = refl
 trace-encoding step (x ∷ xs) s =
   trans
-    (trace-encoding step xs (run (step x) s))
     (sym (composeOperator-law (traceOperator step xs) (step x) s))
+    (trace-encoding step xs (run (step x) s))
 
 traceSize :
   ∀ {A S : Set} →
