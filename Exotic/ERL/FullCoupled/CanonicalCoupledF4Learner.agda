@@ -13,10 +13,10 @@ data Signed8 : Set where
   pos8 : Nat → Signed8
   neg8 : Nat → Signed8
 
-natLE : Nat → Nat → Bool
-natLE zero n = true
-natLE (suc m) zero = false
-natLE (suc m) (suc n) = natLE m n
+canonicalNatLE : Nat → Nat → Bool
+canonicalNatLE zero n = true
+canonicalNatLE (suc m) zero = false
+canonicalNatLE (suc m) (suc n) = canonicalNatLE m n
 
 signedNeg : Signed8 → Signed8
 signedNeg (pos8 zero) = pos8 zero
@@ -25,7 +25,7 @@ signedNeg (neg8 n) = pos8 (suc n)
 
 signedAdd : Signed8 → Signed8 → Signed8
 signedAdd (pos8 m) (pos8 n) = pos8 (m + n)
-signedAdd (pos8 m) (neg8 n) with natLE m (suc n)
+signedAdd (pos8 m) (neg8 n) with canonicalNatLE m (suc n)
 ... | true = neg8 (n ∸ m)
 ... | false = pos8 (m ∸ suc n)
 signedAdd (neg8 m) (pos8 n) = signedAdd (pos8 n) (neg8 m)
@@ -38,15 +38,15 @@ signedMul (neg8 m) (pos8 n) = signedNeg (pos8 (suc m * n))
 signedMul (neg8 m) (neg8 n) = pos8 (suc m * suc n)
 
 fromInt8 : L.Int8 → Signed8
-fromInt8 x with natLE (toℕ (L.code x)) 127
+fromInt8 x with canonicalNatLE (toℕ (L.code x)) 127
 ... | true = pos8 (toℕ (L.code x))
 ... | false = neg8 (255 ∸ toℕ (L.code x))
 
 signedClip : Signed8 → L.Int8
-signedClip (pos8 n) with natLE n 127
+signedClip (pos8 n) with canonicalNatLE n 127
 ... | true = L.int8OfNat n
 ... | false = L.int8OfNat 127
-signedClip (neg8 n) with natLE n 127
+signedClip (neg8 n) with canonicalNatLE n 127
 ... | true = L.int8OfNat (255 ∸ n)
 ... | false = L.int8OfNat 128
 
@@ -88,7 +88,7 @@ pow2Nat (suc n) = 2 * pow2Nat n
 
 pow2Ell8 : Signed8 → L.Int8
 pow2Ell8 (neg8 _) = L.zero8
-pow2Ell8 (pos8 n) with natLE n 6
+pow2Ell8 (pos8 n) with canonicalNatLE n 6
 ... | true = L.int8OfNat (pow2Nat n)
 ... | false = L.int8OfNat 127
 
