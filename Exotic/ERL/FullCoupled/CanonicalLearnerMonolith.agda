@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; z≤n; s≤s)
+open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
@@ -32,6 +32,12 @@ int8Add x y = int8OfNat (toℕ (code x) + toℕ (code y))
 
 int8Mul : Int8 → Int8 → Int8
 int8Mul x y = int8OfNat (toℕ (code x) * toℕ (code y))
+
+int8Neg : Int8 → Int8
+int8Neg x = int8OfNat (256 ∸ toℕ (code x))
+
+int8Sub : Int8 → Int8 → Int8
+int8Sub x y = int8Add x (int8Neg y)
 
 int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
 int8Roundtrip x = trans
@@ -218,17 +224,39 @@ updateLCBCount p (lcbCountState l r t) with policyChoosesLeft p
 
 finiteQLog8 : Int8 → FiniteRational
 finiteQLog8 x with toℕ (code x)
-... | zero = finiteRational 0 1 1
-... | suc n = finiteRational 1 n (suc n)
+... | zero = finiteRational 1 0 1
+... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
 
 negativeFiniteQLog8 : Int8 → FiniteRational
-negativeFiniteQLog8 x with finiteQLog8 x
-... | finiteRational s n d = finiteRational 1 n d
+negativeFiniteQLog8 x = finiteQLog8 x
 
 negativeFiniteQLogLaw : ∀ x →
   negativeFiniteQLog8 x ≡ finiteRational 1 (numerator (finiteQLog8 x)) (denominator (finiteQLog8 x))
 negativeFiniteQLogLaw x with finiteQLog8 x
 ... | finiteRational s n d = refl
+
+munchausenScale8 : Nat
+munchausenScale8 = 16
+
+finiteSignedRationalBias8 : FiniteRational → Int8
+finiteSignedRationalBias8 (finiteRational zero n d) = zero8
+finiteSignedRationalBias8 (finiteRational (suc s) n zero) = zero8
+finiteSignedRationalBias8 (finiteRational (suc s) n (suc d)) =
+  int8Neg (int8OfNat ((munchausenScale8 * n) / suc d))
+
+qLog2Bias8 : Int8 → Int8
+qLog2Bias8 x = finiteSignedRationalBias8 (finiteQLog8 x)
+
+qLog2Bias8-law : ∀ x →
+  qLog2Bias8 x ≡
+  int8Neg
+    (int8OfNat
+      ((munchausenScale8 * numerator (finiteQLog8 x)) /
+       denominator (finiteQLog8 x)))
+qLog2Bias8-law zero8 = refl
+qLog2Bias8-law x with finiteQLog8 x
+... | finiteRational 1 n zero = refl
+... | finiteRational 1 n (suc d) = refl
 
 negativeAlpha8 : Int8
 negativeAlpha8 = int8OfNat 255
@@ -678,18 +706,39 @@ hardSparse-composition-normPair-F4-L2 :
   HardSparseLeft (canonicalPolicy K (replaceNorm (replaceOptimizer s o) n))
 hardSparse-composition-normPair-F4-L2 = hardSparse-composition-invariant
 
-endogenousNegativeScale8 : Sparsemax2Pair → Int8
-endogenousNegativeScale8 (l , r) = lcbNegate l
+maxCriticValue8 : CriticState → Int8
+maxCriticValue8 q with toℕ (code (qLeft q)) <ᵇ toℕ (code (qRight q))
+... | true = qRight q
+... | false = qLeft q
+
+canonicalQLogBias : FullLearnerKernel → FullLearnerState → Int8
+canonicalQLogBias K s = qLog2Bias8 (policyLeftWeight (canonicalPolicy K s))
+
+canonicalReward8 : FullLearnerKernel → FullLearnerState → Int8
+canonicalReward8 K s = policyLeftWeight (canonicalPolicy K s)
+
+canonicalDiscount8 : Int8
+canonicalDiscount8 = one8
+
+canonicalWatkinsTarget : FullLearnerKernel → FullLearnerState → Int8
+canonicalWatkinsTarget K s =
+  int8Add
+    (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
+    (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s))))
+
+canonicalWatkinsTarget-law : ∀ K s →
+  canonicalWatkinsTarget K s ≡
+  int8Add
+    (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
+    (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s))))
+canonicalWatkinsTarget-law K s = refl
 
 canonicalQLogControlStep : FullLearnerKernel → FullLearnerState → SignedQLogControl
-canonicalQLogControlStep K s = signedQLogControl negativeAlpha8
-  (endogenousNegativeScale8 (canonicalPolicy K s))
+canonicalQLogControlStep K s =
+  signedQLogControl negativeAlpha8 (canonicalQLogBias K s)
 
 canonicalSignal : FullLearnerKernel → FullLearnerState → Int8
-canonicalSignal K s =
-  qLogSignal (canonicalQLogControlStep K s)
-  (int8Add (policyLeftWeight (canonicalPolicy K s))
-    (int8OfNat ((clock s * 37) + 17)))
+canonicalSignal = canonicalWatkinsTarget
 
 canonicalWatkinsStep : FullLearnerKernel → FullLearnerState → WatkinsState
 canonicalWatkinsStep K s =
