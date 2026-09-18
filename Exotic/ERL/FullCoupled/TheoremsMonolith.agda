@@ -727,10 +727,7 @@ finite-gesmr-watkins-f4-l2-gru-composition-theorem =
     (λ K s d → refl)
     (λ K s d → refl)
     (λ K s d → refl)
-    (λ K s d →
-      trans
-        (λ _ → refl)
-        refl)
+    (λ K s d → refl)
     (λ K s g d →
       trans
         (C.canonicalNormPairWeightPlusOne-preservation
