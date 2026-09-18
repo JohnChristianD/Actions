@@ -21,10 +21,16 @@
     ---> random_search
     ;   hill_climbing
     ;   simple_es
+    ;   simple_ga
     ;   open_es
+    ;   mr15_ga
+    ;   samr_ga
+    ;   gesmr_ga
     ;   pgpe
     ;   snes
-    ;   cma_es.
+    ;   cma_es
+    ;   differential_evolution
+    ;   particle_swarm.
 
 :- type genome == list(int).
 
@@ -42,10 +48,16 @@ strategies = [
     random_search,
     hill_climbing,
     simple_es,
+    simple_ga,
     open_es,
+    mr15_ga,
+    samr_ga,
+    gesmr_ga,
     pgpe,
     snes,
-    cma_es
+    cma_es,
+    differential_evolution,
+    particle_swarm
 ].
 
 :- func seed0 = int.
@@ -123,8 +135,22 @@ perturb(hill_climbing, _, G) =
     local_flips(G, 0, []).
 perturb(simple_es, _, G) =
     local_flips(G, 0, []) ++ local_flips(G, 1, []).
+perturb(simple_ga, _, G) =
+    local_flips(G, 0, []).
 perturb(open_es, Seed, G) =
     [centered_flip(G, Seed), centered_flip(G, next_seed(Seed))].
+perturb(mr15_ga, Seed, G) =
+    [centered_flip(G, Seed),
+     centered_flip(G, next_seed(Seed))].
+perturb(samr_ga, Seed, G) =
+    [centered_flip(G, Seed),
+     centered_flip(G, next_seed(Seed)),
+     centered_flip(G, next_seed(next_seed(Seed)))].
+perturb(gesmr_ga, Seed, G) =
+    [centered_flip(G, Seed),
+     centered_flip(G, next_seed(Seed)),
+     centered_flip(G, next_seed(next_seed(Seed))),
+     centered_flip(G, next_seed(next_seed(next_seed(Seed))))].
 perturb(pgpe, Seed, G) =
     [centered_flip(G, Seed),
      centered_flip(G, next_seed(Seed)),
@@ -133,6 +159,10 @@ perturb(snes, Seed, G) =
     scaled_flips(G, Seed, 0, []).
 perturb(cma_es, Seed, G) =
     diagonal_covariance_step(G, Seed, 0, []).
+perturb(differential_evolution, Seed, G) =
+    scaled_flips(G, Seed, 0, []).
+perturb(particle_swarm, Seed, G) =
+    [centered_flip(G, Seed)].
 
 :- func local_flips(genome, int, list(genome)) = list(genome).
 local_flips(G, I, Acc) =
