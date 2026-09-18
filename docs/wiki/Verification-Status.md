@@ -19,7 +19,7 @@ Latest verification run for the current code changes:
 
 The immediately preceding run `35404988310` failed in the container checkout step because the Guix daemon socket was absent, before the Agda or Mercury lanes could execute. The workflow now starts `guix-daemon --disable-chroot` inside the pinned CI container and authorizes the standard Guix substitute keys before checkout.
 
-Run `35405054668` is currently queued/pending. No Agda or Mercury success/failure result has been observed yet, so this source state remains pending rather than green.
+The current repair commit hardens the pinned Guix container with `--security-opt seccomp=unconfined`, after run `35405803150` failed in `guix shell` because the `setPersonality` syscall was blocked by the container's seccomp profile. A new verification run is required before the theorem can be called green.
 
 ## Active search architecture
 
@@ -70,4 +70,4 @@ attention replacement -> policy/count/Q-log invariance -> endogenous Watkins tar
 
 while preserving NormPair and persistent-GRU observables through the canonical full step.
 
-The current verification run for this addition is `35405803150` and is pending. No Agda or Mercury success/failure result has been observed yet.
+The prior verification run for this addition was `35405803150`, which failed at the Guix-native checkout step before Agda or Mercury executed. The theorem and direct test therefore remain formally unverified by CI until the hardened workflow completes.
