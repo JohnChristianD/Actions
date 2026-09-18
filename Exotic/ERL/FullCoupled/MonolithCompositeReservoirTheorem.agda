@@ -10,6 +10,7 @@ open import Data.Product using (_×_; _,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; trans; sym)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
+open import Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith as T
 
 stepAt : ∀ {A} → L.LearnerKernel A → L.Int8 → L.LearnerState A → L.LearnerState A
 stepAt K reward s = L.learnerStep K s reward
@@ -154,6 +155,17 @@ reservoir-discreteNSP : ∀ {S : Set}
   (R : ReservoirConditionCertificate S) {s t} →
   s ≢ t → observe R s ≢ observe R t
 reservoir-discreteNSP R apart eq = apart (reservoir-injective R eq)
+
+fullLearnerReservoirCondition-impossible :
+  ∀ {A} (K : L.LearnerKernel A)
+  (R : ReservoirConditionCertificate (L.LearnerState A)) →
+  ⊥
+fullLearnerReservoirCondition-impossible K R =
+  T.fullLearnerState-no-left-inverse
+    K
+    (observe R)
+    (inverse R)
+    (inverseLaw R)
 
 record CertifiedCompositeConclusion
   (A : Nat)
