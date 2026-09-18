@@ -1,101 +1,148 @@
-# Canonical Coupled Semantics
+# Canonical Learner Semantics
 
-## 1. Signed Int8 carrier
+Last audited: 2026-09-19 against `d24c59101794ad3b6684889f709e46b5f0c10478`.
 
-`CanonicalCoupledF4Learner.agda` defines `Signed8` with `pos8 n` and `neg8 n`.
+## 1. Bounded Int8 carrier
 
-For an imported `L.Int8` code, `fromInt8` interprets codes 0..127 as nonnegative and codes 128..255 as negative values represented by `neg8 (255 - code)`.
+`CanonicalLearnerMonolith.agda` represents `Int8` as a record containing:
 
-`signedClip` maps a signed value back to the Int8 code range with saturation at +127 and -128.
+`code : Fin 256`.
 
-Canonical F4 arithmetic is therefore signed/clipped, not the raw modular arithmetic used by the older general learner helpers.
+The functions `int8OfNat`, `int8Add`, `int8Mul`, `int8Neg`, and `int8Sub` operate on the natural-number codes and reduce through the `Fin 256` boundary.
 
-## 2. Canonical F4 state and parameters
+The implementation is therefore a finite code carrier with modular-style arithmetic. The file does not import a generic ring structure and does not establish generic ring laws for this carrier.
 
-State: `(qTheta, rTheta, qE, rE, rL, ell)`.
+## 2. Policy and learner control
 
-Here `qTheta`, `rTheta`, `qE`, `rE`, and `rL` are `L.Int8`, while `ell` is `Signed8`.
+The policy surface is built from:
 
-Shared parameters: `(beta₂, betaTheta)`.
+- `CriticState`
+- `LCBCountState`
+- `LCBCountKernel`
+- `ActionScore`
+- `Sparsemax2Pair`
+- `fixedTemperatureSparsemax`
 
-There is no canonical `l2Global` state field.
+The canonical temperature code is `16`.
 
-## 3. Error and level updates
+The learner also carries finite Q-log control and a finite rational representation:
 
-Define:
+`FiniteRational(sign, numerator, denominator)`.
 
-θfull = qTheta +f4 rTheta
+The current theorem surface checks the Q-log representation law and several concrete sparsemax boundary cases.
 
-efull = qE +f4 rE
+## 3. Attention transform
 
-enew = scaledMulF4 beta₂ efull +f4 scaledMulF4 (1 -f4 beta₂) g
+`LearnedSparsemaxAttention` supplies two Int8 parameters.
 
-rL′ = rL +f4 enew
+The canonical attention path is:
 
-ell′ = ell + sign(rL′), where the sign contribution is represented in the signed residual carrier,
+`learnedSparsemaxAttentionWeights -> liftAttention -> walshHadamardApply -> phase4/walshRademacherRope4 -> readout`.
 
-rL″ = rL′ -f4 sgnF4(rL′).
+The Walsh structure is finite and explicit. The repository checks the 4-row Int8 Gram laws through `H4GramLaw` and provides a `PowerOfFour` witness for the width 4 boundary.
 
-## 4. Canonical hardsign and parameter-level L2
+The phase system has four constructors and repeats after four steps.
 
-`canonicalSign = L.hardSignGate`.
+This is an exact finite signed-permutation phase layer. It is not a sine/cosine numerical RoPE implementation.
 
-The gate is exactly sign(x): negative inputs map to Int8 code 255, zero maps to code 0, and positive inputs map to code 1.
+## 4. GRU state and action composition
 
-The step uses the old level `ell s` when computing the scale `pow2Ell8 (ell s)`.
+`GRUState` contains hidden state, matrices, noise, and global control.
 
-The global parameter-level term is:
+`gruStep` changes the hidden coordinate while preserving the parameter-like coordinates.
 
-Δθ = scaledMulF4 (pow2Ell8 (ell s)) (canonicalSign g) -f4 scaledMulF4 (betaTheta p) (thetaFull s).
+The repository proves:
 
-Then:
+- `persistent-preservation`
+- `gruParameterPersistence`
+- `GRUEquivalent` reflexivity
+- `gruStep-respects-equivalence`
 
-qTheta′ = θfull +f4 Δθ
+It also defines `GRUAction`, `identityGRUAction`, and `composeGRUAction`. The action composition is associative by definitional equality in `gruActionAssociativity`. The identity action is present as an explicit component, while generic `Monoid` packaging is not imported.
 
-rTheta′ = θfull -f4 qTheta′
+## 5. F4-like optimizer component
 
-qE′ = enew
+The current learner uses:
 
-rE′ = efull -f4 enew.
+`F4IntUState = (thetaQ, rTheta, eQ, rE, rL)`
 
-This is the coupled global term requested by the canonical learner. It is not per-coordinate optimizer state and it is not a decoupled L2 update.
+with all fields carried as Int8.
 
-## 5. Scaled multiplication
+The optimizer kernel separately contains:
 
-`scaledMulF4 x y` multiplies signed carriers and divides the signed product by 128 before clipping.
+`globalL2 : Int8`.
 
-A kernel-checked example is `64 * 64 / 128 = 32` in the canonical representation.
+This is distinct from the older wiki's six-state `CanonicalCoupledF4Learner.agda`. That older surface is no longer the current canonical learner.
 
-A clipping example is `127 + 1 = 127` under canonical signed clipping.
+The current optimizer step is supplied through `f4ThetaStep` and connected to the canonical signal by `canonicalOptimizerStep-qMunchausen-L2`.
 
-## 6. Coupled learner composition
+## 6. Full learner state
 
-`canonicalCoupledStep` performs one coupled step in this order:
+`FullLearnerState` contains:
 
-1. derive the policy action from sparsemax and count state;
-2. form the Munchausen-shaped input;
-3. increment the global clock;
-4. update the selected Q entry and action count;
-5. apply the state-independent sign-gated GRU transition to the shaped input;
-6. apply canonical six-state F4 to the same shaped input;
-7. advance the norm pair.
+1. clock
+2. Watkins state
+3. learned sparsemax attention
+4. GRU state
+5. optimizer state
+6. norm pair
+7. LCB counts
+8. signed Q-log control
+9. finite Q-log value
 
-The canonical state contains clock, Q-vector, count-vector, last action, GRU state, canonical F4 state, and norm pair.
+`canonicalFullStep`:
 
-## 7. Legacy general learner semantics
+1. increments the clock;
+2. updates Watkins state;
+3. updates the attention component;
+4. updates GRU state from canonical signal plus canonical attention mix;
+5. updates the optimizer from the canonical Watkins signal;
+6. preserves the norm pair;
+7. updates LCB counts;
+8. updates Q-log control and value.
 
-`GeneralFullCoupledLearnerMonolith.agda` remains a distinct legacy kernel.
+Projection lemmas `canonicalFullStep-*` expose these components directly.
 
-Its `Int8` helpers are raw modular code arithmetic.
+## 7. Closed-loop environment interface
 
-Its GRU uses `hardSignGate` but applies the modular `int8Add`, `int8Mul`, and `int8Neg` operations.
+`CanonicalClosedLoopInterface.agda` adds:
 
-Its old F4 state has five Int8 fields `(thetaQ, residualQ, errorQ, errorResidual, l2Global)`, and `f4Step` quantizes a raw value by multiples of 16 while preserving `l2Global` unchanged.
+`ClosedLoopEnv A S`
+`ClosedLoopAgent A`
+`EpisodeResult S`
+`EpisodeMetrics S`
+`BenchSpec A S`
 
-That old F4 is useful as a generic theorem substrate but is not the canonical six-state F4 semantics.
+The episode runner composes environment transitions and learner updates explicitly.
 
-## 8. Rational branch machinery
+The metrics surface defines return, reference return, truncated regret, success, steps, and observed final state.
 
-The theorem monolith defines `finitePiecewiseRational` using three sign branches: negative -> 255/1, zero -> 0/1, positive -> `mobiusRatio`.
+This closes the type-level seam between a canonical learner state and a finite environment, without claiming external simulator equivalence.
 
-This is theorem-side symbolic representation machinery. It is not the canonical GRU gate and should not be documented as a rational replacement for `sign(x)`.
+## 8. Exact finite environment variants
+
+`CanonicalFaithfulGameVariants.agda` gives exact boolean predicates for finite Toy Maze and FourRooms layouts.
+
+These are useful as finite semantic ports because their cells and boundaries are represented directly in Agda.
+
+They should be read as exact finite contracts, not as empirical replicas of a larger simulator.
+
+## 9. Structural algebra
+
+The current source uses several algebraic patterns without importing broad abstract-algebra interfaces:
+
+- bounded carrier: `Int8` over `Fin 256`;
+- products: tuples and nested products via `Data.Product`;
+- finite sums: Agda data declarations such as `Signed`, `HardSign8`, and `Phase4`;
+- records: kernels, states, certificates, and benchmark specifications;
+- endomorphism composition: `GRUAction`;
+- equality transport: `_≡_`, `cong`, `subst`, `trans`, `sym`;
+- finite witnesses: `Fin`, `PowerOfFour`, and direct finite-code equations;
+- impossible cases: `⊥`.
+
+The repository does not presently import `Algebra.*` typeclass-like structures for the canonical learner. Its algebra is mostly concrete and definitionally checked.
+
+For the standard library semantics, see:
+- [Agda standard library 2.3](https://agda.github.io/agda-stdlib/v2.3/)
+- [Agda User Manual 2.8.0](https://agda.readthedocs.io/en/v2.8.0/)
+- [Agda safe mode](https://agda.readthedocs.io/en/v2.8.0/language/safe-agda.html)
