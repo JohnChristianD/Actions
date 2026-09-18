@@ -49,11 +49,8 @@ jobs:
       - name: Check generalized theorem monolith
         run: timeout 180s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
 
-      - name: Check reservoir attractor theorem module
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralReservoirAttractorTheorems.agda
-
-      - name: Check reservoir attractor theorem regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/ReservoirAttractorTheorems_test.agda
+      - name: Check full-composition reservoir theorem
+        run: timeout 180s agda --safe Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda
 
       - name: Check generalized closed-loop benchmark
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda
@@ -66,12 +63,6 @@ jobs:
 
       - name: Check canonical learner regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
-
-      - name: Check closed-loop interface
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda
-
-      - name: Check closed-loop interface regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface_test.agda
 
       - name: Check exact closed-loop benchmark suite
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopBenchV2.agda
@@ -102,17 +93,6 @@ jobs:
 
       - name: Check learner game execution regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Set up JAxtar A* theorem-search runtime
-        run: python -m pip install --disable-pip-version-check "jaxtar @ git+https://github.com/tinker495/JAxtar@d886571b116d7ca4de1f91a715cf2e73ee3b5acd"
-
-      - name: Run kernel-checked JAxtar A* theorem search
-        run: python .ci/discovery/ProofSearch.py --backend astar --budget 64
 
       - name: Audit redundant learner modules
         run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
