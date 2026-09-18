@@ -4,7 +4,7 @@ Last audited: 2026-09-19.
 
 ## Current code head
 
-`bb677317bd435dd4d23799cae4fbfb9878845ea0`
+`7c2388a76e99dff571964d1f1e27cd78be1c85d6`
 
 Docs-only commits after this code head update the wiki without changing the proof/CI source.
 
@@ -18,11 +18,9 @@ The current theorem entrypoint is:
 
 ## Current workflow
 
-Latest verification run: `35402942175` at `bb677317bd435dd4d23799cae4fbfb9878845ea0`.
+Latest verification run: `35403637915` at `7c2388a76e99dff571964d1f1e27cd78be1c85d6`.
 
-At the latest status read, all four jobs are in progress during container initialization. No lane has yet reported a proof failure or success.
-
-The preceding checkout failure was caused by cloning directly into the pre-created GitHub Actions workspace. The workflow now initializes the workspace as a Git repository, adds the origin, fetches the exact commit, and checks it out. The workflow uses the container's native `sh` shell and keeps Guix pinning outside the pure Guile environment.
+The four jobs are currently queued. No Agda or Mercury result has been observed yet, so this source state remains pending rather than green.
 
 ## New composition discovery
 
@@ -60,3 +58,10 @@ This is a port of the finite A/Q graph/certificate boundary, not a full JAX/JAxt
 A theorem is called verified only after the current Guix/Agda `--safe` lane has actually checked its owning module.
 
 The queued run is therefore recorded as pending, not green.
+
+
+## GESMR endogenous discovery
+
+Mercury now includes MR15_GA, GESMR_GA, Open_ES, HillClimbing, PSO, DifferentialEvolution, and an MCTX candidate in the finite property grammar. The accepted candidate for the Watkins/F4-L2/GRU grouped-mutation requirement is GESMR_GA.
+
+The Agda monolith contains finiteGESMRWatkinsF4L2GRUCompositionTheorem and finite-gesmr-watkins-f4-l2-gru-composition-theorem.
