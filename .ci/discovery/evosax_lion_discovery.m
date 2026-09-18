@@ -103,12 +103,15 @@ fitness(G) =
      then 1000 - (100 * genome_distance(G, canonical)) - complexity(G)
      else -1000000).
 
+:- func is_canonical(genome) = bool.
+is_canonical(G) = (if G = canonical then yes else no).
+
 :- func make_candidate(genome) = candidate.
 make_candidate(G) =
     candidate(
         G,
         typed_genome(G),
-        G = canonical,
+        is_canonical(G),
         complexity(G),
         fitness(G)
     ).
@@ -194,21 +197,34 @@ evaluate(S, Seed, G) =
     score_population(list.map(make_candidate, perturb(S, Seed, G))).
 
 :- func run_strategy(strategy, int, genome, int) = candidate.
-run_strategy(_, _, G, 0) = make_candidate(G).
 run_strategy(S, Seed, G, Steps) =
+    run_strategy_(S, Seed, G, Steps).
+
+:- pred run_strategy_(strategy::in, int::in, genome::in, int::in,
+    candidate::out) is det.
+run_strategy_(_, _, G, 0, Result) :-
+    Result = make_candidate(G).
+run_strategy_(S, Seed, G, Steps, Result) :-
+    Steps > 0,
     Current = make_candidate(G),
     Proposal = evaluate(S, Seed, G),
     Best = better(Current, Proposal),
-    run_strategy(S, next_seed(Seed), candidate_genome(Best), Steps - 1).
+    run_strategy_(
+        S, next_seed(Seed), candidate_genome(Best), Steps - 1, Result).
 
 :- func run_portfolio(genome, list(strategy), int) = candidate.
-run_portfolio(G, [], _) = make_candidate(G).
-run_portfolio(G, [S | Ss], Seed) =
+run_portfolio(G, Strategies, Seed) =
+    run_portfolio_(G, Strategies, Seed).
+
+:- pred run_portfolio_(genome::in, list(strategy)::in, int::in,
+    candidate::out) is det.
+run_portfolio_(G, [], _, Result) :-
+    Result = make_candidate(G).
+run_portfolio_(G, [S | Ss], Seed, Result) :-
     C0 = run_strategy(S, Seed, G, 8),
     C1 = simplify(C0),
-    C2 = run_portfolio(
-        candidate_genome(C1), Ss, next_seed(Seed)),
-    better(C1, C2).
+    C2 = run_portfolio(candidate_genome(C1), Ss, next_seed(Seed)),
+    Result = better(C1, C2).
 
 :- func genome_string(genome) = string.
 genome_string([]) = "".
