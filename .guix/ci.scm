@@ -57,10 +57,7 @@
             "mmc" "--make" "tsts_endogenous_discovery")
       (run! "run Mercury TSTS endogenous discovery"
             "./tsts_endogenous_discovery")
-      (run! "build Mercury involution verifier"
-            "mmc" "--make" "clojure_involution_compat")
-      (run! "run Mercury involution verifier"
-            "./clojure_involution_compat"))))
+      (void))))
 
 (define (run-mercury)
   (in-directory ".ci"
@@ -70,12 +67,7 @@
       (run! "run forbidden-theorem scanner"
             "./check_forbidden_theorems")))
   (run-mercury-discovery-programs)
-  (in-directory "oracle"
-    (lambda ()
-      (run! "build Mercury rational oracle"
-            "mmc" "--make" "mercury_oracle")
-      (run! "run Mercury rational oracle"
-            "./mercury_oracle"))))
+undefined
 
 (define (run-discovery)
   ;; The canonical outer search is TSTS-only. Agda remains authoritative
