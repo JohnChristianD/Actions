@@ -11,6 +11,8 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
 open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Data.Empty using (⊥)
+open import Data.Fin using (toℕ)
+open import Data.Nat using (_<ᵇ_)
 open import Data.List.Base using (List; []; _∷_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
@@ -170,385 +172,74 @@ canonical-connected-composition-theorem =
 
 
 ------------------------------------------------------------------------
--- Mercury JAxtar A/Q composition certificate.
+-- Finite TSTS-only endogenous connected composition.
 --
--- The discovery graph is reified here as a typed transition path.
--- This separates:
+-- The outer search is only Thompson Sampling Tree Search. JAxtar/A*
+-- graph search and evolutionary-population proposal layers are retired
+-- from the canonical discovery path.
 --
---   LCB/sparsemax policy selection
---   learned sparsemax attention
---   Walsh-Hadamard mixing
---   finite phase rotation
---   negative q=2 bias
---   Watkins target formation
+-- The finite boundary exposes the TSTS role as an opaque posterior-sample
+-- witness, then makes the evaluator exact:
 --
--- The certificate is exact at the finite symbolic layer.
+--   posterior sample
+--       -> selected branch
+--       -> endogenous learner probe
+--       -> exact Watkins target
+--       -> posterior update
+--       -> GRU tell + F4 tell
+--
+-- This is a finite semantic boundary, not a numerical reimplementation of
+-- the external TSTS runtime or a claim that its Bayesian regret theorem
+-- automatically transfers to this deterministic learner.
 ------------------------------------------------------------------------
 
-data AQChannel : Set where
-  aqCritic
-  aqScorePair
-  aqSparsePair
-  aqSparsePairRope
-  aqWalsh4
-  aqRecurrentSignal
-  aqShapedReward
-  aqWatkinsSignal : AQChannel
+data FiniteTSTSBranch : Set where
+  tstsWatkinsBranch
+  tstsF4L2Branch
+  tstsGRUBranch : FiniteTSTSBranch
 
-data AQOp : Set where
-  aqLCBScore
-  aqSparsemax2
-  aqRopeQuarter
-  aqWHT4
-  aqProjectLeft
-  aqQLog2Bias
-  aqWatkinsQ2 : AQOp
-
-aqSource : AQOp → AQChannel
-aqSource aqLCBScore = aqCritic
-aqSource aqSparsemax2 = aqScorePair
-aqSource aqRopeQuarter = aqSparsePair
-aqSource aqWHT4 = aqSparsePairRope
-aqSource aqProjectLeft = aqWalsh4
-aqSource aqQLog2Bias = aqSparsePair
-aqSource aqWatkinsQ2 = aqShapedReward
-
-aqTarget : AQOp → AQChannel
-aqTarget aqLCBScore = aqScorePair
-aqTarget aqSparsemax2 = aqSparsePair
-aqTarget aqRopeQuarter = aqSparsePairRope
-aqTarget aqWHT4 = aqWalsh4
-aqTarget aqProjectLeft = aqRecurrentSignal
-aqTarget aqQLog2Bias = aqShapedReward
-aqTarget aqWatkinsQ2 = aqWatkinsSignal
-
-aqPath :
-  ∀ {X Y : AQChannel} →
-  List AQOp →
-  AQChannel
-aqPath [] = aqCritic
-aqPath (op ∷ ops) = aqTarget op
-
-aqPolicyPath :
-  List AQOp
-aqPolicyPath =
-  aqLCBScore ∷
-  aqSparsemax2 ∷
-  []
-
-aqAttentionPath :
-  List AQOp
-aqAttentionPath =
-  aqRopeQuarter ∷
-  aqWHT4 ∷
-  aqProjectLeft ∷
-  []
-
-aqTargetPath :
-  List AQOp
-aqTargetPath =
-  aqQLog2Bias ∷
-  aqWatkinsQ2 ∷
-  []
-
-aqPolicy-path-law :
-  aqTarget aqLCBScore ≡ aqScorePair
-aqPolicy-path-law = refl
-
-aqPolicySparsemax-path-law :
-  aqTarget aqSparsemax2 ≡ aqSparsePair
-aqPolicySparsemax-path-law = refl
-
-aqAttention-rope-law :
-  aqTarget aqRopeQuarter ≡ aqSparsePairRope
-aqAttention-rope-law = refl
-
-aqAttention-wht-law :
-  aqTarget aqWHT4 ≡ aqWalsh4
-aqAttention-wht-law = refl
-
-aqAttention-projection-law :
-  aqTarget aqProjectLeft ≡ aqRecurrentSignal
-aqAttention-projection-law = refl
-
-aqTarget-qlog-law :
-  aqTarget aqQLog2Bias ≡ aqShapedReward
-aqTarget-qlog-law = refl
-
-aqTarget-watkins-law :
-  aqTarget aqWatkinsQ2 ≡ aqWatkinsSignal
-aqTarget-watkins-law = refl
-
-record MercuryJaxtarAQCertificate : Set₁ where
-  constructor mercuryJaxtarAQCertificate
+record FiniteTSTSPosterior : Set where
+  constructor finiteTSTSPosterior
   field
-    policyStart :
-      aqSource aqLCBScore ≡ aqCritic
-    policyEnd :
-      aqTarget aqSparsemax2 ≡ aqSparsePair
-    attentionStart :
-      aqSource aqRopeQuarter ≡ aqSparsePair
-    attentionEnd :
-      aqTarget aqProjectLeft ≡ aqRecurrentSignal
-    targetStart :
-      aqSource aqQLog2Bias ≡ aqSparsePair
-    targetEnd :
-      aqTarget aqWatkinsQ2 ≡ aqWatkinsSignal
-    policyAttentionJoin :
-      aqTarget aqSparsemax2 ≡ aqSource aqRopeQuarter
-    attentionTargetJoin :
-      aqTarget aqProjectLeft ≡ aqSource aqQLog2Bias
+    sampleWatkins
+    sampleF4L2
+    sampleGRU : Nat
+open FiniteTSTSPosterior public
 
-mercury-jaxtar-aq-certificate :
-  MercuryJaxtarAQCertificate
-mercury-jaxtar-aq-certificate =
-  mercuryJaxtarAQCertificate
-    refl
-    refl
-    refl
-    refl
-    refl
-    refl
-    refl
-    refl
+finiteTSTSBranchSample :
+  FiniteTSTSPosterior →
+  FiniteTSTSBranch →
+  Nat
+finiteTSTSBranchSample p tstsWatkinsBranch = sampleWatkins p
+finiteTSTSBranchSample p tstsF4L2Branch = sampleF4L2 p
+finiteTSTSBranchSample p tstsGRUBranch = sampleGRU p
 
-------------------------------------------------------------------------
--- Emergent composition statement.
---
--- The finite symbolic path proves a three-leg causal factorization:
---
---   critic
---     -> LCB
---     -> sparsemax
---     -> learned-attention input
---
---   sparsemax attention
---     -> quarter phase
---     -> Walsh-Hadamard
---     -> recurrent signal
---
---   sparsemax
---     -> q=2 negative bias
---     -> Watkins signal
---
--- The full canonical learner then supplies the endogenous feedback
--- edges through canonicalFullStep.
-------------------------------------------------------------------------
+finiteTSTSChoose2 :
+  FiniteTSTSPosterior →
+  FiniteTSTSBranch →
+  FiniteTSTSBranch →
+  FiniteTSTSBranch
+finiteTSTSChoose2 p a b
+  with finiteTSTSBranchSample p a <ᵇ finiteTSTSBranchSample p b
+... | true = b
+... | false = a
 
-record MercuryJaxtarAQEmergence : Set₁ where
-  constructor mercuryJaxtarAQEmergence
-  field
-    certificate :
-      MercuryJaxtarAQCertificate
-    canonicalAttentionCoupling :
-      ∀ K s →
-      canonicalAttentionMix K s ≡
-      canonicalAttentionMix K s
-    canonicalWatkinsCoupling :
-      ∀ K s →
-      canonicalWatkinsTarget K s ≡
-      canonicalWatkinsTarget K s
+finiteTSTSSelect :
+  FiniteTSTSPosterior →
+  FiniteTSTSBranch
+finiteTSTSSelect p =
+  finiteTSTSChoose2
+    p
+    (finiteTSTSChoose2 p tstsWatkinsBranch tstsF4L2Branch)
+    tstsGRUBranch
 
-mercury-jaxtar-aq-emergence :
-  MercuryJaxtarAQEmergence
-mercury-jaxtar-aq-emergence =
-  mercuryJaxtarAQEmergence
-    mercury-jaxtar-aq-certificate
-    (λ K s → refl)
-    (λ K s → refl)
-
-
-
-
-------------------------------------------------------------------------
--- Finite OpenAI-ES / canonical learner composition certificate.
---
--- This is a symbolic, exact specialization of the EvoSAX Open_ES
--- ask/evaluate/tell shape.  The search variables are the existing
--- F4IntU optimizer state.  The evaluator is the executable canonical
--- learner itself.  The finite perturbation is exact Int8 arithmetic,
--- so this is not a claim of floating-point Gaussian equivalence with
--- JAX EvoSAX.
-------------------------------------------------------------------------
-
-finiteOpenESPlus :
-  C.Int8 → C.F4IntUState → C.F4IntUState
-finiteOpenESPlus eps
-  (C.f4IntUState thetaQ' rTheta' eQ' rE' rL') =
-  C.f4IntUState
-    (C.int8Add thetaQ' eps)
-    rTheta' eQ' rE' rL'
-
-finiteOpenESMinus :
-  C.Int8 → C.F4IntUState → C.F4IntUState
-finiteOpenESMinus eps
-  (C.f4IntUState thetaQ' rTheta' eQ' rE' rL') =
-  C.f4IntUState
-    (C.int8Sub thetaQ' eps)
-    rTheta' eQ' rE' rL'
-
-finiteOpenESObjective :
+finiteTSTSProbe :
   C.FullLearnerKernel →
-  C.FullLearnerState →
-  C.F4IntUState →
-  C.Int8
-finiteOpenESObjective K s o =
-  C.hiddenState
-    (C.gru
-      (C.canonicalFullStep
-        K
-        (C.replaceOptimizer s o)))
-
-finiteOpenESAntitheticGradient :
-  C.FullLearnerKernel →
-  C.FullLearnerState →
-  C.Int8 →
-  C.Int8
-finiteOpenESAntitheticGradient K s eps =
-  C.int8Sub
-    (finiteOpenESObjective
-      K s
-      (finiteOpenESPlus eps (C.optimizer s)))
-    (finiteOpenESObjective
-      K s
-      (finiteOpenESMinus eps (C.optimizer s)))
-
-finiteOpenESTell :
-  C.FullLearnerKernel →
-  C.FullLearnerState →
-  C.Int8 →
-  C.F4IntUState
-finiteOpenESTell K s eps =
-  C.f4ThetaStep
-    (C.optimizerKernel K)
-    (C.optimizer s)
-    (finiteOpenESAntitheticGradient K s eps)
-
-finiteOpenESProbe :
-  C.FullLearnerKernel →
-  C.FullLearnerState →
-  C.Int8 →
-  C.FullLearnerState
-finiteOpenESProbe K s eps =
-  C.replaceOptimizer s (finiteOpenESTell K s eps)
-
-finiteOpenESComposeStep :
-  C.FullLearnerKernel →
-  C.FullLearnerState →
-  C.Int8 →
-  C.FullLearnerState
-finiteOpenESComposeStep K s eps =
-  C.canonicalFullStep K (finiteOpenESProbe K s eps)
-
-record FiniteOpenESCanonicalCompositionTheorem : Set₁ where
-  constructor finiteOpenESCanonicalCompositionTheorem
-  field
-    askPlus :
-      ∀ eps s →
-      C.thetaQ (finiteOpenESPlus eps (C.optimizer s)) ≡
-      C.int8Add (C.thetaQ (C.optimizer s)) eps
-
-    askMinus :
-      ∀ eps s →
-      C.thetaQ (finiteOpenESMinus eps (C.optimizer s)) ≡
-      C.int8Sub (C.thetaQ (C.optimizer s)) eps
-
-    evaluatorIsLearner :
-      ∀ K s o →
-      finiteOpenESObjective K s o ≡
-      C.hiddenState
-        (C.gru
-          (C.canonicalFullStep K (C.replaceOptimizer s o)))
-
-    tellUsesF4L2 :
-      ∀ K s eps →
-      finiteOpenESTell K s eps ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer s)
-        (finiteOpenESAntitheticGradient K s eps)
-
-    policyProbeInvariant :
-      ∀ K s eps →
-      C.canonicalPolicy K (finiteOpenESProbe K s eps) ≡
-      C.canonicalPolicy K s
-
-    normPairCompositionInvariant :
-      ∀ K s eps →
-      C.normPairWeightPlusOne
-        (C.norm (finiteOpenESComposeStep K s eps))
-      ≡
-      C.normPairWeightPlusOne (C.norm s)
-
-    persistentGRUCompositionInvariant :
-      ∀ K s eps →
-      C.persistentGRU
-        (C.gru (finiteOpenESComposeStep K s eps))
-      ≡
-      C.persistentGRU (C.gru s)
-
-open FiniteOpenESCanonicalCompositionTheorem public
-
-finite-openES-canonical-composition-theorem :
-  FiniteOpenESCanonicalCompositionTheorem
-finite-openES-canonical-composition-theorem =
-  finiteOpenESCanonicalCompositionTheorem
-    (λ eps s → refl)
-    (λ eps s → refl)
-    (λ K s o → refl)
-    (λ K s eps → refl)
-    (λ K s eps →
-      C.canonicalPolicy-optimizer-invariant
-        K s (finiteOpenESTell K s eps))
-    (λ K s eps →
-      trans
-        (C.canonicalNormPairWeightPlusOne-preservation
-          K
-          (finiteOpenESProbe K s eps))
-        refl)
-    (λ K s eps →
-      trans
-        (C.canonicalPersistentGRUPreservation
-          K
-          (finiteOpenESProbe K s eps))
-        refl)
-
-finite-openES-discovered-evaluator-boundary :
-  ∀ K s eps →
-  finiteOpenESObjective K s
-    (finiteOpenESTell K s eps) ≡
-  C.hiddenState
-    (C.gru
-      (C.canonicalFullStep
-        K
-        (finiteOpenESProbe K s eps)))
-finite-openES-discovered-evaluator-boundary K s eps = refl
-
-
-
-------------------------------------------------------------------------
--- Finite GESMR / endogenous Watkins-F4-L2-GRU composition certificate.
---
--- The meta-search found GESMR_GA for the stronger requirement set:
--- population elitism, adaptive mutation rate, grouped mutation rates,
--- executable learner evaluation, and preservation of the NormPair and
--- persistent-GRU observables.
---
--- The probes below reuse the canonical learner state.  They do not add a
--- second optimizer model or a second neural runtime.
-------------------------------------------------------------------------
-
-data FiniteGESMRGroup : Set where
-  gesmrWatkinsGroup
-  gesmrF4L2Group
-  gesmrGRUGroup : FiniteGESMRGroup
-
-finiteGESMRProbe :
-  FiniteGESMRGroup →
+  FiniteTSTSBranch →
   C.Int8 →
   C.FullLearnerState →
   C.FullLearnerState
-finiteGESMRProbe gesmrWatkinsGroup d s =
+finiteTSTSProbe K tstsWatkinsBranch d s =
   C.fullLearnerState
     (C.clock s)
     (C.watkinsState
@@ -562,9 +253,13 @@ finiteGESMRProbe gesmrWatkinsGroup d s =
     (C.lcbCounts s)
     (C.qLogControl s)
     (C.qLogValue s)
-finiteGESMRProbe gesmrF4L2Group d s =
-  C.replaceOptimizer s (finiteOpenESPlus d (C.optimizer s))
-finiteGESMRProbe gesmrGRUGroup d s =
+finiteTSTSProbe K tstsF4L2Branch d s =
+  C.replaceOptimizer s
+    (C.f4ThetaStep
+      (C.optimizerKernel K)
+      (C.optimizer s)
+      d)
+finiteTSTSProbe K tstsGRUBranch d s =
   C.fullLearnerState
     (C.clock s)
     (C.watkins s)
@@ -576,54 +271,126 @@ finiteGESMRProbe gesmrGRUGroup d s =
     (C.qLogControl s)
     (C.qLogValue s)
 
-record FiniteGESMRTellObservation : Set where
-  constructor finiteGESMRTellObservation
-  field
-    watkinsValue : C.Int8
-    gruValue : C.Int8
-    f4Value : C.Int8
-    normValue : C.Int8
-open FiniteGESMRTellObservation public
+finiteTSTSSelectedBranch :
+  FiniteTSTSPosterior →
+  FiniteTSTSBranch
+finiteTSTSSelectedBranch p = finiteTSTSSelect p
 
-finiteGESMREvaluate :
+finiteTSTSSelectedProbe :
   C.FullLearnerKernel →
-  C.FullLearnerState →
-  FiniteGESMRGroup →
+  FiniteTSTSPosterior →
   C.Int8 →
+  C.FullLearnerState →
   C.FullLearnerState
-finiteGESMREvaluate K s g d =
-  C.canonicalFullStep K (finiteGESMRProbe g d s)
+finiteTSTSSelectedProbe K p d s =
+  finiteTSTSProbe K (finiteTSTSSelectedBranch p) d s
 
-finiteGESMRTell :
+finiteTSTSSelectedTarget :
   C.FullLearnerKernel →
-  C.FullLearnerState →
-  FiniteGESMRGroup →
+  FiniteTSTSPosterior →
   C.Int8 →
-  FiniteGESMRTellObservation
-finiteGESMRTell K s g d =
-  let
-    e = finiteGESMREvaluate K s g d
-  in
-  finiteGESMRTellObservation
-    (C.canonicalWatkinsTarget K e)
-    (C.hiddenState (C.gru e))
-    (C.thetaQ (C.optimizer e))
-    (C.normPairWeightPlusOne (C.norm e))
+  C.FullLearnerState →
+  C.Int8
+finiteTSTSSelectedTarget K p d s =
+  C.canonicalWatkinsTarget K
+    (finiteTSTSSelectedProbe K p d s)
 
-record FiniteGESMRWatkinsF4L2GRUCompositionTheorem : Set₁ where
-  constructor finiteGESMRWatkinsF4L2GRUCompositionTheorem
+finiteTSTSReward :
+  C.FullLearnerKernel →
+  FiniteTSTSPosterior →
+  C.Int8 →
+  C.FullLearnerState →
+  Nat
+finiteTSTSReward K p d s =
+  toℕ (C.code (finiteTSTSSelectedTarget K p d s))
+
+finiteTSTSPosteriorUpdate :
+  FiniteTSTSPosterior →
+  FiniteTSTSBranch →
+  Nat →
+  FiniteTSTSPosterior
+finiteTSTSPosteriorUpdate p tstsWatkinsBranch r =
+  finiteTSTSPosterior
+    (sampleWatkins p + r)
+    (sampleF4L2 p)
+    (sampleGRU p)
+finiteTSTSPosteriorUpdate p tstsF4L2Branch r =
+  finiteTSTSPosterior
+    (sampleWatkins p)
+    (sampleF4L2 p + r)
+    (sampleGRU p)
+finiteTSTSPosteriorUpdate p tstsGRUBranch r =
+  finiteTSTSPosterior
+    (sampleWatkins p)
+    (sampleF4L2 p)
+    (sampleGRU p + r)
+
+finiteTSTSNextPosterior :
+  C.FullLearnerKernel →
+  FiniteTSTSPosterior →
+  C.Int8 →
+  C.FullLearnerState →
+  FiniteTSTSPosterior
+finiteTSTSNextPosterior K p d s =
+  finiteTSTSPosteriorUpdate
+    p
+    (finiteTSTSSelectedBranch p)
+    (finiteTSTSReward K p d s)
+
+finiteTSTSClosedStep :
+  C.FullLearnerKernel →
+  FiniteTSTSPosterior →
+  C.Int8 →
+  C.FullLearnerState →
+  C.FullLearnerState
+finiteTSTSClosedStep K p d s =
+  C.canonicalFullStep K
+    (finiteTSTSSelectedProbe K p d s)
+
+record FiniteTSTSEndogenousConnectedTheorem : Set₁ where
+  constructor finiteTSTSEndogenousConnectedTheorem
   field
-    f4ProbePolicyInvariant :
-      ∀ K s d →
-      C.canonicalPolicy K
-        (finiteGESMRProbe gesmrF4L2Group d s)
+    selectedTarget-law :
+      ∀ K p d s →
+      finiteTSTSSelectedTarget K p d s
       ≡
-      C.canonicalPolicy K s
-
-    f4ProbeWatkinsDependency :
-      ∀ K s d →
       C.canonicalWatkinsTarget K
-        (finiteGESMRProbe gesmrF4L2Group d s)
+        (finiteTSTSSelectedProbe K p d s)
+
+    posteriorUpdateUsesEndogenousReward :
+      ∀ K p d s →
+      finiteTSTSBranchSample
+        (finiteTSTSNextPosterior K p d s)
+        (finiteTSTSSelectedBranch p)
+      ≡
+      finiteTSTSBranchSample p (finiteTSTSSelectedBranch p)
+      + finiteTSTSReward K p d s
+
+    selectedTargetFeedsGRU :
+      ∀ K p d s →
+      C.canonicalGRUStep K
+        (finiteTSTSSelectedProbe K p d s)
+      ≡
+      C.gruStep
+        (C.gru s)
+        (C.int8Add
+          (finiteTSTSSelectedTarget K p d s)
+          (C.canonicalAttentionMix K s))
+
+    selectedTargetFeedsF4 :
+      ∀ K p d s →
+      C.canonicalOptimizerStep K
+        (finiteTSTSSelectedProbe K p d s)
+      ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer (finiteTSTSSelectedProbe K p d s))
+        (finiteTSTSSelectedTarget K p d s)
+
+    f4SelectedEndogenousExpansion :
+      ∀ K p d s →
+      finiteTSTSSelectedBranch p ≡ tstsF4L2Branch →
+      finiteTSTSSelectedTarget K p d s
       ≡
       C.int8Add
         (C.int8Add
@@ -648,270 +415,42 @@ record FiniteGESMRWatkinsF4L2GRUCompositionTheorem : Set₁ where
                 (C.canonicalQLogControlFeedback s)
                 (C.canonicalQLogValueFeedback s)))))
 
-    f4ProbeGRUTell :
-      ∀ K s d →
-      C.canonicalGRUStep K
-        (finiteGESMRProbe gesmrF4L2Group d s)
-      ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (C.canonicalWatkinsTarget K
-            (finiteGESMRProbe gesmrF4L2Group d s))
-          (C.canonicalAttentionMix K s))
-
-    f4ProbeF4Tell :
-      ∀ K s d →
-      C.canonicalOptimizerStep K
-        (finiteGESMRProbe gesmrF4L2Group d s)
-      ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (finiteOpenESPlus d (C.optimizer s))
-        (C.canonicalWatkinsTarget K
-          (finiteGESMRProbe gesmrF4L2Group d s))
-
-    endogenousF4WatkinsGRUCoupling :
-      ∀ K s d →
-      C.canonicalGRUStep K
-        (finiteGESMRProbe gesmrF4L2Group d s)
-      ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (C.int8Add
-            (C.int8Add
-              (C.canonicalReward8 K s)
-              (C.canonicalQLogBias K s))
-            (C.int8Mul
-              C.canonicalDiscount8
-              (C.maxCriticValue8 (C.critic (C.watkins s)))))
-          (C.int8Add
-            (C.canonicalAttentionMix K s)
-            (C.int8Add
-              (C.canonicalGRUFeedback s)
-              (C.int8Add
-                (C.int8Add
-                  (C.int8Add
-                    (C.thetaQ (C.optimizer s))
-                    d)
-                  (C.l2Correction
-                    (C.globalL2 (C.optimizerKernel K))))
-                (C.int8Add
-                  (C.canonicalQLogControlFeedback s)
-                  (C.canonicalQLogValueFeedback s)))))
-
-    normPairTellInvariant :
-      ∀ K s g d →
+    normPairPreserved :
+      ∀ K p d s →
       C.normPairWeightPlusOne
-        (C.norm (finiteGESMREvaluate K s g d))
+        (C.norm (finiteTSTSClosedStep K p d s))
       ≡
       C.normPairWeightPlusOne (C.norm s)
 
-    persistentGRUTellInvariant :
-      ∀ K s g d →
+    persistentGRUPreserved :
+      ∀ K p d s →
       C.persistentGRU
-        (C.gru (finiteGESMREvaluate K s g d))
-      ≡
-      C.persistentGRU (C.gru (finiteGESMRProbe g d s))
-
-open FiniteGESMRWatkinsF4L2GRUCompositionTheorem public
-
-finite-gesmr-watkins-f4-l2-gru-composition-theorem :
-  FiniteGESMRWatkinsF4L2GRUCompositionTheorem
-finite-gesmr-watkins-f4-l2-gru-composition-theorem =
-  finiteGESMRWatkinsF4L2GRUCompositionTheorem
-    (λ K s d →
-      C.canonicalPolicy-optimizer-invariant
-        K s (finiteOpenESPlus d (C.optimizer s)))
-    (λ K s d → refl)
-    (λ K s d → refl)
-    (λ K s d → refl)
-    (λ K s d → refl)
-    (λ K s g d →
-      trans
-        (C.canonicalNormPairWeightPlusOne-preservation
-          K (finiteGESMRProbe g d s))
-        refl)
-    (λ K s g d →
-      trans
-        (C.canonicalPersistentGRUPreservation
-          K (finiteGESMRProbe g d s))
-        refl)
-
-
-------------------------------------------------------------------------
--- Finite TSTS + PVS + GESMR endogenous connected composition.
---
--- TSTS is represented here by a finite posterior-sample witness. This
--- is deliberately not a probabilistic implementation: the external
--- TSTS result supplies the search guarantee, while Agda checks the
--- exact deterministic composition selected by the witness.
---
--- PVS is represented by an exact principal-branch recheck boundary.
--- The recheck feeds the existing GESMR learner evaluator, so search
--- selection and exact learner semantics remain separate.
-------------------------------------------------------------------------
-
-data FiniteTSTSBranch : Set where
-  tstsWatkinsBranch
-  tstsF4L2Branch
-  tstsGRUBranch : FiniteTSTSBranch
-
-finiteTSTSProbe :
-  FiniteTSTSBranch →
-  C.Int8 →
-  C.FullLearnerState →
-  C.FullLearnerState
-finiteTSTSProbe tstsWatkinsBranch d s =
-  finiteGESMRProbe gesmrWatkinsGroup d s
-finiteTSTSProbe tstsF4L2Branch d s =
-  finiteGESMRProbe gesmrF4L2Group d s
-finiteTSTSProbe tstsGRUBranch d s =
-  finiteGESMRProbe gesmrGRUGroup d s
-
-finiteTSTSPosteriorSample : FiniteTSTSBranch
-finiteTSTSPosteriorSample = tstsF4L2Branch
-
-finiteTSTSSelectedProbe :
-  C.Int8 →
-  C.FullLearnerState →
-  C.FullLearnerState
-finiteTSTSSelectedProbe d s =
-  finiteTSTSProbe finiteTSTSPosteriorSample d s
-
-finitePVSPVRecheck :
-  C.FullLearnerKernel →
-  C.FullLearnerState →
-  C.Int8 →
-  C.FullLearnerState
-finitePVSPVRecheck K s d =
-  finiteGESMREvaluate K s gesmrF4L2Group d
-
-record FiniteTSTSPVSGESMRConnectedTheorem : Set₁ where
-  constructor finiteTSTSPVSGESMRConnectedTheorem
-  field
-    tstsSelectedBranch :
-      finiteTSTSPosteriorSample ≡ tstsF4L2Branch
-
-    pvsRechecksSelectedBranch :
-      ∀ K s d →
-      finitePVSPVRecheck K s d
-      ≡
-      finiteGESMREvaluate K s
-        gesmrF4L2Group d
-
-    selectedProbeIsF4L2Probe :
-      ∀ s d →
-      finiteTSTSSelectedProbe d s
-      ≡
-      finiteGESMRProbe gesmrF4L2Group d s
-
-    endogenousWatkinsAfterSelection :
-      ∀ K s d →
-      C.canonicalWatkinsTarget K
-        (finiteTSTSSelectedProbe d s)
-      ≡
-      C.canonicalWatkinsTarget K
-        (finiteGESMRProbe gesmrF4L2Group d s)
-
-    endogenousGRUTellAfterSelection :
-      ∀ K s d →
-      C.canonicalGRUStep K
-        (finiteTSTSSelectedProbe d s)
-      ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (C.canonicalWatkinsTarget K
-            (finiteTSTSSelectedProbe d s))
-          (C.canonicalAttentionMix K s))
-
-    endogenousF4TellAfterSelection :
-      ∀ K s d →
-      C.canonicalOptimizerStep K
-        (finiteTSTSSelectedProbe d s)
-      ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (finiteOpenESPlus d (C.optimizer s))
-        (C.canonicalWatkinsTarget K
-          (finiteTSTSSelectedProbe d s))
-
-    normPairPreservedAfterSelection :
-      ∀ K s d →
-      C.normPairWeightPlusOne
-        (C.norm (finitePVSPVRecheck K s d))
-      ≡
-      C.normPairWeightPlusOne (C.norm s)
-
-    persistentGRUPreservedAfterSelection :
-      ∀ K s d →
-      C.persistentGRU
-        (C.gru (finitePVSPVRecheck K s d))
+        (C.gru (finiteTSTSClosedStep K p d s))
       ≡
       C.persistentGRU
-        (C.gru (finiteTSTSSelectedProbe d s))
+        (C.gru (finiteTSTSSelectedProbe K p d s))
 
-    tstsPvsEndogenousClosedLoop :
-      ∀ K s d →
-      finitePVSPVRecheck K s d
-      ≡
-      C.canonicalFullStep
+open FiniteTSTSEndogenousConnectedTheorem public
+
+finite-tsts-endogenous-connected-theorem :
+  FiniteTSTSEndogenousConnectedTheorem
+finite-tsts-endogenous-connected-theorem =
+  finiteTSTSEndogenousConnectedTheorem
+    (λ K p d s → refl)
+    (λ K p d s →
+      let
+        b = finiteTSTSSelectedBranch p
+        r = finiteTSTSReward K p d s
+      in
+      refl)
+    (λ K p d s → refl)
+    (λ K p d s → refl)
+    (λ K p d s eq rewrite eq = refl)
+    (λ K p d s →
+      C.canonicalNormPairWeightPlusOne-preservation
         K
-        (finiteTSTSSelectedProbe d s)
-
-    tstsPvsF4WatkinsGRUChain :
-      ∀ K s d →
-      C.canonicalGRUStep K (finiteTSTSSelectedProbe d s)
-      ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (C.canonicalWatkinsTarget K (finiteTSTSSelectedProbe d s))
-          (C.canonicalAttentionMix K s))
-
-    noSecondOptimizerModel :
-      ∀ K s d →
-      finitePVSPVRecheck K s d
-      ≡
-      C.canonicalFullStep
+        (finiteTSTSSelectedProbe K p d s))
+    (λ K p d s →
+      C.canonicalPersistentGRUPreservation
         K
-        (finiteGESMRProbe gesmrF4L2Group d s)
-
-open FiniteTSTSPVSGESMRConnectedTheorem public
-
-finite-tsts-pvs-gesmr-connected-theorem :
-  FiniteTSTSPVSGESMRConnectedTheorem
-finite-tsts-pvs-gesmr-connected-theorem =
-  finiteTSTSPVSGESMRConnectedTheorem
-    refl
-    (λ K s d → refl)
-    (λ s d → refl)
-    (λ K s d →
-      f4ProbeWatkinsDependency
-        finite-gesmr-watkins-f4-l2-gru-composition-theorem
-        K s d)
-    (λ K s d →
-      f4ProbeGRUTell
-        finite-gesmr-watkins-f4-l2-gru-composition-theorem
-        K s d)
-    (λ K s d →
-      f4ProbeF4Tell
-        finite-gesmr-watkins-f4-l2-gru-composition-theorem
-        K s d)
-    (λ K s d →
-      trans
-        (C.canonicalNormPairWeightPlusOne-preservation
-          K
-          (finiteGESMRProbe gesmrF4L2Group d s))
-        refl)
-    (λ K s d →
-      trans
-        (C.canonicalPersistentGRUPreservation
-          K
-          (finiteGESMRProbe gesmrF4L2Group d s))
-        refl)
-    (λ K s d → refl)
-    (λ K s d → refl)
-    (λ K s d → refl)
+        (finiteTSTSSelectedProbe K p d s))
