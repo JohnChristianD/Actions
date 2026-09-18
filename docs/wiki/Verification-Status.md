@@ -21,6 +21,14 @@ The immediately preceding run `35404988310` failed in the container checkout ste
 
 The current repair commit hardens the pinned Guix container with `--security-opt seccomp=unconfined`, after run `35405803150` failed in `guix shell` because the `setPersonality` syscall was blocked by the container's seccomp profile. A new verification run is required before the theorem can be called green.
 
+## Discovery objective
+
+The fixed objective is automated modular theorem discovery for the executable learner. The outer search mechanism may change implementation details, but it must not change the proof target.
+
+Program search proposes learner-side transformations or theorem candidates. Agda is the authority that evaluates those candidates against the learner definitions and proves or rejects the resulting properties. There is no theorem obligation for the search procedure to prove its own self-consistency.
+
+Involution discovery is therefore learner-specific: candidate transformations must act on an actual learner carrier, learner-derived observable, or learner quotient and be checked by the canonical Agda surface. The retired generic list/sign involution oracle did not satisfy that criterion and has been removed.
+
 ## Active search architecture
 
 The active outer search is now TSTS-only.
