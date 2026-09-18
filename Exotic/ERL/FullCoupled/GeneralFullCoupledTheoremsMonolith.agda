@@ -342,6 +342,28 @@ watkinsQTarget-law : ∀ reward gamma nextQ →
   L.int8Add reward (L.int8Mul gamma nextQ)
 watkinsQTarget-law reward gamma nextQ = refl
 
+watkinsQTargetWithBias : L.Int8 → L.Int8 → L.Int8 → L.Int8 → L.Int8
+watkinsQTargetWithBias reward qLogBias gamma nextQ =
+  L.int8Add
+    (L.int8Add reward qLogBias)
+    (L.int8Mul gamma nextQ)
+
+watkinsQTargetWithBias-law : ∀ reward qLogBias gamma nextQ →
+  watkinsQTargetWithBias reward qLogBias gamma nextQ ≡
+  L.int8Add
+    (L.int8Add reward qLogBias)
+    (L.int8Mul gamma nextQ)
+watkinsQTargetWithBias-law reward qLogBias gamma nextQ = refl
+
+watkinsQTargetWithBias-zero-law : ∀ reward gamma nextQ →
+  watkinsQTargetWithBias reward L.zero8 gamma nextQ ≡
+  watkinsQTarget reward gamma nextQ
+watkinsQTargetWithBias-zero-law reward gamma nextQ = refl
+
+watkinsTrace-forward-cut : ∀ t →
+  watkinsTraceStep t L.no ≡ cut
+watkinsTrace-forward-cut = watkinsTrace-cut-law
+
 replaceNormState : ∀ {A} → L.LearnerState A → L.NormPair → L.LearnerState A
 replaceNormState s n =
   L.learnerState
