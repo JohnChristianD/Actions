@@ -8,6 +8,9 @@ on:
       - 'Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda'
       - 'Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda'
       - 'Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda'
+      - 'Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda'
+      - 'Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda'
+      - 'Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda'
       - '.ci/discovery/ProofSearch.py'
       - '.github/workflows/monolith-composite.yml'
   workflow_dispatch:
@@ -42,4 +45,13 @@ jobs:
 
       - name: Check finite cyclic norm-pair certificate
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda
+
+      - name: Check finite universal boundary
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda
+
+      - name: Check signed divisibility bridge
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda
+
+      - name: Check sparse accumulation complexity
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda
 
