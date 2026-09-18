@@ -40,7 +40,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: bash
+        shell: sh
     steps:
       - name: Guile-native source checkout
         run: |
@@ -67,7 +67,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: bash
+        shell: sh
     steps:
       - name: Guile-native source checkout
         run: |
@@ -94,7 +94,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: bash
+        shell: sh
     steps:
       - name: Guile-native source checkout
         run: |
@@ -116,7 +116,9 @@ jobs:
         run: |
           set -eu
           test -f ".ci/discovery/last-search.json"
+          test -f ".ci/discovery/openes-composition-candidate.json"
           printf '%s\n' "discovery-report=present"
+          printf '%s\n' "openes-composition-report=present"
 
   surface:
     name: Guix / no Haskell, Python, JVM, JS, or alternate-language surface
@@ -126,7 +128,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: bash
+        shell: sh
     steps:
       - name: Guile-native source checkout
         run: |
