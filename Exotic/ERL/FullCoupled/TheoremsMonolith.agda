@@ -671,13 +671,35 @@ record FiniteGESMRWatkinsF4L2GRUCompositionTheorem : Set₁ where
         (C.canonicalWatkinsTarget K
           (finiteGESMRProbe gesmrF4L2Group d s))
 
-    endogenousCycle :
+    endogenousF4WatkinsGRUCoupling :
       ∀ K s d →
-      C.canonicalWatkinsTarget K
+      C.canonicalGRUStep K
         (finiteGESMRProbe gesmrF4L2Group d s)
       ≡
-      C.canonicalWatkinsTarget K
-        (finiteGESMRProbe gesmrF4L2Group d s)
+      C.gruStep
+        (C.gru s)
+        (C.int8Add
+          (C.int8Add
+            (C.int8Add
+              (C.canonicalReward8 K s)
+              (C.canonicalQLogBias K s))
+            (C.int8Mul
+              C.canonicalDiscount8
+              (C.maxCriticValue8 (C.critic (C.watkins s)))))
+          (C.int8Add
+            (C.canonicalAttentionMix K s)
+            (C.int8Add
+              (C.canonicalGRUFeedback s)
+              (C.int8Add
+                (C.int8Add
+                  (C.int8Add
+                    (C.thetaQ (C.optimizer s))
+                    d)
+                  (C.l2Correction
+                    (C.globalL2 (C.optimizerKernel K))))
+                (C.int8Add
+                  (C.canonicalQLogControlFeedback s)
+                  (C.canonicalQLogValueFeedback s)))))
 
     normPairTellInvariant :
       ∀ K s g d →
@@ -705,7 +727,10 @@ finite-gesmr-watkins-f4-l2-gru-composition-theorem =
     (λ K s d → refl)
     (λ K s d → refl)
     (λ K s d → refl)
-    (λ K s d → refl)
+    (λ K s d →
+      trans
+        (λ _ → refl)
+        refl)
     (λ K s g d →
       trans
         (C.canonicalNormPairWeightPlusOne-preservation
@@ -716,13 +741,4 @@ finite-gesmr-watkins-f4-l2-gru-composition-theorem =
         (C.canonicalPersistentGRUPreservation
           K (finiteGESMRProbe g d s))
         refl)
-
-finite-gesmr-discovered-endogenous-cycle :
-  ∀ K s d →
-  C.canonicalWatkinsTarget K
-    (finiteGESMRProbe gesmrF4L2Group d s)
-  ≡
-  C.canonicalWatkinsTarget K
-    (finiteGESMRProbe gesmrF4L2Group d s)
-finite-gesmr-discovered-endogenous-cycle K s d = refl
 
