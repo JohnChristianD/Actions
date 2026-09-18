@@ -14,6 +14,8 @@ on:
       - "Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda"
       - "Exotic/ERL/FullCoupled/FunctionalWalshBridge.agda"
       - ".github/workflows/symbolic-discovery.yml"
+      - ".ci/discovery/*.m"
+      - "oracle/mercury_oracle.m"
   workflow_dispatch:
   schedule:
     - cron: "37 3 * * 1"
@@ -31,6 +33,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Mercury
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates gnupg
+          wget -qO /tmp/paul.asc https://paul.bone.id.au/paul.asc
+          sudo cp /tmp/paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
+          echo "deb http://dl.mercurylang.org/deb/ noble main" | sudo tee /etc/apt/sources.list.d/mercury.list
+          sudo apt-get update
+          sudo apt-get install -y mercury-recommended
+          mmc --version
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -47,6 +60,23 @@ jobs:
             --backend auto \
             --require-rope \
             --output .ci/discovery/last-search.json
+
+      - name: Run Mercury typed JAxtar A/Q verifier
+        run: |
+          mmc --make .ci/discovery/jaxtar_aq_discovery.m
+          ./jaxtar_aq_discovery > .ci/discovery/mercury-jaxtar-aq.txt
+          cat .ci/discovery/mercury-jaxtar-aq.txt
+
+      - name: Run Mercury involution verifier
+        run: |
+          mmc --make .ci/discovery/clojure_involution_compat.m
+          ./clojure_involution_compat
+
+      - name: Run Mercury rational oracle
+        run: |
+          mmc --make oracle/mercury_oracle.m
+          ./mercury_oracle > .ci/discovery/mercury-oracle.txt
+          cat .ci/discovery/mercury-oracle.txt
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -66,4 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: typed-finite-discovery
-          path: .ci/discovery/last-search.json
+          path: |
+            .ci/discovery/last-search.json
+            .ci/discovery/mercury-jaxtar-aq.txt
+            .ci/discovery/mercury-oracle.txt
