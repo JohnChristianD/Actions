@@ -1,10 +1,10 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.FiniteConnectedOperatorComplexity where
 
-open import Agda.Builtin.Nat using (Nat; zero; _+_; _≤_; z≤n; s≤s)
+open import Data.Nat using (Nat; zero; suc; _+_; _≤_; z≤n; s≤s)
 open import Data.List.Base using (List; []; _∷_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong; subst)
-open import Data.Nat.Properties using (+-comm; +-mono-≤)
+open import Data.Nat.Properties using (+-comm; +-assoc; +-mono-≤; *-suc)
 
 ------------------------------------------------------------------------
 -- Structural layer only.
@@ -155,11 +155,6 @@ composeList-cost K (x ∷ xs) =
     (+-comm
       (sumApplicationCosts (applicationCostAt K) xs)
       (applicationCostAt K x))
-
-application-cost-exact :
-  ∀ {S} (f : EndoOperator S) (s : S) →
-  applicationCost f ≡ applicationCost f
-application-cost-exact f s = refl
 
 sumRepresentationSizes-bound :
   ∀ {S X}
