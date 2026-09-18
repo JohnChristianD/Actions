@@ -728,8 +728,6 @@ finite-gesmr-watkins-f4-l2-gru-composition-theorem =
     (λ K s d → refl)
     (λ K s d → refl)
     (λ K s d → refl)
-    (λ K s d → refl)
-    (λ K s d → refl)
     (λ K s g d →
       trans
         (C.canonicalNormPairWeightPlusOne-preservation
@@ -741,3 +739,179 @@ finite-gesmr-watkins-f4-l2-gru-composition-theorem =
           K (finiteGESMRProbe g d s))
         refl)
 
+
+------------------------------------------------------------------------
+-- Finite TSTS + PVS + GESMR endogenous connected composition.
+--
+-- TSTS is represented here by a finite posterior-sample witness. This
+-- is deliberately not a probabilistic implementation: the external
+-- TSTS result supplies the search guarantee, while Agda checks the
+-- exact deterministic composition selected by the witness.
+--
+-- PVS is represented by an exact principal-branch recheck boundary.
+-- The recheck feeds the existing GESMR learner evaluator, so search
+-- selection and exact learner semantics remain separate.
+------------------------------------------------------------------------
+
+data FiniteTSTSBranch : Set where
+  tstsWatkinsBranch
+  tstsF4L2Branch
+  tstsGRUBranch : FiniteTSTSBranch
+
+finiteTSTSProbe :
+  FiniteTSTSBranch →
+  C.Int8 →
+  C.FullLearnerState →
+  C.FullLearnerState
+finiteTSTSProbe tstsWatkinsBranch d s =
+  finiteGESMRProbe gesmrWatkinsGroup d s
+finiteTSTSProbe tstsF4L2Branch d s =
+  finiteGESMRProbe gesmrF4L2Group d s
+finiteTSTSProbe tstsGRUBranch d s =
+  finiteGESMRProbe gesmrGRUGroup d s
+
+finiteTSTSPosteriorSample : FiniteTSTSBranch
+finiteTSTSPosteriorSample = tstsF4L2Branch
+
+finiteTSTSSelectedProbe :
+  C.Int8 →
+  C.FullLearnerState →
+  C.FullLearnerState
+finiteTSTSSelectedProbe d s =
+  finiteTSTSProbe finiteTSTSPosteriorSample d s
+
+finitePVSPVRecheck :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  C.Int8 →
+  C.FullLearnerState
+finitePVSPVRecheck K s d =
+  finiteGESMREvaluate K s gesmrF4L2Group d
+
+record FiniteTSTSPVSGESMRConnectedTheorem : Set₁ where
+  constructor finiteTSTSPVSGESMRConnectedTheorem
+  field
+    tstsSelectedBranch :
+      finiteTSTSPosteriorSample ≡ tstsF4L2Branch
+
+    pvsRechecksSelectedBranch :
+      ∀ K s d →
+      finitePVSPVRecheck K s d
+      ≡
+      finiteGESMREvaluate K s
+        gesmrF4L2Group d
+
+    selectedProbeIsF4L2Probe :
+      ∀ s d →
+      finiteTSTSSelectedProbe d s
+      ≡
+      finiteGESMRProbe gesmrF4L2Group d s
+
+    endogenousWatkinsAfterSelection :
+      ∀ K s d →
+      C.canonicalWatkinsTarget K
+        (finiteTSTSSelectedProbe d s)
+      ≡
+      C.canonicalWatkinsTarget K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+
+    endogenousGRUTellAfterSelection :
+      ∀ K s d →
+      C.canonicalGRUStep K
+        (finiteTSTSSelectedProbe d s)
+      ≡
+      C.gruStep
+        (C.gru s)
+        (C.int8Add
+          (C.canonicalWatkinsTarget K
+            (finiteTSTSSelectedProbe d s))
+          (C.canonicalAttentionMix K s))
+
+    endogenousF4TellAfterSelection :
+      ∀ K s d →
+      C.canonicalOptimizerStep K
+        (finiteTSTSSelectedProbe d s)
+      ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (finiteOpenESPlus d (C.optimizer s))
+        (C.canonicalWatkinsTarget K
+          (finiteTSTSSelectedProbe d s))
+
+    normPairPreservedAfterSelection :
+      ∀ K s d →
+      C.normPairWeightPlusOne
+        (C.norm (finitePVSPVRecheck K s d))
+      ≡
+      C.normPairWeightPlusOne (C.norm s)
+
+    persistentGRUPreservedAfterSelection :
+      ∀ K s d →
+      C.persistentGRU
+        (C.gru (finitePVSPVRecheck K s d))
+      ≡
+      C.persistentGRU
+        (C.gru (finiteTSTSSelectedProbe d s))
+
+    tstsPvsEndogenousClosedLoop :
+      ∀ K s d →
+      finitePVSPVRecheck K s d
+      ≡
+      C.canonicalFullStep
+        K
+        (finiteTSTSSelectedProbe d s)
+
+    tstsPvsF4WatkinsGRUChain :
+      ∀ K s d →
+      C.canonicalGRUStep K (finiteTSTSSelectedProbe d s)
+      ≡
+      C.gruStep
+        (C.gru s)
+        (C.int8Add
+          (C.canonicalWatkinsTarget K (finiteTSTSSelectedProbe d s))
+          (C.canonicalAttentionMix K s))
+
+    noSecondOptimizerModel :
+      ∀ K s d →
+      finitePVSPVRecheck K s d
+      ≡
+      C.canonicalFullStep
+        K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+
+open FiniteTSTSPVSGESMRConnectedTheorem public
+
+finite-tsts-pvs-gesmr-connected-theorem :
+  FiniteTSTSPVSGESMRConnectedTheorem
+finite-tsts-pvs-gesmr-connected-theorem =
+  finiteTSTSPVSGESMRConnectedTheorem
+    refl
+    (λ K s d → refl)
+    (λ s d → refl)
+    (λ K s d →
+      f4ProbeWatkinsDependency
+        finite-gesmr-watkins-f4-l2-gru-composition-theorem
+        K s d)
+    (λ K s d →
+      f4ProbeGRUTell
+        finite-gesmr-watkins-f4-l2-gru-composition-theorem
+        K s d)
+    (λ K s d →
+      f4ProbeF4Tell
+        finite-gesmr-watkins-f4-l2-gru-composition-theorem
+        K s d)
+    (λ K s d →
+      trans
+        (C.canonicalNormPairWeightPlusOne-preservation
+          K
+          (finiteGESMRProbe gesmrF4L2Group d s))
+        refl)
+    (λ K s d →
+      trans
+        (C.canonicalPersistentGRUPreservation
+          K
+          (finiteGESMRProbe gesmrF4L2Group d s))
+        refl)
+    (λ K s d → refl)
+    (λ K s d → refl)
+    (λ K s d → refl)
