@@ -38,6 +38,7 @@ jobs:
     timeout-minutes: 30
     container:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+      options: --security-opt seccomp=unconfined
     defaults:
       run:
         shell: sh
@@ -101,6 +102,7 @@ jobs:
     timeout-minutes: 20
     container:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+      options: --security-opt seccomp=unconfined
     defaults:
       run:
         shell: sh
@@ -162,6 +164,7 @@ jobs:
     timeout-minutes: 20
     container:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+      options: --security-opt seccomp=unconfined
     defaults:
       run:
         shell: sh
@@ -228,6 +231,7 @@ jobs:
     timeout-minutes: 10
     container:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
+      options: --security-opt seccomp=unconfined
     defaults:
       run:
         shell: sh
