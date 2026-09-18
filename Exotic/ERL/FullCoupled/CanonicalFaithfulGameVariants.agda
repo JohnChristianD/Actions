@@ -4,9 +4,7 @@ module Exotic.ERL.FullCoupled.CanonicalFaithfulGameVariants where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.Nat using ()
 open import Data.Fin using (Fin)
-open import Data.Fin.Properties using ()
 open import Data.Nat.DivMod using (m%n<n)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
