@@ -9,7 +9,7 @@ open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin; toℕ)
 import Data.Fin as Fin
 open import Data.Fin.Properties using (pigeonhole; <⇒notInjective)
 open import Function.Definitions using (Injective)
