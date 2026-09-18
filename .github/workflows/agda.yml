@@ -36,20 +36,27 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Mercury
+        env:
+          MERCURY_VERSION: "22.01.9"
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget ca-certificates gnupg
-          wget -qO /tmp/paul.asc https://paul.bone.id.au/paul.asc
-          sudo cp /tmp/paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
-          echo "deb http://dl.mercurylang.org/deb/ noble main" | sudo tee /etc/apt/sources.list.d/mercury.list
-          sudo apt-get update
-          sudo apt-get install -y mercury-recommended
+          sudo apt-get install -y build-essential curl xz-utils
+          curl -fsSLO "https://dl.mercurylang.org/release/mercury-srcdist-${MERCURY_VERSION}.tar.xz"
+          curl -fsSLO "https://dl.mercurylang.org/release/mercury-srcdist-${MERCURY_VERSION}.tar.xz.sha512"
+          sha512sum -c "mercury-srcdist-${MERCURY_VERSION}.tar.xz.sha512"
+          tar -xf "mercury-srcdist-${MERCURY_VERSION}.tar.xz"
+          cd "mercury-srcdist-${MERCURY_VERSION}"
+          ./configure             --prefix="$RUNNER_TEMP/mercury"             --enable-minimal-install             --disable-csharp-grade             --disable-java-grade
+          make -j2
+          make install
+          echo "$RUNNER_TEMP/mercury/bin" >> "$GITHUB_PATH"
           mmc --version
-
       - name: Reject forbidden theorem families, holes, and postulates
         run: |
-          mmc --make .ci/check_forbidden_theorems.m
+          cd .ci
+          mmc --make check_forbidden_theorems
           timeout 120s ./check_forbidden_theorems
+
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -134,8 +141,10 @@ jobs:
 
       - name: Audit redundant learner modules
         run: |
-          mmc --make .ci/discovery/prune_redundant_learner_modules.m
+          cd .ci/discovery
+          mmc --make prune_redundant_learner_modules
           timeout 120s ./prune_redundant_learner_modules
+
 
       - name: Audit Mercury surface
         run: |
