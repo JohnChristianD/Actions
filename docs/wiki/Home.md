@@ -47,17 +47,15 @@ The canonical source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-f
 
 The workflow uses a digest-pinned Guix container, boots the Guix daemon inside each job, performs source checkout with Guix-provided Git, and then enters the pinned Guix environment.
 
-## TSTS-only meta-search
+## Symbolic learner theorem search
 
-The active outer search is a finite TSTS-style tree over endogenous learner-composition branches.
+The active search target is a typed symbolic program over actual learner transformations. The current finite search enumerates attention, NormPair, and optimizer replacement compositions and generates concrete Agda theorem declarations for them.
 
 The loop is:
 
-`posterior sample -> branch -> exact learner probe -> endogenous Watkins reward -> posterior update`
+`symbolic composition -> Agda proposition -> generated proof -> agda --safe`
 
-The same Watkins target also feeds the GRU and F4 tell paths.
-
-PVS, JAxtar/A*/Q* graph search, and evolutionary-population proposal layers have been removed from the canonical discovery path because they duplicate or introduce orthogonal search state without strengthening this endogenous connection.
+The discovery metric is deliberately left outside this semantic invariant. PVS, JAxtar/A*/Q* graph search, and evolutionary-population proposal layers remain pruned from the canonical path.
 
 ## Verification target
 
