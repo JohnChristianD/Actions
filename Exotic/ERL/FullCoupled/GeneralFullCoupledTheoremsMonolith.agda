@@ -51,6 +51,10 @@ fullCompositionPigeonhole-not-injective {n} W =
 NatCoercive : ∀ {S : Set} → (S → Nat) → Set
 NatCoercive e = ∀ B → ∃ λ s → B < e s
 
+lt-irrefl : ∀ n → n < n → ⊥
+lt-irrefl zero ()
+lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
+
 int8-code-not-coercive : ¬ NatCoercive (λ x → toℕ (L.code x))
 int8-code-not-coercive coercive with coercive 256
 ... | s , h =
@@ -64,10 +68,6 @@ int8-code-not-coercive coercive with coercive 256
     go z≤n q = q
     go (s≤s p) (s≤s q) = s≤s (go p q)
 
-
-lt-irrefl : ∀ n → n < n → ⊥
-lt-irrefl zero ()
-lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
 
 plus-zero : ∀ n → n + zero ≡ n
 plus-zero zero = refl
