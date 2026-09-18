@@ -1,0 +1,94 @@
+{-# OPTIONS --safe #-}
+module Exotic.ERL.FullCoupled.FiniteUniversalBoundary where
+
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
+open import Data.Nat using (Nat; zero; suc)
+open import Data.Fin using (Fin; toℕ)
+open import Data.Fin.Properties using (pigeonhole)
+open import Data.Product using (_,_; ∃)
+open import Function.Definitions using (Injective)
+open import Data.Empty using (⊥)
+
+iterate : ∀ {A : Set} → (A → A) → Nat → A → A
+iterate f zero x = x
+iterate f (suc n) x = iterate f n (f x)
+
+orbit257 : ∀ (f : Fin 256 → Fin 256) (x : Fin 256) → Fin 257 → Fin 256
+orbit257 f x i = iterate f (toℕ i) x
+
+finiteOrbit-collision :
+  ∀ (f : Fin 256 → Fin 256) (x : Fin 256) →
+  ∃ λ p → p .proj₁ ≢ p .proj₂ ×
+    iterate f (toℕ (p .proj₁)) x ≡
+    iterate f (toℕ (p .proj₂)) x
+finiteOrbit-collision f x with
+  pigeonhole (suc (suc (s≤s z≤n))) (orbit257 f x)
+... | i , j , apart , eq = (i , j) , apart , eq
+
+finiteCarrier-not-injective-on-unbounded-clock :
+  ∀ (f : Fin 256 → Fin 256) (encode : Nat → Fin 256) →
+  ¬ Injective _≡_ _≡_ encode
+finiteCarrier-not-injective-on-unbounded-clock f encode inj =
+  let collision = finiteOrbit-collision f (encode zero) in
+  collision .proj₂ .proj₁
+    (inj (collision .proj₂ .proj₂))
+
+record TwoCounterConfig : Set where
+  constructor twoCounterConfig
+  field
+    pc : Nat
+    left right : Nat
+open TwoCounterConfig public
+
+record TwoCounterStep : Set where
+  constructor twoCounterStep
+  field
+    runStep : TwoCounterConfig → TwoCounterConfig
+open TwoCounterStep public
+
+record TwoCounterSimulation
+  (S : Set)
+  (encode : TwoCounterConfig → S)
+  (step : TwoCounterConfig → TwoCounterConfig) : Set where
+  constructor twoCounterSimulation
+  field
+    runS : S → S
+    stepLaw :
+      ∀ c → runS (encode c) ≡ encode (step c)
+open TwoCounterSimulation public
+
+iterateMachine :
+  ∀ {S : Set} (runS : S → S) → Nat → S → S
+iterateMachine runS zero s = s
+iterateMachine runS (suc n) s = iterateMachine runS n (runS s)
+
+simulation-trace :
+  ∀ {S : Set}
+  {encode : TwoCounterConfig → S}
+  {step : TwoCounterConfig → TwoCounterConfig}
+  (sim : TwoCounterSimulation S encode step)
+  n c →
+  iterateMachine (runS sim) n (encode c) ≡
+  encode (iterate step n c)
+simulation-trace sim zero c = refl
+simulation-trace sim (suc n) c =
+  simulation-trace sim n (step c)
+
+finite-carrier-boundary :
+  ∀ (encode : TwoCounterConfig → Fin 256) →
+  ¬ Injective _≡_ _≡_ encode
+finite-carrier-boundary encode =
+  finiteCarrier-not-injective-on-unbounded-clock
+    (λ x → x)
+    (λ n → encode (twoCounterConfig n zero zero))
+
+conditional-two-counter-transport :
+  ∀ {S : Set}
+  {encode : TwoCounterConfig → S}
+  {step : TwoCounterConfig → TwoCounterConfig}
+  (sim : TwoCounterSimulation S encode step) →
+  ∀ n c →
+  iterateMachine (runS sim) n (encode c) ≡
+  encode (iterate step n c)
+conditional-two-counter-transport sim n c =
+  simulation-trace sim n c
