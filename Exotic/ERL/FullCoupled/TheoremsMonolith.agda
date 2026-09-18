@@ -437,12 +437,10 @@ finite-tsts-endogenous-connected-theorem :
 finite-tsts-endogenous-connected-theorem =
   finiteTSTSEndogenousConnectedTheorem
     (λ K p d s → refl)
-    (λ K p d s →
-      let
-        b = finiteTSTSSelectedBranch p
-        r = finiteTSTSReward K p d s
-      in
-      refl)
+    (λ K p d s with finiteTSTSSelectedBranch p
+     ... | tstsWatkinsBranch = refl
+     ... | tstsF4L2Branch = refl
+     ... | tstsGRUBranch = refl)
     (λ K p d s → refl)
     (λ K p d s → refl)
     (λ K p d s eq rewrite eq = refl)
