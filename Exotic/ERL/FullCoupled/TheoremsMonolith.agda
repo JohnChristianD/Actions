@@ -524,3 +524,205 @@ finite-openES-discovered-evaluator-boundary :
         (finiteOpenESProbe K s eps)))
 finite-openES-discovered-evaluator-boundary K s eps = refl
 
+
+
+------------------------------------------------------------------------
+-- Finite GESMR / endogenous Watkins-F4-L2-GRU composition certificate.
+--
+-- The meta-search found GESMR_GA for the stronger requirement set:
+-- population elitism, adaptive mutation rate, grouped mutation rates,
+-- executable learner evaluation, and preservation of the NormPair and
+-- persistent-GRU observables.
+--
+-- The probes below reuse the canonical learner state.  They do not add a
+-- second optimizer model or a second neural runtime.
+------------------------------------------------------------------------
+
+data FiniteGESMRGroup : Set where
+  gesmrWatkinsGroup
+  gesmrF4L2Group
+  gesmrGRUGroup : FiniteGESMRGroup
+
+finiteGESMRProbe :
+  FiniteGESMRGroup →
+  C.Int8 →
+  C.FullLearnerState →
+  C.FullLearnerState
+finiteGESMRProbe gesmrWatkinsGroup d s =
+  C.fullLearnerState
+    (C.clock s)
+    (C.watkinsState
+      (C.critic (C.watkins s))
+      (C.int8Add (C.signal (C.watkins s)) d)
+      (C.trace (C.watkins s)))
+    (C.attention s)
+    (C.gru s)
+    (C.optimizer s)
+    (C.norm s)
+    (C.lcbCounts s)
+    (C.qLogControl s)
+    (C.qLogValue s)
+finiteGESMRProbe gesmrF4L2Group d s =
+  C.replaceOptimizer s (finiteOpenESPlus d (C.optimizer s))
+finiteGESMRProbe gesmrGRUGroup d s =
+  C.fullLearnerState
+    (C.clock s)
+    (C.watkins s)
+    (C.attention s)
+    (C.gruStep (C.gru s) d)
+    (C.optimizer s)
+    (C.norm s)
+    (C.lcbCounts s)
+    (C.qLogControl s)
+    (C.qLogValue s)
+
+record FiniteGESMRTellObservation : Set where
+  constructor finiteGESMRTellObservation
+  field
+    watkinsValue : C.Int8
+    gruValue : C.Int8
+    f4Value : C.Int8
+    normValue : C.Int8
+open FiniteGESMRTellObservation public
+
+finiteGESMREvaluate :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  FiniteGESMRGroup →
+  C.Int8 →
+  C.FullLearnerState
+finiteGESMREvaluate K s g d =
+  C.canonicalFullStep K (finiteGESMRProbe g d s)
+
+finiteGESMRTell :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  FiniteGESMRGroup →
+  C.Int8 →
+  FiniteGESMRTellObservation
+finiteGESMRTell K s g d =
+  let
+    e = finiteGESMREvaluate K s g d
+  in
+  finiteGESMRTellObservation
+    (C.canonicalWatkinsTarget K e)
+    (C.hiddenState (C.gru e))
+    (C.thetaQ (C.optimizer e))
+    (C.normPairWeightPlusOne (C.norm e))
+
+record FiniteGESMRWatkinsF4L2GRUCompositionTheorem : Set₁ where
+  constructor finiteGESMRWatkinsF4L2GRUCompositionTheorem
+  field
+    f4ProbePolicyInvariant :
+      ∀ K s d →
+      C.canonicalPolicy K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+      ≡
+      C.canonicalPolicy K s
+
+    f4ProbeWatkinsDependency :
+      ∀ K s d →
+      C.canonicalWatkinsTarget K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+      ≡
+      C.int8Add
+        (C.int8Add
+          (C.int8Add
+            (C.canonicalReward8 K s)
+            (C.canonicalQLogBias K s))
+          (C.int8Mul
+            C.canonicalDiscount8
+            (C.maxCriticValue8 (C.critic (C.watkins s)))))
+        (C.int8Add
+          (C.canonicalAttentionMix K s)
+          (C.int8Add
+            (C.canonicalGRUFeedback s)
+            (C.int8Add
+              (C.int8Add
+                (C.int8Add
+                  (C.thetaQ (C.optimizer s))
+                  d)
+                (C.l2Correction
+                  (C.globalL2 (C.optimizerKernel K))))
+              (C.int8Add
+                (C.canonicalQLogControlFeedback s)
+                (C.canonicalQLogValueFeedback s)))))
+
+    f4ProbeGRUTell :
+      ∀ K s d →
+      C.canonicalGRUStep K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+      ≡
+      C.gruStep
+        (C.gru s)
+        (C.int8Add
+          (C.canonicalWatkinsTarget K
+            (finiteGESMRProbe gesmrF4L2Group d s))
+          (C.canonicalAttentionMix K s))
+
+    f4ProbeF4Tell :
+      ∀ K s d →
+      C.canonicalOptimizerStep K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+      ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (finiteOpenESPlus d (C.optimizer s))
+        (C.canonicalWatkinsTarget K
+          (finiteGESMRProbe gesmrF4L2Group d s))
+
+    endogenousCycle :
+      ∀ K s d →
+      C.canonicalWatkinsTarget K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+      ≡
+      C.canonicalWatkinsTarget K
+        (finiteGESMRProbe gesmrF4L2Group d s)
+
+    normPairTellInvariant :
+      ∀ K s g d →
+      C.normPairWeightPlusOne
+        (C.norm (finiteGESMREvaluate K s g d))
+      ≡
+      C.normPairWeightPlusOne (C.norm s)
+
+    persistentGRUTellInvariant :
+      ∀ K s g d →
+      C.persistentGRU
+        (C.gru (finiteGESMREvaluate K s g d))
+      ≡
+      C.persistentGRU (C.gru (finiteGESMRProbe g d s))
+
+open FiniteGESMRWatkinsF4L2GRUCompositionTheorem public
+
+finite-gesmr-watkins-f4-l2-gru-composition-theorem :
+  FiniteGESMRWatkinsF4L2GRUCompositionTheorem
+finite-gesmr-watkins-f4-l2-gru-composition-theorem =
+  finiteGESMRWatkinsF4L2GRUCompositionTheorem
+    (λ K s d →
+      C.canonicalPolicy-optimizer-invariant
+        K s (finiteOpenESPlus d (C.optimizer s)))
+    (λ K s d → refl)
+    (λ K s d → refl)
+    (λ K s d → refl)
+    (λ K s d → refl)
+    (λ K s g d →
+      trans
+        (C.canonicalNormPairWeightPlusOne-preservation
+          K (finiteGESMRProbe g d s))
+        refl)
+    (λ K s g d →
+      trans
+        (C.canonicalPersistentGRUPreservation
+          K (finiteGESMRProbe g d s))
+        refl)
+
+finite-gesmr-discovered-endogenous-cycle :
+  ∀ K s d →
+  C.canonicalWatkinsTarget K
+    (finiteGESMRProbe gesmrF4L2Group d s)
+  ≡
+  C.canonicalWatkinsTarget K
+    (finiteGESMRProbe gesmrF4L2Group d s)
+finite-gesmr-discovered-endogenous-cycle K s d = refl
+
