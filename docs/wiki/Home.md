@@ -2,7 +2,7 @@
 
 Last audited: 2026-09-19.
 
-Current code head: `42a210b7852916d1afd9877b4f720167fa54884d`.
+Current code head: `bb677317bd435dd4d23799cae4fbfb9878845ea0`.
 
 ## Single active theorem source
 
@@ -61,7 +61,7 @@ The repository now contains a Mercury typed finite graph model and an Agda proof
 
 This is a Mercury/Agda formal port of the A/Q graph and certificate boundary.
 
-It is not a full port of the external JAxtar JAX search engine. The external JAxtar project is a JAX-native parallel A*/Q* solver with neural-heuristic integration; this repository keeps only the exact finite A/Q graph semantics needed by the proof/discovery surface.
+It is not a full port of the external JAxtar JAX search engine. The external JAxtar project is a JAX-native parallel A*/Q* solver with neural-heuristic integration; this repository keeps only the exact finite A/Q graph semantics needed by the proof/discovery surface. The new Open_ES theorem is a meta-optimizer composition, not an A*/Q* solver implementation.
 
 ## Meta-search
 
