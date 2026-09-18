@@ -56,3 +56,25 @@ tsts-pvs-persistent-gru-test :
 tsts-pvs-persistent-gru-test =
   FiniteTSTSPVSGESMRConnectedTheorem.persistentGRUPreservedAfterSelection
     finite-tsts-pvs-gesmr-connected-theorem
+
+tsts-pvs-end-to-end-closed-loop-test :
+  ∀ K s d →
+  finitePVSPVRecheck K s d
+  ≡
+  C.canonicalFullStep K (finiteTSTSSelectedProbe d s)
+tsts-pvs-end-to-end-closed-loop-test =
+  FiniteTSTSPVSGESMRConnectedTheorem.tstsPvsEndogenousClosedLoop
+    finite-tsts-pvs-gesmr-connected-theorem
+
+tsts-pvs-f4-watkins-gru-chain-test :
+  ∀ K s d →
+  C.canonicalGRUStep K (finiteTSTSSelectedProbe d s)
+  ≡
+  C.gruStep
+    (C.gru s)
+    (C.int8Add
+      (C.canonicalWatkinsTarget K (finiteTSTSSelectedProbe d s))
+      (C.canonicalAttentionMix K s))
+tsts-pvs-f4-watkins-gru-chain-test =
+  FiniteTSTSPVSGESMRConnectedTheorem.tstsPvsF4WatkinsGRUChain
+    finite-tsts-pvs-gesmr-connected-theorem
