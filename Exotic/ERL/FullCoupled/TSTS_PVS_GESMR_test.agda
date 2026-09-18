@@ -6,14 +6,6 @@ open import Relation.Binary.PropositionalEquality using (_≡_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.TheoremsMonolith
 
-tsts-pvs-selected-branch-test :
-  finiteTSTSSelectedProbe
-    {-- finite witness branch uses the F4/L2 arm --}
-    C.Int8
-    → C.FullLearnerState
-    → C.FullLearnerState
-tsts-pvs-selected-branch-test = finiteTSTSSelectedProbe
-
 tsts-pvs-f4-probe-test :
   ∀ d s →
   finiteTSTSSelectedProbe d s
