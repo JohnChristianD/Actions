@@ -56,6 +56,11 @@ natLt zero (suc n) = yes
 natLt (suc m) zero = no
 natLt (suc m) (suc n) = natLt m n
 
+natLE : Nat → Nat → BoolLike
+natLE zero n = yes
+natLE (suc m) zero = no
+natLE (suc m) (suc n) = natLE m n
+
 maxNat : Nat → Nat → Nat
 maxNat zero n = n
 maxNat (suc m) zero = suc m
