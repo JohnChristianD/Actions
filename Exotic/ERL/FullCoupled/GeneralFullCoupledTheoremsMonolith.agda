@@ -715,10 +715,10 @@ record CNNLogPyramidWitness (X R Q : Set) : Set₁ where
     respects : ∀ {x y} → project x ≡ project y → encode x ≡ encode y
 open CNNLogPyramidWitness public
 
-cnnLogPyramid-step-congruence : ∀ {X R Q : Set}
+general-cnnLogPyramid-step-congruence : ∀ {X R Q : Set}
   (W : CNNLogPyramidWitness X R Q) {x y : X} →
   project W x ≡ project W y → encode W x ≡ encode W y
-cnnLogPyramid-step-congruence W h = respects W h
+general-cnnLogPyramid-step-congruence W h = respects W h
 
 record SignedFiniteScale : Set where
   constructor signedFiniteScale
