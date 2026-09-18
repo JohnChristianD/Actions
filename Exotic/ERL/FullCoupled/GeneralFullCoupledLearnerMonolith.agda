@@ -169,7 +169,8 @@ searchSupport xs temperature (suc n) current best with supportValid xs temperatu
 ... | no = searchSupport xs temperature n (suc current) best
 
 maxNat-left-positive : ∀ {m n} → m ≢ zero → maxNat m n ≢ zero
-maxNat-left-positive {zero} {n} h eq = h refl
+maxNat-left-positive {zero} {zero} h eq = h eq
+maxNat-left-positive {zero} {suc n} h ()
 maxNat-left-positive {suc m} {zero} h ()
 maxNat-left-positive {suc m} {suc n} h ()
 
