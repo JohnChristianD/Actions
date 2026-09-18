@@ -358,3 +358,169 @@ mercury-jaxtar-aq-emergence =
     (λ K s → refl)
 
 
+
+
+------------------------------------------------------------------------
+-- Finite OpenAI-ES / canonical learner composition certificate.
+--
+-- This is a symbolic, exact specialization of the EvoSAX Open_ES
+-- ask/evaluate/tell shape.  The search variables are the existing
+-- F4IntU optimizer state.  The evaluator is the executable canonical
+-- learner itself.  The finite perturbation is exact Int8 arithmetic,
+-- so this is not a claim of floating-point Gaussian equivalence with
+-- JAX EvoSAX.
+------------------------------------------------------------------------
+
+finiteOpenESPlus :
+  C.Int8 → C.F4IntUState → C.F4IntUState
+finiteOpenESPlus eps
+  (C.f4IntUState thetaQ' rTheta' eQ' rE' rL') =
+  C.f4IntUState
+    (C.int8Add thetaQ' eps)
+    rTheta' eQ' rE' rL'
+
+finiteOpenESMinus :
+  C.Int8 → C.F4IntUState → C.F4IntUState
+finiteOpenESMinus eps
+  (C.f4IntUState thetaQ' rTheta' eQ' rE' rL') =
+  C.f4IntUState
+    (C.int8Sub thetaQ' eps)
+    rTheta' eQ' rE' rL'
+
+finiteOpenESObjective :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  C.F4IntUState →
+  C.Int8
+finiteOpenESObjective K s o =
+  C.hiddenState
+    (C.gru
+      (C.canonicalFullStep
+        K
+        (C.replaceOptimizer s o)))
+
+finiteOpenESAntitheticGradient :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  C.Int8 →
+  C.Int8
+finiteOpenESAntitheticGradient K s eps =
+  C.int8Sub
+    (finiteOpenESObjective
+      K s
+      (finiteOpenESPlus eps (C.optimizer s)))
+    (finiteOpenESObjective
+      K s
+      (finiteOpenESMinus eps (C.optimizer s)))
+
+finiteOpenESTell :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  C.Int8 →
+  C.F4IntUState
+finiteOpenESTell K s eps =
+  C.f4ThetaStep
+    (C.optimizerKernel K)
+    (C.optimizer s)
+    (finiteOpenESAntitheticGradient K s eps)
+
+finiteOpenESProbe :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  C.Int8 →
+  C.FullLearnerState
+finiteOpenESProbe K s eps =
+  C.replaceOptimizer s (finiteOpenESTell K s eps)
+
+finiteOpenESComposeStep :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  C.Int8 →
+  C.FullLearnerState
+finiteOpenESComposeStep K s eps =
+  C.canonicalFullStep K (finiteOpenESProbe K s eps)
+
+record FiniteOpenESCanonicalCompositionTheorem : Set₁ where
+  constructor finiteOpenESCanonicalCompositionTheorem
+  field
+    askPlus :
+      ∀ eps s →
+      C.thetaQ (finiteOpenESPlus eps (C.optimizer s)) ≡
+      C.int8Add (C.thetaQ (C.optimizer s)) eps
+
+    askMinus :
+      ∀ eps s →
+      C.thetaQ (finiteOpenESMinus eps (C.optimizer s)) ≡
+      C.int8Sub (C.thetaQ (C.optimizer s)) eps
+
+    evaluatorIsLearner :
+      ∀ K s o →
+      finiteOpenESObjective K s o ≡
+      C.hiddenState
+        (C.gru
+          (C.canonicalFullStep K (C.replaceOptimizer s o)))
+
+    tellUsesF4L2 :
+      ∀ K s eps →
+      finiteOpenESTell K s eps ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer s)
+        (finiteOpenESAntitheticGradient K s eps)
+
+    policyProbeInvariant :
+      ∀ K s eps →
+      C.canonicalPolicy K (finiteOpenESProbe K s eps) ≡
+      C.canonicalPolicy K s
+
+    normPairCompositionInvariant :
+      ∀ K s eps →
+      C.normPairWeightPlusOne
+        (C.norm (finiteOpenESComposeStep K s eps))
+      ≡
+      C.normPairWeightPlusOne (C.norm s)
+
+    persistentGRUCompositionInvariant :
+      ∀ K s eps →
+      C.persistentGRU
+        (C.gru (finiteOpenESComposeStep K s eps))
+      ≡
+      C.persistentGRU (C.gru s)
+
+open FiniteOpenESCanonicalCompositionTheorem public
+
+finite-openES-canonical-composition-theorem :
+  FiniteOpenESCanonicalCompositionTheorem
+finite-openES-canonical-composition-theorem =
+  finiteOpenESCanonicalCompositionTheorem
+    (λ eps s → refl)
+    (λ eps s → refl)
+    (λ K s o → refl)
+    (λ K s eps → refl)
+    (λ K s eps →
+      C.canonicalPolicy-optimizer-invariant
+        K s (finiteOpenESTell K s eps))
+    (λ K s eps →
+      trans
+        (C.canonicalNormPairWeightPlusOne-preservation
+          K
+          (finiteOpenESProbe K s eps))
+        refl)
+    (λ K s eps →
+      trans
+        (C.canonicalPersistentGRUPreservation
+          K
+          (finiteOpenESProbe K s eps))
+        refl)
+
+finite-openES-discovered-evaluator-boundary :
+  ∀ K s eps →
+  finiteOpenESObjective K s
+    (finiteOpenESTell K s eps) ≡
+  C.hiddenState
+    (C.gru
+      (C.canonicalFullStep
+        K
+        (finiteOpenESProbe K s eps)))
+finite-openES-discovered-evaluator-boundary K s eps = refl
+
