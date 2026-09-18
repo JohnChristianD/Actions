@@ -6,7 +6,7 @@ Last audited: 2026-09-19.
 
 Current code/proof source is moving with the TSTS-only refactor. The most recent code/CI repair commit currently visible is:
 
-`dc4d58b00f23970d9652166a718437a4943f4d05`
+`0b376ed889963971986bc58f716cb502de9bf58f`
 
 The current theorem entrypoint is:
 
@@ -15,7 +15,7 @@ The current theorem entrypoint is:
 ## Current workflow
 
 Latest verification run for the current code changes:
-`35405626180`
+`35405803150`
 
 The immediately preceding run `35404988310` failed in the container checkout step because the Guix daemon socket was absent, before the Agda or Mercury lanes could execute. The workflow now starts `guix-daemon --disable-chroot` inside the pinned CI container and authorizes the standard Guix substitute keys before checkout.
 
@@ -57,3 +57,17 @@ The F4/L2 case explicitly expands the target through thetaQ, probe, L2 correctio
 
 The proof is a repository-local finite semantic specialization. It does not inherit the external TSTS Bayesian regret theorem automatically.
 
+
+
+## Intrinsic learner theorem
+
+Added `FiniteAttentionWatkinsGRUF4MediatorTheorem` and
+`Attention_Mediator_Connected_test.agda`.
+
+This theorem is independent of TSTS, EA, program search, PVS, and JAxtar. It formalizes an attention-mediated separation:
+
+attention replacement -> policy/count/Q-log invariance -> endogenous Watkins target -> shared GRU and F4 consumption
+
+while preserving NormPair and persistent-GRU observables through the canonical full step.
+
+The current verification run for this addition is `35405803150` and is pending. No Agda or Mercury success/failure result has been observed yet.
