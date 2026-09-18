@@ -97,103 +97,60 @@ gruStep-respects-equivalence s t x e =
   trans (gruPersistentLaw s x)
     (trans e (sym (gruPersistentLaw t x)))
 
-mobiusAssociative : ∀ f g h x →
-  L.run (L.composeMobius (L.composeMobius f g) h) x ≡
-  L.run (L.composeMobius f (L.composeMobius g h)) x
-mobiusAssociative f g h x = refl
+wrap-int8Sub-law : ∀ x y →
+  L.int8Sub x y ≡ L.int8Add x (L.int8Neg y)
+wrap-int8Sub-law x y = refl
 
-prefixAction-law : ∀ T n x →
-  L.run (L.prefixAction T (suc n)) x ≡
-  L.run (L.atDepth T n) (L.run (L.prefixAction T n) x)
-prefixAction-law T n x = refl
+record ScanAction : Set where
+  constructor scanAction
+  field runScan : L.Int8 → L.Int8
+open ScanAction public
 
-traceInput : L.MobiusTrace → Nat → L.Int8 → L.Int8
-traceInput T n x = L.run (L.prefixAction T n) x
+identityScan : ScanAction
+identityScan = scanAction (λ x → x)
 
-traceGRU : L.MobiusTrace → Nat → L.GRUState → L.Int8 → L.GRUState
-traceGRU T zero s x = s
-traceGRU T (suc n) s x =
-  L.gruStep (traceGRU T n s x) (traceInput T n x)
+composeScan : ScanAction → ScanAction → ScanAction
+composeScan f g = scanAction (λ x → runScan f (runScan g x))
 
-traceGRU-step-law : ∀ T n s x →
-  traceGRU T (suc n) s x ≡
-  L.gruStep (traceGRU T n s x)
-    (L.run (L.atDepth T n) (traceInput T n x))
-traceGRU-step-law T n s x =
-  cong (λ u → L.gruStep (traceGRU T n s x) u)
-    (prefixAction-law T n x)
+scanAssociative : ∀ f g h x →
+  runScan (composeScan (composeScan f g) h) x ≡
+  runScan (composeScan f (composeScan g h)) x
+scanAssociative f g h x = refl
 
-semidirectMobiusStep : L.MobiusAction → L.GRUState → L.Int8 → L.GRUState
-semidirectMobiusStep m s x = L.gruStep s (L.run m x)
+record ScanTrace : Set where
+  constructor scanTrace
+  field atDepth : Nat → ScanAction
+open ScanTrace public
 
-semidirect-product-law : ∀ f g s x →
-  semidirectMobiusStep (L.composeMobius f g) s x ≡
-  semidirectMobiusStep f s (L.run g x)
-semidirect-product-law f g s x = refl
+prefixScan : ScanTrace → Nat → ScanAction
+prefixScan T zero = identityScan
+prefixScan T (suc n) = composeScan (atDepth T n) (prefixScan T n)
 
-trace-prefix-semidirect : ∀ T n s x →
-  semidirectMobiusStep (L.prefixAction T n) s x ≡
-  L.gruStep s (traceInput T n x)
-trace-prefix-semidirect T n s x = refl
+scanInput : ScanTrace → Nat → L.Int8 → L.Int8
+scanInput T n x = runScan (prefixScan T n) x
 
-trace-depth-invariant : ∀ T n s x →
-  L.gruPersistent (traceGRU T n s x) ≡ L.gruPersistent s
-trace-depth-invariant T zero s x = refl
-trace-depth-invariant T (suc n) s x =
-  trans
-    (gruPersistentLaw (traceGRU T n s x) (traceInput T n x))
-    (trace-depth-invariant T n s x)
+scanGRU : ScanTrace → Nat → L.GRUState → L.Int8 → L.GRUState
+scanGRU T zero s x = s
+scanGRU T (suc n) s x =
+  L.gruStep (scanGRU T n s x) (scanInput T n x)
 
-record TraceSemidirectWitness : Set where
-  constructor traceSemidirectWitness
-  field
-    trace : L.MobiusTrace
-    seed : L.GRUState
-    input : L.Int8
-open TraceSemidirectWitness public
+scanGRU-step-law : ∀ T n s x →
+  scanGRU T (suc n) s x ≡
+  L.gruStep (scanGRU T n s x) (scanInput T n x)
+scanGRU-step-law T n s x = refl
 
-traceSemidirect-step : ∀ w n →
-  traceGRU (trace w) (suc n) (seed w) (input w) ≡
-  semidirectMobiusStep (L.atDepth (trace w) n)
-    (traceGRU (trace w) n (seed w) (input w))
-    (traceInput (trace w) n (input w))
-traceSemidirect-step w n = traceGRU-step-law (trace w) n (seed w) (input w)
+scanIterate : ScanTrace → Nat → L.GRUState → L.Int8 → L.GRUState
+scanIterate T zero s x = s
+scanIterate T (suc n) s x =
+  L.gruStep (scanIterate T n s x) (scanInput T n x)
 
-trace-prefix-factor : ∀ T n x →
-  traceInput T (suc n) x ≡
-  L.run (L.atDepth T n) (traceInput T n x)
-trace-prefix-factor T n x = prefixAction-law T n x
-
-traceStep : L.MobiusTrace → Nat → L.GRUState → L.Int8 → L.GRUState
-traceStep T n s x = semidirectMobiusStep (L.atDepth T n) s (traceInput T n x)
-
-traceIterate : L.MobiusTrace → Nat → L.GRUState → L.Int8 → L.GRUState
-traceIterate T zero s x = s
-traceIterate T (suc n) s x = traceStep T n (traceIterate T n s x) x
-
-traceGRU-unbounded : ∀ T n s x →
-  traceGRU T n s x ≡ traceIterate T n s x
-traceGRU-unbounded T zero s x = refl
-traceGRU-unbounded T (suc n) s x =
-  trans
-    (traceGRU-step-law T n s x)
-    (cong
-      (λ st → L.gruStep st (L.run (L.atDepth T n) (traceInput T n x)))
-      (traceGRU-unbounded T n s x))
-
-trace-depth-recurrence : ∀ T n s x →
-  traceGRU T (suc n) s x ≡
-  traceStep T n (traceGRU T n s x) x
-trace-depth-recurrence T n s x = traceGRU-step-law T n s x
-
-trace-prefix-semidirect-composition : ∀ T n m s x →
-  semidirectMobiusStep
-    (L.composeMobius (L.prefixAction T n) (L.prefixAction T m))
-    s x ≡
-  L.gruStep s
-    (L.run (L.prefixAction T n)
-      (L.run (L.prefixAction T m) x))
-trace-prefix-semidirect-composition T n m s x = refl
+scanGRU-unbounded : ∀ T n s x →
+  scanGRU T n s x ≡ scanIterate T n s x
+scanGRU-unbounded T zero s x = refl
+scanGRU-unbounded T (suc n) s x =
+  cong
+    (λ st → L.gruStep st (scanInput T n x))
+    (scanGRU-unbounded T n s x)
 
 record SparsemaxKKTBoundary (A : Nat) : Set where
   constructor sparsemaxKKTBoundary
@@ -384,125 +341,6 @@ customGRU-Siamese-diagonal : ∀ i s →
   pairedStep customGRU-SiameseWitness i i (s , s) ≡
   (L.gruStep s i , L.gruStep s i)
 customGRU-Siamese-diagonal i s = siamese-diagonal-law customGRU-SiameseWitness i s
-
-finitePiecewiseRational : L.Int8 → L.FiniteRational
-finitePiecewiseRational x with L.hardSign x
-... | L.negative = L.finiteRational 255 1
-... | L.zeroSign = L.finiteRational 0 1
-... | L.positive = L.mobiusRatio x
-
-finitePiecewiseRational-law : ∀ x →
-  finitePiecewiseRational x ≡ finitePiecewiseRational x
-finitePiecewiseRational-law x = refl
-
-data FinitePiecewiseInt8Map : Set where
-  prIdentity : FinitePiecewiseInt8Map
-  prHardSignGate : FinitePiecewiseInt8Map
-  prCompose : FinitePiecewiseInt8Map → FinitePiecewiseInt8Map → FinitePiecewiseInt8Map
-
-evalFinitePiecewiseInt8Map : FinitePiecewiseInt8Map → L.Int8 → L.Int8
-evalFinitePiecewiseInt8Map prIdentity x = x
-evalFinitePiecewiseInt8Map prHardSignGate x = L.hardSignGate x
-evalFinitePiecewiseInt8Map (prCompose f g) x =
-  evalFinitePiecewiseInt8Map f (evalFinitePiecewiseInt8Map g x)
-
-data FinitePiecewiseRationalTerm : Set where
-  prConst : L.FiniteRational → FinitePiecewiseRationalTerm
-  prMobius : FinitePiecewiseRationalTerm
-  prBranch : FinitePiecewiseRationalTerm → FinitePiecewiseRationalTerm → FinitePiecewiseRationalTerm → FinitePiecewiseRationalTerm
-  prComposeInput : FinitePiecewiseInt8Map → FinitePiecewiseRationalTerm → FinitePiecewiseRationalTerm
-
-evalFinitePiecewiseRational : FinitePiecewiseRationalTerm → L.Int8 → L.FiniteRational
-evalFinitePiecewiseRational (prConst q) x = q
-evalFinitePiecewiseRational prMobius x = L.mobiusRatio x
-evalFinitePiecewiseRational (prBranch f g h) x with L.hardSign x
-... | L.negative = evalFinitePiecewiseRational f x
-... | L.zeroSign = evalFinitePiecewiseRational g x
-... | L.positive = evalFinitePiecewiseRational h x
-evalFinitePiecewiseRational (prComposeInput m t) x =
-  evalFinitePiecewiseRational t (evalFinitePiecewiseInt8Map m x)
-
-record PiecewiseRationalWitness (f : L.Int8 → L.FiniteRational) : Set where
-  constructor piecewiseRationalWitness
-  field
-    term : FinitePiecewiseRationalTerm
-    sound : ∀ x → evalFinitePiecewiseRational term x ≡ f x
-open PiecewiseRationalWitness public
-
-prConstWitness : ∀ q → PiecewiseRationalWitness (λ _ → q)
-prConstWitness q = piecewiseRationalWitness (prConst q) (λ x → refl)
-
-prMobiusWitness : PiecewiseRationalWitness L.mobiusRatio
-prMobiusWitness = piecewiseRationalWitness prMobius (λ x → refl)
-
-prBranchFunction :
-  ∀ {f g h : L.Int8 → L.FiniteRational} →
-  L.Int8 → L.FiniteRational
-prBranchFunction {f = f} {g = g} {h = h} x with L.hardSign x
-... | L.negative = f x
-... | L.zeroSign = g x
-... | L.positive = h x
-
-prBranch-sound :
-  ∀ {f g h : L.Int8 → L.FiniteRational}
-  (F : PiecewiseRationalWitness f)
-  (G : PiecewiseRationalWitness g)
-  (H : PiecewiseRationalWitness h)
-  (x : L.Int8) →
-  evalFinitePiecewiseRational
-    (prBranch (term F) (term G) (term H)) x ≡
-  prBranchFunction {f = f} {g = g} {h = h} x
-prBranch-sound F G H x with L.hardSign x
-... | L.negative = sound F x
-... | L.zeroSign = sound G x
-... | L.positive = sound H x
-
-prBranch-closure : ∀ {f g h}
-  → PiecewiseRationalWitness f
-  → PiecewiseRationalWitness g
-  → PiecewiseRationalWitness h
-  → PiecewiseRationalWitness
-      (prBranchFunction {f = f} {g = g} {h = h})
-prBranch-closure F G H = piecewiseRationalWitness
-  (prBranch (term F) (term G) (term H))
-  (prBranch-sound F G H)
-
-prComposeInput-closure : ∀ {f}
-  → (m : FinitePiecewiseInt8Map)
-  → PiecewiseRationalWitness f
-  → PiecewiseRationalWitness (λ x → f (evalFinitePiecewiseInt8Map m x))
-prComposeInput-closure m F = piecewiseRationalWitness
-  (prComposeInput m (term F))
-  (λ x → sound F (evalFinitePiecewiseInt8Map m x))
-
-finitePiecewiseRationalWitness : PiecewiseRationalWitness finitePiecewiseRational
-finitePiecewiseRationalWitness =
-  prBranch-closure
-    (prConstWitness (L.finiteRational 255 1))
-    (prConstWitness (L.finiteRational 0 1))
-    prMobiusWitness
-
-iterateFinitePiecewiseInt8Map : FinitePiecewiseInt8Map → Nat → FinitePiecewiseInt8Map
-iterateFinitePiecewiseInt8Map m zero = prIdentity
-iterateFinitePiecewiseInt8Map m (suc n) =
-  prCompose m (iterateFinitePiecewiseInt8Map m n)
-
-prIterated-closure : ∀ {f}
-  → PiecewiseRationalWitness f
-  → (m : FinitePiecewiseInt8Map)
-  → ∀ n →
-  PiecewiseRationalWitness
-    (λ x → f (evalFinitePiecewiseInt8Map (iterateFinitePiecewiseInt8Map m n) x))
-prIterated-closure F m zero = F
-prIterated-closure F m (suc n) =
-  prComposeInput-closure m (prIterated-closure F m n)
-
-unbounded-depth-piecewise-rational-closure : ∀ (m : FinitePiecewiseInt8Map) n →
-  PiecewiseRationalWitness
-    (λ x → finitePiecewiseRational
-      (evalFinitePiecewiseInt8Map (iterateFinitePiecewiseInt8Map m n) x))
-unbounded-depth-piecewise-rational-closure m n =
-  prIterated-closure finitePiecewiseRationalWitness m n
 
 record FiniteParameter (A B : Set) : Set where
   constructor finiteParameter
