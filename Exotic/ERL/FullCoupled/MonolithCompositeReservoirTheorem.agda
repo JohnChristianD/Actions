@@ -156,6 +156,45 @@ reservoir-discreteNSP : ∀ {S : Set}
   s ≢ t → observe R s ≢ observe R t
 reservoir-discreteNSP R apart eq = apart (reservoir-injective R eq)
 
+reservoir-exact-readout :
+  ∀ {S O Y : Set}
+  (R : LeftInverseCertificate S O (observe R))
+  (target : S → Y) →
+  (O → Y) × (∀ s → (λ o → target (inverse R o)) (observe R s) ≡ target s)
+reservoir-exact-readout R target =
+  (λ o → target (inverse R o)) ,
+  (λ s → cong target (leftInverse R s))
+
+history-factor-collision :
+  ∀ {S X O : Set}
+  (history : S → X)
+  (R : LeftInverseCertificate X O (observe R))
+  {s t : S} →
+  (λ u → observe R (history u)) s ≡
+  (λ u → observe R (history u)) t →
+  history s ≡ history t
+history-factor-collision history R eq =
+  leftInverse-implies-injective R eq
+
+fin256HistoryReservoir : LeftInverseCertificate (Fin 256) L.Int8 (λ i → L.int8 i)
+fin256HistoryReservoir =
+  leftInverseCertificate
+    (λ x → L.code x)
+    (λ i → refl)
+
+fin256HistoryReservoir-injective :
+  ∀ {i j : Fin 256} →
+  L.int8 i ≡ L.int8 j → i ≡ j
+fin256HistoryReservoir-injective =
+  leftInverse-implies-injective fin256HistoryReservoir
+
+fin256HistoryReservoir-exact-readout :
+  ∀ {Y : Set} (target : Fin 256 → Y) →
+  (L.Int8 → Y) ×
+  (∀ i → (λ o → target (L.code o)) (L.int8 i) ≡ target i)
+fin256HistoryReservoir-exact-readout target =
+  reservoir-exact-readout fin256HistoryReservoir target
+
 fullLearnerReservoirCondition-impossible :
   ∀ {A} (K : L.LearnerKernel A)
   (R : ReservoirConditionCertificate (L.LearnerState A)) →
