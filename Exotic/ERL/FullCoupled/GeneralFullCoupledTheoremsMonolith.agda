@@ -137,6 +137,14 @@ wrap-int8Sub-law : ∀ x y →
   L.int8Sub x y ≡ L.int8Add x (L.int8Neg y)
 wrap-int8Sub-law x y = refl
 
+f4-wrap-add-law : ∀ x y →
+  L.f4Add x y ≡ L.int8Add x y
+f4-wrap-add-law x y = refl
+
+f4-wrap-sub-law : ∀ x y →
+  L.f4Sub x y ≡ L.int8Sub x y
+f4-wrap-sub-law x y = refl
+
 record ScanAction : Set where
   constructor scanAction
   field runScan : L.Int8 → L.Int8
