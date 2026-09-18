@@ -32,14 +32,14 @@ int8OfNat n = int8 (fromℕ< (m%n<n n 256))
 int8Add : Int8 → Int8 → Int8
 int8Add x y = int8OfNat (toℕ (code x) + toℕ (code y))
 
+int8Neg : Int8 → Int8
+int8Neg x = int8OfNat (256 ∸ toℕ (code x))
+
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8Add x (int8Neg y)
 
 int8Mul : Int8 → Int8 → Int8
 int8Mul x y = int8OfNat (toℕ (code x) * toℕ (code y))
-
-int8Neg : Int8 → Int8
-int8Neg x = int8OfNat (256 ∸ toℕ (code x))
 
 data BoolLike : Set where
   yes no : BoolLike
