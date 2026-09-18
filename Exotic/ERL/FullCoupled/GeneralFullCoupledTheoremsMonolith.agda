@@ -276,6 +276,67 @@ scanGRU-unbounded T (suc n) s x =
     (λ st → L.gruStep st (scanInput T n x))
     (scanGRU-unbounded T n s x)
 
+data WatkinsTrace : Set where
+  cut continue : WatkinsTrace
+
+watkinsTraceStep : WatkinsTrace → L.BoolLike → WatkinsTrace
+watkinsTraceStep t L.yes = t
+watkinsTraceStep t L.no = cut
+
+watkinsTrace-cut-law : ∀ t →
+  watkinsTraceStep t L.no ≡ cut
+watkinsTrace-cut-law t = refl
+
+watkinsTrace-continue-law : ∀ t →
+  watkinsTraceStep t L.yes ≡ t
+watkinsTrace-continue-law t = refl
+
+watkinsQTarget : L.Int8 → L.Int8 → L.Int8 → L.Int8
+watkinsQTarget reward gamma nextQ =
+  L.int8Add reward (L.int8Mul gamma nextQ)
+
+watkinsQTarget-law : ∀ reward gamma nextQ →
+  watkinsQTarget reward gamma nextQ ≡
+  L.int8Add reward (L.int8Mul gamma nextQ)
+watkinsQTarget-law reward gamma nextQ = refl
+
+replaceNormState : ∀ {A} → L.LearnerState A → L.NormPair → L.LearnerState A
+replaceNormState s n =
+  L.learnerState
+    (L.clock s)
+    (L.q s)
+    (L.counts s)
+    (L.lastAction s)
+    (L.gru s)
+    (L.optimizer s)
+    n
+
+replaceOptimizerState : ∀ {A} → L.LearnerState A → L.F4State → L.LearnerState A
+replaceOptimizerState s o =
+  L.learnerState
+    (L.clock s)
+    (L.q s)
+    (L.counts s)
+    (L.lastAction s)
+    (L.gru s)
+    o
+    (L.normState s)
+
+generalPolicy-norm-invariant :
+  ∀ {A} (K : L.LearnerKernel A) s n →
+  L.generalPolicy K (replaceNormState s n) ≡ L.generalPolicy K s
+generalPolicy-norm-invariant K s n = refl
+
+generalPolicy-optimizer-invariant :
+  ∀ {A} (K : L.LearnerKernel A) s o →
+  L.generalPolicy K (replaceOptimizerState s o) ≡ L.generalPolicy K s
+generalPolicy-optimizer-invariant K s o = refl
+
+norm-path-monotone : ∀ n w x →
+  L.pathWeight n ≤ L.pathWeight (L.normStep n w x)
+norm-path-monotone n w x =
+  m≤m+n (L.pathWeight n) (toℕ (L.code w) * toℕ (L.code x))
+
 record SparsemaxKKTBoundary (A : Nat) : Set where
   constructor sparsemaxKKTBoundary
   field
