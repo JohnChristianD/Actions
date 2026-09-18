@@ -142,7 +142,7 @@ trace-encoding :
 trace-encoding step [] s = refl
 trace-encoding step (x ∷ xs) s =
   trans
-    (sym (composeOperator-law (traceOperator step xs) (step x) s))
+    (composeOperator-law (traceOperator step xs) (step x) s)
     (trace-encoding step xs (run (step x) s))
 
 traceSize :
@@ -198,7 +198,7 @@ traceCost-bound step C (x ∷ xs) bound =
   subst
     (λ n → traceCost step xs + applicationCost (step x) ≤ n)
     (trans
-      (+-comm C (C * listLength xs))
+      (sym (+-comm C (C * listLength xs)))
       (sym (*-suc C (listLength xs))))
     (+-mono-≤
       (traceCost-bound step C xs bound)
@@ -244,6 +244,12 @@ simulate C [] s = refl
 simulate C (x ∷ xs) s =
   trans
     (simulate C xs (sourceStep x s))
-    (cong
-      (run (traceOperator (operatorAt target) xs))
-      (stepSimulation C x s))
+    (trans
+      (cong
+        (run (traceOperator (operatorAt target) xs))
+        (stepSimulation C x s))
+      (sym
+        (composeOperator-law
+          (traceOperator (operatorAt target) xs)
+          (operatorAt target x)
+          (encode s))))
