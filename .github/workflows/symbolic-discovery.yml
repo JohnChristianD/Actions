@@ -1,8 +1,0 @@
-name: Legacy symbolic discovery gate
-
-on:
-  workflow_call:
-
-jobs:
-  guix:
-    uses: ./.github/workflows/guix-composition.yml
