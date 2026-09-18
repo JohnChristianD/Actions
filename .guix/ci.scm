@@ -64,6 +64,10 @@
             "mmc" "--make" "formal_openes_composition_discovery")
       (run! "run Mercury formal OpenES composition discovery"
             "./formal_openes_composition_discovery")
+      (run! "build Mercury formal GESMR composition discovery"
+            "mmc" "--make" "formal_gesmr_composition_discovery")
+      (run! "run Mercury formal GESMR composition discovery"
+            "./formal_gesmr_composition_discovery")
       (run! "build Mercury TSTS/PVS composition discovery"
             "mmc" "--make" "tsts_pvs_composition_discovery")
       (run! "run Mercury TSTS/PVS composition discovery"
