@@ -157,8 +157,8 @@ reservoir-discreteNSP : ∀ {S : Set}
 reservoir-discreteNSP R apart eq = apart (reservoir-injective R eq)
 
 reservoir-exact-readout :
-  ∀ {S O Y : Set}
-  (R : LeftInverseCertificate S O (observe R))
+  ∀ {S O Y : Set} {ρ : S → O}
+  (R : LeftInverseCertificate S O ρ)
   (target : S → Y) →
   (O → Y) × (∀ s → (λ o → target (inverse R o)) (observe R s) ≡ target s)
 reservoir-exact-readout R target =
@@ -166,9 +166,9 @@ reservoir-exact-readout R target =
   (λ s → cong target (leftInverse R s))
 
 history-factor-collision :
-  ∀ {S X O : Set}
+  ∀ {S X O : Set} {ρ : X → O}
   (history : S → X)
-  (R : LeftInverseCertificate X O (observe R))
+  (R : LeftInverseCertificate X O ρ)
   {s t : S} →
   (λ u → observe R (history u)) s ≡
   (λ u → observe R (history u)) t →
