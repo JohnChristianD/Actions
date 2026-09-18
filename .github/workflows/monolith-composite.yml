@@ -5,6 +5,7 @@ on:
     branches: ['main']
     paths:
       - 'Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda'
+      - 'Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda'
       - 'Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda'
       - '.ci/discovery/ProofSearch.py'
       - '.github/workflows/monolith-composite.yml'
