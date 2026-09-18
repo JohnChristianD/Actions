@@ -59,6 +59,10 @@
             "mmc" "--make" "evosax_lion_discovery")
       (run! "run Mercury formal EvoSAX/Lion meta-search"
             "./evosax_lion_discovery")
+      (run! "build Mercury formal OpenES composition discovery"
+            "mmc" "--make" "formal_openes_composition_discovery")
+      (run! "run Mercury formal OpenES composition discovery"
+            "./formal_openes_composition_discovery")
       (run! "build Mercury involution verifier"
             "mmc" "--make" "clojure_involution_compat")
       (run! "run Mercury involution verifier"
