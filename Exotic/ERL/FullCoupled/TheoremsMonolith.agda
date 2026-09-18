@@ -11,6 +11,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
 open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Data.Empty using (⊥)
+open import Data.List.Base using (List; []; _∷_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 phase4-period4 :
