@@ -30,11 +30,11 @@
 
 :- type candidate
     ---> candidate(
-        genome_value :: genome,
-        typed :: bool,
-        canonical :: bool,
-        complexity :: int,
-        fitness :: int
+        genome,
+        bool,
+        bool,
+        int,
+        int
     ).
 
 :- func strategies = list(strategy).
