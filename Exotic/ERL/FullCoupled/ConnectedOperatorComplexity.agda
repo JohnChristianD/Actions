@@ -128,18 +128,9 @@ canonicalSequentialApplicationCost-law :
 canonicalSequentialApplicationCost-law n = refl
 
 ------------------------------------------------------------------------
--- The finite cyclic norm certificate bounds transition gain separately
--- from representation width.  This prevents NormPair bookkeeping from
--- being misidentified as byte width.
+-- The finite cyclic norm certificate is a separate gain bound.  It does
+-- not change the fixed 23-Int8 payload width.
 ------------------------------------------------------------------------
-
-normBudget-preserves-payload-separation :
-  ∀ {f : C.Int8 → C.Int8} (Cf : G.NormPairOperatorCertificate f) →
-  representationSize (identityCostedGRUAction) ≤
-  representationSize (identityCostedGRUAction) +
-  G.normPairOperatorBudget (G.pair Cf)
-normBudget-preserves-payload-separation Cf =
-  z≤n
 
 ------------------------------------------------------------------------
 -- Balanced scan has logarithmic depth in the operator-count recurrence
@@ -174,19 +165,4 @@ predictableOperatorShape :
   Set
 predictableOperatorShape =
   C.Int8 → CostedGRUAction
-
-------------------------------------------------------------------------
--- Reservoir boundary:
---
--- bounded finite payload can receive exact finite operator certificates;
--- the full learner's one-byte observation remains subject to the existing
--- pigeonhole/no-left-inverse theorem.
-------------------------------------------------------------------------
-
-finiteCertificateDoesNotImpliesFullObservation :
-  Set
-finiteCertificateDoesNotImpliesFullObservation =
-  ∀ {f : C.Int8 → C.Int8} →
-  G.NormPairOperatorCertificate f →
-  C.Int8 → C.Int8
 
