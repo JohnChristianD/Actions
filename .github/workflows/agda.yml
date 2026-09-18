@@ -59,6 +59,9 @@ jobs:
       - name: Check finite cyclic norm-pair certificate
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda
 
+      - name: Check functional Walsh vector bridge
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FunctionalWalshBridge.agda
+
       - name: Check generalized closed-loop benchmark
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda
 
