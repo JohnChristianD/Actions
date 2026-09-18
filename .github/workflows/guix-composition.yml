@@ -8,6 +8,7 @@ on:
       - ".ci/**"
       - "oracle/**"
       - "Exotic/ERL/FullCoupled/**"
+      - "Exotic/econlib/**"
       - ".github/workflows/guix-composition.yml"
   pull_request:
     branches: [main]
@@ -16,6 +17,7 @@ on:
       - ".ci/**"
       - "oracle/**"
       - "Exotic/ERL/FullCoupled/**"
+      - "Exotic/econlib/**"
       - ".github/workflows/guix-composition.yml"
   schedule:
     - cron: "17 * * * *"
@@ -40,7 +42,17 @@ jobs:
       run:
         shell: guile --no-auto-compile {0}
     steps:
-      - uses: actions/checkout@v5
+      - name: Guile-native source checkout
+        run: |
+          (define workspace (getenv "GITHUB_WORKSPACE"))
+          (define repository (getenv "GITHUB_REPOSITORY"))
+          (define sha (getenv "GITHUB_SHA"))
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "clone" "--filter=blob:none" "--no-checkout"
+                   (string-append "https://github.com/" repository ".git")
+                   workspace)
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "-C" workspace "checkout" "--detach" sha)
       - name: Run pinned Guix Agda lane
         env:
           CI_LANE: agda-safe
@@ -57,7 +69,17 @@ jobs:
       run:
         shell: guile --no-auto-compile {0}
     steps:
-      - uses: actions/checkout@v5
+      - name: Guile-native source checkout
+        run: |
+          (define workspace (getenv "GITHUB_WORKSPACE"))
+          (define repository (getenv "GITHUB_REPOSITORY"))
+          (define sha (getenv "GITHUB_SHA"))
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "clone" "--filter=blob:none" "--no-checkout"
+                   (string-append "https://github.com/" repository ".git")
+                   workspace)
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "-C" workspace "checkout" "--detach" sha)
       - name: Run pinned Guix Mercury lane
         env:
           CI_LANE: mercury
@@ -65,7 +87,7 @@ jobs:
           (load ".guix/ci.scm")
 
   discovery:
-    name: Guix / automated finite discovery
+    name: Guix / Mercury finite discovery
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     container:
@@ -74,21 +96,32 @@ jobs:
       run:
         shell: guile --no-auto-compile {0}
     steps:
-      - uses: actions/checkout@v5
-      - name: Run pinned Guix discovery lane
+      - name: Guile-native source checkout
+        run: |
+          (define workspace (getenv "GITHUB_WORKSPACE"))
+          (define repository (getenv "GITHUB_REPOSITORY"))
+          (define sha (getenv "GITHUB_SHA"))
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "clone" "--filter=blob:none" "--no-checkout"
+                   (string-append "https://github.com/" repository ".git")
+                   workspace)
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "-C" workspace "checkout" "--detach" sha)
+      - name: Run pinned Mercury discovery lane
         env:
           CI_LANE: discovery
         run: |
           (load ".guix/ci.scm")
-      - name: Upload deterministic discovery report
-        uses: actions/upload-artifact@v4
-        with:
-          name: guix-discovery-report
-          path: .ci/discovery/last-search.json
-          if-no-files-found: error
+      - name: Verify discovery artifact is present
+        run: |
+          (if (file-exists? ".ci/discovery/last-search.json")
+              (format #t "discovery-report=present~%")
+              (begin
+                (format #t "ERROR: discovery report missing~%")
+                (exit 1)))
 
   surface:
-    name: Guix / no Haskell, Cabal, shell, or CMD surface
+    name: Guix / no Haskell, Python, JVM, JS, or alternate-language surface
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     container:
@@ -97,7 +130,17 @@ jobs:
       run:
         shell: guile --no-auto-compile {0}
     steps:
-      - uses: actions/checkout@v5
+      - name: Guile-native source checkout
+        run: |
+          (define workspace (getenv "GITHUB_WORKSPACE"))
+          (define repository (getenv "GITHUB_REPOSITORY"))
+          (define sha (getenv "GITHUB_SHA"))
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "clone" "--filter=blob:none" "--no-checkout"
+                   (string-append "https://github.com/" repository ".git")
+                   workspace)
+          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
+                   "git" "-C" workspace "checkout" "--detach" sha)
       - name: Audit repository surface
         env:
           CI_LANE: surface
