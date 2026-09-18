@@ -102,6 +102,23 @@ while preserving the NormPair observable and persistent-GRU quotient through the
 
 This is a repository-local finite semantic specialization of the TSTS role. It is not a reproduction of the probabilistic TSTS runtime, and the published TSTS regret theorem is not claimed for this deterministic finite construction.
 
+### Intrinsic endogenous attention-mediator theorem
+
+The search architecture is deliberately excluded from this theorem. The active learner theorem is:
+
+- `FiniteAttentionWatkinsGRUF4MediatorTheorem`
+- `finite-attention-watkins-gru-f4-mediator-theorem`
+
+It proves a structural separation-and-coupling result for arbitrary attention-state replacement:
+
+`attention replacement -> unchanged policy/count/Q-log channels -> endogenous Watkins expression -> shared GRU/F4 consumption`
+
+The theorem also preserves the NormPair observable and persistent-GRU quotient through the canonical full step.
+
+This is independent of TSTS, evolutionary search, program search, PVS, and JAxtar.
+
+A literature check found extensive prior work combining attention with GRU/recurrent RL and prior Q-learning convergence theory, but the exact formal finite-state mediator theorem above was not found in the checked sources. This should therefore be described as a narrow repository-local novelty candidate, not as a definitive literature-priority claim.
+
 ## B. Closed-loop faithfulness boundary
 
 `CanonicalClosedLoopInterface.agda` supplies the environment/agent/episode contract.
