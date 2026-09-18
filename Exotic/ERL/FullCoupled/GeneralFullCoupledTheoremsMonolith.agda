@@ -46,7 +46,7 @@ fullCompositionPigeonhole-not-injective : ∀ {n : Nat}
   (W : FullCompositionPigeonhole n) →
   ¬ Injective _≡_ _≡_ (λ i → observe W (encode W i))
 fullCompositionPigeonhole-not-injective {n} W =
-  <⇒notInjective (s≤s (natLeRefl n))
+  <⇒notInjective (s≤s (s≤s (natLeRefl n)))
 
 
 lt-irrefl : ∀ n → n < n → ⊥
