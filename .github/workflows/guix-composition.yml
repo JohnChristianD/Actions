@@ -48,6 +48,7 @@ jobs:
           workspace="${GITHUB_WORKSPACE}"
           repository="${GITHUB_REPOSITORY}"
           sha="${GITHUB_SHA}"
+          ref="${GITHUB_REF}"
           mkdir -p "${workspace}"
           guix shell --pure git nss-certs -- \
             git -C "${workspace}" init -q
@@ -57,7 +58,7 @@ jobs:
             git -C "${workspace}" remote add origin \
               "https://github.com/${repository}.git"
           guix shell --pure git nss-certs -- \
-            git -C "${workspace}" fetch --depth=1 origin "${sha}"
+            git -C "${workspace}" fetch --depth=1 origin "${ref}"
           guix shell --pure git nss-certs -- \
             git -C "${workspace}" checkout --detach "${sha}"
       - name: Run pinned Guix Agda lane
