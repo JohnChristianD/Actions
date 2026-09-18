@@ -53,13 +53,6 @@ emit(X, H, C, !IO) :-
         !IO).
 
 main(!IO) :-
-    Cases = [
-        {q(1, 5), q(-1, 10), q(3, 10)},
-        {q(1, 1), q(1, 5), q(-2, 5)},
-        {q(-7, 10), q(1, 2), q(1, 10)}
-    ],
-    list.foldl(
-        (pred({X, H, C}::in, !.IO::di, !:IO::uo) is det :-
-            emit(X, H, C, !IO)
-        ),
-        Cases, !IO).
+    emit(q(1, 5), q(-1, 10), q(3, 10), !IO),
+    emit(q(1, 1), q(1, 5), q(-2, 5), !IO),
+    emit(q(-7, 10), q(1, 2), q(1, 10), !IO).
