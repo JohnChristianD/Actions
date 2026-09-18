@@ -893,3 +893,130 @@ walshOrthonormal :
   dot4 row1 row3 ≡ I.pos 0 × dot4 row2 row3 ≡ I.pos 0
 walshOrthonormal = walsh00 , (walsh11 , (walsh22 , (walsh33 ,
   (walsh01 , (walsh02 , (walsh03 , (walsh12 , (walsh13 , walsh23))))))))
+
+
+------------------------------------------------------------------------
+-- Sparse accumulation impossibility layer.
+--
+-- This is theorem-only.  The learner monolith contains no complexity
+-- records, proof obligations, or impossibility machinery.
+------------------------------------------------------------------------
+
+record CommutativeMonoid (A : Set) : Set where
+  constructor commutativeMonoid
+  field
+    ε : A
+    _⊕_ : A → A → A
+    identityˡ : ∀ x → ε ⊕ x ≡ x
+    identityʳ : ∀ x → x ⊕ ε ≡ x
+    assoc : ∀ x y z → (x ⊕ y) ⊕ z ≡ x ⊕ (y ⊕ z)
+    comm : ∀ x y → x ⊕ y ≡ y ⊕ x
+open CommutativeMonoid public
+
+theoremListLength : ∀ {A : Set} → List A → Nat
+theoremListLength [] = zero
+theoremListLength (_ ∷ xs) = suc (theoremListLength xs)
+
+theoremRepeat : ∀ {A : Set} → Nat → A → List A
+theoremRepeat zero x = []
+theoremRepeat (suc n) x = x ∷ theoremRepeat n x
+
+theoremAccumulate : ∀ {A : Set} → CommutativeMonoid A → List A → A
+theoremAccumulate M [] = ε M
+theoremAccumulate M (x ∷ xs) = _⊕_ M x (theoremAccumulate M xs)
+
+record SparseAccumulation (A : Set) : Set where
+  constructor sparseAccumulation
+  field
+    monoid : CommutativeMonoid A
+    active : List A
+    unitCost : Nat
+open SparseAccumulation public
+
+sparseWork : ∀ {A : Set} → SparseAccumulation A → Nat
+sparseWork S = unitCost S * theoremListLength (active S)
+
+sparseWork-exact :
+  ∀ {A : Set} (S : SparseAccumulation A) →
+  sparseWork S ≡ unitCost S * theoremListLength (active S)
+sparseWork-exact S = refl
+
+sparseWork-repeat-exact :
+  ∀ {A : Set} (M : CommutativeMonoid A) (x : A)
+  (unitCost : Nat) (k : Nat) →
+  sparseWork (sparseAccumulation M (theoremRepeat k x) unitCost)
+    ≡ unitCost * k
+sparseWork-repeat-exact M x unitCost k = refl
+
+one-times : ∀ k → suc zero * k ≡ k
+one-times zero = refl
+one-times (suc k) = cong suc (one-times k)
+
+sparseWork-repeat-one-exact :
+  ∀ {A : Set} (M : CommutativeMonoid A) (x : A) (k : Nat) →
+  sparseWork (sparseAccumulation M (theoremRepeat k x) (suc zero))
+    ≡ k
+sparseWork-repeat-one-exact M x k =
+  trans (sparseWork-repeat-exact M x (suc zero) k) (one-times k)
+
+strictly-more-than-bound :
+  ∀ {A : Set} (M : CommutativeMonoid A) (x : A) (B : Nat) →
+  B <
+  sparseWork
+    (sparseAccumulation M (theoremRepeat (suc B) x) (suc zero))
+strictly-more-than-bound M x B =
+  subst
+    (λ z → B < z)
+    (sym (sparseWork-repeat-one-exact M x (suc B)))
+    (s≤s z≤n)
+
+no-uniform-sparse-work-bound :
+  ∀ {A : Set} (M : CommutativeMonoid A) (x : A) →
+  ¬ (∃ λ B →
+       ∀ xs →
+       sparseWork (sparseAccumulation M xs (suc zero)) ≤ B)
+no-uniform-sparse-work-bound M x (B , bound) =
+  <⇒≱
+    (strictly-more-than-bound M x B)
+    (bound (theoremRepeat (suc B) x))
+
+finite-sparse-accumulation-not-injective :
+  ∀ {n : Nat}
+  (M : CommutativeMonoid (Fin n)) (x : Fin n) →
+  ¬ Injective _≡_ _≡_
+    (λ k → theoremAccumulate M (theoremRepeat k x))
+finite-sparse-accumulation-not-injective {n} M x =
+  <⇒notInjective
+    (n<1+n n)
+    (λ i → theoremAccumulate M (theoremRepeat (toℕ i) x))
+
+finite-sparse-length-decoder-impossible :
+  ∀ {n : Nat}
+  (M : CommutativeMonoid (Fin n)) (x : Fin n)
+  (decode : Fin n → Nat) →
+  ¬ (∀ k →
+     decode (theoremAccumulate M (theoremRepeat k x)) ≡ k)
+finite-sparse-length-decoder-impossible M x decode sound =
+  finite-sparse-accumulation-not-injective M x
+    (λ {i} {j} collision →
+      trans
+        (sym (sound i))
+        (trans (cong decode collision) (sound j)))
+
+record TypedOperator (A B : Set) : Set where
+  constructor typedOperator
+  field run : A → B
+open TypedOperator public
+
+typedCompose :
+  ∀ {A B C : Set} →
+  TypedOperator B C →
+  TypedOperator A B →
+  TypedOperator A C
+typedCompose g f = typedOperator (λ x → run g (run f x))
+
+typedCompose-law :
+  ∀ {A B C : Set}
+  (g : TypedOperator B C) (f : TypedOperator A B) (x : A) →
+  run (typedCompose g f) x ≡ run g (run f x)
+typedCompose-law g f x = refl
