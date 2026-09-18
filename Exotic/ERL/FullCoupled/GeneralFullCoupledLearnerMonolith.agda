@@ -440,11 +440,10 @@ munchausenScale8 : Nat
 munchausenScale8 = 16
 
 finiteQLog2Bias : SparseWeight → Int8
-finiteQLog2Bias (sparseWeight n d) with natEq n zero
-... | yes = zero8
-... | no with natLE n d
-... | yes = int8Neg (int8OfNat ((munchausenScale8 * (d ∸ n)) / n))
-... | no = int8OfNat ((munchausenScale8 * (n ∸ d)) / n)
+finiteQLog2Bias (sparseWeight zero d) = zero8
+finiteQLog2Bias (sparseWeight (suc n) d) with natLE (suc n) d
+... | yes = int8Neg (int8OfNat ((munchausenScale8 * (d ∸ suc n)) / (suc n)))
+... | no = int8OfNat ((munchausenScale8 * ((suc n) ∸ d)) / (suc n))
 
 negativeMunchausen : SparseWeight → Int8
 negativeMunchausen = finiteQLog2Bias
