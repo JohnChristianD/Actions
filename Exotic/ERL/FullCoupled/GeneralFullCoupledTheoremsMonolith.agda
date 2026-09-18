@@ -289,10 +289,10 @@ record FiniteSSRN (S I O : Set) : Set₁ where
 open FiniteSSRN public
 
 ssmToSSRN : ∀ {S I O} → FiniteSSM S I O → FiniteSSRN S I O
-ssmToSSRN M = finiteSSRN (transition M) (transition M) (output M) (output M)
+ssmToSSRN M = finiteSSRN (transition M) (output M)
 
 ssrnToSSM : ∀ {S I O} → FiniteSSRN S I O → FiniteSSM S I O
-ssrnToSSM R = finiteSSM (recurrent R) (recurrent R) (readoutR R)
+ssrnToSSM R = finiteSSM (recurrent R) (readoutR R)
 
 ssm-ssrn-left : ∀ {S I O} (M : FiniteSSM S I O) →
   ssmToSSRN (ssrnToSSM (ssmToSSRN M)) ≡ ssmToSSRN M
