@@ -57,44 +57,26 @@ write_report(!IO) :-
     io.open_output(".ci/discovery/last-search.json", Result, !IO),
     (
         Result = ok(Stream),
-        io.write_string(Stream,
-            "{
-"
-            "  "accepted": true,
-"
-            "  "backend": "mercury-exact-finite-search",
-"
-            "  "candidate": {
-"
-            "    "policy_path": ["lcb_score", "sparsemax2"],
-"
-            "    "attention_path": ["rope_quarter", "wht4", "project_left"],
-"
-            "    "target_path": ["qlog2_bias", "watkins_q2"]
-"
-            "  },
-"
-            "  "semantics": {
-"
-            "    "policy": "LCB + sparsemax/Tsallis-2",
-"
-            "    "attention": "finite Rademacher-phase + Walsh-Hadamard",
-"
-            "    "target": "negative q=2 Munchausen bias + Watkins",
-"
-            "    "carrier": "Z/256Z plus Nat bookkeeping"
-"
-            "  },
-"
-            "  "jaxtar_scope": "A/Q graph model and certificate, not the Python/JAX engine"
-"
-            "}
-",
-            !IO),
+        io.write_string(Stream, "{\n", !IO),
+        io.write_string(Stream, "  \"accepted\": true,\n", !IO),
+        io.write_string(Stream, "  \"backend\": \"mercury-exact-finite-search\",\n", !IO),
+        io.write_string(Stream, "  \"candidate\": {\n", !IO),
+        io.write_string(Stream, "    \"policy_path\": [\"lcb_score\", \"sparsemax2\"],\n", !IO),
+        io.write_string(Stream, "    \"attention_path\": [\"rope_quarter\", \"wht4\", \"project_left\"],\n", !IO),
+        io.write_string(Stream, "    \"target_path\": [\"qlog2_bias\", \"watkins_q2\"]\n", !IO),
+        io.write_string(Stream, "  },\n", !IO),
+        io.write_string(Stream, "  \"semantics\": {\n", !IO),
+        io.write_string(Stream, "    \"policy\": \"LCB + sparsemax/Tsallis-2\",\n", !IO),
+        io.write_string(Stream, "    \"attention\": \"finite Rademacher-phase + Walsh-Hadamard\",\n", !IO),
+        io.write_string(Stream, "    \"target\": \"negative q=2 Munchausen bias + Watkins\",\n", !IO),
+        io.write_string(Stream, "    \"carrier\": \"Z/256Z plus Nat bookkeeping\"\n", !IO),
+        io.write_string(Stream, "  },\n", !IO),
+        io.write_string(Stream, "  \"jaxtar_scope\": \"A/Q graph model and certificate, not the Python/JAX engine\"\n", !IO),
+        io.write_string(Stream, "}\n", !IO),
         io.close_output(Stream, !IO)
     ;
-        Result = error(Error),
-        io.write_string("ERROR: cannot write discovery report: " ++ Error ++ "\n", !IO),
+        Result = error(_),
+        io.write_string("ERROR: cannot write discovery report\n", !IO),
         io.set_exit_status(1, !IO)
     ).
 
