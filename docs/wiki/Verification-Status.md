@@ -4,7 +4,9 @@ Last audited: 2026-09-19.
 
 ## Current code head
 
-`3083a82ccb6bbcb1089f6718199c89b6e31b6da1`
+`a2d1ff089d615adaacfff824c6152737908a7068`
+
+Docs-only commits after this code head update the wiki without changing the proof/CI source.
 
 The current active verification workflow is:
 
@@ -16,11 +18,11 @@ The current theorem entrypoint is:
 
 ## Post-fix workflow
 
-Run `35400721899` is currently in progress.
+Run `35400839457` is queued for the latest CI repair.
 
-At the latest inspection, all four jobs had initialized successfully and were still in container initialization, before Guile-native checkout or the proof lanes executed.
+The preceding run `35400721899` failed at container shell startup because the pinned image exposed `guix` but not a standalone `guile` executable. The workflow now launches its Guile shell through `guix shell --pure guile`.
 
-Therefore the post-fix architecture is not yet empirically green. The old failure at JavaScript checkout is no longer the current workflow shape.
+No post-fix run has yet reached the Agda or Mercury lanes, so the current status is **pending**, not green.
 
 ## Structural repairs now present
 
@@ -33,6 +35,7 @@ Therefore the post-fix architecture is not yet empirically green. The old failur
 - `TheoremsMonolith.agda` is the single canonical theorem discovery entrypoint.
 - Mercury A/Q certificate folded into the theorem monolith.
 - Guile-native Git checkout replaces `actions/checkout` inside the Guix container.
+- The Guix workflow shell launches Guile through the pinned Guix environment.
 - Discovery artifact checking no longer depends on `actions/upload-artifact`.
 - Surface audit rejects Haskell, Python, JS/TS, JVM-family, Elm, PureScript, shell, and Windows script source.
 
@@ -48,4 +51,4 @@ This is a port of the finite A/Q graph/certificate boundary, not a full JAX/JAxt
 
 A theorem is called verified only after the current Guix/Agda `--safe` lane has actually checked its owning module.
 
-The current in-progress run is therefore recorded as pending, not green.
+The queued run is therefore recorded as pending, not green.
