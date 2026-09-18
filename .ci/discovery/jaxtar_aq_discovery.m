@@ -54,7 +54,7 @@ verify_path(Channel, [Op | Ops], Final) :-
 
 :- pred write_report(io::di, io::uo) is det.
 write_report(!IO) :-
-    io.open_output(".ci/discovery/last-search.json", Result, !IO),
+    io.open_output("last-search.json", Result, !IO),
     (
         Result = ok(Stream),
         io.write_string(Stream, "{\n", !IO),
