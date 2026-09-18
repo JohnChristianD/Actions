@@ -140,9 +140,11 @@ jobs:
           test -f ".ci/discovery/last-search.json"
           test -f ".ci/discovery/openes-composition-candidate.json"
           test -f ".ci/discovery/gesmr-composition-candidate.json"
+          test -f ".ci/discovery/tsts-pvs-composition-candidate.json"
           printf '%s\n' "discovery-report=present"
           printf '%s\n' "openes-composition-report=present"
           printf '%s\n' "gesmr-composition-report=present"
+          printf '%s\n' "tsts-pvs-composition-report=present"
 
   surface:
     name: Guix / no Haskell, Python, JVM, JS, or alternate-language surface
