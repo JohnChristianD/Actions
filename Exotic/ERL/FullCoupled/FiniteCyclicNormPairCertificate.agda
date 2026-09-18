@@ -195,6 +195,24 @@ learnerSparseSupportCertificate K q c =
     refl
     (L.sparsemax-support-nonempty K q c)
 
+learnerNormBudget-step-monotone :
+  ∀ {A} (K : L.LearnerKernel A) s reward →
+  normPairOperatorBudget (L.normState s) ≤
+  normPairOperatorBudget (L.normState (L.learnerStep K s reward))
+learnerNormBudget-step-monotone K s reward =
+  normPairOperatorBudget-step-monotone
+    (L.normState s)
+    (L.q s (L.generalPolicy K s))
+    (L.int8Add
+      reward
+      (L.munchausenSignal
+        (L.mode K)
+        (L.sparsemaxWeight
+          (L.actionSpaceK K)
+          (L.q s)
+          (L.counts s)
+          (L.generalPolicy K s)))
+
 ------------------------------------------------------------------------
 -- The certificate layer is intentionally orthogonal to the reservoir
 -- theorem: it bounds finite transition separation/gain, while the
