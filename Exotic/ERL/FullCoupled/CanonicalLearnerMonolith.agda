@@ -740,6 +740,10 @@ canonicalQLogControlStep K s =
 canonicalSignal : FullLearnerKernel → FullLearnerState → Int8
 canonicalSignal = canonicalWatkinsTarget
 
+canonicalSignal-watkins-target : ∀ K s →
+  canonicalSignal K s ≡ canonicalWatkinsTarget K s
+canonicalSignal-watkins-target K s = refl
+
 canonicalWatkinsStep : FullLearnerKernel → FullLearnerState → WatkinsState
 canonicalWatkinsStep K s =
   watkinsStep (watkinsKernel K)
@@ -770,6 +774,14 @@ canonicalRecurrentInput-law K s = refl
 
 canonicalOptimizerStep : FullLearnerKernel → FullLearnerState → F4IntUState
 canonicalOptimizerStep K s = f4ThetaStep (optimizerKernel K) (optimizer s) (canonicalSignal K s)
+
+canonicalOptimizerStep-qMunchausen-L2 : ∀ K s →
+  canonicalOptimizerStep K s ≡
+  f4ThetaStep
+    (optimizerKernel K)
+    (optimizer s)
+    (canonicalWatkinsTarget K s)
+canonicalOptimizerStep-qMunchausen-L2 K s = refl
 
 canonicalCountStep : FullLearnerKernel → FullLearnerState → LCBCountState
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
