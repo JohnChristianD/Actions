@@ -6,7 +6,7 @@ Last audited: 2026-09-19.
 
 Current code/proof source is moving with the TSTS-only refactor. The most recent code/CI repair commit currently visible is:
 
-`e5dae8eac5d76ecae6fff53e35de4edd9a934449`
+`dc4d58b00f23970d9652166a718437a4943f4d05`
 
 The current theorem entrypoint is:
 
@@ -15,7 +15,7 @@ The current theorem entrypoint is:
 ## Current workflow
 
 Latest verification run for the current code changes:
-`35405054668`
+`35405621105`
 
 The immediately preceding run `35404988310` failed in the container checkout step because the Guix daemon socket was absent, before the Agda or Mercury lanes could execute. The workflow now starts `guix-daemon --disable-chroot` inside the pinned CI container and authorizes the standard Guix substitute keys before checkout.
 
