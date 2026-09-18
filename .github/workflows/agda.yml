@@ -65,6 +65,9 @@ jobs:
       - name: Check proof-carrying inverse vectors
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteInverseVector.agda
 
+      - name: Check connected operator complexity
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/ConnectedOperatorComplexity.agda
+
       - name: Check connected operator composition complexity
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/ConnectedOperatorCompositionComplexity.agda
 
