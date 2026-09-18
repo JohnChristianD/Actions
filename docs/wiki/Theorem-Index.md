@@ -91,6 +91,27 @@ This is a finite symbolic specialization of EvoSAX `Open_ES`: an antithetic two-
 
 The new composition theorem proves that the optimizer variation can feed the existing executable learner while preserving the norm-pair observable and the GRU persistent quotient, and that the current policy remains invariant under an optimizer-only probe replacement.
 
+### Finite GESMR endogenous composition
+
+The new meta-search candidate is `GESMR_GA`, selected for the stronger requirement set of elitist population selection, adaptive mutation rates, grouped mutation rates, canonical learner evaluation, and Watkins/F4-L2/GRU tell semantics.
+
+The monolith now contains:
+
+- `FiniteGESMRGroup`
+- `finiteGESMRProbe`
+- `finiteGESMREvaluate`
+- `finiteGESMRTell`
+- `FiniteGESMRWatkinsF4L2GRUCompositionTheorem`
+- `finite-gesmr-watkins-f4-l2-gru-composition-theorem`
+
+The key composed dependency is:
+
+`F4/L2 probe -> endogenous Watkins target -> GRU tell + F4/L2 tell`
+
+while the `NormPair` observable and persistent-GRU quotient are preserved across the canonical learner step.
+
+This is a repository-local finite symbolic specialization inspired by GESMR-GA. It is not a claim of numerical equivalence with the JAX implementation.
+
 ### Mercury / JAxtar A/Q certificate
 
 The same theorem monolith now contains:
