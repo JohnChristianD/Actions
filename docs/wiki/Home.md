@@ -2,6 +2,8 @@
 
 Last audited: 2026-09-19.
 
+Current code head: `a2d1ff089d615adaacfff824c6152737908a7068`.
+
 ## Single active theorem source
 
 The current canonical theorem entrypoint is:
@@ -45,7 +47,7 @@ The finite A/Q discovery path is Mercury-native. Python is no longer in the Guix
 
 The repository source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files from the canonical surface.
 
-The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking pinned Guix-provided Git.
+The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking Guix-provided Git. The workflow shell itself now launches Guile through `guix shell`, since the pinned container exposes `guix` rather than a standalone `guile` executable.
 
 ## JAxtar A/Q boundary
 
@@ -71,7 +73,7 @@ The active source languages are intentionally small:
 
 No JVM language, Elm, PureScript, JavaScript, or TypeScript layer is needed by the current formal architecture.
 
-The GitHub Actions platform itself can run JavaScript actions, but the canonical Guix workflow no longer relies on them inside its job container. GitHub documents that job-container steps execute in the specified container and that JavaScript actions execute on the runner environment, which is why the old in-container `actions/checkout` arrangement was fragile here.
+The GitHub Actions platform itself can run JavaScript actions, but the canonical Guix workflow no longer relies on them inside its job container.
 
 ## CleanRL / LeanRL relationship
 
