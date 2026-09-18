@@ -2,61 +2,50 @@
 
 Last audited: 2026-09-19.
 
-## Current architecture
+## Current code head
 
-Canonical theorem entrypoint:
+`3083a82ccb6bbcb1089f6718199c89b6e31b6da1`
 
-`Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
-
-Canonical implementation entrypoint:
-
-`Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
-
-Canonical CI entrypoint:
+The current active verification workflow is:
 
 `.github/workflows/guix-composition.yml`
 
-The old workflow family and the superseded canonical theorem module have been pruned.
+The current theorem entrypoint is:
 
-## Latest historical failure
+`Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
 
-The previous Guix run `35397895896` failed at `actions/checkout@v5` inside the Guix container.
+## Post-fix workflow
 
-That specific failure mode has been removed from the workflow: the current workflow performs source checkout with Guile invoking Guix-provided Git, then loads the pinned CI driver.
+Run `35400721899` is currently in progress.
 
-No current post-fix Guix run has yet established a green result, so the repair is structurally applied but not yet empirically closed.
+At the latest inspection, all four jobs had initialized successfully and were still in container initialization, before Guile-native checkout or the proof lanes executed.
 
-## Current migration
+Therefore the post-fix architecture is not yet empirically green. The old failure at JavaScript checkout is no longer the current workflow shape.
 
-The intended verification path is:
+## Structural repairs now present
 
-`Guix channel pin -> pure manifest -> Agda --safe + Mercury`
+- Python discovery implementation removed.
+- Python removed from the pinned Guix manifest.
+- Mercury now emits the finite A/Q discovery report directly.
+- Only `.github/workflows/guix-composition.yml` remains.
+- Old Agda/F4/composite/symbolic-discovery workflows removed.
+- Old canonical theorem module removed.
+- `TheoremsMonolith.agda` is the single canonical theorem discovery entrypoint.
+- Mercury A/Q certificate folded into the theorem monolith.
+- Guile-native Git checkout replaces `actions/checkout` inside the Guix container.
+- Discovery artifact checking no longer depends on `actions/upload-artifact`.
+- Surface audit rejects Haskell, Python, JS/TS, JVM-family, Elm, PureScript, shell, and Windows script source.
 
-Python finite discovery is removed.
+## JAxtar A/Q status
 
-The current surface audit rejects:
+Mercury now owns the executable finite A/Q graph verification and JSON report.
 
-- Haskell;
-- Python;
-- JavaScript / TypeScript;
-- JVM-family source;
-- Elm;
-- PureScript;
-- shell and Windows script files.
+Agda owns the corresponding typed certificate and composition theorem in `TheoremsMonolith.agda`.
 
-## JAxtar A/Q
+This is a port of the finite A/Q graph/certificate boundary, not a full JAX/JAxtar solver reimplementation.
 
-The A/Q graph is now represented twice in different proof roles:
+## Verification rule
 
-- Mercury performs the executable finite path check and writes the deterministic discovery report.
-- Agda `TheoremsMonolith.agda` contains the corresponding typed certificate and connected composition theorem.
+A theorem is called verified only after the current Guix/Agda `--safe` lane has actually checked its owning module.
 
-This is a Mercury + Guix + Agda port of the **A/Q graph/certificate boundary**.
-
-It is not a full reimplementation of JAxtar's JAX parallel A*/Q* engine.
-
-## Interpretation rule
-
-The theorem monolith is the current source of truth for canonical theorem discovery.
-
-A theorem is called verified only after the current Guix/Agda `--safe` job actually reaches and checks it.
+The current in-progress run is therefore recorded as pending, not green.
