@@ -12,6 +12,10 @@ on:
       - '.github/workflows/coupled-f4-closure.yml'
   workflow_dispatch:
 
+concurrency:
+  group: coupled-f4-closure-main
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
