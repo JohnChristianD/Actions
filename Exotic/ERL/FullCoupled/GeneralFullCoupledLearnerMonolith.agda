@@ -192,7 +192,7 @@ supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemp
 
 sparsemax-support-nonempty : ∀ {A} (K : ActionSpace A) (q : QVec A) (c : CountVec A) →
   supportSize K q c ≢ zero
-sparsemax-support-nonempty K q c =
+sparsemax-support-nonempty {A} K q c =
   searchSupport-positive
     (sortScores (scoreList q c))
     sparsemaxTemperature
