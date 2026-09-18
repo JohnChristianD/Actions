@@ -115,11 +115,11 @@ parameter_pattern_from([optimizer_tag | Ts], I) =
 
 :- func replacement_expr(replacement_tag, int) = string.
 replacement_expr(attention_tag, I) =
-    "C.attentionReplacement a" ++ nat_string(I).
+    "attentionReplacement a" ++ nat_string(I).
 replacement_expr(norm_tag, I) =
-    "C.normReplacement n" ++ nat_string(I).
+    "normReplacement n" ++ nat_string(I).
 replacement_expr(optimizer_tag, I) =
-    "C.optimizerReplacement o" ++ nat_string(I).
+    "optimizerReplacement o" ++ nat_string(I).
 
 :- func replacement_list_expr(list(replacement_tag)) = string.
 replacement_list_expr(Tags) = replacement_list_expr_from(Tags, 1).
@@ -139,14 +139,14 @@ render_policy_candidate(Tags) =
     policy_candidate_name(Tags) ++ " :" ++
     "\n  ∀ K s" ++ parameter_binders(Tags) ++ " →" ++
     "\n  C.canonicalPolicy K" ++
-    "\n    (C.applyLearnerReplacements" ++
+    "\n    (applyLearnerReplacements" ++
     "\n      (" ++ replacement_list_expr(Tags) ++ ")" ++
     "\n      s)" ++
     "\n  ≡" ++
     "\n  C.canonicalPolicy K s" ++
     "\n" ++
     policy_candidate_name(Tags) ++ parameter_pattern(Tags) ++ " =" ++
-    "\n  C.canonicalPolicy-learnerReplacement-composition" ++
+    "\n  canonicalPolicy-learnerReplacement-composition" ++
     "\n    K s (" ++ replacement_list_expr(Tags) ++ ")" ++
     "\n\n".
 
@@ -159,7 +159,7 @@ render_preservation_candidate(norm_full_step_composition, N) =
     "\n  ≡" ++
     "\n  C.normPairWeightPlusOne (C.norm s)" ++
     "\ncandidate_norm_full_step_" ++ nat_string(N) ++ " K s =" ++
-    "\n  C.canonicalNormPair-afterFullStep-iterate K " ++
+    "\n  canonicalNormPair-afterFullStep-iterate K " ++
     nat_string(N) ++ " s" ++
     "\n\n".
 render_preservation_candidate(persistent_gru_full_step_composition, N) =
@@ -170,7 +170,7 @@ render_preservation_candidate(persistent_gru_full_step_composition, N) =
     "\n  ≡" ++
     "\n  C.persistentGRU (C.gru s)" ++
     "\ncandidate_persistent_gru_full_step_" ++ nat_string(N) ++ " K s =" ++
-    "\n  C.canonicalPersistentGRU-afterFullStep-iterate K " ++
+    "\n  canonicalPersistentGRU-afterFullStep-iterate K " ++
     nat_string(N) ++ " s" ++
     "\n\n".
 render_preservation_candidate(_, _) = "".
@@ -199,12 +199,12 @@ write_programs(Stream, [P | Ps], !IO) :-
 
 :- pred write_agda_program(list(program)::in, io::di, io::uo) is det.
 write_agda_program(Programs, !IO) :-
-    io.open_output("GeneratedLearnerCompositionDiscovery.agda", Result, !IO),
+    io.open_output("../../Exotic/ERL/FullCoupled/GeneratedLearnerCompositionDiscovery.agda", Result, !IO),
     (
         Result = ok(Stream),
         io.write_string(Stream,
             "{-# OPTIONS --safe #-}\n\n" ++
-            "module GeneratedLearnerCompositionDiscovery where\n\n" ++
+            "module Exotic.ERL.FullCoupled.GeneratedLearnerCompositionDiscovery where\n\n" ++
             "open import Data.List.Base using (List; []; _∷_)\n" ++
             "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
             "open import Exotic.ERL.FullCoupled.TheoremsMonolith\n\n",
