@@ -249,52 +249,52 @@ gruPersistent s = matrixZ s , (matrixR s , (matrixH s , optimizerToken s))
 
 data F4Z : Set where
   f4Pos : Nat → F4Z
-  f4Neg : Nat → F4Z
+  f4NegVal : Nat → F4Z
 
 f4NegOfNat : Nat → F4Z
 f4NegOfNat zero = f4Pos zero
-f4NegOfNat (suc n) = f4Neg n
+f4NegOfNat (suc n) = f4NegVal n
 
 f4NegZ : F4Z → F4Z
 f4NegZ (f4Pos zero) = f4Pos zero
-f4NegZ (f4Pos (suc n)) = f4Neg n
-f4NegZ (f4Neg n) = f4Pos (suc n)
+f4NegZ (f4Pos (suc n)) = f4NegVal n
+f4NegZ (f4NegVal n) = f4Pos (suc n)
 
 f4AddZ : F4Z → F4Z → F4Z
 f4AddZ (f4Pos m) (f4Pos n) = f4Pos (m + n)
-f4AddZ (f4Pos m) (f4Neg n) with natLE m (suc n)
-... | yes = f4Neg (n ∸ m)
+f4AddZ (f4Pos m) (f4NegVal n) with natLE m (suc n)
+... | yes = f4NegVal (n ∸ m)
 ... | no = f4Pos (m ∸ suc n)
-f4AddZ (f4Neg m) (f4Pos n) = f4AddZ (f4Pos n) (f4Neg m)
-f4AddZ (f4Neg m) (f4Neg n) = f4Neg (m + n + 1)
+f4AddZ (f4NegVal m) (f4Pos n) = f4AddZ (f4Pos n) (f4NegVal m)
+f4AddZ (f4NegVal m) (f4NegVal n) = f4NegVal (m + n + 1)
 
 f4MulZ : F4Z → F4Z → F4Z
 f4MulZ (f4Pos m) (f4Pos n) = f4Pos (m * n)
-f4MulZ (f4Pos m) (f4Neg n) = f4NegZ (f4Pos (m * suc n))
-f4MulZ (f4Neg m) (f4Pos n) = f4NegZ (f4Pos (suc m * n))
-f4MulZ (f4Neg m) (f4Neg n) = f4Pos (suc m * suc n)
+f4MulZ (f4Pos m) (f4NegVal n) = f4NegZ (f4Pos (m * suc n))
+f4MulZ (f4NegVal m) (f4Pos n) = f4NegZ (f4Pos (suc m * n))
+f4MulZ (f4NegVal m) (f4NegVal n) = f4Pos (suc m * suc n)
 
 toF4Z : Int8 → F4Z
 toF4Z x with natLE (toℕ (code x)) 127
 ... | yes = f4Pos (toℕ (code x))
-... | no = f4Neg (255 ∸ toℕ (code x))
+... | no = f4NegVal (255 ∸ toℕ (code x))
 
 clipF4Z : F4Z → Int8
 clipF4Z (f4Pos n) with natLE n 127
 ... | yes = int8OfNat n
 ... | no = int8OfNat 127
-clipF4Z (f4Neg n) with natLE n 127
+clipF4Z (f4NegVal n) with natLE n 127
 ... | yes = int8OfNat (255 ∸ n)
 ... | no = int8OfNat 128
 
 f4Add : Int8 → Int8 → Int8
 f4Add x y = clipF4Z (f4AddZ (toF4Z x) (toF4Z y))
 
-f4Neg : Int8 → Int8
-f4Neg x = clipF4Z (f4NegZ (toF4Z x))
+f4NegVal : Int8 → Int8
+f4NegVal x = clipF4Z (f4NegZ (toF4Z x))
 
 f4Sub : Int8 → Int8 → Int8
-f4Sub x y = f4Add x (f4Neg y)
+f4Sub x y = f4Add x (f4NegVal y)
 
 f4Div128 : F4Z → F4Z
 f4Div128 (f4Pos n) = f4Pos (n / 128)
