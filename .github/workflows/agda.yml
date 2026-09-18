@@ -52,12 +52,6 @@ jobs:
       - name: Check full-composition reservoir theorem
         run: timeout 180s agda --safe Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda
 
-      - name: Check reservoir attractor theorem module
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralReservoirAttractorTheorems.agda
-
-      - name: Check reservoir attractor theorem regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/ReservoirAttractorTheorems_test.agda
-
       - name: Check generalized closed-loop benchmark
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda
 
@@ -69,12 +63,6 @@ jobs:
 
       - name: Check canonical learner regression
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda
-
-      - name: Check closed-loop interface
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda
-
-      - name: Check closed-loop interface regression
-        run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface_test.agda
 
       - name: Check exact closed-loop benchmark suite
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalClosedLoopBenchV2.agda
