@@ -1,101 +1,124 @@
 # Theorem Index
 
-## A. Kernel-checked canonical results
+Last audited: 2026-09-19 against `d24c59101794ad3b6684889f709e46b5f0c10478`.
 
-### `F4HardsignKernel.agda`
+## A. Canonical learner laws
 
-`clip-add-boundary`: canonical clipping at +127.
+### Finite carrier and sparse policy
 
-`scaled-mul-example`: scaled signed multiplication gives 32 for 64 and 64.
+- `int8Roundtrip`
+- `temperatureCodeLaw`
+- `temperatureTieLaw`
+- `temperaturePositiveUnitLaw`
+- `temperatureNegativeUnitLaw`
+- `negativeFiniteQLogLaw`
 
-`identity-gate-example`: a positive Int8 input maps to the positive hard-sign gate.
+### Walsh and phase layer
 
-`mobius-gate-example` and `mobius-singularity`: the optional Möbius branch machinery has the expected finite-rational cases.
+- `walshHadamardOrthogonality4`
+- `canonicalWalshWidth-power4`
+- `phase4-period4` in the theorem monolith
+- `walshRademacherRope4-period4` in the theorem monolith
 
-`state-independent-gate`: the identity gate ignores any state arguments.
+### GRU structure
 
-### `CanonicalCoupledF4Learner.agda`
+- `persistent-preservation`
+- `gruParameterPersistence`
+- `gruEquivalent-refl`
+- `gruStep-respects-equivalence`
+- `gruActionAssociativity`
+- `gruInputActionAssociativity`
 
-`canonicalSign-state-independent`: canonical sign gate is a function of the input alone.
+### Canonical full-step projections
 
-`canonicalF4-global-L2-law`: the code-level definition of the coupled parameter-level βθ term reduces definitionally to the stated Δθ expression.
+- `canonicalFullStep-clock`
+- `canonicalFullStep-watkins`
+- `canonicalFullStep-attention`
+- `canonicalFullStep-gru`
+- `canonicalFullStep-optimizer`
+- `canonicalFullStep-norm`
+- `canonicalFullStep-counts`
+- `canonicalFullStep-qLog`
+- `canonicalFullStep-qLogControl`
+- `canonicalTotalCountStep`
+- `canonicalNoFixedPoint`
 
-`canonicalF4-old-ell-law`: the power-of-two factor uses the pre-update level.
+These are structural projection/equality theorems. They describe the current function definitions; they do not establish an external benchmark optimum.
 
-`canonicalCoupledStep-clock`: one coupled step increments the clock.
+## B. Composed A/Q theorem
 
-`canonicalCoupledGRU-gate-law`: the canonical gate remains the sign function in the coupled learner.
+`CanonicalAQLoopTheorem` packages six component relationships:
 
-### `CanonicalCoupledCompositionTheorems.agda`
+1. policy composition;
+2. learned-attention composition;
+3. shared Watkins signal;
+4. GRU/attention coupling;
+5. F4 signal coupling;
+6. endogenous Watkins target composition.
 
-`canonicalCoupled-step-clock`: inherited clock law.
+The constructor `canonical-aq-loop-theorem` supplies all six fields with definitionally equal proofs.
 
-`canonicalCoupled-no-fixed-point`: the coupled step cannot be a fixed point because the clock strictly increments.
+## C. Connected composition theorem
 
-`reservoir-condition`: a left inverse implies injectivity and therefore discrete separation of distinct states.
+The latest commit adds:
 
-`canonical-reservoir-condition`: the identity observation is a concrete lossless witness, so its NSP-style separation is closed.
+- `canonicalClockAfter`
+- `canonicalAperiodic`
+- `canonicalNoNontrivialFiniteCycle`
 
-`signGRUScan-depth-unbounded`: natural-number scan depth is not bounded by any finite predecessor B.
+and packages them in `CanonicalConnectedCompositionTheorem` with:
 
-`associative-scan-triple`: triple composition of the scan action is propositionally equal in both parenthesizations.
+`aqLoop`
+`ropePhasePeriod`
+`clockGrowth`
+`finiteCycleExclusion`.
 
-`simultaneous-coupled-closure`: packages the reservoir-separation, arbitrary-depth-index, and triple-associativity results into one record.
+This is the current composed theorem boundary.
 
-Important: the reservoir result here is an exact left-inverse/identity observation theorem. It does not establish that an arbitrary learned reservoir observation is injective.
+"Complete" here means the declared fields of this record have been filled by exact source-level proofs. It does not mean every conceivable property of the learner has been proved.
 
-## B. General reservoir and attractor results
+## D. Mercury typed composition certificate
 
-`finiteCore-collision` and `finiteCore-tail-repeat` derive eventual repetition for any `Int8 -> Int8` deterministic map from finite-state pigeonhole reasoning.
+`GeneralFullCoupledTheoremsMonolith.agda` contains a typed A/Q discovery certificate:
 
-`hiddenProjection-step` and `hiddenProjection-step`'s law expose the hidden-state projection of the general learner step.
+- `AQChannel`
+- `AQOp`
+- `aqSource`
+- `aqTarget`
+- `MercuryJaxtarAQCertificate`
+- `MercuryJaxtarAQEmergence`
 
-`l1Weight-step-monotone` and `l1Weight-is-progress-not-dissipation` prove monotonic accumulation of the norm counter. They do not prove Lyapunov descent.
+The path joins connect critic -> sparsemax -> attention, attention -> Walsh/phase -> recurrent signal, and sparsemax -> Q-log bias -> Watkins signal.
 
-`basin-by-energy` derives a basin hit from the supplied `SymmetricAssociativeReservoir` fields, especially strict energy decrease outside the attractor.
+The certificate laws are exact finite symbolic equations. Its current fields should not be interpreted as a statistical or causal-fidelity claim about a trained model.
 
-`invariant-after-hit` proves that an already-hit attractor remains invariant under the supplied invariant field.
+## E. Learner faithfulness / closed loop
 
-`contextualRecall` derives a cue-specific basin hit from a supplied `MultiAttractorReservoir` certificate.
+`CanonicalClosedLoopInterface.agda` proves concrete structural laws such as:
 
-`contextualRecall-disjoint` is exactly the disjointness field exported by that certificate.
+- action indices stay within `Fin A`;
+- binary learner steps advance the clock;
+- regret is the declared truncated subtraction;
+- the closed-loop interface composes an environment step with a typed learner update.
 
-These are conditional theorems over records whose dynamics, invariant sets, energy, and descent properties are supplied as fields.
+`CanonicalFaithfulGameVariants.agda` supplies exact finite Toy Maze and FourRooms layout predicates.
 
-## C. General theorem monolith
+The current surface does not prove:
 
-The general theorem monolith contains reusable algebraic and proof-packaging infrastructure, including:
+- equivalence with an external Gymnax implementation;
+- equality with CleanRL behavior;
+- optimality on an external environment;
+- empirical generalization;
+- latent-model or cognitive "faithfulness".
 
-`learnerStep-clock`, `learnerNoFixedPoint`, `iterateLearner-clock`, and `clock-lower-bound` for the clocked learner.
+## F. Finite-state / observation boundary
 
-`gruPersistentLaw`, `gruStep-respects-equivalence`, and Möbius composition/prefix laws.
+The general theorem monolith also derives a strong finite-carrier obstruction from the learner's unbounded natural-number clock. In particular, a finite observation carrier cannot admit a left inverse for the full learner state under the stated assumptions.
 
-finite piecewise-rational closure through `prBranch-closure`, `prComposeInput-closure`, `prIterated-closure`, and `unbounded-depth-piecewise-rational-closure`.
+This is a theorem about the formal state representation. It is not a statement about every possible learned model.
 
-`finiteStateParameterComplete` for a fully typed finite-state kernel record.
+## G. Historical theorem pages
 
-ordered-carrier and midpoint machinery uses collision-safe field names `carrier≤` and `midpoint≤`.
+The older pages for `CanonicalCoupledF4Learner.agda` and `CanonicalCoupledCompositionTheorems.agda` describe an earlier semantic surface. They remain useful as historical records but are not the current canonical entrypoint.
 
-The theorem monolith also contains certificate records such as `LyapunovCertificate`, `ObservabilityWitness`, and related abstraction records. Their presence is not itself a proof that the canonical learner satisfies the fields.
-
-## D. Composite theorem packaging
-
-`MonolithCompositeReservoirTheorem.agda` proves concrete structural facts of the legacy learner, including clock-based non-fixed-point behavior, monotone norm counters, persistent GRU coordinates, and preservation of the legacy `l2Global` field.
-
-`composeMonolith` combines supplied KKT, Lyapunov, attractor, and reservoir certificates into one `CertifiedCompositeConclusion`.
-
-That constructor is a certificate composition theorem. It does not manufacture the KKT proof, strict Lyapunov decrease, attractor basin hit, or reservoir injectivity from the learner dynamics.
-
-In particular, the field `f4Coupling` in this composite module refers to the legacy `L.f4Step` and its stored `l2Global`. It should not be confused with the canonical parameter-level βθ term.
-
-## E. What is not currently established
-
-The current Safe Agda closure does not establish a theorem that the canonical learned reservoir has a nontrivial injective observation map.
-
-It does not establish global Lyapunov descent for the actual canonical coupled learner.
-
-It does not establish a KKT optimum for the sparsemax construction merely because a `KKTPathCertificate` record exists.
-
-It does not establish a global attractor basin for the canonical learner without supplying the corresponding attractor certificate fields.
-
-It does not turn the piecewise-rational theorem representation into the canonical GRU activation.
+For current proof status, see `Verification-Status.md`.
