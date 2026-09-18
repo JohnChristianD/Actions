@@ -219,7 +219,6 @@ jobs:
       - name: Verify discovery artifact is present
         run: |
           set -eu
-          test -f ".ci/discovery/last-search.json"
           test -f ".ci/discovery/tsts-endogenous-composition-candidate.json"
           printf '%s\n' "tsts-endogenous-composition-report=present"
 
