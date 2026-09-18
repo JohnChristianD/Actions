@@ -57,6 +57,8 @@ The F4/L2 case explicitly expands the target through thetaQ, probe, L2 correctio
 
 The proof is a repository-local finite semantic specialization. It does not inherit the external TSTS Bayesian regret theorem automatically.
 
+Historic standalone oracle gates were pruned from the active CI path. They were algebraic compatibility checks, not measured discovery-effectiveness comparisons, and they did not provide evidence that one discovery strategy outperformed another.
+
 
 
 ## Intrinsic learner theorem
@@ -71,3 +73,5 @@ attention replacement -> policy/count/Q-log invariance -> endogenous Watkins tar
 while preserving NormPair and persistent-GRU observables through the canonical full step.
 
 The prior verification run for this addition was `35405803150`, which failed at the Guix-native checkout step before Agda or Mercury executed. The theorem and direct test therefore remain formally unverified by CI until the hardened workflow completes.
+
+No active theorem asserts self-consistency of the program/tree-search oracle. Search is an outer learner-candidate mechanism; formal consistency claims target the learner.
