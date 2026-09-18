@@ -46,19 +46,24 @@ gru-persistent-invariant : ∀ s x →
   L.gruPersistent (L.gruStep s x) ≡ L.gruPersistent s
 gru-persistent-invariant s x = refl
 
-f4-l2-preserved : ∀ s g →
-  L.l2Global (L.f4Step s g) ≡ L.l2Global s
-f4-l2-preserved s g = refl
-
-initial-f4-l2-zero :
-  L.l2Global L.zeroF4 ≡ L.zero8
-initial-f4-l2-zero = refl
+f4-global-l2-law : ∀ s g →
+  L.f4DeltaTheta L.defaultF4Params s g ≡
+  L.f4Sub
+    (L.scaledF4
+      (L.f4Pow2Level (L.level s))
+      (L.hardSignGate g))
+    (L.scaledF4
+      (L.betaTheta L.defaultF4Params)
+      (L.f4ThetaFull s))
+f4-global-l2-law s g = refl
 
 gru-hidden-state-law : ∀ s x →
   L.hiddenState (L.gruStep s x) ≡
   L.int8Add
-    (L.int8Mul (L.hardSignGate x) (L.int8Add (L.hiddenState s) x))
-    (L.int8Mul (L.int8Neg (L.hardSignGate x)) (L.hiddenState s))
+    (L.hiddenState s)
+    (L.int8Mul
+      (L.hardSignGate x)
+      (L.int8Sub x (L.hiddenState s)))
 gru-hidden-state-law s x = refl
 
 record DiscreteObservation (S O : Set) : Set₁ where
@@ -152,7 +157,14 @@ record CertifiedCompositeConclusion
           L.pathWeight (L.normStep (L.normState s) (L.q s (L.generalPolicy K s)) reward))
     f4Coupling :
       ∀ s →
-        L.l2Global (L.f4Step (L.optimizer s) reward) ≡ L.l2Global (L.optimizer s)
+        L.f4DeltaTheta L.defaultF4Params (L.optimizer s) reward ≡
+        L.f4Sub
+          (L.scaledF4
+            (L.f4Pow2Level (L.level (L.optimizer s)))
+            (L.hardSignGate reward))
+          (L.scaledF4
+            (L.betaTheta L.defaultF4Params)
+            (L.f4ThetaFull (L.optimizer s)))
     gruCoupling :
       ∀ s →
         L.gruPersistent (L.gruStep (L.gru s) reward) ≡ L.gruPersistent (L.gru s)
@@ -175,7 +187,7 @@ composeMonolith K reward normKKT lyapunov attractor reservoir =
     (λ (s : L.LearnerState _) →
       norm-l1-monotone (L.normState s) (L.q s (L.generalPolicy K s)) reward ,
       norm-path-monotone (L.normState s) (L.q s (L.generalPolicy K s)) reward)
-    (λ (s : L.LearnerState _) → f4-l2-preserved (L.optimizer s) reward)
+    (λ (s : L.LearnerState _) → f4-global-l2-law (L.optimizer s) reward)
     (λ (s : L.LearnerState _) → gru-persistent-invariant (L.gru s) reward)
     normKKT
     lyapunov
