@@ -125,7 +125,7 @@ The narrow novelty candidate here is the formal endogenous connection:
 
 That is stronger than merely putting TSTS in front of a verifier because the verifier's result is not just an external accept/reject signal. The exact learner's own endogenous feedback is the scalar returned to the search state and simultaneously reused by two internal learner update channels.
 
-My literature check found adjacent work for every major ingredient, including TSTS, program-search Thompson sampling, and execution-feedback refinement. I did not find the exact formal composition above in the sources checked. That supports the repository-level statement "apparently not previously reported in the checked literature", but it is not a definitive priority or publication-level novelty claim.
+My literature check found adjacent work for every major ingredient, including TSTS, program-search Thompson sampling, and execution-feedback refinement. I did not find the exact formal composition above in the sources checked. That supports the repository-level statement "apparently not previously reported in the checked literature", but it is not a definitive priority or publication-level novelty claim. Historical multi-language oracle runners were not validated as discovery-effectiveness comparators, so they are no longer treated as discovery evidence.
 
 ## Why this is not merely trivial composition
 
@@ -145,6 +145,16 @@ and that same feedback is consumed twice inside the learner:
     Watkins target -> F4
 
 The theorem also proves that the connection does not destroy the existing preservation invariants. That makes the result a connected feedback theorem rather than an API-level concatenation of unrelated algorithms.
+
+## MCTX compatibility boundary
+
+DeepMind's MCTX is a JAX-native MCTS implementation whose search functions operate on batches in parallel and are JIT compiled for accelerator execution. citeturn752010search0
+
+Replacing TSTS with MCTX would change the search rule: MCTX provides MCTS algorithms, whereas TSTS provides Thompson-sampling tree selection with a posterior over tree choices. The current repository therefore keeps TSTS as the semantic search rule.
+
+A compatible optimization path is a **half-port at the evaluator boundary**: retain the TSTS posterior/sample/update semantics, but expose selected learner probes as a batch of independent tree evaluations and use a vectorized backend for the exact learner evaluator. That preserves the theorem's endogenous target semantics while allowing accelerator-oriented execution to be investigated separately.
+
+The current Mercury/Agda source policy intentionally does not import MCTX or JAX. An MCTX-style batch boundary would therefore be an optional execution backend, not a new source of truth. For the present three-branch finite boundary, actual throughput gains must be measured rather than inferred; the existing discovery driver is not a performance benchmark.
 
 ## Runtime boundary
 
