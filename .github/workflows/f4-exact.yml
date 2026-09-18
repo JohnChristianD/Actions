@@ -8,6 +8,10 @@ on:
       - '.github/workflows/f4-exact.yml'
   workflow_dispatch:
 
+concurrency:
+  group: f4-exact-main
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
