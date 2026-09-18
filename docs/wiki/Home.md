@@ -2,7 +2,7 @@
 
 Last audited: 2026-09-19.
 
-Current code head: `c764550d857c04f272c6d0e2e43c277b43dad74a`.
+Current code head: `42a210b7852916d1afd9877b4f720167fa54884d`.
 
 ## Single active theorem source
 
@@ -47,7 +47,7 @@ The finite A/Q discovery path is Mercury-native. Python is no longer in the Guix
 
 The repository source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files from the canonical surface.
 
-The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking Guix-provided Git. The workflow keeps source checkout and Guix pinning in the outer shell, then enters the pinned Guile environment.
+The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking Guix-provided Git. The workflow keeps source checkout and Guix pinning in the outer shell, then enters the pinned Guile environment. The latest repair run is pending; the previously observed Guile-checkout failure is not being treated as green.
 
 ## JAxtar A/Q boundary
 
