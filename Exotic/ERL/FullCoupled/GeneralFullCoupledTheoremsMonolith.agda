@@ -278,13 +278,13 @@ scanGRU-unbounded T (suc n) s x =
 
 record FiniteSSM (S I O : Set) : Set₁ where
   constructor finiteSSM
-  field transition readout : I → S → S
+  field transition : I → S → S
         output : S → O
 open FiniteSSM public
 
 record FiniteSSRN (S I O : Set) : Set₁ where
   constructor finiteSSRN
-  field recurrent outputR : I → S → S
+  field recurrent : I → S → S
         readoutR : S → O
 open FiniteSSRN public
 
