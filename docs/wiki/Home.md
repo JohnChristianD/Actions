@@ -2,7 +2,7 @@
 
 Last audited: 2026-09-19.
 
-Current code head: `a2d1ff089d615adaacfff824c6152737908a7068`.
+Current code head: `c764550d857c04f272c6d0e2e43c277b43dad74a`.
 
 ## Single active theorem source
 
@@ -39,7 +39,7 @@ Finite Toy Maze and FourRooms variants are represented directly in Agda.
 
 ## Mercury / Guix / Agda
 
-The executable verification path is now:
+The executable formal-RL path is now:
 
 `Guix -> Guile orchestration -> Agda --safe + Mercury`
 
@@ -47,7 +47,7 @@ The finite A/Q discovery path is Mercury-native. Python is no longer in the Guix
 
 The repository source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files from the canonical surface.
 
-The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking Guix-provided Git. The workflow shell itself now launches Guile through `guix shell`, since the pinned container exposes `guix` rather than a standalone `guile` executable.
+The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking Guix-provided Git. The workflow keeps source checkout and Guix pinning in the outer shell, then enters the pinned Guile environment.
 
 ## JAxtar A/Q boundary
 
@@ -62,6 +62,10 @@ The repository now contains a Mercury typed finite graph model and an Agda proof
 This is a Mercury/Agda formal port of the A/Q graph and certificate boundary.
 
 It is not a full port of the external JAxtar JAX search engine. The external JAxtar project is a JAX-native parallel A*/Q* solver with neural-heuristic integration; this repository keeps only the exact finite A/Q graph semantics needed by the proof/discovery surface.
+
+## Meta-search
+
+`docs/wiki/Meta-Search.md` defines the formal EvoSAX-family Mercury search layer, the JAxtar A*/Q graph-search boundary, the Lion-style program-discovery loop, and the manual parameter/import boundary.
 
 ## Language policy
 
