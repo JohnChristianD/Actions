@@ -127,6 +127,26 @@ An involution candidate must be a transformation defined over an actual learner 
 
 The current canonical learner does not yet claim a discovered involution theorem. Existing modular candidates include phase periodicity, persistent-GRU preservation, policy invariance under attention/NormPair/optimizer replacement, and the endogenous attention mediator. Future involution discovery should be evaluated against these learner definitions rather than through an independent oracle.
 
+## Learner-local symbolic composition discovery
+
+The search target is now a typed symbolic theorem program over actual learner transformations.
+
+The canonical transformation algebra is:
+
+- `LearnerReplacement`
+- `applyLearnerReplacement`
+- `applyLearnerReplacements`
+- `canonicalPolicy-learnerReplacement-invariant`
+- `canonicalPolicy-learnerReplacement-composition`
+- `canonicalNormPair-afterFullStep-iterate`
+- `canonicalPersistentGRU-afterFullStep-iterate`
+
+The CI search program `.ci/discovery/tsts_endogenous_discovery.m` enumerates finite transformation compositions and generates `GeneratedLearnerCompositionDiscovery.agda`. The generated module is compiled with `agda --safe`; therefore discovery acceptance is proof-producing rather than a metadata claim about an architecture label.
+
+The direct regression test is `LearnerComposition_Discovery_test.agda`.
+
+The semantic contract deliberately does not fix a discovery metric. A metric may affect candidate ordering later without changing what a theorem candidate means.
+
 ## B. Closed-loop faithfulness boundary
 
 `CanonicalClosedLoopInterface.agda` supplies the environment/agent/episode contract.
