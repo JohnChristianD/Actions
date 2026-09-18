@@ -1021,27 +1021,6 @@ minimaxBellman G V s x =
             (minActionsB G)))
       (maxActionsB G))
 
--- Singleton minimizer reduction.  This is the exact deterministic
--- degenerate-game reduction used to embed a one-player learner.
-minList-singleton :
-  ∀ (x : Nat) → minList (x ∷ []) ≡ x
-minList-singleton x = refl
-
-learnerMinimax-value-reduction :
-  ∀ {A : Nat}
-  (K : L.LearnerKernel A)
-  (s : L.LearnerState A)
-  (reward : L.Int8) →
-  minimaxValue (learnerMinimaxStateSystem K) s reward
-  ≡
-  maxList
-    (map
-      (λ a →
-        toℕ (L.code
-          (L.scoreA (L.q s) (L.counts s) a)))
-      (L.finList _))
-learnerMinimax-value-reduction K s reward = refl
-
 ------------------------------------------------------------------------
 -- The current learner is a genuine member of this minimax-inclusive
 -- state-system class.  The minimizer is the one-element degenerate
@@ -1133,6 +1112,57 @@ learnerMinimaxBellman-reduces :
         V (L.learnerStepGivenAction K s a reward))
       (L.finList _))
 learnerMinimaxBellman-reduces K V s reward = refl
+
+-- Policy-driven rollout of the same finite-action transition class.
+minimaxRollout :
+  ∀ {S X Y A B : Set}
+  (G : FiniteMinimaxStateSystem S X Y A B) →
+  (S → X → A) →
+  (S → X → B) →
+  List X →
+  S →
+  S
+minimaxRollout G π₁ π₂ [] s = s
+minimaxRollout G π₁ π₂ (x ∷ xs) s =
+  minimaxRollout G π₁ π₂ xs
+    (minimaxTransition G s x (π₁ s x) (π₂ s x))
+
+learnerMinimaxRollout :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (xs : List L.Int8)
+  (s : L.LearnerState A) →
+  minimaxRollout
+    (learnerMinimaxStateSystem K)
+    (λ s reward → L.generalPolicy K s)
+    (λ s reward → singletonAction)
+    xs s
+  ≡
+  runHistory (L.learnerStep K) xs s
+learnerMinimaxRollout K [] s = refl
+learnerMinimaxRollout K (x ∷ xs) s =
+  learnerMinimaxRollout
+    K
+    xs
+    (L.learnerStep K s x)
+
+-- The actual learner therefore occupies the same state-space trajectory
+-- class as the minimax extension; the minimax value is an additional
+-- Bellman functional over those exact action-conditioned branches.
+learner-minimax-state-class-inclusion :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (xs : List L.Int8)
+  (s : L.LearnerState A) →
+  minimaxRollout
+    (learnerMinimaxStateSystem K)
+    (λ s reward → L.generalPolicy K s)
+    (λ s reward → singletonAction)
+    xs s
+  ≡
+  learnerHistoryState K xs s
+learner-minimax-state-class-inclusion K xs s =
+  learnerMinimaxRollout K xs s
 
 ------------------------------------------------------------------------
 -- Reservoir-form relation.
