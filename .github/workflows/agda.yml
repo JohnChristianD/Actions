@@ -35,8 +35,21 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Set up Mercury
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget ca-certificates gnupg
+          wget -qO /tmp/paul.asc https://paul.bone.id.au/paul.asc
+          sudo cp /tmp/paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
+          echo "deb http://dl.mercurylang.org/deb/ noble main" | sudo tee /etc/apt/sources.list.d/mercury.list
+          sudo apt-get update
+          sudo apt-get install -y mercury-recommended
+          mmc --version
+
       - name: Reject forbidden theorem families, holes, and postulates
-        run: runghc .ci/CheckForbiddenTheorems.hs
+        run: |
+          mmc --make .ci/check_forbidden_theorems.m
+          timeout 120s ./check_forbidden_theorems
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
@@ -120,4 +133,13 @@ jobs:
         run: timeout 90s agda --safe Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda
 
       - name: Audit redundant learner modules
-        run: runghc .ci/discovery/PruneRedundantLearnerModules.hs
+        run: |
+          mmc --make .ci/discovery/prune_redundant_learner_modules.m
+          timeout 120s ./prune_redundant_learner_modules
+
+      - name: Audit Mercury surface
+        run: |
+          if find . -name '*.hs' -print -quit | grep -q .; then
+            echo "ERROR: Haskell source remains"
+            exit 1
+          fi
