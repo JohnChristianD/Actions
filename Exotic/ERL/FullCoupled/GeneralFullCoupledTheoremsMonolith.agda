@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Int as I
-open import Data.Integer.Base as Z using (_+_; _*_) 
+open import Data.Integer.Base as Z using ()
 open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
