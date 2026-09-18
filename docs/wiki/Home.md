@@ -1,20 +1,18 @@
-# Actions: Canonical Learner, Theorem Monolith, and Proof Environment
+# Actions: Canonical Learner, TSTS Endogenous Theorem, and Proof Environment
 
 Last audited: 2026-09-19.
 
-Current code head: `bb677317bd435dd4d23799cae4fbfb9878845ea0`.
+Current code head: `dc4d58b00f23970d9652166a718437a4943f4d05`.
 
 ## Single active theorem source
 
-The current canonical theorem entrypoint is:
+The canonical theorem entrypoint is:
 
 `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
 
-It owns the current A/Q composition theorem, connected composition theorem, phase periodicity, clock growth, finite-cycle exclusion, and the typed Mercury/JAxtar A/Q certificate.
+It owns the canonical learner composition laws, phase periodicity, clock growth, finite-cycle exclusion, and the active TSTS-only endogenous connected theorem.
 
-The older `CanonicalLearnerTheoremsMonolith.agda` and `CanonicalCoupledCompositionTheorems.agda` surfaces have been retired.
-
-The generic `GeneralFullCoupledTheoremsMonolith.agda` remains only as a legacy/general theorem substrate for noncanonical certificate machinery. It is not the discovery entrypoint.
+The older canonical theorem modules remain retired. The generic theorem monolith remains only as legacy/general infrastructure and is not the discovery entrypoint.
 
 ## Current learner components
 
@@ -35,64 +33,52 @@ The closed-loop interface gives typed:
 
 Finite Toy Maze and FourRooms variants are represented directly in Agda.
 
-"Faithful" is deliberately limited to the formal interface and exact finite predicates. It does not establish behavioral equivalence with an external Gymnax, CleanRL, or simulator implementation.
+“Faithful” is deliberately limited to the formal interface and exact finite predicates. It does not establish behavioral equivalence with an external simulator.
 
 ## Mercury / Guix / Agda
 
-The executable formal-RL path is now:
+The executable formal-RL path is:
 
 `Guix -> Guile orchestration -> Agda --safe + Mercury`
 
-The finite A/Q discovery path is Mercury-native. Python is no longer in the Guix manifest or discovery workflow.
+Mercury now owns the small finite TSTS composition boundary. Agda remains authoritative for exact learner semantics and theorem acceptance.
 
-The repository source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files from the canonical surface.
+The canonical source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files.
 
-The workflow also avoids JavaScript GitHub actions inside the Guix container. Source checkout is performed by Guile invoking Guix-provided Git. The workflow keeps source checkout and Guix pinning in the outer shell, then enters the pinned Guile environment. The latest repair run is pending; the previously observed Guile-checkout failure is not being treated as green.
+The workflow uses a digest-pinned Guix container, boots the Guix daemon inside each job, performs source checkout with Guix-provided Git, and then enters the pinned Guix environment.
 
-## JAxtar A/Q boundary
+## TSTS-only meta-search
 
-The repository now contains a Mercury typed finite graph model and an Agda proof certificate for the A/Q path:
+The active outer search is a finite TSTS-style tree over endogenous learner-composition branches.
 
-`LCB -> sparsemax -> attention`
+The loop is:
 
-`attention -> Walsh-Hadamard -> finite phase -> recurrent signal`
+`posterior sample -> branch -> exact learner probe -> endogenous Watkins reward -> posterior update`
 
-`sparsemax -> q=2 negative bias -> Watkins`
+The same Watkins target also feeds the GRU and F4 tell paths.
 
-This is a Mercury/Agda formal port of the A/Q graph and certificate boundary.
+PVS, JAxtar/A*/Q* graph search, and evolutionary-population proposal layers have been removed from the canonical discovery path because they duplicate or introduce orthogonal search state without strengthening this endogenous connection.
 
-It is not a full port of the external JAxtar JAX search engine. The external JAxtar project is a JAX-native parallel A*/Q* solver with neural-heuristic integration; this repository keeps only the exact finite A/Q graph semantics needed by the proof/discovery surface. The new Open_ES theorem is a meta-optimizer composition, not an A*/Q* solver implementation.
+## Active theorem
 
-## Meta-search
+`FiniteTSTSEndogenousConnectedTheorem`
 
-`docs/wiki/Meta-Search.md` defines the formal EvoSAX-family Mercury search layer, the JAxtar A*/Q graph-search boundary, the Lion-style program-discovery loop, and the manual parameter/import boundary.
+The theorem connects:
 
-## Language policy
+`TSTS sample -> endogenous learner probe -> canonical Watkins target -> TSTS posterior update -> GRU/F4 tell`
 
-The active source languages are intentionally small:
+and proves preservation of the `NormPair` observable and persistent-GRU quotient.
 
-- Agda for kernel-checked semantics and theorems;
-- Mercury for typed executable verification and finite discovery;
-- Guile Scheme through Guix for reproducible orchestration.
+The F4/L2 case explicitly exposes the path through `thetaQ`, the probe, L2 correction, attention feedback, GRU feedback, and q-log feedback.
 
-No JVM language, Elm, PureScript, JavaScript, or TypeScript layer is needed by the current formal architecture.
-
-The GitHub Actions platform itself can run JavaScript actions, but the canonical Guix workflow no longer relies on them inside its job container.
+This is a finite semantic specialization. It is not a numerical reproduction of the external TSTS implementation and does not inherit the external Bayesian regret theorem automatically.
 
 ## CleanRL / LeanRL relationship
 
 The architecture intentionally borrows the useful single-file property: the algorithm/theorem variant has one obvious source of truth.
 
-It does not attempt to reproduce CleanRL or LeanRL as a software architecture:
-
-- CleanRL emphasizes single-file RL implementations, explicit algorithm details, reproducibility, and benchmarking.
-- LeanRL keeps that single-file shape while optimizing selected implementations with PyTorch compilation features.
-- Agda contributes proof checking, not RL training.
-- Mercury contributes typed deterministic verification, not GPU RL execution.
-- Guix contributes reproducible dependency isolation, not the algorithm's internal style.
-
-So the repository is **CleanRL-like in source-of-truth discipline**, not a literal implementation of the CleanRL/LeanRL runtime philosophy.
+It does not attempt to reproduce CleanRL or LeanRL as a software architecture. Agda contributes proof checking, Mercury contributes typed deterministic verification, and Guix contributes reproducible dependency isolation.
 
 ## Wiki status
 
-The in-repository `docs/wiki/` tree is the maintained documentation surface available through the current repository connection.
+The in-repository `docs/wiki/` tree is the maintained documentation surface.
