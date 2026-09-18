@@ -11,7 +11,7 @@ open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 import Data.Fin as Fin
-open import Data.Fin.Properties using (pigeonhole; <⇒notInjective; toℕ-injective; toℕ<n)
+open import Data.Fin.Properties using (pigeonhole; <⇒notInjective; toℕ-injective; toℕ<n; n<1+n)
 open import Function.Definitions using (Injective)
 open import Data.Product using (_×_; _,_; ∃; ∃₂)
 open import Data.List.Base using (List; []; _∷_; map)
@@ -160,7 +160,7 @@ fullLearnerState-observation-not-injective :
   (observe : L.LearnerState A → L.Int8) →
   ¬ Injective _≡_ _≡_ observe
 fullLearnerState-observation-not-injective K observe inj
-  with pigeonhole (s≤s z≤n) (fullLearnerObservationCode K observe)
+  with pigeonhole (n<1+n 256) (fullLearnerObservationCode K observe)
 ... | i , j , apart , codeEq =
   apart
     (fullLearnerEncode257-distinct K
