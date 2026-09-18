@@ -8,7 +8,6 @@ on:
       - 'Exotic/ERL/FullCoupled/CanonicalCoupledF4Learner.agda'
       - 'Exotic/ERL/FullCoupled/CanonicalCoupledCompositionTheorems.agda'
       - 'Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda'
-      - 'Exotic/ERL/FullCoupled/GeneralReservoirAttractorTheorems.agda'
       - 'Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda'
       - '.github/workflows/coupled-f4-closure.yml'
   workflow_dispatch:
@@ -42,9 +41,6 @@ jobs:
 
       - name: Recheck generalized theorem monolith
         run: timeout 180s agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
-
-      - name: Recheck reservoir attractor theorem module
-        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/GeneralReservoirAttractorTheorems.agda
 
       - name: Recheck composite reservoir theorem
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda
