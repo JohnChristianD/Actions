@@ -1,7 +1,7 @@
 # Actions: Canonical Learner, Components, Theorems, and Proof Environment
 
 Last audited: 2026-09-19
-Current main head: `d24c59101794ad3b6684889f709e46b5f0c10478` (`Connect finite-cycle exclusion to canonical theorem monolith`).
+Code head audited: `d24c59101794ad3b6684889f709e46b5f0c10478` (`Connect finite-cycle exclusion to canonical theorem monolith`).
 
 This repository now has a newer canonical surface than the older coupled-F4 wiki pages.
 
@@ -55,7 +55,7 @@ The migration is structurally landed, not CI-complete.
 - `.guix/manifest.scm` declares Agda 2.7.0.1, Agda standard library 2.3, Mercury 22.01.4, Python 3.11, Guile 3.0, and Git.
 - `.github/workflows/guix-composition.yml` is the connected verification entrypoint.
 
-The latest Guix workflow run at this head failed during `actions/checkout@v5` in all four container jobs, before the Agda, Mercury, discovery, or surface lanes executed. Therefore the migration should not be called end-to-end green yet.
+The latest Guix workflow run at this code head failed during `actions/checkout@v5` in all four container jobs, before the Agda, Mercury, discovery, or surface lanes executed. Therefore the migration should not be called end-to-end green yet.
 
 ## Haskell policy
 
