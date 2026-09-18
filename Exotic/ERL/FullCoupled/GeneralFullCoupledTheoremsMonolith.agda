@@ -6,7 +6,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Int as I
 open import Data.Integer.Base as Z using ()
 open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
-open import Data.Nat.Properties using (m≤m+n; <-trans)
+open import Data.Nat.Properties using (m≤m+n; <-trans; +-mono-≤)
 open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
@@ -896,127 +896,164 @@ walshOrthonormal = walsh00 , (walsh11 , (walsh22 , (walsh33 ,
 
 
 ------------------------------------------------------------------------
--- Sparse accumulation impossibility layer.
---
--- This is theorem-only.  The learner monolith contains no complexity
--- records, proof obligations, or impossibility machinery.
+-- Sparse accumulation is tied directly to the learner's sparsemax
+-- support and to the actual learner-step composition.
 ------------------------------------------------------------------------
 
-record CommutativeMonoid (A : Set) : Set where
-  constructor commutativeMonoid
-  field
-    ε : A
-    _⊕_ : A → A → A
-    identityˡ : ∀ x → ε ⊕ x ≡ x
-    identityʳ : ∀ x → x ⊕ ε ≡ x
-    assoc : ∀ x y z → (x ⊕ y) ⊕ z ≡ x ⊕ (y ⊕ z)
-    comm : ∀ x y → x ⊕ y ≡ y ⊕ x
-open CommutativeMonoid public
+maxNat-left-positive :
+  ∀ {m n} → m ≢ zero → L.maxNat m n ≢ zero
+maxNat-left-positive {zero} {zero} h eq = h eq
+maxNat-left-positive {zero} {suc n} h ()
+maxNat-left-positive {suc m} {zero} h ()
+maxNat-left-positive {suc m} {suc n} h ()
 
-theoremListLength : ∀ {A : Set} → List A → Nat
-theoremListLength [] = zero
-theoremListLength (_ ∷ xs) = suc (theoremListLength xs)
+supportSearch-max-positive :
+  ∀ {A : Nat} (xs : List (L.ScoreEntry A)) temperature fuel current best →
+  best ≢ zero →
+  L.searchSupport xs temperature fuel current best ≢ zero
+supportSearch-max-positive xs temperature zero current best h = h
+supportSearch-max-positive xs temperature (suc n) current best h
+  with L.supportValid xs temperature current
+... | yes =
+  supportSearch-max-positive
+    xs temperature n (suc current) (L.maxNat best current)
+    (maxNat-left-positive h)
+... | no =
+  supportSearch-max-positive
+    xs temperature n (suc current) current best h
 
-theoremRepeat : ∀ {A : Set} → Nat → A → List A
-theoremRepeat zero x = []
-theoremRepeat (suc n) x = x ∷ theoremRepeat n x
+-- The actual sparsemax support used by learnerStep is never empty.
+learnerSparseSupport-nonempty :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  L.supportSize
+    (L.actionSpaceK K)
+    (L.q s)
+    (L.counts s) ≢ zero
+learnerSparseSupport-nonempty {A} K s =
+  supportSearch-max-positive
+    (L.sortScores (L.scoreList (L.q s) (L.counts s)))
+    L.sparsemaxTemperature
+    A
+    (suc zero)
+    (suc zero)
+    (λ ())
 
-theoremAccumulate : ∀ {A : Set} → CommutativeMonoid A → List A → A
-theoremAccumulate M [] = ε M
-theoremAccumulate M (x ∷ xs) = _⊕_ M x (theoremAccumulate M xs)
+learnerSparseActiveCodes :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  List Nat
+learnerSparseActiveCodes K s =
+  L.topCodes
+    (L.supportSize
+      (L.actionSpaceK K)
+      (L.q s)
+      (L.counts s))
+    (L.sortScores (L.scoreList (L.q s) (L.counts s)))
 
-record SparseAccumulation (A : Set) : Set where
-  constructor sparseAccumulation
-  field
-    monoid : CommutativeMonoid A
-    active : List A
-    unitCost : Nat
-open SparseAccumulation public
+-- This is the actual finite accumulation performed over the sparse
+-- support selected by the learner's sparsemax implementation.
+learnerSparseAccumulation :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  Nat
+learnerSparseAccumulation K s =
+  L.sumList (learnerSparseActiveCodes K s)
 
-sparseWork : ∀ {A : Set} → SparseAccumulation A → Nat
-sparseWork S = unitCost S * theoremListLength (active S)
+learnerSparseStepWork :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  Nat
+learnerSparseStepWork K s =
+  L.supportSize
+    (L.actionSpaceK K)
+    (L.q s)
+    (L.counts s)
 
-sparseWork-exact :
-  ∀ {A : Set} (S : SparseAccumulation A) →
-  sparseWork S ≡ unitCost S * theoremListLength (active S)
-sparseWork-exact S = refl
+learnerSparseStepWork-positive :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  suc zero ≤ learnerSparseStepWork K s
+learnerSparseStepWork-positive K s =
+  s≤s z≤n
 
-sparseWork-repeat-exact :
-  ∀ {A : Set} (M : CommutativeMonoid A) (x : A)
-  (unitCost : Nat) (k : Nat) →
-  sparseWork (sparseAccumulation M (theoremRepeat k x) unitCost)
-    ≡ unitCost * k
-sparseWork-repeat-exact M x unitCost k = refl
+------------------------------------------------------------------------
+-- The work recurrence is over the actual learner transition.  It is
+-- therefore compositional in the learner state, rather than an external
+-- cost model.
+------------------------------------------------------------------------
 
-one-times : ∀ k → suc zero * k ≡ k
-one-times zero = refl
-one-times (suc k) = cong suc (one-times k)
+learnerSparseTraceWork :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (reward : L.Int8) →
+  Nat →
+  L.LearnerState A →
+  Nat
+learnerSparseTraceWork K reward zero s = zero
+learnerSparseTraceWork K reward (suc n) s =
+  learnerSparseStepWork K s +
+  learnerSparseTraceWork K reward n (L.learnerStep K s reward)
 
-sparseWork-repeat-one-exact :
-  ∀ {A : Set} (M : CommutativeMonoid A) (x : A) (k : Nat) →
-  sparseWork (sparseAccumulation M (theoremRepeat k x) (suc zero))
-    ≡ k
-sparseWork-repeat-one-exact M x k =
-  trans (sparseWork-repeat-exact M x (suc zero) k) (one-times k)
+learnerSparseTraceWork-step :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (reward : L.Int8)
+  (n : Nat)
+  (s : L.LearnerState A) →
+  learnerSparseTraceWork K reward (suc n) s ≡
+  learnerSparseStepWork K s +
+  learnerSparseTraceWork K reward n (L.learnerStep K s reward)
+learnerSparseTraceWork-step K reward n s = refl
 
-strictly-more-than-bound :
-  ∀ {A : Set} (M : CommutativeMonoid A) (x : A) (B : Nat) →
-  B <
-  sparseWork
-    (sparseAccumulation M (theoremRepeat (suc B) x) (suc zero))
-strictly-more-than-bound M x B =
+suc-plus :
+  ∀ n → suc n ≡ suc zero + n
+suc-plus zero = refl
+suc-plus (suc n) = cong suc (suc-plus n)
+
+learnerSparseTraceWork-lower-bound :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (reward : L.Int8)
+  (n : Nat)
+  (s : L.LearnerState A) →
+  n ≤ learnerSparseTraceWork K reward n s
+learnerSparseTraceWork-lower-bound K reward zero s = z≤n
+learnerSparseTraceWork-lower-bound K reward (suc n) s =
   subst
-    (λ z → B < z)
-    (sym (sparseWork-repeat-one-exact M x (suc B)))
-    (s≤s z≤n)
+    (λ z →
+      z ≤
+      learnerSparseStepWork K s +
+      learnerSparseTraceWork K reward n (L.learnerStep K s reward))
+    (suc-plus n)
+    (+-mono-≤
+      (learnerSparseStepWork-positive K s)
+      (learnerSparseTraceWork-lower-bound
+        K reward n (L.learnerStep K s reward)))
 
-no-uniform-sparse-work-bound :
-  ∀ {A : Set} (M : CommutativeMonoid A) (x : A) →
+suc-not≤ :
+  ∀ n → suc n ≤ n → ⊥
+suc-not≤ zero ()
+suc-not≤ (suc n) (s≤s h) = suc-not≤ n h
+
+-- No finite constant bounds the cumulative sparse-support work across
+-- arbitrary compositions of the actual learnerStep.
+learnerSparseAccumulation-unbounded :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (reward : L.Int8)
+  (s : L.LearnerState A) →
   ¬ (∃ λ B →
-       ∀ xs →
-       sparseWork (sparseAccumulation M xs (suc zero)) ≤ B)
-no-uniform-sparse-work-bound M x (B , bound) =
-  <⇒≱
-    (strictly-more-than-bound M x B)
-    (bound (theoremRepeat (suc B) x))
-
-finite-sparse-accumulation-not-injective :
-  ∀ {n : Nat}
-  (M : CommutativeMonoid (Fin n)) (x : Fin n) →
-  ¬ Injective _≡_ _≡_
-    (λ k → theoremAccumulate M (theoremRepeat k x))
-finite-sparse-accumulation-not-injective {n} M x =
-  <⇒notInjective
-    (n<1+n n)
-    (λ i → theoremAccumulate M (theoremRepeat (toℕ i) x))
-
-finite-sparse-length-decoder-impossible :
-  ∀ {n : Nat}
-  (M : CommutativeMonoid (Fin n)) (x : Fin n)
-  (decode : Fin n → Nat) →
-  ¬ (∀ k →
-     decode (theoremAccumulate M (theoremRepeat k x)) ≡ k)
-finite-sparse-length-decoder-impossible M x decode sound =
-  finite-sparse-accumulation-not-injective M x
-    (λ {i} {j} collision →
-      trans
-        (sym (sound i))
-        (trans (cong decode collision) (sound j)))
-
-record TypedOperator (A B : Set) : Set where
-  constructor typedOperator
-  field run : A → B
-open TypedOperator public
-
-typedCompose :
-  ∀ {A B C : Set} →
-  TypedOperator B C →
-  TypedOperator A B →
-  TypedOperator A C
-typedCompose g f = typedOperator (λ x → run g (run f x))
-
-typedCompose-law :
-  ∀ {A B C : Set}
-  (g : TypedOperator B C) (f : TypedOperator A B) (x : A) →
-  run (typedCompose g f) x ≡ run g (run f x)
-typedCompose-law g f x = refl
+       ∀ n →
+       learnerSparseTraceWork K reward n s ≤ B)
+learnerSparseAccumulation-unbounded K reward s (B , bound) =
+  suc-not≤ B
+    (trans
+      (learnerSparseTraceWork-lower-bound
+        K reward (suc B) s)
+      (bound (suc B)))
