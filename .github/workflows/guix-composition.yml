@@ -40,7 +40,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guile --no-auto-compile {0}
+        shell: guix shell --pure guile -- guile --no-auto-compile {0}
     steps:
       - name: Guile-native source checkout
         run: |
@@ -67,7 +67,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guile --no-auto-compile {0}
+        shell: guix shell --pure guile -- guile --no-auto-compile {0}
     steps:
       - name: Guile-native source checkout
         run: |
@@ -94,7 +94,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guile --no-auto-compile {0}
+        shell: guix shell --pure guile -- guile --no-auto-compile {0}
     steps:
       - name: Guile-native source checkout
         run: |
@@ -128,7 +128,7 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guile --no-auto-compile {0}
+        shell: guix shell --pure guile -- guile --no-auto-compile {0}
     steps:
       - name: Guile-native source checkout
         run: |
