@@ -419,8 +419,16 @@ open NormPair public
 zeroNorm : NormPair
 zeroNorm = normPair zero zero
 
+int8AbsCode : Int8 → Nat
+int8AbsCode x with natLE (toℕ (code x)) 127
+... | yes = toℕ (code x)
+... | no = 256 ∸ toℕ (code x)
+
 normStep : NormPair → Int8 → Int8 → NormPair
-normStep n w x = normPair (l1Weight n + toℕ (code w)) (pathWeight n + (toℕ (code w) * toℕ (code x)))
+normStep n w x =
+  normPair
+    (l1Weight n + int8AbsCode w)
+    (pathWeight n + (int8AbsCode w * int8AbsCode x))
 
 data MunchausenMode : Set where
   munchausen noMunchausen : MunchausenMode
