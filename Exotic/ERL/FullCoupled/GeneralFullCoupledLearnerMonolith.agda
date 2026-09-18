@@ -166,6 +166,10 @@ searchSupport xs temperature (suc n) current best with supportValid xs temperatu
 ... | yes = searchSupport xs temperature n (suc current) (maxNat best current)
 ... | no = searchSupport xs temperature n (suc current) best
 
+maxNat-left-positive : ∀ {m n} → m ≢ zero → maxNat m n ≢ zero
+maxNat-left-positive {zero} h = h
+maxNat-left-positive {suc m} h ()
+
 searchSupport-positive : ∀ {A} (xs : List (ScoreEntry A)) temperature fuel current best →
   best ≢ zero →
   searchSupport xs temperature fuel current best ≢ zero
@@ -178,11 +182,6 @@ searchSupport-positive xs temperature (suc n) current best h with supportValid x
 ... | no =
   searchSupport-positive
     xs temperature n (suc current) best h
-
-maxNat-left-positive : ∀ {m n} → m ≢ zero → maxNat m n ≢ zero
-maxNat-left-positive {zero} h = h
-maxNat-left-positive {suc m} h ()
-
 
 supportSize : ∀ {A} → ActionSpace A → QVec A → CountVec A → Nat
 supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemperature A (suc zero) (suc zero)
