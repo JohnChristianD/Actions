@@ -10,6 +10,7 @@ open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin)
+import Data.Fin as Fin
 open import Data.Fin.Properties using (pigeonhole; <⇒notInjective)
 open import Function.Definitions using (Injective)
 open import Data.Product using (_×_; _,_; ∃₂)
@@ -22,7 +23,7 @@ open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
 pigeonhole-suc-collision : ∀ {n : Nat}
   (f : Fin (suc n) → Fin n) →
-  ∃₂ λ i j → i < j × f i ≡ f j
+  ∃₂ λ i j → Fin._<_ i j × f i ≡ f j
 pigeonhole-suc-collision f = pigeonhole (s≤s z≤n) f
 
 pigeonhole-suc-not-injective : ∀ {n : Nat}
