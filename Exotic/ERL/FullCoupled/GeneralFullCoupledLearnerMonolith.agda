@@ -447,10 +447,10 @@ initialLearner K = learnerState zero zeroQ zeroCounts (witness K) zeroGRU zeroF4
 generalPolicy : ∀ {A} → LearnerKernel A → LearnerState A → Fin A
 generalPolicy K s = sparsemaxPolicy (actionSpaceK K) (q s) (counts s)
 
-learnerStep : ∀ {A} → LearnerKernel A → LearnerState A → Int8 → LearnerState A
-learnerStep K s reward =
-  let a = generalPolicy K s
-      w = sparsemaxWeight (actionSpaceK K) (q s) (counts s) a
+learnerStepGivenAction :
+  ∀ {A} → LearnerKernel A → LearnerState A → Fin A → Int8 → LearnerState A
+learnerStepGivenAction K s a reward =
+  let w = sparsemaxWeight (actionSpaceK K) (q s) (counts s) a
       shaped = int8Add reward (munchausenSignal (mode K) w)
   in learnerState
     (suc (clock s))
@@ -460,6 +460,13 @@ learnerStep K s reward =
     (gruStep (gru s) shaped)
     (f4Step (f4ParamsK K) (optimizer s) shaped)
     (normStep (normState s) (q s a) shaped)
+
+learnerStep : ∀ {A} → LearnerKernel A → LearnerState A → Int8 → LearnerState A
+learnerStep K s reward =
+  learnerStepGivenAction
+    K s
+    (generalPolicy K s)
+    reward
 
 iterateLearner : ∀ {A} → LearnerKernel A → Nat → LearnerState A → Int8 → LearnerState A
 iterateLearner K zero s reward = s
