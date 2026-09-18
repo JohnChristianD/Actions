@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.FunctionalWalshBridge where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Fin using (Fin)
-open import Data.Product using (Pair; _,_)
+open import Data.Product using (_,_)
 
 open import Data.Vec.Functional as VF
   using (Vector; map; updateAt; _∷_; [])
