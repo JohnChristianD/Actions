@@ -168,39 +168,8 @@ searchSupport xs temperature (suc n) current best with supportValid xs temperatu
 ... | yes = searchSupport xs temperature n (suc current) (maxNat best current)
 ... | no = searchSupport xs temperature n (suc current) best
 
-maxNat-left-positive : ∀ {m n} → m ≢ zero → maxNat m n ≢ zero
-maxNat-left-positive {zero} {zero} h eq = h eq
-maxNat-left-positive {zero} {suc n} h ()
-maxNat-left-positive {suc m} {zero} h ()
-maxNat-left-positive {suc m} {suc n} h ()
-
-searchSupport-positive : ∀ {A} (xs : List (ScoreEntry A)) temperature fuel current best →
-  best ≢ zero →
-  searchSupport xs temperature fuel current best ≢ zero
-searchSupport-positive xs temperature zero current best h = h
-searchSupport-positive xs temperature (suc n) current best h with supportValid xs temperature current
-... | yes =
-  searchSupport-positive
-    xs temperature n (suc current) (maxNat best current)
-    (maxNat-left-positive h)
-... | no =
-  searchSupport-positive
-    xs temperature n (suc current) best h
-
-
 supportSize : ∀ {A} → ActionSpace A → QVec A → CountVec A → Nat
 supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemperature A (suc zero) (suc zero)
-
-sparsemax-support-nonempty : ∀ {A} (K : ActionSpace A) (q : QVec A) (c : CountVec A) →
-  supportSize K q c ≢ zero
-sparsemax-support-nonempty {A} K q c =
-  searchSupport-positive
-    (sortScores (scoreList q c))
-    sparsemaxTemperature
-    A
-    (suc zero)
-    (suc zero)
-    (λ ())
 
 sparsemaxWeight : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A → SparseWeight
 sparsemaxWeight {A} K q c a =
