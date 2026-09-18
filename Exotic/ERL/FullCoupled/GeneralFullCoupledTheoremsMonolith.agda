@@ -11,7 +11,7 @@ open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 import Data.Fin as Fin
-open import Data.Fin.Properties using (pigeonhole; <⇒notInjective; toℕ-injective)
+open import Data.Fin.Properties using (pigeonhole; <⇒notInjective; toℕ-injective; toℕ<n)
 open import Function.Definitions using (Injective)
 open import Data.Product using (_×_; _,_; ∃; ∃₂)
 open import Data.List.Base using (List; []; _∷_; map)
