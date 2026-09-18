@@ -35,10 +35,14 @@ lstm(X, H, C) = {H2, C2} :-
 q(N, D) = rational.rational(N, D).
 
 :- func render(rational.rational) = string.
-render(R) =
+render(R) = Result :-
     N = integer.to_string(rational.numer(R)),
     D = rational.denom(R),
-    ( if D = integer.one then N else N ++ "/" ++ integer.to_string(D) ).
+    ( if D = integer.one then
+        Result = N
+    else
+        Result = N ++ "/" ++ integer.to_string(D)
+    ).
 
 :- pred emit(rational.rational::in, rational.rational::in,
     rational.rational::in, io::di, io::uo) is det.
