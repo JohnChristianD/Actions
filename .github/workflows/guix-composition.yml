@@ -40,24 +40,24 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guix shell --pure guile -- guile --no-auto-compile {0}
+        shell: bash
     steps:
       - name: Guile-native source checkout
         run: |
-          (define workspace (getenv "GITHUB_WORKSPACE"))
-          (define repository (getenv "GITHUB_REPOSITORY"))
-          (define sha (getenv "GITHUB_SHA"))
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "clone" "--filter=blob:none" "--no-checkout"
-                   (string-append "https://github.com/" repository ".git")
-                   workspace)
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "-C" workspace "checkout" "--detach" sha)
+          set -eu
+          workspace="${GITHUB_WORKSPACE}"
+          repository="${GITHUB_REPOSITORY}"
+          sha="${GITHUB_SHA}"
+          guix shell --pure git nss-certs -- \
+            git clone --filter=blob:none --no-checkout \
+              "https://github.com/${repository}.git" "${workspace}"
+          guix shell --pure git nss-certs -- \
+            git -C "${workspace}" checkout --detach "${sha}"
       - name: Run pinned Guix Agda lane
         env:
           CI_LANE: agda-safe
         run: |
-          (load ".guix/ci.scm")
+          guix time-machine -C .guix/channels.scm -- shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   mercury:
     name: Guix / Mercury connected theorem and verifier lane
@@ -67,24 +67,24 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guix shell --pure guile -- guile --no-auto-compile {0}
+        shell: bash
     steps:
       - name: Guile-native source checkout
         run: |
-          (define workspace (getenv "GITHUB_WORKSPACE"))
-          (define repository (getenv "GITHUB_REPOSITORY"))
-          (define sha (getenv "GITHUB_SHA"))
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "clone" "--filter=blob:none" "--no-checkout"
-                   (string-append "https://github.com/" repository ".git")
-                   workspace)
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "-C" workspace "checkout" "--detach" sha)
+          set -eu
+          workspace="${GITHUB_WORKSPACE}"
+          repository="${GITHUB_REPOSITORY}"
+          sha="${GITHUB_SHA}"
+          guix shell --pure git nss-certs -- \
+            git clone --filter=blob:none --no-checkout \
+              "https://github.com/${repository}.git" "${workspace}"
+          guix shell --pure git nss-certs -- \
+            git -C "${workspace}" checkout --detach "${sha}"
       - name: Run pinned Guix Mercury lane
         env:
           CI_LANE: mercury
         run: |
-          (load ".guix/ci.scm")
+          guix time-machine -C .guix/channels.scm -- shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
     name: Guix / Mercury finite discovery
@@ -94,31 +94,29 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guix shell --pure guile -- guile --no-auto-compile {0}
+        shell: bash
     steps:
       - name: Guile-native source checkout
         run: |
-          (define workspace (getenv "GITHUB_WORKSPACE"))
-          (define repository (getenv "GITHUB_REPOSITORY"))
-          (define sha (getenv "GITHUB_SHA"))
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "clone" "--filter=blob:none" "--no-checkout"
-                   (string-append "https://github.com/" repository ".git")
-                   workspace)
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "-C" workspace "checkout" "--detach" sha)
+          set -eu
+          workspace="${GITHUB_WORKSPACE}"
+          repository="${GITHUB_REPOSITORY}"
+          sha="${GITHUB_SHA}"
+          guix shell --pure git nss-certs -- \
+            git clone --filter=blob:none --no-checkout \
+              "https://github.com/${repository}.git" "${workspace}"
+          guix shell --pure git nss-certs -- \
+            git -C "${workspace}" checkout --detach "${sha}"
       - name: Run pinned Mercury discovery lane
         env:
           CI_LANE: discovery
         run: |
-          (load ".guix/ci.scm")
+          guix time-machine -C .guix/channels.scm -- shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
       - name: Verify discovery artifact is present
         run: |
-          (if (file-exists? ".ci/discovery/last-search.json")
-              (format #t "discovery-report=present~%")
-              (begin
-                (format #t "ERROR: discovery report missing~%")
-                (exit 1)))
+          set -eu
+          test -f ".ci/discovery/last-search.json"
+          printf '%s\n' "discovery-report=present"
 
   surface:
     name: Guix / no Haskell, Python, JVM, JS, or alternate-language surface
@@ -128,21 +126,21 @@ jobs:
       image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
     defaults:
       run:
-        shell: guix shell --pure guile -- guile --no-auto-compile {0}
+        shell: bash
     steps:
       - name: Guile-native source checkout
         run: |
-          (define workspace (getenv "GITHUB_WORKSPACE"))
-          (define repository (getenv "GITHUB_REPOSITORY"))
-          (define sha (getenv "GITHUB_SHA"))
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "clone" "--filter=blob:none" "--no-checkout"
-                   (string-append "https://github.com/" repository ".git")
-                   workspace)
-          (system* "guix" "shell" "--pure" "git" "nss-certs" "--"
-                   "git" "-C" workspace "checkout" "--detach" sha)
+          set -eu
+          workspace="${GITHUB_WORKSPACE}"
+          repository="${GITHUB_REPOSITORY}"
+          sha="${GITHUB_SHA}"
+          guix shell --pure git nss-certs -- \
+            git clone --filter=blob:none --no-checkout \
+              "https://github.com/${repository}.git" "${workspace}"
+          guix shell --pure git nss-certs -- \
+            git -C "${workspace}" checkout --detach "${sha}"
       - name: Audit repository surface
         env:
           CI_LANE: surface
         run: |
-          (load ".guix/ci.scm")
+          guix time-machine -C .guix/channels.scm -- shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
