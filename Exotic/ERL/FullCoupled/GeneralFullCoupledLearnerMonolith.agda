@@ -435,13 +435,21 @@ normStep n w x =
 data MunchausenMode : Set where
   munchausen noMunchausen : MunchausenMode
 
-negativeMunchausen : SparseWeight → Int8
-negativeMunchausen (sparseWeight n d) with natEq n d
+munchausenScale8 : Nat
+munchausenScale8 = 16
+
+finiteQLog2Bias : SparseWeight → Int8
+finiteQLog2Bias (sparseWeight n d) with natEq n zero
 ... | yes = zero8
-... | no = int8Neg (int8OfNat (suc n))
+... | no with natLE n d
+... | yes = int8Neg (int8OfNat ((munchausenScale8 * (d ∸ n)) / n))
+... | no = int8OfNat ((munchausenScale8 * (n ∸ d)) / n)
+
+negativeMunchausen : SparseWeight → Int8
+negativeMunchausen = finiteQLog2Bias
 
 munchausenSignal : MunchausenMode → SparseWeight → Int8
-munchausenSignal munchausen w = negativeMunchausen w
+munchausenSignal munchausen w = finiteQLog2Bias w
 munchausenSignal noMunchausen w = zero8
 
 record LearnerKernel (A : Nat) : Set where
