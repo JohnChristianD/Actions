@@ -943,6 +943,289 @@ learnerStateTransducer-output-law :
 learnerStateTransducer-output-law K s = refl
 
 ------------------------------------------------------------------------
+-- Finite-action minimax extension.
+--
+-- This is the exact discrete finite-action analogue of the literature's
+-- minimax Bellman construction: a maximizer chooses a, a minimizer
+-- chooses b, and the value is max_a min_b of the branch value.
+--
+-- The literature formulation uses max/min over behavioral strategies and
+-- a Bellman recursion over a value function.  Here the action sets and
+-- values are finite/discrete, so the operator is exact rather than an
+-- approximation over real-valued function spaces.
+------------------------------------------------------------------------
+
+minNat : Nat → Nat → Nat
+minNat zero n = zero
+minNat (suc m) zero = zero
+minNat (suc m) (suc n) = suc (minNat m n)
+
+maxList : List Nat → Nat
+maxList [] = zero
+maxList (x ∷ xs) = L.maxNat x (maxList xs)
+
+minList : List Nat → Nat
+minList [] = zero
+minList (x ∷ []) = x
+minList (x ∷ y ∷ xs) = minNat x (minList (y ∷ xs))
+
+record FiniteMinimaxStateSystem
+  (S X Y A B : Set) : Set₁ where
+  constructor finiteMinimaxStateSystem
+  field
+    maxActions : List A
+    minActions : List B
+    transition : S → X → A → B → S
+    payoff : S → X → A → B → Nat
+    output : S → Y
+open FiniteMinimaxStateSystem public
+
+minimaxValue :
+  ∀ {S X Y A B : Set}
+  (G : FiniteMinimaxStateSystem S X Y A B) →
+  S → X → Nat
+minimaxValue G s x =
+  maxList
+    (map
+      (λ a →
+        minList
+          (map
+            (λ b →
+              payoff G s x a b)
+            (minActions G)))
+      (maxActions G))
+
+record MinimaxBellmanSystem
+  (S X A B : Set) : Set₁ where
+  constructor minimaxBellmanSystem
+  field
+    maxActionsB : List A
+    minActionsB : List B
+    rewardB : S → X → A → B → Nat
+    transitionB : S → X → A → B → S
+open MinimaxBellmanSystem public
+
+minimaxBellman :
+  ∀ {S X A B : Set}
+  (G : MinimaxBellmanSystem S X A B) →
+  (S → Nat) → S → X → Nat
+minimaxBellman G V s x =
+  maxList
+    (map
+      (λ a →
+        minList
+          (map
+            (λ b →
+              rewardB G s x a b +
+              V (transitionB G s x a b))
+            (minActionsB G)))
+      (maxActionsB G))
+
+-- Singleton minimizer reduction.  This is the exact deterministic
+-- degenerate-game reduction used to embed a one-player learner.
+minList-singleton :
+  ∀ (x : Nat) → minList (x ∷ []) ≡ x
+minList-singleton x = refl
+
+minimax-singleton-opponent :
+  ∀ {S X Y A : Set}
+  (G : FiniteMinimaxStateSystem S X Y A (Fin 1))
+  (s : S) (x : X) →
+  minimaxValue G s x ≡
+  maxList
+    (map
+      (λ a → payoff G s x a (Fin.zero))
+      (maxActions G))
+minimax-singleton-opponent G s x = refl
+
+------------------------------------------------------------------------
+-- The current learner is a genuine member of this minimax-inclusive
+-- state-system class.  The minimizer is the one-element degenerate
+-- player; the maximizer ranges over the learner's actual action set.
+--
+-- Importantly, this proves inclusion in the class.  It does not claim
+-- that sparsemaxPolicy is itself a minimax optimizer.
+------------------------------------------------------------------------
+
+singletonAction : Fin 1
+singletonAction = Fin.zero
+
+learnerMinimaxStateSystem :
+  ∀ {A : Nat} →
+  L.LearnerKernel A →
+  FiniteMinimaxStateSystem
+    (L.LearnerState A)
+    L.Int8
+    (Fin A)
+    (Fin A)
+    (Fin 1)
+learnerMinimaxStateSystem K =
+  finiteMinimaxStateSystem
+    (L.finList _)
+    (singletonAction ∷ [])
+    (L.learnerStepGivenAction K)
+    (λ s reward a b →
+      toℕ (L.code
+        (L.scoreA (L.q s) (L.counts s) a)))
+    (L.generalPolicy K)
+
+learnerMinimax-branch :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A)
+  (reward : L.Int8) →
+  transition (learnerMinimaxStateSystem K)
+    s reward
+    (L.generalPolicy K s)
+    singletonAction
+  ≡
+  L.learnerStep K s reward
+learnerMinimax-branch K s reward = refl
+
+learnerMinimax-output :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  output (learnerMinimaxStateSystem K) s ≡
+  L.generalPolicy K s
+learnerMinimax-output K s = refl
+
+------------------------------------------------------------------------
+-- A minimax Bellman backup can be taken over the learner's actual
+-- action-conditioned transition without changing its state class.
+------------------------------------------------------------------------
+
+learnerMinimaxBellman :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A) →
+  MinimaxBellmanSystem
+    (L.LearnerState A)
+    L.Int8
+    (Fin A)
+    (Fin 1)
+learnerMinimaxBellman K =
+  minimaxBellmanSystem
+    (L.finList _)
+    (singletonAction ∷ [])
+    (λ s reward a b →
+      toℕ (L.code
+        (L.scoreA (L.q s) (L.counts s) a)))
+    (L.learnerStepGivenAction K)
+
+learnerMinimaxBellman-reduces :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (V : L.LearnerState A → Nat)
+  (s : L.LearnerState A)
+  (reward : L.Int8) →
+  minimaxBellman (learnerMinimaxBellman K) V s reward
+  ≡
+  maxList
+    (map
+      (λ a →
+        toℕ (L.code
+          (L.scoreA (L.q s) (L.counts s) a)) +
+        V (L.learnerStepGivenAction K s a reward))
+      (L.finList _))
+learnerMinimaxBellman-reduces K V s reward = refl
+
+------------------------------------------------------------------------
+-- Reservoir-form relation.
+--
+-- Reservoir-computing literature treats temporal processing as an
+-- input-history filter produced by a state update plus a readout.  The
+-- following finite-history filter is the exact structural construction
+-- for the present learner.  No fading-memory or universality claim is
+-- inferred from this construction.
+------------------------------------------------------------------------
+
+runHistory :
+  ∀ {S X : Set} →
+  (S → X → S) →
+  List X →
+  S →
+  S
+runHistory step [] s = s
+runHistory step (x ∷ xs) s =
+  runHistory step xs (step s x)
+
+learnerHistoryState :
+  ∀ {A : Nat} →
+  L.LearnerKernel A →
+  List L.Int8 →
+  L.LearnerState A →
+  L.LearnerState A
+learnerHistoryState K xs s =
+  runHistory (L.learnerStep K) xs s
+
+learnerHistoryFilter :
+  ∀ {A : Nat} →
+  L.LearnerKernel A →
+  List L.Int8 →
+  L.LearnerState A →
+  Fin A
+learnerHistoryFilter K xs s =
+  L.generalPolicy (learnerHistoryState K xs s)
+
+learnerHistoryFilter-final-output :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (xs : List L.Int8)
+  (s : L.LearnerState A) →
+  learnerHistoryFilter K xs s ≡
+  L.generalPolicy K
+    (learnerHistoryState K xs s)
+learnerHistoryFilter-final-output K xs s = refl
+
+historyState-congruence :
+  ∀ {S X : Set}
+  (step : S → X → S)
+  (xs ys : List X)
+  (s t : S) →
+  runHistory step xs s ≡ runHistory step ys t →
+  ∀ zs →
+  runHistory step zs (runHistory step xs s) ≡
+  runHistory step zs (runHistory step ys t)
+historyState-congruence step xs ys s t eq [] = eq
+historyState-congruence step xs ys s t eq (z ∷ zs) =
+  historyState-congruence
+    step xs ys
+    (step (runHistory step xs s) z)
+    (step (runHistory step ys t) z)
+    (cong (λ u → step u z) eq)
+    zs
+
+learner-filter-causal-state-law :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (xs ys zs : List L.Int8)
+  (s t : L.LearnerState A) →
+  learnerHistoryState K xs s ≡
+  learnerHistoryState K ys t →
+  learnerHistoryState K (zs) (learnerHistoryState K xs s) ≡
+  learnerHistoryState K (zs) (learnerHistoryState K ys t)
+learner-filter-causal-state-law K xs ys zs s t eq =
+  historyState-congruence
+    (L.learnerStep K) xs ys s t eq zs
+
+------------------------------------------------------------------------
+-- The finite-readout obstruction is the discrete analogue of the
+-- exact-left-inverse requirement appearing in reservoir universality
+-- theorems: exact state reconstruction through a finite observation is
+-- impossible here because the learner carries an injective Nat clock.
+------------------------------------------------------------------------
+
+learner-discrete-reservoir-left-inverse-impossible :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → Fin n)
+  (inverse : Fin n → L.LearnerState A) →
+  (∀ s → inverse (observe s) ≡ s) →
+  ⊥
+learner-discrete-reservoir-left-inverse-impossible =
+  learnerFiniteObservation-no-left-inverse
+
+------------------------------------------------------------------------
 -- The actual learner trajectory embeds Nat into the state through clock.
 ------------------------------------------------------------------------
 
