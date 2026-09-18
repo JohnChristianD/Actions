@@ -592,7 +592,7 @@ finiteSionSandwich : ∀ {X Y Z : OrderedCarrier}
   (W : FiniteSionWitness X Y Z payoff) →
   carrier≤ Z (payoff (xStar (saddle W)) (yStar (saddle W)))
     (payoff (xStar (saddle W)) (yStar (saddle W)))
-finiteSionSandwich {payoff = payoff} W = refl≤ _ (payoff (xStar (saddle W)) (yStar (saddle W)))
+finiteSionSandwich {payoff = p} W = refl≤ _ (p (xStar (saddle W)) (yStar (saddle W)))
 
 data DyadicTree (A : Set) : Nat → Set where
   leaf : A → DyadicTree A zero
