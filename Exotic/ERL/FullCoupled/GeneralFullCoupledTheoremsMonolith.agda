@@ -763,8 +763,14 @@ row2 = I.pos 1 , (I.pos 1 , (I.negsuc 0 , I.negsuc 0))
 row3 : IntVec4
 row3 = I.pos 1 , (I.negsuc 0 , (I.negsuc 0 , I.pos 1))
 
+intPlus : I.Int → I.Int → I.Int
+intPlus = I._+_
+
+intTimes : I.Int → I.Int → I.Int
+intTimes = I._*_
+
 dot4 : IntVec4 → IntVec4 → I.Int
-dot4 (a , (b , (c , d))) (e , (f , (g , h))) = I._+_ (I._+_ (I._*_ a e) (I._*_ b f)) (I._+_ (I._*_ c g) (I._*_ d h))
+dot4 (a , (b , (c , d))) (e , (f , (g , h))) = intPlus (intPlus (intTimes a e) (intTimes b f)) (intPlus (intTimes c g) (intTimes d h))
 
 walsh00 : dot4 row0 row0 ≡ I.pos 4
 walsh00 = refl
