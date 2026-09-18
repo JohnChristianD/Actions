@@ -11,9 +11,9 @@ open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 import Data.Fin as Fin
-open import Data.Fin.Properties using (pigeonhole; <⇒notInjective)
+open import Data.Fin.Properties using (pigeonhole; <⇒notInjective; toℕ-injective)
 open import Function.Definitions using (Injective)
-open import Data.Product using (_×_; _,_; ∃₂)
+open import Data.Product using (_×_; _,_; ∃; ∃₂)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
 open import Data.List.Relation.Unary.Sorted.TotalOrder using (Sorted)
@@ -47,6 +47,78 @@ fullCompositionPigeonhole-not-injective : ∀ {n : Nat}
   ¬ Injective _≡_ _≡_ (λ i → observe W (encode W i))
 fullCompositionPigeonhole-not-injective {n} W =
   <⇒notInjective (s≤s (s≤s (natLeRefl n)))
+
+fullLearnerEncode257 : ∀ {A} (K : L.LearnerKernel A) →
+  Fin 257 → L.LearnerState A
+fullLearnerEncode257 K i =
+  L.iterateLearner K (toℕ i)
+    (L.initialLearner (L.actionSpaceK K))
+    L.zero8
+
+zero-plus : ∀ n → zero + n ≡ n
+zero-plus n = refl
+
+fullLearnerEncode257-clock : ∀ {A} (K : L.LearnerKernel A) (i : Fin 257) →
+  L.clock (fullLearnerEncode257 K i) ≡ toℕ i
+fullLearnerEncode257-clock K i =
+  trans
+    (iterateLearner-clock K (toℕ i)
+      (L.initialLearner (L.actionSpaceK K)) L.zero8)
+    (zero-plus (toℕ i))
+
+fullLearnerEncode257-distinct : ∀ {A} (K : L.LearnerKernel A)
+  {i j : Fin 257} →
+  fullLearnerEncode257 K i ≡ fullLearnerEncode257 K j →
+  i ≡ j
+fullLearnerEncode257-distinct K {i} {j} eq =
+  toℕ-injective
+    (trans
+      (sym (fullLearnerEncode257-clock K i))
+      (trans
+        (cong L.clock eq)
+        (fullLearnerEncode257-clock K j)))
+
+fullLearnerState-observation-not-injective :
+  ∀ {A} (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → L.Int8) →
+  ¬ Injective _≡_ _≡_ observe
+fullLearnerState-observation-not-injective K observe inj =
+  <⇒notInjective
+    (s≤s z≤n)
+    (λ {i} {j} eq →
+      fullLearnerEncode257-distinct K
+        (inj (cong L.int8 eq)))
+
+fullLearnerState-no-left-inverse :
+  ∀ {A} (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → L.Int8)
+  (inverse : L.Int8 → L.LearnerState A) →
+  (∀ s → inverse (observe s) ≡ s) →
+  ⊥
+fullLearnerState-no-left-inverse K observe inverse leftInverse =
+  fullLearnerState-observation-not-injective
+    K observe
+    (λ {s} {t} eq →
+      trans
+        (sym (leftInverse s))
+        (trans
+          (cong inverse eq)
+          (leftInverse t)))
+
+NatCoercive : ∀ {S : Set} → (S → Nat) → Set
+NatCoercive e = ∀ B → ∃ λ s → B < e s
+
+int8-code-not-coercive : ¬ NatCoercive (λ x → toℕ (L.code x))
+int8-code-not-coercive coercive with coercive 256
+... | x , h = lt-irrefl 256
+  (lt-trans-nat-local h (toℕ<n (L.code x)))
+  where
+  lt-trans-nat-local : ∀ {a b c : Nat} → a < b → b < c → a < c
+  lt-trans-nat-local (s≤s p) (s≤s q) = s≤s (go p q)
+    where
+    go : ∀ {a b c : Nat} → a ≤ b → b ≤ c → a ≤ c
+    go z≤n q = q
+    go (s≤s p) (s≤s q) = s≤s (go p q)
 
 
 lt-irrefl : ∀ n → n < n → ⊥
