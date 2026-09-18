@@ -42,6 +42,33 @@ jobs:
       run:
         shell: sh
     steps:
+      - name: Initialize Guix daemon
+        run: |
+          set -eu
+          groupadd --system guixbuild 2>/dev/null || true
+          for i in $(seq -w 1 10); do
+            useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin \
+              -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
+          done
+          mkdir -p /var/guix/daemon-socket
+          if [ ! -S /var/guix/daemon-socket/socket ]; then
+            env LANG=C.UTF-8 guix-daemon --disable-chroot \
+              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
+          fi
+          for i in $(seq 1 30); do
+            if [ -S /var/guix/daemon-socket/socket ]; then
+              break
+            fi
+            sleep 1
+          done
+          test -S /var/guix/daemon-socket/socket
+          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
+          fi
+          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
+          fi
+
       - name: Guile-native source checkout
         run: |
           set -eu
@@ -77,6 +104,33 @@ jobs:
       run:
         shell: sh
     steps:
+      - name: Initialize Guix daemon
+        run: |
+          set -eu
+          groupadd --system guixbuild 2>/dev/null || true
+          for i in $(seq -w 1 10); do
+            useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin \
+              -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
+          done
+          mkdir -p /var/guix/daemon-socket
+          if [ ! -S /var/guix/daemon-socket/socket ]; then
+            env LANG=C.UTF-8 guix-daemon --disable-chroot \
+              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
+          fi
+          for i in $(seq 1 30); do
+            if [ -S /var/guix/daemon-socket/socket ]; then
+              break
+            fi
+            sleep 1
+          done
+          test -S /var/guix/daemon-socket/socket
+          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
+          fi
+          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
+          fi
+
       - name: Guile-native source checkout
         run: |
           set -eu
@@ -111,6 +165,33 @@ jobs:
       run:
         shell: sh
     steps:
+      - name: Initialize Guix daemon
+        run: |
+          set -eu
+          groupadd --system guixbuild 2>/dev/null || true
+          for i in $(seq -w 1 10); do
+            useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin \
+              -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
+          done
+          mkdir -p /var/guix/daemon-socket
+          if [ ! -S /var/guix/daemon-socket/socket ]; then
+            env LANG=C.UTF-8 guix-daemon --disable-chroot \
+              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
+          fi
+          for i in $(seq 1 30); do
+            if [ -S /var/guix/daemon-socket/socket ]; then
+              break
+            fi
+            sleep 1
+          done
+          test -S /var/guix/daemon-socket/socket
+          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
+          fi
+          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
+          fi
+
       - name: Guile-native source checkout
         run: |
           set -eu
@@ -156,6 +237,33 @@ jobs:
       run:
         shell: sh
     steps:
+      - name: Initialize Guix daemon
+        run: |
+          set -eu
+          groupadd --system guixbuild 2>/dev/null || true
+          for i in $(seq -w 1 10); do
+            useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin \
+              -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
+          done
+          mkdir -p /var/guix/daemon-socket
+          if [ ! -S /var/guix/daemon-socket/socket ]; then
+            env LANG=C.UTF-8 guix-daemon --disable-chroot \
+              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
+          fi
+          for i in $(seq 1 30); do
+            if [ -S /var/guix/daemon-socket/socket ]; then
+              break
+            fi
+            sleep 1
+          done
+          test -S /var/guix/daemon-socket/socket
+          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
+          fi
+          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
+            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
+          fi
+
       - name: Guile-native source checkout
         run: |
           set -eu
