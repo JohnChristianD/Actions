@@ -200,34 +200,6 @@ defaultActionSpace = actionSpace (fromℕ< (m%n<n 0 64))
 defaultD : Nat
 defaultD = 64
 
-record FiniteRational : Set where
-  constructor finiteRational
-  field numerator denominator : Nat
-open FiniteRational public
-
-mobiusRatio : Int8 → FiniteRational
-mobiusRatio x = finiteRational (toℕ (code x)) (suc (255 ∸ toℕ (code x)))
-
-record MobiusAction : Set where
-  constructor mobiusAction
-  field run : Int8 → Int8
-open MobiusAction public
-
-identityMobius : MobiusAction
-identityMobius = mobiusAction (λ x → x)
-
-composeMobius : MobiusAction → MobiusAction → MobiusAction
-composeMobius f g = mobiusAction (λ x → run f (run g x))
-
-record MobiusTrace : Set where
-  constructor mobiusTrace
-  field atDepth : Nat → MobiusAction
-open MobiusTrace public
-
-prefixAction : MobiusTrace → Nat → MobiusAction
-prefixAction T zero = identityMobius
-prefixAction T (suc n) = composeMobius (atDepth T n) (prefixAction T n)
-
 data HardSign : Set where
   negative zeroSign positive : HardSign
 
@@ -269,27 +241,6 @@ gruStep s x =
 
 gruPersistent : GRUState → Int8 × (Int8 × (Int8 × Int8))
 gruPersistent s = matrixZ s , (matrixR s , (matrixH s , optimizerToken s))
-
-gruTransitionFamily : Set
-gruTransitionFamily = Int8 → GRUState → GRUState
-
-mobiusTransport : MobiusAction → gruTransitionFamily → gruTransitionFamily
-mobiusTransport f T x s = T (run f x) s
-
-record SemidirectToken : Set where
-  constructor semidirectToken
-  field transitionPart : gruTransitionFamily
-        mobiusPart : MobiusAction
-open SemidirectToken public
-
-semidirectIdentity : SemidirectToken
-semidirectIdentity = semidirectToken (λ x s → gruStep s x) identityMobius
-
-semidirectCompose : SemidirectToken → SemidirectToken → SemidirectToken
-semidirectCompose (semidirectToken T f) (semidirectToken S g) =
-  semidirectToken
-    (λ x s → T x (S (run f x) s))
-    (composeMobius f g)
 
 data F4Z : Set where
   f4Pos : Nat → F4Z
