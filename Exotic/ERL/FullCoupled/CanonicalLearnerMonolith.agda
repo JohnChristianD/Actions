@@ -761,6 +761,16 @@ canonicalQLogBias K s = qLog2Bias8 (policyLeftWeight (canonicalPolicy K s))
 canonicalReward8 : FullLearnerKernel → FullLearnerState → Int8
 canonicalReward8 K s = policyLeftWeight (canonicalPolicy K s)
 
+canonicalAttentionMix : FullLearnerKernel → FullLearnerState → Int8
+canonicalAttentionMix K s =
+  let
+    p = learnedSparsemaxAttentionWeights (attention s)
+    w = walshHadamardApply (liftAttention p)
+  in
+  int8Add
+    (attentionToGRU K w)
+    (walshRademacherRopeReadout (clock s) w)
+
 canonicalDiscount8 : Int8
 canonicalDiscount8 = one8
 
@@ -834,16 +844,6 @@ canonicalWatkinsStep K s =
 
 canonicalAttentionStep : FullLearnerKernel → FullLearnerState → LearnedSparsemaxAttention
 canonicalAttentionStep K s = attentionStep K (attention s) (canonicalSignal K s)
-
-canonicalAttentionMix : FullLearnerKernel → FullLearnerState → Int8
-canonicalAttentionMix K s =
-  let
-    p = learnedSparsemaxAttentionWeights (attention s)
-    w = walshHadamardApply (liftAttention p)
-  in
-  int8Add
-    (attentionToGRU K w)
-    (walshRademacherRopeReadout (clock s) w)
 
 canonicalGRUStep : FullLearnerKernel → FullLearnerState → GRUState
 canonicalGRUStep K s =
