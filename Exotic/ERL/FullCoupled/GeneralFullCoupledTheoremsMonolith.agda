@@ -9,13 +9,19 @@ open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin)
-open import Data.Product using (_×_; _,_)
+open import Data.Fin.Pigeonhole using (pigeonhole-collision)
+open import Data.Product using (_×_; _,_; ∃₂)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
 open import Data.List.Relation.Unary.Sorted.TotalOrder using (Sorted)
 open import Data.List.Relation.Binary.Permutation.Propositional using (_↭_)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
+
+pigeonhole-suc-collision : ∀ {n : Nat}
+  (f : Fin (suc n) → Fin n) →
+  ∃₂ λ i j → i < j × f i ≡ f j
+pigeonhole-suc-collision f = pigeonhole-collision (s≤s z≤n) f
 
 lt-irrefl : ∀ n → n < n → ⊥
 lt-irrefl zero ()
