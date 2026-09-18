@@ -46,8 +46,9 @@ jobs:
         run: |
           set -eu
           groupadd --system guixbuild 2>/dev/null || true
+          build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
           for i in $(seq -w 1 10); do
-            useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin \
+            useradd -g guixbuild -G guixbuild -d /var/empty -s "$build_shell" \
               -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
           done
           mkdir -p /var/guix/daemon-socket
