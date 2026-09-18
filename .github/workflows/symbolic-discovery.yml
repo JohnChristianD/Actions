@@ -9,6 +9,9 @@ on:
       - "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda"
       - "Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda"
       - "Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda"
+      - "Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda"
+      - "Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda"
+      - "Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda"
       - "Exotic/ERL/FullCoupled/FunctionalWalshBridge.agda"
       - ".github/workflows/symbolic-discovery.yml"
   workflow_dispatch:
@@ -54,6 +57,9 @@ jobs:
       - name: Verify certificate surface
         run: |
           agda --safe Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda
+          agda --safe Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda
+          agda --safe Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda
           agda --safe Exotic/ERL/FullCoupled/FunctionalWalshBridge.agda
           agda --safe Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda
 
