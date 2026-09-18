@@ -10,6 +10,10 @@ on:
       - '.github/workflows/monolith-composite.yml'
   workflow_dispatch:
 
+concurrency:
+  group: monolith-composite-main
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
