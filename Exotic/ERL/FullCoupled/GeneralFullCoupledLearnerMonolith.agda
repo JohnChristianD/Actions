@@ -166,8 +166,37 @@ searchSupport xs temperature (suc n) current best with supportValid xs temperatu
 ... | yes = searchSupport xs temperature n (suc current) (maxNat best current)
 ... | no = searchSupport xs temperature n (suc current) best
 
+searchSupport-positive : ∀ {A} (xs : List (ScoreEntry A)) temperature fuel current best →
+  best ≢ zero →
+  searchSupport xs temperature fuel current best ≢ zero
+searchSupport-positive xs temperature zero current best h = h
+searchSupport-positive xs temperature (suc n) current best h with supportValid xs temperature current
+... | yes =
+  searchSupport-positive
+    xs temperature n (suc current) (maxNat best current)
+    (maxNat-left-positive h)
+... | no =
+  searchSupport-positive
+    xs temperature n (suc current) best h
+
+maxNat-left-positive : ∀ {m n} → m ≢ zero → maxNat m n ≢ zero
+maxNat-left-positive {zero} h = h
+maxNat-left-positive {suc m} h ()
+
+
 supportSize : ∀ {A} → ActionSpace A → QVec A → CountVec A → Nat
 supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemperature A (suc zero) (suc zero)
+
+sparsemax-support-nonempty : ∀ {A} (K : ActionSpace A) (q : QVec A) (c : CountVec A) →
+  supportSize K q c ≢ zero
+sparsemax-support-nonempty K q c =
+  searchSupport-positive
+    (sortScores (scoreList q c))
+    sparsemaxTemperature
+    A
+    (suc zero)
+    (suc zero)
+    (λ ())
 
 sparsemaxWeight : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A → SparseWeight
 sparsemaxWeight {A} K q c a =
@@ -279,29 +308,25 @@ toF4Z x with natLE (toℕ (code x)) 127
 ... | yes = f4Pos (toℕ (code x))
 ... | no = f4NegZVal (255 ∸ toℕ (code x))
 
-clipF4Z : F4Z → Int8
-clipF4Z (f4Pos n) with natLE n 127
-... | yes = int8OfNat n
-... | no = int8OfNat 127
-clipF4Z (f4NegZVal n) with natLE n 127
-... | yes = int8OfNat (255 ∸ n)
-... | no = int8OfNat 128
+wrapF4Z : F4Z → Int8
+wrapF4Z (f4Pos n) = int8OfNat n
+wrapF4Z (f4NegZVal n) = int8Neg (int8OfNat (suc n))
 
 f4Add : Int8 → Int8 → Int8
-f4Add x y = clipF4Z (f4AddZ (toF4Z x) (toF4Z y))
+f4Add = int8Add
 
 f4Neg8 : Int8 → Int8
-f4Neg8 x = clipF4Z (f4NegZ (toF4Z x))
+f4Neg8 = int8Neg
 
 f4Sub : Int8 → Int8 → Int8
-f4Sub x y = f4Add x (f4Neg8 y)
+f4Sub = int8Sub
 
 f4Div128 : F4Z → F4Z
 f4Div128 (f4Pos n) = f4Pos (n / 128)
 f4Div128 (f4NegZVal n) = f4NegOfNat ((suc n + 127) / 128)
 
 scaledF4 : Int8 → Int8 → Int8
-scaledF4 x y = clipF4Z (f4Div128 (f4MulZ (toF4Z x) (toF4Z y)))
+scaledF4 x y = wrapF4Z (f4Div128 (f4MulZ (toF4Z x) (toF4Z y)))
 
 f4Sign : Int8 → Int8
 f4Sign x with toF4Z x
