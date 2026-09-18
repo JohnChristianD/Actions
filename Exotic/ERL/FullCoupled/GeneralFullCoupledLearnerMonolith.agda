@@ -291,23 +291,143 @@ semidirectCompose (semidirectToken T f) (semidirectToken S g) =
     (λ x s → T x (S (run f x) s))
     (composeMobius f g)
 
+data F4Z : Set where
+  f4Pos : Nat → F4Z
+  f4Neg : Nat → F4Z
+
+f4NegOfNat : Nat → F4Z
+f4NegOfNat zero = f4Pos zero
+f4NegOfNat (suc n) = f4Neg n
+
+f4NegZ : F4Z → F4Z
+f4NegZ (f4Pos zero) = f4Pos zero
+f4NegZ (f4Pos (suc n)) = f4Neg n
+f4NegZ (f4Neg n) = f4Pos (suc n)
+
+f4AddZ : F4Z → F4Z → F4Z
+f4AddZ (f4Pos m) (f4Pos n) = f4Pos (m + n)
+f4AddZ (f4Pos m) (f4Neg n) with natLE m (suc n)
+... | yes = f4Neg (n ∸ m)
+... | no = f4Pos (m ∸ suc n)
+f4AddZ (f4Neg m) (f4Pos n) = f4AddZ (f4Pos n) (f4Neg m)
+f4AddZ (f4Neg m) (f4Neg n) = f4Neg (m + n + 1)
+
+f4MulZ : F4Z → F4Z → F4Z
+f4MulZ (f4Pos m) (f4Pos n) = f4Pos (m * n)
+f4MulZ (f4Pos m) (f4Neg n) = f4NegZ (f4Pos (m * suc n))
+f4MulZ (f4Neg m) (f4Pos n) = f4NegZ (f4Pos (suc m * n))
+f4MulZ (f4Neg m) (f4Neg n) = f4Pos (suc m * suc n)
+
+toF4Z : Int8 → F4Z
+toF4Z x with natLE (toℕ (code x)) 127
+... | yes = f4Pos (toℕ (code x))
+... | no = f4Neg (255 ∸ toℕ (code x))
+
+clipF4Z : F4Z → Int8
+clipF4Z (f4Pos n) with natLE n 127
+... | yes = int8OfNat n
+... | no = int8OfNat 127
+clipF4Z (f4Neg n) with natLE n 127
+... | yes = int8OfNat (255 ∸ n)
+... | no = int8OfNat 128
+
+f4Add : Int8 → Int8 → Int8
+f4Add x y = clipF4Z (f4AddZ (toF4Z x) (toF4Z y))
+
+f4Neg : Int8 → Int8
+f4Neg x = clipF4Z (f4NegZ (toF4Z x))
+
+f4Sub : Int8 → Int8 → Int8
+f4Sub x y = f4Add x (f4Neg y)
+
+f4Div128 : F4Z → F4Z
+f4Div128 (f4Pos n) = f4Pos (n / 128)
+f4Div128 (f4Neg n) = f4NegOfNat ((suc n + 127) / 128)
+
+scaledF4 : Int8 → Int8 → Int8
+scaledF4 x y = clipF4Z (f4Div128 (f4MulZ (toF4Z x) (toF4Z y)))
+
+f4Sign : Int8 → Int8
+f4Sign x with toF4Z x
+... | f4Pos zero = zero8
+... | f4Pos (suc _) = one8
+... | f4Neg _ = int8OfNat 255
+
+f4SignZ : Int8 → F4Z
+f4SignZ x with toF4Z x
+... | f4Pos zero = f4Pos zero
+... | f4Pos (suc _) = f4Pos 1
+... | f4Neg _ = f4Neg zero
+
+f4Pow2Nat : Nat → Nat
+f4Pow2Nat zero = 1
+f4Pow2Nat (suc n) = 2 * f4Pow2Nat n
+
+f4Pow2Level : F4Z → Int8
+f4Pow2Level (f4Neg _) = zero8
+f4Pow2Level (f4Pos n) with natLE n 6
+... | yes = int8OfNat (f4Pow2Nat n)
+... | no = int8OfNat 127
+
 record F4State : Set where
   constructor f4State
-  field thetaQ residualQ errorQ errorResidual l2Global : Int8
+  field
+    thetaQ residualQ errorQ errorResidual levelResidual : Int8
+    level : F4Z
 open F4State public
 
+record F4Params : Set where
+  constructor f4Params
+  field beta₂ betaTheta : Int8
+open F4Params public
+
 zeroF4 : F4State
-zeroF4 = f4State zero8 zero8 zero8 zero8 zero8
+zeroF4 = f4State zero8 zero8 zero8 zero8 zero8 (f4Pos zero)
 
-f4Quantize : Int8 → Int8
-f4Quantize x = int8OfNat (toℕ (code x) ∸ (toℕ (code x) % 16))
+defaultF4Params : F4Params
+defaultF4Params = f4Params zero8 zero8
 
-f4Step : F4State → Int8 → F4State
-f4Step s g =
-  let base = int8Add (thetaQ s) (residualQ s)
-      raw = int8Sub (int8Add base g) (int8Mul (l2Global s) base)
-      q = f4Quantize raw
-  in f4State q (int8Sub raw q) (errorQ s) (errorResidual s) (l2Global s)
+f4ThetaFull : F4State → Int8
+f4ThetaFull s = f4Add (thetaQ s) (residualQ s)
+
+f4ErrorFull : F4State → Int8
+f4ErrorFull s = f4Add (errorQ s) (errorResidual s)
+
+f4ErrorNew : F4Params → F4State → Int8 → Int8
+f4ErrorNew p s g =
+  f4Add
+    (scaledF4 (beta₂ p) (f4ErrorFull s))
+    (scaledF4 (f4Sub one8 (beta₂ p)) g)
+
+f4LevelUpdated : F4State → Int8 → F4Z
+f4LevelUpdated s e′ =
+  f4AddZ (level s) (f4SignZ (f4Add (levelResidual s) e′))
+
+f4LevelResidualUpdated : F4State → Int8 → Int8
+f4LevelResidualUpdated s e′ =
+  let r′ = f4Add (levelResidual s) e′
+  in f4Sub r′ (f4Sign r′)
+
+f4DeltaTheta : F4Params → F4State → Int8 → Int8
+f4DeltaTheta p s g =
+  f4Sub
+    (scaledF4 (f4Pow2Level (level s)) (hardSignGate g))
+    (scaledF4 (betaTheta p) (f4ThetaFull s))
+
+f4Step : F4Params → F4State → Int8 → F4State
+f4Step p s g =
+  f4State qθ′ rθ′ qe′ re′ rℓ′′ level′
+  where
+  θ = f4ThetaFull s
+  e = f4ErrorFull s
+  e′ = f4ErrorNew p s g
+  rℓ′′ = f4LevelResidualUpdated s e′
+  level′ = f4LevelUpdated s e′
+  Δθ = f4DeltaTheta p s g
+  qθ′ = f4Add θ Δθ
+  rθ′ = f4Sub θ qθ′
+  qe′ = e′
+  re′ = f4Sub e e′
 
 record NormPair : Set where
   constructor normPair
@@ -367,7 +487,7 @@ learnerStep K s reward =
     (incAt (counts s) a)
     a
     (gruStep (gru s) shaped)
-    (f4Step (optimizer s) shaped)
+    (f4Step defaultF4Params (optimizer s) shaped)
     (normStep (normState s) (q s a) shaped)
 
 iterateLearner : ∀ {A} → LearnerKernel A → Nat → LearnerState A → Int8 → LearnerState A
