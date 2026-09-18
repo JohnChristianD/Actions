@@ -6,7 +6,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Int as I
 open import Data.Integer.Base as Z using ()
 open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
-open import Data.Nat.Properties using (m≤m+n)
+open import Data.Nat.Properties using (m≤m+n; <-trans)
 open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
@@ -62,11 +62,7 @@ int8-code-not-coercive coercive with coercive 256
     (lt-trans-nat-local h (toℕ<n (L.code s)))
   where
   lt-trans-nat-local : ∀ {a b c : Nat} → a < b → b < c → a < c
-  lt-trans-nat-local (s≤s p) (s≤s q) = s≤s (go p q)
-    where
-    go : ∀ {a b c : Nat} → a ≤ b → b ≤ c → a ≤ c
-    go z≤n q = z≤n
-    go (s≤s p) (s≤s q) = s≤s (go p q)
+  lt-trans-nat-local = <-trans
 
 
 plus-zero : ∀ n → n + zero ≡ n
