@@ -9,7 +9,8 @@ open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin)
-open import Data.Fin.Properties using (pigeonhole)
+open import Data.Fin.Properties using (pigeonhole; <⇒notInjective)
+open import Function.Definitions using (Injective)
 open import Data.Product using (_×_; _,_; ∃₂)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
@@ -22,6 +23,11 @@ pigeonhole-suc-collision : ∀ {n : Nat}
   (f : Fin (suc n) → Fin n) →
   ∃₂ λ i j → i < j × f i ≡ f j
 pigeonhole-suc-collision f = pigeonhole (s≤s z≤n) f
+
+pigeonhole-suc-not-injective : ∀ {n : Nat}
+  (f : Fin (suc n) → Fin n) →
+  ¬ Injective _≡_ _≡_ f
+pigeonhole-suc-not-injective f = <⇒notInjective (s≤s z≤n)
 
 lt-irrefl : ∀ n → n < n → ⊥
 lt-irrefl zero ()
