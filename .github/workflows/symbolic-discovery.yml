@@ -34,16 +34,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Mercury
+        env:
+          MERCURY_VERSION: "22.01.9"
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget ca-certificates gnupg
-          wget -qO /tmp/paul.asc https://paul.bone.id.au/paul.asc
-          sudo cp /tmp/paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
-          echo "deb http://dl.mercurylang.org/deb/ noble main" | sudo tee /etc/apt/sources.list.d/mercury.list
-          sudo apt-get update
-          sudo apt-get install -y mercury-recommended
+          sudo apt-get install -y build-essential curl xz-utils
+          curl -fsSLO "https://dl.mercurylang.org/release/mercury-srcdist-${MERCURY_VERSION}.tar.xz"
+          curl -fsSLO "https://dl.mercurylang.org/release/mercury-srcdist-${MERCURY_VERSION}.tar.xz.sha512"
+          sha512sum -c "mercury-srcdist-${MERCURY_VERSION}.tar.xz.sha512"
+          tar -xf "mercury-srcdist-${MERCURY_VERSION}.tar.xz"
+          cd "mercury-srcdist-${MERCURY_VERSION}"
+          ./configure             --prefix="$RUNNER_TEMP/mercury"             --enable-minimal-install             --disable-csharp-grade             --disable-java-grade
+          make -j2
+          make install
+          echo "$RUNNER_TEMP/mercury/bin" >> "$GITHUB_PATH"
           mmc --version
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -63,20 +68,26 @@ jobs:
 
       - name: Run Mercury typed JAxtar A/Q verifier
         run: |
-          mmc --make .ci/discovery/jaxtar_aq_discovery.m
-          ./jaxtar_aq_discovery > .ci/discovery/mercury-jaxtar-aq.txt
-          cat .ci/discovery/mercury-jaxtar-aq.txt
+          cd .ci/discovery
+          mmc --make jaxtar_aq_discovery
+          ./jaxtar_aq_discovery > mercury-jaxtar-aq.txt
+          cat mercury-jaxtar-aq.txt
+
 
       - name: Run Mercury involution verifier
         run: |
-          mmc --make .ci/discovery/clojure_involution_compat.m
+          cd .ci/discovery
+          mmc --make clojure_involution_compat
           ./clojure_involution_compat
+
 
       - name: Run Mercury rational oracle
         run: |
-          mmc --make oracle/mercury_oracle.m
-          ./mercury_oracle > .ci/discovery/mercury-oracle.txt
-          cat .ci/discovery/mercury-oracle.txt
+          cd oracle
+          mmc --make mercury_oracle
+          ./mercury_oracle > ../.ci/discovery/mercury-oracle.txt
+          cat ../.ci/discovery/mercury-oracle.txt
+
 
       - name: Set up Agda and standard library
         uses: agda/agda-setup-action@v1
