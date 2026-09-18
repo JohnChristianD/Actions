@@ -128,16 +128,32 @@ record ReservoirConditionCertificate (S : Set) : Set₁ where
   constructor reservoirConditionCertificate
   field
     observe : S → L.Int8
-    injective : ∀ {s t} → observe s ≡ observe t → s ≡ t
     inverse : L.Int8 → S
     inverseLaw : ∀ s → inverse (observe s) ≡ s
-    discreteNSP : ∀ {s t} → s ≢ t → observe s ≢ observe t
 open ReservoirConditionCertificate public
+
+reservoir-condition-sufficient : ∀ {S : Set}
+  (R : ReservoirConditionCertificate S) (s : S) →
+  inverse R (observe R s) ≡ s
+reservoir-condition-sufficient R s = inverseLaw R s
+
+reservoir-condition-necessary : ∀ {S : Set}
+  (R : ReservoirConditionCertificate S) {s t : S} →
+  observe R s ≡ observe R t → s ≡ t
+reservoir-condition-necessary R eq =
+  trans
+    (sym (inverseLaw R _))
+    (trans (cong (inverse R) eq) (inverseLaw R _))
+
+reservoir-injective : ∀ {S : Set}
+  (R : ReservoirConditionCertificate S) →
+  ∀ {s t} → observe R s ≡ observe R t → s ≡ t
+reservoir-injective = reservoir-condition-necessary
 
 reservoir-discreteNSP : ∀ {S : Set}
   (R : ReservoirConditionCertificate S) {s t} →
   s ≢ t → observe R s ≢ observe R t
-reservoir-discreteNSP R = discreteNSP R
+reservoir-discreteNSP R apart eq = apart (reservoir-injective R eq)
 
 record CertifiedCompositeConclusion
   (A : Nat)
