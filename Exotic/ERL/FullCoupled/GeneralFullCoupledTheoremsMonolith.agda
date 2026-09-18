@@ -48,70 +48,6 @@ fullCompositionPigeonhole-not-injective : ∀ {n : Nat}
 fullCompositionPigeonhole-not-injective {n} W =
   <⇒notInjective (s≤s (s≤s (natLeRefl n)))
 
-fullLearnerEncode257 : ∀ {A} (K : L.LearnerKernel A) →
-  Fin 257 → L.LearnerState A
-fullLearnerEncode257 K i =
-  L.iterateLearner K (toℕ i)
-    (L.initialLearner (L.actionSpaceK K))
-    L.zero8
-
-zero-plus : ∀ n → zero + n ≡ n
-zero-plus n = refl
-
-fullLearnerEncode257-clock : ∀ {A} (K : L.LearnerKernel A) (i : Fin 257) →
-  L.clock (fullLearnerEncode257 K i) ≡ toℕ i
-fullLearnerEncode257-clock K i =
-  trans
-    (iterateLearner-clock K (toℕ i)
-      (L.initialLearner (L.actionSpaceK K)) L.zero8)
-    (zero-plus (toℕ i))
-
-fullLearnerEncode257-distinct : ∀ {A} (K : L.LearnerKernel A)
-  {i j : Fin 257} →
-  fullLearnerEncode257 K i ≡ fullLearnerEncode257 K j →
-  i ≡ j
-fullLearnerEncode257-distinct K {i} {j} eq =
-  toℕ-injective
-    (trans
-      (sym (fullLearnerEncode257-clock K i))
-      (trans
-        (cong L.clock eq)
-        (fullLearnerEncode257-clock K j)))
-
-fullLearnerObservationCode :
-  ∀ {A} (K : L.LearnerKernel A)
-  (observe : L.LearnerState A → L.Int8) →
-  Fin 257 → Fin 256
-fullLearnerObservationCode K observe i =
-  L.code (observe (fullLearnerEncode257 K i))
-
-fullLearnerState-observation-not-injective :
-  ∀ {A} (K : L.LearnerKernel A)
-  (observe : L.LearnerState A → L.Int8) →
-  ¬ Injective _≡_ _≡_ observe
-fullLearnerState-observation-not-injective K observe inj
-  with pigeonhole (s≤s z≤n) (fullLearnerObservationCode K observe)
-... | i , j , apart , codeEq =
-  apart
-    (fullLearnerEncode257-distinct K
-      (inj (cong L.int8 codeEq)))
-
-fullLearnerState-no-left-inverse :
-  ∀ {A} (K : L.LearnerKernel A)
-  (observe : L.LearnerState A → L.Int8)
-  (inverse : L.Int8 → L.LearnerState A) →
-  (∀ s → inverse (observe s) ≡ s) →
-  ⊥
-fullLearnerState-no-left-inverse K observe inverse leftInverse =
-  fullLearnerState-observation-not-injective
-    K observe
-    (λ {s} {t} eq →
-      trans
-        (sym (leftInverse s))
-        (trans
-          (cong inverse eq)
-          (leftInverse t)))
-
 NatCoercive : ∀ {S : Set} → (S → Nat) → Set
 NatCoercive e = ∀ B → ∃ λ s → B < e s
 
@@ -185,6 +121,70 @@ clock-lower-bound K n s r =
     (λ z → L.clock s ≤ z)
     (sym (iterateLearner-clock K n s r))
     (m≤m+n (L.clock s) n)
+
+fullLearnerEncode257 : ∀ {A} (K : L.LearnerKernel A) →
+  Fin 257 → L.LearnerState A
+fullLearnerEncode257 K i =
+  L.iterateLearner K (toℕ i)
+    (L.initialLearner (L.actionSpaceK K))
+    L.zero8
+
+zero-plus : ∀ n → zero + n ≡ n
+zero-plus n = refl
+
+fullLearnerEncode257-clock : ∀ {A} (K : L.LearnerKernel A) (i : Fin 257) →
+  L.clock (fullLearnerEncode257 K i) ≡ toℕ i
+fullLearnerEncode257-clock K i =
+  trans
+    (iterateLearner-clock K (toℕ i)
+      (L.initialLearner (L.actionSpaceK K)) L.zero8)
+    (zero-plus (toℕ i))
+
+fullLearnerEncode257-distinct : ∀ {A} (K : L.LearnerKernel A)
+  {i j : Fin 257} →
+  fullLearnerEncode257 K i ≡ fullLearnerEncode257 K j →
+  i ≡ j
+fullLearnerEncode257-distinct K {i} {j} eq =
+  toℕ-injective
+    (trans
+      (sym (fullLearnerEncode257-clock K i))
+      (trans
+        (cong L.clock eq)
+        (fullLearnerEncode257-clock K j)))
+
+fullLearnerObservationCode :
+  ∀ {A} (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → L.Int8) →
+  Fin 257 → Fin 256
+fullLearnerObservationCode K observe i =
+  L.code (observe (fullLearnerEncode257 K i))
+
+fullLearnerState-observation-not-injective :
+  ∀ {A} (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → L.Int8) →
+  ¬ Injective _≡_ _≡_ observe
+fullLearnerState-observation-not-injective K observe inj
+  with pigeonhole (s≤s z≤n) (fullLearnerObservationCode K observe)
+... | i , j , apart , codeEq =
+  apart
+    (fullLearnerEncode257-distinct K
+      (inj (cong L.int8 codeEq)))
+
+fullLearnerState-no-left-inverse :
+  ∀ {A} (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → L.Int8)
+  (inverse : L.Int8 → L.LearnerState A) →
+  (∀ s → inverse (observe s) ≡ s) →
+  ⊥
+fullLearnerState-no-left-inverse K observe inverse leftInverse =
+  fullLearnerState-observation-not-injective
+    K observe
+    (λ {s} {t} eq →
+      trans
+        (sym (leftInverse s))
+        (trans
+          (cong inverse eq)
+          (leftInverse t)))
 
 finiteParameterComplete : ∀ {A : Nat}
   (table : L.QVec A) → (λ a → table a) ≡ table
