@@ -2,97 +2,61 @@
 
 Last audited: 2026-09-19.
 
-## Current head
+## Current architecture
 
-`d24c59101794ad3b6684889f709e46b5f0c10478`
+Canonical theorem entrypoint:
 
-Commit:
+`Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
 
-`Connect finite-cycle exclusion to canonical theorem monolith`
+Canonical implementation entrypoint:
 
-## What is structurally in place
+`Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
 
-The current main branch contains:
+Canonical CI entrypoint:
 
-- canonical learner monolith;
-- canonical learner theorem monolith;
-- canonical closed-loop interface;
-- exact finite Toy Maze and FourRooms variants;
-- Mercury theorem/discovery/verifier sources;
-- pinned Guix channel and manifest;
-- Guix-native connected CI;
-- legacy Agda/discovery workflows reduced to `workflow_call` wrappers.
+`.github/workflows/guix-composition.yml`
 
-## Latest CI result
+The old workflow family and the superseded canonical theorem module have been pruned.
 
-The latest `Guix connected composition verification` run is:
+## Latest historical failure
 
-run `35397895896`
+The previous Guix run `35397895896` failed at `actions/checkout@v5` inside the Guix container.
 
-Result: **failure**.
+That specific failure mode has been removed from the workflow: the current workflow performs source checkout with Guile invoking Guix-provided Git, then loads the pinned CI driver.
 
-All four jobs failed at `actions/checkout@v5` inside the Guix container before the lane body ran:
+No current post-fix Guix run has yet established a green result, so the repair is structurally applied but not yet empirically closed.
 
-- Guix / Agda --safe connected theorem surface
-- Guix / Mercury connected theorem and verifier lane
-- Guix / automated finite discovery
-- Guix / no Haskell, Cabal, shell, or CMD surface
+## Current migration
 
-Therefore the current head has not yet received an end-to-end green Guix verification.
+The intended verification path is:
 
-The failure is an infrastructure/entrypoint failure at checkout. The later Agda and Mercury commands were skipped, so this run provides no evidence about their current execution inside the pinned Guix environment.
+`Guix channel pin -> pure manifest -> Agda --safe + Mercury`
 
-## Agda theorem closure
+Python finite discovery is removed.
 
-`CanonicalLearnerTheoremsMonolith.agda` now contains the connected composition record and the finite-cycle exclusion.
+The current surface audit rejects:
 
-Its theorem bodies are source-level equalities and direct reuse of canonical lemmas. This is enough to type-check the declarations when Agda reaches the module, but the current Guix run did not reach them.
+- Haskell;
+- Python;
+- JavaScript / TypeScript;
+- JVM-family source;
+- Elm;
+- PureScript;
+- shell and Windows script files.
 
-The previous wiki's `coupled-f4-closure.yml` status is historical. It is not the current CI status for main.
+## JAxtar A/Q
 
-## Mercury migration status
+The A/Q graph is now represented twice in different proof roles:
 
-The old Haskell discovery/theorem gates were replaced by Mercury.
+- Mercury performs the executable finite path check and writes the deterministic discovery report.
+- Agda `TheoremsMonolith.agda` contains the corresponding typed certificate and connected composition theorem.
 
-Current Mercury roles:
+This is a Mercury + Guix + Agda port of the **A/Q graph/certificate boundary**.
 
-- forbidden-theorem scanning;
-- learner-module audit;
-- component audit;
-- typed A/Q discovery;
-- involution verification;
-- rational oracle.
-
-The Mercury verifier sources are present on main.
-
-The current Guix failure means these lanes have not yet been revalidated at `d24c591`.
-
-## Haskell status
-
-No current proof design depends on Haskell.
-
-The migration commits removed the Haskell discovery scripts, replaced the Haskell CI calls with Mercury, and added a policy check for lingering `.hs` sources.
-
-Therefore Haskell is not part of the intended current toolchain for this repository.
-
-That is a repository architecture statement, not a statement that Haskell has no useful role elsewhere.
-
-## Reproducibility status
-
-Guix is pinned by:
-
-- `.guix/channels.scm`
-- `.guix/manifest.scm`
-- the digest-pinned Guix container image in `.github/workflows/guix-composition.yml`.
-
-The intended CI path is now Guix/Guile-driven rather than shell-script-driven.
-
-The remaining closure task is operational: make checkout/entry into the Guix container succeed, then rerun the Agda, Mercury, discovery, and surface lanes and record their actual results here.
+It is not a full reimplementation of JAxtar's JAX parallel A*/Q* engine.
 
 ## Interpretation rule
 
-A declaration in a theorem record is counted as verified only after its owning Agda module has actually passed the current Safe Agda lane.
+The theorem monolith is the current source of truth for canonical theorem discovery.
 
-A certificate field is not treated as a proved property merely because a record type names it.
-
-This page separates source-level theorem completeness from current CI execution status.
+A theorem is called verified only after the current Guix/Agda `--safe` job actually reaches and checks it.
