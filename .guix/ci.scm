@@ -56,8 +56,7 @@
       (run! "build Mercury TSTS endogenous discovery"
             "mmc" "--make" "tsts_endogenous_discovery")
       (run! "run Mercury TSTS endogenous discovery"
-            "./tsts_endogenous_discovery")
-      (void))))
+            "./tsts_endogenous_discovery"))))
 
 (define (run-mercury)
   (in-directory ".ci"
@@ -66,8 +65,7 @@
             "mmc" "--make" "check_forbidden_theorems")
       (run! "run forbidden-theorem scanner"
             "./check_forbidden_theorems")))
-  (run-mercury-discovery-programs)
-undefined
+  (run-mercury-discovery-programs))
 
 (define (run-discovery)
   ;; The canonical outer search is TSTS-only. Agda remains authoritative
