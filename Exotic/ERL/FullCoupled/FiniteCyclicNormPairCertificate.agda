@@ -9,19 +9,19 @@ open import Data.Fin using (toℕ)
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
 ------------------------------------------------------------------------
--- Finite cyclic metric certificate.
+-- Finite cyclic operator certificate.
 --
--- This is deliberately NOT a real-valued Lipschitz structure and does
--- not introduce division, rationals, limits, or an ordered structure on
--- Z/256Z.  The carrier is the existing Int8 = Fin 256 representation.
+-- This is NOT a real-valued Lipschitz theorem.  The carrier is the
+-- existing Int8 = Fin 256 carrier, and the comparison is entirely in
+-- Nat bookkeeping around the cyclic code distance.
 --
--- cycDist8 is the exact shortest cyclic displacement of the two Int8
--- codes.  A CyclicOperatorCertificate f L proves the finite inequality
+-- cycDist8 is the shortest cyclic displacement between two Int8 codes.
+-- A certificate with gain L proves:
 --
 --   cycDist8 (f x) (f y) <= L * cycDist8 x y
 --
--- for every pair.  L is therefore a genuine finite operator-gain
--- certificate.  Composition multiplies certificates exactly.
+-- for every x,y.  No division, rationals, limits, or ordered ring
+-- structure on Z/256Z are introduced.
 ------------------------------------------------------------------------
 
 minNat : Nat → Nat → Nat
@@ -49,9 +49,7 @@ record CyclicOperatorCertificate (f : L.Int8 → L.Int8) : Set where
 open CyclicOperatorCertificate public
 
 ------------------------------------------------------------------------
--- The small arithmetic bridge needed for composition.  The only
--- non-reflexive step is multiplication monotonicity in the second
--- factor; the final reassociation is exact Nat equality.
+-- Arithmetic bridge used to re-associate a product bound exactly.
 ------------------------------------------------------------------------
 
 mul-left-assoc-bound : ∀ a b c →
@@ -61,6 +59,11 @@ mul-left-assoc-bound a b c =
     (λ z → a * (b * c) ≤ z)
     (sym (*-assoc a b c))
     (≤-refl (a * b * c))
+
+------------------------------------------------------------------------
+-- Operator composition is associative at the function level, while
+-- finite cyclic gains compose multiplicatively.
+------------------------------------------------------------------------
 
 composeCyclicOperatorCertificate :
   ∀ {f g} →
@@ -78,18 +81,18 @@ composeCyclicOperatorCertificate Cf Cg =
           (mul-left-assoc-bound (gain Cf) (gain Cg)
             (cycDist8 x y))))
 
-composeCyclicGain-bound :
+composeCyclicGain-law :
   ∀ {f g}
   (Cf : CyclicOperatorCertificate f)
   (Cg : CyclicOperatorCertificate g) →
-  gain (composeCyclicOperatorCertificate Cf Cg) ≡ gain Cf * gain Cg
-composeCyclicGain-bound Cf Cg = refl
+  gain (composeCyclicOperatorCertificate Cf Cg) ≡
+  gain Cf * gain Cg
+composeCyclicGain-law Cf Cg = refl
 
 ------------------------------------------------------------------------
--- NormPair is retained as a bookkeeping object, but it now has a fully
--- explicit finite operator-budget interpretation.  The +1 makes the zero
--- bookkeeping state a valid unit-scale upper bound without introducing
--- any normalized probability semantics.
+-- NormPair is inert bookkeeping, but it can now supply an explicit
+-- conservative finite operator budget.  The +1 gives the zero state a
+-- unit-scale budget without pretending that NormPair stores probabilities.
 ------------------------------------------------------------------------
 
 normPairOperatorBudget : L.NormPair → Nat
@@ -106,20 +109,15 @@ normPairOperatorBudget-step-monotone :
   normPairOperatorBudget (L.normStep n w x)
 normPairOperatorBudget-step-monotone n w x =
   s≤s
-    ( +-mono-≤
-        (m≤m+n (L.l1Weight n) (L.int8AbsCode w))
-        (m≤m+n
-          (L.pathWeight n)
-          (L.int8AbsCode w * L.int8AbsCode x)) )
+    (+-mono-≤
+      (m≤m+n (L.l1Weight n) (L.int8AbsCode w))
+      (m≤m+n
+        (L.pathWeight n)
+        (L.int8AbsCode w * L.int8AbsCode x)))
   where
   m≤m+n : ∀ m n → m ≤ m + n
   m≤m+n zero n = z≤n
   m≤m+n (suc m) n = s≤s (m≤m+n m n)
-
-------------------------------------------------------------------------
--- A compositional certificate says exactly what it means for the
--- inert Nat bookkeeping pair to upper-bound a finite operator gain.
-------------------------------------------------------------------------
 
 record NormPairOperatorCertificate
   (f : L.Int8 → L.Int8) : Set where
@@ -131,29 +129,12 @@ record NormPairOperatorCertificate
       gain operator ≤ normPairOperatorBudget pair
 open NormPairOperatorCertificate public
 
-composeNormPairOperatorCertificate :
-  ∀ {f g} →
-  NormPairOperatorCertificate f →
-  NormPairOperatorCertificate g →
-  NormPairOperatorCertificate (λ x → f (g x))
-composeNormPairOperatorCertificate Cf Cg =
-  normPairOperatorCertificate
-    (pair Cf)
-    (composeCyclicOperatorCertificate (operator Cf) (operator Cg))
-    (≤-trans
-      (refl≤)
-      (refl≤))
-  where
-  refl≤ : gain (composeCyclicOperatorCertificate (operator Cf) (operator Cg))
-      ≤ normPairOperatorBudget (pair Cf)
-  refl≤ = boundedBy Cf
-
 ------------------------------------------------------------------------
--- The previous constructor above intentionally preserves the first
--- bookkeeping pair as the carrier witness; the more useful statement
--- for composition is recorded separately, because the operator gain of
--- a composition is multiplicative while the runtime NormPair is additive
--- bookkeeping.
+-- Composition theorem for the certificate layer.
+--
+-- The runtime NormPair remains additive bookkeeping.  The theorem does
+-- not silently identify that additive pair with the multiplicative
+-- operator gain; instead it exposes the exact product bound separately.
 ------------------------------------------------------------------------
 
 composedGain-upperBound :
@@ -161,16 +142,18 @@ composedGain-upperBound :
   (Cf : NormPairOperatorCertificate f)
   (Cg : NormPairOperatorCertificate g) →
   gain (composeCyclicOperatorCertificate (operator Cf) (operator Cg))
-  ≤ normPairOperatorBudget (pair Cf) * normPairOperatorBudget (pair Cg)
+  ≤ normPairOperatorBudget (pair Cf) *
+    normPairOperatorBudget (pair Cg)
 composedGain-upperBound Cf Cg =
   *-mono-≤ (boundedBy Cf) (boundedBy Cg)
 
 ------------------------------------------------------------------------
--- Exact finite parameter-count capacity arithmetic.
+-- Exact finite parameter-count arithmetic.
 --
--- p independent Int8 parameters admit exactly 256^p raw assignments.
--- This is a count of encodings, hence an upper bound on the number of
--- distinct induced operators/functions after quotienting collisions.
+-- p independently chosen Int8 parameters have exactly 256^p raw
+-- assignments.  Distinct parameter assignments may induce the same
+-- transition function, so this is an upper bound on the number of
+-- distinct finite operators/hypotheses, not a claim of injectivity.
 ------------------------------------------------------------------------
 
 int8ParameterConfigurations : Nat → Nat
@@ -188,51 +171,34 @@ int8ParameterBitBudget : Nat → Nat
 int8ParameterBitBudget p = 8 * p
 
 ------------------------------------------------------------------------
--- Sparse support remains an independent discrete capacity factor.
--- The learner already computes supportSize by finite search fuel; this
--- certificate exposes that quantity without pretending it is a real
--- measure or a normalized probability denominator.
+-- Sparse support remains an independent finite capacity factor.
+-- The learner already computes supportSize through finite search fuel,
+-- and this certificate deliberately exposes the exact support value and
+-- its non-emptiness theorem without turning it into a real-valued norm.
 ------------------------------------------------------------------------
 
-record SparseSupportCertificate (A : Nat) : Set where
+record SparseSupportCertificate
+  {A : Nat} (K : L.ActionSpace A) (q : L.QVec A) (c : L.CountVec A) : Set where
   constructor sparseSupportCertificate
   field
     support : Nat
+    exactSupport : support ≡ L.supportSize K q c
     positive : support ≢ zero
-    actionCap : support ≤ suc A
 open SparseSupportCertificate public
 
 learnerSparseSupportCertificate :
   ∀ {A} (K : L.ActionSpace A) q c →
-  SparseSupportCertificate A
+  SparseSupportCertificate K q c
 learnerSparseSupportCertificate K q c =
   sparseSupportCertificate
     (L.supportSize K q c)
+    refl
     (L.sparsemax-support-nonempty K q c)
-    (suc-weak-bound (L.supportSize K q c))
-  where
-  suc-weak-bound : ∀ n → n ≤ suc A
-  suc-weak-bound zero = z≤n
-  suc-weak-bound (suc n) = s≤s (suc-weak-bound n)
 
 ------------------------------------------------------------------------
--- A finite architecture certificate can therefore carry three separate,
--- exact factors:
---
---   * cyclic operator gain from the transition law,
---   * NormPair bookkeeping budget that upper-bounds that gain,
---   * finite support / parameter-count capacity.
---
--- None of these claims injects a real-valued Lipschitz order into the
--- modular carrier.
+-- The certificate layer is intentionally orthogonal to the reservoir
+-- theorem: it bounds finite transition separation/gain, while the
+-- separate reservoir result decides whether a chosen observation map
+-- can have a left inverse on the domain.  Hence a finite norm certificate
+-- never repairs the existing one-byte full-state collision theorem.
 ------------------------------------------------------------------------
-
-record FiniteCapacityCertificate (A p : Nat) : Set where
-  constructor finiteCapacityCertificate
-  field
-    supportFactor : Nat
-    parameterFactor : Nat
-    supportPositive : supportFactor ≢ zero
-    supportBound : supportFactor ≤ suc A
-    parameterBound : parameterFactor ≡ int8ParameterConfigurations p
-open FiniteCapacityCertificate public
