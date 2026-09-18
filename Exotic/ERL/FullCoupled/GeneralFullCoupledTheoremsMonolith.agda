@@ -13,7 +13,7 @@ open import Data.Fin using (Fin; toℕ)
 import Data.Fin as Fin
 open import Data.Fin.Properties using (pigeonhole; <⇒notInjective; toℕ-injective; toℕ<n)
 open import Function.Definitions using (Injective)
-open import Data.Product using (_×_; _,_; ∃₂)
+open import Data.Product using (_×_; _,_; ∃; ∃₂)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
 open import Data.List.Relation.Unary.Sorted.TotalOrder using (Sorted)
@@ -113,7 +113,7 @@ fullLearnerState-no-left-inverse K observe inverse leftInverse =
           (leftInverse t)))
 
 NatCoercive : ∀ {S : Set} → (S → Nat) → Set
-NatCoercive e = ∀ B → ∃₂ λ s → B < e s
+NatCoercive e = ∀ B → ∃ λ s → B < e s
 
 int8-code-not-coercive : ¬ NatCoercive (λ x → toℕ (L.code x))
 int8-code-not-coercive coercive with coercive 256
