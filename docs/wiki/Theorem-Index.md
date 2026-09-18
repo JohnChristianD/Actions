@@ -119,6 +119,14 @@ This is independent of TSTS, evolutionary search, program search, PVS, and JAxta
 
 A literature check found extensive prior work combining attention with GRU/recurrent RL and prior Q-learning convergence theory, but the exact formal finite-state mediator theorem above was not found in the checked sources. This should therefore be described as a narrow repository-local novelty candidate, not as a definitive literature-priority claim.
 
+## Learner theorem-discovery target
+
+Automated theorem discovery may search for modular identities of the learner itself, including involutions, equivariances, commuting diagrams, quotient-preserving transformations, and invariant-preserving perturbations.
+
+An involution candidate must be a transformation defined over an actual learner carrier or learner-derived observable and be checked by Agda. A generic vector/list involution smoke test is not a learner theorem and is not part of the discovery contract.
+
+The current canonical learner does not yet claim a discovered involution theorem. Existing modular candidates include phase periodicity, persistent-GRU preservation, policy invariance under attention/NormPair/optimizer replacement, and the endogenous attention mediator. Future involution discovery should be evaluated against these learner definitions rather than through an independent oracle.
+
 ## B. Closed-loop faithfulness boundary
 
 `CanonicalClosedLoopInterface.agda` supplies the environment/agent/episode contract.
