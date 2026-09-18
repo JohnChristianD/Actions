@@ -975,9 +975,9 @@ record FiniteMinimaxStateSystem
   field
     maxActions : List A
     minActions : List B
-    transition : S → X → A → B → S
+    minimaxTransition : S → X → A → B → S
     payoff : S → X → A → B → Nat
-    output : S → Y
+    minimaxOutput : S → Y
 open FiniteMinimaxStateSystem public
 
 minimaxValue :
@@ -1027,16 +1027,20 @@ minList-singleton :
   ∀ (x : Nat) → minList (x ∷ []) ≡ x
 minList-singleton x = refl
 
-minimax-singleton-opponent :
-  ∀ {S X Y A : Set}
-  (G : FiniteMinimaxStateSystem S X Y A (Fin 1))
-  (s : S) (x : X) →
-  minimaxValue G s x ≡
+learnerMinimax-value-reduction :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (s : L.LearnerState A)
+  (reward : L.Int8) →
+  minimaxValue (learnerMinimaxStateSystem K) s reward
+  ≡
   maxList
     (map
-      (λ a → payoff G s x a (Fin.zero))
-      (maxActions G))
-minimax-singleton-opponent G s x = refl
+      (λ a →
+        toℕ (L.code
+          (L.scoreA (L.q s) (L.counts s) a)))
+      (L.finList _))
+learnerMinimax-value-reduction K s reward = refl
 
 ------------------------------------------------------------------------
 -- The current learner is a genuine member of this minimax-inclusive
@@ -1063,7 +1067,8 @@ learnerMinimaxStateSystem K =
   finiteMinimaxStateSystem
     (L.finList _)
     (singletonAction ∷ [])
-    (L.learnerStepGivenAction K)
+    (λ s reward a b →
+      L.learnerStepGivenAction K s a reward)
     (λ s reward a b →
       toℕ (L.code
         (L.scoreA (L.q s) (L.counts s) a)))
@@ -1074,7 +1079,7 @@ learnerMinimax-branch :
   (K : L.LearnerKernel A)
   (s : L.LearnerState A)
   (reward : L.Int8) →
-  transition (learnerMinimaxStateSystem K)
+  minimaxTransition (learnerMinimaxStateSystem K)
     s reward
     (L.generalPolicy K s)
     singletonAction
@@ -1086,7 +1091,7 @@ learnerMinimax-output :
   ∀ {A : Nat}
   (K : L.LearnerKernel A)
   (s : L.LearnerState A) →
-  output (learnerMinimaxStateSystem K) s ≡
+  minimaxOutput (learnerMinimaxStateSystem K) s ≡
   L.generalPolicy K s
 learnerMinimax-output K s = refl
 
