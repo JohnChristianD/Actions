@@ -388,6 +388,50 @@ walshHadamardOrthogonality4 = record
   ; r33 = refl
   }
 
+
+------------------------------------------------------------------------
+-- Exact finite Walsh-Rademacher phase layer.
+--
+-- This is a finite, proof-friendly rotary analogue: each phase is a
+-- signed permutation of two 2D planes. It is not transcendental RoPE.
+------------------------------------------------------------------------
+
+data Phase4 : Set where
+  phase0 phase1 phase2 phase3 : Phase4
+
+phase4 : Nat → Phase4
+phase4 zero = phase0
+phase4 (suc zero) = phase1
+phase4 (suc (suc zero)) = phase2
+phase4 (suc (suc (suc zero))) = phase3
+phase4 (suc (suc (suc (suc n)))) = phase4 n
+
+walshQuantize4 : WalshVec4 → Int8Vec4
+walshQuantize4 (a , (b , (c , d))) =
+  int8OfNat (halfNumerator a) ,
+  (int8OfNat (halfNumerator b) ,
+    (int8OfNat (halfNumerator c) , int8OfNat (halfNumerator d)))
+
+phaseRotate4 : Phase4 → Int8Vec4 → Int8Vec4
+phaseRotate4 phase0 v = v
+phaseRotate4 phase1 (a , (b , (c , d))) =
+  int8Neg b , (a , (int8Neg d , c))
+phaseRotate4 phase2 (a , (b , (c , d))) =
+  int8Neg a , (int8Neg b , (int8Neg c , int8Neg d))
+phaseRotate4 phase3 (a , (b , (c , d))) =
+  b , (int8Neg a , (d , int8Neg c))
+
+walshRademacherRope4 : Nat → WalshVec4 → Int8Vec4
+walshRademacherRope4 clockValue w =
+  phaseRotate4 (phase4 clockValue) (walshQuantize4 w)
+
+walshRademacherRopeReadout : Nat → WalshVec4 → Int8
+walshRademacherRopeReadout clockValue w with walshRademacherRope4 clockValue w
+... | a , (b , (c , d)) =
+  int8Add
+    (int8Add a b)
+    (int8Add c d)
+
 data PowerOfFour : Nat → Set where
   powerOfFour-one : PowerOfFour 1
   powerOfFour-step : ∀ {d} → PowerOfFour d → PowerOfFour (d * 4)
@@ -720,17 +764,56 @@ canonicalReward8 K s = policyLeftWeight (canonicalPolicy K s)
 canonicalDiscount8 : Int8
 canonicalDiscount8 = one8
 
+------------------------------------------------------------------------
+-- Closed-loop endogenous feedback.
+--
+-- LCB/sparsemax policy and learned sparsemax attention stay distinct.
+-- Attention flows through Walsh-Hadamard + finite phase mixing into GRU.
+-- GRU and F4/L2 state feed the next Watkins target, closing the loop.
+------------------------------------------------------------------------
+
+canonicalGRUFeedback : FullLearnerState → Int8
+canonicalGRUFeedback s = hiddenState (gru s)
+
+canonicalF4L2Feedback : FullLearnerKernel → FullLearnerState → Int8
+canonicalF4L2Feedback K s =
+  int8Add
+    (f4ThetaFull (optimizer s))
+    (l2Correction (globalL2 (optimizerKernel K)))
+
+canonicalQLogControlFeedback : FullLearnerState → Int8
+canonicalQLogControlFeedback s = coefficient (qLogControl s)
+
+canonicalQLogValueFeedback : FullLearnerState → Int8
+canonicalQLogValueFeedback s = rationalCode (qLogValue s)
+
+canonicalEndogenousFeedback : FullLearnerKernel → FullLearnerState → Int8
+canonicalEndogenousFeedback K s =
+  int8Add
+    (canonicalAttentionMix K s)
+    (int8Add
+      (canonicalGRUFeedback s)
+      (int8Add
+        (canonicalF4L2Feedback K s)
+        (int8Add
+          (canonicalQLogControlFeedback s)
+          (canonicalQLogValueFeedback s))))
+
 canonicalWatkinsTarget : FullLearnerKernel → FullLearnerState → Int8
 canonicalWatkinsTarget K s =
   int8Add
-    (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
-    (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s))))
+    (int8Add
+      (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
+      (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s)))))
+    (canonicalEndogenousFeedback K s)
 
 canonicalWatkinsTarget-law : ∀ K s →
   canonicalWatkinsTarget K s ≡
   int8Add
-    (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
-    (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s))))
+    (int8Add
+      (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
+      (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s)))))
+    (canonicalEndogenousFeedback K s)
 canonicalWatkinsTarget-law K s = refl
 
 canonicalQLogControlStep : FullLearnerKernel → FullLearnerState → SignedQLogControl
@@ -752,24 +835,32 @@ canonicalWatkinsStep K s =
 canonicalAttentionStep : FullLearnerKernel → FullLearnerState → LearnedSparsemaxAttention
 canonicalAttentionStep K s = attentionStep K (attention s) (canonicalSignal K s)
 
+canonicalAttentionMix : FullLearnerKernel → FullLearnerState → Int8
+canonicalAttentionMix K s =
+  let
+    p = learnedSparsemaxAttentionWeights (attention s)
+    w = walshHadamardApply (liftAttention p)
+  in
+  int8Add
+    (attentionToGRU K w)
+    (walshRademacherRopeReadout (clock s) w)
+
 canonicalGRUStep : FullLearnerKernel → FullLearnerState → GRUState
 canonicalGRUStep K s =
-  let p = learnedSparsemaxAttentionWeights (attention s)
-      w = walshHadamardApply (liftAttention p)
-  in gruStep (gru s) (int8Add (canonicalSignal K s) (attentionToGRU K w))
+  gruStep
+    (gru s)
+    (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
 
 canonicalPersistentGRUPreservation : ∀ K s →
   persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistentGRUPreservation K s =
-  persistent-preservation (gru s) (int8Add (canonicalSignal K s)
-    (attentionToGRU K (walshHadamardApply
-      (liftAttention (learnedSparsemaxAttentionWeights (attention s))))))
+  persistent-preservation (gru s)
+    (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
 
 canonicalRecurrentInput-law : ∀ K s →
-  canonicalGRUStep K s ≡ gruStep (gru s)
-    (int8Add (canonicalSignal K s)
-      (attentionToGRU K (walshHadamardApply
-        (liftAttention (learnedSparsemaxAttentionWeights (attention s))))))
+  canonicalGRUStep K s ≡
+  gruStep (gru s)
+    (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
 canonicalRecurrentInput-law K s = refl
 
 canonicalOptimizerStep : FullLearnerKernel → FullLearnerState → F4IntUState
