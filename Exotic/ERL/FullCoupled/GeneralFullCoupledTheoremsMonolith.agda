@@ -764,9 +764,7 @@ row3 : IntVec4
 row3 = I.pos 1 , (I.negsuc 0 , (I.negsuc 0 , I.pos 1))
 
 dot4 : IntVec4 → IntVec4 → I.Int
-dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
-  I._+_ (I._+_ (I._*_ a e) (I._*_ b f))
-    (I._+_ (I._*_ c g) (I._*_ d h))
+dot4 (a , (b , (c , d))) (e , (f , (g , h))) = I._+_ (I._+_ (I._*_ a e) (I._*_ b f)) (I._+_ (I._*_ c g) (I._*_ d h))
 
 walsh00 : dot4 row0 row0 ≡ I.pos 4
 walsh00 = refl
