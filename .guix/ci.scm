@@ -48,23 +48,28 @@
            "agda" "--safe" file))
    (agda-safe-files)))
 
-(define (run-mercury)
-  (in-directory ".ci"
-    (lambda ()
-      (run! "build forbidden-theorem scanner"
-            "mmc" "--make" "check_forbidden_theorems")
-      (run! "run forbidden-theorem scanner"
-            "./check_forbidden_theorems")))
+(define (run-mercury-discovery-programs)
   (in-directory ".ci/discovery"
     (lambda ()
       (run! "build Mercury A/Q discovery"
             "mmc" "--make" "jaxtar_aq_discovery")
       (run! "run Mercury A/Q discovery"
             "./jaxtar_aq_discovery")
+      (run! "build Mercury formal EvoSAX/Lion meta-search"
+            "mmc" "--make" "evosax_lion_discovery")
+      (run! "run Mercury formal EvoSAX/Lion meta-search"
+            "./evosax_lion_discovery")
       (run! "build Mercury involution verifier"
             "mmc" "--make" "clojure_involution_compat")
       (run! "run Mercury involution verifier"
-            "./clojure_involution_compat")))
+            "./clojure_involution_compat"))))
+
+(define (run-mercury)
+  (in-directory "."
+    (lambda ()
+      (run! "build forbidden-theorem scanner"
+            "mmc" "--make" ".ci/check_forbidden_theorems")))
+  (run-mercury-discovery-programs)
   (in-directory "oracle"
     (lambda ()
       (run! "build Mercury rational oracle"
@@ -73,14 +78,11 @@
             "./mercury_oracle"))))
 
 (define (run-discovery)
-  ;; The finite A/Q discovery path is now Mercury-native.  The report is
-  ;; emitted directly as deterministic JSON by jaxtar_aq_discovery.m.
-  (in-directory ".ci/discovery"
-    (lambda ()
-      (run! "build Mercury finite discovery"
-            "mmc" "--make" "jaxtar_aq_discovery")
-      (run! "run Mercury finite discovery"
-            "./jaxtar_aq_discovery"))))
+  ;; The finite A/Q discovery path is Mercury-native.  The portfolio meta
+  ;; search is also Mercury-native and only proposes programs inside the
+  ;; fixed seven-slot A/Q grammar.  Agda remains authoritative for theorem
+  ;; and benchmark acceptance.
+  (run-mercury-discovery-programs))
 
 (define (git-files)
   (let ((port (open-pipe* OPEN_READ "git" "ls-files")))
