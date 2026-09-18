@@ -1139,6 +1139,21 @@ learnerHistoryState :
 learnerHistoryState K xs s =
   runHistory (L.learnerStep K) xs s
 
+learnerMinimaxRollout-historyState :
+  ∀ {A : Nat}
+  (K : L.LearnerKernel A)
+  (xs : List L.Int8)
+  (s : L.LearnerState A) →
+  minimaxRollout
+    (learnerMinimaxStateSystem K)
+    (λ s reward → L.generalPolicy K s)
+    (λ s reward → singletonAction)
+    xs s
+  ≡
+  learnerHistoryState K xs s
+learnerMinimaxRollout-historyState K xs s =
+  learnerMinimaxRollout K xs s
+
 learnerHistoryFilter :
   ∀ {A : Nat} →
   L.LearnerKernel A →
@@ -1188,23 +1203,6 @@ learner-filter-causal-state-law :
 learner-filter-causal-state-law K xs ys zs s t eq =
   historyState-congruence
     (L.learnerStep K) xs ys s t eq zs
-
-------------------------------------------------------------------------
--- The finite-readout obstruction is the discrete analogue of the
--- exact-left-inverse requirement appearing in reservoir universality
--- theorems: exact state reconstruction through a finite observation is
--- impossible here because the learner carries an injective Nat clock.
-------------------------------------------------------------------------
-
-learner-discrete-reservoir-left-inverse-impossible :
-  ∀ {A n : Nat}
-  (K : L.LearnerKernel A)
-  (observe : L.LearnerState A → Fin n)
-  (inverse : Fin n → L.LearnerState A) →
-  (∀ s → inverse (observe s) ≡ s) →
-  ⊥
-learner-discrete-reservoir-left-inverse-impossible =
-  learnerFiniteObservation-no-left-inverse
 
 ------------------------------------------------------------------------
 -- The actual learner trajectory embeds Nat into the state through clock.
@@ -1280,6 +1278,23 @@ learnerFiniteObservation-no-left-inverse K observe inverse leftInverse =
         (trans
           (cong inverse eq)
           (leftInverse t)))
+
+------------------------------------------------------------------------
+-- The finite-readout obstruction is the discrete analogue of the
+-- exact-left-inverse requirement appearing in reservoir universality
+-- theorems: exact state reconstruction through a finite observation is
+-- impossible here because the learner carries an injective Nat clock.
+------------------------------------------------------------------------
+
+learner-discrete-reservoir-left-inverse-impossible :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → Fin n)
+  (inverse : Fin n → L.LearnerState A) →
+  (∀ s → inverse (observe s) ≡ s) →
+  ⊥
+learner-discrete-reservoir-left-inverse-impossible =
+  learnerFiniteObservation-no-left-inverse
 
 ------------------------------------------------------------------------
 -- Deduction: the learner is not a finite-state machine under its
