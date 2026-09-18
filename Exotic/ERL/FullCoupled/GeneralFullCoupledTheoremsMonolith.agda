@@ -4,6 +4,7 @@ module Exotic.ERL.FullCoupled.GeneralFullCoupledTheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; trans; subst)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Agda.Builtin.Int as I
+open import Data.Integer.Base as Z using (_+_; _*_) 
 open import Data.Nat using (_<_ ; _≤_; z≤n; s≤s)
 open import Data.Nat.Properties using (m≤m+n)
 open import Data.Empty using (⊥)
@@ -764,10 +765,10 @@ row3 : IntVec4
 row3 = I.pos 1 , (I.negsuc 0 , (I.negsuc 0 , I.pos 1))
 
 intPlus : I.Int → I.Int → I.Int
-intPlus = I._+_
+intPlus = Z._+_
 
 intTimes : I.Int → I.Int → I.Int
-intTimes = I._*_
+intTimes = Z._*_
 
 dot4 : IntVec4 → IntVec4 → I.Int
 dot4 (a , (b , (c , d))) (e , (f , (g , h))) = intPlus (intPlus (intTimes a e) (intTimes b f)) (intPlus (intTimes c g) (intTimes d h))
