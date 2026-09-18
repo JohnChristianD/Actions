@@ -4,7 +4,6 @@ module Exotic.econlib.Equilibrium where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _*_; _+_)
-open import Data.Nat using ()
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
