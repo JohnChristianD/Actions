@@ -290,8 +290,8 @@ clipF4Z (f4NegZVal n) with natLE n 127
 f4Add : Int8 → Int8 → Int8
 f4Add x y = clipF4Z (f4AddZ (toF4Z x) (toF4Z y))
 
-f4NegZVal : Int8 → Int8
-f4NegZVal x = clipF4Z (f4NegZ (toF4Z x))
+f4Neg8 : Int8 → Int8
+f4Neg8 x = clipF4Z (f4NegZ (toF4Z x))
 
 f4Sub : Int8 → Int8 → Int8
 f4Sub x y = f4Add x (f4Neg8 y)
