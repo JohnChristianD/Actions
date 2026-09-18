@@ -41,7 +41,7 @@ The executable formal-RL path is:
 
 `Guix -> Guile orchestration -> Agda --safe + Mercury`
 
-Mercury now owns the small finite TSTS composition boundary. Agda remains authoritative for exact learner semantics and theorem acceptance.
+Mercury now owns the small finite TSTS composition boundary. Agda remains authoritative for exact learner semantics and theorem acceptance. The outer search is a learner-discovery mechanism, not a self-certifying proof layer.
 
 The canonical source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files.
 
@@ -58,6 +58,10 @@ The loop is:
 The same Watkins target also feeds the GRU and F4 tell paths.
 
 PVS, JAxtar/A*/Q* graph search, and evolutionary-population proposal layers have been removed from the canonical discovery path because they duplicate or introduce orthogonal search state without strengthening this endogenous connection.
+
+## Verification target
+
+The program/tree-search layer is used to propose, select, or refine learner-side candidates. Its purpose is to explore learner consistency by sending learner candidates and observations into the exact formal path. It is not used to prove its own search algorithm self-consistent.
 
 ## Active theorem
 
