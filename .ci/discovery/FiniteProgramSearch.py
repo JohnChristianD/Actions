@@ -171,33 +171,58 @@ def discover_jaxtar(require_rope: bool) -> Candidate:
     except Exception as exc:
         raise RuntimeError(f"JAxtar unavailable: {exc}") from exc
 
+    if not require_rope:
+        # The accepted architecture in this search mode deliberately keeps
+        # the finite RoPE branch explicit, so the accelerated controller is
+        # only asked to certify that branch.
+        raise RuntimeError("JAxtar backend requires --require-rope")
+
+    channels = (
+        "sparse_pair",
+        "sparse_pair_rope",
+        "walsh4",
+        "recurrent_signal",
+    )
+    channel_index = {name: i for i, name in enumerate(channels)}
+    branch_ops = tuple(
+        op for op in OPS
+        if op.name in {"rope_quarter", "wht4", "project_left"}
+    )
+    goal = channel_index["recurrent_signal"]
+
     @xtructure_dataclass(bitpack="off")
     class SearchState:
-        code: FieldDescriptor.scalar(dtype=jnp.int32)
+        channel: FieldDescriptor.scalar(dtype=jnp.int32)
 
-    class SmokePuzzle(Puzzle):
+    class BranchPuzzle(Puzzle):
         def define_state_class(self):
             return SearchState
 
         def __init__(self):
-            self.action_size = 1
+            self.action_size = len(branch_ops)
             super().__init__()
 
         def get_initial_state(self, solve_config, key=None, data=None):
-            return SearchState(code=0)
+            return SearchState(code=channel_index["sparse_pair"])
 
         def get_solve_config(self, key=None, data=None):
             return self.SolveConfig(
                 InstanceContext=self.InstanceContext(),
-                GoalSpec=SearchState(code=0),
+                GoalSpec=SearchState(channel=goal),
             )
 
         def get_actions(self, solve_config, state, action, filled=True):
-            valid = jnp.logical_and(action == 0, filled)
-            return SearchState(code=0), jnp.where(valid, 0.0, jnp.inf)
+            current = int(state.channel)
+            op = branch_ops[int(action)]
+            source_ok = channel_index[op.source] == current
+            valid = jnp.logical_and(jnp.asarray(source_ok), filled)
+            next_channel = channel_index[op.target] if source_ok else current
+            return SearchState(channel=next_channel), jnp.where(
+                valid, 1.0, jnp.inf
+            )
 
         def get_string_parser(self):
-            return lambda state, **kwargs: str(int(state.code))
+            return lambda state, **kwargs: channels[int(state.channel)]
 
         def get_img_parser(self):
             return lambda state, **kwargs: jnp.zeros((1, 1, 1), dtype=jnp.float32)
@@ -207,15 +232,24 @@ def discover_jaxtar(require_rope: bool) -> Candidate:
             super().__init__(puzzle)
 
         def distance(self, heuristic_parameters, current):
-            return jnp.zeros_like(current.code, dtype=jnp.float32)
+            return jnp.zeros_like(current.channel, dtype=jnp.float32)
 
-    puzzle = SmokePuzzle()
-    search = astar_builder(puzzle, ZeroHeuristic(puzzle), batch_size=4, max_nodes=8)
+    puzzle = BranchPuzzle()
+    search = astar_builder(
+        puzzle,
+        ZeroHeuristic(puzzle),
+        batch_size=4,
+        max_nodes=16,
+    )
     solve_config = puzzle.get_solve_config()
-    search(solve_config, puzzle.get_initial_state(solve_config))
+    result = search(
+        solve_config,
+        puzzle.get_initial_state(solve_config),
+    )
+    if not bool(result.solved):
+        raise RuntimeError("JAxtar did not solve the finite RoPE -> WHT -> GRU branch")
 
-    # JAxtar controls graph exploration; the exact typed search remains the
-    # semantic acceptance layer because its state is a theorem specification.
+    # The exact typed graph remains the semantic acceptance oracle.
     return discover_exact(require_rope)
 
 
