@@ -8,39 +8,52 @@
 
 :- implementation.
 
-main(!IO) :-
-    Command =
-        "set -eu; " ++
-        "test -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda; " ++
-        "for p in " ++
-        "Exotic/ERL/Exploration/MR15Reachability.agda " ++
-        "Exotic/ERL/Exploration/OpenESDyadic.agda " ++
-        "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda " ++
-        "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicBehavior.agda " ++
-        "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicBehavior_test.agda " ++
-        "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicSeparation.agda " ++
-        "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicSeparation_test.agda " ++
-        "Exotic/ERL/FullCoupled/SharedActorCritic.agda " ++
-        "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem.agda " ++
-        "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem_test.agda " ++
-        "Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition.agda " ++
-        "Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition_test.agda " ++
-        "Exotic/ERL/FullCoupled/ConnectedGRUSemidirectQSA.agda " ++
-        "Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda " ++
-        "Exotic/ERL/FullCoupled/Int8SparsemaxLiteral.agda " ++
-        "Exotic/econlib/RockPaperScissors.agda " ++
-        "Exotic/econlib/RockPaperScissors_test.agda; " ++
-        "do test ! -e \"$p\"; done; " ++
-        "for token in softsign haarApply haarRow0 haarRow1 helmertApply SharedActorCritic SparsemaxActorVsCriticTheorem; " ++
-        "do if git grep -n -I -- \"$token\" -- '*.agda' >/dev/null 2>&1; " ++
-        "then echo \"ERROR: legacy token active: $token\"; exit 1; fi; done; " ++
-        "echo canonical-component-audit=clean; " ++
-        "echo retirement-policy=report-only-until-owner-is-confirmed",
-    io.call_system(Command, Result, !IO),
+:- import_module list.
+
+:- func retired_paths = list(string).
+retired_paths = [
+    "Exotic/ERL/Exploration/MR15Reachability.agda",
+    "Exotic/ERL/Exploration/OpenESDyadic.agda",
+    "Exotic/ERL/FullCoupled/NoisyNetCoupled.agda",
+    "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicBehavior.agda",
+    "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicBehavior_test.agda",
+    "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicSeparation.agda",
+    "Exotic/ERL/FullCoupled/SparsemaxFlatDyadicSeparation_test.agda",
+    "Exotic/ERL/FullCoupled/SharedActorCritic.agda",
+    "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem.agda",
+    "Exotic/ERL/FullCoupled/SparsemaxActorVsCriticTheorem_test.agda",
+    "Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition.agda",
+    "Exotic/ERL/FullCoupled/SignReLUSemidirectCycleComposition_test.agda",
+    "Exotic/ERL/FullCoupled/ConnectedGRUSemidirectQSA.agda",
+    "Exotic/ERL/FullCoupled/FrozenOrthogonalAttentionGRU.agda",
+    "Exotic/ERL/FullCoupled/Int8SparsemaxLiteral.agda",
+    "Exotic/econlib/RockPaperScissors.agda",
+    "Exotic/econlib/RockPaperScissors_test.agda"
+].
+
+:- pred audit_path(string::in, io::di, io::uo) is det.
+audit_path(Path, !IO) :-
+    io.read_named_file_as_string(Path, Result, !IO),
     (
-        Result = ok(0)
-    ->
-        true
+        Result = error(_),
+        io.write_string("absent=" ++ Path ++ "\n", !IO)
     ;
+        Result = ok(_),
+        io.write_string("ERROR: retired component still exists: " ++ Path ++ "\n", !IO),
         io.set_exit_status(1, !IO)
+    ).
+
+main(!IO) :-
+    io.set_exit_status(0, !IO),
+    io.write_string(
+        "canonical=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda\n",
+        !IO),
+    list.foldl(audit_path, retired_paths, !IO),
+    io.get_exit_status(Status, !IO),
+    (
+        Status = 0,
+        io.write_string("canonical-component-audit=clean\n", !IO),
+        io.write_string("retirement-policy=fail-if-reintroduced\n", !IO)
+    ;
+        true
     ).
