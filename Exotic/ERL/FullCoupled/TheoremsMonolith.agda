@@ -452,3 +452,141 @@ finite-tsts-endogenous-connected-theorem =
       C.canonicalPersistentGRUPreservation
         K
         (finiteTSTSSelectedProbe K p d s))
+
+
+------------------------------------------------------------------------
+-- Intrinsic endogenous attention-mediator connected theorem.
+--
+-- This theorem is intentionally independent of TSTS, program search,
+-- evolutionary search, PVS, and JAxtar.  It is a property of the
+-- executable learner itself.
+--
+-- An arbitrary attention-state replacement is policy-invariant and
+-- therefore leaves the count and Q-log channels unchanged, but the
+-- replacement enters the endogenous Watkins target.  That same target
+-- is then consumed by both the GRU and F4 optimizer tells.
+------------------------------------------------------------------------
+
+record FiniteAttentionWatkinsGRUF4MediatorTheorem : Set₁ where
+  constructor finiteAttentionWatkinsGRUF4MediatorTheorem
+  field
+    attentionPolicyInvariant :
+      ∀ K s a →
+      C.canonicalPolicy K (C.replaceAttention s a)
+      ≡
+      C.canonicalPolicy K s
+
+    attentionCountInvariant :
+      ∀ K s a →
+      C.canonicalCountStep K (C.replaceAttention s a)
+      ≡
+      C.canonicalCountStep K s
+
+    attentionQLogInvariant :
+      ∀ K s a →
+      C.canonicalQLogStep K (C.replaceAttention s a)
+      ≡
+      C.canonicalQLogStep K s
+
+    attentionTargetExpansion :
+      ∀ K s a →
+      C.canonicalWatkinsTarget K (C.replaceAttention s a)
+      ≡
+      C.int8Add
+        (C.int8Add
+          (C.int8Add
+            (C.canonicalReward8 K s)
+            (C.canonicalQLogBias K s))
+          (C.int8Mul
+            C.canonicalDiscount8
+            (C.maxCriticValue8 (C.critic (C.watkins s)))))
+        (C.int8Add
+          (C.canonicalAttentionMix K (C.replaceAttention s a))
+          (C.int8Add
+            (C.canonicalGRUFeedback s)
+            (C.int8Add
+              (C.canonicalF4L2Feedback K s)
+              (C.int8Add
+                (C.canonicalQLogControlFeedback s)
+                (C.canonicalQLogValueFeedback s)))))
+
+    sharedTargetFeedsGRU :
+      ∀ K s a →
+      C.canonicalGRUStep K (C.replaceAttention s a)
+      ≡
+      C.gruStep
+        (C.gru s)
+        (C.int8Add
+          (C.canonicalWatkinsTarget K (C.replaceAttention s a))
+          (C.canonicalAttentionMix K (C.replaceAttention s a)))
+
+    sharedTargetFeedsF4 :
+      ∀ K s a →
+      C.canonicalOptimizerStep K (C.replaceAttention s a)
+      ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer s)
+        (C.canonicalWatkinsTarget K (C.replaceAttention s a))
+
+    fullStepCountChannelInvariant :
+      ∀ K s a →
+      C.lcbCounts
+        (C.canonicalFullStep K (C.replaceAttention s a))
+      ≡
+      C.lcbCounts
+        (C.canonicalFullStep K s)
+
+    fullStepQLogChannelInvariant :
+      ∀ K s a →
+      C.qLogValue
+        (C.canonicalFullStep K (C.replaceAttention s a))
+      ≡
+      C.qLogValue
+        (C.canonicalFullStep K s)
+
+    fullStepNormPairInvariant :
+      ∀ K s a →
+      C.normPairWeightPlusOne
+        (C.norm (C.canonicalFullStep K (C.replaceAttention s a)))
+      ≡
+      C.normPairWeightPlusOne (C.norm s)
+
+    fullStepPersistentGRUInvariant :
+      ∀ K s a →
+      C.persistentGRU
+        (C.gru (C.canonicalFullStep K (C.replaceAttention s a)))
+      ≡
+      C.persistentGRU (C.gru (C.replaceAttention s a))
+
+open FiniteAttentionWatkinsGRUF4MediatorTheorem public
+
+finite-attention-watkins-gru-f4-mediator-theorem :
+  FiniteAttentionWatkinsGRUF4MediatorTheorem
+finite-attention-watkins-gru-f4-mediator-theorem =
+  finiteAttentionWatkinsGRUF4MediatorTheorem
+    (λ K s a → C.canonicalPolicy-attention-invariant K s a)
+    (λ K s a →
+      refl)
+    (λ K s a →
+      refl)
+    (λ K s a →
+      refl)
+    (λ K s a →
+      C.canonicalRecurrentInput-law K (C.replaceAttention s a))
+    (λ K s a →
+      C.canonicalOptimizerStep-qMunchausen-L2 K (C.replaceAttention s a))
+    (λ K s a →
+      refl)
+    (λ K s a →
+      refl)
+    (λ K s a →
+      trans
+        (C.canonicalNormPairWeightPlusOne-preservation
+          K
+          (C.replaceAttention s a))
+        refl)
+    (λ K s a →
+      C.canonicalPersistentGRUPreservation
+        K
+        (C.replaceAttention s a))
