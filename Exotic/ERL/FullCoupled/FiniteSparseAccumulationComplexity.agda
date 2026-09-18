@@ -7,6 +7,7 @@ open import Data.Nat.Properties using (m≤n*m; <⇒≱)
 open import Data.Fin using (Fin)
 open import Data.Fin.Properties using (ℕ→Fin-notInjective)
 open import Data.List.Base using (List; []; _∷_)
+open import Data.Product using (∃)
 open import Function.Definitions using (Injective)
 
 record CommutativeMonoid (A : Set) : Set where
