@@ -15,7 +15,7 @@ The current theorem entrypoint is:
 ## Current workflow
 
 Latest verification run for the current code changes:
-`35405621105`
+`35405626180`
 
 The immediately preceding run `35404988310` failed in the container checkout step because the Guix daemon socket was absent, before the Agda or Mercury lanes could execute. The workflow now starts `guix-daemon --disable-chroot` inside the pinned CI container and authorizes the standard Guix substitute keys before checkout.
 
