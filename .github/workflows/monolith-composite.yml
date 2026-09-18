@@ -8,7 +8,6 @@ on:
       - 'Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda'
       - 'Exotic/ERL/FullCoupled/MonolithCompositeReservoirTheorem.agda'
       - 'Exotic/ERL/FullCoupled/FiniteCyclicNormPairCertificate.agda'
-      - 'Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda'
       - 'Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda'
       - 'Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda'
       - '.ci/discovery/ProofSearch.py'
