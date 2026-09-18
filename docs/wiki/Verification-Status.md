@@ -4,7 +4,7 @@ Last audited: 2026-09-19.
 
 ## Current code head
 
-`a2d1ff089d615adaacfff824c6152737908a7068`
+`bb677317bd435dd4d23799cae4fbfb9878845ea0`
 
 Docs-only commits after this code head update the wiki without changing the proof/CI source.
 
@@ -16,13 +16,21 @@ The current theorem entrypoint is:
 
 `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
 
-## Post-fix workflow
+## Current workflow
 
-Run `35400839457` is queued for the latest CI repair.
+Latest verification run: `35402942175` at `bb677317bd435dd4d23799cae4fbfb9878845ea0`.
 
-The preceding run `35400721899` failed at container shell startup because the pinned image exposed `guix` but not a standalone `guile` executable. The workflow now launches its Guile shell through `guix shell --pure guile`.
+At the latest status read, all four jobs are in progress during container initialization. No lane has yet reported a proof failure or success.
 
-No post-fix run has yet reached the Agda or Mercury lanes, so the current status is **pending**, not green.
+The preceding checkout failure was caused by cloning directly into the pre-created GitHub Actions workspace. The workflow now initializes the workspace as a Git repository, adds the origin, fetches the exact commit, and checks it out. The workflow uses the container's native `sh` shell and keeps Guix pinning outside the pure Guile environment.
+
+## New composition discovery
+
+Mercury now runs `formal_openes_composition_discovery.m`, which searches a finite variation/property grammar and selects `Open_ES` for the required two-sided probe, antithetic estimator, F4/L2 tell, canonical learner evaluator, norm-pair preservation, and persistent-GRU preservation obligations.
+
+The selected candidate is implemented in `TheoremsMonolith.agda` as `finite-openES-canonical-composition-theorem`.
+
+This is a finite symbolic EvoSAX/OpenAI-ES specialization, not a claim of floating-point or JAX-level numerical equivalence.
 
 ## Structural repairs now present
 
