@@ -30,7 +30,7 @@
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
-    "Exotic/ERL/FullCoupled/TSTS_PVS_GESMR_test.agda"
+    "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
@@ -52,26 +52,10 @@
 (define (run-mercury-discovery-programs)
   (in-directory ".ci/discovery"
     (lambda ()
-      (run! "build Mercury A/Q discovery"
-            "mmc" "--make" "jaxtar_aq_discovery")
-      (run! "run Mercury A/Q discovery"
-            "./jaxtar_aq_discovery")
-      (run! "build Mercury formal EvoSAX/Lion meta-search"
-            "mmc" "--make" "evosax_lion_discovery")
-      (run! "run Mercury formal EvoSAX/Lion meta-search"
-            "./evosax_lion_discovery")
-      (run! "build Mercury formal OpenES composition discovery"
-            "mmc" "--make" "formal_openes_composition_discovery")
-      (run! "run Mercury formal OpenES composition discovery"
-            "./formal_openes_composition_discovery")
-      (run! "build Mercury formal GESMR composition discovery"
-            "mmc" "--make" "formal_gesmr_composition_discovery")
-      (run! "run Mercury formal GESMR composition discovery"
-            "./formal_gesmr_composition_discovery")
-      (run! "build Mercury TSTS/PVS composition discovery"
-            "mmc" "--make" "tsts_pvs_composition_discovery")
-      (run! "run Mercury TSTS/PVS composition discovery"
-            "./tsts_pvs_composition_discovery")
+      (run! "build Mercury TSTS endogenous discovery"
+            "mmc" "--make" "tsts_endogenous_discovery")
+      (run! "run Mercury TSTS endogenous discovery"
+            "./tsts_endogenous_discovery")
       (run! "build Mercury involution verifier"
             "mmc" "--make" "clojure_involution_compat")
       (run! "run Mercury involution verifier"
@@ -93,10 +77,8 @@
             "./mercury_oracle"))))
 
 (define (run-discovery)
-  ;; The finite A/Q discovery path is Mercury-native.  The portfolio meta
-  ;; search is also Mercury-native and only proposes programs inside the
-  ;; fixed seven-slot A/Q grammar.  Agda remains authoritative for theorem
-  ;; and benchmark acceptance.
+  ;; The canonical outer search is TSTS-only. Agda remains authoritative
+  ;; for exact learner execution and theorem acceptance.
   (run-mercury-discovery-programs))
 
 (define (git-files)
