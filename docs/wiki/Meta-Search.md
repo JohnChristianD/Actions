@@ -46,3 +46,23 @@ MCTS is not required merely to obtain this search topology. MCTX can remain an e
 The target is not wholesale JAX or TensorFlow replication. The library boundary should instead favor compact array-friendly primitives that can map naturally onto SIMD-oriented implementations, while leaving the learner's formal parameterization and theorem source explicit.
 
 That keeps the runtime substrate small without allowing an external numerical library to become the source of truth.
+
+## Why GESMR emerged for the endogenous composition
+
+The search grammar now includes MR15_GA, GESMR_GA, Open_ES, HillClimbing, PSO, DifferentialEvolution, and an MCTX search candidate.
+
+The requirement set is intentionally semantic rather than name-based:
+
+- elitist population selection;
+- adaptive mutation rate;
+- grouped mutation rates;
+- canonical Agda learner evaluation;
+- Watkins/F4-L2/GRU tell coupling;
+- NormPair preservation;
+- persistent-GRU preservation.
+
+Under that grammar, MR15_GA satisfies the adaptive-mutation and elitist-population properties but does not supply grouped mutation rates. MCTX supplies tree-search behavior, not mutation-rate adaptation, so it is a candidate-navigation mechanism rather than the selected evolutionary update rule. HillClimbing supplies local search but not the grouped-rate population semantics.
+
+GESMR_GA is therefore the first candidate accepted by this exact finite semantic gate.
+
+The distinction is important: the Mercury lane discovers a candidate from a typed property grammar. The Agda theorem then supplies the exact symbolic semantics for the candidate's composition with the existing learner. It does not claim that the external JAX implementation has been numerically reproduced.
