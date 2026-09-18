@@ -62,6 +62,15 @@ jobs:
       - name: Check functional Walsh vector bridge
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FunctionalWalshBridge.agda
 
+      - name: Check finite simulation boundary
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda
+
+      - name: Check signed divisibility bridge
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/SignedDivisibilityBridge.agda
+
+      - name: Check sparse accumulation complexity
+        run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteSparseAccumulationComplexity.agda
+
       - name: Check proof-carrying inverse vectors
         run: timeout 120s agda --safe Exotic/ERL/FullCoupled/FiniteInverseVector.agda
 
