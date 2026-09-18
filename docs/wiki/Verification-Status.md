@@ -4,12 +4,9 @@ Last audited: 2026-09-19.
 
 ## Current code head
 
-Latest code/proof source head:
-`16a1714bb3e2ef5397d75384ec494165bfc2e4db`
+Current code/proof source is moving with the TSTS-only refactor. The most recent code/CI repair commit currently visible is:
 
-The current active verification workflow is:
-
-`.github/workflows/guix-composition.yml`
+`e5dae8eac5d76ecae6fff53e35de4edd9a934449`
 
 The current theorem entrypoint is:
 
@@ -24,65 +21,39 @@ The immediately preceding run `35404988310` failed in the container checkout ste
 
 Run `35405054668` is currently queued/pending. No Agda or Mercury success/failure result has been observed yet, so this source state remains pending rather than green.
 
-## New composition discovery
+## Active search architecture
 
-Mercury now runs `formal_openes_composition_discovery.m`, which searches a finite variation/property grammar and selects `Open_ES` for the required two-sided probe, antithetic estimator, F4/L2 tell, canonical learner evaluator, norm-pair preservation, and persistent-GRU preservation obligations.
+The active outer search is now TSTS-only.
 
-The selected candidate is implemented in `TheoremsMonolith.agda` as `finite-openES-canonical-composition-theorem`.
+Retired from the canonical discovery path:
 
-This is a finite symbolic EvoSAX/OpenAI-ES specialization, not a claim of floating-point or JAX-level numerical equivalence.
+- JAxtar A*/Q* graph-search adapter.
+- PVS recheck layer.
+- OpenES/GESMR/MR15/SAMR/EvoSAX population search layer.
 
-## Structural repairs now present
+Mercury now runs `.ci/discovery/tsts_endogenous_discovery.m` and emits `.ci/discovery/tsts-endogenous-composition-candidate.json`.
 
-- Python discovery implementation removed.
-- Python removed from the pinned Guix manifest.
-- Mercury now emits the finite A/Q discovery report directly.
-- Only `.github/workflows/guix-composition.yml` remains.
-- Old Agda/F4/composite/symbolic-discovery workflows removed.
-- Old canonical theorem module removed.
-- `TheoremsMonolith.agda` is the single canonical theorem discovery entrypoint.
-- Mercury A/Q certificate folded into the theorem monolith.
-- Guile-native Git checkout replaces `actions/checkout` inside the Guix container.
-- The Guix workflow shell launches Guile through the pinned Guix environment.
-- Discovery artifact checking no longer depends on `actions/upload-artifact`.
-- Surface audit rejects Haskell, Python, JS/TS, JVM-family, Elm, PureScript, shell, and Windows script source.
+Agda tests now live in:
 
-## JAxtar A/Q status
+`Exotic/ERL/FullCoupled/TSTS_Connected_test.agda`
 
-Mercury now owns the executable finite A/Q graph verification and JSON report.
+The canonical theorem is `FiniteTSTSEndogenousConnectedTheorem`.
 
-Agda owns the corresponding typed certificate and composition theorem in `TheoremsMonolith.agda`.
+## Verification status
 
-This is a port of the finite A/Q graph/certificate boundary, not a full JAX/JAxtar solver reimplementation.
+The latest repair run visible during this audit is still pending. The earlier run failed before any Agda or Mercury execution because the Guix container had no running Guix daemon. The workflow now boots the daemon inside the digest-pinned container before performing the Guix-native checkout.
 
-## Verification rule
+No current run is being called green until the Agda and Mercury lanes actually execute and succeed.
 
-A theorem is called verified only after the current Guix/Agda `--safe` lane has actually checked its owning module.
+## Endogenous theorem status
 
-The queued run is therefore recorded as pending, not green.
+The new theorem connects:
 
+TSTS posterior witness -> selected learner branch -> exact canonical learner -> endogenous Watkins target -> TSTS posterior update
 
-## GESMR endogenous discovery
+while the same target drives both the GRU and F4 tell paths.
 
-Mercury now includes MR15_GA, GESMR_GA, Open_ES, HillClimbing, PSO, DifferentialEvolution, and an MCTX candidate in the finite property grammar. The accepted candidate for the Watkins/F4-L2/GRU grouped-mutation requirement is GESMR_GA.
+The F4/L2 case explicitly expands the target through thetaQ, probe, L2 correction, attention feedback, GRU feedback, and q-log feedback. NormPair and persistent-GRU preservation are retained.
 
-The Agda monolith contains finiteGESMRWatkinsF4L2GRUCompositionTheorem and finite-gesmr-watkins-f4-l2-gru-composition-theorem.
-## TSTS + PVS + GESMR status
+The proof is a repository-local finite semantic specialization. It does not inherit the external TSTS Bayesian regret theorem automatically.
 
-Mercury now runs `tsts_pvs_composition_discovery.m`. Its semantic gate includes TSTS tree selection, PVS exact recheck, the canonical learner evaluator, endogenous F4/L2 -> Watkins -> GRU/F4 coupling, preservation invariants, adaptive/grouped mutation control, and the external TSTS finite-time-regret property.
-
-The selected finite candidate is `TSTS_PVS_GESMR_GA`.
-
-Agda contains `FiniteTSTSPVSGESMRConnectedTheorem` plus the test module `Exotic/ERL/FullCoupled/TSTS_PVS_GESMR_test.agda`.
-
-The theorem is a repository-local finite composition certificate. It does not claim that the complete probabilistic TSTS runtime or a full PVS chess-style engine has been reproduced.
-
-## EvoSAX challenger portfolio
-
-The finite Mercury portfolio grammar now explicitly includes RandomSearch, HillClimbing, SimpleES, SimpleGA, OpenES, MR15-GA, SAMR-GA, GESMR-GA, PGPE, SNES, CMA-ES, DifferentialEvolution, and ParticleSwarm.
-
-These remain proof-friendly finite analogues and challenge kernels. Agda remains authoritative for accepted learner semantics.
-
-## Container boundary
-
-Hadolint is not used as a runtime/containerization layer. The existing digest-pinned Guix job container plus Guix time-machine already supplies the isolation and reproducibility boundary. A Haskell Dockerfile linter would be appropriate only for linting Dockerfiles, not for wrapping the Guix environment.
