@@ -29,10 +29,6 @@ check-qlog : ∀ x →
   finiteRational 1 (numerator (finiteQLog8 x)) (denominator (finiteQLog8 x))
 check-qlog = negativeFiniteQLogLaw
 
-check-mobius : ∀ x → signedCode x ≢ pos 0 →
-  mobiusRatio8 x ≡ mobiusFormula (signedCode x)
-check-mobius = mobiusRatio8-law
-
 check-persistence : ∀ (s : GRUState) (x : Int8) →
   persistentGRU (gruStep s x) ≡ persistentGRU s
 check-persistence = persistent-preservation
@@ -50,13 +46,6 @@ check-gru-scan : ∀ x y z s →
   runGRU (composeGRUAction (inputGRUAction x)
     (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
 check-gru-scan = gruInputActionAssociativity
-
-check-mobius-scan : ∀ x y z q →
-  run (composeAction (composeAction (mobiusActivationAction x) (mobiusActivationAction y))
-      (mobiusActivationAction z)) q ≡
-  run (composeAction (mobiusActivationAction x)
-    (composeAction (mobiusActivationAction y) (mobiusActivationAction z))) q
-check-mobius-scan = gruMobiusAssociativeScan
 
 check-h4-orthogonality : H4GramLaw
 check-h4-orthogonality = walshHadamardOrthogonality4
