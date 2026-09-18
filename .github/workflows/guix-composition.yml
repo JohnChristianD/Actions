@@ -6,7 +6,6 @@ on:
     paths:
       - ".guix/**"
       - ".ci/**"
-      - "oracle/**"
       - "Exotic/ERL/FullCoupled/**"
       - "Exotic/econlib/**"
       - ".github/workflows/guix-composition.yml"
