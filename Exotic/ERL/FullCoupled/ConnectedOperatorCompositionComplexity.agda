@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.ConnectedOperatorCompositionComplexity where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Data.List.Base using (List; []; _∷_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
@@ -87,14 +87,14 @@ traceOperator-size :
   representationSize (traceOperator step xs) ≡ traceSize step xs
 traceOperator-size step [] = refl
 traceOperator-size step (x ∷ xs) =
-  traceOperator-size step xs
+  cong (λ n → n + representationSize (step x)) (traceOperator-size step xs)
 
 traceOperator-cost :
   ∀ {A S : Set} (step : A → Operator S) (xs : List A) →
   applicationCost (traceOperator step xs) ≡ traceCost step xs
 traceOperator-cost step [] = refl
 traceOperator-cost step (x ∷ xs) =
-  traceOperator-cost step xs
+  cong (λ n → n + applicationCost (step x)) (traceOperator-cost step xs)
 
 traceLearner :
   ∀ {A : Nat} →
