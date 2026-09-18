@@ -5,7 +5,7 @@ Last audited: 2026-09-19.
 ## Current code head
 
 Latest code/proof source head:
-`417248c6282c23c84e63c1457abc92b4b95c0dc6`
+`16a1714bb3e2ef5397d75384ec494165bfc2e4db`
 
 The current active verification workflow is:
 
@@ -18,9 +18,11 @@ The current theorem entrypoint is:
 ## Current workflow
 
 Latest verification run for the current code changes:
-`35404988310`
+`35405054668`
 
-At the time of this audit the run is pending. No Agda or Mercury success/failure result has been observed yet, so this source state is recorded as pending rather than green.
+The immediately preceding run `35404988310` failed in the container checkout step because the Guix daemon socket was absent, before the Agda or Mercury lanes could execute. The workflow now starts `guix-daemon --disable-chroot` inside the pinned CI container and authorizes the standard Guix substitute keys before checkout.
+
+Run `35405054668` is currently queued/pending. No Agda or Mercury success/failure result has been observed yet, so this source state remains pending rather than green.
 
 ## New composition discovery
 
