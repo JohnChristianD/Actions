@@ -4,9 +4,8 @@ Last audited: 2026-09-19.
 
 ## Current code head
 
-`7c2388a76e99dff571964d1f1e27cd78be1c85d6`
-
-Docs-only commits after this code head update the wiki without changing the proof/CI source.
+Latest code/proof source head:
+`417248c6282c23c84e63c1457abc92b4b95c0dc6`
 
 The current active verification workflow is:
 
@@ -18,9 +17,10 @@ The current theorem entrypoint is:
 
 ## Current workflow
 
-Latest verification run: `35403637915` at `7c2388a76e99dff571964d1f1e27cd78be1c85d6`.
+Latest verification run for the current code changes:
+`35404988310`
 
-The four jobs are currently queued. No Agda or Mercury result has been observed yet, so this source state remains pending rather than green.
+At the time of this audit the run is pending. No Agda or Mercury success/failure result has been observed yet, so this source state is recorded as pending rather than green.
 
 ## New composition discovery
 
@@ -65,3 +65,22 @@ The queued run is therefore recorded as pending, not green.
 Mercury now includes MR15_GA, GESMR_GA, Open_ES, HillClimbing, PSO, DifferentialEvolution, and an MCTX candidate in the finite property grammar. The accepted candidate for the Watkins/F4-L2/GRU grouped-mutation requirement is GESMR_GA.
 
 The Agda monolith contains finiteGESMRWatkinsF4L2GRUCompositionTheorem and finite-gesmr-watkins-f4-l2-gru-composition-theorem.
+## TSTS + PVS + GESMR status
+
+Mercury now runs `tsts_pvs_composition_discovery.m`. Its semantic gate includes TSTS tree selection, PVS exact recheck, the canonical learner evaluator, endogenous F4/L2 -> Watkins -> GRU/F4 coupling, preservation invariants, adaptive/grouped mutation control, and the external TSTS finite-time-regret property.
+
+The selected finite candidate is `TSTS_PVS_GESMR_GA`.
+
+Agda contains `FiniteTSTSPVSGESMRConnectedTheorem` plus the test module `Exotic/ERL/FullCoupled/TSTS_PVS_GESMR_test.agda`.
+
+The theorem is a repository-local finite composition certificate. It does not claim that the complete probabilistic TSTS runtime or a full PVS chess-style engine has been reproduced.
+
+## EvoSAX challenger portfolio
+
+The finite Mercury portfolio grammar now explicitly includes RandomSearch, HillClimbing, SimpleES, SimpleGA, OpenES, MR15-GA, SAMR-GA, GESMR-GA, PGPE, SNES, CMA-ES, DifferentialEvolution, and ParticleSwarm.
+
+These remain proof-friendly finite analogues and challenge kernels. Agda remains authoritative for accepted learner semantics.
+
+## Container boundary
+
+Hadolint is not used as a runtime/containerization layer. The existing digest-pinned Guix job container plus Guix time-machine already supplies the isolation and reproducibility boundary. A Haskell Dockerfile linter would be appropriate only for linting Dockerfiles, not for wrapping the Guix environment.
