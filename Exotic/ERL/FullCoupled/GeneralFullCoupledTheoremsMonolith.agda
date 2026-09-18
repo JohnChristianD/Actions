@@ -920,7 +920,7 @@ supportSearch-max-positive xs temperature (suc n) current best h
     (maxNat-left-positive h)
 ... | no =
   supportSearch-max-positive
-    xs temperature n (suc current) current best h
+    xs temperature n (suc current) best h
 
 -- The actual sparsemax support used by learnerStep is never empty.
 learnerSparseSupport-nonempty :
@@ -980,7 +980,7 @@ learnerSparseStepWork-positive :
   (s : L.LearnerState A) →
   suc zero ≤ learnerSparseStepWork K s
 learnerSparseStepWork-positive K s =
-  s≤s z≤n
+  nonzero→one≤ (learnerSparseSupport-nonempty K s)
 
 ------------------------------------------------------------------------
 -- The work recurrence is over the actual learner transition.  It is
