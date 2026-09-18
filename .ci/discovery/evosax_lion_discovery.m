@@ -10,11 +10,12 @@
 
 :- import_module int.
 :- import_module list.
+:- import_module string.
 
-% Proof-friendly, finite analogues of the EvoSAX strategy families.
-% These are not a Python/JAX import and do not attempt to reproduce JAX
-% floating-point numerics. They provide the meta-search control law over
-% a closed, typed, seven-slot A/Q program genome.
+% Proof-friendly finite analogues of EvoSAX strategy families.
+% This is a Mercury meta-search layer, not a JAX/Python port.
+% Learner parameters, imports, and Agda semantics remain fixed by hand.
+% The search space is a closed seven-slot A/Q program genome.
 
 :- type strategy
     ---> random_search
@@ -29,11 +30,11 @@
 
 :- type candidate
     ---> candidate(
-        genome,
-        typed,
-        canonical,
-        complexity,
-        fitness
+        genome_value :: genome,
+        typed :: bool,
+        canonical :: bool,
+        complexity :: int,
+        fitness :: int
     ).
 
 :- func strategies = list(strategy).
@@ -79,12 +80,7 @@ random_genome(Seed, N, [B | Bs]) :-
 
 :- func typed_genome(genome) = bool.
 typed_genome(G) =
-    if length(G) = 7,
-       all_binary(G)
-    then
-        yes
-    else
-        no.
+    (if length(G) = 7, all_binary(G) then yes else no).
 
 :- pred all_binary(genome::in) is semidet.
 all_binary([]).
@@ -103,15 +99,15 @@ complexity(G) = length(G) + genome_distance(G, canonical).
 
 :- func fitness(genome) = int.
 fitness(G) =
-    if typed_genome(G) = yes
-    then 1000 - (100 * genome_distance(G, canonical)) - complexity(G)
-    else -1000000.
+    (if typed_genome(G) = yes
+     then 1000 - (100 * genome_distance(G, canonical)) - complexity(G)
+     else -1000000).
 
 :- func make_candidate(genome) = candidate.
 make_candidate(G) =
     candidate(
         G,
-        typed_genome(G) = yes,
+        typed_genome(G),
         G = canonical,
         complexity(G),
         fitness(G)
@@ -127,7 +123,8 @@ perturb(simple_es, _, G) =
 perturb(open_es, Seed, G) =
     [centered_flip(G, Seed), centered_flip(G, next_seed(Seed))].
 perturb(pgpe, Seed, G) =
-    [centered_flip(G, Seed), centered_flip(G, next_seed(Seed)),
+    [centered_flip(G, Seed),
+     centered_flip(G, next_seed(Seed)),
      centered_flip(G, next_seed(next_seed(Seed)))].
 perturb(snes, Seed, G) =
     scaled_flips(G, Seed, 0, []).
@@ -136,12 +133,12 @@ perturb(cma_es, Seed, G) =
 
 :- func local_flips(genome, int, list(genome)) = list(genome).
 local_flips(G, I, Acc) =
-    if I >= length(G)
-    then reverse(Acc)
-    else
-        (if flip_at(I, G, G1)
-         then local_flips(G, I + 1, [G1 | Acc])
-         else local_flips(G, I + 1, Acc)).
+    (if I >= length(G)
+     then reverse(Acc)
+     else
+         (if flip_at(I, G, G1)
+          then local_flips(G, I + 1, [G1 | Acc])
+          else local_flips(G, I + 1, Acc))).
 
 :- func centered_flip(genome, int) = genome.
 centered_flip(G, Seed) =
@@ -151,40 +148,33 @@ centered_flip(G, Seed) =
 
 :- func scaled_flips(genome, int, int, list(genome)) = list(genome).
 scaled_flips(G, Seed, I, Acc) =
-    if I >= length(G)
-    then reverse(Acc)
-    else
-        (if (Seed + I) rem 3 = 0,
-              flip_at(I, G, G1)
-         then scaled_flips(G, next_seed(Seed), I + 1, [G1 | Acc])
-         else scaled_flips(G, next_seed(Seed), I + 1, Acc)).
+    (if I >= length(G)
+     then reverse(Acc)
+     else
+         (if (Seed + I) rem 3 = 0, flip_at(I, G, G1)
+          then scaled_flips(G, next_seed(Seed), I + 1, [G1 | Acc])
+          else scaled_flips(G, next_seed(Seed), I + 1, Acc))).
 
 :- func diagonal_covariance_step(genome, int, int, list(genome))
     = list(genome).
 diagonal_covariance_step(G, Seed, I, Acc) =
-    if I >= length(G)
-    then reverse(Acc)
-    else
-        (if (Seed + (I * I)) rem 2 = 0,
-              flip_at(I, G, G1)
-         then diagonal_covariance_step(G, next_seed(Seed), I + 1,
-             [G1 | Acc])
-         else diagonal_covariance_step(G, next_seed(Seed), I + 1, Acc)).
+    (if I >= length(G)
+     then reverse(Acc)
+     else
+         (if (Seed + (I * I)) rem 2 = 0, flip_at(I, G, G1)
+          then diagonal_covariance_step(
+              G, next_seed(Seed), I + 1, [G1 | Acc])
+          else diagonal_covariance_step(
+              G, next_seed(Seed), I + 1, Acc))).
 
 :- func simplify(candidate) = candidate.
-simplify(C) =
-    C = candidate(G, _, _, _, _),
-    make_candidate(simplify_genome(G, canonical)).
-
-:- func simplify_genome(genome, genome) = genome.
-simplify_genome([], []).
-simplify_genome([X | Xs], [Y | Ys]) =
-    (if X = Y then Y else X),
-    simplify_genome(Xs, Ys).
+simplify(C) = C.
 
 :- func better(candidate, candidate) = candidate.
 better(A, B) =
-    (if candidate_fitness(A) >= candidate_fitness(B) then A else B).
+    (if candidate_fitness(A) >= candidate_fitness(B)
+     then A
+     else B).
 
 :- func candidate_fitness(candidate) = int.
 candidate_fitness(candidate(_, _, _, _, F)) = F.
@@ -201,10 +191,7 @@ score_population([]) = make_candidate(baseline).
 
 :- func evaluate(strategy, int, genome) = candidate.
 evaluate(S, Seed, G) =
-    score_population(
-        list.map(
-            make_candidate,
-            perturb(S, Seed, G))).
+    score_population(list.map(make_candidate, perturb(S, Seed, G))).
 
 :- func run_strategy(strategy, int, genome, int) = candidate.
 run_strategy(_, _, G, 0) = make_candidate(G).
@@ -219,18 +206,31 @@ run_portfolio(G, [], _) = make_candidate(G).
 run_portfolio(G, [S | Ss], Seed) =
     C0 = run_strategy(S, Seed, G, 8),
     C1 = simplify(C0),
-    C2 = run_portfolio(candidate_genome(C1), Ss, next_seed(Seed)),
+    C2 = run_portfolio(
+        candidate_genome(C1), Ss, next_seed(Seed)),
     better(C1, C2).
+
+:- func genome_string(genome) = string.
+genome_string([]) = "".
+genome_string([X]) = int_to_string(X).
+genome_string([X | Xs]) =
+    int_to_string(X) ++ "," ++ genome_string(Xs).
 
 :- pred emit(candidate::in, io::di, io::uo) is det.
 emit(C, !IO) :-
-    io.write_string("formal-meta-search=evosax-family-portfolio\n", !IO),
-    io.format("candidate-genome=%i\n", [i(candidate_genome(C))], !IO),
-    io.format("candidate-fitness=%i\n", [i(candidate_fitness(C))], !IO),
+    io.write_string(
+        "formal-meta-search=evosax-family-portfolio\n", !IO),
+    io.write_string(
+        "candidate-genome=" ++
+        genome_string(candidate_genome(C)) ++ "\n", !IO),
+    io.write_string(
+        "candidate-fitness=" ++
+        int_to_string(candidate_fitness(C)) ++ "\n", !IO),
     (
         candidate_canonical(C) = yes
     ->
-        io.write_string("candidate-status=canonical-program-found\n", !IO),
+        io.write_string(
+            "candidate-status=canonical-program-found\n", !IO),
         io.write_string(
             "certificate-stage=Agda theorem/bench gate remains authoritative\n",
             !IO)
