@@ -33,7 +33,7 @@ int8Add : Int8 → Int8 → Int8
 int8Add x y = int8OfNat (toℕ (code x) + toℕ (code y))
 
 int8Sub : Int8 → Int8 → Int8
-int8Sub x y = int8OfNat (toℕ (code x) ∸ toℕ (code y))
+int8Sub x y = int8Add x (int8Neg y)
 
 int8Mul : Int8 → Int8 → Int8
 int8Mul x y = int8OfNat (toℕ (code x) * toℕ (code y))
@@ -257,9 +257,12 @@ zeroGRU = gruState zero8 one8 one8 one8 zero8 zero8 zero8 zero8 zero8
 
 gruStep : GRUState → Int8 → GRUState
 gruStep s x =
-  gruState
-    (int8Add (int8Mul (hardSignGate x) (int8Add (hiddenState s) x))
-      (int8Mul (int8Neg (hardSignGate x)) (hiddenState s)))
+  let z = hardSignGate x
+      h = hiddenState s
+      delta = int8Mul z (int8Sub x h)
+      h′ = int8Add h delta
+  in gruState
+    h′
     (matrixZ s) (matrixR s) (matrixH s)
     (noiseZ s) (noiseR s) (noiseH s)
     (optimizerToken s) (l2Token s)
