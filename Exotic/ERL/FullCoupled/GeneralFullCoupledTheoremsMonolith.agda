@@ -1120,49 +1120,6 @@ learnerMinimaxRollout K (x ∷ xs) s =
     xs
     (L.learnerStep K s x)
 
-record LearnerMinimaxInclusion
-  {A : Nat}
-  (K : L.LearnerKernel A) : Set₁ where
-  constructor learnerMinimaxInclusion
-  field
-    stateSystemWitness :
-      FiniteMinimaxStateSystem
-        (L.LearnerState A)
-        L.Int8
-        (Fin A)
-        (Fin A)
-        (Fin 1)
-    bellmanSystemWitness :
-      MinimaxBellmanSystem
-        (L.LearnerState A)
-        L.Int8
-        (Fin A)
-        (Fin 1)
-    rolloutWitness :
-      ∀ (xs : List L.Int8) (s : L.LearnerState A) →
-      minimaxRollout
-        stateSystemWitness
-        (λ s reward → L.generalPolicy K s)
-        (λ s reward → singletonAction)
-        xs s
-      ≡
-      runHistory (L.learnerStep K) xs s
-    noFiniteStateEncoding :
-      ∀ {n : Nat}
-      (encode : L.LearnerState A → Fin n) →
-      ¬ Injective _≡_ _≡_ encode
-open LearnerMinimaxInclusion public
-
-learner-minimax-inclusive :
-  ∀ {A : Nat} (K : L.LearnerKernel A) →
-  LearnerMinimaxInclusion K
-learner-minimax-inclusive K =
-  learnerMinimaxInclusion
-    (learnerMinimaxStateSystem K)
-    (learnerMinimaxBellman K)
-    (learnerMinimaxRollout K)
-    (learnerState-no-finite-injective-encoding K)
-
 ------------------------------------------------------------------------
 -- Reservoir-form relation.
 --
@@ -1321,6 +1278,49 @@ learnerFiniteObservation-no-left-inverse K observe inverse leftInverse =
         (trans
           (cong inverse eq)
           (leftInverse t)))
+
+record LearnerMinimaxInclusion
+  {A : Nat}
+  (K : L.LearnerKernel A) : Set₁ where
+  constructor learnerMinimaxInclusion
+  field
+    stateSystemWitness :
+      FiniteMinimaxStateSystem
+        (L.LearnerState A)
+        L.Int8
+        (Fin A)
+        (Fin A)
+        (Fin 1)
+    bellmanSystemWitness :
+      MinimaxBellmanSystem
+        (L.LearnerState A)
+        L.Int8
+        (Fin A)
+        (Fin 1)
+    rolloutWitness :
+      ∀ (xs : List L.Int8) (s : L.LearnerState A) →
+      minimaxRollout
+        stateSystemWitness
+        (λ s reward → L.generalPolicy K s)
+        (λ s reward → singletonAction)
+        xs s
+      ≡
+      runHistory (L.learnerStep K) xs s
+    noFiniteStateEncoding :
+      ∀ {n : Nat}
+      (encode : L.LearnerState A → Fin n) →
+      ¬ Injective _≡_ _≡_ encode
+open LearnerMinimaxInclusion public
+
+learner-minimax-inclusive :
+  ∀ {A : Nat} (K : L.LearnerKernel A) →
+  LearnerMinimaxInclusion K
+learner-minimax-inclusive K =
+  learnerMinimaxInclusion
+    (learnerMinimaxStateSystem K)
+    (learnerMinimaxBellman K)
+    (learnerMinimaxRollout K)
+    (learnerState-no-finite-injective-encoding K)
 
 ------------------------------------------------------------------------
 -- The finite-readout obstruction is the discrete analogue of the
