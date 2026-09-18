@@ -5,7 +5,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
 open import Data.Nat using (Nat; zero; suc)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Fin.Properties using (pigeonhole)
-open import Data.Product using (_,_; ∃)
+open import Data.Product using (_×_; _,_; ∃; proj₁; proj₂)
 open import Function.Definitions using (Injective)
 open import Data.Empty using (⊥)
 
@@ -18,20 +18,21 @@ orbit257 f x i = iterate f (toℕ i) x
 
 finiteOrbit-collision :
   ∀ (f : Fin 256 → Fin 256) (x : Fin 256) →
-  ∃ λ p → p .proj₁ ≢ p .proj₂ ×
-    iterate f (toℕ (p .proj₁)) x ≡
-    iterate f (toℕ (p .proj₂)) x
+  ∃ λ i →
+    ∃ λ j →
+      i ≢ j ×
+      iterate f (toℕ i) x ≡ iterate f (toℕ j) x
 finiteOrbit-collision f x with
   pigeonhole (suc (suc (s≤s z≤n))) (orbit257 f x)
-... | i , j , apart , eq = (i , j) , apart , eq
+... | i , j , apart , eq = i , j , apart , eq
 
 finiteCarrier-not-injective-on-unbounded-clock :
-  ∀ (f : Fin 256 → Fin 256) (encode : Nat → Fin 256) →
+  ∀ (encode : Nat → Fin 256) →
   ¬ Injective _≡_ _≡_ encode
-finiteCarrier-not-injective-on-unbounded-clock f encode inj =
-  let collision = finiteOrbit-collision f (encode zero) in
-  collision .proj₂ .proj₁
-    (inj (collision .proj₂ .proj₂))
+finiteCarrier-not-injective-on-unbounded-clock encode inj
+  with pigeonhole (suc (suc (s≤s z≤n))) (λ i → encode (toℕ i))
+... | i , j , apart , eq =
+  apart (inj eq)
 
 record TwoCounterConfig : Set where
   constructor twoCounterConfig
@@ -72,7 +73,9 @@ simulation-trace :
   encode (iterate step n c)
 simulation-trace sim zero c = refl
 simulation-trace sim (suc n) c =
-  simulation-trace sim n (step c)
+  trans
+    (cong (iterateMachine (runS sim) n) (stepSimulation sim c))
+    (simulation-trace sim n (step c))
 
 finite-carrier-boundary :
   ∀ (encode : TwoCounterConfig → Fin 256) →
