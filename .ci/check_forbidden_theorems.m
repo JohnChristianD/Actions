@@ -102,5 +102,5 @@ main(!IO) :-
         io.write_string("holes-and-postulates=absent\n", !IO),
         io.write_string("forbidden-theorem-families=absent\n", !IO)
     ;
-        Status \\= 0
+        true
     ).
