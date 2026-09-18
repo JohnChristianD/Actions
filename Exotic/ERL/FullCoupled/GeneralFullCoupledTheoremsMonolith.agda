@@ -896,6 +896,140 @@ walshOrthonormal = walsh00 , (walsh11 , (walsh22 , (walsh33 ,
 
 
 ------------------------------------------------------------------------
+-- Exact function-class identification.
+--
+-- The learner is a deterministic discrete-time state-space transducer:
+--
+--   S_{t+1} = step S_t x_t
+--   y_t     = output S_t
+--
+-- Its state is not finite because LearnerState contains Nat-valued
+-- clock/count registers.  Therefore the correct class is an
+-- infinite-state deterministic state-space/transducer class, with the
+-- finite Int8 components forming a finite-precision algebraic subsystem.
+------------------------------------------------------------------------
+
+record DeterministicStateTransducer (S X Y : Set) : Set₁ where
+  constructor deterministicStateTransducer
+  field
+    step : S → X → S
+    output : S → Y
+open DeterministicStateTransducer public
+
+learnerStateTransducer :
+  ∀ {A : Nat} →
+  L.LearnerKernel A →
+  DeterministicStateTransducer
+    (L.LearnerState A)
+    L.Int8
+    (Fin A)
+learnerStateTransducer K =
+  deterministicStateTransducer
+    (L.learnerStep K)
+    (L.generalPolicy K)
+
+learnerStateTransducer-step-law :
+  ∀ {A : Nat} (K : L.LearnerKernel A)
+  (s : L.LearnerState A) (reward : L.Int8) →
+  step (learnerStateTransducer K) s reward ≡
+  L.learnerStep K s reward
+learnerStateTransducer-step-law K s reward = refl
+
+learnerStateTransducer-output-law :
+  ∀ {A : Nat} (K : L.LearnerKernel A)
+  (s : L.LearnerState A) →
+  output (learnerStateTransducer K) s ≡
+  L.generalPolicy K s
+learnerStateTransducer-output-law K s = refl
+
+------------------------------------------------------------------------
+-- The actual learner trajectory embeds Nat into the state through clock.
+------------------------------------------------------------------------
+
+learnerClockTrace :
+  ∀ {A : Nat} →
+  L.LearnerKernel A →
+  Nat →
+  L.LearnerState A
+learnerClockTrace K n =
+  L.iterateLearner K n
+    (L.initialLearner (L.actionSpaceK K))
+    L.zero8
+
+learnerClockTrace-clock :
+  ∀ {A : Nat} (K : L.LearnerKernel A) (n : Nat) →
+  L.clock (learnerClockTrace K n) ≡ n
+learnerClockTrace-clock K n =
+  trans
+    (iterateLearner-clock K n
+      (L.initialLearner (L.actionSpaceK K))
+      L.zero8)
+    (zero-plus n)
+
+learnerClockTrace-injective :
+  ∀ {A : Nat} (K : L.LearnerKernel A) →
+  Injective _≡_ _≡_ (learnerClockTrace K)
+learnerClockTrace-injective K {i} {j} eq =
+  trans
+    (sym (learnerClockTrace-clock K i))
+    (trans
+      (cong L.clock eq)
+      (learnerClockTrace-clock K j))
+
+------------------------------------------------------------------------
+-- Explicit finite-state impossibility.
+--
+-- Any finite carrier Fin n is too small to injectively encode the
+-- learner's reachable state trajectory.
+------------------------------------------------------------------------
+
+learnerState-no-finite-injective-encoding :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (encode : L.LearnerState A → Fin n) →
+  ¬ Injective _≡_ _≡_ encode
+learnerState-no-finite-injective-encoding K encode inj =
+  ℕ→Fin-notInjective
+    (λ n → encode (learnerClockTrace K n))
+    (λ {i} {j} eq →
+      learnerClockTrace-injective K (inj eq))
+
+------------------------------------------------------------------------
+-- Stronger observational impossibility.
+--
+-- No observation into any finite carrier admits a left inverse on the
+-- full learner state.
+------------------------------------------------------------------------
+
+learnerFiniteObservation-no-left-inverse :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → Fin n)
+  (inverse : Fin n → L.LearnerState A) →
+  (∀ s → inverse (observe s) ≡ s) →
+  ⊥
+learnerFiniteObservation-no-left-inverse K observe inverse leftInverse =
+  learnerState-no-finite-injective-encoding K observe
+    (λ {s} {t} eq →
+      trans
+        (sym (leftInverse s))
+        (trans
+          (cong inverse eq)
+          (leftInverse t)))
+
+------------------------------------------------------------------------
+-- Deduction: the learner is not a finite-state machine under its
+-- current unbounded-Nat state type.
+------------------------------------------------------------------------
+
+learner-not-finite-state :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (encode : L.LearnerState A → Fin n) →
+  ¬ Injective _≡_ _≡_ encode
+learner-not-finite-state = learnerState-no-finite-injective-encoding
+
+------------------------------------------------------------------------
 -- Sparse accumulation is tied directly to the learner's sparsemax
 -- support and to the actual learner-step composition.
 ------------------------------------------------------------------------
