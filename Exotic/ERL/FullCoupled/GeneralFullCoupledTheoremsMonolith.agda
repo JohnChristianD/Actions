@@ -73,11 +73,16 @@ learnerStep-clock : ∀ {A} K s r →
   L.clock (L.learnerStep K s r) ≡ suc (L.clock s)
 learnerStep-clock K s r = refl
 
+suc-as-plus : ∀ n → suc n ≡ n + suc zero
+suc-as-plus n = sym (trans (plus-suc n zero) (cong suc (plus-zero n)))
+
 learnerNoFixedPoint : ∀ {A} K s r →
   L.learnerStep K s r ≢ s
 learnerNoFixedPoint K s r eq =
   plus-suc-not-self (L.clock s) zero
-    (trans (sym (learnerStep-clock K s r)) (cong L.clock eq))
+    (trans
+      (sym (suc-as-plus (L.clock s)))
+      (trans (sym (learnerStep-clock K s r)) (cong L.clock eq)))
 
 iterateLearner-clock : ∀ {A} K n s r →
   L.clock (L.iterateLearner K n s r) ≡ L.clock s + n
@@ -86,8 +91,10 @@ iterateLearner-clock K (suc n) s r =
   trans
     (learnerStep-clock K (L.iterateLearner K n s r) r)
     (trans
+      (suc-as-plus (L.clock (L.iterateLearner K n s r)))
+      (trans
       (cong suc (iterateLearner-clock K n s r))
-      (sym (plus-suc (L.clock s) n)))
+        (sym (plus-suc (L.clock s) n))))
 
 clock-lower-bound : ∀ {A} K n s r →
   L.clock s ≤ L.clock (L.iterateLearner K n s r)
