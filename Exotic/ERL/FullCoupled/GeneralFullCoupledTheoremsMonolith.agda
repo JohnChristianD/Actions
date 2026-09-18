@@ -116,7 +116,8 @@ fullCompositionBisimulation K s t r refl = refl
 
 norm-pair-monotone : ∀ n w x →
   L.l1Weight n ≤ L.l1Weight (L.normStep n w x)
-norm-pair-monotone n w x = z≤n
+norm-pair-monotone n w x =
+  s≤s (natLeRefl (L.l1Weight n))
 
 GRUEquivalent : L.GRUState → L.GRUState → Set
 GRUEquivalent s t = L.gruPersistent s ≡ L.gruPersistent t
