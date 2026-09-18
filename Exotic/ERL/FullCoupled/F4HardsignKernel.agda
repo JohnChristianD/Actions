@@ -2,7 +2,6 @@
 module Exotic.ERL.FullCoupled.F4HardsignKernel where
 
 open import Agda.Builtin.Bool using (Bool; true; false)
-open import Agda.Builtin.Maybe using (Maybe; just; nothing)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ<n)
@@ -118,13 +117,6 @@ pow2-ell8 (zp n) with natLE n 6
 identityGate : Int8 → Int8
 identityGate = sgn8
 
-mobiusGate : Int8 → Maybe Int8
-mobiusGate x with toZ x
-... | zp zero = just zero8
-... | zp (suc zero) = nothing
-... | zp (suc (suc _)) = just (int8OfNat 255)
-... | zn _ = just (int8OfNat 255)
-
 ------------------------------------------------------------------------
 -- Six-state-coordinate F4.
 ------------------------------------------------------------------------
@@ -166,11 +158,6 @@ f4StepWithGate p s g gate =
 f4StepIdentity : F4Params → F4State → Int8 → F4State
 f4StepIdentity p s g = f4StepWithGate p s g (identityGate g)
 
-f4StepMobius : F4Params → F4State → Int8 → Maybe F4State
-f4StepMobius p s g with mobiusGate g
-... | nothing = nothing
-... | just gate = just (f4StepWithGate p s g gate)
-
 ------------------------------------------------------------------------
 -- Kernel-checked semantics.
 ------------------------------------------------------------------------
@@ -183,12 +170,6 @@ scaled-mul-example = refl
 
 identity-gate-example : identityGate (int8OfNat 2) ≡ one8
 identity-gate-example = refl
-
-mobius-gate-example : mobiusGate (int8OfNat 2) ≡ just (int8OfNat 255)
-mobius-gate-example = refl
-
-mobius-singularity : mobiusGate one8 ≡ nothing
-mobius-singularity = refl
 
 state-independent-gate : ∀ (s t : F4State) (x : Int8) → identityGate x ≡ identityGate x
 state-independent-gate s t x = refl
