@@ -41,6 +41,22 @@ The useful combination is therefore:
 
 MCTS is not required merely to obtain this search topology. MCTX can remain an external alternative when an explicit MCTS branch is desired.
 
+## TSTS + PVS outer search boundary
+
+The outer search now distinguishes branch selection from exact verification:
+
+    TSTS posterior sample / tree choice
+        ->
+    PVS principal-branch recheck
+        ->
+    canonical Agda evaluator
+        ->
+    endogenous learner observables
+
+TSTS is the only candidate in this comparison that arrives with the specific finite-time Bayesian regret guarantee used to justify the tree-selection layer. PVS is a correctness-preserving alpha-beta search organization, not a regret guarantee. The repository therefore treats TSTS as the search-selection theory and PVS as the exact recheck mechanism.
+
+The Mercury discovery grammar includes TSTS+PVS with GESMR, SAMR, SimpleES, and RandomSearch challengers, plus PVS-only, PVS+HillClimbing, and MCTX+PVS alternatives. The selected candidate is accepted only when it also satisfies the existing endogenous F4/L2 -> Watkins -> GRU/F4 tell and preservation obligations.
+
 ## SIMD-friendly library boundary
 
 The target is not wholesale JAX or TensorFlow replication. The library boundary should instead favor compact array-friendly primitives that can map naturally onto SIMD-oriented implementations, while leaving the learner's formal parameterization and theorem source explicit.
