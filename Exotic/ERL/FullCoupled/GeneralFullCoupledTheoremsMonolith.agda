@@ -39,7 +39,7 @@ fullCompositionPigeonhole-collision : ∀ {n : Nat}
     observe W (encode W i) ≡ observe W (encode W j)
 fullCompositionPigeonhole-collision {n} W =
   pigeonhole
-    (s≤s (natLeRefl n))
+    (s≤s (s≤s (natLeRefl n)))
     (λ i → observe W (encode W i))
 
 fullCompositionPigeonhole-not-injective : ∀ {n : Nat}
