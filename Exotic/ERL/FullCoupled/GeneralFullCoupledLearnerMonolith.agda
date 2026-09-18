@@ -410,8 +410,10 @@ munchausenSignal noMunchausen w = zero8
 
 record LearnerKernel (A : Nat) : Set where
   constructor learnerKernel
-  field actionSpaceK : ActionSpace A
-        mode : MunchausenMode
+  field
+    actionSpaceK : ActionSpace A
+    mode : MunchausenMode
+    f4ParamsK : F4Params
 open LearnerKernel public
 
 record LearnerState (A : Nat) : Set where
@@ -443,7 +445,7 @@ learnerStep K s reward =
     (incAt (counts s) a)
     a
     (gruStep (gru s) shaped)
-    (f4Step defaultF4Params (optimizer s) shaped)
+    (f4Step (f4ParamsK K) (optimizer s) shaped)
     (normStep (normState s) (q s a) shaped)
 
 iterateLearner : ∀ {A} → LearnerKernel A → Nat → LearnerState A → Int8 → LearnerState A
