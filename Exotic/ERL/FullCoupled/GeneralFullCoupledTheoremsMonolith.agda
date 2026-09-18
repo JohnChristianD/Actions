@@ -21,15 +21,33 @@ open import Data.List.Relation.Binary.Permutation.Propositional using (_↭_)
 
 open import Exotic.ERL.FullCoupled.GeneralFullCoupledLearnerMonolith as L
 
-pigeonhole-suc-collision : ∀ {n : Nat}
-  (f : Fin (suc n) → Fin n) →
-  ∃₂ λ i j → Fin._<_ i j × f i ≡ f j
-pigeonhole-suc-collision f = pigeonhole (s≤s z≤n) f
+natLeRefl : ∀ n → n ≤ n
+natLeRefl zero = z≤n
+natLeRefl (suc n) = s≤s (natLeRefl n)
 
-pigeonhole-suc-not-injective : ∀ {n : Nat}
-  (f : Fin (suc n) → Fin n) →
-  ¬ Injective _≡_ _≡_ f
-pigeonhole-suc-not-injective f = <⇒notInjective (s≤s z≤n)
+record FullCompositionPigeonhole (n : Nat) : Set₁ where
+  constructor fullCompositionPigeonhole
+  field
+    encode : Fin (suc (suc n)) → L.LearnerState (suc n)
+    observe : L.LearnerState (suc n) → Fin (suc n)
+open FullCompositionPigeonhole public
+
+fullCompositionPigeonhole-collision : ∀ {n : Nat}
+  (W : FullCompositionPigeonhole n) →
+  ∃₂ λ i j →
+    Fin._<_ i j ×
+    observe W (encode W i) ≡ observe W (encode W j)
+fullCompositionPigeonhole-collision {n} W =
+  pigeonhole
+    (s≤s (natLeRefl n))
+    (λ i → observe W (encode W i))
+
+fullCompositionPigeonhole-not-injective : ∀ {n : Nat}
+  (W : FullCompositionPigeonhole n) →
+  ¬ Injective _≡_ _≡_ (λ i → observe W (encode W i))
+fullCompositionPigeonhole-not-injective {n} W =
+  <⇒notInjective (s≤s (natLeRefl n))
+
 
 lt-irrefl : ∀ n → n < n → ⊥
 lt-irrefl zero ()
