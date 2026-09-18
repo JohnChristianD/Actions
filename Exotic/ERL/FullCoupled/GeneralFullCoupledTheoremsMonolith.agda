@@ -65,7 +65,7 @@ int8-code-not-coercive coercive with coercive 256
   lt-trans-nat-local (s≤s p) (s≤s q) = s≤s (go p q)
     where
     go : ∀ {a b c : Nat} → a ≤ b → b ≤ c → a ≤ c
-    go z≤n q = z≤n
+    go z≤n q = q
     go (s≤s p) (s≤s q) = s≤s (go p q)
 
 
