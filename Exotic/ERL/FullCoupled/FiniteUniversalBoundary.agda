@@ -1,10 +1,10 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.FiniteUniversalBoundary where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; trans)
 open import Data.Nat using (Nat; zero; suc)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Fin.Properties using (pigeonhole)
+open import Data.Fin.Properties using (pigeonhole; n<1+n; toℕ-injective; <-irrefl)
 open import Data.Product using (_×_; _,_; ∃; proj₁; proj₂)
 open import Function.Definitions using (Injective)
 open import Data.Empty using (⊥)
@@ -23,16 +23,20 @@ finiteOrbit-collision :
       i ≢ j ×
       iterate f (toℕ i) x ≡ iterate f (toℕ j) x
 finiteOrbit-collision f x with
-  pigeonhole (suc (suc (s≤s z≤n))) (orbit257 f x)
+  pigeonhole (n<1+n 256) (orbit257 f x)
 ... | i , j , apart , eq = i , j , apart , eq
 
 finiteCarrier-not-injective-on-unbounded-clock :
   ∀ (encode : Nat → Fin 256) →
   ¬ Injective _≡_ _≡_ encode
 finiteCarrier-not-injective-on-unbounded-clock encode inj
-  with pigeonhole (suc (suc (s≤s z≤n))) (λ i → encode (toℕ i))
+  with pigeonhole (n<1+n 256) (λ i → encode (toℕ i))
 ... | i , j , apart , eq =
-  apart (inj eq)
+  <-irrefl (toℕ-injective (inj eq)) (toℕ-preserves-< apart)
+  where
+  toℕ-preserves-< : ∀ {i j : Fin 257} → i < j → toℕ i < toℕ j
+  toℕ-preserves-< (s≤s p) = p
+
 
 record TwoCounterConfig : Set where
   constructor twoCounterConfig
@@ -74,7 +78,7 @@ simulation-trace :
 simulation-trace sim zero c = refl
 simulation-trace sim (suc n) c =
   trans
-    (cong (iterateMachine (runS sim) n) (stepSimulation sim c))
+    (cong (iterateMachine (runS sim) n) (stepLaw sim c))
     (simulation-trace sim n (step c))
 
 finite-carrier-boundary :
