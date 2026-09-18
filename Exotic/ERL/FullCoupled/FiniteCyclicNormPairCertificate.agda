@@ -203,8 +203,11 @@ learnerNormBudget-step-monotone K s reward =
   normPairOperatorBudget-step-monotone
     (L.normState s)
     (L.q s (L.generalPolicy K s))
-    (L.int8Add
-      reward
+    shaped
+  where
+  shaped : L.Int8
+  shaped =
+    L.int8Add reward
       (L.munchausenSignal
         (L.mode K)
         (L.sparsemaxWeight
