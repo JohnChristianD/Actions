@@ -25,6 +25,8 @@ The current repair commit hardens the pinned Guix container with `--security-opt
 
 The fixed objective is automated modular theorem discovery for the executable learner. The outer search mechanism may change implementation details, but it must not change the proof target.
 
+The current target is a typed symbolic theorem program composed from actual learner transformations. Candidate programs are lowered to generated Agda propositions and checked with `agda --safe`. The current finite grammar includes attention, NormPair, and optimizer replacements plus repeated full-step preservation.
+
 Program search proposes learner-side transformations or theorem candidates. Agda is the authority that evaluates those candidates against the learner definitions and proves or rejects the resulting properties. There is no theorem obligation for the search procedure to prove its own self-consistency.
 
 Involution discovery is therefore learner-specific: candidate transformations must act on an actual learner carrier, learner-derived observable, or learner quotient and be checked by the canonical Agda surface. The retired generic list/sign involution oracle did not satisfy that criterion and has been removed.
