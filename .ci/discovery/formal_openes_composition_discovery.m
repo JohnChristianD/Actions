@@ -83,35 +83,26 @@ write_report(V, !IO) :-
     io.open_output("openes-composition-candidate.json", Result, !IO),
     (
         Result = ok(Stream),
-        io.write_string(Stream, "{
-", !IO),
-        io.write_string(Stream, "  \"accepted\": true,
-", !IO),
+        io.write_string(Stream, "{\n", !IO),
+        io.write_string(Stream, "  \"accepted\": true,\n", !IO),
         io.write_string(Stream, "  \"variation\": \"", !IO),
         io.write_string(Stream, variation_name(V), !IO),
-        io.write_string(Stream, "\",
-", !IO),
+        io.write_string(Stream, "\",\n", !IO),
         io.write_string(Stream,
-            "  \"semantic_boundary\": " ++
-            "\"finite OpenAI-ES ask/evaluate/tell over F4/L2 with Agda learner evaluator\",
-",
+            "  \"semantic_boundary\": \"finite OpenAI-ES ask/evaluate/tell over F4/L2 with Agda learner evaluator\",\n",
             !IO),
         io.write_string(Stream,
-            "  \"proof_gate\": \"TheoremsMonolith.agda\",
-",
+            "  \"proof_gate\": \"TheoremsMonolith.agda\",\n",
             !IO),
         io.write_string(Stream,
-            "  \"external_equivalence\": false
-",
-            , !IO),
-        io.write_string(Stream, "}
-", !IO),
+            "  \"external_equivalence\": false\n",
+            !IO),
+        io.write_string(Stream, "}\n", !IO),
         io.close_output(Stream, !IO)
     ;
         Result = error(_),
         io.write_string(
-            "ERROR: cannot write OpenES composition discovery report
-",
+            "ERROR: cannot write OpenES composition discovery report\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
@@ -122,17 +113,13 @@ main(!IO) :-
     ->
         write_report(V, !IO),
         io.write_string(
-            "formal-openes-composition-discovery=accepted
-", !IO),
+            "formal-openes-composition-discovery=accepted\n", !IO),
         io.write_string(
-            "candidate=Open_ES
-", !IO),
+            "candidate=Open_ES\n", !IO),
         io.write_string(
-            "next=Agda monolith proof gate
-", !IO)
+            "next=Agda monolith proof gate\n", !IO)
     ;
         io.write_string(
-            "formal-openes-composition-discovery=rejected
-", !IO),
+            "formal-openes-composition-discovery=rejected\n", !IO),
         io.set_exit_status(1, !IO)
     ).
