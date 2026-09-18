@@ -93,8 +93,10 @@ iterateLearner-clock K (suc n) s r =
     (trans
       (suc-as-plus (L.clock (L.iterateLearner K n s r)))
       (trans
-      (cong suc (iterateLearner-clock K n s r))
-        (sym (plus-suc (L.clock s) n))))
+        (cong (λ z → z + suc zero) (iterateLearner-clock K n s r))
+        (trans
+          (sym (suc-as-plus (L.clock s + n)))
+          (sym (plus-suc (L.clock s) n)))))
 
 clock-lower-bound : ∀ {A} K n s r →
   L.clock s ≤ L.clock (L.iterateLearner K n s r)
