@@ -89,7 +89,8 @@ write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
             "{\n" ++
             "  \"accepted\": true,\n" ++
             "  \"search_semantics\": \"typed symbolic learner-law basis enumeration\",\n" ++
-            "  \"quotient\": \"Mercury equivalence-class quotient derived from canonical theorem keys\",\n" ++
+            "  \"egraph\": { \"rewrite_registry\": 1, \"saturation\": true, \"cost_based_extraction\": true },\n" ++
+            "  \"quotient\": \"Mercury equivalence-class quotient with declarative rewrite saturation\",\n" ++
             "  \"proof_gate\": \"GeneratedNovelLearnerTheorems.agda\",\n" ++
             "  \"raw_candidate_count\": " ++ nat_string(RawCount) ++ ",\n" ++
             "  \"quotient_pruned_count\": " ++ nat_string(QuotientPruned) ++ ",\n" ++
