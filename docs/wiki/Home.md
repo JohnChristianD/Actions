@@ -51,7 +51,7 @@ The workflow uses a digest-pinned Guix container, boots the Guix daemon inside e
 
 The active search target is a typed symbolic theorem program over actual learner transformations. Mercury enumerates a small basis grammar, quotients derived candidates, removes declarations already represented in the theorem monolith, and generates concrete Agda theorem declarations.
 
-The current basis uses NormPair replacement and the period-4 clock transformation with target-invariance and full-step-equivariance relations. Iterate-equivalence candidates are used as quotienting information and are not emitted when subsumed by the stronger one-step relation.
+The current basis uses NormPair replacement and the period-4 clock transformation against four actual learner observables: count step, Q-log step, endogenous feedback, and Watkins target. Iterate candidates are quotient-pruned, and emitted proofs are compositional rather than bare reflexivity.
 
 The loop is:
 
@@ -69,10 +69,10 @@ The existing `FiniteTSTSEndogenousConnectedTheorem` remains part of the theorem 
 
 The current novel basis is:
 
-- Watkins-target invariance under NormPair replacement;
-- Watkins-target invariance under the period-4 clock transformation;
-- canonical full-step equivariance under NormPair replacement;
-- canonical full-step equivariance under the period-4 clock transformation.
+- count-step invariance under NormPair replacement;
+- Q-log-step invariance under NormPair replacement;
+- endogenous-feedback invariance under the period-4 clock transformation;
+- Watkins-target invariance under the period-4 clock transformation.
 
 These candidates are generated into a transient Agda module and must pass `agda --safe` before they can be considered verified. They are not auto-promoted into the canonical theorem monolith.
 ## CleanRL / LeanRL relationship
