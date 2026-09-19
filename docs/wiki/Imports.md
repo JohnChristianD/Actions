@@ -1,6 +1,6 @@
 # Imported Libraries and Verification Substrate
 
-Last audited: 2026-09-19 against `main` at `d48e5cf6e3671f268440135f1acc32eeafb3d510`.
+Last audited: 2026-09-19 before the automated e-graph correction.
 
 ## Canonical learner
 
@@ -97,7 +97,7 @@ The current repository contains these Mercury modules in `.ci/discovery/`:
 - `prune_redundant_components.m`
 - `prune_redundant_learner_modules.m`
 
-The current Guix discovery path actively invokes the semantic extractor/manifest/discovery modules and both e-graph regressions. The two prune modules remain repository tooling, but they are not called by the current `.guix/ci.scm` discovery lane.
+The current Guix semantic-discovery path actively invokes the source extractor, manifest-driven discovery, the generic e-graph regression, and the manifest-derived interpolated e-graph regression. The two prune modules remain repository tooling, but they are not called by the current `.guix/ci.scm` semantic-discovery path.
 
 ### Forbidden-theorem scanner
 
@@ -133,6 +133,6 @@ No Python package is part of this pinned verification manifest.
 
 All execute through the pinned Guix manifest and `.guix/ci.scm`.
 
-## Configuration mismatch worth tracking
+## Synchronization note
 
-The current `.guix/ci.scm` safe-file list still names `CanonicalClosedLoopInterface.agda`, which is absent from `main`. This should be treated as a CI configuration defect, not as an active import/module.
+The current `.guix/ci.scm` safe-file list no longer names the removed `CanonicalClosedLoopInterface.agda`; the canonical closed-loop benchmark surface is `CanonicalClosedLoopBench.agda`.

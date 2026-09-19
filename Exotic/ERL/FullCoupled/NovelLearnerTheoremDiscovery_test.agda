@@ -15,3 +15,9 @@ generatedSemanticDerivedCount-self :
   generatedSemanticDerivedCount ≡
   generatedSemanticDerivedCount
 generatedSemanticDerivedCount-self = refl
+
+
+generatedSemanticEGraphQuotientCount-type :
+  Nat
+generatedSemanticEGraphQuotientCount-type =
+  generatedSemanticEGraphQuotientCount

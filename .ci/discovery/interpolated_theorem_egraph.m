@@ -4,51 +4,89 @@
 
 :- import_module io.
 :- import_module symbolic_egraph.
+:- import_module learner_semantic_manifest.
 
-:- pred discovery_egraph(symbolic_egraph.egraph::out, io::di, io::uo) is det.
+:- pred discovery_egraph(
+    symbolic_egraph.egraph::out,
+    int::out,
+    io::di, io::uo) is det.
+:- pred discovery_egraph_from_laws(
+    list(semantic_law)::in,
+    symbolic_egraph.egraph::out,
+    int::out) is det.
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
 
 :- import_module bool.
-:- import_module learner_semantic_manifest.
 :- import_module list.
 :- import_module string.
 
 :- func law_expr(string) = expr.
 law_expr(Id) = app("semantic-law", [atom(Id)]).
 
-:- func compose_expr(list(string)) = expr.
-compose_expr([]) = atom("invalid-proof-compose").
-compose_expr([Id]) = law_expr(Id).
-compose_expr([A, B | Rest]) =
-    compose_expr_acc(
+:- func left_assoc_expr(list(string)) = expr.
+left_assoc_expr([]) = atom("empty-proof-compose").
+left_assoc_expr([Id]) = law_expr(Id).
+left_assoc_expr([A, B | Rest]) =
+    left_assoc_expr_acc(
         app("proof-compose", [law_expr(A), law_expr(B)]),
         Rest).
 
-:- func compose_expr_acc(expr, list(string)) = expr.
-compose_expr_acc(Acc, []) = Acc.
-compose_expr_acc(Acc, [Id | Rest]) =
-    compose_expr_acc(
+:- func left_assoc_expr_acc(expr, list(string)) = expr.
+left_assoc_expr_acc(Acc, []) = Acc.
+left_assoc_expr_acc(Acc, [Id | Rest]) =
+    left_assoc_expr_acc(
         app("proof-compose", [Acc, law_expr(Id)]),
         Rest).
 
-:- pred add_law(semantic_law::in,
-    symbolic_egraph.egraph::in, symbolic_egraph.egraph::out) is det.
-add_law(Law, E0, E) :-
+:- func right_assoc_expr(list(string)) = expr.
+right_assoc_expr([]) = atom("empty-proof-compose").
+right_assoc_expr([Id]) = law_expr(Id).
+right_assoc_expr([Id | Rest]) =
+    app("proof-compose", [law_expr(Id), right_assoc_expr(Rest)]).
+
+:- pred add_law(
+    semantic_law::in,
+    symbolic_egraph.egraph::in,
+    symbolic_egraph.egraph::out,
+    int::in, int::out) is det.
+add_law(Law, E0, E, Quotient0, Quotient) :-
     Id = law_id(Law),
     add_expr(law_expr(Id), E0, _, E1),
     (
         semantic_law.composite(Law) = yes
     ->
         Deps = semantic_law.dependencies(Law),
-        Plan = compose_expr(Deps),
+        Left = left_assoc_expr(Deps),
         add_expr(
             app("derived-proof-plan", [
                 law_expr(Id),
-                Plan
+                Left
             ]),
-            E1, _, E)
+            E1, _, E2),
+        (
+            list.length(Deps) >= 3
+        ->
+            Right = right_assoc_expr(Deps),
+            add_expr(
+                app("derived-proof-plan", [
+                    law_expr(Id),
+                    Right
+                ]),
+                E2, LeftClass, E3),
+            add_expr(
+                app("derived-proof-plan", [
+                    law_expr(Id),
+                    Left
+                ]),
+                E3, RightClass, E4),
+            merge(LeftClass, RightClass, E4, E),
+            Quotient = Quotient0 + 1
+        ;
+            E = E2,
+            Quotient = Quotient0
+        )
     ;
         (
             semantic_law.reflexive(Law) = yes
@@ -58,25 +96,32 @@ add_law(Law, E0, E) :-
                 E1, _, E)
         ;
             E = E1
-        )
+        ),
+        Quotient = Quotient0
     ).
 
-:- pred add_laws(list(semantic_law)::in,
-    symbolic_egraph.egraph::in, symbolic_egraph.egraph::out) is det.
-add_laws([], E, E).
-add_laws([Law | Laws], E0, E) :-
-    add_law(Law, E0, E1),
-    add_laws(Laws, E1, E).
+:- pred add_laws(
+    list(semantic_law)::in,
+    symbolic_egraph.egraph::in,
+    symbolic_egraph.egraph::out,
+    int::in, int::out) is det.
+add_laws([], E, E, Count, Count).
+add_laws([Law | Laws], E0, E, Count0, Count) :-
+    add_law(Law, E0, E1, Count0, Count1),
+    add_laws(Laws, E1, E, Count1, Count).
 
-discovery_egraph(E, !IO) :-
-    read_manifest(Laws, !IO),
+discovery_egraph_from_laws(Laws, E, QuotientCount) :-
     E0 = symbolic_egraph.empty,
-    add_laws(Laws, E0, E).
+    add_laws(Laws, E0, E, 0, QuotientCount).
+
+discovery_egraph(E, QuotientCount, !IO) :-
+    read_manifest(Laws, !IO),
+    discovery_egraph_from_laws(Laws, E, QuotientCount).
 
 main(!IO) :-
     read_manifest(Laws, !IO),
-    discovery_egraph(EGraph, !IO),
-    MultiDependency = list.length(
+    discovery_egraph_from_laws(Laws, EGraph, QuotientCount),
+    CompositeCount = list.length(
         list.filter(
             (pred(L::in) is semidet :-
                 semantic_law.composite(L) = yes),
@@ -88,20 +133,22 @@ main(!IO) :-
             Laws)),
     (
         list.length(Laws) > 0,
-        NonReflexive >= MultiDependency,
+        NonReflexive >= CompositeCount,
+        QuotientCount > 0,
         class_count(EGraph) > 0,
-        enode_count(EGraph) > 0
+        enode_count(EGraph) > 0,
+        class_count(EGraph) < enode_count(EGraph)
     ->
         io.write_string(
             "interpolated-theorem-egraph=pass "
             "source=learner-monolith "
-            "symbolic-registry=absent "
-            "refl-composition=disabled "
+            "semantic-registry=manifest "
+            "proof-compose-associativity=quotiented "
             "dynamic-manifest=on\n",
             !IO)
     ;
         io.write_string(
-            "ERROR: learner semantic e-graph manifest gate failed\n",
+            "ERROR: learner semantic e-graph quotient gate failed\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).

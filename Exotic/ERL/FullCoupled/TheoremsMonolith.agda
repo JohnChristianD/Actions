@@ -682,101 +682,36 @@ finite-attention-watkins-gru-f4-mediator-theorem =
 
 
 ------------------------------------------------------------------------
--- Compact novel theorem basis for the canonical learner.
+-- Generic equality composition primitive.
 --
--- These four laws are the minimal nontrivial representatives retained by
--- the Mercury symbolic quotient.  They are compositional consequences of
--- the canonical learner laws, not bare definitional-reflexivity candidates.
+-- This is theorem algebra, not a learner-specific discovery registry.
+-- Automated discovery derives its semantic vocabulary from source
+-- declarations; no fixed candidate basis is encoded here.
 ------------------------------------------------------------------------
 
-novel-clockPlus4-endogenousFeedback-invariant :
-  ∀ K s →
-  C.canonicalEndogenousFeedback K
-    (replaceClock s
-      (suc (suc (suc (suc (C.clock s))))))
-  ≡
-  C.canonicalEndogenousFeedback K s
-novel-clockPlus4-endogenousFeedback-invariant K s =
-  cong
-    (λ x →
-      C.int8Add
-        x
-        (C.int8Add
-          (C.canonicalGRUFeedback s)
-          (C.int8Add
-            (C.canonicalF4L2Feedback K s)
-            (C.int8Add
-              (C.canonicalQLogControlFeedback s)
-              (C.canonicalQLogValueFeedback s)))))
-    (canonicalAttentionMix-clock-period4 K s)
-
-record NovelLearnerTheoremBasis : Set₁ where
-  constructor novelLearnerTheoremBasis
+record EqualityCompositionTheorem
+  {A : Set}
+  {x y z : A} : Set where
+  constructor equalityCompositionTheorem
   field
-    normReplacementCountStep :
-      ∀ K s n →
-      C.canonicalCountStep K (C.replaceNorm s n)
-      ≡
-      C.canonicalCountStep K s
+    firstStep : x ≡ y
+    secondStep : y ≡ z
+    composedStep : x ≡ z
 
-    normReplacementQLogStep :
-      ∀ K s n →
-      C.canonicalQLogStep K (C.replaceNorm s n)
-      ≡
-      C.canonicalQLogStep K s
-
-    clockPlus4EndogenousFeedback :
-      ∀ K s →
-      C.canonicalEndogenousFeedback K
-        (replaceClock s
-          (suc (suc (suc (suc (C.clock s))))))
-      ≡
-      C.canonicalEndogenousFeedback K s
-
-    clockPlus4WatkinsTarget :
-      ∀ K s →
-      C.canonicalWatkinsTarget K
-        (replaceClock s
-          (suc (suc (suc (suc (C.clock s))))))
-      ≡
-      C.canonicalWatkinsTarget K s
-
-open NovelLearnerTheoremBasis public
-
-novel-learner-theorem-basis :
-  NovelLearnerTheoremBasis
-novel-learner-theorem-basis =
-  novelLearnerTheoremBasis
-    (λ K s n →
-      cong₂ C.updateLCBCount
-        (canonicalPolicy-norm-invariant K s n)
-        refl)
-    (λ K s n →
-      cong
-        (λ p → C.negativeFiniteQLog8 (C.policyLeftWeight p))
-        (canonicalPolicy-norm-invariant K s n))
-    novel-clockPlus4-endogenousFeedback-invariant
-    (λ K s →
-      trans
-        (C.canonicalWatkinsTarget-law K
-          (replaceClock s
-            (suc (suc (suc (suc (C.clock s)))))))
-        (cong
-          (λ x →
-            C.int8Add
-              (C.int8Add
-                (C.int8Add
-                  (C.canonicalReward8 K s)
-                  (C.canonicalQLogBias K s))
-                (C.int8Mul
-                  C.canonicalDiscount8
-                  (C.maxCriticValue8 (C.critic (C.watkins s)))))
-              x)
-          (novel-clockPlus4-endogenousFeedback-invariant K s)))
-
+composeEqualityTheorem :
+  ∀ {A : Set} {x y z : A} →
+  x ≡ y →
+  y ≡ z →
+  EqualityCompositionTheorem
+composeEqualityTheorem first second =
+  equalityCompositionTheorem
+    first
+    second
+    (trans first second)
 
 ------------------------------------------------------------------------
 -- Exact recurrent scan class.
+
 --
 -- No finite horizon is baked into this theorem. The input is a Nat-indexed
 -- stream, and the prefix/split laws quantify over arbitrary natural
@@ -913,64 +848,3 @@ composeEqualityTheorem first second =
     second
     (trans first second)
 
-------------------------------------------------------------------------
--- E-graph completed theorem package.
---
--- Mercury selects a dependency-composed proof plan for each class.  This
--- record collects the exact Agda theorem objects that the selected plans
--- must close.  The e-graph is not a second proof checker: Agda remains the
--- authority for the final terms.
-------------------------------------------------------------------------
-
-record EGraphCompletedTheoremBasis : Set₁ where
-  constructor eGraphCompletedTheoremBasis
-  field
-    novelBasis :
-      NovelLearnerTheoremBasis
-
-    policyReplacementComposition :
-      ∀ K s rs →
-      C.canonicalPolicy K (applyLearnerReplacements rs s)
-      ≡
-      C.canonicalPolicy K s
-
-    equalityComposition :
-      ∀ {A : Set} {x y z : A}
-      → x ≡ y
-      → y ≡ z
-      → x ≡ z
-
-    attentionMediator :
-      FiniteAttentionWatkinsGRUF4MediatorTheorem
-
-    recurrentScan :
-      RecurrentAssociativeScanTheorem C.GRUState C.Int8
-
-    finiteReservoir :
-      FiniteReservoirFaithfulnessTheorem
-        C.Int8
-        C.Int8
-        (λ x → x)
-
-    noUnboundedInt8Memory :
-      ∀ (f : Nat → C.Int8) →
-      ¬ (∀ {m n} → f m ≡ f n → m ≡ n)
-
-open EGraphCompletedTheoremBasis public
-
-egraph-completed-theorem-basis :
-  EGraphCompletedTheoremBasis
-egraph-completed-theorem-basis =
-  eGraphCompletedTheoremBasis
-    novel-learner-theorem-basis
-    canonicalPolicy-learnerReplacement-composition
-    (λ {A} {x} {y} {z} first second →
-      EqualityCompositionTheorem.composedStep
-        (composeEqualityTheorem first second))
-    finite-attention-watkins-gru-f4-mediator-theorem
-    canonicalGRU-recurrent-associative-scan-theorem
-    (finiteReservoirFaithfulnessTheorem
-      (λ x → x)
-      (λ x → x)
-      (λ x → refl))
-    C.int8-no-countably-unbounded-injective

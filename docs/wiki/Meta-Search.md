@@ -1,6 +1,6 @@
 # Meta-Search Architecture
 
-Last audited: 2026-09-19 against `main` at `d48e5cf6e3671f268440135f1acc32eeafb3d510`.
+Last audited: 2026-09-19 before the automated e-graph correction.
 
 ## Semantic authority
 
@@ -50,10 +50,15 @@ learner_semantic_manifest.m
               +-------------------------+
               |                         |
               v                         v
-novel_learner_theorem_discovery.m   interpolated_theorem_egraph.m
-              |                         |
-              v                         v
-GeneratedNovelLearnerTheorems.agda   generic symbolic regression
+interpolated_theorem_egraph.m
+              |
+              +--> proof-compose associativity quotient
+              |
+              v
+novel_learner_theorem_discovery.m
+              |
+              v
+GeneratedNovelLearnerTheorems.agda
               |
               v
 agda --safe
@@ -97,14 +102,14 @@ It:
 4. emits named Agda aliases for those declarations;
 5. writes a report describing the extraction.
 
-The current generated module contains four aliases:
+The current generated module contains four source-owned theorem projections:
 
-- `generatedSemanticDerived0 = canonicalStep-not-fixed`
-- `generatedSemanticDerived1 = clockAfter`
-- `generatedSemanticDerived2 = canonicalAperiodic`
-- `generatedSemanticDerived3 = canonicalNoCountedTwoCycle`
+- `generatedSemanticDerived0 = T.canonicalStep-not-fixed`
+- `generatedSemanticDerived1 = T.clockAfter`
+- `generatedSemanticDerived2 = T.canonicalAperiodic`
+- `generatedSemanticDerived3 = T.canonicalNoCountedTwoCycle`
 
-These are derived projections of existing theorem declarations. They are not automatically promoted into `TheoremsMonolith.agda`.
+It also records the manifest-derived e-graph associativity quotient count. These declarations are not automatically promoted into `TheoremsMonolith.agda`.
 
 ## Generic symbolic e-graph boundary
 
@@ -127,19 +132,9 @@ Its e-graph uses:
 
 The symbols in this generic engine are merely strings carried by the expression representation. Semantic meaning comes from the manifest-derived construction that creates those expressions.
 
-`interpolated_theorem_egraph.m` maps an extracted law ID into:
+`interpolated_theorem_egraph.m` maps each extracted law into `semantic-law(...)` and each composite dependency list into `proof-compose(...)`. For dependency lists of length at least three, it constructs both left- and right-associated proof plans and merges their e-classes. Thus the e-graph performs an actual quotient over a source-derived algebraic identity, rather than merely storing nodes.
 
-```
-semantic-law(law-id)
-```
-
-and a composite law's dependency list into nested:
-
-```
-proof-compose(...)
-```
-
-It does not invent learner transformations, and it does not establish theorem truth. The test is a structural regression over the extracted manifest/e-graph construction.
+That quotient is symbolic normalization. It does not establish theorem truth; `agda --safe` does that. The regression requires a nonempty manifest graph and a nonzero associativity quotient.
 
 ## Trust boundary
 
@@ -163,9 +158,7 @@ Agda `--safe` disables postulates, unsafe OPTIONS pragmas, and `primTrustMe` amo
 
 ## Generated-proof shape
 
-The Guix driver reads `GeneratedNovelLearnerTheorems.agda` and rejects the generated artifact if it contains the exact bare form `= refl`.
-
-This is a proof-shape policy for the generated discovery artifact. It is not a theorem that every canonical learner law must avoid definitional equality. The canonical learner and theorem source intentionally contain many legitimate `refl` proofs.
+The Guix driver no longer treats bare `refl` as a semantic error in the generated artifact. The generated file contains source-owned theorem projections, while the e-graph handles proof-plan normalization. Agda `--safe` remains the proof acceptance boundary.
 
 ## Retired discovery architecture
 

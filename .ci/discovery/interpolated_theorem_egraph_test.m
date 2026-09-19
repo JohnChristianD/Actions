@@ -16,8 +16,8 @@
 
 main(!IO) :-
     read_manifest(Laws, !IO),
-    discovery_egraph(E, !IO),
-    MultiDependency = list.length(
+    discovery_egraph_from_laws(Laws, E, QuotientCount),
+    CompositeCount = list.length(
         list.filter(
             (pred(L::in) is semidet :-
                 semantic_law.composite(L) = yes),
@@ -28,16 +28,17 @@ main(!IO) :-
                 semantic_law.reflexive(L) = no),
             Laws)),
     (
-        list.length(Laws) > 0,
-        NonReflexive >= MultiDependency,
+        CompositeCount > 0,
+        NonReflexive >= CompositeCount,
+        QuotientCount > 0,
         class_count(E) > 0,
-        enode_count(E) > 0
+        enode_count(E) > 0,
+        class_count(E) < enode_count(E)
     ->
         io.write_string(
             "learner-semantic-egraph-regression=pass "
-            "source=monolith "
-            "composition=dependency-plan "
-            "refl=excluded "
+            "source=manifest "
+            "quotient=proof-compose-associativity "
             "dynamic=on\n",
             !IO)
     ;

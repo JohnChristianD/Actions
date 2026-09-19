@@ -158,7 +158,7 @@ jobs:
           guix time-machine -C .guix/channels.scm -- shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
-    name: Guix / Mercury novel learner theorem discovery
+    name: Guix / Mercury semantic e-graph discovery
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     container:
@@ -213,7 +213,7 @@ jobs:
             git -C "${workspace}" fetch --depth=1 origin "${sha}"
           guix shell --pure git nss-certs -- \
             git -C "${workspace}" checkout --detach "${sha}"
-      - name: Run pinned Mercury discovery lane
+      - name: Run pinned Mercury semantic e-graph discovery lane
         env:
           CI_LANE: discovery
         run: |

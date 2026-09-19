@@ -8,25 +8,37 @@
 
 :- implementation.
 
-:- import_module bool.
 :- import_module io.
+:- import_module interpolated_theorem_egraph.
 :- import_module learner_semantic_extractor.
 :- import_module learner_semantic_manifest.
 :- import_module list.
 :- import_module string.
+:- import_module symbolic_egraph.
 
-:- pred multi_dependency_laws(
+:- pred composite_laws(
     list(semantic_law)::in, list(semantic_law)::out) is det.
-multi_dependency_laws(All, MultiDependency) :-
+composite_laws(All, Composite) :-
     list.filter(
         (pred(L::in) is semidet :-
             semantic_law.composite(L) = yes),
         All,
-        MultiDependency).
+        Composite).
 
-:- func rhs_qualification(string, string) = string.
-rhs_qualification(Source, Name) =
-    Name.
+:- pred rhs_qualification(
+    string::in, string::in, string::out) is semidet.
+rhs_qualification(Source, Name, Qualified) :-
+    (
+        string.sub_string_search(Source, "CanonicalLearnerMonolith.agda", _)
+    ->
+        Qualified = "C." ++ Name
+    ;
+        string.sub_string_search(Source, "TheoremsMonolith.agda", _)
+    ->
+        Qualified = "T." ++ Name
+    ;
+        fail
+    ).
 
 :- pred write_generated_derived_aliases(
     list(semantic_law)::in,
@@ -35,22 +47,33 @@ rhs_qualification(Source, Name) =
     io::di, io::uo) is det.
 write_generated_derived_aliases([], _, _, !IO).
 write_generated_derived_aliases([L | Ls], Index, Stream, !IO) :-
-    io.write_string(Stream,
-        "generatedSemanticDerived" ++
-        string.int_to_string(Index) ++
-        " :\n  " ++ semantic_law.signature(L) ++ "\n" ++
-        "generatedSemanticDerived" ++
-        string.int_to_string(Index) ++
-        " = " ++ rhs_qualification(
+    (
+        rhs_qualification(
             semantic_law.source(L),
-            semantic_law.name(L)) ++
-        "\n\n",
-        !IO),
-    write_generated_derived_aliases(Ls, Index + 1, Stream, !IO).
+            semantic_law.name(L),
+            Qualified)
+    ->
+        io.write_string(Stream,
+            "generatedSemanticDerived" ++
+            string.int_to_string(Index) ++
+            " :\n  " ++ semantic_law.signature(L) ++ "\n" ++
+            "generatedSemanticDerived" ++
+            string.int_to_string(Index) ++
+            " = " ++ Qualified ++ "\n\n",
+            !IO),
+        write_generated_derived_aliases(Ls, Index + 1, Stream, !IO)
+    ;
+        io.write_string(
+            "ERROR: unknown semantic source in generated theorem alias\n",
+            !IO),
+        io.set_exit_status(1, !IO)
+    ).
 
-:- pred write_generated_module(list(semantic_law)::in,
+:- pred write_generated_module(
+    list(semantic_law)::in,
+    int::in,
     io::di, io::uo) is det.
-write_generated_module(MultiDependency, !IO) :-
+write_generated_module(Composite, QuotientCount, !IO) :-
     io.open_output(
         "../../Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda",
         Result,
@@ -66,14 +89,18 @@ write_generated_module(MultiDependency, !IO) :-
             "open import Exotic.ERL.FullCoupled.TheoremsMonolith as T\n" ++
             "open C\n" ++
             "open T\n\n" ++
-            "-- Generated from actual executable learner/theorem declarations.\\n" ++
-            "-- Reflexive declarations are excluded from the composition class.\\n\\n" ++
+            "-- Generated from the shared semantic manifest and its e-graph quotient.\n" ++
+            "-- The generated declarations are projections of source-owned theorems.\n\n" ++
             "generatedSemanticDerivedCount : Nat\n" ++
             "generatedSemanticDerivedCount = " ++
-            string.int_to_string(list.length(MultiDependency)) ++
+            string.int_to_string(list.length(Composite)) ++
+            "\n\n" ++
+            "generatedSemanticEGraphQuotientCount : Nat\n" ++
+            "generatedSemanticEGraphQuotientCount = " ++
+            string.int_to_string(QuotientCount) ++
             "\n\n",
             !IO),
-        write_generated_derived_aliases(MultiDependency, 0, Stream, !IO),
+        write_generated_derived_aliases(Composite, 0, Stream, !IO),
         io.close_output(Stream)
     ;
         Result = error(_),
@@ -84,9 +111,11 @@ write_generated_module(MultiDependency, !IO) :-
     ).
 
 :- pred write_report(
-    list(semantic_law)::in, list(semantic_law)::in,
+    list(semantic_law)::in,
+    list(semantic_law)::in,
+    int::in,
     io::di, io::uo) is det.
-write_report(All, MultiDependency, !IO) :-
+write_report(All, Composite, QuotientCount, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -97,7 +126,7 @@ write_report(All, MultiDependency, !IO) :-
         Result = ok(Stream),
         io.write_string(Stream,
             "{\n" ++
-            "  \"accepted\": true,\n" ++
+            "  \"generated\": true,\n" ++
             "  \"search_semantics\": \"learner-monolith semantic dependency extraction\",\n" ++
             "  \"symbolic_registry\": false,\n" ++
             "  \"refl_as_composition\": false,\n" ++
@@ -106,7 +135,9 @@ write_report(All, MultiDependency, !IO) :-
             "  \"nonreflexive_law_count\": " ++
                 string.int_to_string(NonReflexive) ++ ",\n" ++
             "  \"composite_law_count\": " ++
-                string.int_to_string(list.length(MultiDependency)) ++ ",\n" ++
+                string.int_to_string(list.length(Composite)) ++ ",\n" ++
+            "  \"egraph_associativity_quotient_count\": " ++
+                string.int_to_string(QuotientCount) ++ ",\n" ++
             "  \"proof_authority\": \"Agda --safe\"\n" ++
             "}\n",
             !IO),
@@ -122,17 +153,35 @@ write_report(All, MultiDependency, !IO) :-
 main(!IO) :-
     extract_semantics(!IO),
     read_manifest(All, !IO),
-    multi_dependency_laws(All, MultiDependency),
-    write_generated_module(MultiDependency, !IO),
-    write_report(All, MultiDependency, !IO),
-    io.write_string(
-        "semantic-theorem-discovery=generated-from-learner-monolith\n",
-        !IO),
-    io.write_string(
-        "semantic-law-count=" ++
-        string.int_to_string(list.length(All)) ++ "\n",
-        !IO),
-    io.write_string(
-        "multi-dependency-law-count=" ++
-        string.int_to_string(list.length(MultiDependency)) ++ "\n",
-        !IO).
+    composite_laws(All, Composite),
+    discovery_egraph_from_laws(All, EGraph, QuotientCount),
+    (
+        list.length(All) > 0,
+        list.length(Composite) > 0,
+        QuotientCount > 0,
+        class_count(EGraph) > 0,
+        enode_count(EGraph) > 0
+    ->
+        write_generated_module(Composite, QuotientCount, !IO),
+        write_report(All, Composite, QuotientCount, !IO),
+        io.write_string(
+            "semantic-theorem-discovery=generated-from-learner-monolith\n",
+            !IO),
+        io.write_string(
+            "semantic-law-count=" ++
+            string.int_to_string(list.length(All)) ++ "\n",
+            !IO),
+        io.write_string(
+            "composite-law-count=" ++
+            string.int_to_string(list.length(Composite)) ++ "\n",
+            !IO),
+        io.write_string(
+            "egraph-associativity-quotient-count=" ++
+            string.int_to_string(QuotientCount) ++ "\n",
+            !IO)
+    ;
+        io.write_string(
+            "ERROR: semantic discovery/e-graph gate failed\n",
+            !IO),
+        io.set_exit_status(1, !IO)
+    ).

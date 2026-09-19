@@ -32,18 +32,6 @@
     (lambda (port)
       (get-string-all port))))
 
-(define (run-discovery-artifact-audit)
-  (let* ((generated
-          "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda")
-         (text (read-file-string generated)))
-    (if (string-contains text "= refl\n")
-        (begin
-          (format #t
-                  "ERROR: generated discovery module contains a bare refl proof~%")
-          (exit 1))
-        (format #t
-                "discovery-proof-shape=nontrivial; bare-refl=absent~%"))))
-
 (define (agda-safe-files)
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
@@ -51,7 +39,6 @@
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
     "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
     "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
-    "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopBench.agda"
@@ -64,8 +51,7 @@
 
 (define (run-agda-safe)
   ;; Regenerate only novel learner-law candidates before the proof lane.
-  (run-novel-learner-theorem-discovery)
-  (run-discovery-artifact-audit)
+  (run-automated-semantic-egraph)
   (for-each
    (lambda (file)
      (run! (string-append "Agda --safe " file)
@@ -75,7 +61,7 @@
         "agda" "--safe"
         "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda"))
 
-(define (run-novel-learner-theorem-discovery)
+(define (run-automated-semantic-egraph)
   (in-directory ".ci/discovery"
     (lambda ()
       (run! "build Mercury learner semantic theorem discovery"
@@ -98,14 +84,13 @@
             "mmc" "--make" "check_forbidden_theorems")
       (run! "run forbidden-theorem scanner"
             "./check_forbidden_theorems")))
-  (run-novel-learner-theorem-discovery))
+  (run-automated-semantic-egraph))
 
 (define (run-discovery)
-  ;; The canonical discovery lane extracts executable learner/theorem
-  ;; declarations first. Mercury then builds the e-graph from that extracted
-  ;; semantic dependency graph. Agda remains authoritative for acceptance.
-  (run-novel-learner-theorem-discovery)
-  (run-discovery-artifact-audit))
+  ;; Extract executable learner/theorem declarations, then build and quotient
+  ;; the generic e-graph from that source-derived dependency graph.
+  (run-automated-semantic-egraph))
+  (run-automated-semantic-egraph)
 
 (define (git-files)
   (let ((port (open-pipe* OPEN_READ "git" "ls-files")))

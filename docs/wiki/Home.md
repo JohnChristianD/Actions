@@ -1,6 +1,6 @@
 # Actions: Canonical Learner, Semantic Discovery, and Proof Environment
 
-Last audited: 2026-09-19 against `main` at `d48e5cf6e3671f268440135f1acc32eeafb3d510`.
+Last audited: 2026-09-19 before the automated e-graph correction.
 
 Git currently reports no combined status entries for this head, so the wiki does not label the current remote workflow run green.
 
@@ -82,7 +82,7 @@ Guile CI driver
         |
         +--> Mercury generic e-graph regressions
         |
-        +--> generated Agda artifact audit
+        +--> source-derived e-graph quotient
         |
         v
 Agda --safe
@@ -161,11 +161,11 @@ Agda --safe
 - `discovery`
 - `surface`
 
-The Agda lane regenerates the semantic-discovery artifact, audits its proof shape, type-checks the listed Agda surface with `agda --safe`, and type-checks the generated theorem module.
+The Agda lane regenerates the source-derived semantic graph, type-checks the configured Agda surface with `agda --safe`, and type-checks the generated semantic projection module.
 
-The Mercury lane runs the forbidden-theorem scanner and the manifest-driven discovery machinery.
+The Mercury lane runs the forbidden-theorem scanner and the manifest-driven e-graph discovery machinery.
 
-The discovery lane runs the semantic discovery plus generated-artifact audit.
+The discovery lane runs the semantic extraction, e-graph quotient, and generated semantic projection.
 
 The surface lane rejects repository source files in the retired Haskell, Python, JavaScript/TypeScript, JVM-language, Elm, and PureScript suffix families.
 
@@ -173,7 +173,7 @@ The Guix manifest pins Agda 2.7.0.1, Agda standard library 2.3, Mercury 22.01.4,
 
 ## Repository consistency note
 
-The current `.guix/ci.scm` still lists `Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda` in its `agda-safe-files` list even though that path is absent from the current `main` tree. This is a live CI configuration mismatch, so the wiki records it rather than silently treating the configured safe lane as fully current.
+The current `.guix/ci.scm` safe-file list is synchronized with the current canonical closed-loop modules.
 
 ## Legacy and generalized surfaces
 

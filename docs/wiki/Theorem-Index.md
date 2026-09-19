@@ -1,6 +1,6 @@
 # Theorem Index
 
-Last audited: 2026-09-19 against `main` at `d48e5cf6e3671f268440135f1acc32eeafb3d510`.
+Last audited: 2026-09-19 before the automated e-graph correction.
 
 ## A. Canonical theorem monolith
 
@@ -153,14 +153,14 @@ The current generated file is:
 
 `Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda`
 
-It has `{-# OPTIONS --safe #-}` and currently exposes four aliases generated from the shared semantic manifest:
+It has `{-# OPTIONS --safe #-}` and currently exposes four source-owned theorem projections generated from the shared semantic manifest:
 
 - `generatedSemanticDerived0` -> `canonicalStep-not-fixed`
 - `generatedSemanticDerived1` -> `clockAfter`
 - `generatedSemanticDerived2` -> `canonicalAperiodic`
 - `generatedSemanticDerived3` -> `canonicalNoCountedTwoCycle`
 
-These are generated semantic projections, not automatically promoted new theorems.
+These are source-owned semantic projections; the e-graph quotient count is recorded alongside them, and they are not automatically promoted into `TheoremsMonolith.agda`.
 
 The name "NovelLearnerTheorems" is retained for CI continuity, but the present generator does not synthesize a novel transformation grammar.
 

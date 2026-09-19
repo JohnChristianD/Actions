@@ -1,6 +1,6 @@
 # Verification Status
 
-Last audited: 2026-09-19 against `main` at `d48e5cf6e3671f268440135f1acc32eeafb3d510`.
+Last audited: 2026-09-19 before the automated e-graph correction.
 
 ## Current code head
 
@@ -45,7 +45,7 @@ The extractor reads:
 
 and derives theorem-like declarations plus source-level dependencies.
 
-The generator then filters composite declarations and writes the generated Agda aliases.
+The generator filters composite declarations, builds the source-derived e-graph, quotients associative proof plans, and writes the generated Agda aliases plus the quotient count.
 
 There is no current Mercury-side transformation grammar, observable registry, or symbolic theorem table.
 
@@ -53,7 +53,7 @@ There is no current Mercury-side transformation grammar, observable registry, or
 
 `Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda` is generated with `{-# OPTIONS --safe #-}`.
 
-The current artifact contains four aliases:
+The current artifact contains four source-owned theorem projections plus the e-graph quotient count:
 
 ```
 generatedSemanticDerived0 = canonicalStep-not-fixed
@@ -64,11 +64,12 @@ generatedSemanticDerived3 = canonicalNoCountedTwoCycle
 
 These are existing theorem declarations projected through the extracted semantic dependency mechanism. They are not automatically merged back into `TheoremsMonolith.agda`.
 
-The JSON report produced by the generator records:
+The JSON report records:
 
 ```
 symbolic_registry = false
 refl_as_composition = false
+egraph_associativity_quotient_count > 0
 proof_authority = "Agda --safe"
 ```
 
@@ -79,10 +80,10 @@ The filename/report term "Novel" is historical. The current source does not perf
 The current Guix driver executes:
 
 ```
-Mercury semantic discovery
+Mercury semantic extraction
+Mercury source-derived e-graph construction/quotient
 Mercury generic e-graph regression
-Mercury interpolated theorem e-graph regression
-generated-artifact proof-shape audit
+Mercury interpolated e-graph regression
 Agda --safe
 ```
 
@@ -96,24 +97,7 @@ There is no current "8 -> 4 candidate quotient" theorem-discovery claim in the e
 
 `.guix/ci.scm` regenerates the discovery artifact, audits it for the exact bare string `= refl`, and then runs `agda --safe` over the configured proof/test surface plus the generated module.
 
-Agda `--safe` is used as the proof authority. The relevant property is that safe mode disables postulates, unsafe OPTIONS pragmas, and `primTrustMe`, among other consistency-sensitive features. The repository's own scanner additionally rejects forbidden theorem/axiom markers in the configured proof files.
-
-## Current configuration mismatch
-
-The current `.guix/ci.scm` function `agda-safe-files` still names:
-
-`Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda`
-
-The path is absent from the current `main` tree.
-
-Therefore the configured Agda lane and the current source tree are not perfectly synchronized. This is a concrete CI configuration mismatch, not evidence that the missing module still exists.
-
-The current workflow file itself has four lanes:
-
-- Agda `--safe` connected theorem surface;
-- Mercury connected theorem and verifier lane;
-- Mercury semantic-discovery lane;
-- repository surface audit.
+Agda `--safe` is used as the proof authority. The Mercury e-graph is symbolic proof-plan normalization, not an independent proof checker. The repository's own scanner additionally rejects forbidden theorem/axiom markers in the configured proof files.
 
 ## Surface audit
 
