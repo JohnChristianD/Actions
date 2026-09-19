@@ -57,11 +57,19 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.sha }}
+      - name: Checkout repository with container Git
+        run: |
+          set -eu
+          test -x "$(command -v git)"
+          git --version
+          workspace="${GITHUB_WORKSPACE}"
+          mkdir -p "${workspace}"
+          git -C "${workspace}" init -q
+          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
+          git -C "${workspace}" remote add origin \
+            "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
+          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Run pinned Guix Agda lane
         env:
           CI_LANE: agda-safe
@@ -106,11 +114,19 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.sha }}
+      - name: Checkout repository with container Git
+        run: |
+          set -eu
+          test -x "$(command -v git)"
+          git --version
+          workspace="${GITHUB_WORKSPACE}"
+          mkdir -p "${workspace}"
+          git -C "${workspace}" init -q
+          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
+          git -C "${workspace}" remote add origin \
+            "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
+          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Run pinned Guix Mercury lane
         env:
           CI_LANE: mercury
@@ -155,11 +171,19 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.sha }}
+      - name: Checkout repository with container Git
+        run: |
+          set -eu
+          test -x "$(command -v git)"
+          git --version
+          workspace="${GITHUB_WORKSPACE}"
+          mkdir -p "${workspace}"
+          git -C "${workspace}" init -q
+          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
+          git -C "${workspace}" remote add origin \
+            "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
+          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Run pinned Mercury semantic e-graph discovery lane
         env:
           CI_LANE: discovery
@@ -209,11 +233,19 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.sha }}
+      - name: Checkout repository with container Git
+        run: |
+          set -eu
+          test -x "$(command -v git)"
+          git --version
+          workspace="${GITHUB_WORKSPACE}"
+          mkdir -p "${workspace}"
+          git -C "${workspace}" init -q
+          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
+          git -C "${workspace}" remote add origin \
+            "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
+          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Audit repository surface
         env:
           CI_LANE: surface
