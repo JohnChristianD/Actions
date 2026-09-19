@@ -1019,12 +1019,12 @@ continuousLeftInverse-injective :
   ∀ {s t} →
   observe s ≡ observe t →
   s ≡ t
-continuousLeftInverse-injective witness eq =
+continuousLeftInverse-injective witness {s} {t} eq =
   trans
-    (sym (leftInverse witness _))
+    (sym (leftInverse witness s))
     (trans
       (cong inverse eq)
-      (leftInverse witness _))
+      (leftInverse witness t))
 
 continuousLeftInverse-exactReadout-transfer :
   ∀ {State Feature Output : Set}
