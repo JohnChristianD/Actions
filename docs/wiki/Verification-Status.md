@@ -1,6 +1,6 @@
 # Verification Status
 
-Last audited: 2026-09-19 before the automated e-graph correction.
+Last audited: 2026-09-19 against `main` after the automated e-graph correction.
 
 ## Current code head
 
@@ -95,7 +95,7 @@ There is no current "8 -> 4 candidate quotient" theorem-discovery claim in the e
 
 ## Agda safe lane
 
-`.guix/ci.scm` regenerates the discovery artifact, audits it for the exact bare string `= refl`, and then runs `agda --safe` over the configured proof/test surface plus the generated module.
+`.guix/ci.scm` regenerates the source-derived semantic e-graph and then runs `agda --safe` over the configured proof/test surface plus the generated module.
 
 Agda `--safe` is used as the proof authority. The Mercury e-graph is symbolic proof-plan normalization, not an independent proof checker. The repository's own scanner additionally rejects forbidden theorem/axiom markers in the configured proof files.
 

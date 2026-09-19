@@ -1,6 +1,6 @@
 # Actions: Canonical Learner, Semantic Discovery, and Proof Environment
 
-Last audited: 2026-09-19 before the automated e-graph correction.
+Last audited: 2026-09-19 against `main` after the automated e-graph correction.
 
 Git currently reports no combined status entries for this head, so the wiki does not label the current remote workflow run green.
 

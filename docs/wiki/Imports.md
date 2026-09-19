@@ -1,6 +1,6 @@
 # Imported Libraries and Verification Substrate
 
-Last audited: 2026-09-19 before the automated e-graph correction.
+Last audited: 2026-09-19 against `main` after the automated e-graph correction.
 
 ## Canonical learner
 

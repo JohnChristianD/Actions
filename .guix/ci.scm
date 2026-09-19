@@ -26,11 +26,6 @@
       thunk
       (lambda () (chdir old)))))
 
-(define (read-file-string file)
-  (call-with-input-file
-      file
-    (lambda (port)
-      (get-string-all port))))
 
 (define (agda-safe-files)
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
@@ -89,8 +84,8 @@
 (define (run-discovery)
   ;; Extract executable learner/theorem declarations, then build and quotient
   ;; the generic e-graph from that source-derived dependency graph.
-  (run-automated-semantic-egraph))
   (run-automated-semantic-egraph)
+
 
 (define (git-files)
   (let ((port (open-pipe* OPEN_READ "git" "ls-files")))
