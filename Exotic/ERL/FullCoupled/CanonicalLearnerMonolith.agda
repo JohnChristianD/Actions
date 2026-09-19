@@ -254,17 +254,6 @@ finiteSignedRationalBias8 (finiteRational (suc s) n (suc d)) =
 qLog2Bias8 : Int8 → Int8
 qLog2Bias8 x = finiteSignedRationalBias8 (finiteQLog8 x)
 
-qLog2Bias8-law : ∀ x →
-  qLog2Bias8 x ≡
-  int8Neg
-    (int8OfNat
-      ((munchausenScale8 * numerator (finiteQLog8 x)) /
-       denominator (finiteQLog8 x)))
-qLog2Bias8-law zero8 = refl
-qLog2Bias8-law x with toℕ (code x)
-... | zero = refl
-... | suc n = refl
-
 negativeAlpha8 : Int8
 negativeAlpha8 = int8OfNat 255
 
