@@ -35,8 +35,9 @@
     "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"))
 
 (define (run-agda-safe)
-  ;; The Agda lane is deliberately proof-check-only.  Mercury discovery
-  ;; owns generation/e-graph work in its separate lane.
+  ;; The Agda lane is deliberately proof-check-only.  The theorem
+  ;; monolith is the only connected theorem source; Mercury only
+  ;; discovers and validates its dependency graph.
   (run! "Guix-installed Agda version"
         "agda" "--version")
   ;; CanonicalLearnerMonolith_test imports Data.Empty and other Agda
@@ -50,17 +51,14 @@
      (run! (string-append "Agda --safe " file)
            "agda" "--safe" file))
    (agda-safe-files))
-  (run! "Agda --safe generated novel learner theorem module"
-        "agda" "--safe"
-        "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda"))
 
 (define (run-automated-semantic-egraph)
   (in-directory ".ci/discovery"
     (lambda ()
-      (run! "build Mercury learner semantic theorem discovery"
-            "mmc" "--make" "novel_learner_theorem_discovery")
-      (run! "run Mercury learner semantic theorem discovery"
-            "./novel_learner_theorem_discovery")
+      (run! "build Mercury theorem-monolith e-graph sync"
+            "mmc" "--make" "theorem_monolith_egraph_sync")
+      (run! "run Mercury theorem-monolith e-graph sync"
+            "./theorem_monolith_egraph_sync")
       (run! "build Mercury generic e-graph regression"
             "mmc" "--make" "symbolic_egraph_test")
       (run! "run Mercury generic e-graph regression"
@@ -174,15 +172,28 @@
       (suffix? ".sty" file)
       (suffix? ".cls" file)
       (suffix? ".bib" file)
-      ;; Markdown is permitted only for the root README or the
-      ;; controlled repository-side wiki documentation tree.
+      ;; Markdown is permitted only for the root README.
       (and (or (suffix? ".md" file) (suffix? ".markdown" file))
            (not (string-suffix? "/README.md" file))
-           (not (string=? file "README.md"))
-           (not (string-prefix? "wiki/" file)))))
+           (not (string=? file "README.md")))))
    (git-files)))
 
+(define (run-single-theorem-source-audit)
+  (let ((monoliths
+         (filter
+          (lambda (file)
+            (string-suffix? "/Exotic/ERL/FullCoupled/TheoremsMonolith.agda" file))
+          (git-files))))
+    (if (and (= (length monoliths) 1)
+             (not (file-exists? "wiki"))
+             (not (file-exists? "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda")))
+        (format #t "single-theorem-source=TheoremsMonolith.agda; generated-Agda=absent; wiki=absent~%")
+        (begin
+          (format #t "ERROR: theorem surface is not single-file canonical: ~s~%" monoliths)
+          (exit 1)))))
+
 (define (run-surface-audit)
+  (run-single-theorem-source-audit)
   (let ((bad (bad-surface-files)))
     (if (null? bad)
         (format #t "surface=clean; noncanonical language/script files=absent~%")
