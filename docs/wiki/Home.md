@@ -2,7 +2,7 @@
 
 Last audited: 2026-09-19.
 
-Current code head: `7026de9010634edb22325d081a277ae6fc546969`.
+Current code head is tracked directly in Git; this branch is not declared CI-green until the new Mercury/Agda discovery lane completes.
 
 ## Single active theorem source
 
