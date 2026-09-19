@@ -50,11 +50,11 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
-            if [ -n "$latest" ] && [ -f "$latest" ]; then
-              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            builder_log="$(grep -o '/var/log/guix/drvs/[^[:space:]]*\\.gz' "$log" | tail -n 1)"
+            if [ -n "$builder_log" ] && [ -f "$builder_log" ]; then
+              details="$(gzip -cd "$builder_log" 2>/dev/null | tail -n 100)"
             else
-              details="$(tail -n 80 "$log")"
+              details="$(tail -n 100 "$log")"
             fi
             summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
@@ -98,11 +98,11 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
-            if [ -n "$latest" ] && [ -f "$latest" ]; then
-              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            builder_log="$(grep -o '/var/log/guix/drvs/[^[:space:]]*\\.gz' "$log" | tail -n 1)"
+            if [ -n "$builder_log" ] && [ -f "$builder_log" ]; then
+              details="$(gzip -cd "$builder_log" 2>/dev/null | tail -n 100)"
             else
-              details="$(tail -n 80 "$log")"
+              details="$(tail -n 100 "$log")"
             fi
             summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
@@ -146,11 +146,11 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
-            if [ -n "$latest" ] && [ -f "$latest" ]; then
-              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            builder_log="$(grep -o '/var/log/guix/drvs/[^[:space:]]*\\.gz' "$log" | tail -n 1)"
+            if [ -n "$builder_log" ] && [ -f "$builder_log" ]; then
+              details="$(gzip -cd "$builder_log" 2>/dev/null | tail -n 100)"
             else
-              details="$(tail -n 80 "$log")"
+              details="$(tail -n 100 "$log")"
             fi
             summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
@@ -199,11 +199,11 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
-            if [ -n "$latest" ] && [ -f "$latest" ]; then
-              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            builder_log="$(grep -o '/var/log/guix/drvs/[^[:space:]]*\\.gz' "$log" | tail -n 1)"
+            if [ -n "$builder_log" ] && [ -f "$builder_log" ]; then
+              details="$(gzip -cd "$builder_log" 2>/dev/null | tail -n 100)"
             else
-              details="$(tail -n 80 "$log")"
+              details="$(tail -n 100 "$log")"
             fi
             summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
