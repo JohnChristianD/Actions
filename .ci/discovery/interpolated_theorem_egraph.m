@@ -33,14 +33,14 @@ compose_laws([]) = atom("invalid-composition").
 compose_laws([A]) = law_term(A).
 compose_laws([A, B | Rest]) =
     compose_laws_acc(
-        app("compose", [law_term(A), law_term(B)]),
+        app("proof-compose", [law_term(A), law_term(B)]),
         Rest).
 
 :- func compose_laws_acc(expr, list(string)) = expr.
 compose_laws_acc(Acc, []) = Acc.
 compose_laws_acc(Acc, [Name | Rest]) =
     compose_laws_acc(
-        app("compose", [Acc, law_term(Name)]),
+        app("proof-compose", [Acc, law_term(Name)]),
         Rest).
 
 proof_plan(goal_novel_basis) =
@@ -111,7 +111,7 @@ goals = [
 :- pred plan_registry_valid(expr::in) is semidet.
 plan_registry_valid(app("law", [atom(Name)])) :-
     lookup_law(Name, _).
-plan_registry_valid(app("compose", [Left, Right])) :-
+plan_registry_valid(app("proof-compose", [Left, Right])) :-
     plan_registry_valid(Left),
     plan_registry_valid(Right),
     ( Left \= atom("invalid-composition") ),
@@ -132,7 +132,7 @@ registry_plans_valid([Plan | Plans]) :-
     registry_plans_valid(Plans).
 
 :- pred plan_has_real_composition(expr::in) is semidet.
-plan_has_real_composition(app("compose", [_, _])).
+plan_has_real_composition(app("proof-compose", [_, _])).
 plan_has_real_composition(app(_, Children)) :-
     list.member(Child, Children),
     plan_has_real_composition(Child).
@@ -170,8 +170,8 @@ add_goals([G | Gs], E0, E) :-
     egraph::out) is det.
 add_composition_associativity(E0, E) :-
     add_expr(
-        app("compose", [
-            app("compose", [
+        app("proof-compose", [
+            app("proof-compose", [
                 law_term("ring-+-assoc"),
                 law_term("ring-+-comm")
             ]),
@@ -179,9 +179,9 @@ add_composition_associativity(E0, E) :-
         ]),
         E0, Left, E1),
     add_expr(
-        app("compose", [
+        app("proof-compose", [
             law_term("ring-+-assoc"),
-            app("compose", [
+            app("proof-compose", [
                 law_term("ring-+-comm"),
                 law_term("ring-*-assoc")
             ])
