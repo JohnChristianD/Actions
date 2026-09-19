@@ -33,36 +33,22 @@ compose_expr_acc(Acc, [Id | Rest]) =
         app("proof-compose", [Acc, law_expr(Id)]),
         Rest).
 
-:- func right_compose_expr(list(string)) = expr.
-right_compose_expr([]) = atom("invalid-proof-compose").
-right_compose_expr([Id]) = law_expr(Id).
-right_compose_expr([A, B | Rest]) =
-    app("proof-compose", [
-        law_expr(A),
-        right_compose_expr([B | Rest])
-    ]).
-
 :- pred add_law(semantic_law::in,
     symbolic_egraph.egraph::in, symbolic_egraph.egraph::out) is det.
 add_law(Law, E0, E) :-
     Id = law_id(Law),
-    add_expr(law_expr(Id), E0, LawId, E1),
+    add_expr(law_expr(Id), E0, _, E1),
     (
         semantic_law.composite(Law) = yes
     ->
         Deps = semantic_law.dependencies(Law),
-        Left = compose_expr(Deps),
-        add_expr(Left, E1, ProofId, E2),
-        merge(LawId, ProofId, E2, E3),
-        (
-            list.length(Deps) >= 3
-        ->
-            Right = right_compose_expr(Deps),
-            add_expr(Right, E3, RightId, E4),
-            merge(ProofId, RightId, E4, E)
-        ;
-            E = E3
-        )
+        Plan = compose_expr(Deps),
+        add_expr(
+            app("derived-proof-plan", [
+                law_expr(Id),
+                Plan
+            ]),
+            E1, _, E)
     ;
         (
             semantic_law.reflexive(Law) = yes
