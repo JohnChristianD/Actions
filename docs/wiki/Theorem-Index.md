@@ -109,31 +109,32 @@ A literature check found extensive prior work combining attention with GRU/recur
 
 ## Learner theorem-discovery target
 
-Automated theorem discovery searches for modular identities of the learner itself, including involutions, equivariances, commuting diagrams, quotient-preserving transformations, and invariant-preserving perturbations.
+Automated theorem discovery searches for modular identities of the learner itself, including invariances, equivariances, commuting diagrams, quotient-preserving transformations, and related structural laws.
 
-A candidate must act on an actual learner carrier or learner-derived observable and must survive the Mercury novelty quotient before Agda checks it. Generic algebraic smoke tests are not learner theorems.
+A candidate must act on an actual learner carrier or learner-derived observable, survive the Mercury equivalence quotient, not already be represented in the canonical theorem source, and generate a compositional Agda proof rather than a bare reflexivity proof.
 
-The current raw basis is generated from two actual transformations:
+The current raw basis uses:
 
 - NormPair replacement;
-- period-4 clock replacement.
+- period-4 clock replacement;
 
-The current theorem relations are:
+crossed with the following observables:
 
-- Watkins-target invariance;
-- full-step equivariance;
-- iterate equivariance.
+- canonical count step;
+- canonical Q-log step;
+- canonical endogenous feedback;
+- canonical Watkins target.
 
-The Mercury equivalence quotient identifies iterate-equivariance candidates as consequences of full-step equivariance and emits only minimal representatives. A source-level guard then removes declarations already present in `TheoremsMonolith.agda`.
+Each observable also has an iterate candidate in the raw grammar. Mercury quotients those downstream forms into the one-step basis.
 
 The current emitted basis is:
 
-- Watkins target invariant under NormPair replacement;
-- Watkins target invariant under the period-4 clock replacement;
-- canonical full-step equivariant under NormPair replacement;
-- canonical full-step equivariant under the period-4 clock replacement.
+- `candidate_normReplacement_countStep_invariant`;
+- `candidate_normReplacement_qLogStep_invariant`;
+- `candidate_clockPlus4_endogenousFeedback_invariant`;
+- `candidate_clockPlus4_watkinsTarget_invariant`.
 
-These are discovery candidates, not canonical theorem names, until their generated Agda module passes the `--safe` gate.
+The generated proof module is `GeneratedNovelLearnerTheorems.agda`. Passing `agda --safe` is required before any candidate can be considered verified.
 
 ## Learner-local symbolic composition algebra
 
