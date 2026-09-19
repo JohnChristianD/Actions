@@ -99,8 +99,9 @@
            (not (string=? name ".git")))))))
 
 (define (git-files)
-  ;; The CI checkout is supplied by actions/checkout.  The pinned Guix
-  ;; environment therefore does not need to build Git just to audit files.
+  ;; The CI checkout is supplied by container-native Git before this
+  ;; pinned environment starts. The pure Guix profile therefore does not
+  ;; need to build Git just to audit files.
   (repository-files (getcwd)))
 
 (define (suffix? suffix file)
@@ -173,10 +174,12 @@
       (suffix? ".sty" file)
       (suffix? ".cls" file)
       (suffix? ".bib" file)
-      ;; Markdown is permitted only for a README.
+      ;; Markdown is permitted only for the root README or the
+      ;; controlled repository-side wiki documentation tree.
       (and (or (suffix? ".md" file) (suffix? ".markdown" file))
            (not (string-suffix? "/README.md" file))
-           (not (string=? file "README.md")))))
+           (not (string=? file "README.md"))
+           (not (string-prefix? "wiki/" file)))))
    (git-files)))
 
 (define (run-surface-audit)
