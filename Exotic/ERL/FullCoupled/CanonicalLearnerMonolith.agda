@@ -571,6 +571,23 @@ gruActionAssociativity f g h s = refl
 inputGRUAction : Int8 → GRUAction
 inputGRUAction x = gruAction (λ s → gruStep s x)
 
+record RecurrentNetwork (State Input : Set) : Set₁ where
+  constructor recurrentNetwork
+  field
+    runNetwork : State → Input → State
+open RecurrentNetwork public
+
+canonicalGRURecurrentNetwork : RecurrentNetwork GRUState Int8
+canonicalGRURecurrentNetwork =
+  recurrentNetwork gruStep
+
+canonicalGRUNetwork-law :
+  ∀ (s : GRUState) (x : Int8) →
+  runNetwork canonicalGRURecurrentNetwork s x
+  ≡
+  gruStep s x
+canonicalGRUNetwork-law s x = refl
+
 gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
   runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
