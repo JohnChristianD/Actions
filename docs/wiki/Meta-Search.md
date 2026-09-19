@@ -11,7 +11,7 @@ The search object is a theorem about the executable learner. The search procedur
 | Layer | Role |
 |---|---|
 | Agda | Executable learner semantics, exact finite evaluation, theorem checking, and final certificate gate |
-| Mercury | Typed theorem-program enumeration, novelty pruning, equivalence quotienting, and generated-candidate emission |
+| Mercury | Typed theorem-program enumeration, reusable equivalence quotienting, novelty pruning, and generated-candidate emission |
 | Guix/Guile | Reproducible orchestration and tool pinning |
 | Manual source | Learner parameters, imports, carriers, and formal assumptions remain explicit |
 
