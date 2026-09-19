@@ -47,6 +47,8 @@
 (define (agda-safe-files)
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+    "Exotic/ERL/FullCoupled/AlgebraLawRegistry.agda"
+    "Exotic/ERL/FullCoupled/AlgebraLawRegistry_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
     "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
