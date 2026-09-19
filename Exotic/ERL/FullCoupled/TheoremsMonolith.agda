@@ -1264,6 +1264,62 @@ continuousLeftInverse-exactReadout-transfer
   cong target (sym (leftInverse witness s))
 
 ------------------------------------------------------------------------
+-- Canonical Watkins exact AUP/UAP factorization through a continuous
+-- left-invertible observation.  The result is exact equality, not a
+-- metric approximation claim.
+------------------------------------------------------------------------
+
+canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse :
+  ∀ {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous) →
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState) →
+  C.canonicalWatkinsTarget K s ≡
+  C.canonicalWatkinsTarget K (inverse (observe s))
+canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse
+  observe inverse witness K s =
+  continuousLeftInverse-exactReadout-transfer
+    witness
+    (C.canonicalWatkinsTarget K)
+    s
+
+canonicalWatkinsTarget-boundedUniversalExactAUP :
+  ∀ {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous) →
+  ∀ (K : C.FullLearnerKernel)
+  (i : Fin bound) →
+  C.canonicalWatkinsTarget K (embed i) ≡
+  C.canonicalWatkinsTarget K (inverse (observe (embed i)))
+canonicalWatkinsTarget-boundedUniversalExactAUP
+  bound embed observe inverse witness K i =
+  canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse
+    observe
+    inverse
+    witness
+    K
+    (embed i)
+
+------------------------------------------------------------------------
 -- Bounded exact approximation/readout.
 --
 -- The domain is finite by construction: it is indexed by Fin bound.
