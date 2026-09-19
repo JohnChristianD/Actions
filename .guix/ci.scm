@@ -1,6 +1,7 @@
 ;; Guix-native CI driver.
-;; All repository orchestration is expressed in Guile.  The proof and
-;; verifier tools are supplied only by the pinned manifest below.
+;; Guix installation, daemon setup, and host bootstrap are delegated to the
+;; prepared GitHub Action. This file only selects and runs the repository lane
+;; inside the manifest-defined environment.
 
 (use-modules
  (ice-9 format)
@@ -9,9 +10,7 @@
  (srfi srfi-1)
  (srfi srfi-13))
 
-(define channels-file ".guix/channels.scm")
 (define manifest-file ".guix/manifest.scm")
-(define self-file ".guix/ci.scm")
 
 (define (run! label . argv)
   (format #t "==> ~a: ~s~%" label argv)
@@ -27,7 +26,6 @@
       thunk
       (lambda () (chdir old)))))
 
-
 (define (agda-safe-files)
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
@@ -35,14 +33,11 @@
     "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"))
 
 (define (run-agda-safe)
-  ;; The Agda lane is deliberately proof-check-only.  The theorem
-  ;; monolith is the only connected theorem source; Mercury only
-  ;; discovers and validates its dependency graph.
+  ;; The Agda lane is deliberately proof-check-only. The theorem monolith is
+  ;; the only connected theorem source; Mercury only discovers and validates
+  ;; its dependency graph.
   (run! "Guix-installed Agda version"
         "agda" "--version")
-  ;; CanonicalLearnerMonolith_test imports Data.Empty and other Agda
-  ;; standard-library modules, so this is the stdlib import smoke check
-  ;; under the actual Guix-installed Agda executable.
   (run! "Agda --safe stdlib import smoke"
         "agda" "--safe"
         "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda")
@@ -97,9 +92,8 @@
            (not (string=? name ".git")))))))
 
 (define (git-files)
-  ;; The CI checkout is supplied by container-native Git before this
-  ;; pinned environment starts. The pure Guix profile therefore does not
-  ;; need to build Git just to audit files.
+  ;; The GitHub checkout action supplies the source tree. The pure Guix profile
+  ;; therefore does not need to build Git just to audit repository files.
   (repository-files (getcwd)))
 
 (define (suffix? suffix file)
@@ -211,19 +205,10 @@
    (else (error (format #f "unknown CI_LANE: ~a" lane)))))
 
 (define lane (or (getenv "CI_LANE") "surface"))
-(define inside-pinned-env? (getenv "GUIX_ENVIRONMENT"))
 
-(if inside-pinned-env?
+(if (getenv "GUIX_ENVIRONMENT")
     (begin
-      (format #t "guix-pinned-environment=active~%")
+      (format #t "prepared-guix-action=active~%")
+      (format #t "guix-manifest=~a~%" manifest-file)
       (run-lane lane))
-    (begin
-      (format #t "guix-pinned-environment=entering~%")
-      (run! "enter pinned Guix environment"
-            "guix" "time-machine"
-            "-C" channels-file
-            "--"
-            "shell" "--pure"
-            "-m" manifest-file
-            "--"
-            "guile" self-file))))
+    (error "CI driver must run inside guix shell; prepared action owns Guix bootstrap"))
