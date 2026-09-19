@@ -57,25 +57,11 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Guile-native source checkout
-        run: |
-          set -eu
-          workspace="${GITHUB_WORKSPACE}"
-          repository="${GITHUB_REPOSITORY}"
-          sha="${GITHUB_SHA}"
-          ref="${GITHUB_REF}"
-          mkdir -p "${workspace}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" init -q
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote add origin \
-              "https://github.com/${repository}.git"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" fetch --depth=1 origin "${ref}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" checkout --detach "${sha}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
       - name: Run pinned Guix Agda lane
         env:
           CI_LANE: agda-safe
@@ -120,24 +106,11 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Guile-native source checkout
-        run: |
-          set -eu
-          workspace="${GITHUB_WORKSPACE}"
-          repository="${GITHUB_REPOSITORY}"
-          sha="${GITHUB_SHA}"
-          mkdir -p "${workspace}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" init -q
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote add origin \
-              "https://github.com/${repository}.git"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" fetch --depth=1 origin "${sha}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" checkout --detach "${sha}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
       - name: Run pinned Guix Mercury lane
         env:
           CI_LANE: mercury
@@ -182,24 +155,11 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Guile-native source checkout
-        run: |
-          set -eu
-          workspace="${GITHUB_WORKSPACE}"
-          repository="${GITHUB_REPOSITORY}"
-          sha="${GITHUB_SHA}"
-          mkdir -p "${workspace}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" init -q
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote add origin \
-              "https://github.com/${repository}.git"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" fetch --depth=1 origin "${sha}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" checkout --detach "${sha}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
       - name: Run pinned Mercury semantic e-graph discovery lane
         env:
           CI_LANE: discovery
@@ -249,24 +209,11 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
-      - name: Guile-native source checkout
-        run: |
-          set -eu
-          workspace="${GITHUB_WORKSPACE}"
-          repository="${GITHUB_REPOSITORY}"
-          sha="${GITHUB_SHA}"
-          mkdir -p "${workspace}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" init -q
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" remote add origin \
-              "https://github.com/${repository}.git"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" fetch --depth=1 origin "${sha}"
-          guix shell --pure git nss-certs -- \
-            git -C "${workspace}" checkout --detach "${sha}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
       - name: Audit repository surface
         env:
           CI_LANE: surface
