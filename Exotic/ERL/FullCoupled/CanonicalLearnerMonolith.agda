@@ -234,7 +234,7 @@ negativeFiniteQLog8 x = finiteQLog8 x
 negativeFiniteQLogLaw : ∀ x →
   negativeFiniteQLog8 x ≡ finiteRational 1 (numerator (finiteQLog8 x)) (denominator (finiteQLog8 x))
 negativeFiniteQLogLaw x with finiteQLog8 x
-... | finiteRational s n d = refl
+... | finiteRational 1 n d = refl
 
 munchausenScale8 : Nat
 munchausenScale8 = 16
