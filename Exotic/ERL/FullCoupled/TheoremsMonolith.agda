@@ -1054,7 +1054,11 @@ record CanonicalEndogenousMinimaxBellmanShapleyTheorem : Set₁ where
       (lower actual upper : Input → Value) →
       MonotoneMinimaxValue _≤_ value →
       PointwiseSandwich _≤_ lower actual upper →
-      (value lower ≤ value actual) × (value actual ≤ value upper)
+      MinimaxInclusionResult
+        _≤_
+        (value lower)
+        (value actual)
+        (value upper)
 
     endogenousFactorization :
       ∀ (K : C.FullLearnerKernel)
