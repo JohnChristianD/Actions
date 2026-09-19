@@ -233,8 +233,9 @@ negativeFiniteQLog8 x = finiteQLog8 x
 
 negativeFiniteQLogLaw : ∀ x →
   negativeFiniteQLog8 x ≡ finiteRational 1 (numerator (finiteQLog8 x)) (denominator (finiteQLog8 x))
-negativeFiniteQLogLaw x with finiteQLog8 x
-... | finiteRational 1 n d = refl
+negativeFiniteQLogLaw x with toℕ (code x)
+... | zero = refl
+... | suc n = refl
 
 munchausenScale8 : Nat
 munchausenScale8 = 16
@@ -255,9 +256,9 @@ qLog2Bias8-law : ∀ x →
       ((munchausenScale8 * numerator (finiteQLog8 x)) /
        denominator (finiteQLog8 x)))
 qLog2Bias8-law zero8 = refl
-qLog2Bias8-law x with finiteQLog8 x
-... | finiteRational 1 n zero = refl
-... | finiteRational 1 n (suc d) = refl
+qLog2Bias8-law x with toℕ (code x)
+... | zero = refl
+... | suc n = refl
 
 negativeAlpha8 : Int8
 negativeAlpha8 = int8OfNat 255
