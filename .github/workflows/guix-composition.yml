@@ -110,11 +110,13 @@ jobs:
         run: |
           set -euo pipefail
           guix shell --pure --preserve='^(MERCURY_COMMAND|PATH|HOME)$' -m .guix/manifest.scm -- guile .guix/ci.scm
-      - name: Verify forced endogenous theorem discovery artifact is present
+      - name: Verify theorem-monolith e-graph discovery report
         run: |
           set -euo pipefail
-          test -f ".ci/discovery/novel-learner-theorem-discovery.json"
-          printf '%s\n' "novel-learner-theorem-discovery-report=present"
+          test -f ".ci/discovery/theorem-monolith-egraph-sync.json"
+          grep -q '"forced_target_law"' ".ci/discovery/theorem-monolith-egraph-sync.json"
+          grep -q '"bounded_exact_approximation": "connected"' ".ci/discovery/theorem-monolith-egraph-sync.json"
+          printf '%s\n' "theorem-monolith-egraph-sync-report=present"
 
   surface:
     needs: [agda-safe]
