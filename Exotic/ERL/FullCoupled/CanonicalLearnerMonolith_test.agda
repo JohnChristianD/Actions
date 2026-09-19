@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith_test where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
-open import Data.Product using (_,_ )
+open import Data.Product using (_,_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 
 check-temperature : sparsemaxTemperature ≡ int8OfNat 16
@@ -87,7 +87,8 @@ check-clock = canonicalFullStep-clock
 
 check-count :
   ∀ (K : FullLearnerKernel) (s : FullLearnerState) →
-  totalCount (canonicalFullStep K s) ≡ suc (totalCount s)
+  totalCount (lcbCounts (canonicalFullStep K s)) ≡
+  suc (totalCount (lcbCounts s))
 check-count = canonicalTotalCountStep
 
 check-no-fixed-point :
