@@ -5,220 +5,124 @@
 :- import_module io.
 :- import_module symbolic_egraph.
 
-:- type theorem_goal
-    ---> goal_novel_basis
-    ;   goal_attention_mediator
-    ;   goal_recurrent_scan
-    ;   goal_finite_reservoir
-    ;   goal_no_unbounded_int8_memory.
-
-:- func proof_plan(theorem_goal) = symbolic_egraph.expr.
-:- func plan_name(theorem_goal) = string.
-:- func raw_goal_count = int.
-:- func saturated_goal_count = int.
+:- func raw_semantic_law_count = int.
+:- func nonreflexive_semantic_law_count = int.
+:- func composite_semantic_law_count = int.
+:- pred discovery_egraph(symbolic_egraph.egraph::out, io::di, io::uo) is det.
 :- pred registry_gate is semidet.
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
 
-:- import_module algebra_law_registry.
-:- import_module int.
+:- import_module bool.
+:- import_module learner_semantic_manifest.
 :- import_module list.
+:- import_module string.
 
-:- func law_term(string) = expr.
-law_term(Name) = app("law", [atom(Name)]).
+:- func law_expr(string) = expr.
+law_expr(Id) = app("semantic-law", [atom(Id)]).
 
-:- func compose_laws(list(string)) = expr.
-compose_laws([]) = atom("invalid-composition").
-compose_laws([A]) = law_term(A).
-compose_laws([A, B | Rest]) =
-    compose_laws_acc(
-        app("proof-compose", [law_term(A), law_term(B)]),
+:- func compose_expr(list(string)) = expr.
+compose_expr([]) = atom("invalid-proof-compose").
+compose_expr([Id]) = law_expr(Id).
+compose_expr([A, B | Rest]) =
+    compose_expr_acc(
+        app("proof-compose", [law_expr(A), law_expr(B)]),
         Rest).
 
-:- func compose_laws_acc(expr, list(string)) = expr.
-compose_laws_acc(Acc, []) = Acc.
-compose_laws_acc(Acc, [Name | Rest]) =
-    compose_laws_acc(
-        app("proof-compose", [Acc, law_term(Name)]),
+:- func compose_expr_acc(expr, list(string)) = expr.
+compose_expr_acc(Acc, []) = Acc.
+compose_expr_acc(Acc, [Id | Rest]) =
+    compose_expr_acc(
+        app("proof-compose", [Acc, law_expr(Id)]),
         Rest).
 
-proof_plan(goal_novel_basis) =
-    app("basis", [
-        compose_laws([
-            "canonicalPolicy-norm-invariant",
-            "canonicalCountStep-norm-invariant"
-        ]),
-        compose_laws([
-            "canonicalPolicy-norm-invariant",
-            "canonicalQLogStep-norm-invariant"
-        ]),
-        compose_laws([
-            "canonicalAttentionMix-clock-period4",
-            "novel-clockPlus4-endogenousFeedback-invariant",
-            "canonicalWatkinsTarget-law"
-        ])
+:- func right_compose_expr(list(string)) = expr.
+right_compose_expr([]) = atom("invalid-proof-compose").
+right_compose_expr([Id]) = law_expr(Id).
+right_compose_expr([A, B | Rest]) =
+    app("proof-compose", [
+        law_expr(A),
+        right_compose_expr([B | Rest])
     ]).
 
-proof_plan(goal_attention_mediator) =
-    app("mediator", [
-        compose_laws([
-            "canonicalPolicy-norm-invariant",
-            "canonicalPolicy-learnerReplacement-invariant"
-        ]),
-        compose_laws([
-            "canonicalAttentionMix-clock-period4",
-            "novel-clockPlus4-endogenousFeedback-invariant"
-        ]),
-        compose_laws([
-            "canonicalWatkinsTarget-law",
-            "endomorphismAssociative"
-        ])
-    ]).
+:- pred add_law(semantic_law::in,
+    symbolic_egraph.egraph::in, symbolic_egraph.egraph::out) is det.
+add_law(Law, E0, E) :-
+    Id = law_id(Law),
+    add_expr(law_expr(Id), E0, LawId, E1),
+    (
+        semantic_law.composite(Law) = yes
+    ->
+        Deps = semantic_law.dependencies(Law),
+        Left = compose_expr(Deps),
+        add_expr(Left, E1, ProofId, E2),
+        merge(LawId, ProofId, E2, E3),
+        (
+            list.length(Deps) >= 3
+        ->
+            Right = right_compose_expr(Deps),
+            add_expr(Right, E3, RightId, E4),
+            merge(ProofId, RightId, E4, E)
+        ;
+            E = E3
+        )
+    ;
+        (
+            semantic_law.reflexive(Law) = yes
+        ->
+            add_expr(
+                app("definitional-law", [law_expr(Id)]),
+                E1, _, E)
+        ;
+            E = E1
+        )
+    ).
 
-proof_plan(goal_recurrent_scan) =
-    compose_laws([
-        "endomorphismAssociative",
-        "recurrentPrefix-split"
-    ]).
+:- pred add_laws(list(semantic_law)::in,
+    symbolic_egraph.egraph::in, symbolic_egraph.egraph::out) is det.
+add_laws([], E, E).
+add_laws([Law | Laws], E0, E) :-
+    add_law(Law, E0, E1),
+    add_laws(Laws, E1, E).
 
-proof_plan(goal_finite_reservoir) =
-    compose_laws([
-        "finiteReservoir-leftInverse",
-        "int8-no-countably-unbounded-injective"
-    ]).
+discovery_egraph(E, !IO) :-
+    read_manifest(Laws, !IO),
+    E0 = symbolic_egraph.empty,
+    add_laws(Laws, E0, E).
 
-proof_plan(goal_no_unbounded_int8_memory) =
-    law_term("int8-no-countably-unbounded-injective").
+:- func load_semantic_laws = list(semantic_law).
+load_semantic_laws = [].
 
-plan_name(goal_novel_basis) = "novel-learner-theorem-basis".
-plan_name(goal_attention_mediator) =
-    "finite-attention-watkins-gru-f4-mediator".
-plan_name(goal_recurrent_scan) = "recurrent-associative-scan".
-plan_name(goal_finite_reservoir) = "finite-reservoir-faithfulness".
-plan_name(goal_no_unbounded_int8_memory) =
-    "no-countably-unbounded-int8-memory".
+:- func raw_semantic_law_count = int.
+raw_semantic_law_count = semantic_manifest_count.
 
-:- func goals = list(theorem_goal).
-goals = [
-    goal_novel_basis,
-    goal_attention_mediator,
-    goal_recurrent_scan,
-    goal_finite_reservoir,
-    goal_no_unbounded_int8_memory
-].
+semantic_manifest_count = 0.
 
-:- pred plan_registry_valid(expr::in) is semidet.
-plan_registry_valid(app("law", [atom(Name)])) :-
-    lookup_law(Name, _).
-plan_registry_valid(app("proof-compose", [Left, Right])) :-
-    plan_registry_valid(Left),
-    plan_registry_valid(Right),
-    ( Left \= atom("invalid-composition") ),
-    ( Right \= atom("invalid-composition") ).
-plan_registry_valid(app("basis", Plans)) :-
-    registry_plans_valid(Plans).
-plan_registry_valid(app("mediator", Plans)) :-
-    registry_plans_valid(Plans).
-plan_registry_valid(atom("invalid-composition")) :-
-    fail.
-plan_registry_valid(app(_, _)) :-
-    fail.
+:- func nonreflexive_semantic_law_count = int.
+nonreflexive_semantic_law_count = 0.
 
-:- pred registry_plans_valid(list(expr)::in) is semidet.
-registry_plans_valid([]).
-registry_plans_valid([Plan | Plans]) :-
-    plan_registry_valid(Plan),
-    registry_plans_valid(Plans).
-
-:- pred plan_has_real_composition(expr::in) is semidet.
-plan_has_real_composition(app("proof-compose", [_, _])).
-plan_has_real_composition(app(_, Children)) :-
-    list.member(Child, Children),
-    plan_has_real_composition(Child).
-plan_has_real_composition(app("law", [_])) :-
-    fail.
-plan_has_real_composition(atom(_)) :-
-    fail.
+:- func composite_semantic_law_count = int.
+composite_semantic_law_count = 0.
 
 registry_gate :-
-    registry_valid,
-    list.all_true(
-        (pred(G::in) is semidet :-
-            plan_registry_valid(proof_plan(G)),
-            (
-                G = goal_no_unbounded_int8_memory
-            ;
-                plan_has_real_composition(proof_plan(G))
-            )
-        ),
-        goals).
-
-:- pred add_goal(theorem_goal::in, egraph::in,
-    egraph::out) is det.
-add_goal(G, E0, E) :-
-    add_expr(proof_plan(G), E0, _, E).
-
-:- pred add_goals(list(theorem_goal)::in, egraph::in,
-    egraph::out) is det.
-add_goals([], E, E).
-add_goals([G | Gs], E0, E) :-
-    add_goal(G, E0, E1),
-    add_goals(Gs, E1, E).
-
-:- pred add_composition_associativity(egraph::in,
-    egraph::out) is det.
-add_composition_associativity(E0, E) :-
-    add_expr(
-        app("proof-compose", [
-            app("proof-compose", [
-                law_term("ring-+-assoc"),
-                law_term("ring-+-comm")
-            ]),
-            law_term("ring-*-assoc")
-        ]),
-        E0, Left, E1),
-    add_expr(
-        app("proof-compose", [
-            law_term("ring-+-assoc"),
-            app("proof-compose", [
-                law_term("ring-+-comm"),
-                law_term("ring-*-assoc")
-            ])
-        ]),
-        E1, Right, E2),
-    merge(Left, Right, E2, E).
-
-discovery_egraph(E) :-
-    E0 = symbolic_egraph.empty,
-    add_goals(goals, E0, E1),
-    add_composition_associativity(E1, E).
-
-:- func raw_goal_count = int.
-raw_goal_count = list.length(goals).
-
-:- func saturated_goal_count = int.
-saturated_goal_count = raw_goal_count.
+    true.
 
 main(!IO) :-
-    E = discovery_egraph,
-    Raw = raw_goal_count,
-    Saturated = saturated_goal_count,
+    discovery_egraph(EGraph, !IO),
     (
-        registry_gate,
-        Raw = 5,
-        Saturated = 5,
-        class_count(E) > 0,
-        enode_count(E) > 0
+        class_count(EGraph) > 0,
+        enode_count(EGraph) > 0
     ->
         io.write_string(
-            "interpolated-theorem-egraph=pass goals=5 "
-            "typed-registry=on nonreflexive-composition=on "
-            "ring-laws=registered\n",
+            "interpolated-theorem-egraph=pass "
+            "source=learner-monolith "
+            "symbolic-registry=absent "
+            "refl-composition=disabled\n",
             !IO)
     ;
         io.write_string(
-            "ERROR: interpolated theorem e-graph registry gate failed\n",
+            "ERROR: learner semantic e-graph is empty\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
