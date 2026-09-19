@@ -1325,6 +1325,179 @@ learner-minimax-inclusive K =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
+-- Literature bridge: left-invertibility, separation, and the dense
+-- discontinuity boundary used in universal reservoir approximation.
+------------------------------------------------------------------------
+
+record ContinuousPredicate (X Y : Set) : Set₁ where
+  constructor continuousPredicate
+  field
+    continuous : (X → Y) → Set
+open ContinuousPredicate public
+
+record ContinuousLeftInverse
+  (X Y : Set)
+  (observe : X → Y)
+  (inverseContinuous : (Y → X) → Set) : Set₁ where
+  constructor continuousLeftInverse
+  field
+    inverse : Y → X
+    leftInverse : ∀ x → inverse (observe x) ≡ x
+    continuousInverse : inverseContinuous inverse
+open ContinuousLeftInverse public
+
+continuous-left-inverse-separation :
+  ∀ {X Y : Set}
+  {observe : X → Y}
+  {C : (Y → X) → Set}
+  (W : ContinuousLeftInverse X Y observe C) →
+  ∀ {s t : X} →
+  observe s ≡ observe t →
+  s ≡ t
+continuous-left-inverse-separation W eq =
+  trans
+    (sym (leftInverse W _))
+    (trans
+      (cong (inverse W) eq)
+      (leftInverse W _))
+
+continuous-left-inverse-NSP :
+  ∀ {X Y : Set}
+  {observe : X → Y}
+  {C : (Y → X) → Set}
+  (W : ContinuousLeftInverse X Y observe C) →
+  ∀ {s t : X} →
+  s ≢ t →
+  observe s ≢ observe t
+continuous-left-inverse-NSP W apart eq =
+  apart (continuous-left-inverse-separation W eq)
+
+-- The cited reservoir result characterizes universality through
+-- separation/NSP and a uniformly continuous left inverse, under its
+-- metric/compactification hypotheses.  The present theorem proves the
+-- learner-specific obstruction to that condition without assuming the
+-- literature theorem.
+
+learner-no-continuous-left-inverse-through-finite-observation :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → Fin n)
+  (C : (Fin n → L.LearnerState A) → Set) →
+  ¬ ∃ λ W →
+      ContinuousLeftInverse
+        (L.LearnerState A)
+        (Fin n)
+        observe
+        C
+learner-no-continuous-left-inverse-through-finite-observation
+  K observe C (W , _) =
+  learnerState-no-finite-injective-encoding K observe
+    (λ {s} {t} eq →
+      continuous-left-inverse-separation W eq)
+
+------------------------------------------------------------------------
+-- Dense neighborhood separation is incompatible with everywhere-local
+-- constancy.  For a finite/discrete output carrier this is the exact
+-- elementary form of the discontinuity boundary.
+------------------------------------------------------------------------
+
+record NeighborhoodSystem (X : Set) : Set₁ where
+  constructor neighborhoodSystem
+  field
+    near : X → Nat → X → Set
+    selfNear : ∀ x r → near x r x
+open NeighborhoodSystem public
+
+locallyConstantAt :
+  ∀ {X Y : Set} →
+  NeighborhoodSystem X →
+  (X → Y) →
+  X →
+  Set
+locallyConstantAt N f x =
+  ∃ λ r →
+    ∀ y →
+    near N x r y →
+    f y ≡ f x
+
+denseNeighborhoodSeparation :
+  ∀ {X Y : Set} →
+  NeighborhoodSystem X →
+  (X → Y) →
+  Set
+denseNeighborhoodSeparation N f =
+  ∀ x r →
+  ∃ λ y →
+    near N x r y ×
+    f y ≢ f x
+
+everywhereLocallyConstant :
+  ∀ {X Y : Set} →
+  NeighborhoodSystem X →
+  (X → Y) →
+  Set
+everywhereLocallyConstant N f =
+  ∀ x → locallyConstantAt N f x
+
+dense-separation-not-everywhere-continuous :
+  ∀ {X Y : Set}
+  (N : NeighborhoodSystem X)
+  (f : X → Y) →
+  denseNeighborhoodSeparation N f →
+  ¬ everywhereLocallyConstant N f
+dense-separation-not-everywhere-continuous N f dense continuous =
+  let x = witnessAtZero dense
+  in contradictionFromNeighborhood x
+  where
+  witnessAtZero :
+    denseNeighborhoodSeparation N f →
+    X
+  witnessAtZero dense =
+    proj₁ (proj₂ (dense _ zero))
+
+  contradictionFromNeighborhood :
+    ∀ x →
+    ⊥
+  contradictionFromNeighborhood x with continuous x
+  ... | r , locallyConstant =
+    let witness = proj₂ (dense x r)
+    in (proj₁ witness) (
+         locallyConstant
+           (proj₁ witness))
+
+-- A continuous finite-valued reservoir readout therefore cannot itself
+-- possess dense neighborhood separation.  This is distinct from the
+-- literature's universal-reservoir result, where the reservoir feature
+-- map is allowed to be discontinuous and the left inverse may be
+-- uniformly continuous.
+
+continuous-finite-readout-no-dense-separation :
+  ∀ {X Y : Set}
+  (N : NeighborhoodSystem X)
+  (f : X → Y) →
+  everywhereLocallyConstant N f →
+  ¬ denseNeighborhoodSeparation N f
+continuous-finite-readout-no-dense-separation N f continuous dense =
+  dense-separation-not-everywhere-continuous N f
+    dense
+    continuous
+
+------------------------------------------------------------------------
+-- Applying the reservoir boundary to the actual learner:
+-- every finite readout from the full learner state fails NSP and hence
+-- cannot supply the left-invertibility side of the universal-reservoir
+-- equivalence.
+------------------------------------------------------------------------
+
+learner-no-finite-Negelastic-reservoir-condition :
+  ∀ {A n : Nat}
+  (K : L.LearnerKernel A)
+  (observe : L.LearnerState A → Fin n) →
+  ¬ (∀ {s t} → observe s ≡ observe t → s ≡ t)
+learner-no-finite-Negelastic-reservoir-condition =
+  learnerState-no-finite-injective-encoding
+
+------------------------------------------------------------------------
 -- Mercury JAxtar A/Q composition certificate.
 --
 -- The discovery graph is reified here as a typed transition path.
