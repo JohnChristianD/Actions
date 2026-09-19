@@ -1329,12 +1329,6 @@ learner-minimax-inclusive K =
 -- discontinuity boundary used in universal reservoir approximation.
 ------------------------------------------------------------------------
 
-record ContinuousPredicate (X Y : Set) : Set₁ where
-  constructor continuousPredicate
-  field
-    continuous : (X → Y) → Set
-open ContinuousPredicate public
-
 record ContinuousLeftInverse
   (X Y : Set)
   (observe : X → Y)
@@ -1484,8 +1478,8 @@ learner-no-finite-reservoir-left-inverse-condition :
   (K : L.LearnerKernel A)
   (observe : L.LearnerState A → Fin n) →
   ¬ (∀ {s t} → observe s ≡ observe t → s ≡ t)
-learner-no-finite-Negelastic-reservoir-condition =
-  learnerState-no-finite-injective-encoding
+learner-no-finite-reservoir-left-inverse-condition K observe =
+  learnerState-no-finite-injective-encoding K observe
 
 ------------------------------------------------------------------------
 -- Mercury JAxtar A/Q composition certificate.
