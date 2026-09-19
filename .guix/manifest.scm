@@ -11,10 +11,11 @@
 
 (define lane-packages
   (cond
+   ;; Guix remains the pure CI driver. The proof compiler and stdlib are
+   ;; supplied by the pinned official Agda setup action, avoiding a stale
+   ;; Guix Agda/stdlib realization before kernel checking.
    ((string=? lane "agda-safe")
     (list
-     agda
-     agda-stdlib
      (specification->package "guile@3.0")))
    ((or (string=? lane "mercury")
         (string=? lane "discovery"))
