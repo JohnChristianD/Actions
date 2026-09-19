@@ -47,7 +47,7 @@ jobs:
           agda_path="${{ steps.setup-agda.outputs.agda-path }}"
           "$agda_path" --version
           export AGDA_COMMAND="$agda_path"
-          guix shell --pure --preserve=AGDA_COMMAND --preserve=AGDA_DIR -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix shell --pure --preserve=CI_LANE --preserve=AGDA_COMMAND --preserve=AGDA_DIR -m .guix/manifest.scm -- guile .guix/ci.scm
 
   mercury:
     needs: [agda-safe]
@@ -78,7 +78,7 @@ jobs:
       - name: Run Mercury verifier lane
         run: |
           set -euo pipefail
-          guix shell --pure --preserve=MERCURY_COMMAND -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix shell --pure --preserve=CI_LANE --preserve=MERCURY_COMMAND -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
     needs: [agda-safe]
