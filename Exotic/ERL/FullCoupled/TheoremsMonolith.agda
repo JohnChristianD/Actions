@@ -132,10 +132,10 @@ canonicalClockAfter :
   C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
 canonicalClockAfter = C.clockAfter
 
-canonicalAperiodic :
+canonicalAperiodic-theorem :
   ∀ K s n →
   C.iterateCanonical K (suc n) s ≢ s
-canonicalAperiodic = C.canonicalAperiodic
+canonicalAperiodic-theorem = C.canonicalAperiodic
 
 canonicalNoNontrivialFiniteCycle :
   ∀ K s n →
