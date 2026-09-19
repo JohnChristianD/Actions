@@ -16,3 +16,28 @@ novelBasis-recurrentNetwork :
   ≡
   C.gruStep s x
 novelBasis-recurrentNetwork = C.canonicalGRUNetwork-law
+
+novelBasis-associativeScan :
+  RecurrentAssociativeScanTheorem C.GRUState C.Int8
+novelBasis-associativeScan =
+  canonicalGRU-recurrent-associative-scan-theorem
+
+novelBasis-prefixSplit :
+  ∀ (xs : Nat → C.Int8) (m n : Nat) (s : C.GRUState) →
+  C.recurrentPrefixState
+    C.canonicalGRURecurrentNetwork
+    xs
+    (m + n)
+    s
+  ≡
+  C.recurrentPrefixState
+    C.canonicalGRURecurrentNetwork
+    (C.shiftInput xs m)
+    n
+    (C.recurrentPrefixState
+      C.canonicalGRURecurrentNetwork
+      xs
+      m
+      s)
+novelBasis-prefixSplit =
+  C.canonicalGRU-recurrent-prefix-split
