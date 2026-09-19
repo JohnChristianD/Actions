@@ -1,0 +1,168 @@
+:- module theorem_monolith_egraph_sync.
+
+:- interface.
+
+:- import_module io.
+
+:- pred main(io::di, io::uo) is det.
+
+:- implementation.
+
+:- import_module io.
+:- import_module interpolated_theorem_egraph.
+:- import_module learner_semantic_extractor.
+:- import_module learner_semantic_manifest.
+:- import_module list.
+:- import_module string.
+:- import_module symbolic_egraph.
+
+:- func forced_target_law_id = string.
+forced_target_law_id =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
+
+:- func continuous_readout_dependency = string.
+continuous_readout_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#continuousLeftInverse-exactReadout-transfer".
+
+:- func bounded_exact_approximation_dependency = string.
+bounded_exact_approximation_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
+
+:- func infinite_state_orbit_dependency = string.
+infinite_state_orbit_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalInfiniteStateOrbitEmbedding".
+
+:- func pigeonhole_dependency = string.
+pigeonhole_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
+
+:- func no_global_uap_dependency = string.
+no_global_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
+
+:- pred forced_target_law(
+    list(semantic_law)::in, semantic_law::out) is semidet.
+forced_target_law(All, Target) :-
+    list.member(Target, All),
+    law_id(Target) = forced_target_law_id,
+    semantic_law.composite(Target) = yes,
+    list.member(
+        continuous_readout_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        bounded_exact_approximation_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        infinite_state_orbit_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        pigeonhole_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        no_global_uap_dependency,
+        semantic_law.dependencies(Target)).
+
+:- pred composite_laws(
+    list(semantic_law)::in, list(semantic_law)::out) is det.
+composite_laws(All, Composite) :-
+    list.filter(
+        (pred(L::in) is semidet :-
+            semantic_law.composite(L) = yes),
+        All,
+        Composite).
+
+:- pred write_report(
+    list(semantic_law)::in,
+    semantic_law::in,
+    list(semantic_law)::in,
+    int::in,
+    io::di, io::uo) is det.
+write_report(All, Target, Composite, QuotientCount, !IO) :-
+    NonReflexive = list.length(
+        list.filter(
+            (pred(L::in) is semidet :-
+                semantic_law.reflexive(L) = no),
+            All)),
+    io.open_output("theorem-monolith-egraph-sync.json", Result, !IO),
+    (
+        Result = ok(Stream),
+        io.write_string(Stream,
+            "{\n" ++
+            "  \"source_theorem_monolith\": \"../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda\",\n" ++
+            "  \"forced_target_law\": \"" ++ law_id(Target) ++ "\",\n" ++
+            "  \"single_agda_source\": true,\n" ++
+            "  \"generated_agda_module\": false,\n" ++
+            "  \"semantic_law_count\": " ++
+                string.int_to_string(list.length(All)) ++ ",\n" ++
+            "  \"nonreflexive_law_count\": " ++
+                string.int_to_string(NonReflexive) ++ ",\n" ++
+            "  \"composite_law_count\": " ++
+                string.int_to_string(list.length(Composite)) ++ ",\n" ++
+            "  \"egraph_associativity_quotient_count\": " ++
+                string.int_to_string(QuotientCount) ++ ",\n" ++
+            "  \"continuous_left_inverse_transfer\": \"connected\",\n" ++
+            "  \"bounded_exact_approximation\": \"connected\",\n" ++
+            "  \"infinite_state_orbit\": \"connected\",\n" ++
+            "  \"pigeonhole_contradiction\": \"connected\",\n" ++
+            "  \"global_int8_uap\": \"refuted\",\n" ++
+            "  \"proof_authority\": \"Agda --safe\"\n" ++
+            "}\n",
+            !IO),
+        io.close_output(Stream)
+    ;
+        Result = error(_),
+        io.write_string(
+            "ERROR: cannot write theorem monolith e-graph sync report\n",
+            !IO),
+        io.set_exit_status(1, !IO)
+    ).
+
+main(!IO) :-
+    extract_semantics(!IO),
+    read_manifest(All, !IO),
+    composite_laws(All, Composite),
+    (
+        forced_target_law(All, Target),
+        discovery_egraph_from_laws(All, EGraph, QuotientCount),
+        list.length(All) > 0,
+        list.length(Composite) > 0,
+        QuotientCount > 0,
+        class_count(EGraph) > 0,
+        enode_count(EGraph) > 0
+    ->
+        write_report(All, Target, Composite, QuotientCount, !IO),
+        io.write_string(
+            "mercury-theorem-monolith-egraph-sync=pass\n",
+            !IO),
+        io.write_string(
+            "forced-target-law=" ++ law_id(Target) ++ "\n",
+            !IO),
+        io.write_string(
+            "single-agda-source=TheoremsMonolith.agda\n",
+            !IO),
+        io.write_string(
+            "generated-agda-module=false\n",
+            !IO),
+        io.write_string(
+            "continuous-left-inverse=connected\n",
+            !IO),
+        io.write_string(
+            "bounded-exact-approximation=connected\n",
+            !IO),
+        io.write_string(
+            "infinite-state-orbit=connected\n",
+            !IO),
+        io.write_string(
+            "pigeonhole-global-int8-uap=refuted\n",
+            !IO),
+        io.write_string(
+            "egraph-associativity-quotient-count=" ++
+            string.int_to_string(QuotientCount) ++ "\n",
+            !IO)
+    ;
+        io.write_string(
+            "ERROR: theorem monolith target/dependencies or semantic e-graph gate failed\n",
+            !IO),
+        io.set_exit_status(1, !IO)
+    ).
+
