@@ -1799,7 +1799,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
             C.canonicalDiscount8
             (C.maxCriticValue8
               (C.critic (C.watkins (inverse (observe s))))))
-        (C.canonicalEndogenousFeedback K (inverse (observe s)))
+        (C.canonicalEndogenousFeedback K (inverse (observe s))))
 
     targetScan :
       ∀ (K : C.FullLearnerKernel)
