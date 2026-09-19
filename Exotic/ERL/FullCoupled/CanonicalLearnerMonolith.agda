@@ -588,6 +588,156 @@ canonicalGRUNetwork-law :
   gruStep s x
 canonicalGRUNetwork-law s x = refl
 
+record Endomorphism (State : Set) : Set₁ where
+  constructor endomorphism
+  field
+    applyEndomorphism : State → State
+open Endomorphism public
+
+identityEndomorphism : ∀ {State : Set} → Endomorphism State
+identityEndomorphism = endomorphism (λ s → s)
+
+composeEndomorphism :
+  ∀ {State : Set} →
+  Endomorphism State →
+  Endomorphism State →
+  Endomorphism State
+composeEndomorphism f g =
+  endomorphism
+    (λ s →
+      applyEndomorphism f
+        (applyEndomorphism g s))
+
+endomorphismAssociative :
+  ∀ {State : Set} (f g h : Endomorphism State) s →
+  applyEndomorphism
+    (composeEndomorphism
+      (composeEndomorphism f g)
+      h)
+    s
+  ≡
+  applyEndomorphism
+    (composeEndomorphism
+      f
+      (composeEndomorphism g h))
+    s
+endomorphismAssociative f g h s = refl
+
+recurrentInputEndomorphism :
+  ∀ {State Input : Set} →
+  RecurrentNetwork State Input →
+  Input →
+  Endomorphism State
+recurrentInputEndomorphism R x =
+  endomorphism (λ s → runNetwork R s x)
+
+recurrentPrefixState :
+  ∀ {State Input : Set} →
+  RecurrentNetwork State Input →
+  (Nat → Input) →
+  Nat →
+  State →
+  State
+recurrentPrefixState R xs zero s = s
+recurrentPrefixState R xs (suc n) s =
+  runNetwork R
+    (recurrentPrefixState R xs n s)
+    (xs n)
+
+recurrentPrefixEndomorphism :
+  ∀ {State Input : Set} →
+  RecurrentNetwork State Input →
+  (Nat → Input) →
+  Nat →
+  Endomorphism State
+recurrentPrefixEndomorphism R xs zero =
+  identityEndomorphism
+recurrentPrefixEndomorphism R xs (suc n) =
+  composeEndomorphism
+    (recurrentInputEndomorphism R (xs n))
+    (recurrentPrefixEndomorphism R xs n)
+
+recurrentPrefix-correct :
+  ∀ {State Input : Set}
+  (R : RecurrentNetwork State Input)
+  (xs : Nat → Input)
+  (n : Nat)
+  (s : State) →
+  applyEndomorphism
+    (recurrentPrefixEndomorphism R xs n)
+    s
+  ≡
+  recurrentPrefixState R xs n s
+recurrentPrefix-correct R xs zero s = refl
+recurrentPrefix-correct R xs (suc n) s =
+  cong
+    (λ z → runNetwork R z (xs n))
+    (recurrentPrefix-correct R xs n s)
+
+shiftInput :
+  ∀ {Input : Set} →
+  (Nat → Input) →
+  Nat →
+  Nat →
+  Input
+shiftInput xs m n = xs (m + n)
+
+recurrentPrefix-split :
+  ∀ {State Input : Set}
+  (R : RecurrentNetwork State Input)
+  (xs : Nat → Input)
+  (m n : Nat)
+  (s : State) →
+  recurrentPrefixState R xs (m + n) s
+  ≡
+  recurrentPrefixState
+    R
+    (shiftInput xs m)
+    n
+    (recurrentPrefixState R xs m s)
+recurrentPrefix-split R xs m zero s = refl
+recurrentPrefix-split R xs m (suc n) s =
+  cong
+    (λ z → runNetwork R z (xs (m + n)))
+    (recurrentPrefix-split R xs m n s)
+
+canonicalGRU-recurrent-prefix-correct :
+  ∀ (xs : Nat → Int8) (n : Nat) (s : GRUState) →
+  applyEndomorphism
+    (recurrentPrefixEndomorphism
+      canonicalGRURecurrentNetwork
+      xs
+      n)
+    s
+  ≡
+  recurrentPrefixState
+    canonicalGRURecurrentNetwork
+    xs
+    n
+    s
+canonicalGRU-recurrent-prefix-correct =
+  recurrentPrefix-correct canonicalGRURecurrentNetwork
+
+canonicalGRU-recurrent-prefix-split :
+  ∀ (xs : Nat → Int8) (m n : Nat) (s : GRUState) →
+  recurrentPrefixState
+    canonicalGRURecurrentNetwork
+    xs
+    (m + n)
+    s
+  ≡
+  recurrentPrefixState
+    canonicalGRURecurrentNetwork
+    (shiftInput xs m)
+    n
+    (recurrentPrefixState
+      canonicalGRURecurrentNetwork
+      xs
+      m
+      s)
+canonicalGRU-recurrent-prefix-split =
+  recurrentPrefix-split canonicalGRURecurrentNetwork
+
 gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
   runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
