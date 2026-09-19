@@ -57,6 +57,17 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
+      - name: Initialize container network service database
+        run: |
+          set -eu
+          touch /etc/services
+          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
+            printf '%s\n' 'http 80/tcp' >> /etc/services
+          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
+            printf '%s\n' 'https 443/tcp' >> /etc/services
+          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
+            printf '%s\n' 'git 9418/tcp' >> /etc/services
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -75,8 +86,7 @@ jobs:
         env:
           CI_LANE: agda-safe
         run: |
-          guix shell net-base nss-certs -- \
-            guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   mercury:
@@ -117,6 +127,17 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
+      - name: Initialize container network service database
+        run: |
+          set -eu
+          touch /etc/services
+          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
+            printf '%s\n' 'http 80/tcp' >> /etc/services
+          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
+            printf '%s\n' 'https 443/tcp' >> /etc/services
+          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
+            printf '%s\n' 'git 9418/tcp' >> /etc/services
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -135,8 +156,7 @@ jobs:
         env:
           CI_LANE: mercury
         run: |
-          guix shell net-base nss-certs -- \
-            guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
@@ -177,6 +197,17 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
+      - name: Initialize container network service database
+        run: |
+          set -eu
+          touch /etc/services
+          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
+            printf '%s\n' 'http 80/tcp' >> /etc/services
+          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
+            printf '%s\n' 'https 443/tcp' >> /etc/services
+          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
+            printf '%s\n' 'git 9418/tcp' >> /etc/services
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -195,8 +226,7 @@ jobs:
         env:
           CI_LANE: discovery
         run: |
-          guix shell net-base nss-certs -- \
-            guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
       - name: Verify forced endogenous theorem discovery artifact is present
         run: |
@@ -242,6 +272,17 @@ jobs:
             guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
           fi
 
+      - name: Initialize container network service database
+        run: |
+          set -eu
+          touch /etc/services
+          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
+            printf '%s\n' 'http 80/tcp' >> /etc/services
+          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
+            printf '%s\n' 'https 443/tcp' >> /etc/services
+          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
+            printf '%s\n' 'git 9418/tcp' >> /etc/services
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -260,6 +301,5 @@ jobs:
         env:
           CI_LANE: surface
         run: |
-          guix shell net-base nss-certs -- \
-            guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
