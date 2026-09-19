@@ -72,7 +72,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget ca-certificates
           cd /tmp
-          wget -q https://dl.mercurylang.org/deb/paul.asc
+          wget -q https://paul.bone.id.au/paul.asc
           sudo cp paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
           echo "deb http://dl.mercurylang.org/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/mercury.list >/dev/null
           sudo apt-get update
@@ -107,7 +107,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget ca-certificates
           cd /tmp
-          wget -q https://dl.mercurylang.org/deb/paul.asc
+          wget -q https://paul.bone.id.au/paul.asc
           sudo cp paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
           echo "deb http://dl.mercurylang.org/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/mercury.list >/dev/null
           sudo apt-get update
