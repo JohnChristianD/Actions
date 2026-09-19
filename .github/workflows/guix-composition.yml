@@ -109,7 +109,7 @@ jobs:
       - name: Run semantic e-graph discovery lane
         run: |
           set -euo pipefail
-          guix shell --pure --preserve=MERCURY_COMMAND -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix shell --pure --preserve=CI_LANE --preserve=MERCURY_COMMAND -m .guix/manifest.scm -- guile .guix/ci.scm
           test -s ".ci/discovery/theorem-monolith-egraph-sync.json"
       - name: Verify theorem-monolith e-graph discovery report
         run: |
