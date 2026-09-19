@@ -8,7 +8,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 -- part of the canonical proof surface.
 ------------------------------------------------------------------------
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym)
 open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Data.Empty using (⊥)
 open import Data.Fin using (toℕ)
@@ -882,3 +882,50 @@ finiteReservoirFaithfulnessTheorem
           (leftInverse t)))
     (λ target s →
       cong target (leftInverse s))
+
+
+------------------------------------------------------------------------
+-- E-graph completed theorem package.
+--
+-- Mercury selects a dependency-composed proof plan for each class.  This
+-- record collects the exact Agda theorem objects that the selected plans
+-- must close.  The e-graph is not a second proof checker: Agda remains the
+-- authority for the final terms.
+------------------------------------------------------------------------
+
+record EGraphCompletedTheoremBasis : Set₁ where
+  constructor eGraphCompletedTheoremBasis
+  field
+    novelBasis :
+      NovelLearnerTheoremBasis
+
+    attentionMediator :
+      FiniteAttentionWatkinsGRUF4MediatorTheorem
+
+    recurrentScan :
+      RecurrentAssociativeScanTheorem C.GRUState C.Int8
+
+    finiteReservoir :
+      FiniteReservoirFaithfulnessTheorem
+        C.Int8
+        C.Int8
+        (λ x → x)
+
+    noUnboundedInt8Memory :
+      ∀ (f : Nat → C.Int8) →
+      ¬ (∀ {m n} → f m ≡ f n → m ≡ n)
+
+open EGraphCompletedTheoremBasis public
+
+egraph-completed-theorem-basis :
+  EGraphCompletedTheoremBasis
+egraph-completed-theorem-basis =
+  eGraphCompletedTheoremBasis
+    novel-learner-theorem-basis
+    finite-attention-watkins-gru-f4-mediator-theorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    (finiteReservoirFaithfulnessTheorem
+      (λ x → x)
+      (λ x → x)
+      (λ x → refl))
+    C.int8-no-countably-unbounded-injective
