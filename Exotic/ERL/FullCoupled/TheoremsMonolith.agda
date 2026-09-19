@@ -970,6 +970,18 @@ canonicalOrbit-state-injective K s {m} {n} eq =
         (cong (λ t → C.clock t) eq)
         (C.clockAfter K n s)))
 
+-- The canonical Nat-indexed orbit is an explicit infinite-state embedding:
+-- equality of orbit states forces equality of the Nat indices.
+canonicalInfiniteStateOrbitEmbedding :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState) →
+  ∀ {m n : Nat} →
+  C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+  m ≡ n
+canonicalInfiniteStateOrbitEmbedding K s =
+  canonicalOrbit-state-injective K s
+
+
 canonicalPigeonholeNatClockContradiction :
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState)
@@ -1354,6 +1366,41 @@ boundedExactApproximation-on-boundedOrbit
     embed
     witness
 
+-- Named universal form: every output target factors exactly through the
+-- observation on the finite bound, provided the observation has a
+-- continuous left inverse. "Approximation" is exact equality here.
+boundedUniversalExactApproximation-through-continuousLeftInverse :
+  ∀ {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous) →
+  BoundedContinuousLeftInverseExactApproximationTheorem
+    C.FullLearnerState
+    Feature
+    observe
+    inverse
+    Continuous
+    bound
+    embed
+boundedUniversalExactApproximation-through-continuousLeftInverse
+  bound embed observe inverse witness =
+  boundedExactApproximation-on-boundedOrbit
+    bound
+    embed
+    observe
+    inverse
+    witness
+
+
 ------------------------------------------------------------------------
 -- Ring-state injectivity and dense-neighborhood separation interfaces.
 --
@@ -1546,6 +1593,13 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       (s : C.FullLearnerState) →
       RingStateInjectivityTheorem C.FullLearnerState
 
+    infiniteStateOrbit :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState) →
+      ∀ {m n : Nat} →
+      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+      m ≡ n
+
     denseNeighborhoodSeparation :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
@@ -1601,8 +1655,9 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
         witness
         target
         s)
-    boundedExactApproximation-on-boundedOrbit
+    boundedUniversalExactApproximation-through-continuousLeftInverse
     canonicalRingStateInjective
+    canonicalInfiniteStateOrbitEmbedding
     canonicalDenseNeighborhoodSeparation
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalInt8DiscreteUAPOnOrbit
