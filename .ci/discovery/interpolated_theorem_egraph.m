@@ -18,6 +18,10 @@
 forced_target_id =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
 
+:- func bounded_exact_approximation_dependency = string.
+bounded_exact_approximation_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
+
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
@@ -145,13 +149,17 @@ main(!IO) :-
         list.member(TargetLaw, Laws),
         law_id(TargetLaw) = forced_target_id,
         semantic_law.composite(TargetLaw) = yes,
-        list.length(semantic_law.dependencies(TargetLaw)) >= 3
+        list.length(semantic_law.dependencies(TargetLaw)) >= 3,
+        list.member(
+            bounded_exact_approximation_dependency,
+            semantic_law.dependencies(TargetLaw))
     ->
         io.write_string(
             "interpolated-theorem-egraph=pass "
             "source=learner-monolith "
             "semantic-registry=manifest "
             "proof-compose-associativity=quotiented "
+            "bounded-exact-approximation=connected "
             "dynamic-manifest=on\n",
             !IO)
     ;
