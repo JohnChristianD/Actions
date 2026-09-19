@@ -68,27 +68,6 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
-      - name: Prepare pinned Guix channel with container Git
-        run: |
-          set -eu
-          rm -rf /tmp/guix-channel
-          git config --global --add safe.directory /tmp/guix-channel
-          git clone --no-tags --single-branch --branch version-1.5.0 \
-            "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch origin \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          git -C /tmp/guix-channel checkout --detach \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          test "$(git -C /tmp/guix-channel rev-parse HEAD)" = \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          printf '%s\n' \
-            "(list" \
-            " (channel" \
-            "  (name 'guix)" \
-            "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
-            ")" > /tmp/channels-ci.scm
-
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -104,11 +83,14 @@ jobs:
           git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
           git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Run pinned Guix Agda lane
+        # The container image digest pins the Guix toolchain. Avoid channel-history
+        # bootstrap here; the previous time-machine update consumed the CI timeout.
         env:
           CI_LANE: agda-safe
         run: |
-          guix time-machine -C /tmp/channels-ci.scm -- \
-            shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix --version
+          guix describe -f channels
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   mercury:
     name: Guix / Mercury connected theorem and verifier lane
@@ -159,27 +141,6 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
-      - name: Prepare pinned Guix channel with container Git
-        run: |
-          set -eu
-          rm -rf /tmp/guix-channel
-          git config --global --add safe.directory /tmp/guix-channel
-          git clone --no-tags --single-branch --branch version-1.5.0 \
-            "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch origin \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          git -C /tmp/guix-channel checkout --detach \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          test "$(git -C /tmp/guix-channel rev-parse HEAD)" = \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          printf '%s\n' \
-            "(list" \
-            " (channel" \
-            "  (name 'guix)" \
-            "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
-            ")" > /tmp/channels-ci.scm
-
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -195,11 +156,14 @@ jobs:
           git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
           git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Run pinned Guix Mercury lane
+        # The container image digest pins the Guix toolchain. No channel-history
+        # bootstrap is needed for the manifest-based verifier lane.
         env:
           CI_LANE: mercury
         run: |
-          guix time-machine -C /tmp/channels-ci.scm -- \
-            shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix --version
+          guix describe -f channels
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
     name: Guix / Mercury semantic e-graph discovery
@@ -250,27 +214,6 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
-      - name: Prepare pinned Guix channel with container Git
-        run: |
-          set -eu
-          rm -rf /tmp/guix-channel
-          git config --global --add safe.directory /tmp/guix-channel
-          git clone --no-tags --single-branch --branch version-1.5.0 \
-            "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch origin \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          git -C /tmp/guix-channel checkout --detach \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          test "$(git -C /tmp/guix-channel rev-parse HEAD)" = \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          printf '%s\n' \
-            "(list" \
-            " (channel" \
-            "  (name 'guix)" \
-            "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
-            ")" > /tmp/channels-ci.scm
-
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -286,11 +229,14 @@ jobs:
           git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
           git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Run pinned Mercury semantic e-graph discovery lane
+        # The container image digest pins the Guix toolchain. No channel-history
+        # bootstrap is needed for the manifest-based discovery lane.
         env:
           CI_LANE: discovery
         run: |
-          guix time-machine -C /tmp/channels-ci.scm -- \
-            shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix --version
+          guix describe -f channels
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
       - name: Verify forced endogenous theorem discovery artifact is present
         run: |
           set -eu
@@ -346,27 +292,6 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
-      - name: Prepare pinned Guix channel with container Git
-        run: |
-          set -eu
-          rm -rf /tmp/guix-channel
-          git config --global --add safe.directory /tmp/guix-channel
-          git clone --no-tags --single-branch --branch version-1.5.0 \
-            "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch origin \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          git -C /tmp/guix-channel checkout --detach \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          test "$(git -C /tmp/guix-channel rev-parse HEAD)" = \
-            "ac03c482b1910a1672427beaea07ddcd1d652806"
-          printf '%s\n' \
-            "(list" \
-            " (channel" \
-            "  (name 'guix)" \
-            "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
-            ")" > /tmp/channels-ci.scm
-
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -382,8 +307,10 @@ jobs:
           git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
           git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
       - name: Audit repository surface
+        # The container image digest pins the Guix executable; no channel update is needed.
         env:
           CI_LANE: surface
         run: |
-          guix time-machine -C /tmp/channels-ci.scm -- \
-            shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          guix --version
+          guix describe -f channels
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
