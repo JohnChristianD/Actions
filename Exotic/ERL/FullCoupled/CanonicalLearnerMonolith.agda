@@ -1128,7 +1128,8 @@ canonicalAperiodic K s n cyc = plus-suc-not-self (clock s) n
   (trans (sym (clockAfter K (suc n) s)) (cong clock cyc))
 
 canonicalOrbitNonFixed : ∀ K s n → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
-canonicalOrbitNonFixed K s n = canonicalStep-not-fixed K (iterateCanonical K n s)
+canonicalOrbitNonFixed K s n eq =
+  canonicalStep-not-fixed K (iterateCanonical K n s) (sym eq)
 
 canonicalNoNontrivialFiniteCycle : ∀ K s n → iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
