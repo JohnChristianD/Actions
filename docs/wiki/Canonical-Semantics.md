@@ -1,148 +1,217 @@
 # Canonical Learner Semantics
 
-Last audited: 2026-09-19 against `d24c59101794ad3b6684889f709e46b5f0c10478`.
+Last audited: 2026-09-19 against \`main\` at \`d48e5cf6e3671f268440135f1acc32eeafb3d510\`.
 
-## 1. Bounded Int8 carrier
+## 1. Finite Int8 carrier
 
-`CanonicalLearnerMonolith.agda` represents `Int8` as a record containing:
+\`CanonicalLearnerMonolith.agda\` defines:
 
-`code : Fin 256`.
+\`\`\`
+record Int8 : Set where
+  constructor int8
+  field code : Fin 256
+\`\`\`
 
-The functions `int8OfNat`, `int8Add`, `int8Mul`, `int8Neg`, and `int8Sub` operate on the natural-number codes and reduce through the `Fin 256` boundary.
+The primitive arithmetic functions are \`int8OfNat\`, \`int8Add\`, \`int8Mul\`, \`int8Neg\`, and \`int8Sub\`. They operate through the finite \`Fin 256\` code and do not import a generic ring structure.
 
-The implementation is therefore a finite code carrier with modular-style arithmetic. The file does not import a generic ring structure and does not establish generic ring laws for this carrier.
+The repository proves concrete carrier lemmas such as \`int8Roundtrip\`, while deliberately avoiding a claim that the carrier is a generic abstract ring.
 
-## 2. Policy and learner control
+## 2. Critic, LCB, and sparsemax
 
-The policy surface is built from:
+The canonical policy surface consists of:
 
-- `CriticState`
-- `LCBCountState`
-- `LCBCountKernel`
-- `ActionScore`
-- `Sparsemax2Pair`
-- `fixedTemperatureSparsemax`
+- \`CriticState\`
+- \`LCBCountState\`
+- \`LCBCountKernel\`
+- \`ActionScore\`
+- \`Sparsemax2Pair\`
+- \`fixedTemperatureSparsemax\`
 
-The canonical temperature code is `16`.
+The fixed sparsemax temperature is the Int8 value 16.
 
-The learner also carries finite Q-log control and a finite rational representation:
+The policy is:
 
-`FiniteRational(sign, numerator, denominator)`.
+\`\`\`
+canonicalPolicy K s =
+  fixedTemperatureSparsemax
+    (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s)))
+\`\`\`
 
-The current theorem surface checks the Q-log representation law and several concrete sparsemax boundary cases.
+Attention state, NormPair, and optimizer state are separate from policy selection. The theorem monolith proves policy invariance under replacement of each of those state components through \`LearnerReplacement\`.
 
-## 3. Attention transform
+## 3. Finite Q-log control
 
-`LearnedSparsemaxAttention` supplies two Int8 parameters.
+\`FiniteRational\` is a concrete sign/numerator/denominator record.
 
-The canonical attention path is:
+The learner defines:
 
-`learnedSparsemaxAttentionWeights -> liftAttention -> walshHadamardApply -> phase4/walshRademacherRope4 -> readout`.
+- \`finiteQLog8\`
+- \`negativeFiniteQLog8\`
+- \`qLog2Bias8\`
+- \`SignedQLogControl\`
 
-The Walsh structure is finite and explicit. The repository checks the 4-row Int8 Gram laws through `H4GramLaw` and provides a `PowerOfFour` witness for the width 4 boundary.
+The canonical Q-log step is the negative finite Q-log of the selected policy weight. The Q-log bias then contributes directly to the canonical Watkins target.
 
-The phase system has four constructors and repeats after four steps.
+This is a finite exact representation surface. It is not a generic real logarithm implementation.
 
-This is an exact finite signed-permutation phase layer. It is not a sine/cosine numerical RoPE implementation.
+## 4. Learned sparsemax attention and Walsh phase
 
-## 4. GRU state and action composition
+\`LearnedSparsemaxAttention\` contains two Int8 parameters.
 
-`GRUState` contains hidden state, matrices, noise, and global control.
+The exact attention path is:
 
-`gruStep` changes the hidden coordinate while preserving the parameter-like coordinates.
+\`\`\`
+learnedSparsemaxAttentionWeights
+  -> liftAttention
+  -> walshHadamardApply
+  -> phase4 / walshRademacherRope4
+  -> walshRademacherRopeReadout
+\`\`\`
 
-The repository proves:
+The Walsh layer is a finite width-4 construction. The source proves the concrete Int8 Gram/orthogonality law through \`H4GramLaw\`.
 
-- `persistent-preservation`
-- `gruParameterPersistence`
-- `GRUEquivalent` reflexivity
-- `gruStep-respects-equivalence`
+\`Phase4\` has four constructors and \`phase4\` repeats modulo four. The rotary analogue is a finite signed-permutation layer, not a numerical sine/cosine RoPE implementation.
 
-It also defines `GRUAction`, `identityGRUAction`, and `composeGRUAction`. The action composition is associative by definitional equality in `gruActionAssociativity`. The identity action is present as an explicit component, while generic `Monoid` packaging is not imported.
+## 5. GRU and persistent quotient
 
-## 5. F4-like optimizer component
+\`GRUState\` contains:
 
-The current learner uses:
+- hidden state;
+- \`GRUMatrices\`;
+- \`GRUNoise\`;
+- \`GlobalControl\`.
 
-`F4IntUState = (thetaQ, rTheta, eQ, rE, rL)`
+\`gruStep\` updates the hidden coordinate while the parameter-like coordinates are preserved.
 
-with all fields carried as Int8.
+The source proves:
 
-The optimizer kernel separately contains:
+- \`persistent-preservation\`
+- \`gruParameterPersistence\`
+- \`GRUEquivalent\` reflexivity
+- \`gruStep-respects-equivalence\`
+- \`gruActionAssociativity\`
+- \`gruInputActionAssociativity\`
 
-`globalL2 : Int8`.
+\`GRUAction\` is explicit endomorphism composition. The source does not register a standard-library \`Monoid\` instance.
 
-This is distinct from the older wiki's six-state `CanonicalCoupledF4Learner.agda`. That older surface is no longer the current canonical learner.
+## 6. F4/L2 optimizer
 
-The current optimizer step is supplied through `f4ThetaStep` and connected to the canonical signal by `canonicalOptimizerStep-qMunchausen-L2`.
+\`F4IntUState\` contains:
 
-## 6. Full learner state
+\`\`\`
+thetaQ rTheta eQ rE rL : Int8
+\`\`\`
 
-`FullLearnerState` contains:
+\`F4IntUKernel\` contains \`globalL2 : Int8\`.
 
-1. clock
-2. Watkins state
-3. learned sparsemax attention
-4. GRU state
-5. optimizer state
-6. norm pair
-7. LCB counts
-8. signed Q-log control
-9. finite Q-log value
+The optimizer transition is \`f4ThetaStep\`. Its parameter law is \`f4ParameterInvariant\`.
 
-`canonicalFullStep`:
+The canonical optimizer consumes \`canonicalSignal\`, which is definitionally equal to \`canonicalWatkinsTarget\`. The current source therefore gives an explicit q-Munchausen/L2 signal path without introducing a separate actor implementation.
 
-1. increments the clock;
-2. updates Watkins state;
-3. updates the attention component;
-4. updates GRU state from canonical signal plus canonical attention mix;
-5. updates the optimizer from the canonical Watkins signal;
-6. preserves the norm pair;
-7. updates LCB counts;
-8. updates Q-log control and value.
+## 7. NormPair
 
-Projection lemmas `canonicalFullStep-*` expose these components directly.
+\`NormPair\` contains two Int8 fields:
 
-## 7. Closed-loop environment interface
+\`\`\`
+l1
+path
+\`\`\`
 
-`CanonicalClosedLoopInterface.agda` adds:
+with:
 
-`ClosedLoopEnv A S`
-`ClosedLoopAgent A`
-`EpisodeResult S`
-`EpisodeMetrics S`
-`BenchSpec A S`
+\`\`\`
+normPairWeight  = l1 + path
+normPairWeightPlusOne = 1 + normPairWeight
+\`\`\`
 
-The episode runner composes environment transitions and learner updates explicitly.
+The canonical full step preserves \`NormPair\`, hence also preserves \`normPairWeightPlusOne\).
 
-The metrics surface defines return, reference return, truncated regret, success, steps, and observed final state.
+## 8. Full learner state and transition
 
-This closes the type-level seam between a canonical learner state and a finite environment, without claiming external simulator equivalence.
+\`FullLearnerState\` has nine components:
 
-## 8. Exact finite environment variants
+1. \`clock : Nat\`
+2. \`watkins : WatkinsState\`
+3. \`attention : LearnedSparsemaxAttention\`
+4. \`gru : GRUState\`
+5. \`optimizer : F4IntUState\`
+6. \`norm : NormPair\`
+7. \`lcbCounts : LCBCountState\`
+8. \`qLogControl : SignedQLogControl\`
+9. \`qLogValue : FiniteRational\`
 
-`CanonicalFaithfulGameVariants.agda` gives exact boolean predicates for finite Toy Maze and FourRooms layouts.
+\`canonicalFullStep\` performs:
 
-These are useful as finite semantic ports because their cells and boundaries are represented directly in Agda.
+\`\`\`
+clock        := suc clock
+watkins      := canonicalWatkinsStep
+attention    := canonicalAttentionStep
+gru          := canonicalGRUStep
+optimizer    := canonicalOptimizerStep
+norm         := norm
+lcbCounts    := canonicalCountStep
+qLogControl  := canonicalQLogControlStep
+qLogValue    := canonicalQLogStep
+\`\`\`
 
-They should be read as exact finite contracts, not as empirical replicas of a larger simulator.
+The exact projection laws are named \`canonicalFullStep-clock\`, \`canonicalFullStep-watkins\`, \`canonicalFullStep-attention\`, \`canonicalFullStep-gru\`, \`canonicalFullStep-optimizer\`, \`canonicalFullStep-norm\`, \`canonicalFullStep-counts\`, \`canonicalFullStep-qLog\`, and \`canonicalFullStep-qLogControl\`.
 
-## 9. Structural algebra
+The transition has no fixed point because the clock advances. The same clock law yields aperiodicity and exclusion of nontrivial finite cycles for the canonical iteration.
 
-The current source uses several algebraic patterns without importing broad abstract-algebra interfaces:
+## 9. Endogenous feedback
 
-- bounded carrier: `Int8` over `Fin 256`;
-- products: tuples and nested products via `Data.Product`;
-- finite sums: Agda data declarations such as `Signed`, `HardSign8`, and `Phase4`;
-- records: kernels, states, certificates, and benchmark specifications;
-- endomorphism composition: `GRUAction`;
-- equality transport: `_≡_`, `cong`, `subst`, `trans`, `sym`;
-- finite witnesses: `Fin`, `PowerOfFour`, and direct finite-code equations;
-- impossible cases: `⊥`.
+The canonical endogenous feedback is:
 
-The repository does not presently import `Algebra.*` typeclass-like structures for the canonical learner. Its algebra is mostly concrete and definitionally checked.
+\`\`\`
+canonicalEndogenousFeedback K s =
+    canonicalAttentionMix K s
+  + canonicalGRUFeedback s
+  + canonicalF4L2Feedback K s
+  + canonicalQLogControlFeedback s
+  + canonicalQLogValueFeedback s
+\`\`\`
 
-For the standard library semantics, see:
-- [Agda standard library 2.3](https://agda.github.io/agda-stdlib/v2.3/)
-- [Agda User Manual 2.8.0](https://agda.readthedocs.io/en/v2.8.0/)
-- [Agda safe mode](https://agda.readthedocs.io/en/v2.8.0/language/safe-agda.html)
+The canonical Watkins target is:
+
+\`\`\`
+reward
++ qLogBias
++ discounted max critic
++ endogenous feedback
+\`\`\`
+
+The source makes this exact by definition, and \`canonicalWatkinsTarget-law\` exposes the decomposition propositionally.
+
+## 10. Recurrent scan abstraction
+
+The learner monolith defines:
+
+- \`RecurrentNetwork State Input\`
+- \`canonicalGRURecurrentNetwork\`
+- \`Endomorphism\`
+- \`recurrentPrefixState\`
+- \`recurrentPrefixEndomorphism\`
+- \`recurrentPrefix-correct\`
+- \`recurrentPrefix-split\`
+
+The split law is for arbitrary natural prefix lengths. It is an algebraic decomposition of the executable recurrence, not a second neural-network implementation.
+
+The same source proves \`int8-no-countably-unbounded-injective\`, which gives the finite-state obstruction to injectively encoding an unbounded natural clock in \`Int8\`.
+
+## 11. Finite closed-loop ports
+
+\`CanonicalGamePorts.agda\` defines exact finite \`StepResult\` carriers and port transitions.
+
+\`CanonicalFaithfulGameVariants.agda\` defines exact Toy Maze and FourRooms openness predicates.
+
+\`CanonicalClosedLoopBench.agda\` defines \`ClosedLoopSpec\`, \`ClosedLoopRun\`, and \`ClosedLoopMetrics\`, then runs explicit finite learner/environment loops.
+
+The result is exact finite formal composition. It is not an external simulator equivalence theorem.
+
+## 12. Generalized benchmark boundary
+
+\`GeneralFullCoupledLearnerMonolith.agda\` is separate from the canonical learner. It generalizes action cardinality through a parameter \`A\`, defines \`QVec A\`, \`CountVec A\`, sorting over \`Fin A\`, and a sparsemax policy over that generalized surface.
+
+\`GeneralClosedLoopBenchV2.agda\` consumes that generalized learner with benchmark-specific environments and ablations.
+
+This generalized surface should not be read back into the canonical theorem source as though it were the same learner.

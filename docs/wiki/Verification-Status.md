@@ -1,107 +1,146 @@
 # Verification Status
 
-Last audited: 2026-09-19.
+Last audited: 2026-09-19 against \`main\` at \`d48e5cf6e3671f268440135f1acc32eeafb3d510\`.
 
 ## Current code head
 
-Current code/proof source is moving with the novel-theorem-discovery refactor. The current branch is changing the discovery surface from TSTS composition search to basis discovery over unincluded learner laws.
+The current \`main\` ref points at:
 
-The current theorem entrypoint is:
+\`d48e5cf6e3671f268440135f1acc32eeafb3d510\`
 
-`Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
+GitHub's combined status query currently returns no status entries for that commit. Accordingly, this ledger records configuration and source state without labeling the remote run green.
 
-## Current workflow
+## Active theorem source
 
-The repository workflow is wired to execute the Mercury e-graph regression, novel-theorem generation, bare-`refl` artifact audit, and the full Agda `--safe` surface. The current head is:
+The canonical theorem entrypoint remains:
 
-`2f6eceef96ca7fc1572244edb64038512e2a00bd`
+\`Exotic/ERL/FullCoupled/TheoremsMonolith.agda\`
 
-The connected GitHub status surface currently reports no status entries for this direct-push head, so this ledger does not label the remote CI run green without an observed result. The workflow remains configured for push and manual dispatch verification.
+The canonical learner implementation is:
 
-## Discovery objective
+\`Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda\`
 
-The fixed objective is automated modular theorem discovery for the executable learner. The outer search mechanism may change implementation details, but it must not change the proof target.
+The generalized learner/theorem monoliths remain separate benchmark/general infrastructure.
 
-The current target is a typed symbolic theorem program composed from actual learner transformations. Mercury emits only novel, nontrivial basis candidates after equivalence quotienting and a source-level inclusion guard. Candidate programs are lowered to generated Agda propositions and checked with `agda --safe`.
+## Active discovery implementation
 
-The current raw grammar is deliberately small: NormPair replacement and the existing period-4 clock transformation, crossed with four actual learner observables: count step, Q-log step, endogenous feedback, and Watkins target. Iterate forms are quotient-pruned into the corresponding one-step basis.
+The current discovery source set is:
 
-Program search proposes learner-side transformations or theorem candidates. Agda is the authority that evaluates those candidates against the learner definitions and proves or rejects the resulting properties. There is no theorem obligation for the search procedure to prove its own self-consistency.
+\`\`\`
+.ci/discovery/learner_semantic_extractor.m
+.ci/discovery/learner_semantic_manifest.m
+.ci/discovery/novel_learner_theorem_discovery.m
+.ci/discovery/symbolic_egraph.m
+.ci/discovery/symbolic_egraph_test.m
+.ci/discovery/interpolated_theorem_egraph.m
+.ci/discovery/interpolated_theorem_egraph_test.m
+\`\`\`
 
-Involution discovery is therefore learner-specific: candidate transformations must act on an actual learner carrier, learner-derived observable, or learner quotient and be checked by the canonical Agda surface. The retired generic list/sign involution oracle did not satisfy that criterion and has been removed.
+The executable semantics are manifest-driven.
 
-## Active search architecture
+The extractor reads:
 
-The canonical discovery executable is:
+- \`CanonicalLearnerMonolith.agda\`
+- \`TheoremsMonolith.agda\`
 
-`.ci/discovery/novel_learner_theorem_discovery.m`
+and derives theorem-like declarations plus source-level dependencies.
 
-It emits:
+The generator then filters composite declarations and writes the generated Agda aliases.
 
-`.ci/discovery/novel-learner-theorem-discovery.json`
+There is no current Mercury-side transformation grammar, observable registry, or symbolic theorem table.
 
-and generates:
+## Current generated artifact
 
-`Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda`
+\`Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda\` is generated with \`{-# OPTIONS --safe #-}\`.
 
-The Mercury layer performs typed enumeration, a reusable equivalence-class/e-graph quotient, a proposition-signature novelty guard, and a bare-refl artifact audit. The regression gate checks the current 8-to-4 quotient before generation. Agda remains the acceptance boundary.
+The current artifact contains four aliases:
 
-Pruned from canonical discovery:
+\`\`\`
+generatedSemanticDerived0 = canonicalStep-not-fixed
+generatedSemanticDerived1 = clockAfter
+generatedSemanticDerived2 = canonicalAperiodic
+generatedSemanticDerived3 = canonicalNoCountedTwoCycle
+\`\`\`
 
-- finite policy-replacement compositions already covered by existing theorem algebra;
-- repeated preservation candidates already covered by existing iterate theorems;
-- the old TSTS composition generator;
-- generic list/sign involution testing;
-- JAxtar A*/Q*;
-- PVS;
-- evolutionary-population proposal layers.
+These are existing theorem declarations projected through the extracted semantic dependency mechanism. They are not automatically merged back into \`TheoremsMonolith.agda\`.
 
-The existing `FiniteTSTSEndogenousConnectedTheorem` remains in the verified theorem surface, but it is no longer a discovery objective.
+The JSON report produced by the generator records:
 
-Agda tests now include:
+\`\`\`
+symbolic_registry = false
+refl_as_composition = false
+proof_authority = "Agda --safe"
+\`\`\`
 
-`Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda`
+The filename/report term "Novel" is historical. The current source does not perform independent novel-law synthesis.
 
-## Verification status
+## Generic e-graph verification
 
-The new source-level gates are in place:
+The current Guix driver executes:
 
-- Mercury theorem e-graph regression: raw grammar 8 -> quotient 4;
-- proposition-signature novelty pruning;
-- generator-level bare-`refl` rejection;
-- Guix-level generated-artifact bare-`refl` audit;
-- Agda `--safe` compilation of the generated theorem module.
+\`\`\`
+Mercury semantic discovery
+Mercury generic e-graph regression
+Mercury interpolated theorem e-graph regression
+generated-artifact proof-shape audit
+Agda --safe
+\`\`\`
 
-Those are code gates, not claims that an unobserved remote workflow succeeded. The current GitHub status query has no entries for the current head.
+The generic e-graph regression exercises the implementation in \`.ci/discovery/symbolic_egraph.m\`.
 
-## Discovery theorem status
+The interpolated theorem e-graph consumes the same extracted semantic manifest. It checks that the generated symbolic graph is nonempty and source-derived. It does not establish learner theorem truth.
 
-The current novel basis generated by the new search surface is:
+There is no current "8 -> 4 candidate quotient" theorem-discovery claim in the executable source. That statement belonged to the retired hand-authored grammar architecture and has been removed from this ledger.
 
-- count-step invariance under NormPair replacement;
-- Q-log-step invariance under NormPair replacement;
-- endogenous-feedback invariance under the period-4 clock replacement;
-- Watkins-target invariance under the period-4 clock replacement.
+## Agda safe lane
 
-The generated proof terms are compositional and do not use bare reflexivity. The declarations are intentionally emitted into a generated Agda module rather than added automatically to the canonical theorem monolith.
+\`.guix/ci.scm\` regenerates the discovery artifact, audits it for the exact bare string \`= refl\`, and then runs \`agda --safe\` over the configured proof/test surface plus the generated module.
 
-The current source head has not yet been declared CI-green. The new Mercury and Agda lanes must execute successfully before these candidates are called verified.
+Agda \`--safe\` is used as the proof authority. The relevant property is that safe mode disables postulates, unsafe OPTIONS pragmas, and \`primTrustMe\`, among other consistency-sensitive features. The repository's own scanner additionally rejects forbidden theorem/axiom markers in the configured proof files.
 
-Historic standalone oracle gates remain removed from the active CI path. They were compatibility checks, not evidence of discovery effectiveness.
+## Current configuration mismatch
 
+The current \`.guix/ci.scm\` function \`agda-safe-files\` still names:
 
+\`Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda\`
 
-## Intrinsic learner theorem
+The path is absent from the current \`main\` tree.
 
-Added `FiniteAttentionWatkinsGRUF4MediatorTheorem` and
-`Attention_Mediator_Connected_test.agda`.
+Therefore the configured Agda lane and the current source tree are not perfectly synchronized. This is a concrete CI configuration mismatch, not evidence that the missing module still exists.
 
-This theorem is independent of TSTS, EA, program search, PVS, and JAxtar. It formalizes an attention-mediated separation:
+The current workflow file itself has four lanes:
 
-attention replacement -> policy/count/Q-log invariance -> endogenous Watkins target -> shared GRU and F4 consumption
+- Agda \`--safe\` connected theorem surface;
+- Mercury connected theorem and verifier lane;
+- Mercury semantic-discovery lane;
+- repository surface audit.
 
-while preserving NormPair and persistent-GRU observables through the canonical full step.
+## Surface audit
 
-The prior verification run for this addition was `35405803150`, which failed at the Guix-native checkout step before Agda or Mercury executed. The theorem and direct test therefore remain formally unverified by CI until the hardened workflow completes.
+The Guix \`surface\` lane rejects repository source files with the retired Haskell, Python, shell-script, JavaScript/TypeScript, JVM-language, Elm, and PureScript suffixes.
 
-No active theorem asserts self-consistency of the program/tree-search oracle. Search is an outer learner-candidate mechanism; formal consistency claims target the learner.
+This is a repository hygiene gate. It is not a theorem about the learner.
+
+## Legacy discovery removal
+
+The current tree no longer contains the older TSTS/JAxtar Mercury discovery modules or the Mercury oracle described by earlier wiki versions.
+
+The surviving TSTS theorem is an Agda theorem surface, not an active Mercury search target.
+
+## Verification interpretation
+
+The repository distinguishes four claims:
+
+\`\`\`
+source exists
+    !=
+Mercury generated a file
+    !=
+Agda accepts the generated proposition
+    !=
+remote CI status is green
+\`\`\`
+
+The first two are source/configuration facts visible in Git. The third requires an actual Agda run. The fourth requires an observed workflow result.
+
+For the current main head, only the source/configuration facts are directly established here. The remote status API currently exposes no status entries for the head.

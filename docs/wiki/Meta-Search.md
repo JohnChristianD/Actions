@@ -1,149 +1,194 @@
 # Meta-Search Architecture
 
-The canonical automated discovery layer is now novel learner-theorem basis search.
+Last audited: 2026-09-19 against \`main\` at \`d48e5cf6e3671f268440135f1acc32eeafb3d510\`.
 
-Mercury enumerates a small typed grammar of transformations and theorem relations, quotients candidates with an equivalence-class layer, removes candidates already represented in the canonical theorem source, and emits only the remaining nontrivial basis candidates. Agda then checks the generated propositions with --safe.
+## Semantic authority
 
-The search object is a theorem about the executable learner. The search procedure is not a theorem subject and does not attempt to prove its own self-consistency.
+The learner's semantic universe is defined by the Agda source, not by Mercury.
+
+The active semantic sources are:
+
+- \`Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda\`
+- \`Exotic/ERL/FullCoupled/TheoremsMonolith.agda\`
+
+Both use \`{-# OPTIONS --safe #-}\`.
+
+The Mercury layer consumes a mechanically extracted representation of those declarations. It does not define a separate hard-coded learner symbol registry.
 
 ## Roles
 
-| Layer | Role |
+| Layer | Actual role |
 |---|---|
-| Agda | Executable learner semantics, exact finite evaluation, theorem checking, and final certificate gate |
-| Mercury | Typed theorem-program enumeration, reusable equivalence quotienting, novelty pruning, and generated-candidate emission |
-| Guix/Guile | Reproducible orchestration and tool pinning |
-| Manual source | Learner parameters, imports, carriers, and formal assumptions remain explicit |
+| Agda learner monolith | Executable canonical learner semantics |
+| Agda theorem monolith | Canonical theorem/proof surface |
+| \`learner_semantic_extractor.m\` | Parses theorem-like declarations and derives source-level dependencies |
+| \`learner_semantic_manifest.m\` | Reads the generated typed manifest |
+| \`novel_learner_theorem_discovery.m\` | Selects extracted composite laws and generates Agda aliases |
+| \`symbolic_egraph.m\` | Generic expression/e-class data structure and congruence rebuild |
+| \`interpolated_theorem_egraph.m\` | Encodes manifest-derived law/dependency expressions for regression |
+| Guix/Guile | Reproducible build, orchestration, and lane selection |
+| Agda \`--safe\` | Acceptance authority for generated propositions |
 
-## Current discovery grammar
+## Current semantic pipeline
 
-The raw finite basis contains two actual learner transformations:
+The current pipeline is:
 
-- NormPair replacement.
-- Period-4 clock replacement.
+\`\`\`
+CanonicalLearnerMonolith.agda
+              +
+TheoremsMonolith.agda
+              |
+              v
+learner_semantic_extractor.m
+              |
+              v
+learner-semantic-laws.tsv
+              |
+              v
+learner_semantic_manifest.m
+              |
+              +-------------------------+
+              |                         |
+              v                         v
+novel_learner_theorem_discovery.m   interpolated_theorem_egraph.m
+              |                         |
+              v                         v
+GeneratedNovelLearnerTheorems.agda   generic symbolic regression
+              |
+              v
+agda --safe
+\`\`\`
 
-It considers observable-invariance relations over:
+The dependency relation is obtained from occurrences of declarations already present in the source files. Composite status is derived from having at least two extracted dependencies and not being a reflexive declaration.
 
-- NormPair replacement and the count-step observable;
-- NormPair replacement and the Q-log-step observable;
-- period-4 clock replacement and the endogenous-feedback observable;
-- period-4 clock replacement and the Watkins-target observable.
+## No hard-coded learner symbol registry
 
-Each relation also has an iterate form in the raw grammar. The Mercury equivalence quotient collapses those downstream forms into the one-step basis.
+There is deliberately no Mercury-side list defining the learner's semantic atoms, transformations, or observables.
 
-The current basis candidates are:
+In particular, the current \`novel_learner_theorem_discovery.m\` contains no equivalent of:
 
-- count-step is invariant under NormPair replacement;
-- Q-log-step is invariant under NormPair replacement;
-- endogenous feedback is invariant under the period-4 clock replacement;
-- Watkins target is invariant under the period-4 clock replacement.
+- a manually declared NormPair transformation grammar;
+- a manually declared period-4 transformation grammar;
+- a manually declared observable registry;
+- a hand-written theorem candidate table.
 
-The generated proofs are compositional. They use existing canonical laws through congruence/transitivity rather than emitting bare reflexivity proofs.
+Those descriptions belonged to an earlier discovery architecture and are no longer accurate.
 
-These are not already named in TheoremsMonolith.agda at discovery time. The Mercury generator also scans the canonical theorem source and removes any candidate whose declaration is already present.
+The generated discovery report itself records:
 
-## Discovery loop
+\`\`\`
+"search_semantics": "learner-monolith semantic dependency extraction"
+"symbolic_registry": false
+"refl_as_composition": false
+"proof_authority": "Agda --safe"
+\`\`\`
 
-The active loop is:
+The semantics of the search are therefore endogenous in the limited, precise sense implemented by the repository: the candidate/source names and dependency graph come from the learner/theorem source itself.
 
-    typed learner transformation
-        ->
-    typed theorem relation
-        ->
-    equivalence quotient
-        ->
-    source-level novelty guard
-        ->
-    generated Agda proposition
-        ->
-    agda --safe
-        ->
-    accepted or rejected theorem candidate
+## What the current "novel" executable actually does
 
-This separates novelty selection from proof acceptance. A candidate is not considered discovered merely because Mercury emitted it. It must pass the Agda proof gate.
+The filename \`novel_learner_theorem_discovery.m\` is retained for CI continuity, but its present algorithm is not theorem synthesis over an independently authored grammar.
 
-## Why use an equivalence quotient
+It:
 
-The discovery space contains many statements that are consequences of stronger statements. For example, if a transformation commutes with the one-step learner transition, the corresponding iterate-commutation family is structurally downstream.
+1. extracts declarations from the canonical learner and theorem source;
+2. reads the shared semantic manifest;
+3. filters declarations marked composite;
+4. emits named Agda aliases for those declarations;
+5. writes a report describing the extraction.
 
-The Mercury quotient therefore keeps a smaller basis rather than emitting every syntactic consequence. This is the current lightweight e-graph boundary: Mercury uses equivalence classes to quotient theorem programs before proof generation. A full equality-saturation e-graph is not justified yet because the current grammar is finite and the quotient rules are explicit.
+The current generated module contains four aliases:
 
-That makes Mercury the right host for the discovery layer without introducing another runtime or trust boundary. The semantic boundary remains the Agda learner. Mercury is only reducing redundant theorem search.
+- \`generatedSemanticDerived0 = canonicalStep-not-fixed\`
+- \`generatedSemanticDerived1 = clockAfter\`
+- \`generatedSemanticDerived2 = canonicalAperiodic\`
+- \`generatedSemanticDerived3 = canonicalNoCountedTwoCycle\`
 
-## What was pruned
+These are derived projections of existing theorem declarations. They are not automatically promoted into \`TheoremsMonolith.agda\`.
 
-The following were removed from the canonical discovery path because they were already included or were search machinery rather than novel learner theorems:
+## Generic symbolic e-graph boundary
 
-- Finite compositions of attention/NormPair/optimizer replacements already covered by canonicalPolicy-learnerReplacement-composition.
-- Repeated preservation forms already covered by the canonical iterate lemmas.
-- The old TSTS composition generator.
-- Generic list/sign involution testing.
-- PVS.
-- JAxtar A*/Q*.
-- Evolutionary-population proposal layers.
+\`.ci/discovery/symbolic_egraph.m\` is a generic ground e-graph implementation.
 
-The existing FiniteTSTSEndogenousConnectedTheorem remains a theorem surface, but it is no longer used as the semantic target of theorem discovery.
+Its expressions have the form:
 
-## What counts as a novel candidate
+\`\`\`
+atom(Symbol)
+app(Symbol, Children)
+\`\`\`
 
-A discovery candidate must:
+Its e-graph uses:
 
-1. act on an actual learner state or learner-derived observable;
-2. express a nontrivial relation such as invariance, equivariance, commuting, quotient preservation, or an analogous structural law;
-3. not already be represented in the canonical theorem source;
-4. survive the Mercury equivalence quotient;
-5. produce an Agda proposition accepted by agda --safe.
+- hash-consed enodes;
+- finite e-class IDs;
+- parent representatives;
+- congruence rebuild;
+- equivalence checks.
 
-External reward, search regret, or architecture labels are not theorem semantics.
+The symbols in this generic engine are merely strings carried by the expression representation. Semantic meaning comes from the manifest-derived construction that creates those expressions.
 
-## Search policy boundary
+\`interpolated_theorem_egraph.m\` maps an extracted law ID into:
 
-No particular search policy is canonical here.
+\`\`\`
+semantic-law(law-id)
+\`\`\`
 
-For the current finite grammar, enumeration plus quotienting is exact and auditable. A future larger grammar can replace enumeration with best-first, A*, CEGIS, or another search policy without changing the theorem language or proof gate.
+and a composite law's dependency list into nested:
 
-That is the intended division:
+\`\`\`
+proof-compose(...)
+\`\`\`
 
-    theorem grammar = semantic contract
-    Mercury        = candidate engine
-    search policy  = replaceable implementation detail
-    Agda           = authority
+It does not invent learner transformations, and it does not establish theorem truth. The test is a structural regression over the extracted manifest/e-graph construction.
 
-## Runtime boundary
+## Trust boundary
 
-No external JAX/TensorFlow search runtime is imported into the canonical source path. The current system keeps the formal learner small, finite, and directly checkable.
+The repository's trust order is:
 
-Mercury remains outside the Agda kernel trust boundary. Mercury proposes candidate propositions; Agda decides whether the generated theorem is actually proven.
+\`\`\`
+Agda learner definitions
+        >
+Agda theorem proofs
+        >
+generated Agda declarations
+        >
+Mercury extraction / symbolic bookkeeping
+        >
+Guix orchestration
+\`\`\`
 
-## Hash-consed e-graph
+Mercury can construct a graph or generated file that is wrong. The system is designed so that correctness of the Agda proposition is decided at the \`agda --safe\` boundary rather than by Mercury.
 
-The canonical discovery engine now uses `.ci/discovery/symbolic_egraph.m` for a real ground e-graph core:
+Agda \`--safe\` disables postulates, unsafe OPTIONS pragmas, and \`primTrustMe\` among other consistency-sensitive features. The repository uses that mode as the proof gate.
 
-- general enodes with arbitrary symbol names and child e-class IDs;
-- hash-consing through Mercury's versioned hash-table implementation;
-- union-find e-class representatives;
-- rebuild-based congruence closure after merges;
-- declarative ground rewrite equations;
-- cost-based representative extraction.
+## Generated-proof shape
 
-`learner_theorem_egraph.m` maps typed learner laws into these enodes and applies the theorem rewrite registry before minimal extraction. The generic regression test explicitly merges `a` and `b` and checks that `f(a)` and `f(b)` become equivalent by congruence closure.
+The Guix driver reads \`GeneratedNovelLearnerTheorems.agda\` and rejects the generated artifact if it contains the exact bare form \`= refl\`.
 
-This is now a reusable symbolic engine rather than an `eqvclass`-only quotient.
+This is a proof-shape policy for the generated discovery artifact. It is not a theorem that every canonical learner law must avoid definitional equality. The canonical learner and theorem source intentionally contain many legitimate \`refl\` proofs.
 
-## Exact recurrent scan theorem class
+## Retired discovery architecture
 
-`CanonicalLearnerMonolith.agda` now defines `Endomorphism`, exact recurrent-prefix endomorphisms, a `Nat`-indexed stream scan, and a split-prefix theorem. `TheoremsMonolith.agda` packages these as `RecurrentAssociativeScanTheorem`.
+The post-TSTS migration removed the old TSTS discovery generator. The current tree also no longer contains the older Mercury oracle/discovery files that the previous wiki documented, including:
 
-The theorem does not assume a bounded sequence length. For arbitrary natural `m` and `n`, the prefix of length `m + n` is exactly the `m` prefix followed by the `n`-length scan of the shifted stream.
+- \`.ci/discovery/tsts_endogenous_discovery.m\`
+- \`.ci/discovery/jaxtar_aq_discovery.m\`
+- \`.ci/discovery/clojure_involution_compat.m\`
+- \`oracle/mercury_oracle.m\`
 
-The canonical GRU instantiation is `canonicalGRU-recurrent-associative-scan-theorem`.
+Likewise, there is no current \`.ci/discovery/learner_theorem_egraph.m\`.
 
-A separate theorem, `int8-no-countably-unbounded-injective`, proves that an `Int8` state cannot injectively encode an unbounded `Nat` index. Thus the exact scan theorem solves the algebraic/parallel-evaluation side of long-horizon recurrence, while the finite-state theorem establishes the formal information-capacity limit for lossless unbounded history.
+The surviving TSTS theorem is still formalized in \`TheoremsMonolith.agda\`, but theorem existence and theorem-discovery tooling are separate concepts.
 
-## Reservoir-computing theorem correspondence
+## Endogenous boundary
 
-The repository also contains `FiniteReservoirFaithfulnessTheorem`, the exact finite/discrete proof object:
+The useful invariant for future discovery work is:
 
-`left inverse -> injective observation -> exact readout factorization`.
+\`\`\`
+semantic vocabulary = extracted from canonical learner/theorem declarations
+candidate representation = generated from extracted vocabulary
+symbolic quotienting = generic, source-driven
+proof acceptance = Agda --safe
+\`\`\`
 
-This is the discrete theorem boundary used for comparison with Sugiura et al.'s 2025 result on reservoir universality. The external theorem is stronger and analytically different: in its continuous setting, universality, neighborhood separation, and existence of a uniformly continuous inverse are equivalent. The repository does not claim that its finite Int8 learner satisfies those continuous assumptions.
+A future search implementation may change its enumeration, quotienting, or scheduling strategy, but it should not reintroduce an independently authored semantic alphabet that duplicates the learner's explicit Agda surface.

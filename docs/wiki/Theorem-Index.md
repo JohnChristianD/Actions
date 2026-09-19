@@ -1,183 +1,196 @@
 # Theorem Index
 
-Last audited: 2026-09-19.
+Last audited: 2026-09-19 against \`main\` at \`d48e5cf6e3671f268440135f1acc32eeafb3d510\`.
 
 ## A. Canonical theorem monolith
 
 Single active source:
 
-`Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
+\`Exotic/ERL/FullCoupled/TheoremsMonolith.agda\`
 
 ### Core carrier and policy laws
 
-- `int8Roundtrip`
-- `temperatureCodeLaw`
-- `temperatureTieLaw`
-- `temperaturePositiveUnitLaw`
-- `temperatureNegativeUnitLaw`
-- `negativeFiniteQLogLaw`
+- \`int8Roundtrip\`
+- \`temperatureCodeLaw\`
+- \`temperatureTieLaw\`
+- \`temperaturePositiveUnitLaw\`
+- \`temperatureNegativeUnitLaw\`
+- \`negativeFiniteQLogLaw\`
 
-### Walsh / phase laws
+### Walsh and phase laws
 
-- `walshHadamardOrthogonality4`
-- `canonicalWalshWidth-power4`
-- `phase4-period4`
-- `walshRademacherRope4-period4`
-- `canonicalAttentionMix-clock-period4`
+- \`walshHadamardOrthogonality4\`
+- \`canonicalWalshWidth-power4\`
+- \`phase4-period4\`
+- \`walshRademacherRope4-period4\`
+- \`canonicalAttentionMix-clock-period4\`
 
 ### GRU laws
 
-- `persistent-preservation`
-- `gruParameterPersistence`
-- `gruEquivalent-refl`
-- `gruStep-respects-equivalence`
-- `gruActionAssociativity`
-- `gruInputActionAssociativity`
+- \`persistent-preservation\`
+- \`gruParameterPersistence\`
+- \`gruEquivalent-refl\`
+- \`gruStep-respects-equivalence\`
+- \`gruActionAssociativity\`
+- \`gruInputActionAssociativity\`
 
 ### Full-step laws
 
-- `canonicalFullStep-clock`
-- `canonicalFullStep-watkins`
-- `canonicalFullStep-attention`
-- `canonicalFullStep-gru`
-- `canonicalFullStep-optimizer`
-- `canonicalFullStep-norm`
-- `canonicalFullStep-counts`
-- `canonicalFullStep-qLog`
-- `canonicalFullStep-qLogControl`
-- `canonicalTotalCountStep`
-- `canonicalNoFixedPoint`
+- \`canonicalFullStep-clock\`
+- \`canonicalFullStep-watkins\`
+- \`canonicalFullStep-attention\`
+- \`canonicalFullStep-gru\`
+- \`canonicalFullStep-optimizer\`
+- \`canonicalFullStep-norm\`
+- \`canonicalFullStep-counts\`
+- \`canonicalFullStep-qLog\`
+- \`canonicalFullStep-qLogControl\`
+- \`canonicalTotalCountStep\`
+- \`canonicalStep-not-fixed\`
+- \`canonicalNoFixedPoint\`
+- \`canonicalTotalCountIterate2\`
+- \`canonicalNoCountedTwoCycle\`
 
-### Connected composition
+### Canonical connected composition
 
-`CanonicalAQLoopTheorem` packages:
+\`CanonicalAQLoopTheorem\` packages:
 
 1. policy composition;
-2. learned-attention composition;
+2. learned attention composition;
 3. shared Watkins signal;
 4. GRU/attention coupling;
-5. F4 signal coupling;
+5. F4/L2 signal coupling;
 6. endogenous Watkins target composition.
 
-`CanonicalConnectedCompositionTheorem` packages:
+\`CanonicalConnectedCompositionTheorem\` packages:
 
 - the A/Q loop;
 - phase periodicity;
 - clock growth;
 - finite-cycle exclusion.
 
-The current cycle laws are:
+The associated cycle laws are:
 
-- `canonicalClockAfter`
-- `canonicalAperiodic`
-- `canonicalNoNontrivialFiniteCycle`
+- \`canonicalClockAfter\`
+- \`canonicalAperiodic\`
+- \`canonicalNoNontrivialFiniteCycle\`
 
+### Existing TSTS endogenous connected theorem
 
-### Existing TSTS endogenous connected composition
+The TSTS structure remains an existing canonical theorem surface:
 
-The TSTS connected theorem remains in the canonical theorem monolith as an existing theorem surface:
+- \`FiniteTSTSBranch\`
+- \`FiniteTSTSPosterior\`
+- \`finiteTSTSSelect\`
+- \`finiteTSTSSelectedProbe\`
+- \`finiteTSTSSelectedTarget\`
+- \`finiteTSTSReward\`
+- \`finiteTSTSPosteriorUpdate\`
+- \`finiteTSTSNextPosterior\`
+- \`finiteTSTSClosedStep\`
+- \`FiniteTSTSEndogenousConnectedTheorem\`
+- \`finite-tsts-endogenous-connected-theorem\`
 
-- `FiniteTSTSBranch`
-- `FiniteTSTSPosterior`
-- `finiteTSTSSelect`
-- `finiteTSTSSelectedProbe`
-- `finiteTSTSSelectedTarget`
-- `finiteTSTSReward`
-- `finiteTSTSNextPosterior`
-- `finiteTSTSClosedStep`
-- `FiniteTSTSEndogenousConnectedTheorem`
-- `finite-tsts-endogenous-connected-theorem`
+Its presence does not imply that TSTS is the semantic definition of the canonical learner. The discovery generator for TSTS has been removed.
 
-It is no longer the search target for theorem discovery. Discovery treats these laws as already included and searches for new learner-local structure around the remaining theorem surface.
+### Intrinsic attention-mediator theorem
 
-### Intrinsic endogenous attention-mediator theorem
+The active learner-local mediator theorem is:
 
-The search architecture is deliberately excluded from this theorem. The active learner theorem is:
+- \`FiniteAttentionWatkinsGRUF4MediatorTheorem\`
+- \`finite-attention-watkins-gru-f4-mediator-theorem\`
 
-- `FiniteAttentionWatkinsGRUF4MediatorTheorem`
-- `finite-attention-watkins-gru-f4-mediator-theorem`
+It formalizes the chain:
 
-It proves a structural separation-and-coupling result for arbitrary attention-state replacement:
+\`\`\`
+attention replacement
+    -> policy/count/Q-log invariance
+    -> endogenous Watkins expansion
+    -> shared GRU and F4 consumption
+\`\`\`
 
-`attention replacement -> unchanged policy/count/Q-log channels -> endogenous Watkins expression -> shared GRU/F4 consumption`
+and also carries NormPair/persistent-GRU preservation through the canonical full step.
 
-The theorem also preserves the NormPair observable and persistent-GRU quotient through the canonical full step.
+The theorem itself does not depend on a Mercury search procedure.
 
-This is independent of TSTS, evolutionary search, program search, PVS, and JAxtar.
+### Recurrent scan theorem class
 
-A literature check found extensive prior work combining attention with GRU/recurrent RL and prior Q-learning convergence theory, but the exact formal finite-state mediator theorem above was not found in the checked sources. This should therefore be described as a narrow repository-local novelty candidate, not as a definitive literature-priority claim.
+The theorem monolith packages:
 
-## Learner theorem-discovery target
+- \`RecurrentAssociativeScanTheorem\`
+- \`canonicalGRU-recurrent-associative-scan-theorem\`
 
-Automated theorem discovery searches for modular identities of the learner itself, including invariances, equivariances, commuting diagrams, quotient-preserving transformations, and related structural laws.
+over the generic \`RecurrentNetwork\` abstraction exposed by the learner monolith.
 
-A candidate must act on an actual learner carrier or learner-derived observable, survive the Mercury equivalence quotient, not already be represented in the canonical theorem source, and generate a compositional Agda proof rather than a bare reflexivity proof.
+The split theorem holds for arbitrary natural prefix lengths. It is a structural law of the executable recurrence.
 
-The current raw basis uses:
+### Finite reservoir boundary
 
-- NormPair replacement;
-- period-4 clock replacement;
+The theorem monolith also contains:
 
-crossed with the following observables:
+- \`FiniteReservoirFaithfulnessTheorem\`
+- \`finiteReservoirFaithfulnessTheorem\`
 
-- canonical count step;
-- canonical Q-log step;
-- canonical endogenous feedback;
-- canonical Watkins target.
+This is a finite/discrete faithfulness boundary based on an explicit left-inverse/injectivity/readout factorization. It is not a continuous reservoir-universality theorem.
 
-Each observable also has an iterate candidate in the raw grammar. Mercury quotients those downstream forms into the one-step basis.
+## B. Learner-local replacement algebra
 
-The current emitted basis is:
+The canonical theorem monolith defines:
 
-- `candidate_normReplacement_countStep_invariant`;
-- `candidate_normReplacement_qLogStep_invariant`;
-- `candidate_clockPlus4_endogenousFeedback_invariant`;
-- `candidate_clockPlus4_watkinsTarget_invariant`.
+- \`LearnerReplacement\`
+- \`applyLearnerReplacement\`
+- \`applyLearnerReplacements\`
+- \`canonicalPolicy-learnerReplacement-invariant\`
+- \`canonicalPolicy-learnerReplacement-composition\`
+- \`canonicalNormPair-afterFullStep-iterate\`
+- \`canonicalPersistentGRU-afterFullStep-iterate\`
 
-The reusable Mercury equivalence layer is `.ci/discovery/learner_theorem_egraph.m`. The generated proof module is `GeneratedNovelLearnerTheorems.agda`. Passing `agda --safe` and the Guix bare-refl artifact audit is required before any candidate can be considered verified.
+These are semantic laws over actual learner state replacement. They are part of the theorem source, not a Mercury-generated symbolic vocabulary.
 
-## Learner-local symbolic composition algebra
+## C. Generated semantic-discovery artifact
 
-The canonical learner still exports the existing composition laws:
+The current generated file is:
 
-- `LearnerReplacement`
-- `applyLearnerReplacement`
-- `applyLearnerReplacements`
-- `canonicalPolicy-learnerReplacement-invariant`
-- `canonicalPolicy-learnerReplacement-composition`
-- `canonicalNormPair-afterFullStep-iterate`
-- `canonicalPersistentGRU-afterFullStep-iterate`
+\`Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda\`
 
-Those laws are now inputs to novelty pruning rather than the discovery target itself.
+It has \`{-# OPTIONS --safe #-}\` and currently exposes four aliases generated from the shared semantic manifest:
 
-## B. Closed-loop faithfulness boundary
+- \`generatedSemanticDerived0\` -> \`canonicalStep-not-fixed\`
+- \`generatedSemanticDerived1\` -> \`clockAfter\`
+- \`generatedSemanticDerived2\` -> \`canonicalAperiodic\`
+- \`generatedSemanticDerived3\` -> \`canonicalNoCountedTwoCycle\`
 
-`CanonicalClosedLoopInterface.agda` supplies the environment/agent/episode contract.
+These are generated semantic projections, not automatically promoted new theorems.
 
-`CanonicalFaithfulGameVariants.agda` supplies exact finite Toy Maze and FourRooms predicates.
+The name "NovelLearnerTheorems" is retained for CI continuity, but the present generator does not synthesize a novel transformation grammar.
 
-These prove structural closure of the formal interfaces, not external behavioral equivalence.
+## D. Closed-loop formal boundary
 
-## C. Legacy/general benchmark substrate
+\`CanonicalGamePorts.agda\` defines exact finite transition ports.
 
-`GeneralFullCoupledLearnerMonolith.agda` and `GeneralClosedLoopBenchV2.agda` remain only where the benchmark surface explicitly depends on the older generalized learner.
+\`CanonicalFaithfulGameVariants.agda\` defines exact Toy Maze and FourRooms predicates.
 
-`MonolithCompositeReservoirTheorem.agda` was pruned because it duplicated a noncanonical conditional theorem surface and was not part of the active verification gate.
+\`CanonicalClosedLoopBench.agda\` defines \`ClosedLoopSpec\`, \`ClosedLoopRun\`, and \`ClosedLoopMetrics\` and composes those finite ports with the canonical learner.
 
-## D. Verification rule
+These are structural formal contracts, not external simulator equivalence theorems.
 
-A theorem counts as currently verified only after the module owning it passes the current Guix/Agda `--safe` lane.
+## E. Generalized / benchmark theorem surface
 
-A record field is not counted as a derived theorem merely because the record type names it.
+\`Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda\` is separate from the canonical theorem source.
 
-## Recurrent network abstraction
+It contains generalized theorem infrastructure and the Mercury-named structures:
 
-The canonical learner exposes a single generic recurrent class:
+- \`MercuryJaxtarAQCertificate\`
+- \`MercuryJaxtarAQEmergence\`
 
-`RecurrentNetwork State Input`
+Those names should not be read as ownership of the canonical theorem source.
 
-with transition:
+\`GeneralClosedLoopBenchV2.agda\` supplies generalized learner benchmark loops, environments, and ablation records.
 
-`runNetwork : State → Input → State`
+## F. Verification rule
 
-The canonical instance is `canonicalGRURecurrentNetwork`, defined directly from the existing `gruStep`. This is an interface-level abstraction over the executable recurrence, not a second neural-network implementation.
+A theorem is considered verified by repository policy only after its owning Agda module passes the current configured Guix \`agda --safe\` lane.
+
+A record field is not counted as a separate derived theorem merely because the field name appears inside a certificate record.
+
+The generated semantic artifact is likewise not considered accepted merely because Mercury emitted it.
