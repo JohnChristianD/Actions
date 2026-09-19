@@ -109,7 +109,7 @@ jobs:
       - name: Run semantic e-graph discovery lane
         run: |
           set -euo pipefail
-          guix shell --pure --preserve=MERCURY_COMMAND^(MERCURY_COMMAND|PATH|HOME)
+          guix shell --pure --preserve=MERCURY_COMMAND -m .guix/manifest.scm -- guile .guix/ci.scm
   surface:
     needs: [agda-safe]
     name: Guix / canonical source-policy surface
