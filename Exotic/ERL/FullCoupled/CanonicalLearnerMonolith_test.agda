@@ -4,6 +4,7 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith_test where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Empty using (⊥)
+open import Data.Product using (_,_ )
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith
 
 check-temperature : sparsemaxTemperature ≡ int8OfNat 16
@@ -11,17 +12,17 @@ check-temperature = temperatureCodeLaw
 
 check-tie :
   fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 0)) ≡
-  int8OfNat 64 , int8OfNat 64
+  (int8OfNat 64 , int8OfNat 64)
 check-tie = temperatureTieLaw
 
 check-positive-unit :
   fixedTemperatureSparsemax (actionScore (int8OfNat 1) (int8OfNat 0)) ≡
-  int8OfNat 68 , int8OfNat 60
+  (int8OfNat 68 , int8OfNat 60)
 check-positive-unit = temperaturePositiveUnitLaw
 
 check-negative-unit :
   fixedTemperatureSparsemax (actionScore (int8OfNat 0) (int8OfNat 1)) ≡
-  int8OfNat 60 , int8OfNat 68
+  (int8OfNat 60 , int8OfNat 68)
 check-negative-unit = temperatureNegativeUnitLaw
 
 check-qlog : ∀ x →
