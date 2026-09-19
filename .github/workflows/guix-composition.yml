@@ -66,19 +66,15 @@ jobs:
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
           pullAfterInstall: false
-      - name: Install Mercury 22.01.8
+      - name: Install Nix sidecar for Mercury
+        uses: cachix/install-nix-action@b85815f71a6de0ddee80b8a80a98d43f4bcc66c7
+      - name: Install Mercury 22.01.9 from pinned nixpkgs
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y wget ca-certificates
-          cd /tmp
-          wget -q https://paul.bone.id.au/paul.asc
-          sudo cp paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
-          echo "deb http://dl.mercurylang.org/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/mercury.list >/dev/null
-          sudo apt-get update
-          sudo apt-get install -y mercury-recommended
-          mmc --version
-          echo "MERCURY_COMMAND=$(command -v mmc)" >> "$GITHUB_ENV"
+          mercury_store="$(nix build --no-link --print-out-paths github:NixOS/nixpkgs/1613e472ad9077812d74c56ea0dfd442be2872ae#mercury)"
+          test -x "$mercury_store/bin/mmc"
+          "$mercury_store/bin/mmc" --version
+          echo "MERCURY_COMMAND=$mercury_store/bin/mmc" >> "$GITHUB_ENV"
       - name: Run Mercury verifier lane
         run: |
           set -euo pipefail
@@ -101,19 +97,15 @@ jobs:
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
           pullAfterInstall: false
-      - name: Install Mercury 22.01.8
+      - name: Install Nix sidecar for Mercury
+        uses: cachix/install-nix-action@b85815f71a6de0ddee80b8a80a98d43f4bcc66c7
+      - name: Install Mercury 22.01.9 from pinned nixpkgs
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y wget ca-certificates
-          cd /tmp
-          wget -q https://paul.bone.id.au/paul.asc
-          sudo cp paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
-          echo "deb http://dl.mercurylang.org/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/mercury.list >/dev/null
-          sudo apt-get update
-          sudo apt-get install -y mercury-recommended
-          mmc --version
-          echo "MERCURY_COMMAND=$(command -v mmc)" >> "$GITHUB_ENV"
+          mercury_store="$(nix build --no-link --print-out-paths github:NixOS/nixpkgs/1613e472ad9077812d74c56ea0dfd442be2872ae#mercury)"
+          test -x "$mercury_store/bin/mmc"
+          "$mercury_store/bin/mmc" --version
+          echo "MERCURY_COMMAND=$mercury_store/bin/mmc" >> "$GITHUB_ENV"
       - name: Run semantic e-graph discovery lane
         run: |
           set -euo pipefail
