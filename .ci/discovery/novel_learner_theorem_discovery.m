@@ -114,6 +114,8 @@ write_generated(Terms, !IO) :-
                 "open import Agda.Builtin.Nat using (suc)\n" ++
                 "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
                 "open import Exotic.ERL.FullCoupled.TheoremsMonolith\n\n" ++
+                "generatedNovelLearnerTheoremBasis : NovelLearnerTheoremBasis\n" ++
+                "generatedNovelLearnerTheoremBasis = novel-learner-theorem-basis\n\n" ++
                 Text,
                 !IO),
             io.close_output(Stream)
