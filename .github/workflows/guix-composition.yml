@@ -64,6 +64,7 @@ jobs:
           git --version
           workspace="${GITHUB_WORKSPACE}"
           mkdir -p "${workspace}"
+          git config --global --add safe.directory "${workspace}"
           git -C "${workspace}" init -q
           git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
           git -C "${workspace}" remote add origin \
@@ -121,6 +122,7 @@ jobs:
           git --version
           workspace="${GITHUB_WORKSPACE}"
           mkdir -p "${workspace}"
+          git config --global --add safe.directory "${workspace}"
           git -C "${workspace}" init -q
           git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
           git -C "${workspace}" remote add origin \
@@ -178,6 +180,7 @@ jobs:
           git --version
           workspace="${GITHUB_WORKSPACE}"
           mkdir -p "${workspace}"
+          git config --global --add safe.directory "${workspace}"
           git -C "${workspace}" init -q
           git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
           git -C "${workspace}" remote add origin \
@@ -240,6 +243,7 @@ jobs:
           git --version
           workspace="${GITHUB_WORKSPACE}"
           mkdir -p "${workspace}"
+          git config --global --add safe.directory "${workspace}"
           git -C "${workspace}" init -q
           git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
           git -C "${workspace}" remote add origin \
