@@ -28,7 +28,9 @@
 
 
 (define (agda-safe-files)
-  '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+  '("Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda"
+    "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda"
+    "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
