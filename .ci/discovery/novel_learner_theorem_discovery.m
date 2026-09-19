@@ -79,6 +79,48 @@ term_names([T | Ts], Stream, !IO) :-
     ),
     term_names(Ts, Stream, !IO).
 
+:- pred write_conjectures(list(theorem_term)::in, io::di, io::uo) is det.
+write_conjectures(Terms, !IO) :-
+    io.open_output("novel-learner-theorem-conjectures.json", Result, !IO),
+    (
+        Result = ok(Stream),
+        io.write_string(Stream,
+            "{\n" ++
+            "  \"conjectures\": [\n",
+            !IO),
+        write_conjecture_entries(Terms, Stream, !IO),
+        io.write_string(Stream,
+            "  ],\n" ++
+            "  \"proof_authority\": \"Agda --safe\",\n" ++
+            "  \"status\": \"unproved candidates until accepted by Agda\"\n" ++
+            "}\n",
+            !IO),
+        io.close_output(Stream)
+    ;
+        Result = error(_),
+        io.write_string(
+            "ERROR: cannot write theorem conjecture manifest\n",
+            !IO),
+        io.set_exit_status(1, !IO)
+    ).
+
+:- pred write_conjecture_entries(list(theorem_term)::in,
+    io.text_output_stream::in, io::di, io::uo) is det.
+write_conjecture_entries([], _, !IO).
+write_conjecture_entries([T | Ts], Stream, !IO) :-
+    io.write_string(Stream,
+        "    { \"name\": \"" ++ candidate_name(T) ++
+        "\", \"signature\": \"" ++
+        candidate_signature(T) ++ "\" }",
+        !IO),
+    (
+        Ts = [] ->
+            io.write_string(Stream, "\n", !IO)
+    ;
+        io.write_string(Stream, ",\n", !IO)
+    ),
+    write_conjecture_entries(Ts, Stream, !IO).
+
 :- pred write_report(int::in, int::in, int::in,
     list(theorem_term)::in, io::di, io::uo) is det.
 write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
@@ -122,6 +164,7 @@ main(!IO) :-
         prune_included(Source, Quotiented, Novel),
         QuotientPruned = list.length(Raw) - list.length(Quotiented),
         SourcePruned = list.length(Quotiented) - list.length(Novel),
+        write_conjectures(Quotiented, !IO),
         write_generated(Novel, !IO),
         write_report(
             list.length(Raw),
