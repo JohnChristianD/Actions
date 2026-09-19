@@ -1538,6 +1538,99 @@ boundedUniversalExactUAP-postcompose
       (embed i))
 
 ------------------------------------------------------------------------
+-- Recurrent-prefix bounded exact UAP certificate.
+--
+-- This packages the four structural ingredients requested for the
+-- executable bounded-prefix result:
+-- recurrent depth/associative scan, dense-neighborhood separation,
+-- a continuous left inverse, and Nat-indexed composition injectivity.
+------------------------------------------------------------------------
+
+record CanonicalRecurrentBoundedExactUniversalApproximationTheorem
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState) : Set₁ where
+  constructor canonicalRecurrentBoundedExactUniversalApproximationTheorem
+  field
+    recurrentDepth :
+      RecurrentAssociativeScanTheorem C.GRUState C.Int8
+
+    continuousLeftInverse :
+      ContinuousLeftInverseTheorem
+        C.FullLearnerState
+        Feature
+        observe
+        inverse
+        Continuous
+
+    natCompositionInjective :
+      ∀ {m n : Nat} →
+      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+      m ≡ n
+
+    denseNeighborhoodSeparation :
+      DenseNeighborhoodSeparationTheorem
+        C.FullLearnerState
+        Feature
+        (λ n → C.iterateCanonical K n s)
+        observe
+
+    boundedUniversalExactApproximation :
+      ∀ {Output : Set} →
+      ∀ (bound : Nat) →
+      (target : C.FullLearnerState → Output) →
+      (i : Fin bound) →
+      target (C.iterateCanonical K (toℕ i) s) ≡
+      target
+        (inverse
+          (observe
+            (C.iterateCanonical K (toℕ i) s)))
+
+open CanonicalRecurrentBoundedExactUniversalApproximationTheorem public
+
+canonicalRecurrentBoundedExactUniversalApproximationTheorem :
+  ∀ {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous) →
+  CanonicalRecurrentBoundedExactUniversalApproximationTheorem
+    K
+    s
+    observe
+    inverse
+canonicalRecurrentBoundedExactUniversalApproximationTheorem
+  K s observe inverse witness =
+  canonicalRecurrentBoundedExactUniversalApproximationTheorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    witness
+    (canonicalInfiniteStateOrbitEmbedding K s)
+    (denseNeighborhoodSeparationTheorem
+      (λ {m} {n} eq →
+        canonicalOrbit-state-injective K s
+          (trans
+            (sym (leftInverse witness (C.iterateCanonical K m s)))
+            (trans
+              (cong inverse eq)
+              (leftInverse witness (C.iterateCanonical K n s))))))
+    (λ bound target i →
+      continuousLeftInverse-exactReadout-transfer
+        witness
+        target
+        (C.iterateCanonical K (toℕ i) s))
+
+------------------------------------------------------------------------
 -- Ring-state injectivity and dense-neighborhood separation interfaces.
 --
 -- These are explicit theorem contracts. The strict import boundary does

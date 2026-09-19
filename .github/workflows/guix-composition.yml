@@ -38,22 +38,15 @@ jobs:
       - name: Install prepared Guix action
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
-          pullAfterInstall: false
-      - name: Install Agda 2.8.0.2 and stdlib 2.4
-        id: setup-agda
-        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
-        with:
-          agda-version: '2.8.0.2'
-          agda-stdlib-version: '2.4'
-      - name: Run pinned Agda lane inside Guix
+          pullAfterInstall: true
+      - name: Run pinned Guix Agda lane
         run: |
           set -euo pipefail
-          agda_path="${{ steps.setup-agda.outputs.agda-path }}"
-          "$agda_path" --version
-          export AGDA_COMMAND="$agda_path"
+          guix --version
+          guix describe -f channels
           set +e
           log="$(mktemp)"
-          guix shell --pure --preserve='^(AGDA_COMMAND|AGDA_DIR|HOME)$' -m .guix/manifest.scm -- guile .guix/ci.scm >"$log" 2>&1
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm >"$log" 2>&1
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
