@@ -63,11 +63,7 @@ discovery_egraph = E4 :-
         E1,
         theorem_term(full_step_equivariant, clock_plus4),
         theorem_term(iterate_equivariant, clock_plus4)),
-    E3 = eqvclass.ensure_equivalence(
-        E2,
-        theorem_term(target_invariant, norm_replacement),
-        theorem_term(target_invariant, norm_replacement)),
-    E3 = E4.
+    E2 = E4.
 
 :- pred equivalent_to_prior(eqvclass.eqvclass(theorem_term)::in,
     list(theorem_term)::in, theorem_term::in) is semidet.
@@ -126,8 +122,8 @@ nat_string(N) = string.int_to_string(N).
 
 :- func clock_plus4_expr(string) = string.
 clock_plus4_expr(S) =
-    "replaceClock " ++ S ++
-    " (suc (suc (suc (suc (C.clock " ++ S ++ "))))))".
+    "replaceClock (" ++ S ++
+    ") (suc (suc (suc (suc (C.clock (" ++ S ++ "))))))".
 
 :- func render_candidate(theorem_term) = string.
 render_candidate(theorem_term(target_invariant, norm_replacement)) =
