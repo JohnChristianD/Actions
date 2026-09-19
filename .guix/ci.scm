@@ -160,12 +160,7 @@
       (suffix? ".html" file)
       (suffix? ".htm" file)
       (suffix? ".css" file)))
-   ;; README files are documentation and are intentionally outside the
-   ;; executable/source surface audit.
-   (filter
-    (lambda (file)
-      (not (string-prefix? "README" (basename file))))
-    (git-files))))
+   (git-files)))
 
 (define (run-surface-audit)
   (let ((bad (bad-surface-files)))
