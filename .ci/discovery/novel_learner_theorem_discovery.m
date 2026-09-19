@@ -111,7 +111,7 @@ write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
 main(!IO) :-
     Raw = raw_terms,
     EGraph = discovery_egraph,
-    quotient_terms(EGraph, Raw, [], Quotiented),
+    extract_minimal(EGraph, Raw, Quotiented),
     io.read_named_file_as_string(
         "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
         SourceResult,
