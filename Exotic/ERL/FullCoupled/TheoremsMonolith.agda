@@ -887,8 +887,10 @@ finiteReservoirFaithfulnessTheorem
 ------------------------------------------------------------------------
 -- Explicit equality-composition theorem.
 --
--- The e-graph operation named compose denotes theorem composition through
--- trans.  It is not a reflexive identity node.
+-- The e-graph proof-plan combinator is dependency composition.  Actual
+-- equality composition is represented separately by composeEqualityTheorem,
+-- whose proof term uses trans.  A reflexive identity is never used as the
+-- composition theorem itself.
 ------------------------------------------------------------------------
 
 record EqualityCompositionTheorem
