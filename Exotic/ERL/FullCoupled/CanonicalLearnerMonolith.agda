@@ -1120,7 +1120,7 @@ iterateCanonical K zero s = s
 iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
 
 clockAfter : ∀ K n s → clock (iterateCanonical K n s) ≡ clock s + n
-clockAfter K zero s = plus-zero (clock s)
+clockAfter K zero s = sym (plus-zero (clock s))
 clockAfter K (suc n) s = trans (cong suc (clockAfter K n s)) (sym (plus-suc (clock s) n))
 
 canonicalAperiodic : ∀ K s n → iterateCanonical K (suc n) s ≢ s
