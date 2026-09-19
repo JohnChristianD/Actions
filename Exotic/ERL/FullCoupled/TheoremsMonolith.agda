@@ -1069,7 +1069,7 @@ discreteExactUniversalUAP-to-leftInverse :
 discreteExactUniversalUAP-to-leftInverse universal =
   discreteLeftInverseWitness
     (readout universal (λ s → s))
-    (exactReadout universal (λ s → s))
+    (λ s → sym (exactReadout universal (λ t → t) s))
 
 record DiscreteExactUniversalUAPLeftInverseEquivalence
   (State Feature : Set)
