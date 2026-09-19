@@ -45,7 +45,7 @@ and generates:
 
 `Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda`
 
-The Mercury layer performs typed enumeration, a reusable equivalence-class/e-graph quotient, a proposition-signature novelty guard, and a bare-refl artifact audit. Agda remains the acceptance boundary.
+The Mercury layer performs typed enumeration, a reusable equivalence-class/e-graph quotient, a proposition-signature novelty guard, and a bare-refl artifact audit. The regression gate checks the current 8-to-4 quotient before generation. Agda remains the acceptance boundary.
 
 Pruned from canonical discovery:
 
