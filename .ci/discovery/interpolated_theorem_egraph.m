@@ -91,23 +91,6 @@ discovery_egraph(E, !IO) :-
     E0 = symbolic_egraph.empty,
     add_laws(Laws, E0, E).
 
-:- func load_semantic_laws = list(semantic_law).
-load_semantic_laws = [].
-
-:- func raw_semantic_law_count = int.
-raw_semantic_law_count = semantic_manifest_count.
-
-semantic_manifest_count = 0.
-
-:- func nonreflexive_semantic_law_count = int.
-nonreflexive_semantic_law_count = 0.
-
-:- func composite_semantic_law_count = int.
-composite_semantic_law_count = 0.
-
-registry_gate :-
-    true.
-
 main(!IO) :-
     discovery_egraph(EGraph, !IO),
     (
@@ -118,11 +101,11 @@ main(!IO) :-
             "interpolated-theorem-egraph=pass "
             "source=learner-monolith "
             "symbolic-registry=absent "
-            "refl-composition=disabled\n",
+            "refl-composition=disabled\\n",
             !IO)
     ;
         io.write_string(
-            "ERROR: learner semantic e-graph is empty\n",
+            "ERROR: learner semantic e-graph is empty\\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
