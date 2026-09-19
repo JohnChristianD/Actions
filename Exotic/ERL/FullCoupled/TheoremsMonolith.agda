@@ -449,6 +449,35 @@ finiteTSTSPosteriorUpdate-law K p d s with finiteTSTSSelectedBranch p
 ... | tstsF4L2Branch = refl
 ... | tstsGRUBranch = refl
 
+finiteTSTS-f4SelectedEndogenousExpansion :
+  ∀ K p d s →
+  finiteTSTSSelectedBranch p ≡ tstsF4L2Branch →
+  finiteTSTSSelectedTarget K p d s
+  ≡
+  C.int8Add
+    (C.int8Add
+      (C.int8Add
+        (C.canonicalReward8 K s)
+        (C.canonicalQLogBias K s))
+      (C.int8Mul
+        C.canonicalDiscount8
+        (C.maxCriticValue8 (C.critic (C.watkins s)))))
+    (C.int8Add
+      (C.canonicalAttentionMix K s)
+      (C.int8Add
+        (C.canonicalGRUFeedback s)
+        (C.int8Add
+          (C.int8Add
+            (C.int8Add
+              (C.thetaQ (C.optimizer s))
+              d)
+            (C.l2Correction
+              (C.globalL2 (C.optimizerKernel K))))
+          (C.int8Add
+            (C.canonicalQLogControlFeedback s)
+            (C.canonicalQLogValueFeedback s)))))
+finiteTSTS-f4SelectedEndogenousExpansion K p d s eq rewrite eq = refl
+
 record FiniteTSTSEndogenousConnectedTheorem : Set₁ where
   constructor finiteTSTSEndogenousConnectedTheorem
   field
@@ -542,7 +571,7 @@ finite-tsts-endogenous-connected-theorem =
     finiteTSTSPosteriorUpdate-law
     (λ K p d s → refl)
     (λ K p d s → refl)
-    (λ K p d s eq rewrite eq = refl)
+    finiteTSTS-f4SelectedEndogenousExpansion
     (λ K p d s →
       C.canonicalNormPairWeightPlusOne-preservation
         K
