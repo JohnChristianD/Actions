@@ -84,7 +84,7 @@ jobs:
             " (channel" \
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
             ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
@@ -173,7 +173,7 @@ jobs:
             " (channel" \
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
             ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
@@ -262,7 +262,7 @@ jobs:
             " (channel" \
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
             ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
@@ -356,7 +356,7 @@ jobs:
             " (channel" \
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
-            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\"))" \
             ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
