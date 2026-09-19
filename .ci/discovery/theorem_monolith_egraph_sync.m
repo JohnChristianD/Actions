@@ -28,6 +28,18 @@ continuous_readout_dependency =
 bounded_exact_approximation_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
 
+:- func bounded_uap_retraction_dependency = string.
+bounded_uap_retraction_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedUniversalExactUAP-retraction".
+
+:- func bounded_uap_decoder_dependency = string.
+bounded_uap_decoder_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedUniversalExactUAP-decoder-transport".
+
+:- func bounded_uap_postcompose_dependency = string.
+bounded_uap_postcompose_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedUniversalExactUAP-postcompose".
+
 :- func infinite_state_orbit_dependency = string.
 infinite_state_orbit_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalInfiniteStateOrbitEmbedding".
@@ -51,6 +63,15 @@ forced_target_law(All, Target) :-
         semantic_law.dependencies(Target)),
     list.member(
         bounded_exact_approximation_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        bounded_uap_retraction_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        bounded_uap_decoder_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        bounded_uap_postcompose_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         infinite_state_orbit_dependency,
