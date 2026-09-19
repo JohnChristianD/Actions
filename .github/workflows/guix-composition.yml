@@ -32,6 +32,15 @@ jobs:
       - name: Initialize Guix daemon
         run: |
           set -eu
+          # The pinned Guix container runs as UID 0 but does not always ship
+          # a passwd entry for that UID. Guix offload calls getpw(0), so make
+          # the root identity explicit before starting any Guix command.
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
+            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
+          fi
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
+            printf '%s\n' 'root:x:0:' >> /etc/group
+          fi
           groupadd --system guixbuild 2>/dev/null || true
           build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
           for i in $(seq -w 1 10); do
@@ -106,6 +115,15 @@ jobs:
       - name: Initialize Guix daemon
         run: |
           set -eu
+          # The pinned Guix container runs as UID 0 but does not always ship
+          # a passwd entry for that UID. Guix offload calls getpw(0), so make
+          # the root identity explicit before starting any Guix command.
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
+            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
+          fi
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
+            printf '%s\n' 'root:x:0:' >> /etc/group
+          fi
           groupadd --system guixbuild 2>/dev/null || true
           build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
           for i in $(seq -w 1 10); do
@@ -179,6 +197,15 @@ jobs:
       - name: Initialize Guix daemon
         run: |
           set -eu
+          # The pinned Guix container runs as UID 0 but does not always ship
+          # a passwd entry for that UID. Guix offload calls getpw(0), so make
+          # the root identity explicit before starting any Guix command.
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
+            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
+          fi
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
+            printf '%s\n' 'root:x:0:' >> /etc/group
+          fi
           groupadd --system guixbuild 2>/dev/null || true
           build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
           for i in $(seq -w 1 10); do
@@ -257,6 +284,15 @@ jobs:
       - name: Initialize Guix daemon
         run: |
           set -eu
+          # The pinned Guix container runs as UID 0 but does not always ship
+          # a passwd entry for that UID. Guix offload calls getpw(0), so make
+          # the root identity explicit before starting any Guix command.
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
+            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
+          fi
+          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
+            printf '%s\n' 'root:x:0:' >> /etc/group
+          fi
           groupadd --system guixbuild 2>/dev/null || true
           build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
           for i in $(seq -w 1 10); do
