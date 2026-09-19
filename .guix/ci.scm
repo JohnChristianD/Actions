@@ -5,6 +5,7 @@
 (use-modules
  (ice-9 format)
  (ice-9 rdelim)
+ (ice-9 regex)
  (srfi srfi-1)
  (srfi srfi-13))
 
@@ -25,6 +26,29 @@
       (lambda () (chdir directory))
       thunk
       (lambda () (chdir old)))))
+
+(define (read-file-string file)
+  (call-with-input-file
+      file
+    (lambda (port)
+      (let loop ((chunks '()))
+        (let ((line (read-line port)))
+          (if (eof-object? line)
+              (string-concatenate-reverse
+               (cons "" chunks))
+              (loop (cons (string-append line "\n") chunks))))))))
+
+(define (run-discovery-artifact-audit)
+  (let* ((generated
+          "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda")
+         (text (read-file-string generated)))
+    (if (string-match "^[[:space:]]*[^\n=]+=[[:space:]]*refl[[:space:]]*$" text)
+        (begin
+          (format #t
+                  "ERROR: generated discovery module contains a bare refl proof~%")
+          (exit 1))
+        (format #t
+                "discovery-proof-shape=nontrivial; bare-refl=absent~%"))))
 
 (define (agda-safe-files)
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
@@ -47,6 +71,7 @@
 (define (run-agda-safe)
   ;; Regenerate only novel learner-law candidates before the proof lane.
   (run-novel-learner-theorem-discovery)
+  (run-discovery-artifact-audit)
   (for-each
    (lambda (file)
      (run! (string-append "Agda --safe " file)
@@ -77,7 +102,8 @@
   ;; The canonical discovery lane enumerates only novel, nontrivial
   ;; learner-law basis candidates. Agda remains authoritative for theorem
   ;; acceptance.
-  (run-novel-learner-theorem-discovery))
+  (run-novel-learner-theorem-discovery)
+  (run-discovery-artifact-audit))
 
 (define (git-files)
   (let ((port (open-pipe* OPEN_READ "git" "ls-files")))
