@@ -78,13 +78,13 @@ add_law(Law, E0, E, Quotient0, Quotient) :-
                     law_expr(Id),
                     Right
                 ]),
-                E2, LeftClass, E3),
+                E2, RightClass, E3),
             add_expr(
                 app("derived-proof-plan", [
                     law_expr(Id),
                     Left
                 ]),
-                E3, RightClass, E4),
+                E3, LeftClass, E4),
             merge(LeftClass, RightClass, E4, E),
             Quotient = Quotient0 + 1
         ;
@@ -141,7 +141,11 @@ main(!IO) :-
         QuotientCount > 0,
         class_count(EGraph) > 0,
         enode_count(EGraph) > 0,
-        class_count(EGraph) < enode_count(EGraph)
+        class_count(EGraph) < enode_count(EGraph),
+        list.member(TargetLaw, Laws),
+        law_id(TargetLaw) = forced_target_id,
+        semantic_law.composite(TargetLaw) = yes,
+        list.length(semantic_law.dependencies(TargetLaw)) >= 3
     ->
         io.write_string(
             "interpolated-theorem-egraph=pass "
