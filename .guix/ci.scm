@@ -5,6 +5,7 @@
 (use-modules
  (ice-9 format)
  (ice-9 rdelim)
+ (ice-9 ftw)
  (srfi srfi-1)
  (srfi srfi-13))
 
@@ -34,8 +35,16 @@
     "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"))
 
 (define (run-agda-safe)
-  ;; Regenerate only novel learner-law candidates before the proof lane.
-  (run-automated-semantic-egraph)
+  ;; The Agda lane is deliberately proof-check-only.  Mercury discovery
+  ;; owns generation/e-graph work in its separate lane.
+  (run! "Guix-installed Agda version"
+        "agda" "--version")
+  ;; CanonicalLearnerMonolith_test imports Data.Empty and other Agda
+  ;; standard-library modules, so this is the stdlib import smoke check
+  ;; under the actual Guix-installed Agda executable.
+  (run! "Agda --safe stdlib import smoke"
+        "agda" "--safe"
+        "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda")
   (for-each
    (lambda (file)
      (run! (string-append "Agda --safe " file)
@@ -75,15 +84,24 @@
   ;; the generic e-graph from that source-derived dependency graph.
   (run-automated-semantic-egraph))
 
+(define (repository-files directory)
+  (append-map
+   (lambda (name)
+     (let ((path (string-append directory "/" name)))
+       (if (file-is-directory? path)
+           (repository-files path)
+           (list path))))
+   (scandir
+    directory
+    (lambda (name)
+      (and (not (string=? name "."))
+           (not (string=? name ".."))
+           (not (string=? name ".git")))))))
+
 (define (git-files)
-  (let ((port (open-pipe* OPEN_READ "git" "ls-files")))
-    (let loop ((result '()))
-      (let ((line (read-line port)))
-        (if (eof-object? line)
-            (begin
-              (close-pipe port)
-              (reverse result))
-            (loop (cons line result)))))))
+  ;; The CI checkout is supplied by actions/checkout.  The pinned Guix
+  ;; environment therefore does not need to build Git just to audit files.
+  (repository-files (getcwd)))
 
 (define (suffix? suffix file)
   (string-suffix? suffix file))
