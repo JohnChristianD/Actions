@@ -1458,6 +1458,86 @@ boundedUniversalExactApproximation-through-continuousLeftInverse
 
 
 ------------------------------------------------------------------------
+-- Additional bounded exact UAP corollaries.
+------------------------------------------------------------------------
+
+boundedUniversalExactUAP-retraction :
+  ∀ {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous)
+  (i : Fin bound) →
+  inverse (observe (embed i)) ≡ embed i
+boundedUniversalExactUAP-retraction
+  bound embed observe inverse witness i =
+  leftInverse witness (embed i)
+
+boundedUniversalExactUAP-decoder-transport :
+  ∀ {Feature Output : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous)
+  (decoder : Feature → C.FullLearnerState)
+  (decoderOnBound :
+    ∀ i → decoder (observe (embed i)) ≡ inverse (observe (embed i)))
+  (target : C.FullLearnerState → Output)
+  (i : Fin bound) →
+  target (embed i) ≡ target (decoder (observe (embed i)))
+boundedUniversalExactUAP-decoder-transport
+  bound embed observe inverse witness decoder decoderOnBound target i =
+  trans
+    (continuousLeftInverse-exactReadout-transfer
+      witness
+      target
+      (embed i))
+    (cong target (sym (decoderOnBound i)))
+
+boundedUniversalExactUAP-postcompose :
+  ∀ {Feature Output Output₂ : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous)
+  (target : C.FullLearnerState → Output)
+  (post : Output → Output₂)
+  (i : Fin bound) →
+  post (target (embed i)) ≡
+  post (target (inverse (observe (embed i))))
+boundedUniversalExactUAP-postcompose
+  bound embed observe inverse witness target post i =
+  cong post
+    (continuousLeftInverse-exactReadout-transfer
+      witness
+      target
+      (embed i))
+
+------------------------------------------------------------------------
 -- Ring-state injectivity and dense-neighborhood separation interfaces.
 --
 -- These are explicit theorem contracts. The strict import boundary does
@@ -1644,6 +1724,61 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         bound
         embed
 
+    boundedUAPRetraction :
+      ∀ {Feature : Set}
+      {Continuous : {A B : Set} → (A → B) → Set}
+      (bound : Nat)
+      (embed : Fin bound → C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState
+          Feature
+          observe
+          inverse
+          Continuous) →
+      ∀ i → inverse (observe (embed i)) ≡ embed i
+
+    boundedUAPDecoderTransport :
+      ∀ {Feature Output : Set}
+      {Continuous : {A B : Set} → (A → B) → Set}
+      (bound : Nat)
+      (embed : Fin bound → C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState
+          Feature
+          observe
+          inverse
+          Continuous)
+      (decoder : Feature → C.FullLearnerState)
+      (decoderOnBound :
+        ∀ i → decoder (observe (embed i)) ≡ inverse (observe (embed i)))
+      (target : C.FullLearnerState → Output) →
+      ∀ i → target (embed i) ≡ target (decoder (observe (embed i)))
+
+    boundedUAPPostcompose :
+      ∀ {Feature Output Output₂ : Set}
+      {Continuous : {A B : Set} → (A → B) → Set}
+      (bound : Nat)
+      (embed : Fin bound → C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState
+          Feature
+          observe
+          inverse
+          Continuous)
+      (target : C.FullLearnerState → Output)
+      (post : Output → Output₂) →
+      ∀ i → post (target (embed i)) ≡
+        post (target (inverse (observe (embed i))))
+
     ringStateInjection :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState) →
@@ -1712,6 +1847,9 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
         target
         s)
     boundedUniversalExactApproximation-through-continuousLeftInverse
+    boundedUniversalExactUAP-retraction
+    boundedUniversalExactUAP-decoder-transport
+    boundedUniversalExactUAP-postcompose
     canonicalRingStateInjective
     canonicalInfiniteStateOrbitEmbedding
     canonicalDenseNeighborhoodSeparation
