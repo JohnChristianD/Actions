@@ -32,7 +32,7 @@
   (cond
    ((string=? lane "agda-safe")
     (list
-     (specification->package "agda@2.7.0.1")
+     agda
      agda-stdlib-2.3
      (specification->package "guile@3.0")))
    ((or (string=? lane "mercury")
