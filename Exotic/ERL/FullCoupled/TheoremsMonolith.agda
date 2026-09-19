@@ -854,9 +854,13 @@ record MinimaxBellmanShapleyInclusionTheorem
   constructor minimaxBellmanShapleyInclusionTheorem
   field
     lowerBound :
-      value operator lower ≤ value operator actual
+      MinimaxBellmanShapleyOperator.value operator lower
+      ≤
+      MinimaxBellmanShapleyOperator.value operator actual
     upperBound :
-      value operator actual ≤ value operator upper
+      MinimaxBellmanShapleyOperator.value operator actual
+      ≤
+      MinimaxBellmanShapleyOperator.value operator upper
 
 open PointwiseSandwich public
 open MinimaxBellmanShapleyOperator public
