@@ -889,6 +889,15 @@ record MonotoneMinimaxValue
       (∀ x → f x ≤ g x) →
       value f ≤ value g
 
+record MinimaxInclusionResult
+  {Value : Set}
+  (_≤_ : Value → Value → Set)
+  (lower actual upper : Value) : Set₁ where
+  constructor minimaxInclusionResult
+  field
+    lowerBound : lower ≤ actual
+    upperBound : actual ≤ upper
+
 minimaxBellmanShapley-inclusion-class :
   ∀ {Input Value : Set}
   (_≤_ : Value → Value → Set)
@@ -896,13 +905,14 @@ minimaxBellmanShapley-inclusion-class :
   (lower actual upper : Input → Value) →
   MonotoneMinimaxValue _≤_ value →
   PointwiseSandwich _≤_ lower actual upper →
-  (value lower ≤ value actual) × (value actual ≤ value upper)
+  MinimaxInclusionResult _≤_ (value lower) (value actual) (value upper)
 minimaxBellmanShapley-inclusion-class
   _≤_ value lower actual upper
   (monotoneMinimaxValue monotone)
   (pointwiseSandwich lower≤actual actual≤upper) =
-  monotone lower actual lower≤actual ,
-  monotone actual upper actual≤upper
+  minimaxInclusionResult
+    (monotone lower actual lower≤actual)
+    (monotone actual upper actual≤upper)
 
 ------------------------------------------------------------------------
 -- Nat-clock orbit injectivity and the finite-observation contradiction.
