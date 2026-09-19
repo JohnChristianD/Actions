@@ -32,7 +32,7 @@
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
     "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
-    "Exotic/ERL/FullCoupled/LearnerComposition_Discovery_test.agda"
+    "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalClosedLoopInterface.agda"
     "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
     "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
@@ -45,24 +45,24 @@
     "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"))
 
 (define (run-agda-safe)
-  ;; Regenerate the symbolic learner-composition program before the proof lane.
-  (run-mercury-discovery-programs)
+  ;; Regenerate only novel learner-law candidates before the proof lane.
+  (run-novel-learner-theorem-discovery)
   (for-each
    (lambda (file)
      (run! (string-append "Agda --safe " file)
            "agda" "--safe" file))
    (agda-safe-files))
-  (run! "Agda --safe generated symbolic learner-composition program"
+  (run! "Agda --safe generated novel learner theorem module"
         "agda" "--safe"
-        "Exotic/ERL/FullCoupled/GeneratedLearnerCompositionDiscovery.agda"))
+        "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda"))
 
-(define (run-mercury-discovery-programs)
+(define (run-novel-learner-theorem-discovery)
   (in-directory ".ci/discovery"
     (lambda ()
-      (run! "build Mercury TSTS endogenous discovery"
-            "mmc" "--make" "tsts_endogenous_discovery")
-      (run! "run Mercury TSTS endogenous discovery"
-            "./tsts_endogenous_discovery"))))
+      (run! "build Mercury novel learner theorem discovery"
+            "mmc" "--make" "novel_learner_theorem_discovery")
+      (run! "run Mercury novel learner theorem discovery"
+            "./novel_learner_theorem_discovery"))))
 
 (define (run-mercury)
   (in-directory ".ci"
@@ -71,12 +71,13 @@
             "mmc" "--make" "check_forbidden_theorems")
       (run! "run forbidden-theorem scanner"
             "./check_forbidden_theorems")))
-  (run-mercury-discovery-programs))
+  (run-novel-learner-theorem-discovery))
 
 (define (run-discovery)
-  ;; The canonical outer search is TSTS-only. Agda remains authoritative
-  ;; for exact learner execution and theorem acceptance.
-  (run-mercury-discovery-programs))
+  ;; The canonical discovery lane enumerates only novel, nontrivial
+  ;; learner-law basis candidates. Agda remains authoritative for theorem
+  ;; acceptance.
+  (run-novel-learner-theorem-discovery))
 
 (define (git-files)
   (let ((port (open-pipe* OPEN_READ "git" "ls-files")))
