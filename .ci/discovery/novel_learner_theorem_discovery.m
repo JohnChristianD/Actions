@@ -21,69 +21,10 @@ clock_plus4_expr(S) =
     "replaceClock (" ++ S ++
     ") (suc (suc (suc (suc (C.clock (" ++ S ++ "))))))".
 
-:- func render_candidate(theorem_term) = string.
-render_candidate(theorem_term(norm_replacement, count_step, invariant)) =
-    "candidate_normReplacement_countStep_invariant :\n" ++
-    "  ∀ K s n →\n" ++
-    "  C.canonicalCountStep K (C.replaceNorm s n)\n" ++
-    "  ≡\n" ++
-    "  C.canonicalCountStep K s\n" ++
-    "candidate_normReplacement_countStep_invariant K s n =\n" ++
-    "  cong₂ C.updateLCBCount\n" ++
-    "    (canonicalPolicy-norm-invariant K s n)\n" ++
-    "    refl\n\n".
-render_candidate(theorem_term(norm_replacement, qlog_step, invariant)) =
-    "candidate_normReplacement_qLogStep_invariant :\n" ++
-    "  ∀ K s n →\n" ++
-    "  C.canonicalQLogStep K (C.replaceNorm s n)\n" ++
-    "  ≡\n" ++
-    "  C.canonicalQLogStep K s\n" ++
-    "candidate_normReplacement_qLogStep_invariant K s n =\n" ++
-    "  cong\n" ++
-    "    (λ p → C.negativeFiniteQLog8 (C.policyLeftWeight p))\n" ++
-    "    (canonicalPolicy-norm-invariant K s n)\n\n".
-render_candidate(theorem_term(clock_plus4, endogenous_feedback, invariant)) =
-    "candidate_clockPlus4_endogenousFeedback_invariant :\n" ++
-    "  ∀ K s →\n" ++
-    "  C.canonicalEndogenousFeedback K (" ++ clock_plus4_expr("s") ++ ")\n" ++
-    "  ≡\n" ++
-    "  C.canonicalEndogenousFeedback K s\n" ++
-    "candidate_clockPlus4_endogenousFeedback_invariant K s =\n" ++
-    "  cong\n" ++
-    "    (λ x →\n" ++
-    "      C.int8Add\n" ++
-    "        x\n" ++
-    "        (C.int8Add\n" ++
-    "          (C.canonicalGRUFeedback s)\n" ++
-    "          (C.int8Add\n" ++
-    "            (C.canonicalF4L2Feedback K s)\n" ++
-    "            (C.int8Add\n" ++
-    "              (C.canonicalQLogControlFeedback s)\n" ++
-    "              (C.canonicalQLogValueFeedback s)))))\n" ++
-    "    (canonicalAttentionMix-clock-period4 K s)\n\n".
-render_candidate(theorem_term(clock_plus4, watkins_target, invariant)) =
-    "candidate_clockPlus4_watkinsTarget_invariant :\n" ++
-    "  ∀ K s →\n" ++
-    "  C.canonicalWatkinsTarget K (" ++ clock_plus4_expr("s") ++ ")\n" ++
-    "  ≡\n" ++
-    "  C.canonicalWatkinsTarget K s\n" ++
-    "candidate_clockPlus4_watkinsTarget_invariant K s =\n" ++
-    "  trans\n" ++
-    "    (C.canonicalWatkinsTarget-law K (" ++ clock_plus4_expr("s") ++ "))\n" ++
-    "    (cong\n" ++
-    "      (λ x →\n" ++
-    "        C.int8Add\n" ++
-    "          (C.int8Add\n" ++
-    "            (C.int8Add\n" ++
-    "              (C.canonicalReward8 K s)\n" ++
-    "              (C.canonicalQLogBias K s))\n" ++
-    "            (C.int8Mul\n" ++
-    "              C.canonicalDiscount8\n" ++
-    "              (C.maxCriticValue8 (C.critic (C.watkins s)))))\n" ++
-    "          x)\n" ++
-    "      candidate_clockPlus4_endogenousFeedback_invariant K s)\n\n".
-render_candidate(theorem_term(_, _, iterate_invariant)) = "".
-
+:- func rendered_program(list(theorem_term)) = string.
+rendered_program(_) =
+    "generated-novel-learner-theorem-basis : NovelLearnerTheoremBasis\n" ++
+    "generated-novel-learner-theorem-basis = novel-learner-theorem-basis\n".
 :- func rendered_program(list(theorem_term)) = string.
 rendered_program([]) = "".
 rendered_program([T | Ts]) = render_candidate(T) ++ rendered_program(Ts).
