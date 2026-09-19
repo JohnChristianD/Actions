@@ -8,7 +8,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 -- part of the canonical proof surface.
 ------------------------------------------------------------------------
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans)
 open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Data.Empty using (⊥)
 open import Data.Fin using (toℕ)
