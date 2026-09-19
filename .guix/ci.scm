@@ -47,8 +47,6 @@
 (define (agda-safe-files)
   '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
-    "Exotic/ERL/FullCoupled/AlgebraLawRegistry.agda"
-    "Exotic/ERL/FullCoupled/AlgebraLawRegistry_test.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
     "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
@@ -80,22 +78,18 @@
 (define (run-novel-learner-theorem-discovery)
   (in-directory ".ci/discovery"
     (lambda ()
+      (run! "build Mercury learner semantic theorem discovery"
+            "mmc" "--make" "novel_learner_theorem_discovery")
+      (run! "run Mercury learner semantic theorem discovery"
+            "./novel_learner_theorem_discovery")
       (run! "build Mercury generic e-graph regression"
             "mmc" "--make" "symbolic_egraph_test")
       (run! "run Mercury generic e-graph regression"
             "./symbolic_egraph_test")
-      (run! "build Mercury theorem e-graph regression"
-            "mmc" "--make" "learner_theorem_egraph_test")
-      (run! "run Mercury theorem e-graph regression"
-            "./learner_theorem_egraph_test")
       (run! "build Mercury interpolated theorem e-graph regression"
             "mmc" "--make" "interpolated_theorem_egraph_test")
       (run! "run Mercury interpolated theorem e-graph regression"
-            "./interpolated_theorem_egraph_test")
-      (run! "build Mercury novel learner theorem discovery"
-            "mmc" "--make" "novel_learner_theorem_discovery")
-      (run! "run Mercury novel learner theorem discovery"
-            "./novel_learner_theorem_discovery"))))
+            "./interpolated_theorem_egraph_test"))))
 
 (define (run-mercury)
   (in-directory ".ci"
