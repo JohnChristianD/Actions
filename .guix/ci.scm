@@ -33,8 +33,7 @@
       (lambda () (chdir old)))))
 
 (define (agda-safe-files)
-  '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+  '("Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
     "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"))
 
