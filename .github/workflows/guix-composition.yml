@@ -35,6 +35,7 @@ jobs:
           # The pinned Guix container runs as UID 0 but does not always ship
           # a passwd entry for that UID. Guix offload calls getpw(0), so make
           # the root identity explicit before starting any Guix command.
+          touch /etc/passwd /etc/group
           if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
             printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
           fi
@@ -99,8 +100,17 @@ jobs:
         run: |
           guix --version
           guix describe -f channels
+          set +e
           guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
-
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            log="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            if [ -n "$log" ] && [ -f "$log" ]; then
+              printf '%s\n' "latest-guix-build-log=$log"
+              gzip -cd "$log" | tail -n 400 || true
+            fi
+          fi
+          exit "$status"
   mercury:
     name: Guix / Mercury connected theorem and verifier lane
     runs-on: ubuntu-24.04
