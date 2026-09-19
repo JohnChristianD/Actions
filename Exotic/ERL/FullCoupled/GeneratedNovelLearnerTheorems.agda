@@ -13,7 +13,7 @@ generatedSemanticDerivedCount : Nat
 generatedSemanticDerivedCount = 5
 
 generatedSemanticEGraphQuotientCount : Nat
-generatedSemanticEGraphQuotientCount = 5
+generatedSemanticEGraphQuotientCount = 2
 
 generatedCanonicalEndogenousMinimaxBellmanShapleyUAP :
   T.CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
@@ -31,3 +31,8 @@ generatedSemanticDerived2 =
 
 generatedSemanticDerived3 =
   T.canonicalNoCountedTwoCycle
+
+generatedSemanticDerived4 :
+  T.CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
+generatedSemanticDerived4 =
+  T.canonical-endogenous-minimax-bellman-shapley-uap-theorem
