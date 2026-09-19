@@ -11,7 +11,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym)
 open import Agda.Builtin.Nat using (Nat; suc; _+_)
 open import Data.Empty using (⊥)
-open import Data.Fin using (toℕ)
+open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (_<ᵇ_)
 open import Data.List.Base using (List; []; _∷_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
@@ -1250,6 +1250,109 @@ continuousLeftInverse-exactReadout-transfer :
 continuousLeftInverse-exactReadout-transfer
   witness target s =
   cong target (sym (leftInverse witness s))
+
+------------------------------------------------------------------------
+-- Bounded exact approximation/readout.
+--
+-- The domain is finite by construction: it is indexed by Fin bound.
+-- Exact equality is the approximation relation, so no metric, limit,
+-- compactness, or infinite orbit is required.  The only semantic input
+-- beyond the finite index is a continuous left inverse.
+------------------------------------------------------------------------
+
+record BoundedContinuousLeftInverseExactApproximationTheorem
+  (State Feature : Set)
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (Continuous : {A B : Set} → (A → B) → Set)
+  (bound : Nat)
+  (embed : Fin bound → State) : Set₁ where
+  constructor boundedContinuousLeftInverseExactApproximationTheorem
+  field
+    continuousLeftInverseWitness :
+      ContinuousLeftInverseTheorem
+        State
+        Feature
+        observe
+        inverse
+        Continuous
+
+    exactReadoutOnBound :
+      {Output : Set} →
+      (target : State → Output) →
+      (i : Fin bound) →
+      target (embed i) ≡
+      target (inverse (observe (embed i)))
+
+    observationInjectiveOnBound :
+      ∀ {i j : Fin bound} →
+      observe (embed i) ≡ observe (embed j) →
+      embed i ≡ embed j
+
+open BoundedContinuousLeftInverseExactApproximationTheorem public
+
+boundedContinuousLeftInverseExactApproximationTheorem-from-witness :
+  ∀ {State Feature : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → State)
+  (witness :
+    ContinuousLeftInverseTheorem
+      State
+      Feature
+      observe
+      inverse
+      Continuous) →
+  BoundedContinuousLeftInverseExactApproximationTheorem
+    State
+    Feature
+    observe
+    inverse
+    Continuous
+    bound
+    embed
+boundedContinuousLeftInverseExactApproximationTheorem-from-witness
+  bound embed witness =
+  boundedContinuousLeftInverseExactApproximationTheorem
+    witness
+    (λ target i →
+      continuousLeftInverse-exactReadout-transfer
+        witness
+        target
+        (embed i))
+    (λ {i} {j} eq →
+      continuousLeftInverse-injective witness eq)
+
+boundedExactApproximation-on-boundedOrbit :
+  ∀ {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (bound : Nat)
+  (embed : Fin bound → C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState)
+  (witness :
+    ContinuousLeftInverseTheorem
+      C.FullLearnerState
+      Feature
+      observe
+      inverse
+      Continuous) →
+  BoundedContinuousLeftInverseExactApproximationTheorem
+    C.FullLearnerState
+    Feature
+    observe
+    inverse
+    Continuous
+    bound
+    embed
+boundedExactApproximation-on-boundedOrbit
+  bound embed observe inverse witness =
+  boundedContinuousLeftInverseExactApproximationTheorem-from-witness
+    bound
+    embed
+    witness
 
 ------------------------------------------------------------------------
 -- Ring-state injectivity and dense-neighborhood separation interfaces.
