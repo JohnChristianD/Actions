@@ -57,3 +57,8 @@ novelBasis-noPerfectUnboundedInt8Memory :
   ¬ (∀ {m n} → f m ≡ f n → m ≡ n)
 novelBasis-noPerfectUnboundedInt8Memory =
   C.int8-no-countably-unbounded-injective
+
+novelBasis-eGraphCompleted :
+  EGraphCompletedTheoremBasis
+novelBasis-eGraphCompleted =
+  generatedEGraphCompletedTheoremBasis
