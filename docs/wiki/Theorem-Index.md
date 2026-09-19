@@ -158,13 +158,11 @@ Those laws are now inputs to novelty pruning rather than the discovery target it
 
 These prove structural closure of the formal interfaces, not external behavioral equivalence.
 
-## C. Legacy/general theorem substrate
+## C. Legacy/general benchmark substrate
 
-`GeneralFullCoupledTheoremsMonolith.agda` remains available for generic theorem infrastructure and conditional certificates.
+`GeneralFullCoupledLearnerMonolith.agda` and `GeneralClosedLoopBenchV2.agda` remain only where the benchmark surface explicitly depends on the older generalized learner.
 
-It is not part of the current canonical discovery entrypoint.
-
-`MonolithCompositeReservoirTheorem.agda` remains a legacy conditional certificate adapter. It is intentionally excluded from the canonical theorem gate because its certificate fields are assumptions supplied by callers, not unconditional learner theorems.
+`MonolithCompositeReservoirTheorem.agda` was pruned because it duplicated a noncanonical conditional theorem surface and was not part of the active verification gate.
 
 ## D. Verification rule
 
