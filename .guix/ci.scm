@@ -86,6 +86,10 @@
             "mmc" "--make" "learner_theorem_egraph_test")
       (run! "run Mercury theorem e-graph regression"
             "./learner_theorem_egraph_test")
+      (run! "build Mercury interpolated theorem e-graph regression"
+            "mmc" "--make" "interpolated_theorem_egraph_test")
+      (run! "run Mercury interpolated theorem e-graph regression"
+            "./interpolated_theorem_egraph_test")
       (run! "build Mercury novel learner theorem discovery"
             "mmc" "--make" "novel_learner_theorem_discovery")
       (run! "run Mercury novel learner theorem discovery"
