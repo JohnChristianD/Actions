@@ -169,3 +169,15 @@ These prove structural closure of the formal interfaces, not external behavioral
 A theorem counts as currently verified only after the module owning it passes the current Guix/Agda `--safe` lane.
 
 A record field is not counted as a derived theorem merely because the record type names it.
+
+## Recurrent network abstraction
+
+The canonical learner exposes a single generic recurrent class:
+
+`RecurrentNetwork State Input`
+
+with transition:
+
+`runNetwork : State → Input → State`
+
+The canonical instance is `canonicalGRURecurrentNetwork`, defined directly from the existing `gruStep`. This is an interface-level abstraction over the executable recurrence, not a second neural-network implementation.
