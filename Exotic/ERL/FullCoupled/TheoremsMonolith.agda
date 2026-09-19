@@ -965,7 +965,7 @@ canonicalWatkinsTarget-endogenous-leftInverse :
           (C.maxCriticValue8
             (C.critic
               (C.watkins
-                (inverse (observe s))))))
+                (inverse (observe s)))))))
       (C.canonicalEndogenousFeedback K (inverse (observe s)))
 canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
   trans
