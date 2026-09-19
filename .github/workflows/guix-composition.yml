@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: read
+  statuses: write
 
 env:
   GUIX_INSTALL_ACTION: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
@@ -42,7 +43,23 @@ jobs:
           set -euo pipefail
           guix --version
           guix describe -f channels
-          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          set +e
+          log="$(mktemp)"
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm >"$log" 2>&1
+          status=$?
+          cat "$log"
+          if [ "$status" -ne 0 ]; then
+            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            GH_TOKEN="$GITHUB_TOKEN" gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+              -f state=failure \
+              -f context="guix-failure-diagnostic" \
+              -f description="$description" >/dev/null || true
+          fi
+          rm -f "$log"
+          exit "$status"
 
   mercury:
     needs: [agda-safe]
@@ -66,7 +83,23 @@ jobs:
           set -euo pipefail
           guix --version
           guix describe -f channels
-          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          set +e
+          log="$(mktemp)"
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm >"$log" 2>&1
+          status=$?
+          cat "$log"
+          if [ "$status" -ne 0 ]; then
+            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            GH_TOKEN="$GITHUB_TOKEN" gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+              -f state=failure \
+              -f context="guix-failure-diagnostic" \
+              -f description="$description" >/dev/null || true
+          fi
+          rm -f "$log"
+          exit "$status"
 
   discovery:
     needs: [agda-safe]
@@ -90,7 +123,23 @@ jobs:
           set -euo pipefail
           guix --version
           guix describe -f channels
-          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          set +e
+          log="$(mktemp)"
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm >"$log" 2>&1
+          status=$?
+          cat "$log"
+          if [ "$status" -ne 0 ]; then
+            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            GH_TOKEN="$GITHUB_TOKEN" gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+              -f state=failure \
+              -f context="guix-failure-diagnostic" \
+              -f description="$description" >/dev/null || true
+          fi
+          rm -f "$log"
+          exit "$status"
       - name: Verify forced endogenous theorem discovery artifact is present
         run: |
           set -euo pipefail
@@ -119,4 +168,20 @@ jobs:
           set -euo pipefail
           guix --version
           guix describe -f channels
-          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
+          set +e
+          log="$(mktemp)"
+          guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm >"$log" 2>&1
+          status=$?
+          cat "$log"
+          if [ "$status" -ne 0 ]; then
+            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            GH_TOKEN="$GITHUB_TOKEN" gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+              -f state=failure \
+              -f context="guix-failure-diagnostic" \
+              -f description="$description" >/dev/null || true
+          fi
+          rm -f "$log"
+          exit "$status"
