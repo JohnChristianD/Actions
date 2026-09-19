@@ -22,20 +22,23 @@ The raw finite basis contains two actual learner transformations:
 - NormPair replacement.
 - Period-4 clock replacement.
 
-It considers three theorem relations:
+It considers observable-invariance relations over:
 
-- Watkins-target invariance.
-- One-step/full-step equivariance.
-- Iterated-step equivariance.
+- NormPair replacement and the count-step observable;
+- NormPair replacement and the Q-log-step observable;
+- period-4 clock replacement and the endogenous-feedback observable;
+- period-4 clock replacement and the Watkins-target observable.
 
-The sixth raw form is not emitted when it is already represented by the stronger full-step equivariance class. The current quotient therefore removes the iterate consequence and retains only minimal representatives.
+Each relation also has an iterate form in the raw grammar. The Mercury equivalence quotient collapses those downstream forms into the one-step basis.
 
 The current basis candidates are:
 
-- Watkins target is invariant under NormPair replacement.
-- Watkins target is invariant under a four-phase clock shift.
-- The canonical full step commutes with NormPair replacement.
-- The canonical full step commutes with a four-phase clock shift.
+- count-step is invariant under NormPair replacement;
+- Q-log-step is invariant under NormPair replacement;
+- endogenous feedback is invariant under the period-4 clock replacement;
+- Watkins target is invariant under the period-4 clock replacement.
+
+The generated proofs are compositional. They use existing canonical laws through congruence/transitivity rather than emitting bare reflexivity proofs.
 
 These are not already named in TheoremsMonolith.agda at discovery time. The Mercury generator also scans the canonical theorem source and removes any candidate whose declaration is already present.
 
@@ -63,9 +66,9 @@ This separates novelty selection from proof acceptance. A candidate is not consi
 
 The discovery space contains many statements that are consequences of stronger statements. For example, if a transformation commutes with the one-step learner transition, the corresponding iterate-commutation family is structurally downstream.
 
-The Mercury quotient therefore keeps a smaller basis rather than emitting every syntactic consequence. This is an e-graph-style use of equivalence classes: canonicalize symbolic theorem forms first, then send only minimal representatives to the proof checker.
+The Mercury quotient therefore keeps a smaller basis rather than emitting every syntactic consequence. This is the current lightweight e-graph boundary: Mercury uses equivalence classes to quotient theorem programs before proof generation. A full equality-saturation e-graph is not justified yet because the current grammar is finite and the quotient rules are explicit.
 
-This is deliberately domain-specific rather than a general optimizer. The semantic boundary remains the Agda learner. Mercury is only reducing redundant theorem search.
+That makes Mercury the right host for the discovery layer without introducing another runtime or trust boundary. The semantic boundary remains the Agda learner. Mercury is only reducing redundant theorem search.
 
 ## What was pruned
 
