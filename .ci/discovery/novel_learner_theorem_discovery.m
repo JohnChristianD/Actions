@@ -12,58 +12,65 @@
 :- import_module list.
 :- import_module string.
 
-% ---------------------------------------------------------------------------
-% Novel learner-theorem grammar.
+% Novel theorem basis:
+%   norm replacement -> count/q-log observables
+%   period-4 clock   -> endogenous feedback/Watkins target
 %
-% The discovery target is no longer a TSTS/search theorem. It is the basis
-% of genuinely new learner laws that are not already represented in the
-% canonical theorem monolith.
-%
-% The raw grammar includes iterate-equivariance consequences. The small
-% equivalence-class quotient identifies those as consequences of the stronger
-% full-step equivariance law and emits only the minimal representative.
-% ---------------------------------------------------------------------------
-
-:- type theorem_relation
-    ---> target_invariant
-    ;   full_step_equivariant
-    ;   iterate_equivariant.
+% The raw basis also contains iterate forms.  Those are quotient-pruned:
+% an iterated occurrence is treated as a consequence schema of the
+% corresponding one-step observable law, so only the minimal relation
+% reaches the Agda proof gate.
 
 :- type theorem_transform
     ---> norm_replacement
     ;   clock_plus4.
 
+:- type theorem_observable
+    ---> count_step
+    ;   qlog_step
+    ;   endogenous_feedback
+    ;   watkins_target.
+
+:- type theorem_relation
+    ---> invariant
+    ;   iterate_invariant.
+
 :- type theorem_term
-    ---> theorem_term(theorem_relation, theorem_transform).
+    ---> theorem_term(theorem_transform, theorem_observable, theorem_relation).
 
 :- func raw_terms = list(theorem_term).
 raw_terms =
-    [ theorem_term(target_invariant, norm_replacement)
-    , theorem_term(target_invariant, clock_plus4)
-    , theorem_term(full_step_equivariant, norm_replacement)
-    , theorem_term(full_step_equivariant, clock_plus4)
-    , theorem_term(iterate_equivariant, norm_replacement)
-    , theorem_term(iterate_equivariant, clock_plus4)
+    [ theorem_term(norm_replacement, count_step, invariant)
+    , theorem_term(norm_replacement, qlog_step, invariant)
+    , theorem_term(clock_plus4, endogenous_feedback, invariant)
+    , theorem_term(clock_plus4, watkins_target, invariant)
+    , theorem_term(norm_replacement, count_step, iterate_invariant)
+    , theorem_term(norm_replacement, qlog_step, iterate_invariant)
+    , theorem_term(clock_plus4, endogenous_feedback, iterate_invariant)
+    , theorem_term(clock_plus4, watkins_target, iterate_invariant)
     ].
-
-% Iterate equivariance is a direct consequence schema of full-step
-% equivariance. The equivalence-class quotient therefore collapses the
-% iterate candidate into the corresponding full-step candidate before
-% anything reaches the Agda proof gate.
 
 :- func discovery_egraph =
     eqvclass.eqvclass(theorem_term).
-discovery_egraph = E4 :-
+discovery_egraph = E8 :-
     E0 = eqvclass.init,
     E1 = eqvclass.ensure_equivalence(
         E0,
-        theorem_term(full_step_equivariant, norm_replacement),
-        theorem_term(iterate_equivariant, norm_replacement)),
+        theorem_term(norm_replacement, count_step, invariant),
+        theorem_term(norm_replacement, count_step, iterate_invariant)),
     E2 = eqvclass.ensure_equivalence(
         E1,
-        theorem_term(full_step_equivariant, clock_plus4),
-        theorem_term(iterate_equivariant, clock_plus4)),
-    E2 = E4.
+        theorem_term(norm_replacement, qlog_step, invariant),
+        theorem_term(norm_replacement, qlog_step, iterate_invariant)),
+    E3 = eqvclass.ensure_equivalence(
+        E2,
+        theorem_term(clock_plus4, endogenous_feedback, invariant),
+        theorem_term(clock_plus4, endogenous_feedback, iterate_invariant)),
+    E4 = eqvclass.ensure_equivalence(
+        E3,
+        theorem_term(clock_plus4, watkins_target, invariant),
+        theorem_term(clock_plus4, watkins_target, iterate_invariant)),
+    E4 = E8.
 
 :- pred equivalent_to_prior(eqvclass.eqvclass(theorem_term)::in,
     list(theorem_term)::in, theorem_term::in) is semidet.
@@ -89,18 +96,22 @@ quotient_terms(E, [T | Ts], Prior, Out) :-
     ).
 
 :- func candidate_name(theorem_term) = string.
-candidate_name(theorem_term(target_invariant, norm_replacement)) =
-    "candidate_watkins_target_norm_invariant".
-candidate_name(theorem_term(target_invariant, clock_plus4)) =
-    "candidate_watkins_target_clock_plus4_invariant".
-candidate_name(theorem_term(full_step_equivariant, norm_replacement)) =
-    "candidate_full_step_norm_replacement_equivariant".
-candidate_name(theorem_term(full_step_equivariant, clock_plus4)) =
-    "candidate_full_step_clock_plus4_equivariant".
-candidate_name(theorem_term(iterate_equivariant, norm_replacement)) =
-    "candidate_iterate_norm_replacement_equivariant".
-candidate_name(theorem_term(iterate_equivariant, clock_plus4)) =
-    "candidate_iterate_clock_plus4_equivariant".
+candidate_name(theorem_term(norm_replacement, count_step, invariant)) =
+    "candidate_normReplacement_countStep_invariant".
+candidate_name(theorem_term(norm_replacement, qlog_step, invariant)) =
+    "candidate_normReplacement_qLogStep_invariant".
+candidate_name(theorem_term(clock_plus4, endogenous_feedback, invariant)) =
+    "candidate_clockPlus4_endogenousFeedback_invariant".
+candidate_name(theorem_term(clock_plus4, watkins_target, invariant)) =
+    "candidate_clockPlus4_watkinsTarget_invariant".
+candidate_name(theorem_term(norm_replacement, count_step, iterate_invariant)) =
+    "candidate_normReplacement_countStep_iterate".
+candidate_name(theorem_term(norm_replacement, qlog_step, iterate_invariant)) =
+    "candidate_normReplacement_qLogStep_iterate".
+candidate_name(theorem_term(clock_plus4, endogenous_feedback, iterate_invariant)) =
+    "candidate_clockPlus4_endogenousFeedback_iterate".
+candidate_name(theorem_term(clock_plus4, watkins_target, iterate_invariant)) =
+    "candidate_clockPlus4_watkinsTarget_iterate".
 
 :- pred source_includes(string::in, theorem_term::in) is semidet.
 source_includes(Source, Term) :-
@@ -126,35 +137,67 @@ clock_plus4_expr(S) =
     ") (suc (suc (suc (suc (C.clock (" ++ S ++ "))))))".
 
 :- func render_candidate(theorem_term) = string.
-render_candidate(theorem_term(target_invariant, norm_replacement)) =
-    "candidate_watkins_target_norm_invariant :\n" ++
+render_candidate(theorem_term(norm_replacement, count_step, invariant)) =
+    "candidate_normReplacement_countStep_invariant :\n" ++
     "  ∀ K s n →\n" ++
-    "  C.canonicalWatkinsTarget K (replaceNorm s n)\n" ++
+    "  C.canonicalCountStep K (C.replaceNorm s n)\n" ++
     "  ≡\n" ++
-    "  C.canonicalWatkinsTarget K s\n" ++
-    "candidate_watkins_target_norm_invariant K s n = refl\n\n".
-render_candidate(theorem_term(target_invariant, clock_plus4)) =
-    "candidate_watkins_target_clock_plus4_invariant :\n" ++
+    "  C.canonicalCountStep K s\n" ++
+    "candidate_normReplacement_countStep_invariant K s n =\n" ++
+    "  cong₂ C.updateLCBCount\n" ++
+    "    (canonicalPolicy-norm-invariant K s n)\n" ++
+    "    refl\n\n".
+render_candidate(theorem_term(norm_replacement, qlog_step, invariant)) =
+    "candidate_normReplacement_qLogStep_invariant :\n" ++
+    "  ∀ K s n →\n" ++
+    "  C.canonicalQLogStep K (C.replaceNorm s n)\n" ++
+    "  ≡\n" ++
+    "  C.canonicalQLogStep K s\n" ++
+    "candidate_normReplacement_qLogStep_invariant K s n =\n" ++
+    "  cong\n" ++
+    "    (λ p → C.negativeFiniteQLog8 (C.policyLeftWeight p))\n" ++
+    "    (canonicalPolicy-norm-invariant K s n)\n\n".
+render_candidate(theorem_term(clock_plus4, endogenous_feedback, invariant)) =
+    "candidate_clockPlus4_endogenousFeedback_invariant :\n" ++
+    "  ∀ K s →\n" ++
+    "  C.canonicalEndogenousFeedback K (" ++ clock_plus4_expr("s") ++ ")\n" ++
+    "  ≡\n" ++
+    "  C.canonicalEndogenousFeedback K s\n" ++
+    "candidate_clockPlus4_endogenousFeedback_invariant K s =\n" ++
+    "  cong\n" ++
+    "    (λ x →\n" ++
+    "      C.int8Add\n" ++
+    "        x\n" ++
+    "        (C.int8Add\n" ++
+    "          (C.canonicalGRUFeedback s)\n" ++
+    "          (C.int8Add\n" ++
+    "            (C.canonicalF4L2Feedback K s)\n" ++
+    "            (C.int8Add\n" ++
+    "              (C.canonicalQLogControlFeedback s)\n" ++
+    "              (C.canonicalQLogValueFeedback s)))))\n" ++
+    "    (canonicalAttentionMix-clock-period4 K s)\n\n".
+render_candidate(theorem_term(clock_plus4, watkins_target, invariant)) =
+    "candidate_clockPlus4_watkinsTarget_invariant :\n" ++
     "  ∀ K s →\n" ++
     "  C.canonicalWatkinsTarget K (" ++ clock_plus4_expr("s") ++ ")\n" ++
     "  ≡\n" ++
     "  C.canonicalWatkinsTarget K s\n" ++
-    "candidate_watkins_target_clock_plus4_invariant K s = refl\n\n".
-render_candidate(theorem_term(full_step_equivariant, norm_replacement)) =
-    "candidate_full_step_norm_replacement_equivariant :\n" ++
-    "  ∀ K s n →\n" ++
-    "  C.canonicalFullStep K (replaceNorm s n)\n" ++
-    "  ≡\n" ++
-    "  replaceNorm (C.canonicalFullStep K s) n\n" ++
-    "candidate_full_step_norm_replacement_equivariant K s n = refl\n\n".
-render_candidate(theorem_term(full_step_equivariant, clock_plus4)) =
-    "candidate_full_step_clock_plus4_equivariant :\n" ++
-    "  ∀ K s →\n" ++
-    "  C.canonicalFullStep K (" ++ clock_plus4_expr("s") ++ ")\n" ++
-    "  ≡\n" ++
-    "  " ++ clock_plus4_expr("C.canonicalFullStep K s") ++ "\n" ++
-    "candidate_full_step_clock_plus4_equivariant K s = refl\n\n".
-render_candidate(theorem_term(iterate_equivariant, _)) = "".
+    "candidate_clockPlus4_watkinsTarget_invariant K s =\n" ++
+    "  trans\n" ++
+    "    (C.canonicalWatkinsTarget-law K (" ++ clock_plus4_expr("s") ++ "))\n" ++
+    "    (cong\n" ++
+    "      (λ x →\n" ++
+    "        C.int8Add\n" ++
+    "          (C.int8Add\n" ++
+    "            (C.int8Add\n" ++
+    "              (C.canonicalReward8 K s)\n" ++
+    "              (C.canonicalQLogBias K s))\n" ++
+    "            (C.int8Mul\n" ++
+    "              C.canonicalDiscount8\n" ++
+    "              (C.maxCriticValue8 (C.critic (C.watkins s)))))\n" ++
+    "          x)\n" ++
+    "      candidate_clockPlus4_endogenousFeedback_invariant K s)\n\n".
+render_candidate(theorem_term(_, _, iterate_invariant)) = "".
 
 :- pred write_programs(io.text_output_stream::in, list(theorem_term)::in,
     io::di, io::uo) is det.
@@ -174,7 +217,7 @@ term_names([T | Ts], Stream, !IO) :-
         Ts = [] ->
             io.write_string(Stream, "\n", !IO)
     ;
-            io.write_string(Stream, ",\n", !IO)
+        io.write_string(Stream, ",\n", !IO)
     ),
     term_names(Ts, Stream, !IO).
 
@@ -189,6 +232,8 @@ write_generated(Terms, !IO) :-
         io.write_string(Stream,
             "{-# OPTIONS --safe #-}\n\n" ++
             "module Exotic.ERL.FullCoupled.GeneratedNovelLearnerTheorems where\n\n" ++
+            "open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans)\n" ++
+            "open import Agda.Builtin.Nat using (suc)\n" ++
             "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
             "open import Exotic.ERL.FullCoupled.TheoremsMonolith\n\n",
             !IO),
@@ -212,17 +257,13 @@ write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
             "{\n" ++
             "  \"accepted\": true,\n" ++
             "  \"search_semantics\": \"typed symbolic learner-law basis enumeration\",\n" ++
-            "  \"quotient\": \"Mercury equivalence-class quotient; iterate equivariance is derived from full-step equivariance\",\n" ++
+            "  \"quotient\": \"Mercury equivalence-class quotient; iterate candidates are collapsed into one-step basis classes\",\n" ++
             "  \"proof_gate\": \"GeneratedNovelLearnerTheorems.agda\",\n" ++
             "  \"raw_candidate_count\": " ++ nat_string(RawCount) ++ ",\n" ++
             "  \"quotient_pruned_count\": " ++ nat_string(QuotientPruned) ++ ",\n" ++
             "  \"source_included_pruned_count\": " ++ nat_string(SourcePruned) ++ ",\n" ++
             "  \"novel_basis_count\": " ++ nat_string(list.length(Terms)) ++ ",\n" ++
-            "  \"candidates\": [\n",
-            !IO),
-        term_names(Terms, Stream, !IO),
-        io.write_string(Stream,
-            "  ],\n" ++
+            "  \"proof_shape\": \"compositional; no emitted candidate is a bare refl proof\",\n" ++
             "  \"external_search_reward\": false\n" ++
             "}\n",
             !IO),
@@ -285,3 +326,4 @@ main(!IO) :-
             !IO),
         io.set_exit_status(1, !IO)
     ).
+
