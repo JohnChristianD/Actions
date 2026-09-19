@@ -50,10 +50,16 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            if [ -n "$latest" ] && [ -f "$latest" ]; then
+              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            else
+              details="$(tail -n 80 "$log")"
+            fi
+            summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
               --arg sha "$GITHUB_SHA" \
-              --arg summary "$description" \
+              --arg summary "$summary" \
               '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
             printf '%s' "$payload" | gh api \
               --method POST \
@@ -92,10 +98,16 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            if [ -n "$latest" ] && [ -f "$latest" ]; then
+              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            else
+              details="$(tail -n 80 "$log")"
+            fi
+            summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
               --arg sha "$GITHUB_SHA" \
-              --arg summary "$description" \
+              --arg summary "$summary" \
               '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
             printf '%s' "$payload" | gh api \
               --method POST \
@@ -134,10 +146,16 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            if [ -n "$latest" ] && [ -f "$latest" ]; then
+              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            else
+              details="$(tail -n 80 "$log")"
+            fi
+            summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
               --arg sha "$GITHUB_SHA" \
-              --arg summary "$description" \
+              --arg summary "$summary" \
               '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
             printf '%s' "$payload" | gh api \
               --method POST \
@@ -181,10 +199,16 @@ jobs:
           status=$?
           cat "$log"
           if [ "$status" -ne 0 ]; then
-            description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
+            latest="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            if [ -n "$latest" ] && [ -f "$latest" ]; then
+              details="$(gzip -cd "$latest" 2>/dev/null | tail -n 80)"
+            else
+              details="$(tail -n 80 "$log")"
+            fi
+            summary="$(printf '%s\\nGuix command output:\\n%s' "$(printf '%s' "$details" | tail -n 80)" "$(tail -n 20 "$log")" | cut -c1-8000)"
             payload="$(jq -n \
               --arg sha "$GITHUB_SHA" \
-              --arg summary "$description" \
+              --arg summary "$summary" \
               '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
             printf '%s' "$payload" | gh api \
               --method POST \
