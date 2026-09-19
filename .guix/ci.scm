@@ -78,6 +78,10 @@
 (define (run-novel-learner-theorem-discovery)
   (in-directory ".ci/discovery"
     (lambda ()
+      (run! "build Mercury generic e-graph regression"
+            "mmc" "--make" "symbolic_egraph_test")
+      (run! "run Mercury generic e-graph regression"
+            "./symbolic_egraph_test")
       (run! "build Mercury theorem e-graph regression"
             "mmc" "--make" "learner_theorem_egraph_test")
       (run! "run Mercury theorem e-graph regression"
