@@ -26,13 +26,7 @@ composite_laws(All, Composite) :-
 
 :- func rhs_qualification(string, string) = string.
 rhs_qualification(Source, Name) =
-    ( if string.sub_string_search(Source, "CanonicalLearnerMonolith.agda", _) then
-        "C." ++ Name
-    else if string.sub_string_search(Source, "TheoremsMonolith.agda", _) then
-        Name
-    else
-        Name
-    ).
+    Name.
 
 :- pred write_generated_aliases(
     list(semantic_law)::in,
@@ -66,9 +60,12 @@ write_generated_module(Composite, !IO) :-
         io.write_string(Stream,
             "{-# OPTIONS --safe #-}\n\n" ++
             "module Exotic.ERL.FullCoupled.GeneratedNovelLearnerTheorems where\n\n" ++
-            "open import Agda.Builtin.Nat using (Nat)\n" ++
+            "open import Agda.Builtin.Nat using (Nat; suc)\n" ++
+            "open import Data.Empty using (⊥)\n" ++
             "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
-            "open import Exotic.ERL.FullCoupled.TheoremsMonolith\n\n" ++
+            "open import Exotic.ERL.FullCoupled.TheoremsMonolith as T\n" ++
+            "open C\n" ++
+            "open T\n\n" ++
             "-- Generated from actual executable learner/theorem declarations.\\n" ++
             "-- Reflexive declarations are excluded from the composition class.\\n\\n" ++
             "generatedSemanticCompositionCount : Nat\n" ++
