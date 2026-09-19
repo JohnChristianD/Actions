@@ -9,6 +9,7 @@ open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInj
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
+open import Relation.Nullary using (¬_)
 
 record Int8 : Set where
   constructor int8
