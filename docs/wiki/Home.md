@@ -1,4 +1,4 @@
-# Actions: Canonical Learner, TSTS Endogenous Theorem, and Proof Environment
+# Actions: Canonical Learner, Novel Theorem Discovery, and Proof Environment
 
 Last audited: 2026-09-19.
 
@@ -10,7 +10,7 @@ The canonical theorem entrypoint is:
 
 `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
 
-It owns the canonical learner composition laws, phase periodicity, clock growth, finite-cycle exclusion, and the active TSTS-only endogenous connected theorem.
+It owns the canonical learner composition laws, phase periodicity, clock growth, finite-cycle exclusion, and the existing TSTS/attention connected theorems. The discovery layer is separate and searches for additional unincluded learner laws.
 
 The older canonical theorem modules remain retired. The generic theorem monolith remains only as legacy/general infrastructure and is not the discovery entrypoint.
 
@@ -41,7 +41,7 @@ The executable formal-RL path is:
 
 `Guix -> Guile orchestration -> Agda --safe + Mercury`
 
-Mercury now owns the small finite TSTS composition boundary. Agda remains authoritative for exact learner semantics and theorem acceptance. The outer search is a learner-discovery mechanism, not a self-certifying proof layer.
+Mercury now owns the finite novel-theorem candidate engine. Agda remains authoritative for exact learner semantics and theorem acceptance. The outer search is a learner-discovery mechanism, not a self-certifying proof layer.
 
 The canonical source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files.
 
@@ -49,32 +49,32 @@ The workflow uses a digest-pinned Guix container, boots the Guix daemon inside e
 
 ## Symbolic learner theorem search
 
-The active search target is a typed symbolic program over actual learner transformations. The current finite search enumerates attention, NormPair, and optimizer replacement compositions and generates concrete Agda theorem declarations for them.
+The active search target is a typed symbolic theorem program over actual learner transformations. Mercury enumerates a small basis grammar, quotients derived candidates, removes declarations already represented in the theorem monolith, and generates concrete Agda theorem declarations.
+
+The current basis uses NormPair replacement and the period-4 clock transformation with target-invariance and full-step-equivariance relations. Iterate-equivalence candidates are used as quotienting information and are not emitted when subsumed by the stronger one-step relation.
 
 The loop is:
 
-`symbolic composition -> Agda proposition -> generated proof -> agda --safe`
+`symbolic theorem -> equivalence quotient -> source novelty guard -> Agda proposition -> agda --safe`
 
-The discovery metric is deliberately left outside this semantic invariant. PVS, JAxtar/A*/Q* graph search, and evolutionary-population proposal layers remain pruned from the canonical path.
+PVS, JAxtar/A*/Q*, evolutionary-population proposal layers, and the old TSTS discovery generator are pruned from the canonical search path.
 
 ## Verification target
 
 The program/tree-search layer is used to propose, select, or refine learner-side candidates. Its purpose is to explore learner consistency by sending learner candidates and observations into the exact formal path. It is not used to prove its own search algorithm self-consistent.
 
-## Active theorem
+## Discovery status
 
-`FiniteTSTSEndogenousConnectedTheorem`
+The existing `FiniteTSTSEndogenousConnectedTheorem` remains part of the theorem surface, but discovery no longer searches for TSTS composition itself.
 
-The theorem connects:
+The current novel basis is:
 
-`TSTS sample -> endogenous learner probe -> canonical Watkins target -> TSTS posterior update -> GRU/F4 tell`
+- Watkins-target invariance under NormPair replacement;
+- Watkins-target invariance under the period-4 clock transformation;
+- canonical full-step equivariance under NormPair replacement;
+- canonical full-step equivariance under the period-4 clock transformation.
 
-and proves preservation of the `NormPair` observable and persistent-GRU quotient.
-
-The F4/L2 case explicitly exposes the path through `thetaQ`, the probe, L2 correction, attention feedback, GRU feedback, and q-log feedback.
-
-This is a finite semantic specialization. It is not a numerical reproduction of the external TSTS implementation and does not inherit the external Bayesian regret theorem automatically.
-
+These candidates are generated into a transient Agda module and must pass `agda --safe` before they can be considered verified. They are not auto-promoted into the canonical theorem monolith.
 ## CleanRL / LeanRL relationship
 
 The architecture intentionally borrows the useful single-file property: the algorithm/theorem variant has one obvious source of truth.
