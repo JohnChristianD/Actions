@@ -137,10 +137,10 @@ canonicalAperiodic-theorem :
   C.iterateCanonical K (suc n) s ≢ s
 canonicalAperiodic-theorem = C.canonicalAperiodic
 
-canonicalNoNontrivialFiniteCycle :
+canonicalNoNontrivialFiniteCycle-theorem :
   ∀ K s n →
   C.iterateCanonical K (suc n) s ≡ s → ⊥
-canonicalNoNontrivialFiniteCycle = C.canonicalNoNontrivialFiniteCycle
+canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
 
 record CanonicalConnectedCompositionTheorem : Set₁ where
   constructor canonicalConnectedCompositionTheorem
@@ -168,7 +168,7 @@ canonical-connected-composition-theorem =
     canonical-aq-loop-theorem
     walshRademacherRope4-period4
     canonicalClockAfter
-    canonicalNoNontrivialFiniteCycle
+    canonicalNoNontrivialFiniteCycle-theorem
 
 
 
