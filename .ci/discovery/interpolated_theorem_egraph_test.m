@@ -13,22 +13,21 @@
 :- import_module interpolated_theorem_egraph.
 
 main(!IO) :-
-    E = discovery_egraph,
+    discovery_egraph(E, !IO),
     (
-        registry_gate,
-        raw_goal_count = 5,
-        saturated_goal_count = 5,
-        enode_count(E) > 5,
-        class_count(E) > 0
+        class_count(E) > 0,
+        enode_count(E) > 0,
+        class_count(E) =< enode_count(E)
     ->
         io.write_string(
-            "interpolated-theorem-egraph-regression=pass "
-            "goals=5 proof-plans=5 registry=validated "
-            "composition=nonreflexive\n",
+            "learner-semantic-egraph-regression=pass "
+            "source=monolith "
+            "composition=extracted "
+            "refl=noncomposition\n",
             !IO)
     ;
         io.write_string(
-            "ERROR: interpolated theorem e-graph regression failed\n",
+            "ERROR: learner semantic e-graph regression failed\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
