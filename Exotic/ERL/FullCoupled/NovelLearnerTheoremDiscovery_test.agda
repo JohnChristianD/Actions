@@ -41,3 +41,19 @@ novelBasis-prefixSplit :
       s)
 novelBasis-prefixSplit =
   C.canonicalGRU-recurrent-prefix-split
+
+novelBasis-finiteReservoirFaithfulness :
+  FiniteReservoirFaithfulnessTheorem
+    C.Int8
+    C.Int8
+    (λ x → x)
+novelBasis-finiteReservoirFaithfulness =
+  finiteReservoirFaithfulnessTheorem
+    (λ x → x)
+    (λ x → refl)
+
+novelBasis-noPerfectUnboundedInt8Memory :
+  ∀ (f : Nat → C.Int8) →
+  ¬ (∀ {m n} → f m ≡ f n → m ≡ n)
+novelBasis-noPerfectUnboundedInt8Memory =
+  C.int8-no-countably-unbounded-injective
