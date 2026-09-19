@@ -83,7 +83,12 @@ theoremish(Signature) :-
     ;
     string.sub_string_search(Signature, "≢", _)
     ;
-    string.sub_string_search(Signature, "→ ⊥", _).
+    string.sub_string_search(Signature, "→ ⊥", _)
+    ;
+    %% Record-valued theorem instances are theorem objects too.  The
+    %% canonical theorem monolith uses the suffix "Theorem" for these
+    %% structured witnesses.
+    string.sub_string_search(Signature, "Theorem", _).
 
 :- pred body_clause(string::in, string::in, string::out) is semidet.
 body_clause(Name, Line, Body) :-
