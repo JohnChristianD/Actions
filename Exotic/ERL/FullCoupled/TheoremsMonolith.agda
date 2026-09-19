@@ -290,8 +290,8 @@ data FiniteTSTSBranch : Set where
 record FiniteTSTSPosterior : Set where
   constructor finiteTSTSPosterior
   field
-    sampleWatkins
-    sampleF4L2
+    sampleWatkins : Nat
+    sampleF4L2 : Nat
     sampleGRU : Nat
 open FiniteTSTSPosterior public
 
