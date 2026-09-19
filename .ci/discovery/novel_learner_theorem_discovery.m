@@ -22,12 +22,7 @@ clock_plus4_expr(S) =
     ") (suc (suc (suc (suc (C.clock (" ++ S ++ "))))))".
 
 :- func rendered_program(list(theorem_term)) = string.
-rendered_program(_) =
-    "generated-novel-learner-theorem-basis : NovelLearnerTheoremBasis\n" ++
-    "generated-novel-learner-theorem-basis = novel-learner-theorem-basis\n".
-:- func rendered_program(list(theorem_term)) = string.
-rendered_program([]) = "".
-rendered_program([T | Ts]) = render_candidate(T) ++ rendered_program(Ts).
+rendered_program(_) = "".
 
 :- pred contains_bare_refl(string::in) is semidet.
 contains_bare_refl(Text) :-
