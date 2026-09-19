@@ -89,7 +89,7 @@ write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
             "{\n" ++
             "  \"accepted\": true,\n" ++
             "  \"search_semantics\": \"typed symbolic learner-law basis enumeration\",\n" ++
-            "  \"egraph\": { \"rewrite_registry\": 1, \"saturation\": true, \"cost_based_extraction\": true },\n" ++
+            "  \"egraph\": { \"hash_cons\": true, \"general_enodes\": true, \"congruence_closure\": true, \"rewrite_registry\": 1, \"saturation\": true, \"cost_based_extraction\": true },\n" ++
             "  \"quotient\": \"Mercury equivalence-class quotient with declarative rewrite saturation\",\n" ++
             "  \"proof_gate\": \"GeneratedNovelLearnerTheorems.agda\",\n" ++
             "  \"raw_candidate_count\": " ++ nat_string(RawCount) ++ ",\n" ++
