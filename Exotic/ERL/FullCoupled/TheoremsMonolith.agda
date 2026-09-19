@@ -436,6 +436,19 @@ finiteTSTSClosedStep K p d s =
   C.canonicalFullStep K
     (finiteTSTSSelectedProbe K p d s)
 
+finiteTSTSPosteriorUpdate-law :
+  ∀ K p d s →
+  finiteTSTSBranchSample
+    (finiteTSTSNextPosterior K p d s)
+    (finiteTSTSSelectedBranch p)
+  ≡
+  finiteTSTSBranchSample p (finiteTSTSSelectedBranch p)
+  + finiteTSTSReward K p d s
+finiteTSTSPosteriorUpdate-law K p d s with finiteTSTSSelectedBranch p
+... | tstsWatkinsBranch = refl
+... | tstsF4L2Branch = refl
+... | tstsGRUBranch = refl
+
 record FiniteTSTSEndogenousConnectedTheorem : Set₁ where
   constructor finiteTSTSEndogenousConnectedTheorem
   field
@@ -526,10 +539,7 @@ finite-tsts-endogenous-connected-theorem :
 finite-tsts-endogenous-connected-theorem =
   finiteTSTSEndogenousConnectedTheorem
     (λ K p d s → refl)
-    (λ K p d s with finiteTSTSSelectedBranch p
-     ... | tstsWatkinsBranch = refl
-     ... | tstsF4L2Branch = refl
-     ... | tstsGRUBranch = refl)
+    finiteTSTSPosteriorUpdate-law
     (λ K p d s → refl)
     (λ K p d s → refl)
     (λ K p d s eq rewrite eq = refl)
