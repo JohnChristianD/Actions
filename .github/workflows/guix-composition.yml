@@ -16,7 +16,7 @@ concurrency:
 
 permissions:
   contents: read
-  statuses: write
+  checks: write
 
 env:
   GH_TOKEN: ${{ github.token }}
@@ -51,13 +51,15 @@ jobs:
           cat "$log"
           if [ "$status" -ne 0 ]; then
             description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
-            GH_TOKEN="$GITHUB_TOKEN" gh api \
+            payload="$(jq -n \
+              --arg sha "$GITHUB_SHA" \
+              --arg summary "$description" \
+              '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
+            printf '%s' "$payload" | gh api \
               --method POST \
               -H "Accept: application/vnd.github+json" \
-              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-              -f state=failure \
-              -f context="guix-failure-diagnostic" \
-              -f description="$description" >/dev/null || true
+              "/repos/$GITHUB_REPOSITORY/check-runs" \
+              --input - >/dev/null || true
           fi
           rm -f "$log"
           exit "$status"
@@ -91,13 +93,15 @@ jobs:
           cat "$log"
           if [ "$status" -ne 0 ]; then
             description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
-            GH_TOKEN="$GITHUB_TOKEN" gh api \
+            payload="$(jq -n \
+              --arg sha "$GITHUB_SHA" \
+              --arg summary "$description" \
+              '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
+            printf '%s' "$payload" | gh api \
               --method POST \
               -H "Accept: application/vnd.github+json" \
-              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-              -f state=failure \
-              -f context="guix-failure-diagnostic" \
-              -f description="$description" >/dev/null || true
+              "/repos/$GITHUB_REPOSITORY/check-runs" \
+              --input - >/dev/null || true
           fi
           rm -f "$log"
           exit "$status"
@@ -131,13 +135,15 @@ jobs:
           cat "$log"
           if [ "$status" -ne 0 ]; then
             description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
-            GH_TOKEN="$GITHUB_TOKEN" gh api \
+            payload="$(jq -n \
+              --arg sha "$GITHUB_SHA" \
+              --arg summary "$description" \
+              '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
+            printf '%s' "$payload" | gh api \
               --method POST \
               -H "Accept: application/vnd.github+json" \
-              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-              -f state=failure \
-              -f context="guix-failure-diagnostic" \
-              -f description="$description" >/dev/null || true
+              "/repos/$GITHUB_REPOSITORY/check-runs" \
+              --input - >/dev/null || true
           fi
           rm -f "$log"
           exit "$status"
@@ -176,13 +182,15 @@ jobs:
           cat "$log"
           if [ "$status" -ne 0 ]; then
             description="$(tail -n 3 "$log" | tr '\n' ' ' | cut -c1-140)"
-            GH_TOKEN="$GITHUB_TOKEN" gh api \
+            payload="$(jq -n \
+              --arg sha "$GITHUB_SHA" \
+              --arg summary "$description" \
+              '{name:"Guix lane diagnostic",head_sha:$sha,status:"completed",conclusion:"failure",output:{title:"Guix lane failed",summary:$summary}}')"
+            printf '%s' "$payload" | gh api \
               --method POST \
               -H "Accept: application/vnd.github+json" \
-              "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-              -f state=failure \
-              -f context="guix-failure-diagnostic" \
-              -f description="$description" >/dev/null || true
+              "/repos/$GITHUB_REPOSITORY/check-runs" \
+              --input - >/dev/null || true
           fi
           rm -f "$log"
           exit "$status"
