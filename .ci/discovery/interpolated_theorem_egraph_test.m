@@ -15,6 +15,7 @@
 main(!IO) :-
     E = discovery_egraph,
     (
+        registry_gate,
         raw_goal_count = 5,
         saturated_goal_count = 5,
         enode_count(E) > 5,
@@ -22,7 +23,8 @@ main(!IO) :-
     ->
         io.write_string(
             "interpolated-theorem-egraph-regression=pass "
-            "goals=5 proof-plans=5\n",
+            "goals=5 proof-plans=5 registry=validated "
+            "composition=nonreflexive\n",
             !IO)
     ;
         io.write_string(
