@@ -5,7 +5,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInjective)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
@@ -737,6 +737,14 @@ canonicalGRU-recurrent-prefix-split :
       s)
 canonicalGRU-recurrent-prefix-split =
   recurrentPrefix-split canonicalGRURecurrentNetwork
+
+int8-no-countably-unbounded-injective :
+  ∀ (f : Nat → Int8) →
+  ¬ (∀ {m n} → f m ≡ f n → m ≡ n)
+int8-no-countably-unbounded-injective f inj =
+  ℕ→Fin-notInjective
+    (λ n → code (f n))
+    (λ {m} {n} eq → inj (cong int8 eq))
 
 gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
