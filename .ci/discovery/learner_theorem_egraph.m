@@ -2,7 +2,7 @@
 
 :- interface.
 
-:- import_module eqvclass.
+:- import_module symbolic_egraph.
 :- import_module list.
 :- import_module string.
 
@@ -27,27 +27,20 @@
     ---> theorem_pattern(theorem_transform, theorem_observable).
 
 :- type theorem_rewrite
-    ---> normalize_iterate.
+    ---> theorem_rewrite(theorem_term, theorem_term).
 
 :- func theorem_patterns = list(theorem_pattern).
 :- func theorem_rewrites = list(theorem_rewrite).
 
 :- func raw_terms = list(theorem_term).
-:- func discovery_egraph = eqvclass.eqvclass(theorem_term).
+:- func discovery_egraph = egraph.
 
-:- pred saturate(
-    eqvclass.eqvclass(theorem_term)::in,
-    list(theorem_rewrite)::in,
-    list(theorem_term)::in,
-    eqvclass.eqvclass(theorem_term)::out) is det.
-
-:- pred quotient_terms(eqvclass.eqvclass(theorem_term)::in,
-    list(theorem_term)::in, list(theorem_term)::in,
-    list(theorem_term)::out) is det.
+:- pred quotient_terms(egraph::in, list(theorem_term)::in,
+    list(theorem_term)::in, list(theorem_term)::out) is det.
 
 :- func theorem_cost(theorem_term) = int.
-:- pred extract_minimal(eqvclass.eqvclass(theorem_term)::in,
-    list(theorem_term)::in, list(theorem_term)::out) is det.
+:- pred extract_minimal(egraph::in, list(theorem_term)::in,
+    list(theorem_term)::out) is det.
 
 :- func candidate_name(theorem_term) = string.
 :- func candidate_signature(theorem_term) = string.
@@ -64,70 +57,84 @@ theorem_patterns = [
     theorem_pattern(clock_plus4, watkins_target)
 ].
 
-theorem_rewrites = [normalize_iterate].
+theorem_rewrites = [
+    theorem_rewrite(
+        theorem_term(norm_replacement, count_step, iterate_invariant),
+        theorem_term(norm_replacement, count_step, invariant)),
+    theorem_rewrite(
+        theorem_term(norm_replacement, qlog_step, iterate_invariant),
+        theorem_term(norm_replacement, qlog_step, invariant)),
+    theorem_rewrite(
+        theorem_term(clock_plus4, endogenous_feedback, iterate_invariant),
+        theorem_term(clock_plus4, endogenous_feedback, invariant)),
+    theorem_rewrite(
+        theorem_term(clock_plus4, watkins_target, iterate_invariant),
+        theorem_term(clock_plus4, watkins_target, invariant))
+].
 
 :- func pattern_terms(theorem_pattern) = list(theorem_term).
 pattern_terms(theorem_pattern(T, O)) =
-    [theorem_term(T, O, invariant), theorem_term(T, O, iterate_invariant)].
-
-:- func raw_terms = list(theorem_term).
-raw_terms = expand_patterns(theorem_patterns).
+    [theorem_term(T, O, invariant),
+     theorem_term(T, O, iterate_invariant)].
 
 :- func expand_patterns(list(theorem_pattern)) = list(theorem_term).
 expand_patterns([]) = [].
-expand_patterns([P | Ps]) = pattern_terms(P) ++ expand_patterns(Ps).
+expand_patterns([P | Ps]) =
+    pattern_terms(P) ++ expand_patterns(Ps).
 
-:- func rewrite_once(theorem_rewrite, theorem_term) = theorem_term.
-rewrite_once(normalize_iterate, theorem_term(T, O, iterate_invariant)) =
-    theorem_term(T, O, invariant).
-rewrite_once(normalize_iterate, T) = T.
+raw_terms = expand_patterns(theorem_patterns).
 
-:- pred add_rewrite(
-    eqvclass.eqvclass(theorem_term)::in,
-    theorem_rewrite::in,
-    theorem_term::in,
-    eqvclass.eqvclass(theorem_term)::out) is det.
-add_rewrite(E0, Rule, T, E) :-
-    R = rewrite_once(Rule, T),
-    ( if T = R then
-        E = E0
-    else
-        E = eqvclass.ensure_equivalence(E0, T, R)
-    ).
+:- func theorem_expr(theorem_term) = expr.
+theorem_expr(theorem_term(T, O, R)) =
+    app("learner-law", [
+        atom(transform_symbol(T)),
+        atom(observable_symbol(O)),
+        atom(relation_symbol(R))
+    ]).
 
-:- pred add_rewrites(
-    eqvclass.eqvclass(theorem_term)::in,
-    list(theorem_rewrite)::in,
-    theorem_term::in,
-    eqvclass.eqvclass(theorem_term)::out) is det.
-add_rewrites(E, [], _, E).
-add_rewrites(E0, [Rule | Rules], T, E) :-
-    add_rewrite(E0, Rule, T, E1),
-    add_rewrites(E1, Rules, T, E).
+:- func transform_symbol(theorem_transform) = string.
+transform_symbol(norm_replacement) = "norm-replacement".
+transform_symbol(clock_plus4) = "clock-plus4".
 
-:- pred saturate_terms(
-    eqvclass.eqvclass(theorem_term)::in,
-    list(theorem_rewrite)::in,
-    list(theorem_term)::in,
-    eqvclass.eqvclass(theorem_term)::out) is det.
-saturate_terms(E, _, [], E).
-saturate_terms(E0, Rules, [T | Ts], E) :-
-    add_rewrites(E0, Rules, T, E1),
-    saturate_terms(E1, Rules, Ts, E).
+:- func observable_symbol(theorem_observable) = string.
+observable_symbol(count_step) = "count-step".
+observable_symbol(qlog_step) = "qlog-step".
+observable_symbol(endogenous_feedback) = "endogenous-feedback".
+observable_symbol(watkins_target) = "watkins-target".
 
-saturate(E0, Rules, Terms, E) :-
-    saturate_terms(E0, Rules, Terms, E).
+:- func relation_symbol(theorem_relation) = string.
+relation_symbol(invariant) = "invariant".
+relation_symbol(iterate_invariant) = "iterate-invariant".
+
+:- pred add_terms(list(theorem_term)::in, egraph::in,
+    egraph::out) is det.
+add_terms([], E, E).
+add_terms([T | Ts], E0, E) :-
+    add_expr(theorem_expr(T), E0, _, E1),
+    add_terms(Ts, E1, E).
+
+:- pred add_rewrites(list(theorem_rewrite)::in, egraph::in,
+    egraph::out) is det.
+add_rewrites([], E, E).
+add_rewrites([theorem_rewrite(L, R) | Rs], E0, E) :-
+    add_expr(theorem_expr(L), E0, LeftId, E1),
+    add_expr(theorem_expr(R), E1, RightId, E2),
+    merge(LeftId, RightId, E2, E3),
+    add_rewrites(Rs, E3, E).
 
 discovery_egraph = E :-
-    E0 = eqvclass.init,
-    saturate(E0, theorem_rewrites, raw_terms, E).
+    E0 = symbolic_egraph.empty,
+    add_terms(raw_terms, E0, E1),
+    add_rewrites(theorem_rewrites, E1, E).
 
-:- pred equivalent_to_prior(eqvclass.eqvclass(theorem_term)::in,
-    list(theorem_term)::in, theorem_term::in) is semidet.
+:- pred equivalent_to_prior(egraph::in, list(theorem_term)::in,
+    theorem_term::in) is semidet.
 equivalent_to_prior(_, [], _) :-
     fail.
 equivalent_to_prior(E, [P | Ps], T) :-
-    ( if eqvclass.same_eqvclass(E, P, T) then
+    add_expr(theorem_expr(P), E, Pid, Ep),
+    add_expr(theorem_expr(T), Ep, Tid, Et),
+    ( if equivalent(Pid, Tid, Et) then
         true
     else
         equivalent_to_prior(E, Ps, T)
@@ -145,11 +152,11 @@ quotient_terms(E, [T | Ts], Prior, Out) :-
 theorem_cost(theorem_term(_, _, invariant)) = 1.
 theorem_cost(theorem_term(_, _, iterate_invariant)) = 2.
 
-:- pred insert_minimal(eqvclass.eqvclass(theorem_term)::in,
-    theorem_term::in, list(theorem_term)::in, list(theorem_term)::out) is det.
-insert_minimal(E, T, [], [T]).
+:- pred insert_minimal(egraph::in, theorem_term::in,
+    list(theorem_term)::in, list(theorem_term)::out) is det.
+insert_minimal(_, T, [], [T]).
 insert_minimal(E, T, [H | Hs], Out) :-
-    ( if eqvclass.same_eqvclass(E, T, H) then
+    ( if equivalent_to_prior(E, [H], T) then
         ( if theorem_cost(T) < theorem_cost(H) then
             Out = [T | Hs]
         else
