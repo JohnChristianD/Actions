@@ -679,3 +679,97 @@ finite-attention-watkins-gru-f4-mediator-theorem =
       C.canonicalPersistentGRUPreservation
         K
         (C.replaceAttention s a))
+
+
+------------------------------------------------------------------------
+-- Compact novel theorem basis for the canonical learner.
+--
+-- These four laws are the minimal nontrivial representatives retained by
+-- the Mercury symbolic quotient.  They are compositional consequences of
+-- the canonical learner laws, not bare definitional-reflexivity candidates.
+------------------------------------------------------------------------
+
+novel-clockPlus4-endogenousFeedback-invariant :
+  ∀ K s →
+  C.canonicalEndogenousFeedback K
+    (replaceClock s
+      (suc (suc (suc (suc (C.clock s))))))
+  ≡
+  C.canonicalEndogenousFeedback K s
+novel-clockPlus4-endogenousFeedback-invariant K s =
+  cong
+    (λ x →
+      C.int8Add
+        x
+        (C.int8Add
+          (C.canonicalGRUFeedback s)
+          (C.int8Add
+            (C.canonicalF4L2Feedback K s)
+            (C.int8Add
+              (C.canonicalQLogControlFeedback s)
+              (C.canonicalQLogValueFeedback s)))))
+    (canonicalAttentionMix-clock-period4 K s)
+
+record NovelLearnerTheoremBasis : Set₁ where
+  constructor novelLearnerTheoremBasis
+  field
+    normReplacementCountStep :
+      ∀ K s n →
+      C.canonicalCountStep K (C.replaceNorm s n)
+      ≡
+      C.canonicalCountStep K s
+
+    normReplacementQLogStep :
+      ∀ K s n →
+      C.canonicalQLogStep K (C.replaceNorm s n)
+      ≡
+      C.canonicalQLogStep K s
+
+    clockPlus4EndogenousFeedback :
+      ∀ K s →
+      C.canonicalEndogenousFeedback K
+        (replaceClock s
+          (suc (suc (suc (suc (C.clock s))))))
+      ≡
+      C.canonicalEndogenousFeedback K s
+
+    clockPlus4WatkinsTarget :
+      ∀ K s →
+      C.canonicalWatkinsTarget K
+        (replaceClock s
+          (suc (suc (suc (suc (C.clock s))))))
+      ≡
+      C.canonicalWatkinsTarget K s
+
+open NovelLearnerTheoremBasis public
+
+novel-learner-theorem-basis :
+  NovelLearnerTheoremBasis
+novel-learner-theorem-basis =
+  novelLearnerTheoremBasis
+    (λ K s n →
+      cong₂ C.updateLCBCount
+        (canonicalPolicy-norm-invariant K s n)
+        refl)
+    (λ K s n →
+      cong
+        (λ p → C.negativeFiniteQLog8 (C.policyLeftWeight p))
+        (canonicalPolicy-norm-invariant K s n))
+    novel-clockPlus4-endogenousFeedback-invariant
+    (λ K s →
+      trans
+        (C.canonicalWatkinsTarget-law K
+          (replaceClock s
+            (suc (suc (suc (suc (C.clock s)))))))
+        (cong
+          (λ x →
+            C.int8Add
+              (C.int8Add
+                (C.int8Add
+                  (C.canonicalReward8 K s)
+                  (C.canonicalQLogBias K s))
+                (C.int8Mul
+                  C.canonicalDiscount8
+                  (C.maxCriticValue8 (C.critic (C.watkins s)))))
+              x)
+          (novel-clockPlus4-endogenousFeedback-invariant K s)))
