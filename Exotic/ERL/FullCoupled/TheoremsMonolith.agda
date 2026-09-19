@@ -1012,6 +1012,101 @@ record DiscreteExactUAPTheorem
 
 open DiscreteExactUAPTheorem public
 
+------------------------------------------------------------------------
+-- Full universal exact-discrete UAP, not merely one chosen target.
+--
+-- Universal exact readout means every target State → Output factors
+-- exactly through the observation.  Constructively, this is equivalent
+-- to existence of a left inverse.  The identity target supplies the
+-- converse, so this result is independent of topology or approximation
+-- metrics.
+------------------------------------------------------------------------
+
+record DiscreteLeftInverseWitness
+  (State Feature : Set)
+  (observe : State → Feature) : Set₁ where
+  constructor discreteLeftInverseWitness
+  field
+    inverse : Feature → State
+    leftInverse :
+      ∀ s → inverse (observe s) ≡ s
+
+open DiscreteLeftInverseWitness public
+
+record DiscreteExactUniversalUAP
+  (State Feature : Set)
+  (observe : State → Feature) : Set₁ where
+  constructor discreteExactUniversalUAP
+  field
+    readout :
+      {Output : Set} →
+      (State → Output) →
+      Feature →
+      Output
+    exactReadout :
+      {Output : Set} →
+      (target : State → Output) →
+      ∀ s →
+      target s ≡ readout target (observe s)
+
+open DiscreteExactUniversalUAP public
+
+discreteExactUniversalUAP-from-leftInverse :
+  ∀ {State Feature : Set}
+  {observe : State → Feature} →
+  DiscreteLeftInverseWitness State Feature observe →
+  DiscreteExactUniversalUAP State Feature observe
+discreteExactUniversalUAP-from-leftInverse witness =
+  discreteExactUniversalUAP
+    (λ target f → target (inverse witness f))
+    (λ target s → cong target (leftInverse witness s))
+
+discreteExactUniversalUAP-to-leftInverse :
+  ∀ {State Feature : Set}
+  {observe : State → Feature} →
+  DiscreteExactUniversalUAP State Feature observe →
+  DiscreteLeftInverseWitness State Feature observe
+discreteExactUniversalUAP-to-leftInverse universal =
+  discreteLeftInverseWitness
+    (readout universal (λ s → s))
+    (exactReadout universal (λ s → s))
+
+record DiscreteExactUniversalUAPLeftInverseEquivalence
+  (State Feature : Set)
+  (observe : State → Feature) : Set₁ where
+  constructor discreteExactUniversalUAPLeftInverseEquivalence
+  field
+    fromLeftInverse :
+      DiscreteLeftInverseWitness State Feature observe →
+      DiscreteExactUniversalUAP State Feature observe
+    toLeftInverse :
+      DiscreteExactUniversalUAP State Feature observe →
+      DiscreteLeftInverseWitness State Feature observe
+
+discreteExactUniversalUAP-leftInverse-equivalence :
+  ∀ {State Feature : Set}
+  {observe : State → Feature} →
+  DiscreteExactUniversalUAPLeftInverseEquivalence State Feature observe
+discreteExactUniversalUAP-leftInverse-equivalence =
+  discreteExactUniversalUAPLeftInverseEquivalence
+    discreteExactUniversalUAP-from-leftInverse
+    discreteExactUniversalUAP-to-leftInverse
+
+discreteLeftInverse-observe-injective :
+  ∀ {State Feature : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State} →
+  (∀ s → inverse (observe s) ≡ s) →
+  ∀ {s t} →
+  observe s ≡ observe t →
+  s ≡ t
+discreteLeftInverse-observe-injective leftInverse {s} {t} eq =
+  trans
+    (sym (leftInverse s))
+    (trans
+      (cong inverse eq)
+      (leftInverse t))
+
 discreteExactUAPTheorem-from-leftInverse :
   ∀ {State Feature Output : Set}
   (observe : State → Feature)
@@ -1081,6 +1176,27 @@ canonicalNoGlobalInt8DiscreteUAPOnOrbit
     s
     observe
     inverse
+    (leftInverse witness)
+
+canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → C.Int8) →
+  DiscreteExactUniversalUAP
+    C.FullLearnerState
+    C.Int8
+    observe →
+  ⊥
+canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
+  K s observe universal =
+  let
+    witness = discreteExactUniversalUAP-to-leftInverse universal
+  in
+  canonicalPigeonholeNatClockContradiction
+    K
+    s
+    observe
+    (inverse witness)
     (leftInverse witness)
 
 ------------------------------------------------------------------------
