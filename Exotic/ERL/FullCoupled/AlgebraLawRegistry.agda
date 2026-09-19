@@ -236,15 +236,16 @@ algebraLawRegistry =
   ringNegMultiplyLaw ∷
   []
 
+data ValidCompositionArity : Set where
+  validCompositionArity : ValidCompositionArity
+
 compositionArityIsValid : AlgebraLawKind → Set
-compositionArityIsValid primitiveLaw = Set
-compositionArityIsValid (compositionLaw (suc (suc n))) = Set
+compositionArityIsValid primitiveLaw = ValidCompositionArity
+compositionArityIsValid (compositionLaw (suc (suc n))) =
+  ValidCompositionArity
 compositionArityIsValid (compositionLaw zero) = ⊥
 compositionArityIsValid (compositionLaw (suc zero)) = ⊥
 
 policyReplacementCompositionLaw-valid :
-  compositionArityIsValid (kind policyReplacementCompositionLaw)
-policyReplacementCompositionLaw-valid = Set
-
-canonicalRegistryContainsOnlyDeclaredCompositions : Set
-canonicalRegistryContainsOnlyDeclaredCompositions = Set
+  compositionArityIsValid (AlgebraLaw.kind policyReplacementCompositionLaw)
+policyReplacementCompositionLaw-valid = validCompositionArity
