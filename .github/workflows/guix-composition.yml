@@ -17,179 +17,53 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  GUIX_INSTALL_ACTION: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
+
 jobs:
   agda-safe:
     name: Guix / Agda --safe connected theorem surface
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    container:
-      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
-      options: --security-opt seccomp=unconfined
     defaults:
       run:
-        shell: sh
+        shell: bash
+    env:
+      CI_LANE: agda-safe
     steps:
-      - name: Initialize Guix daemon
-        run: |
-          set -eu
-          # The pinned Guix container runs as UID 0 but does not always ship
-          # a passwd entry for that UID. Guix offload calls getpw(0), so make
-          # the root identity explicit before starting any Guix command.
-          touch /etc/passwd /etc/group
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
-            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
-          fi
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
-            printf '%s\n' 'root:x:0:' >> /etc/group
-          fi
-          groupadd --system guixbuild 2>/dev/null || true
-          build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
-          for i in $(seq -w 1 10); do
-            useradd -g guixbuild -G guixbuild -d /var/empty -s "$build_shell" \
-              -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
-          done
-          mkdir -p /var/guix/daemon-socket
-          if [ ! -S /var/guix/daemon-socket/socket ]; then
-            env LANG=C.UTF-8 guix-daemon --disable-chroot \
-              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
-          fi
-          for i in $(seq 1 30); do
-            if [ -S /var/guix/daemon-socket/socket ]; then
-              break
-            fi
-            sleep 1
-          done
-          test -S /var/guix/daemon-socket/socket
-          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
-          fi
-          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
-          fi
-
-      - name: Initialize container network service database
-        run: |
-          set -eu
-          touch /etc/services
-          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
-            printf '%s\n' 'http 80/tcp' >> /etc/services
-          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
-            printf '%s\n' 'https 443/tcp' >> /etc/services
-          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
-            printf '%s\n' 'git 9418/tcp' >> /etc/services
-
-      - name: Checkout repository with container Git
-        run: |
-          set -eu
-          test -x "$(command -v git)"
-          git --version
-          workspace="${GITHUB_WORKSPACE}"
-          mkdir -p "${workspace}"
-          git config --global --add safe.directory "${workspace}"
-          git -C "${workspace}" init -q
-          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          git -C "${workspace}" remote add origin \
-            "https://github.com/${GITHUB_REPOSITORY}.git"
-          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
-          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install prepared Guix action
+        uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
+        with:
+          pullAfterInstall: false
       - name: Run pinned Guix Agda lane
-        # The container image digest pins the Guix toolchain. Avoid channel-history
-        # bootstrap here; the previous time-machine update consumed the CI timeout.
-        env:
-          CI_LANE: agda-safe
         run: |
+          set -euo pipefail
           guix --version
           guix describe -f channels
-          set +e
           guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
-          status=$?
-          if [ "$status" -ne 0 ]; then
-            log="$(find /var/log/guix/drvs -type f -name '*.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
-            if [ -n "$log" ] && [ -f "$log" ]; then
-              printf '%s\n' "latest-guix-build-log=$log"
-              gzip -cd "$log" | tail -n 400 || true
-            fi
-          fi
-          exit "$status"
+
   mercury:
     needs: [agda-safe]
     name: Guix / Mercury connected theorem and verifier lane
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    container:
-      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
-      options: --security-opt seccomp=unconfined
     defaults:
       run:
-        shell: sh
+        shell: bash
+    env:
+      CI_LANE: mercury
     steps:
-      - name: Initialize Guix daemon
-        run: |
-          set -eu
-          # The pinned Guix container runs as UID 0 but does not always ship
-          # a passwd entry for that UID. Guix offload calls getpw(0), so make
-          # the root identity explicit before starting any Guix command.
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
-            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
-          fi
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
-            printf '%s\n' 'root:x:0:' >> /etc/group
-          fi
-          groupadd --system guixbuild 2>/dev/null || true
-          build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
-          for i in $(seq -w 1 10); do
-            useradd -g guixbuild -G guixbuild -d /var/empty -s "$build_shell"               -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
-          done
-          mkdir -p /var/guix/daemon-socket
-          if [ ! -S /var/guix/daemon-socket/socket ]; then
-            env LANG=C.UTF-8 guix-daemon --disable-chroot \
-              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
-          fi
-          for i in $(seq 1 30); do
-            if [ -S /var/guix/daemon-socket/socket ]; then
-              break
-            fi
-            sleep 1
-          done
-          test -S /var/guix/daemon-socket/socket
-          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
-          fi
-          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
-          fi
-
-      - name: Initialize container network service database
-        run: |
-          set -eu
-          touch /etc/services
-          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
-            printf '%s\n' 'http 80/tcp' >> /etc/services
-          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
-            printf '%s\n' 'https 443/tcp' >> /etc/services
-          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
-            printf '%s\n' 'git 9418/tcp' >> /etc/services
-
-      - name: Checkout repository with container Git
-        run: |
-          set -eu
-          test -x "$(command -v git)"
-          git --version
-          workspace="${GITHUB_WORKSPACE}"
-          mkdir -p "${workspace}"
-          git config --global --add safe.directory "${workspace}"
-          git -C "${workspace}" init -q
-          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          git -C "${workspace}" remote add origin \
-            "https://github.com/${GITHUB_REPOSITORY}.git"
-          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
-          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install prepared Guix action
+        uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
+        with:
+          pullAfterInstall: false
       - name: Run pinned Guix Mercury lane
-        # The container image digest pins the Guix toolchain. No channel-history
-        # bootstrap is needed for the manifest-based verifier lane.
-        env:
-          CI_LANE: mercury
         run: |
+          set -euo pipefail
           guix --version
           guix describe -f channels
           guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
@@ -199,86 +73,27 @@ jobs:
     name: Guix / Mercury semantic e-graph discovery
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    container:
-      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
-      options: --security-opt seccomp=unconfined
     defaults:
       run:
-        shell: sh
+        shell: bash
+    env:
+      CI_LANE: discovery
     steps:
-      - name: Initialize Guix daemon
-        run: |
-          set -eu
-          # The pinned Guix container runs as UID 0 but does not always ship
-          # a passwd entry for that UID. Guix offload calls getpw(0), so make
-          # the root identity explicit before starting any Guix command.
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
-            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
-          fi
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
-            printf '%s\n' 'root:x:0:' >> /etc/group
-          fi
-          groupadd --system guixbuild 2>/dev/null || true
-          build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
-          for i in $(seq -w 1 10); do
-            useradd -g guixbuild -G guixbuild -d /var/empty -s "$build_shell"               -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
-          done
-          mkdir -p /var/guix/daemon-socket
-          if [ ! -S /var/guix/daemon-socket/socket ]; then
-            env LANG=C.UTF-8 guix-daemon --disable-chroot \
-              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
-          fi
-          for i in $(seq 1 30); do
-            if [ -S /var/guix/daemon-socket/socket ]; then
-              break
-            fi
-            sleep 1
-          done
-          test -S /var/guix/daemon-socket/socket
-          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
-          fi
-          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
-          fi
-
-      - name: Initialize container network service database
-        run: |
-          set -eu
-          touch /etc/services
-          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
-            printf '%s\n' 'http 80/tcp' >> /etc/services
-          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
-            printf '%s\n' 'https 443/tcp' >> /etc/services
-          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
-            printf '%s\n' 'git 9418/tcp' >> /etc/services
-
-      - name: Checkout repository with container Git
-        run: |
-          set -eu
-          test -x "$(command -v git)"
-          git --version
-          workspace="${GITHUB_WORKSPACE}"
-          mkdir -p "${workspace}"
-          git config --global --add safe.directory "${workspace}"
-          git -C "${workspace}" init -q
-          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          git -C "${workspace}" remote add origin \
-            "https://github.com/${GITHUB_REPOSITORY}.git"
-          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
-          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install prepared Guix action
+        uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
+        with:
+          pullAfterInstall: false
       - name: Run pinned Mercury semantic e-graph discovery lane
-        # The container image digest pins the Guix toolchain. No channel-history
-        # bootstrap is needed for the manifest-based discovery lane.
-        env:
-          CI_LANE: discovery
         run: |
+          set -euo pipefail
           guix --version
           guix describe -f channels
           guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
       - name: Verify forced endogenous theorem discovery artifact is present
         run: |
-          set -eu
+          set -euo pipefail
           test -f ".ci/discovery/novel-learner-theorem-discovery.json"
           printf '%s\n' "novel-learner-theorem-discovery-report=present"
 
@@ -287,79 +102,21 @@ jobs:
     name: Guix / canonical source-policy surface
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    container:
-      image: jas4711/guix@sha256:1ecca8f90bdc59d0fac97700aa18e6e0677de8b75dc9ffc16bf7452b240d8f52
-      options: --security-opt seccomp=unconfined
     defaults:
       run:
-        shell: sh
+        shell: bash
+    env:
+      CI_LANE: surface
     steps:
-      - name: Initialize Guix daemon
-        run: |
-          set -eu
-          # The pinned Guix container runs as UID 0 but does not always ship
-          # a passwd entry for that UID. Guix offload calls getpw(0), so make
-          # the root identity explicit before starting any Guix command.
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/passwd; then
-            printf '%s\n' 'root:x:0:0:root:/root:/bin/sh' >> /etc/passwd
-          fi
-          if ! awk -F: '$3 == 0 { found=1 } END { exit(found ? 0 : 1) }' /etc/group; then
-            printf '%s\n' 'root:x:0:' >> /etc/group
-          fi
-          groupadd --system guixbuild 2>/dev/null || true
-          build_shell="$(command -v nologin || command -v false || echo /bin/sh)"
-          for i in $(seq -w 1 10); do
-            useradd -g guixbuild -G guixbuild -d /var/empty -s "$build_shell"               -c "Guix build user $i" --system guixbuilder$i 2>/dev/null || true
-          done
-          mkdir -p /var/guix/daemon-socket
-          if [ ! -S /var/guix/daemon-socket/socket ]; then
-            env LANG=C.UTF-8 guix-daemon --disable-chroot \
-              --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
-          fi
-          for i in $(seq 1 30); do
-            if [ -S /var/guix/daemon-socket/socket ]; then
-              break
-            fi
-            sleep 1
-          done
-          test -S /var/guix/daemon-socket/socket
-          if [ -f /share/guix/ci.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/ci.guix.gnu.org.pub
-          fi
-          if [ -f /share/guix/bordeaux.guix.gnu.org.pub ]; then
-            guix archive --authorize < /share/guix/bordeaux.guix.gnu.org.pub
-          fi
-
-      - name: Initialize container network service database
-        run: |
-          set -eu
-          touch /etc/services
-          grep -q '^http[[:space:]]\+80/tcp' /etc/services || \
-            printf '%s\n' 'http 80/tcp' >> /etc/services
-          grep -q '^https[[:space:]]\+443/tcp' /etc/services || \
-            printf '%s\n' 'https 443/tcp' >> /etc/services
-          grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
-            printf '%s\n' 'git 9418/tcp' >> /etc/services
-
-      - name: Checkout repository with container Git
-        run: |
-          set -eu
-          test -x "$(command -v git)"
-          git --version
-          workspace="${GITHUB_WORKSPACE}"
-          mkdir -p "${workspace}"
-          git config --global --add safe.directory "${workspace}"
-          git -C "${workspace}" init -q
-          git -C "${workspace}" remote remove origin >/dev/null 2>&1 || true
-          git -C "${workspace}" remote add origin \
-            "https://github.com/${GITHUB_REPOSITORY}.git"
-          git -C "${workspace}" fetch --depth=1 origin "${GITHUB_SHA}"
-          git -C "${workspace}" checkout --detach "${GITHUB_SHA}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install prepared Guix action
+        uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
+        with:
+          pullAfterInstall: false
       - name: Audit repository surface
-        # The container image digest pins the Guix executable; no channel update is needed.
-        env:
-          CI_LANE: surface
         run: |
+          set -euo pipefail
           guix --version
           guix describe -f channels
           guix shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
