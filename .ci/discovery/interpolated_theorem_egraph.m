@@ -5,11 +5,7 @@
 :- import_module io.
 :- import_module symbolic_egraph.
 
-:- func raw_semantic_law_count = int.
-:- func nonreflexive_semantic_law_count = int.
-:- func composite_semantic_law_count = int.
 :- pred discovery_egraph(symbolic_egraph.egraph::out, io::di, io::uo) is det.
-:- pred registry_gate is semidet.
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
