@@ -152,7 +152,7 @@ algebra_law_registry = [
 ].
 
 law_is_nonreflexive(algebra_law(_, _, Lhs, Rhs, _, _)) :-
-    Lhs = Rhs.
+    Lhs \= Rhs.
 
 law_is_composition(algebra_law(_, _, _, _, composition_law(N), Dependencies)) :-
     N >= 2,
