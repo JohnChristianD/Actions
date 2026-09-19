@@ -73,9 +73,9 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --depth=1 --branch version-1.5.0 \
+          git clone --branch version-1.5.0 \
             "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch --depth=1 origin \
+          git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
           git -C /tmp/guix-channel checkout --detach \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
@@ -162,9 +162,9 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --depth=1 --branch version-1.5.0 \
+          git clone --branch version-1.5.0 \
             "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch --depth=1 origin \
+          git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
           git -C /tmp/guix-channel checkout --detach \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
@@ -251,9 +251,9 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --depth=1 --branch version-1.5.0 \
+          git clone --branch version-1.5.0 \
             "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch --depth=1 origin \
+          git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
           git -C /tmp/guix-channel checkout --detach \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
@@ -345,9 +345,9 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --depth=1 --branch version-1.5.0 \
+          git clone --branch version-1.5.0 \
             "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
-          git -C /tmp/guix-channel fetch --depth=1 origin \
+          git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
           git -C /tmp/guix-channel checkout --detach \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
