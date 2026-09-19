@@ -19,6 +19,7 @@ permissions:
   statuses: write
 
 env:
+  GH_TOKEN: ${{ github.token }}
   GUIX_INSTALL_ACTION: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
 
 jobs:
