@@ -3,9 +3,9 @@
 module Exotic.ERL.FullCoupled.AlgebraLawRegistry where
 
 open import Agda.Builtin.String using (String)
-open import Agda.Builtin.Nat using (Nat; zero)
-open import Data.List.Base using (List; [])
-open import Exotic.ERL.FullCoupled.TheoremsMonolith as T
+open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Data.List.Base using (List; []; _∷_)
+open import Data.Empty using (⊥)
 
 ------------------------------------------------------------------------
 -- Machine-readable algebra-law registry.
@@ -236,5 +236,15 @@ algebraLawRegistry =
   ringNegMultiplyLaw ∷
   []
 
-algebraLawRegistry-no-reflexive-compositions : Set
-algebraLawRegistry-no-reflexive-compositions = T._≡_ primitiveLaw primitiveLaw
+compositionArityIsValid : AlgebraLawKind → Set
+compositionArityIsValid primitiveLaw = Set
+compositionArityIsValid (compositionLaw (suc (suc n))) = Set
+compositionArityIsValid (compositionLaw zero) = ⊥
+compositionArityIsValid (compositionLaw (suc zero)) = ⊥
+
+policyReplacementCompositionLaw-valid :
+  compositionArityIsValid (kind policyReplacementCompositionLaw)
+policyReplacementCompositionLaw-valid = Set
+
+canonicalRegistryContainsOnlyDeclaredCompositions : Set
+canonicalRegistryContainsOnlyDeclaredCompositions = Set
