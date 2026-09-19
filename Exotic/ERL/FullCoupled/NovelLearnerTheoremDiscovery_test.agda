@@ -6,12 +6,12 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat)
 open import Exotic.ERL.FullCoupled.GeneratedNovelLearnerTheorems
 
-generatedSemanticCompositionCount-type :
+generatedSemanticDerivedCount-type :
   Nat
-generatedSemanticCompositionCount-type =
-  generatedSemanticCompositionCount
+generatedSemanticDerivedCount-type =
+  generatedSemanticDerivedCount
 
-generatedSemanticCompositionCount-self :
-  generatedSemanticCompositionCount ≡
-  generatedSemanticCompositionCount
-generatedSemanticCompositionCount-self = refl
+generatedSemanticDerivedCount-self :
+  generatedSemanticDerivedCount ≡
+  generatedSemanticDerivedCount
+generatedSemanticDerivedCount-self = refl
