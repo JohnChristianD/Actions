@@ -3,7 +3,6 @@
  (guix profiles)
  (guix git-download)
  (gnu packages agda)
- (gnu packages mercury)
  (srfi srfi-1))
 
 ;; The CI container pins Guix itself. The stock channel in that image is
@@ -38,7 +37,7 @@
    ((or (string=? lane "mercury")
         (string=? lane "discovery"))
     (list
-     mercury-minimal
+     (specification->package "mercury-minimal")
      (specification->package "guile@3.0")))
    ((string=? lane "surface")
     (list
