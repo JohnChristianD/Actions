@@ -114,8 +114,8 @@ plan_registry_valid(app("law", [atom(Name)])) :-
 plan_registry_valid(app("compose", [Left, Right])) :-
     plan_registry_valid(Left),
     plan_registry_valid(Right),
-    ( Left = atom("invalid-composition") ),
-    ( Right = atom("invalid-composition") ).
+    ( Left \= atom("invalid-composition") ),
+    ( Right \= atom("invalid-composition") ).
 plan_registry_valid(app("basis", Plans)) :-
     registry_plans_valid(Plans).
 plan_registry_valid(app("mediator", Plans)) :-
