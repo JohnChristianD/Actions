@@ -1442,43 +1442,33 @@ everywhereLocallyConstant N f =
 dense-separation-not-everywhere-continuous :
   ∀ {X Y : Set}
   (N : NeighborhoodSystem X)
-  (f : X → Y) →
+  (f : X → Y)
+  (x₀ : X) →
   denseNeighborhoodSeparation N f →
   ¬ everywhereLocallyConstant N f
-dense-separation-not-everywhere-continuous N f dense continuous =
-  let x = witnessAtZero dense
-  in contradictionFromNeighborhood x
+dense-separation-not-everywhere-continuous N f x₀ dense continuous
+  with continuous x₀
+... | r , locallyConstant =
+  separated (locallyConstant y nearby)
   where
-  witnessAtZero :
-    denseNeighborhoodSeparation N f →
-    X
-  witnessAtZero dense =
-    proj₁ (proj₂ (dense _ zero))
+  y : X
+  y = proj₁ (dense x₀ r)
 
-  contradictionFromNeighborhood :
-    ∀ x →
-    ⊥
-  contradictionFromNeighborhood x with continuous x
-  ... | r , locallyConstant =
-    let witness = proj₂ (dense x r)
-    in (proj₁ witness) (
-         locallyConstant
-           (proj₁ witness))
+  nearby : near N x₀ r y
+  nearby = proj₁ (proj₂ (dense x₀ r))
 
--- A continuous finite-valued reservoir readout therefore cannot itself
--- possess dense neighborhood separation.  This is distinct from the
--- literature's universal-reservoir result, where the reservoir feature
--- map is allowed to be discontinuous and the left inverse may be
--- uniformly continuous.
+  separated : f y ≢ f x₀
+  separated = proj₂ (proj₂ (dense x₀ r))
 
 continuous-finite-readout-no-dense-separation :
   ∀ {X Y : Set}
   (N : NeighborhoodSystem X)
-  (f : X → Y) →
+  (f : X → Y)
+  (x₀ : X) →
   everywhereLocallyConstant N f →
   ¬ denseNeighborhoodSeparation N f
-continuous-finite-readout-no-dense-separation N f continuous dense =
-  dense-separation-not-everywhere-continuous N f
+continuous-finite-readout-no-dense-separation N f x₀ continuous dense =
+  dense-separation-not-everywhere-continuous N f x₀
     dense
     continuous
 
@@ -1489,7 +1479,7 @@ continuous-finite-readout-no-dense-separation N f continuous dense =
 -- equivalence.
 ------------------------------------------------------------------------
 
-learner-no-finite-Negelastic-reservoir-condition :
+learner-no-finite-reservoir-left-inverse-condition :
   ∀ {A n : Nat}
   (K : L.LearnerKernel A)
   (observe : L.LearnerState A → Fin n) →
