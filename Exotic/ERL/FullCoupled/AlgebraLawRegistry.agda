@@ -149,8 +149,9 @@ policyReplacementCompositionLaw =
     "policy (r1 :: r2 :: rs)"
     "policy rs"
     (compositionLaw 2)
-    [ "canonicalPolicy-norm-invariant"
-    ]
+    [ "canonicalPolicy-learnerReplacement-invariant"
+    ∷ "canonicalPolicy-norm-invariant"
+    ∷ [] ]
 
 ------------------------------------------------------------------------
 -- Imported ring-law registry slots.
@@ -249,3 +250,14 @@ compositionArityIsValid (compositionLaw (suc zero)) = ⊥
 policyReplacementCompositionLaw-valid :
   compositionArityIsValid (AlgebraLaw.kind policyReplacementCompositionLaw)
 policyReplacementCompositionLaw-valid = validCompositionArity
+
+data AtLeastTwoDependencies : List String → Set where
+  atLeastTwoDependencies :
+    ∀ {a b rest} →
+    AtLeastTwoDependencies (a ∷ b ∷ rest)
+
+policyReplacementCompositionLaw-dependencies-valid :
+  AtLeastTwoDependencies
+    (AlgebraLaw.dependencyNames policyReplacementCompositionLaw)
+policyReplacementCompositionLaw-dependencies-valid =
+  atLeastTwoDependencies
