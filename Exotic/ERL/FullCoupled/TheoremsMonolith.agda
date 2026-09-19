@@ -12,7 +12,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; con
 open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Nat using (_<ᵇ_)
+open import Data.Nat using (_<ᵇ_; _/_)
 open import Data.List.Base using (List; []; _∷_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
