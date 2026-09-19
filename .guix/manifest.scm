@@ -1,20 +1,16 @@
 (use-modules
  (guix packages)
  (guix profiles)
- (gnu packages agda)
- (srfi srfi-1))
+  (srfi srfi-1))
 
-;; The prepared GitHub Guix action supplies a current Guix package set.
-;; Keep the proof lane on that package set so Agda and agda-stdlib advance
-;; together instead of pinning an obsolete compiler/library pair.
+;; Guix supplies the pure proof-driver runtime. The pinned official Agda
+;; setup action supplies Agda 2.8.0.2 and stdlib 2.4 outside this manifest.
 (define lane (or (getenv "CI_LANE") "surface"))
 
 (define lane-packages
   (cond
    ((string=? lane "agda-safe")
     (list
-     agda
-     agda-stdlib
      (specification->package "guile@3.0")))
    ((or (string=? lane "mercury")
         (string=? lane "discovery"))

@@ -40,6 +40,10 @@ pigeonhole_dependency =
 no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
 
+:- func recurrent_bound_uap_dependency = string.
+recurrent_bound_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalRecurrentBoundedExactUniversalApproximationTheorem".
+
 :- pred forced_target_law(
     list(semantic_law)::in, semantic_law::out) is semidet.
 forced_target_law(All, Target) :-
@@ -60,6 +64,9 @@ forced_target_law(All, Target) :-
         semantic_law.dependencies(Target)),
     list.member(
         no_global_uap_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        recurrent_bound_uap_dependency,
         semantic_law.dependencies(Target)).
 
 :- pred composite_laws(

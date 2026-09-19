@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-19",
+  "scope": "Guix proof environment and exact bounded UAP theorem surface",
+  "current_state": {
+    "agda": "official Agda 2.8.0.2 with stdlib 2.4 via pinned agda/agda-setup-action",
+    "guix": "prepared Guix action with pullAfterInstall=false across all four lanes",
+    "proof_source": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    "mercury_contract": "forced canonical theorem must include bounded exact UAP and recurrent-prefix bounded UAP dependencies"
+  },
+  "theorems": [
+    "boundedUniversalExactUAP-retraction",
+    "boundedUniversalExactUAP-decoder-transport",
+    "boundedUniversalExactUAP-postcompose",
+    "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
+  ],
+  "verification": {
+    "known_green": "Agda 2.8.0.2 installation and earlier canonical Agda --safe lane passed on the corrected prepared environment",
+    "current_gate": "Re-run required after removing stale agda-stdlib-2.3 from the Guix manifest"
+  },
+  "decision": "Retain the prepared Guix environment; remove redundant channel pulls instead of migrating to Nix while Guix lanes are reproducing the proof surface."
+}

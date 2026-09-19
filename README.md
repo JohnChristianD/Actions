@@ -200,3 +200,10 @@ The surface lane rejects noncanonical language/script files, rejects a second ge
 The strict surface does not import a general topology hierarchy, Sion's minimax theorem, generic strong-convexity/coercivity machinery for modular `Int8` state updates, or reservoir literature.
 
 Where a result is conditional, the condition is explicit. Where a global claim is impossible under finite `Int8` observation, the theorem says so rather than hiding the contradiction.
+
+
+## Agda proof lane update
+
+The proof lane uses the prepared Guix action as the pure driver while the official pinned Agda setup action supplies Agda 2.8.0.2 and standard library 2.4. The Guix manifest no longer realizes a stale Agda or agda-stdlib package before the kernel check.
+
+The bounded exact-UAP surface now includes exact retraction, decoder-transport, postcomposition, and a recurrent-prefix certificate combining recurrent depth, dense-neighborhood separation, continuous left-invertibility, and Nat-indexed composition injectivity.
