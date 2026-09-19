@@ -1,160 +1,113 @@
 # Meta-Search Architecture
 
-The active automated search layer is a **symbolic theorem-program search over the learner's own transformation algebra**. The current finite CI implementation exhaustively enumerates a typed composition grammar; TSTS remains the intended outer tree-search family, but the semantic target is the theorem program, not a learner-state perturbation.
+The canonical automated discovery layer is now novel learner-theorem basis search.
 
-There is no active evolutionary-algorithm population search and no active JAxtar/A*/Q* graph-search adapter.
+Mercury enumerates a small typed grammar of transformations and theorem relations, quotients candidates with an equivalence-class layer, removes candidates already represented in the canonical theorem source, and emits only the remaining nontrivial basis candidates. Agda then checks the generated propositions with --safe.
+
+The search object is a theorem about the executable learner. The search procedure is not a theorem subject and does not attempt to prove its own self-consistency.
 
 ## Roles
 
 | Layer | Role |
 |---|---|
-| Agda | Executable learner semantics, exact finite evaluation, theorem checking, and final certificate gate for the learner |
-| Mercury | Typed finite TSTS boundary, learner-candidate discovery, and reproducible report |
+| Agda | Executable learner semantics, exact finite evaluation, theorem checking, and final certificate gate |
+| Mercury | Typed theorem-program enumeration, novelty pruning, equivalence quotienting, and generated-candidate emission |
 | Guix/Guile | Reproducible orchestration and tool pinning |
-| Manual source | Learner parameters, imports, carrier choices, and formal assumptions remain explicit |
+| Manual source | Learner parameters, imports, carriers, and formal assumptions remain explicit |
 
-## Symbolic theorem-program process
+## Current discovery grammar
 
-The finite search loop is:
+The raw finite basis contains two actual learner transformations:
 
-1. Build a typed program candidate from actual learner transformations such as attention, NormPair, and optimizer replacement.
-2. Compose those transformations into a candidate theorem program.
-3. Lower the candidate into a concrete Agda proposition over the canonical learner.
-4. Synthesize the proof term from the compositional learner theorem algebra.
-5. Compile the generated candidate module with `agda --safe`.
-6. Treat compilation success as theorem acceptance and failure as rejection.
-7. Repeat over the finite composition grammar. The current semantic contract deliberately leaves the discovery ranking metric unspecified.
+- NormPair replacement.
+- Period-4 clock replacement.
 
-The important point is that the search object is the learner's symbolic theorem structure. The search layer is not the subject of the theorem: its job is to construct candidate learner theorems and hand them to the formal checker. The formal consistency claim is about the learner, not about the search procedure proving its own self-consistency.
+It considers three theorem relations:
 
-## Counterfactual Lion-style program search
+- Watkins-target invariance.
+- One-step/full-step equivariance.
+- Iterated-step equivariance.
 
-For a Lion-style symbolic optimizer search, the comparison is not a dominance result. Lion's published discovery system used regularized evolution over an infinite and sparse imperative program space, together with abstract execution, warm-start/restart, selection, and simplification. A TSTS replacement would therefore be a counterfactual search mechanism, not the original Lion method.
+The sixth raw form is not emitted when it is already represented by the stronger full-step equivariance class. The current quotient therefore removes the iterate consequence and retains only minimal representatives.
 
-SAMR-GA is a continuous black-box evolutionary optimizer with self-adapted mutation rates. It could be adapted to program genomes, but that would introduce a population/mutation-state search model different from Lion's regularized-evolution program pipeline and from the current finite endogenous learner tree.
+The current basis candidates are:
 
-JAxtar is a parallel JAX A*/Q* graph-search implementation. A program-search use would require representing partial programs as graph states and supplying a useful heuristic/cost-to-go. That is a different modeling commitment from the finite branch tree used here.
+- Watkins target is invariant under NormPair replacement.
+- Watkins target is invariant under a four-phase clock shift.
+- The canonical full step commutes with NormPair replacement.
+- The canonical full step commutes with a four-phase clock shift.
 
-Accordingly, TSTS does not "completely dominate" SAMR-GA or JAxtar in the abstract Lion counterfactual. TSTS is the better semantic fit for the current repository because the search object is already a small branch tree whose observations come from exact learner probes. That is an architectural fit, not a universal algorithmic superiority claim.
+These are not already named in TheoremsMonolith.agda at discovery time. The Mercury generator also scans the canonical theorem source and removes any candidate whose declaration is already present.
 
-## TSTS and MCTX lineage
+## Discovery loop
 
-TSTS is in the broader MCTS/tree-search family, but the checked sources do not establish that its algorithm is derived from MCTX's parallelism design. The TSTS paper presents Thompson sampling for tree search in the Bayesian online-planning setting and gives an efficient implementation for a restricted posterior family. MCTX, by contrast, is a JAX-native MCTS library whose search algorithms explicitly operate on batches in parallel. JAxtar explicitly describes itself as inspired by MCTX.
+The active loop is:
 
-The safe wording is therefore: **TSTS is conceptually adjacent to batched MCTS implementations such as MCTX, but it should not be described as MCTX-derived without stronger evidence.**
-
-## Why PVS, JAxtar, and EA were removed
-
-PVS is an alpha-beta/minimax search optimization. It is useful when the search objective is exact minimax in a game tree, but it does not add a distinct theorem-verification role to this finite endogenous learner.
-
-JAxtar is an A*/Q* graph-search implementation. The present search object is already a finite tree of alternative learner-composition branches. Adding a graph-search adapter would duplicate the outer navigation role without adding a new semantic dependency.
-
-Evolutionary-algorithm layers such as OpenES, MR15-GA, SAMR-GA, and GESMR-GA introduce population and mutation-state machinery. That machinery is orthogonal to the present theorem, whose interesting dependency is the learner's own feedback becoming the search reward and then re-entering the learner. Removing the EA layer leaves one search state instead of two coupled optimization states.
-
-## Verification target: the learner, not the searcher
-
-Program search or finite tree search is an outer discovery mechanism. It can generate a learner candidate, select a learner perturbation, or rank learner-side observations, but it does not certify its own internal consistency.
-
-The theorem checker instead evaluates and proves properties of the executable learner state transition. In this repository, the useful crossing point is the learner-generated Watkins target: it is computed from the learner's own endogenous channels, then used as a reward/observation for the outer search and simultaneously consumed by learner update paths.
-
-This keeps the proof obligation pointed inward:
-
-`search selects learner candidate -> Agda evaluates learner -> theorem proves learner properties`
-
-not:
-
-`search -> search proves search`
-
-## What the Agda theorem actually proves
-
-The active endogenous connection theorem is `FiniteTSTSEndogenousConnectedTheorem`. Separately, symbolic program search now targets learner-local composition laws through `canonicalPolicy-learnerReplacement-composition`, `canonicalNormPair-afterFullStep-iterate`, and `canonicalPersistentGRU-afterFullStep-iterate`.
-
-Its causal chain is:
-
-    posterior sample
+    typed learner transformation
         ->
-    selected endogenous branch
+    typed theorem relation
         ->
-    exact learner probe
+    equivalence quotient
         ->
-    canonical Watkins target
+    source-level novelty guard
         ->
-    posterior update
+    generated Agda proposition
         ->
-    GRU tell + F4 tell
+    agda --safe
         ->
-    next exact learner state
+    accepted or rejected theorem candidate
 
-For the F4/L2 branch, the theorem expands the endogenous target far enough to expose:
+This separates novelty selection from proof acceptance. A candidate is not considered discovered merely because Mercury emitted it. It must pass the Agda proof gate.
 
-    thetaQ
-    + probe
-    + L2 correction
-    + attention feedback
-    + GRU feedback
-    + q-log control/value feedback
+## Why use an equivalence quotient
 
-The same closed step preserves the NormPair observable and the persistent-GRU quotient.
+The discovery space contains many statements that are consequences of stronger statements. For example, if a transformation commutes with the one-step learner transition, the corresponding iterate-commutation family is structurally downstream.
 
-## Literature and novelty boundary
+The Mercury quotient therefore keeps a smaller basis rather than emitting every syntactic consequence. This is an e-graph-style use of equivalence classes: canonicalize symbolic theorem forms first, then send only minimal representatives to the proof checker.
 
-The building blocks are not novel individually.
+This is deliberately domain-specific rather than a general optimizer. The semantic boundary remains the Agda learner. Mercury is only reducing redundant theorem search.
 
-Greshler et al. introduced Thompson Sampling Tree Search and proved a finite-time Bayesian regret bound for their online-planning setting. citeturn145149search0
+## What was pruned
 
-Thompson sampling has also already been used for program refinement and program-search selection. REx frames program refinement as an arm-acquiring bandit and uses Thompson Sampling to choose which program to refine. citeturn633299academia43turn633299search44
+The following were removed from the canonical discovery path because they were already included or were search machinery rather than novel learner theorems:
 
-More recent work has used Thompson-sampling tree search directly over code/program hypotheses with execution feedback, so TSTS + executable program search is not itself a novelty claim. citeturn633299search41
+- Finite compositions of attention/NormPair/optimizer replacements already covered by canonicalPolicy-learnerReplacement-composition.
+- Repeated preservation forms already covered by the canonical iterate lemmas.
+- The old TSTS composition generator.
+- Generic list/sign involution testing.
+- PVS.
+- JAxtar A*/Q*.
+- Evolutionary-population proposal layers.
 
-The narrow novelty candidate here is the formal endogenous connection:
+The existing FiniteTSTSEndogenousConnectedTheorem remains a theorem surface, but it is no longer used as the semantic target of theorem discovery.
 
-    symbolic theorem program
-        ->
-    exact learner proposition
-        ->
-    generated Agda proof
-        ->
-    `agda --safe` acceptance
-        +
-    same target -> GRU tell
-        +
-    same target -> F4 tell
-        ->
-    preserved learner invariants
+## What counts as a novel candidate
 
-That is stronger than merely putting TSTS in front of a verifier because the verifier's result is not just an external accept/reject signal. The exact learner's own endogenous feedback is the scalar returned to the search state and simultaneously reused by two internal learner update channels.
+A discovery candidate must:
 
-My literature check found adjacent work for every major ingredient, including TSTS, program-search Thompson sampling, and execution-feedback refinement. I did not find the exact formal composition above in the sources checked. That supports the repository-level statement "apparently not previously reported in the checked literature", but it is not a definitive priority or publication-level novelty claim. Historical multi-language oracle runners were not validated as discovery-effectiveness comparators, so they are no longer treated as discovery evidence.
+1. act on an actual learner state or learner-derived observable;
+2. express a nontrivial relation such as invariance, equivariance, commuting, quotient preservation, or an analogous structural law;
+3. not already be represented in the canonical theorem source;
+4. survive the Mercury equivalence quotient;
+5. produce an Agda proposition accepted by agda --safe.
 
-## Why this is not merely trivial composition
+External reward, search regret, or architecture labels are not theorem semantics.
 
-A trivial composition would look like:
+## Search policy boundary
 
-    TSTS -> arbitrary score -> verifier
+No particular search policy is canonical here.
 
-where each layer is independent.
+For the current finite grammar, enumeration plus quotienting is exact and auditable. A future larger grammar can replace enumeration with best-first, A*, CEGIS, or another search policy without changing the theorem language or proof gate.
 
-Here the reward function crosses the abstraction boundary:
+That is the intended division:
 
-    search state -> learner probe -> endogenous learner feedback -> search state
-
-and that same feedback is consumed twice inside the learner:
-
-    Watkins target -> GRU
-    Watkins target -> F4
-
-The theorem also proves that the connection does not destroy the existing preservation invariants. That makes the result a connected feedback theorem rather than an API-level concatenation of unrelated algorithms.
-
-## MCTX compatibility boundary
-
-DeepMind's MCTX is a JAX-native MCTS implementation whose search functions operate on batches in parallel and are JIT compiled for accelerator execution. citeturn752010search0
-
-Replacing TSTS with MCTX would change the search rule: MCTX provides MCTS algorithms, whereas TSTS provides Thompson-sampling tree selection with a posterior over tree choices. The current repository therefore keeps TSTS as the semantic search rule.
-
-A compatible optimization path is a **half-port at the evaluator boundary**: retain the TSTS posterior/sample/update semantics, but expose selected learner probes as a batch of independent tree evaluations and use a vectorized backend for the exact learner evaluator. That preserves the theorem's endogenous target semantics while allowing accelerator-oriented execution to be investigated separately.
-
-The current Mercury/Agda source policy intentionally does not import MCTX or JAX. An MCTX-style batch boundary would therefore be an optional execution backend, not a new source of truth. For the present three-branch finite boundary, actual throughput gains must be measured rather than inferred; the existing discovery driver is not a performance benchmark.
+    theorem grammar = semantic contract
+    Mercury        = candidate engine
+    search policy  = replaceable implementation detail
+    Agda           = authority
 
 ## Runtime boundary
 
-The target remains a small formal runtime with manually controlled learner parameters. No wholesale JAX/TensorFlow reproduction is introduced, and no external search engine becomes the source of truth.
+No external JAX/TensorFlow search runtime is imported into the canonical source path. The current system keeps the formal learner small, finite, and directly checkable.
+
+Mercury remains outside the Agda kernel trust boundary. Mercury proposes candidate propositions; Agda decides whether the generated theorem is actually proven.
