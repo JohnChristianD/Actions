@@ -963,7 +963,9 @@ canonicalWatkinsTarget-endogenous-leftInverse :
         (C.int8Mul
           C.canonicalDiscount8
           (C.maxCriticValue8
-            (C.critic (C.watkins (inverse (observe s))))))
+            (C.critic
+              (C.watkins
+                (inverse (observe s))))))
       (C.canonicalEndogenousFeedback K (inverse (observe s)))
 canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
   trans
