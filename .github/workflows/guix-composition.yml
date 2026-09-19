@@ -164,7 +164,7 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --filter=blob:none --no-tags --branch version-1.5.0 \
+          git clone --no-tags --single-branch --branch version-1.5.0 \
             "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
           git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
@@ -255,7 +255,7 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --filter=blob:none --no-tags --branch version-1.5.0 \
+          git clone --no-tags --single-branch --branch version-1.5.0 \
             "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
           git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
@@ -351,7 +351,7 @@ jobs:
           set -eu
           rm -rf /tmp/guix-channel
           git config --global --add safe.directory /tmp/guix-channel
-          git clone --filter=blob:none --no-tags --branch version-1.5.0 \
+          git clone --no-tags --single-branch --branch version-1.5.0 \
             "https://github.com/neuroradiology/guix-mirror.git" /tmp/guix-channel
           git -C /tmp/guix-channel fetch origin \
             "ac03c482b1910a1672427beaea07ddcd1d652806"
