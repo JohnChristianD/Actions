@@ -22,7 +22,9 @@ clock_plus4_expr(S) =
     ") (suc (suc (suc (suc (C.clock (" ++ S ++ "))))))".
 
 :- func rendered_program(list(theorem_term)) = string.
-rendered_program(_) = "".
+rendered_program(_) =
+    "generatedEGraphCompletedTheoremBasis : EGraphCompletedTheoremBasis\\n"
+    ++ "generatedEGraphCompletedTheoremBasis = egraph-completed-theorem-basis\\n".
 
 :- pred contains_bare_refl(string::in) is semidet.
 contains_bare_refl(Text) :-
