@@ -19,12 +19,19 @@
 :- func forced_target_law_id = string.
 forced_target_law_id = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
 
+:- func bounded_exact_approximation_dependency = string.
+bounded_exact_approximation_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
+
 :- pred forced_target_law(
     list(semantic_law)::in, semantic_law::out) is semidet.
 forced_target_law(All, Target) :-
     list.member(Target, All),
     law_id(Target) = forced_target_law_id,
-    semantic_law.composite(Target) = yes.
+    semantic_law.composite(Target) = yes,
+    list.member(
+        bounded_exact_approximation_dependency,
+        semantic_law.dependencies(Target)).
 
 :- pred composite_laws(
     list(semantic_law)::in, list(semantic_law)::out) is det.
