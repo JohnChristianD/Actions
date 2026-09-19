@@ -12,6 +12,9 @@
 
 (define manifest-file ".guix/manifest.scm")
 
+(define agda-command
+  (or (getenv "AGDA_COMMAND") "agda"))
+
 (define (run! label . argv)
   (format #t "==> ~a: ~s~%" label argv)
   (let ((status (apply system* argv)))
@@ -36,15 +39,15 @@
   ;; The Agda lane is deliberately proof-check-only. The theorem monolith is
   ;; the only connected theorem source; Mercury only discovers and validates
   ;; its dependency graph.
-  (run! "Guix-installed Agda version"
-        "agda" "--version")
+  (run! "Pinned Agda version"
+        agda-command "--version")
   (run! "Agda --safe stdlib import smoke"
-        "agda" "--safe"
+        agda-command "--safe"
         "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda")
   (for-each
    (lambda (file)
      (run! (string-append "Agda --safe " file)
-           "agda" "--safe" file))
+           agda-command "--safe" file))
    (agda-safe-files)))
 
 (define (run-automated-semantic-egraph)
