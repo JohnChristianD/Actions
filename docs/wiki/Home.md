@@ -41,7 +41,7 @@ The executable formal-RL path is:
 
 `Guix -> Guile orchestration -> Agda --safe + Mercury`
 
-Mercury now owns the finite novel-theorem candidate engine. Agda remains authoritative for exact learner semantics and theorem acceptance. The outer search is a learner-discovery mechanism, not a self-certifying proof layer.
+Mercury now owns the finite novel-theorem candidate engine and reusable theorem e-graph. Agda remains authoritative for exact learner semantics and theorem acceptance. The outer search is a learner-discovery mechanism, not a self-certifying proof layer.
 
 The canonical source audit rejects Haskell, Python, JavaScript/TypeScript, JVM-family source, Elm, and PureScript source files.
 
