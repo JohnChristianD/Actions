@@ -114,3 +114,36 @@ That is the intended division:
 No external JAX/TensorFlow search runtime is imported into the canonical source path. The current system keeps the formal learner small, finite, and directly checkable.
 
 Mercury remains outside the Agda kernel trust boundary. Mercury proposes candidate propositions; Agda decides whether the generated theorem is actually proven.
+
+## Hash-consed e-graph
+
+The canonical discovery engine now uses `.ci/discovery/symbolic_egraph.m` for a real ground e-graph core:
+
+- general enodes with arbitrary symbol names and child e-class IDs;
+- hash-consing through Mercury's versioned hash-table implementation;
+- union-find e-class representatives;
+- rebuild-based congruence closure after merges;
+- declarative ground rewrite equations;
+- cost-based representative extraction.
+
+`learner_theorem_egraph.m` maps typed learner laws into these enodes and applies the theorem rewrite registry before minimal extraction. The generic regression test explicitly merges `a` and `b` and checks that `f(a)` and `f(b)` become equivalent by congruence closure.
+
+This is now a reusable symbolic engine rather than an `eqvclass`-only quotient.
+
+## Exact recurrent scan theorem class
+
+`CanonicalLearnerMonolith.agda` now defines `Endomorphism`, exact recurrent-prefix endomorphisms, a `Nat`-indexed stream scan, and a split-prefix theorem. `TheoremsMonolith.agda` packages these as `RecurrentAssociativeScanTheorem`.
+
+The theorem does not assume a bounded sequence length. For arbitrary natural `m` and `n`, the prefix of length `m + n` is exactly the `m` prefix followed by the `n`-length scan of the shifted stream.
+
+The canonical GRU instantiation is `canonicalGRU-recurrent-associative-scan-theorem`.
+
+A separate theorem, `int8-no-countably-unbounded-injective`, proves that an `Int8` state cannot injectively encode an unbounded `Nat` index. Thus the exact scan theorem solves the algebraic/parallel-evaluation side of long-horizon recurrence, while the finite-state theorem establishes the formal information-capacity limit for lossless unbounded history.
+
+## Reservoir-computing theorem correspondence
+
+The repository also contains `FiniteReservoirFaithfulnessTheorem`, the exact finite/discrete proof object:
+
+`left inverse -> injective observation -> exact readout factorization`.
+
+This is the discrete theorem boundary used for comparison with Sugiura et al.'s 2025 result on reservoir universality. The external theorem is stronger and analytically different: in its continuous setting, universality, neighborhood separation, and existence of a uniformly continuous inverse are equivalent. The repository does not claim that its finite Int8 learner satisfies those continuous assumptions.
