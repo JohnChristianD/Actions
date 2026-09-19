@@ -50,7 +50,7 @@
    (lambda (file)
      (run! (string-append "Agda --safe " file)
            "agda" "--safe" file))
-   (agda-safe-files))
+   (agda-safe-files)))
 
 (define (run-automated-semantic-egraph)
   (in-directory ".ci/discovery"
