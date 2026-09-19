@@ -167,7 +167,19 @@ main(!IO) :-
         semantic_law.composite(TargetLaw) = yes,
         list.length(semantic_law.dependencies(TargetLaw)) >= 3,
         list.member(
+            continuous_readout_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
             bounded_exact_approximation_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            infinite_state_orbit_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            pigeonhole_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            no_global_uap_dependency,
             semantic_law.dependencies(TargetLaw))
     ->
         io.write_string(
