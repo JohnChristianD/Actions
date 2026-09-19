@@ -283,8 +283,8 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
 ------------------------------------------------------------------------
 
 data FiniteTSTSBranch : Set where
-  tstsWatkinsBranch
-  tstsF4L2Branch
+  tstsWatkinsBranch : FiniteTSTSBranch
+  tstsF4L2Branch : FiniteTSTSBranch
   tstsGRUBranch : FiniteTSTSBranch
 
 record FiniteTSTSPosterior : Set where
