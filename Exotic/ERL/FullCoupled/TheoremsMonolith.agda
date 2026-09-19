@@ -1198,8 +1198,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       (∀ t → inverse (observe t) ≡ t) →
       ⊥
 
-canonical-endogenous-minimax-bellman-shapley-uap-theorem :
-  CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
+canonical-endogenous-minimax-bellman-shapley-uap-theorem : CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
 canonical-endogenous-minimax-bellman-shapley-uap-theorem =
   canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
     canonical-biased-watkins-negative-q-munchausen-l2-target-theorem
