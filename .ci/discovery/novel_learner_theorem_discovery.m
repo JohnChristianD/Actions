@@ -15,42 +15,42 @@
 :- import_module list.
 :- import_module string.
 
-:- pred composite_laws(
+:- pred multi_dependency_laws(
     list(semantic_law)::in, list(semantic_law)::out) is det.
-composite_laws(All, Composite) :-
+multi_dependency_laws(All, MultiDependency) :-
     list.filter(
         (pred(L::in) is semidet :-
             semantic_law.composite(L) = yes),
         All,
-        Composite).
+        MultiDependency).
 
 :- func rhs_qualification(string, string) = string.
 rhs_qualification(Source, Name) =
     Name.
 
-:- pred write_generated_aliases(
+:- pred write_generated_derived_aliases(
     list(semantic_law)::in,
     int::in,
     io.text_output_stream::in,
     io::di, io::uo) is det.
-write_generated_aliases([], _, _, !IO).
-write_generated_aliases([L | Ls], Index, Stream, !IO) :-
+write_generated_derived_aliases([], _, _, !IO).
+write_generated_derived_aliases([L | Ls], Index, Stream, !IO) :-
     io.write_string(Stream,
-        "generatedSemanticComposition" ++
+        "generatedSemanticDerived" ++
         string.int_to_string(Index) ++
         " :\n  " ++ semantic_law.signature(L) ++ "\n" ++
-        "generatedSemanticComposition" ++
+        "generatedSemanticDerived" ++
         string.int_to_string(Index) ++
         " = " ++ rhs_qualification(
             semantic_law.source(L),
             semantic_law.name(L)) ++
         "\n\n",
         !IO),
-    write_generated_aliases(Ls, Index + 1, Stream, !IO).
+    write_generated_derived_aliases(Ls, Index + 1, Stream, !IO).
 
 :- pred write_generated_module(list(semantic_law)::in,
     io::di, io::uo) is det.
-write_generated_module(Composite, !IO) :-
+write_generated_module(MultiDependency, !IO) :-
     io.open_output(
         "../../Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda",
         Result,
@@ -68,12 +68,12 @@ write_generated_module(Composite, !IO) :-
             "open T\n\n" ++
             "-- Generated from actual executable learner/theorem declarations.\\n" ++
             "-- Reflexive declarations are excluded from the composition class.\\n\\n" ++
-            "generatedSemanticCompositionCount : Nat\n" ++
-            "generatedSemanticCompositionCount = " ++
-            string.int_to_string(list.length(Composite)) ++
+            "generatedSemanticDerivedCount : Nat\n" ++
+            "generatedSemanticDerivedCount = " ++
+            string.int_to_string(list.length(MultiDependency)) ++
             "\n\n",
             !IO),
-        write_generated_aliases(Composite, 0, Stream, !IO),
+        write_generated_derived_aliases(MultiDependency, 0, Stream, !IO),
         io.close_output(Stream)
     ;
         Result = error(_),
@@ -86,7 +86,7 @@ write_generated_module(Composite, !IO) :-
 :- pred write_report(
     list(semantic_law)::in, list(semantic_law)::in,
     io::di, io::uo) is det.
-write_report(All, Composite, !IO) :-
+write_report(All, MultiDependency, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -106,7 +106,7 @@ write_report(All, Composite, !IO) :-
             "  \"nonreflexive_law_count\": " ++
                 string.int_to_string(NonReflexive) ++ ",\n" ++
             "  \"composite_law_count\": " ++
-                string.int_to_string(list.length(Composite)) ++ ",\n" ++
+                string.int_to_string(list.length(MultiDependency)) ++ ",\n" ++
             "  \"proof_authority\": \"Agda --safe\"\n" ++
             "}\n",
             !IO),
@@ -122,9 +122,9 @@ write_report(All, Composite, !IO) :-
 main(!IO) :-
     extract_semantics(!IO),
     read_manifest(All, !IO),
-    composite_laws(All, Composite),
-    write_generated_module(Composite, !IO),
-    write_report(All, Composite, !IO),
+    multi_dependency_laws(All, MultiDependency),
+    write_generated_module(MultiDependency, !IO),
+    write_report(All, MultiDependency, !IO),
     io.write_string(
         "semantic-theorem-discovery=generated-from-learner-monolith\n",
         !IO),
@@ -133,6 +133,6 @@ main(!IO) :-
         string.int_to_string(list.length(All)) ++ "\n",
         !IO),
     io.write_string(
-        "composite-law-count=" ++
-        string.int_to_string(list.length(Composite)) ++ "\n",
+        "multi-dependency-law-count=" ++
+        string.int_to_string(list.length(MultiDependency)) ++ "\n",
         !IO).
