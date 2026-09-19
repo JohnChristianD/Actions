@@ -1421,8 +1421,9 @@ canonicalDenseNeighborhoodSeparation
 -- current imports. It is the exact composition available here:
 -- target semantics + minimax/Bellman-Shapley inclusion + endogenous
 -- left-inverse factorization + continuous-left-inverse transfer +
--- ring-state injectivity + dense-neighborhood separation + Nat-clock
--- pigeonhole contradiction.
+-- bounded exact approximation from the continuous left inverse + ring-state
+-- injectivity + dense-neighborhood separation + Nat-clock pigeonhole
+-- contradiction.
 ------------------------------------------------------------------------
 
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
@@ -1517,6 +1518,29 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       ∀ s →
       target s ≡ target (inverse (observe s))
 
+    boundedExactApproximation :
+      ∀ {Feature : Set}
+      {Continuous : {A B : Set} → (A → B) → Set}
+      (bound : Nat)
+      (embed : Fin bound → C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState
+          Feature
+          observe
+          inverse
+          Continuous) →
+      BoundedContinuousLeftInverseExactApproximationTheorem
+        C.FullLearnerState
+        Feature
+        observe
+        inverse
+        Continuous
+        bound
+        embed
+
     ringStateInjection :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState) →
@@ -1577,6 +1601,7 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
         witness
         target
         s)
+    boundedExactApproximation-on-boundedOrbit
     canonicalRingStateInjective
     canonicalDenseNeighborhoodSeparation
     canonicalPigeonholeNatClockContradiction
