@@ -38,7 +38,7 @@ jobs:
       - name: Install prepared Guix action
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
-          pullAfterInstall: false
+          pullAfterInstall: true
       - name: Run pinned Guix Agda lane
         run: |
           set -euo pipefail
@@ -86,7 +86,7 @@ jobs:
       - name: Install prepared Guix action
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
-          pullAfterInstall: false
+          pullAfterInstall: true
       - name: Run pinned Guix Mercury lane
         run: |
           set -euo pipefail
@@ -134,7 +134,7 @@ jobs:
       - name: Install prepared Guix action
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
-          pullAfterInstall: false
+          pullAfterInstall: true
       - name: Run pinned Mercury semantic e-graph discovery lane
         run: |
           set -euo pipefail
@@ -187,7 +187,7 @@ jobs:
       - name: Install prepared Guix action
         uses: ROCKTAKEY/guix-install-action@40615e98e5c16a451aec10fe01c214ed07cbaa77
         with:
-          pullAfterInstall: false
+          pullAfterInstall: true
       - name: Audit repository surface
         run: |
           set -euo pipefail
