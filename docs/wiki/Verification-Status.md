@@ -12,12 +12,11 @@ The current theorem entrypoint is:
 
 ## Current workflow
 
-Latest verification run for the current code changes:
-`35405803150`
+The repository workflow is wired to execute the Mercury e-graph regression, novel-theorem generation, bare-`refl` artifact audit, and the full Agda `--safe` surface. The current head is:
 
-The immediately preceding run `35404988310` failed in the container checkout step because the Guix daemon socket was absent, before the Agda or Mercury lanes could execute. The workflow now starts `guix-daemon --disable-chroot` inside the pinned CI container and authorizes the standard Guix substitute keys before checkout.
+`2f6eceef96ca7fc1572244edb64038512e2a00bd`
 
-The current repair commit hardens the pinned Guix container with `--security-opt seccomp=unconfined`, after run `35405803150` failed in `guix shell` because the `setPersonality` syscall was blocked by the container's seccomp profile. A new verification run is required before the theorem can be called green.
+The connected GitHub status surface currently reports no status entries for this direct-push head, so this ledger does not label the remote CI run green without an observed result. The workflow remains configured for push and manual dispatch verification.
 
 ## Discovery objective
 
@@ -65,9 +64,15 @@ Agda tests now include:
 
 ## Verification status
 
-The latest repair run visible during this audit is still pending. The earlier run failed before any Agda or Mercury execution because the Guix container had no running Guix daemon. The workflow now boots the daemon inside the digest-pinned container before performing the Guix-native checkout.
+The new source-level gates are in place:
 
-No current run is being called green until the Agda and Mercury lanes actually execute and succeed.
+- Mercury theorem e-graph regression: raw grammar 8 -> quotient 4;
+- proposition-signature novelty pruning;
+- generator-level bare-`refl` rejection;
+- Guix-level generated-artifact bare-`refl` audit;
+- Agda `--safe` compilation of the generated theorem module.
+
+Those are code gates, not claims that an unobserved remote workflow succeeded. The current GitHub status query has no entries for the current head.
 
 ## Discovery theorem status
 
