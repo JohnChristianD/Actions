@@ -1,12 +1,12 @@
 # Components and Algebraic Structure
 
-Last audited: 2026-09-19 against \`main\` at \`d48e5cf6e3671f268440135f1acc32eeafb3d510\`.
+Last audited: 2026-09-19 against `main` at `d48e5cf6e3671f268440135f1acc32eeafb3d510`.
 
 ## Component graph
 
 The canonical learner can be read as this typed composition:
 
-\`\`\`
+```
 CriticState + LCBCountState
         |
         v
@@ -51,11 +51,11 @@ CriticState + LCBCountState
                   +--> optimizer
                   +--> counts
                   +--> Q-log
-\`\`\`
+```
 
 The endogenous feedback path is not an external search node. It is an explicit learner function:
 
-\`\`\`
+```
 attention mix
 + GRU hidden
 + F4/L2 state
@@ -67,61 +67,61 @@ canonicalEndogenousFeedback
         |
         v
 canonicalWatkinsTarget
-\`\`\`
+```
 
 ## Primary records and data
 
 ### Learner kernels
 
-- \`WatkinsKernel\`
-- \`LCBCountKernel\`
-- \`F4IntUKernel\`
-- \`FullLearnerKernel\`
+- `WatkinsKernel`
+- `LCBCountKernel`
+- `F4IntUKernel`
+- `FullLearnerKernel`
 
 ### Learner state
 
-- \`WatkinsState\`
-- \`CriticState\`
-- \`LCBCountState\`
-- \`LearnedSparsemaxAttention\`
-- \`GRUState\`
-- \`F4IntUState\`
-- \`NormPair\`
-- \`SignedQLogControl\`
-- \`FullLearnerState\`
+- `WatkinsState`
+- `CriticState`
+- `LCBCountState`
+- `LearnedSparsemaxAttention`
+- `GRUState`
+- `F4IntUState`
+- `NormPair`
+- `SignedQLogControl`
+- `FullLearnerState`
 
 ### Finite closed-loop seam
 
 The current closed-loop benchmark surface is:
 
-- \`CanonicalGamePorts.agda\`
-- \`CanonicalFaithfulGameVariants.agda\`
-- \`CanonicalClosedLoopBench.agda\`
+- `CanonicalGamePorts.agda`
+- `CanonicalFaithfulGameVariants.agda`
+- `CanonicalClosedLoopBench.agda`
 
-Its core records are \`StepResult\`, \`ClosedLoopSpec\`, \`ClosedLoopRun\`, and \`ClosedLoopMetrics\`.
+Its core records are `StepResult`, `ClosedLoopSpec`, `ClosedLoopRun`, and `ClosedLoopMetrics`.
 
-There is no current \`CanonicalClosedLoopInterface.agda\`.
+There is no current `CanonicalClosedLoopInterface.agda`.
 
 ## Canonical theorem packaging
 
 The active theorem monolith packages:
 
-- \`CanonicalAQLoopTheorem\`
-- \`CanonicalConnectedCompositionTheorem\`
-- \`FiniteTSTSEndogenousConnectedTheorem\`
-- \`FiniteAttentionWatkinsGRUF4MediatorTheorem\`
-- \`RecurrentAssociativeScanTheorem\`
-- \`FiniteReservoirFaithfulnessTheorem\`
+- `CanonicalAQLoopTheorem`
+- `CanonicalConnectedCompositionTheorem`
+- `FiniteTSTSEndogenousConnectedTheorem`
+- `FiniteAttentionWatkinsGRUF4MediatorTheorem`
+- `RecurrentAssociativeScanTheorem`
+- `FiniteReservoirFaithfulnessTheorem`
 
 and the underlying component laws for policy replacement, persistent GRU behavior, clock growth, count growth, sparsemax boundaries, and full-step projections.
 
-The old \`MercuryJaxtarAQCertificate\` and \`MercuryJaxtarAQEmergence\` records belong to \`GeneralFullCoupledTheoremsMonolith.agda\`, not to the canonical theorem monolith.
+The old `MercuryJaxtarAQCertificate` and `MercuryJaxtarAQEmergence` records belong to `GeneralFullCoupledTheoremsMonolith.agda`, not to the canonical theorem monolith.
 
 ## Algebraic forms actually used
 
 ### Finite carrier
 
-\`Int8\` is a concrete wrapper around \`Fin 256\`.
+`Int8` is a concrete wrapper around `Fin 256`.
 
 Arithmetic is defined over finite natural-number codes. The code does not declare a generic abstract ring instance.
 
@@ -129,40 +129,40 @@ Arithmetic is defined over finite natural-number codes. The code does not declar
 
 Nested products encode fixed-width vectors such as:
 
-- \`IntVec4\`
-- \`WalshVec4\`
-- \`Int8Vec4\`
-- \`Int8WalshVec4\`
+- `IntVec4`
+- `WalshVec4`
+- `Int8Vec4`
+- `Int8WalshVec4`
 
 ### Closed finite alternatives
 
 The implementation uses Agda data declarations for:
 
-- \`Signed\`
-- \`HardSign8\`
-- \`Phase4\`
-- \`BoolLike\`
+- `Signed`
+- `HardSign8`
+- `Phase4`
+- `BoolLike`
 
 Pattern matching gives total definitions over those finite alternatives.
 
 ### Endomorphism composition
 
-\`GRUAction\` packages state-to-state functions.
+`GRUAction` packages state-to-state functions.
 
-\`composeGRUAction\` is associative, with \`gruActionAssociativity\` proved by definitional equality.
+`composeGRUAction` is associative, with `gruActionAssociativity` proved by definitional equality.
 
-\`identityGRUAction\` is explicit. There is no imported standard-library \`Monoid\` instance for this surface.
+`identityGRUAction` is explicit. There is no imported standard-library `Monoid` instance for this surface.
 
 ### Equality and transport
 
 The canonical proof language is dominated by:
 
-- \`_≡_\`
-- \`refl\`
-- \`sym\`
-- \`trans\`
-- \`cong\`
-- \`subst\`
+- `_≡_`
+- `refl`
+- `sym`
+- `trans`
+- `cong`
+- `subst`
 
 This explains why many component projections and composition laws close by definitional equality.
 
@@ -170,10 +170,10 @@ This explains why many component projections and composition laws close by defin
 
 The learner uses:
 
-- \`Fin\` for finite carriers;
-- \`PowerOfFour\` for the width-4 witness;
-- \`FiniteRational\` for the exact finite Q-log representation;
-- \`⊥\` for impossible cases.
+- `Fin` for finite carriers;
+- `PowerOfFour` for the width-4 witness;
+- `FiniteRational` for the exact finite Q-log representation;
+- `⊥` for impossible cases.
 
 ## Semantic discovery algebra
 
@@ -199,11 +199,11 @@ The repository does not claim external simulator equivalence without a separate 
 
 The generalized learner surface is independent:
 
-\`GeneralFullCoupledLearnerMonolith.agda\` parameterizes action cardinality and uses list sorting/order structure for generalized policy selection.
+`GeneralFullCoupledLearnerMonolith.agda` parameterizes action cardinality and uses list sorting/order structure for generalized policy selection.
 
-\`GeneralFullCoupledTheoremsMonolith.agda\` packages generalized theorem statements and also contains the Mercury-named JAxtar certificate structures.
+`GeneralFullCoupledTheoremsMonolith.agda` packages generalized theorem statements and also contains the Mercury-named JAxtar certificate structures.
 
-\`GeneralClosedLoopBenchV2.agda\` supplies generalized benchmark loops and ablations.
+`GeneralClosedLoopBenchV2.agda` supplies generalized benchmark loops and ablations.
 
 These are benchmark/general infrastructure, not replacements for the canonical learner theorem monolith.
 
