@@ -101,9 +101,9 @@
   (run-novel-learner-theorem-discovery))
 
 (define (run-discovery)
-  ;; The canonical discovery lane enumerates only novel, nontrivial
-  ;; learner-law basis candidates. Agda remains authoritative for theorem
-  ;; acceptance.
+  ;; The canonical discovery lane extracts executable learner/theorem
+  ;; declarations first. Mercury then builds the e-graph from that extracted
+  ;; semantic dependency graph. Agda remains authoritative for acceptance.
   (run-novel-learner-theorem-discovery)
   (run-discovery-artifact-audit))
 
