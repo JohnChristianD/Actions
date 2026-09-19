@@ -694,9 +694,11 @@ recurrentPrefix-split :
     (recurrentPrefixState R xs m s)
 recurrentPrefix-split R xs m zero s rewrite +-identityʳ m = refl
 recurrentPrefix-split R xs m (suc n) s =
-  cong
-    (λ z → runNetwork R z (xs (m + n)))
-    (recurrentPrefix-split R xs m n s)
+  trans
+    (cong
+      (λ z → runNetwork R z (xs (m + n)))
+      (recurrentPrefix-split R xs m n s))
+    refl
 
 canonicalGRU-recurrent-prefix-correct :
   ∀ (xs : Nat → Int8) (n : Nat) (s : GRUState) →
