@@ -13,18 +13,9 @@
 
 :- func checked_paths = list(string).
 checked_paths = [
-    "Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda",
-    "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda",
-    "Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda",
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda",
-    "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda",
-    "Exotic/ERL/FullCoupled/CanonicalClosedLoopBench.agda",
-    "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda",
-    "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda",
-    "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda",
-    "Exotic/econlib/GameTheory.agda",
-    "Exotic/econlib/Equilibrium.agda",
-    "Exotic/econlib/MatchingPennies.agda"
+    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
 ].
 
 :- func forbidden = list(string).

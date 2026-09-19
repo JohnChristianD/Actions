@@ -16,8 +16,12 @@ generatedSemanticDerivedCount-self :
   generatedSemanticDerivedCount
 generatedSemanticDerivedCount-self = refl
 
-
 generatedSemanticEGraphQuotientCount-type :
   Nat
 generatedSemanticEGraphQuotientCount-type =
   generatedSemanticEGraphQuotientCount
+
+generatedCanonicalEndogenousMinimaxBellmanShapleyUAP-self :
+  generatedCanonicalEndogenousMinimaxBellmanShapleyUAP ≡
+  generatedCanonicalEndogenousMinimaxBellmanShapleyUAP
+generatedCanonicalEndogenousMinimaxBellmanShapleyUAP-self = refl

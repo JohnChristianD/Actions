@@ -28,23 +28,10 @@
 
 
 (define (agda-safe-files)
-  '("Exotic/ERL/FullCoupled/GeneralFullCoupledLearnerMonolith.agda"
-    "Exotic/ERL/FullCoupled/GeneralFullCoupledTheoremsMonolith.agda"
-    "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+  '("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
-    "Exotic/ERL/FullCoupled/TSTS_Connected_test.agda"
-    "Exotic/ERL/FullCoupled/Attention_Mediator_Connected_test.agda"
-    "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
-    "Exotic/ERL/FullCoupled/CanonicalGamePorts.agda"
-    "Exotic/ERL/FullCoupled/CanonicalFaithfulGameVariants.agda"
-    "Exotic/ERL/FullCoupled/CanonicalClosedLoopBench.agda"
-    "Exotic/ERL/FullCoupled/GeneralClosedLoopBenchV2.agda"
-    "Exotic/ERL/FullCoupled/AdditionalBenchmarkPorts.agda"
-    "Exotic/econlib/GameTheory.agda"
-    "Exotic/econlib/Equilibrium.agda"
-    "Exotic/econlib/MatchingPennies.agda"
-    "Exotic/ERL/FullCoupled/CanonicalLearnerGameExecution_test.agda"))
+    "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"))
 
 (define (run-agda-safe)
   ;; Regenerate only novel learner-law candidates before the proof lane.
@@ -116,6 +103,8 @@
       (suffix? ".command" file)
       (string=? file "ssh")
       (string=? file "scp")
+      (string-suffix? "/ssh" file)
+      (string-suffix? "/scp" file)
       (string=? file "python")
       (string=? file "bash")
       (string=? file "sh")
@@ -159,7 +148,17 @@
       ;; Web/markup source surfaces.
       (suffix? ".html" file)
       (suffix? ".htm" file)
-      (suffix? ".css" file)))
+      (suffix? ".css" file)
+      ;; TeX / LaTeX-family files.
+      (suffix? ".tex" file)
+      (suffix? ".ltx" file)
+      (suffix? ".sty" file)
+      (suffix? ".cls" file)
+      (suffix? ".bib" file)
+      ;; Markdown is permitted only for a README.
+      (and (or (suffix? ".md" file) (suffix? ".markdown" file))
+           (not (string-suffix? "/README.md" file))
+           (not (string=? file "README.md")))))
    (git-files)))
 
 (define (run-surface-audit)

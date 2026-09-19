@@ -770,56 +770,6 @@ canonicalGRU-recurrent-associative-scan-theorem =
     C.recurrentPrefix-split
 
 ------------------------------------------------------------------------
--- Finite exact reservoir-faithfulness class.
---
--- This is the exact finite/discrete form of the left-inverse implication:
--- a reservoir observation with a verified left inverse is injective and
--- every target on the hidden state factors exactly through that observation.
-------------------------------------------------------------------------
-
-record FiniteReservoirFaithfulnessTheorem
-  (State Output : Set)
-  (observe : State → Output) : Set₁ where
-  constructor finiteReservoirFaithfulnessTheorem
-  field
-    inverse : Output → State
-    leftInverse :
-      ∀ s → inverse (observe s) ≡ s
-
-    injective :
-      ∀ {s t} →
-      observe s ≡ observe t →
-      s ≡ t
-
-    exactReadout :
-      ∀ {Y : Set} (target : State → Y) s →
-      (λ o → target (inverse o)) (observe s)
-      ≡
-      target s
-
-finiteReservoirFaithfulnessTheorem :
-  ∀ {State Output : Set}
-  (observe : State → Output)
-  (inverse : Output → State)
-  (leftInverse : ∀ s → inverse (observe s) ≡ s) →
-  FiniteReservoirFaithfulnessTheorem State Output observe
-finiteReservoirFaithfulnessTheorem
-  observe inverse leftInverse =
-  finiteReservoirFaithfulnessTheorem
-    observe
-    inverse
-    leftInverse
-    (λ {s} {t} eq →
-      trans
-        (sym (leftInverse s))
-        (trans
-          (cong inverse eq)
-          (leftInverse t)))
-    (λ target s →
-      cong target (leftInverse s))
-
-
-------------------------------------------------------------------------
 -- Explicit equality-composition theorem.
 --
 -- The e-graph proof-plan combinator is dependency composition.  Actual
@@ -827,46 +777,14 @@ finiteReservoirFaithfulnessTheorem
 -- whose proof term uses trans.  A reflexive identity is never used as the
 -- composition theorem itself.
 ------------------------------------------------------------------------
-
-record EqualityCompositionTheorem
-  {A : Set}
-  {x y z : A} : Set where
-  constructor equalityCompositionTheorem
-  field
-    firstStep : x ≡ y
-    secondStep : y ≡ z
-    composedStep : x ≡ z
-
-composeEqualityTheorem :
-  ∀ {A : Set} {x y z : A} →
-  x ≡ y →
-  y ≡ z →
-  EqualityCompositionTheorem
-composeEqualityTheorem first second =
-  equalityCompositionTheorem
-    first
-    second
-    (trans first second)
-
-
-
-------------------------------------------------------------------------
--- Literature-derived minimax/Bellman-Shapley inclusion core.
+-- Canonical minimax/Bellman-Shapley inclusion class for the executable
+-- biased Watkins + negative-q-Munchausen + L2 target.
 --
--- Jaulin et al., Applied Interval Analysis, §5.6, Theorem 5.2, proves
--- that a convergent inclusion function can be propagated through a
--- minimization by partitioning the quantified variable and taking the
--- interval minimum of the sub-enclosures.  Their constrained Theorem 5.3
--- adds an inclusion test for the feasible set.  Shapley's stochastic-game
--- operator is the minimax value of a local matrix game applied to
--- discounted continuation payoffs.  The theorem below isolates the
--- common order-theoretic core: whenever the local minimax value is
--- monotone in its payoff function, a pointwise lower/upper enclosure is
--- transported to a lower/upper enclosure of the minimax value.
---
--- This is deliberately an abstract theorem over the current import
--- surface.  It does not smuggle a real-number topology, interval library,
--- or an ordered-ring instance into the canonical learner.
+-- The learner has a concrete Int8 carrier. No ordered ring, interval,
+-- metric, or topology is imported here. The inclusion theorem therefore
+-- takes the comparison relation and monotone minimax/Bellman-Shapley
+-- operator as explicit hypotheses, while the target itself is the exact
+-- executable canonicalWatkinsTarget.
 ------------------------------------------------------------------------
 
 record PointwiseSandwich
@@ -878,99 +796,117 @@ record PointwiseSandwich
     lower≤actual : ∀ x → lower x ≤ actual x
     actual≤upper : ∀ x → actual x ≤ upper x
 
-record MonotoneMinimaxValue
-  {Input Value : Set}
-  (_≤_ : Value → Value → Set)
-  (value : (Input → Value) → Value) : Set₁ where
-  constructor monotoneMinimaxValue
+record MinimaxBellmanShapleyOperator
+  (State Value : Set)
+  (_≤_ : Value → Value → Set) : Set₁ where
+  constructor minimaxBellmanShapleyOperator
   field
+    value : (State → Value) → Value
     monotone :
-      ∀ (f g : Input → Value) →
-      (∀ x → f x ≤ g x) →
+      ∀ (f g : State → Value) →
+      (∀ s → f s ≤ g s) →
       value f ≤ value g
 
-record MinimaxInclusionResult
-  {Value : Set}
+record MinimaxBellmanShapleyInclusionTheorem
+  (State Value : Set)
   (_≤_ : Value → Value → Set)
-  (lower actual upper : Value) : Set₁ where
-  constructor minimaxInclusionResult
+  (operator : MinimaxBellmanShapleyOperator State Value _≤_)
+  (lower actual upper : State → Value) : Set₁ where
+  constructor minimaxBellmanShapleyInclusionTheorem
   field
-    lowerBound : lower ≤ actual
-    upperBound : actual ≤ upper
+    lowerBound :
+      value operator lower ≤ value operator actual
+    upperBound :
+      value operator actual ≤ value operator upper
 
-minimaxBellmanShapley-inclusion-class :
-  ∀ {Input Value : Set}
-  (_≤_ : Value → Value → Set)
-  (value : (Input → Value) → Value)
-  (lower actual upper : Input → Value) →
-  MonotoneMinimaxValue _≤_ value →
-  PointwiseSandwich _≤_ lower actual upper →
-  MinimaxInclusionResult _≤_ (value lower) (value actual) (value upper)
-minimaxBellmanShapley-inclusion-class
-  _≤_ value lower actual upper
-  (monotoneMinimaxValue monotone)
-  (pointwiseSandwich lower≤actual actual≤upper) =
-  minimaxInclusionResult
-    (monotone lower actual lower≤actual)
-    (monotone actual upper actual≤upper)
+open PointwiseSandwich public
+open MinimaxBellmanShapleyOperator public
+open MinimaxBellmanShapleyInclusionTheorem public
 
-------------------------------------------------------------------------
--- Nat-clock orbit injectivity and the finite-observation contradiction.
---
--- FullLearnerState is infinite because its clock and count coordinates
--- range over Nat.  The canonical step increments the clock exactly.
--- Hence every canonical orbit is injective, while no map from Nat into
--- Int8 can be injective.  A left inverse through an Int8 observation
--- would force those two facts to coexist, which is impossible.
-------------------------------------------------------------------------
+canonicalBiasedWatkinsNegativeQMunchausenL2Target :
+  C.FullLearnerKernel → C.FullLearnerState → C.Int8
+canonicalBiasedWatkinsNegativeQMunchausenL2Target =
+  C.canonicalWatkinsTarget
 
-suc-injective :
-  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
-suc-injective refl = refl
+record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
+  constructor canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+  field
+    negativeQMunchausenBias :
+      ∀ x →
+      C.qLog2Bias8 x ≡
+      C.int8Neg
+        (C.int8OfNat
+          ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
+           C.denominator (C.finiteQLog8 x)))
 
-natPlus-left-cancel :
-  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
-natPlus-left-cancel zero m n eq = eq
-natPlus-left-cancel (suc k) m n eq =
-  natPlus-left-cancel k m n (suc-injective eq)
+    targetDecomposition :
+      ∀ K s →
+      canonicalBiasedWatkinsNegativeQMunchausenL2Target K s ≡
+      C.int8Add
+        (C.int8Add
+          (C.int8Add
+            (C.canonicalReward8 K s)
+            (C.canonicalQLogBias K s))
+          (C.int8Mul
+            C.canonicalDiscount8
+            (C.maxCriticValue8 (C.critic (C.watkins s)))))
+        (C.canonicalEndogenousFeedback K s)
 
-canonicalOrbit-state-injective :
-  ∀ K s {m n : Nat} →
-  C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
-  m ≡ n
-canonicalOrbit-state-injective K s {m} {n} eq =
-  natPlus-left-cancel
-    (C.clock s) m n
-    (trans
-      (sym (C.clockAfter K m s))
-      (trans
-        (cong (λ t → C.clock t) eq)
-        (C.clockAfter K n s)))
+    l2ConsumesTarget :
+      ∀ K s →
+      C.canonicalOptimizerStep K s ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer s)
+        (canonicalBiasedWatkinsNegativeQMunchausenL2Target K s)
 
-canonicalNoInt8LeftInverseOnOrbit :
+open CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem public
+
+canonical-biased-watkins-negative-q-munchausen-l2-target-theorem :
+  CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+canonical-biased-watkins-negative-q-munchausen-l2-target-theorem =
+  canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+    C.qLog2Bias8-law
+    (λ K s → C.canonicalWatkinsTarget-law K s)
+    (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
+
+canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class :
   ∀ (K : C.FullLearnerKernel)
-  (s : C.FullLearnerState)
-  (observe : C.FullLearnerState → C.Int8)
-  (inverse : C.Int8 → C.FullLearnerState) →
-  (∀ t → inverse (observe t) ≡ t) →
-  ⊥
-canonicalNoInt8LeftInverseOnOrbit K s observe inverse leftInverse =
-  C.int8-no-countably-unbounded-injective
-    (λ n → observe (C.iterateCanonical K n s))
-    (λ {m} {n} eq →
-      canonicalOrbit-state-injective K s
-        (trans
-          (sym (leftInverse (C.iterateCanonical K m s)))
-          (trans
-            (cong inverse eq)
-            (leftInverse (C.iterateCanonical K n s)))))
+  (_≤_ : C.Int8 → C.Int8 → Set)
+  (operator :
+    MinimaxBellmanShapleyOperator
+      C.FullLearnerState
+      C.Int8
+      _≤_)
+  (lower upper : C.FullLearnerState → C.Int8) →
+  PointwiseSandwich
+    _≤_
+    lower
+    (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
+    upper →
+  MinimaxBellmanShapleyInclusionTheorem
+    C.FullLearnerState
+    C.Int8
+    _≤_
+    operator
+    lower
+    (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
+    upper
+canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
+  K _≤_ operator lower upper
+  (pointwiseSandwich lower≤actual actual≤upper) =
+  minimaxBellmanShapleyInclusionTheorem
+    (monotone operator
+      lower
+      (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
+      lower≤actual)
+    (monotone operator
+      (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
+      upper
+      actual≤upper)
 
 ------------------------------------------------------------------------
 -- Endogenous factorization through a left-invertible observation.
---
--- The target is expanded using the actual learner decomposition:
--- reward + q-log bias + discounted critic value + endogenous feedback.
--- This is an exact semantic factorization, not an approximation claim.
 ------------------------------------------------------------------------
 
 canonicalWatkinsTarget-endogenous-leftInverse :
@@ -1008,57 +944,201 @@ canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
       (leftInverse s))
 
 ------------------------------------------------------------------------
--- Exact UAP-relevant transfer fact available under the strict imports.
---
--- A genuine continuous universal-approximation theorem additionally
--- needs a topological/metric function-space structure.  That structure
--- is intentionally absent here because the canonical theorem surface is
--- required to import only the learner monolith.  What can be proved
--- without changing those imports is the exact left-inverse factorization
--- that UAP transfer arguments use: every target already defined on the
--- state factors exactly through the observation/reconstruction pair.
+-- Infinite-state orbit injectivity and Nat-clock pigeonhole contradiction.
 ------------------------------------------------------------------------
 
-leftInverse-exact-readout-transfer :
-  ∀ {State Feature Output : Set}
+suc-injective :
+  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+suc-injective refl = refl
+
+natPlus-left-cancel :
+  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+natPlus-left-cancel zero m n eq = eq
+natPlus-left-cancel (suc k) m n eq =
+  natPlus-left-cancel k m n (suc-injective eq)
+
+canonicalOrbit-state-injective :
+  ∀ K s {m n : Nat} →
+  C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+  m ≡ n
+canonicalOrbit-state-injective K s {m} {n} eq =
+  natPlus-left-cancel
+    (C.clock s) m n
+    (trans
+      (sym (C.clockAfter K m s))
+      (trans
+        (cong (λ t → C.clock t) eq)
+        (C.clockAfter K n s)))
+
+canonicalPigeonholeNatClockContradiction :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.FullLearnerState) →
+  (∀ t → inverse (observe t) ≡ t) →
+  ⊥
+canonicalPigeonholeNatClockContradiction K s observe inverse leftInverse =
+  C.int8-no-countably-unbounded-injective
+    (λ n → observe (C.iterateCanonical K n s))
+    (λ {m} {n} eq →
+      canonicalOrbit-state-injective K s
+        (trans
+          (sym (leftInverse (C.iterateCanonical K m s)))
+          (trans
+            (cong inverse eq)
+            (leftInverse (C.iterateCanonical K n s)))))
+
+------------------------------------------------------------------------
+-- Continuous left-inverse transfer.
+--
+-- The strict import boundary does not contain topology. Continuity is
+-- therefore an explicit predicate supplied by the theorem caller.
+------------------------------------------------------------------------
+
+record ContinuousLeftInverseTheorem
+  (State Feature : Set)
   (observe : State → Feature)
   (inverse : Feature → State)
+  (Continuous : {A B : Set} → (A → B) → Set) : Set₁ where
+  constructor continuousLeftInverseTheorem
+  field
+    observeContinuous : Continuous observe
+    inverseContinuous : Continuous inverse
+    leftInverse :
+      ∀ s → inverse (observe s) ≡ s
+
+open ContinuousLeftInverseTheorem public
+
+continuousLeftInverse-injective :
+  ∀ {State Feature : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {Continuous : {A B : Set} → (A → B) → Set} →
+  ContinuousLeftInverseTheorem
+    State Feature observe inverse Continuous →
+  ∀ {s t} →
+  observe s ≡ observe t →
+  s ≡ t
+continuousLeftInverse-injective witness eq =
+  trans
+    (sym (leftInverse witness _))
+    (trans
+      (cong inverse eq)
+      (leftInverse witness _))
+
+continuousLeftInverse-exactReadout-transfer :
+  ∀ {State Feature Output : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {Continuous : {A B : Set} → (A → B) → Set} →
+  ContinuousLeftInverseTheorem
+    State Feature observe inverse Continuous →
   (target : State → Output) →
-  (leftInverse : ∀ s → inverse (observe s) ≡ s) →
   ∀ s →
   target s ≡ target (inverse (observe s))
-leftInverse-exact-readout-transfer
-  observe inverse target leftInverse s =
-  cong target (sym (leftInverse s))
+continuousLeftInverse-exactReadout-transfer
+  witness target s =
+  cong target (sym (leftInverse witness s))
 
 ------------------------------------------------------------------------
--- Composed novel endogenous theorem target for Mercury e-graph discovery.
+-- Ring-state injectivity and dense-neighborhood separation interfaces.
 --
--- The constructor deliberately composes:
---   1. the literature-derived minimax inclusion core;
---   2. endogenous Watkins-target factorization;
---   3. Nat-clock orbit injectivity;
---   4. the finite-Int8 left-inverse contradiction;
---
--- so Mercury discovery has a genuine multi-dependency semantic theorem
--- rather than a generated alias to an isolated reflexive law.
+-- These are explicit theorem contracts. The strict import boundary does
+-- not define a topology or an ordered-ring hierarchy, so neither is hidden.
 ------------------------------------------------------------------------
 
-record CanonicalEndogenousMinimaxBellmanShapleyTheorem : Set₁ where
-  constructor canonicalEndogenousMinimaxBellmanShapleyTheorem
+record RingStateInjectivityTheorem (State : Set) : Set₁ where
+  constructor ringStateInjectivityTheorem
   field
-    inclusionCore :
-      ∀ {Input Value : Set}
-      (_≤_ : Value → Value → Set)
-      (value : (Input → Value) → Value)
-      (lower actual upper : Input → Value) →
-      MonotoneMinimaxValue _≤_ value →
-      PointwiseSandwich _≤_ lower actual upper →
-      MinimaxInclusionResult
+    ringState : Nat → State
+    ringStateInjective :
+      ∀ {m n} → ringState m ≡ ringState n → m ≡ n
+
+open RingStateInjectivityTheorem public
+
+canonicalRingStateInjective :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState) →
+  RingStateInjectivityTheorem C.FullLearnerState
+canonicalRingStateInjective K s =
+  ringStateInjectivityTheorem
+    (λ n → C.iterateCanonical K n s)
+    (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
+
+record DenseNeighborhoodSeparationTheorem
+  (State Feature : Set)
+  (embed : Nat → State)
+  (observe : State → Feature) : Set₁ where
+  constructor denseNeighborhoodSeparationTheorem
+  field
+    denseNeighborhoodSeparation :
+      ∀ {m n} →
+      observe (embed m) ≡ observe (embed n) →
+      m ≡ n
+
+open DenseNeighborhoodSeparationTheorem public
+
+canonicalDenseNeighborhoodSeparation :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.FullLearnerState) →
+  (∀ t → inverse (observe t) ≡ t) →
+  DenseNeighborhoodSeparationTheorem
+    C.FullLearnerState
+    C.Int8
+    (λ n → C.iterateCanonical K n s)
+    observe
+canonicalDenseNeighborhoodSeparation
+  K s observe inverse leftInverse =
+  denseNeighborhoodSeparationTheorem
+    (λ {m} {n} eq →
+      canonicalOrbit-state-injective K s
+        (trans
+          (sym (leftInverse (C.iterateCanonical K m s)))
+          (trans
+            (cong inverse eq)
+            (leftInverse (C.iterateCanonical K n s)))))
+
+------------------------------------------------------------------------
+-- Strictly stronger combined theorem schema.
+--
+-- This is not a topological universal-approximation theorem under the
+-- current imports. It is the exact composition available here:
+-- target semantics + minimax/Bellman-Shapley inclusion + endogenous
+-- left-inverse factorization + continuous-left-inverse transfer +
+-- ring-state injectivity + dense-neighborhood separation + Nat-clock
+-- pigeonhole contradiction.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
+  constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
+  field
+    targetSemantics :
+      CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+
+    inclusionClass :
+      ∀ (K : C.FullLearnerKernel)
+      (_≤_ : C.Int8 → C.Int8 → Set)
+      (operator :
+        MinimaxBellmanShapleyOperator
+          C.FullLearnerState
+          C.Int8
+          _≤_)
+      (lower upper : C.FullLearnerState → C.Int8) →
+      PointwiseSandwich
         _≤_
-        (value lower)
-        (value actual)
-        (value upper)
+        lower
+        (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
+        upper →
+      MinimaxBellmanShapleyInclusionTheorem
+        C.FullLearnerState
+        C.Int8
+        _≤_
+        operator
+        lower
+        (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
+        upper
 
     endogenousFactorization :
       ∀ (K : C.FullLearnerKernel)
@@ -1067,25 +1147,50 @@ record CanonicalEndogenousMinimaxBellmanShapleyTheorem : Set₁ where
       (leftInverse : ∀ t → inverse (observe t) ≡ t) →
       ∀ s →
       C.canonicalWatkinsTarget K s ≡
-        C.int8Add
+      C.int8Add
+        (C.int8Add
           (C.int8Add
-            (C.int8Add
-              (C.canonicalReward8 K (inverse (observe s)))
-              (C.canonicalQLogBias K (inverse (observe s))))
-            (C.int8Mul
-              C.canonicalDiscount8
-              (C.maxCriticValue8
-                (C.critic (C.watkins (inverse (observe s))))))
-          (C.canonicalEndogenousFeedback K (inverse (observe s)))
+            (C.canonicalReward8 K (inverse (observe s)))
+            (C.canonicalQLogBias K (inverse (observe s))))
+          (C.int8Mul
+            C.canonicalDiscount8
+            (C.maxCriticValue8
+              (C.critic (C.watkins (inverse (observe s))))))
+        (C.canonicalEndogenousFeedback K (inverse (observe s)))
 
-    orbitInjective :
+    continuousReadoutTransfer :
+      ∀ {Feature Output : Set}
+      {observe : C.FullLearnerState → Feature}
+      {inverse : Feature → C.FullLearnerState}
+      {Continuous : {A B : Set} → (A → B) → Set} →
+      ContinuousLeftInverseTheorem
+        C.FullLearnerState
+        Feature
+        observe
+        inverse
+        Continuous →
+      (target : C.FullLearnerState → Output) →
+      ∀ s →
+      target s ≡ target (inverse (observe s))
+
+    ringStateInjection :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState) →
+      RingStateInjectivityTheorem C.FullLearnerState
+
+    denseNeighborhoodSeparation :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
-      {m n : Nat} →
-      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
-      m ≡ n
+      (observe : C.FullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.FullLearnerState) →
+      (∀ t → inverse (observe t) ≡ t) →
+      DenseNeighborhoodSeparationTheorem
+        C.FullLearnerState
+        C.Int8
+        (λ n → C.iterateCanonical K n s)
+        observe
 
-    finiteObservationContradiction :
+    pigeonholeNatClockContradiction :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
       (observe : C.FullLearnerState → C.Int8)
@@ -1093,11 +1198,20 @@ record CanonicalEndogenousMinimaxBellmanShapleyTheorem : Set₁ where
       (∀ t → inverse (observe t) ≡ t) →
       ⊥
 
-canonical-endogenous-minimax-bellman-shapley-theorem :
-  CanonicalEndogenousMinimaxBellmanShapleyTheorem
-canonical-endogenous-minimax-bellman-shapley-theorem =
-  canonicalEndogenousMinimaxBellmanShapleyTheorem
-    minimaxBellmanShapley-inclusion-class
-    canonicalWatkinsTarget-endogenous-leftInverse
-    canonicalOrbit-state-injective
-    canonicalNoInt8LeftInverseOnOrbit
+canonical-endogenous-minimax-bellman-shapley-uap-theorem :
+  CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
+canonical-endogenous-minimax-bellman-shapley-uap-theorem =
+  canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
+    canonical-biased-watkins-negative-q-munchausen-l2-target-theorem
+    canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
+    (λ K observe inverse leftInverse s →
+      canonicalWatkinsTarget-endogenous-leftInverse
+        K observe inverse leftInverse s)
+    (λ witness target s →
+      continuousLeftInverse-exactReadout-transfer
+        witness
+        target
+        s)
+    canonicalRingStateInjective
+    canonicalDenseNeighborhoodSeparation
+    canonicalPigeonholeNatClockContradiction

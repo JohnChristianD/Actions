@@ -14,6 +14,10 @@
     list(semantic_law)::in,
     symbolic_egraph.egraph::out,
     int::out) is det.
+:- func forced_target_id = string.
+forced_target_id =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
+
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.

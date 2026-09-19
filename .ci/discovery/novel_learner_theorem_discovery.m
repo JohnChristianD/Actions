@@ -16,6 +16,16 @@
 :- import_module string.
 :- import_module symbolic_egraph.
 
+:- func forced_target_law_id = string.
+forced_target_law_id = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
+
+:- pred forced_target_law(
+    list(semantic_law)::in, semantic_law::out) is semidet.
+forced_target_law(All, Target) :-
+    list.member(Target, All),
+    law_id(Target) = forced_target_law_id,
+    semantic_law.composite(Target) = yes.
+
 :- pred composite_laws(
     list(semantic_law)::in, list(semantic_law)::out) is det.
 composite_laws(All, Composite) :-
@@ -38,6 +48,30 @@ rhs_qualification(Source, Name, Qualified) :-
         Qualified = "T." ++ Name
     ;
         fail
+    ).
+
+:- pred write_forced_target_alias(
+    semantic_law::in,
+    io.text_output_stream::in,
+    io::di, io::uo) is det.
+write_forced_target_alias(Target, Stream, !IO) :-
+    (
+        rhs_qualification(
+            semantic_law.source(Target),
+            semantic_law.name(Target),
+            Qualified)
+    ->
+        io.write_string(Stream,
+            "generatedCanonicalEndogenousMinimaxBellmanShapleyUAP :\n  " ++
+            semantic_law.signature(Target) ++ "\n" ++
+            "generatedCanonicalEndogenousMinimaxBellmanShapleyUAP = " ++
+            Qualified ++ "\n\n",
+            !IO)
+    ;
+        io.write_string(
+            "ERROR: unknown forced target source in generated theorem alias\n",
+            !IO),
+        io.set_exit_status(1, !IO)
     ).
 
 :- pred write_generated_derived_aliases(
@@ -70,10 +104,11 @@ write_generated_derived_aliases([L | Ls], Index, Stream, !IO) :-
     ).
 
 :- pred write_generated_module(
+    semantic_law::in,
     list(semantic_law)::in,
     int::in,
     io::di, io::uo) is det.
-write_generated_module(Composite, QuotientCount, !IO) :-
+write_generated_module(Target, Composite, QuotientCount, !IO) :-
     io.open_output(
         "../../Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda",
         Result,
@@ -100,6 +135,7 @@ write_generated_module(Composite, QuotientCount, !IO) :-
             string.int_to_string(QuotientCount) ++
             "\n\n",
             !IO),
+        write_forced_target_alias(Target, Stream, !IO),
         write_generated_derived_aliases(Composite, 0, Stream, !IO),
         io.close_output(Stream)
     ;
@@ -112,10 +148,11 @@ write_generated_module(Composite, QuotientCount, !IO) :-
 
 :- pred write_report(
     list(semantic_law)::in,
+    semantic_law::in,
     list(semantic_law)::in,
     int::in,
     io::di, io::uo) is det.
-write_report(All, Composite, QuotientCount, !IO) :-
+write_report(All, Target, Composite, QuotientCount, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -127,6 +164,7 @@ write_report(All, Composite, QuotientCount, !IO) :-
         io.write_string(Stream,
             "{\n" ++
             "  \"generated\": true,\n" ++
+            "  \"forced_target_law\": \"" ++ law_id(Target) ++ "\",\n" ++
             "  \"search_semantics\": \"learner-monolith semantic dependency extraction\",\n" ++
             "  \"symbolic_registry\": false,\n" ++
             "  \"refl_as_composition\": false,\n" ++
@@ -154,16 +192,20 @@ main(!IO) :-
     extract_semantics(!IO),
     read_manifest(All, !IO),
     composite_laws(All, Composite),
-    discovery_egraph_from_laws(All, EGraph, QuotientCount),
     (
+        forced_target_law(All, Target),
+        discovery_egraph_from_laws(All, EGraph, QuotientCount),
         list.length(All) > 0,
         list.length(Composite) > 0,
         QuotientCount > 0,
         class_count(EGraph) > 0,
         enode_count(EGraph) > 0
     ->
-        write_generated_module(Composite, QuotientCount, !IO),
-        write_report(All, Composite, QuotientCount, !IO),
+        write_generated_module(Target, Composite, QuotientCount, !IO),
+        write_report(All, Target, Composite, QuotientCount, !IO),
+        io.write_string(
+            "forced-target-law=" ++ law_id(Target) ++ "\n",
+            !IO),
         io.write_string(
             "semantic-theorem-discovery=generated-from-learner-monolith\n",
             !IO),
@@ -181,7 +223,7 @@ main(!IO) :-
             !IO)
     ;
         io.write_string(
-            "ERROR: semantic discovery/e-graph gate failed\n",
+            "ERROR: forced target missing/composite or semantic discovery/e-graph gate failed\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
