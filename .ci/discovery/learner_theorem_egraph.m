@@ -66,15 +66,16 @@ theorem_patterns = [
 
 theorem_rewrites = [normalize_iterate].
 
-:- func relations = list(theorem_relation).
-relations = [invariant, iterate_invariant].
-
 :- func pattern_terms(theorem_pattern) = list(theorem_term).
 pattern_terms(theorem_pattern(T, O)) =
     [theorem_term(T, O, invariant), theorem_term(T, O, iterate_invariant)].
 
 :- func raw_terms = list(theorem_term).
-raw_terms = concat_map(pattern_terms, theorem_patterns).
+raw_terms = expand_patterns(theorem_patterns).
+
+:- func expand_patterns(list(theorem_pattern)) = list(theorem_term).
+expand_patterns([]) = [].
+expand_patterns([P | Ps]) = pattern_terms(P) ++ expand_patterns(Ps).
 
 :- func rewrite_once(theorem_rewrite, theorem_term) = theorem_term.
 rewrite_once(normalize_iterate, theorem_term(T, O, iterate_invariant)) =
