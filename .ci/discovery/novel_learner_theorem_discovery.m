@@ -101,7 +101,11 @@ canonical_term(theorem_term(T, O, _)) =
 build_egraph([], E, E).
 build_egraph([T | Ts], E0, E) :-
     C = canonical_term(T),
-    E1 = eqvclass.ensure_equivalence(E0, T, C),
+    ( if T = C then
+        E1 = E0
+    else
+        E1 = eqvclass.ensure_equivalence(E0, T, C)
+    ),
     build_egraph(Ts, E1, E).
 
 :- func discovery_egraph = eqvclass.eqvclass(theorem_term).
