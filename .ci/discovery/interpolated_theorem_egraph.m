@@ -22,6 +22,22 @@ forced_target_id =
 bounded_exact_approximation_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
 
+:- func continuous_readout_dependency = string.
+continuous_readout_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#continuousLeftInverse-exactReadout-transfer".
+
+:- func infinite_state_orbit_dependency = string.
+infinite_state_orbit_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalInfiniteStateOrbitEmbedding".
+
+:- func pigeonhole_dependency = string.
+pigeonhole_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
+
+:- func no_global_uap_dependency = string.
+no_global_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
+
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
@@ -159,7 +175,11 @@ main(!IO) :-
             "source=learner-monolith "
             "semantic-registry=manifest "
             "proof-compose-associativity=quotiented "
+            "continuous-left-inverse=connected "
             "bounded-exact-approximation=connected "
+            "infinite-state-orbit=connected "
+            "pigeonhole-global-int8-uap=refuted "
+
             "dynamic-manifest=on\n",
             !IO)
     ;
