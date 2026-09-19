@@ -78,6 +78,7 @@ top_level_header(Line, Name, SignatureFragment) :-
 top_level_declaration_header(Line, Name) :-
     top_level_line(Line),
     first_word(Line, Name),
+    Name \= "--",
     string.sub_string_search(Line, ":", _).
 
 :- pred theoremish(string::in) is semidet.
