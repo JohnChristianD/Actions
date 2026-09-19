@@ -134,7 +134,7 @@ The current emitted basis is:
 - `candidate_clockPlus4_endogenousFeedback_invariant`;
 - `candidate_clockPlus4_watkinsTarget_invariant`.
 
-The generated proof module is `GeneratedNovelLearnerTheorems.agda`. Passing `agda --safe` is required before any candidate can be considered verified.
+The reusable Mercury equivalence layer is `.ci/discovery/learner_theorem_egraph.m`. The generated proof module is `GeneratedNovelLearnerTheorems.agda`. Passing `agda --safe` and the Guix bare-refl artifact audit is required before any candidate can be considered verified.
 
 ## Learner-local symbolic composition algebra
 
