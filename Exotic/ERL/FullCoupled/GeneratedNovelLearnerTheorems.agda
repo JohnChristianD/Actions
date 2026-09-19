@@ -6,3 +6,6 @@ open import Exotic.ERL.FullCoupled.TheoremsMonolith
 
 generatedNovelLearnerTheoremBasis : NovelLearnerTheoremBasis
 generatedNovelLearnerTheoremBasis = novel-learner-theorem-basis
+
+generatedEGraphCompletedTheoremBasis : EGraphCompletedTheoremBasis
+generatedEGraphCompletedTheoremBasis = egraph-completed-theorem-basis
