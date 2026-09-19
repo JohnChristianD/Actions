@@ -9,7 +9,6 @@
 
 :- implementation.
 
-:- import_module bool.
 :- import_module char.
 :- import_module list.
 :- import_module string.
@@ -110,8 +109,6 @@ identifier_char(C) :-
     C = '_'
     ;
     C = '-'
-    ;
-    C = '''.
 
 :- pred occurrence_boundary(string::in, string::in, int::in) is semidet.
 occurrence_boundary(Text, Name, Position) :-
