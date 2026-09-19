@@ -5,7 +5,6 @@
 (use-modules
  (ice-9 format)
  (ice-9 rdelim)
- (ice-9 regex)
  (srfi srfi-1)
  (srfi srfi-13))
 
@@ -31,18 +30,13 @@
   (call-with-input-file
       file
     (lambda (port)
-      (let loop ((chunks '()))
-        (let ((line (read-line port)))
-          (if (eof-object? line)
-              (string-concatenate-reverse
-               (cons "" chunks))
-              (loop (cons (string-append line "\n") chunks))))))))
+      (get-string-all port))))
 
 (define (run-discovery-artifact-audit)
   (let* ((generated
           "Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda")
          (text (read-file-string generated)))
-    (if (string-match "^[[:space:]]*[^\n=]+=[[:space:]]*refl[[:space:]]*$" text)
+    (if (string-contains text "= refl\n")
         (begin
           (format #t
                   "ERROR: generated discovery module contains a bare refl proof~%")
