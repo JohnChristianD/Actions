@@ -8,23 +8,22 @@
 
 :- implementation.
 
-:- import_module learner_theorem_egraph.
-:- import_module eqvclass.
 :- import_module io.
+:- import_module learner_theorem_egraph.
 :- import_module list.
 
 main(!IO) :-
     Raw = raw_terms,
     E = discovery_egraph,
-    quotient_terms(E, Raw, [], Quotient),
+    extract_minimal(E, Raw, Minimal),
     RawCount = list.length(Raw),
-    QuotientCount = list.length(Quotient),
+    MinimalCount = list.length(Minimal),
     (
         RawCount = 8,
-        QuotientCount = 4
+        MinimalCount = 4
     ->
         io.write_string(
-            "theorem-egraph-regression=pass raw=8 quotient=4\n",
+            "theorem-egraph-regression=pass raw=8 minimal=4 saturation=enabled\n",
             !IO)
     ;
         io.write_string(
