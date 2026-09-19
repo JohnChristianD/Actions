@@ -68,6 +68,25 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
+      - name: Prepare pinned Guix channel with container Git
+        run: |
+          set -eu
+          rm -rf /tmp/guix-channel
+          git config --global --add safe.directory /tmp/guix-channel
+          git clone --depth=1 --branch version-1.5.0 \
+            "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
+          git -C /tmp/guix-channel fetch --depth=1 origin \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          git -C /tmp/guix-channel checkout --detach \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          printf '%s\n' \
+            "(list" \
+            " (channel" \
+            "  (name 'guix)" \
+            "  (url \"file:///tmp/guix-channel\")" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            ")" > .guix/channels-ci.scm
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -86,7 +105,7 @@ jobs:
         env:
           CI_LANE: agda-safe
         run: |
-          guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   mercury:
@@ -138,6 +157,25 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
+      - name: Prepare pinned Guix channel with container Git
+        run: |
+          set -eu
+          rm -rf /tmp/guix-channel
+          git config --global --add safe.directory /tmp/guix-channel
+          git clone --depth=1 --branch version-1.5.0 \
+            "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
+          git -C /tmp/guix-channel fetch --depth=1 origin \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          git -C /tmp/guix-channel checkout --detach \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          printf '%s\n' \
+            "(list" \
+            " (channel" \
+            "  (name 'guix)" \
+            "  (url \"file:///tmp/guix-channel\")" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            ")" > .guix/channels-ci.scm
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -156,7 +194,7 @@ jobs:
         env:
           CI_LANE: mercury
         run: |
-          guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
@@ -208,6 +246,25 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
+      - name: Prepare pinned Guix channel with container Git
+        run: |
+          set -eu
+          rm -rf /tmp/guix-channel
+          git config --global --add safe.directory /tmp/guix-channel
+          git clone --depth=1 --branch version-1.5.0 \
+            "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
+          git -C /tmp/guix-channel fetch --depth=1 origin \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          git -C /tmp/guix-channel checkout --detach \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          printf '%s\n' \
+            "(list" \
+            " (channel" \
+            "  (name 'guix)" \
+            "  (url \"file:///tmp/guix-channel\")" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            ")" > .guix/channels-ci.scm
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -226,7 +283,7 @@ jobs:
         env:
           CI_LANE: discovery
         run: |
-          guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
       - name: Verify forced endogenous theorem discovery artifact is present
         run: |
@@ -283,6 +340,25 @@ jobs:
           grep -q '^git[[:space:]]\+9418/tcp' /etc/services || \
             printf '%s\n' 'git 9418/tcp' >> /etc/services
 
+      - name: Prepare pinned Guix channel with container Git
+        run: |
+          set -eu
+          rm -rf /tmp/guix-channel
+          git config --global --add safe.directory /tmp/guix-channel
+          git clone --depth=1 --branch version-1.5.0 \
+            "https://git.savannah.gnu.org/git/guix.git" /tmp/guix-channel
+          git -C /tmp/guix-channel fetch --depth=1 origin \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          git -C /tmp/guix-channel checkout --detach \
+            "ac03c482b1910a1672427beaea07ddcd1d652806"
+          printf '%s\n' \
+            "(list" \
+            " (channel" \
+            "  (name 'guix)" \
+            "  (url \"file:///tmp/guix-channel\")" \
+            "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
+            ")" > .guix/channels-ci.scm
+
       - name: Checkout repository with container Git
         run: |
           set -eu
@@ -301,5 +377,5 @@ jobs:
         env:
           CI_LANE: surface
         run: |
-          guix time-machine -C .guix/channels.scm -- \
+          guix time-machine -C .guix/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
