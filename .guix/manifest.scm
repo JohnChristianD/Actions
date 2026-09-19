@@ -3,7 +3,8 @@
  (guix profiles)
  (guix git-download)
  (gnu packages agda)
- (gnu packages mercury))
+ (gnu packages mercury)
+ (srfi srfi-1))
 
 ;; The CI container pins Guix itself. The stock channel in that image is
 ;; Agda 2.7.0.1-era but carries agda-stdlib 2.1.1, while this repository
@@ -25,9 +26,24 @@
         (base32
          "17w5vfn5pb2cgfs22zph3jfqnki52ja8y4zwyqj24zwf9rxairr4"))))))
 
-(packages->manifest
- (list
-  (specification->package "agda@2.7.0.1")
-  agda-stdlib-2.3
-  mercury-minimal
-  (specification->package "guile@3.0")))
+(define lane (or (getenv "CI_LANE") "surface"))
+
+(define lane-packages
+  (cond
+   ((string=? lane "agda-safe")
+    (list
+     (specification->package "agda@2.7.0.1")
+     agda-stdlib-2.3
+     (specification->package "guile@3.0")))
+   ((or (string=? lane "mercury")
+        (string=? lane "discovery"))
+    (list
+     mercury-minimal
+     (specification->package "guile@3.0")))
+   ((string=? lane "surface")
+    (list
+     (specification->package "guile@3.0")))
+   (else
+    (error (format #f "unknown CI_LANE: ~a" lane)))))
+
+(packages->manifest lane-packages)
