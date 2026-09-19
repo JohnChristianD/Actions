@@ -871,6 +871,17 @@ canonicalBiasedWatkinsNegativeQMunchausenL2Target :
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
   C.canonicalWatkinsTarget
 
+canonical-qLog2Bias8-law :
+  ∀ x →
+  C.qLog2Bias8 x ≡
+  C.int8Neg
+    (C.int8OfNat
+      ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
+       C.denominator (C.finiteQLog8 x)))
+canonical-qLog2Bias8-law x with toℕ (C.code x)
+... | zero = refl
+... | suc n = refl
+
 record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
   constructor canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
   field
@@ -909,7 +920,7 @@ canonical-biased-watkins-negative-q-munchausen-l2-target-theorem :
   CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
 canonical-biased-watkins-negative-q-munchausen-l2-target-theorem =
   canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-    C.qLog2Bias8-law
+    canonical-qLog2Bias8-law
     (λ K s → C.canonicalWatkinsTarget-law K s)
     (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
 
