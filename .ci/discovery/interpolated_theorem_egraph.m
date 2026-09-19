@@ -74,8 +74,21 @@ discovery_egraph(E, !IO) :-
     add_laws(Laws, E0, E).
 
 main(!IO) :-
+    read_manifest(Laws, !IO),
     discovery_egraph(EGraph, !IO),
+    MultiDependency = list.length(
+        list.filter(
+            (pred(L::in) is semidet :-
+                semantic_law.composite(L) = yes),
+            Laws)),
+    NonReflexive = list.length(
+        list.filter(
+            (pred(L::in) is semidet :-
+                semantic_law.reflexive(L) = no),
+            Laws)),
     (
+        list.length(Laws) > 0,
+        NonReflexive >= MultiDependency,
         class_count(EGraph) > 0,
         enode_count(EGraph) > 0
     ->
@@ -83,11 +96,12 @@ main(!IO) :-
             "interpolated-theorem-egraph=pass "
             "source=learner-monolith "
             "symbolic-registry=absent "
-            "refl-composition=disabled\\n",
+            "refl-composition=disabled "
+            "dynamic-manifest=on\n",
             !IO)
     ;
         io.write_string(
-            "ERROR: learner semantic e-graph is empty\\n",
+            "ERROR: learner semantic e-graph manifest gate failed\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
