@@ -6,6 +6,8 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Agda.Builtin.Nat using (suc)
 open import Data.List.Base using (List; []; _∷_)
 open import Exotic.ERL.FullCoupled.AlgebraLawRegistry
+open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
+open import Exotic.ERL.FullCoupled.TheoremsMonolith
 
 registry-has-policy-composition :
   AlgebraLaw
