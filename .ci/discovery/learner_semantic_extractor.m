@@ -9,6 +9,7 @@
 
 :- implementation.
 
+:- import_module bool.
 :- import_module char.
 :- import_module list.
 :- import_module string.
