@@ -10,23 +10,23 @@ open C
 open T
 
 -- Generated from actual executable learner/theorem declarations.
--- Reflexive declarations are excluded from the composition class.
+-- Reflexive declarations are excluded from the multi-dependency class.
 
-generatedSemanticCompositionCount : Nat
-generatedSemanticCompositionCount = 4
+generatedSemanticDerivedCount : Nat
+generatedSemanticDerivedCount = 4
 
-generatedSemanticComposition0 :
+generatedSemanticDerived0 :
   ∀ K s → canonicalFullStep K s ≢ s
-generatedSemanticComposition0 = canonicalStep-not-fixed
+generatedSemanticDerived0 = canonicalStep-not-fixed
 
-generatedSemanticComposition1 :
+generatedSemanticDerived1 :
   ∀ K n s → clock (iterateCanonical K n s) ≡ clock s + n
-generatedSemanticComposition1 = clockAfter
+generatedSemanticDerived1 = clockAfter
 
-generatedSemanticComposition2 :
+generatedSemanticDerived2 :
   ∀ K s n → iterateCanonical K (suc n) s ≢ s
-generatedSemanticComposition2 = canonicalAperiodic
+generatedSemanticDerived2 = canonicalAperiodic
 
-generatedSemanticComposition3 :
+generatedSemanticDerived3 :
   ∀ K s → iterateCanonical K 2 s ≡ s → ⊥
-generatedSemanticComposition3 = canonicalNoCountedTwoCycle
+generatedSemanticDerived3 = canonicalNoCountedTwoCycle
