@@ -172,8 +172,8 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
             then
                 scan_lines(Source, Rest,
                     body_state(Name, SigRev, [Body]), Acc0, Out)
-            else if top_level_header(Line, NextName, NextFragment),
-                    theoremish(NextFragment)
+            else if top_level_header(Line, NextName, _),
+                    NextName \= Name
             then
                 finalize_state(Source, State0, Acc0, Acc1),
                 scan_lines(Source, [Line | Rest], idle, Acc1, Out)
@@ -185,9 +185,8 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
     ;
         State0 = body_state(Name, SigRev, BodyRev),
         (
-            if top_level_header(Line, NextName, NextFragment),
-               NextName \= Name,
-               theoremish(NextFragment)
+            if top_level_header(Line, NextName, _),
+               NextName \= Name
             then
                 finalize_state(Source, State0, Acc0, Acc1),
                 scan_lines(Source, [Line | Rest], idle, Acc1, Out)
