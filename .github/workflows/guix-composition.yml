@@ -109,7 +109,7 @@ jobs:
           cd /tmp
           wget -q https://dl.mercurylang.org/deb/paul.asc
           sudo cp paul.asc /etc/apt/trusted.gpg.d/paulbone.asc
-          echo "deb http://dl.mercurylang.org/deb/ noble main" | sudo tee /etc/apt/sources.list.d/mercury.list >/dev/null
+          echo "deb http://dl.mercurylang.org/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/mercury.list >/dev/null
           sudo apt-get update
           sudo apt-get install -y mercury-recommended
           mmc --version
