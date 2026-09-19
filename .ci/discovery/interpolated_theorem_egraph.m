@@ -2,7 +2,8 @@
 
 :- interface.
 
-:- import_module io.
+ :- import_module io.
+:- import_module symbolic_egraph.
 
 :- type theorem_goal
     ---> goal_novel_basis
@@ -33,11 +34,10 @@
 :- func saturated_goal_count = int.
 :- pred main(io::di, io::uo) is det.
 
-:- implementation.
+ :- implementation.
 
 :- import_module int.
 :- import_module list.
-:- import_module symbolic_egraph.
 
 proof_plan(goal_novel_basis) =
     app("basis", [
