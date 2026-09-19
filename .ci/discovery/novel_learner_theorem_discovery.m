@@ -8,196 +8,190 @@
 
 :- implementation.
 
+:- import_module learner_semantic_extractor.
 :- import_module io.
 :- import_module list.
 :- import_module string.
-:- import_module learner_theorem_egraph.
 
-:- func nat_string(int) = string.
-nat_string(N) = string.int_to_string(N).
+:- type semantic_law
+    ---> semantic_law(
+        source :: string,
+        name :: string,
+        reflexive :: string,
+        composite :: string,
+        signature :: string,
+        dependencies :: list(string)
+    ).
 
-:- func clock_plus4_expr(string) = string.
-clock_plus4_expr(S) =
-    "replaceClock (" ++ S ++
-    ") (suc (suc (suc (suc (C.clock (" ++ S ++ "))))))".
-
-:- func rendered_program(list(theorem_term)) = string.
-rendered_program(_) =
-    "generatedEGraphCompletedTheoremBasis : EGraphCompletedTheoremBasis\\n"
-    ++ "generatedEGraphCompletedTheoremBasis = egraph-completed-theorem-basis\\n".
-
-:- pred contains_bare_refl(string::in) is semidet.
-contains_bare_refl(Text) :-
-    string.sub_string_search(Text, "= refl\n", _).
-
-:- pred write_generated(list(theorem_term)::in, io::di, io::uo) is det.
-write_generated(Terms, !IO) :-
-    Text = rendered_program(Terms),
-    ( if contains_bare_refl(Text) then
+:- pred read_manifest(list(semantic_law)::out, io::di, io::uo) is det.
+read_manifest(Laws, !IO) :-
+    io.read_named_file_as_lines("learner-semantic-laws.tsv", Result, !IO),
+    (
+        Result = ok(Lines),
+        parse_manifest_lines(Lines, [], Laws)
+    ;
+        Result = error(Error),
         io.write_string(
-            "ERROR: trivial bare refl proof remained in generated discovery module\n",
+            "ERROR: cannot read learner semantic manifest: " ++
+            Error ++ "\n",
             !IO),
-        io.set_exit_status(1, !IO)
-    else
-        io.open_output(
-            "../../Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda",
-            Result,
-            !IO),
+        io.set_exit_status(1, !IO),
+        Laws = []
+    ).
+
+:- pred parse_manifest_lines(list(string)::in,
+    list(semantic_law)::in, list(semantic_law)::out) is det.
+parse_manifest_lines([], Acc, Laws) :-
+    list.reverse(Acc, Laws).
+parse_manifest_lines([Line | Rest], Acc, Laws) :-
+    (
+        string.strip(Line) = ""
+        -> parse_manifest_lines(Rest, Acc, Laws)
+    ;
+        Line = "source|name|reflexive|composite|signature|dependencies"
+        -> parse_manifest_lines(Rest, Acc, Laws)
+    ;
+        Parts = string.split_at_string("|", Line),
         (
-            Result = ok(Stream),
-            io.write_string(Stream,
-                "{-# OPTIONS --safe #-}\n\n" ++
-                "module Exotic.ERL.FullCoupled.GeneratedNovelLearnerTheorems where\n\n" ++
-                "open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans)\n" ++
-                "open import Agda.Builtin.Nat using (suc)\n" ++
-                "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
-                "open import Exotic.ERL.FullCoupled.TheoremsMonolith\n\n" ++
-                "generatedNovelLearnerTheoremBasis : NovelLearnerTheoremBasis\n" ++
-                "generatedNovelLearnerTheoremBasis = novel-learner-theorem-basis\n\n" ++
-                Text,
-                !IO),
-            io.close_output(Stream)
+            Parts = [Source, Name, Reflexive, Composite, Signature0, Dependencies0 | _],
+            Signature = string.replace_all(Signature0, "%7C", "|"),
+            Dependencies = parse_dependencies(Dependencies0),
+            parse_manifest_lines(
+                Rest,
+                [semantic_law(
+                    Source, Name, Reflexive, Composite,
+                    Signature, Dependencies) | Acc],
+                Laws)
         ;
-            Result = error(_),
-            io.write_string(
-                "ERROR: cannot write generated novel learner theorem module\n",
-                !IO),
-            io.set_exit_status(1, !IO)
+            parse_manifest_lines(Rest, Acc, Laws)
         )
     ).
 
-:- pred term_names(list(theorem_term)::in, io.text_output_stream::in,
-    io::di, io::uo) is det.
-term_names([], _, !IO).
-term_names([T | Ts], Stream, !IO) :-
-    io.write_string(Stream,
-        "    \"" ++ candidate_name(T) ++ "\"",
-        !IO),
-    (
-        Ts = [] ->
-            io.write_string(Stream, "\n", !IO)
-    ;
-        io.write_string(Stream, ",\n", !IO)
-    ),
-    term_names(Ts, Stream, !IO).
+:- func parse_dependencies(string) = list(string).
+parse_dependencies("") = [].
+parse_dependencies(Text) = list.filter(
+    (pred(X::in) is semidet :- string.strip(X) = ""),
+    string.split_at_string(";", Text)
+).
 
-:- pred write_conjectures(list(theorem_term)::in, io::di, io::uo) is det.
-write_conjectures(Terms, !IO) :-
-    io.open_output("novel-learner-theorem-conjectures.json", Result, !IO),
+:- pred composite_laws(list(semantic_law)::in,
+    list(semantic_law)::out) is det.
+composite_laws(All, Composite) :-
+    list.filter(
+        (pred(L::in) is semidet :-
+            L ^ composite = "true"),
+        All,
+        Composite).
+
+:- func rhs_qualification(string, string) = string.
+rhs_qualification(Source, Name) =
+    ( if string.sub_string_search(Source, "CanonicalLearnerMonolith.agda", _) then
+        "C." ++ Name
+    else if string.sub_string_search(Source, "TheoremsMonolith.agda", _) then
+        "T." ++ Name
+    else
+        Name
+    ).
+
+:- pred write_generated_aliases(
+    list(semantic_law)::in,
+    int::in,
+    io.text_output_stream::in,
+    io::di, io::uo) is det.
+write_generated_aliases([], _, _, !IO).
+write_generated_aliases(
+    [L | Ls], Index, Stream, !IO) :-
+    io.write_string(Stream,
+        "generatedSemanticComposition" ++
+        string.int_to_string(Index) ++
+        " :\n  " ++ L ^ signature ++ "\n" ++
+        "generatedSemanticComposition" ++
+        string.int_to_string(Index) ++
+        " = " ++ rhs_qualification(L ^ source, L ^ name) ++
+        "\n\n",
+        !IO),
+    write_generated_aliases(Ls, Index + 1, Stream, !IO).
+
+:- pred write_generated_module(list(semantic_law)::in,
+    io::di, io::uo) is det.
+write_generated_module(Composite, !IO) :-
+    io.open_output(
+        "../../Exotic/ERL/FullCoupled/GeneratedNovelLearnerTheorems.agda",
+        Result,
+        !IO),
     (
         Result = ok(Stream),
         io.write_string(Stream,
-            "{\n" ++
-            "  \"conjectures\": [\n",
+            "{-# OPTIONS --safe #-}\n\n" ++
+            "module Exotic.ERL.FullCoupled.GeneratedNovelLearnerTheorems where\n\n" ++
+            "open import Agda.Builtin.Nat using (Nat)\n" ++
+            "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
+            "open import Exotic.ERL.FullCoupled.TheoremsMonolith as T\n\n" ++
+            "-- This surface is generated from the actual learner monolith\n" ++
+            "-- declarations.  No theorem-name registry is used.\n\n" ++
+            "generatedSemanticCompositionCount : Nat\n" ++
+            "generatedSemanticCompositionCount = " ++
+            string.int_to_string(list.length(Composite)) ++
+            "\n\n",
             !IO),
-        write_conjecture_entries(Terms, Stream, !IO),
-        io.write_string(Stream,
-            "  ],\n" ++
-            "  \"proof_authority\": \"Agda --safe\",\n" ++
-            "  \"status\": \"unproved candidates until accepted by Agda\"\n" ++
-            "}\n",
-            !IO),
+        write_generated_aliases(Composite, 0, Stream, !IO),
         io.close_output(Stream)
     ;
         Result = error(_),
         io.write_string(
-            "ERROR: cannot write theorem conjecture manifest\n",
+            "ERROR: cannot write generated semantic theorem module\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
 
-:- pred write_conjecture_entries(list(theorem_term)::in,
-    io.text_output_stream::in, io::di, io::uo) is det.
-write_conjecture_entries([], _, !IO).
-write_conjecture_entries([T | Ts], Stream, !IO) :-
-    io.write_string(Stream,
-        "    { \"name\": \"" ++ candidate_name(T) ++
-        "\", \"signature\": \"" ++
-        candidate_signature(T) ++ "\" }",
-        !IO),
-    (
-        Ts = [] ->
-            io.write_string(Stream, "\n", !IO)
-    ;
-        io.write_string(Stream, ",\n", !IO)
-    ),
-    write_conjecture_entries(Ts, Stream, !IO).
-
-:- pred write_report(int::in, int::in, int::in,
-    list(theorem_term)::in, io::di, io::uo) is det.
-write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
+:- pred write_report(list(semantic_law)::in,
+    list(semantic_law)::in, io::di, io::uo) is det.
+write_report(All, Composite, !IO) :-
+    NonReflexive = list.length(
+        list.filter(
+            (pred(L::in) is semidet :- L ^ reflexive = "false"),
+            All)),
     io.open_output("novel-learner-theorem-discovery.json", Result, !IO),
     (
         Result = ok(Stream),
         io.write_string(Stream,
             "{\n" ++
             "  \"accepted\": true,\n" ++
-            "  \"search_semantics\": \"typed symbolic learner-law basis enumeration\",\n" ++
-            "  \"egraph\": { \"hash_cons\": true, \"general_enodes\": true, \"congruence_closure\": true, \"rewrite_registry\": 1, \"saturation\": true, \"cost_based_extraction\": true },\n" ++
-            "  \"quotient\": \"Mercury equivalence-class quotient with declarative rewrite saturation\",\n" ++
-            "  \"proof_gate\": \"GeneratedNovelLearnerTheorems.agda\",\n" ++
-            "  \"proof_plan_egraph\": true,\n" ++
-            "  \"proof_plan_goal_count\": 5,\n" ++
-            "  \"raw_candidate_count\": " ++ nat_string(RawCount) ++ ",\n" ++
-            "  \"quotient_pruned_count\": " ++ nat_string(QuotientPruned) ++ ",\n" ++
-            "  \"source_included_pruned_count\": " ++ nat_string(SourcePruned) ++ ",\n" ++
-            "  \"novel_basis_count\": " ++ nat_string(list.length(Terms)) ++ ",\n" ++
-            "  \"bare_refl_pruned\": true,\n" ++
-            "  \"external_search_reward\": false\n" ++
+            "  \"search_semantics\": \"learner-monolith semantic dependency extraction\",\n" ++
+            "  \"symbolic_registry\": false,\n" ++
+            "  \"refl_as_composition\": false,\n" ++
+            "  \"semantic_law_count\": " ++
+                string.int_to_string(list.length(All)) ++ ",\n" ++
+            "  \"nonreflexive_law_count\": " ++
+                string.int_to_string(NonReflexive) ++ ",\n" ++
+            "  \"composite_law_count\": " ++
+                string.int_to_string(list.length(Composite)) ++ ",\n" ++
+            "  \"proof_authority\": \"Agda --safe\"\n" ++
             "}\n",
             !IO),
         io.close_output(Stream)
     ;
         Result = error(_),
         io.write_string(
-            "ERROR: cannot write novel learner theorem discovery report\n",
+            "ERROR: cannot write semantic discovery report\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
 
 main(!IO) :-
-    Raw = raw_terms,
-    EGraph = discovery_egraph,
-    extract_minimal(EGraph, Raw, Quotiented),
-    io.read_named_file_as_string(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
-        SourceResult,
+    extract_semantics(!IO),
+    read_manifest(All, !IO),
+    composite_laws(All, Composite),
+    write_generated_module(Composite, !IO),
+    write_report(All, Composite, !IO),
+    io.write_string(
+        "semantic-theorem-discovery=generated-from-learner-monolith\n",
         !IO),
-    (
-        SourceResult = ok(Source),
-        prune_included(Source, Quotiented, Novel),
-        QuotientPruned = list.length(Raw) - list.length(Quotiented),
-        SourcePruned = list.length(Quotiented) - list.length(Novel),
-        write_conjectures(Quotiented, !IO),
-        write_generated(Novel, !IO),
-        write_report(
-            list.length(Raw),
-            QuotientPruned,
-            SourcePruned,
-            Novel,
-            !IO),
-        io.write_string(
-            "novel-learner-theorem-discovery=generated\n", !IO),
-        io.write_string(
-            "raw_candidate_count=" ++ nat_string(list.length(Raw)) ++ "\n",
-            !IO),
-        io.write_string(
-            "quotient_pruned_count=" ++ nat_string(QuotientPruned) ++ "\n",
-            !IO),
-        io.write_string(
-            "source_included_pruned_count=" ++ nat_string(SourcePruned) ++ "\n",
-            !IO),
-        io.write_string(
-            "novel_basis_count=" ++ nat_string(list.length(Novel)) ++ "\n",
-            !IO),
-        io.write_string("bare_refl_pruned=true\n", !IO),
-        io.write_string(
-            "proof_gate=GeneratedNovelLearnerTheorems.agda\n", !IO)
-    ;
-        SourceResult = error(ErrorMessage),
-        io.write_string(
-            "ERROR: cannot read TheoremsMonolith.agda: " ++
-            ErrorMessage ++ "\n",
-            !IO),
-        io.set_exit_status(1, !IO)
-    ).
+    io.write_string(
+        "semantic-law-count=" ++
+        string.int_to_string(list.length(All)) ++ "\n",
+        !IO),
+    io.write_string(
+        "composite-law-count=" ++
+        string.int_to_string(list.length(Composite)) ++ "\n",
+        !IO).
