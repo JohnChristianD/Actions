@@ -989,6 +989,101 @@ canonicalPigeonholeNatClockContradiction K s observe inverse leftInverse =
             (leftInverse (C.iterateCanonical K n s)))))
 
 ------------------------------------------------------------------------
+-- Full discrete exact-UAP factorization.
+--
+-- This is the genuine universal statement available without topology:
+-- every target on the discrete state factors exactly through an observation
+-- that has a left inverse. No limits, density arguments, or real-valued
+-- approximation metric are involved.
+------------------------------------------------------------------------
+
+record DiscreteExactUAPTheorem
+  (State Feature Output : Set)
+  (observe : State → Feature)
+  (inverse : Feature → State) : Set₁ where
+  constructor discreteExactUAPTheorem
+  field
+    leftInverse :
+      ∀ s → inverse (observe s) ≡ s
+    exactReadout :
+      (target : State → Output) →
+      ∀ s →
+      target s ≡ target (inverse (observe s))
+
+open DiscreteExactUAPTheorem public
+
+discreteExactUAPTheorem-from-leftInverse :
+  ∀ {State Feature Output : Set}
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (leftInverse : ∀ s → inverse (observe s) ≡ s) →
+  DiscreteExactUAPTheorem State Feature Output observe inverse
+discreteExactUAPTheorem-from-leftInverse
+  observe inverse leftInverse =
+  discreteExactUAPTheorem
+    leftInverse
+    (λ target s → cong target (sym (leftInverse s)))
+
+------------------------------------------------------------------------
+-- Exact recurrent scan of the executable endogenous target stream.
+------------------------------------------------------------------------
+
+canonicalWatkinsTargetSignalStream :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  Nat →
+  C.Int8
+canonicalWatkinsTargetSignalStream K s n =
+  C.canonicalWatkinsTarget K
+    (C.iterateCanonical K n s)
+
+canonicalWatkinsTarget-recurrent-prefix-correct :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (n : Nat)
+  (h : C.GRUState) →
+  C.applyEndomorphism
+    (C.recurrentPrefixEndomorphism
+      C.canonicalGRURecurrentNetwork
+      (canonicalWatkinsTargetSignalStream K s)
+      n)
+    h
+  ≡
+  C.recurrentPrefixState
+    C.canonicalGRURecurrentNetwork
+    (canonicalWatkinsTargetSignalStream K s)
+    n
+    h
+canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
+  C.recurrentPrefix-correct
+    C.canonicalGRURecurrentNetwork
+    (canonicalWatkinsTargetSignalStream K s)
+    n
+    h
+
+canonicalNoGlobalInt8DiscreteUAPOnOrbit :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.FullLearnerState)
+  {Output : Set} →
+  DiscreteExactUAPTheorem
+    C.FullLearnerState
+    C.Int8
+    Output
+    observe
+    inverse →
+  ⊥
+canonicalNoGlobalInt8DiscreteUAPOnOrbit
+  K s observe inverse witness =
+  canonicalPigeonholeNatClockContradiction
+    K
+    s
+    observe
+    inverse
+    (leftInverse witness)
+
+------------------------------------------------------------------------
 -- Continuous left-inverse transfer.
 --
 -- The strict import boundary does not contain topology. Continuity is
@@ -1117,6 +1212,18 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
     targetSemantics :
       CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
 
+    exactDiscreteUAP :
+      ∀ {Feature Output : Set}
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState) →
+      (leftInverse : ∀ s → inverse (observe s) ≡ s) →
+      DiscreteExactUAPTheorem
+        C.FullLearnerState
+        Feature
+        Output
+        observe
+        inverse
+
     inclusionClass :
       ∀ (K : C.FullLearnerKernel)
       (_≤_ : C.Int8 → C.Int8 → Set)
@@ -1158,6 +1265,24 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
               (C.critic (C.watkins (inverse (observe s))))))
         (C.canonicalEndogenousFeedback K (inverse (observe s)))
 
+    targetScan :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (n : Nat)
+      (h : C.GRUState) →
+      C.applyEndomorphism
+        (C.recurrentPrefixEndomorphism
+          C.canonicalGRURecurrentNetwork
+          (canonicalWatkinsTargetSignalStream K s)
+          n)
+        h
+      ≡
+      C.recurrentPrefixState
+        C.canonicalGRURecurrentNetwork
+        (canonicalWatkinsTargetSignalStream K s)
+        n
+        h
+
     continuousReadoutTransfer :
       ∀ {Feature Output : Set}
       {observe : C.FullLearnerState → Feature}
@@ -1198,14 +1323,36 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       (∀ t → inverse (observe t) ≡ t) →
       ⊥
 
+    noGlobalInt8DiscreteUAP :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (observe : C.FullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.FullLearnerState)
+      {Output : Set} →
+      DiscreteExactUAPTheorem
+        C.FullLearnerState
+        C.Int8
+        Output
+        observe
+        inverse →
+      ⊥
+
 canonical-endogenous-minimax-bellman-shapley-uap-theorem : CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
 canonical-endogenous-minimax-bellman-shapley-uap-theorem =
   canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
     canonical-biased-watkins-negative-q-munchausen-l2-target-theorem
     canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
+    (λ observe inverse leftInverse →
+      discreteExactUAPTheorem-from-leftInverse
+        observe
+        inverse
+        leftInverse)
     (λ K observe inverse leftInverse s →
       canonicalWatkinsTarget-endogenous-leftInverse
         K observe inverse leftInverse s)
+    (λ K s n h →
+      canonicalWatkinsTarget-recurrent-prefix-correct
+        K s n h)
     (λ witness target s →
       continuousLeftInverse-exactReadout-transfer
         witness
@@ -1214,3 +1361,4 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalRingStateInjective
     canonicalDenseNeighborhoodSeparation
     canonicalPigeonholeNatClockContradiction
+    canonicalNoGlobalInt8DiscreteUAPOnOrbit
