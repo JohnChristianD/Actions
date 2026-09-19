@@ -8,78 +8,19 @@
 
 :- implementation.
 
-:- import_module learner_semantic_extractor.
+:- import_module bool.
 :- import_module io.
+:- import_module learner_semantic_extractor.
+:- import_module learner_semantic_manifest.
 :- import_module list.
 :- import_module string.
 
-:- type semantic_law
-    ---> semantic_law(
-        source :: string,
-        name :: string,
-        reflexive :: string,
-        composite :: string,
-        signature :: string,
-        dependencies :: list(string)
-    ).
-
-:- pred read_manifest(list(semantic_law)::out, io::di, io::uo) is det.
-read_manifest(Laws, !IO) :-
-    io.read_named_file_as_lines("learner-semantic-laws.tsv", Result, !IO),
-    (
-        Result = ok(Lines),
-        parse_manifest_lines(Lines, [], Laws)
-    ;
-        Result = error(Error),
-        io.write_string(
-            "ERROR: cannot read learner semantic manifest: " ++
-            Error ++ "\n",
-            !IO),
-        io.set_exit_status(1, !IO),
-        Laws = []
-    ).
-
-:- pred parse_manifest_lines(list(string)::in,
+:- pred composite_laws(
     list(semantic_law)::in, list(semantic_law)::out) is det.
-parse_manifest_lines([], Acc, Laws) :-
-    list.reverse(Acc, Laws).
-parse_manifest_lines([Line | Rest], Acc, Laws) :-
-    (
-        string.strip(Line) = ""
-        -> parse_manifest_lines(Rest, Acc, Laws)
-    ;
-        Line = "source|name|reflexive|composite|signature|dependencies"
-        -> parse_manifest_lines(Rest, Acc, Laws)
-    ;
-        Parts = string.split_at_string("|", Line),
-        (
-            Parts = [Source, Name, Reflexive, Composite, Signature0, Dependencies0 | _],
-            Signature = string.replace_all(Signature0, "%7C", "|"),
-            Dependencies = parse_dependencies(Dependencies0),
-            parse_manifest_lines(
-                Rest,
-                [semantic_law(
-                    Source, Name, Reflexive, Composite,
-                    Signature, Dependencies) | Acc],
-                Laws)
-        ;
-            parse_manifest_lines(Rest, Acc, Laws)
-        )
-    ).
-
-:- func parse_dependencies(string) = list(string).
-parse_dependencies("") = [].
-parse_dependencies(Text) = list.filter(
-    (pred(X::in) is semidet :- string.strip(X) = ""),
-    string.split_at_string(";", Text)
-).
-
-:- pred composite_laws(list(semantic_law)::in,
-    list(semantic_law)::out) is det.
 composite_laws(All, Composite) :-
     list.filter(
         (pred(L::in) is semidet :-
-            L ^ composite = "true"),
+            semantic_law.composite(L) = yes),
         All,
         Composite).
 
@@ -88,7 +29,7 @@ rhs_qualification(Source, Name) =
     ( if string.sub_string_search(Source, "CanonicalLearnerMonolith.agda", _) then
         "C." ++ Name
     else if string.sub_string_search(Source, "TheoremsMonolith.agda", _) then
-        "T." ++ Name
+        Name
     else
         Name
     ).
@@ -99,15 +40,16 @@ rhs_qualification(Source, Name) =
     io.text_output_stream::in,
     io::di, io::uo) is det.
 write_generated_aliases([], _, _, !IO).
-write_generated_aliases(
-    [L | Ls], Index, Stream, !IO) :-
+write_generated_aliases([L | Ls], Index, Stream, !IO) :-
     io.write_string(Stream,
         "generatedSemanticComposition" ++
         string.int_to_string(Index) ++
-        " :\n  " ++ L ^ signature ++ "\n" ++
+        " :\n  " ++ semantic_law.signature(L) ++ "\n" ++
         "generatedSemanticComposition" ++
         string.int_to_string(Index) ++
-        " = " ++ rhs_qualification(L ^ source, L ^ name) ++
+        " = " ++ rhs_qualification(
+            semantic_law.source(L),
+            semantic_law.name(L)) ++
         "\n\n",
         !IO),
     write_generated_aliases(Ls, Index + 1, Stream, !IO).
@@ -126,9 +68,9 @@ write_generated_module(Composite, !IO) :-
             "module Exotic.ERL.FullCoupled.GeneratedNovelLearnerTheorems where\n\n" ++
             "open import Agda.Builtin.Nat using (Nat)\n" ++
             "open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C\n" ++
-            "open import Exotic.ERL.FullCoupled.TheoremsMonolith as T\n\n" ++
-            "-- This surface is generated from the actual learner monolith\n" ++
-            "-- declarations.  No theorem-name registry is used.\n\n" ++
+            "open import Exotic.ERL.FullCoupled.TheoremsMonolith\n\n" ++
+            "-- Generated from actual executable learner/theorem declarations.\\n" ++
+            "-- Reflexive declarations are excluded from the composition class.\\n\\n" ++
             "generatedSemanticCompositionCount : Nat\n" ++
             "generatedSemanticCompositionCount = " ++
             string.int_to_string(list.length(Composite)) ++
@@ -144,12 +86,14 @@ write_generated_module(Composite, !IO) :-
         io.set_exit_status(1, !IO)
     ).
 
-:- pred write_report(list(semantic_law)::in,
-    list(semantic_law)::in, io::di, io::uo) is det.
+:- pred write_report(
+    list(semantic_law)::in, list(semantic_law)::in,
+    io::di, io::uo) is det.
 write_report(All, Composite, !IO) :-
     NonReflexive = list.length(
         list.filter(
-            (pred(L::in) is semidet :- L ^ reflexive = "false"),
+            (pred(L::in) is semidet :-
+                semantic_law.reflexive(L) = no),
             All)),
     io.open_output("novel-learner-theorem-discovery.json", Result, !IO),
     (
