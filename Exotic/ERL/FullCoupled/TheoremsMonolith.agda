@@ -885,6 +885,33 @@ finiteReservoirFaithfulnessTheorem
 
 
 ------------------------------------------------------------------------
+-- Explicit equality-composition theorem.
+--
+-- The e-graph operation named compose denotes theorem composition through
+-- trans.  It is not a reflexive identity node.
+------------------------------------------------------------------------
+
+record EqualityCompositionTheorem
+  {A : Set}
+  {x y z : A} : Set where
+  constructor equalityCompositionTheorem
+  field
+    firstStep : x ≡ y
+    secondStep : y ≡ z
+    composedStep : x ≡ z
+
+composeEqualityTheorem :
+  ∀ {A : Set} {x y z : A} →
+  x ≡ y →
+  y ≡ z →
+  EqualityCompositionTheorem
+composeEqualityTheorem first second =
+  equalityCompositionTheorem
+    first
+    second
+    (trans first second)
+
+------------------------------------------------------------------------
 -- E-graph completed theorem package.
 --
 -- Mercury selects a dependency-composed proof plan for each class.  This
@@ -898,6 +925,18 @@ record EGraphCompletedTheoremBasis : Set₁ where
   field
     novelBasis :
       NovelLearnerTheoremBasis
+
+    policyReplacementComposition :
+      ∀ K s rs →
+      C.canonicalPolicy K (applyLearnerReplacements rs s)
+      ≡
+      C.canonicalPolicy K s
+
+    equalityComposition :
+      ∀ {A : Set} {x y z : A}
+      → x ≡ y
+      → y ≡ z
+      → x ≡ z
 
     attentionMediator :
       FiniteAttentionWatkinsGRUF4MediatorTheorem
@@ -922,6 +961,10 @@ egraph-completed-theorem-basis :
 egraph-completed-theorem-basis =
   eGraphCompletedTheoremBasis
     novel-learner-theorem-basis
+    canonicalPolicy-learnerReplacement-composition
+    (λ {A} {x} {y} {z} first second →
+      EqualityCompositionTheorem.composedStep
+        (composeEqualityTheorem first second))
     finite-attention-watkins-gru-f4-mediator-theorem
     canonicalGRU-recurrent-associative-scan-theorem
     (finiteReservoirFaithfulnessTheorem
