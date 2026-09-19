@@ -85,7 +85,7 @@ jobs:
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
             "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
-            ")" > .guix/channels-ci.scm
+            ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
         run: |
@@ -105,7 +105,7 @@ jobs:
         env:
           CI_LANE: agda-safe
         run: |
-          guix time-machine -C .guix/channels-ci.scm -- \
+          guix time-machine -C /tmp/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   mercury:
@@ -174,7 +174,7 @@ jobs:
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
             "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
-            ")" > .guix/channels-ci.scm
+            ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
         run: |
@@ -194,7 +194,7 @@ jobs:
         env:
           CI_LANE: mercury
         run: |
-          guix time-machine -C .guix/channels-ci.scm -- \
+          guix time-machine -C /tmp/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
 
   discovery:
@@ -263,7 +263,7 @@ jobs:
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
             "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
-            ")" > .guix/channels-ci.scm
+            ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
         run: |
@@ -283,7 +283,7 @@ jobs:
         env:
           CI_LANE: discovery
         run: |
-          guix time-machine -C .guix/channels-ci.scm -- \
+          guix time-machine -C /tmp/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
       - name: Verify forced endogenous theorem discovery artifact is present
         run: |
@@ -357,7 +357,7 @@ jobs:
             "  (name 'guix)" \
             "  (url \"file:///tmp/guix-channel\")" \
             "  (commit \"ac03c482b1910a1672427beaea07ddcd1d652806\")))" \
-            ")" > .guix/channels-ci.scm
+            ")" > /tmp/channels-ci.scm
 
       - name: Checkout repository with container Git
         run: |
@@ -377,5 +377,5 @@ jobs:
         env:
           CI_LANE: surface
         run: |
-          guix time-machine -C .guix/channels-ci.scm -- \
+          guix time-machine -C /tmp/channels-ci.scm -- \
             shell --pure -m .guix/manifest.scm -- guile .guix/ci.scm
