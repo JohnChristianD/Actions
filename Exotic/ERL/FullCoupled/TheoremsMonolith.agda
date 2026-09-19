@@ -773,3 +773,112 @@ novel-learner-theorem-basis =
                   (C.maxCriticValue8 (C.critic (C.watkins s)))))
               x)
           (novel-clockPlus4-endogenousFeedback-invariant K s)))
+
+
+------------------------------------------------------------------------
+-- Exact recurrent scan class.
+--
+-- No finite horizon is baked into this theorem. The input is a Nat-indexed
+-- stream, and the prefix/split laws quantify over arbitrary natural
+-- horizons. The associativity is over endomorphism composition, so the
+-- recurrent state transition itself is not approximated or relaxed.
+------------------------------------------------------------------------
+
+record RecurrentAssociativeScanTheorem
+  (State Input : Set) : Set₁ where
+  constructor recurrentAssociativeScanTheorem
+  field
+    actionAssociative :
+      ∀ (f g h : C.Endomorphism State) s →
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          (C.composeEndomorphism f g)
+          h)
+        s
+      ≡
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          f
+          (C.composeEndomorphism g h))
+        s
+
+    prefixCorrect :
+      ∀ (R : C.RecurrentNetwork State Input)
+        (xs : Nat → Input)
+        (n : Nat)
+        (s : State) →
+      C.applyEndomorphism
+        (C.recurrentPrefixEndomorphism R xs n)
+        s
+      ≡
+      C.recurrentPrefixState R xs n s
+
+    prefixSplit :
+      ∀ (R : C.RecurrentNetwork State Input)
+        (xs : Nat → Input)
+        (m n : Nat)
+        (s : State) →
+      C.recurrentPrefixState R xs (m + n) s
+      ≡
+      C.recurrentPrefixState
+        R
+        (C.shiftInput xs m)
+        n
+        (C.recurrentPrefixState R xs m s)
+
+canonicalGRU-recurrent-associative-scan-theorem :
+  RecurrentAssociativeScanTheorem C.GRUState C.Int8
+canonicalGRU-recurrent-associative-scan-theorem =
+  recurrentAssociativeScanTheorem
+    C.endomorphismAssociative
+    C.recurrentPrefix-correct
+    C.recurrentPrefix-split
+
+------------------------------------------------------------------------
+-- Finite exact reservoir-faithfulness class.
+--
+-- This is the exact finite/discrete form of the left-inverse implication:
+-- a reservoir observation with a verified left inverse is injective and
+-- every target on the hidden state factors exactly through that observation.
+------------------------------------------------------------------------
+
+record FiniteReservoirFaithfulnessTheorem
+  (State Output : Set)
+  (observe : State → Output) : Set₁ where
+  constructor finiteReservoirFaithfulnessTheorem
+  field
+    inverse : Output → State
+    leftInverse :
+      ∀ s → inverse (observe s) ≡ s
+
+    injective :
+      ∀ {s t} →
+      observe s ≡ observe t →
+      s ≡ t
+
+    exactReadout :
+      ∀ {Y : Set} (target : State → Y) s →
+      (λ o → target (inverse o)) (observe s)
+      ≡
+      target s
+
+finiteReservoirFaithfulnessTheorem :
+  ∀ {State Output : Set}
+  (observe : State → Output)
+  (inverse : Output → State)
+  (leftInverse : ∀ s → inverse (observe s) ≡ s) →
+  FiniteReservoirFaithfulnessTheorem State Output observe
+finiteReservoirFaithfulnessTheorem
+  observe inverse leftInverse =
+  finiteReservoirFaithfulnessTheorem
+    observe
+    inverse
+    leftInverse
+    (λ {s} {t} eq →
+      trans
+        (sym (leftInverse s))
+        (trans
+          (cong inverse eq)
+          (leftInverse t)))
+    (λ target s →
+      cong target (leftInverse s))
