@@ -136,6 +136,8 @@ write_report(RawCount, QuotientPruned, SourcePruned, Terms, !IO) :-
             "  \"egraph\": { \"hash_cons\": true, \"general_enodes\": true, \"congruence_closure\": true, \"rewrite_registry\": 1, \"saturation\": true, \"cost_based_extraction\": true },\n" ++
             "  \"quotient\": \"Mercury equivalence-class quotient with declarative rewrite saturation\",\n" ++
             "  \"proof_gate\": \"GeneratedNovelLearnerTheorems.agda\",\n" ++
+            "  \"proof_plan_egraph\": true,\n" ++
+            "  \"proof_plan_goal_count\": 5,\n" ++
             "  \"raw_candidate_count\": " ++ nat_string(RawCount) ++ ",\n" ++
             "  \"quotient_pruned_count\": " ++ nat_string(QuotientPruned) ++ ",\n" ++
             "  \"source_included_pruned_count\": " ++ nat_string(SourcePruned) ++ ",\n" ++
