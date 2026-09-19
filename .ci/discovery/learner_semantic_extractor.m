@@ -25,13 +25,13 @@
 :- type scan_state
     ---> idle
     ;   signature_state(
-            string,      % name
-            list(string) % signature fragments, reverse order
+            string,
+            list(string)
         )
     ;   body_state(
-            string,      % name
-            list(string),% signature fragments, reverse order
-            list(string) % body fragments, reverse order
+            string,
+            list(string),
+            list(string)
         ).
 
 :- func source_files = list(string).
@@ -117,28 +117,20 @@ identifier_char(C) :-
 occurrence_boundary(Text, Name, Position) :-
     Length = string.length(Name),
     End = Position + Length,
-    BeforeOK =
-        ( if Position = 0 then
-            yes
-        else
-            ( if string.index(Text, Position - 1, Before) then
-                not identifier_char(Before)
-            else
-                yes
-            )
-        ),
-    AfterOK =
-        ( if End >= string.length(Text) then
-            yes
-        else
-            ( if string.index(Text, End, After) then
-                not identifier_char(After)
-            else
-                yes
-            )
-        ),
-    BeforeOK = yes,
-    AfterOK = yes.
+    (
+        Position = 0
+    ;
+        Position > 0,
+        string.index(Text, Position - 1, Before),
+        not identifier_char(Before)
+    ),
+    (
+        End >= string.length(Text)
+    ;
+        End < string.length(Text),
+        string.index(Text, End, After),
+        not identifier_char(After)
+    ).
 
 :- pred contains_identifier(string::in, string::in) is semidet.
 contains_identifier(Text, Name) :-
@@ -192,7 +184,7 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
         State0 = body_state(Name, SigRev, BodyRev),
         (
             if top_level_header(Line, NextName, NextFragment),
-               NextName = Name,
+               NextName \= Name,
                theoremish(NextFragment)
             then
                 finalize_state(Source, State0, Acc0, Acc1),
@@ -245,8 +237,7 @@ dependency_names(
 :- pred find_dependencies(string::in, string::in, string::in,
     list(semantic_decl)::in, list(string)::in, list(string)::out) is det.
 find_dependencies(_, _, _, [], Acc, Acc).
-find_dependencies(Source, Name, Body,
-        [D | Ds], Acc0, Acc) :-
+find_dependencies(Source, Name, Body, [D | Ds], Acc0, Acc) :-
     D = semantic_decl(TargetSource, TargetName, _, _),
     (
         TargetName = Name
@@ -259,12 +250,8 @@ find_dependencies(Source, Name, Body,
         ->
             Acc1 = [TargetSource ++ "#" ++ TargetName | Acc0]
         ;
-            TargetSource = Source,
-            (
-                contains_identifier(Body, "." ++ TargetName)
-                ;
-                contains_identifier(Body, TargetName)
-            )
+            TargetSource \= Source,
+            contains_identifier(Body, "." ++ TargetName)
         ->
             Acc1 = [TargetSource ++ "#" ++ TargetName | Acc0]
         ;
@@ -273,10 +260,6 @@ find_dependencies(Source, Name, Body,
     ),
     find_dependencies(Source, Name, Body, Ds, Acc1, Acc).
 
-:- func semantic_id(semantic_decl) = string.
-semantic_id(semantic_decl(Source, Name, _, _)) =
-    Source ++ "#" ++ Name.
-
 :- pred write_manifest(list(semantic_decl)::in, list(semantic_decl)::in,
     io::di, io::uo) is det.
 write_manifest(All, Laws, !IO) :-
@@ -284,15 +267,13 @@ write_manifest(All, Laws, !IO) :-
     (
         Result = ok(Stream),
         io.write_string(Stream,
-            "source|name|reflexive|composite|signature|dependencies
-", !IO),
+            "source|name|reflexive|composite|signature|dependencies\n", !IO),
         write_manifest_entries(All, Laws, Stream, !IO),
         io.close_output(Stream)
     ;
         Result = error(_),
         io.write_string(
-            "ERROR: cannot write learner semantic manifest
-", !IO),
+            "ERROR: cannot write learner semantic manifest\n", !IO),
         io.set_exit_status(1, !IO)
     ).
 
@@ -316,15 +297,14 @@ write_manifest_entries(All, [D | Ds], Stream, !IO) :-
     ),
     SafeSignature = string.replace_all(
         string.replace_all(Signature, "|", "%7C"),
-        "	", " "),
+        "\t", " "),
     io.write_string(Stream,
         Source ++ "|" ++
         Name ++ "|" ++
         Reflexive ++ "|" ++
         Composite ++ "|" ++
         SafeSignature ++ "|" ++
-        string.join_list(";", Dependencies) ++ "
-",
+        string.join_list(";", Dependencies) ++ "\n",
         !IO),
     write_manifest_entries(All, Ds, Stream, !IO).
 
@@ -332,31 +312,30 @@ write_manifest_entries(All, [D | Ds], Stream, !IO) :-
 extract_semantics(!IO) :-
     semantic_declarations(Result, !IO),
     (
-        Result = ok(All0),
-        list.filter(semantic_signature, All0, Laws),
-        write_manifest(All0, Laws, !IO),
+        Result = ok(All),
+        list.filter(semantic_signature, All, Laws),
+        write_manifest(All, Laws, !IO),
         io.write_string(
-            "learner-semantic-extraction=generated
-", !IO),
+            "learner-semantic-extraction=generated\n", !IO),
         io.write_string(
             "semantic-law-count=" ++
-            string.int_to_string(list.length(Laws)) ++ "
-", !IO),
-        count_composite(Laws, All0, CompositeCount, NonReflexiveCount),
+            string.int_to_string(list.length(Laws)) ++ "\n",
+            !IO),
+        count_composite(Laws, All, CompositeCount, NonReflexiveCount),
         io.write_string(
             "nonreflexive-law-count=" ++
-            string.int_to_string(NonReflexiveCount) ++ "
-", !IO),
+            string.int_to_string(NonReflexiveCount) ++ "\n",
+            !IO),
         io.write_string(
             "composite-law-count=" ++
-            string.int_to_string(CompositeCount) ++ "
-", !IO)
+            string.int_to_string(CompositeCount) ++ "\n",
+            !IO)
     ;
         Result = error(Error),
         io.write_string(
             "ERROR: semantic extraction failed: " ++
-            Error ++ "
-", !IO),
+            Error ++ "\n",
+            !IO),
         io.set_exit_status(1, !IO)
     ).
 
