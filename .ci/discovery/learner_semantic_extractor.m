@@ -73,6 +73,13 @@ top_level_header(Line, Name, SignatureFragment) :-
     Parts = [_, After | _],
     SignatureFragment = string.strip(After).
 
+:- pred top_level_declaration_header(
+    string::in, string::out) is semidet.
+top_level_declaration_header(Line, Name) :-
+    top_level_line(Line),
+    first_word(Line, Name),
+    string.sub_string_search(Line, ":", _).
+
 :- pred theoremish(string::in) is semidet.
 theoremish(Signature) :-
     string.sub_string_search(Signature, "_≡_", _)
@@ -172,7 +179,7 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
             then
                 scan_lines(Source, Rest,
                     body_state(Name, SigRev, [Body]), Acc0, Out)
-            else if top_level_header(Line, NextName, _),
+            else if top_level_declaration_header(Line, NextName),
                     NextName \= Name
             then
                 finalize_state(Source, State0, Acc0, Acc1),
@@ -185,7 +192,7 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
     ;
         State0 = body_state(Name, SigRev, BodyRev),
         (
-            if top_level_header(Line, NextName, _),
+            if top_level_declaration_header(Line, NextName),
                NextName \= Name
             then
                 finalize_state(Source, State0, Acc0, Acc1),
