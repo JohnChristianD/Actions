@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-19",
+  "scope": "Agda proof lane and bounded exact UAP theorem surface",
+  "before": {
+    "agda_lane": "Guix agda and agda-stdlib packages were realized before kernel checking.",
+    "ci_bootstrap": "pullAfterInstall=true used %default-channels and introduced a large moving Guix pull.",
+    "theorems": "boundedUniversalExactApproximation-through-continuousLeftInverse existed; three bounded exact-UAP corollaries were absent."
+  },
+  "change": {
+    "agda": "Use official Agda 2.8.0.2 and stdlib 2.4 through agda/agda-setup-action pinned at commit c931d59d76a036d1bed9f322cc12cc105bda7881.",
+    "guix": "Use ROCKTAKEY/guix-install-action with pullAfterInstall=false as the pure CI driver.",
+    "uap": [
+      "boundedUniversalExactUAP-retraction",
+      "boundedUniversalExactUAP-decoder-transport",
+      "boundedUniversalExactUAP-postcompose"
+    ],
+    "mercury": "Require the three bounded-UAP corollaries in the forced theorem dependency contract."
+  },
+  "verification_target": "Guix Agda lane must print Agda 2.8.0.2 and execute Agda --safe on the canonical learner, theorem monolith, and focused tests.",
+  "rollback": "Revert the Agda setup action, restore Guix Agda packages, restore pullAfterInstall=true, and remove the three UAP corollaries plus their Mercury dependencies."
+}
