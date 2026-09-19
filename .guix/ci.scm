@@ -15,6 +15,9 @@
 (define agda-command
   (or (getenv "AGDA_COMMAND") "agda"))
 
+(define mercury-command
+  (or (getenv "MERCURY_COMMAND") "mmc"))
+
 (define (run! label . argv)
   (format #t "==> ~a: ~s~%" label argv)
   (let ((status (apply system* argv)))
@@ -54,15 +57,15 @@
   (in-directory ".ci/discovery"
     (lambda ()
       (run! "build Mercury theorem-monolith e-graph sync"
-            "mmc" "--make" "theorem_monolith_egraph_sync")
+            mercury-command "--make" "theorem_monolith_egraph_sync")
       (run! "run Mercury theorem-monolith e-graph sync"
             "./theorem_monolith_egraph_sync")
       (run! "build Mercury generic e-graph regression"
-            "mmc" "--make" "symbolic_egraph_test")
+            mercury-command "--make" "symbolic_egraph_test")
       (run! "run Mercury generic e-graph regression"
             "./symbolic_egraph_test")
       (run! "build Mercury interpolated theorem e-graph regression"
-            "mmc" "--make" "interpolated_theorem_egraph_test")
+            mercury-command "--make" "interpolated_theorem_egraph_test")
       (run! "run Mercury interpolated theorem e-graph regression"
             "./interpolated_theorem_egraph_test"))))
 
@@ -70,7 +73,7 @@
   (in-directory ".ci"
     (lambda ()
       (run! "build forbidden-theorem scanner"
-            "mmc" "--make" "check_forbidden_theorems")
+            mercury-command "--make" "check_forbidden_theorems")
       (run! "run forbidden-theorem scanner"
             "./check_forbidden_theorems")))
   (run-automated-semantic-egraph))

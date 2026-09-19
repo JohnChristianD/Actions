@@ -15,7 +15,6 @@
    ((or (string=? lane "mercury")
         (string=? lane "discovery"))
     (list
-     (specification->package "mercury-minimal")
      (specification->package "guile@3.0")))
    ((string=? lane "surface")
     (list
