@@ -3,7 +3,7 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
-open import Data.Nat using (_∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
+open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInjective)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
@@ -227,6 +227,11 @@ finiteQLog8 : Int8 → FiniteRational
 finiteQLog8 x with toℕ (code x)
 ... | zero = finiteRational 1 0 1
 ... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
+
+finiteQLog8-denominator-nonZero : ∀ {x} → NonZero (denominator (finiteQLog8 x))
+finiteQLog8-denominator-nonZero {x} with toℕ (code x)
+... | zero = Data.Nat.nonZero
+... | suc n = Data.Nat.nonZero
 
 negativeFiniteQLog8 : Int8 → FiniteRational
 negativeFiniteQLog8 x = finiteQLog8 x
