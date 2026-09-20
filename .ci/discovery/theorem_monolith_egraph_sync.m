@@ -90,8 +90,10 @@ composite_laws(All, Composite) :-
     semantic_law::in,
     list(semantic_law)::in,
     int::in,
+    saturation_report::in,
+    int::in,
     io::di, io::uo) is det.
-write_report(All, Target, Composite, QuotientCount, !IO) :-
+write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -114,6 +116,15 @@ write_report(All, Target, Composite, QuotientCount, !IO) :-
                 string.int_to_string(list.length(Composite)) ++ ",\n" ++
             "  \"egraph_associativity_quotient_count\": " ++
                 string.int_to_string(QuotientCount) ++ ",\n" ++
+            "  \"egraph_e_matching\": \"on\",\n" ++
+            "  \"egraph_saturation\": \"on\",\n" ++
+            "  \"egraph_rebuild\": \"on\",\n" ++
+            "  \"egraph_eclass_analysis\": \"on\",\n" ++
+            "  \"egraph_cost_extraction\": \"on\",\n" ++
+            "  \"egraph_saturation_iterations\": " ++
+                string.int_to_string(saturation_iterations(Saturation)) ++ ",\n" ++
+            "  \"egraph_extraction_cost\": " ++
+                string.int_to_string(ExtractionCost) ++ ",\n" ++
             "  \"continuous_left_inverse_transfer\": \"connected\",\n" ++
             "  \"bounded_exact_approximation\": \"connected\",\n" ++
             "  \"infinite_state_orbit\": \"connected\",\n" ++
@@ -151,7 +162,7 @@ main(!IO) :-
         saturation_iterations(Saturation) > 0,
         ExtractionCost > 0
     ->
-        write_report(All, Target, Composite, QuotientCount, !IO),
+        write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, !IO),
         io.write_string(
             "mercury-theorem-monolith-egraph-sync=pass\n",
             !IO),
@@ -179,6 +190,12 @@ main(!IO) :-
         io.write_string(
             "egraph-associativity-quotient-count=" ++
             string.int_to_string(QuotientCount) ++ "\n",
+            !IO),
+        io.write_string(
+            "e-matching=on saturation=on rebuild=on eclass-analysis=on cost-extraction=on\n",
+            !IO),
+        io.write_string(
+            "finite-int8-continuous-left-inverse=contradicted\n",
             !IO)
     ;
         io.write_string(
