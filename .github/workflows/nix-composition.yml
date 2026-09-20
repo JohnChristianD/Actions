@@ -47,10 +47,12 @@ jobs:
           include: .
           depend: standard-library
           EOF
+      - name: Disable CI Agda project for local interface
+        run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
       - name: Check learner monolith once
         run: |
           "$AGDA_COMMAND" --version
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       - name: Stage learner Agda interface
         run: |
           test -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
@@ -96,21 +98,23 @@ jobs:
         with:
           name: learner-agdai
           path: .
+      - name: Disable CI Agda project for local interfaces
+        run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
       - name: Verify learner interface handoff
         run: |
           test -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
       - name: Check theorem partition 1a
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
       - name: Check theorem partition 1b
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
       - name: Check theorem partition 1c
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
       - name: Check theorem partition 1 facade
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
       - name: Stage theorem partition 1 Agda interfaces
         run: |
           mv ci-composition.agda-lib.disabled ci-composition.agda-lib
@@ -156,7 +160,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part1-agdai
-          path: .
+          path: .      - name: Disable CI Agda project for local interfaces
+        run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+
       - name: Prefer downloaded Agda interfaces
         run: |
           mv ci-composition.agda-lib ci-composition.agda-lib.disabled
@@ -176,7 +182,7 @@ jobs:
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 2
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Stage theorem partition 2 Agda interfaces
         run: |
           mv ci-composition.agda-lib.disabled ci-composition.agda-lib
@@ -222,7 +228,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part2-agdai
-          path: .
+          path: .      - name: Disable CI Agda project for local interfaces
+        run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+
       - name: Prefer downloaded Agda interfaces
         run: |
           mv ci-composition.agda-lib ci-composition.agda-lib.disabled
@@ -242,7 +250,7 @@ jobs:
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 3
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Stage theorem partition 3 Agda interfaces
         run: |
           mv ci-composition.agda-lib.disabled ci-composition.agda-lib
@@ -288,7 +296,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part3-agdai
-          path: .
+          path: .      - name: Disable CI Agda project for local interfaces
+        run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+
       - name: Prefer downloaded Agda interfaces
         run: |
           mv ci-composition.agda-lib ci-composition.agda-lib.disabled
@@ -308,7 +318,7 @@ jobs:
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 4
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Stage theorem partition 4 Agda interfaces
         run: |
           mv ci-composition.agda-lib.disabled ci-composition.agda-lib
@@ -354,7 +364,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part4-agdai
-          path: .
+          path: .      - name: Disable CI Agda project for local interfaces
+        run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+
       - name: Prefer downloaded Agda interfaces
         run: |
           mv ci-composition.agda-lib ci-composition.agda-lib.disabled
@@ -374,7 +386,7 @@ jobs:
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 5
         run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - name: Stage theorem partition 5 Agda interfaces
         run: |
           mv ci-composition.agda-lib.disabled ci-composition.agda-lib
@@ -456,7 +468,7 @@ jobs:
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - run: |
-          "$AGDA_COMMAND" --safe --no-project -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
           mv ci-composition.agda-lib.disabled ci-composition.agda-lib
 
   mercury-discovery-surface:
