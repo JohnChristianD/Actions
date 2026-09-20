@@ -17,13 +17,15 @@ run_agda_safe() {
   done
 }
 
-run_mercury_egraph() {
+run_mercury() {
   (
     cd ".ci"
     mmc --make check_forbidden_theorems
     ./check_forbidden_theorems
   )
+}
 
+run_discovery() {
   (
     cd ".ci/discovery"
     mmc --make theorem_monolith_egraph_sync
@@ -33,14 +35,7 @@ run_mercury_egraph() {
     mmc --make interpolated_theorem_egraph_test
     ./interpolated_theorem_egraph_test
   )
-}
 
-run_mercury() {
-  run_mercury_egraph
-}
-
-run_discovery() {
-  run_mercury_egraph
   test -s ".ci/discovery/theorem-monolith-egraph-sync.json"
   printf '%s\n' "theorem-monolith-egraph-sync-report=present"
 }
@@ -48,7 +43,7 @@ run_discovery() {
 run_surface() {
   local monolith_count
   monolith_count="$(
-    find . -type f -not -path './.git/*' -print       | grep -F '/Exotic/ERL/FullCoupled/TheoremsMonolith.agda'       | wc -l
+    find . -type f -not -path './.git/*' -print       | grep -F './Exotic/ERL/FullCoupled/TheoremsMonolith.agda'       | wc -l
   )"
 
   if [[ "$monolith_count" -ne 1 ]] ||
