@@ -35,7 +35,10 @@
 
 :- func source_files = list(string).
 source_files = [
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda",
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda",
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda",
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
 ].
 
 :- func syntax_heads = list(string).
@@ -269,7 +272,10 @@ read_all_sources([File | Files], Acc, Result, !IO) :-
     io.read_named_file_as_lines(File, ReadResult, !IO),
     (
         ReadResult = ok(Lines),
-        parse_lines(File, Lines, Decls),
+        parse_lines(
+            "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+            Lines,
+            Decls),
         read_all_sources(Files, Decls ++ Acc, Result, !IO)
     ;
         ReadResult = error(Error),

@@ -52,8 +52,9 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
 
-  agda-theorems:
-    name: Nix / Agda theorem monolith
+
+  agda-theorem-part1:
+    name: Nix / Agda theorem partition 1
     needs: agda-learner
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -61,30 +62,136 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - name: Install Agda 2.8.0.2 and standard library 2.4
+      - uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
         id: setup-agda
-        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
         with:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
-      - name: Export Agda executable
-        run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
-      - name: Restore Agda interfaces
-        uses: actions/cache@v4
+      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
         with:
           path: |
             **/*.agdai
-          key: agda-interfaces-${{ runner.os }}-2.8.0.2-2.4-${{ hashFiles('Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda') }}
-      - name: Check theorem monolith
-        run: |
-          "$AGDA_COMMAND" --version
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+          key: agda-theorem-p1-${{ github.sha }}
+          restore-keys: |
+            agda-interfaces-${{ runner.os }}-2.8.0.2-2.4-
+      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+
+  agda-theorem-part2:
+    name: Nix / Agda theorem partition 2
+    needs: agda-theorem-part1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/*.agdai
+          key: agda-theorem-p2-${{ github.sha }}
+          restore-keys: |
+            agda-theorem-p1-${{ github.sha }}
+      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+
+  agda-theorem-part3:
+    name: Nix / Agda theorem partition 3
+    needs: agda-theorem-part2
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/*.agdai
+          key: agda-theorem-p3-${{ github.sha }}
+          restore-keys: |
+            agda-theorem-p2-${{ github.sha }}
+      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+
+  agda-theorem-part4:
+    name: Nix / Agda theorem partition 4
+    needs: agda-theorem-part3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/*.agdai
+          key: agda-theorem-p4-${{ github.sha }}
+          restore-keys: |
+            agda-theorem-p3-${{ github.sha }}
+      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+
+  agda-theorems:
+    name: Nix / Agda canonical theorem facade
+    needs: agda-theorem-part4
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/*.agdai
+          key: agda-theorem-root-${{ github.sha }}
+          restore-keys: |
+            agda-theorem-p4-${{ github.sha }}
+      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
   mercury-discovery-surface:
     name: Nix / Mercury discovery and canonical surface
