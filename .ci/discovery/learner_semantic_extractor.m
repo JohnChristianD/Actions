@@ -73,6 +73,16 @@ top_level_header(Line, Name, SignatureFragment) :-
     Parts = [_, After | _],
     SignatureFragment = string.strip(After).
 
+:- pred top_level_record_header(
+    string::in, string::out, string::out) is semidet.
+top_level_record_header(Line, Name, SignatureFragment) :-
+    top_level_line(Line),
+    first_word(Line, "record"),
+    Words = string.words(string.strip(Line)),
+    Words = ["record", Name | _],
+    Name = "ExactUniversalApproximationThroughContinuousLeftInverse",
+    SignatureFragment = "".
+
 :- pred top_level_declaration_header(
     string::in, string::out) is semidet.
 top_level_declaration_header(Line, Name) :-
@@ -171,8 +181,12 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
     (
         State0 = idle,
         (
-            if top_level_header(Line, Name, Fragment),
-               theoremish(Fragment)
+            if top_level_record_header(Line, RecordName, RecordFragment)
+            then
+                scan_lines(Source, Rest,
+                    signature_state(RecordName, [RecordFragment]), Acc0, Out)
+            else if top_level_header(Line, Name, Fragment),
+                    theoremish(Fragment)
             then
                 scan_lines(Source, Rest,
                     signature_state(Name, [Fragment]), Acc0, Out)
@@ -266,8 +280,9 @@ read_all_sources([File | Files], Acc, Result, !IO) :-
 :- pred dependency_names(semantic_decl::in, list(semantic_decl)::in,
     list(string)::out) is det.
 dependency_names(
-    semantic_decl(Source, Name, _, Body), All, Dependencies) :-
-    find_dependencies(Source, Name, Body, All, [], Rev),
+    semantic_decl(Source, Name, Signature, Body), All, Dependencies) :-
+    DependencyText = Signature ++ " " ++ Body,
+    find_dependencies(Source, Name, DependencyText, All, [], Rev),
     list.reverse(Rev, Dependencies).
 
 :- pred find_dependencies(string::in, string::in, string::in,
