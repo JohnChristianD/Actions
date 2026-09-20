@@ -14,7 +14,7 @@ The only active theorem source is:
 
 That theorem monolith imports the learner monolith as its only repository-local semantic source and is checked with `{-# OPTIONS --safe #-}`.
 
-There is no generated Agda theorem projection. Mercury synchronizes against the source-derived theorem monolith; Nix supplies one reproducible toolchain, while Agda performs the kernel check. One theorem source, because apparently software projects require ritual before they will stop duplicating themselves.
+There is no generated Agda theorem projection. Mercury synchronizes against the source-derived theorem monolith; Nix supplies the package environment, the NixOS-maintained installer action bootstraps Nix, and Agda performs the kernel check. One theorem source, because apparently software projects require ritual before they will stop duplicating themselves.
 
 ## Which tool owns the sync?
 
@@ -44,7 +44,7 @@ The e-graph is a discovery/proof-plan normalization layer, not a second proof au
 
 CI installs Nix once and enters the repository flake. The flake pins nixpkgs, layers the upstream Agda 2.8.0 release, pins the Agda standard library at v2.4, and obtains Mercury 22.01.9 from nixpkgs. No Guix channel, Guile manifest, or Scheme CI driver is required.
 
-The four verification lanes run from that one Nix environment: Agda kernel checking, Mercury theorem verification, Mercury e-graph discovery, and the canonical source-policy surface audit.
+The verification script runs Agda kernel checking, Mercury theorem verification, Mercury e-graph discovery, and the canonical source-policy surface audit from one Nix development shell.
 
 ## Infinite-state proof
 
@@ -123,7 +123,7 @@ It combines:
 - the Nat-clock pigeonhole contradiction;
 - impossibility of a global exact `Int8` UAP over the unbounded canonical orbit.
 
-The constructor for the composed theorem directly includes the bounded theorem and infinite-state orbit proof, so the Mercury dependency graph can see those as connected source laws rather than decorative documentation. The bounded exact-UAP record itself does not require dense-neighborhood separation; its exact readout follows from the left-inverse witness, with observation injectivity derived from that witness.
+The constructor for the composed theorem directly includes the bounded theorem and infinite-state orbit proof, so the Mercury dependency graph can see those as connected source laws rather than decorative documentation. The minimal exact-universal-readout certificate exposes three facts directly: a continuous left inverse, explicit observation separation, and exact readout for every target. Separation is derived from the left-inverse witness, so the separated field is intentionally redundant but makes the proof contract visible.
 
 ## Mercury e-graph sync contract
 
@@ -198,6 +198,11 @@ Where a result is conditional, the condition is explicit. Where a global claim i
 
 ## Agda proof lane update
 
-The proof lane uses the repository flake as the reproducible driver. It layers Agda v2.8.0 with standard-library v2.4 and Mercury 22.01.9 in one Nix shell, removing the former Guix/Guile execution boundary.
+The proof lane uses the repository flake for the pinned Nix package environment, while the official Agda setup action installs Agda 2.8.0.2 and standard-library 2.4. The GitHub runner installs Nix with the NixOS-maintained nix-installer action, pinned by commit, and the workflow pins Nix 2.35.1.
 
 The bounded exact-UAP surface includes exact retraction, decoder-transport, and postcomposition. The minimal bounded theorem needs a left inverse for exact readout; continuity is represented as an explicit abstract predicate until an actual topology is imported, and dense-neighborhood separation is not a prerequisite for the bounded theorem.
+
+
+## Terminology boundary
+
+The active proof model is ordinary reinforcement learning (RL). The legacy filesystem/module namespace `Exotic/ERL/FullCoupled/...` is retained only to avoid a broad path-and-module migration in the proof surface; the mathematics and documentation do not claim an evolutionary-RL mechanism.
