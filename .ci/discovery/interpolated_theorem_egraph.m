@@ -67,10 +67,6 @@ iterate_composition_dependency =
 convex_concave_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem".
 
-:- func finite_regret_dependency = string.
-finite_regret_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteHorizonRegretComposition".
-
 :- func finite_visit_dependency = string.
 finite_visit_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible".
@@ -87,6 +83,11 @@ aperiodicity_dependency =
 :- func finite_cycle_dependency = string.
 finite_cycle_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem".
+
+
+:- func hadamard_attention_rope_prefix_dependency = string.
+hadamard_attention_rope_prefix_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem".
 
 
 :- func semantic_rewrite_rules = list(rewrite_rule).
@@ -302,18 +303,18 @@ main(!IO) :-
             convex_concave_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            finite_regret_dependency,
-            semantic_law.dependencies(TargetLaw)),
-        list.member(
             finite_visit_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
             injectivity_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            hadamard_attention_rope_prefix_dependency,
             semantic_law.dependencies(TargetLaw))
     ->
         io.write_string(
             "interpolated-theorem-egraph=pass "
-            "source=learner-monolith "
+            "source=TheoremsMonolith.agda "
             "semantic-registry=manifest "
             "proof-compose-associativity=quotiented "
             "continuous-left-inverse=connected "
@@ -328,9 +329,9 @@ main(!IO) :-
             "aperiodicity=connected "
             "finite-cycle-exclusion=connected "
             "topology-convex-concave=connected "
-            "finite-regret-composition=connected "
             "finite-state-action-visit-capacity=connected "
             "left-inverse-injectivity=connected "
+            "hadamard-attention-rope-prefix=connected "
             "e-matching=on "
             "saturation=on "
             "rebuild=on "

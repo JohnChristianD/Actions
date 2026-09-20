@@ -33,10 +33,10 @@ main(!IO) :-
     FiniteTimeId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteTimeExactUniversalReadout",
     FiniteSampleId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteSampleExactUniversalReadout",
     IterateCompositionId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition",
+    MixingPrefixCompositionId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem",
     AperiodicityId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalAperiodic-theorem",
     FiniteCycleId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem",
     ConvexConcaveId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem",
-    RegretId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteHorizonRegretComposition",
     VisitId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible",
     NonReflexive = list.length(
         list.filter(
@@ -44,6 +44,11 @@ main(!IO) :-
                 semantic_law.reflexive(L) = no),
             Laws)),
     (
+        list.filter(
+            (pred(L::in) is semidet :-
+                semantic_law.source(L) =
+                    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"),
+            Laws) = Laws,
         CompositeCount > 0,
         NonReflexive >= CompositeCount,
         QuotientCount > 0,
@@ -67,14 +72,14 @@ main(!IO) :-
         law_id(FiniteSampleLaw) = FiniteSampleId,
         list.member(IterateCompositionLaw, Laws),
         law_id(IterateCompositionLaw) = IterateCompositionId,
+        list.member(MixingPrefixCompositionLaw, Laws),
+        law_id(MixingPrefixCompositionLaw) = MixingPrefixCompositionId,
         list.member(AperiodicityLaw, Laws),
         law_id(AperiodicityLaw) = AperiodicityId,
         list.member(FiniteCycleLaw, Laws),
         law_id(FiniteCycleLaw) = FiniteCycleId,
         list.member(ConvexConcaveLaw, Laws),
         law_id(ConvexConcaveLaw) = ConvexConcaveId,
-        list.member(RegretLaw, Laws),
-        law_id(RegretLaw) = RegretId,
         list.member(VisitLaw, Laws),
         law_id(VisitLaw) = VisitId,
         e_match(

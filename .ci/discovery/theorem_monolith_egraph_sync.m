@@ -68,10 +68,6 @@ iterate_composition_dependency =
 convex_concave_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem".
 
-:- func finite_regret_dependency = string.
-finite_regret_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteHorizonRegretComposition".
-
 :- func finite_visit_dependency = string.
 finite_visit_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible".
@@ -88,6 +84,11 @@ aperiodicity_dependency =
 :- func finite_cycle_dependency = string.
 finite_cycle_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem".
+
+
+:- func hadamard_attention_rope_prefix_dependency = string.
+hadamard_attention_rope_prefix_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem".
 
 
 :- func recurrent_bound_uap_dependency = string.
@@ -143,13 +144,13 @@ forced_target_law(All, Target) :-
         convex_concave_dependency,
         semantic_law.dependencies(Target)),
     list.member(
-        finite_regret_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
         finite_visit_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         injectivity_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        hadamard_attention_rope_prefix_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         recurrent_bound_uap_dependency,
@@ -281,9 +282,10 @@ main(!IO) :-
             "finite-sample-exact-readout=connected\n"
             "iterate-composition=connected\n"
             "topology-convex-concave=connected\n"
-            "finite-regret-composition=connected\n"
+
             "finite-state-action-visit-capacity=connected\n"
-            "left-inverse-injectivity=connected\n",
+            "left-inverse-injectivity=connected\n"
+            "hadamard-attention-rope-prefix=connected\n",
             !IO)
     ;
         io.write_string(
