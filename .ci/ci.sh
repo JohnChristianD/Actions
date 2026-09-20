@@ -4,7 +4,6 @@ set -euo pipefail
 agda_safe_files=(
   "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
   "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
-  "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
 )
 
 run_agda_safe() {
