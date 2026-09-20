@@ -80,7 +80,7 @@ read_manifest(Laws, !IO) :-
         Laws = []
     ).
 
-law_source(Law) = semantic_law.source(Law).
+law_source(Law) = Law ^ source.
 
 law_id(Law) = Id :-
     Source = law_source(Law),
@@ -88,14 +88,14 @@ law_id(Law) = Id :-
     Prefix = string.append(Source, "#"),
     Id = string.append(Prefix, Name).
 
-law_name(Law) = semantic_law.name(Law).
+law_name(Law) = Law ^ name.
 
-law_signature(Law) = semantic_law.signature(Law).
+law_signature(Law) = Law ^ signature.
 
-law_dependencies(Law) = semantic_law.dependencies(Law).
+law_dependencies(Law) = Law ^ dependencies.
 
 is_reflexive(Law) :-
-    semantic_law.reflexive(Law) = yes.
+    Law ^ reflexive = yes.
 
 is_composite(Law) :-
-    semantic_law.composite(Law) = yes.
+    Law ^ composite = yes.
