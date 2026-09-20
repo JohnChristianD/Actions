@@ -14,7 +14,7 @@ The only active theorem source is:
 
 That theorem monolith imports the learner monolith as its only repository-local semantic source and is checked with `{-# OPTIONS --safe #-}`.
 
-There is no generated Agda theorem projection. Mercury synchronizes against the source-derived theorem monolith; Nix supplies the package environment, the NixOS-maintained installer action bootstraps Nix, and Agda performs the kernel check. One theorem source, because apparently software projects require ritual before they will stop duplicating themselves.
+There is no generated Agda theorem projection. Mercury synchronizes only against the source-derived theorem monolith; Nix supplies the package environment, the NixOS-maintained installer action bootstraps Nix, and Agda performs the kernel check. One theorem source, because apparently software projects require ritual before they will stop duplicating themselves.
 
 ## Which tool owns the sync?
 
@@ -247,7 +247,7 @@ The active model is a learned recurrent finite-state/Mealy-style RL system: the 
 
 The topology construction is already minimal and constructive. `Topology` is defined directly using the existing `Data.Empty` (`⊥`), `Data.Unit` (`⊤`), and `Data.Product` (`Σ`, `×`) primitives; `Continuous` is then an explicit property over the two supplied topologies. No general topology package was imported. The discrete topology is instantiated explicitly, and every function is continuous for it. This is the clean counterpoint to treating continuity as synonymous with numerical precision.
 
-The order/inequality imports are also deliberately small: `Data.Nat` supplies `_<_`, `_≤_`, and the finite arithmetic relations, while `Data.Nat.Properties` supplies the specific arithmetic lemmas already used. Historical canonical sources use that same family of imports. There is no current `Algebra.Order`, ordered-semiring, or `Data.List.Sort` dependency in the proof lineage. The recent `Data.List` correction was a separate asymmetry: the theorem monolith uses `List` in the learner-replacement theorem surface, while the learner monolith does not.
+The order/inequality imports are also deliberately small: `Data.Nat` supplies `_<_`, `_≤_`, and the finite arithmetic relations, while `Data.Nat.Properties` supplies the specific arithmetic lemmas already used. Historical canonical sources use that same family of imports. There is no current `Algebra.Order`, ordered-semiring, or `Data.List.Sort` dependency in the proof lineage. The recent `Data.List` correction was a separate asymmetry: `Data.List` is no longer imported by the theorem monolith after pruning the learner-replacement semantic block.
 
 `Nat` is countably infinite, so an observation into `Nat` can avoid the finite-codomain pigeonhole obstruction that blocks global exact recovery through `Int8`. But infinite codomain is not sufficient for exact universal approximation. Exact universality still follows from composition with a left inverse: the standalone `ExactUniversalApproximationThroughContinuousLeftInverse` certificate provides continuous left-invertibility, derived observation separation, and exact readout for every target. The canonical infinite `Nat` orbit then supplies the contrasting countably infinite state index used in the finite-`Int8` contradiction.
 
@@ -261,4 +261,20 @@ For this repository the formal result is stronger and simpler: an injective `Nat
 
 ## Mercury synchronization boundary
 
-Mercury now treats the `{-# OPTIONS --safe #-}` theorem monolith as the proof-source contract. The extractor verifies the safe declaration, recognizes the record-valued exact-UAP certificate, and derives the semantic manifest directly from the canonical learner/theorem sources. The theorem e-graph explicitly requires the exact-UAP certificate and the finite-`Int8` continuous-left-inverse contradiction in the forced target dependency graph, then runs e-matching, rewriting, saturation, rebuild, e-class analysis, and cost-guided extraction. Agda `--safe` remains authoritative; Mercury is synchronized semantic/equality-saturation verification.
+Mercury now treats the `{-# OPTIONS --safe #-}` theorem monolith as the proof-source contract. The extractor verifies the safe declaration, recognizes the record-valued exact-UAP certificate, and derives the semantic manifest directly from the theorem monolith only. The theorem e-graph explicitly requires the exact-UAP certificate and the finite-`Int8` continuous-left-inverse contradiction in the forced target dependency graph, then runs e-matching, rewriting, saturation, rebuild, e-class analysis, and cost-guided extraction. Agda `--safe` remains authoritative; Mercury is synchronized semantic/equality-saturation verification.
+
+## Theorem-only equality saturation and canonical composition
+
+Mercury's semantic extractor now reads only `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` remains the sole owner of learner state, transitions, sparse attention state, Walsh-Hadamard primitives, and Walsh-Rademacher phase mixing; the theorem monolith imports those definitions, but Mercury does not e-graph the learner declarations themselves.
+
+The theorem monolith now exposes `CanonicalHadamardAttentionRopePrefixCompositionTheorem`. It composes the existing Hadamard Gram/orthogonality law, learned sparse-attention mixing equation, Walsh-Rademacher phase-period theorem, endogenous attention-to-Watkins-to-GRU/F4 mediator theorem, associative recurrent prefix scan, exact target-prefix correctness, and exact prefix work/count equalities. The canonical combined theorem depends on this composition directly, so the e-graph sees the theorem composition rather than a parallel learner implementation.
+
+The prefix complexity statement is exact: `recurrentPrefixStepWork n ≡ n` and the work splits additively over `m + n`. It is a finite equality certificate, not an invented asymptotic or statistical complexity claim.
+
+`Nat` is the standard natural-number carrier with its usual addition/multiplication and order structure. Agda's standard library exposes `<` and `≤` and a large arithmetic/algebraic property surface in `Data.Nat.Properties`. [Data.Nat.Base](https://agda.github.io/agda-stdlib/v2.4/Data.Nat.Base.html) [Data.Nat.Properties](https://agda.github.io/agda-stdlib/v2.4/Data.Nat.Properties.html) The repository imports only the properties actually used by the proof. Importing a whole library module does not automatically create e-graph semantics: only declarations present in the theorem monolith and their extracted dependencies become e-graph nodes.
+
+The finite-capacity contradiction is not that Nat is the wrong algebra. Nat can represent arbitrarily large integers and therefore unbounded bit-length. The contradiction is that an injective Nat-indexed orbit cannot be passed through a feature map whose information has an injective code into finite `Fin bound`; the resulting `Nat → Fin bound` map cannot be injective. `Int8` is the concrete finite special case.
+
+No Sion theorem, environment-dependent regret bound, or statistical sample-complexity theorem is part of this exact theorem surface. The existing Bellman-Shapley inclusion theorem remains an explicit operator/inclusion contract with its own comparison and monotonicity hypotheses.
+
+Tom Smeding and Matthijs Vákár's `Efficient CHAD` is an automatic-differentiation transformation with a formal complexity proof, not a semantic theorem for this recurrent `Int8` learner. It is not imported into the canonical theorem graph merely to manufacture a complexity label. [Efficient CHAD](https://arxiv.org/abs/2307.05738) [Agda formalisation](https://github.com/tomsmeding/efficient-chad-agda)

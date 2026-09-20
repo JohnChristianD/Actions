@@ -15,15 +15,22 @@
     "boundedUniversalExactUAP-postcompose",
     "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
     "ExactUniversalApproximationThroughContinuousLeftInverse",
-    "canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies"
+    "canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies",
+    "CanonicalHadamardAttentionRopePrefixCompositionTheorem",
+    "recurrentPrefixStepWork-law",
+    "recurrentPrefixStepWork-split"
   ],
   "verification": {
     "prior_ab": "four retired CI A/B executions repeatedly failed to complete while native shell Agda A/B runs reached green",
     "current_gate": "Nix migration must kernel-check the same theorem set and execute the Mercury verifier/e-graph lanes",
     "theorem_boundary": "bounded exact UAP derives from a continuous left-inverse witness; orbit-observation separation is derived from that witness; the standalone exact universal certificate exposes that separation explicitly",
     "topology_boundary": "the minimal topology uses Data.Empty, Data.Unit, and Data.Product; discrete topology makes continuity automatic; finite-Int8 global inversion still contradicts the infinite Nat orbit",
-    "nat_boundary": "Nat supplies countably infinite orbit indices and can serve as a non-finite feature code, but exact UAP still requires a left inverse and is not implied by cardinality alone",
-    "import_boundary": "Data.Nat and Data.Nat.Properties provide the existing order/inequality convenience; no ordered-semiring or Data.List.Sort dependency is part of the canonical proof lineage"
+    "nat_boundary": "Nat is retained as the canonical unbounded index/value carrier with standard arithmetic and order properties; no mutually exclusive alternative Nat algebra is introduced.",
+    "import_boundary": "Data.Nat and Data.Nat.Properties provide the existing order/inequality convenience; no ordered-semiring or Data.List.Sort dependency is part of the canonical proof lineage",
+    "egraph_scope": "Mercury equality-saturation reads declarations only from TheoremsMonolith.agda; CanonicalLearnerMonolith remains imported canonical component semantics and is never an e-graph source.",
+    "mixing_scan_boundary": "The theorem monolith composes Hadamard orthogonality, learned sparse-attention mixing, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative prefix scan, target-prefix correctness, and exact finite prefix work.",
+    "sample_complexity_boundary": "Environment-dependent Sion/regret/sample-complexity machinery is pruned.",
+    "chad_boundary": "Efficient CHAD is external reverse-mode AD complexity semantics and is not imported into this learner theorem graph."
   },
-  "decision": "Use one pinned Nix environment for Mercury and the repository shell; install Agda 2.8.0.2 with standard-library 2.4 through the official setup action; preserve Agda --safe as proof authority and Mercury as semantic discovery/verification."
+  "decision": "One canonical learner monolith, one theorem monolith, theorem-only Mercury e-graph. Exact finite-time equality composition remains Agda-authoritative; Mercury only discovers/quotients theorem dependencies."
 }

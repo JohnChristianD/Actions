@@ -112,3 +112,8 @@ Make the finite/discrete exact-UAP boundary explicit without importing reservoir
 ### Verification
 
 The single CI shell must run Agda `--safe`, Mercury theorem checks, source-derived e-graph synchronization, equality-saturation regression tests, and the repository surface audit from the same pinned Nix environment.
+
+
+## Follow-up: theorem-only equality saturation and canonical mix-prefix composition
+
+Restrict semantic extraction to `TheoremsMonolith.agda`; the learner monolith remains imported canonical semantics but is never e-graphed. Compose existing Hadamard orthogonality, attention mixing, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative prefix scan, target-prefix correctness, and exact prefix work/count laws into `CanonicalHadamardAttentionRopePrefixCompositionTheorem`. Prune environment-dependent Sion/regret/sample-complexity claims. Do not import CHAD merely for complexity vocabulary: it is a separate reverse-AD transformation semantics.
