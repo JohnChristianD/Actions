@@ -267,7 +267,7 @@ Mercury now treats the `{-# OPTIONS --safe #-}` theorem monolith as the proof-so
 
 Mercury's semantic extractor now reads only `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` remains the sole owner of learner state, transitions, sparse attention state, Walsh-Hadamard primitives, and Walsh-Rademacher phase mixing; the theorem monolith imports those definitions, but Mercury does not e-graph the learner declarations themselves.
 
-The theorem monolith now exposes `CanonicalHadamardAttentionRopePrefixCompositionTheorem`. It composes the existing Hadamard Gram/orthogonality law, learned sparse-attention mixing equation, Walsh-Rademacher phase-period theorem, endogenous attention-to-Watkins-to-GRU/F4 mediator theorem, associative recurrent prefix scan, exact target-prefix correctness, and exact prefix work/count equalities. The canonical combined theorem depends on this composition directly, so the e-graph sees the theorem composition rather than a parallel learner implementation.
+The theorem monolith exposes `CanonicalHadamardAttentionRopePrefixCompositionTheorem`. It composes the existing Hadamard Gram/orthogonality law, learned sparse-attention mixing equation, Walsh-Rademacher phase-period theorem, endogenous attention-to-Watkins-to-GRU/F4 mediator theorem, associative recurrent prefix scan, exact target-prefix correctness, and exact prefix work/count equalities. The canonical combined theorem carries this composition as a first-class field, so the source-derived Mercury e-graph receives it through the forced theorem target rather than through a duplicated learner model.
 
 The prefix complexity statement is exact: `recurrentPrefixStepWork n ≡ n` and the work splits additively over `m + n`. It is a finite equality certificate, not an invented asymptotic or statistical complexity claim.
 
@@ -278,3 +278,6 @@ The finite-capacity contradiction is not that Nat is the wrong algebra. Nat can 
 No Sion theorem, environment-dependent regret bound, or statistical sample-complexity theorem is part of this exact theorem surface. The existing Bellman-Shapley inclusion theorem remains an explicit operator/inclusion contract with its own comparison and monotonicity hypotheses.
 
 Tom Smeding and Matthijs Vákár's `Efficient CHAD` is an automatic-differentiation transformation with a formal complexity proof, not a semantic theorem for this recurrent `Int8` learner. It is not imported into the canonical theorem graph merely to manufacture a complexity label. [Efficient CHAD](https://arxiv.org/abs/2307.05738) [Agda formalisation](https://github.com/tomsmeding/efficient-chad-agda)
+
+
+The Nix CI invokes Mercury discovery only against `TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` is kernel-checked because it is the canonical imported learner definition, but learner declarations are not inserted into the Mercury semantic manifest or e-graph. No Sion-style environment-dependent regret or statistical sample-complexity theorem is part of this exact surface; the retained regret result is only a finite-horizon equality recurrence.

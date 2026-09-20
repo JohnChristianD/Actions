@@ -277,6 +277,7 @@ main(!IO) :-
             !IO),
         io.write_string(
             "finite-int8-continuous-left-inverse=contradicted\n"
+            "hadamard-attention-rope-prefix=connected\n"
             "generic-finite-feature-obstruction=connected\n"
             "finite-time-exact-readout=connected\n"
             "finite-sample-exact-readout=connected\n"

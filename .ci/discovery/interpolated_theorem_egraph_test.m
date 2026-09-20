@@ -92,7 +92,7 @@ main(!IO) :-
             _)
     ->
         io.write_string(
-            "learner-semantic-egraph-regression=pass "
+            "theorem-semantic-egraph-regression=pass "
             "source=manifest "
             "quotient=proof-compose-associativity "
             "e-matching=on saturation=on rebuild=on "
@@ -101,7 +101,7 @@ main(!IO) :-
             !IO)
     ;
         io.write_string(
-            "ERROR: learner semantic e-graph regression failed\n",
+            "ERROR: theorem semantic e-graph regression failed\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).

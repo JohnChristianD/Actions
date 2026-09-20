@@ -328,6 +328,7 @@ main(!IO) :-
             "iterate-composition=connected "
             "aperiodicity=connected "
             "finite-cycle-exclusion=connected "
+            "hadamard-attention-rope-prefix=connected "
             "topology-convex-concave=connected "
             "finite-state-action-visit-capacity=connected "
             "left-inverse-injectivity=connected "

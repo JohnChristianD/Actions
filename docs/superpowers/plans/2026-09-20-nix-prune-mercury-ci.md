@@ -117,3 +117,11 @@ The single CI shell must run Agda `--safe`, Mercury theorem checks, source-deriv
 ## Follow-up: theorem-only equality saturation and canonical mix-prefix composition
 
 Restrict semantic extraction to `TheoremsMonolith.agda`; the learner monolith remains imported canonical semantics but is never e-graphed. Compose existing Hadamard orthogonality, attention mixing, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative prefix scan, target-prefix correctness, and exact prefix work/count laws into `CanonicalHadamardAttentionRopePrefixCompositionTheorem`. Prune environment-dependent Sion/regret/sample-complexity claims. Do not import CHAD merely for complexity vocabulary: it is a separate reverse-AD transformation semantics.
+
+
+## Theorem-only e-graph scope
+
+- Mercury semantic extraction source is exactly `TheoremsMonolith.agda`.
+- `CanonicalLearnerMonolith.agda` remains an imported Agda proof dependency and kernel-check target, but its declarations are not e-graph nodes.
+- The canonical forced theorem exposes `CanonicalHadamardAttentionRopePrefixCompositionTheorem` as a first-class field so the e-graph derives the Hadamard/attention/RoPE/associative-prefix/work composition from theorem declarations.
+- Do not add Sion or environment-dependent sample-complexity/regret theorems without an explicit stochastic environment contract.
