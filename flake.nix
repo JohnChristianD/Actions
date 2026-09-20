@@ -25,12 +25,10 @@
         let
           pkgs = mkPkgs system;
 
-          agda = pkgs.agdaPackages.agda;
         in
         {
           default = pkgs.mkShell {
             packages = [
-              agda
               pkgs.mercury
               pkgs.gnumake
               pkgs.git
