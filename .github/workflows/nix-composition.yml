@@ -420,7 +420,7 @@ jobs:
           mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda" .ci/interface-shadow/
           mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda" .ci/interface-shadow/
       - run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
   mercury-discovery-surface:
     name: Nix / Mercury discovery and canonical surface
