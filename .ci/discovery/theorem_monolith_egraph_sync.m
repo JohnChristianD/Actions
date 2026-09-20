@@ -81,6 +81,15 @@ injectivity_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#leftInverse-observation-injective".
 
 
+:- func aperiodicity_dependency = string.
+aperiodicity_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalAperiodic-theorem".
+
+:- func finite_cycle_dependency = string.
+finite_cycle_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem".
+
+
 :- func recurrent_bound_uap_dependency = string.
 recurrent_bound_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalRecurrentBoundedExactUniversalApproximationTheorem".
@@ -123,6 +132,12 @@ forced_target_law(All, Target) :-
         semantic_law.dependencies(Target)),
     list.member(
         iterate_composition_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        aperiodicity_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        finite_cycle_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         convex_concave_dependency,

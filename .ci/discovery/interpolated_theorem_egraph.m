@@ -80,6 +80,15 @@ injectivity_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#leftInverse-observation-injective".
 
 
+:- func aperiodicity_dependency = string.
+aperiodicity_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalAperiodic-theorem".
+
+:- func finite_cycle_dependency = string.
+finite_cycle_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem".
+
+
 :- func semantic_rewrite_rules = list(rewrite_rule).
 
 
@@ -284,6 +293,12 @@ main(!IO) :-
             iterate_composition_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
+            aperiodicity_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_cycle_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
             convex_concave_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
@@ -310,6 +325,8 @@ main(!IO) :-
             "finite-time-exact-readout=connected "
             "finite-sample-exact-readout=connected "
             "iterate-composition=connected "
+            "aperiodicity=connected "
+            "finite-cycle-exclusion=connected "
             "topology-convex-concave=connected "
             "finite-regret-composition=connected "
             "finite-state-action-visit-capacity=connected "

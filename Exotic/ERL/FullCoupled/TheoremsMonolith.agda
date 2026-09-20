@@ -2073,6 +2073,18 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       C.iterateCanonical K (m + n) s ≡
       C.iterateCanonical K n (C.iterateCanonical K m s)
 
+    aperiodicity :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (n : Nat) →
+      C.iterateCanonical K (suc n) s ≢ s
+
+    finiteCycleExclusion :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (n : Nat) →
+      C.iterateCanonical K (suc n) s ≡ s → ⊥
+
     topologicalConvexConcaveExactReadout :
       ∀ {Feature Output : Set}
       (observe : C.FullLearnerState → Feature)
@@ -2363,6 +2375,8 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalFiniteTimeExactUniversalReadout
     canonicalFiniteSampleExactUniversalReadout
     canonicalIterateComposition
+    canonicalAperiodic-theorem
+    canonicalNoNontrivialFiniteCycle-theorem
     topologicalConvexConcaveExactReadoutTheorem-from-witness
     finiteHorizonRegretComposition
     finiteStateActionVisitInjectionImpossible
