@@ -720,6 +720,70 @@ symbolicTaskImpossible-from-observation-collision
 
 
 
+
+------------------------------------------------------------------------
+-- Recurrent-word collision boundary.
+--
+-- List-valued histories are part of the theorem vocabulary: a recurrent
+-- word is an exact endomorphism.  If an observation collides two states
+-- reached by exact words and the target separates them, no exact symbolic
+-- readout through that observation exists.
+------------------------------------------------------------------------
+
+recurrentWordState :
+  ∀ {State Input : Set} →
+  C.RecurrentNetwork State Input →
+  List Input →
+  State →
+  State
+recurrentWordState R word s =
+  C.applyEndomorphism
+    (prefixListEndomorphism R word)
+    s
+
+recurrentWord-observation-collision-impossible :
+  ∀ {State Input Feature Output : Set}
+  (R : C.RecurrentNetwork State Input)
+  (word : List Input)
+  (s t : State)
+  (observe : State → Feature)
+  (target : State → Output) →
+  observe (recurrentWordState R word s) ≡
+  observe (recurrentWordState R word t) →
+  target (recurrentWordState R word s) ≢
+  target (recurrentWordState R word t) →
+  ¬ ObservationTaskFactorization observe target
+recurrentWord-observation-collision-impossible
+  R word s t observe target obsEq targetDistinct =
+  symbolicTaskImpossible-from-observation-collision
+    observe
+    obsEq
+    target
+    targetDistinct
+
+------------------------------------------------------------------------
+-- Collision and injectivity are two views of the same obstruction.
+--
+-- This is a genuine composition theorem: the proof consumes the
+-- non-reflexive left-inverse ⇒ injectivity law.
+------------------------------------------------------------------------
+
+collision-implies-no-leftInverse-via-injectivity :
+  ∀ {State Feature : Set}
+  (observe : State → Feature)
+  {s t : State} →
+  observe s ≡ observe t →
+  s ≢ t →
+  ¬ (Σ (λ inverse →
+      ∀ u → inverse (observe u) ≡ u))
+collision-implies-no-leftInverse-via-injectivity
+  observe obsEq distinct =
+  λ witness →
+    distinct
+      (discreteLeftInverse-observe-injective
+        (proj₂ witness)
+        obsEq)
+
 ------------------------------------------------------------------------
 -- S4/S5-style scan algebra, without claiming the canonical learner is
 -- literally the linear S4/S5 architecture.
@@ -2399,11 +2463,7 @@ record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
         (C.replaceNorm (C.replaceOptimizer s o) n)
 
     recurrentPrefixComposition :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (n : Nat) →
-      C.iterateCanonical K n s
-      ≡ C.iterateCanonical K n s
+      RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
 
     s4PlusS5RecurrentScan :
       S4PlusS5RecurrentScanTheorem C.GRUState C.Int8
@@ -2456,7 +2516,7 @@ canonical-polymorphic-sparsemax-egraph-theorem =
     C.canonicalPolicy-norm-invariant
     C.canonicalPolicy-optimizer-invariant
     C.hardSparse-composition-normPair-F4-L2
-    (λ K s n → refl)
+    canonical-recurrent-prefix-monoid-homomorphism
     canonical-S4S5-recurrent-scan-theorem
     finiteAutomatonProductPrefix-correct
     informationPreserving-symbolic-task-factorization
