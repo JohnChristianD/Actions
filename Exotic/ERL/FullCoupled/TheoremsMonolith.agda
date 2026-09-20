@@ -1247,8 +1247,8 @@ record ContinuousLeftInverseTheorem
   field
     stateTopology : Topology State
     featureTopology : Topology Feature
-    observeContinuous : Continuous stateTopology featureTopology observe
-    inverseContinuous : Continuous featureTopology stateTopology inverse
+    observeContinuous : Continuous State Feature stateTopology featureTopology observe
+    inverseContinuous : Continuous Feature State featureTopology stateTopology inverse
     leftInverse :
       ∀ s → inverse (observe s) ≡ s
 
