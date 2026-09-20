@@ -1841,7 +1841,7 @@ record OrbitStateInjectivityTheorem (State : Set) : Set₁ where
   field
     orbitState : Nat → State
     orbitStateInjective :
-      ∀ {m n} → ringState m ≡ ringState n → m ≡ n
+      ∀ {m n} → orbitState m ≡ orbitState n → m ≡ n
 
 open OrbitStateInjectivityTheorem public
 
