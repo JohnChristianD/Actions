@@ -7,19 +7,23 @@
     "retired_non_nix_layer": "removed from the repository CI path; its channel/manifest/driver files are deleted",
     "package_configuration": "no repository-controlled legacy package-management configuration remains",
     "proof_source": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
-    "mercury_contract": "forced canonical theorem retains bounded exact UAP and recurrent-prefix dependencies; Mercury remains discovery/verification only"
+    "mercury_contract": "the forced canonical theorem now exposes the continuous-left-inverse exact-UAP certificate and finite-Int8 continuity contradiction; Mercury remains discovery/equality-saturation verification only"
   },
   "theorems": [
     "boundedUniversalExactUAP-retraction",
     "boundedUniversalExactUAP-decoder-transport",
     "boundedUniversalExactUAP-postcompose",
     "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
-    "ExactUniversalApproximationThroughContinuousLeftInverse"
+    "ExactUniversalApproximationThroughContinuousLeftInverse",
+    "canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies"
   ],
   "verification": {
     "prior_ab": "four retired CI A/B executions repeatedly failed to complete while native shell Agda A/B runs reached green",
     "current_gate": "Nix migration must kernel-check the same theorem set and execute the Mercury verifier/e-graph lanes",
-    "theorem_boundary": "bounded exact UAP derives from a continuous left-inverse witness; orbit-observation separation is derived from that witness; the standalone exact universal certificate exposes that separation explicitly"
+    "theorem_boundary": "bounded exact UAP derives from a continuous left-inverse witness; orbit-observation separation is derived from that witness; the standalone exact universal certificate exposes that separation explicitly",
+    "topology_boundary": "the minimal topology uses Data.Empty, Data.Unit, and Data.Product; discrete topology makes continuity automatic; finite-Int8 global inversion still contradicts the infinite Nat orbit",
+    "nat_boundary": "Nat supplies countably infinite orbit indices and can serve as a non-finite feature code, but exact UAP still requires a left inverse and is not implied by cardinality alone",
+    "import_boundary": "Data.Nat and Data.Nat.Properties provide the existing order/inequality convenience; no ordered-semiring or Data.List.Sort dependency is part of the canonical proof lineage"
   },
   "decision": "Use one pinned Nix environment for Mercury and the repository shell; install Agda 2.8.0.2 with standard-library 2.4 through the official setup action; preserve Agda --safe as proof authority and Mercury as semantic discovery/verification."
 }
