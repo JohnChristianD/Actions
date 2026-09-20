@@ -36,7 +36,6 @@ main(!IO) :-
     MixingPrefixCompositionId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem",
     AperiodicityId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalAperiodic-theorem",
     FiniteCycleId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem",
-    ConvexConcaveId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem",
     VisitId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible",
     EmergentExactOrbitId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalFiniteExactOrbitUAPCompositionTheorem",
     NonReflexive = list.length(
@@ -79,8 +78,6 @@ main(!IO) :-
         law_id(AperiodicityLaw) = AperiodicityId,
         list.member(FiniteCycleLaw, Laws),
         law_id(FiniteCycleLaw) = FiniteCycleId,
-        list.member(ConvexConcaveLaw, Laws),
-        law_id(ConvexConcaveLaw) = ConvexConcaveId,
         list.member(VisitLaw, Laws),
         law_id(VisitLaw) = VisitId,
         list.member(EmergentExactOrbitLaw, Laws),

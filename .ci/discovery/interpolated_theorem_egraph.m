@@ -16,6 +16,10 @@
     int::out) is det.
 :- func forced_target_id = string.
 forced_target_id =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-finite-exact-orbit-uap-composition-theorem".
+
+:- func base_target_dependency = string.
+base_target_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
 
 :- func bounded_exact_approximation_dependency = string.
@@ -47,7 +51,7 @@ exact_universal_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse".
 
 
-:- func finite_feature_continuity_dependency = string.
+:- func emergent_finite_int8_dependency = string.
 finite_feature_continuity_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalFiniteFeatureContinuousLeftInverseOnDiscreteTopologies".
 
@@ -62,10 +66,6 @@ finite_sample_exact_readout_dependency =
 :- func iterate_composition_dependency = string.
 iterate_composition_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition".
-
-:- func convex_concave_dependency = string.
-convex_concave_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem".
 
 :- func finite_visit_dependency = string.
 finite_visit_dependency =
@@ -88,6 +88,55 @@ finite_cycle_dependency =
 :- func hadamard_attention_rope_prefix_dependency = string.
 hadamard_attention_rope_prefix_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem".
+
+
+:- func emergent_aq_loop_dependency = string.
+emergent_aq_loop_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-aq-loop-theorem".
+
+:- func emergent_mix_prefix_dependency = string.
+emergent_mix_prefix_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-hadamard-attention-rope-prefix-composition-theorem".
+
+:- func emergent_bounded_uap_dependency = string.
+emergent_bounded_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedUniversalExactApproximation-through-continuousLeftInverse".
+
+:- func emergent_recurrent_bounded_uap_dependency = string.
+emergent_recurrent_bounded_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness".
+
+:- func emergent_orbit_dependency = string.
+emergent_orbit_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalInfiniteStateOrbitEmbedding".
+
+:- func emergent_aperiodicity_dependency = string.
+emergent_aperiodicity_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalAperiodic-theorem".
+
+:- func emergent_cycle_dependency = string.
+emergent_cycle_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem".
+
+:- func emergent_time_dependency = string.
+emergent_time_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteTimeExactUniversalReadout".
+
+:- func emergent_sample_dependency = string.
+emergent_sample_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteSampleExactUniversalReadout".
+
+:- func emergent_iterate_dependency = string.
+emergent_iterate_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition".
+
+:- func emergent_injectivity_dependency = string.
+emergent_injectivity_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#leftInverse-observation-injective".
+
+:- func emergent_feature_dependency = string.
+emergent_feature_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteFeatureCode-no-Nat-injective".
 
 
 :- func semantic_rewrite_rules = list(rewrite_rule).
@@ -261,6 +310,9 @@ main(!IO) :-
         semantic_law.composite(TargetLaw) = yes,
         list.length(semantic_law.dependencies(TargetLaw)) >= 3,
         list.member(
+            base_target_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
             continuous_readout_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
@@ -282,31 +334,43 @@ main(!IO) :-
             exact_universal_uap_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            finite_feature_continuity_dependency,
+            emergent_aq_loop_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            finite_time_exact_readout_dependency,
+            emergent_mix_prefix_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            finite_sample_exact_readout_dependency,
+            emergent_bounded_uap_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            iterate_composition_dependency,
+            emergent_recurrent_bounded_uap_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            aperiodicity_dependency,
+            emergent_orbit_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            finite_cycle_dependency,
+            emergent_aperiodicity_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
-            convex_concave_dependency,
+            emergent_cycle_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            emergent_time_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            emergent_sample_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            emergent_iterate_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            emergent_injectivity_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            emergent_feature_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
             finite_visit_dependency,
-            semantic_law.dependencies(TargetLaw)),
-        list.member(
-            injectivity_dependency,
             semantic_law.dependencies(TargetLaw)),
         list.member(
             hadamard_attention_rope_prefix_dependency,
@@ -329,7 +393,7 @@ main(!IO) :-
             "aperiodicity=connected "
             "finite-cycle-exclusion=connected "
             "hadamard-attention-rope-prefix=connected "
-            "topology-convex-concave=connected "
+            "emergent-finite-exact-orbit-uap=connected "
             "finite-state-action-visit-capacity=connected "
             "left-inverse-injectivity=connected "
             "e-matching=on "

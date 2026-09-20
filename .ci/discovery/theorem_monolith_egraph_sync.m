@@ -18,6 +18,10 @@
 
 :- func forced_target_law_id = string.
 forced_target_law_id =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-finite-exact-orbit-uap-composition-theorem".
+
+:- func base_target_dependency = string.
+base_target_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
 
 :- func continuous_readout_dependency = string.
@@ -64,10 +68,6 @@ finite_sample_exact_readout_dependency =
 iterate_composition_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition".
 
-:- func convex_concave_dependency = string.
-convex_concave_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem".
-
 :- func finite_visit_dependency = string.
 finite_visit_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible".
@@ -102,6 +102,9 @@ forced_target_law(All, Target) :-
     law_id(Target) = forced_target_law_id,
     semantic_law.composite(Target) = yes,
     list.member(
+        base_target_dependency,
+        semantic_law.dependencies(Target)),
+        list.member(
         continuous_readout_dependency,
         semantic_law.dependencies(Target)),
     list.member(
@@ -123,7 +126,10 @@ forced_target_law(All, Target) :-
         exact_universal_uap_dependency,
         semantic_law.dependencies(Target)),
     list.member(
-        finite_feature_continuity_dependency,
+        aperiodicity_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        finite_cycle_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         finite_time_exact_readout_dependency,
@@ -135,13 +141,7 @@ forced_target_law(All, Target) :-
         iterate_composition_dependency,
         semantic_law.dependencies(Target)),
     list.member(
-        aperiodicity_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        finite_cycle_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        convex_concave_dependency,
+        finite_feature_continuity_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         finite_visit_dependency,
@@ -282,7 +282,7 @@ main(!IO) :-
             "finite-time-exact-readout=connected\n"
             "finite-sample-exact-readout=connected\n"
             "iterate-composition=connected\n"
-            "topology-convex-concave=connected\n"
+            "emergent-finite-exact-orbit-uap=connected\n"
             "finite-state-action-visit-capacity=connected\n"
             "left-inverse-injectivity=connected\n",
             !IO)

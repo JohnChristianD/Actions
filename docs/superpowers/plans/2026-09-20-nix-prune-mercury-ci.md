@@ -133,3 +133,12 @@ Restrict semantic extraction to `TheoremsMonolith.agda`; the learner monolith re
 - Name the state-orbit wrapper as orbit injectivity rather than ring injectivity; no ring structure is implied by that theorem.
 - Do not import full `Fin` or `Vec` libraries merely for Mercury search convenience. Add only theorem-relevant modules and properties.
 - Keep Mercury semantic extraction restricted to `TheoremsMonolith.agda`; imported learner definitions remain Agda-only proof dependencies.
+
+
+## Follow-up: emergent finite-exact orbit/UAP target
+
+- Use `CanonicalFiniteExactOrbitUAPCompositionTheorem` as the Mercury forced target.
+- Compose theorem certificates only; `CanonicalLearnerMonolith.agda` remains the sole component semantic source.
+- Keep exact continuous/bounded/recurrent UAP, left-inverse injectivity, finite-code contradiction, finite-time/sample readout, exact iterate composition, aperiodicity, finite-cycle exclusion, and finite state/action visit capacity.
+- Prune generic convexity/concavity, Sion, regret, and sample-complexity abstractions when their concrete canonical witnesses are absent.
+- Do not introduce compression=prediction or Turing-completeness claims without a concrete formal statement and proof.

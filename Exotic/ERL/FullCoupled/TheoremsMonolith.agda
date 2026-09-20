@@ -1459,59 +1459,6 @@ canonicalNoGlobalFiniteFeatureContinuousLeftInverseOnDiscreteTopologies
     (canonicalLeftInverse-orbit-injective K s observe inverse leftInverse)
 
 ------------------------------------------------------------------------
--- Topology × convexity/concavity × exact readout.
-------------------------------------------------------------------------
-
-record TopologicalConvexConcaveExactReadoutTheorem
-  (State Feature Output : Set)
-  (observe : State → Feature)
-  (inverse : Feature → State)
-  (target : State → Output)
-  (midpoint : State → State → State)
-  (combineOutput : Output → Output → Output)
-  (leOutput : Output → Output → Set) : Set₁ where
-  constructor topologicalConvexConcaveExactReadoutTheorem
-  field
-    continuousLeftInverse :
-      ContinuousLeftInverseTheorem State Feature observe inverse
-    convexTarget :
-      ∀ x y → leOutput (target (midpoint x y))
-        (combineOutput (target x) (target y))
-    concaveTarget :
-      ∀ x y → leOutput (combineOutput (target x) (target y))
-        (target (midpoint x y))
-    exactUniversalReadout :
-      ∀ s → target s ≡ target (inverse (observe s))
-
-open TopologicalConvexConcaveExactReadoutTheorem public
-
-topologicalConvexConcaveExactReadoutTheorem-from-witness :
-  ∀ {State Feature Output : Set}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  (target : State → Output)
-  (midpoint : State → State → State)
-  (combineOutput : Output → Output → Output)
-  (leOutput : Output → Output → Set)
-  (witness : ContinuousLeftInverseTheorem State Feature observe inverse) →
-  (convexTarget :
-    ∀ x y → leOutput (target (midpoint x y))
-      (combineOutput (target x) (target y))) →
-  (concaveTarget :
-    ∀ x y → leOutput (combineOutput (target x) (target y))
-      (target (midpoint x y))) →
-  TopologicalConvexConcaveExactReadoutTheorem
-    State Feature Output observe inverse target midpoint combineOutput leOutput
-topologicalConvexConcaveExactReadoutTheorem-from-witness
-  target midpoint combineOutput leOutput witness convexTarget concaveTarget =
-  topologicalConvexConcaveExactReadoutTheorem
-    witness
-    convexTarget
-    concaveTarget
-    (λ s → continuousLeftInverse-exactReadout-transfer witness target s)
-
-
-------------------------------------------------------------------------
 -- Finite state/action visit capacity.
 ------------------------------------------------------------------------
 
@@ -2033,6 +1980,190 @@ canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness
         (C.iterateCanonical K (toℕ i) s))
 
 ------------------------------------------------------------------------
+-- Emergent finite-exact orbit/UAP composition theorem.
+--
+-- This composes theorem certificates only. It does not define a second
+-- learner semantics: CanonicalLearnerMonolith remains the sole component
+-- and transition semantics source.
+------------------------------------------------------------------------
+
+record CanonicalFiniteExactOrbitUAPCompositionTheorem : Set₁ where
+  constructor canonicalFiniteExactOrbitUAPCompositionTheorem
+  field
+    aqLoop :
+      CanonicalAQLoopTheorem
+
+    hadamardAttentionRopePrefixComposition :
+      CanonicalHadamardAttentionRopePrefixCompositionTheorem
+
+    exactUniversalContinuousReadout :
+      ∀ {Feature : Set}
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState Feature observe inverse) →
+      ExactUniversalApproximationThroughContinuousLeftInverse
+        C.FullLearnerState Feature observe inverse
+
+    boundedExactUniversalApproximation :
+      ∀ {Feature : Set}
+      (bound : Nat)
+      (embed : Fin bound → C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState Feature observe inverse) →
+      BoundedContinuousLeftInverseExactApproximationTheorem
+        C.FullLearnerState Feature observe inverse bound embed
+
+    recurrentBoundedExactUniversalApproximation :
+      ∀ {Feature : Set}
+      (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState Feature observe inverse) →
+      CanonicalRecurrentBoundedExactUniversalApproximationTheorem
+        K s observe inverse
+
+    infiniteStateOrbit :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState) →
+      ∀ {m n : Nat} →
+      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+      m ≡ n
+
+    observationInjectivityFromLeftInverse :
+      ∀ {Feature : Set}
+      {observe : C.FullLearnerState → Feature}
+      {inverse : Feature → C.FullLearnerState} →
+      (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+      ∀ {x y} →
+      observe x ≡ observe y →
+      x ≡ y
+
+    finiteFeatureCapacityContradiction :
+      ∀ {Feature : Set}
+      (bound : Nat)
+      (encode : Feature → Fin bound)
+      (encodeInjective :
+        ∀ {x y} → encode x ≡ encode y → x ≡ y)
+      (orbit : Nat → Feature)
+      (orbitInjective :
+        ∀ {m n} → orbit m ≡ orbit n → m ≡ n) →
+      ⊥
+
+    finiteInt8ContinuousLeftInverseContradiction :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (observe : C.FullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.FullLearnerState) →
+      Continuous
+        C.FullLearnerState C.Int8
+        (discreteTopology C.FullLearnerState)
+        (discreteTopology C.Int8) observe →
+      Continuous
+        C.Int8 C.FullLearnerState
+        (discreteTopology C.Int8)
+        (discreteTopology C.FullLearnerState) inverse →
+      (∀ t → inverse (observe t) ≡ t) →
+      ⊥
+
+    finiteTimeExactReadout :
+      ∀ {Feature Output : Set}
+      (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState) →
+      (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+      (target : C.FullLearnerState → Output) →
+      (horizon n : Nat) →
+      n ≤ horizon →
+      target (C.iterateCanonical K n s) ≡
+      target (inverse (observe (C.iterateCanonical K n s)))
+
+    finiteSampleExactReadout :
+      ∀ {Feature Output : Set}
+      (bound : Nat)
+      (embed : Fin bound → C.FullLearnerState)
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState Feature observe inverse)
+      (target : C.FullLearnerState → Output)
+      (i : Fin bound) →
+      target (embed i) ≡ target (inverse (observe (embed i)))
+
+    exactIterateComposition :
+      ∀ (K : C.FullLearnerKernel)
+      (m n : Nat)
+      (s : C.FullLearnerState) →
+      C.iterateCanonical K (m + n) s ≡
+      C.iterateCanonical K n
+        (C.iterateCanonical K m s)
+
+    aperiodicity :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (n : Nat) →
+      C.iterateCanonical K (suc n) s ≢ s
+
+    finiteCycleExclusion :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (n : Nat) →
+      C.iterateCanonical K (suc n) s ≡ s → ⊥
+
+    finiteStateActionVisitCapacity :
+      ∀ (stateCount actionCount : Nat)
+      (visitCode : Nat → Fin (stateCount * actionCount)) →
+      ¬ (∀ {m n} → visitCode m ≡ visitCode n → m ≡ n)
+
+    noGlobalInt8DiscreteUAP :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (observe : C.FullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.FullLearnerState)
+      {Output : Set} →
+      DiscreteExactUAPTheorem
+        C.FullLearnerState C.Int8 Output observe inverse →
+      ⊥
+
+open CanonicalFiniteExactOrbitUAPCompositionTheorem public
+
+canonical-finite-exact-orbit-uap-composition-theorem :
+  CanonicalFiniteExactOrbitUAPCompositionTheorem
+canonical-finite-exact-orbit-uap-composition-theorem =
+  canonicalFiniteExactOrbitUAPCompositionTheorem
+    canonical-aq-loop-theorem
+    canonical-hadamard-attention-rope-prefix-composition-theorem
+    (λ observe inverse witness →
+      exactUniversalApproximationThroughContinuousLeftInverse-from-witness
+        witness)
+    boundedUniversalExactApproximation-through-continuousLeftInverse
+    (λ K s observe inverse witness →
+      canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness
+        K s observe inverse witness)
+    canonicalInfiniteStateOrbitEmbedding
+    leftInverse-observation-injective
+    finiteFeatureCode-no-Nat-injective
+    (λ K s observe inverse observeContinuous inverseContinuous leftInverse →
+      canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies
+        K s observe inverse observeContinuous inverseContinuous leftInverse)
+    canonicalFiniteTimeExactUniversalReadout
+    canonicalFiniteSampleExactUniversalReadout
+    canonicalIterateComposition
+    canonicalAperiodic-theorem
+    canonicalNoNontrivialFiniteCycle-theorem
+    finiteStateActionVisitInjectionImpossible
+    canonicalNoGlobalInt8DiscreteUAPOnOrbit
+
+------------------------------------------------------------------------
 -- Strictly stronger combined theorem schema.
 --
 -- This is not a topological universal-approximation theorem under the
@@ -2132,25 +2263,8 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       (n : Nat) →
       C.iterateCanonical K (suc n) s ≡ s → ⊥
 
-    topologicalConvexConcaveExactReadout :
-      ∀ {Feature Output : Set}
-      (observe : C.FullLearnerState → Feature)
-      (inverse : Feature → C.FullLearnerState)
-      (target : C.FullLearnerState → Output)
-      (midpoint : C.FullLearnerState → C.FullLearnerState → C.FullLearnerState)
-      (combineOutput : Output → Output → Output)
-      (leOutput : Output → Output → Set)
-      (witness : ContinuousLeftInverseTheorem
-        C.FullLearnerState Feature observe inverse) →
-      (convexTarget :
-        ∀ x y → leOutput (target (midpoint x y))
-          (combineOutput (target x) (target y))) →
-      (concaveTarget :
-        ∀ x y → leOutput (combineOutput (target x) (target y))
-          (target (midpoint x y))) →
-      TopologicalConvexConcaveExactReadoutTheorem
-        C.FullLearnerState Feature Output observe inverse target
-        midpoint combineOutput leOutput
+    finiteExactOrbitUAPComposition :
+      CanonicalFiniteExactOrbitUAPCompositionTheorem
 
     finiteStateActionVisitInjectionCapacityTheorem :
       ∀ (stateCount actionCount : Nat)
@@ -2417,5 +2531,5 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalAperiodic-theorem
     canonicalNoNontrivialFiniteCycle-theorem
     canonical-hadamard-attention-rope-prefix-composition-theorem
-    topologicalConvexConcaveExactReadoutTheorem-from-witness
+    canonical-finite-exact-orbit-uap-composition-theorem
     finiteStateActionVisitInjectionImpossible

@@ -275,12 +275,12 @@ The prefix complexity statement is exact: `recurrentPrefixStepWork n ≡ n` and 
 
 The finite-capacity contradiction is not that Nat is the wrong algebra. Nat can represent arbitrarily large integers and therefore unbounded bit-length. The contradiction is that an injective Nat-indexed orbit cannot be passed through a feature map whose information has an injective code into finite `Fin bound`; the resulting `Nat → Fin bound` map cannot be injective. `Int8` is the concrete finite special case.
 
-No Sion theorem, environment-dependent regret bound, or statistical sample-complexity theorem is part of this exact theorem surface. The existing Bellman-Shapley inclusion theorem remains an explicit operator/inclusion contract with its own comparison and monotonicity hypotheses.
+No Sion theorem, regret bound, or statistical sample-complexity theorem is part of this exact theorem surface. The existing Bellman-Shapley inclusion theorem remains an explicit operator/inclusion contract with its own comparison and monotonicity hypotheses. Sion's theorem is not silently imported because the required topological convexity/semicontinuity assumptions are not part of the canonical learner proof.
 
 No CHAD/automatic-differentiation theorem family is imported into this canonical learner/theorem graph. The current repository proof surface contains no CHAD source, and complexity results are stated only where an exact theorem already exists in the canonical theorem monolith.
 
 
-The Nix CI invokes Mercury discovery only against `TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` is kernel-checked because it is the canonical imported learner definition, but learner declarations are not inserted into the Mercury semantic manifest or e-graph. No Sion-style environment-dependent regret or statistical sample-complexity theorem is part of this exact surface; the retained regret result is only a finite-horizon equality recurrence.
+The Nix CI invokes Mercury discovery only against `TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` is kernel-checked because it is the canonical imported learner definition, but learner declarations are not inserted into the Mercury semantic manifest or e-graph. No Sion-style environment-dependent regret or statistical sample-complexity theorem is part of this exact surface; no regret theorem is retained.
 
 ### Injectivity and finite-capacity boundary
 
@@ -289,3 +289,12 @@ The theorem monolith contains several distinct injectivity surfaces: Nat success
 The obstruction is specifically finite capacity. `Nat` can inject into an infinite ring such as the integers; it cannot inject into a finite carrier. If a ring algebra has (B) elements, its ring operations are irrelevant to the pigeonhole step once its carrier is finite.
 
 `Data.Fin` is imported because finite carriers and finite sample indices are explicit theorem semantics. `Data.Vec` is not imported merely for Mercury search convenience: Mercury consumes declarations extracted from `TheoremsMonolith.agda`, not the declarations made available by arbitrary imports. A theorem that actually uses vectors can import the smallest `Vec` module/property set required by that theorem.
+
+
+## AQLoop versus Mercury e-graph
+
+`CanonicalAQLoopTheorem` is an Agda semantic certificate containing exact equalities for the canonical learner composition. The Mercury e-graph is a separate discovery and equality-saturation representation over extracted theorem declarations. E-graphs compactly represent equivalence classes and equality saturation repeatedly applies rewrites before extraction; they do not define the learner semantics in this repository. citeturn601944search0turn601944academia54
+
+## Computational-capacity boundary
+
+The Nat-indexed orbit, exact iterate composition, left-inverse injectivity, and finite-feature pigeonhole contradiction do not constitute a Turing-completeness theorem. No universal-machine interpreter, two-counter simulation, or compression=prediction theorem is formalized. The present result is an exact algebraic capacity boundary between unbounded Nat bit-length and finite feature cardinality.
