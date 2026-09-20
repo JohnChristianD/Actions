@@ -1,11 +1,13 @@
 {
   "date": "2026-09-19",
-  "scope": "Guix proof environment and exact bounded UAP theorem surface",
+  "scope": "Nix-backed proof environment and exact bounded UAP theorem surface",
   "current_state": {
-    "agda": "official Agda 2.8.0.2 with stdlib 2.4 via pinned agda/agda-setup-action",
-    "guix": "prepared Guix action with pullAfterInstall=false across all four lanes",
+    "agda": "Agda v2.8.0 source layered through the repository Nix flake with standard-library v2.4",
+    "nix": "pinned nixpkgs supplies Mercury 22.01.9 and the reproducible execution environment",
+    "guix": "removed from the repository CI path; Guix channel/manifest/driver files deleted",
+    "scheme": "removed from repository-controlled CI and package-management configuration",
     "proof_source": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
-    "mercury_contract": "forced canonical theorem must include bounded exact UAP and recurrent-prefix bounded UAP dependencies"
+    "mercury_contract": "forced canonical theorem retains bounded exact UAP and recurrent-prefix dependencies; Mercury remains discovery/verification only"
   },
   "theorems": [
     "boundedUniversalExactUAP-retraction",
@@ -14,8 +16,9 @@
     "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
   ],
   "verification": {
-    "known_green": "Agda 2.8.0.2 installation and earlier canonical Agda --safe lane passed on the corrected prepared environment",
-    "current_gate": "Re-run required after removing stale agda-stdlib-2.3 from the Guix manifest"
+    "prior_ab": "four Guix A/B executions repeatedly failed to complete while native shell Agda A/B runs reached green",
+    "current_gate": "Nix migration must kernel-check the same theorem set and execute the Mercury verifier/e-graph lanes",
+    "theorem_boundary": "bounded exact UAP derives from a left-inverse witness; continuity is an abstract predicate until a topology is instantiated; dense-neighborhood separation is not required by the bounded theorem"
   },
-  "decision": "Retain the prepared Guix environment; remove redundant channel pulls instead of migrating to Nix while Guix lanes are reproducing the proof surface."
+  "decision": "Prune Guix and Scheme from CI; use one pinned Nix environment for Agda and Mercury; preserve Agda --safe as proof authority and Mercury as a semantic discovery/verification layer."
 }
