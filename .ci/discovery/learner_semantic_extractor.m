@@ -318,7 +318,7 @@ find_dependencies(Source, Name, Body, [D | Ds], Acc0, Acc) :-
             TargetSource \= Source,
             contains_identifier(Body, concat_strings([".", TargetName]))
         ->
-            Acc1 = [TargetSource ++ "#" ++ TargetName | Acc0]
+            Acc1 = [concat_strings([TargetSource, "#", TargetName]) | Acc0]
         ;
             Acc1 = Acc0
         )
