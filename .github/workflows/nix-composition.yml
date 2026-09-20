@@ -77,6 +77,10 @@ jobs:
         with:
           name: learner-agdai
           path: Exotic/ERL/FullCoupled
+      - name: Enforce interface-only predecessor handoff
+        run: |
+          mkdir -p .ci/interface-shadow
+          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
       - name: Check theorem partition 1a
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
@@ -121,6 +125,14 @@ jobs:
         with:
           name: part1-agdai
           path: Exotic/ERL/FullCoupled
+      - name: Enforce interface-only predecessor handoff
+        run: |
+          mkdir -p .ci/interface-shadow
+          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Upload theorem partition 2 Agda interfaces
@@ -155,6 +167,15 @@ jobs:
         with:
           name: part2-agdai
           path: Exotic/ERL/FullCoupled
+      - name: Enforce interface-only predecessor handoff
+        run: |
+          mkdir -p .ci/interface-shadow
+          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Upload theorem partition 3 Agda interfaces
@@ -189,6 +210,16 @@ jobs:
         with:
           name: part3-agdai
           path: Exotic/ERL/FullCoupled
+      - name: Enforce interface-only predecessor handoff
+        run: |
+          mkdir -p .ci/interface-shadow
+          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Upload theorem partition 4 Agda interfaces
@@ -223,6 +254,17 @@ jobs:
         with:
           name: part4-agdai
           path: Exotic/ERL/FullCoupled
+      - name: Enforce interface-only predecessor handoff
+        run: |
+          mkdir -p .ci/interface-shadow
+          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda" .ci/interface-shadow/
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - name: Upload theorem partition 5 Agda interfaces
@@ -257,6 +299,18 @@ jobs:
         with:
           name: part5-agdai
           path: Exotic/ERL/FullCoupled
+      - name: Enforce interface-only predecessor handoff
+        run: |
+          mkdir -p .ci/interface-shadow
+          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda" .ci/interface-shadow/
+          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda" .ci/interface-shadow/
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
