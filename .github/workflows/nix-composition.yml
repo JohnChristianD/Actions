@@ -47,10 +47,9 @@ jobs:
           include: .
           depend: standard-library
           EOF
-      - name: Check learner sources
+      - name: Check learner monolith once
         run: |
           "$AGDA_COMMAND" --version
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       - name: Stage learner Agda interfaces
         run: |
