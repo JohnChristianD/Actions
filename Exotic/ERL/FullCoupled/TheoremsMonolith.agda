@@ -1822,3 +1822,21 @@ canonical-hadamard-attention-rope-prefix-composition-theorem =
 -- operator as explicit hypotheses, while the target itself is the exact
 -- executable canonicalWatkinsTarget.
 ------------------------------------------------------------------------
+
+-- Recovered Part2 theorem
+canonicalNatIndexedExactUniversalReadout :
+  ∀ {Feature Output : Set}
+  (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState) →
+  (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+  (target : C.FullLearnerState → Output) →
+  ∀ n →
+  target (C.iterateCanonical K n s) ≡
+  target (inverse (observe (C.iterateCanonical K n s)))
+canonicalNatIndexedExactUniversalReadout
+  K s observe inverse leftInverse target n =
+  cong
+    target
+    (sym (leftInverse (C.iterateCanonical K n s)))
