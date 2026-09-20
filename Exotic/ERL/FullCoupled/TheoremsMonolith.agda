@@ -521,31 +521,53 @@ prefixListEndomorphism R (x ∷ xs) =
 
 prefixListEndomorphism-unit :
   ∀ {State Input : Set}
-  (R : C.RecurrentNetwork State Input) →
-  prefixListEndomorphism R [] ≡ C.identityEndomorphism
-prefixListEndomorphism-unit R = refl
+  (R : C.RecurrentNetwork State Input)
+  (s : State) →
+  C.applyEndomorphism
+    (prefixListEndomorphism R [])
+    s
+  ≡ s
+prefixListEndomorphism-unit R s = refl
 
 prefixListEndomorphism-append :
   ∀ {State Input : Set}
   (R : C.RecurrentNetwork State Input)
-  (xs ys : List Input) →
-  prefixListEndomorphism R (xs ++ ys)
+  (xs ys : List Input)
+  (s : State) →
+  C.applyEndomorphism
+    (prefixListEndomorphism R (xs ++ ys))
+    s
   ≡
-  prefixOp
-    (prefixListEndomorphism R xs)
-    (prefixListEndomorphism R ys)
-prefixListEndomorphism-append R [] ys = refl
-prefixListEndomorphism-append R (x ∷ xs) ys
-  rewrite prefixListEndomorphism-append R xs ys = refl
+  C.applyEndomorphism
+    (prefixOp
+      (prefixListEndomorphism R xs)
+      (prefixListEndomorphism R ys))
+    s
+prefixListEndomorphism-append R [] ys s = refl
+prefixListEndomorphism-append R (x ∷ xs) ys s =
+  trans
+    (prefixListEndomorphism-append
+      R
+      xs
+      ys
+      (C.applyEndomorphism
+        (C.recurrentInputEndomorphism R x)
+        s))
+    refl
 
 prefixOp-associative :
   ∀ {State : Set}
-  (f g h : C.Endomorphism State) →
-  prefixOp (prefixOp f g) h
+  (f g h : C.Endomorphism State)
+  (s : State) →
+  C.applyEndomorphism
+    (prefixOp (prefixOp f g) h)
+    s
   ≡
-  prefixOp f (prefixOp g h)
-prefixOp-associative f g h =
-  C.endomorphismAssociative h g f _
+  C.applyEndomorphism
+    (prefixOp f (prefixOp g h))
+    s
+prefixOp-associative f g h s =
+  C.endomorphismAssociative h g f s
 
 prefixOp-identity-left :
   ∀ {State : Set}
@@ -566,23 +588,31 @@ record RecurrentPrefixMonoidHomomorphism
   constructor recurrentPrefixMonoidHomomorphism
   field
     unit :
-      ∀ (R : C.RecurrentNetwork State Input) →
-      prefixListEndomorphism R [] ≡ C.identityEndomorphism
+      ∀ (R : C.RecurrentNetwork State Input) (s : State) →
+      C.applyEndomorphism
+        (prefixListEndomorphism R [])
+        s
+      ≡ s
     append :
       ∀ (R : C.RecurrentNetwork State Input)
-        (xs ys : List Input) →
-      prefixListEndomorphism R (xs ++ ys)
+        (xs ys : List Input)
+        (s : State) →
+      C.applyEndomorphism
+        (prefixListEndomorphism R (xs ++ ys))
+        s
       ≡
-      prefixOp
-        (prefixListEndomorphism R xs)
-        (prefixListEndomorphism R ys)
+      C.applyEndomorphism
+        (prefixOp
+          (prefixListEndomorphism R xs)
+          (prefixListEndomorphism R ys))
+        s
 
 canonical-recurrent-prefix-monoid-homomorphism :
   RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
 canonical-recurrent-prefix-monoid-homomorphism =
   recurrentPrefixMonoidHomomorphism
-    (λ R → prefixListEndomorphism-unit R)
-    (λ R xs ys → prefixListEndomorphism-append R xs ys)
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
 
 
 ------------------------------------------------------------------------
