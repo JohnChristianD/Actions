@@ -42,7 +42,7 @@ The e-graph is a discovery/proof-plan normalization layer, not a second proof au
 
 ## Nix toolchain strategy
 
-CI installs Nix once and enters the repository flake. The flake pins nixpkgs, layers the upstream Agda 2.8.0 release, pins the Agda standard library at v2.4, and obtains Mercury 22.01.9 from nixpkgs. No Guix channel, Guile manifest, or Scheme CI driver is required.
+CI installs Nix once and enters the repository flake. The flake pins nixpkgs, layers the upstream Agda 2.8.0 release, pins the Agda standard library at v2.4, and obtains Mercury 22.01.9 from nixpkgs. The proof pipeline requires only the pinned Nix, Agda, and Mercury toolchains.
 
 The verification script runs Agda kernel checking, Mercury theorem verification, Mercury e-graph discovery, and the canonical source-policy surface audit from one Nix development shell.
 
