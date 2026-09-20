@@ -332,7 +332,6 @@ main(!IO) :-
             "topology-convex-concave=connected "
             "finite-state-action-visit-capacity=connected "
             "left-inverse-injectivity=connected "
-            "hadamard-attention-rope-prefix=connected "
             "e-matching=on "
             "saturation=on "
             "rebuild=on "

@@ -277,7 +277,15 @@ The finite-capacity contradiction is not that Nat is the wrong algebra. Nat can 
 
 No Sion theorem, environment-dependent regret bound, or statistical sample-complexity theorem is part of this exact theorem surface. The existing Bellman-Shapley inclusion theorem remains an explicit operator/inclusion contract with its own comparison and monotonicity hypotheses.
 
-Tom Smeding and Matthijs Vákár's `Efficient CHAD` is an automatic-differentiation transformation with a formal complexity proof, not a semantic theorem for this recurrent `Int8` learner. It is not imported into the canonical theorem graph merely to manufacture a complexity label. [Efficient CHAD](https://arxiv.org/abs/2307.05738) [Agda formalisation](https://github.com/tomsmeding/efficient-chad-agda)
+No CHAD/automatic-differentiation theorem family is imported into this canonical learner/theorem graph. The current repository proof surface contains no CHAD source, and complexity results are stated only where an exact theorem already exists in the canonical theorem monolith.
 
 
 The Nix CI invokes Mercury discovery only against `TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` is kernel-checked because it is the canonical imported learner definition, but learner declarations are not inserted into the Mercury semantic manifest or e-graph. No Sion-style environment-dependent regret or statistical sample-complexity theorem is part of this exact surface; the retained regret result is only a finite-horizon equality recurrence.
+
+### Injectivity and finite-capacity boundary
+
+The theorem monolith contains several distinct injectivity surfaces: Nat successor/cancellation used by the orbit proof, canonical orbit injectivity, discrete-left-inverse injectivity, continuous-left-inverse injectivity, exact-UAP-to-left-inverse equivalence, generic left-inverse observation injectivity, and orbit-observation separation. The finite-feature theorem then composes that injectivity with an injective code into `Fin bound` to obtain the pigeonhole contradiction. These are exact theorem transports, not mutually exclusive “algebra choices.”
+
+The obstruction is specifically finite capacity. `Nat` can inject into an infinite ring such as the integers; it cannot inject into a finite carrier. If a ring algebra has (B) elements, its ring operations are irrelevant to the pigeonhole step once its carrier is finite.
+
+`Data.Fin` is imported because finite carriers and finite sample indices are explicit theorem semantics. `Data.Vec` is not imported merely for Mercury search convenience: Mercury consumes declarations extracted from `TheoremsMonolith.agda`, not the declarations made available by arbitrary imports. A theorem that actually uses vectors can import the smallest `Vec` module/property set required by that theorem.

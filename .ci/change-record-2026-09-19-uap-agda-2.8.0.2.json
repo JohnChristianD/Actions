@@ -30,10 +30,12 @@
     "egraph_scope": "Mercury equality-saturation reads declarations only from TheoremsMonolith.agda; CanonicalLearnerMonolith remains imported canonical component semantics and is never an e-graph source.",
     "mixing_scan_boundary": "The theorem monolith composes Hadamard orthogonality, learned sparse-attention mixing, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative prefix scan, target-prefix correctness, and exact finite prefix work.",
     "sample_complexity_boundary": "Environment-dependent Sion/regret/sample-complexity machinery is pruned.",
-    "chad_boundary": "Efficient CHAD is external reverse-mode AD complexity semantics and is not imported into this learner theorem graph.",
+    "chad_boundary": "No CHAD or automatic-differentiation theorem family is imported into the canonical theorem graph. Complexity statements remain exact theorem equalities already proved in the theorem monolith.",
     "theorem_egraph_scope": "Mercury semantic extraction and equality saturation consume only TheoremsMonolith.agda; CanonicalLearnerMonolith.agda is kernel-checked only as the canonical imported learner definition.",
     "associative_mix_composition": "CanonicalHadamardAttentionRopePrefixCompositionTheorem is a first-class field of the forced combined theorem, connecting Hadamard orthogonality, sparse attention composition, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative recurrent prefix scan, target-prefix correctness, and exact prefix-work equalities.",
-    "regret_boundary": "No Sion theorem or environment-dependent minimax regret/sample-complexity theorem is included. The retained regret result is only the exact finite-horizon recurrence composition."
+    "regret_boundary": "No Sion theorem or environment-dependent minimax regret/sample-complexity theorem is included. The retained regret result is only the exact finite-horizon recurrence composition.",
+    "injectivity_boundary": "Injectivity surfaces are explicit theorem declarations: left inverse ⇒ observation injective; exact UAP ⇔ left inverse in the discrete setting; canonical Nat-orbit injectivity; finite-feature Nat → Fin obstruction. Orbit-state injectivity is named without implying a ring structure.",
+    "import_convenience_boundary": "Data.Fin is imported because finite carriers and finite sample indices are theorem semantics. Data.Vec is not imported solely for e-graph search convenience because Mercury consumes theorem declarations, not the imported library namespace."
   },
-  "decision": "Preserve theorem-only Mercury e-graph semantics and canonical learner/theorem modularity: Agda --safe checks learner and theorem imports, while Mercury extracts and saturates only TheoremsMonolith declarations."
+  "decision": "Preserve one canonical learner monolith and one theorem monolith; Mercury equality-saturates theorem declarations only, with the canonical Hadamard/attention/Walsh-Rademacher/associative-prefix composition as a first-class theorem dependency. No speculative Fin/Vec or CHAD imports are added."
 }

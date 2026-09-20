@@ -125,3 +125,11 @@ Restrict semantic extraction to `TheoremsMonolith.agda`; the learner monolith re
 - `CanonicalLearnerMonolith.agda` remains an imported Agda proof dependency and kernel-check target, but its declarations are not e-graph nodes.
 - The canonical forced theorem exposes `CanonicalHadamardAttentionRopePrefixCompositionTheorem` as a first-class field so the e-graph derives the Hadamard/attention/RoPE/associative-prefix/work composition from theorem declarations.
 - Do not add Sion or environment-dependent sample-complexity/regret theorems without an explicit stochastic environment contract.
+
+
+## Follow-up: injectivity and finite library boundary
+
+- Treat finite-capacity impossibility as `Nat → Fin bound`, not as impossibility of embedding Nat into arbitrary infinite rings.
+- Name the state-orbit wrapper as orbit injectivity rather than ring injectivity; no ring structure is implied by that theorem.
+- Do not import full `Fin` or `Vec` libraries merely for Mercury search convenience. Add only theorem-relevant modules and properties.
+- Keep Mercury semantic extraction restricted to `TheoremsMonolith.agda`; imported learner definitions remain Agda-only proof dependencies.

@@ -733,6 +733,42 @@ recurrentPrefixStepWork-split m (suc n)
   rewrite +-suc m n =
   cong suc (recurrentPrefixStepWork-split m n)
 
+
+------------------------------------------------------------------------
+
+canonicalWatkinsTargetSignalStream :
+  C.FullLearnerKernel →
+  C.FullLearnerState →
+  Nat →
+  C.Int8
+canonicalWatkinsTargetSignalStream K s n =
+  C.canonicalWatkinsTarget K
+    (C.iterateCanonical K n s)
+
+canonicalWatkinsTarget-recurrent-prefix-correct :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (n : Nat)
+  (h : C.GRUState) →
+  C.applyEndomorphism
+    (C.recurrentPrefixEndomorphism
+      C.canonicalGRURecurrentNetwork
+      (canonicalWatkinsTargetSignalStream K s)
+      n)
+    h
+  ≡
+  C.recurrentPrefixState
+    C.canonicalGRURecurrentNetwork
+    (canonicalWatkinsTargetSignalStream K s)
+    n
+    h
+canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
+  C.recurrentPrefix-correct
+    C.canonicalGRURecurrentNetwork
+    (canonicalWatkinsTargetSignalStream K s)
+    n
+    h
+
 ------------------------------------------------------------------------
 -- Canonical Hadamard/attention/Walsh-Rademacher phase × associative scan
 -- composition theorem.
@@ -1199,41 +1235,6 @@ discreteExactUAPTheorem-from-leftInverse
 
 ------------------------------------------------------------------------
 -- Exact recurrent scan of the executable endogenous target stream.
-------------------------------------------------------------------------
-
-canonicalWatkinsTargetSignalStream :
-  C.FullLearnerKernel →
-  C.FullLearnerState →
-  Nat →
-  C.Int8
-canonicalWatkinsTargetSignalStream K s n =
-  C.canonicalWatkinsTarget K
-    (C.iterateCanonical K n s)
-
-canonicalWatkinsTarget-recurrent-prefix-correct :
-  ∀ (K : C.FullLearnerKernel)
-  (s : C.FullLearnerState)
-  (n : Nat)
-  (h : C.GRUState) →
-  C.applyEndomorphism
-    (C.recurrentPrefixEndomorphism
-      C.canonicalGRURecurrentNetwork
-      (canonicalWatkinsTargetSignalStream K s)
-      n)
-    h
-  ≡
-  C.recurrentPrefixState
-    C.canonicalGRURecurrentNetwork
-    (canonicalWatkinsTargetSignalStream K s)
-    n
-    h
-canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
-  C.recurrentPrefix-correct
-    C.canonicalGRURecurrentNetwork
-    (canonicalWatkinsTargetSignalStream K s)
-    n
-    h
-
 canonicalNoGlobalInt8DiscreteUAPOnOrbit :
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState)
@@ -1888,21 +1889,21 @@ canonicalFiniteSampleExactUniversalReadout
 -- not define a topology or an ordered-ring hierarchy, so neither is hidden.
 ------------------------------------------------------------------------
 
-record RingStateInjectivityTheorem (State : Set) : Set₁ where
-  constructor ringStateInjectivityTheorem
+record OrbitStateInjectivityTheorem (State : Set) : Set₁ where
+  constructor orbitStateInjectivityTheorem
   field
-    ringState : Nat → State
-    ringStateInjective :
+    orbitState : Nat → State
+    orbitStateInjective :
       ∀ {m n} → ringState m ≡ ringState n → m ≡ n
 
-open RingStateInjectivityTheorem public
+open OrbitStateInjectivityTheorem public
 
-canonicalRingStateInjective :
+canonicalOrbitStateInjective :
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState) →
-  RingStateInjectivityTheorem C.FullLearnerState
-canonicalRingStateInjective K s =
-  ringStateInjectivityTheorem
+  OrbitStateInjectivityTheorem C.FullLearnerState
+canonicalOrbitStateInjective K s =
+  orbitStateInjectivityTheorem
     (λ n → C.iterateCanonical K n s)
     (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
 
@@ -2302,10 +2303,10 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         observe
         inverse
 
-    ringStateInjection :
+    orbitStateInjection :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState) →
-      RingStateInjectivityTheorem C.FullLearnerState
+      OrbitStateInjectivityTheorem C.FullLearnerState
 
     infiniteStateOrbit :
       ∀ (K : C.FullLearnerKernel)
@@ -2399,7 +2400,7 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     (λ K s observe inverse witness →
       canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness
         K s observe inverse witness)
-    canonicalRingStateInjective
+    canonicalOrbitStateInjective
     canonicalInfiniteStateOrbitEmbedding
     canonicalOrbitObservationSeparation
     canonicalPigeonholeNatClockContradiction
