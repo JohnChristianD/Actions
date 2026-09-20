@@ -106,11 +106,15 @@ jobs:
           cp "_build/2.8.0.2/agda/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
       - name: Prefer downloaded Agda interfaces
         run: |
-          mkdir -p .ci/interface-shadow
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+          while IFS= read -r -d '' iface; do
+            rel="${iface#_build/2.8.0.2/agda/}"
+            mkdir -p "$(dirname "$rel")"
+            cp "$iface" "$rel"
+          done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 1a
         run: |
-          "$AGDA_COMMAND" --no-project --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
       - name: Check theorem partition 1b
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
@@ -122,9 +126,15 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
       - name: Stage theorem partition 1 Agda interfaces
         run: |
-          rm -rf interface-artifact
-          mkdir -p interface-artifact
-          test -d _build
+          mv ci-composition.agda-lib.disabled ci-composition.agda-lib
+          rm -rf _build interface-artifact
+          mkdir -p _build/2.8.0.2/agda interface-artifact
+          while IFS= read -r -d '' iface; do
+            rel="${iface#./}"
+            dest="_build/2.8.0.2/agda/$rel"
+            mkdir -p "$(dirname "$dest")"
+            cp "$iface" "$dest"
+          done < <(find Exotic -type f -name '*.agdai' -print0)
           cp -a _build interface-artifact/
           find interface-artifact -type f -name '*.agdai' | sort
       - name: Upload theorem partition 1 Agda interfaces
@@ -166,20 +176,26 @@ jobs:
           path: .
       - name: Prefer downloaded Agda interfaces
         run: |
-          mkdir -p .ci/interface-shadow
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+          while IFS= read -r -d '' iface; do
+            rel="${iface#_build/2.8.0.2/agda/}"
+            mkdir -p "$(dirname "$rel")"
+            cp "$iface" "$rel"
+          done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 2
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Stage theorem partition 2 Agda interfaces
         run: |
-          rm -rf interface-artifact
-          mkdir -p interface-artifact
-          test -d _build
+          mv ci-composition.agda-lib.disabled ci-composition.agda-lib
+          rm -rf _build interface-artifact
+          mkdir -p _build/2.8.0.2/agda interface-artifact
+          while IFS= read -r -d '' iface; do
+            rel="${iface#./}"
+            dest="_build/2.8.0.2/agda/$rel"
+            mkdir -p "$(dirname "$dest")"
+            cp "$iface" "$dest"
+          done < <(find Exotic -type f -name '*.agdai' -print0)
           cp -a _build interface-artifact/
           find interface-artifact -type f -name '*.agdai' | sort
       - name: Upload theorem partition 2 Agda interfaces
@@ -221,21 +237,26 @@ jobs:
           path: .
       - name: Prefer downloaded Agda interfaces
         run: |
-          mkdir -p .ci/interface-shadow
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+          while IFS= read -r -d '' iface; do
+            rel="${iface#_build/2.8.0.2/agda/}"
+            mkdir -p "$(dirname "$rel")"
+            cp "$iface" "$rel"
+          done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 3
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Stage theorem partition 3 Agda interfaces
         run: |
-          rm -rf interface-artifact
-          mkdir -p interface-artifact
-          test -d _build
+          mv ci-composition.agda-lib.disabled ci-composition.agda-lib
+          rm -rf _build interface-artifact
+          mkdir -p _build/2.8.0.2/agda interface-artifact
+          while IFS= read -r -d '' iface; do
+            rel="${iface#./}"
+            dest="_build/2.8.0.2/agda/$rel"
+            mkdir -p "$(dirname "$dest")"
+            cp "$iface" "$dest"
+          done < <(find Exotic -type f -name '*.agdai' -print0)
           cp -a _build interface-artifact/
           find interface-artifact -type f -name '*.agdai' | sort
       - name: Upload theorem partition 3 Agda interfaces
@@ -277,22 +298,26 @@ jobs:
           path: .
       - name: Prefer downloaded Agda interfaces
         run: |
-          mkdir -p .ci/interface-shadow
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+          while IFS= read -r -d '' iface; do
+            rel="${iface#_build/2.8.0.2/agda/}"
+            mkdir -p "$(dirname "$rel")"
+            cp "$iface" "$rel"
+          done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 4
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Stage theorem partition 4 Agda interfaces
         run: |
-          rm -rf interface-artifact
-          mkdir -p interface-artifact
-          test -d _build
+          mv ci-composition.agda-lib.disabled ci-composition.agda-lib
+          rm -rf _build interface-artifact
+          mkdir -p _build/2.8.0.2/agda interface-artifact
+          while IFS= read -r -d '' iface; do
+            rel="${iface#./}"
+            dest="_build/2.8.0.2/agda/$rel"
+            mkdir -p "$(dirname "$dest")"
+            cp "$iface" "$dest"
+          done < <(find Exotic -type f -name '*.agdai' -print0)
           cp -a _build interface-artifact/
           find interface-artifact -type f -name '*.agdai' | sort
       - name: Upload theorem partition 4 Agda interfaces
@@ -334,23 +359,26 @@ jobs:
           path: .
       - name: Prefer downloaded Agda interfaces
         run: |
-          mkdir -p .ci/interface-shadow
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+          while IFS= read -r -d '' iface; do
+            rel="${iface#_build/2.8.0.2/agda/}"
+            mkdir -p "$(dirname "$rel")"
+            cp "$iface" "$rel"
+          done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 5
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - name: Stage theorem partition 5 Agda interfaces
         run: |
-          rm -rf interface-artifact
-          mkdir -p interface-artifact
-          test -d _build
+          mv ci-composition.agda-lib.disabled ci-composition.agda-lib
+          rm -rf _build interface-artifact
+          mkdir -p _build/2.8.0.2/agda interface-artifact
+          while IFS= read -r -d '' iface; do
+            rel="${iface#./}"
+            dest="_build/2.8.0.2/agda/$rel"
+            mkdir -p "$(dirname "$dest")"
+            cp "$iface" "$dest"
+          done < <(find Exotic -type f -name '*.agdai' -print0)
           cp -a _build interface-artifact/
           find interface-artifact -type f -name '*.agdai' | sort
       - name: Upload theorem partition 5 Agda interfaces
@@ -412,16 +440,12 @@ jobs:
           test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - name: Prefer downloaded Agda interfaces
         run: |
-          mkdir -p .ci/interface-shadow
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
-          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
+          mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+          while IFS= read -r -d '' iface; do
+            rel="${iface#_build/2.8.0.2/agda/}"
+            mkdir -p "$(dirname "$rel")"
+            cp "$iface" "$rel"
+          done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
