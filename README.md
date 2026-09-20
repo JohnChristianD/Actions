@@ -1,6 +1,6 @@
 # Actions
 
-This repository keeps one canonical semantic learner, one canonical theorem monolith, Mercury-only semantic e-graph discovery, and a Guix-connected proof pipeline.
+This repository keeps one canonical semantic learner, one canonical theorem monolith, Mercury-only semantic e-graph discovery, and a pinned Nix-connected proof pipeline.
 
 ## Canonical proof surface
 
@@ -14,11 +14,11 @@ The only active theorem source is:
 
 That theorem monolith imports the learner monolith as its only repository-local semantic source and is checked with `{-# OPTIONS --safe #-}`.
 
-There is no generated Agda theorem projection. Mercury synchronizes against the source-derived theorem monolith; Guix runs the green kernel check. One theorem source, because apparently software projects require ritual before they will stop duplicating themselves.
+There is no generated Agda theorem projection. Mercury synchronizes against the source-derived theorem monolith; Nix supplies one reproducible toolchain, while Agda performs the kernel check. One theorem source, because apparently software projects require ritual before they will stop duplicating themselves.
 
 ## Which tool owns the sync?
 
-**Mercury owns e-graph sync and semantic discovery. Guix owns bootstrap and reproducible execution. Agda owns proof acceptance.**
+**Mercury owns e-graph sync and semantic discovery. Nix owns toolchain bootstrap and reproducible execution. Agda owns proof acceptance.**
 
 The division is deliberately strict:
 
@@ -27,7 +27,7 @@ The division is deliberately strict:
 -> Mercury semantic manifest
 -> Mercury e-graph normalization
 -> Mercury theorem-monolith sync gate
--> Guix-pinned `agda --safe`
+-> Nix-pinned `agda --safe`
 -> kernel-checked theorem monolith
 
 Mercury never writes a second Agda theorem file. The sync program is:
@@ -40,17 +40,11 @@ The generic e-graph implementation remains:
 
 The e-graph is a discovery/proof-plan normalization layer, not a second proof authority.
 
-## Guix bootstrap fix strategy
+## Nix toolchain strategy
 
-CI separates transport/bootstrap from the pinned pure proof environment.
+CI installs Nix once and enters the repository flake. The flake pins nixpkgs, layers the upstream Agda 2.8.0 release, pins the Agda standard library at v2.4, and obtains Mercury 22.01.9 from nixpkgs. No Nix channel, Nix manifest, or Scheme CI driver is required.
 
-1. Container-native Git performs source checkout. Git is deliberately absent from the pure Guix proof manifest.
-2. The container initializes the minimal `http`, `https`, and `git` entries in `/etc/services` before networked Guix work.
-3. The pinned Guix channel is fetched with container-native Git from the verified GitHub mirror and checked against the exact commit `ac03c482b1910a1672427beaea07ddcd1d652806`.
-4. The channel is cloned as complete `version-1.5.0` history and blobs so `guix time-machine` can resolve every referenced Git object.
-5. Only then does CI enter the pure manifest containing Agda, Agda stdlib, Mercury, and Guile.
-
-This prevents transport and bootstrap failures from pretending to be theorem failures. Humanity has apparently decided that even package managers need an exorcism phase.
+The four verification lanes run from that one Nix environment: Agda kernel checking, Mercury theorem verification, Mercury e-graph discovery, and the canonical source-policy surface audit.
 
 ## Infinite-state proof
 
@@ -129,7 +123,7 @@ It combines:
 - the Nat-clock pigeonhole contradiction;
 - impossibility of a global exact `Int8` UAP over the unbounded canonical orbit.
 
-The constructor for the composed theorem directly includes the bounded theorem and infinite-state orbit proof, so the Mercury dependency graph can see those as connected source laws rather than decorative documentation.
+The constructor for the composed theorem directly includes the bounded theorem and infinite-state orbit proof, so the Mercury dependency graph can see those as connected source laws rather than decorative documentation. The bounded exact-UAP record itself does not require dense-neighborhood separation; its exact readout follows from the left-inverse witness, with observation injectivity derived from that witness.
 
 ## Mercury e-graph sync contract
 
@@ -183,11 +177,11 @@ The boundary remains:
 
 ## CI lanes
 
-Guix runs four connected lanes:
+Nix runs four connected lanes:
 
 `agda-safe`, `mercury`, `discovery`, and `surface`.
 
-The Agda lane checks the canonical learner, the single theorem monolith, and focused tests with the same Guix-installed `agda --safe` executable.
+The Agda lane checks the canonical learner, the single theorem monolith, and focused tests with the same Nix-provided `agda --safe -l standard-library` executable.
 
 The Mercury lane runs the theorem-monolith e-graph sync and the generic e-graph regressions. The sync program emits a report but does not generate Agda source.
 
@@ -204,6 +198,6 @@ Where a result is conditional, the condition is explicit. Where a global claim i
 
 ## Agda proof lane update
 
-The proof lane uses the prepared Guix action as the pure driver while the official pinned Agda setup action supplies Agda 2.8.0.2 and standard library 2.4. The Guix manifest no longer realizes a stale Agda or agda-stdlib package before the kernel check.
+The proof lane uses the repository flake as the reproducible driver. It layers Agda v2.8.0 with standard-library v2.4 and Mercury 22.01.9 in one Nix shell, removing the former Nix/Nix execution boundary.
 
-The bounded exact-UAP surface now includes exact retraction, decoder-transport, postcomposition, and a recurrent-prefix certificate combining recurrent depth, dense-neighborhood separation, continuous left-invertibility, and Nat-indexed composition injectivity.
+The bounded exact-UAP surface includes exact retraction, decoder-transport, and postcomposition. The minimal bounded theorem needs a left inverse for exact readout; continuity is represented as an explicit abstract predicate until an actual topology is imported, and dense-neighborhood separation is not a prerequisite for the bounded theorem.
