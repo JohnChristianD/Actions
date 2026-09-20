@@ -283,6 +283,11 @@ read_all_sources([File | Files], Acc, Result, !IO) :-
         Result = error(Error)
     ).
 
+:- pred semantic_declarations(
+    io.res(list(semantic_decl))::out, io::di, io::uo) is det.
+semantic_declarations(Result, !IO) :-
+    read_all_sources(source_files, [], Result, !IO).
+
 :- pred dependency_names(semantic_decl::in, list(semantic_decl)::in,
     list(string)::out) is det.
 dependency_names(
