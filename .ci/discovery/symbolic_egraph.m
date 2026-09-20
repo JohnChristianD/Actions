@@ -84,6 +84,11 @@
         bindings :: list(binding)
     ).
 
+:- pred parent_set(
+    map(int, int)::in, int::in, int::in, map(int, int)::out) is det.
+parent_set(M, K, V, M2) :-
+    map.set(M, K, V, M2).
+
 :- pred enode_hash(enode::in, int::out) is det.
 enode_hash(enode(Symbol, Children), Hash) :-
     string.hash(Symbol, Initial),
@@ -119,7 +124,7 @@ id_int(eclass_id(I)) = I.
 fresh_class(egraph(Next, Parent0, Hash, Bindings), Id,
         egraph(Next + 1, Parent, Hash, Bindings)) :-
     Id = eclass_id(Next),
-    map.set(Parent0, Next, Next, Parent).
+    parent_set(Parent0, Next, Next, Parent).
 
 :- pred canonical_children(egraph::in, list(eclass_id)::in,
     list(eclass_id)::out) is det.
@@ -174,9 +179,9 @@ merge(A0, B0, E0, E) :-
         IdA = id_int(A),
         IdB = id_int(B),
         ( if IdA < IdB then
-            map.set(parent(E0), IdB, IdA, Parent)
+            parent_set(parent(E0), IdB, IdA, Parent)
         else
-            map.set(parent(E0), IdA, IdB, Parent)
+            parent_set(parent(E0), IdA, IdB, Parent)
         ),
         E1 = replace_parent(E0, Parent),
         rebuild(E1, E)
@@ -232,9 +237,9 @@ merge_roots(A, B, E0, E) :-
     IdA = id_int(A),
     IdB = id_int(B),
     ( if IdA < IdB then
-        map.set(parent(E0), IdB, IdA, P)
+        parent_set(parent(E0), IdB, IdA, P)
     else
-        map.set(parent(E0), IdA, IdB, P)
+        parent_set(parent(E0), IdA, IdB, P)
     ),
     E = replace_parent(E0, P).
 
