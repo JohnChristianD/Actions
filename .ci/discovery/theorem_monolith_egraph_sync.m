@@ -15,6 +15,7 @@
 :- import_module list.
 :- import_module string.
 :- import_module symbolic_egraph.
+:- import_module theorem_astar_search.
 
 :- func forced_target_law_id = string.
 forced_target_law_id =
@@ -147,8 +148,9 @@ composite_laws(All, Composite) :-
     int::in,
     saturation_report::in,
     int::in,
+    list(list(string))::in,
     io::di, io::uo) is det.
-write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, !IO) :-
+write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, AStarPlans, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -188,6 +190,9 @@ write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, 
             "  \"information_preserving_task_factorization\": \"connected\",\n" ++
             "  \"infinite_state_orbit\": \"connected\",\n" ++
             "  \"pigeonhole_contradiction\": \"connected\",\n" ++
+            "  \"astar_collision_candidate_count\": " ++
+                string.int_to_string(list.length(AStarPlans)) ++ ",\n" ++
+            "  \"astar_collision_search\": \"jaxtar-inspired ordinary A*\",\n" ++
             "  \"global_int8_uap\": \"refuted\",\n" ++
             "  \"proof_authority\": \"Agda --safe\"\n" ++
             "}\n",
@@ -205,6 +210,7 @@ main(!IO) :-
     extract_semantics(!IO),
     read_manifest(All, !IO),
     composite_laws(All, Composite),
+    search_collision_compositions(All, 6, AStarPlans, !IO),
     (
         forced_target_law(All, Target),
         discovery_egraph_from_laws(All, EGraph0, QuotientCount),
@@ -219,14 +225,19 @@ main(!IO) :-
         enode_count(EGraph) > 0,
         list.length(Analyses) > 0,
         saturation_iterations(Saturation) > 0,
-        ExtractionCost > 0
+        ExtractionCost > 0,
+        list.length(AStarPlans) > 0
     ->
-        write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, !IO),
+        write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, AStarPlans, !IO),
         io.write_string(
             "mercury-theorem-monolith-egraph-sync=pass\n",
             !IO),
         io.write_string(
             "forced-target-law=" ++ law_id(Target) ++ "\n",
+            !IO),
+        io.write_string(
+            "astar-collision-candidate-count=" ++
+            string.int_to_string(list.length(AStarPlans)) ++ "\n",
             !IO),
         io.write_string(
             "single-agda-source=TheoremsMonolith.agda\n",
