@@ -40,6 +40,13 @@ jobs:
           agda-stdlib-version: '2.4'
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Configure CI Agda project
+        run: |
+          cat > ci-composition.agda-lib <<'EOF'
+          name: ci-composition
+          include: .
+          depend: standard-library
+          EOF
       - name: Check learner sources
         run: |
           "$AGDA_COMMAND" --version
