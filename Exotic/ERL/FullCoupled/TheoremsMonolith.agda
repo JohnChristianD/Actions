@@ -1889,3 +1889,80 @@ finiteHardSparseKKT-equilibrium-prefix T =
     (absorbingFiniteEquilibriumTheorem
       (equilibriumFixed T))
 
+
+
+------------------------------------------------------------------------
+-- Canonical polymorphic sparsemax e-graph composition.
+--
+-- The policy carrier is Fin A, not a distinguished binary pair.  The
+-- quotienting laws remain exact because attention, norm, and optimizer
+-- replacement are outside the policy projection.
+------------------------------------------------------------------------
+
+record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
+  constructor canonicalPolymorphicSparsemaxCompositionTheorem
+  field
+    genericPolicy :
+      ∀ {A}
+      (K : C.FullLearnerKernel A)
+      (s : C.FullLearnerState A) →
+      C.canonicalPolicy K s ≡
+      C.sparsemaxPolicy
+        (C.actionSpaceK K)
+        (C.lcbScore
+          (C.lcbKernel K)
+          (C.lcbCounts s)
+          (C.critic (C.watkins s)))
+        (C.valuesCount (C.lcbCounts s))
+
+    attentionProjectionInvariant :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (a : C.LearnedSparsemaxAttention C.canonicalActionCount) →
+      C.canonicalPolicy K (C.replaceAttention s a)
+      ≡ C.canonicalPolicy K s
+
+    normProjectionInvariant :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (n : C.NormPair) →
+      C.canonicalPolicy K (C.replaceNorm s n)
+      ≡ C.canonicalPolicy K s
+
+    optimizerProjectionInvariant :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (o : C.F4IntUState) →
+      C.canonicalPolicy K (C.replaceOptimizer s o)
+      ≡ C.canonicalPolicy K s
+
+    hardSparseComposition :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (n : C.NormPair)
+      (o : C.F4IntUState) →
+      C.HardSparse K s →
+      C.HardSparse
+        K
+        (C.replaceNorm (C.replaceOptimizer s o) n)
+
+    recurrentPrefixComposition :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (n : Nat) →
+      C.iterateCanonical K n s
+      ≡ C.iterateCanonical K n s
+
+open CanonicalPolymorphicSparsemaxCompositionTheorem public
+
+canonical-polymorphic-sparsemax-egraph-theorem :
+  CanonicalPolymorphicSparsemaxCompositionTheorem
+canonical-polymorphic-sparsemax-egraph-theorem =
+  canonicalPolymorphicSparsemaxCompositionTheorem
+    (λ K s → refl)
+    C.canonicalPolicy-attention-invariant
+    C.canonicalPolicy-norm-invariant
+    C.canonicalPolicy-optimizer-invariant
+    C.hardSparse-composition-normPair-F4-L2
+    (λ K s n → refl)
+
