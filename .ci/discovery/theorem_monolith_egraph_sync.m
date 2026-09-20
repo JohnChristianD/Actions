@@ -110,10 +110,10 @@ recurrent_bound_uap_dependency =
 forced_target_law(All, Target) :-
     list.member(Target, All),
     law_id(Target) = forced_target_law_id,
-    semantic_law.composite(Target) = yes,
+    is_composite(Target),
     list.member(
         "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-attention-invariant",
-        semantic_law.dependencies(Target)),
+        law_dependencies(Target)),
     list.member(
         "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-norm-invariant",
         semantic_law.dependencies(Target)),
@@ -136,7 +136,7 @@ forced_target_law(All, Target) :-
 composite_laws(All, Composite) :-
     list.filter(
         (pred(L::in) is semidet :-
-            semantic_law.composite(L) = yes),
+            is_composite(L)),
         All,
         Composite).
 
@@ -162,7 +162,7 @@ write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, 
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
-                semantic_law.reflexive(L) = no),
+                not is_reflexive(L)),
             All)),
     io.open_output("theorem-monolith-egraph-sync.json", Result, !IO),
     (

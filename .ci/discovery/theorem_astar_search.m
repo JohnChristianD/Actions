@@ -49,8 +49,8 @@ law_for_id(Id, Laws, Law) :-
 
 :- pred seed_node(semantic_law::in, astar_node::out) is semidet.
 seed_node(Law, Node) :-
-    semantic_law.reflexive(Law) = no,
-    semantic_law.composite(Law) = yes,
+    not is_reflexive(Law),
+    is_composite(Law),
     Id = law_id(Law),
     Node = astar_node(Id, [Id], 0, goal_depth - 1).
 
@@ -145,7 +145,7 @@ expand_node(Node, Laws, Children) :-
     (
         law_for_id(TerminalId, Laws, TerminalLaw)
     ->
-        Dependencies = semantic_law.dependencies(TerminalLaw),
+        Dependencies = law_dependencies(TerminalLaw),
         expand_dependencies(
             Dependencies, Node, [], Children)
     ;
@@ -195,7 +195,7 @@ goal_node(Node, Laws) :-
     law_for_id(SeedId, Laws, SeedLaw),
     not list.member(
         TerminalId,
-        semantic_law.dependencies(SeedLaw)).
+        law_dependencies(SeedLaw)).
 
 :- pred insert_children(
     list(astar_node)::in,

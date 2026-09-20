@@ -87,9 +87,9 @@ add_law(Law, E0, E, Quotient0, Quotient) :-
     Id = law_id(Law),
     add_expr(law_expr(Id), E0, _, E1),
     (
-        semantic_law.composite(Law) = yes
+        is_composite(Law)
     ->
-        Deps = semantic_law.dependencies(Law),
+        Deps = law_dependencies(Law),
         Left = left_assoc_expr(Deps),
         add_expr(
             app("derived-proof-plan", [
@@ -121,7 +121,7 @@ add_law(Law, E0, E, Quotient0, Quotient) :-
         )
     ;
         (
-            semantic_law.reflexive(Law) = yes
+            is_reflexive(Law)
         ->
             add_expr(
                 app("definitional-law", [law_expr(Id)]),

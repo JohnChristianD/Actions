@@ -18,6 +18,11 @@
 
 :- pred read_manifest(list(semantic_law)::out, io::di, io::uo) is det.
 :- func law_id(semantic_law) = string.
+:- func law_name(semantic_law) = string.
+:- func law_signature(semantic_law) = string.
+:- func law_dependencies(semantic_law) = list(string).
+:- pred is_reflexive(semantic_law::in) is semidet.
+:- pred is_composite(semantic_law::in) is semidet.
 
 :- implementation.
 
@@ -76,3 +81,15 @@ read_manifest(Laws, !IO) :-
     ).
 
 law_id(Law) = semantic_law.source(Law) ++ "#" ++ semantic_law.name(Law).
+
+law_name(Law) = semantic_law.name(Law).
+
+law_signature(Law) = semantic_law.signature(Law).
+
+law_dependencies(Law) = semantic_law.dependencies(Law).
+
+is_reflexive(Law) :-
+    semantic_law.reflexive(Law) = yes.
+
+is_composite(Law) :-
+    semantic_law.composite(Law) = yes.
