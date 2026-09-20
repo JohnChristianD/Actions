@@ -190,8 +190,8 @@ jobs:
             Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
           if-no-files-found: error
 
-  agda-theorems:
-    name: Nix / Agda canonical theorem facade
+  agda-theorem-part5:
+    name: Nix / Agda theorem partition 5
     needs: agda-theorem-part4
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -212,6 +212,40 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part4-agdai
+          path: Exotic/ERL/FullCoupled
+      - run: |
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
+      - name: Upload theorem partition 5 Agda interfaces
+        uses: actions/upload-artifact@v4
+        with:
+          name: part5-agdai
+          path: |
+            Exotic/ERL/FullCoupled/*.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
+          if-no-files-found: error
+
+  agda-theorems:
+    name: Nix / Agda canonical theorem facade
+    needs: agda-theorem-part5
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v4
+        with:
+          name: part5-agdai
           path: Exotic/ERL/FullCoupled
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
