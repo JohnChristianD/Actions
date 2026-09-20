@@ -101,13 +101,16 @@ jobs:
         run: |
           find . -path './.git' -prune -o -name 'CanonicalLearnerMonolith.agdai' -print
           test -f "_build/2.8.0.2/agda/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
+      - name: Materialize learner interface locally
+        run: |
+          cp "_build/2.8.0.2/agda/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
       - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
           touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       - name: Check theorem partition 1a
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          "$AGDA_COMMAND" --no-project --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
       - name: Check theorem partition 1b
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
