@@ -18,7 +18,7 @@
 
 :- func forced_target_law_id = string.
 forced_target_law_id =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
 
 :- func continuous_readout_dependency = string.
 continuous_readout_dependency =
@@ -98,22 +98,19 @@ forced_target_law(All, Target) :-
     law_id(Target) = forced_target_law_id,
     semantic_law.composite(Target) = yes,
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finite-attention-watkins-gru-f4-mediator-theorem",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-attention-invariant",
         semantic_law.dependencies(Target)),
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finite-attention-watkins-gru-f4-mediator-theorem",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-norm-invariant",
+        semantic_law.dependencies(Target)),
+    list.member(
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-optimizer-invariant",
+        semantic_law.dependencies(Target)),
+    list.member(
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#hardSparse-composition-normPair-F4-L2",
         semantic_law.dependencies(Target)),
     list.member(
         "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalGRU-recurrent-associative-scan-theorem",
-        semantic_law.dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalWatkinsTarget-recurrent-prefix-correct",
-        semantic_law.dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-learnerReplacement-invariant",
-        semantic_law.dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalWatkinsTarget-boundedUniversalExactAUP",
         semantic_law.dependencies(Target)).
 
 
