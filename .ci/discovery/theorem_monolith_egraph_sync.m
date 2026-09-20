@@ -18,7 +18,7 @@
 
 :- func forced_target_law_id = string.
 forced_target_law_id =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-finite-exact-orbit-uap-composition-theorem".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-sparse-summary-egraph-theorem".
 
 :- func continuous_readout_dependency = string.
 continuous_readout_dependency =
@@ -97,57 +97,25 @@ forced_target_law(All, Target) :-
     list.member(Target, All),
     law_id(Target) = forced_target_law_id,
     semantic_law.composite(Target) = yes,
-        list.member(
-        continuous_readout_dependency,
+    list.member(
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#FiniteAttentionWatkinsGRUF4MediatorTheorem",
         semantic_law.dependencies(Target)),
     list.member(
-        bounded_exact_approximation_dependency,
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem",
         semantic_law.dependencies(Target)),
     list.member(
-        infinite_state_orbit_dependency,
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#compressedPower-scan",
         semantic_law.dependencies(Target)),
     list.member(
-        pigeonhole_dependency,
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#exactPredictionEqualsCompressed",
         semantic_law.dependencies(Target)),
     list.member(
-        no_global_uap_dependency,
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#generalTsallis2NearSparsity",
         semantic_law.dependencies(Target)),
     list.member(
-        finite_int8_continuous_left_inverse_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        exact_universal_uap_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        aperiodicity_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        finite_cycle_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        finite_time_exact_readout_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        finite_sample_exact_readout_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        iterate_composition_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        finite_feature_continuity_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        finite_visit_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        injectivity_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        hadamard_attention_rope_prefix_dependency,
-        semantic_law.dependencies(Target)),
-    list.member(
-        recurrent_bound_uap_dependency,
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#supportAwarePrefixWork-split",
         semantic_law.dependencies(Target)).
+
 
 :- pred composite_laws(
     list(semantic_law)::in, list(semantic_law)::out) is det.
