@@ -1377,6 +1377,64 @@ record BoundedContinuousLeftInverseExactApproximationTheorem
       embed i ≡ embed j
 
 open BoundedContinuousLeftInverseExactApproximationTheorem public
+------------------------------------------------------------------------
+-- Standalone exact universal readout certificate.
+--
+-- This is the minimal universal form: a continuous left inverse gives
+-- exact factorization of every target through the observation, while
+-- separation is exposed explicitly as a derived contract.
+------------------------------------------------------------------------
+
+record ExactUniversalApproximationThroughContinuousLeftInverse
+  (State Feature : Set)
+  (observe : State → Feature)
+  (inverse : Feature → State) : Set₁ where
+  constructor exactUniversalApproximationThroughContinuousLeftInverse
+  field
+    continuousLeftInverse :
+      ContinuousLeftInverseTheorem
+        State
+        Feature
+        observe
+        inverse
+
+    observationSeparation :
+      ∀ {s t : State} →
+      observe s ≡ observe t →
+      s ≡ t
+
+    exactUniversalReadout :
+      ∀ {Output : Set} →
+      (target : State → Output) →
+      ∀ s →
+      target s ≡ target (inverse (observe s))
+
+open ExactUniversalApproximationThroughContinuousLeftInverse public
+
+exactUniversalApproximationThroughContinuousLeftInverse-from-witness :
+  ∀ {State Feature : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State} →
+  ContinuousLeftInverseTheorem
+    State
+    Feature
+    observe
+    inverse →
+  ExactUniversalApproximationThroughContinuousLeftInverse
+    State
+    Feature
+    observe
+    inverse
+exactUniversalApproximationThroughContinuousLeftInverse-from-witness witness =
+  exactUniversalApproximationThroughContinuousLeftInverse
+    witness
+    (continuousLeftInverse-injective witness)
+    (λ target s →
+      continuousLeftInverse-exactReadout-transfer
+        witness
+        target
+        s)
+
 
 boundedContinuousLeftInverseExactApproximationTheorem-from-witness :
   ∀ {State Feature : Set}
@@ -1486,8 +1544,7 @@ boundedUniversalExactUAP-retraction :
       C.FullLearnerState
       Feature
       observe
-      inverse
-)
+      inverse)
   (i : Fin bound) →
   inverse (observe (embed i)) ≡ embed i
 boundedUniversalExactUAP-retraction
@@ -1506,8 +1563,7 @@ boundedUniversalExactUAP-decoder-transport :
       C.FullLearnerState
       Feature
       observe
-      inverse
-)
+      inverse)
   (decoder : Feature → C.FullLearnerState)
   (decoderOnBound :
     ∀ i → decoder (observe (embed i)) ≡ inverse (observe (embed i)))
@@ -1535,8 +1591,7 @@ boundedUniversalExactUAP-postcompose :
       C.FullLearnerState
       Feature
       observe
-      inverse
-)
+      inverse)
   (target : C.FullLearnerState → Output)
   (post : Output → Output₂)
   (i : Fin bound) →
@@ -1551,7 +1606,7 @@ boundedUniversalExactUAP-postcompose
       (embed i))
 
 ------------------------------------------------------------------------
--- Ring-state injectivity and dense-neighborhood separation interfaces.
+-- Ring-state injectivity and orbit-observation separation interfaces.
 --
 -- These are explicit theorem contracts. The strict import boundary does
 -- not define a topology or an ordered-ring hierarchy, so neither is hidden.
@@ -1575,33 +1630,33 @@ canonicalRingStateInjective K s =
     (λ n → C.iterateCanonical K n s)
     (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
 
-record DenseNeighborhoodSeparationTheorem
+record OrbitObservationSeparationTheorem
   (State Feature : Set)
   (embed : Nat → State)
   (observe : State → Feature) : Set₁ where
-  constructor denseNeighborhoodSeparationTheorem
+  constructor orbitObservationSeparationTheorem
   field
-    denseNeighborhoodSeparation :
+    observationSeparatesOrbitIndices :
       ∀ {m n} →
       observe (embed m) ≡ observe (embed n) →
       m ≡ n
 
-open DenseNeighborhoodSeparationTheorem public
+open OrbitObservationSeparationTheorem public
 
-canonicalDenseNeighborhoodSeparation :
+canonicalOrbitObservationSeparation :
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState)
   (observe : C.FullLearnerState → C.Int8)
   (inverse : C.Int8 → C.FullLearnerState) →
   (∀ t → inverse (observe t) ≡ t) →
-  DenseNeighborhoodSeparationTheorem
+  OrbitObservationSeparationTheorem
     C.FullLearnerState
     C.Int8
     (λ n → C.iterateCanonical K n s)
     observe
-canonicalDenseNeighborhoodSeparation
+canonicalOrbitObservationSeparation
   K s observe inverse leftInverse =
-  denseNeighborhoodSeparationTheorem
+  orbitObservationSeparationTheorem
     (λ {m} {n} eq →
       canonicalOrbit-state-injective K s
         (trans
@@ -1614,7 +1669,7 @@ canonicalDenseNeighborhoodSeparation
 -- Recurrent-prefix bounded exact UAP certificate.
 --
 -- The certificate makes the requested ingredients explicit:
--- recurrent depth/associative scan, dense-neighborhood separation,
+-- recurrent depth/associative scan, orbit-observation separation,
 -- a continuous left inverse, and Nat-indexed composition injectivity.
 ------------------------------------------------------------------------
 
@@ -1642,8 +1697,8 @@ record CanonicalRecurrentBoundedExactUniversalApproximationTheorem
       C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
       m ≡ n
 
-    denseNeighborhoodSeparation :
-      DenseNeighborhoodSeparationTheorem
+    observationSeparatesOrbitIndices :
+      OrbitObservationSeparationTheorem
         C.FullLearnerState
         Feature
         (λ n → C.iterateCanonical K n s)
@@ -1686,7 +1741,7 @@ canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness
     canonicalGRU-recurrent-associative-scan-theorem
     witness
     (canonicalInfiniteStateOrbitEmbedding K s)
-    (denseNeighborhoodSeparationTheorem
+    (orbitObservationSeparationTheorem
       (λ {m} {n} eq →
         canonicalOrbit-state-injective K s
           (trans
@@ -1708,7 +1763,7 @@ canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness
 -- target semantics + minimax/Bellman-Shapley inclusion + endogenous
 -- left-inverse factorization + continuous-left-inverse transfer +
 -- bounded exact approximation from the continuous left inverse + ring-state
--- injectivity + dense-neighborhood separation + Nat-clock pigeonhole
+-- injectivity + orbit-observation separation + Nat-clock pigeonhole
 -- contradiction.
 ------------------------------------------------------------------------
 
@@ -1855,13 +1910,13 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
       m ≡ n
 
-    denseNeighborhoodSeparation :
+    observationSeparatesOrbitIndices :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
       (observe : C.FullLearnerState → C.Int8)
       (inverse : C.Int8 → C.FullLearnerState) →
       (∀ t → inverse (observe t) ≡ t) →
-      DenseNeighborhoodSeparationTheorem
+      OrbitObservationSeparationTheorem
         C.FullLearnerState
         C.Int8
         (λ n → C.iterateCanonical K n s)
@@ -1916,6 +1971,6 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
         K s observe inverse witness)
     canonicalRingStateInjective
     canonicalInfiniteStateOrbitEmbedding
-    canonicalDenseNeighborhoodSeparation
+    canonicalOrbitObservationSeparation
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalInt8DiscreteUAPOnOrbit
