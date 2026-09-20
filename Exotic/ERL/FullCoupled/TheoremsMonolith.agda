@@ -1744,6 +1744,24 @@ hardSparse-prefix-equilibrium H s hs = hardSparseAbsorbing H s hs
 
 
 
--- recovered-check-marker
-recoveredPartitionCheck : C.FullLearnerState → C.FullLearnerState
-recoveredPartitionCheck s = s
+-- Recovered from legacy theorem partition Part1a.agda
+canonicalIterateComposition :
+  ∀ (K : C.FullLearnerKernel)
+  (m n : Nat)
+  (s : C.FullLearnerState) →
+  C.iterateCanonical K (m + n) s ≡
+  C.iterateCanonical K n (C.iterateCanonical K m s)
+canonicalIterateComposition K m zero s
+  rewrite +-identityʳ m = refl
+canonicalIterateComposition K m (suc n) s
+  rewrite +-suc m n =
+  cong (C.canonicalFullStep K)
+    (canonicalIterateComposition K m n s)
+
+record CanonicalConnectedCompositionTheorem : Set₁ where
+  constructor canonicalConnectedCompositionTheorem
+  field
+    aqLoop :
+      CanonicalAQLoopTheorem
+    ropePhasePeriod :
+      ∀ n w →
