@@ -7,7 +7,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _≤_; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-injective; toℕ-fromℕ<)
-open import Data.Product using (Σ; _,_)
+open import Data.Product using (Σ; _×_; _,_)
 open import Data.Unit using (⊤; tt)
 open import Data.Bool using (Bool; true; false)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
@@ -192,51 +192,177 @@ exactSupportSparsity-law v support bound = refl
 -- proof-carrying specification rather than a fabricated Real implementation.
 ------------------------------------------------------------------------
 
-record NearSparsityModel (d : Nat) : Set₁ where
-  constructor nearSparsityModel
-  field
-    Scalar : Set
-    zero one : Scalar
-    add mul sub div : Scalar → Scalar → Scalar
-    abs log exp : Scalar → Scalar
-    ofNat : Nat → Scalar
-    sum : (Fin d → Scalar) → Scalar
-    weight : Fin d → Scalar
-    l1Norm : Scalar
-    probability : Fin d → Scalar
-    entropy effectiveSupport nearSparsity : Scalar
-    probabilityLaw :
-      ∀ i → probability i ≡ div (abs (weight i)) l1Norm
-    entropyLaw :
-      entropy ≡
-      sub zero (sum (λ i → mul (probability i) (log (probability i))))
-    effectiveSupportLaw :
-      effectiveSupport ≡ exp entropy
-    nearSparsityLaw :
-      nearSparsity ≡
-      sub one (div effectiveSupport (ofNat d))
-    zeroVectorLaw :
-      (∀ i → weight i ≡ zero) → nearSparsity ≡ one
+------------------------------------------------------------------------
+-- Exact Tsallis-2 near-sparsity.
+--
+-- Shannon log/exp is intentionally absent from the executable theorem
+-- surface.  For the two-action carrier, pᵢ = wᵢ / S gives
+--
+--   1 - 1 / (2 * sum pᵢ²)
+-- = (2 * sum wᵢ² - S²) / (2 * sum wᵢ²).
+--
+-- The theorem records this value by an exact cleared-denominator
+-- FiniteRational pair.  It therefore needs no transcendental or floating
+-- analysis.  The zero-vector convention is exact and explicit.
+------------------------------------------------------------------------
+
+tsallis2SupportBit : Nat → Nat
+tsallis2SupportBit zero = zero
+tsallis2SupportBit (suc n) = suc zero
+
+tsallis2ExactSparsityPair : Nat → Nat → C.FiniteRational
+tsallis2ExactSparsityPair a b =
+  C.finiteRational
+    1
+    (suc (suc zero) ∸
+      (tsallis2SupportBit a + tsallis2SupportBit b))
+    (suc (suc zero))
+
+tsallis2PairSum : Nat → Nat → Nat
+tsallis2PairSum a b = a + b
+
+tsallis2PairSquareSum : Nat → Nat → Nat
+tsallis2PairSquareSum a b = (a * a) + (b * b)
+
+tsallis2PairDenominator : Nat → Nat → Nat
+tsallis2PairDenominator a b =
+  suc (suc zero) * tsallis2PairSquareSum a b
+
+tsallis2PairNumerator : Nat → Nat → Nat
+tsallis2PairNumerator a b =
+  tsallis2PairDenominator a b ∸
+    (tsallis2PairSum a b * tsallis2PairSum a b)
+
+tsallis2NearSparsityPair : Nat → Nat → C.FiniteRational
+tsallis2NearSparsityPair zero zero =
+  C.finiteRational 1 1 1
+tsallis2NearSparsityPair a b =
+  C.finiteRational
+    1
+    (tsallis2PairNumerator a b)
+    (tsallis2PairDenominator a b)
+
+fractionEquivalent : C.FiniteRational → C.FiniteRational → Set
+fractionEquivalent x y =
+  (C.numerator x * C.denominator y)
+  ≡
+  (C.numerator y * C.denominator x)
+
+tsallis2Exact-oneHot128 :
+  tsallis2ExactSparsityPair 128 0
+  ≡ C.finiteRational 1 1 2
+tsallis2Exact-oneHot128 = refl
+
+tsallis2Near-oneHot128 :
+  fractionEquivalent
+    (tsallis2NearSparsityPair 128 0)
+    (C.finiteRational 1 1 2)
+tsallis2Near-oneHot128 = refl
+
+tsallis2Near-exact-oneHot128 :
+  fractionEquivalent
+    (tsallis2NearSparsityPair 128 0)
+    (tsallis2ExactSparsityPair 128 0)
+tsallis2Near-exact-oneHot128 = refl
+
+canonicalPolicyExactSparsity :
+  ∀ K s →
+  C.FiniteRational
+canonicalPolicyExactSparsity K s with C.canonicalPolicy K s
+... | l , r =
+  tsallis2ExactSparsityPair
+    (toℕ (C.code l))
+    (toℕ (C.code r))
+
+canonicalPolicyTsallis2NearSparsity :
+  ∀ K s →
+  C.FiniteRational
+canonicalPolicyTsallis2NearSparsity K s with C.canonicalPolicy K s
+... | l , r =
+  tsallis2NearSparsityPair
+    (toℕ (C.code l))
+    (toℕ (C.code r))
 
 ------------------------------------------------------------------------
--- Temporal exact-sparsity preservation is proved for the component slice
--- that the learner actually makes invariant.  A whole-step policy-support
--- invariant is not asserted because canonicalFullStep updates the LCB
--- counts and Watkins critic, both of which enter canonicalPolicy.
+-- Temporal hard/near sparsity preservation.
+--
+-- The full learner changes Watkins critic and LCB counts, so an unconditional
+-- policy-support invariant would be unsound.  The exact theorem required for
+-- the closed loop is therefore: one-step closure implies all finite prefixes
+-- by induction.
 ------------------------------------------------------------------------
 
 canonicalHardSparse-normOptimizer-temporal-invariance :
   ∀ K s n o →
   C.HardSparseLeft (C.canonicalPolicy K s) →
   C.HardSparseLeft
-    (C.canonicalPolicy K (C.replaceNorm (C.replaceOptimizer s o) n))
+    (C.canonicalPolicy K
+      (C.replaceNorm (C.replaceOptimizer s o) n))
 canonicalHardSparse-normOptimizer-temporal-invariance =
   C.hardSparse-composition-normPair-F4-L2
+
+canonicalHardSparsityLeft-fullLoop-preservation :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState) →
+  C.HardSparseLeft (C.canonicalPolicy K s) →
+  (∀ n →
+     C.HardSparseLeft
+       (C.canonicalPolicy K (C.iterateCanonical K n s)) →
+     C.HardSparseLeft
+       (C.canonicalPolicy K
+         (C.iterateCanonical K (suc n) s))) →
+  ∀ n →
+  C.HardSparseLeft
+    (C.canonicalPolicy K (C.iterateCanonical K n s))
+canonicalHardSparsityLeft-fullLoop-preservation K s base closed zero =
+  base
+canonicalHardSparsityLeft-fullLoop-preservation K s base closed (suc n) =
+  closed n
+    (canonicalHardSparsityLeft-fullLoop-preservation
+      K s base closed n)
+
+canonicalExactSparsity-fullLoop-preservation :
+  ∀ K s →
+  (∀ n →
+     canonicalPolicyExactSparsity K
+       (C.iterateCanonical K (suc n) s)
+     ≡
+     canonicalPolicyExactSparsity K
+       (C.iterateCanonical K n s)) →
+  ∀ n →
+  canonicalPolicyExactSparsity K
+    (C.iterateCanonical K n s)
+  ≡
+  canonicalPolicyExactSparsity K s
+canonicalExactSparsity-fullLoop-preservation K s closed zero = refl
+canonicalExactSparsity-fullLoop-preservation K s closed (suc n) =
+  trans
+    (closed n)
+    (canonicalExactSparsity-fullLoop-preservation K s closed n)
+
+canonicalTsallis2NearSparsity-fullLoop-preservation :
+  ∀ K s →
+  (∀ n →
+     canonicalPolicyTsallis2NearSparsity K
+       (C.iterateCanonical K (suc n) s)
+     ≡
+     canonicalPolicyTsallis2NearSparsity K
+       (C.iterateCanonical K n s)) →
+  ∀ n →
+  canonicalPolicyTsallis2NearSparsity K
+    (C.iterateCanonical K n s)
+  ≡
+  canonicalPolicyTsallis2NearSparsity K s
+canonicalTsallis2NearSparsity-fullLoop-preservation K s closed zero = refl
+canonicalTsallis2NearSparsity-fullLoop-preservation K s closed (suc n) =
+  trans
+    (closed n)
+    (canonicalTsallis2NearSparsity-fullLoop-preservation K s closed n)
 
 record TemporalNearSparsityInvariant : Set₁ where
   constructor temporalNearSparsityInvariant
   field
-    measure : C.FullLearnerState → FiniteRational
+    measure : C.FullLearnerState → C.FiniteRational
     stepInvariant :
       ∀ K s →
       measure (C.canonicalFullStep K s) ≡ measure s
