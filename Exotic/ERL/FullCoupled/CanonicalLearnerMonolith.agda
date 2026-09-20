@@ -57,7 +57,7 @@ discreteTopology A =
 continuous-under-discrete-topology :
   ∀ {A B : Set} (f : A → B) →
   Continuous A B (discreteTopology A) (discreteTopology B) f
-continuous-under-discrete-topology f = λ {V} _ → tt
+continuous-under-discrete-topology f = λ V _ → tt
 
 
 
