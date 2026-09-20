@@ -18,7 +18,7 @@
 
 :- func forced_target_law_id = string.
 forced_target_law_id =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-sparse-summary-egraph-theorem".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
 
 :- func continuous_readout_dependency = string.
 continuous_readout_dependency =
@@ -43,34 +43,34 @@ no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
 
 finite_int8_continuous_left_inverse_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#continuousLeftInverse-injective".
 
 exact_universal_uap_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#discreteExactUniversalUAP-from-leftInverse".
 
 :- func finite_feature_continuity_dependency = string.
 finite_feature_continuity_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalFiniteFeatureContinuousLeftInverseOnDiscreteTopologies".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalDenseNeighborhoodSeparation".
 
 :- func finite_time_exact_readout_dependency = string.
 finite_time_exact_readout_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteTimeExactUniversalReadout".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse".
 
 :- func finite_sample_exact_readout_dependency = string.
 finite_sample_exact_readout_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteSampleExactUniversalReadout".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedUniversalExactUAP-postcompose".
 
 :- func iterate_composition_dependency = string.
 iterate_composition_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalGRU-recurrent-associative-scan-theorem".
 
 :- func finite_visit_dependency = string.
 finite_visit_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
 
 :- func injectivity_dependency = string.
 injectivity_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#leftInverse-observation-injective".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#discreteLeftInverse-observe-injective".
 
 
 :- func aperiodicity_dependency = string.
@@ -84,12 +84,12 @@ finite_cycle_dependency =
 
 :- func hadamard_attention_rope_prefix_dependency = string.
 hadamard_attention_rope_prefix_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finite-attention-watkins-gru-f4-mediator-theorem".
 
 
 :- func recurrent_bound_uap_dependency = string.
 recurrent_bound_uap_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalRecurrentBoundedExactUniversalApproximationTheorem".
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness".
 
 :- pred forced_target_law(
     list(semantic_law)::in, semantic_law::out) is semidet.
@@ -98,22 +98,22 @@ forced_target_law(All, Target) :-
     law_id(Target) = forced_target_law_id,
     semantic_law.composite(Target) = yes,
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#FiniteAttentionWatkinsGRUF4MediatorTheorem",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finite-attention-watkins-gru-f4-mediator-theorem",
         semantic_law.dependencies(Target)),
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalHadamardAttentionRopePrefixCompositionTheorem",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finite-attention-watkins-gru-f4-mediator-theorem",
         semantic_law.dependencies(Target)),
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#compressedPower-scan",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalGRU-recurrent-associative-scan-theorem",
         semantic_law.dependencies(Target)),
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#exactPredictionEqualsCompressed",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalWatkinsTarget-recurrent-prefix-correct",
         semantic_law.dependencies(Target)),
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#generalTsallis2NearSparsity",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-learnerReplacement-invariant",
         semantic_law.dependencies(Target)),
     list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#supportAwarePrefixWork-split",
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalWatkinsTarget-boundedUniversalExactAUP",
         semantic_law.dependencies(Target)).
 
 
