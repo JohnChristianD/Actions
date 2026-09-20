@@ -108,10 +108,10 @@ jobs:
         run: |
           find . -path './.git' -prune -o -name 'CanonicalLearnerMonolith.agdai' -print
           test -f "_build/2.8.0.2/agda/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
-      - name: Enforce interface-only predecessor handoff
+      - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
-          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       - name: Check theorem partition 1a
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
@@ -175,14 +175,14 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Enforce interface-only predecessor handoff
+      - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
-          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
       - name: Check theorem partition 2
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
@@ -237,15 +237,15 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Enforce interface-only predecessor handoff
+      - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
-          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Check theorem partition 3
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
@@ -300,16 +300,16 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Enforce interface-only predecessor handoff
+      - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
-          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Check theorem partition 4
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
@@ -364,17 +364,17 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Enforce interface-only predecessor handoff
+      - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
-          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda" .ci/interface-shadow/
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Check theorem partition 5
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
@@ -449,18 +449,18 @@ jobs:
           test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
           test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
           test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
-      - name: Enforce interface-only predecessor handoff
+      - name: Prefer downloaded Agda interfaces
         run: |
           mkdir -p .ci/interface-shadow
-          mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda" .ci/interface-shadow/
-          mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda" .ci/interface-shadow/
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
