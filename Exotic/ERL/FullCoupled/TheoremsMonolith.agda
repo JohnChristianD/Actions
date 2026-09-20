@@ -2173,6 +2173,46 @@ record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
       C.iterateCanonical K n s
       ≡ C.iterateCanonical K n s
 
+    s4PlusS5RecurrentScan :
+      S4PlusS5RecurrentScanTheorem C.GRUState C.Int8
+
+    finiteAutomataProductPrefix :
+      ∀ {A B I : Nat}
+      (stepA : Fin A → Fin I → Fin A)
+      (stepB : Fin B → Fin I → Fin B)
+      (xs : Nat → Fin I)
+      (n : Nat)
+      (s : Fin A)
+      (t : Fin B) →
+      C.recurrentPrefixState
+        (C.recurrentNetwork stepA)
+        xs n s
+      ≡
+      proj₁
+        (C.recurrentPrefixState
+          (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
+          xs n
+          (s , t))
+      ×
+      C.recurrentPrefixState
+        (C.recurrentNetwork stepB)
+        xs n t
+      ≡
+      proj₂
+        (C.recurrentPrefixState
+          (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
+          xs n
+          (s , t))
+
+    informationPreservingTask :
+      ∀ {State Feature Output : Set}
+      (observe : State → Feature)
+      (inverse : Feature → State)
+      (leftInverse : ∀ s → inverse (observe s) ≡ s)
+      (target : State → Output)
+      (s : State) →
+      target s ≡ target (inverse (observe s))
+
 open CanonicalPolymorphicSparsemaxCompositionTheorem public
 
 canonical-polymorphic-sparsemax-egraph-theorem :
@@ -2185,4 +2225,7 @@ canonical-polymorphic-sparsemax-egraph-theorem =
     C.canonicalPolicy-optimizer-invariant
     C.hardSparse-composition-normPair-F4-L2
     (λ K s n → refl)
+    canonical-S4+S5-recurrent-scan-theorem
+    finiteAutomatonProductPrefix-correct
+    informationPreserving-symbolic-task-factorization
 
