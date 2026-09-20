@@ -197,7 +197,7 @@ equivalent(A, B, E) :-
 
 rebuild(E0, E) :-
     rebuild_pass(E0, E1, Changed),
-    ( if Changed then
+    ( if Changed = yes then
         rebuild(E1, E)
     else
         E = E1
@@ -301,7 +301,7 @@ bind_variable(Name, Id, Sub0, Sub) :-
     string::in, int::in, eclass_id::in, egraph::in,
     list(eclass_id)::out) is nondet.
 matching_enode(Symbol, Arity, Class, E, Children) :-
-    Root = root(parent(E), Class),
+    root(parent(E), Class, Root),
     list.member(binding(enode(Symbol0, Children0), Bound), bindings(E)),
     Symbol0 = Symbol,
     list.length(Children0, Arity),
@@ -313,7 +313,7 @@ matching_enode(Symbol, Arity, Class, E, Children) :-
     pattern::in, eclass_id::in, egraph::in,
     substitution::in, substitution::out) is nondet.
 match_pattern(pvar(Name), Class, E, Sub0, Sub) :-
-    Root = root(parent(E), Class),
+    root(parent(E), Class, Root),
     bind_variable(Name, Root, Sub0, Sub).
 match_pattern(papp(Symbol, Patterns), Class, E, Sub0, Sub) :-
     list.length(Patterns, Arity),
@@ -357,8 +357,8 @@ instantiate_patterns([Pattern | Patterns], Sub, E0, [Id | Ids], E) :-
     egraph::in, egraph::out, int::out) is det.
 apply_match(rewrite_rule(_, _, Rhs), Root, Sub, E0, E, Changed) :-
     ( if instantiate_pattern(Rhs, Sub, E0, RhsClass, E1) then
-        Root0 = root(parent(E1), Root),
-        RhsRoot = root(parent(E1), RhsClass),
+        root(parent(E1), Root, Root0),
+        root(parent(E1), RhsClass, RhsRoot),
         (
             Root0 = RhsRoot
         ->
@@ -404,7 +404,7 @@ root_classes(E, Roots) :-
 root_classes_bindings([], _, Acc, Roots) :-
     list.reverse(Acc, Roots).
 root_classes_bindings([binding(_, Id) | Bs], Parent, Acc0, Roots) :-
-    Root = root(Parent, Id),
+    root(Parent, Id, Root),
     (
         list.member(Root, Acc0)
     ->
