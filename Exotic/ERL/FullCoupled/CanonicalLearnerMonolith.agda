@@ -12,7 +12,7 @@ open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
 open import Relation.Binary.Bundles using (DecTotalOrder)
 open import Relation.Binary.Construct.On as On
-open import Relation.Binary.Construct.Flip.EqAndOrd as Flip
+import Relation.Binary.Construct.Flip.EqAndOrd as Flip
 open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _×_; _,_)
