@@ -229,7 +229,7 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
 -- Finite TSTS-only endogenous connected composition.
 --
 -- The outer search is only Thompson Sampling Tree Search. JAxtar/A*
--- graph search and evolutionary-population proposal layers are retired
+-- graph search and population-proposal layers are retired
 -- from the canonical discovery path.
 --
 -- The finite boundary exposes the TSTS role as an opaque posterior-sample
@@ -551,7 +551,7 @@ finite-tsts-endogenous-connected-theorem =
 -- Intrinsic endogenous attention-mediator connected theorem.
 --
 -- This theorem is intentionally independent of TSTS, program search,
--- evolutionary search, PVS, and JAxtar.  It is a property of the
+-- program search, PVS, and JAxtar.  It is a property of the
 -- executable learner itself.
 --
 -- An arbitrary attention-state replacement is policy-invariant and
