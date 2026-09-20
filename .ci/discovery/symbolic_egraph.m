@@ -276,15 +276,23 @@ enode_count(E) = list.length(bindings(E)).
 
 :- pred lookup_binding(
     string::in, substitution::in, eclass_id::out) is semidet.
-lookup_binding(_, substitution([]), _) :-
-    fail.
-lookup_binding(Name,
-        substitution([substitution_binding(Name0, Id) | _]), Id) :-
-    Name = Name0.
-lookup_binding(Name, substitution([_ | Rest]), Id) :-
-    lookup_binding(Name, substitution(Rest), Id).
+lookup_binding(Name, substitution(Bindings), Id) :-
+    (
+        Bindings = []
+    ->
+        fail
+    ;
+        Bindings = [substitution_binding(Name0, BoundId) | Rest],
+        (
+            Name = Name0
+        ->
+            Id = BoundId
+        ;
+            lookup_binding(Name, substitution(Rest), Id)
+        )
+    ).
 
-:- pred bind_variable(
+- pred bind_variable(
     string::in, eclass_id::in,
     substitution::in, substitution::out) is semidet.
 bind_variable(Name, Id, Sub0, Sub) :-
@@ -435,42 +443,35 @@ apply_rules_to_roots(Rule, [Root | Roots], E0, E, Count) :-
 :- pred saturate_loop(
     list(rewrite_rule)::in, int::in, int::in,
     egraph::in, egraph::out, int::out, int::out) is det.
-saturate_loop(_, Limit, Iteration, E, E, Iteration, 0) :-
-    Iteration >= Limit.
 saturate_loop(Rules, Limit, Iteration0, E0, E, Iteration, Total) :-
-    Iteration0 < Limit,
-    root_classes(E0, Roots),
-    Size0 = class_count(E0) + enode_count(E0),
-    saturate_pass(Rules, Roots, E0, E1, Count),
-    rebuild(E1, E2),
-    Size1 = class_count(E2) + enode_count(E2),
-    Iteration1 = Iteration0 + 1,
     (
-        Size1 = Size0,
-        Count = 0
+        Iteration0 >= Limit
     ->
-        E = E2,
-        Iteration = Iteration1,
-        Total = Count
+        E = E0,
+        Iteration = Iteration0,
+        Total = 0
     ;
-        saturate_loop(
-            Rules, Limit, Iteration1, E2, E, Iteration, Tail),
-        Total = Count + Tail
+        root_classes(E0, Roots),
+        Size0 = class_count(E0) + enode_count(E0),
+        saturate_pass(Rules, Roots, E0, E1, Count),
+        rebuild(E1, E2),
+        Size1 = class_count(E2) + enode_count(E2),
+        Iteration1 = Iteration0 + 1,
+        (
+            Size1 = Size0,
+            Count = 0
+        ->
+            E = E2,
+            Iteration = Iteration1,
+            Total = Count
+        ;
+            saturate_loop(
+                Rules, Limit, Iteration1, E2, E, Iteration, Tail),
+            Total = Count + Tail
+        )
     ).
 
-saturate(Rules, Limit, E0, E, Report) :-
-    saturate_loop(Rules, Limit, 0, E0, E, Iterations, Rewrites),
-    (
-        Iterations > 0,
-        Rewrites > 0
-    ->
-        Changed = yes
-    ;
-        Changed = no
-    ),
-    Report = saturation_report(Iterations, Rewrites, Changed).
-
-:- pred local_cost(enode::in, int::out) is det.
+- pred local_cost(enode::in, int::out) is det.
 local_cost(enode(Symbol, Children), Cost) :-
     Cost = 1 + string.length(Symbol) + list.length(Children).
 
@@ -498,14 +499,23 @@ analyze_bindings([binding(Node, Id) | Bs], Parent, Acc0, Out) :-
 :- pred find_analysis(
     eclass_id::in, list(class_analysis)::in,
     class_analysis::out) is semidet.
-find_analysis(_, [], _) :-
-    fail.
-find_analysis(Root, [A | _], A) :-
-    analysis_class(A) = Root.
-find_analysis(Root, [_ | As], A) :-
-    find_analysis(Root, As, A).
+find_analysis(Root, Analyses, Result) :-
+    (
+        Analyses = []
+    ->
+        fail
+    ;
+        Analyses = [Head | Tail],
+        (
+            analysis_class(Head) = Root
+        ->
+            Result = Head
+        ;
+            find_analysis(Root, Tail, Result)
+        )
+    ).
 
-:- pred replace_analysis(
+- pred replace_analysis(
     eclass_id::in, class_analysis::in,
     list(class_analysis)::in, list(class_analysis)::out) is det.
 replace_analysis(_, _, [], []).
