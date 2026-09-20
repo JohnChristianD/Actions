@@ -49,8 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: learner-agdai
-          path: |
-            Exotic/ERL/FullCoupled/*.agdai
+          path: Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
           if-no-files-found: error
 
 
@@ -98,8 +97,11 @@ jobs:
         with:
           name: part1-agdai
           path: |
-            Exotic/ERL/FullCoupled/*.agdai
-            Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai
           if-no-files-found: error
 
   agda-theorem-part2:
@@ -140,8 +142,9 @@ jobs:
         with:
           name: part2-agdai
           path: |
-            Exotic/ERL/FullCoupled/*.agdai
-            Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
           if-no-files-found: error
 
   agda-theorem-part3:
@@ -183,8 +186,10 @@ jobs:
         with:
           name: part3-agdai
           path: |
-            Exotic/ERL/FullCoupled/*.agdai
-            Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai
           if-no-files-found: error
 
   agda-theorem-part4:
@@ -227,8 +232,11 @@ jobs:
         with:
           name: part4-agdai
           path: |
-            Exotic/ERL/FullCoupled/*.agdai
-            Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai
           if-no-files-found: error
 
   agda-theorem-part5:
@@ -272,8 +280,12 @@ jobs:
         with:
           name: part5-agdai
           path: |
-            Exotic/ERL/FullCoupled/*.agdai
-            Exotic/ERL/FullCoupled/TheoremsMonolith/*.agdai
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai
           if-no-files-found: error
 
   agda-theorems:
