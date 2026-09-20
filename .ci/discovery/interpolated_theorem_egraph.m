@@ -35,8 +35,12 @@ pigeonhole_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
 
 :- func no_global_uap_dependency = string.
+:- func finite_int8_continuous_left_inverse_dependency = string.
 no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
+
+finite_int8_continuous_left_inverse_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies".
 
 
 :- func semantic_rewrite_rules = list(rewrite_rule).
@@ -223,6 +227,9 @@ main(!IO) :-
             semantic_law.dependencies(TargetLaw)),
         list.member(
             no_global_uap_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_int8_continuous_left_inverse_dependency,
             semantic_law.dependencies(TargetLaw))
     ->
         io.write_string(
