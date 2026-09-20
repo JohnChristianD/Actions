@@ -178,7 +178,7 @@ record ExactSupportSparsitySpec (d : Nat) : Set₁ where
 exactSupportSparsity :
   ∀ {d} → (Fin d → Bool) → (support : Nat) → support ≤ d → FiniteRational
 exactSupportSparsity v support bound =
-  finiteRational 0 (_∸_ _ support) _
+  finiteRational 0 (d ∸ support) d
 
 exactSupportSparsity-law :
   ∀ {d} v support bound →
