@@ -970,30 +970,30 @@ HardSparse K s =
   a ≢ canonicalPolicy K s →
   numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ≡ zero
 
-replaceAttention : FullLearnerState → LearnedSparsemaxAttention → FullLearnerState
+replaceAttention : ∀ {A} → FullLearnerState A → LearnedSparsemaxAttention A → FullLearnerState A
 replaceAttention s a = fullLearnerState (clock s) (watkins s) a (gru s) (optimizer s)
   (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
 
 canonicalPolicy-attention-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (a : LearnedSparsemaxAttention) →
+  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (a : LearnedSparsemaxAttention A) →
   canonicalPolicy K (replaceAttention s a) ≡ canonicalPolicy K s
 canonicalPolicy-attention-invariant K s a = refl
 
-replaceNorm : FullLearnerState → NormPair → FullLearnerState
+replaceNorm : ∀ {A} → FullLearnerState A → NormPair → FullLearnerState A
 replaceNorm s n = fullLearnerState (clock s) (watkins s) (attention s) (gru s) (optimizer s)
   n (lcbCounts s) (qLogControl s) (qLogValue s)
 
-replaceOptimizer : FullLearnerState → F4IntUState → FullLearnerState
+replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
 replaceOptimizer s o = fullLearnerState (clock s) (watkins s) (attention s) (gru s) o
   (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
 
 canonicalPolicy-norm-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (n : NormPair) →
+  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : NormPair) →
   canonicalPolicy K (replaceNorm s n) ≡ canonicalPolicy K s
 canonicalPolicy-norm-invariant K s n = refl
 
 canonicalPolicy-optimizer-invariant :
-  ∀ (K : FullLearnerKernel) (s : FullLearnerState) (o : F4IntUState) →
+  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (o : F4IntUState) →
   canonicalPolicy K (replaceOptimizer s o) ≡ canonicalPolicy K s
 canonicalPolicy-optimizer-invariant K s o = refl
 
@@ -1051,7 +1051,7 @@ canonicalDiscount8 = one8
 -- GRU and F4/L2 state feed the next Watkins target, closing the loop.
 ------------------------------------------------------------------------
 
-canonicalGRUFeedback : FullLearnerState → Int8
+canonicalGRUFeedback : ∀ {A} → FullLearnerState A → Int8
 canonicalGRUFeedback s = hiddenState (gru s)
 
 canonicalF4L2Feedback : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
@@ -1060,10 +1060,10 @@ canonicalF4L2Feedback K s =
     (f4ThetaFull (optimizer s))
     (l2Correction (globalL2 (optimizerKernel K)))
 
-canonicalQLogControlFeedback : FullLearnerState → Int8
+canonicalQLogControlFeedback : ∀ {A} → FullLearnerState A → Int8
 canonicalQLogControlFeedback s = coefficient (qLogControl s)
 
-canonicalQLogValueFeedback : FullLearnerState → Int8
+canonicalQLogValueFeedback : ∀ {A} → FullLearnerState A → Int8
 canonicalQLogValueFeedback s = rationalCode (qLogValue s)
 
 canonicalEndogenousFeedback : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
@@ -1147,7 +1147,7 @@ canonicalCountStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → 
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
 
 canonicalQLogStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → FiniteRational
-canonicalQLogStep K s = negativeFiniteQLog8 (policyLeftWeight (canonicalPolicy K s))
+canonicalQLogStep K s = negativeFiniteQLog8 (canonicalPolicyWeightCode K s)
 
 canonicalFullStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → FullLearnerState A
 canonicalFullStep K s =
