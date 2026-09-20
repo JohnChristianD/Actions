@@ -30,7 +30,7 @@ record Topology (A : Set) : Set₁ where
 
 open Topology public
 
-Continuous : {A : Set} → {B : Set} →
+Continuous : (A B : Set) →
   Topology A → Topology B → (A → B) → Set
 Continuous τA τB f =
   ∀ {V : B → Set} →
