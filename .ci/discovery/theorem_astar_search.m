@@ -17,15 +17,19 @@
 
 :- implementation.
 
-:- import_module bool.
 :- import_module int.
 :- import_module list.
 :- import_module string.
 
+:- type semantic_class
+    ---> scan_class
+    ;    injectivity_class
+    ;    collision_class.
+
 :- type astar_node
     ---> astar_node(
         astar_plan :: list(string),
-        astar_mask :: int,
+        astar_classes :: list(semantic_class),
         astar_cost :: int,
         astar_heuristic :: int
     ).
@@ -33,17 +37,8 @@
 :- func max_depth = int.
 max_depth = 4.
 
-:- func goal_mask = int.
-goal_mask = 7.
-
-:- func scan_bit = int.
-scan_bit = 1.
-
-:- func injectivity_bit = int.
-injectivity_bit = 2.
-
-:- func collision_bit = int.
-collision_bit = 4.
+:- func goal_classes = list(semantic_class).
+goal_classes = [scan_class, injectivity_class, collision_class].
 
 :- pred has_term(string::in, string::in) is semidet.
 has_term(Text, Term) :-
@@ -67,11 +62,13 @@ is_scan_candidate(Law) :-
 is_injectivity_candidate(Law) :-
     Signature = semantic_law.signature(Law),
     Name = semantic_law.name(Law),
-    has_term(Name, "inject")
+    (
+        has_term(Name, "inject")
     ;
-    has_term(Name, "leftInverse")
+        has_term(Name, "leftInverse")
     ;
-    has_term(Signature, "leftInverse").
+        has_term(Signature, "leftInverse")
+    ).
 
 :- pred is_collision_candidate(semantic_law::in) is semidet.
 is_collision_candidate(Law) :-
@@ -83,43 +80,48 @@ is_collision_candidate(Law) :-
         has_term(Signature, "ObservationTaskFactorization")
     ;
         (
-            has_term(Signature, "observe")
-        ,
+            has_term(Signature, "observe"),
             has_term(Signature, "≢")
         )
     ).
 
-:- pred candidate_bit(semantic_law::in, int::out) is semidet.
-candidate_bit(Law, Bit) :-
+:- pred candidate_class(semantic_law::in, semantic_class::out) is semidet.
+candidate_class(Law, Class) :-
     (
         is_collision_candidate(Law)
     ->
-        Bit = collision_bit
+        Class = collision_class
     ;
         is_injectivity_candidate(Law)
     ->
-        Bit = injectivity_bit
+        Class = injectivity_class
     ;
         is_scan_candidate(Law)
     ->
-        Bit = scan_bit
+        Class = scan_class
     ).
 
 :- pred candidate_law(semantic_law::in) is semidet.
 candidate_law(Law) :-
     semantic_law.reflexive(Law) = no,
-    candidate_bit(Law, _).
+    candidate_class(Law, _).
 
-:- pred missing_class_count(int::in, int::out) is det.
-missing_class_count(Mask, Missing) :-
-    CountScan = (if (Mask / scan_bit) = 0 then 1 else 0),
-    CountInjectivity = (if (Mask / injectivity_bit) = 0 then 1 else 0),
-    CountCollision = (if (Mask / collision_bit) = 0 then 1 else 0),
-    Missing = CountScan + CountInjectivity + CountCollision.
+:- func class_present(semantic_class, list(semantic_class)) = bool.
+class_present(Class, Classes) =
+    (if list.member(Class, Classes) then yes else no).
+
+:- pred missing_class_count(list(semantic_class)::in, int::out) is det.
+missing_class_count(Classes, Missing) :-
+    Missing =
+        list.length(
+            list.filter(
+                (pred(Class::in) is semidet :-
+                    not list.member(Class, Classes)),
+                goal_classes)).
 
 :- func initial_node = astar_node.
 initial_node =
-    astar_node([], 0, 0, 3).
+    astar_node([], [], 0, 3).
 
 :- func node_f(astar_node) = int.
 node_f(Node) =
@@ -153,20 +155,10 @@ frontier_insert(Node, [Head | Tail], Result) :-
         Result = [Head | TailResult]
     ).
 
-:- pred find_bit_for_id(string::in, list(semantic_law)::in, int::out) is semidet.
-find_bit_for_id(Id, [Law | Laws], Bit) :-
-    (
-        law_id(Law) = Id,
-        candidate_bit(Law, Bit)
-    ;
-        find_bit_for_id(Id, Laws, Bit)
-    ).
-
 :- pred expand_node(astar_node::in, list(semantic_law)::in,
     list(astar_node)::out) is det.
 expand_node(Node, Laws, Children) :-
     Plan = astar_node.astar_plan(Node),
-    Cost = astar_node.astar_cost(Node),
     list.filter(
         (pred(Law::in) is semidet :-
             candidate_law(Law),
@@ -186,12 +178,19 @@ expand_candidates([], _, Acc, Children) :-
     list.reverse(Acc, Children).
 expand_candidates([Law | Laws], Node, Acc0, Children) :-
     Id = law_id(Law),
-    candidate_bit(Law, Bit),
-    NewMask = astar_node.astar_mask(Node) / Bit,
+    candidate_class(Law, Class),
+    OldClasses = astar_node.astar_classes(Node),
+    (
+        list.member(Class, OldClasses)
+    ->
+        NewClasses = OldClasses
+    ;
+        NewClasses = [Class | OldClasses]
+    ),
     NewCost = astar_node.astar_cost(Node) + 1,
-    missing_class_count(NewMask, NewHeuristic),
+    missing_class_count(NewClasses, NewHeuristic),
     NewPlan = [Id | astar_node.astar_plan(Node)],
-    Child = astar_node(NewPlan, NewMask, NewCost, NewHeuristic),
+    Child = astar_node(NewPlan, NewClasses, NewCost, NewHeuristic),
     expand_candidates(Laws, Node, [Child | Acc0], Children).
 
 :- pred pop_best(
@@ -218,33 +217,21 @@ pop_best_acc([Candidate | Rest], Best0, Acc0, Best, Remaining) :-
         pop_best_acc(Rest, Best0, [Candidate | Acc0], Best, Remaining)
     ).
 
-:- pred collect_goals(
-    int::in,
-    int::in,
-    list(string)::in,
-    list(list(string))::in,
-    list(list(string))::out,
-    int::out,
-    io::di, io::uo) is det.
-collect_goals(_, _, _, Acc, Acc, 0, !IO).
-collect_goals(Count, MaxResults, Plan, Acc0, Acc, Added, !IO) :-
-    (
-        Count =< 0
-    ->
-        Acc = Acc0,
-        Added = 0
-    ;
-        MaxResults =< list.length(Acc0)
-    ->
-        Acc = Acc0,
-        Added = 0
-    ;
-        Acc1 = [Plan | Acc0],
-        Acc = Acc1,
-        Added = 1
-    ).
+:- pred insert_children(
+    list(astar_node)::in,
+    list(astar_node)::in,
+    list(astar_node)::out) is det.
+insert_children([], Frontier, Frontier).
+insert_children([Node | Nodes], Frontier0, Frontier) :-
+    frontier_insert(Node, Frontier0, Frontier1),
+    insert_children(Nodes, Frontier1, Frontier).
 
-:- pred astar_loop(
+:- pred goal_node(astar_node::in) is semidet.
+goal_node(Node) :-
+    Missing = astar_node.astar_heuristic(Node),
+    Missing = 0.
+
+:- pred astar_collect(
     list(semantic_law)::in,
     list(astar_node)::in,
     int::in,
@@ -253,29 +240,22 @@ collect_goals(Count, MaxResults, Plan, Acc0, Acc, Added, !IO) :-
     list(list(string))::in,
     list(list(string))::out,
     io::di, io::uo) is det.
-astar_loop(_, [], _, _, _, Results, Results, !IO).
-astar_loop(_, _, Expansions, MaxExpansions, MaxResults, Results, Results, !IO) :-
+astar_collect(_, [], _, _, _, Results, Results, !IO).
+astar_collect(_, _, Expansions, MaxExpansions, MaxResults,
+    Results, Results, !IO) :-
     Expansions >= MaxExpansions,
-    MaxResults >= list.length(Results).
-astar_loop(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
+    list.length(Results) >= MaxResults.
+astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     Results0, Results, !IO) :-
     Expansions < MaxExpansions,
-    MaxResults > list.length(Results0),
+    list.length(Results0) < MaxResults,
     pop_best(Frontier0, Node, Frontier1),
-    Mask = astar_node.astar_mask(Node),
-    Plan = astar_node.astar_plan(Node),
     (
-        Mask = goal_mask
+        goal_node(Node)
     ->
-        collect_goals(
-            1,
-            MaxResults,
-            Plan,
-            Results0,
-            Results1,
-            _,
-            !IO),
-        astar_loop(
+        Plan = astar_node.astar_plan(Node),
+        Results1 = [Plan | Results0],
+        astar_collect(
             Laws,
             Frontier1,
             Expansions,
@@ -289,7 +269,7 @@ astar_loop(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     ->
         expand_node(Node, Laws, Children),
         insert_children(Children, Frontier1, Frontier2),
-        astar_loop(
+        astar_collect(
             Laws,
             Frontier2,
             Expansions + 1,
@@ -299,7 +279,7 @@ astar_loop(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
             Results,
             !IO)
     ;
-        astar_loop(
+        astar_collect(
             Laws,
             Frontier1,
             Expansions + 1,
@@ -310,15 +290,6 @@ astar_loop(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
             !IO)
     ).
 
-:- pred insert_children(
-    list(astar_node)::in,
-    list(astar_node)::in,
-    list(astar_node)::out) is det.
-insert_children([], Frontier, Frontier).
-insert_children([Node | Nodes], Frontier0, Frontier) :-
-    frontier_insert(Node, Frontier0, Frontier1),
-    insert_children(Nodes, Frontier1, Frontier).
-
 search_collision_compositions(Laws, MaxResults, Results, !IO) :-
     list.filter(candidate_law, Laws, CandidateLaws),
     (
@@ -326,10 +297,9 @@ search_collision_compositions(Laws, MaxResults, Results, !IO) :-
     ->
         Results = []
     ;
-        Frontier0 = [initial_node],
-        astar_loop(
+        astar_collect(
             CandidateLaws,
-            Frontier0,
+            [initial_node],
             0,
             500,
             MaxResults,
@@ -338,10 +308,6 @@ search_collision_compositions(Laws, MaxResults, Results, !IO) :-
             !IO),
         list.reverse(ReversedResults, Results)
     ).
-
-search_collision_composition(Laws, Plan) :-
-    list.filter(candidate_law, Laws, CandidateLaws),
-    search_det(CandidateLaws, [initial_node], 0, Plan).
 
 :- pred search_det(
     list(semantic_law)::in,
@@ -354,7 +320,7 @@ search_det(Laws, Frontier0, Expansions, Plan) :-
     Expansions < 500,
     pop_best(Frontier0, Node, Frontier1),
     (
-        astar_node.astar_mask(Node) = goal_mask
+        goal_node(Node)
     ->
         Plan = astar_node.astar_plan(Node)
     ;
@@ -364,3 +330,6 @@ search_det(Laws, Frontier0, Expansions, Plan) :-
         search_det(Laws, Frontier2, Expansions + 1, Plan)
     ).
 
+search_collision_composition(Laws, Plan) :-
+    list.filter(candidate_law, Laws, CandidateLaws),
+    search_det(CandidateLaws, [initial_node], 0, Plan).
