@@ -1,16 +1,42 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; subst; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Nat.Properties using (+-identityʳ; +-suc)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInjective)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (Σ; _×_; _,_)
 open import Data.Empty using (⊥)
+open import Data.Unit using (⊤)
 open import Relation.Nullary using (¬_)
+------------------------------------------------------------------------
+-- Minimal topology foundation. Continuity is a concrete property over
+-- explicit topologies. Algebraic structure remains topology-independent.
+------------------------------------------------------------------------
+
+record Topology (A : Set) : Set₁ where
+  field
+    isOpen : (A → Set) → Set
+    emptyOpen : isOpen (λ _ → ⊥)
+    wholeOpen : isOpen (λ _ → ⊤)
+    intersectionOpen : ∀ {U V} → isOpen U → isOpen V →
+      isOpen (λ x → U x × V x)
+    unionOpen : ∀ {I : Set} (U : I → A → Set) →
+      (∀ i → isOpen (U i)) →
+      isOpen (λ x → Σ I (λ i → U i x))
+
+open Topology public
+
+Continuous : {A B : Set} →
+  Topology A → Topology B → (A → B) → Set
+Continuous τA τB f =
+  ∀ {V : B → Set} →
+  isOpen τB V →
+  isOpen τA (λ x → V (f x))
+
 
 record Int8 : Set where
   constructor int8
