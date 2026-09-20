@@ -51,7 +51,7 @@ exact_universal_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse".
 
 
-:- func emergent_finite_int8_dependency = string.
+:- func finite_feature_continuity_dependency = string.
 finite_feature_continuity_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalFiniteFeatureContinuousLeftInverseOnDiscreteTopologies".
 
