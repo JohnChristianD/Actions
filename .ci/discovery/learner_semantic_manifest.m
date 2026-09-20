@@ -51,9 +51,20 @@ parse_line(Line, Law) :-
 :- func parse_dependencies(string) = list(string).
 parse_dependencies("") = [].
 parse_dependencies(Text) =
-    list.filter(
-        (pred(X::in) is semidet :- string.strip(X) \= ""),
-        string.split_at_string(";", Text)).
+    parse_dependency_parts(string.split_at_string(";", Text)).
+
+:- pred parse_dependency_parts(list(string)::in, list(string)::out) is det.
+parse_dependency_parts([], []).
+parse_dependency_parts([X | Xs], Result) :-
+    Y = string.strip(X),
+    parse_dependency_parts(Xs, Tail),
+    (
+        Y = ""
+    ->
+        Result = Tail
+    ;
+        Result = [Y | Tail]
+    ).
 
 :- pred read_lines(list(string)::in, list(semantic_law)::in,
     list(semantic_law)::out) is det.
