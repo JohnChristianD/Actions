@@ -261,8 +261,8 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
     (canonicalPersistentGRUPreservation K s)
 
 ------------------------------------------------------------------------
--- This theorem is intentionally independent of TSTS, program search,
--- evolutionary search, PVS, and JAxtar.  It is a property of the
+-- This theorem is intentionally independent of external search systems,
+-- program synthesis, PVS, and JAxtar.  It is a property of the
 -- executable learner itself.
 --
 -- An arbitrary attention-state replacement is policy-invariant and
