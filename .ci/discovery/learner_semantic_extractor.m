@@ -327,7 +327,7 @@ write_manifest(All, Laws, !IO) :-
         io.write_string(Stream,
             "source|name|reflexive|composite|signature|dependencies\n", !IO),
         write_manifest_entries(All, Laws, Stream, !IO),
-        io.close_output(Stream)
+        io.close_output(Stream, !IO)
     ;
         Result = error(_),
         io.write_string(
@@ -390,10 +390,9 @@ extract_semantics(!IO) :-
             string.int_to_string(CompositeCount) ++ "\n",
             !IO)
     ;
-        Result = error(Error),
+        Result = error(_),
         io.write_string(
-            "ERROR: semantic extraction failed: " ++
-            Error ++ "\n",
+            "ERROR: semantic extraction failed\n",
             !IO),
         io.set_exit_status(1, !IO)
     ).
