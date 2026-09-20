@@ -49,10 +49,16 @@ parse_line(Line, Law) :-
         Source, Name, Reflexive, Composite, Signature, Dependencies).
 
 :- pred parse_dependencies(string::in, list(string)::out) is det.
-parse_dependencies("", []).
 parse_dependencies(Text, Dependencies) :-
-    Text \= "",
-    parse_dependency_parts(string.split_at_string(";", Text), Dependencies).
+    (
+        Text = ""
+    ->
+        Dependencies = []
+    ;
+        parse_dependency_parts(
+            string.split_at_string(";", Text),
+            Dependencies)
+    ).
 
 :- pred parse_dependency_parts(list(string)::in, list(string)::out) is det.
 parse_dependency_parts([], []).
