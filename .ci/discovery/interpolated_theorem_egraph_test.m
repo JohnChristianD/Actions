@@ -26,6 +26,12 @@ main(!IO) :-
             (pred(L::in) is semidet :-
                 semantic_law.composite(L) = yes),
             Laws)),
+    ExactUAPId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse",
+            ContinuousBoundaryId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies",
+            list.member(ExactUAPLaw, Laws),
+            law_id(ExactUAPLaw) = ExactUAPId,
+            list.member(ContinuousBoundaryLaw, Laws),
+            law_id(ContinuousBoundaryLaw) = ContinuousBoundaryId,
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
