@@ -34,16 +34,16 @@ jobs:
         uses: cachix/install-nix-action@b85815f71a6de0ddee80b8a80a98d43f4bcc66c7
 
       - name: Verify pinned toolchain
-        run: nix develop --command bash -lc './.ci/ci.sh versions'
+        run: nix develop --command bash -lc 'bash ./.ci/ci.sh versions'
 
       - name: Run Agda kernel lane
-        run: nix develop --command bash -lc './.ci/ci.sh agda-safe'
+        run: nix develop --command bash -lc 'bash ./.ci/ci.sh agda-safe'
 
       - name: Run Mercury theorem verifier lane
-        run: nix develop --command bash -lc './.ci/ci.sh mercury'
+        run: nix develop --command bash -lc 'bash ./.ci/ci.sh mercury'
 
       - name: Run Mercury semantic e-graph discovery lane
-        run: nix develop --command bash -lc './.ci/ci.sh discovery'
+        run: nix develop --command bash -lc 'bash ./.ci/ci.sh discovery'
 
       - name: Run canonical source-policy surface audit
-        run: nix develop --command bash -lc './.ci/ci.sh surface'
+        run: nix develop --command bash -lc 'bash ./.ci/ci.sh surface'
