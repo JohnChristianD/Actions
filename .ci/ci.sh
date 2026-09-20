@@ -82,9 +82,27 @@ run_surface() {
   done < <(find . -type f -not -path './.git/*' -name '*Monolith.agda' -print0)
 
   local bad_file
+  while IFS= read -r -d '' bad_file; do
+    local path="${bad_file#./}"
+    case "$path" in
+      .ci/ci.sh)
+        continue
+        ;;
+      *.sh|*.bash|*.zsh|*.fish|*.cmd|*.bat|*.ps1|*.command|*.py|*.java|*.kt|*.scala|*.groovy|*.clj|*.cljs|*.js|*.mjs|*.cjs|*.ts|*.tsx|*.elm|*.purs|*.hs|*.lhs|*.cabal|*.c|*.h|*.cc|*.cpp|*.cxx|*.hpp|*.hxx|*.cs|*.fs|*.fsx|*.vb|*.csproj|*.fsproj|*.vbproj|*.sln|*.html|*.htm|*.css|*.tex|*.ltx|*.sty|*.cls|*.bib|*.scm|*.scheme|*.ss)
+        printf 'ERROR: forbidden legacy/noncanonical source file: %s\n' "$path"
+        exit 1
+        ;;
+      *)
+        ;;
+    esac
+  done < <(find . -type f -not -path './.git/*' -print0)
+
+  printf '%s\n' "single-theorem-source=TheoremsMonolith.agda; single-learner-source=CanonicalLearnerMonolith.agda; generated-Agda=absent; wiki=absent"
+  printf '%s\n' "surface=clean; legacy Scheme/Guix and noncanonical language files=absent"
+}
 run_versions() {
   nix --version
-  agda --version
+  "$AGDA_COMMAND" --version
   mmc --version
 }
 
