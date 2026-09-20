@@ -1365,7 +1365,6 @@ record BoundedContinuousLeftInverseExactApproximationTheorem
         Feature
         observe
         inverse
-        Continuous
 
     exactReadoutOnBound :
       {Output : Set} →
@@ -1400,7 +1399,6 @@ boundedContinuousLeftInverseExactApproximationTheorem-from-witness :
     Feature
     observe
     inverse
-    Continuous
     bound
     embed
 boundedContinuousLeftInverseExactApproximationTheorem-from-witness
@@ -1434,7 +1432,6 @@ boundedExactApproximation-on-boundedOrbit :
     Feature
     observe
     inverse
-    Continuous
     bound
     embed
 boundedExactApproximation-on-boundedOrbit
@@ -1466,7 +1463,6 @@ boundedUniversalExactApproximation-through-continuousLeftInverse :
     Feature
     observe
     inverse
-    Continuous
     bound
     embed
 boundedUniversalExactApproximation-through-continuousLeftInverse
@@ -1645,7 +1641,6 @@ record CanonicalRecurrentBoundedExactUniversalApproximationTheorem
         Feature
         observe
         inverse
-        Continuous
 
     natCompositionInjective :
       ∀ {m n : Nat} →
@@ -1833,7 +1828,6 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         Feature
         observe
         inverse
-        Continuous
         bound
         embed
 
