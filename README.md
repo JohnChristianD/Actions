@@ -223,3 +223,20 @@ This is a cardinality contradiction, not a claim that chaotic reservoirs are req
 ## Equality-saturation e-graph boundary
 
 The Mercury implementation now contains the standard equality-saturation stages that were previously missing from the repository-specific congruence structure: e-matching, rewrite application, repeated saturation to a fixed point or iteration cap, rebuilding/congruence maintenance, e-class analysis, and cost-guided extraction. The theorem-sync gate exercises the same pipeline against the source-derived semantic manifest. It does not make Mercury a proof authority: Agda `--safe` remains authoritative.
+
+
+## Topology, import, and reservoir-universality boundary
+
+The topology statement did not require a heavyweight topology package. The canonical learner monolith defines a minimal `Topology` record directly, using only the existing `Data.Empty` (`⊥`), `Data.Unit` (`⊤`), and `Data.Product` (`Σ`, `×`) primitives. `Continuous` is an explicit property over those topologies. The discrete topology is now also instantiated explicitly; under it every function is continuous, which makes the finite-observation contradiction independent of any continuity failure.
+
+The import history is intentionally minimal. The canonical theorem monolith needs `Data.List` because its learner-replacement theorem surface uses `List`; the learner monolith does not currently use `List` and no longer imports it merely for symmetry. `Data.List.Sort` is not part of the current canonical proof lineage, and the older ordered-algebra work used custom `_≤_`/`_<` relation fields rather than a `Data.List.Sort` dependency. Those older ordered structures are not silently required by the exact-UAP proof.
+
+The 2025 reservoir-computing result by Sugiura, Ariizumi, Asai, and Azuma proves equivalence, under its reservoir-computing assumptions, between universality, the neighborhood separation property, and a uniformly continuous left inverse, and proves dense discontinuity points for universal reservoirs. The authors connect this sensitivity to chaotic reservoirs, but that last step is presented as an implication/interpretation supported by cited chaotic-reservoir studies, not as a theorem that every universal system is chaotic. The 2024 study also constructs a universal reservoir with a single output, so infinite output width is not required.
+
+A useful algebraic comparison is therefore a conditional resolution-versus-instability tradeoff, not a proved duality: rich input classes require enough distinguishability either through representational capacity/precision or through highly sensitive/discontinuous reservoir maps. This should not be conflated with sample complexity. Universality is an expressivity/property-of-a-function-space statement and does not by itself imply that training requires literally infinite data.
+
+For this repository's exact finite algebra the stronger obstruction is cardinality. The canonical orbit is injectively indexed by `Nat`, while `Int8` has only 256 values. Hence a global exact observation left inverse is impossible. Granting both observation and inverse continuity under the explicit discrete topology does not change that result. Chaotic internal dynamics also cannot evade the theorem while the exact observation remains `Int8`: the final observation map still has finite codomain.
+
+## Mercury proof-source synchronization
+
+Mercury semantic extraction now checks that `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` explicitly declares `{-# OPTIONS --safe #-}` before generating the semantic manifest. The theorem e-graph then consumes that source-derived manifest and exercises e-matching, rewrite application, saturation, rebuild, e-class analysis, and cost-guided extraction. Agda remains the proof authority; Mercury is the semantic synchronization/equality-saturation verification layer.
