@@ -79,7 +79,8 @@ jobs:
           key: agda-theorem-p1-${{ github.sha }}
           restore-keys: |
             agda-interfaces-${{ runner.os }}-2.8.0.2-2.4-
-      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+      - run: |
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
 
   agda-theorem-part2:
     name: Nix / Agda theorem partition 2
@@ -107,7 +108,8 @@ jobs:
           key: agda-theorem-p2-${{ github.sha }}
           restore-keys: |
             agda-theorem-p1-${{ github.sha }}
-      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+      - run: |
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
 
   agda-theorem-part3:
     name: Nix / Agda theorem partition 3
@@ -135,7 +137,8 @@ jobs:
           key: agda-theorem-p3-${{ github.sha }}
           restore-keys: |
             agda-theorem-p2-${{ github.sha }}
-      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+      - run: |
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
 
   agda-theorem-part4:
     name: Nix / Agda theorem partition 4
@@ -163,7 +166,8 @@ jobs:
           key: agda-theorem-p4-${{ github.sha }}
           restore-keys: |
             agda-theorem-p3-${{ github.sha }}
-      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+      - run: |
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
 
   agda-theorems:
     name: Nix / Agda canonical theorem facade
@@ -191,7 +195,8 @@ jobs:
           key: agda-theorem-root-${{ github.sha }}
           restore-keys: |
             agda-theorem-p4-${{ github.sha }}
-      - run: "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+      - run: |
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
   mercury-discovery-surface:
     name: Nix / Mercury discovery and canonical surface
