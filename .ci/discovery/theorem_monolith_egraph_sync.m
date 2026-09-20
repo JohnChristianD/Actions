@@ -234,14 +234,14 @@ main(!IO) :-
             "e-matching=on saturation=on rebuild=on eclass-analysis=on cost-extraction=on\n",
             !IO),
         io.write_string(
-            "finite-int8-continuous-left-inverse=contradicted\n"
-            "hadamard-attention-rope-prefix=connected\n"
-            "generic-finite-feature-obstruction=connected\n"
-            "finite-time-exact-readout=connected\n"
-            "finite-sample-exact-readout=connected\n"
-            "iterate-composition=connected\n"
-            "emergent-finite-exact-orbit-uap=connected\n"
-            "finite-state-action-visit-capacity=connected\n"
+            "finite-int8-continuous-left-inverse=contradicted\n" ++
+            "hadamard-attention-rope-prefix=connected\n" ++
+            "generic-finite-feature-obstruction=connected\n" ++
+            "finite-time-exact-readout=connected\n" ++
+            "finite-sample-exact-readout=connected\n" ++
+            "iterate-composition=connected\n" ++
+            "emergent-finite-exact-orbit-uap=connected\n" ++
+            "finite-state-action-visit-capacity=connected\n" ++
             "left-inverse-injectivity=connected\n",
             !IO)
     ;
