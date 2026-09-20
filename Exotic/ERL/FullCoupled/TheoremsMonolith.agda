@@ -1771,3 +1771,8 @@ record CanonicalConnectedCompositionTheorem : Set₁ where
 recurrentPrefixStepWork : Nat → Nat
 recurrentPrefixStepWork zero = zero
 recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
+
+-- Recovered Part2 theorem
+recurrentPrefixStepWork-law :
+  ∀ n → recurrentPrefixStepWork n ≡ n
+recurrentPrefixStepWork-law n = refl
