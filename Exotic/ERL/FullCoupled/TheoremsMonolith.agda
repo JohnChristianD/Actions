@@ -17,7 +17,7 @@ open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInj
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _×_; _,_)
 open import Data.Empty using (⊥)
-open import Data.Unit using (⊤)
+open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
