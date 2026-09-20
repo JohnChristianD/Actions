@@ -2361,8 +2361,6 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         n
         h
 
-    hadamardAttentionRopePrefixComposition :
-      CanonicalHadamardAttentionRopePrefixCompositionTheorem
 
     continuousReadoutTransfer :
       ∀ {Feature Output : Set}
@@ -2530,6 +2528,5 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalIterateComposition
     canonicalAperiodic-theorem
     canonicalNoNontrivialFiniteCycle-theorem
-    canonical-hadamard-attention-rope-prefix-composition-theorem
     canonical-finite-exact-orbit-uap-composition-theorem
     finiteStateActionVisitInjectionImpossible
