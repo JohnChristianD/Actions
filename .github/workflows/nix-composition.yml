@@ -43,17 +43,7 @@ jobs:
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
 
-      - name: Verify pinned toolchain
-        run: nix develop --command bash -lc 'bash ./.ci/ci.sh versions'
+      - name: Run complete pinned proof surface
+        run: nix develop --command bash -lc 'bash ./.ci/ci.sh all'
 
-      - name: Run Agda kernel lane
-        run: nix develop --command bash -lc 'bash ./.ci/ci.sh agda-safe'
 
-      - name: Run Mercury theorem verifier lane
-        run: nix develop --command bash -lc 'bash ./.ci/ci.sh mercury'
-
-      - name: Run Mercury semantic e-graph discovery lane
-        run: nix develop --command bash -lc 'bash ./.ci/ci.sh discovery'
-
-      - name: Run canonical source-policy surface audit
-        run: nix develop --command bash -lc 'bash ./.ci/ci.sh surface'
