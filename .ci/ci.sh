@@ -100,7 +100,7 @@ run_surface() {
   local legacy_term_hits
   legacy_term_hits="$(
     grep -RniE --exclude-dir=.git --exclude=ci.sh \
-      'guix|guile|(^|[^[:alnum:]])scheme([^[:alnum:]]|$)|evolutionary-search|evolutionary algorithm' . || true
+      'guix|guile|(^|[^[:alnum:]])scheme([^[:alnum:]]|$)|evolutionary-search|evolutionary algorithm|Sparsemax2Pair|fixedTemperatureSparsemax|ActionScore|policyLeftWeight|TSTS|Gresher' . || true
   )"
   if [[ -n "$legacy_term_hits" ]]; then
     printf '%s\n' "ERROR: retired execution/search terminology remains in the repository:"
