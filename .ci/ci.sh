@@ -9,11 +9,11 @@ agda_safe_files=(
 
 run_agda_safe() {
   agda --version
-  agda --safe -l standard-library "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+  agda --safe -i "$AGDA_STDLIB" "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
 
   for file in "${agda_safe_files[@]}"; do
     printf '==> Agda --safe %s\n' "$file"
-    agda --safe -l standard-library "$file"
+    agda --safe -i "$AGDA_STDLIB" "$file"
   done
 }
 
