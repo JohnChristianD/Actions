@@ -283,10 +283,8 @@ main(!IO) :-
             "finite-sample-exact-readout=connected\n"
             "iterate-composition=connected\n"
             "topology-convex-concave=connected\n"
-
             "finite-state-action-visit-capacity=connected\n"
-            "left-inverse-injectivity=connected\n"
-            "hadamard-attention-rope-prefix=connected\n",
+            "left-inverse-injectivity=connected\n",
             !IO)
     ;
         io.write_string(
