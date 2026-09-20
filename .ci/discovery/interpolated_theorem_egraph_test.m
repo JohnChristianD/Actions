@@ -28,6 +28,14 @@ main(!IO) :-
             Laws)),
     ExactUAPId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse",
     ContinuousBoundaryId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies",
+    InjectivityId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#leftInverse-observation-injective",
+    FiniteFeatureId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalFiniteFeatureContinuousLeftInverseOnDiscreteTopologies",
+    FiniteTimeId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteTimeExactUniversalReadout",
+    FiniteSampleId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteSampleExactUniversalReadout",
+    IterateCompositionId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition",
+    ConvexConcaveId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem",
+    RegretId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteHorizonRegretComposition",
+    VisitId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible",
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -47,6 +55,22 @@ main(!IO) :-
         law_id(ExactUAPLaw) = ExactUAPId,
         list.member(ContinuousBoundaryLaw, Laws),
         law_id(ContinuousBoundaryLaw) = ContinuousBoundaryId,
+        list.member(InjectivityLaw, Laws),
+        law_id(InjectivityLaw) = InjectivityId,
+        list.member(FiniteFeatureLaw, Laws),
+        law_id(FiniteFeatureLaw) = FiniteFeatureId,
+        list.member(FiniteTimeLaw, Laws),
+        law_id(FiniteTimeLaw) = FiniteTimeId,
+        list.member(FiniteSampleLaw, Laws),
+        law_id(FiniteSampleLaw) = FiniteSampleId,
+        list.member(IterateCompositionLaw, Laws),
+        law_id(IterateCompositionLaw) = IterateCompositionId,
+        list.member(ConvexConcaveLaw, Laws),
+        law_id(ConvexConcaveLaw) = ConvexConcaveId,
+        list.member(RegretLaw, Laws),
+        law_id(RegretLaw) = RegretId,
+        list.member(VisitLaw, Laws),
+        law_id(VisitLaw) = VisitId,
         e_match(
             papp("proof-compose", [
                 pvar("A"),

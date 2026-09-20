@@ -47,6 +47,39 @@ exact_universal_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse".
 
 
+:- func finite_feature_continuity_dependency = string.
+finite_feature_continuity_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalFiniteFeatureContinuousLeftInverseOnDiscreteTopologies".
+
+:- func finite_time_exact_readout_dependency = string.
+finite_time_exact_readout_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteTimeExactUniversalReadout".
+
+:- func finite_sample_exact_readout_dependency = string.
+finite_sample_exact_readout_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalFiniteSampleExactUniversalReadout".
+
+:- func iterate_composition_dependency = string.
+iterate_composition_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalIterateComposition".
+
+:- func convex_concave_dependency = string.
+convex_concave_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem".
+
+:- func finite_regret_dependency = string.
+finite_regret_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteHorizonRegretComposition".
+
+:- func finite_visit_dependency = string.
+finite_visit_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible".
+
+:- func injectivity_dependency = string.
+injectivity_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#leftInverse-observation-injective".
+
+
 :- func semantic_rewrite_rules = list(rewrite_rule).
 
 
@@ -237,6 +270,30 @@ main(!IO) :-
             semantic_law.dependencies(TargetLaw)),
         list.member(
             exact_universal_uap_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_feature_continuity_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_time_exact_readout_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_sample_exact_readout_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            iterate_composition_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            convex_concave_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_regret_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            finite_visit_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            injectivity_dependency,
             semantic_law.dependencies(TargetLaw))
     ->
         io.write_string(
@@ -249,6 +306,14 @@ main(!IO) :-
             "bounded-exact-approximation=connected "
             "infinite-state-orbit=connected "
             "pigeonhole-global-int8-uap=refuted "
+            "generic-finite-feature-obstruction=connected "
+            "finite-time-exact-readout=connected "
+            "finite-sample-exact-readout=connected "
+            "iterate-composition=connected "
+            "topology-convex-concave=connected "
+            "finite-regret-composition=connected "
+            "finite-state-action-visit-capacity=connected "
+            "left-inverse-injectivity=connected "
             "e-matching=on "
             "saturation=on "
             "rebuild=on "
