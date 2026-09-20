@@ -2093,7 +2093,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         C.FullLearnerState Feature Output observe inverse target
         midpoint combineOutput leOutput
 
-    finiteHorizonRegretComposition :
+    finiteHorizonRegretCompositionTheorem :
       ∀ (regret : Nat → Nat)
       (suffix : Nat → Nat → Nat)
       (instant : Nat → Nat)
@@ -2105,7 +2105,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       (m n : Nat) →
       regret (m + n) ≡ regret m + suffix m n
 
-    finiteStateActionVisitInjectionImpossible :
+    finiteStateActionVisitInjectionCapacityTheorem :
       ∀ (stateCount actionCount : Nat)
       (visitCode : Nat → Fin (stateCount * actionCount)) →
       ¬ (∀ {m n} → visitCode m ≡ visitCode n → m ≡ n)
