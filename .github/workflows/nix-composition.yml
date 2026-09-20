@@ -20,7 +20,7 @@ permissions:
 jobs:
   agda-learner:
     name: Nix / Agda learner proof surface
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -40,6 +40,17 @@ jobs:
           agda-stdlib-version: '2.4'
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -71,7 +82,7 @@ jobs:
   agda-theorem-part1:
     name: Nix / Agda theorem partition 1
     needs: agda-learner
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -87,6 +98,17 @@ jobs:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
       - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -142,7 +164,7 @@ jobs:
   agda-theorem-part2:
     name: Nix / Agda theorem partition 2
     needs: agda-theorem-part1
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -158,6 +180,17 @@ jobs:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
       - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -219,7 +252,7 @@ jobs:
   agda-theorem-part3:
     name: Nix / Agda theorem partition 3
     needs: agda-theorem-part2
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -235,6 +268,17 @@ jobs:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
       - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -296,7 +340,7 @@ jobs:
   agda-theorem-part4:
     name: Nix / Agda theorem partition 4
     needs: agda-theorem-part3
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -312,6 +356,17 @@ jobs:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
       - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -373,7 +428,7 @@ jobs:
   agda-theorem-part5:
     name: Nix / Agda theorem partition 5
     needs: agda-theorem-part4
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -389,6 +444,17 @@ jobs:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
       - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -450,7 +516,7 @@ jobs:
   agda-theorems:
     name: Nix / Agda canonical theorem facade
     needs: agda-theorem-part5
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
@@ -466,6 +532,17 @@ jobs:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
       - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Provision 4 GiB swap for Agda
+        run: |
+          if ! swapon --show=NAME | grep -qx '/swapfile'; then
+            if test ! -e /swapfile; then
+              sudo fallocate -l 4G /swapfile
+            fi
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
       - name: Configure CI Agda project
         run: |
           cat > ci-composition.agda-lib <<'EOF'
@@ -517,7 +594,7 @@ jobs:
 
   mercury-discovery-surface:
     name: Nix / Mercury discovery and canonical surface
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     defaults:
       run:
