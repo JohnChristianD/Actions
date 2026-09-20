@@ -18,6 +18,7 @@
 
 :- pred read_manifest(list(semantic_law)::out, io::di, io::uo) is det.
 :- func law_id(semantic_law) = string.
+:- func law_source(semantic_law) = string.
 :- func law_name(semantic_law) = string.
 :- func law_signature(semantic_law) = string.
 :- func law_dependencies(semantic_law) = list(string).
@@ -79,9 +80,11 @@ read_manifest(Laws, !IO) :-
         Laws = []
     ).
 
+law_source(Law) = semantic_law.source(Law).
+
 law_id(Law) = Id :-
-    Source = semantic_law.source(Law),
-    Name = semantic_law.name(Law),
+    Source = law_source(Law),
+    Name = law_name(Law),
     Prefix = string.append(Source, "#"),
     Id = string.append(Prefix, Name).
 
