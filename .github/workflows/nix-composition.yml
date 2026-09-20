@@ -100,6 +100,14 @@ jobs:
           path: .
       - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+      - name: Make predecessor interfaces authoritative
+        run: |
+          while IFS= read -r -d '' iface; do
+            src="${iface%.agdai}.agda"
+            if test -f "$src"; then
+              touch -d '@1' "$src"
+            fi
+          done < <(find Exotic -type f -name '*.agdai' -print0)
       - name: Verify learner interface handoff
         run: |
           test -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
@@ -163,6 +171,14 @@ jobs:
           path: .
       - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+      - name: Make predecessor interfaces authoritative
+        run: |
+          while IFS= read -r -d '' iface; do
+            src="${iface%.agdai}.agda"
+            if test -f "$src"; then
+              touch -d '@1' "$src"
+            fi
+          done < <(find Exotic -type f -name '*.agdai' -print0)
 
       - name: Prefer downloaded Agda interfaces
         run: |
@@ -232,6 +248,14 @@ jobs:
           path: .
       - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+      - name: Make predecessor interfaces authoritative
+        run: |
+          while IFS= read -r -d '' iface; do
+            src="${iface%.agdai}.agda"
+            if test -f "$src"; then
+              touch -d '@1' "$src"
+            fi
+          done < <(find Exotic -type f -name '*.agdai' -print0)
 
       - name: Prefer downloaded Agda interfaces
         run: |
@@ -301,6 +325,14 @@ jobs:
           path: .
       - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+      - name: Make predecessor interfaces authoritative
+        run: |
+          while IFS= read -r -d '' iface; do
+            src="${iface%.agdai}.agda"
+            if test -f "$src"; then
+              touch -d '@1' "$src"
+            fi
+          done < <(find Exotic -type f -name '*.agdai' -print0)
 
       - name: Prefer downloaded Agda interfaces
         run: |
@@ -370,6 +402,14 @@ jobs:
           path: .
       - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
+      - name: Make predecessor interfaces authoritative
+        run: |
+          while IFS= read -r -d '' iface; do
+            src="${iface%.agdai}.agda"
+            if test -f "$src"; then
+              touch -d '@1' "$src"
+            fi
+          done < <(find Exotic -type f -name '*.agdai' -print0)
 
       - name: Prefer downloaded Agda interfaces
         run: |
