@@ -10,7 +10,7 @@ open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInj
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _×_; _,_)
 open import Data.Empty using (⊥)
-open import Data.Unit using (⊤)
+open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
 ------------------------------------------------------------------------
 -- Minimal topology foundation. Continuity is a concrete property over
@@ -29,6 +29,29 @@ record Topology (A : Set) : Set₁ where
       isOpen (λ x → Σ I (λ i → U i x))
 
 open Topology public
+
+------------------------------------------------------------------------
+-- Explicit discrete topology boundary.
+--
+-- Every predicate is open, so continuity is automatic.  In this finite
+-- algebra, therefore, continuity cannot repair a missing global inverse.
+------------------------------------------------------------------------
+
+discreteTopology : ∀ (A : Set) → Topology A
+discreteTopology A =
+  record
+    { isOpen = λ _ → ⊤
+    ; emptyOpen = tt
+    ; wholeOpen = tt
+    ; intersectionOpen = λ _ _ → tt
+    ; unionOpen = λ _ _ → tt
+    }
+
+continuous-under-discrete-topology :
+  ∀ {A B : Set} (f : A → B) →
+  Continuous A B (discreteTopology A) (discreteTopology B) f
+continuous-under-discrete-topology f = λ {V} _ → tt
+
 
 Continuous : (A B : Set) →
   Topology A → Topology B → (A → B) → Set₁
