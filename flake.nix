@@ -4,14 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee1263483043c0e50321eb4ec7ae";
 
-
-    agda-stdlib = {
-      url = "github:agda/agda-stdlib/v2.4";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, agda-stdlib }:
+  outputs = { self, nixpkgs }:
     let
       systems = [
         "x86_64-linux"
@@ -42,7 +37,6 @@
             ];
 
             shellHook = ''
-              export AGDA_STDLIB="${agda-stdlib}/src"
               printf 'agda=%s\n' "$(agda --version | head -n 1)"
               printf 'mercury=%s\n' "$(mmc --version | head -n 1)"
             '';
