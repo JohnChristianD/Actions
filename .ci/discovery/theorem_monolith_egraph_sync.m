@@ -183,6 +183,9 @@ write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, 
             "  \"continuous_left_inverse_transfer\": \"connected\",\n" ++
             "  \"exact_universal_readout\": \"connected\",\n" ++
             "  \"bounded_exact_approximation\": \"connected\",\n" ++
+            "  \"s4s5_recurrent_scan\": \"connected\",\n" ++
+            "  \"finite_automata_direct_product\": \"connected\",\n" ++
+            "  \"information_preserving_task_factorization\": \"connected\",\n" ++
             "  \"infinite_state_orbit\": \"connected\",\n" ++
             "  \"pigeonhole_contradiction\": \"connected\",\n" ++
             "  \"global_int8_uap\": \"refuted\",\n" ++
@@ -257,6 +260,9 @@ main(!IO) :-
             "finite-time-exact-readout=connected\n" ++
             "finite-sample-exact-readout=connected\n" ++
             "iterate-composition=connected\n" ++
+            "s4s5-recurrent-scan=connected\n" ++
+            "finite-automata-direct-product=connected\n" ++
+            "information-preserving-task-factorization=connected\n" ++
             "emergent-finite-exact-orbit-uap=connected\n" ++
             "finite-state-action-visit-capacity=connected\n" ++
             "left-inverse-injectivity=connected\n",
