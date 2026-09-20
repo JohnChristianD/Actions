@@ -14,6 +14,7 @@ open import Data.Empty using (⊥)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (_<ᵇ_; _/_)
 open import Data.List.Base using (List; []; _∷_)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 phase4-period4 :
@@ -485,6 +486,82 @@ canonicalGRU-recurrent-associative-scan-theorem =
     C.endomorphismAssociative
     C.recurrentPrefix-correct
     C.recurrentPrefix-split
+
+
+------------------------------------------------------------------------
+-- S4/S5-style scan algebra, without claiming the canonical learner is
+-- literally the linear S4/S5 architecture.
+--
+-- The exact shared algebraic core is:
+--   * state transitions induce endomorphisms,
+--   * endomorphisms compose associatively,
+--   * recurrent prefixes are correct,
+--   * prefixes split by associative composition.
+--
+-- S5's distinctive computational point is the associative scan; S4 and
+-- S5 remain broader architectural families than this abstract law.
+------------------------------------------------------------------------
+
+record S4PlusS5RecurrentScanTheorem (State Input : Set) : Set₁ where
+  constructor s4PlusS5RecurrentScanTheorem
+  field
+    recurrentScan :
+      RecurrentAssociativeScanTheorem State Input
+    identityAction :
+      ∀ (s : State) →
+      C.applyEndomorphism
+        C.identityEndomorphism s ≡ s
+
+open S4PlusS5RecurrentScanTheorem public
+
+canonical-S4+S5-recurrent-scan-theorem :
+  S4PlusS5RecurrentScanTheorem C.GRUState C.Int8
+canonical-S4+S5-recurrent-scan-theorem =
+  s4PlusS5RecurrentScanTheorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    (λ s → refl)
+
+
+------------------------------------------------------------------------
+-- Exact synchronous direct-product closure for recurrent finite-state
+-- machines.  No new learner semantics are introduced: this is a generic
+-- theorem over the recurrent interface already used by the learner.
+------------------------------------------------------------------------
+
+productRecurrentNetwork :
+  ∀ {StateA StateB Input : Set} →
+  C.RecurrentNetwork StateA Input →
+  C.RecurrentNetwork StateB Input →
+  C.RecurrentNetwork (StateA × StateB) Input
+productRecurrentNetwork RA RB =
+  C.recurrentNetwork
+    (λ st x →
+      (C.runNetwork RA (proj₁ st) x ,
+       C.runNetwork RB (proj₂ st) x))
+
+productRecurrentPrefix-correct :
+  ∀ {StateA StateB Input : Set}
+  (RA : C.RecurrentNetwork StateA Input)
+  (RB : C.RecurrentNetwork StateB Input)
+  (xs : Nat → Input)
+  (n : Nat)
+  (s : StateA)
+  (t : StateB) →
+  C.recurrentPrefixState
+    (productRecurrentNetwork RA RB)
+    xs n
+    (s , t)
+  ≡
+  (C.recurrentPrefixState RA xs n s ,
+   C.recurrentPrefixState RB xs n t)
+productRecurrentPrefix-correct RA RB xs zero s t = refl
+productRecurrentPrefix-correct RA RB xs (suc n) s t =
+  cong₂
+    (λ a b →
+      (C.runNetwork RA a (xs n) ,
+       C.runNetwork RB b (xs n)))
+    (cong proj₁ (productRecurrentPrefix-correct RA RB xs n s t))
+    (cong proj₂ (productRecurrentPrefix-correct RA RB xs n s t))
 
 ------------------------------------------------------------------------
 -- Explicit equality-composition theorem.
