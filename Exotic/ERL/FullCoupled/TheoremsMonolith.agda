@@ -13,8 +13,8 @@ open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (_<ᵇ_; _/_)
-open import Data.List.Base using (List; []; _∷_)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.List.Base using (List; []; _∷_; _++_)
+open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 phase4-period4 :
@@ -486,6 +486,208 @@ canonicalGRU-recurrent-associative-scan-theorem =
     C.endomorphismAssociative
     C.recurrentPrefix-correct
     C.recurrentPrefix-split
+
+------------------------------------------------------------------------
+-- Stronger free-monoid formulation of the recurrent prefix scan.
+--
+-- The Nat-indexed split law is equivalent to a word/prefix action.  With
+-- the convention that a sequence is executed left-to-right, the resulting
+-- map is a monoid homomorphism into the opposite endomorphism monoid:
+--
+--   Prefix (xs ++ ys) = Prefix xs ⊙ Prefix ys
+--
+-- where f ⊙ g means g ∘ f.  This is stronger than merely recording one
+-- associativity equation for three endomorphisms.
+------------------------------------------------------------------------
+
+prefixOp :
+  ∀ {State : Set} →
+  C.Endomorphism State →
+  C.Endomorphism State →
+  C.Endomorphism State
+prefixOp f g = C.composeEndomorphism g f
+
+prefixListEndomorphism :
+  ∀ {State Input : Set} →
+  C.RecurrentNetwork State Input →
+  List Input →
+  C.Endomorphism State
+prefixListEndomorphism R [] =
+  C.identityEndomorphism
+prefixListEndomorphism R (x ∷ xs) =
+  C.composeEndomorphism
+    (prefixListEndomorphism R xs)
+    (C.recurrentInputEndomorphism R x)
+
+prefixListEndomorphism-unit :
+  ∀ {State Input : Set}
+  (R : C.RecurrentNetwork State Input) →
+  prefixListEndomorphism R [] ≡ C.identityEndomorphism
+prefixListEndomorphism-unit R = refl
+
+prefixListEndomorphism-append :
+  ∀ {State Input : Set}
+  (R : C.RecurrentNetwork State Input)
+  (xs ys : List Input) →
+  prefixListEndomorphism R (xs ++ ys)
+  ≡
+  prefixOp
+    (prefixListEndomorphism R xs)
+    (prefixListEndomorphism R ys)
+prefixListEndomorphism-append R [] ys = refl
+prefixListEndomorphism-append R (x ∷ xs) ys
+  rewrite prefixListEndomorphism-append R xs ys = refl
+
+prefixOp-associative :
+  ∀ {State : Set}
+  (f g h : C.Endomorphism State) →
+  prefixOp (prefixOp f g) h
+  ≡
+  prefixOp f (prefixOp g h)
+prefixOp-associative f g h =
+  C.endomorphismAssociative h g f _
+
+prefixOp-identity-left :
+  ∀ {State : Set}
+  (f : C.Endomorphism State) (s : State) →
+  C.applyEndomorphism (prefixOp C.identityEndomorphism f) s
+  ≡ C.applyEndomorphism f s
+prefixOp-identity-left f s = refl
+
+prefixOp-identity-right :
+  ∀ {State : Set}
+  (f : C.Endomorphism State) (s : State) →
+  C.applyEndomorphism (prefixOp f C.identityEndomorphism) s
+  ≡ C.applyEndomorphism f s
+prefixOp-identity-right f s = refl
+
+record RecurrentPrefixMonoidHomomorphism
+  (State Input : Set) : Set₁ where
+  constructor recurrentPrefixMonoidHomomorphism
+  field
+    unit :
+      ∀ (R : C.RecurrentNetwork State Input) →
+      prefixListEndomorphism R [] ≡ C.identityEndomorphism
+    append :
+      ∀ (R : C.RecurrentNetwork State Input)
+        (xs ys : List Input) →
+      prefixListEndomorphism R (xs ++ ys)
+      ≡
+      prefixOp
+        (prefixListEndomorphism R xs)
+        (prefixListEndomorphism R ys)
+
+canonical-recurrent-prefix-monoid-homomorphism :
+  RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
+canonical-recurrent-prefix-monoid-homomorphism =
+  recurrentPrefixMonoidHomomorphism
+    (λ R → prefixListEndomorphism-unit R)
+    (λ R xs ys → prefixListEndomorphism-append R xs ys)
+
+
+------------------------------------------------------------------------
+-- Pointwise product lifting of recurrent homomorphisms.
+--
+-- If two transition algebras read the same word, their product transition
+-- algebra is obtained elementwise.  The product therefore preserves the
+-- same monoid law componentwise; this is closure, not a stronger algebraic
+-- law than homomorphism itself.
+------------------------------------------------------------------------
+
+productEndomorphism :
+  ∀ {StateA StateB : Set} →
+  C.Endomorphism StateA →
+  C.Endomorphism StateB →
+  C.Endomorphism (StateA × StateB)
+productEndomorphism f g =
+  C.endomorphism
+    (λ st →
+      (C.applyEndomorphism f (proj₁ st) ,
+       C.applyEndomorphism g (proj₂ st)))
+
+productEndomorphism-compose :
+  ∀ {StateA StateB : Set}
+  (f₁ f₂ : C.Endomorphism StateA)
+  (g₁ g₂ : C.Endomorphism StateB)
+  (s : StateA)
+  (t : StateB) →
+  C.applyEndomorphism
+    (productEndomorphism
+      (C.composeEndomorphism f₁ f₂)
+      (C.composeEndomorphism g₁ g₂))
+    (s , t)
+  ≡
+  C.applyEndomorphism
+    (C.composeEndomorphism
+      (productEndomorphism f₁ g₁)
+      (productEndomorphism f₂ g₂))
+    (s , t)
+productEndomorphism-compose f₁ f₂ g₁ g₂ s t = refl
+
+
+------------------------------------------------------------------------
+-- Generic symbolic impossibility at the observation boundary.
+--
+-- A collision in observation prohibits a left inverse.  More generally,
+-- any task that distinguishes the collided states cannot factor exactly
+-- through the observation map.
+------------------------------------------------------------------------
+
+noLeftInverse-from-observation-collision :
+  ∀ {State Feature : Set}
+  (observe : State → Feature)
+  {s t : State} →
+  observe s ≡ observe t →
+  s ≢ t →
+  ¬ (Σ (λ inverse →
+      ∀ u → inverse (observe u) ≡ u))
+noLeftInverse-from-observation-collision
+  observe obsEq distinct =
+  λ witness →
+    distinct
+      (let
+         inverse = proj₁ witness
+         leftInverse = proj₂ witness
+       in
+       trans
+         (sym (leftInverse s))
+         (trans
+           (cong inverse obsEq)
+           (leftInverse t)))
+
+record ObservationTaskFactorization
+  {State Feature Output : Set}
+  (observe : State → Feature)
+  (target : State → Output) : Set₁ where
+  constructor observationTaskFactorization
+  field
+    factor : Feature → Output
+    correctness :
+      ∀ s → target s ≡ factor (observe s)
+
+symbolicTaskImpossible-from-observation-collision :
+  ∀ {State Feature Output : Set}
+  (observe : State → Feature)
+  {s t : State}
+  (obsEq : observe s ≡ observe t)
+  (target : State → Output) →
+  target s ≢ target t →
+  ¬ ObservationTaskFactorization observe target
+symbolicTaskImpossible-from-observation-collision
+  observe obsEq target distinguishes =
+  λ factorization →
+    let
+      factor = ObservationTaskFactorization.factor factorization
+      correctness =
+        ObservationTaskFactorization.correctness factorization
+    in
+    distinguishes
+      (trans
+        (correctness s)
+        (trans
+          (cong factor obsEq)
+          (sym (correctness t))))
+
 
 
 ------------------------------------------------------------------------
