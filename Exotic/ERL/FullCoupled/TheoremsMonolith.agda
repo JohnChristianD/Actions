@@ -1831,6 +1831,22 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         observe
         inverse
 
+    exactUniversalContinuousReadout :
+      ∀ {Feature : Set}
+      (observe : C.FullLearnerState → Feature)
+      (inverse : Feature → C.FullLearnerState)
+      (witness :
+        ContinuousLeftInverseTheorem
+          C.FullLearnerState
+          Feature
+          observe
+          inverse) →
+      ExactUniversalApproximationThroughContinuousLeftInverse
+        C.FullLearnerState
+        Feature
+        observe
+        inverse
+
     inclusionClass :
       ∀ (K : C.FullLearnerKernel)
       (_≤_ : C.Int8 → C.Int8 → Set)
