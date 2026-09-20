@@ -20,6 +20,20 @@
 forced_target_law_id =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
 
+
+:- func s4s5_scan_dependency = string.
+s4s5_scan_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-S4S5-recurrent-scan-theorem".
+
+:- func finite_product_dependency = string.
+finite_product_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteAutomatonProductPrefix-correct".
+
+:- func information_preservation_dependency = string.
+information_preservation_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#informationPreserving-symbolic-task-factorization".
+
+
 :- func continuous_readout_dependency = string.
 continuous_readout_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#continuousLeftInverse-exactReadout-transfer".
@@ -111,7 +125,10 @@ forced_target_law(All, Target) :-
         semantic_law.dependencies(Target)),
     list.member(
         "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalGRU-recurrent-associative-scan-theorem",
-        semantic_law.dependencies(Target)).
+        semantic_law.dependencies(Target)),
+    list.member(s4s5_scan_dependency, semantic_law.dependencies(Target)),
+    list.member(finite_product_dependency, semantic_law.dependencies(Target)),
+    list.member(information_preservation_dependency, semantic_law.dependencies(Target)).
 
 
 :- pred composite_laws(
