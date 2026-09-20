@@ -81,6 +81,10 @@ top_level_declaration_header(Line, Name) :-
     Name \= "--",
     string.sub_string_search(Line, ":", _).
 
+:- pred theoremish_name(string::in) is semidet.
+theoremish_name(Name) :-
+    Name = "ExactUniversalApproximationThroughContinuousLeftInverse".
+
 :- pred theoremish(string::in) is semidet.
 theoremish(Signature) :-
     string.sub_string_search(Signature, "_≡_", _)
@@ -148,7 +152,9 @@ contains_identifier(Text, Name) :-
     occurrence_boundary(Text, Name, Position).
 
 :- pred semantic_signature(semantic_decl::in) is semidet.
-semantic_signature(semantic_decl(_, _, Signature, _)) :-
+semantic_signature(semantic_decl(_, Name, Signature, _)) :-
+    theoremish_name(Name)
+    ;
     theoremish(Signature).
 
 :- pred parse_lines(string::in, list(string)::in,
@@ -340,6 +346,7 @@ write_manifest_entries(All, [D | Ds], Stream, !IO) :-
 
 :- pred extract_semantics(io::di, io::uo) is det.
 extract_semantics(!IO) :-
+    theorem_monolith_is_safe(!IO),
     semantic_declarations(Result, !IO),
     (
         Result = ok(All),
