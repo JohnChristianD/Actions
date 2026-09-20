@@ -1221,6 +1221,42 @@ canonicalNoGlobalInt8DiscreteUAPOnOrbit
     inverse
     (leftInverse witness)
 
+------------------------------------------------------------------------
+-- Finite-observation contradiction even after granting continuity.
+--
+-- The discrete topologies make continuity automatic.  The contradiction
+-- therefore comes strictly from the infinite canonical orbit versus the
+-- finite Int8 observation space, not from a continuity failure.
+------------------------------------------------------------------------
+
+canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies :
+  ∀ (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.FullLearnerState) →
+  Continuous
+    C.FullLearnerState
+    C.Int8
+    (discreteTopology C.FullLearnerState)
+    (discreteTopology C.Int8)
+    observe →
+  Continuous
+    C.Int8
+    C.FullLearnerState
+    (discreteTopology C.Int8)
+    (discreteTopology C.FullLearnerState)
+    inverse →
+  (∀ t → inverse (observe t) ≡ t) →
+  ⊥
+canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies
+  K s observe inverse _ _ leftInverse =
+  canonicalPigeonholeNatClockContradiction
+    K
+    s
+    observe
+    inverse
+    leftInverse
+
 canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit :
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState)
