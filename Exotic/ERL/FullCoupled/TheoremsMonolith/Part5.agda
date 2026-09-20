@@ -2,9 +2,10 @@
 
 module Exotic.ERL.FullCoupled.TheoremsMonolith.Part5 where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; cong₂; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _≤_; s≤s)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; +-assoc)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-injective; toℕ-fromℕ<)
 open import Data.Product using (Σ; _×_; _,_)
@@ -499,6 +500,117 @@ temporalNearSparsity-invariance :
   ≡ TemporalNearSparsityInvariant.measure M s
 temporalNearSparsity-invariance M K s =
   TemporalNearSparsityInvariant.stepInvariant M K s
+
+------------------------------------------------------------------------
+-- Support-aware exact work model.
+--
+-- This is a cost certificate parameterized by support k.  It does not claim
+-- that every sparsemax implementation costs exactly k operations; it gives
+-- the exact SIMD work model to which Mercury may attach an implementation
+-- witness.  Prefix work is additive and therefore composes with the recurrent
+-- endomorphism scan.
+------------------------------------------------------------------------
+
+supportAwarePrefixWork : Nat → Nat → Nat
+supportAwarePrefixWork k zero = zero
+supportAwarePrefixWork k (suc n) =
+  supportAwarePrefixWork k n + k
+
+supportAwarePrefixWork-law :
+  ∀ k n → supportAwarePrefixWork k n ≡ n * k
+supportAwarePrefixWork-law k zero = refl
+supportAwarePrefixWork-law k (suc n) =
+  trans
+    (cong (λ x → x + k) (supportAwarePrefixWork-law k n))
+    refl
+
+supportAwarePrefixWork-split :
+  ∀ k m n →
+  supportAwarePrefixWork k (m + n)
+  ≡
+  supportAwarePrefixWork k m
+  + supportAwarePrefixWork k n
+supportAwarePrefixWork-split k m zero
+  rewrite +-identityʳ m = refl
+supportAwarePrefixWork-split k m (suc n)
+  rewrite +-suc m n
+  rewrite supportAwarePrefixWork-split k m n
+  rewrite +-assoc (supportAwarePrefixWork k m)
+    (supportAwarePrefixWork k n) k = refl
+
+record CanonicalEndogenousSparseSummaryEGraphTheorem : Set₁ where
+  constructor canonicalEndogenousSparseSummaryEGraphTheorem
+  field
+    attentionMediator :
+      C.FiniteAttentionWatkinsGRUF4MediatorTheorem
+    hadamardPrefixComposition :
+      CanonicalHadamardAttentionRopePrefixCompositionTheorem
+    watkinsF4Composition :
+      ∀ K s →
+      C.canonicalOptimizerStep K s
+      ≡ C.f4ThetaStep
+          (C.optimizerKernel K)
+          (C.optimizer s)
+          (C.canonicalWatkinsTarget K s)
+    gruTargetComposition :
+      ∀ K s →
+      C.canonicalGRUStep K s
+      ≡ C.gruStep
+          (C.gru s)
+          (C.int8Add
+            (C.canonicalSignal K s)
+            (C.canonicalAttentionMix K s))
+    recurrentSummaryScan :
+      ∀ {State Summary : Set}
+      (M : CompositionalSummary State Summary)
+      (f : C.Endomorphism State)
+      (n : Nat) →
+      compressSummary M
+        (endomorphismPower f n)
+      ≡ compressedPower M f n
+    predictionCompression :
+      ∀ {State Summary Output : Set}
+      (M : CompositionalSummary State Summary)
+      (decode : Summary → C.Endomorphism State)
+      (correct :
+        ∀ f s →
+        C.applyEndomorphism
+          (decode (compressSummary M f)) s
+        ≡ C.applyEndomorphism f s)
+      (target : State → Output)
+      (f : C.Endomorphism State)
+      (s : State) →
+      target (C.applyEndomorphism f s)
+      ≡
+      target
+        (C.applyEndomorphism
+          (decode (compressSummary M f)) s)
+    generalizedTsallis2 :
+      ∀ {d : Nat} (v : ActionWeights d) →
+      generalTsallis2NearSparsity v ≡
+      generalTsallis2NearSparsity v
+    supportAwareWork :
+      ∀ k m n →
+      supportAwarePrefixWork k (m + n)
+      ≡
+      supportAwarePrefixWork k m
+      + supportAwarePrefixWork k n
+
+open CanonicalEndogenousSparseSummaryEGraphTheorem public
+
+canonical-endogenous-sparse-summary-egraph-theorem :
+  CanonicalEndogenousSparseSummaryEGraphTheorem
+canonical-endogenous-sparse-summary-egraph-theorem =
+  canonicalEndogenousSparseSummaryEGraphTheorem
+    finite-attention-watkins-gru-f4-mediator-theorem
+    canonical-hadamard-attention-rope-prefix-composition-theorem
+    (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
+    (λ K s → C.canonicalRecurrentInput-law K s)
+    (λ M f n → compressedPower-scan M f n)
+    (λ M decode correct target f s →
+      exactPredictionEqualsCompressed M decode correct target f s)
+    (λ v → refl)
+    supportAwarePrefixWork-split
 
 ------------------------------------------------------------------------
 -- Exact compressed-summary homomorphism and prediction=compression.
