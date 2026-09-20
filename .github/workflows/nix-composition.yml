@@ -107,16 +107,16 @@ jobs:
           mv "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" .ci/interface-shadow/
       - name: Check theorem partition 1a
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
       - name: Check theorem partition 1b
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
       - name: Check theorem partition 1c
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
       - name: Check theorem partition 1 facade
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
       - name: Stage theorem partition 1 Agda interfaces
         run: |
           rm -rf interface-artifact
@@ -171,7 +171,7 @@ jobs:
           mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda" .ci/interface-shadow/
       - name: Check theorem partition 2
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Stage theorem partition 2 Agda interfaces
         run: |
           rm -rf interface-artifact
@@ -227,7 +227,7 @@ jobs:
           mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda" .ci/interface-shadow/
       - name: Check theorem partition 3
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Stage theorem partition 3 Agda interfaces
         run: |
           rm -rf interface-artifact
@@ -284,7 +284,7 @@ jobs:
           mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda" .ci/interface-shadow/
       - name: Check theorem partition 4
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Stage theorem partition 4 Agda interfaces
         run: |
           rm -rf interface-artifact
@@ -342,7 +342,7 @@ jobs:
           mv "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda" .ci/interface-shadow/
       - name: Check theorem partition 5
         run: |
-          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . -i _build/2.8.0.2/agda "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - name: Stage theorem partition 5 Agda interfaces
         run: |
           rm -rf interface-artifact
