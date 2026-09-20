@@ -85,6 +85,15 @@ jobs:
         run: |
           find . -path './.git' -prune -o -name 'CanonicalLearnerMonolith.agdai' -print
           test -f "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       - name: Check theorem partition 1a
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
@@ -132,6 +141,18 @@ jobs:
         with:
           name: part1-agdai
           path: .
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
       - name: Check theorem partition 2
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
@@ -170,6 +191,20 @@ jobs:
         with:
           name: part2-agdai
           path: .
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Check theorem partition 3
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
@@ -208,6 +243,22 @@ jobs:
         with:
           name: part3-agdai
           path: .
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Check theorem partition 4
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
@@ -246,6 +297,24 @@ jobs:
         with:
           name: part4-agdai
           path: .
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Check theorem partition 5
         run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
@@ -284,6 +353,26 @@ jobs:
         with:
           name: part5-agdai
           path: .
+      - name: Prefer downloaded Agda interfaces
+        run: |
+          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          touch -d @1 "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
+          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
+          test "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai" -nt "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - run: |
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
