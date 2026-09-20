@@ -18,34 +18,115 @@ permissions:
   contents: read
 
 jobs:
-  verify:
-    name: Nix / Agda + Mercury connected proof surface
+  agda-learner:
+    name: Nix / Agda learner proof surface
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 10
     defaults:
       run:
         shell: bash
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Install Nix
         uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-
       - name: Install Agda 2.8.0.2 and standard library 2.4
         id: setup-agda
         uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
         with:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
-
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Check learner sources
+        run: |
+          "$AGDA_COMMAND" --version
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
 
-      - name: Run complete pinned proof surface
-        run: nix develop --command bash -lc 'bash ./.ci/ci.sh all'
+  agda-theorems:
+    name: Nix / Agda theorem monolith
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - name: Install Agda 2.8.0.2 and standard library 2.4
+        id: setup-agda
+        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - name: Export Agda executable
+        run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Check theorem monolith
+        run: |
+          "$AGDA_COMMAND" --version
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 
+  agda-discovery-tests:
+    name: Nix / Agda discovery theorem tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - name: Install Agda 2.8.0.2 and standard library 2.4
+        id: setup-agda
+        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - name: Export Agda executable
+        run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Check theorem discovery test
+        run: |
+          "$AGDA_COMMAND" --version
+          "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
 
+  mercury-discovery-surface:
+    name: Nix / Mercury discovery and canonical surface
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - name: Install Agda 2.8.0.2 and standard library 2.4
+        id: setup-agda
+        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+      - name: Export Agda executable
+        run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Run Mercury verifier
+        run: bash ./.ci/ci.sh mercury
+      - name: Run Mercury e-graph discovery
+        run: bash ./.ci/ci.sh discovery
+      - name: Check canonical surface
+        run: bash ./.ci/ci.sh surface
+      - name: Check tool versions
+        run: bash ./.ci/ci.sh versions
