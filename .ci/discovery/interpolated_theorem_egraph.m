@@ -3,6 +3,7 @@
 :- interface.
 
 :- import_module io.
+:- import_module list.
 :- import_module symbolic_egraph.
 :- import_module learner_semantic_manifest.
 
