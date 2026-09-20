@@ -8,53 +8,18 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 -- part of the canonical proof surface.
 ------------------------------------------------------------------------
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym)
-open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
+open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
+open import Data.Nat.Properties using (+-identityʳ; +-suc)
+open import Data.Fin using (Fin; fromℕ<; toℕ)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInjective)
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
+open import Data.Product using (Σ; _×_; _,_)
 open import Data.Empty using (⊥)
-open import Data.Fin using (Fin; toℕ)
-open import Data.Nat using (_<ᵇ_; _/_)
-open import Data.List.Base using (List; []; _∷_)
+open import Data.Unit using (⊤)
+open import Relation.Nullary using (¬_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
-
-phase4-period4 :
-  ∀ n →
-  C.phase4
-    (suc (suc (suc (suc n))))
-  ≡
-  C.phase4 n
-phase4-period4 n = refl
-
-walshRademacherRope4-period4 :
-  ∀ n w →
-  C.walshRademacherRope4
-    (suc (suc (suc (suc n))))
-    w
-  ≡
-  C.walshRademacherRope4 n w
-walshRademacherRope4-period4 n w = refl
-
-replaceClock :
-  C.FullLearnerState → Nat → C.FullLearnerState
-replaceClock s n =
-  C.fullLearnerState
-    n
-    (C.watkins s)
-    (C.attention s)
-    (C.gru s)
-    (C.optimizer s)
-    (C.norm s)
-    (C.lcbCounts s)
-    (C.qLogControl s)
-    (C.qLogValue s)
-
-canonicalAttentionMix-clock-period4 :
-  ∀ K s →
-  C.canonicalAttentionMix K
-    (replaceClock s
-      (suc (suc (suc (suc (C.clock s))))))
-  ≡
-  C.canonicalAttentionMix K s
-canonicalAttentionMix-clock-period4 K s = refl
 
 record CanonicalAQLoopTheorem : Set₁ where
   constructor canonicalAQLoopTheorem
@@ -1277,12 +1242,13 @@ canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
 record ContinuousLeftInverseTheorem
   (State Feature : Set)
   (observe : State → Feature)
-  (inverse : Feature → State)
-  (Continuous : {A B : Set} → (A → B) → Set) : Set₁ where
+  (inverse : Feature → State) : Set₁ where
   constructor continuousLeftInverseTheorem
   field
-    observeContinuous : Continuous observe
-    inverseContinuous : Continuous inverse
+    stateTopology : Topology State
+    featureTopology : Topology Feature
+    observeContinuous : Continuous stateTopology featureTopology observe
+    inverseContinuous : Continuous featureTopology stateTopology inverse
     leftInverse :
       ∀ s → inverse (observe s) ≡ s
 
@@ -1292,9 +1258,9 @@ continuousLeftInverse-injective :
   ∀ {State Feature : Set}
   {observe : State → Feature}
   {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set} →
+
   ContinuousLeftInverseTheorem
-    State Feature observe inverse Continuous →
+    State Feature observe inverse →
   ∀ {s t} →
   observe s ≡ observe t →
   s ≡ t
@@ -1309,9 +1275,9 @@ continuousLeftInverse-exactReadout-transfer :
   ∀ {State Feature Output : Set}
   {observe : State → Feature}
   {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set} →
+
   ContinuousLeftInverseTheorem
-    State Feature observe inverse Continuous →
+    State Feature observe inverse →
   (target : State → Output) →
   ∀ s →
   target s ≡ target (inverse (observe s))
@@ -1327,7 +1293,7 @@ continuousLeftInverse-exactReadout-transfer
 
 canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse :
   ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (observe : C.FullLearnerState → Feature)
   (inverse : Feature → C.FullLearnerState)
   (witness :
@@ -1336,7 +1302,7 @@ canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse :
       Feature
       observe
       inverse
-      Continuous) →
+) →
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState) →
   C.canonicalWatkinsTarget K s ≡
@@ -1350,7 +1316,7 @@ canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse
 
 canonicalWatkinsTarget-boundedUniversalExactAUP :
   ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1361,7 +1327,7 @@ canonicalWatkinsTarget-boundedUniversalExactAUP :
       Feature
       observe
       inverse
-      Continuous) →
+) →
   ∀ (K : C.FullLearnerKernel)
   (i : Fin bound) →
   C.canonicalWatkinsTarget K (embed i) ≡
@@ -1388,7 +1354,7 @@ record BoundedContinuousLeftInverseExactApproximationTheorem
   (State Feature : Set)
   (observe : State → Feature)
   (inverse : Feature → State)
-  (Continuous : {A B : Set} → (A → B) → Set)
+
   (bound : Nat)
   (embed : Fin bound → State) : Set₁ where
   constructor boundedContinuousLeftInverseExactApproximationTheorem
@@ -1419,7 +1385,7 @@ boundedContinuousLeftInverseExactApproximationTheorem-from-witness :
   ∀ {State Feature : Set}
   {observe : State → Feature}
   {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → State)
   (witness :
@@ -1428,7 +1394,7 @@ boundedContinuousLeftInverseExactApproximationTheorem-from-witness :
       Feature
       observe
       inverse
-      Continuous) →
+) →
   BoundedContinuousLeftInverseExactApproximationTheorem
     State
     Feature
@@ -1451,7 +1417,7 @@ boundedContinuousLeftInverseExactApproximationTheorem-from-witness
 
 boundedExactApproximation-on-boundedOrbit :
   ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1462,7 +1428,7 @@ boundedExactApproximation-on-boundedOrbit :
       Feature
       observe
       inverse
-      Continuous) →
+) →
   BoundedContinuousLeftInverseExactApproximationTheorem
     C.FullLearnerState
     Feature
@@ -1483,7 +1449,7 @@ boundedExactApproximation-on-boundedOrbit
 -- continuous left inverse. "Approximation" is exact equality here.
 boundedUniversalExactApproximation-through-continuousLeftInverse :
   ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1494,7 +1460,7 @@ boundedUniversalExactApproximation-through-continuousLeftInverse :
       Feature
       observe
       inverse
-      Continuous) →
+) →
   BoundedContinuousLeftInverseExactApproximationTheorem
     C.FullLearnerState
     Feature
@@ -1519,7 +1485,7 @@ boundedUniversalExactApproximation-through-continuousLeftInverse
 
 boundedUniversalExactUAP-retraction :
   ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1530,7 +1496,7 @@ boundedUniversalExactUAP-retraction :
       Feature
       observe
       inverse
-      Continuous)
+)
   (i : Fin bound) →
   inverse (observe (embed i)) ≡ embed i
 boundedUniversalExactUAP-retraction
@@ -1539,7 +1505,7 @@ boundedUniversalExactUAP-retraction
 
 boundedUniversalExactUAP-decoder-transport :
   ∀ {Feature Output : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1550,7 +1516,7 @@ boundedUniversalExactUAP-decoder-transport :
       Feature
       observe
       inverse
-      Continuous)
+)
   (decoder : Feature → C.FullLearnerState)
   (decoderOnBound :
     ∀ i → decoder (observe (embed i)) ≡ inverse (observe (embed i)))
@@ -1568,7 +1534,7 @@ boundedUniversalExactUAP-decoder-transport
 
 boundedUniversalExactUAP-postcompose :
   ∀ {Feature Output Output₂ : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (bound : Nat)
   (embed : Fin bound → C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1579,7 +1545,7 @@ boundedUniversalExactUAP-postcompose :
       Feature
       observe
       inverse
-      Continuous)
+)
   (target : C.FullLearnerState → Output)
   (post : Output → Output₂)
   (i : Fin bound) →
@@ -1663,7 +1629,7 @@ canonicalDenseNeighborhoodSeparation
 
 record CanonicalRecurrentBoundedExactUniversalApproximationTheorem
   {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (K : C.FullLearnerKernel)
   (s : C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1708,7 +1674,7 @@ open CanonicalRecurrentBoundedExactUniversalApproximationTheorem public
 
 canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness :
   ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
+
   (K : C.FullLearnerKernel)
   (s : C.FullLearnerState)
   (observe : C.FullLearnerState → Feature)
@@ -1719,7 +1685,7 @@ canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness :
       Feature
       observe
       inverse
-      Continuous) →
+) →
   CanonicalRecurrentBoundedExactUniversalApproximationTheorem
     K
     s
@@ -1838,20 +1804,19 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       ∀ {Feature Output : Set}
       {observe : C.FullLearnerState → Feature}
       {inverse : Feature → C.FullLearnerState}
-      {Continuous : {A B : Set} → (A → B) → Set} →
+
       ContinuousLeftInverseTheorem
         C.FullLearnerState
         Feature
         observe
-        inverse
-        Continuous →
+        inverse →
       (target : C.FullLearnerState → Output) →
       ∀ s →
       target s ≡ target (inverse (observe s))
 
     boundedExactApproximation :
       ∀ {Feature : Set}
-      {Continuous : {A B : Set} → (A → B) → Set}
+
       (bound : Nat)
       (embed : Fin bound → C.FullLearnerState)
       (observe : C.FullLearnerState → Feature)
@@ -1862,7 +1827,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
           Feature
           observe
           inverse
-          Continuous) →
+) →
       BoundedContinuousLeftInverseExactApproximationTheorem
         C.FullLearnerState
         Feature
@@ -1874,7 +1839,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
 
     recurrentBoundedExactUniversalApproximation :
       ∀ {Feature : Set}
-      {Continuous : {A B : Set} → (A → B) → Set}
+
       (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
       (observe : C.FullLearnerState → Feature)
@@ -1885,7 +1850,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
           Feature
           observe
           inverse
-          Continuous) →
+) →
       CanonicalRecurrentBoundedExactUniversalApproximationTheorem
         K
         s
