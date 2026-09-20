@@ -5,13 +5,13 @@
 :- import_module io.
 :- import_module learner_semantic_manifest.
 
-:- pred search_collision_compositions(
+:- pred search_emergent_compositions(
     list(semantic_law)::in,
     int::in,
     list(list(string))::out,
     io::di, io::uo) is det.
 
-:- pred search_collision_composition(
+:- pred search_emergent_composition(
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
@@ -19,113 +19,57 @@
 
 :- import_module int.
 :- import_module list.
-:- import_module string.
-
-:- type semantic_class
-    ---> scan_class
-    ;    injectivity_class
-    ;    collision_class.
 
 :- type astar_node
     ---> astar_node(
-        astar_plan :: list(string),
-        astar_classes :: list(semantic_class),
-        astar_cost :: int,
-        astar_heuristic :: int
+        seed :: string,
+        plan :: list(string),
+        cost :: int,
+        heuristic :: int
     ).
 
 :- func max_depth = int.
 max_depth = 4.
 
-:- func goal_classes = list(semantic_class).
-goal_classes = [scan_class, injectivity_class, collision_class].
+:- func goal_depth = int.
+goal_depth = 3.
 
-:- pred has_term(string::in, string::in) is semidet.
-has_term(Text, Term) :-
-    string.sub_string_search(Text, Term, _).
+:- pred all_unique(list(string)::in) is semidet.
+all_unique([]).
+all_unique([X | Xs]) :-
+    not list.member(X, Xs),
+    all_unique(Xs).
 
-:- pred is_scan_candidate(semantic_law::in) is semidet.
-is_scan_candidate(Law) :-
-    Signature = semantic_law.signature(Law),
-    Name = semantic_law.name(Law),
-    (
-        has_term(Signature, "List")
-    ;   has_term(Name, "prefix")
-    ),
-    (
-        has_term(Signature, "Endomorphism")
-    ;   has_term(Name, "scan")
-    ;   has_term(Name, "prefix")
-    ).
+:- pred law_for_id(
+    string::in, list(semantic_law)::in, semantic_law::out) is semidet.
+law_for_id(Id, Laws, Law) :-
+    list.member(Law, Laws),
+    law_id(Law) = Id.
 
-:- pred is_injectivity_candidate(semantic_law::in) is semidet.
-is_injectivity_candidate(Law) :-
-    Signature = semantic_law.signature(Law),
-    Name = semantic_law.name(Law),
-    (
-        has_term(Name, "inject")
-    ;
-        has_term(Name, "leftInverse")
-    ;
-        has_term(Signature, "leftInverse")
-    ).
-
-:- pred is_collision_candidate(semantic_law::in) is semidet.
-is_collision_candidate(Law) :-
-    Signature = semantic_law.signature(Law),
-    Name = semantic_law.name(Law),
-    (
-        has_term(Name, "collision")
-    ;
-        has_term(Signature, "ObservationTaskFactorization")
-    ;
-        (
-            has_term(Signature, "observe"),
-            has_term(Signature, "≢")
-        )
-    ).
-
-:- pred candidate_class(semantic_law::in, semantic_class::out) is semidet.
-candidate_class(Law, Class) :-
-    (
-        is_collision_candidate(Law)
-    ->
-        Class = collision_class
-    ;
-        is_injectivity_candidate(Law)
-    ->
-        Class = injectivity_class
-    ;
-        is_scan_candidate(Law)
-    ->
-        Class = scan_class
-    ).
-
-:- pred candidate_law(semantic_law::in) is semidet.
-candidate_law(Law) :-
+:- pred seed_node(semantic_law::in, astar_node::out) is semidet.
+seed_node(Law, Node) :-
     semantic_law.reflexive(Law) = no,
-    candidate_class(Law, _).
+    semantic_law.composite(Law) = yes,
+    Id = law_id(Law),
+    Node = astar_node(Id, [Id], 0, goal_depth - 1).
 
-:- func class_present(semantic_class, list(semantic_class)) = bool.
-class_present(Class, Classes) =
-    (if list.member(Class, Classes) then yes else no).
-
-:- pred missing_class_count(list(semantic_class)::in, int::out) is det.
-missing_class_count(Classes, Missing) :-
-    Missing =
-        list.length(
-            list.filter(
-                (pred(Class::in) is semidet :-
-                    not list.member(Class, Classes)),
-                goal_classes)).
-
-:- func initial_node = astar_node.
-initial_node =
-    astar_node([], [], 0, 3).
+:- pred seed_nodes(
+    list(semantic_law)::in,
+    list(astar_node)::out) is det.
+seed_nodes([], []).
+seed_nodes([Law | Laws], Nodes) :-
+    seed_nodes(Laws, Tail),
+    (
+        seed_node(Law, Node)
+    ->
+        Nodes = [Node | Tail]
+    ;
+        Nodes = Tail
+    ).
 
 :- func node_f(astar_node) = int.
 node_f(Node) =
-    astar_node.astar_cost(Node) + astar_node.astar_heuristic(Node).
+    astar_node.cost(Node) + astar_node.heuristic(Node).
 
 :- pred node_before(astar_node::in, astar_node::in) is semidet.
 node_before(A, B) :-
@@ -135,11 +79,11 @@ node_before(A, B) :-
         FA < FB
     ;
         FA = FB,
-        astar_node.astar_heuristic(A) < astar_node.astar_heuristic(B)
+        astar_node.heuristic(A) < astar_node.heuristic(B)
     ;
         FA = FB,
-        astar_node.astar_heuristic(A) = astar_node.astar_heuristic(B),
-        astar_node.astar_cost(A) < astar_node.astar_cost(B)
+        astar_node.heuristic(A) = astar_node.heuristic(B),
+        astar_node.cost(A) < astar_node.cost(B)
     ).
 
 :- pred frontier_insert(astar_node::in, list(astar_node)::in,
@@ -154,44 +98,6 @@ frontier_insert(Node, [Head | Tail], Result) :-
         frontier_insert(Node, Tail, TailResult),
         Result = [Head | TailResult]
     ).
-
-:- pred expand_node(astar_node::in, list(semantic_law)::in,
-    list(astar_node)::out) is det.
-expand_node(Node, Laws, Children) :-
-    Plan = astar_node.astar_plan(Node),
-    list.filter(
-        (pred(Law::in) is semidet :-
-            candidate_law(Law),
-            Id = law_id(Law),
-            not list.member(Id, Plan)
-        ),
-        Laws,
-        Candidates),
-    expand_candidates(Candidates, Node, [], Children).
-
-:- pred expand_candidates(
-    list(semantic_law)::in,
-    astar_node::in,
-    list(astar_node)::in,
-    list(astar_node)::out) is det.
-expand_candidates([], _, Acc, Children) :-
-    list.reverse(Acc, Children).
-expand_candidates([Law | Laws], Node, Acc0, Children) :-
-    Id = law_id(Law),
-    candidate_class(Law, Class),
-    OldClasses = astar_node.astar_classes(Node),
-    (
-        list.member(Class, OldClasses)
-    ->
-        NewClasses = OldClasses
-    ;
-        NewClasses = [Class | OldClasses]
-    ),
-    NewCost = astar_node.astar_cost(Node) + 1,
-    missing_class_count(NewClasses, NewHeuristic),
-    NewPlan = [Id | astar_node.astar_plan(Node)],
-    Child = astar_node(NewPlan, NewClasses, NewCost, NewHeuristic),
-    expand_candidates(Laws, Node, [Child | Acc0], Children).
 
 :- pred pop_best(
     list(astar_node)::in,
@@ -217,6 +123,79 @@ pop_best_acc([Candidate | Rest], Best0, Acc0, Best, Remaining) :-
         pop_best_acc(Rest, Best0, [Candidate | Acc0], Best, Remaining)
     ).
 
+:- pred missing_depth(astar_node::in, int::out) is det.
+missing_depth(Node, Missing) :-
+    Length = list.length(astar_node.plan(Node)),
+    (
+        Length >= goal_depth
+    ->
+        Missing = 0
+    ;
+        Missing = goal_depth - Length
+    ).
+
+:- pred expand_node(
+    astar_node::in,
+    list(semantic_law)::in,
+    list(astar_node)::out) is det.
+expand_node(Node, Laws, Children) :-
+    Plan = astar_node.plan(Node),
+    Plan = [TerminalId | _],
+    (
+        law_for_id(TerminalId, Laws, TerminalLaw)
+    ->
+        Dependencies = semantic_law.dependencies(TerminalLaw),
+        expand_dependencies(
+            Dependencies, Node, [], Children)
+    ;
+        Children = []
+    ).
+
+:- pred expand_dependencies(
+    list(string)::in,
+    astar_node::in,
+    list(astar_node)::in,
+    list(astar_node)::out) is det.
+expand_dependencies([], _, Acc, Children) :-
+    list.reverse(Acc, Children).
+expand_dependencies([Dependency | Dependencies], Node, Acc0, Children) :-
+    Plan0 = astar_node.plan(Node),
+    (
+        list.member(Dependency, Plan0)
+    ->
+        expand_dependencies(Dependencies, Node, Acc0, Children)
+    ;
+        NewPlan = [Dependency | Plan0],
+        missing_depth(
+            astar_node(
+                astar_node.seed(Node),
+                NewPlan,
+                astar_node.cost(Node) + 1,
+                0),
+            NewHeuristic),
+        Child = astar_node(
+            astar_node.seed(Node),
+            NewPlan,
+            astar_node.cost(Node) + 1,
+            NewHeuristic),
+        expand_dependencies(
+            Dependencies, Node, [Child | Acc0], Children)
+    ).
+
+:- pred goal_node(
+    astar_node::in,
+    list(semantic_law)::in) is semidet.
+goal_node(Node, Laws) :-
+    Plan = astar_node.plan(Node),
+    list.length(Plan) >= goal_depth,
+    all_unique(Plan),
+    Plan = [TerminalId | _],
+    SeedId = astar_node.seed(Node),
+    law_for_id(SeedId, Laws, SeedLaw),
+    not list.member(
+        TerminalId,
+        semantic_law.dependencies(SeedLaw)).
+
 :- pred insert_children(
     list(astar_node)::in,
     list(astar_node)::in,
@@ -225,11 +204,6 @@ insert_children([], Frontier, Frontier).
 insert_children([Node | Nodes], Frontier0, Frontier) :-
     frontier_insert(Node, Frontier0, Frontier1),
     insert_children(Nodes, Frontier1, Frontier).
-
-:- pred goal_node(astar_node::in) is semidet.
-goal_node(Node) :-
-    Missing = astar_node.astar_heuristic(Node),
-    Missing = 0.
 
 :- pred astar_collect(
     list(semantic_law)::in,
@@ -240,21 +214,20 @@ goal_node(Node) :-
     list(list(string))::in,
     list(list(string))::out,
     io::di, io::uo) is det.
-astar_collect(_, [], _, _, _, Results, Results, !IO).
 astar_collect(_, _, Expansions, MaxExpansions, MaxResults,
     Results, Results, !IO) :-
     Expansions >= MaxExpansions,
-    list.length(Results) >= MaxResults.
+    MaxResults >= list.length(Results).
+astar_collect(_, [], _, _, _, Results, Results, !IO).
 astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     Results0, Results, !IO) :-
     Expansions < MaxExpansions,
     list.length(Results0) < MaxResults,
     pop_best(Frontier0, Node, Frontier1),
     (
-        goal_node(Node)
+        goal_node(Node, Laws)
     ->
-        Plan = astar_node.astar_plan(Node),
-        Results1 = [Plan | Results0],
+        Results1 = [astar_node.plan(Node) | Results0],
         astar_collect(
             Laws,
             Frontier1,
@@ -265,7 +238,7 @@ astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
             Results,
             !IO)
     ;
-        astar_node.astar_cost(Node) < max_depth
+        astar_node.cost(Node) < max_depth
     ->
         expand_node(Node, Laws, Children),
         insert_children(Children, Frontier1, Frontier2),
@@ -290,24 +263,18 @@ astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
             !IO)
     ).
 
-search_collision_compositions(Laws, MaxResults, Results, !IO) :-
-    list.filter(candidate_law, Laws, CandidateLaws),
-    (
-        CandidateLaws = []
-    ->
-        Results = []
-    ;
-        astar_collect(
-            CandidateLaws,
-            [initial_node],
-            0,
-            500,
-            MaxResults,
-            [],
-            ReversedResults,
-            !IO),
-        list.reverse(ReversedResults, Results)
-    ).
+search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
+    seed_nodes(Laws, Seeds),
+    astar_collect(
+        Laws,
+        Seeds,
+        0,
+        1000,
+        MaxResults,
+        [],
+        Reversed,
+        !IO),
+    list.reverse(Reversed, Results).
 
 :- pred search_det(
     list(semantic_law)::in,
@@ -317,19 +284,19 @@ search_collision_compositions(Laws, MaxResults, Results, !IO) :-
 search_det(_, [], _, _) :-
     fail.
 search_det(Laws, Frontier0, Expansions, Plan) :-
-    Expansions < 500,
+    Expansions < 1000,
     pop_best(Frontier0, Node, Frontier1),
     (
-        goal_node(Node)
+        goal_node(Node, Laws)
     ->
-        Plan = astar_node.astar_plan(Node)
+        Plan = astar_node.plan(Node)
     ;
-        astar_node.astar_cost(Node) < max_depth,
+        astar_node.cost(Node) < max_depth,
         expand_node(Node, Laws, Children),
         insert_children(Children, Frontier1, Frontier2),
         search_det(Laws, Frontier2, Expansions + 1, Plan)
     ).
 
-search_collision_composition(Laws, Plan) :-
-    list.filter(candidate_law, Laws, CandidateLaws),
-    search_det(CandidateLaws, [initial_node], 0, Plan).
+search_emergent_composition(Laws, Plan) :-
+    seed_nodes(Laws, Seeds),
+    search_det(Laws, Seeds, 0, Plan).

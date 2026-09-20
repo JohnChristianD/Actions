@@ -17,6 +17,7 @@
 :- import_module symbolic_egraph.
 :- import_module theorem_astar_search.
 
+
 :- func forced_target_law_id = string.
 forced_target_law_id =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
@@ -141,6 +142,15 @@ composite_laws(All, Composite) :-
         All,
         Composite).
 
+:- pred add_astar_plans(
+    list(list(string))::in,
+    symbolic_egraph.egraph::in,
+    symbolic_egraph.egraph::out) is det.
+add_astar_plans([], E, E).
+add_astar_plans([Plan | Plans], E0, E) :-
+    add_expr(astar_plan_expr(Plan), E0, _, E1),
+    add_astar_plans(Plans, E1, E).
+
 :- pred write_report(
     list(semantic_law)::in,
     semantic_law::in,
@@ -190,9 +200,10 @@ write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, 
             "  \"information_preserving_task_factorization\": \"connected\",\n" ++
             "  \"infinite_state_orbit\": \"connected\",\n" ++
             "  \"pigeonhole_contradiction\": \"connected\",\n" ++
-            "  \"astar_collision_candidate_count\": " ++
+            "  \"astar_emergent_candidate_count\": " ++
                 string.int_to_string(list.length(AStarPlans)) ++ ",\n" ++
-            "  \"astar_collision_search\": \"jaxtar-inspired ordinary A*\",\n" ++
+            "  \"astar_search\": \"ordinary A* over monolith dependency graph\",\n" ++
+            "  \"astar_plans_in_egraph\": true,\n" ++
             "  \"global_int8_uap\": \"refuted\",\n" ++
             "  \"proof_authority\": \"Agda --safe\"\n" ++
             "}\n",
@@ -210,11 +221,12 @@ main(!IO) :-
     extract_semantics(!IO),
     read_manifest(All, !IO),
     composite_laws(All, Composite),
-    search_collision_compositions(All, 6, AStarPlans, !IO),
+    search_emergent_compositions(All, 8, AStarPlans, !IO),
     (
         forced_target_law(All, Target),
         discovery_egraph_from_laws(All, EGraph0, QuotientCount),
-        saturate(semantic_rewrite_rules, 32, EGraph0, EGraph, Saturation),
+        add_astar_plans(AStarPlans, EGraph0, EGraphAStar),
+        saturate(semantic_rewrite_rules, 32, EGraphAStar, EGraph, Saturation),
         analyze(EGraph, Analyses),
         add_expr(law_expr(forced_target_law_id), EGraph, TargetClass, EGraph1),
         extract_best(TargetClass, EGraph1, 64, _, ExtractionCost),
@@ -236,7 +248,7 @@ main(!IO) :-
             "forced-target-law=" ++ law_id(Target) ++ "\n",
             !IO),
         io.write_string(
-            "astar-collision-candidate-count=" ++
+            "astar-emergent-candidate-count=" ++
             string.int_to_string(list.length(AStarPlans)) ++ "\n",
             !IO),
         io.write_string(

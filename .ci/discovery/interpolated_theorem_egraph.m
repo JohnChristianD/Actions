@@ -16,6 +16,7 @@
     int::out) is det.
 :- func forced_target_id = string.
 :- func semantic_rewrite_rules = list(rewrite_rule).
+:- func astar_plan_expr(list(string)) = expr.
 
 :- implementation.
 
@@ -23,6 +24,9 @@
 
 forced_target_id =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
+
+astar_plan_expr(Ids) =
+    app("astar-discovered-proof-plan", [left_assoc_expr(Ids)]).
 
 semantic_rewrite_rules = [
     rewrite_rule(
