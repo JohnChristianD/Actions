@@ -56,14 +56,12 @@ run_surface() {
 
   theorem_monolith_count="$(
     find . -type f -not -path './.git/*' -print \
-      | grep -F './Exotic/ERL/FullCoupled/TheoremsMonolith.agda' \
-      | wc -l
+      | grep -Fc './Exotic/ERL/FullCoupled/TheoremsMonolith.agda'
   )"
 
   learner_monolith_count="$(
     find . -type f -not -path './.git/*' -print \
-      | grep -F './Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda' \
-      | wc -l
+      | grep -Fc './Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda'
   )"
 
   total_monolith_count="$(
