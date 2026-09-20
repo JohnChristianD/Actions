@@ -1400,20 +1400,6 @@ record TopologicalConvexConcaveExactReadoutTheorem
         (target (midpoint x y))
     exactUniversalReadout :
       ∀ s → target s ≡ target (inverse (observe s))
-    convexReadout :
-      ∀ x y →
-      leOutput
-        (target (inverse (observe (midpoint x y))))
-        (combineOutput
-          (target (inverse (observe x)))
-          (target (inverse (observe y))))
-    concaveReadout :
-      ∀ x y →
-      leOutput
-        (combineOutput
-          (target (inverse (observe x)))
-          (target (inverse (observe y))))
-        (target (inverse (observe (midpoint x y))))
 
 open TopologicalConvexConcaveExactReadoutTheorem public
 
@@ -1441,36 +1427,7 @@ topologicalConvexConcaveExactReadoutTheorem-from-witness
     convexTarget
     concaveTarget
     (λ s → continuousLeftInverse-exactReadout-transfer witness target s)
-    (λ x y →
-      subst
-        (λ v → leOutput v (combineOutput (target x) (target y)))
-        (continuousLeftInverse-exactReadout-transfer witness target (midpoint x y))
-        (subst
-          (λ v → leOutput
-            (target (inverse (observe (midpoint x y))))
-            (combineOutput v (target y)))
-          (continuousLeftInverse-exactReadout-transfer witness target x)
-          (subst
-            (λ v → leOutput
-              (target (inverse (observe (midpoint x y))))
-              (combineOutput (target (inverse (observe x))) v))
-            (continuousLeftInverse-exactReadout-transfer witness target y)
-            (convexTarget x y))))
-    (λ x y →
-      subst
-        (λ v → leOutput (combineOutput (target x) (target y)) v)
-        (continuousLeftInverse-exactReadout-transfer witness target (midpoint x y))
-        (subst
-          (λ v → leOutput
-            (combineOutput v (target y))
-            (target (inverse (observe (midpoint x y)))))
-          (continuousLeftInverse-exactReadout-transfer witness target x)
-          (subst
-            (λ v → leOutput
-              (combineOutput (target (inverse (observe x))) v)
-              (target (inverse (observe (midpoint x y)))))
-            (continuousLeftInverse-exactReadout-transfer witness target y)
-            (concaveTarget x y))))
+
 
 ------------------------------------------------------------------------
 -- Exact finite-horizon regret composition.
