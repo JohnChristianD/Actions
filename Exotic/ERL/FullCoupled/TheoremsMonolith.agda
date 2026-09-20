@@ -1760,15 +1760,6 @@ canonicalIterateComposition K m (suc n) s
   cong (C.canonicalFullStep K)
     (canonicalIterateComposition K m n s)
 
-record CanonicalConnectedCompositionTheorem : Set₁ where
-  constructor canonicalConnectedCompositionTheorem
-  field
-    aqLoop :
-      CanonicalAQLoopTheorem
-    ropePhasePeriod :
-      ∀ n w →
-
-
 -- Recovered Part2 theorem
 recurrentPrefixStepWork : Nat → Nat
 recurrentPrefixStepWork zero = zero
