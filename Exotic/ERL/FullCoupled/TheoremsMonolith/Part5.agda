@@ -187,6 +187,128 @@ exactSupportSparsity-law :
 exactSupportSparsity-law v support bound = refl
 
 ------------------------------------------------------------------------
+-- General finite-action Tsallis-2 near-sparsity.
+--
+-- The canonical learner currently has a two-action sparsemax specialization,
+-- but the exact Tsallis-2 measure is action-cardinality polymorphic.  For
+-- weights w : Fin d -> Nat, S = sum w and Q = sum (w²),
+--
+--   Tsallis2(w) = 1 - S² / (d Q)
+--               = (d Q - S²) / (d Q)
+--
+-- with the zero-vector convention equal to 1.  No logarithm, exponential,
+-- floating point, or two-action restriction is used by this definition.
+------------------------------------------------------------------------
+
+ActionWeights : Nat → Set
+ActionWeights d = Fin d → Nat
+
+nonzeroWeight : Nat → Nat
+nonzeroWeight zero = zero
+nonzeroWeight (suc _) = suc zero
+
+actionSupportCount : ∀ {d : Nat} → ActionWeights d → Nat
+actionSupportCount {zero} _ = zero
+actionSupportCount {suc d} v =
+  nonzeroWeight (v Data.Fin.zero)
+  + actionSupportCount (λ i → v (Data.Fin.suc i))
+
+actionWeightSum : ∀ {d : Nat} → ActionWeights d → Nat
+actionWeightSum {zero} _ = zero
+actionWeightSum {suc d} v =
+  v Data.Fin.zero
+  + actionWeightSum (λ i → v (Data.Fin.suc i))
+
+actionWeightSquareSum : ∀ {d : Nat} → ActionWeights d → Nat
+actionWeightSquareSum {zero} _ = zero
+actionWeightSquareSum {suc d} v =
+  (v Data.Fin.zero * v Data.Fin.zero)
+  + actionWeightSquareSum (λ i → v (Data.Fin.suc i))
+
+generalTsallis2Denominator :
+  ∀ {d : Nat} → ActionWeights d → Nat
+generalTsallis2Denominator {d} v =
+  d * actionWeightSquareSum v
+
+generalTsallis2Numerator :
+  ∀ {d : Nat} → ActionWeights d → Nat
+generalTsallis2Numerator {d} v =
+  generalTsallis2Denominator v
+  ∸
+  (actionWeightSum v * actionWeightSum v)
+
+generalTsallis2NearSparsity :
+  ∀ {d : Nat} → ActionWeights d → C.FiniteRational
+generalTsallis2NearSparsity {zero} v =
+  C.finiteRational 1 1 1
+generalTsallis2NearSparsity {suc d} v with actionWeightSquareSum v
+... | zero = C.finiteRational 1 1 1
+... | suc q =
+  C.finiteRational
+    1
+    (generalTsallis2Numerator v)
+    (generalTsallis2Denominator v)
+
+generalTsallis2NearSparsity-zero :
+  ∀ {d : Nat} (v : ActionWeights d) →
+  actionWeightSquareSum v ≡ zero →
+  generalTsallis2NearSparsity v ≡ C.finiteRational 1 1 1
+generalTsallis2NearSparsity-zero v h with actionWeightSquareSum v
+... | zero = refl
+... | suc q = ⊥-elim (C.natZeroNotSuc h)
+
+generalTsallis2NearSparsity-definition :
+  ∀ {d : Nat} (v : ActionWeights d) →
+  actionWeightSquareSum v ≢ zero →
+  generalTsallis2NearSparsity v
+  ≡ C.finiteRational
+      1
+      (generalTsallis2Numerator v)
+      (generalTsallis2Denominator v)
+generalTsallis2NearSparsity-definition {zero} v h =
+  ⊥-elim (h refl)
+generalTsallis2NearSparsity-definition {suc d} v h with actionWeightSquareSum v
+... | zero = ⊥-elim (h refl)
+... | suc q = refl
+
+------------------------------------------------------------------------
+-- Exact support sparsity and Tsallis-2 share the same support boundary.
+-- The canonical hard measure is (d-k)/d; the generalized Tsallis-2 measure
+-- is a weighted effective-support quantity.  Equality at the hard boundary
+-- is characterized by the uniform-on-support identity S² = k Q.
+------------------------------------------------------------------------
+
+generalSupportSparsity :
+  ∀ {d : Nat} → ActionWeights d → FiniteRational
+generalSupportSparsity {d} v =
+  C.finiteRational 0
+    (d ∸ actionSupportCount v)
+    d
+
+generalSupportSparsity-definition :
+  ∀ {d : Nat} (v : ActionWeights d) →
+  generalSupportSparsity v
+  ≡ C.finiteRational 0
+      (d ∸ actionSupportCount v)
+      d
+generalSupportSparsity-definition v = refl
+
+record UniformSupportTsallisBoundary
+  (d : Nat) (v : ActionWeights d) : Set₁ where
+  constructor uniformSupportTsallisBoundary
+  field
+    support : Nat
+    supportLaw : support ≡ actionSupportCount v
+    uniformSquareLaw :
+      actionWeightSum v * actionWeightSum v
+      ≡ support * actionWeightSquareSum v
+
+------------------------------------------------------------------------
+-- The existing two-action carrier is retained as a canonical specialization,
+-- not as the definition of the Tsallis-2 measure.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- Exact Tsallis-2 near-sparsity.
 --
 -- Shannon log/exp is intentionally absent from the executable theorem
