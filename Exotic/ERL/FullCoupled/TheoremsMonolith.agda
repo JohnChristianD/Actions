@@ -1114,6 +1114,31 @@ discreteExactUniversalUAP-to-leftInverse universal =
     (readout universal (λ s → s))
     (λ s → sym (exactReadout universal (λ t → t) s))
 
+------------------------------------------------------------------------
+-- Positive Nat-indexed exact-universal readout.
+--
+-- Nat supplies the countably infinite orbit index.  Exact universality still
+-- comes from the left inverse; Nat cardinality only removes the finite-
+-- codomain pigeonhole obstruction.
+------------------------------------------------------------------------
+
+canonicalNatIndexedExactUniversalReadout :
+  ∀ {Feature Output : Set}
+  (K : C.FullLearnerKernel)
+  (s : C.FullLearnerState)
+  (observe : C.FullLearnerState → Feature)
+  (inverse : Feature → C.FullLearnerState) →
+  (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+  (target : C.FullLearnerState → Output) →
+  ∀ n →
+  target (C.iterateCanonical K n s) ≡
+  target (inverse (observe (C.iterateCanonical K n s)))
+canonicalNatIndexedExactUniversalReadout
+  K s observe inverse leftInverse target n =
+  cong
+    target
+    (sym (leftInverse (C.iterateCanonical K n s)))
+
 record DiscreteExactUniversalUAPLeftInverseEquivalence
   (State Feature : Set)
   (observe : State → Feature) : Set₁ where
