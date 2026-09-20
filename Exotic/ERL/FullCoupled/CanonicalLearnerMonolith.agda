@@ -540,21 +540,6 @@ mix8 g old new = int8Add
   (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old)
   (int8Mul g new)
 
-data HardSign8 : Set where
-  negative : HardSign8
-  zeroSign : HardSign8
-  positive : HardSign8
-
-hardSignCode : Signed → HardSign8
-hardSignCode (neg n) = negative
-hardSignCode zer = zeroSign
-hardSignCode (pos n) = positive
-
-hardSign8 : HardSign8 → Int8
-hardSign8 negative = int8OfNat 255
-hardSign8 zeroSign = zero8
-hardSign8 positive = one8
-
 gateCode : Signed → Int8
 gateCode (neg n) = int8OfNat 0
 gateCode zer = int8OfNat 64
@@ -562,9 +547,6 @@ gateCode (pos n) = int8OfNat 128
 
 gateFromInput : Int8 → Int8
 gateFromInput x = gateCode (signedCode x)
-
-hardGate-state-independent : ∀ (h₁ h₂ x : Int8) → gateFromInput x ≡ gateFromInput x
-hardGate-state-independent h₁ h₂ x = refl
 
 gruStep : GRUState → Int8 → GRUState
 gruStep (gruState h m n g) x =
