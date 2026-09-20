@@ -564,6 +564,149 @@ productRecurrentPrefix-correct RA RB xs (suc n) s t =
     (cong proj₂ (productRecurrentPrefix-correct RA RB xs n s t))
 
 ------------------------------------------------------------------------
+-- Finite automata are closed under the same direct-product construction.
+-- Fin A × Fin B is a finite product state space, and synchronized input
+-- preserves exact prefix semantics componentwise.
+------------------------------------------------------------------------
+
+finiteAutomatonProductStep :
+  ∀ {A B I : Nat} →
+  (Fin A → Fin I → Fin A) →
+  (Fin B → Fin I → Fin B) →
+  (Fin A × Fin B) →
+  Fin I →
+  (Fin A × Fin B)
+finiteAutomatonProductStep stepA stepB st x =
+  (stepA (proj₁ st) x , stepB (proj₂ st) x)
+
+finiteAutomatonProductPrefix-correct :
+  ∀ {A B I : Nat}
+  (stepA : Fin A → Fin I → Fin A)
+  (stepB : Fin B → Fin I → Fin B)
+  (xs : Nat → Fin I)
+  (n : Nat)
+  (s : Fin A)
+  (t : Fin B) →
+  C.recurrentPrefixState
+    (C.recurrentNetwork stepA)
+    xs n s
+  ≡
+  proj₁
+    (C.recurrentPrefixState
+      (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
+      xs n
+      (s , t))
+  ×
+  C.recurrentPrefixState
+    (C.recurrentNetwork stepB)
+    xs n t
+  ≡
+  proj₂
+    (C.recurrentPrefixState
+      (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
+      xs n
+      (s , t))
+finiteAutomatonProductPrefix-correct stepA stepB xs n s t =
+  let
+    eq =
+      productRecurrentPrefix-correct
+        (C.recurrentNetwork stepA)
+        (C.recurrentNetwork stepB)
+        xs n s t
+  in
+  cong proj₁ (sym eq) , cong proj₂ (sym eq)
+
+
+------------------------------------------------------------------------
+-- Information-preserving symbolic task composition.
+--
+-- A left inverse makes observation a split monomorphism. Therefore every
+-- exact symbolic task on the hidden state can be factorized through the
+-- observation and reconstructed before applying the task.
+------------------------------------------------------------------------
+
+informationPreserving-symbolic-task-factorization :
+  ∀ {State Feature Output : Set}
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (leftInverse : ∀ s → inverse (observe s) ≡ s)
+  (target : State → Output)
+  (s : State) →
+  target s ≡ target (inverse (observe s))
+informationPreserving-symbolic-task-factorization
+  observe inverse leftInverse target s =
+  cong target (sym (leftInverse s))
+
+informationPreserving-all-tasks-injective :
+  ∀ {State Feature : Set}
+  (observe : State → Feature)
+  (inverse : Feature → State) →
+  (∀ (target : State → State) (s : State) →
+    target s ≡ target (inverse (observe s))) →
+  ∀ {s t} → observe s ≡ observe t → s ≡ t
+informationPreserving-all-tasks-injective
+  observe inverse allTasks
+  {s} {t} eq =
+  trans
+    (sym (allTasks (λ x → x) s))
+    (trans
+      (cong inverse eq)
+      (allTasks (λ x → x) t))
+
+productObservation :
+  ∀ {StateA StateB FeatureA FeatureB : Set} →
+  (StateA → FeatureA) →
+  (StateB → FeatureB) →
+  (StateA × StateB) →
+  (FeatureA × FeatureB)
+productObservation observeA observeB st =
+  (observeA (proj₁ st) , observeB (proj₂ st))
+
+productInverse :
+  ∀ {StateA StateB FeatureA FeatureB : Set} →
+  (FeatureA → StateA) →
+  (FeatureB → StateB) →
+  (FeatureA × FeatureB) →
+  (StateA × StateB)
+productInverse inverseA inverseB feature =
+  (inverseA (proj₁ feature) , inverseB (proj₂ feature))
+
+productObservation-leftInverse :
+  ∀ {StateA StateB FeatureA FeatureB : Set}
+  (observeA : StateA → FeatureA)
+  (inverseA : FeatureA → StateA)
+  (observeB : StateB → FeatureB)
+  (inverseB : FeatureB → StateB)
+  (leftInverseA : ∀ s → inverseA (observeA s) ≡ s)
+  (leftInverseB : ∀ s → inverseB (observeB s) ≡ s)
+  (s : StateA)
+  (t : StateB) →
+  productInverse inverseA inverseB
+    (productObservation observeA observeB (s , t))
+  ≡
+  (s , t)
+productObservation-leftInverse observeA inverseA observeB inverseB
+  leftInverseA leftInverseB s t =
+  cong₂ _,_ (leftInverseA s) (leftInverseB t)
+
+
+------------------------------------------------------------------------
+-- The exact task boundary is therefore the observation equivalence:
+-- with a left inverse, every state task survives observation; without
+-- injectivity, not every state task can survive.
+------------------------------------------------------------------------
+
+informationPreserving-symbolic-task-boundary :
+  ∀ {State Feature : Set}
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (leftInverse : ∀ s → inverse (observe s) ≡ s) →
+  ∀ (target : State → State) (s : State) →
+  target s ≡ target (inverse (observe s))
+informationPreserving-symbolic-task-boundary =
+  informationPreserving-symbolic-task-factorization
+
+------------------------------------------------------------------------
 -- Explicit equality-composition theorem.
 --
 -- The e-graph proof-plan combinator is dependency composition.  Actual
