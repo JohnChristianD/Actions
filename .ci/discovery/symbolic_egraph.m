@@ -480,7 +480,7 @@ local_cost(enode(Symbol, Children), Cost) :-
 analyze_bindings([], _, Acc, Out) :-
     list.reverse(Acc, Out).
 analyze_bindings([binding(Node, Id) | Bs], Parent, Acc0, Out) :-
-    Root = root(Parent, Id),
+    root(Parent, Id, Root),
     (
         if find_analysis(Root, Acc0, Existing) then
             Count = Existing ^ analysis_enode_count + 1,
