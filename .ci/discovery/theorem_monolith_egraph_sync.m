@@ -37,8 +37,12 @@ pigeonhole_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
 
 :- func no_global_uap_dependency = string.
+:- func finite_int8_continuous_left_inverse_dependency = string.
 no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
+
+finite_int8_continuous_left_inverse_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies".
 
 :- func recurrent_bound_uap_dependency = string.
 recurrent_bound_uap_dependency =
@@ -64,6 +68,9 @@ forced_target_law(All, Target) :-
         semantic_law.dependencies(Target)),
     list.member(
         no_global_uap_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        finite_int8_continuous_left_inverse_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         recurrent_bound_uap_dependency,
@@ -130,12 +137,19 @@ main(!IO) :-
     composite_laws(All, Composite),
     (
         forced_target_law(All, Target),
-        discovery_egraph_from_laws(All, EGraph, QuotientCount),
+        discovery_egraph_from_laws(All, EGraph0, QuotientCount),
+        saturate(semantic_rewrite_rules, 32, EGraph0, EGraph, Saturation),
+        analyze(EGraph, Analyses),
+        add_expr(law_expr(forced_target_law_id), EGraph, TargetClass, EGraph1),
+        extract_best(TargetClass, EGraph1, 64, _, ExtractionCost),
         list.length(All) > 0,
         list.length(Composite) > 0,
         QuotientCount > 0,
         class_count(EGraph) > 0,
-        enode_count(EGraph) > 0
+        enode_count(EGraph) > 0,
+        list.length(Analyses) > 0,
+        saturation_iterations(Saturation) > 0,
+        ExtractionCost > 0
     ->
         write_report(All, Target, Composite, QuotientCount, !IO),
         io.write_string(
