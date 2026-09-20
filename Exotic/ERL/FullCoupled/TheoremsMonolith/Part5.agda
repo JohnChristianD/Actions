@@ -187,12 +187,6 @@ exactSupportSparsity-law :
 exactSupportSparsity-law v support bound = refl
 
 ------------------------------------------------------------------------
--- Near sparsity: exact entropy formula as a parameterized analytic model.
--- The current executable Int8 algebra has no Real log/exp, so this is a
--- proof-carrying specification rather than a fabricated Real implementation.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
 -- Exact Tsallis-2 near-sparsity.
 --
 -- Shannon log/exp is intentionally absent from the executable theorem
@@ -236,11 +230,16 @@ tsallis2PairNumerator a b =
 tsallis2NearSparsityPair : Nat → Nat → C.FiniteRational
 tsallis2NearSparsityPair zero zero =
   C.finiteRational 1 1 1
-tsallis2NearSparsityPair a b =
+tsallis2NearSparsityPair zero (suc b) =
   C.finiteRational
     1
-    (tsallis2PairNumerator a b)
-    (tsallis2PairDenominator a b)
+    (tsallis2PairNumerator zero (suc b))
+    (tsallis2PairDenominator zero (suc b))
+tsallis2NearSparsityPair (suc a) b =
+  C.finiteRational
+    1
+    (tsallis2PairNumerator (suc a) b)
+    (tsallis2PairDenominator (suc a) b)
 
 fractionEquivalent : C.FiniteRational → C.FiniteRational → Set
 fractionEquivalent x y =
@@ -374,6 +373,212 @@ temporalNearSparsity-invariance :
   ≡ TemporalNearSparsityInvariant.measure M s
 temporalNearSparsity-invariance M K s =
   TemporalNearSparsityInvariant.stepInvariant M K s
+
+------------------------------------------------------------------------
+-- Exact compressed-summary homomorphism and prediction=compression.
+--
+-- A smaller summary is sound exactly when its decoder reconstructs the
+-- original endomorphism on the relevant state.  The scan theorem below
+-- separates the algebraic homomorphism from that semantic decoder law.
+------------------------------------------------------------------------
+
+record CompositionalSummary (State Summary : Set) : Set₁ where
+  constructor compositionalSummary
+  field
+    identitySummary : Summary
+    composeSummary : Summary → Summary → Summary
+    compressSummary : C.Endomorphism State → Summary
+    summaryIdentity :
+      compressSummary C.identityEndomorphism ≡ identitySummary
+    summaryComposition :
+      ∀ f g →
+      compressSummary
+        (C.composeEndomorphism f g)
+      ≡
+      composeSummary
+        (compressSummary f)
+        (compressSummary g)
+
+open CompositionalSummary public
+
+endomorphismPower :
+  ∀ {State : Set} →
+  C.Endomorphism State →
+  Nat →
+  C.Endomorphism State
+endomorphismPower f zero = C.identityEndomorphism
+endomorphismPower f (suc n) =
+  C.composeEndomorphism
+    (endomorphismPower f n)
+    f
+
+compressedPower :
+  ∀ {State Summary : Set} →
+  CompositionalSummary State Summary →
+  C.Endomorphism State →
+  Nat →
+  Summary
+compressedPower M f zero = identitySummary M
+compressedPower M f (suc n) =
+  composeSummary M
+    (compressedPower M f n)
+    (compressSummary M f)
+
+compressedPower-scan :
+  ∀ {State Summary : Set}
+  (M : CompositionalSummary State Summary)
+  (f : C.Endomorphism State) →
+  ∀ n →
+  compressSummary M (endomorphismPower f n)
+  ≡
+  compressedPower M f n
+compressedPower-scan M f zero = summaryIdentity M
+compressedPower-scan M f (suc n) =
+  trans
+    (summaryComposition M
+      (endomorphismPower f n)
+      f)
+    (cong₂
+      (composeSummary M)
+      (compressedPower-scan M f n)
+      refl)
+
+exactPredictionEqualsCompressed :
+  ∀ {State Summary Output : Set}
+  (M : CompositionalSummary State Summary)
+  (decode : Summary → C.Endomorphism State) →
+  (correct :
+    ∀ f s →
+      C.applyEndomorphism
+        (decode (compressSummary M f))
+        s
+      ≡
+      C.applyEndomorphism f s) →
+  ∀ (target : State → Output)
+    (f : C.Endomorphism State)
+    (s : State) →
+  target (C.applyEndomorphism f s)
+  ≡
+  target
+    (C.applyEndomorphism
+      (decode (compressSummary M f))
+      s)
+exactPredictionEqualsCompressed M decode correct target f s =
+  sym (cong target (correct f s))
+
+------------------------------------------------------------------------
+-- Polynomial / rational / Möbius / finite-Taylor upper-order composition.
+--
+-- Each layer is an independently closed summary carrier.  Their product is
+-- itself a closed summary carrier, and the product compression law is
+-- proved componentwise.  This is the exact structural theorem required
+-- before choosing concrete coefficient representations.
+------------------------------------------------------------------------
+
+record SummaryLayer (State Summary : Set) : Set₁ where
+  constructor summaryLayer
+  field
+    layerIdentity : Summary
+    layerCompose : Summary → Summary → Summary
+    layerCompress : C.Endomorphism State → Summary
+    layerComposition :
+      ∀ f g →
+      layerCompress (C.composeEndomorphism f g)
+      ≡
+      layerCompose (layerCompress f) (layerCompress g)
+
+UpperOrderSummary :
+  ∀ {P R M T : Set} → Set
+UpperOrderSummary {P = P} {R = R} {M = M} {T = T} =
+  P × (R × (M × T))
+
+upperOrderCompose :
+  ∀ {State P R M T : Set} →
+  SummaryLayer State P →
+  SummaryLayer State R →
+  SummaryLayer State M →
+  SummaryLayer State T →
+  UpperOrderSummary {P = P} {R = R} {M = M} {T = T} →
+  UpperOrderSummary {P = P} {R = R} {M = M} {T = T} →
+  UpperOrderSummary {P = P} {R = R} {M = M} {T = T}
+upperOrderCompose P R M T
+  (p₁ , (r₁ , (m₁ , t₁)))
+  (p₂ , (r₂ , (m₂ , t₂))) =
+  SummaryLayer.layerCompose P p₁ p₂ ,
+  (SummaryLayer.layerCompose R r₁ r₂ ,
+    (SummaryLayer.layerCompose M m₁ m₂ ,
+      SummaryLayer.layerCompose T t₁ t₂))
+
+upperOrderCompress :
+  ∀ {State P R M T : Set} →
+  SummaryLayer State P →
+  SummaryLayer State R →
+  SummaryLayer State M →
+  SummaryLayer State T →
+  C.Endomorphism State →
+  UpperOrderSummary {P = P} {R = R} {M = M} {T = T}
+upperOrderCompress P R M T f =
+  SummaryLayer.layerCompress P f ,
+  (SummaryLayer.layerCompress R f ,
+    (SummaryLayer.layerCompress M f ,
+      SummaryLayer.layerCompress T f))
+
+upperOrderComposition-homomorphism :
+  ∀ {State P R M T : Set}
+  (P : SummaryLayer State P)
+  (R : SummaryLayer State R)
+  (M : SummaryLayer State M)
+  (T : SummaryLayer State T) →
+  ∀ f g →
+  upperOrderCompress P R M T (C.composeEndomorphism f g)
+  ≡
+  upperOrderCompose P R M T
+    (upperOrderCompress P R M T f)
+    (upperOrderCompress P R M T g)
+upperOrderComposition-homomorphism P R M T f g =
+  cong₂
+    (λ p q → p , q)
+    (SummaryLayer.layerComposition P f g)
+    (cong₂
+      (λ r q → r , q)
+      (SummaryLayer.layerComposition R f g)
+      (cong₂
+        (λ m t → m , t)
+        (SummaryLayer.layerComposition M f g)
+        (SummaryLayer.layerComposition T f g)))
+
+record UpperOrderRepresentationTheorem
+  (State Polynomial Rational Mobius Taylor : Set) : Set₁ where
+  constructor upperOrderRepresentationTheorem
+  field
+    polynomialLayer : SummaryLayer State Polynomial
+    rationalLayer : SummaryLayer State Rational
+    mobiusLayer : SummaryLayer State Mobius
+    taylorUpperOrderLayer : SummaryLayer State Taylor
+    compositionRepresentation :
+      ∀ f g →
+      upperOrderCompress
+        polynomialLayer rationalLayer mobiusLayer taylorUpperOrderLayer
+        (C.composeEndomorphism f g)
+      ≡
+      upperOrderCompose
+        polynomialLayer rationalLayer mobiusLayer taylorUpperOrderLayer
+        (upperOrderCompress
+          polynomialLayer rationalLayer mobiusLayer taylorUpperOrderLayer f)
+        (upperOrderCompress
+          polynomialLayer rationalLayer mobiusLayer taylorUpperOrderLayer g)
+
+upperOrderRepresentationTheorem-from-layers :
+  ∀ {State Polynomial Rational Mobius Taylor : Set}
+  (P : SummaryLayer State Polynomial)
+  (R : SummaryLayer State Rational)
+  (M : SummaryLayer State Mobius)
+  (T : SummaryLayer State Taylor) →
+  UpperOrderRepresentationTheorem State Polynomial Rational Mobius Taylor
+upperOrderRepresentationTheorem-from-layers P R M T =
+  upperOrderRepresentationTheorem
+    P R M T
+    (upperOrderComposition-homomorphism P R M T)
 
 ------------------------------------------------------------------------
 -- Negative-q-Munchausen semantics.
