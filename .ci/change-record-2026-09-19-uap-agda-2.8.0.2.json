@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-19",
+  "scope": "Nix-backed proof environment and exact bounded UAP theorem surface",
+  "current_state": {
+    "agda": "Agda 2.8.0.2 with standard-library 2.4 installed by the official Agda setup action",
+    "nix": "pinned nixpkgs supplies Mercury 22.01.9; the NixOS-maintained installer action installs Nix 2.35.1",
+    "retired_non_nix_layer": "removed from the repository CI path; its channel/manifest/driver files are deleted",
+    "package_configuration": "no repository-controlled legacy package-management configuration remains",
+    "proof_source": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    "mercury_contract": "the forced canonical theorem now exposes the continuous-left-inverse exact-UAP certificate and finite-Int8 continuity contradiction; Mercury remains discovery/equality-saturation verification only"
+  },
+  "theorems": [
+    "boundedUniversalExactUAP-retraction",
+    "boundedUniversalExactUAP-decoder-transport",
+    "boundedUniversalExactUAP-postcompose",
+    "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+    "ExactUniversalApproximationThroughContinuousLeftInverse",
+    "canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies",
+    "CanonicalHadamardAttentionRopePrefixCompositionTheorem",
+    "recurrentPrefixStepWork-law",
+    "recurrentPrefixStepWork-split"
+  ],
+  "verification": {
+    "prior_ab": "four retired CI A/B executions repeatedly failed to complete while native shell Agda A/B runs reached green",
+    "current_gate": "Nix migration must kernel-check the same theorem set and execute the Mercury verifier/e-graph lanes",
+    "theorem_boundary": "bounded exact UAP derives from a continuous left-inverse witness; orbit-observation separation is derived from that witness; the standalone exact universal certificate exposes that separation explicitly",
+    "topology_boundary": "the minimal topology uses Data.Empty, Data.Unit, and Data.Product; discrete topology makes continuity automatic; finite-Int8 global inversion still contradicts the infinite Nat orbit",
+    "nat_boundary": "Nat is retained as the canonical unbounded index/value carrier with standard arithmetic and order properties; no mutually exclusive alternative Nat algebra is introduced.",
+    "import_boundary": "Data.Nat and Data.Nat.Properties provide the existing order/inequality convenience; no ordered-semiring or Data.List.Sort dependency is part of the canonical proof lineage",
+    "egraph_scope": "Mercury equality-saturation reads declarations only from TheoremsMonolith.agda; CanonicalLearnerMonolith remains imported canonical component semantics and is never an e-graph source.",
+    "mixing_scan_boundary": "The theorem monolith composes Hadamard orthogonality, learned sparse-attention mixing, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative prefix scan, target-prefix correctness, and exact finite prefix work.",
+    "sample_complexity_boundary": "Environment-dependent Sion/regret/sample-complexity machinery is pruned.",
+    "chad_boundary": "No CHAD theorem family is currently imported. Base CHAD and Iterative CHAD are admissible only as theorem-monolith additions; Efficient CHAD is excluded.",
+    "theorem_egraph_scope": "Mercury semantic extraction and equality saturation consume only TheoremsMonolith.agda; CanonicalLearnerMonolith.agda is kernel-checked only as the canonical imported learner definition.",
+    "associative_mix_composition": "CanonicalHadamardAttentionRopePrefixCompositionTheorem is a first-class field of the forced combined theorem, connecting Hadamard orthogonality, sparse attention composition, Walsh-Rademacher phase periodicity, endogenous attention mediation, associative recurrent prefix scan, target-prefix correctness, and exact prefix-work equalities.",
+    "regret_boundary": "No Sion theorem, regret bound, or statistical sample-complexity theorem is included; environment-dependent statistical claims are pruned.",
+    "injectivity_boundary": "Injectivity surfaces are explicit theorem declarations: left inverse ⇒ observation injective; exact UAP ⇔ left inverse in the discrete setting; canonical Nat-orbit injectivity; finite-feature Nat → Fin obstruction. Orbit-state injectivity is named without implying a ring structure.",
+    "import_convenience_boundary": "Data.Fin is imported because finite carriers and finite sample indices are theorem semantics. Data.Vec is not imported solely for e-graph search convenience because Mercury consumes theorem declarations, not the imported library namespace.",
+    "convexity_boundary": "No generic topology×convexity/concavity theorem is retained. The concrete Bellman-Shapley layer remains an explicit monotone-operator/inclusion theorem.",
+    "emergent_finite_exact_orbit_uap": "CanonicalFiniteExactOrbitUAPCompositionTheorem is the theorem-level composition of AQLoop/prefix semantics, exact UAP, bounded/recurrent exact UAP, injectivity/cardinality, finite-time/sample equalities, exact iterate composition, aperiodicity/cycle exclusion, and state/action visit capacity.",
+    "turing_capacity_boundary": "No Turing-completeness or compression=prediction theorem is claimed."
+  },
+  "decision": "Preserve one canonical learner monolith and one theorem monolith; make CanonicalFiniteExactOrbitUAPCompositionTheorem the Mercury forced target; retain Agda --safe as proof authority and Mercury as theorem-source equality-saturation verification only."
+}
