@@ -1847,8 +1847,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
     continuousReadoutTransfer :
       ∀ {Feature Output : Set}
       {observe : C.FullLearnerState → Feature}
-      {inverse : Feature → C.FullLearnerState}
-
+      {inverse : Feature → C.FullLearnerState} →
       ContinuousLeftInverseTheorem
         C.FullLearnerState
         Feature
