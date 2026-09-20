@@ -1929,6 +1929,28 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       (∀ t → inverse (observe t) ≡ t) →
       ⊥
 
+    finiteInt8ContinuousLeftInverseContradiction :
+      ∀ (K : C.FullLearnerKernel)
+      (s : C.FullLearnerState)
+      (observe : C.FullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.FullLearnerState) →
+      (observeContinuous :
+        Continuous
+          C.FullLearnerState
+          C.Int8
+          (discreteTopology C.FullLearnerState)
+          (discreteTopology C.Int8)
+          observe) →
+      (inverseContinuous :
+        Continuous
+          C.Int8
+          C.FullLearnerState
+          (discreteTopology C.Int8)
+          (discreteTopology C.FullLearnerState)
+          inverse) →
+      (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+      ⊥
+
     noGlobalInt8DiscreteUAP :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
@@ -1972,4 +1994,7 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalInfiniteStateOrbitEmbedding
     canonicalOrbitObservationSeparation
     canonicalPigeonholeNatClockContradiction
+    (λ K s observe inverse observeContinuous inverseContinuous leftInverse →
+      canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies
+        K s observe inverse observeContinuous inverseContinuous leftInverse)
     canonicalNoGlobalInt8DiscreteUAPOnOrbit
