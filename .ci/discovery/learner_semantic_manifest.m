@@ -80,9 +80,8 @@ read_manifest(Laws, !IO) :-
     ).
 
 law_id(Law) =
-    string.format(
-        "%s#%s",
-        [s(semantic_law.source(Law)), s(semantic_law.name(Law))]).
+    string.append_list(
+        [semantic_law.source(Law), "#", semantic_law.name(Law)]).
 
 law_name(Law) = semantic_law.name(Law).
 
