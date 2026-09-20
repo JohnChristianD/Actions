@@ -348,6 +348,10 @@ selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c
 sparsemaxPolicy : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A
 sparsemaxPolicy {A} K q c = selectPositive K q c (sortScores (scoreList q c))
 
+updateLCBCount : ∀ {A} → Fin A → LCBCountState A → LCBCountState A
+updateLCBCount a (lcbCountState counts total) =
+  lcbCountState (incAt counts a) (suc total)
+
 finiteQLog8 : Int8 → FiniteRational
 finiteQLog8 x with toℕ (code x)
 ... | zero = finiteRational 1 0 1
