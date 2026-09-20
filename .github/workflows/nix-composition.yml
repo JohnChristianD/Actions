@@ -47,14 +47,14 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
       - name: Stage learner Agda interfaces
         run: |
-          rm -rf .ci/interface-artifact
-          mkdir -p .ci/interface-artifact
-          cp --parents "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" .ci/interface-artifact/
+          rm -rf interface-artifact
+          mkdir -p interface-artifact
+          cp --parents "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" interface-artifact/
       - name: Upload learner Agda interfaces
         uses: actions/upload-artifact@v4
         with:
           name: learner-agdai
-          path: .ci/interface-artifact
+          path: interface-artifact
           if-no-files-found: error
 
 
@@ -99,14 +99,14 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda"
       - name: Stage theorem partition 1 Agda interfaces
         run: |
-          rm -rf .ci/interface-artifact
-          mkdir -p .ci/interface-artifact
-          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             .ci/interface-artifact/
+          rm -rf interface-artifact
+          mkdir -p interface-artifact
+          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             interface-artifact/
       - name: Upload theorem partition 1 Agda interfaces
         uses: actions/upload-artifact@v4
         with:
           name: part1-agdai
-          path: .ci/interface-artifact
+          path: interface-artifact
           if-no-files-found: error
 
   agda-theorem-part2:
@@ -145,14 +145,14 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda"
       - name: Stage theorem partition 2 Agda interfaces
         run: |
-          rm -rf .ci/interface-artifact
-          mkdir -p .ci/interface-artifact
-          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             .ci/interface-artifact/
+          rm -rf interface-artifact
+          mkdir -p interface-artifact
+          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             interface-artifact/
       - name: Upload theorem partition 2 Agda interfaces
         uses: actions/upload-artifact@v4
         with:
           name: part2-agdai
-          path: .ci/interface-artifact
+          path: interface-artifact
           if-no-files-found: error
 
   agda-theorem-part3:
@@ -192,14 +192,14 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda"
       - name: Stage theorem partition 3 Agda interfaces
         run: |
-          rm -rf .ci/interface-artifact
-          mkdir -p .ci/interface-artifact
-          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai"             .ci/interface-artifact/
+          rm -rf interface-artifact
+          mkdir -p interface-artifact
+          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai"             interface-artifact/
       - name: Upload theorem partition 3 Agda interfaces
         uses: actions/upload-artifact@v4
         with:
           name: part3-agdai
-          path: .ci/interface-artifact
+          path: interface-artifact
           if-no-files-found: error
 
   agda-theorem-part4:
@@ -240,14 +240,14 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda"
       - name: Stage theorem partition 4 Agda interfaces
         run: |
-          rm -rf .ci/interface-artifact
-          mkdir -p .ci/interface-artifact
-          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai"             .ci/interface-artifact/
+          rm -rf interface-artifact
+          mkdir -p interface-artifact
+          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai"             interface-artifact/
       - name: Upload theorem partition 4 Agda interfaces
         uses: actions/upload-artifact@v4
         with:
           name: part4-agdai
-          path: .ci/interface-artifact
+          path: interface-artifact
           if-no-files-found: error
 
   agda-theorem-part5:
@@ -289,14 +289,14 @@ jobs:
           "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
       - name: Stage theorem partition 5 Agda interfaces
         run: |
-          rm -rf .ci/interface-artifact
-          mkdir -p .ci/interface-artifact
-          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai"             .ci/interface-artifact/
+          rm -rf interface-artifact
+          mkdir -p interface-artifact
+          cp --parents             "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai"             "Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai"             interface-artifact/
       - name: Upload theorem partition 5 Agda interfaces
         uses: actions/upload-artifact@v4
         with:
           name: part5-agdai
-          path: .ci/interface-artifact
+          path: interface-artifact
           if-no-files-found: error
 
   agda-theorems:
