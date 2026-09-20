@@ -541,7 +541,8 @@ best_binding_for_root(
         [binding(Node, Bound) | Bs], Root, E, Depth, Seen,
         Expr, Cost) :-
     (
-        root(parent(E), Bound) = Root,
+        root(parent(E), Bound, BoundRoot),
+        BoundRoot = Root,
         Node = enode(Symbol, Children),
         extract_children(Children, E, Depth - 1, Seen, ChildExprs, ChildCost),
         Candidate = app(Symbol, ChildExprs),
