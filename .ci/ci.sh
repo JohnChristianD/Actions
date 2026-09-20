@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-agda_safe_files=(
-  "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
-  "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
-)
-
 run_agda_file() {
   local file="$1"
   printf '==> Agda --safe %s\n' "$file"
@@ -53,6 +48,11 @@ run_discovery() {
 
 run_surface() {
   local theorem_monolith_count learner_monolith_count total_monolith_count
+
+  if grep -Eq '^[[:space:]]*concurrency:' .github/workflows/nix-composition.yml; then
+    printf '%s\n' "ERROR: workflow concurrency may cancel or evict runs; rely on independent bounded jobs instead"
+    exit 1
+  fi
 
   theorem_monolith_count="$(
     find . -type f -not -path './.git/*' -print \
