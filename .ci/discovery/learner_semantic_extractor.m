@@ -106,6 +106,10 @@ theoremish(Signature) :-
     ;
     string.sub_string_search(Signature, "→ ⊥", _)
     ;
+    string.sub_string_search(Signature, "Continuous", _)
+    ;
+    string.sub_string_search(Signature, "Set₁", _)
+    ;
     %% Record-valued theorem instances are theorem objects too.  The
     %% canonical theorem monolith uses the suffix "Theorem" for these
     %% structured witnesses.
