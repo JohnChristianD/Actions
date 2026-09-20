@@ -217,9 +217,8 @@ finalize_state(Source, body_state(Name, SigRev, BodyRev), Acc, Out) :-
     Out = [semantic_decl(Source, Name, Signature, Body) | Acc].
 
 
-:- pred theorem_monolith_is_safe(
-    io::res(list(string))::out, io::di, io::uo) is det.
-theorem_monolith_is_safe(Result, !IO) :-
+:- pred theorem_monolith_is_safe(io::di, io::uo) is det.
+theorem_monolith_is_safe(!IO) :-
     io.read_named_file_as_lines(
         "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
         ReadResult, !IO),
@@ -228,26 +227,19 @@ theorem_monolith_is_safe(Result, !IO) :-
         (
             list.member("{-# OPTIONS --safe #-}", Lines)
         ->
-            Result = ok(Lines)
+            true
         ;
-            Result = error("canonical theorem monolith is not declared --safe")
+            io.write_string(
+                "ERROR: canonical theorem monolith is not declared --safe\n",
+                !IO),
+            io.set_exit_status(1, !IO)
         )
     ;
         ReadResult = error(Error),
-        Result = error(Error)
-    ).
-
-
-:- pred semantic_declarations(io.res(list(semantic_decl))::out,
-    io::di, io::uo) is det.
-semantic_declarations(Result, !IO) :-
-    theorem_monolith_is_safe(SafeResult, !IO),
-    (
-        SafeResult = ok(_),
-        read_all_sources(source_files, [], Result, !IO)
-    ;
-        SafeResult = error(Error),
-        Result = error(Error)
+        io.write_string(
+            "ERROR: cannot read canonical theorem monolith: " ++
+            Error ++ "\n", !IO),
+        io.set_exit_status(1, !IO)
     ).
 
 :- pred read_all_sources(list(string)::in, list(semantic_decl)::in,
