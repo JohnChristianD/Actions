@@ -72,10 +72,9 @@ read_manifest(Laws, !IO) :-
         Result = ok(Lines),
         read_lines(Lines, [], Laws)
     ;
-        Result = error(Error),
+        Result = error(_),
         io.write_string(
-            "ERROR: cannot read learner semantic manifest: " ++
-            Error ++ "\n", !IO),
+            "ERROR: cannot read learner semantic manifest\n", !IO),
         io.set_exit_status(1, !IO),
         Laws = []
     ).
