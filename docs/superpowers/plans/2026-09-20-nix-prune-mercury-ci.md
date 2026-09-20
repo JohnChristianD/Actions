@@ -79,3 +79,36 @@
 - [ ] Step 2: Observe the new CI run.
 - [ ] Step 3: If Nix evaluation or package compatibility fails, fix only the environment wiring and re-run; do not weaken theorem gates.
 - [ ] Step 4: Confirm Agda kernel checks and Mercury e-graph checks execute rather than being skipped.
+
+
+## Follow-up: finite precision, Nat coding, and theorem/e-graph synchronization
+
+### Goal
+
+Make the finite/discrete exact-UAP boundary explicit without importing reservoir terminology into the RL model, and make Mercury's equality-saturation layer consume only the theorem surface proven by the canonical Agda monolith.
+
+### Architecture
+
+`CanonicalLearnerMonolith.agda` owns the minimal topology, discrete topology witness, finite `Int8` algebra, and learner/RL definitions. `TheoremsMonolith.agda` owns the exact-UAP factorization, infinite `Nat` orbit embedding, finite-`Int8` contradiction, and proof-source theorem contracts. Mercury consumes the source-derived theorem manifest and verifies the named dependencies with equality saturation; Agda `--safe` remains the proof authority.
+
+### Knowledge delta
+
+- `README.md`: distinguish this learned 2-RNN/SSRN/finite-automata/Moore-style RL algebra from reservoir computing; explain the exact Nat-vs-Int8 cardinality boundary and the topology/import result.
+- `.ci/change-record-2026-09-19-uap-agda-2.8.0.2.json`: record the new theorem and Mercury synchronization contracts.
+- `.ci/discovery/theorem_monolith_egraph_sync.m`: require the exact UAP, topology boundary, Nat-orbit, and finite-Int8 contradiction declarations.
+- `.ci/discovery/interpolated_theorem_egraph.m`: include the same theorem dependencies in the semantic e-graph target.
+- `.ci/discovery/interpolated_theorem_egraph_test.m`: exercise the synchronization gate.
+- `.ci/discovery/symbolic_egraph_test.m`: exercise e-matching, saturation, rebuild, analysis, and extraction.
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: add only theorem contracts justified by the existing finite/discrete algebra.
+
+### Review focus
+
+1. Do not claim that finite-dimensional reservoir universality requires infinite width; the 2024 reservoir result supplies a finite-output counterexample.
+2. Do not claim neighborhood separation is inherently equivalent to infinite precision or infinite data in arbitrary topology; the repo proves only the finite-codomain exact-left-inverse obstruction.
+3. Do not claim `Nat` codomain alone is sufficient for exact universality; require an explicit left inverse/injectivity composition on the relevant orbit.
+4. Do not reintroduce ordered-semiring or sorting dependencies absent from the existing proof import surface.
+5. Do not let Mercury outrank Agda proof authority or fabricate theorem dependencies not extracted from the monolith.
+
+### Verification
+
+The single CI shell must run Agda `--safe`, Mercury theorem checks, source-derived e-graph synchronization, equality-saturation regression tests, and the repository surface audit from the same pinned Nix environment.
