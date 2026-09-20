@@ -1,0 +1,49 @@
+name: Nix connected composition verification
+
+on:
+  push:
+    branches: [main, nix-prune-mercury-ci]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: nix-connected-composition-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Nix / Agda + Mercury connected proof surface
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@b85815f71a6de0ddee80b8a80a98d43f4bcc66c7
+
+      - name: Verify pinned toolchain
+        run: nix develop --command bash -lc './.ci/ci.sh versions'
+
+      - name: Run Agda kernel lane
+        run: nix develop --command bash -lc './.ci/ci.sh agda-safe'
+
+      - name: Run Mercury theorem verifier lane
+        run: nix develop --command bash -lc './.ci/ci.sh mercury'
+
+      - name: Run Mercury semantic e-graph discovery lane
+        run: nix develop --command bash -lc './.ci/ci.sh discovery'
+
+      - name: Run canonical source-policy surface audit
+        run: nix develop --command bash -lc './.ci/ci.sh surface'
