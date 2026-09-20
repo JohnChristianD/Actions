@@ -30,25 +30,19 @@
         let
           pkgs = mkPkgs system;
 
-          standardLibrary = pkgs.agdaPackages.standard-library.overrideAttrs
-            (_old: {
-              version = "2.4";
-              src = agda-stdlib;
-            });
-
-          agdaWithStandardLibrary =
-            pkgs.agdaPackages.agda.withPackages [ standardLibrary ];
+          agda = pkgs.agdaPackages.agda;
         in
         {
           default = pkgs.mkShell {
             packages = [
-              agdaWithStandardLibrary
+              agda
               pkgs.mercury
               pkgs.gnumake
               pkgs.git
             ];
 
             shellHook = ''
+              export AGDA_STDLIB="${agda-stdlib}/src"
               printf 'agda=%s\n' "$(agda --version | head -n 1)"
               printf 'mercury=%s\n' "$(mmc --version | head -n 1)"
             '';
