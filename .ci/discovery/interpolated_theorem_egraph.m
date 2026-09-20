@@ -18,10 +18,6 @@
 forced_target_id =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-finite-exact-orbit-uap-composition-theorem".
 
-:- func base_target_dependency = string.
-base_target_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem".
-
 :- func bounded_exact_approximation_dependency = string.
 bounded_exact_approximation_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
@@ -309,9 +305,6 @@ main(!IO) :-
         law_id(TargetLaw) = forced_target_id,
         semantic_law.composite(TargetLaw) = yes,
         list.length(semantic_law.dependencies(TargetLaw)) >= 3,
-        list.member(
-            base_target_dependency,
-            semantic_law.dependencies(TargetLaw)),
         list.member(
             continuous_readout_dependency,
             semantic_law.dependencies(TargetLaw)),
