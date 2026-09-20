@@ -514,9 +514,9 @@ record S4PlusS5RecurrentScanTheorem (State Input : Set) : Set₁ where
 
 open S4PlusS5RecurrentScanTheorem public
 
-canonical-S4+S5-recurrent-scan-theorem :
+canonical-S4S5-recurrent-scan-theorem :
   S4PlusS5RecurrentScanTheorem C.GRUState C.Int8
-canonical-S4+S5-recurrent-scan-theorem =
+canonical-S4S5-recurrent-scan-theorem =
   s4PlusS5RecurrentScanTheorem
     canonicalGRU-recurrent-associative-scan-theorem
     (λ s → refl)
@@ -2225,7 +2225,7 @@ canonical-polymorphic-sparsemax-egraph-theorem =
     C.canonicalPolicy-optimizer-invariant
     C.hardSparse-composition-normPair-F4-L2
     (λ K s n → refl)
-    canonical-S4+S5-recurrent-scan-theorem
+    canonical-S4S5-recurrent-scan-theorem
     finiteAutomatonProductPrefix-correct
     informationPreserving-symbolic-task-factorization
 
