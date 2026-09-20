@@ -760,30 +760,6 @@ recurrentWord-observation-collision-impossible
     obsEq
     target
     targetDistinct
-
-------------------------------------------------------------------------
--- Collision and injectivity are two views of the same obstruction.
---
--- This is a genuine composition theorem: the proof consumes the
--- non-reflexive left-inverse ⇒ injectivity law.
-------------------------------------------------------------------------
-
-collision-implies-no-leftInverse-via-injectivity :
-  ∀ {State Feature : Set}
-  (observe : State → Feature)
-  {s t : State} →
-  observe s ≡ observe t →
-  s ≢ t →
-  ¬ (Σ (λ inverse →
-      ∀ u → inverse (observe u) ≡ u))
-collision-implies-no-leftInverse-via-injectivity
-  observe obsEq distinct =
-  λ witness →
-    distinct
-      (discreteLeftInverse-observe-injective
-        (proj₂ witness)
-        obsEq)
-
 ------------------------------------------------------------------------
 -- S4/S5-style scan algebra, without claiming the canonical learner is
 -- literally the linear S4/S5 architecture.
@@ -1368,6 +1344,30 @@ discreteLeftInverse-observe-injective leftInverse {s} {t} eq =
     (trans
       (cong inverse eq)
       (leftInverse t))
+
+
+------------------------------------------------------------------------
+-- Collision and injectivity are two views of the same obstruction.
+--
+-- This is a genuine composition theorem: the proof consumes the
+-- non-reflexive left-inverse ⇒ injectivity law.
+------------------------------------------------------------------------
+
+collision-implies-no-leftInverse-via-injectivity :
+  ∀ {State Feature : Set}
+  (observe : State → Feature)
+  {s t : State} →
+  observe s ≡ observe t →
+  s ≢ t →
+  ¬ (Σ (λ inverse →
+      ∀ u → inverse (observe u) ≡ u))
+collision-implies-no-leftInverse-via-injectivity
+  observe obsEq distinct =
+  λ witness →
+    distinct
+      (discreteLeftInverse-observe-injective
+        (proj₂ witness)
+        obsEq)
 
 discreteExactUAPTheorem-from-leftInverse :
   ∀ {State Feature Output : Set}
