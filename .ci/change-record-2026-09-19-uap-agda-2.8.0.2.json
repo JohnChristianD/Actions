@@ -5,7 +5,7 @@
     "agda": "Agda 2.8.0.2 with standard-library 2.4 installed by the official Agda setup action",
     "nix": "pinned nixpkgs supplies Mercury 22.01.9; the NixOS-maintained installer action installs Nix 2.35.1",
     "retired_non_nix_layer": "removed from the repository CI path; its channel/manifest/driver files are deleted",
-    "package_configuration": "no repository-controlled legacy Scheme package-management configuration remains",
+    "package_configuration": "no repository-controlled legacy package-management configuration remains",
     "proof_source": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
     "mercury_contract": "forced canonical theorem retains bounded exact UAP and recurrent-prefix dependencies; Mercury remains discovery/verification only"
   },
@@ -17,7 +17,7 @@
     "ExactUniversalApproximationThroughContinuousLeftInverse"
   ],
   "verification": {
-    "prior_ab": "four Guix A/B executions repeatedly failed to complete while native shell Agda A/B runs reached green",
+    "prior_ab": "four retired CI A/B executions repeatedly failed to complete while native shell Agda A/B runs reached green",
     "current_gate": "Nix migration must kernel-check the same theorem set and execute the Mercury verifier/e-graph lanes",
     "theorem_boundary": "bounded exact UAP derives from a continuous left-inverse witness; orbit-observation separation is derived from that witness; the standalone exact universal certificate exposes that separation explicitly"
   },

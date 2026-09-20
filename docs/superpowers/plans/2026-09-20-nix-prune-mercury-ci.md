@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Remove the Guix/Scheme execution layer and run the Agda proof lane plus Mercury verifier/e-graph lanes from one pinned Nix environment while preserving the current theorem and discovery contracts.
+**Goal:** Remove the retired non-Nix execution layer and run the Agda proof lane plus Mercury verifier/e-graph lanes from one pinned Nix environment while preserving the current theorem and discovery contracts.
 
 **Architecture:** GitHub Actions installs Nix once, enters the repository's flake devShell, and runs lane-specific commands from a small POSIX shell driver. Mercury comes from Nixpkgs. Agda 2.8.0.2 and standard-library 2.4 come from the official Agda setup action.
 
 **Tech Stack:** GitHub Actions, Nix flakes, pinned nixpkgs, Agda 2.8.x + standard-library package set, Mercury, POSIX shell.
 
-**Spec:** Current request: prune Guix/Scheme, consolidate CI on Nix, and preserve kernel-check plus Mercury e-graph verification.
+**Spec:** Current request: prune the retired CI layer and consolidate CI on Nix, and preserve kernel-check plus Mercury e-graph verification.
 
 ## Global Constraints
 
@@ -16,15 +16,15 @@
 - Preserve `.ci/discovery/` Mercury source and executable e-graph checks.
 - Keep `--safe` on the Agda proof lane.
 - Do not weaken or delete theorem checks merely to obtain a green run.
-- Remove all repository-controlled Guix and Guile CI files.
+- Remove all repository-controlled files from the retired CI layer.
 - Keep the CI environment deterministic through a pinned flake lock.
 
 ## Review Focus
 
 - Agda/stdlib compatibility: the selected Nix package set must expose the standard library used by the repository's imports.
 - Mercury build/runtime: all current Mercury verifier and e-graph programs must compile and execute from the same Nix shell.
-- Runner lifecycle: the Agda lane must no longer depend on Guix bootstrap or Guix shell process boundaries.
-- Surface audit: no `.scm` or Guix workflow/config remnants should remain.
+- Runner lifecycle: the Agda lane must no longer depend on the retired CI bootstrap or shell process boundaries.
+- Surface audit: no legacy Scheme-source or retired workflow/config remnants should remain.
 - Evidence quality: CI must distinguish a kernel failure from a runner/process failure.
 
 ---
@@ -40,13 +40,11 @@
 - [x] Step 3: Keep Mercury sourced from nixpkgs.
 - [x] Step 4: Avoid the retired non-Nix execution layer entirely.
 
-### Task 2: Replace Scheme CI driver
+### Task 2: Replace the retired CI driver
 
 **Files:**
 - Create: `.ci/ci.sh`
-- Delete: `.guix/ci.scm`
-- Delete: `.guix/manifest.scm`
-- Delete: `.guix/channels.scm`
+- Delete: the retired CI driver, manifest, and channel files
 
 - [x] Step 1: Port the existing lane dispatch into POSIX shell without changing the lane contracts.
 - [x] Step 2: Keep the Agda file list and `--safe` invocations unchanged.
@@ -56,7 +54,7 @@
 ### Task 3: Replace GitHub Actions environment
 
 **Files:**
-- Modify: `.github/workflows/guix-composition.yml` (rename is optional; contents must become Nix-backed CI).
+- Replace the retired GitHub workflow with the Nix-backed workflow.
 
 - [x] Step 1: Install Nix with a pinned action.
 - [x] Step 2: Run all four lanes from the same flake devShell.
@@ -70,7 +68,7 @@
 - Modify: `README.md`
 - Modify: `.ci/change-record-2026-09-19-uap-agda-2.8.0.2.json`
 
-- [x] Step 1: Replace Guix bootstrap documentation with Nix environment documentation.
+- [x] Step 1: Replace retired bootstrap documentation with Nix environment documentation.
 - [x] Step 2: Record that Mercury is supplied through Nixpkgs.
 - [x] Step 3: Record the CI diagnosis as a runner/process-boundary investigation, not a theorem rejection.
 - [x] Step 4: Keep the bounded exact-UAP theorem statement and its proof dependencies intact.
