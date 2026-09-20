@@ -40,6 +40,12 @@ jobs:
           agda-stdlib-version: '2.4'
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Restore or save Agda interfaces
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/*.agdai
+          key: agda-interfaces-${{ runner.os }}-2.8.0.2-2.4-${{ hashFiles('Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda') }}
       - name: Check learner sources
         run: |
           "$AGDA_COMMAND" --version
@@ -48,6 +54,7 @@ jobs:
 
   agda-theorems:
     name: Nix / Agda theorem monolith
+    needs: agda-learner
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
@@ -68,6 +75,12 @@ jobs:
           agda-stdlib-version: '2.4'
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
+      - name: Restore Agda interfaces
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/*.agdai
+          key: agda-interfaces-${{ runner.os }}-2.8.0.2-2.4-${{ hashFiles('Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda') }}
       - name: Check theorem monolith
         run: |
           "$AGDA_COMMAND" --version
@@ -95,11 +108,11 @@ jobs:
           agda-stdlib-version: '2.4'
       - name: Export Agda executable
         run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
-      - name: Run Mercury verifier
-        run: bash ./.ci/ci.sh mercury
-      - name: Run Mercury e-graph discovery
-        run: bash ./.ci/ci.sh discovery
-      - name: Check canonical surface
-        run: bash ./.ci/ci.sh surface
-      - name: Check tool versions
-        run: bash ./.ci/ci.sh versions
+      - name: Run Mercury, discovery, surface, and version checks
+        run: |
+          nix develop --command bash -lc '
+            bash ./.ci/ci.sh mercury
+            bash ./.ci/ci.sh discovery
+            bash ./.ci/ci.sh surface
+            bash ./.ci/ci.sh versions
+          '
