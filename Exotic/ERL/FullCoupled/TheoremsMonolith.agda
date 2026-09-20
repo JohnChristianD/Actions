@@ -1301,8 +1301,7 @@ canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse :
       C.FullLearnerState
       Feature
       observe
-      inverse
-) →
+      inverse) →
   ∀ (K : C.FullLearnerKernel)
   (s : C.FullLearnerState) →
   C.canonicalWatkinsTarget K s ≡
@@ -1326,8 +1325,7 @@ canonicalWatkinsTarget-boundedUniversalExactAUP :
       C.FullLearnerState
       Feature
       observe
-      inverse
-) →
+      inverse) →
   ∀ (K : C.FullLearnerKernel)
   (i : Fin bound) →
   C.canonicalWatkinsTarget K (embed i) ≡
@@ -1392,8 +1390,7 @@ boundedContinuousLeftInverseExactApproximationTheorem-from-witness :
       State
       Feature
       observe
-      inverse
-) →
+      inverse) →
   BoundedContinuousLeftInverseExactApproximationTheorem
     State
     Feature
@@ -1425,8 +1422,7 @@ boundedExactApproximation-on-boundedOrbit :
       C.FullLearnerState
       Feature
       observe
-      inverse
-) →
+      inverse) →
   BoundedContinuousLeftInverseExactApproximationTheorem
     C.FullLearnerState
     Feature
@@ -1456,8 +1452,7 @@ boundedUniversalExactApproximation-through-continuousLeftInverse :
       C.FullLearnerState
       Feature
       observe
-      inverse
-) →
+      inverse) →
   BoundedContinuousLeftInverseExactApproximationTheorem
     C.FullLearnerState
     Feature
@@ -1679,8 +1674,7 @@ canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness :
       C.FullLearnerState
       Feature
       observe
-      inverse
-) →
+      inverse) →
   CanonicalRecurrentBoundedExactUniversalApproximationTheorem
     K
     s
@@ -1821,8 +1815,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
           C.FullLearnerState
           Feature
           observe
-          inverse
-) →
+          inverse) →
       BoundedContinuousLeftInverseExactApproximationTheorem
         C.FullLearnerState
         Feature
@@ -1843,8 +1836,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
           C.FullLearnerState
           Feature
           observe
-          inverse
-) →
+          inverse) →
       CanonicalRecurrentBoundedExactUniversalApproximationTheorem
         K
         s
