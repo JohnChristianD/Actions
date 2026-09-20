@@ -1842,3 +1842,59 @@ canonicalNatIndexedExactUniversalReadout
   cong
     target
     (sym (leftInverse (C.iterateCanonical K n s)))
+
+------------------------------------------------------------------------
+-- Finite topological hard-sign results.
+--
+-- The exact finite sign projection is idempotent and automatically
+-- continuous under the already-defined discrete topology.  No derivative,
+-- metric, convexity, or real-analytic assumption is used.
+------------------------------------------------------------------------
+
+hardSignGate-idempotent :
+  ∀ x → C.hardSignGate (C.hardSignGate x) ≡ C.hardSignGate x
+hardSignGate-idempotent x with C.hardSign x
+... | C.negative = refl
+... | C.zeroSign = refl
+... | C.positive = refl
+
+hardSignGate-continuous-discrete :
+  Continuous
+    C.Int8
+    C.Int8
+    (discreteTopology C.Int8)
+    (discreteTopology C.Int8)
+    C.hardSignGate
+hardSignGate-continuous-discrete =
+  continuous-under-discrete-topology C.hardSignGate
+
+record FiniteHardSparseKKTEquilibriumTheorem
+  (State : Set)
+  (step : State → State)
+  (hardSparse : State → Set)
+  (equilibrium : State) : Set₁ where
+  constructor finiteHardSparseKKTEquilibriumTheorem
+  field
+    complementarySupport :
+      ∀ s → hardSparse s → step s ≡ equilibrium
+    equilibriumHardSparse :
+      hardSparse equilibrium
+    equilibriumFixed :
+      step equilibrium ≡ equilibrium
+
+open FiniteHardSparseKKTEquilibriumTheorem public
+
+finiteHardSparseKKT-equilibrium-prefix :
+  ∀ {State : Set}
+  {step : State → State}
+  {hardSparse : State → Set}
+  {equilibrium : State}
+  (T : FiniteHardSparseKKTEquilibriumTheorem
+    State step hardSparse equilibrium)
+  (n : Nat) →
+  iterateState step n equilibrium ≡ equilibrium
+finiteHardSparseKKT-equilibrium-prefix T =
+  absorbing-prefix-fixed
+    (absorbingFiniteEquilibriumTheorem
+      (equilibriumFixed T))
+
