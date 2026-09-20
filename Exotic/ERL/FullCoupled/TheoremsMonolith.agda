@@ -261,330 +261,6 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
     (canonicalPersistentGRUPreservation K s)
 
 ------------------------------------------------------------------------
--- Finite TSTS-only endogenous connected composition.
---
--- The outer search is only Thompson Sampling Tree Search. JAxtar/A*
--- graph search and evolutionary-population proposal layers are retired
--- from the canonical discovery path.
---
--- The finite boundary exposes the TSTS role as an opaque posterior-sample
--- witness, then makes the evaluator exact:
---
---   posterior sample
---       -> selected branch
---       -> endogenous learner probe
---       -> exact Watkins target
---       -> posterior update
---       -> GRU tell + F4 tell
---
--- This is a finite semantic boundary, not a numerical reimplementation of
--- the external TSTS runtime or a claim that its Bayesian regret theorem
--- automatically transfers to this deterministic learner.
-------------------------------------------------------------------------
-
-data FiniteTSTSBranch : Set where
-  tstsWatkinsBranch : FiniteTSTSBranch
-  tstsF4L2Branch : FiniteTSTSBranch
-  tstsGRUBranch : FiniteTSTSBranch
-
-record FiniteTSTSPosterior : Set where
-  constructor finiteTSTSPosterior
-  field
-    sampleWatkins : Nat
-    sampleF4L2 : Nat
-    sampleGRU : Nat
-open FiniteTSTSPosterior public
-
-finiteTSTSBranchSample :
-  FiniteTSTSPosterior →
-  FiniteTSTSBranch →
-  Nat
-finiteTSTSBranchSample p tstsWatkinsBranch = sampleWatkins p
-finiteTSTSBranchSample p tstsF4L2Branch = sampleF4L2 p
-finiteTSTSBranchSample p tstsGRUBranch = sampleGRU p
-
-finiteTSTSChoose2 :
-  FiniteTSTSPosterior →
-  FiniteTSTSBranch →
-  FiniteTSTSBranch →
-  FiniteTSTSBranch
-finiteTSTSChoose2 p a b
-  with finiteTSTSBranchSample p a <ᵇ finiteTSTSBranchSample p b
-... | true = b
-... | false = a
-
-finiteTSTSSelect :
-  FiniteTSTSPosterior →
-  FiniteTSTSBranch
-finiteTSTSSelect p =
-  finiteTSTSChoose2
-    p
-    (finiteTSTSChoose2 p tstsWatkinsBranch tstsF4L2Branch)
-    tstsGRUBranch
-
-finiteTSTSProbe :
-  C.FullLearnerKernel →
-  FiniteTSTSBranch →
-  C.Int8 →
-  C.FullLearnerState →
-  C.FullLearnerState
-finiteTSTSProbe K tstsWatkinsBranch d s =
-  C.fullLearnerState
-    (C.clock s)
-    (C.watkinsState
-      (C.critic (C.watkins s))
-      (C.int8Add (C.signal (C.watkins s)) d)
-      (C.trace (C.watkins s)))
-    (C.attention s)
-    (C.gru s)
-    (C.optimizer s)
-    (C.norm s)
-    (C.lcbCounts s)
-    (C.qLogControl s)
-    (C.qLogValue s)
-finiteTSTSProbe K tstsF4L2Branch d s =
-  C.replaceOptimizer s
-    (C.f4ThetaStep
-      (C.optimizerKernel K)
-      (C.optimizer s)
-      d)
-finiteTSTSProbe K tstsGRUBranch d s =
-  C.fullLearnerState
-    (C.clock s)
-    (C.watkins s)
-    (C.attention s)
-    (C.gruStep (C.gru s) d)
-    (C.optimizer s)
-    (C.norm s)
-    (C.lcbCounts s)
-    (C.qLogControl s)
-    (C.qLogValue s)
-
-finiteTSTSSelectedBranch :
-  FiniteTSTSPosterior →
-  FiniteTSTSBranch
-finiteTSTSSelectedBranch p = finiteTSTSSelect p
-
-finiteTSTSSelectedProbe :
-  C.FullLearnerKernel →
-  FiniteTSTSPosterior →
-  C.Int8 →
-  C.FullLearnerState →
-  C.FullLearnerState
-finiteTSTSSelectedProbe K p d s =
-  finiteTSTSProbe K (finiteTSTSSelectedBranch p) d s
-
-finiteTSTSSelectedTarget :
-  C.FullLearnerKernel →
-  FiniteTSTSPosterior →
-  C.Int8 →
-  C.FullLearnerState →
-  C.Int8
-finiteTSTSSelectedTarget K p d s =
-  C.canonicalWatkinsTarget K
-    (finiteTSTSSelectedProbe K p d s)
-
-finiteTSTSReward :
-  C.FullLearnerKernel →
-  FiniteTSTSPosterior →
-  C.Int8 →
-  C.FullLearnerState →
-  Nat
-finiteTSTSReward K p d s =
-  toℕ (C.code (finiteTSTSSelectedTarget K p d s))
-
-finiteTSTSPosteriorUpdate :
-  FiniteTSTSPosterior →
-  FiniteTSTSBranch →
-  Nat →
-  FiniteTSTSPosterior
-finiteTSTSPosteriorUpdate p tstsWatkinsBranch r =
-  finiteTSTSPosterior
-    (sampleWatkins p + r)
-    (sampleF4L2 p)
-    (sampleGRU p)
-finiteTSTSPosteriorUpdate p tstsF4L2Branch r =
-  finiteTSTSPosterior
-    (sampleWatkins p)
-    (sampleF4L2 p + r)
-    (sampleGRU p)
-finiteTSTSPosteriorUpdate p tstsGRUBranch r =
-  finiteTSTSPosterior
-    (sampleWatkins p)
-    (sampleF4L2 p)
-    (sampleGRU p + r)
-
-finiteTSTSNextPosterior :
-  C.FullLearnerKernel →
-  FiniteTSTSPosterior →
-  C.Int8 →
-  C.FullLearnerState →
-  FiniteTSTSPosterior
-finiteTSTSNextPosterior K p d s =
-  finiteTSTSPosteriorUpdate
-    p
-    (finiteTSTSSelectedBranch p)
-    (finiteTSTSReward K p d s)
-
-finiteTSTSClosedStep :
-  C.FullLearnerKernel →
-  FiniteTSTSPosterior →
-  C.Int8 →
-  C.FullLearnerState →
-  C.FullLearnerState
-finiteTSTSClosedStep K p d s =
-  C.canonicalFullStep K
-    (finiteTSTSSelectedProbe K p d s)
-
-finiteTSTSPosteriorUpdate-law :
-  ∀ K p d s →
-  finiteTSTSBranchSample
-    (finiteTSTSNextPosterior K p d s)
-    (finiteTSTSSelectedBranch p)
-  ≡
-  finiteTSTSBranchSample p (finiteTSTSSelectedBranch p)
-  + finiteTSTSReward K p d s
-finiteTSTSPosteriorUpdate-law K p d s with finiteTSTSSelectedBranch p
-... | tstsWatkinsBranch = refl
-... | tstsF4L2Branch = refl
-... | tstsGRUBranch = refl
-
-finiteTSTS-f4SelectedEndogenousExpansion :
-  ∀ K p d s →
-  finiteTSTSSelectedBranch p ≡ tstsF4L2Branch →
-  finiteTSTSSelectedTarget K p d s
-  ≡
-  C.int8Add
-    (C.int8Add
-      (C.int8Add
-        (C.canonicalReward8 K s)
-        (C.canonicalQLogBias K s))
-      (C.int8Mul
-        C.canonicalDiscount8
-        (C.maxCriticValue8 (C.critic (C.watkins s)))))
-    (C.int8Add
-      (C.canonicalAttentionMix K s)
-      (C.int8Add
-        (C.canonicalGRUFeedback s)
-        (C.int8Add
-          (C.int8Add
-            (C.int8Add
-              (C.thetaQ (C.optimizer s))
-              d)
-            (C.l2Correction
-              (C.globalL2 (C.optimizerKernel K))))
-          (C.int8Add
-            (C.canonicalQLogControlFeedback s)
-            (C.canonicalQLogValueFeedback s)))))
-finiteTSTS-f4SelectedEndogenousExpansion K p d s eq rewrite eq = refl
-
-record FiniteTSTSEndogenousConnectedTheorem : Set₁ where
-  constructor finiteTSTSEndogenousConnectedTheorem
-  field
-    selectedTarget-law :
-      ∀ K p d s →
-      finiteTSTSSelectedTarget K p d s
-      ≡
-      C.canonicalWatkinsTarget K
-        (finiteTSTSSelectedProbe K p d s)
-
-    posteriorUpdateUsesEndogenousReward :
-      ∀ K p d s →
-      finiteTSTSBranchSample
-        (finiteTSTSNextPosterior K p d s)
-        (finiteTSTSSelectedBranch p)
-      ≡
-      finiteTSTSBranchSample p (finiteTSTSSelectedBranch p)
-      + finiteTSTSReward K p d s
-
-    selectedTargetFeedsGRU :
-      ∀ K p d s →
-      C.canonicalGRUStep K
-        (finiteTSTSSelectedProbe K p d s)
-      ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (finiteTSTSSelectedTarget K p d s)
-          (C.canonicalAttentionMix K s))
-
-    selectedTargetFeedsF4 :
-      ∀ K p d s →
-      C.canonicalOptimizerStep K
-        (finiteTSTSSelectedProbe K p d s)
-      ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer (finiteTSTSSelectedProbe K p d s))
-        (finiteTSTSSelectedTarget K p d s)
-
-    f4SelectedEndogenousExpansion :
-      ∀ K p d s →
-      finiteTSTSSelectedBranch p ≡ tstsF4L2Branch →
-      finiteTSTSSelectedTarget K p d s
-      ≡
-      C.int8Add
-        (C.int8Add
-          (C.int8Add
-            (C.canonicalReward8 K s)
-            (C.canonicalQLogBias K s))
-          (C.int8Mul
-            C.canonicalDiscount8
-            (C.maxCriticValue8 (C.critic (C.watkins s)))))
-        (C.int8Add
-          (C.canonicalAttentionMix K s)
-          (C.int8Add
-            (C.canonicalGRUFeedback s)
-            (C.int8Add
-              (C.int8Add
-                (C.int8Add
-                  (C.thetaQ (C.optimizer s))
-                  d)
-                (C.l2Correction
-                  (C.globalL2 (C.optimizerKernel K))))
-              (C.int8Add
-                (C.canonicalQLogControlFeedback s)
-                (C.canonicalQLogValueFeedback s)))))
-
-    normPairPreserved :
-      ∀ K p d s →
-      C.normPairWeightPlusOne
-        (C.norm (finiteTSTSClosedStep K p d s))
-      ≡
-      C.normPairWeightPlusOne (C.norm s)
-
-    persistentGRUPreserved :
-      ∀ K p d s →
-      C.persistentGRU
-        (C.gru (finiteTSTSClosedStep K p d s))
-      ≡
-      C.persistentGRU
-        (C.gru (finiteTSTSSelectedProbe K p d s))
-
-open FiniteTSTSEndogenousConnectedTheorem public
-
-finite-tsts-endogenous-connected-theorem :
-  FiniteTSTSEndogenousConnectedTheorem
-finite-tsts-endogenous-connected-theorem =
-  finiteTSTSEndogenousConnectedTheorem
-    (λ K p d s → refl)
-    finiteTSTSPosteriorUpdate-law
-    (λ K p d s → refl)
-    (λ K p d s → refl)
-    finiteTSTS-f4SelectedEndogenousExpansion
-    (λ K p d s →
-      C.canonicalNormPairWeightPlusOne-preservation
-        K
-        (finiteTSTSSelectedProbe K p d s))
-    (λ K p d s →
-      C.canonicalPersistentGRUPreservation
-        K
-        (finiteTSTSSelectedProbe K p d s))
-
-
-------------------------------------------------------------------------
--- Intrinsic endogenous attention-mediator connected theorem.
---
 -- This theorem is intentionally independent of TSTS, program search,
 -- evolutionary search, PVS, and JAxtar.  It is a property of the
 -- executable learner itself.
@@ -1968,3 +1644,101 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalDenseNeighborhoodSeparation
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalInt8DiscreteUAPOnOrbit
+
+
+------------------------------------------------------------------------
+-- Exact finite mixed-product recurrence certificate.
+--
+-- This is the finite-automata/algebraic form needed by the e-graph:
+-- a deterministic endomorphism on a finite quotient has an eventual
+-- periodic orbit; an absorbing member gives a fixed equilibrium, while
+-- a nontrivial cycle is the mixed equilibrium.  No metric, real field,
+-- derivative, or limit is used.
+------------------------------------------------------------------------
+
+record FiniteMixedProductRecurrenceTheorem
+  (State : Set)
+  (step : State → State)
+  (bound : Nat)
+  (encode : State → Fin bound)
+  (decode : Fin bound → State) : Set₁ where
+  constructor finiteMixedProductRecurrenceTheorem
+  field
+    decodeEncode : ∀ s → decode (encode s) ≡ s
+    collision :
+      (s : State) →
+      (m n : Nat) →
+      m ≢ n →
+      encode (iterateState step m s) ≡ encode (iterateState step n s)
+
+open FiniteMixedProductRecurrenceTheorem public
+
+iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
+iterateState step zero s = s
+iterateState step (suc n) s = step (iterateState step n s)
+
+finiteMixedProduct-periodic :
+  ∀ {State : Set}
+  {step : State → State}
+  {bound : Nat}
+  {encode : State → Fin bound}
+  {decode : Fin bound → State}
+  (T : FiniteMixedProductRecurrenceTheorem State step bound encode decode)
+  (s : State) (m n : Nat) →
+  m ≢ n →
+  encode (iterateState step m s) ≡ encode (iterateState step n s) →
+  iterateState step m s ≡ iterateState step n s
+finiteMixedProduct-periodic T s m n _ eq =
+  trans
+    (sym (decodeEncode T (iterateState step m s)))
+    (trans
+      (cong (decode) eq)
+      (decodeEncode T (iterateState step n s)))
+
+record AbsorbingFiniteEquilibriumTheorem
+  (State : Set)
+  (step : State → State)
+  (equilibrium : State) : Set₁ where
+  constructor absorbingFiniteEquilibriumTheorem
+  field
+    absorbing : step equilibrium ≡ equilibrium
+
+open AbsorbingFiniteEquilibriumTheorem public
+
+absorbing-prefix-fixed :
+  ∀ {State : Set}
+  {step : State → State}
+  {equilibrium : State}
+  (A : AbsorbingFiniteEquilibriumTheorem State step equilibrium)
+  (n : Nat) →
+  iterateState step n equilibrium ≡ equilibrium
+absorbing-prefix-fixed A zero = refl
+absorbing-prefix-fixed A (suc n) =
+  trans
+    (cong step (absorbing-prefix-fixed A n))
+    (absorbing A)
+
+record HardSparseAbsorbingPrefixTheorem
+  (State : Set)
+  (step : State → State)
+  (hardSparse : State → Set)
+  (equilibrium : State) : Set₁ where
+  constructor hardSparseAbsorbingPrefixTheorem
+  field
+    equilibriumHardSparse : hardSparse equilibrium
+    hardSparseAbsorbing :
+      ∀ s → hardSparse s → step s ≡ equilibrium
+
+open HardSparseAbsorbingPrefixTheorem public
+
+hardSparse-prefix-equilibrium :
+  ∀ {State : Set}
+  {step : State → State}
+  {hardSparse : State → Set}
+  {equilibrium : State}
+  (H : HardSparseAbsorbingPrefixTheorem State step hardSparse equilibrium)
+  (s : State) →
+  hardSparse s →
+  step s ≡ equilibrium
+hardSparse-prefix-equilibrium H s hs = hardSparseAbsorbing H s hs
+
