@@ -100,7 +100,7 @@ jobs:
       - name: Verify learner interface handoff
         run: |
           find . -path './.git' -prune -o -name 'CanonicalLearnerMonolith.agdai' -print
-          test -f "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
+          test -f "_build/2.8.0.2/agda/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
       - name: Enforce interface-only predecessor handoff
         run: |
           mkdir -p .ci/interface-shadow
