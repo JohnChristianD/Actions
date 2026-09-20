@@ -9,6 +9,7 @@ open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-injective; toℕ-fromℕ<)
 open import Data.Product using (Σ; _×_; _,_)
 open import Data.Unit using (⊤; tt)
+open import Data.Empty using (⊥-elim)
 open import Data.Bool using (Bool; true; false)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.TheoremsMonolith.Part4 public
@@ -225,6 +226,9 @@ actionWeightSquareSum {suc d} v =
   (v Data.Fin.zero * v Data.Fin.zero)
   + actionWeightSquareSum (λ i → v (Data.Fin.suc i))
 
+nat-suc-not-zero : ∀ n → suc n ≢ zero
+nat-suc-not-zero n ()
+
 generalTsallis2Denominator :
   ∀ {d : Nat} → ActionWeights d → Nat
 generalTsallis2Denominator {d} v =
@@ -255,7 +259,7 @@ generalTsallis2NearSparsity-zero :
   generalTsallis2NearSparsity v ≡ C.finiteRational 1 1 1
 generalTsallis2NearSparsity-zero v h with actionWeightSquareSum v
 ... | zero = refl
-... | suc q = ⊥-elim (C.natZeroNotSuc h)
+... | suc q = ⊥-elim (nat-suc-not-zero q h)
 
 generalTsallis2NearSparsity-definition :
   ∀ {d : Nat} (v : ActionWeights d) →
