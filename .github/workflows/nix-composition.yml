@@ -49,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: learner-agdai
-          path: ./CanonicalLearnerMonolith.agdai
+          path: Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
           if-no-files-found: error
 
 
@@ -96,7 +96,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: part1-agdai
-          path: .
+          path: |
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai
           if-no-files-found: error
 
   agda-theorem-part2:
@@ -146,7 +151,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part2-agdai
-          path: .
+          path: |
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
           if-no-files-found: error
 
   agda-theorem-part4:
@@ -171,7 +182,14 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part3-agdai
-          path: .
+          path: |
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai
           if-no-files-found: error
 
   agda-theorem-part5:
@@ -196,7 +214,15 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part4-agdai
-          path: .
+          path: |
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai
           if-no-files-found: error
 
   agda-theorems:
@@ -221,7 +247,16 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part5-agdai
-          path: .
+          path: |
+            Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1a.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1b.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part1c.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agdai
+            Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agdai
       - name: Enforce interface-only predecessor handoff
         run: |
           mkdir -p .ci/interface-shadow
