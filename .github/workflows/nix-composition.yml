@@ -160,7 +160,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part1-agdai
-          path: .      - name: Disable CI Agda project for local interfaces
+          path: .
+      - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
 
       - name: Prefer downloaded Agda interfaces
@@ -228,7 +229,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part2-agdai
-          path: .      - name: Disable CI Agda project for local interfaces
+          path: .
+      - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
 
       - name: Prefer downloaded Agda interfaces
@@ -296,7 +298,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part3-agdai
-          path: .      - name: Disable CI Agda project for local interfaces
+          path: .
+      - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
 
       - name: Prefer downloaded Agda interfaces
@@ -364,7 +367,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: part4-agdai
-          path: .      - name: Disable CI Agda project for local interfaces
+          path: .
+      - name: Disable CI Agda project for local interfaces
         run: mv ci-composition.agda-lib ci-composition.agda-lib.disabled
 
       - name: Prefer downloaded Agda interfaces
