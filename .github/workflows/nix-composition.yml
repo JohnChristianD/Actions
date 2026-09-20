@@ -43,8 +43,12 @@ jobs:
           fi
       - name: Check canonical learner monolith
         run: "$AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+      - name: Check canonical learner test
+        run: "$AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
       - name: Check theorem monolith
         run: "$AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+      - name: Check Agda version
+        run: "$AGDA_COMMAND --version"
 
   mercury:
     name: Mercury theorem-only e-graph
@@ -61,5 +65,4 @@ jobs:
             bash ./.ci/ci.sh mercury
             bash ./.ci/ci.sh discovery
             bash ./.ci/ci.sh surface
-            bash ./.ci/ci.sh versions
           '
