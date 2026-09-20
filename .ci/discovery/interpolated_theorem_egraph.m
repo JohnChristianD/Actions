@@ -77,8 +77,11 @@ left_assoc_expr_acc(Acc, [Id | Rest]) =
 :- func right_assoc_expr(list(string)) = expr.
 right_assoc_expr([]) = atom("empty-proof-compose").
 right_assoc_expr([Id]) = law_expr(Id).
-right_assoc_expr([Id | Rest]) =
-    app("proof-compose", [law_expr(Id), right_assoc_expr(Rest)]).
+right_assoc_expr([A, B | Rest]) =
+    app("proof-compose", [
+        law_expr(A),
+        right_assoc_expr([B | Rest])
+    ]).
 
 :- pred add_law(
     semantic_law::in,
