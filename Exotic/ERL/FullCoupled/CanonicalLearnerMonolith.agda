@@ -30,6 +30,13 @@ record Topology (A : Set) : Set₁ where
 
 open Topology public
 
+Continuous : (A B : Set) →
+  Topology A → Topology B → (A → B) → Set₁
+Continuous A B τA τB f =
+  ∀ {V : B → Set} →
+  isOpen τB V →
+  isOpen τA (λ x → V (f x))
+
 ------------------------------------------------------------------------
 -- Explicit discrete topology boundary.
 --
@@ -52,13 +59,6 @@ continuous-under-discrete-topology :
   Continuous A B (discreteTopology A) (discreteTopology B) f
 continuous-under-discrete-topology f = λ {V} _ → tt
 
-
-Continuous : (A B : Set) →
-  Topology A → Topology B → (A → B) → Set₁
-Continuous A B τA τB f =
-  ∀ {V : B → Set} →
-  isOpen τB V →
-  isOpen τA (λ x → V (f x))
 
 
 record Int8 : Set where
