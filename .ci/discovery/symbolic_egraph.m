@@ -87,7 +87,7 @@
 :- pred parent_set(
     map(int, int)::in, int::in, int::in, map(int, int)::out) is det.
 parent_set(M, K, V, M2) :-
-    map.set(M, K, V, M2).
+    map.set(K, V, M, M2).
 
 :- pred enode_hash(enode::in, int::out) is det.
 enode_hash(enode(Symbol, Children), Hash) :-
