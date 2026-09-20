@@ -1742,3 +1742,8 @@ hardSparse-prefix-equilibrium :
   step s ≡ equilibrium
 hardSparse-prefix-equilibrium H s hs = hardSparseAbsorbing H s hs
 
+
+
+-- recovered-check-marker
+recoveredPartitionCheck : C.FullLearnerState → C.FullLearnerState
+recoveredPartitionCheck s = s
