@@ -7,8 +7,6 @@
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
-
-:- import_module io.
 :- import_module interpolated_theorem_egraph.
 :- import_module learner_semantic_extractor.
 :- import_module learner_semantic_manifest.

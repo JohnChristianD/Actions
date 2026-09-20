@@ -3,6 +3,7 @@
 :- interface.
 
 :- import_module io.
+:- import_module list.
 :- import_module learner_semantic_manifest.
 
 :- pred search_emergent_compositions(
