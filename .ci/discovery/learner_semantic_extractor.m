@@ -259,10 +259,9 @@ theorem_monolith_is_safe(!IO) :-
             io.set_exit_status(1, !IO)
         )
     ;
-        ReadResult = error(Error),
+        ReadResult = error(_),
         io.write_string(
-            "ERROR: cannot read canonical theorem monolith: " ++
-            Error ++ "\n", !IO),
+            "ERROR: cannot read canonical theorem monolith\n", !IO),
         io.set_exit_status(1, !IO)
     ).
 
@@ -366,7 +365,6 @@ write_manifest_entries(All, [D | Ds], Stream, !IO) :-
         !IO),
     write_manifest_entries(All, Ds, Stream, !IO).
 
-:- pred extract_semantics(io::di, io::uo) is det.
 extract_semantics(!IO) :-
     theorem_monolith_is_safe(!IO),
     semantic_declarations(Result, !IO),
