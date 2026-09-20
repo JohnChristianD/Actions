@@ -38,6 +38,37 @@ pigeonhole_dependency =
 no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
 
+
+:- func semantic_rewrite_rules = list(rewrite_rule).
+
+
+semantic_rewrite_rules = [
+    rewrite_rule(
+        "proof-compose-associativity",
+        papp("proof-compose", [
+            pvar("A"),
+            papp("proof-compose", [pvar("B"), pvar("C")])
+        ]),
+        papp("proof-compose", [
+            papp("proof-compose", [pvar("A"), pvar("B")]),
+            pvar("C")
+        ])),
+    rewrite_rule(
+        "proof-compose-empty-right",
+        papp("proof-compose", [
+            pvar("A"),
+            papp("empty-proof-compose", [])
+        ]),
+        pvar("A")),
+    rewrite_rule(
+        "proof-compose-empty-left",
+        papp("proof-compose", [
+            papp("empty-proof-compose", []),
+            pvar("A")
+        ]),
+        pvar("A"))
+].
+
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
@@ -144,12 +175,21 @@ discovery_egraph(E, QuotientCount, !IO) :-
 
 main(!IO) :-
     read_manifest(Laws, !IO),
-    discovery_egraph_from_laws(Laws, EGraph, QuotientCount),
+    discovery_egraph_from_laws(Laws, EGraph0, QuotientCount),
+    saturate(semantic_rewrite_rules, 32, EGraph0, EGraph, Saturation),
+    root_count = class_count(EGraph),
+    node_count = enode_count(EGraph),
+    analyze(EGraph, Analyses),
+    add_expr(law_expr(forced_target_id), EGraph, TargetClass, EGraph1),
+    extract_best(TargetClass, EGraph1, 64, _, ExtractionCost),
     CompositeCount = list.length(
         list.filter(
             (pred(L::in) is semidet :-
                 semantic_law.composite(L) = yes),
             Laws)),
+    RootCount = root_count,
+    NodeCount = node_count,
+    AnalysisCount = list.length(Analyses),
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -159,9 +199,12 @@ main(!IO) :-
         list.length(Laws) > 0,
         NonReflexive >= CompositeCount,
         QuotientCount > 0,
-        class_count(EGraph) > 0,
-        enode_count(EGraph) > 0,
-        class_count(EGraph) < enode_count(EGraph),
+        RootCount > 0,
+        NodeCount > 0,
+        RootCount < NodeCount,
+        AnalysisCount > 0,
+        ExtractionCost > 0,
+        saturation_iterations(Saturation) > 0,
         list.member(TargetLaw, Laws),
         law_id(TargetLaw) = forced_target_id,
         semantic_law.composite(TargetLaw) = yes,
@@ -191,7 +234,11 @@ main(!IO) :-
             "bounded-exact-approximation=connected "
             "infinite-state-orbit=connected "
             "pigeonhole-global-int8-uap=refuted "
-
+            "e-matching=on "
+            "saturation=on "
+            "rebuild=on "
+            "eclass-analysis=on "
+            "cost-extraction=on "
             "dynamic-manifest=on\n",
             !IO)
     ;
