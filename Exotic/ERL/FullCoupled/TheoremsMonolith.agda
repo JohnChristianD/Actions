@@ -126,6 +126,15 @@ record CanonicalConnectedCompositionTheorem : Set₁ where
       ∀ K s n →
       C.iterateCanonical K (suc n) s ≡ s → ⊥
 
+walshRademacherRope4-period4 :
+  ∀ n w →
+  C.walshRademacherRope4
+    (suc (suc (suc (suc n))))
+    w
+  ≡
+  C.walshRademacherRope4 n w
+walshRademacherRope4-period4 n w = refl
+
 canonical-connected-composition-theorem :
   CanonicalConnectedCompositionTheorem
 canonical-connected-composition-theorem =
