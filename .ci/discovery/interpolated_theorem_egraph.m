@@ -36,11 +36,15 @@ pigeonhole_dependency =
 
 :- func no_global_uap_dependency = string.
 :- func finite_int8_continuous_left_inverse_dependency = string.
+:- func exact_universal_uap_dependency = string.
 no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
 
 finite_int8_continuous_left_inverse_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies".
+
+exact_universal_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse".
 
 
 :- func semantic_rewrite_rules = list(rewrite_rule).
@@ -230,6 +234,9 @@ main(!IO) :-
             semantic_law.dependencies(TargetLaw)),
         list.member(
             finite_int8_continuous_left_inverse_dependency,
+            semantic_law.dependencies(TargetLaw)),
+        list.member(
+            exact_universal_uap_dependency,
             semantic_law.dependencies(TargetLaw))
     ->
         io.write_string(
@@ -238,6 +245,7 @@ main(!IO) :-
             "semantic-registry=manifest "
             "proof-compose-associativity=quotiented "
             "continuous-left-inverse=connected "
+            "exact-universal-readout=connected "
             "bounded-exact-approximation=connected "
             "infinite-state-orbit=connected "
             "pigeonhole-global-int8-uap=refuted "
