@@ -98,7 +98,17 @@ run_surface() {
   done < <(find . -type f -not -path './.git/*' -print0)
 
   printf '%s\n' "single-theorem-source=TheoremsMonolith.agda; single-learner-source=CanonicalLearnerMonolith.agda; generated-Agda=absent; wiki=absent"
-  printf '%s\n' "surface=clean; legacy Scheme/Guix and noncanonical language files=absent"
+  local legacy_term_hits
+  legacy_term_hits="$(
+    grep -RniE --exclude-dir=.git --exclude=ci.sh \
+      'guix|guile|(^|[^[:alnum:]])scheme([^[:alnum:]]|$)|evolutionary-search|evolutionary algorithm' . || true
+  )"
+  if [[ -n "$legacy_term_hits" ]]; then
+    printf '%s\n' "ERROR: retired execution/search terminology remains in the repository:"
+    printf '%s\n' "$legacy_term_hits"
+    exit 1
+  fi
+  printf '%s\n' "surface=clean; retired execution/search terminology and noncanonical language files=absent"
 }
 run_versions() {
   nix --version
