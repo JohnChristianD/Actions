@@ -35,11 +35,7 @@
 
 :- func source_files = list(string).
 source_files = [
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part1.agda",
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part2.agda",
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part3.agda",
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part4.agda",
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith/Part5.agda"
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 ].
 
 :- func syntax_heads = list(string).
