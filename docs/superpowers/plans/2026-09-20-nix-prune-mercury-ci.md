@@ -24,7 +24,7 @@
 - Agda/stdlib compatibility: the selected Nix package set must expose the standard library used by the repository's imports.
 - Mercury build/runtime: all current Mercury verifier and e-graph programs must compile and execute from the same Nix shell.
 - Runner lifecycle: the Agda lane must no longer depend on the retired CI bootstrap or shell process boundaries.
-- Surface audit: no legacy Scheme-source or retired workflow/config remnants should remain.
+- Surface audit: no legacy package-source or retired workflow/config remnants should remain.
 - Evidence quality: CI must distinguish a kernel failure from a runner/process failure.
 
 ---
