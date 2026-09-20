@@ -4,7 +4,7 @@
 
 **Goal:** Remove the Guix/Scheme execution layer and run the Agda proof lane plus Mercury verifier/e-graph lanes from one pinned Nix environment while preserving the current theorem and discovery contracts.
 
-**Architecture:** GitHub Actions installs Nix once, enters the repository's flake devShell, and runs lane-specific commands from a small POSIX shell driver. Agda and the standard library are supplied through Nix's Agda package set; Mercury comes from Nixpkgs; no Guix manifest, channel, or Guile CI driver remains.
+**Architecture:** GitHub Actions installs Nix once, enters the repository's flake devShell, and runs lane-specific commands from a small POSIX shell driver. Mercury comes from Nixpkgs. Agda 2.8.0.2 and standard-library 2.4 come from the official Agda setup action.
 
 **Tech Stack:** GitHub Actions, Nix flakes, pinned nixpkgs, Agda 2.8.x + standard-library package set, Mercury, POSIX shell.
 
@@ -35,10 +35,10 @@
 - Create: `flake.nix`
 - Create: `flake.lock` via Nix tooling in a future local/CI refresh if available.
 
-- [x] Step 1: Define a pinned nixpkgs input and a default devShell containing Agda, standard-library, Mercury, GNU make, coreutils, and a shell.
-- [x] Step 2: Use `agda.withPackages` with `agdaPackages.standard-library` so Agda receives an explicit Nix-managed library set.
+- [x] Step 1: Define a pinned nixpkgs input and a default devShell containing Mercury, GNU make, and git.
+- [x] Step 2: Use the official Agda setup action for Agda 2.8.0.2 and standard-library 2.4.
 - [x] Step 3: Keep Mercury sourced from nixpkgs.
-- [x] Step 4: Avoid Guile entirely.
+- [x] Step 4: Avoid the retired non-Nix execution layer entirely.
 
 ### Task 2: Replace Scheme CI driver
 
@@ -60,8 +60,8 @@
 
 - [x] Step 1: Install Nix with a pinned action.
 - [x] Step 2: Run all four lanes from the same flake devShell.
-- [x] Step 3: Remove prepared Guix action, Guix shell, Agda setup action, and Nix sidecar duplication.
-- [x] Step 4: Keep Mercury dependent on successful Agda completion.
+- [x] Step 3: Use the NixOS-maintained nix-installer action and the official Agda setup action with pinned versions.
+- [x] Step 4: Keep all verification lanes in one Nix shell invocation.
 - [x] Step 5: Emit tool versions before lane execution.
 
 ### Task 4: Update repository documentation
