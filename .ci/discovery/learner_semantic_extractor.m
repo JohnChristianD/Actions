@@ -35,7 +35,6 @@
 
 :- func source_files = list(string).
 source_files = [
-    "../../Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda",
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 ].
 
@@ -368,7 +367,7 @@ extract_semantics(!IO) :-
         list.filter(semantic_signature, All, Laws),
         write_manifest(All, Laws, !IO),
         io.write_string(
-            "learner-semantic-extraction=generated\n", !IO),
+            "theorem-monolith-semantic-extraction=generated\n", !IO),
         io.write_string(
             "semantic-law-count=" ++
             string.int_to_string(list.length(Laws)) ++ "\n",

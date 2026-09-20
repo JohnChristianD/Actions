@@ -16,7 +16,6 @@ open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ℕ→Fin-notInjective)
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _×_; _,_)
-open import Data.List using (List; []; _∷_)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
@@ -711,6 +710,88 @@ canonicalGRU-recurrent-associative-scan-theorem =
     C.endomorphismAssociative
     C.recurrentPrefix-correct
     C.recurrentPrefix-split
+
+------------------------------------------------------------------------
+-- Exact prefix work/count semantics.
+------------------------------------------------------------------------
+
+recurrentPrefixStepWork : Nat → Nat
+recurrentPrefixStepWork zero = zero
+recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
+
+recurrentPrefixStepWork-law :
+  ∀ n → recurrentPrefixStepWork n ≡ n
+recurrentPrefixStepWork-law n = refl
+
+recurrentPrefixStepWork-split :
+  ∀ m n →
+  recurrentPrefixStepWork (m + n) ≡
+  recurrentPrefixStepWork m + recurrentPrefixStepWork n
+recurrentPrefixStepWork-split m zero
+  rewrite +-identityʳ m = refl
+recurrentPrefixStepWork-split m (suc n)
+  rewrite +-suc m n =
+  cong suc (recurrentPrefixStepWork-split m n)
+
+------------------------------------------------------------------------
+-- Canonical Hadamard/attention/Walsh-Rademacher phase × associative scan
+-- composition theorem.
+------------------------------------------------------------------------
+
+record CanonicalHadamardAttentionRopePrefixCompositionTheorem : Set₁ where
+  constructor canonicalHadamardAttentionRopePrefixCompositionTheorem
+  field
+    hadamardOrthogonality : C.H4GramLaw
+    learnedAttentionComposition :
+      ∀ K s →
+      C.canonicalAttentionMix K s ≡
+      let
+        p = C.learnedSparsemaxAttentionWeights (C.attention s)
+        w = C.walshHadamardApply (C.liftAttention p)
+      in
+      C.int8Add
+        (C.attentionToGRU K w)
+        (C.walshRademacherRopeReadout (C.clock s) w)
+    ropePhasePeriod :
+      ∀ n w →
+      C.walshRademacherRope4 (suc (suc (suc (suc n)))) w
+      ≡ C.walshRademacherRope4 n w
+    attentionMediator : FiniteAttentionWatkinsGRUF4MediatorTheorem
+    associativePrefixScan : RecurrentAssociativeScanTheorem C.GRUState C.Int8
+    targetPrefixCorrect :
+      ∀ (K : C.FullLearnerKernel) (s : C.FullLearnerState)
+      (n : Nat) (h : C.GRUState) →
+      C.applyEndomorphism
+        (C.recurrentPrefixEndomorphism
+          C.canonicalGRURecurrentNetwork
+          (canonicalWatkinsTargetSignalStream K s)
+          n)
+        h
+      ≡
+      C.recurrentPrefixState
+        C.canonicalGRURecurrentNetwork
+        (canonicalWatkinsTargetSignalStream K s)
+        n h
+    exactPrefixWork : ∀ n → recurrentPrefixStepWork n ≡ n
+    splitPrefixWork :
+      ∀ m n →
+      recurrentPrefixStepWork (m + n) ≡
+      recurrentPrefixStepWork m + recurrentPrefixStepWork n
+
+open CanonicalHadamardAttentionRopePrefixCompositionTheorem public
+
+canonical-hadamard-attention-rope-prefix-composition-theorem :
+  CanonicalHadamardAttentionRopePrefixCompositionTheorem
+canonical-hadamard-attention-rope-prefix-composition-theorem =
+  canonicalHadamardAttentionRopePrefixCompositionTheorem
+    C.walshHadamardOrthogonality4
+    (λ K s → learnedAttentionComposition canonical-aq-loop-theorem K s)
+    walshRademacherRope4-period4
+    finite-attention-watkins-gru-f4-mediator-theorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    (λ K s n h → canonicalWatkinsTarget-recurrent-prefix-correct K s n h)
+    recurrentPrefixStepWork-law
+    recurrentPrefixStepWork-split
 
 ------------------------------------------------------------------------
 -- Explicit equality-composition theorem.
@@ -1430,44 +1511,6 @@ topologicalConvexConcaveExactReadoutTheorem-from-witness
 
 
 ------------------------------------------------------------------------
--- Exact finite-horizon regret composition.
-------------------------------------------------------------------------
-
-finiteHorizonRegretComposition :
-  ∀ (regret : Nat → Nat)
-  (suffix : Nat → Nat → Nat)
-  (instant : Nat → Nat)
-  (_ : regret zero ≡ zero)
-  (_ : ∀ n → regret (suc n) ≡ regret n + instant n)
-  (_ : ∀ m → suffix m zero ≡ zero)
-  (_ : ∀ m n →
-    suffix m (suc n) ≡ suffix m n + instant (m + n))
-  (m n : Nat) →
-  regret (m + n) ≡ regret m + suffix m n
-finiteHorizonRegretComposition
-  regret suffix instant _ stepLaw suffixZeroLaw suffixStepLaw m zero =
-  trans
-    (cong regret (+-identityʳ m))
-    (sym
-      (trans
-        (cong (λ z → regret m + z) (suffixZeroLaw m))
-        (+-identityʳ (regret m))))
-finiteHorizonRegretComposition
-  regret suffix instant _ stepLaw suffixZeroLaw suffixStepLaw m (suc n) =
-  trans
-    (cong regret (+-suc m n))
-    (trans
-      (stepLaw (m + n))
-      (trans
-        (cong (λ z → z + instant (m + n))
-          (finiteHorizonRegretComposition
-            regret suffix instant _ stepLaw suffixZeroLaw suffixStepLaw m n))
-        (trans
-          (+-assoc (regret m) (suffix m n) (instant (m + n)))
-          (cong (λ z → regret m + z)
-            (sym (suffixStepLaw m n))))))
-
-------------------------------------------------------------------------
 -- Finite state/action visit capacity.
 ------------------------------------------------------------------------
 
@@ -2073,6 +2116,9 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       C.iterateCanonical K (m + n) s ≡
       C.iterateCanonical K n (C.iterateCanonical K m s)
 
+    hadamardAttentionRopePrefixComposition :
+      CanonicalHadamardAttentionRopePrefixCompositionTheorem
+
     aperiodicity :
       ∀ (K : C.FullLearnerKernel)
       (s : C.FullLearnerState)
@@ -2104,18 +2150,6 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       TopologicalConvexConcaveExactReadoutTheorem
         C.FullLearnerState Feature Output observe inverse target
         midpoint combineOutput leOutput
-
-    finiteHorizonRegretCompositionTheorem :
-      ∀ (regret : Nat → Nat)
-      (suffix : Nat → Nat → Nat)
-      (instant : Nat → Nat)
-      (_ : regret zero ≡ zero)
-      (_ : ∀ n → regret (suc n) ≡ regret n + instant n)
-      (_ : ∀ m → suffix m zero ≡ zero)
-      (_ : ∀ m n →
-        suffix m (suc n) ≡ suffix m n + instant (m + n))
-      (m n : Nat) →
-      regret (m + n) ≡ regret m + suffix m n
 
     finiteStateActionVisitInjectionCapacityTheorem :
       ∀ (stateCount actionCount : Nat)
@@ -2377,6 +2411,6 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalIterateComposition
     canonicalAperiodic-theorem
     canonicalNoNontrivialFiniteCycle-theorem
+    canonical-hadamard-attention-rope-prefix-composition-theorem
     topologicalConvexConcaveExactReadoutTheorem-from-witness
-    finiteHorizonRegretComposition
     finiteStateActionVisitInjectionImpossible
