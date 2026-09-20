@@ -79,9 +79,11 @@ read_manifest(Laws, !IO) :-
         Laws = []
     ).
 
-law_id(Law) =
-    string.append_list(
-        [semantic_law.source(Law), "#", semantic_law.name(Law)]).
+law_id(Law) = Id :-
+    Source = semantic_law.source(Law),
+    Name = semantic_law.name(Law),
+    Prefix = string.append(Source, "#"),
+    Id = string.append(Prefix, Name).
 
 law_name(Law) = semantic_law.name(Law).
 
