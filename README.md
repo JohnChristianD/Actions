@@ -119,7 +119,7 @@ It combines:
 - **bounded exact universal approximation/readout from that continuous left inverse**;
 - ring-state injectivity;
 - the explicit **infinite-state orbit embedding**;
-- dense-neighborhood separation as an explicit contract;
+- orbit-observation separation as an explicit contract;
 - the Nat-clock pigeonhole contradiction;
 - impossibility of a global exact `Int8` UAP over the unbounded canonical orbit.
 
@@ -200,7 +200,7 @@ Where a result is conditional, the condition is explicit. Where a global claim i
 
 The proof lane uses the repository flake for the pinned Nix package environment, while the official Agda setup action installs Agda 2.8.0.2 and standard-library 2.4. The GitHub runner installs Nix with the NixOS-maintained nix-installer action, pinned by commit, and the workflow pins Nix 2.35.1.
 
-The bounded exact-UAP surface includes exact retraction, decoder-transport, and postcomposition. The minimal bounded theorem needs a left inverse for exact readout; continuity is represented as an explicit abstract predicate until an actual topology is imported, and dense-neighborhood separation is not a prerequisite for the bounded theorem.
+The bounded exact-UAP surface includes exact retraction, decoder-transport, and postcomposition. The minimal bounded theorem needs a left inverse for exact readout. The standalone universal certificate exposes continuous left-invertibility, explicit orbit-observation separation, and exact readout for every target; separation is derived from the left inverse, so it is a visible redundant contract rather than an extra mathematical assumption.
 
 
 ## Terminology boundary
