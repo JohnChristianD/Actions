@@ -216,10 +216,39 @@ finalize_state(Source, body_state(Name, SigRev, BodyRev), Acc, Out) :-
     Body = string.join_list(" ", list.reverse(BodyRev)),
     Out = [semantic_decl(Source, Name, Signature, Body) | Acc].
 
+
+:- pred theorem_monolith_is_safe(
+    io::res(list(string))::out, io::di, io::uo) is det.
+theorem_monolith_is_safe(Result, !IO) :-
+    io.read_named_file_as_lines(
+        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+        ReadResult, !IO),
+    (
+        ReadResult = ok(Lines),
+        (
+            list.member("{-# OPTIONS --safe #-}", Lines)
+        ->
+            Result = ok(Lines)
+        ;
+            Result = error("canonical theorem monolith is not declared --safe")
+        )
+    ;
+        ReadResult = error(Error),
+        Result = error(Error)
+    ).
+
+
 :- pred semantic_declarations(io.res(list(semantic_decl))::out,
     io::di, io::uo) is det.
 semantic_declarations(Result, !IO) :-
-    read_all_sources(source_files, [], Result, !IO).
+    theorem_monolith_is_safe(SafeResult, !IO),
+    (
+        SafeResult = ok(_),
+        read_all_sources(source_files, [], Result, !IO)
+    ;
+        SafeResult = error(Error),
+        Result = error(Error)
+    ).
 
 :- pred read_all_sources(list(string)::in, list(semantic_decl)::in,
     io.res(list(semantic_decl))::out, io::di, io::uo) is det.
