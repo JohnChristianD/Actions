@@ -1656,6 +1656,10 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
 -- derivative, or limit is used.
 ------------------------------------------------------------------------
 
+iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
+iterateState step zero s = s
+iterateState step (suc n) s = step (iterateState step n s)
+
 record FiniteMixedProductRecurrenceTheorem
   (State : Set)
   (step : State → State)
@@ -1672,10 +1676,6 @@ record FiniteMixedProductRecurrenceTheorem
       encode (iterateState step m s) ≡ encode (iterateState step n s)
 
 open FiniteMixedProductRecurrenceTheorem public
-
-iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
-iterateState step zero s = s
-iterateState step (suc n) s = step (iterateState step n s)
 
 finiteMixedProduct-periodic :
   ∀ {State : Set}
