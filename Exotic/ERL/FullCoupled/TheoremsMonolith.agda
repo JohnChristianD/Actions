@@ -1776,3 +1776,17 @@ recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
 recurrentPrefixStepWork-law :
   ∀ n → recurrentPrefixStepWork n ≡ n
 recurrentPrefixStepWork-law n = refl
+
+-- Recovered Part2 theorem
+recurrentPrefixStepWork-split :
+  ∀ m n →
+  recurrentPrefixStepWork (m + n) ≡
+  recurrentPrefixStepWork m + recurrentPrefixStepWork n
+recurrentPrefixStepWork-split m zero
+  rewrite +-identityʳ m = refl
+recurrentPrefixStepWork-split m (suc n)
+  rewrite +-suc m n =
+  cong suc (recurrentPrefixStepWork-split m n)
+
+
+------------------------------------------------------------------------
