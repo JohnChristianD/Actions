@@ -21,6 +21,8 @@
 
 :- implementation.
 
+:- import_module int.
+
 forced_target_id =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
 
