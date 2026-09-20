@@ -19,7 +19,7 @@ main(!IO) :-
     discovery_egraph_from_laws(Laws, E0, QuotientCount),
     saturate(semantic_rewrite_rules, 32, E0, E, Saturation),
     analyze(E, Analyses),
-    add_expr(law_expr(forced_target_id), E, TargetClass, E1),
+    add_expr(app("semantic-law", [atom(forced_target_id)]), E, TargetClass, E1),
     extract_best(TargetClass, E1, 64, _, ExtractionCost),
     CompositeCount = list.length(
         list.filter(
