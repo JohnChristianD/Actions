@@ -1765,3 +1765,9 @@ record CanonicalConnectedCompositionTheorem : Set₁ where
       CanonicalAQLoopTheorem
     ropePhasePeriod :
       ∀ n w →
+
+
+-- Recovered Part2 theorem
+recurrentPrefixStepWork : Nat → Nat
+recurrentPrefixStepWork zero = zero
+recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
