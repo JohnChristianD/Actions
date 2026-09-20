@@ -38,11 +38,15 @@ pigeonhole_dependency =
 
 :- func no_global_uap_dependency = string.
 :- func finite_int8_continuous_left_inverse_dependency = string.
+:- func exact_universal_uap_dependency = string.
 no_global_uap_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
 
 finite_int8_continuous_left_inverse_dependency =
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies".
+
+exact_universal_uap_dependency =
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse".
 
 :- func recurrent_bound_uap_dependency = string.
 recurrent_bound_uap_dependency =
@@ -71,6 +75,9 @@ forced_target_law(All, Target) :-
         semantic_law.dependencies(Target)),
     list.member(
         finite_int8_continuous_left_inverse_dependency,
+        semantic_law.dependencies(Target)),
+    list.member(
+        exact_universal_uap_dependency,
         semantic_law.dependencies(Target)),
     list.member(
         recurrent_bound_uap_dependency,
@@ -126,6 +133,7 @@ write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, 
             "  \"egraph_extraction_cost\": " ++
                 string.int_to_string(ExtractionCost) ++ ",\n" ++
             "  \"continuous_left_inverse_transfer\": \"connected\",\n" ++
+            "  \"exact_universal_readout\": \"connected\",\n" ++
             "  \"bounded_exact_approximation\": \"connected\",\n" ++
             "  \"infinite_state_orbit\": \"connected\",\n" ++
             "  \"pigeonhole_contradiction\": \"connected\",\n" ++
