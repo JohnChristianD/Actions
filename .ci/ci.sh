@@ -6,14 +6,26 @@ agda_safe_files=(
   "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
 )
 
-run_agda_safe() {
-  "$AGDA_COMMAND" --version
-  "$AGDA_COMMAND" --safe -l standard-library -i . "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
-
-  for file in "${agda_safe_files[@]}"; do
-    printf '==> Agda --safe %s\n' "$file"
+run_agda_file() {
+  local file="$1"
+  printf '==> Agda --safe %s\n' "$file"
+  timeout --foreground "${AGDA_TIMEOUT_SECONDS:-1200}" \
     "$AGDA_COMMAND" --safe -l standard-library -i . "$file"
-  done
+}
+
+run_agda_learner() {
+  "$AGDA_COMMAND" --version
+  run_agda_file "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+}
+
+run_agda_theorem() {
+  "$AGDA_COMMAND" --version
+  run_agda_file "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+}
+
+run_agda_safe() {
+  run_agda_learner
+  run_agda_theorem
 }
 
 run_mercury() {
@@ -116,6 +128,12 @@ run_versions() {
 }
 
 case "${1:-surface}" in
+  agda-learner)
+    run_agda_learner
+    ;;
+  agda-theorem)
+    run_agda_theorem
+    ;;
   agda-safe)
     run_agda_safe
     ;;
@@ -139,7 +157,7 @@ case "${1:-surface}" in
     run_surface
     ;;
   *)
-    printf 'usage: %s {agda-safe|mercury|discovery|surface|versions|all}\n' "$0"
+    printf 'usage: %s {agda-safe|agda-learner|agda-theorem|mercury|discovery|surface|versions|all}\n' "$0"
     exit 2
     ;;
 esac
