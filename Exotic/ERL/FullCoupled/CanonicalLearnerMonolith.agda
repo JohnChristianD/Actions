@@ -348,6 +348,58 @@ selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c
 sparsemaxPolicy : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A
 sparsemaxPolicy {A} K q c = selectPositive K q c (sortScores (scoreList q c))
 
+finiteQLog8 : Int8 → FiniteRational
+finiteQLog8 x with toℕ (code x)
+... | zero = finiteRational 1 0 1
+... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
+
+finiteQLog8-denominator-nonZero :
+  ∀ {x} → NonZero (denominator (finiteQLog8 x))
+finiteQLog8-denominator-nonZero {x} with toℕ (code x)
+... | zero = Data.Nat.nonZero
+... | suc n = Data.Nat.nonZero
+
+negativeFiniteQLog8 : Int8 → FiniteRational
+negativeFiniteQLog8 x = finiteQLog8 x
+
+negativeFiniteQLogLaw :
+  ∀ x →
+  negativeFiniteQLog8 x ≡
+  finiteRational 1
+    (numerator (finiteQLog8 x))
+    (denominator (finiteQLog8 x))
+negativeFiniteQLogLaw x with toℕ (code x)
+... | zero = refl
+... | suc n = refl
+
+munchausenScale8 : Nat
+munchausenScale8 = 16
+
+finiteSignedRationalBias8 : FiniteRational → Int8
+finiteSignedRationalBias8 (finiteRational zero n d) = zero8
+finiteSignedRationalBias8 (finiteRational (suc s) n zero) = zero8
+finiteSignedRationalBias8 (finiteRational (suc s) n (suc d)) =
+  int8Neg (int8OfNat ((munchausenScale8 * n) / suc d))
+
+qLog2Bias8 : Int8 → Int8
+qLog2Bias8 x =
+  finiteSignedRationalBias8 (finiteQLog8 x)
+
+negativeAlpha8 : Int8
+negativeAlpha8 = int8OfNat 255
+
+record SignedQLogControl : Set where
+  constructor signedQLogControl
+  field mode coefficient : Int8
+open SignedQLogControl public
+
+canonicalQLogControl : SignedQLogControl
+canonicalQLogControl =
+  signedQLogControl negativeAlpha8 negativeAlpha8
+
+qLogSignal : SignedQLogControl → Int8 → Int8
+qLogSignal c x = int8Add x (coefficient c)
+
 canonicalActionCount : Nat
 canonicalActionCount = 64
 
