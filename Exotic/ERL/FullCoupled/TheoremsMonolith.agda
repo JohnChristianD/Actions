@@ -2037,6 +2037,9 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
         observe
         inverse
         leftInverse)
+    (λ observe inverse witness →
+      exactUniversalApproximationThroughContinuousLeftInverse-from-witness
+        witness)
     (λ K observe inverse leftInverse s →
       canonicalWatkinsTarget-endogenous-leftInverse
         K observe inverse leftInverse s)
