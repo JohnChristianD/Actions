@@ -35,10 +35,10 @@
 - Create: `flake.nix`
 - Create: `flake.lock` via Nix tooling in a future local/CI refresh if available.
 
-- [ ] Step 1: Define a pinned nixpkgs input and a default devShell containing Agda, standard-library, Mercury, GNU make, coreutils, and a shell.
-- [ ] Step 2: Use `agda.withPackages` with `agdaPackages.standard-library` so Agda receives an explicit Nix-managed library set.
-- [ ] Step 3: Keep Mercury sourced from nixpkgs.
-- [ ] Step 4: Avoid Guile entirely.
+- [x] Step 1: Define a pinned nixpkgs input and a default devShell containing Agda, standard-library, Mercury, GNU make, coreutils, and a shell.
+- [x] Step 2: Use `agda.withPackages` with `agdaPackages.standard-library` so Agda receives an explicit Nix-managed library set.
+- [x] Step 3: Keep Mercury sourced from nixpkgs.
+- [x] Step 4: Avoid Guile entirely.
 
 ### Task 2: Replace Scheme CI driver
 
@@ -48,21 +48,21 @@
 - Delete: `.guix/manifest.scm`
 - Delete: `.guix/channels.scm`
 
-- [ ] Step 1: Port the existing lane dispatch into POSIX shell without changing the lane contracts.
-- [ ] Step 2: Keep the Agda file list and `--safe` invocations unchanged.
-- [ ] Step 3: Keep Mercury forbidden-theorem and e-graph commands unchanged.
-- [ ] Step 4: Keep the canonical single-theorem-source and forbidden-surface audits.
+- [x] Step 1: Port the existing lane dispatch into POSIX shell without changing the lane contracts.
+- [x] Step 2: Keep the Agda file list and `--safe` invocations unchanged.
+- [x] Step 3: Keep Mercury forbidden-theorem and e-graph commands unchanged.
+- [x] Step 4: Keep the canonical single-theorem-source and forbidden-surface audits.
 
 ### Task 3: Replace GitHub Actions environment
 
 **Files:**
 - Modify: `.github/workflows/guix-composition.yml` (rename is optional; contents must become Nix-backed CI).
 
-- [ ] Step 1: Install Nix with a pinned action.
-- [ ] Step 2: Run all four lanes from the same flake devShell.
-- [ ] Step 3: Remove prepared Guix action, Guix shell, Agda setup action, and Nix sidecar duplication.
-- [ ] Step 4: Keep Mercury dependent on successful Agda completion.
-- [ ] Step 5: Emit tool versions before lane execution.
+- [x] Step 1: Install Nix with a pinned action.
+- [x] Step 2: Run all four lanes from the same flake devShell.
+- [x] Step 3: Remove prepared Guix action, Guix shell, Agda setup action, and Nix sidecar duplication.
+- [x] Step 4: Keep Mercury dependent on successful Agda completion.
+- [x] Step 5: Emit tool versions before lane execution.
 
 ### Task 4: Update repository documentation
 
@@ -70,14 +70,14 @@
 - Modify: `README.md`
 - Modify: `.ci/change-record-2026-09-19-uap-agda-2.8.0.2.json`
 
-- [ ] Step 1: Replace Guix bootstrap documentation with Nix environment documentation.
-- [ ] Step 2: Record that Mercury is supplied through Nixpkgs.
-- [ ] Step 3: Record the CI diagnosis as a runner/process-boundary investigation, not a theorem rejection.
-- [ ] Step 4: Keep the bounded exact-UAP theorem statement and its proof dependencies intact.
+- [x] Step 1: Replace Guix bootstrap documentation with Nix environment documentation.
+- [x] Step 2: Record that Mercury is supplied through Nixpkgs.
+- [x] Step 3: Record the CI diagnosis as a runner/process-boundary investigation, not a theorem rejection.
+- [x] Step 4: Keep the bounded exact-UAP theorem statement and its proof dependencies intact.
 
 ### Task 5: Verify
 
-- [ ] Step 1: Create a pull request from `nix-prune-mercury-ci` into `main`.
+- [x] Step 1: Create a pull request from `nix-prune-mercury-ci` into `main` (blocked by the GitHub integration with HTTP 403; branch remains available).
 - [ ] Step 2: Observe the new CI run.
 - [ ] Step 3: If Nix evaluation or package compatibility fails, fix only the environment wiring and re-run; do not weaken theorem gates.
 - [ ] Step 4: Confirm Agda kernel checks and Mercury e-graph checks execute rather than being skipped.
