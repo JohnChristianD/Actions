@@ -34,6 +34,9 @@
             list(string)
         ).
 
+:- func concat_strings(list(string)) = string.
+concat_strings(Parts) = string.join_list("", Parts).
+
 :- func source_files = list(string).
 source_files = [
     "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
@@ -292,7 +295,7 @@ semantic_declarations(Result, !IO) :-
     list(string)::out) is det.
 dependency_names(
     semantic_decl(Source, Name, Signature, Body), All, Dependencies) :-
-    DependencyText = Signature ++ " " ++ Body,
+    DependencyText = concat_strings([Signature, " ", Body]),
     find_dependencies(Source, Name, DependencyText, All, [], Rev),
     list.reverse(Rev, Dependencies).
 
@@ -310,10 +313,10 @@ find_dependencies(Source, Name, Body, [D | Ds], Acc0, Acc) :-
             TargetSource = Source,
             contains_identifier(Body, TargetName)
         ->
-            Acc1 = [TargetSource ++ "#" ++ TargetName | Acc0]
+            Acc1 = [concat_strings([TargetSource, "#", TargetName]) | Acc0]
         ;
             TargetSource \= Source,
-            contains_identifier(Body, "." ++ TargetName)
+            contains_identifier(Body, concat_strings([".", TargetName]))
         ->
             Acc1 = [TargetSource ++ "#" ++ TargetName | Acc0]
         ;
@@ -361,12 +364,10 @@ write_manifest_entries(All, [D | Ds], Stream, !IO) :-
         string.replace_all(Signature, "|", "%7C"),
         "\t", " "),
     io.write_string(Stream,
-        Source ++ "|" ++
-        Name ++ "|" ++
-        Reflexive ++ "|" ++
-        Composite ++ "|" ++
-        SafeSignature ++ "|" ++
-        string.join_list(";", Dependencies) ++ "\n",
+        concat_strings([
+            Source, "|", Name, "|", Reflexive, "|", Composite, "|",
+            SafeSignature, "|", string.join_list(";", Dependencies), "\n"
+        ]),
         !IO),
     write_manifest_entries(All, Ds, Stream, !IO).
 
@@ -380,17 +381,26 @@ extract_semantics(!IO) :-
         io.write_string(
             "theorem-monolith-semantic-extraction=generated\n", !IO),
         io.write_string(
-            "semantic-law-count=" ++
-            string.int_to_string(list.length(Laws)) ++ "\n",
+            concat_strings([
+                "semantic-law-count=",
+                string.int_to_string(list.length(Laws)),
+                "\n"
+            ]),
             !IO),
         count_composite(Laws, All, CompositeCount, NonReflexiveCount),
         io.write_string(
-            "nonreflexive-law-count=" ++
-            string.int_to_string(NonReflexiveCount) ++ "\n",
+            concat_strings([
+                "nonreflexive-law-count=",
+                string.int_to_string(NonReflexiveCount),
+                "\n"
+            ]),
             !IO),
         io.write_string(
-            "composite-law-count=" ++
-            string.int_to_string(CompositeCount) ++ "\n",
+            concat_strings([
+                "composite-law-count=",
+                string.int_to_string(CompositeCount),
+                "\n"
+            ]),
             !IO)
     ;
         Result = error(_),
