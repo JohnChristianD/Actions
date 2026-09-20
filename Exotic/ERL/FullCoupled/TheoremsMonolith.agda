@@ -1790,3 +1790,35 @@ recurrentPrefixStepWork-split m (suc n)
 
 
 ------------------------------------------------------------------------
+
+-- Recovered Part2 theorem
+canonical-hadamard-attention-rope-prefix-composition-theorem :
+  CanonicalHadamardAttentionRopePrefixCompositionTheorem
+canonical-hadamard-attention-rope-prefix-composition-theorem =
+  canonicalHadamardAttentionRopePrefixCompositionTheorem
+    C.walshHadamardOrthogonality4
+    (λ K s → learnedAttentionComposition canonical-aq-loop-theorem K s)
+    walshRademacherRope4-period4
+    finite-attention-watkins-gru-f4-mediator-theorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    (λ K s n h → canonicalWatkinsTarget-recurrent-prefix-correct K s n h)
+    recurrentPrefixStepWork-law
+    recurrentPrefixStepWork-split
+
+------------------------------------------------------------------------
+-- Explicit equality-composition theorem.
+--
+-- The e-graph proof-plan combinator is dependency composition.  Actual
+-- equality composition is represented separately by composeEqualityTheorem,
+-- whose proof term uses trans.  A reflexive identity is never used as the
+-- composition theorem itself.
+------------------------------------------------------------------------
+-- Canonical minimax/Bellman-Shapley inclusion class for the executable
+-- biased Watkins + negative-q-Munchausen + L2 target.
+--
+-- The learner has a concrete Int8 carrier. No ordered ring, interval,
+-- metric, or topology is imported here. The inclusion theorem therefore
+-- takes the comparison relation and monotone minimax/Bellman-Shapley
+-- operator as explicit hypotheses, while the target itself is the exact
+-- executable canonicalWatkinsTarget.
+------------------------------------------------------------------------
