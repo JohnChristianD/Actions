@@ -138,7 +138,7 @@ identifier_char(C) :-
     ;
     C = '_'
     ;
-    C = '-'.
+    char.to_int(C) = 45.
 
 :- pred occurrence_boundary(string::in, string::in, int::in) is semidet.
 occurrence_boundary(Text, Name, Position) :-
