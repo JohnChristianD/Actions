@@ -477,8 +477,9 @@ walshOrthonormal :
   dot4 row2 row2 ≡ 2 × dot4 row3 row3 ≡ 2
 walshOrthonormal = refl , (refl , (refl , refl))
 
-liftAttention : Int8 × Int8 → IntVec4
-liftAttention (x , y) = toℕ (code x) , (toℕ (code y) , (0 , 0))
+liftAttention : ∀ {A} → Fin A → IntVec4
+liftAttention p =
+  toℕ p , (0 , (0 , 0))
 
 walshHadamardApply : IntVec4 → WalshVec4
 walshHadamardApply (a , (b , (c , d))) =
