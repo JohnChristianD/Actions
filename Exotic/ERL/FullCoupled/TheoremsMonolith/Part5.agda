@@ -517,7 +517,7 @@ supportAwarePrefixWork k (suc n) =
   supportAwarePrefixWork k n + k
 
 supportAwarePrefixWork-law :
-  ∀ k n → supportAwarePrefixWork k n ≡ n * k
+  ∀ k n → supportAwarePrefixWork k n ≡ k * n
 supportAwarePrefixWork-law k zero = refl
 supportAwarePrefixWork-law k (suc n) =
   trans
