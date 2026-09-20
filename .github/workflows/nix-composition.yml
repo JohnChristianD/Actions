@@ -112,13 +112,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 1a
@@ -191,13 +191,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 2
@@ -261,13 +261,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 3
@@ -331,13 +331,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 4
@@ -401,13 +401,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Check theorem partition 5
@@ -471,13 +471,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - name: Prefer downloaded Agda interfaces
@@ -488,13 +488,13 @@ jobs:
             mkdir -p "$(dirname "$rel")"
             cp "$iface" "$rel"
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
-      - name: Hide predecessor Agda sources
+      - name: Prefer downloaded Agda interface timestamps
         run: |
           while IFS= read -r -d '' iface; do
             rel="${iface#_build/2.8.0.2/agda/}"
             src="${rel%.agdai}.agda"
             if test -f "$src"; then
-              mv "$src" "$src.ci-source-hidden"
+              touch -d '@1' "$src"
             fi
           done < <(find _build/2.8.0.2/agda -type f -name '*.agdai' -print0)
       - run: |
