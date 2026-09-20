@@ -44,14 +44,15 @@ parse_line(Line, Law) :-
         CompositeS = "true" -> Composite = yes ; Composite = no
     ),
     Signature = string.replace_all(Signature0, "%7C", "|"),
-    Dependencies = parse_dependencies(DependenciesS),
+    parse_dependencies(DependenciesS, Dependencies),
     Law = semantic_law(
         Source, Name, Reflexive, Composite, Signature, Dependencies).
 
-:- func parse_dependencies(string) = list(string).
-parse_dependencies("") = [].
-parse_dependencies(Text) =
-    parse_dependency_parts(string.split_at_string(";", Text)).
+:- pred parse_dependencies(string::in, list(string)::out) is det.
+parse_dependencies("", []).
+parse_dependencies(Text, Dependencies) :-
+    Text \= "",
+    parse_dependency_parts(string.split_at_string(";", Text), Dependencies).
 
 :- pred parse_dependency_parts(list(string)::in, list(string)::out) is det.
 parse_dependency_parts([], []).
