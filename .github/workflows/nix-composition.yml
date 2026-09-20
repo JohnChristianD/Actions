@@ -33,6 +33,11 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@b85815f71a6de0ddee80b8a80a98d43f4bcc66c7
 
+      - name: Fetch pinned Agda standard library
+        run: |
+          git clone --depth 1 --branch v2.4 https://github.com/agda/agda-stdlib.git "$RUNNER_TEMP/agda-stdlib"
+          echo "AGDA_STDLIB=$RUNNER_TEMP/agda-stdlib/src" >> "$GITHUB_ENV"
+
       - name: Verify pinned toolchain
         run: nix develop --command bash -lc 'bash ./.ci/ci.sh versions'
 
