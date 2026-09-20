@@ -926,20 +926,20 @@ gruCriticWH8CoordinateCount-law = refl
 gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
 gruCriticWH8PersistentQuotientCoordinateCount-law = refl
 
-record GRUCriticWH8State : Set where
+record GRUCriticWH8State (A : Nat) : Set where
   constructor gruCriticWH8State
   field gruPart : GRUState
-        criticPart : CriticState
+        criticPart : CriticState A
         walshPart : Int8WalshVec4
 open GRUCriticWH8State public
 
-GRUCriticWH8Equivalent : GRUCriticWH8State → GRUCriticWH8State → Set
+GRUCriticWH8Equivalent : ∀ {A} → GRUCriticWH8State A → GRUCriticWH8State A → Set
 GRUCriticWH8Equivalent s t =
   persistentGRU (gruPart s) ≡ persistentGRU (gruPart t) ×
   criticPart s ≡ criticPart t ×
   walshPart s ≡ walshPart t
 
-gruCriticWH8Equivalent-refl : ∀ s → GRUCriticWH8Equivalent s s
+gruCriticWH8Equivalent-refl : ∀ {A} (s : GRUCriticWH8State A) → GRUCriticWH8Equivalent s s
 gruCriticWH8Equivalent-refl s = refl , (refl , refl)
 
 record F4IntUState : Set where
