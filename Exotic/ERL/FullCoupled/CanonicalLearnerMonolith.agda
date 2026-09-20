@@ -595,9 +595,12 @@ identityActivation8-zero = refl
 gruCandidate8 : Int8 → Int8 → Int8
 gruCandidate8 h x = int8Add h x
 
+complement128 : Nat → Nat
+complement128 n = 128 ∸ n
+
 mix8 : Int8 → Int8 → Int8 → Int8
 mix8 g old new = int8Add
-  (int8Mul (int8OfNat (q7Complement128 (toℕ (code g)))) old)
+  (int8Mul (int8OfNat (complement128 (toℕ (code g)))) old)
   (int8Mul g new)
 
 gateCode : Signed → Int8
