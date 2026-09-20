@@ -86,10 +86,13 @@ main(!IO) :-
     io.set_exit_status(0, !IO),
     scan(checked_paths, !IO),
     io.get_exit_status(Status, !IO),
-    if Status = 0 then
-        io.write_string("canonical-and-generalized-safe-surface=complete\n", !IO),
-        io.write_string("holes-and-postulates=absent\n", !IO),
-        io.write_string("forbidden-theorem-families=absent\n", !IO)
-    else
-        true
-    .
+    (
+        if Status = 0 then
+            (
+                io.write_string("canonical-and-generalized-safe-surface=complete\n", !IO),
+                io.write_string("holes-and-postulates=absent\n", !IO),
+                io.write_string("forbidden-theorem-families=absent\n", !IO)
+            )
+        else
+            true
+    ).
