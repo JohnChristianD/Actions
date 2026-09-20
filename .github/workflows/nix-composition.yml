@@ -11,7 +11,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: nix-connected-composition-${{ github.ref }}
+  group: nix-connected-composition-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: false
 
 permissions:
