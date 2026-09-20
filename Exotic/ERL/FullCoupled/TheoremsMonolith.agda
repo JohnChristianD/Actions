@@ -10,4 +10,4 @@
 
 module Exotic.ERL.FullCoupled.TheoremsMonolith where
 
-open import Exotic.ERL.FullCoupled.TheoremsMonolith.Part4 public
+open import Exotic.ERL.FullCoupled.TheoremsMonolith.Part5 public
