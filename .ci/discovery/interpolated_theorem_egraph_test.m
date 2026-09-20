@@ -38,6 +38,7 @@ main(!IO) :-
     FiniteCycleId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem",
     ConvexConcaveId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#TopologicalConvexConcaveExactReadoutTheorem",
     VisitId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteStateActionVisitInjectionImpossible",
+    EmergentExactOrbitId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#CanonicalFiniteExactOrbitUAPCompositionTheorem",
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -82,6 +83,8 @@ main(!IO) :-
         law_id(ConvexConcaveLaw) = ConvexConcaveId,
         list.member(VisitLaw, Laws),
         law_id(VisitLaw) = VisitId,
+        list.member(EmergentExactOrbitLaw, Laws),
+        law_id(EmergentExactOrbitLaw) = EmergentExactOrbitId,
         e_match(
             papp("proof-compose", [
                 pvar("A"),
