@@ -31,7 +31,7 @@ record Topology (A : Set) : Set₁ where
 open Topology public
 
 Continuous : (A B : Set) →
-  Topology A → Topology B → (A → B) → Set
+  Topology A → Topology B → (A → B) → Set₁
 Continuous A B τA τB f =
   ∀ {V : B → Set} →
   isOpen τB V →
