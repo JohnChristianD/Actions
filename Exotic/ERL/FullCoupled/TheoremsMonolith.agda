@@ -2246,6 +2246,9 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         n
         h
 
+    hadamardAttentionRopePrefixComposition :
+      CanonicalHadamardAttentionRopePrefixCompositionTheorem
+
     continuousReadoutTransfer :
       ∀ {Feature Output : Set}
       {observe : C.FullLearnerState → Feature}
@@ -2386,6 +2389,7 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     (λ K s n h →
       canonicalWatkinsTarget-recurrent-prefix-correct
         K s n h)
+    canonical-hadamard-attention-rope-prefix-composition-theorem
     (λ witness target s →
       continuousLeftInverse-exactReadout-transfer
         witness
