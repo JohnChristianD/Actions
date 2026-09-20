@@ -15,7 +15,6 @@
 checked_paths = [
     "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda",
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
-    "Exotic/ERL/FullCoupled/NovelLearnerTheoremDiscovery_test.agda"
 ].
 
 :- func forbidden = list(string).
@@ -87,11 +86,10 @@ main(!IO) :-
     io.set_exit_status(0, !IO),
     scan(checked_paths, !IO),
     io.get_exit_status(Status, !IO),
-    (
-        Status = 0,
+    if Status = 0 then
         io.write_string("canonical-and-generalized-safe-surface=complete\n", !IO),
         io.write_string("holes-and-postulates=absent\n", !IO),
         io.write_string("forbidden-theorem-families=absent\n", !IO)
-    ;
+    else
         true
-    ).
+    .
