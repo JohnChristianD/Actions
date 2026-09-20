@@ -965,8 +965,8 @@ canonicalPolicyWeightCode : ∀ {A} → FullLearnerKernel A → FullLearnerState
 canonicalPolicyWeightCode K s = int8OfNat (numerator (canonicalPolicyWeight K s))
 
 HardSparse : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Set
-HardSparse K s =
-  ∀ {a : Fin _} →
+HardSparse {A} K s =
+  ∀ {a : Fin A} →
   a ≢ canonicalPolicy K s →
   numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ≡ zero
 
