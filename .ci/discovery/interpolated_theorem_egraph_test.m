@@ -27,11 +27,7 @@ main(!IO) :-
                 semantic_law.composite(L) = yes),
             Laws)),
     ExactUAPId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#ExactUniversalApproximationThroughContinuousLeftInverse",
-            ContinuousBoundaryId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies",
-            list.member(ExactUAPLaw, Laws),
-            law_id(ExactUAPLaw) = ExactUAPId,
-            list.member(ContinuousBoundaryLaw, Laws),
-            law_id(ContinuousBoundaryLaw) = ContinuousBoundaryId,
+    ContinuousBoundaryId = "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies",
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :-
@@ -47,6 +43,10 @@ main(!IO) :-
         list.length(Analyses) > 0,
         saturation_iterations(Saturation) > 0,
         ExtractionCost > 0,
+        list.member(ExactUAPLaw, Laws),
+        law_id(ExactUAPLaw) = ExactUAPId,
+        list.member(ContinuousBoundaryLaw, Laws),
+        law_id(ContinuousBoundaryLaw) = ContinuousBoundaryId,
         e_match(
             papp("proof-compose", [
                 pvar("A"),
