@@ -206,3 +206,20 @@ The bounded exact-UAP surface includes exact retraction, decoder-transport, and 
 ## Terminology boundary
 
 The active proof model is ordinary reinforcement learning (RL). The legacy filesystem/module namespace `Exotic/ERL/FullCoupled/...` is retained only to avoid a broad path-and-module migration in the proof surface; the mathematics and documentation do not claim an evolutionary-RL mechanism.
+
+
+## Reservoir-computing universality boundary
+
+The reservoir-computing literature uses a different universality problem from this finite exact RL algebra. Sugiura, Ariizumi, Asai, and Azuma (Mathematics 2025, 13, 3440) prove, under their continuous-time RC assumptions, that universality, the neighborhood separation property, and existence of a uniformly continuous left inverse are equivalent. They also prove that a universal reservoir functional has dense discontinuity points. Their earlier 2024 construction shows that a universal reservoir with finite-dimensional output can exist, including a single-output construction, so the result is not an 'infinite width' theorem. [Source: the 2025 paper and its 2024 predecessor.]
+
+The present Agda result is different and exact. On the canonical Nat-indexed orbit, state equality implies index equality, while an `Int8` observation has only finitely many values. Therefore a global exact left inverse `inverse ∘ observe = id` is impossible on the whole orbit by pigeonhole. The theorem `canonicalNoGlobalInt8ContinuousLeftInverseOnDiscreteTopologies` strengthens the boundary by explicitly granting continuity under the discrete topologies: even then the finite observation cannot have a global exact left inverse.
+
+Consequently:
+
+`finite Int8 observation + infinite canonical orbit -> no global exact left inverse`
+
+This is a cardinality contradiction, not a claim that chaotic reservoirs are required in every universal-approximation setting. The reservoir result explains the dense-discontinuity phenomenon in the continuous infinite-precision regime; the Agda theorem establishes the stricter finite-precision obstruction for this algebra.
+
+## Equality-saturation e-graph boundary
+
+The Mercury implementation now contains the standard equality-saturation stages that were previously missing from the repository-specific congruence structure: e-matching, rewrite application, repeated saturation to a fixed point or iteration cap, rebuilding/congruence maintenance, e-class analysis, and cost-guided extraction. The theorem-sync gate exercises the same pipeline against the source-derived semantic manifest. It does not make Mercury a proof authority: Agda `--safe` remains authoritative.
