@@ -526,7 +526,7 @@ analyze(E, Analyses) :-
     eclass_id::in, egraph::in, int::in,
     list(eclass_id)::in, expr::out, int::out) is semidet.
 extract_best_seen(Class, E, Depth, Seen, Expr, Cost) :-
-    Root = root(parent(E), Class),
+    root(parent(E), Class, Root),
     Depth > 0,
     not list.member(Root, Seen),
     best_binding_for_root(
