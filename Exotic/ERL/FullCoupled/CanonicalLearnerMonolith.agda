@@ -32,7 +32,7 @@ open Topology public
 
 Continuous : (A B : Set) →
   Topology A → Topology B → (A → B) → Set
-Continuous τA τB f =
+Continuous A B τA τB f =
   ∀ {V : B → Set} →
   isOpen τB V →
   isOpen τA (λ x → V (f x))
