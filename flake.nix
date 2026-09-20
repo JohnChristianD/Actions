@@ -19,12 +19,34 @@
 
       mkPkgs = system:
         import nixpkgs { inherit system; };
+
+      ciProgram = system:
+        let
+          pkgs = mkPkgs system;
+        in
+        pkgs.callPackage ./.ci/ci.nix {};
+
     in
     {
+      packages = forAllSystems (system: {
+        ci = ciProgram system;
+        default = ciProgram system;
+      });
+
+      apps = forAllSystems (system: {
+        ci = {
+          type = "app";
+          program = "${ciProgram system}/bin/actions-ci";
+        };
+        default = {
+          type = "app";
+          program = "${ciProgram system}/bin/actions-ci";
+        };
+      });
+
       devShells = forAllSystems (system:
         let
           pkgs = mkPkgs system;
-
         in
         {
           default = pkgs.mkShell {
@@ -35,7 +57,6 @@
             ];
 
             shellHook = ''
-              printf 'agda=%s\n' "$(agda --version | head -n 1)"
               printf 'mercury=%s\n' "$(mmc --version | head -n 1)"
             '';
           };
