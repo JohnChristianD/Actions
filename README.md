@@ -298,3 +298,13 @@ The obstruction is specifically finite capacity. `Nat` can inject into an infini
 ## Computational-capacity boundary
 
 The Nat-indexed orbit, exact iterate composition, left-inverse injectivity, and finite-feature pigeonhole contradiction do not constitute a Turing-completeness theorem. No universal-machine interpreter, two-counter simulation, or compression=prediction theorem is formalized. The present result is an exact algebraic capacity boundary between unbounded Nat bit-length and finite feature cardinality.
+
+## Current monolith/e-graph contract
+
+The canonical learner remains exactly one executable source, `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`, and the canonical theorem surface remains exactly one public facade, `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`. `TheoremsMonolith/Part1a` through `Part5` are CI compilation partitions only; they are not separate learner semantics.
+
+The theorem/e-graph boundary now includes the complete Part5 partition. Mercury extracts the full theorem partition set and forces `canonical-endogenous-sparse-summary-egraph-theorem`, which composes the attention→Watkins→GRU/F4 mediator, recurrent summary/compression scan, prediction-from-decoded-compression law, generalized finite-action Tsallis-2 sparsity, and the support-aware exact work model. Agda `--safe` remains the semantic authority; Mercury performs equality-saturation discovery and checks that the required theorem dependencies are present.
+
+The Tsallis-2 measure is no longer conceptually restricted to the canonical two-action specialization. `ActionWeights d = Fin d -> Nat` provides the general exact finite-action definition; the existing two-action policy remains a specialization of the learner semantics rather than the definition of the measure. The hard support sparsity boundary is `(d-k)/d`; Tsallis-2 is the weighted effective-support measure `(dQ-S²)/(dQ)`, with the zero-vector convention equal to 1.
+
+CI predecessor handoff is interface-only: theorem jobs consume downloaded `.agdai` artifacts and hide predecessor `.agda` sources before checking the current partition. This is specifically to prevent repeated canonical learner recompilation on the GitHub runner while preserving kernel-checked Agda interfaces and the separate Mercury stack.
