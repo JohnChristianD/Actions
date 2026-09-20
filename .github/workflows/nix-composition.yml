@@ -94,11 +94,6 @@ jobs:
         run: |
           find . -path './.git' -prune -o -name 'CanonicalLearnerMonolith.agdai' -print
           test -f "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai"
-      - name: Prefer downloaded Agda interfaces
-        run: |
-          touch -d @1 "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-          test "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agdai" -nt "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
-
       - name: Enforce interface-only predecessor handoff
         run: |
           mkdir -p .ci/interface-shadow
