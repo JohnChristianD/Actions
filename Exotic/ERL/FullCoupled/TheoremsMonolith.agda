@@ -71,16 +71,6 @@ record CanonicalAQLoopTheorem : Set₁ where
 
 open CanonicalAQLoopTheorem public
 
-canonical-aq-loop-theorem : CanonicalAQLoopTheorem
-canonical-aq-loop-theorem =
-  canonicalAQLoopTheorem
-    (λ K s → refl)
-    (λ K s → refl)
-    (λ K s → refl)
-    (λ K s → refl)
-
-open CanonicalAQLoopTheorem public
-
 canonical-aq-loop-theorem :
   CanonicalAQLoopTheorem
 canonical-aq-loop-theorem =
@@ -3010,8 +3000,6 @@ record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
 
 open CanonicalPolymorphicSparsemaxCompositionTheorem public
 
-canonical-polymorphic-sparsemax-egraph-theorem :
-  CanonicalPolymorphicSparsemaxCompositionTheorem
 canonical-polymorphic-sparsemax-egraph-theorem :
   CanonicalPolymorphicSparsemaxCompositionTheorem
 canonical-polymorphic-sparsemax-egraph-theorem =
