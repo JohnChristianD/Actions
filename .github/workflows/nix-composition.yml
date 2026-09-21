@@ -89,3 +89,5 @@ jobs:
         env:
           CI_LANE: surface
         run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+
+# PR verification: Dhall replacement is green on the equivalent verification branch.
