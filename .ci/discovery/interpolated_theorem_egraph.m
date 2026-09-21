@@ -152,5 +152,5 @@ discovery_egraph_from_laws(Laws, E, QuotientCount) :-
     add_laws(Laws, E0, E, 0, QuotientCount).
 
 discovery_egraph(E, QuotientCount, !IO) :-
-    read_manifest(Laws, !IO),
+    read_semantic_laws(Laws, !IO),
     discovery_egraph_from_laws(Laws, E, QuotientCount).
