@@ -91,7 +91,7 @@ run! = \program, args -> Cmd.exec!(program, args)
 
 agda_program! : {} => Result Str _
 agda_program! = \{} ->
-  Env.var!("AGDA_COMMAND")?
+  Env.var!("AGDA_COMMAND")
 
 run_agda_file! : Str => Result {} _
 run_agda_file! = \file_path ->
@@ -157,7 +157,7 @@ check_symbols! = \symbols, source ->
 
 path_has_suffix! : Str, List Str -> Bool
 path_has_suffix! = \path, suffixes ->
-  suffixes.any(\suffix -> Str.ends_with(path, suffix))
+  List.any(suffixes, \suffix -> Str.ends_with(path, suffix))
 
 is_text_path! : Str -> Bool
 is_text_path! = \path ->
@@ -243,14 +243,14 @@ run_surface! = \{} ->
   listing = Cmd.new("git") |> Cmd.args(["ls-files"]) |> Cmd.exec_output!()?
   files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
 
-  monoliths = files.keep_if(\path -> Str.ends_with(path, "Monolith.agda"))
-  if monoliths.len() != 2 then
+  monoliths = List.keep_if(files, \path -> Str.ends_with(path, "Monolith.agda"))
+  if List.len(monoliths) != 2 then
       Err(NonCanonicalMonolithCount)
   else
       check_source_paths!(files)?
       check_retired_terms_in_files!(files)?
 
-      if !files.contains(".ci/actions_ci.roc") then
+      if !List.contains(files, ".ci/actions_ci.roc") then
           Err(MissingRocOrchestrator)
       else
           Ok({})
@@ -290,7 +290,7 @@ get_lane! = \args ->
 
 main! : List Arg => Result {} _
 main! = \raw_args ->
-  args = raw_args.map(Arg.display)
+  args = List.map(raw_args, Arg.display)
 
   lane = get_lane!(args)?
 
