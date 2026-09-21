@@ -16,7 +16,7 @@ open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Nat.Properties using (≤-antisym)
+open import Data.Nat.Properties using (≤-antisym; +-identityʳ)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 phase4-period4 :
