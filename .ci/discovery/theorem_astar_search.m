@@ -77,14 +77,23 @@ node_before(A, B) :-
     FA = node_f(A),
     FB = node_f(B),
     (
-        FA < FB
-    ;
-        FA = FB,
-        astar_node.heuristic(A) < astar_node.heuristic(B)
-    ;
-        FA = FB,
-        astar_node.heuristic(A) = astar_node.heuristic(B),
-        astar_node.cost(A) < astar_node.cost(B)
+        if FA < FB then
+            true
+        else if FA > FB then
+            fail
+        else
+            HA = astar_node.heuristic(A),
+            HB = astar_node.heuristic(B),
+            (
+                if HA < HB then
+                    true
+                else if HA > HB then
+                    fail
+                else
+                    CA = astar_node.cost(A),
+                    CB = astar_node.cost(B),
+                    CA < CB
+            )
     ).
 
 :- pred frontier_insert(astar_node::in, list(astar_node)::in,
@@ -211,10 +220,11 @@ insert_children([Node | Nodes], Frontier0, Frontier) :-
     list(list(string))::in,
     list(list(string))::out,
     io::di, io::uo) is det.
-astar_collect(_, _, Expansions, MaxExpansions, MaxResults,
+astar_collect(_, _, Expansions, MaxExpansions, _,
     Results, Results, !IO) :-
-    Expansions >= MaxExpansions,
-    MaxResults >= list.length(Results).
+    Expansions >= MaxExpansions.
+astar_collect(_, _, _, _, MaxResults, Results, Results, !IO) :-
+    list.length(Results) >= MaxResults.
 astar_collect(_, [], _, _, _, Results, Results, !IO).
 astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     Results0, Results, !IO) :-
