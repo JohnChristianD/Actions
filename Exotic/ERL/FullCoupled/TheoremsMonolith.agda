@@ -4228,8 +4228,8 @@ architecture-preserving-canonical-rnn-lm-identity K =
       (λ x → x)
       (λ x → refl)
       (λ x → refl))
-    (λ t → refl)
-    (λ x → refl)
+    canonicalTokenDecodeEncode
+    canonicalTokenEncodeDecode
     (λ t → refl)
     (λ t → refl)
     (λ s → refl)
