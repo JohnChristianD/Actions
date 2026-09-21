@@ -125,14 +125,14 @@ writeShellApplication {
         find . -type f -not -path './.git/*' -name '*Monolith.agda' -print
         exit 1
       fi
-      while IFS= read -r -d  monolith; do
+      while IFS= read -r monolith; do
         case "$monolith" in
           Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda|Exotic/ERL/FullCoupled/TheoremsMonolith.agda) ;;
           *) printf 'ERROR: noncanonical monolith remains: %s\n' "$monolith"; exit 1 ;;
         esac
-      done < <(find . -type f -not -path './.git/*' -name '*Monolith.agda' -print0)
+      done < <(find . -type f -not -path './.git/*' -name '*Monolith.agda' -print)
       local bad_file
-      while IFS= read -r -d '' bad_file; do
+      while IFS= read -r bad_file; do
         local path="$bad_file"
         case "$path" in
           ./.ci/ci.sh) printf '%s\n' 'ERROR: hand-maintained shell workflow remains; use .ci/ci.nix'; exit 1 ;;
@@ -140,7 +140,7 @@ writeShellApplication {
             printf 'ERROR: forbidden legacy/noncanonical source file: %s\n' "$path"; exit 1 ;;
           *) ;;
         esac
-      done < <(find . -type f -not -path './.git/*' -print0)
+      done < <(find . -type f -not -path './.git/*' -print)
       printf '%s\n' 'single-theorem-source=TheoremsMonolith.agda; single-learner-source=CanonicalLearnerMonolith.agda; generated-Agda=absent; wiki=absent'
       local legacy_term_hits
       legacy_term_hits="$(grep -RniE --exclude-dir=.git --exclude=ci.nix 'guix|guile|(^|[^[:alnum:]])scheme([^[:alnum:]]|$)|evolutionary-search|evolutionary algorithm|Sparsemax2Pair|fixedTemperatureSparsemax|ActionScore|policyLeftWeight|TSTS|Gresher' . || true)"
