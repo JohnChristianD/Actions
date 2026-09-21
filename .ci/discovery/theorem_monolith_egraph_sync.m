@@ -19,10 +19,10 @@
     list(list(string))::in,
     symbolic_egraph.egraph::in,
     symbolic_egraph.egraph::out) is det.
-add_astar_plans([], E, E).
-add_astar_plans([Plan | Plans], E0, E) :-
+add_graph_plans([], E, E).
+add_graph_plans([Plan | Plans], E0, E) :-
     add_expr(graph_plan_expr(Plan), E0, _, E1),
-    add_astar_plans(Plans, E1, E).
+    add_graph_plans(Plans, E1, E).
 
 :- pred write_plan_items(
     io.text_output_stream::in, list(list(string))::in,
