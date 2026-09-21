@@ -167,7 +167,7 @@ Agda is still the only component allowed to accept the theorem. Mercury can disc
 
 ## Graph-derived emergent hypotheses
 
-The former unigram, bigram, and onion items were empirical representation hypotheses. They are removed from the canonical README claim surface because they were not source-derived Agda laws and were not outputs of the Mercury theorem graph.
+The former empirical representation hypotheses were not source-derived Agda laws and were not outputs of the Mercury theorem graph. They are removed from the canonical claim surface.
 
 This pass adds **exactly two new theorem hypotheses** to the graph-facing surface:
 
