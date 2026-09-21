@@ -91,10 +91,9 @@ run! : Str, List Str => Try({}, _)
 run! = |program, args| Cmd.exec!(program, args)
 
 agda_program! : {} => Try(Str, _)
-agda_program! = || {
+agda_program! = |args|
     env_value = Env.var!(OsStr.from_str("AGDA_COMMAND"))?
     Ok(OsStr.display(env_value))
-}
 
 run_agda_file! : Str => Try({}, _)
 run_agda_file! = |file_path| {
