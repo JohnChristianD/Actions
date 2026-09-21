@@ -87,6 +87,12 @@ writeShellApplication {
         "canonicalNoNontrivialFiniteCycle-theorem"
         "canonicalDeterministicFiniteStepDivergenceInevitability"
         "canonicalNoFiniteStepConvergenceToFixedPoint"
+        "BairdSevenStarProblem"
+        "bairdSevenStar"
+        "NonIIDMarkovWalrasianProblem"
+        "nonIIDMarkovStationaryWalrasian-lift"
+        "Majority3ShapleyEquilibrium"
+        "majority3ShapleyEquilibriumWitness"
       )
       for symbol in "${required[@]}"; do
         if ! grep -Fq "$symbol" "$theorem"; then
