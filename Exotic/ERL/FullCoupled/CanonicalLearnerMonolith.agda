@@ -1187,3 +1187,32 @@ canonicalTokenLogitTrace K [] s = []
 canonicalTokenLogitTrace K (t ∷ ts) s =
   logits K s ∷
   canonicalTokenLogitTrace K ts (canonicalTokenStep s t)
+
+canonicalTokenActionSpace : ActionSpace 256
+canonicalTokenActionSpace =
+  actionSpace (fromℕ< (m%n<n 0 256))
+
+canonicalTokenLogitCounts : CountVec 256
+canonicalTokenLogitCounts = zeroCounts
+
+canonicalTokenSparsemaxWeight :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalToken →
+  SparseWeight
+canonicalTokenSparsemaxWeight K s t =
+  sparsemaxWeight
+    canonicalTokenActionSpace
+    (logits K s)
+    canonicalTokenLogitCounts
+    t
+
+canonicalTokenSparsemaxPolicy :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalToken
+canonicalTokenSparsemaxPolicy K s =
+  sparsemaxPolicy
+    canonicalTokenActionSpace
+    (logits K s)
+    canonicalTokenLogitCounts
