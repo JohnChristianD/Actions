@@ -115,10 +115,11 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
             "ERROR: cannot write theorem monolith e-graph sync report\n",
             !IO),
         io.set_exit_status(1, !IO)
+    )
     ).
 
 main(!IO) :-
-    read_semantic_laws(All, !IO),
+    ( read_semantic_laws(All, !IO),
     search_emergent_compositions(All, Plans),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(Plans, EGraph0, EGraphGraph),
