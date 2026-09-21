@@ -39,7 +39,7 @@ law_for_id(Id, [Law | Laws], Result) :-
 :- pred seed_node(semantic_law::in, graph_node::out) is semidet.
 seed_node(Law, Node) :-
     not is_reflexive(Law),
-    graph_node(law_id(Law)) = Node.
+    Node = graph_node([law_id(Law)]).
 
 :- pred seed_nodes(
     list(semantic_law)::in,
@@ -137,13 +137,15 @@ all_unique([X | Xs]) :-
 valid_plan(Plan, Laws) :-
     Plan = [TerminalId | _],
     all_unique(Plan),
-    list.map_corresponding(
-        (pred(Child::in, Parent::in) is semidet :-
-            law_for_id(Parent, Laws, ParentLaw),
-            list.member(Child, law_dependencies(ParentLaw))),
-        list.det_tail(Plan),
-        Plan),
+    valid_chain(Plan, Laws),
     law_for_id(TerminalId, Laws, _).
+
+:- pred valid_chain(list(string)::in, list(semantic_law)::in) is semidet.
+valid_chain([_], _).
+valid_chain([Child, Parent | Rest], Laws) :-
+    law_for_id(Parent, Laws, ParentLaw),
+    list.member(Child, law_dependencies(ParentLaw)),
+    valid_chain([Parent | Rest], Laws).
 
 :- pred all_valid_plans(
     list(list(string))::in, list(semantic_law)::in) is semidet.
