@@ -41,9 +41,30 @@ The e-graph is a discovery/proof-plan normalization layer, not a second proof au
 
 ## Nix toolchain strategy
 
-CI installs Nix once and enters the repository flake. The flake pins nixpkgs, layers the upstream Agda 2.8.0 release, pins the Agda standard library at v2.4, and obtains Mercury 22.01.9 from nixpkgs. The proof pipeline requires only the pinned Nix, Agda, and Mercury toolchains.
+CI installs Nix once and enters the repository flake. The flake pins nixpkgs at the repository revision and supplies the upstream Agda setup, Mercury 22.01.9, and Roc. Roc is the only hand-written CI scripting language: \`.ci/actions_ci.roc\` is a typed functional executable source, while Nix remains the declarative environment/build layer.
 
-The verification script runs Agda kernel checking, Mercury theorem verification, Mercury e-graph discovery, and the canonical source-policy surface audit from one Nix development shell.
+The Roc program invokes Agda \`--safe\`, Mercury, theorem-only A* graph search, e-graph saturation, the semantic contract, and the canonical source audit directly as processes. It does not invoke a shell interpreter, Node, Python, Lua, or a JavaScript runtime.
+
+Roc is used specifically for its pure functional model, explicit effects, native execution, and documented terminal-command and CI-script examples. The exact pinned nixpkgs revision already contains the Roc compiler used by the Linux CI runner.
+
+## Typed functional CI scripting and A* e-graph discovery
+
+The repository does not treat “general-purpose language” as sufficient for CI scripting. The replacement criterion is the intersection of typed functional semantics, explicit effects/process execution, native Linux execution, and an installable upstream compiler in the pinned Nixpkgs revision.
+
+Roc matches the actual CI job: it is a pure functional language with explicit effects, documented terminal-command execution, and documented real-world CI scripts. The CI runtime therefore stays native and statically typed without introducing a JavaScript or Lua execution layer.
+
+The executable path is:
+
+\`.ci/actions_ci.roc\`
+-> Roc process execution
+-> Agda / Mercury binaries
+-> theorem-source extraction
+-> A* dependency frontier
+-> e-graph saturation
+-> cost-guided extraction
+-> \`theorem-monolith-egraph-sync.json\`
+
+A* is a graph-search cost policy, not a proof authority. Agda \`--safe\` accepts proofs; Mercury derives the theorem dependency graph and equality-saturation plan; Roc only orchestrates those existing authorities.
 
 ## Infinite-state proof
 
@@ -176,17 +197,17 @@ The boundary remains:
 
 ## CI lanes
 
-Nix runs four connected lanes:
+Roc dispatches four connected lanes:
 
-`agda-safe`, `mercury`, `discovery`, and `surface`.
+\`agda-safe\`, \`mercury\`, \`discovery\`, and \`surface\`.
 
-The Agda lane checks the canonical learner, the single theorem monolith, and focused tests with the same Nix-provided `agda --safe -l standard-library` executable.
+The Agda lane checks the canonical learner and theorem monolith with \`agda --safe\`.
 
-The Mercury lane runs the theorem-monolith e-graph sync and the generic e-graph regressions. The sync program emits a report but does not generate Agda source.
+The Mercury lane runs the theorem-policy gate.
 
-The discovery lane runs the same source-derived semantic/e-graph chain.
+The discovery lane runs theorem-only semantic extraction, A* cost-guided dependency-path search, e-graph insertion, saturation, analysis, and cost-guided extraction. The sync report is required to state \`forced_symbolic_target=false\`, \`single_agda_source=true\`, \`astar_score_ordered=true\`, and a positive emergent composition count.
 
-The surface lane rejects noncanonical language/script files, rejects a second generated Agda theorem module, rejects a repository-side wiki tree, and requires the single active `TheoremsMonolith.agda`.
+The semantic-contract lane checks required theorem declarations directly in \`TheoremsMonolith.agda\` and rejects forbidden unrelated learner mechanisms. The surface lane derives its file inventory from \`git ls-files\`, rejects retired script/source languages, rejects a second generated theorem monolith, and requires \`.ci/actions_ci.roc\`.
 
 ## Deliberate mathematical boundary
 
