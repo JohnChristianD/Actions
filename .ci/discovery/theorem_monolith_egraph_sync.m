@@ -119,7 +119,7 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
 
 main(!IO) :-
     read_semantic_laws(All, !IO),
-    search_emergent_compositions(All, Plans, !IO),
+    search_emergent_compositions(All, Plans),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(Plans, EGraph0, EGraphGraph),
     saturate_until_stable(semantic_rewrite_rules, EGraphGraph, EGraph, Saturation),
