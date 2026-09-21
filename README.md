@@ -23,8 +23,7 @@ There is no generated Agda theorem projection. Mercury synchronizes only against
 The division is deliberately strict:
 
 `CanonicalLearnerMonolith.agda` + `TheoremsMonolith.agda`
--> Mercury semantic extraction
--> Mercury in-memory semantic law extraction
+-> Mercury source-derived in-memory semantic law extraction
 -> Mercury e-graph normalization
 -> Mercury theorem-monolith sync gate
 -> Nix-pinned `agda --safe`
