@@ -2660,6 +2660,15 @@ record MarkovStationaryWalrasianCompositionTheorem : Set₁ where
     recurrentScan :
       RecurrentAssociativeScanTheorem C.GRUState C.Int8
 
+    directProductFiniteAutomaton :
+      ∀ {Q₁ Q₂ Input : Set}
+        (step₁ : Q₁ → Input → Q₁)
+        (step₂ : Q₂ → Input → Q₂) →
+      DirectProductFiniteAutomatonComposition Q₁ Q₂ Input
+
+    stabilityBoundary :
+      OffPolicyFunctionApproximationStabilityBoundary
+
     continuousExactReadout :
       ∀ {State Feature Output : Set}
         {observe : State → Feature}
@@ -2688,6 +2697,9 @@ markov-stationary-walrasian-composition-theorem :
 markov-stationary-walrasian-composition-theorem =
   markovStationaryWalrasianCompositionTheorem
     canonicalGRU-recurrent-associative-scan-theorem
+    (λ step₁ step₂ →
+      directProductFiniteAutomatonComposition-theorem step₁ step₂)
+    offPolicyFunctionApproximationStabilityBoundary
     continuousLeftInverse-exactReadout-transfer
     continuousStationaryWalrasian-lift
 
