@@ -165,37 +165,38 @@ The sync report records:
 
 Agda is still the only component allowed to accept the theorem. Mercury can discover that the wires are connected; it cannot bless a bad proof. Civilization narrowly avoids another parser being mistaken for a kernel.
 
-## Representation hypotheses: research boundary
+## Graph-derived emergent hypotheses
 
-The unigram, bigram, and onion hypotheses supplied for recurrent representation analysis remain empirical hypotheses, not formal facts about the canonical learner.
+The former unigram, bigram, and onion items were empirical representation hypotheses. They are removed from the canonical README claim surface because they were not source-derived Agda laws and were not outputs of the Mercury theorem graph.
 
-### Hypothesis 1: unigram variables
+The current hypotheses are exactly the theorem-level compositions exposed by the canonical source and discovered through the dependency graph/e-graph boundary:
 
-The hypothesis asks whether sequence positions occupy separate linear subspaces of the final hidden state. A rotated representation and assignment matrix identify candidate subspaces, and interchange interventions test whether replacing a position's subspace preserves exact target decoding.
+1. **Integer Haar orthogonality is an exact scaled kernel law.**
+   `canonical-integer-haar-scaled-orthogonality-theorem` composes the source laws `canonicalIntegerHaarCross` and `canonicalIntegerHaarEnergy`. The certificate is deliberately the integer/scaled two-point kernel; it does not claim the normalized real Haar matrix, which would require a `1/sqrt(2)` factor outside the current `Int8` carrier.
 
-Formal connection: an exact readout consequence follows constructively from a left-invertible observation. The Agda theorem does not assert that a trained GRU necessarily learns unigram subspaces.
+2. **A* cost guidance is an exact theorem composition.**
+   `canonical-a-star-cost-guidance-theorem` composes the zero-cost identity, successor-cost law, and exact token logit-trace append law. Mercury owns the A* graph-search policy; Agda owns the exact cost identities and trace equality used by the certificate.
 
-### Hypothesis 2: bigram variables
+3. **The graph can connect the two surfaces to existing sparsemax/recurrent laws without a second normalization.**
+   `canonical-linear-haar-sparsemax-attention-composition-theorem` and `canonical-full-state-haar-sparsemax-invariant-composition-theorem` are source-derived composition certificates. The Haar operation is the integer linear sum/difference transform, while sparsemax remains the existing shared policy/head machinery.
 
-The hypothesis assigns representation to adjacent token tuples, so an intervention around one token affects the neighboring bigram variables as well.
+These are **graphed emergent hypotheses**, not heuristic claims: the candidate wires come from declarations and dependency occurrences in `TheoremsMonolith.agda`; Mercury enumerates dependency paths, inserts those paths into the e-graph, saturates and analyzes the graph, and extracts source laws. A candidate is only a proved theorem when the corresponding Agda declaration type-checks under `--safe`.
 
-Formal connection: the theorem surface verifies executable compositional laws. It does not label the learner's hidden representation as bigram-based without intervention evidence.
+The evidence boundary is therefore:
 
-### Hypothesis 3: onion representations
+**empirical representation hypothesis** -> removed from the formal README claim surface
 
-The hypothesis models multiple positions in a shared direction with different magnitudes and uses autoregressive feedback to peel the dominant layer before decoding the next one.
+**source-derived theorem dependency** -> eligible Mercury graph hypothesis
 
-Formal connection: the recurrent scan theorem proves the executable recurrence's prefix semantics. It does not prove that the hidden representation empirically implements the onion mechanism.
-
-The boundary remains:
-
-**experimental representation** -> hypothesis and intervention target
-
-**source-derived Agda equality** -> formal theorem
-
-**Mercury e-graph** -> semantic discovery and proof-plan quotient
+**Mercury A* + e-graph extraction** -> discovery/proof-plan evidence
 
 **Agda `--safe`** -> proof acceptance
+
+## Functional-programming physics methodology
+
+Scott N. Walck's *Learn Physics with Functional Programming: A Hands-on Guide to Exploring Physics with Haskell* is used only as a methodology reference for typed functional modeling: make mathematical state, transformations, and invariants explicit in the program structure. The book was published by No Starch Press in 2023 (ISBN-13 9781718501669). It is not treated as evidence for any theorem about this learner's computational power or for the Haar/A* certificates above.
+
+The useful transfer is methodological rather than bibliographic: encode the mathematical object first, give the transformation an explicit type, and make the invariant a separately checkable equality. That matches the repository's division of labor between Agda proof terms, Mercury semantic/e-graph discovery, and typed functional CI orchestration.
 
 ## CI lanes
 
