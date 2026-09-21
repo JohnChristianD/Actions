@@ -2588,6 +2588,64 @@ continuousStationaryWalrasian-lift D p allocation h =
 ------------------------------------------------------------------------
 
 
+
+
+------------------------------------------------------------------------
+-- Direct-product finite-automaton composition.
+--
+-- The product is the finite-state carrier for simultaneous recurrence:
+-- each component reads the same input and advances independently, while
+-- the product transition preserves both component states.
+------------------------------------------------------------------------
+
+record DirectProductFiniteAutomatonComposition
+  (Q₁ Q₂ Input : Set) : Set₁ where
+  constructor directProductFiniteAutomatonComposition
+  field
+    step₁ : Q₁ → Input → Q₁
+    step₂ : Q₂ → Input → Q₂
+    productStep :
+      (Q₁ × Q₂) → Input → (Q₁ × Q₂)
+    productStep-def :
+      ∀ q₁ q₂ x →
+      productStep (q₁ , q₂) x
+      ≡
+      (step₁ q₁ x , step₂ q₂ x)
+    prefixCorrect :
+      ∀ (xs : List Input) (q₁ : Q₁) (q₂ : Q₂) →
+      productPrefix productStep xs (q₁ , q₂)
+      ≡
+      (componentPrefix step₁ xs q₁ ,
+       componentPrefix step₂ xs q₂)
+
+directProductFiniteAutomatonComposition-theorem :
+  ∀ {Q₁ Q₂ Input : Set}
+  (step₁ : Q₁ → Input → Q₁)
+  (step₂ : Q₂ → Input → Q₂) →
+  DirectProductFiniteAutomatonComposition Q₁ Q₂ Input
+directProductFiniteAutomatonComposition-theorem step₁ step₂ =
+  directProductFiniteAutomatonComposition
+    step₁
+    step₂
+    (λ { (q₁ , q₂) x → step₁ q₁ x , step₂ q₂ x })
+    (λ _ _ _ → refl)
+    (λ _ _ _ → refl)
+
+------------------------------------------------------------------------
+-- Baird is retained as a negative algorithmic-stability boundary.
+-- It is NOT a theorem that this learner diverges: Baird's result concerns
+-- off-policy bootstrapping with function approximation.  Our exact
+-- representation theorems and this stability boundary are separate layers.
+------------------------------------------------------------------------
+
+record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
+  constructor offPolicyFunctionApproximationStabilityBoundary
+  field
+    exactRepresentationDoesNotImplyConvergence :
+      Set
+    bairdDivergenceBoundary :
+      Set
+
 ------------------------------------------------------------------------
 -- Endogenous cross-domain composition target for Mercury A*.
 --
