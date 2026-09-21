@@ -13,7 +13,7 @@
 :- import_module list.
 :- import_module string.
 :- import_module symbolic_egraph.
- :- import_module theorem_graph_search.
+:- import_module theorem_graph_search.
 
 :- pred add_graph_plans(
     list(list(string))::in,
