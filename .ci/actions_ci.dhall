@@ -120,6 +120,8 @@ let script =
     grep -Fq 'WalrasianEquilibrium' "$root/Econlib/Equilibrium/Economy.lean"
     grep -Fq 'StationaryWalrasianEquilibrium' "$root/Econlib/Equilibrium/AggregateAccounting.lean"
     grep -Fq 'exists_stationary' "$root/Econlib/Probability/Markov/Ergodic.lean"
+    grep -Fq 'theorem geometric_convergence_to' "$root/Econlib/Probability/Markov/Ergodic.lean"
+    grep -Fq '0 < P.transition' "$root/Econlib/Probability/Markov/Ergodic.lean"
 
     grep -Fq 'BehavioralStrategy' "$root/Econlib/GameTheory/ExtensiveForm/Core/Strategy.lean"
     grep -Fq 'BeliefSystem' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/BeliefSystem.lean"
@@ -142,6 +144,8 @@ let script =
       printf '  "static_existence": "Economy.exists_equilibrium",\n'
       printf '  "non_iid_transition": "arbitrary Markov/kernel transition",\n'
       printf '  "stationary_law_node": "FiniteMarkovChain.exists_stationary",\n'
+      printf '  "stationary_law_convergence_node": "FiniteMarkovChain.geometric_convergence_to",\n'
+      printf '  "stationary_law_convergence_condition": "strictly positive transition probabilities",\n'
       printf '  "stationary_equilibrium_node": "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
       printf '  "local_non_iid_lift": "nonIIDMarkovStationaryWalrasian-lift",\n'
       printf '  "local_generalized_lift": "generalizedWalrasianEquilibrium-from-static",\n'
