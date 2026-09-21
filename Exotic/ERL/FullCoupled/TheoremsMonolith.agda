@@ -688,6 +688,7 @@ commutingSquareLeftInverseTheorem-from-witness :
   CommutingSquareLeftInverseTheorem
     State Feature step observe featureStep inverse
 commutingSquareLeftInverseTheorem-from-witness
+  {State} {Feature} {step} {observe} {featureStep}
   inverse squareWitness leftInverse =
   commutingSquareLeftInverseTheorem
     squareWitness
