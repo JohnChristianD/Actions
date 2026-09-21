@@ -82,7 +82,7 @@ writeShellApplication {
         "canonicalNormPair-prefix-monoid-homomorphism"
         "canonicalGRUF4Norm-prefix-monoid-homomorphism"
         "canonicalFullStep-GRUF4Norm-prefix-bridge"
-        "canonical-hadamard-attention-rope-prefix-composition-theorem"
+        "canonical-gruf4-norm-watkins-prefix-composition-theorem"
         "ContinuousLeftInverseTheorem"
         "canonicalRingStateInjective"
         "canonicalDenseNeighborhoodSeparation"
@@ -109,7 +109,7 @@ writeShellApplication {
 ' 'ERROR: generated semantic lookup-table source/artifact remains'
         exit 1
       fi
-      if grep -Eiq 'target[-_ ]network|(^|[^[:alnum:]])normalization([^[:alnum:]]|$)|(^|[^[:alnum:]])regularization([^[:alnum:]]|$)' "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"; then
+      if grep -Eiq 'attention|walsh|rope|target[-_ ]network|(^|[^[:alnum:]])normalization([^[:alnum:]]|$)|(^|[^[:alnum:]])regularization([^[:alnum:]]|$)' "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"; then
         printf '%s\n' 'ERROR: forbidden extraneous target-network/normalization/regularization semantics entered the canonical learner'
         exit 1
       fi
