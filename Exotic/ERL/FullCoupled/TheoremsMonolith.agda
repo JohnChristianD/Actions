@@ -2353,8 +2353,8 @@ absorbing-prefix-fixed :
   (A : AbsorbingFiniteEquilibriumTheorem State step equilibrium)
   (n : Nat) →
   iterateState step n equilibrium ≡ equilibrium
-absorbing-prefix-fixed A zero = refl
-absorbing-prefix-fixed A (suc n) =
+absorbing-prefix-fixed {step = step} A zero = refl
+absorbing-prefix-fixed {step = step} A (suc n) =
   trans
     (cong step (absorbing-prefix-fixed A n))
     (absorbing A)
