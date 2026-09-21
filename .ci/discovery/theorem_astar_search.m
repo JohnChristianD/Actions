@@ -236,28 +236,45 @@ astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
         else if Frontier0 = [] then
             Results = Results0
         else
-            Frontier0 = [First | Rest],
-            pop_best_acc(Rest, First, [], Node, Frontier1),
-            (
-                if goal_node(Node, Laws) then
-                    Results1 = [plan(Node) | Results0],
-                    astar_collect(
-                        Laws, Frontier1, Expansions,
-                        MaxExpansions, MaxResults,
-                        Results1, Results, !IO)
-                else if cost(Node) < max_depth then
-                    expand_node(Node, Laws, Children),
-                    insert_children(Children, Frontier1, Frontier2),
-                    astar_collect(
-                        Laws, Frontier2, Expansions + 1,
-                        MaxExpansions, MaxResults,
-                        Results0, Results, !IO)
-                else
-                    astar_collect(
-                        Laws, Frontier1, Expansions + 1,
-                        MaxExpansions, MaxResults,
-                        Results0, Results, !IO)
-            )
+            astar_collect_frontier(
+                Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
+                Results0, Results, !IO)
+    ).
+
+:- pred astar_collect_frontier(
+    list(semantic_law)::in,
+    list(astar_node)::in,
+    int::in,
+    int::in,
+    int::in,
+    list(list(string))::in,
+    list(list(string))::out,
+    io::di, io::uo) is det.
+astar_collect_frontier(
+    _, [], _, _, _, Results, Results, !IO).
+astar_collect_frontier(
+    Laws, [First | Rest], Expansions, MaxExpansions, MaxResults,
+    Results0, Results, !IO) :-
+    pop_best_acc(Rest, First, [], Node, Frontier1),
+    (
+        if goal_node(Node, Laws) then
+            Results1 = [plan(Node) | Results0],
+            astar_collect(
+                Laws, Frontier1, Expansions,
+                MaxExpansions, MaxResults,
+                Results1, Results, !IO)
+        else if cost(Node) < max_depth then
+            expand_node(Node, Laws, Children),
+            insert_children(Children, Frontier1, Frontier2),
+            astar_collect(
+                Laws, Frontier2, Expansions + 1,
+                MaxExpansions, MaxResults,
+                Results0, Results, !IO)
+        else
+            astar_collect(
+                Laws, Frontier1, Expansions + 1,
+                MaxExpansions, MaxResults,
+                Results0, Results, !IO)
     ).
 
 search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
