@@ -13,15 +13,15 @@
 :- import_module list.
 :- import_module string.
 :- import_module symbolic_egraph.
-:- import_module theorem_astar_search.
+ :- import_module theorem_graph_search.
 
-:- pred add_astar_plans(
+:- pred add_graph_plans(
     list(list(string))::in,
     symbolic_egraph.egraph::in,
     symbolic_egraph.egraph::out) is det.
 add_astar_plans([], E, E).
 add_astar_plans([Plan | Plans], E0, E) :-
-    add_expr(astar_plan_expr(Plan), E0, _, E1),
+    add_expr(graph_plan_expr(Plan), E0, _, E1),
     add_astar_plans(Plans, E1, E).
 
 :- pred write_plan_items(
