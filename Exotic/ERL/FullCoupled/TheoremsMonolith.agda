@@ -849,8 +849,8 @@ record CommutingSquareTheorem
       ∀ s → observe (step s) ≡ featureStep (observe s)
     iterateSquare :
       ∀ n s →
-      observe (C.iterate step n s) ≡
-      C.iterate featureStep n (observe s)
+      observe (commutingIterate step n s) ≡
+      commutingIterate featureStep n (observe s)
 
 open CommutingSquareTheorem public
 
@@ -868,12 +868,12 @@ commutingSquareTheorem-from-square squareWitness =
   where
     iterateProof :
       ∀ n s →
-      observe (C.iterate step n s) ≡
-      C.iterate featureStep n (observe s)
+      observe (commutingIterate step n s) ≡
+      commutingIterate featureStep n (observe s)
     iterateProof zero s = refl
     iterateProof (suc n) s =
       trans
-        (squareWitness (C.iterate step n s))
+        (squareWitness (commutingIterate step n s))
         (cong featureStep (iterateProof n s))
 
 record CommutingSquareLeftInverseTheorem
@@ -992,8 +992,8 @@ canonicalSquare-law-on-orbit :
   (featureStep : Feature → Feature) →
   (∀ s → observe (step s) ≡ featureStep (observe s)) →
   ∀ n s →
-  observe (C.iterate step n s) ≡
-  C.iterate featureStep n (observe s)
+  observe (commutingIterate step n s) ≡
+  commutingIterate featureStep n (observe s)
 canonicalSquare-law-on-orbit
   step observe featureStep squareWitness n s =
   CommutingSquareTheorem.iterateSquare
