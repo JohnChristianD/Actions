@@ -2749,7 +2749,7 @@ finiteHardSparseKKT-absorbing-class :
     State step hardSparse equilibrium →
   UniqueKKTAbsorbingClass
     State
-    (⊤)
+    (C.⊤)
     step
     hardSparse
     (λ _ → tt)
