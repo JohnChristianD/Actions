@@ -23,7 +23,7 @@ writeShellApplication {
     run_agda_file() {
       local file="$1"
       printf '==> Agda --safe %s\n' "$file"
-      timeout --foreground "${AGDA_TIMEOUT_SECONDS:-1200}" "$AGDA_COMMAND" --safe -l standard-library -i . "$file"
+      timeout --foreground "''${AGDA_TIMEOUT_SECONDS:-1200}" "$AGDA_COMMAND" --safe -l standard-library -i . "$file"
     }
 
     run_agda_learner() {
@@ -94,7 +94,7 @@ writeShellApplication {
         "Majority3ShapleyEquilibrium"
         "majority3ShapleyEquilibriumWitness"
       )
-      for symbol in "${required[@]}"; do
+      for symbol in "''${required[@]}"; do
         if ! grep -Fq "$symbol" "$theorem"; then
           printf 'ERROR: canonical theorem semantic missing: %s\n' "$symbol"
           exit 1
@@ -126,14 +126,14 @@ writeShellApplication {
         exit 1
       fi
       while IFS= read -r -d '' monolith; do
-        case "${monolith#./}" in
+        case "''${monolith#./}" in
           Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda|Exotic/ERL/FullCoupled/TheoremsMonolith.agda) ;;
-          *) printf 'ERROR: noncanonical monolith remains: %s\n' "${monolith#./}"; exit 1 ;;
+          *) printf 'ERROR: noncanonical monolith remains: %s\n' "''${monolith#./}"; exit 1 ;;
         esac
       done < <(find . -type f -not -path './.git/*' -name '*Monolith.agda' -print0)
       local bad_file
       while IFS= read -r -d '' bad_file; do
-        local path="${bad_file#./}"
+        local path="''${bad_file#./}"
         case "$path" in
           .ci/ci.sh) printf '%s\n' 'ERROR: hand-maintained shell workflow remains; use .ci/ci.nix'; exit 1 ;;
           *.sh|*.bash|*.zsh|*.fish|*.cmd|*.bat|*.ps1|*.command|*.py|*.java|*.kt|*.scala|*.groovy|*.clj|*.cljs|*.js|*.mjs|*.cjs|*.ts|*.tsx|*.elm|*.purs|*.hs|*.lhs|*.cabal|*.c|*.h|*.cc|*.cpp|*.cxx|*.hpp|*.hxx|*.cs|*.fs|*.fsx|*.vb|*.csproj|*.fsproj|*.vbproj|*.sln|*.html|*.htm|*.css|*.tex|*.ltx|*.sty|*.cls|*.bib|*.scm|*.scheme|*.ss)
@@ -158,7 +158,7 @@ writeShellApplication {
       mmc --version
     }
 
-    case "${1:-surface}" in
+    case "''${1:-surface}" in
       agda-learner) run_agda_learner ;;
       agda-theorem) run_agda_theorem ;;
       agda-safe) run_agda_safe ;;
