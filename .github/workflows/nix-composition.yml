@@ -10,6 +10,10 @@ on:
   workflow_dispatch:
   workflow_call:
 
+concurrency:
+  group: nix-composition-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -50,6 +54,8 @@ jobs:
 
   mercury:
     name: Mercury theorem-only e-graph
+    needs: agda
+    if: ${{ always() }}
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
