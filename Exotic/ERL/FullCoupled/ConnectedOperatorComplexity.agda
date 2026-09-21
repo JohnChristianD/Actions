@@ -110,12 +110,12 @@ canonicalFullPayloadWidth-exact =
 
 ------------------------------------------------------------------------
 -- Full connected component application cost is exact in the declared
--- component-count cost model: Watkins, attention, GRU, F4, counts, q-log
--- control, and q-log value are seven component transitions.
+-- attention-free component-count model: Watkins, GRU, F4, counts, q-log
+-- control, and q-log value are six component transitions.
 ------------------------------------------------------------------------
 
 canonicalComponentCount : Nat
-canonicalComponentCount = 7
+canonicalComponentCount = 6
 
 canonicalSequentialApplicationCost : Nat → Nat
 canonicalSequentialApplicationCost n =
