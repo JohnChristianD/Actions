@@ -787,109 +787,6 @@ canonicalFullStep-GRUF4Norm-prefix-bridge K s = refl
 -- semantics or theorem registry is introduced here.
 ------------------------------------------------------------------------
 
-canonicalF4RecurrentNetwork :
-  C.CanonicalFullLearnerKernel →
-  C.RecurrentNetwork C.F4IntUState C.Int8
-canonicalF4RecurrentNetwork K =
-  C.recurrentNetwork (C.f4ThetaStep (C.optimizerKernel K))
-
-canonicalF4-prefix-correct :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (xs : Nat → C.Int8)
-  (n : Nat)
-  (s : C.F4IntUState) →
-  C.applyEndomorphism
-    (C.recurrentPrefixEndomorphism
-      (canonicalF4RecurrentNetwork K)
-      xs
-      n)
-    s
-  ≡
-  C.recurrentPrefixState
-    (canonicalF4RecurrentNetwork K)
-    xs
-    n
-    s
-canonicalF4-prefix-correct K =
-  C.recurrentPrefix-correct
-    (canonicalF4RecurrentNetwork K)
-
-canonicalF4-prefix-monoid-homomorphism :
-  ∀ (K : C.CanonicalFullLearnerKernel) →
-  RecurrentPrefixMonoidHomomorphism
-    C.F4IntUState
-    C.Int8
-canonicalF4-prefix-monoid-homomorphism K =
-  recurrentPrefixMonoidHomomorphism
-    (λ R s → prefixListEndomorphism-unit R s)
-    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
-
-canonicalNormPairRecurrentNetwork :
-  C.RecurrentNetwork C.NormPair C.Int8
-canonicalNormPairRecurrentNetwork =
-  C.recurrentNetwork (λ s _ → s)
-
-canonicalNormPair-prefix-correct :
-  ∀ (xs : Nat → C.Int8)
-  (n : Nat)
-  (s : C.NormPair) →
-  C.applyEndomorphism
-    (C.recurrentPrefixEndomorphism
-      canonicalNormPairRecurrentNetwork
-      xs
-      n)
-    s
-  ≡
-  s
-canonicalNormPair-prefix-correct xs zero s = refl
-canonicalNormPair-prefix-correct xs (suc n) s =
-  canonicalNormPair-prefix-correct xs n s
-
-canonicalNormPair-prefix-monoid-homomorphism :
-  RecurrentPrefixMonoidHomomorphism
-    C.NormPair
-    C.Int8
-canonicalNormPair-prefix-monoid-homomorphism =
-  recurrentPrefixMonoidHomomorphism
-    (λ R s → prefixListEndomorphism-unit R s)
-    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
-
-canonicalNormPair-policy-invariant :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (n : C.NormPair) →
-  C.canonicalPolicy K
-    (C.replaceNorm s n)
-  ≡
-  C.canonicalPolicy K s
-canonicalNormPair-policy-invariant K s n =
-  C.canonicalPolicy-norm-invariant K s n
-
-canonicalF4-policy-invariant :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (o : C.F4IntUState) →
-  C.canonicalPolicy K
-    (C.replaceOptimizer s o)
-  ≡
-  C.canonicalPolicy K s
-canonicalF4-policy-invariant K s o =
-  C.canonicalPolicy-optimizer-invariant K s o
-
-canonicalFullStep-GRUF4Norm-prefix-bridge :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState) →
-  C.runNetwork
-    (canonicalGRUF4NormRecurrentNetwork K)
-    (C.gru s , (C.optimizer s , C.norm s))
-    (C.canonicalSignal K s , C.canonicalAttentionMix K s)
-  ≡
-  ( C.gru (C.canonicalFullStep K s)
-  , ( C.optimizer (C.canonicalFullStep K s)
-    , C.norm (C.canonicalFullStep K s)))
-canonicalFullStep-GRUF4Norm-prefix-bridge K s =
-  canonicalFullStep-GRUF4Norm-product-bridge K s
-
 record CanonicalHadamardAttentionRopePrefixCompositionTheorem : Set₁ where
   constructor canonicalHadamardAttentionRopePrefixCompositionTheorem
   field
@@ -922,6 +819,181 @@ canonical-hadamard-attention-rope-prefix-composition-theorem =
     C.canonicalSignal-watkins-target
     (λ K s → refl)
 
+
+------------------------------------------------------------------------
+-- Full commuting-square / naturality completion.
+--
+-- The literature's equivariance/naturality law is the commuting square
+--   observe ∘ step ≡ featureStep ∘ observe.
+-- Here it is proved for arbitrary deterministic recurrent transitions.
+-- Iteration follows by induction. A left inverse upgrades the square from
+-- a factorization law to exact reconstruction on the observation image.
+-- A right inverse closes the square globally and yields exact conjugacy.
+------------------------------------------------------------------------
+
+record CommutingSquareTheorem
+  (State Feature : Set)
+  (step : State → State)
+  (observe : State → Feature)
+  (featureStep : Feature → Feature) : Set₁ where
+  constructor commutingSquareTheorem
+  field
+    square :
+      ∀ s → observe (step s) ≡ featureStep (observe s)
+    iterateSquare :
+      ∀ n s →
+      observe (C.iterate step n s) ≡
+      C.iterate featureStep n (observe s)
+
+open CommutingSquareTheorem public
+
+commutingSquareTheorem-from-square :
+  ∀ {State Feature : Set}
+  {step : State → State}
+  {observe : State → Feature}
+  {featureStep : Feature → Feature} →
+  (∀ s → observe (step s) ≡ featureStep (observe s)) →
+  CommutingSquareTheorem State Feature step observe featureStep
+commutingSquareTheorem-from-square squareWitness =
+  commutingSquareTheorem
+    squareWitness
+    iterateProof
+  where
+    iterateProof :
+      ∀ n s →
+      observe (C.iterate step n s) ≡
+      C.iterate featureStep n (observe s)
+    iterateProof zero s = refl
+    iterateProof (suc n) s =
+      trans
+        (squareWitness (C.iterate step n s))
+        (cong featureStep (iterateProof n s))
+
+record CommutingSquareLeftInverseTheorem
+  (State Feature : Set)
+  (step : State → State)
+  (observe : State → Feature)
+  (featureStep : Feature → Feature)
+  (inverse : Feature → State) : Set₁ where
+  constructor commutingSquareLeftInverseTheorem
+  field
+    squareWitness :
+      CommutingSquareTheorem State Feature step observe featureStep
+    leftInverse :
+      ∀ s → inverse (observe s) ≡ s
+    observationInjective :
+      ∀ {s t} →
+      observe s ≡ observe t →
+      s ≡ t
+    reconstructedStep :
+      ∀ s →
+      step s ≡ inverse (featureStep (observe s))
+
+open CommutingSquareLeftInverseTheorem public
+
+commutingSquareLeftInverseTheorem-from-witness :
+  ∀ {State Feature : Set}
+  {step : State → State}
+  {observe : State → Feature}
+  {featureStep : Feature → Feature}
+  (inverse : Feature → State)
+  (squareWitness :
+    CommutingSquareTheorem State Feature step observe featureStep)
+  (leftInverse :
+    ∀ s → inverse (observe s) ≡ s) →
+  CommutingSquareLeftInverseTheorem
+    State Feature step observe featureStep inverse
+commutingSquareLeftInverseTheorem-from-witness
+  inverse squareWitness leftInverse =
+  commutingSquareLeftInverseTheorem
+    squareWitness
+    leftInverse
+    (λ {s} {t} eq →
+      trans
+        (sym (leftInverse s))
+        (trans
+          (cong inverse eq)
+          (leftInverse t)))
+    (λ s →
+      trans
+        (sym (leftInverse (step s)))
+        (cong inverse
+          (CommutingSquareTheorem.square
+            squareWitness
+            s)))
+
+record FullCommutingSquareConjugacyTheorem
+  (State Feature : Set)
+  (step : State → State)
+  (observe : State → Feature)
+  (featureStep : Feature → Feature)
+  (inverse : Feature → State) : Set₁ where
+  constructor fullCommutingSquareConjugacyTheorem
+  field
+    squareWitness :
+      CommutingSquareTheorem State Feature step observe featureStep
+    leftInverse :
+      ∀ s → inverse (observe s) ≡ s
+    rightInverse :
+      ∀ f → observe (inverse f) ≡ f
+    backwardSquare :
+      ∀ f → inverse (featureStep f) ≡ step (inverse f)
+
+open FullCommutingSquareConjugacyTheorem public
+
+fullCommutingSquareConjugacyTheorem-from-witness :
+  ∀ {State Feature : Set}
+  {step : State → State}
+  {observe : State → Feature}
+  {featureStep : Feature → Feature}
+  (inverse : Feature → State)
+  (squareWitness :
+    CommutingSquareTheorem State Feature step observe featureStep)
+  (leftInverse :
+    ∀ s → inverse (observe s) ≡ s)
+  (rightInverse :
+    ∀ f → observe (inverse f) ≡ f) →
+  FullCommutingSquareConjugacyTheorem
+    State Feature step observe featureStep inverse
+fullCommutingSquareConjugacyTheorem-from-witness
+  inverse squareWitness leftInverse rightInverse =
+  fullCommutingSquareConjugacyTheorem
+    squareWitness
+    leftInverse
+    rightInverse
+    (λ f →
+      trans
+        (sym (leftInverse (step (inverse f))))
+        (cong inverse
+          (trans
+            (CommutingSquareTheorem.square
+              squareWitness
+              (inverse f))
+            (cong featureStep (rightInverse f)))))
+
+------------------------------------------------------------------------
+-- Particular boundary:
+-- global exact Int8 decoding would supply the left-inverse half, while
+-- the Nat-indexed aperiodic orbit proves that such decoding cannot exist.
+-- Hence a global exact conjugacy square through Int8 is impossible.
+------------------------------------------------------------------------
+
+canonicalSquare-law-on-orbit :
+  ∀ {Feature : Set}
+  (step : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+  (observe : C.CanonicalFullLearnerState → Feature)
+  (featureStep : Feature → Feature) →
+  (∀ s → observe (step s) ≡ featureStep (observe s)) →
+  ∀ n s →
+  observe (C.iterate step n s) ≡
+  C.iterate featureStep n (observe s)
+canonicalSquare-law-on-orbit
+  step observe featureStep squareWitness n s =
+  CommutingSquareTheorem.iterateSquare
+    (commutingSquareTheorem-from-square squareWitness)
+    n s
+
+------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Generic symbolic impossibility at the observation boundary.
