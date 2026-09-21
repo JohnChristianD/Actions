@@ -122,7 +122,7 @@ main(!IO) :-
     search_emergent_compositions(All, Plans, !IO),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_astar_plans(Plans, EGraph0, EGraphAStar),
-    saturate(semantic_rewrite_rules, 32, EGraphAStar, EGraph, Saturation),
+    saturate_until_stable(semantic_rewrite_rules, EGraphAStar, EGraph, Saturation),
     analyze(EGraph, Analyses),
     ExtractionDepth = enode_count(EGraph) + 1,
     extract_all_laws(All, EGraph, ExtractionDepth, ExtractionCost),
