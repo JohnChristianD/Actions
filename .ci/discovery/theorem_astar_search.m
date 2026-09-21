@@ -226,36 +226,37 @@ insert_children([Node | Nodes], Frontier0, Frontier) :-
     list(list(string))::in,
     list(list(string))::out,
     io::di, io::uo) is det.
-astar_collect(_, _, Expansions, MaxExpansions, _,
-    Results, Results, !IO) :-
-    Expansions >= MaxExpansions.
-astar_collect(_, _, _, _, MaxResults, Results, Results, !IO) :-
-    list.length(Results) >= MaxResults.
-astar_collect(_, [], _, _, _, Results, Results, !IO).
 astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     Results0, Results, !IO) :-
-    Expansions < MaxExpansions,
-    list.length(Results0) < MaxResults,
-    pop_best(Frontier0, Node, Frontier1),
     (
-        goal_node(Node, Laws)
-    ->
-        Results1 = [plan(Node) | Results0],
-        astar_collect(
-            Laws, Frontier1, Expansions, MaxExpansions, MaxResults,
-            Results1, Results, !IO)
-    ;
-        cost(Node) < max_depth
-    ->
-        expand_node(Node, Laws, Children),
-        insert_children(Children, Frontier1, Frontier2),
-        astar_collect(
-            Laws, Frontier2, Expansions + 1, MaxExpansions, MaxResults,
-            Results0, Results, !IO)
-    ;
-        astar_collect(
-            Laws, Frontier1, Expansions + 1, MaxExpansions, MaxResults,
-            Results0, Results, !IO)
+        if Expansions >= MaxExpansions then
+            Results = Results0
+        else if list.length(Results0) >= MaxResults then
+            Results = Results0
+        else if Frontier0 = [] then
+            Results = Results0
+        else
+            pop_best(Frontier0, Node, Frontier1),
+            (
+                if goal_node(Node, Laws) then
+                    Results1 = [plan(Node) | Results0],
+                    astar_collect(
+                        Laws, Frontier1, Expansions,
+                        MaxExpansions, MaxResults,
+                        Results1, Results, !IO)
+                else if cost(Node) < max_depth then
+                    expand_node(Node, Laws, Children),
+                    insert_children(Children, Frontier1, Frontier2),
+                    astar_collect(
+                        Laws, Frontier2, Expansions + 1,
+                        MaxExpansions, MaxResults,
+                        Results0, Results, !IO)
+                else
+                    astar_collect(
+                        Laws, Frontier1, Expansions + 1,
+                        MaxExpansions, MaxResults,
+                        Results0, Results, !IO)
+            )
     ).
 
 search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
