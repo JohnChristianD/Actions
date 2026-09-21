@@ -15,7 +15,7 @@ open import Relation.Binary.Construct.On as On
 import Relation.Binary.Construct.Flip.EqAndOrd as Flip
 open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
 open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
-open import Data.Product using (Σ; _×_; _,_)
+open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
