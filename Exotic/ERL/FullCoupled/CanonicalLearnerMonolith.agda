@@ -1120,7 +1120,7 @@ canonicalPersistent = canonicalPersistentGRUPreservation
 -- Exact token-level recurrent language-model substrate.
 --
 -- Tokenization begins at the finite symbolic/numeric token boundary.
--- No transcendental functions are introduced here.  The recurrent
+-- No nonalgebraic analytic primitive is introduced here.  The recurrent
 -- semantics remain the existing Int8 GRU, and token sequences remain
 -- ordinary Lists so prefix composition is exact and structural.
 ------------------------------------------------------------------------
