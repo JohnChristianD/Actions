@@ -1265,6 +1265,13 @@ CanonicalFixedSparsemaxAttentionWeight K s t =
     (numerator
       (canonicalTokenSparsemaxWeight K s t))
 
+canonicalFixedSparsemaxAttentionWeight :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalToken →
+  Int8
+canonicalFixedSparsemaxAttentionWeight = CanonicalFixedSparsemaxAttentionWeight
+
 CanonicalFixedSparsemaxAttentionVector :
   CanonicalTokenLanguageModelKernel →
   GRUState →
