@@ -1709,8 +1709,8 @@ noExactTuringCounterObservation-through-Int8
     encode
     observe
     decode
-    (counterInjective witness)
-    (counterDecode witness)
+    (ExactTuringCounterObservation.counterInjective witness)
+    (ExactTuringCounterObservation.counterDecode witness)
 
 canonicalNoExactTuringCounterObservation :
   ∀
