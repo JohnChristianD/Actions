@@ -91,8 +91,7 @@ run! = \program, args -> Cmd.exec!(program, args)
 
 agda_program! : {} => Result Str _
 agda_program! = \{} ->
-  env_value = Env.var!(OsStr.from_str("AGDA_COMMAND"))?
-  Ok(OsStr.display(env_value))
+  Env.var!("AGDA_COMMAND")?
 
 run_agda_file! : Str => Result {} _
 run_agda_file! = \file_path ->
@@ -283,12 +282,17 @@ run_lane! = \lane ->
           run_surface!({})
       _ -> Err(UnknownLane(lane))
 
+get_lane! : List Str => Result Str [InvalidInvocation]
+get_lane! = \args ->
+  when List.get(args, 1) is
+      Ok(lane) -> Ok(lane)
+      Err(_) -> Err(InvalidInvocation)
+
 main! : List Arg => Result {} _
 main! = \raw_args ->
   args = raw_args.map(Arg.display)
 
-  lane = List.get(args, 1) ? \{} ->
-      Err(InvalidInvocation)
+  lane = get_lane!(args)?
 
   run_lane!(lane)?
   Stdout.line!("lane=\${lane}")?
