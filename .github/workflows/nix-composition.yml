@@ -44,18 +44,21 @@ jobs:
         timeout-minutes: 15
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-        run: nix develop .#default -c roc .ci/actions_ci.roc agda-learner
+          CI_LANE: agda-learner
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-        run: nix develop .#default -c roc .ci/actions_ci.roc agda-theorem
-      - name: Check Agda/Mercury tool versions
+          CI_LANE: agda-theorem
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+      - name: Check Agda/Mercury/Dhall tool versions
         if: always()
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-        run: nix develop .#default -c roc .ci/actions_ci.roc versions
+          CI_LANE: versions
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
 
   mercury:
     name: Mercury theorem-only e-graph
@@ -68,8 +71,21 @@ jobs:
           installer-version: '2.35.1'
       - name: Run theorem-only Mercury discovery and canonical semantic contract
         timeout-minutes: 15
-        run: |
-          nix develop .#default -c roc .ci/actions_ci.roc mercury
-          nix develop .#default -c roc .ci/actions_ci.roc discovery
-          nix develop .#default -c roc .ci/actions_ci.roc semantic-contract
-          nix develop .#default -c roc .ci/actions_ci.roc surface
+        env:
+          CI_LANE: mercury
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+      - name: Discovery
+        timeout-minutes: 15
+        env:
+          CI_LANE: discovery
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+      - name: Semantic contract
+        timeout-minutes: 15
+        env:
+          CI_LANE: semantic-contract
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+      - name: Surface contract
+        timeout-minutes: 15
+        env:
+          CI_LANE: surface
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
