@@ -9,15 +9,15 @@
 
 ## Current composed theorem target
 
-Mercury forces `canonical-endogenous-sparse-summary-egraph-theorem`. Its Agda certificate composes:
+Mercury does not force a named theorem target. It derives maximal dependency paths from every non-reflexive declaration in `TheoremsMonolith.agda`, inserts those paths into the e-graph, saturates, analyzes, and extracts them. The current exact theorem surfaces include:
 
-1. sparsemax attention → endogenous Watkins target → GRU/F4 mediator;
-2. exact recurrent endomorphism summary/compression scan;
-3. prediction sufficiency of a sound decoder;
-4. general finite-action Tsallis-2 near-sparsity over `Fin d -> Nat`;
-5. an exact support-parameterized prefix work model.
+1. `canonical-integer-haar-scaled-orthogonality-theorem`: integer/scaled two-point Haar cross-orthogonality plus energy;
+2. `canonical-a-star-cost-guidance-theorem`: exact zero-cost, successor-cost, and token-trace composition laws;
+3. `canonical-linear-haar-sparsemax-attention-composition-theorem`: integer Haar sum/difference composed with the existing sparsemax head;
+4. `canonical-full-state-haar-sparsemax-invariant-composition-theorem`: Haar/sparsemax attention invariance under the existing NormPair and optimizer replacement seams;
+5. the broader recurrent-prefix, finite-product, exact-readout, and stationary-Walrasian composition surfaces already present in the monolith.
 
-Agda `--safe` is authoritative. Mercury extracts the theorem partitions, builds an e-graph, saturates sound rewrite relations, rebuilds, analyzes e-classes, and extracts a costed representative. It does not prove the Agda induction or invent semantic laws.
+Agda `--safe` is authoritative. Mercury extracts the canonical theorem monolith, builds the dependency graph, performs A* cost-guided path search, inserts source laws and graph plans into the e-graph, saturates sound rewrite relations, rebuilds, analyzes e-classes, and extracts costed representatives. It does not prove the Agda induction or invent semantic laws.
 
 ## Sparsity boundary
 
@@ -32,3 +32,9 @@ The learner job produces Agda interfaces. Each theorem partition downloads the c
 ## F4 history invariant
 
 The recent F4 history was inspected. The current canonical F4 state is `F4IntUState` with five `Int8` fields, and its theta step consumes `canonicalWatkinsTarget` with global L2 correction. The older six-coordinate coupled F4 design and legacy hardsign variants are historical code paths, not current canonical semantics. `lcbNegate` and `int8Neg` are definitionally the same modular negation; deduplication can be done without changing the F4 semantic flow.
+
+## 2026-09-21 graph-hypothesis sync
+
+The former README representation hypotheses (unigram, bigram, onion) were empirical research hypotheses and were removed from the canonical claim surface. The replacement hypothesis set is source-derived: the integer Haar orthogonality certificate, the A* cost-guidance certificate, and their existing Haar/sparsemax composition certificates. The distinction is deliberate: Mercury discovers dependency paths; only Agda `--safe` turns a source declaration into a proof.
+
+The methodology reference for this pass is Scott N. Walck, *Learn Physics with Functional Programming: A Hands-on Guide to Exploring Physics with Haskell* (No Starch Press, 2023, ISBN-13 9781718501669). It is used as a typed-functional-programming modeling reference, not as evidence for the learner's theorem claims.
