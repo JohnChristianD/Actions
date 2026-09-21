@@ -1294,3 +1294,30 @@ canonicalFixedSparsemaxAttention-fixed :
   ≡
   canonicalFixedSparsemaxAttentionVector K s
 canonicalFixedSparsemaxAttention-fixed K s = refl
+
+ 
+canonicalHaarSparsemaxAttention :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalToken →
+  CanonicalToken →
+  CanonicalHaarPair
+canonicalHaarSparsemaxAttention K s t u =
+  canonicalHaarMix
+    (canonicalFixedSparsemaxAttentionWeight K s t)
+    (canonicalFixedSparsemaxAttentionWeight K s u)
+
+canonicalHaarSparsemaxAttention-linear-form :
+  ∀ (K : CanonicalTokenLanguageModelKernel)
+  (s : GRUState)
+  (t u : CanonicalToken) →
+  canonicalHaarSparsemaxAttention K s t u
+  ≡
+  (int8Add
+     (canonicalFixedSparsemaxAttentionWeight K s t)
+     (canonicalFixedSparsemaxAttentionWeight K s u)
+   ,
+   int8Sub
+     (canonicalFixedSparsemaxAttentionWeight K s t)
+     (canonicalFixedSparsemaxAttentionWeight K s u))
+canonicalHaarSparsemaxAttention-linear-form K s t u = refl
