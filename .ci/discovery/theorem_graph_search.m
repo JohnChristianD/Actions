@@ -95,33 +95,42 @@ expand_dependencies([Dependency | Dependencies], Plan, Acc0, Children) :-
 maximal_dependency_chain(Node, Laws) :-
     expand_node(Node, Laws, []).
 
-:- func node_score(graph_node) = int.
-node_score(graph_node(Plan)) = length(Plan) + dependency_count(Plan).
+:- func node_score(list(semantic_law), graph_node) = int.
+node_score(Laws, graph_node(Plan)) =
+    length(Plan) + node_heuristic(Laws, Plan).
 
-:- func dependency_count(list(string)) = int.
-dependency_count([]) = 0.
-dependency_count([_]) = 0.
-dependency_count([_ | Rest]) = 1 + dependency_count(Rest).
-
-:- pred insert_astar(graph_node::in, list(graph_node)::in, list(graph_node)::out) is det.
-insert_astar(Node, [], [Node]).
-insert_astar(Node, [Head | Tail], Result) :-
+:- func node_heuristic(list(semantic_law), list(string)) = int.
+node_heuristic(_, []) = 0.
+node_heuristic(Laws, [TerminalId | _]) =
     (
-        if node_score(Node) =< node_score(Head) then
+        if law_for_id(TerminalId, Laws, Law),
+           law_dependencies(Law) = []
+        then
+            0
+        else
+            1
+    ).
+
+:- pred insert_astar(list(semantic_law)::in, graph_node::in, list(graph_node)::in, list(graph_node)::out) is det.
+insert_astar(_, Node, [], [Node]).
+insert_astar(Laws, Node, [Head | Tail], Result) :-
+    (
+        if node_score(Laws, Node) =< node_score(Laws, Head) then
             Result = [Node, Head | Tail]
         else
-            insert_astar(Node, Tail, TailResult),
+            insert_astar(Laws, Node, Tail, TailResult),
             Result = [Head | TailResult]
     ).
 
 :- pred insert_astar_children(
+    list(semantic_law)::in,
     list(graph_node)::in,
     list(graph_node)::in,
     list(graph_node)::out) is det.
-insert_astar_children([], Frontier, Frontier).
-insert_astar_children([Node | Nodes], Frontier0, Frontier) :-
-    insert_astar(Node, Frontier0, Frontier1),
-    insert_astar_children(Nodes, Frontier1, Frontier).
+insert_astar_children(_, [], Frontier, Frontier).
+insert_astar_children(Laws, [Node | Nodes], Frontier0, Frontier) :-
+    insert_astar(Laws, Node, Frontier0, Frontier1),
+    insert_astar_children(Laws, Nodes, Frontier1, Frontier).
 
 :- pred astar_collect(
     list(semantic_law)::in,
@@ -137,7 +146,7 @@ astar_collect(Laws, [Node | Frontier], Results0, Results) :-
                 [Node ^ plan | Results0], Results)
         else
             expand_node(Node, Laws, Children),
-            insert_astar_children(Children, Frontier, Frontier1),
+            insert_astar_children(Laws, Children, Frontier, Frontier1),
             astar_collect(
                 Laws, Frontier1, Results0, Results)
     ).
