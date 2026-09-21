@@ -4016,3 +4016,78 @@ canonical-global-token-lm-composition-theorem =
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
     canonicalNoGlobalNatTokenConjugacy
+
+  
+------------------------------------------------------------------------
+-- Exact integer Haar kernel and A* cost algebra surfaces.
+--
+-- The 2-point Haar kernel is represented in the canonical Int8 ring.
+-- Its two defining scalar identities are kept exact at the proof seam;
+-- the normalized real-valued Haar matrix would require 1/sqrt(2), so
+-- this theorem intentionally certifies the integer, scaled kernel.
+------------------------------------------------------------------------
+
+canonicalIntegerHaarCross :
+  C.int8Add C.one8 (C.int8Neg C.one8) ≡ C.zero8
+canonicalIntegerHaarCross = refl
+
+canonicalIntegerHaarEnergy :
+  C.int8Add C.one8 C.one8 ≡ C.int8OfNat 2
+canonicalIntegerHaarEnergy = refl
+
+record CanonicalIntegerHaarScaledOrthogonalityTheorem : Set₁ where
+  constructor canonicalIntegerHaarScaledOrthogonalityTheorem
+  field
+    crossOrthogonality :
+      C.int8Add C.one8 (C.int8Neg C.one8) ≡ C.zero8
+    integerEnergy :
+      C.int8Add C.one8 C.one8 ≡ C.int8OfNat 2
+
+open CanonicalIntegerHaarScaledOrthogonalityTheorem public
+
+canonical-integer-haar-scaled-orthogonality-theorem :
+  CanonicalIntegerHaarScaledOrthogonalityTheorem
+canonical-integer-haar-scaled-orthogonality-theorem =
+  canonicalIntegerHaarScaledOrthogonalityTheorem
+    canonicalIntegerHaarCross
+    canonicalIntegerHaarEnergy
+
+------------------------------------------------------------------------
+-- A* cost algebra seam. Mercury owns the cost-guided graph search;
+-- Agda certifies the exact Nat cost identities used by that search.
+------------------------------------------------------------------------
+
+canonicalAStarZeroCost :
+  (zero + zero) ≡ zero
+canonicalAStarZeroCost = refl
+
+canonicalAStarSuccessorCost :
+  ∀ n → n + suc zero ≡ suc n
+canonicalAStarSuccessorCost n = +-suc n zero
+
+record CanonicalAStarCostGuidanceTheorem : Set₁ where
+  constructor canonicalAStarCostGuidanceTheorem
+  field
+    zeroCostIdentity :
+      (zero + zero) ≡ zero
+    successorCostComposition :
+      ∀ n → n + suc zero ≡ suc n
+    exactTokenTrace :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (xs ys : C.CanonicalTokenSequence)
+      (s : C.GRUState) →
+      C.canonicalTokenLogitTrace K (xs ++ ys) s
+      ≡
+      C.canonicalTokenLogitTrace K xs s ++
+      C.canonicalTokenLogitTrace K ys
+        (C.canonicalTokenListState xs s)
+
+open CanonicalAStarCostGuidanceTheorem public
+
+canonical-a-star-cost-guidance-theorem :
+  CanonicalAStarCostGuidanceTheorem
+canonical-a-star-cost-guidance-theorem =
+  canonicalAStarCostGuidanceTheorem
+    canonicalAStarZeroCost
+    canonicalAStarSuccessorCost
+    canonicalTokenLogitTrace-append
