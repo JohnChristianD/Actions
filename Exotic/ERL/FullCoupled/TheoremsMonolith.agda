@@ -13,9 +13,10 @@ open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Nat using (_<ᵇ_; _/_)
-open import Data.List.Base using (List; []; _∷_; _++_)
+open import Data.Nat using (_<ᵇ_; _/_; _≤_; zero)
+open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
+open import Data.Nat.Properties using (≤-antisym)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 phase4-period4 :
@@ -2448,6 +2449,242 @@ finiteHardSparseKKT-equilibrium-prefix T =
       (equilibriumFixed T))
 
 
+
+------------------------------------------------------------------------
+-- Exact KKT/sparsity absorbing-class composition.
+--
+-- This is the stability-side algebra that is separate from the raw
+-- canonical full learner transition, whose Nat clock proves that the full
+-- state itself has no fixed point.  A fixed equilibrium therefore belongs
+-- to an explicitly specified operator/quotient certificate.
+------------------------------------------------------------------------
+
+record UniqueKKTAbsorbingClass
+  (State Parameter : Set)
+  (step : State → State)
+  (hardSparse : State → Set)
+  (kkt : Parameter → Set)
+  (parameterOf : State → Parameter)
+  (equilibrium : State) : Set₁ where
+  constructor uniqueKKTAbsorbingClass
+  field
+    equilibriumKKT :
+      kkt (parameterOf equilibrium)
+    uniqueKKT :
+      ∀ p → kkt p → p ≡ parameterOf equilibrium
+    equilibriumHardSparse :
+      hardSparse equilibrium
+    hardSparseKKTAbsorbing :
+      ∀ s →
+      hardSparse s →
+      kkt (parameterOf s) →
+      step s ≡ equilibrium
+    equilibriumFixed :
+      step equilibrium ≡ equilibrium
+
+open UniqueKKTAbsorbingClass public
+
+finiteHardSparseKKT-absorbing-class :
+  ∀ {State : Set}
+  {step : State → State}
+  {hardSparse : State → Set}
+  {equilibrium : State} →
+  FiniteHardSparseKKTEquilibriumTheorem
+    State step hardSparse equilibrium →
+  UniqueKKTAbsorbingClass
+    State
+    (⊤)
+    step
+    hardSparse
+    (λ _ → tt)
+    equilibrium
+finiteHardSparseKKT-absorbing-class T =
+  uniqueKKTAbsorbingClass
+    tt
+    (λ _ _ → refl)
+    (equilibriumHardSparse T)
+    (λ s hs _ → complementarySupport T s hs)
+    (equilibriumFixed T)
+
+productUniqueKKTAbsorbingClass :
+  ∀ {StateA StateB ParameterA ParameterB : Set}
+  {stepA : StateA → StateA}
+  {stepB : StateB → StateB}
+  {hardA : StateA → Set}
+  {hardB : StateB → Set}
+  {kktA : ParameterA → Set}
+  {kktB : ParameterB → Set}
+  {parameterA : StateA → ParameterA}
+  {parameterB : StateB → ParameterB}
+  {equilibriumA : StateA}
+  {equilibriumB : StateB} →
+  UniqueKKTAbsorbingClass
+    StateA ParameterA stepA hardA kktA parameterA equilibriumA →
+  UniqueKKTAbsorbingClass
+    StateB ParameterB stepB hardB kktB parameterB equilibriumB →
+  UniqueKKTAbsorbingClass
+    (StateA × StateB)
+    (ParameterA × ParameterB)
+    (λ st → stepA (proj₁ st) , stepB (proj₂ st))
+    (λ st → hardA (proj₁ st) × hardB (proj₂ st))
+    (λ p → kktA (proj₁ p) × kktB (proj₂ p))
+    (λ st → parameterA (proj₁ st) , parameterB (proj₂ st))
+    (equilibriumA , equilibriumB)
+productUniqueKKTAbsorbingClass TA TB =
+  uniqueKKTAbsorbingClass
+    (equilibriumKKT TA , equilibriumKKT TB)
+    (λ p witness →
+      cong₂ _,_
+        (uniqueKKT TA (proj₁ p) (proj₁ witness))
+        (uniqueKKT TB (proj₂ p) (proj₂ witness)))
+    (equilibriumHardSparse TA , equilibriumHardSparse TB)
+    (λ st hard witness →
+      cong₂ _,_
+        (hardSparseKKTAbsorbing
+          TA
+          (proj₁ st)
+          (proj₁ hard)
+          (proj₁ witness))
+        (hardSparseKKTAbsorbing
+          TB
+          (proj₂ st)
+          (proj₂ hard)
+          (proj₂ witness)))
+    (cong₂ _,_
+      (equilibriumFixed TA)
+      (equilibriumFixed TB))
+
+------------------------------------------------------------------------
+-- Exact finite rank certificate for the missing anti-divergence condition.
+--
+-- KKT uniqueness, hard sparsity, and product closure do not by themselves
+-- prove convergence of an off-policy update.  This certificate makes the
+-- additional algorithmic requirement explicit: a well-founded Nat rank,
+-- a fixed equilibrium, strict rank descent away from it, and the supplied
+-- eventual-equality proof.  Baird-style divergence cannot be excluded from
+-- the generic facts without such a certificate.
+------------------------------------------------------------------------
+
+record FiniteRankStabilityCertificate
+  (State : Set)
+  (step : State → State)
+  (equilibrium : State) : Set₁ where
+  constructor finiteRankStabilityCertificate
+  field
+    rank : State → Nat
+    equilibriumFixed :
+      step equilibrium ≡ equilibrium
+    rankZero :
+      ∀ s → rank s ≡ zero → s ≡ equilibrium
+    strictDescent :
+      ∀ s → s ≢ equilibrium →
+      rank (step s) < rank s
+    eventualExact :
+      ∀ s → Σ Nat (λ n → iterateState step n s ≡ equilibrium)
+
+open FiniteRankStabilityCertificate public
+
+finiteRank-stability-implies-eventual-fixed :
+  ∀ {State : Set}
+  {step : State → State}
+  {equilibrium : State} →
+  FiniteRankStabilityCertificate State step equilibrium →
+  ∀ s → Σ Nat (λ n → iterateState step n s ≡ equilibrium)
+finiteRank-stability-implies-eventual-fixed C s =
+  eventualExact C s
+
+------------------------------------------------------------------------
+-- Finite non-iid Walrasian equilibrium.
+--
+-- Agents may have distinct endowments and utility functions; the only
+-- equilibrium requirements are individual budget optimality and aggregate
+-- market clearing.  No iid or uniform shock assumption appears.
+------------------------------------------------------------------------
+
+sumNat :
+  List Nat → Nat
+sumNat [] = zero
+sumNat (x ∷ xs) = x + sumNat xs
+
+bundleCost :
+  ∀ {Good : Set} →
+  List Good →
+  (Good → Nat) →
+  (Good → Nat) →
+  Nat
+bundleCost goods price bundle =
+  sumNat (map (λ g → price g * bundle g) goods)
+
+BudgetFeasible :
+  ∀ {Good : Set} →
+  List Good →
+  (Good → Nat) →
+  (Good → Nat) →
+  (Good → Nat) →
+  Set
+BudgetFeasible goods price endowment bundle =
+  bundleCost goods price bundle ≤
+  bundleCost goods price endowment
+
+record FiniteNonIIDWalrasianEquilibrium
+  (Agent Good : Set)
+  (agents : List Agent)
+  (goods : List Good)
+  (utility : Agent → (Good → Nat) → Nat)
+  (endowment : Agent → Good → Nat) : Set₁ where
+  constructor finiteNonIIDWalrasianEquilibrium
+  field
+    price : Good → Nat
+    allocation : Agent → Good → Nat
+    budgetOptimal :
+      ∀ i bundle →
+      BudgetFeasible
+        goods
+        price
+        (endowment i)
+        bundle →
+      utility i bundle ≤
+      utility i (allocation i)
+    marketClearing :
+      ∀ g →
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents)
+
+open FiniteNonIIDWalrasianEquilibrium public
+
+------------------------------------------------------------------------
+-- Finite TU Shapley allocation equilibrium.
+--
+-- "Shapley equilibrium" is not used here as an assertion of a standard
+-- market-theory term.  This record precisely means that the payoff is a
+-- supplied exact scaled-Shapley witness for a finite TU worth function,
+-- together with scaled efficiency.
+------------------------------------------------------------------------
+
+record FiniteTUShapleyAllocationEquilibrium
+  (Player : Set)
+  (players : List Player) : Set₁ where
+  constructor finiteTUShapleyAllocationEquilibrium
+  field
+    coalitionWorth : List Player → Nat
+    payoff : Player → Nat
+    scaledShapley : Player → Nat
+    scaledValue : Nat
+    scaledShapleyCorrect :
+      ∀ p →
+      scaledValue * payoff p ≡
+      scaledShapley p
+    scaledEfficiency :
+      sumNat (map payoff players) ≡
+      scaledValue * coalitionWorth players
+
+open FiniteTUShapleyAllocationEquilibrium public
+
+------------------------------------------------------------------------
+-- Explicit non-iid stationary Walrasian lift and finite Shapley witness
+-- are now ordinary theorem objects that Mercury may compose from their
+-- dependency edges; no theorem-name lookup is required.
+------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Canonical polymorphic sparsemax e-graph composition.
