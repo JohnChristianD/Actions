@@ -831,6 +831,13 @@ canonical-hadamard-attention-rope-prefix-composition-theorem =
 -- A right inverse closes the square globally and yields exact conjugacy.
 ------------------------------------------------------------------------
 
+commutingIterate :
+  ∀ {S : Set} →
+  (S → S) → Nat → S → S
+commutingIterate step zero s = s
+commutingIterate step (suc n) s =
+  step (commutingIterate step n s)
+
 record CommutingSquareTheorem
   (State Feature : Set)
   (step : State → State)
