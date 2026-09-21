@@ -15,8 +15,6 @@
 
 :- implementation.
 
-:- import_module int.
-
 :- type graph_node
     ---> graph_node(
         plan :: list(string)
