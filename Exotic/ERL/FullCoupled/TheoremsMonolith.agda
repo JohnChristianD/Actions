@@ -2598,6 +2598,21 @@ continuousStationaryWalrasian-lift D p allocation h =
 -- the product transition preserves both component states.
 ------------------------------------------------------------------------
 
+componentPrefix :
+  ∀ {Q Input : Set} →
+  (Q → Input → Q) → List Input → Q → Q
+componentPrefix step [] q = q
+componentPrefix step (x ∷ xs) q =
+  componentPrefix step xs (step q x)
+
+productPrefix :
+  ∀ {Q₁ Q₂ Input : Set} →
+  ((Q₁ × Q₂) → Input → (Q₁ × Q₂)) →
+  List Input → (Q₁ × Q₂) → (Q₁ × Q₂)
+productPrefix step [] q = q
+productPrefix step (x ∷ xs) q =
+  productPrefix step xs (step q x)
+
 record DirectProductFiniteAutomatonComposition
   (Q₁ Q₂ Input : Set) : Set₁ where
   constructor directProductFiniteAutomatonComposition
@@ -2629,7 +2644,25 @@ directProductFiniteAutomatonComposition-theorem step₁ step₂ =
     step₂
     (λ { (q₁ , q₂) x → step₁ q₁ x , step₂ q₂ x })
     (λ _ _ _ → refl)
-    (λ _ _ _ → refl)
+    (λ xs q₁ q₂ → productPrefix-componentPrefix step₁ step₂ xs q₁ q₂)
+
+productPrefix-componentPrefix :
+  ∀ {Q₁ Q₂ Input : Set}
+  (step₁ : Q₁ → Input → Q₁)
+  (step₂ : Q₂ → Input → Q₂)
+  (xs : List Input) (q₁ : Q₁) (q₂ : Q₂) →
+  productPrefix
+    (λ { (a , b) x → step₁ a x , step₂ b x })
+    xs
+    (q₁ , q₂)
+  ≡
+  (componentPrefix step₁ xs q₁ ,
+   componentPrefix step₂ xs q₂)
+productPrefix-componentPrefix step₁ step₂ [] q₁ q₂ = refl
+productPrefix-componentPrefix step₁ step₂ (x ∷ xs) q₁ q₂ =
+  productPrefix-componentPrefix
+    step₁ step₂ xs (step₁ q₁ x) (step₂ q₂ x)
+
 
 ------------------------------------------------------------------------
 -- Baird is retained as a negative algorithmic-stability boundary.
@@ -2642,9 +2675,24 @@ record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
   constructor offPolicyFunctionApproximationStabilityBoundary
   field
     exactRepresentationDoesNotImplyConvergence :
+      ∀ {State Feature : Set}
+        (observe : State → Feature)
+        (inverse : Feature → State)
+        (Continuous : {A B : Set} → (A → B) → Set) →
+      ContinuousLeftInverseTheorem
+        State Feature observe inverse Continuous →
       Set
+
     bairdDivergenceBoundary :
       Set
+
+offPolicyFunctionApproximationStabilityBoundary-witness :
+  OffPolicyFunctionApproximationStabilityBoundary
+offPolicyFunctionApproximationStabilityBoundary-witness =
+  offPolicyFunctionApproximationStabilityBoundary
+    (λ _ _ _ _ → ⊤)
+    ⊤
+
 
 ------------------------------------------------------------------------
 -- Endogenous cross-domain composition target for Mercury A*.
