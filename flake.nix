@@ -53,6 +53,8 @@
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
+              pkgs.rakudo
+              pkgs.chibi
             ];
           };
         });
