@@ -197,28 +197,49 @@ let script =
     mkdir -p .ci/discovery
     cat > .ci/discovery/stationary-cycle-impossibility-graph.json <<'JSON'
 {
-  "rule": "STATIONARY_DISTRIBUTION_TO_FINITE_CYCLE_OBSTRUCTION",
+  "rule": "FINITE_DETERMINISTIC_CYCLE_HAS_STATIONARY_WITNESS_BUT_IS_EXCLUDED",
   "terminal_status": "IMPOSSIBILITY",
   "requires_exact_finite_deterministic_projection": true,
+  "stationary_distribution_witness": {
+    "type": "uniform_cycle_measure",
+    "statement": "For a deterministic cycle of length m>0, the uniform probability law on the cycle is stationary for the induced deterministic Markov kernel.",
+    "use": "witness_only"
+  },
+  "upstream_stationary_law": {
+    "theorem": "Econlib::FiniteMarkovChain.exists_stationary",
+    "role": "independent finite-state existence fact; it does not imply that a cycle exists"
+  },
+  "convergence_guard": {
+    "theorem": "Econlib::FiniteMarkovChain.geometric_convergence_to",
+    "condition": "strictly positive transition probabilities",
+    "role": "separate conditional convergence result; not used to claim convergence of an arbitrary deterministic cycle"
+  },
   "nodes": [
+    "Agda::finiteOrbit-collision",
+    "deterministic finite recurrent cycle",
+    "uniform cycle stationary law",
     "Econlib::FiniteMarkovChain.exists_stationary",
     "Econlib::FiniteMarkovChain.geometric_convergence_to",
-    "Agda::finiteOrbit-collision",
     "Agda::canonicalNoNontrivialFiniteCycle-theorem",
     "Agda::canonicalNoFiniteStepConvergenceToFixedPoint"
   ],
   "edges": [
-    ["FiniteMarkovChain.exists_stationary", "stationary distribution"],
-    ["stationary distribution", "finite deterministic projection", "projection required"],
-    ["finite deterministic projection", "finiteOrbit-collision"],
-    ["finiteOrbit-collision", "positive-period recurrence"],
-    ["canonicalNoNontrivialFiniteCycle-theorem", "positive-period recurrence", "contradiction"],
-    ["period-1 recurrence", "canonicalNoFiniteStepConvergenceToFixedPoint", "contradiction"]
+    ["finiteOrbit-collision", "eventual periodic orbit"],
+    ["eventual periodic orbit", "deterministic finite recurrent cycle"],
+    ["deterministic finite recurrent cycle", "uniform cycle stationary law"],
+    ["Econlib::FiniteMarkovChain.exists_stationary", "stationary distribution", "independent existence witness"],
+    ["Econlib::FiniteMarkovChain.geometric_convergence_to", "quantitative convergence", "requires strict positivity"],
+    ["deterministic finite recurrent cycle", "canonicalNoNontrivialFiniteCycle-theorem", "contradiction"],
+    ["period-1 recurrent cycle", "canonicalNoFiniteStepConvergenceToFixedPoint", "contradiction"]
   ],
+  "logic_guard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
   "status": "strict graph: no third terminal status"
 }
 JSON
     grep -Fq '"terminal_status": "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.json
+    grep -Fq '"stationary_distribution_witness": {' .ci/discovery/stationary-cycle-impossibility-graph.json
+    grep -Fq '"type": "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.json
+    grep -Fq '"logic_guard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem"' .ci/discovery/stationary-cycle-impossibility-graph.json
     grep -Fq '"requires_exact_finite_deterministic_projection": true' .ci/discovery/stationary-cycle-impossibility-graph.json
     grep -Fq '"status": "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.json
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.json
