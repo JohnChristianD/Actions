@@ -42,6 +42,72 @@ add_astar_plans([Plan | Plans], E0, E) :-
     add_expr(astar_plan_expr(Plan), E0, _, E1),
     add_astar_plans(Plans, E1, E).
 
+:- pred dependency_chain_valid(
+    list(string)::in, list(semantic_law)::in) is semidet.
+dependency_chain_valid([_], _) :- semidet_fail.
+dependency_chain_valid([Dependency, Parent | Rest], Laws) :-
+    law_for_id(Parent, Laws, ParentLaw),
+    list.member(Dependency, law_dependencies(ParentLaw)),
+    (
+        Rest = []
+    ->
+        true
+    ;
+        dependency_chain_valid([Parent | Rest], Laws)
+    ).
+
+:- pred astar_plan_valid(
+    list(string)::in, list(semantic_law)::in) is semidet.
+astar_plan_valid(Plan, Laws) :-
+    list.length(Plan) >= 3,
+    all_unique(Plan, Laws),
+    all_nonreflexive(Plan, Laws),
+    dependency_chain_valid(Plan, Laws),
+    list.reverse(Plan, [_Terminal | [SeedId | _]]),
+    law_for_id(SeedId, Laws, SeedLaw),
+    Plan = [TerminalId | _],
+    not list.member(TerminalId, law_dependencies(SeedLaw)).
+
+:- pred all_unique(list(string)::in, list(semantic_law)::in) is semidet.
+all_unique([], _).
+all_unique([Id | Ids], Laws) :-
+    not list.member(Id, Ids),
+    law_for_id(Id, Laws, _),
+    all_unique(Ids, Laws).
+
+:- pred all_nonreflexive(list(string)::in, list(semantic_law)::in) is semidet.
+all_nonreflexive([], _).
+all_nonreflexive([Id | Ids], Laws) :-
+    law_for_id(Id, Laws, Law),
+    not is_reflexive(Law),
+    all_nonreflexive(Ids, Laws).
+
+:- pred all_astar_plans_valid(
+    list(list(string))::in, list(semantic_law)::in) is semidet.
+all_astar_plans_valid([], _).
+all_astar_plans_valid([Plan | Plans], Laws) :-
+    astar_plan_valid(Plan, Laws),
+    all_astar_plans_valid(Plans, Laws).
+
+:- pred write_plan_items(
+    io.output_stream::in, list(list(string))::in,
+    io::di, io::uo) is det.
+write_plan_items(_, [], !IO).
+write_plan_items(Stream, [Plan | Plans], !IO) :-
+    io.write_string("    \"", !IO),
+    io.write_string(string.join_list(" -> ", Plan), !IO),
+    io.write_string("\"", !IO),
+    (
+        Plans = []
+    ->
+        true
+    ;
+        io.write_string(",", !IO)
+    ),
+    io.write_string("\n", !IO),
+    write_plan_items(Stream, Plans, !IO).
+
+
 :- pred write_report(
     list(semantic_law)::in,
     semantic_law::in,
@@ -89,6 +155,9 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream, "  \"astar_emergent_candidate_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(AStarPlans)), !IO),
         io.write_string(Stream, ",\n", !IO),
+        io.write_string(Stream, "  \"astar_candidate_plans\": [\n", !IO),
+        write_plan_items(Stream, AStarPlans, !IO),
+        io.write_string(Stream, "  ],\n", !IO),
         io.write_string(Stream,
             "  \"astar_search\": \"structural dependency composition only\",\n",
             !IO),
@@ -118,6 +187,7 @@ main(!IO) :-
         extract_best(TargetClass, EGraph1, 64, _, ExtractionCost),
         list.length(All) > 0,
         list.length(AStarPlans) > 0,
+        all_astar_plans_valid(AStarPlans, All),
         list.length(Analyses) > 0,
         QuotientCount > 0,
         class_count(EGraph) > 0,
