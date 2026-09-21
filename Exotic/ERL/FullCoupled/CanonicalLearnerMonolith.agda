@@ -1115,3 +1115,75 @@ pessimisticCritic-law i = refl
 
 canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistent = canonicalPersistentGRUPreservation
+
+------------------------------------------------------------------------
+-- Exact token-level recurrent language-model substrate.
+--
+-- Tokenization begins at the finite symbolic/numeric token boundary.
+-- No transcendental functions are introduced here.  The recurrent
+-- semantics remain the existing Int8 GRU, and token sequences remain
+-- ordinary Lists so prefix composition is exact and structural.
+------------------------------------------------------------------------
+
+CanonicalToken : Set
+CanonicalToken = Fin 256
+
+CanonicalTokenSequence : Set
+CanonicalTokenSequence = List CanonicalToken
+
+canonicalTokenEncode : CanonicalToken → Int8
+canonicalTokenEncode = int8
+
+canonicalTokenDecode : Int8 → CanonicalToken
+canonicalTokenDecode = code
+
+canonicalTokenEncodeList : CanonicalTokenSequence → List Int8
+canonicalTokenEncodeList = map canonicalTokenEncode
+
+canonicalTokenDecodeList : List Int8 → CanonicalTokenSequence
+canonicalTokenDecodeList = map canonicalTokenDecode
+
+canonicalTokenStep : GRUState → CanonicalToken → GRUState
+canonicalTokenStep s t = gruStep s (canonicalTokenEncode t)
+
+canonicalTokenRecurrentNetwork :
+  RecurrentNetwork GRUState CanonicalToken
+canonicalTokenRecurrentNetwork =
+  recurrentNetwork canonicalTokenStep
+
+recurrentListState :
+  ∀ {State Input : Set} →
+  RecurrentNetwork State Input →
+  List Input →
+  State →
+  State
+recurrentListState R [] s = s
+recurrentListState R (x ∷ xs) s =
+  recurrentListState R xs (runNetwork R s x)
+
+canonicalTokenListState :
+  CanonicalTokenSequence →
+  GRUState →
+  GRUState
+canonicalTokenListState [] s = s
+canonicalTokenListState (t ∷ ts) s =
+  canonicalTokenListState ts (canonicalTokenStep s t)
+
+CanonicalTokenLogitVector : Set
+CanonicalTokenLogitVector = CanonicalToken → Int8
+
+record CanonicalTokenLanguageModelKernel : Set₁ where
+  constructor canonicalTokenLanguageModelKernel
+  field
+    logits : GRUState → CanonicalTokenLogitVector
+open CanonicalTokenLanguageModelKernel public
+
+canonicalTokenLogitTrace :
+  CanonicalTokenLanguageModelKernel →
+  CanonicalTokenSequence →
+  GRUState →
+  List CanonicalTokenLogitVector
+canonicalTokenLogitTrace K [] s = []
+canonicalTokenLogitTrace K (t ∷ ts) s =
+  logits K s ∷
+  canonicalTokenLogitTrace K ts (canonicalTokenStep s t)
