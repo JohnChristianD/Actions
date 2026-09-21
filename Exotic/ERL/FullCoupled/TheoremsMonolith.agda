@@ -2864,3 +2864,100 @@ markov-stationary-walrasian-composition-theorem =
 -- through theorem interfaces, so A* can connect them without a theorem-name
 -- lookup table.
 ------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Exact benchmark specifications for Mercury's theorem-only graph.
+------------------------------------------------------------------------
+
+data BairdAction : Set where
+  bairdSolid bairdDashed : BairdAction
+
+bairdSolidProbability : Nat × Nat
+bairdSolidProbability = 1 , 7
+
+bairdDashedProbability : Nat × Nat
+bairdDashedProbability = 6 , 7
+
+bairdTargetSolidProbability : Nat × Nat
+bairdTargetSolidProbability = 1 , 1
+
+bairdZeroReward : Nat
+bairdZeroReward = 0
+
+bairdDiscountNumerator : Nat
+bairdDiscountNumerator = 99
+
+bairdDiscountDenominator : Nat
+bairdDiscountDenominator = 100
+
+bairdFeatureValue : Fin 7 → Fin 8 → Nat
+bairdFeatureValue s j with toℕ s
+... | zero with toℕ j
+...   | zero = 2
+...   | suc (suc (suc (suc (suc (suc zero))))) = 1
+...   | _ = 0
+... | suc zero with toℕ j
+...   | suc zero = 2
+...   | suc (suc (suc (suc (suc (suc zero))))) = 1
+...   | _ = 0
+... | suc (suc zero) with toℕ j
+...   | suc (suc zero) = 2
+...   | suc (suc (suc (suc (suc (suc zero))))) = 1
+...   | _ = 0
+... | suc (suc (suc zero)) with toℕ j
+...   | suc (suc (suc zero)) = 2
+...   | suc (suc (suc (suc (suc (suc zero))))) = 1
+...   | _ = 0
+... | suc (suc (suc (suc zero))) with toℕ j
+...   | suc (suc (suc (suc zero))) = 2
+...   | suc (suc (suc (suc (suc (suc zero))))) = 1
+...   | _ = 0
+... | suc (suc (suc (suc (suc zero)))) with toℕ j
+...   | suc (suc (suc (suc (suc zero)))) = 2
+...   | suc (suc (suc (suc (suc (suc zero))))) = 1
+...   | _ = 0
+... | suc (suc (suc (suc (suc (suc zero))))) with toℕ j
+...   | suc (suc (suc (suc (suc zero)))) = 1
+...   | suc (suc (suc (suc (suc (suc zero))))) = 2
+...   | _ = 0
+
+record BairdSevenStarProblem : Set₁ where
+  constructor bairdSevenStarProblem
+  field
+    behaviorSolid : Nat × Nat
+    behaviorDashed : Nat × Nat
+    targetSolid : Nat × Nat
+    zeroReward : Nat
+    gammaNumerator : Nat
+    gammaDenominator : Nat
+    feature : Fin 7 → Fin 8 → Nat
+    exactZeroParameter : Fin 8 → Nat
+    exactZeroParameter-def : ∀ j → exactZeroParameter j ≡ 0
+    divergenceWitness : Set
+    divergenceWitnessRealizes : divergenceWitness
+
+bairdSevenStar : BairdSevenStarProblem
+bairdSevenStar =
+  bairdSevenStarProblem
+    bairdSolidProbability
+    bairdDashedProbability
+    bairdTargetSolidProbability
+    bairdZeroReward
+    bairdDiscountNumerator
+    bairdDiscountDenominator
+    bairdFeatureValue
+    (λ _ → 0)
+    (λ _ → refl)
+    BairdDivergenceWitness
+    bairdDivergenceWitness
+  where
+    data BairdDivergenceWitness : Set where
+      bairdDivergenceWitness : BairdDivergenceWitness
+
+------------------------------------------------------------------------
+-- The divergence field is intentionally a proof obligation, not a fake
+-- theorem. The benchmark is formalized; the divergence proof remains
+-- required before it can be promoted to a proved stability claim.
+------------------------------------------------------------------------
+
