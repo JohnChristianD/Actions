@@ -118,17 +118,17 @@ run_agda_safe! = \{} ->
 
 run_mercury! : {} => Result {} _
 run_mercury! = \{} ->
-  run!("mmc", ["--make", ".ci/check_forbidden_theorems"])?
+  run!("sh", ["-c", "cd .ci && mmc --make check_forbidden_theorems"])?
   run!("./.ci/check_forbidden_theorems", [])?
   Ok({})
 
 run_discovery! : {} => Result {} _
 run_discovery! = \{} ->
-  run!("mmc", ["--make", ".ci/discovery/theorem_monolith_egraph_sync"])?
+  run!("sh", ["-c", "cd .ci/discovery && mmc --make theorem_monolith_egraph_sync"])?
   run!("./.ci/discovery/theorem_monolith_egraph_sync", [])?
-  run!("mmc", ["--make", ".ci/discovery/symbolic_egraph_test"])?
+  run!("sh", ["-c", "cd .ci/discovery && mmc --make symbolic_egraph_test"])?
   run!("./.ci/discovery/symbolic_egraph_test", [])?
-  run!("mmc", ["--make", ".ci/discovery/interpolated_theorem_egraph_test"])?
+  run!("sh", ["-c", "cd .ci/discovery && mmc --make interpolated_theorem_egraph_test"])?
   run!("./.ci/discovery/interpolated_theorem_egraph_test", [])?
 
   report = File.read_utf8!(".ci/discovery/theorem-monolith-egraph-sync.json")?
