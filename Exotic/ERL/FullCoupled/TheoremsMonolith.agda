@@ -157,14 +157,17 @@ isomorphismNoFiniteCycleTransport :
   ∀ n a →
   iterateIsomorphism g (suc n) (to iso a) ≢ to iso a
 isomorphismNoFiniteCycleTransport iso f g stepConjugacy noCycle n a cyc =
-  noCycle n a
-    (isomorphismToInjective
-      iso
-      (iterateIsomorphism f (suc n) a)
-      a
-      (trans
-        (isomorphismIterateConjugacy iso f g stepConjugacy (suc n) a)
-        cyc))
+  λ cycle →
+    noCycle n a
+      (isomorphismToInjective
+        iso
+        (iterateIsomorphism f (suc n) a)
+        a
+        (trans
+          (sym
+            (isomorphismIterateConjugacy
+              iso f g stepConjugacy (suc n) a))
+          cycle))
 
 ------------------------------------------------------------------------
 -- The generic transport law makes canonical finite-cycle exclusion stable
