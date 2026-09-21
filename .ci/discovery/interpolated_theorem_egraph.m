@@ -18,6 +18,7 @@
 :- func forced_target_id = string.
 :- func semantic_rewrite_rules = list(rewrite_rule).
 :- func astar_plan_expr(list(string)) = expr.
+:- func law_expr(string) = expr.
 
 :- implementation.
 
