@@ -2,6 +2,7 @@
 
 :- interface.
 :- import_module io.
+:- import_module int.
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
