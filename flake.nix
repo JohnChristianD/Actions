@@ -56,6 +56,9 @@
               pkgs.rakudo
               pkgs.chibi
             ];
+            shellHook = ''
+              export PATH="\${pkgs.mercury}/bin:$PATH"
+            '';
           };
         });
     };
