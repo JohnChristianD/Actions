@@ -19,7 +19,6 @@
 :- implementation.
 
 :- import_module int.
-:- import_module list.
 
 :- type astar_node
     ---> astar_node(
@@ -282,26 +281,7 @@ search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
     astar_collect(Laws, Seeds, 0, 1000, MaxResults, [], Reversed, !IO),
     list.reverse(Reversed, Results).
 
-:- pred search_det(
-    list(semantic_law)::in,
-    list(astar_node)::in,
-    int::in,
-    list(string)::out) is semidet.
-search_det(_, [], _, _) :- fail.
-search_det(Laws, Frontier0, Expansions, Plan) :-
-    Expansions < 1000,
-    pop_best(Frontier0, Node, Frontier1),
-    (
-        goal_node(Node, Laws)
-    ->
-        Plan = plan(Node)
-    ;
-        cost(Node) < max_depth,
-        expand_node(Node, Laws, Children),
-        insert_children(Children, Frontier1, Frontier2),
-        search_det(Laws, Frontier2, Expansions + 1, Plan)
-    ).
-
 search_emergent_composition(Laws, Plan) :-
-    seed_nodes(Laws, Seeds),
-    search_det(Laws, Seeds, 0, Plan).
+    search_emergent_compositions(Laws, 1, Results, !IO),
+    Results = [Plan | _].
+
