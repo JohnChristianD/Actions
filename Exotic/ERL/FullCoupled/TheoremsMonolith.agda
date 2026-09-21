@@ -800,6 +800,53 @@ canonicalSquare-law-on-orbit
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
+-- Free-monoid action form of the commuting square.
+--
+-- One transition generates the N-action by iteration.  The one-step
+-- commuting square therefore induces an action homomorphism for every
+-- natural-number word in the generator.  This is stronger terminology
+-- than merely naming the one-step square as an equivariance law.
+------------------------------------------------------------------------
+
+record FreeMonoidActionHomomorphism
+  (State Feature : Set)
+  (step : State → State)
+  (observe : State → Feature)
+  (featureStep : Feature → Feature) : Set₁ where
+  constructor freeMonoidActionHomomorphism
+  field
+    actionHomomorphism :
+      ∀ n s →
+      observe (commutingIterate step n s) ≡
+      commutingIterate featureStep n (observe s)
+
+open FreeMonoidActionHomomorphism public
+
+freeMonoidActionHomomorphism-from-square :
+  ∀ {State Feature : Set}
+  {step : State → State}
+  {observe : State → Feature}
+  {featureStep : Feature → Feature} →
+  CommutingSquareTheorem State Feature step observe featureStep →
+  FreeMonoidActionHomomorphism State Feature step observe featureStep
+freeMonoidActionHomomorphism-from-square squareWitness =
+  freeMonoidActionHomomorphism
+    (CommutingSquareTheorem.iterateSquare squareWitness)
+
+canonicalClock-freeMonoidActionHomomorphism :
+  ∀ (K : C.CanonicalFullLearnerKernel) →
+  FreeMonoidActionHomomorphism
+    C.CanonicalFullLearnerState
+    Nat
+    (C.canonicalFullStep K)
+    suc
+    C.clock
+canonicalClock-freeMonoidActionHomomorphism K =
+  freeMonoidActionHomomorphism-from-square
+    (commutingSquareTheorem-from-square
+      (λ s → C.canonicalFullStep-clock K s))
+
+------------------------------------------------------------------------
 -- Generic symbolic impossibility at the observation boundary.
 --
 -- A collision in observation prohibits a left inverse.  More generally,
