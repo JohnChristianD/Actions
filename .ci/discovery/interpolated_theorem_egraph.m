@@ -57,7 +57,6 @@ semantic_rewrite_rules = [
         pvar("A"))
 ].
 
-:- func law_expr(string) = expr.
 law_expr(Id) = app("semantic-law", [atom(Id)]).
 
 :- func left_assoc_expr(list(string)) = expr.
