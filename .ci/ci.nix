@@ -63,6 +63,9 @@ writeShellApplication {
       grep -q '"forced_symbolic_target": false' ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"single_agda_source": true' ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -Fq '"graph_search": "A* cost-guided dependency paths"' ".ci/discovery/theorem-monolith-egraph-sync.json"
+      # A* discovery follows the JAxtar model of a JAX-native, cost-guided priority frontier;
+      # the repository keeps its proof authority in Mercury/Agda and does not import Python/JAX.
+      grep -Fq '"astar_score_ordered": true' ".ci/discovery/theorem-monolith-egraph-sync.json"
       composition_count="$(sed -n 's/.*"emergent_composition_count": \\([0-9][0-9]*\\).*/\\1/p' ".ci/discovery/theorem-monolith-egraph-sync.json")"
       test -n "$composition_count"
       test "$composition_count" -gt 0
@@ -112,6 +115,8 @@ writeShellApplication {
         "canonical-integer-haar-scaled-orthogonality-theorem"
         "CanonicalAStarCostGuidanceTheorem"
         "canonical-a-star-cost-guidance-theorem"
+        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem"
+        "canonical-linear-haar-sparsemax-attention-composition-theorem"
         "BairdSevenStarProblem"
         "bairdSevenStar"
         "NonIIDMarkovWalrasianProblem"
