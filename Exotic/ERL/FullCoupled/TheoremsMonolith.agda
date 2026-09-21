@@ -636,7 +636,9 @@ commutingSquareTheorem-from-square :
   {featureStep : Feature → Feature} →
   (∀ s → observe (step s) ≡ featureStep (observe s)) →
   CommutingSquareTheorem State Feature step observe featureStep
-commutingSquareTheorem-from-square squareWitness =
+commutingSquareTheorem-from-square
+  {State} {Feature} {step} {observe} {featureStep}
+  squareWitness =
   commutingSquareTheorem
     squareWitness
     iterateProof
