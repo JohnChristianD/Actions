@@ -43,6 +43,18 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
     write_plan_items(Stream, Plans, !IO).
 
 
+:- pred extract_all_laws(
+    list(semantic_law)::in,
+    symbolic_egraph.egraph::in,
+    int::in,
+    int::out) is semidet.
+extract_all_laws([], _, _, 0).
+extract_all_laws([Law | Laws], E, Depth, Cost) :-
+    add_expr(law_expr(law_id(Law)), E, Class, E1),
+    extract_best(Class, E1, Depth, _, ThisCost),
+    extract_all_laws(Laws, E1, Depth, TailCost),
+    Cost = ThisCost + TailCost.
+
 :- pred write_report(
     list(semantic_law)::in,
     int::in,
@@ -50,8 +62,8 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
     int::in,
     list(list(string))::in,
     io::di, io::uo) is det.
-write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
-    AStarPlans, !IO) :-
+write_report(All, QuotientCount, Saturation, ExtractionCost,
+    Plans, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :- not is_reflexive(L)),
@@ -66,15 +78,15 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream,
             "  \"forced_symbolic_target\": false,\n", !IO),
         io.write_string(Stream,
-            "  \"selected_emergent_law\": null,\n", !IO),
-        io.write_string(Stream, "  \"single_agda_source\": true,\n", !IO),
+            "  \"single_agda_source\": true,\n", !IO),
         io.write_string(Stream, "  \"semantic_law_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(All)), !IO),
         io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"nonreflexive_law_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(NonReflexive), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"egraph_associativity_quotient_count\": ", !IO),
+        io.write_string(Stream,
+            "  \"egraph_associativity_quotient_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(QuotientCount), !IO),
         io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"egraph_saturation_iterations\": ", !IO),
@@ -84,11 +96,11 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream, "  \"egraph_extraction_cost\": ", !IO),
         io.write_string(Stream, string.int_to_string(ExtractionCost), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"astar_emergent_candidate_count\": ", !IO),
-        io.write_string(Stream, string.int_to_string(list.length(AStarPlans)), !IO),
+        io.write_string(Stream, "  \"emergent_composition_count\": ", !IO),
+        io.write_string(Stream, string.int_to_string(list.length(Plans)), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"astar_candidate_plans\": [\n", !IO),
-        write_plan_items(Stream, AStarPlans, !IO),
+        io.write_string(Stream, "  \"emergent_composition_plans\": [\n", !IO),
+        write_plan_items(Stream, Plans, !IO),
         io.write_string(Stream, "  ],\n", !IO),
         io.write_string(Stream,
             "  \"graph_search\": \"exhaustive simple dependency paths\",\n",
@@ -112,20 +124,22 @@ main(!IO) :-
     add_astar_plans(Plans, EGraph0, EGraphAStar),
     saturate(semantic_rewrite_rules, 32, EGraphAStar, EGraph, Saturation),
     analyze(EGraph, Analyses),
+    ExtractionDepth = enode_count(EGraph) + 1,
+    extract_all_laws(All, EGraph, ExtractionDepth, ExtractionCost),
     list.length(All) > 0,
     list.length(Plans) > 0,
-    list.length(Plans) =< list.length(All) * list.length(All),
     list.length(Analyses) > 0,
     QuotientCount > 0,
     class_count(EGraph) > 0,
     enode_count(EGraph) > 0,
-    saturation_iterations(Saturation) > 0
+    saturation_iterations(Saturation) > 0,
+    ExtractionCost > 0
     ->
         write_report(
             All,
             QuotientCount,
             Saturation,
-            1,
+            ExtractionCost,
             Plans,
             !IO),
         io.write_string(
