@@ -166,18 +166,13 @@ search_emergent_compositions(Laws, Results) :-
             Results = []
     ).
 
-:- pred member_once(T::in, list(T)::in) is semidet.
-member_once(_, []) :-
+:- pred first_plan(
+    list(list(string))::in, list(string)::out) is semidet.
+first_plan([], _) :-
     fail.
-member_once(X, [Y | Ys]) :-
-    (
-        if X = Y then
-            true
-        else
-            member_once(X, Ys)
-    ).
+first_plan([Plan | _], Plan).
 
 search_emergent_composition(Laws, Plan) :-
     seed_nodes(Laws, Seeds),
     graph_collect(Laws, Seeds, [], Results),
-    member_once(Plan, Results).
+    first_plan(Results, Plan).
