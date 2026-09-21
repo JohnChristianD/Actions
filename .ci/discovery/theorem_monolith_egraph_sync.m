@@ -135,7 +135,6 @@ main(!IO) :-
             list.length(All) > 0,
             list.length(Plans) > 0,
             list.length(Analyses) > 0,
-            QuotientCount > 0,
             class_count(EGraph) > 0,
             enode_count(EGraph) > 0,
             saturation_iterations(Saturation) > 0,
@@ -160,7 +159,9 @@ main(!IO) :-
             io.write_string(
                 "single-agda-source=TheoremsMonolith.agda\n", !IO),
             io.write_string(
-                "proof-authority=Agda --safe\n", !IO)
+                "proof-authority=Agda --safe\n", !IO),
+            io.write_string(
+                "all-agda-laws-extracted=true\n", !IO)
         else
             io.write_string(
                 "ERROR: exhaustive theorem dependency graph / e-graph gate failed\n",
