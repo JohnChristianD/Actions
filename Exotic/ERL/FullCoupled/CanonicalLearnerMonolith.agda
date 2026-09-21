@@ -949,7 +949,7 @@ canonicalEndogenousFeedback K s =
         (canonicalF4L2Feedback K s)
         (int8Add
           (canonicalQLogControlFeedback s)
-          (canonicalQLogValueFeedback s))))
+          (canonicalQLogValueFeedback s)))
 
 canonicalWatkinsTarget : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalWatkinsTarget K s =
