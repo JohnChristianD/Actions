@@ -1,12 +1,11 @@
 :- module theorem_monolith_egraph_sync.
 
 :- interface.
-
 :- import_module io.
-
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
+
 :- import_module interpolated_theorem_egraph.
 :- import_module learner_semantic_extractor.
 :- import_module learner_semantic_manifest.
@@ -15,130 +14,24 @@
 :- import_module symbolic_egraph.
 :- import_module theorem_astar_search.
 
+:- pred law_for_id(
+    string::in, list(semantic_law)::in, semantic_law::out) is semidet.
+law_for_id(Id, Laws, Law) :-
+    list.member(Law, Laws),
+    law_id(Law) = Id.
 
-:- func forced_target_law_id = string.
-forced_target_law_id =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
+:- pred plan_seed_id(list(string)::in, string::out) is semidet.
+plan_seed_id(Plan, SeedId) :-
+    list.reverse(Plan, Reversed),
+    Reversed = [SeedId | _].
 
-
-:- func s4s5_scan_dependency = string.
-s4s5_scan_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-S4S5-recurrent-scan-theorem".
-
-:- func finite_product_dependency = string.
-finite_product_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finiteAutomatonProductPrefix-correct".
-
-:- func information_preservation_dependency = string.
-information_preservation_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#informationPreserving-symbolic-task-factorization".
-
-
-:- func continuous_readout_dependency = string.
-continuous_readout_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#continuousLeftInverse-exactReadout-transfer".
-
-:- func bounded_exact_approximation_dependency = string.
-bounded_exact_approximation_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedExactApproximation-on-boundedOrbit".
-
-:- func infinite_state_orbit_dependency = string.
-infinite_state_orbit_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalInfiniteStateOrbitEmbedding".
-
-:- func pigeonhole_dependency = string.
-pigeonhole_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
-
-:- func no_global_uap_dependency = string.
-:- func finite_int8_continuous_left_inverse_dependency = string.
-:- func exact_universal_uap_dependency = string.
-no_global_uap_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoGlobalInt8DiscreteUAPOnOrbit".
-
-finite_int8_continuous_left_inverse_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#continuousLeftInverse-injective".
-
-exact_universal_uap_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#discreteExactUniversalUAP-from-leftInverse".
-
-:- func finite_feature_continuity_dependency = string.
-finite_feature_continuity_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalDenseNeighborhoodSeparation".
-
-:- func finite_time_exact_readout_dependency = string.
-finite_time_exact_readout_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse".
-
-:- func finite_sample_exact_readout_dependency = string.
-finite_sample_exact_readout_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#boundedUniversalExactUAP-postcompose".
-
-:- func iterate_composition_dependency = string.
-iterate_composition_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalGRU-recurrent-associative-scan-theorem".
-
-:- func finite_visit_dependency = string.
-finite_visit_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPigeonholeNatClockContradiction".
-
-:- func injectivity_dependency = string.
-injectivity_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#discreteLeftInverse-observe-injective".
-
-
-:- func aperiodicity_dependency = string.
-aperiodicity_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalAperiodic-theorem".
-
-:- func finite_cycle_dependency = string.
-finite_cycle_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalNoNontrivialFiniteCycle-theorem".
-
-
-:- func hadamard_attention_rope_prefix_dependency = string.
-hadamard_attention_rope_prefix_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#finite-attention-watkins-gru-f4-mediator-theorem".
-
-
-:- func recurrent_bound_uap_dependency = string.
-recurrent_bound_uap_dependency =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalRecurrentBoundedExactUniversalApproximationTheorem-from-witness".
-
-:- pred forced_target_law(
-    list(semantic_law)::in, semantic_law::out) is semidet.
-forced_target_law(All, Target) :-
-    list.member(Target, All),
-    law_id(Target) = forced_target_law_id,
-    is_composite(Target),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-attention-invariant",
-        law_dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-norm-invariant",
-        law_dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalPolicy-optimizer-invariant",
-        law_dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#hardSparse-composition-normPair-F4-L2",
-        law_dependencies(Target)),
-    list.member(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonicalGRU-recurrent-associative-scan-theorem",
-        law_dependencies(Target)),
-    list.member(s4s5_scan_dependency, law_dependencies(Target)),
-    list.member(finite_product_dependency, law_dependencies(Target)),
-    list.member(information_preservation_dependency, law_dependencies(Target)).
-
-
-:- pred composite_laws(
-    list(semantic_law)::in, list(semantic_law)::out) is det.
-composite_laws(All, Composite) :-
-    list.filter(
-        (pred(L::in) is semidet :-
-            is_composite(L)),
-        All,
-        Composite).
+:- pred selected_emergent_law(
+    list(list(string))::in,
+    list(semantic_law)::in,
+    semantic_law::out) is semidet.
+selected_emergent_law([Plan | _], Laws, Law) :-
+    plan_seed_id(Plan, SeedId),
+    law_for_id(SeedId, Laws, Law).
 
 :- pred add_astar_plans(
     list(list(string))::in,
@@ -152,66 +45,55 @@ add_astar_plans([Plan | Plans], E0, E) :-
 :- pred write_report(
     list(semantic_law)::in,
     semantic_law::in,
-    list(semantic_law)::in,
     int::in,
     saturation_report::in,
     int::in,
     list(list(string))::in,
     io::di, io::uo) is det.
-write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, AStarPlans, !IO) :-
+write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
+    AStarPlans, !IO) :-
     NonReflexive = list.length(
         list.filter(
-            (pred(L::in) is semidet :-
-                not is_reflexive(L)),
+            (pred(L::in) is semidet :- not is_reflexive(L)),
             All)),
     io.open_output("theorem-monolith-egraph-sync.json", Result, !IO),
     (
         Result = ok(Stream),
         io.write_string(Stream, "{\n", !IO),
-        io.write_string(Stream, "  \"source_theorem_monolith\": \"../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda\",\n", !IO),
-        io.write_string(Stream, "  \"forced_target_law\": \"", !IO),
+        io.write_string(Stream,
+            "  \"source_theorem_monolith\": \"../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda\",\n",
+            !IO),
+        io.write_string(Stream,
+            "  \"forced_symbolic_target\": false,\n", !IO),
+        io.write_string(Stream,
+            "  \"selected_emergent_law\": \"", !IO),
         io.write_string(Stream, law_id(Target), !IO),
         io.write_string(Stream, "\",\n", !IO),
         io.write_string(Stream, "  \"single_agda_source\": true,\n", !IO),
-        io.write_string(Stream, "  \"generated_agda_module\": false,\n", !IO),
         io.write_string(Stream, "  \"semantic_law_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(All)), !IO),
         io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"nonreflexive_law_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(NonReflexive), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"composite_law_count\": ", !IO),
-        io.write_string(Stream, string.int_to_string(list.length(Composite)), !IO),
-        io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"egraph_associativity_quotient_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(QuotientCount), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"egraph_e_matching\": \"on\",\n", !IO),
-        io.write_string(Stream, "  \"egraph_saturation\": \"on\",\n", !IO),
-        io.write_string(Stream, "  \"egraph_rebuild\": \"on\",\n", !IO),
-        io.write_string(Stream, "  \"egraph_eclass_analysis\": \"on\",\n", !IO),
-        io.write_string(Stream, "  \"egraph_cost_extraction\": \"on\",\n", !IO),
         io.write_string(Stream, "  \"egraph_saturation_iterations\": ", !IO),
-        io.write_string(Stream, string.int_to_string(saturation_iterations(Saturation)), !IO),
+        io.write_string(Stream,
+            string.int_to_string(saturation_iterations(Saturation)), !IO),
         io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"egraph_extraction_cost\": ", !IO),
         io.write_string(Stream, string.int_to_string(ExtractionCost), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"continuous_left_inverse_transfer\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"exact_universal_readout\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"bounded_exact_approximation\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"s4s5_recurrent_scan\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"finite_automata_direct_product\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"information_preserving_task_factorization\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"infinite_state_orbit\": \"connected\",\n", !IO),
-        io.write_string(Stream, "  \"pigeonhole_contradiction\": \"connected\",\n", !IO),
         io.write_string(Stream, "  \"astar_emergent_candidate_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(AStarPlans)), !IO),
         io.write_string(Stream, ",\n", !IO),
-        io.write_string(Stream, "  \"astar_search\": \"ordinary A* over monolith dependency graph\",\n", !IO),
-        io.write_string(Stream, "  \"astar_plans_in_egraph\": true,\n", !IO),
-        io.write_string(Stream, "  \"global_int8_uap\": \"refuted\",\n", !IO),
-        io.write_string(Stream, "  \"proof_authority\": \"Agda --safe\"\n", !IO),
+        io.write_string(Stream,
+            "  \"astar_search\": \"structural dependency composition only\",\n",
+            !IO),
+        io.write_string(Stream,
+            "  \"proof_authority\": \"Agda --safe\"\n", !IO),
         io.write_string(Stream, "}\n", !IO),
         io.close_output(Stream, !IO)
     ;
@@ -225,76 +107,41 @@ write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, 
 main(!IO) :-
     extract_semantics(!IO),
     read_manifest(All, !IO),
-    composite_laws(All, Composite),
     search_emergent_compositions(All, 8, AStarPlans, !IO),
     (
-        forced_target_law(All, Target),
+        selected_emergent_law(AStarPlans, All, Target),
         discovery_egraph_from_laws(All, EGraph0, QuotientCount),
         add_astar_plans(AStarPlans, EGraph0, EGraphAStar),
         saturate(semantic_rewrite_rules, 32, EGraphAStar, EGraph, Saturation),
         analyze(EGraph, Analyses),
-        add_expr(law_expr(forced_target_law_id), EGraph, TargetClass, EGraph1),
+        add_expr(law_expr(law_id(Target)), EGraph, TargetClass, EGraph1),
         extract_best(TargetClass, EGraph1, 64, _, ExtractionCost),
         list.length(All) > 0,
-        list.length(Composite) > 0,
+        list.length(AStarPlans) > 0,
+        list.length(Analyses) > 0,
         QuotientCount > 0,
         class_count(EGraph) > 0,
         enode_count(EGraph) > 0,
-        list.length(Analyses) > 0,
         saturation_iterations(Saturation) > 0,
-        ExtractionCost > 0,
-        list.length(AStarPlans) > 0
+        ExtractionCost > 0
     ->
-        write_report(All, Target, Composite, QuotientCount, Saturation, ExtractionCost, AStarPlans, !IO),
+        write_report(All, Target, QuotientCount, Saturation,
+            ExtractionCost, AStarPlans, !IO),
         io.write_string(
-            "mercury-theorem-monolith-egraph-sync=pass\n",
-            !IO),
-        io.write_string("forced-target-law=", !IO),
+            "mercury-theorem-monolith-egraph-sync=pass\n", !IO),
+        io.write_string("forced-symbolic-target=false\n", !IO),
+        io.write_string("selected-emergent-law=", !IO),
         io.write_string(law_id(Target), !IO),
         io.write_string("\n", !IO),
         io.write_string("astar-emergent-candidate-count=", !IO),
         io.write_string(string.int_to_string(list.length(AStarPlans)), !IO),
         io.write_string("\n", !IO),
         io.write_string(
-            "single-agda-source=TheoremsMonolith.agda\n",
-            !IO),
+            "single-agda-source=TheoremsMonolith.agda\n", !IO),
         io.write_string(
-            "generated-agda-module=false\n",
-            !IO),
-        io.write_string(
-            "continuous-left-inverse=connected\n",
-            !IO),
-        io.write_string(
-            "bounded-exact-approximation=connected\n",
-            !IO),
-        io.write_string(
-            "infinite-state-orbit=connected\n",
-            !IO),
-        io.write_string(
-            "pigeonhole-global-int8-uap=refuted\n",
-            !IO),
-        io.write_string("egraph-associativity-quotient-count=", !IO),
-        io.write_string(string.int_to_string(QuotientCount), !IO),
-        io.write_string("\n", !IO),
-        io.write_string(
-            "e-matching=on saturation=on rebuild=on eclass-analysis=on cost-extraction=on\n",
-            !IO),
-        io.write_string("finite-int8-continuous-left-inverse=contradicted\n", !IO),
-        io.write_string("hadamard-attention-rope-prefix=connected\n", !IO),
-        io.write_string("generic-finite-feature-obstruction=connected\n", !IO),
-        io.write_string("finite-time-exact-readout=connected\n", !IO),
-        io.write_string("finite-sample-exact-readout=connected\n", !IO),
-        io.write_string("iterate-composition=connected\n", !IO),
-        io.write_string("s4s5-recurrent-scan=connected\n", !IO),
-        io.write_string("finite-automata-direct-product=connected\n", !IO),
-        io.write_string("information-preserving-task-factorization=connected\n", !IO),
-        io.write_string("emergent-finite-exact-orbit-uap=connected\n", !IO),
-        io.write_string("finite-state-action-visit-capacity=connected\n", !IO),
-        io.write_string("left-inverse-injectivity=connected\n", !IO)
+            "proof-authority=Agda --safe\n", !IO)
     ;
         io.write_string(
-            "ERROR: theorem monolith target/dependencies or semantic e-graph gate failed\n",
-            !IO),
+            "ERROR: structural A* / e-graph gate failed\n", !IO),
         io.set_exit_status(1, !IO)
     ).
-
