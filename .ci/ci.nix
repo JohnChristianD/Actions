@@ -78,6 +78,10 @@ writeShellApplication {
         "FiniteHardSparseKKTEquilibriumTheorem"
         "DirectProductFiniteAutomatonComposition"
         "canonical-recurrent-prefix-monoid-homomorphism"
+        "canonicalF4-prefix-monoid-homomorphism"
+        "canonicalNormPair-prefix-monoid-homomorphism"
+        "canonicalGRUF4Norm-prefix-monoid-homomorphism"
+        "canonicalFullStep-GRUF4Norm-prefix-bridge"
         "canonical-hadamard-attention-rope-prefix-composition-theorem"
         "ContinuousLeftInverseTheorem"
         "canonicalRingStateInjective"
@@ -100,6 +104,11 @@ writeShellApplication {
           exit 1
         fi
       done
+      if [[ -e ".ci/discovery/learner_semantic_manifest.m" ]] || [[ -e ".ci/discovery/learner-semantic-laws.tsv" ]]; then
+        printf '%s
+' 'ERROR: generated semantic lookup-table source/artifact remains'
+        exit 1
+      fi
       if grep -Eiq 'target[-_ ]network|(^|[^[:alnum:]])normalization([^[:alnum:]]|$)|(^|[^[:alnum:]])regularization([^[:alnum:]]|$)' "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"; then
         printf '%s\n' 'ERROR: forbidden extraneous target-network/normalization/regularization semantics entered the canonical learner'
         exit 1

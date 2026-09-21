@@ -4,7 +4,7 @@
 
 :- import_module io.
 :- import_module list.
-:- import_module learner_semantic_manifest.
+:- import_module learner_semantic_extractor.
 
 :- pred search_emergent_compositions(
     list(semantic_law)::in,

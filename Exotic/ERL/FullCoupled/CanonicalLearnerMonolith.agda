@@ -1052,8 +1052,11 @@ hardSparse-to-softSparse-zero :
   (s : FullLearnerState A) →
   HardSparse K s →
   SoftSparseBounded K s zero
-hardSparse-to-softSparse-zero K s h {a} distinct with h distinct
-... | refl = z≤n
+hardSparse-to-softSparse-zero K s h {a} distinct =
+  subst
+    (λ n → n ≤ zero)
+    (sym (h distinct))
+    z≤n
 
 softSparse-zero-to-hardSparse :
   ∀ {A}

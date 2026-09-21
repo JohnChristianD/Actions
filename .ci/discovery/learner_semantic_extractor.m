@@ -3,8 +3,20 @@
 :- interface.
 
 :- import_module io.
+:- import_module list.
+
+:- type semantic_law
+    ---> semantic_law(
+        source :: string,
+        name :: string,
+        reflexive :: bool,
+        composite :: bool,
+        signature :: string,
+        dependencies :: list(string)
+    ).
 
 :- pred extract_semantics(io::di, io::uo) is det.
+:- pred read_semantic_laws(list(semantic_law)::out, io::di, io::uo) is det.
 
 :- implementation.
 
@@ -299,90 +311,78 @@ find_dependencies(Source, Name, Body, [D | Ds], Acc0, Acc) :-
     ),
     find_dependencies(Source, Name, Body, Ds, Acc1, Acc).
 
-:- pred write_manifest(list(semantic_decl)::in, list(semantic_decl)::in,
-    io::di, io::uo) is det.
-write_manifest(All, Laws, !IO) :-
-    io.open_output("learner-semantic-laws.tsv", Result, !IO),
-    (
-        Result = ok(Stream),
-        io.write_string(Stream,
-            "source|name|reflexive|composite|signature|dependencies\n", !IO),
-        write_manifest_entries(All, Laws, Stream, !IO),
-        io.close_output(Stream, !IO)
-    ;
-        Result = error(_),
-        io.write_string(
-            "ERROR: cannot write learner semantic manifest\n", !IO),
-        io.set_exit_status(1, !IO)
-    ).
-
-:- pred write_manifest_entries(list(semantic_decl)::in,
-    list(semantic_decl)::in, io.text_output_stream::in,
-    io::di, io::uo) is det.
-write_manifest_entries(_, [], _, !IO).
-write_manifest_entries(All, [D | Ds], Stream, !IO) :-
+:- pred semantic_laws_from_declarations(
+    list(semantic_decl)::in,
+    list(semantic_decl)::in,
+    list(semantic_law)::out) is det.
+semantic_laws_from_declarations(_, [], []).
+semantic_laws_from_declarations(All, [D | Ds], [Law | Laws]) :-
     D = semantic_decl(Source, Name, Signature, _),
     (
         semantic_reflexive(D)
-        -> Reflexive = "true"
-        ;  Reflexive = "false"
+        -> Reflexive = yes
+        ; Reflexive = no
     ),
     dependency_names(D, All, Dependencies),
     (
         list.length(Dependencies) >= 2,
         not semantic_reflexive(D)
-        -> Composite = "true"
-        ;  Composite = "false"
+        -> Composite = yes
+        ; Composite = no
     ),
-    SafeSignature = string.replace_all(
-        string.replace_all(Signature, "|", "%7C"),
-        "\t", " "),
-    io.write_string(Stream,
-        concat_strings([
-            Source, "|", Name, "|", Reflexive, "|", Composite, "|",
-            SafeSignature, "|", string.join_list(";", Dependencies), "\n"
-        ]),
-        !IO),
-    write_manifest_entries(All, Ds, Stream, !IO).
+    Law = semantic_law(
+        Source, Name, Reflexive, Composite, Signature, Dependencies),
+    semantic_laws_from_declarations(All, Ds, Laws).
 
-extract_semantics(!IO) :-
+read_semantic_laws(Laws, !IO) :-
     theorem_monolith_is_safe(!IO),
     semantic_declarations(Result, !IO),
     (
         Result = ok(All),
-        list.filter(semantic_signature, All, Laws),
-        write_manifest(All, Laws, !IO),
-        io.write_string(
-            "theorem-monolith-semantic-extraction=generated\n", !IO),
-        io.write_string(
-            concat_strings([
-                "semantic-law-count=",
-                string.int_to_string(list.length(Laws)),
-                "\n"
-            ]),
-            !IO),
-        count_composite(Laws, All, CompositeCount, NonReflexiveCount),
-        io.write_string(
-            concat_strings([
-                "nonreflexive-law-count=",
-                string.int_to_string(NonReflexiveCount),
-                "\n"
-            ]),
-            !IO),
-        io.write_string(
-            concat_strings([
-                "composite-law-count=",
-                string.int_to_string(CompositeCount),
-                "\n"
-            ]),
-            !IO)
+        list.filter(semantic_signature, All, Decls),
+        semantic_laws_from_declarations(All, Decls, Laws)
     ;
         Result = error(_),
         io.write_string(
-            "ERROR: semantic extraction failed\n",
+            "ERROR: cannot read canonical theorem semantic declarations\n",
             !IO),
-        io.set_exit_status(1, !IO)
+        io.set_exit_status(1, !IO),
+        Laws = []
     ).
+
+extract_semantics(!IO) :-
+    read_semantic_laws(Laws, !IO),
+    io.write_string(
+        "theorem-monolith-semantic-extraction=in-memory\n", !IO),
+    io.write_string(
+        concat_strings([
+            "semantic-law-count=",
+            string.int_to_string(list.length(Laws)),
+            "\n"
+        ]),
+        !IO),
+    io.write_string(
+        concat_strings([
+            "nonreflexive-law-count=",
+            string.int_to_string(
+                list.length(
+                    list.filter(
+                        (pred(L::in) is semidet :- not is_reflexive(L)),
+                        Laws))),
+            "\n"
+        ]),
+        !IO),
+    io.write_string(
+        concat_strings([
+            "composite-law-count=",
+            string.int_to_string(
+                list.length(
+                    list.filter(
+                        (pred(L::in) is semidet :- is_composite(L)),
+                        Laws))),
+            "\n"
+        ]),
+        !IO).
 
 :- pred count_composite(list(semantic_decl)::in,
     list(semantic_decl)::in, int::out, int::out) is det.

@@ -658,6 +658,127 @@ productEndomorphism-compose f₁ f₂ g₁ g₂ s t = refl
 
 
 ------------------------------------------------------------------------
+-- Componentwise prefix homomorphisms from the canonical learner.
+--
+-- F4 is a genuine per-feature recurrent component: its transition is
+-- f4ThetaStep on one Int8 feature/signal.  NormPair is policy-invariant
+-- and its canonical transition is the identity.  Each is therefore lifted
+-- into the same prefix-endomorphism monoid, and their direct product with
+-- the canonical GRU is a single componentwise prefix action.
+------------------------------------------------------------------------
+
+canonicalF4RecurrentNetwork :
+  C.CanonicalFullLearnerKernel →
+  C.RecurrentNetwork C.F4IntUState C.Int8
+canonicalF4RecurrentNetwork K =
+  C.recurrentNetwork
+    (λ o signal →
+      C.f4ThetaStep (C.optimizerKernel K) o signal)
+
+canonicalF4RecurrentNetwork-step-law :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (o : C.F4IntUState)
+  (signal : C.Int8) →
+  C.runNetwork
+    (canonicalF4RecurrentNetwork K)
+    o
+    signal
+  ≡
+  C.f4ThetaStep (C.optimizerKernel K) o signal
+canonicalF4RecurrentNetwork-step-law K o signal = refl
+
+canonicalF4-prefix-monoid-homomorphism :
+  RecurrentPrefixMonoidHomomorphism
+    C.F4IntUState
+    C.Int8
+canonicalF4-prefix-monoid-homomorphism =
+  recurrentPrefixMonoidHomomorphism
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
+
+canonicalNormPairRecurrentNetwork :
+  C.RecurrentNetwork C.NormPair C.Int8
+canonicalNormPairRecurrentNetwork =
+  C.recurrentNetwork
+    (λ n _ → n)
+
+canonicalNormPairRecurrentNetwork-step-law :
+  ∀ (n : C.NormPair) (signal : C.Int8) →
+  C.runNetwork
+    canonicalNormPairRecurrentNetwork
+    n
+    signal
+  ≡ n
+canonicalNormPairRecurrentNetwork-step-law n signal = refl
+
+canonicalNormPair-prefix-monoid-homomorphism :
+  RecurrentPrefixMonoidHomomorphism
+    C.NormPair
+    C.Int8
+canonicalNormPair-prefix-monoid-homomorphism =
+  recurrentPrefixMonoidHomomorphism
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
+
+CanonicalGRUF4NormPrefixState : Set
+CanonicalGRUF4NormPrefixState =
+  C.GRUState × (C.F4IntUState × C.NormPair)
+
+CanonicalGRUF4NormPrefixInput : Set
+CanonicalGRUF4NormPrefixInput =
+  C.Int8 × C.Int8
+
+canonicalGRUF4NormPrefixNetwork :
+  C.CanonicalFullLearnerKernel →
+  C.RecurrentNetwork
+    CanonicalGRUF4NormPrefixState
+    CanonicalGRUF4NormPrefixInput
+canonicalGRUF4NormPrefixNetwork K =
+  C.recurrentNetwork
+    (λ { (g , (o , n)) (signal , attentionMix) →
+      ( C.gruStep g (C.int8Add signal attentionMix)
+      , ( C.f4ThetaStep (C.optimizerKernel K) o signal
+        , n)) })
+
+canonicalGRUF4NormPrefix-step-law :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (g : C.GRUState)
+  (o : C.F4IntUState)
+  (n : C.NormPair)
+  (signal attentionMix : C.Int8) →
+  C.runNetwork
+    (canonicalGRUF4NormPrefixNetwork K)
+    (g , (o , n))
+    (signal , attentionMix)
+  ≡
+  ( C.gruStep g (C.int8Add signal attentionMix)
+  , ( C.f4ThetaStep (C.optimizerKernel K) o signal
+    , n))
+canonicalGRUF4NormPrefix-step-law K g o n signal attentionMix = refl
+
+canonicalGRUF4Norm-prefix-monoid-homomorphism :
+  RecurrentPrefixMonoidHomomorphism
+    CanonicalGRUF4NormPrefixState
+    CanonicalGRUF4NormPrefixInput
+canonicalGRUF4Norm-prefix-monoid-homomorphism =
+  recurrentPrefixMonoidHomomorphism
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
+
+canonicalFullStep-GRUF4Norm-prefix-bridge :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
+  C.runNetwork
+    (canonicalGRUF4NormPrefixNetwork K)
+    (C.gru s , (C.optimizer s , C.norm s))
+    (C.canonicalSignal K s , C.canonicalAttentionMix K s)
+  ≡
+  ( C.gru (C.canonicalFullStep K s)
+  , ( C.optimizer (C.canonicalFullStep K s)
+    , C.norm (C.canonicalFullStep K s)))
+canonicalFullStep-GRUF4Norm-prefix-bridge K s = refl
+
+------------------------------------------------------------------------
 -- Generic symbolic impossibility at the observation boundary.
 --
 -- A collision in observation prohibits a left inverse.  More generally,

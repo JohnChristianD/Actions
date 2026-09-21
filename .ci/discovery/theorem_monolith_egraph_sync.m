@@ -10,7 +10,6 @@
 
 :- import_module interpolated_theorem_egraph.
 :- import_module learner_semantic_extractor.
-:- import_module learner_semantic_manifest.
 :- import_module list.
 :- import_module string.
 :- import_module symbolic_egraph.
@@ -182,8 +181,7 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
     ).
 
 main(!IO) :-
-    extract_semantics(!IO),
-    read_manifest(All, !IO),
+    read_semantic_laws(All, !IO),
     search_emergent_compositions(All, 8, AStarPlans, !IO),
     (
         selected_emergent_law(AStarPlans, All, Target),
