@@ -115,7 +115,6 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
             "ERROR: cannot write theorem monolith e-graph sync report\n",
             !IO),
         io.set_exit_status(1, !IO)
-    )
     ).
 
 main(!IO) :-
