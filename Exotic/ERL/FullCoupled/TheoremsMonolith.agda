@@ -2329,7 +2329,7 @@ finiteMixedProduct-periodic :
   m ≢ n →
   encode (iterateState step m s) ≡ encode (iterateState step n s) →
   iterateState step m s ≡ iterateState step n s
-finiteMixedProduct-periodic T s m n _ eq =
+finiteMixedProduct-periodic T {step} {bound} {encode} {decode} s m n _ eq =
   trans
     (sym (decodeEncode T (iterateState step m s)))
     (trans
