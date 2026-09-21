@@ -3,6 +3,7 @@
 :- interface.
 
 :- import_module bool.
+:- import_module int.
 :- import_module list.
 :- import_module learner_semantic_extractor.
 
@@ -94,33 +95,53 @@ expand_dependencies([Dependency | Dependencies], Plan, Acc0, Children) :-
 maximal_dependency_chain(Node, Laws) :-
     expand_node(Node, Laws, []).
 
-:- pred insert_children(
+:- func node_score(graph_node) = int.
+node_score(graph_node(Plan)) = length(Plan) + dependency_count(Plan).
+
+:- func dependency_count(list(string)) = int.
+dependency_count([]) = 0.
+dependency_count([_]) = 0.
+dependency_count([_ | Rest]) = 1 + dependency_count(Rest).
+
+:- pred insert_astar(graph_node::in, list(graph_node)::in, list(graph_node)::out) is det.
+insert_astar(Node, [], [Node]).
+insert_astar(Node, [Head | Tail], Result) :-
+    (
+        if node_score(Node) =< node_score(Head) then
+            Result = [Node, Head | Tail]
+        else
+            insert_astar(Node, Tail, TailResult),
+            Result = [Head | TailResult]
+    ).
+
+:- pred insert_astar_children(
     list(graph_node)::in,
     list(graph_node)::in,
     list(graph_node)::out) is det.
-insert_children([], Frontier, Frontier).
-insert_children([Node | Nodes], Frontier0, Frontier) :-
-    Frontier1 = [Node | Frontier0],
-    insert_children(Nodes, Frontier1, Frontier).
+insert_astar_children([], Frontier, Frontier).
+insert_astar_children([Node | Nodes], Frontier0, Frontier) :-
+    insert_astar(Node, Frontier0, Frontier1),
+    insert_astar_children(Nodes, Frontier1, Frontier).
 
-:- pred graph_collect(
+:- pred astar_collect(
     list(semantic_law)::in,
     list(graph_node)::in,
     list(list(string))::in,
     list(list(string))::out) is det.
-graph_collect(_, [], Results, Results).
-graph_collect(Laws, [Node | Frontier], Results0, Results) :-
+astar_collect(_, [], Results, Results).
+astar_collect(Laws, [Node | Frontier], Results0, Results) :-
     (
         if maximal_dependency_chain(Node, Laws) then
-            graph_collect(
+            astar_collect(
                 Laws, Frontier,
                 [Node ^ plan | Results0], Results)
         else
             expand_node(Node, Laws, Children),
-            insert_children(Children, Frontier, Frontier1),
-            graph_collect(
+            insert_astar_children(Children, Frontier, Frontier1),
+            astar_collect(
                 Laws, Frontier1, Results0, Results)
     ).
+
 
 :- pred all_unique(list(string)::in) is semidet.
 all_unique([]).
@@ -156,7 +177,7 @@ all_valid_plans([Plan | Plans], Laws, Valid) :-
 
 search_emergent_compositions(Laws, Results) :-
     seed_nodes(Laws, Seeds),
-    graph_collect(Laws, Seeds, [], Reversed),
+    astar_collect(Laws, Seeds, [], Reversed),
     list.reverse(Reversed, CandidateResults),
     all_valid_plans(CandidateResults, Laws, Valid),
     (
@@ -174,5 +195,5 @@ first_plan([Plan | _], Plan).
 
 search_emergent_composition(Laws, Plan) :-
     seed_nodes(Laws, Seeds),
-    graph_collect(Laws, Seeds, [], Results),
+    astar_collect(Laws, Seeds, [], Results),
     first_plan(Results, Plan).
