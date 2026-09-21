@@ -18,6 +18,11 @@
 
 :- pred extract_semantics(io::di, io::uo) is det.
 :- pred read_semantic_laws(list(semantic_law)::out, io::di, io::uo) is det.
+:- func law_id(semantic_law) = string.
+:- func law_source(semantic_law) = string.
+:- func law_name(semantic_law) = string.
+:- func law_signature(semantic_law) = string.
+:- func law_dependencies(semantic_law) = list(string).
 :- pred is_reflexive(semantic_law::in) is semidet.
 :- pred is_composite(semantic_law::in) is semidet.
 
@@ -338,6 +343,12 @@ semantic_laws_from_declarations(All, [D | Ds], [Law | Laws]) :-
 
 is_reflexive(semantic_law(_, _, yes, _, _, _)).
 is_composite(semantic_law(_, _, _, yes, _, _)).
+
+law_source(Law) = Law ^ source.
+law_id(Law) = string.append(string.append(law_source(Law), "#"), law_name(Law)).
+law_name(Law) = Law ^ name.
+law_signature(Law) = Law ^ signature.
+law_dependencies(Law) = Law ^ dependencies.
 
 read_semantic_laws(Laws, !IO) :-
     theorem_monolith_is_safe(!IO),
