@@ -3827,7 +3827,7 @@ canonicalTokenLogitTrace-append K [] ys s = refl
 canonicalTokenLogitTrace-append K (t ∷ xs) ys s =
   cong
     (λ trace →
-      C.logits K s t ++ trace)
+      C.logits K s ∷ trace)
     (canonicalTokenLogitTrace-append
       K
       xs
