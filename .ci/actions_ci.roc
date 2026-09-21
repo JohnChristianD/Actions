@@ -1,4 +1,3 @@
-# CI note: current Roc syntax uses |_args| for ignored parameters; |{}| is rejected by the parser.
 app [main!] {
     cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.20.0/X73hGh05nNTkDHU06FHC0YfFaQB1pimX7gncRcao5mU.tar.br",
 }
@@ -92,7 +91,7 @@ run! : Str, List Str => Try({}, _)
 run! = |program, args| Cmd.exec!(program, args)
 
 agda_program! : {} => Try(Str, _)
-agda_program! = |_args| {
+agda_program! = |{}| {
     env_value = Env.var!(OsStr.from_str("AGDA_COMMAND"))?
     Ok(OsStr.display(env_value))
 }
@@ -106,33 +105,33 @@ run_agda_file! = |file_path| {
 }
 
 run_agda_learner! : {} => Try({}, _)
-run_agda_learner! = |_args| {
+run_agda_learner! = |{}| {
     run_agda_file!("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda")?
     Ok({})
 }
 
 run_agda_theorem! : {} => Try({}, _)
-run_agda_theorem! = |_args| {
+run_agda_theorem! = |{}| {
     run_agda_file!("Exotic/ERL/FullCoupled/TheoremsMonolith.agda")?
     Ok({})
 }
 
 run_agda_safe! : {} => Try({}, _)
-run_agda_safe! = |_args| {
+run_agda_safe! = |{}| {
     run_agda_learner!({})?
     run_agda_theorem!({})?
     Ok({})
 }
 
 run_mercury! : {} => Try({}, _)
-run_mercury! = |_args| {
+run_mercury! = |{}| {
     run!("mmc", ["--make", ".ci/check_forbidden_theorems"])?
     run!("./.ci/check_forbidden_theorems", [])?
     Ok({})
 }
 
 run_discovery! : {} => Try({}, _)
-run_discovery! = |_args| {
+run_discovery! = |{}| {
     run!("mmc", ["--make", ".ci/discovery/theorem_monolith_egraph_sync"])?
     run!("./.ci/discovery/theorem_monolith_egraph_sync", [])?
     run!("mmc", ["--make", ".ci/discovery/symbolic_egraph_test"])?
@@ -225,7 +224,7 @@ check_retired_terms_in_files! = |files| {
 }
 
 run_semantic_contract! : {} => Try({}, _)
-run_semantic_contract! = |_args| {
+run_semantic_contract! = |{}| {
     theorem_path = "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     learner_path = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     theorem_text = File.read_utf8!(theorem_path)?
@@ -258,7 +257,7 @@ run_semantic_contract! = |_args| {
 }
 
 run_surface! : {} => Try({}, _)
-run_surface! = |_args| {
+run_surface! = |{}| {
     listing = Cmd.new("git") |> Cmd.args(["ls-files"]) |> Cmd.exec_output!()?
     files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
 
@@ -276,7 +275,7 @@ run_surface! = |_args| {
 }
 
 run_versions! : {} => Try({}, _)
-run_versions! = |_args| {
+run_versions! = |{}| {
     agda = agda_program!({})?
     run!(agda, ["--version"])?
     run!("mmc", ["--version"])?
