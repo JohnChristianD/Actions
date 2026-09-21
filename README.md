@@ -41,7 +41,7 @@ The e-graph is a discovery/proof-plan normalization layer, not a second proof au
 
 ## Nix toolchain strategy
 
-CI installs Nix once and enters the repository flake. The flake pins nixpkgs at the repository revision and supplies the upstream Agda setup, Mercury 22.01.9, and Roc. Roc is the only hand-written CI scripting language: \`.ci/actions_ci.roc\` is a typed functional executable source, while Nix remains the declarative environment/build layer.
+CI installs Nix once and enters the repository flake. The flake pins nixpkgs at the repository revision and supplies the upstream Agda setup, Mercury 22.01.9, and Roc. Roc is the only repository-side CI program source: \`.ci/actions_ci.roc\` is a typed functional executable source, while Nix remains the declarative environment/build layer.
 
 The Roc program invokes Agda \`--safe\`, Mercury, theorem-only A* graph search, e-graph saturation, the semantic contract, and the canonical source audit directly as processes. It does not invoke a shell interpreter, Node, Python, Lua, or a JavaScript runtime.
 
