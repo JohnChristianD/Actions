@@ -440,12 +440,6 @@ apply_rules_to_roots(Rule, [Root | Roots], E0, E, Count) :-
     apply_rules_to_roots(Rule, Roots, E1, E, Count2),
     Count = Count1 + Count2.
 
-:- pred saturate(
-    list(rewrite_rule)::in,
-    int::in,
-    egraph::in,
-    egraph::out,
-    saturation_report::out) is det.
 saturate(Rules, Limit, E0, E, Report) :-
     saturate_loop(Rules, Limit, 0, E0, E, Iterations, Rewrites),
     Report = saturation_report(Iterations, Rewrites,
