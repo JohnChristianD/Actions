@@ -57,6 +57,42 @@
 
 :- pred analyze(egraph::in, list(class_analysis)::out) is det.
 
+:- pred saturate_loop(
+    list(rewrite_rule)::in, egraph::in, egraph::out,
+    int::in, int::in, saturation_report::out) is det.
+saturate_loop(Rules, E0, E, Iter0, RewriteTotal0, Report) :-
+    root_classes(E0, Roots),
+    saturate_pass(Rules, Roots, E0, E1, Rewrites),
+    rebuild(E1, E2),
+    Class0 = class_count(E0),
+    Class2 = class_count(E2),
+    Enode0 = enode_count(E0),
+    Enode2 = enode_count(E2),
+    Iter = Iter0 + 1,
+    RewriteTotal = RewriteTotal0 + Rewrites,
+    (
+        if
+            Rewrites = 0,
+            Class0 = Class2,
+            Enode0 = Enode2
+        then
+            E = E2,
+            Report = saturation_report(Iter, RewriteTotal, no)
+        else
+            saturate_loop(
+                Rules,
+                E2,
+                E,
+                Iter,
+                RewriteTotal,
+                Report)
+    ).
+
+saturate_until_stable(Rules, E0, E, Report) :-
+    saturate_loop(Rules, E0, E, 0, 0, Report).
+
+
+
 :- pred extract_best(
     eclass_id::in, egraph::in, int::in, expr::out, int::out) is semidet.
 
