@@ -1216,3 +1216,81 @@ canonicalTokenSparsemaxPolicy K s =
     canonicalTokenActionSpace
     (logits K s)
     canonicalTokenLogitCounts
+
+
+------------------------------------------------------------------------
+-- Strictly linear integer Haar mixing plus fixed unnormalized sparsemax
+-- attention.  The Haar layer contains only additions/subtractions; there
+-- is no normalization, gate, activation, or learned nonlinear mixing.
+-- The sparsemax head reuses the existing canonical sparsemax machinery:
+-- its attention coefficient is the fixed-support numerator, so no second
+-- normalization is introduced.
+------------------------------------------------------------------------
+
+CanonicalHaarPair : Set
+CanonicalHaarPair = Int8 × Int8
+
+canonicalHaarMix : Int8 → Int8 → CanonicalHaarPair
+canonicalHaarMix x y =
+  int8Add x y , int8Sub x y
+
+canonicalHaarMix-left : ∀ x y →
+  proj₁ (canonicalHaarMix x y) ≡ int8Add x y
+canonicalHaarMix-left x y = refl
+
+canonicalHaarMix-right : ∀ x y →
+  proj₂ (canonicalHaarMix x y) ≡ int8Sub x y
+canonicalHaarMix-right x y = refl
+
+canonicalHaarMix-linear-form :
+  ∀ x y →
+  canonicalHaarMix x y ≡
+  (int8Add x y , int8Sub x y)
+canonicalHaarMix-linear-form x y = refl
+
+canonicalHaarOrthogonalCross :
+  int8Add
+    (int8Mul one8 one8)
+    (int8Mul one8 (int8Neg one8))
+  ≡ zero8
+canonicalHaarOrthogonalCross = refl
+
+CanonicalFixedSparsemaxAttentionWeight :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalToken →
+  Int8
+CanonicalFixedSparsemaxAttentionWeight K s t =
+  int8OfNat
+    (numerator
+      (canonicalTokenSparsemaxWeight K s t))
+
+CanonicalFixedSparsemaxAttentionVector :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalTokenLogitVector
+CanonicalFixedSparsemaxAttentionVector K s t =
+  canonicalFixedSparsemaxAttentionWeight K s t
+
+canonicalFixedSparsemaxAttention-shared :
+  ∀ (K : CanonicalTokenLanguageModelKernel)
+  (s : GRUState)
+  (t : CanonicalToken) →
+  canonicalFixedSparsemaxAttentionWeight K s t
+  ≡
+  int8OfNat
+    (numerator
+      (sparsemaxWeight
+        canonicalTokenActionSpace
+        (logits K s)
+        canonicalTokenLogitCounts
+        t))
+canonicalFixedSparsemaxAttention-shared K s t = refl
+
+canonicalFixedSparsemaxAttention-fixed :
+  ∀ (K : CanonicalTokenLanguageModelKernel)
+  (s : GRUState) →
+  canonicalFixedSparsemaxAttentionVector K s
+  ≡
+  canonicalFixedSparsemaxAttentionVector K s
+canonicalFixedSparsemaxAttention-fixed K s = refl
