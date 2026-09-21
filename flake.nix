@@ -1,5 +1,5 @@
 {
-  description = "Pinned Nix environment for the Agda kernel, Mercury e-graph lanes, and typed OCaml CI orchestration";
+  description = "Pinned Nix environment for the Agda kernel, Mercury e-graph lanes, and typed functional Roc CI scripting";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee1263483043c0e50321eb4ec7ae";
@@ -16,44 +16,44 @@
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      mkPkgs = system:
+      pkgsFor = system:
         import nixpkgs { inherit system; };
-
-      ciProgram = system:
-        let
-          pkgs = mkPkgs system;
-        in
-        pkgs.callPackage ./.ci/ci.nix {};
-
     in
     {
-      packages = forAllSystems (system: {
-        ci = ciProgram system;
-        default = ciProgram system;
-      });
+      packages = forAllSystems (system:
+        let
+          pkgs = pkgsFor system;
+        in
+        {
+          ci = pkgs.roc;
+          default = pkgs.roc;
+        });
 
-      apps = forAllSystems (system: {
-        ci = {
-          type = "app";
-          program = "\${ciProgram system}/bin/actions-ci";
-        };
-        default = {
-          type = "app";
-          program = "\${ciProgram system}/bin/actions-ci";
-        };
-      });
+      apps = forAllSystems (system:
+        let
+          pkgs = pkgsFor system;
+        in
+        {
+          ci = {
+            type = "app";
+            program = "\${pkgs.roc}/bin/roc";
+          };
+          default = {
+            type = "app";
+            program = "\${pkgs.roc}/bin/roc";
+          };
+        });
 
       devShells = forAllSystems (system:
         let
-          pkgs = mkPkgs system;
+          pkgs = pkgsFor system;
         in
         {
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
-              self.packages.\${system}.ci
+              pkgs.roc
             ];
           };
         });
     };
-}
