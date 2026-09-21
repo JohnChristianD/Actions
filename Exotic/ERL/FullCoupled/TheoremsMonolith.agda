@@ -2553,9 +2553,9 @@ open ContinuousStationaryMarkovWalrasianData public
 
 StationaryWalrasian :
   ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
   (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation
-    (λ {A} {B} f → Set))
+    State Price Allocation Continuous)
   → Price → (State → Allocation) → Set
 StationaryWalrasian D p allocation =
   staticWalrasian D p (aggregate D allocation)
@@ -2572,15 +2572,7 @@ continuousStationaryWalrasian-lift :
   (p : Price)
   (allocation : State → Allocation) →
   staticWalrasian D p (aggregate D allocation) →
-  StationaryWalrasian
-    (continuousStationaryMarkovWalrasianData
-      (step D)
-      (aggregate D)
-      (aggregateContinuous D)
-      (invariant D)
-      (staticWalrasian D))
-    p
-    allocation
+  StationaryWalrasian D p allocation
 continuousStationaryWalrasian-lift D p allocation h =
   h , invariant D allocation
 
