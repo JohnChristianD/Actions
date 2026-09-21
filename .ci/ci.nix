@@ -63,11 +63,11 @@ writeShellApplication {
       grep -q '"forced_symbolic_target": false' ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"single_agda_source": true' ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"graph_search": "exhaustive simple dependency paths"' ".ci/discovery/theorem-monolith-egraph-sync.json"
-      astar_count="$(sed -n 's/.*"astar_emergent_candidate_count": \\([0-9][0-9]*\\).*/\\1/p' ".ci/discovery/theorem-monolith-egraph-sync.json")"
-      test -n "$astar_count"
-      test "$astar_count" -gt 0
+      composition_count="$(sed -n 's/.*"emergent_composition_count": \\([0-9][0-9]*\\).*/\\1/p' ".ci/discovery/theorem-monolith-egraph-sync.json")"
+      test -n "$composition_count"
+      test "$composition_count" -gt 0
       printf 'theorem-monolith-egraph-sync-report=present\n'
-      printf 'astar-emergent-candidate-count=%s\n' "$astar_count"
+      printf 'emergent-composition-count=%s\n' "$composition_count"
     }
 
     run_semantic_contract() {
