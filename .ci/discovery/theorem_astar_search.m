@@ -146,8 +146,7 @@ expand_node(Node, Laws, Children) :-
         law_for_id(TerminalId, Laws, TerminalLaw)
     ->
         Dependencies = law_dependencies(TerminalLaw),
-        expand_dependencies(
-            Dependencies, Node, [], Children)
+        expand_dependencies(Dependencies, Node, [], Children)
     ;
         Children = []
     ).
@@ -167,13 +166,12 @@ expand_dependencies([Dependency | Dependencies], Node, Acc0, Children) :-
         expand_dependencies(Dependencies, Node, Acc0, Children)
     ;
         NewPlan = [Dependency | Plan0],
-        missing_depth(
-            astar_node(
-                astar_node.seed(Node),
-                NewPlan,
-                astar_node.cost(Node) + 1,
-                0),
-            NewHeuristic),
+        NewNode0 = astar_node(
+            astar_node.seed(Node),
+            NewPlan,
+            astar_node.cost(Node) + 1,
+            0),
+        missing_depth(NewNode0, NewHeuristic),
         Child = astar_node(
             astar_node.seed(Node),
             NewPlan,
@@ -193,9 +191,7 @@ goal_node(Node, Laws) :-
     Plan = [TerminalId | _],
     SeedId = astar_node.seed(Node),
     law_for_id(SeedId, Laws, SeedLaw),
-    not list.member(
-        TerminalId,
-        law_dependencies(SeedLaw)).
+    not list.member(TerminalId, law_dependencies(SeedLaw).
 
 :- pred insert_children(
     list(astar_node)::in,
@@ -230,51 +226,25 @@ astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     ->
         Results1 = [astar_node.plan(Node) | Results0],
         astar_collect(
-            Laws,
-            Frontier1,
-            Expansions,
-            MaxExpansions,
-            MaxResults,
-            Results1,
-            Results,
-            !IO)
+            Laws, Frontier1, Expansions, MaxExpansions, MaxResults,
+            Results1, Results, !IO)
     ;
         astar_node.cost(Node) < max_depth
     ->
         expand_node(Node, Laws, Children),
         insert_children(Children, Frontier1, Frontier2),
         astar_collect(
-            Laws,
-            Frontier2,
-            Expansions + 1,
-            MaxExpansions,
-            MaxResults,
-            Results0,
-            Results,
-            !IO)
+            Laws, Frontier2, Expansions + 1, MaxExpansions, MaxResults,
+            Results0, Results, !IO)
     ;
         astar_collect(
-            Laws,
-            Frontier1,
-            Expansions + 1,
-            MaxExpansions,
-            MaxResults,
-            Results0,
-            Results,
-            !IO)
+            Laws, Frontier1, Expansions + 1, MaxExpansions, MaxResults,
+            Results0, Results, !IO)
     ).
 
 search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
     seed_nodes(Laws, Seeds),
-    astar_collect(
-        Laws,
-        Seeds,
-        0,
-        1000,
-        MaxResults,
-        [],
-        Reversed,
-        !IO),
+    astar_collect(Laws, Seeds, 0, 1000, MaxResults, [], Reversed, !IO),
     list.reverse(Reversed, Results).
 
 :- pred search_det(
@@ -282,8 +252,7 @@ search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
     list(astar_node)::in,
     int::in,
     list(string)::out) is semidet.
-search_det(_, [], _, _) :-
-    fail.
+search_det(_, [], _, _) :- fail.
 search_det(Laws, Frontier0, Expansions, Plan) :-
     Expansions < 1000,
     pop_best(Frontier0, Node, Frontier1),
