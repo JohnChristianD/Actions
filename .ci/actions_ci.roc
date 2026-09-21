@@ -275,17 +275,16 @@ run_lane! = \lane ->
       "semantic-contract" -> run_semantic_contract!({})
       "surface" -> run_surface!({})
       "versions" -> run_versions!({})
-      "all" -> {
+      "all" ->
           run_versions!({})?
           run_agda_safe!({})?
           run_mercury!({})?
           run_discovery!({})?
           run_semantic_contract!({})?
           run_surface!({})
-      }
       _ -> Err(UnknownLane(lane))
 
-main! : List Arg => Try({}, [Exit(I32), ..])
+main! : List Arg => Result {} [Exit(I32), ..]
 main! = \raw_args ->
   args = raw_args.map(Arg.display)
 
