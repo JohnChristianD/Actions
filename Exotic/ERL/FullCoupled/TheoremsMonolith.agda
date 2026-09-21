@@ -3882,54 +3882,6 @@ canonicalTokenSparsemaxTrace-append K (t ∷ xs) ys s =
       ys
       (C.canonicalTokenStep s t))
 
-record CanonicalExactRNNLMTheorem : Set₁ where
-  constructor canonicalExactRNNLMTheorem
-  field
-    globalTokenConjugacy :
-      CanonicalGlobalTokenConjugacyTheorem
-    recurrentTrace :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (xs ys : C.CanonicalTokenSequence)
-      (s : C.GRUState) →
-      C.canonicalTokenLogitTrace K (xs ++ ys) s
-      ≡
-      C.canonicalTokenLogitTrace K xs s ++
-      C.canonicalTokenLogitTrace K ys
-        (C.canonicalTokenListState xs s)
-    sparsemaxHead :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.GRUState) →
-      C.canonicalTokenSparsemaxPolicy K s
-      ≡
-      C.sparsemaxPolicy
-        C.canonicalTokenActionSpace
-        (C.logits K s)
-        C.canonicalTokenLogitCounts
-    sparsemaxTrace :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (xs ys : C.CanonicalTokenSequence)
-      (s : C.GRUState) →
-      canonicalTokenSparsemaxTrace K (xs ++ ys) s
-      ≡
-      canonicalTokenSparsemaxTrace K xs s ++
-      canonicalTokenSparsemaxTrace K ys
-        (C.canonicalTokenListState xs s)
-
-open CanonicalExactRNNLMTheorem public
-
-canonical-exact-rnn-lm-theorem : CanonicalExactRNNLMTheorem
-canonical-exact-rnn-lm-theorem =
-  canonicalExactRNNLMTheorem
-    canonical-global-token-conjugacy
-    canonicalTokenLogitTrace-append
-    canonicalTokenSparsemaxPolicy-shared
-    canonicalTokenSparsemaxTrace-append
-
-------------------------------------------------------------------------
--- Global positive conjugacy is finite and exact; the corresponding
--- unbounded Nat-to-Int8 exact injective boundary is impossible.
-------------------------------------------------------------------------
-
 record CanonicalGlobalTokenConjugacyTheorem : Set₁ where
   constructor canonicalGlobalTokenConjugacyTheorem
   field
@@ -3977,6 +3929,55 @@ canonical-global-token-conjugacy =
     canonicalTokenListEncodeDecode
     canonicalTokenStep-conjugacy
     canonicalTokenListState-conjugacy
+
+
+record CanonicalExactRNNLMTheorem : Set₁ where
+  constructor canonicalExactRNNLMTheorem
+  field
+    globalTokenConjugacy :
+      CanonicalGlobalTokenConjugacyTheorem
+    recurrentTrace :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (xs ys : C.CanonicalTokenSequence)
+      (s : C.GRUState) →
+      C.canonicalTokenLogitTrace K (xs ++ ys) s
+      ≡
+      C.canonicalTokenLogitTrace K xs s ++
+      C.canonicalTokenLogitTrace K ys
+        (C.canonicalTokenListState xs s)
+    sparsemaxHead :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.GRUState) →
+      C.canonicalTokenSparsemaxPolicy K s
+      ≡
+      C.sparsemaxPolicy
+        C.canonicalTokenActionSpace
+        (C.logits K s)
+        C.canonicalTokenLogitCounts
+    sparsemaxTrace :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (xs ys : C.CanonicalTokenSequence)
+      (s : C.GRUState) →
+      canonicalTokenSparsemaxTrace K (xs ++ ys) s
+      ≡
+      canonicalTokenSparsemaxTrace K xs s ++
+      canonicalTokenSparsemaxTrace K ys
+        (C.canonicalTokenListState xs s)
+
+open CanonicalExactRNNLMTheorem public
+
+canonical-exact-rnn-lm-theorem : CanonicalExactRNNLMTheorem
+canonical-exact-rnn-lm-theorem =
+  canonicalExactRNNLMTheorem
+    canonical-global-token-conjugacy
+    canonicalTokenLogitTrace-append
+    canonicalTokenSparsemaxPolicy-shared
+    canonicalTokenSparsemaxTrace-append
+
+------------------------------------------------------------------------
+-- Global positive conjugacy is finite and exact; the corresponding
+-- unbounded Nat-to-Int8 exact injective boundary is impossible.
+------------------------------------------------------------------------
 
 canonicalNoGlobalNatTokenConjugacy :
   ∀ (embed : Nat → C.Int8) →
