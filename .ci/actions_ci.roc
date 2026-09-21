@@ -87,44 +87,44 @@ retired_terms = [
     "policyleftweight", "tsts", "gresher",
 ]
 
-run! : Str, List Str => Try({}, _)
+run! : Str, List Str => Result {} _
 run! = \program, args -> Cmd.exec!(program, args)
 
-agda_program! : {} => Try(Str, _)
+agda_program! : {} => Result Str _
 agda_program! = \{} ->
   env_value = Env.var!(OsStr.from_str("AGDA_COMMAND"))?
   Ok(OsStr.display(env_value))
 
-run_agda_file! : Str => Try({}, _)
+run_agda_file! : Str => Result {} _
 run_agda_file! = \file_path ->
   agda = agda_program!({})?
   Stdout.line!("==> Agda --safe \${file_path}")?
   run!(agda, ["--safe", "-l", "standard-library", "-i", ".", file_path])?
   Ok({})
 
-run_agda_learner! : {} => Try({}, _)
+run_agda_learner! : {} => Result {} _
 run_agda_learner! = \{} ->
   run_agda_file!("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda")?
   Ok({})
 
-run_agda_theorem! : {} => Try({}, _)
+run_agda_theorem! : {} => Result {} _
 run_agda_theorem! = \{} ->
   run_agda_file!("Exotic/ERL/FullCoupled/TheoremsMonolith.agda")?
   Ok({})
 
-run_agda_safe! : {} => Try({}, _)
+run_agda_safe! : {} => Result {} _
 run_agda_safe! = \{} ->
   run_agda_learner!({})?
   run_agda_theorem!({})?
   Ok({})
 
-run_mercury! : {} => Try({}, _)
+run_mercury! : {} => Result {} _
 run_mercury! = \{} ->
   run!("mmc", ["--make", ".ci/check_forbidden_theorems"])?
   run!("./.ci/check_forbidden_theorems", [])?
   Ok({})
 
-run_discovery! : {} => Try({}, _)
+run_discovery! : {} => Result {} _
 run_discovery! = \{} ->
   run!("mmc", ["--make", ".ci/discovery/theorem_monolith_egraph_sync"])?
   run!("./.ci/discovery/theorem_monolith_egraph_sync", [])?
@@ -147,7 +147,7 @@ run_discovery! = \{} ->
   else
       Ok({})
 
-check_symbols! : List Str, Str => Result {}, _
+check_symbols! : List Str, Str => Result {} _
 check_symbols! = \symbols, source ->
   when symbols is
       [] -> Ok({})
@@ -165,14 +165,14 @@ is_text_path! : Str -> Bool
 is_text_path! = \path ->
   path_has_suffix!(path, text_suffixes)
 
-validate_source_path! : Str => Result {}, _
+validate_source_path! : Str => Result {} _
 validate_source_path! = \path ->
   if path_has_suffix!(path, forbidden_source_suffixes) then
       Err(ForbiddenSource(path))
   else
       Ok({})
 
-check_source_paths! : List Str => Result {}, _
+check_source_paths! : List Str => Result {} _
 check_source_paths! = \paths ->
   when paths is
       [] -> Ok({})
@@ -180,7 +180,7 @@ check_source_paths! = \paths ->
           validate_source_path!(path)?
           check_source_paths!(rest)
 
-check_retired_terms_in_file! : Str => Result {}, _
+check_retired_terms_in_file! : Str => Result {} _
 check_retired_terms_in_file! = \path ->
   if !is_text_path!(path) then
       Ok({})
@@ -188,7 +188,7 @@ check_retired_terms_in_file! = \path ->
       text = File.read_utf8!(path)?
       check_retired_terms_in_text!(retired_terms, path, text)
 
-check_retired_terms_in_text! : List Str, Str, Str => Result {}, _
+check_retired_terms_in_text! : List Str, Str, Str => Result {} _
 check_retired_terms_in_text! = \terms, path, text ->
   when terms is
       [] -> Ok({})
@@ -200,7 +200,7 @@ check_retired_terms_in_text! = \terms, path, text ->
           else
               check_retired_terms_in_text!(rest, path, text)
 
-check_retired_terms_in_files! : List Str => Result {}, _
+check_retired_terms_in_files! : List Str => Result {} _
 check_retired_terms_in_files! = \files ->
   when files is
       [] -> Ok({})
@@ -208,7 +208,7 @@ check_retired_terms_in_files! = \files ->
           check_retired_terms_in_file!(path)?
           check_retired_terms_in_files!(rest)
 
-run_semantic_contract! : {} => Try({}, _)
+run_semantic_contract! : {} => Result {} _
 run_semantic_contract! = \{} ->
   theorem_path = "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
   learner_path = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
@@ -240,7 +240,7 @@ run_semantic_contract! = \{} ->
   else
       Ok({})
 
-run_surface! : {} => Try({}, _)
+run_surface! : {} => Result {} _
 run_surface! = \{} ->
   listing = Cmd.new("git") |> Cmd.args(["ls-files"]) |> Cmd.exec_output!()?
   files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
@@ -257,14 +257,14 @@ run_surface! = \{} ->
       else
           Ok({})
 
-run_versions! : {} => Try({}, _)
+run_versions! : {} => Result {} _
 run_versions! = \{} ->
   agda = agda_program!({})?
   run!(agda, ["--version"])?
   run!("mmc", ["--version"])?
   Ok({})
 
-run_lane! : Str => Try({}, _)
+run_lane! : Str => Result {} _
 run_lane! = \lane ->
   when lane is
       "agda-learner" -> run_agda_learner!({})
