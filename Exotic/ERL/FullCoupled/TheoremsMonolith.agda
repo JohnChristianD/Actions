@@ -4091,3 +4091,109 @@ canonical-a-star-cost-guidance-theorem =
     canonicalAStarZeroCost
     canonicalAStarSuccessorCost
     canonicalTokenLogitTrace-append
+
+
+------------------------------------------------------------------------
+-- Linear Haar + fixed unnormalized sparsemax attention composition.
+--
+-- This is deliberately not a second attention normalization: the
+-- coefficients are the existing sparsemax numerators with zero counts,
+-- while Haar is the strictly linear (sum,difference) integer transform.
+------------------------------------------------------------------------
+
+canonicalIntegerHaarOrthogonality :
+  C.int8Add
+    (C.int8Mul C.one8 C.one8)
+    (C.int8Mul C.one8 (C.int8Neg C.one8))
+  ≡ C.zero8
+canonicalIntegerHaarOrthogonality = C.canonicalHaarOrthogonalCross
+
+canonicalIntegerHaarLinearForm :
+  ∀ (x y : C.Int8) →
+  C.canonicalHaarMix x y
+  ≡
+  (C.int8Add x y , C.int8Sub x y)
+canonicalIntegerHaarLinearForm = C.canonicalHaarMix-linear-form
+
+canonicalFixedSparsemaxAttentionShared :
+  ∀ (K : C.CanonicalTokenLanguageModelKernel)
+  (s : C.GRUState)
+  (t : C.CanonicalToken) →
+  C.canonicalFixedSparsemaxAttentionWeight K s t
+  ≡
+  C.int8OfNat
+    (C.numerator
+      (C.sparsemaxWeight
+        C.canonicalTokenActionSpace
+        (C.logits K s)
+        C.canonicalTokenLogitCounts
+        t))
+canonicalFixedSparsemaxAttentionShared =
+  C.canonicalFixedSparsemaxAttention-shared
+
+canonicalHaarSparsemaxAttentionLinear :
+  ∀ (K : C.CanonicalTokenLanguageModelKernel)
+  (s : C.GRUState)
+  (t u : C.CanonicalToken) →
+  C.canonicalHaarSparsemaxAttention K s t u
+  ≡
+  (C.int8Add
+     (C.canonicalFixedSparsemaxAttentionWeight K s t)
+     (C.canonicalFixedSparsemaxAttentionWeight K s u)
+   ,
+   C.int8Sub
+     (C.canonicalFixedSparsemaxAttentionWeight K s t)
+     (C.canonicalFixedSparsemaxAttentionWeight K s u))
+canonicalHaarSparsemaxAttentionLinear =
+  C.canonicalHaarSparsemaxAttention-linear-form
+
+record CanonicalLinearHaarSparsemaxAttentionCompositionTheorem : Set₁ where
+  constructor canonicalLinearHaarSparsemaxAttentionCompositionTheorem
+  field
+    haarOrthogonality :
+      C.int8Add
+        (C.int8Mul C.one8 C.one8)
+        (C.int8Mul C.one8 (C.int8Neg C.one8))
+      ≡ C.zero8
+    haarLinear :
+      ∀ (x y : C.Int8) →
+      C.canonicalHaarMix x y
+      ≡
+      (C.int8Add x y , C.int8Sub x y)
+    sparsemaxAttention :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.GRUState)
+      (t : C.CanonicalToken) →
+      C.canonicalFixedSparsemaxAttentionWeight K s t
+      ≡
+      C.int8OfNat
+        (C.numerator
+          (C.sparsemaxWeight
+            C.canonicalTokenActionSpace
+            (C.logits K s)
+            C.canonicalTokenLogitCounts
+            t))
+    composedAttention :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.GRUState)
+      (t u : C.CanonicalToken) →
+      C.canonicalHaarSparsemaxAttention K s t u
+      ≡
+      (C.int8Add
+         (C.canonicalFixedSparsemaxAttentionWeight K s t)
+         (C.canonicalFixedSparsemaxAttentionWeight K s u)
+       ,
+       C.int8Sub
+         (C.canonicalFixedSparsemaxAttentionWeight K s t)
+         (C.canonicalFixedSparsemaxAttentionWeight K s u))
+
+open CanonicalLinearHaarSparsemaxAttentionCompositionTheorem public
+
+canonical-linear-haar-sparsemax-attention-composition-theorem :
+  CanonicalLinearHaarSparsemaxAttentionCompositionTheorem
+canonical-linear-haar-sparsemax-attention-composition-theorem =
+  canonicalLinearHaarSparsemaxAttentionCompositionTheorem
+    canonicalIntegerHaarOrthogonality
+    canonicalIntegerHaarLinearForm
+    canonicalFixedSparsemaxAttentionShared
+    canonicalHaarSparsemaxAttentionLinear
