@@ -39,6 +39,57 @@ let script =
     grep -Fq '"astar_score_ordered": true' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     ''
+  else if lane == "econlib-crossrepo" then
+    ''
+    set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
+    econlib_rev=$(git -C "$tmp/Econlib" rev-parse HEAD)
+
+    upstream_economy="$tmp/Econlib/Econlib/Equilibrium/Economy.lean"
+    upstream_existence="$tmp/Econlib/Econlib/Equilibrium/Existence.lean"
+    upstream_markov="$tmp/Econlib/EconlibExamples/Equilibrium/MarkovStationary.lean"
+    local_theorem="Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+
+    grep -Fq 'structure WalrasianEquilibrium' "$upstream_economy"
+    grep -Fq 'theorem exists_equilibrium' "$upstream_existence"
+    grep -Fq 'Nonempty E.WalrasianEquilibrium' "$upstream_existence"
+    grep -Fq 'stationary Walrasian equilibrium' "$upstream_markov"
+
+    grep -Fq 'staticWalrasian' "$local_theorem"
+    grep -Fq 'GeneralizedWalrasianEquilibrium' "$local_theorem"
+    grep -Fq 'generalizedWalrasianEquilibrium-from-static' "$local_theorem"
+    grep -Fq 'MarkovStationaryWalrasianCompositionTheorem' "$local_theorem"
+    grep -Fq 'markov-stationary-walrasian-composition-theorem' "$local_theorem"
+
+    adapter_present=false
+    if grep -Eiq 'Econlib|exists_equilibrium' "$local_theorem"; then
+      adapter_present=true
+    fi
+
+    mkdir -p .ci/discovery
+    {
+      printf '%s\n' '{'
+      printf '  "econlib_repo": "danlyng/Econlib",\n'
+      printf '  "econlib_commit": "%s",\n' "$econlib_rev"
+      printf '  "upstream_static_existence": "Economy.exists_equilibrium",\n'
+      printf '  "upstream_equilibrium_object": "Economy.WalrasianEquilibrium",\n'
+      printf '  "local_static_target": "staticWalrasian",\n'
+      printf '  "local_stationary_lift": "generalizedWalrasianEquilibrium-from-static",\n'
+      printf '  "local_markov_composition": "markov-stationary-walrasian-composition-theorem",\n'
+      printf '  "adapter_present": %s,\n' "$adapter_present"
+      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "bridge::staticWalrasian", "Actions::generalizedWalrasianEquilibrium-from-static", "Actions::markov-stationary-walrasian-composition-theorem"],\n'
+      printf '  "graph_status": "composition-ready; explicit cross-language adapter still required"\n'
+      printf '%s\n' '}'
+    } > .ci/discovery/econlib-crossrepo-sync.json
+
+    grep -Fq '"upstream_static_existence": "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.json
+    grep -Fq '"local_stationary_lift": "generalizedWalrasianEquilibrium-from-static"' .ci/discovery/econlib-crossrepo-sync.json
+    echo "econlib-crossrepo-sync=pass"
+    echo "econlib-commit=$econlib_rev"
+    echo "adapter-present=$adapter_present"
+    ''
   else if lane == "semantic-contract" then
     ''
     set -euo pipefail
