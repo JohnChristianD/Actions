@@ -47,7 +47,7 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
     list(semantic_law)::in,
     symbolic_egraph.egraph::in,
     int::in,
-    int::out) is semidet.
+    int::out) is det.
 extract_all_laws([], _, _, 0).
 extract_all_laws([Law | Laws], E, Depth, Cost) :-
     add_expr(law_expr(law_id(Law)), E, Class, E1),
