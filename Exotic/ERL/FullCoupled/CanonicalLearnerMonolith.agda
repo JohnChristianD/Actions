@@ -1171,7 +1171,7 @@ canonicalWatkinsStep K s =
   watkinsStep (watkinsKernel K)
   (watkinsState (critic (watkins s)) (canonicalSignal K s) (trace (watkins s)))
 
-canonicalAttentionStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → LearnedSparsemaxAttention A
+canonicalAttentionStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → LearnedSparsemaxAttention A
 canonicalAttentionStep K s = attentionStep K (attention s) (canonicalSignal K s)
 
 canonicalGRUStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → GRUState
@@ -1203,13 +1203,13 @@ canonicalOptimizerStep-qMunchausen-L2 : ∀ K s →
     (canonicalWatkinsTarget K s)
 canonicalOptimizerStep-qMunchausen-L2 K s = refl
 
-canonicalCountStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → LCBCountState A
+canonicalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → LCBCountState A
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
 
-canonicalQLogStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → FiniteRational
+canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FiniteRational
 canonicalQLogStep K s = negativeFiniteQLog8 (canonicalPolicyWeightCode K s)
 
-canonicalFullStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → FullLearnerState A
+canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FullLearnerState A
 canonicalFullStep K s =
   fullLearnerState (suc (clock s))
   (canonicalWatkinsStep K s)
