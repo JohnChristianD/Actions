@@ -44,7 +44,7 @@ add_astar_plans([Plan | Plans], E0, E) :-
 
 :- pred dependency_chain_valid(
     list(string)::in, list(semantic_law)::in) is semidet.
-dependency_chain_valid([_], _) :- semidet_fail.
+dependency_chain_valid([_], _) :- fail.
 dependency_chain_valid([Dependency, Parent | Rest], Laws) :-
     law_for_id(Parent, Laws, ParentLaw),
     list.member(Dependency, law_dependencies(ParentLaw)),
