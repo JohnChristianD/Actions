@@ -300,6 +300,8 @@ JSON
     canonicalTokenSparsemaxTrace-append
     CanonicalExactRNNLMTheorem
     canonical-exact-rnn-lm-theorem
+    ArchitecturePreservingCanonicalRNNLMIsomorphism
+    architecture-preserving-canonical-rnn-lm-identity
     CanonicalIntegerHaarScaledOrthogonalityTheorem
     canonical-integer-haar-scaled-orthogonality-theorem
     CanonicalAStarCostGuidanceTheorem
