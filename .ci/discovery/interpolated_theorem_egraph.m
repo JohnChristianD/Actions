@@ -16,14 +16,14 @@
     symbolic_egraph.egraph::out,
     int::out) is det.
 :- func semantic_rewrite_rules = list(rewrite_rule).
- :- func astar_plan_expr(list(string)) = expr.
+  :- func graph_plan_expr(list(string)) = expr.
 :- func law_expr(string) = expr.
 
 :- implementation.
 
 :- import_module int.
 
-astar_plan_expr(Ids) =
+graph_plan_expr(Ids) =
     app("astar-discovered-proof-plan", [left_assoc_expr(Ids)]).
 
 semantic_rewrite_rules = [
