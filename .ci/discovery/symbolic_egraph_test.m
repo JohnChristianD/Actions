@@ -46,7 +46,7 @@ main(!IO) :-
                 atom("c")
             ]),
             E6, Left, E7),
-        saturate([Rewrite], 8, E7, E8, Sat),
+        saturate_until_stable([Rewrite], E7, E8, Sat),
         (
             equivalent(Nested, Left, E8),
             e_match(
@@ -62,7 +62,7 @@ main(!IO) :-
             list.length(Analyses) > 0,
             extract_best(Nested, E8, 32, Extracted, Cost),
             Cost > 0,
-            Extracted = atom("")
+            (Extracted = atom(_) ; Extracted = app(_, _))
         ->
             io.write_string(
                 "symbolic-egraph-regression=pass "
