@@ -44,18 +44,18 @@ jobs:
         timeout-minutes: 15
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-        run: nix develop .#default -c actions-ci agda-learner
+        run: nix develop .#default -c roc .ci/actions_ci.roc agda-learner
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-        run: nix develop .#default -c actions-ci agda-theorem
+        run: nix develop .#default -c roc .ci/actions_ci.roc agda-theorem
       - name: Check Agda/Mercury tool versions
         if: always()
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-        run: nix develop .#default -c actions-ci versions
+        run: nix develop .#default -c roc .ci/actions_ci.roc versions
 
   mercury:
     name: Mercury theorem-only e-graph
@@ -69,7 +69,7 @@ jobs:
       - name: Run theorem-only Mercury discovery and canonical semantic contract
         timeout-minutes: 15
         run: |
-          nix develop .#default -c actions-ci mercury
-          nix develop .#default -c actions-ci discovery
-          nix develop .#default -c actions-ci semantic-contract
-          nix develop .#default -c actions-ci surface
+          nix develop .#default -c roc .ci/actions_ci.roc mercury
+          nix develop .#default -c roc .ci/actions_ci.roc discovery
+          nix develop .#default -c roc .ci/actions_ci.roc semantic-contract
+          nix develop .#default -c roc .ci/actions_ci.roc surface
