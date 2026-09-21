@@ -119,7 +119,7 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
     ).
 
 main(!IO) :-
-    ( read_semantic_laws(All, !IO),
+    read_semantic_laws(All, !IO),
     search_emergent_compositions(All, Plans),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(Plans, EGraph0, EGraphGraph),
@@ -127,38 +127,40 @@ main(!IO) :-
     analyze(EGraph, Analyses),
     ExtractionDepth = enode_count(EGraph) + 1,
     extract_all_laws(All, EGraph, ExtractionDepth, ExtractionCost),
-    list.length(All) > 0,
-    list.length(Plans) > 0,
-    list.length(Analyses) > 0,
-    QuotientCount > 0,
-    class_count(EGraph) > 0,
-    enode_count(EGraph) > 0,
-    saturation_iterations(Saturation) > 0,
-    ExtractionCost > 0
-    ->
-        write_report(
-            All,
-            QuotientCount,
-            Saturation,
-            ExtractionCost,
-            Plans,
-            !IO),
-        io.write_string(
-            "mercury-theorem-monolith-egraph-sync=pass\n", !IO),
-        io.write_string("forced-symbolic-target=false\n", !IO),
-        io.write_string("emergent-law-count=", !IO),
-        io.write_string(string.int_to_string(list.length(All)), !IO),
-        io.write_string("\n", !IO),
-        io.write_string("emergent-composition-count=", !IO),
-        io.write_string(string.int_to_string(list.length(Plans)), !IO),
-        io.write_string("\n", !IO),
-        io.write_string(
-            "single-agda-source=TheoremsMonolith.agda\n", !IO),
-        io.write_string(
-            "proof-authority=Agda --safe\n", !IO)
-    ;
-        io.write_string(
-            "ERROR: exhaustive theorem dependency graph / e-graph gate failed\n",
-            !IO),
-        io.set_exit_status(1, !IO)
+    (
+        if
+            list.length(All) > 0,
+            list.length(Plans) > 0,
+            list.length(Analyses) > 0,
+            QuotientCount > 0,
+            class_count(EGraph) > 0,
+            enode_count(EGraph) > 0,
+            saturation_iterations(Saturation) > 0,
+            ExtractionCost > 0
+        then
+            write_report(
+                All,
+                QuotientCount,
+                Saturation,
+                ExtractionCost,
+                Plans,
+                !IO),
+            io.write_string(
+                "mercury-theorem-monolith-egraph-sync=pass\n", !IO),
+            io.write_string("forced-symbolic-target=false\n", !IO),
+            io.write_string("emergent-law-count=", !IO),
+            io.write_string(string.int_to_string(list.length(All)), !IO),
+            io.write_string("\n", !IO),
+            io.write_string("emergent-composition-count=", !IO),
+            io.write_string(string.int_to_string(list.length(Plans)), !IO),
+            io.write_string("\n", !IO),
+            io.write_string(
+                "single-agda-source=TheoremsMonolith.agda\n", !IO),
+            io.write_string(
+                "proof-authority=Agda --safe\n", !IO)
+        else
+            io.write_string(
+                "ERROR: exhaustive theorem dependency graph / e-graph gate failed\n",
+                !IO),
+            io.set_exit_status(1, !IO)
     ).
