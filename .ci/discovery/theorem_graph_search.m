@@ -54,9 +54,9 @@ seed_nodes([Law | Laws], Nodes) :-
     graph_node::in,
     list(semantic_law)::in,
     list(graph_node)::out) is det.
-expand_node(Node, Laws, Children) :-
-    Plan0 = Node ^ plan,
-    Plan0 = [TerminalId | _],
+expand_node(graph_node([]), _, []).
+expand_node(graph_node([TerminalId | Rest]), Laws, Children) :-
+    Plan0 = [TerminalId | Rest],
     (
         if law_for_id(TerminalId, Laws, TerminalLaw) then
             expand_dependencies(
@@ -143,19 +143,40 @@ valid_chain([Child, Parent | Rest], Laws) :-
     valid_chain([Parent | Rest], Laws).
 
 :- pred all_valid_plans(
-    list(list(string))::in, list(semantic_law)::in) is semidet.
-all_valid_plans([], _).
-all_valid_plans([Plan | Plans], Laws) :-
-    valid_plan(Plan, Laws),
-    all_valid_plans(Plans, Laws).
+    list(list(string))::in, list(semantic_law)::in, bool::out) is det.
+all_valid_plans([], _, yes).
+all_valid_plans([Plan | Plans], Laws, Valid) :-
+    (
+        if valid_plan(Plan, Laws) then
+            all_valid_plans(Plans, Laws, Valid)
+        else
+            Valid = no
+    ).
 
 search_emergent_compositions(Laws, Results) :-
     seed_nodes(Laws, Seeds),
     graph_collect(Laws, Seeds, [], Reversed),
-    list.reverse(Reversed, Results),
-    all_valid_plans(Results, Laws).
+    list.reverse(Reversed, CandidateResults),
+    all_valid_plans(CandidateResults, Laws, Valid),
+    (
+        if Valid = yes then
+            Results = CandidateResults
+        else
+            Results = []
+    ).
+
+:- pred member_once(T::in, list(T)::in) is semidet.
+member_once(_, []) :-
+    fail.
+member_once(X, [Y | Ys]) :-
+    (
+        if X = Y then
+            true
+        else
+            member_once(X, Ys)
+    ).
 
 search_emergent_composition(Laws, Plan) :-
     seed_nodes(Laws, Seeds),
     graph_collect(Laws, Seeds, [], Results),
-    list.member(Plan, Results).
+    member_once(Plan, Results).
