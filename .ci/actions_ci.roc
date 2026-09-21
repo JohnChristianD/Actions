@@ -91,47 +91,41 @@ run! : Str, List Str => Try({}, _)
 run! = \program, args -> Cmd.exec!(program, args)
 
 agda_program! : {} => Try(Str, _)
-agda_program! = \{} -> {
+agda_program! = \{} ->
     env_value = Env.var!(OsStr.from_str("AGDA_COMMAND"))?
     Ok(OsStr.display(env_value))
-}
 
 run_agda_file! : Str => Try({}, _)
-run_agda_file! = \file_path -> {
+run_agda_file! = \file_path ->
     agda = agda_program!({})?
     Stdout.line!("==> Agda --safe \${file_path}")?
     run!(agda, ["--safe", "-l", "standard-library", "-i", ".", file_path])?
     Ok({})
-}
 
 run_agda_learner! : {} => Try({}, _)
-run_agda_learner! = \{} -> {
+run_agda_learner! = \{} ->
     run_agda_file!("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda")?
     Ok({})
-}
 
 run_agda_theorem! : {} => Try({}, _)
-run_agda_theorem! = \{} -> {
+run_agda_theorem! = \{} ->
     run_agda_file!("Exotic/ERL/FullCoupled/TheoremsMonolith.agda")?
     Ok({})
-}
 
 run_agda_safe! : {} => Try({}, _)
-run_agda_safe! = \{} -> {
+run_agda_safe! = \{} ->
     run_agda_learner!({})?
     run_agda_theorem!({})?
     Ok({})
-}
 
 run_mercury! : {} => Try({}, _)
-run_mercury! = \{} -> {
+run_mercury! = \{} ->
     run!("mmc", ["--make", ".ci/check_forbidden_theorems"])?
     run!("./.ci/check_forbidden_theorems", [])?
     Ok({})
-}
 
 run_discovery! : {} => Try({}, _)
-run_discovery! = \{} -> {
+run_discovery! = \{} ->
     run!("mmc", ["--make", ".ci/discovery/theorem_monolith_egraph_sync"])?
     run!("./.ci/discovery/theorem_monolith_egraph_sync", [])?
     run!("mmc", ["--make", ".ci/discovery/symbolic_egraph_test"])?
@@ -152,10 +146,9 @@ run_discovery! = \{} -> {
         Err(NoEmergentComposition)
     else
         Ok({})
-}
 
 check_symbols! : List Str, Str => Result {}, _
-check_symbols! = \symbols, source -> {
+check_symbols! = \symbols, source ->
     when symbols is
         [] -> Ok({})
         [symbol, ..rest] ->
@@ -163,46 +156,40 @@ check_symbols! = \symbols, source -> {
                 check_symbols!(rest, source)
             else
                 Err(MissingTheoremSymbol(symbol))
-}
 
 path_has_suffix! : Str, List Str -> Bool
-path_has_suffix! = \path, suffixes -> {
+path_has_suffix! = \path, suffixes ->
     suffixes.any(\suffix -> Str.ends_with(path, suffix))
-}
 
 is_text_path! : Str -> Bool
-is_text_path! = \path -> {
+is_text_path! = \path ->
     path_has_suffix!(path, text_suffixes)
-}
 
 validate_source_path! : Str => Result {}, _
-validate_source_path! = \path -> {
+validate_source_path! = \path ->
     if path_has_suffix!(path, forbidden_source_suffixes) then
         Err(ForbiddenSource(path))
     else
         Ok({})
-}
 
 check_source_paths! : List Str => Result {}, _
-check_source_paths! = \paths -> {
+check_source_paths! = \paths ->
     when paths is
         [] -> Ok({})
         [path, ..rest] ->
             validate_source_path!(path)?
             check_source_paths!(rest)
-}
 
 check_retired_terms_in_file! : Str => Result {}, _
-check_retired_terms_in_file! = \path -> {
+check_retired_terms_in_file! = \path ->
     if !is_text_path!(path) then
         Ok({})
     else
         text = File.read_utf8!(path)?
         check_retired_terms_in_text!(retired_terms, path, text)
-}
 
 check_retired_terms_in_text! : List Str, Str, Str => Result {}, _
-check_retired_terms_in_text! = \terms, path, text -> {
+check_retired_terms_in_text! = \terms, path, text ->
     when terms is
         [] -> Ok({})
         [term, ..rest] ->
@@ -212,19 +199,17 @@ check_retired_terms_in_text! = \terms, path, text -> {
                 Err(RetiredTerm(path, term))
             else
                 check_retired_terms_in_text!(rest, path, text)
-}
 
 check_retired_terms_in_files! : List Str => Result {}, _
-check_retired_terms_in_files! = \files -> {
+check_retired_terms_in_files! = \files ->
     when files is
         [] -> Ok({})
         [path, ..rest] ->
             check_retired_terms_in_file!(path)?
             check_retired_terms_in_files!(rest)
-}
 
 run_semantic_contract! : {} => Try({}, _)
-run_semantic_contract! = \{} -> {
+run_semantic_contract! = \{} ->
     theorem_path = "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     learner_path = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     theorem_text = File.read_utf8!(theorem_path)?
@@ -254,11 +239,10 @@ run_semantic_contract! = \{} -> {
         Err(NonCanonicalTheoremSource)
     else
         Ok({})
-}
 
 run_surface! : {} => Try({}, _)
-run_surface! = \{} -> {
-    listing = Cmd.new("git") \> Cmd.args(["ls-files"])  ->> Cmd.exec_output!()?
+run_surface! = \{} ->
+    listing = Cmd.new("git") |> Cmd.args(["ls-files"]) |> Cmd.exec_output!()?
     files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
 
     monoliths = files.keep_if(\path -> Str.ends_with(path, "Monolith.agda"))
@@ -272,18 +256,16 @@ run_surface! = \{} -> {
             Err(MissingRocOrchestrator)
         else
             Ok({})
-}
 
 run_versions! : {} => Try({}, _)
-run_versions! = \{} -> {
+run_versions! = \{} ->
     agda = agda_program!({})?
     run!(agda, ["--version"])?
     run!("mmc", ["--version"])?
     Ok({})
-}
 
 run_lane! : Str => Try({}, _)
-run_lane! = \lane -> {
+run_lane! = \lane ->
     when lane is
         "agda-learner" -> run_agda_learner!({})
         "agda-theorem" -> run_agda_theorem!({})
@@ -302,10 +284,9 @@ run_lane! = \lane -> {
             run_surface!({})
         }
         _ -> Err(UnknownLane(lane))
-}
 
 main! : List Arg => Try({}, [Exit(I32), ..])
-main! = \raw_args -> {
+main! = \raw_args ->
     args = raw_args.map(Arg.display)
 
     lane = List.get(args, 1) ? \{} ->
@@ -314,4 +295,3 @@ main! = \raw_args -> {
     run_lane!(lane)?
     Stdout.line!("lane=\${lane}")?
     Ok({})
-}
