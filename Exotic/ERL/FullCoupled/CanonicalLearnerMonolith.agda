@@ -1263,8 +1263,10 @@ canonicalStep-not-fixed K s eq =
 canonicalTotalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
 canonicalTotalCountStep K s = refl
 
-canonicalNoFixedPoint : ∀ {A} K s → canonicalFullStep K s ≢ s
-canonicalNoFixedPoint = canonicalStep-not-fixed
+canonicalNoFixedPoint :
+  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
+  canonicalFullStep K s ≢ s
+canonicalNoFixedPoint K s = canonicalStep-not-fixed K s
 
 iterateCanonical : ∀ {A} → FullLearnerKernel A → Nat → FullLearnerState A → FullLearnerState A
 iterateCanonical K zero s = s
