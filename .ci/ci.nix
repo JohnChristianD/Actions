@@ -117,6 +117,8 @@ writeShellApplication {
         "canonical-a-star-cost-guidance-theorem"
         "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem"
         "canonical-linear-haar-sparsemax-attention-composition-theorem"
+        "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem"
+        "canonical-full-state-haar-sparsemax-invariant-composition-theorem"
         "BairdSevenStarProblem"
         "bairdSevenStar"
         "NonIIDMarkovWalrasianProblem"
