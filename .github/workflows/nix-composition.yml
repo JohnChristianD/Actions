@@ -47,7 +47,7 @@ jobs:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaLearner'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
@@ -56,7 +56,7 @@ jobs:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaTheorem'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Check Agda/Mercury/Dhall tool versions
         if: always()
         env:
@@ -64,7 +64,7 @@ jobs:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Versions'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
 
   mercury:
     name: Mercury theorem-only e-graph
@@ -81,35 +81,35 @@ jobs:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Mercury'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Discovery
         timeout-minutes: 15
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Discovery'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Cross-repo Econlib graph
         timeout-minutes: 15
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.EconlibCrossrepo'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Econlib equilibrium graph search
         timeout-minutes: 15
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.EconlibEquilibriumSearch'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Strict existence or impossibility graph
         timeout-minutes: 15
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.StrictExistenceImpossibility'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
 
       - name: Stationary distribution finite-cycle impossibility graph
         timeout-minutes: 15
@@ -117,7 +117,7 @@ jobs:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.StationaryCycleImpossibility'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
 
 
       - name: Isomorphism transport closure
@@ -126,20 +126,20 @@ jobs:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.IsomorphismTransport'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Semantic contract
         timeout-minutes: 15
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.SemanticContract'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
       - name: Surface contract
         timeout-minutes: 15
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Surface'
         run: |
           set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | nix develop .#default -c bash -e
 
 # PR verification: Dhall replacement is green on the equivalent verification branch.
