@@ -5,7 +5,7 @@
 :- import_module io.
 :- import_module list.
 :- import_module symbolic_egraph.
-:- import_module learner_semantic_manifest.
+:- import_module learner_semantic_extractor.
 
 :- pred discovery_egraph(
     symbolic_egraph.egraph::out,

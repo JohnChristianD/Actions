@@ -827,7 +827,7 @@ symbolicTaskImpossible-from-observation-collision :
   target s ≢ target t →
   ¬ ObservationTaskFactorization observe target
 symbolicTaskImpossible-from-observation-collision
-  observe obsEq target distinguishes =
+  observe {s} {t} obsEq target distinguishes =
   λ factorization →
     let
       factor = ObservationTaskFactorization.factor factorization
