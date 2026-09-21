@@ -265,7 +265,7 @@ run_surface! = |{}| {
     files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
 
     monoliths = files.keep_if(|path| Str.ends_with(path, "Monolith.agda"))
-    if monoliths.len() != 2u64 then
+    if monoliths.len() != 2 then
         Err(NonCanonicalMonolithCount)
     else
         check_source_paths!(files)?
