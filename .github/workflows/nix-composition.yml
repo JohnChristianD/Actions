@@ -63,9 +63,10 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - name: Run theorem-only Mercury discovery
+      - name: Run theorem-only Mercury discovery and canonical semantic contract
         timeout-minutes: 15
         run: |
           nix run .#ci -- mercury
           nix run .#ci -- discovery
+          nix run .#ci -- semantic-contract
           nix run .#ci -- surface
