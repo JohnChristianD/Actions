@@ -176,6 +176,54 @@ let script =
     grep -Fq 'strict-existence-impossibility-graph=pass' <(./.ci/discovery/strict_existence_impossibility_graph)
     ''
 
+  else if lane == "stationary-cycle-impossibility" then
+    ''
+    set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
+
+    theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    finite=Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda
+    ergodic="$tmp/Econlib/Econlib/Probability/Markov/Ergodic.lean"
+
+    grep -Fq 'finiteOrbit-collision' "$finite"
+    grep -Fq 'canonicalNoNontrivialFiniteCycle-theorem' "$theorem"
+    grep -Fq 'canonicalNoFiniteStepConvergenceToFixedPoint' "$theorem"
+    grep -Fq 'exists_stationary' "$ergodic"
+    grep -Fq 'theorem geometric_convergence_to' "$ergodic"
+    grep -Fq '0 < P.transition' "$ergodic"
+
+    mkdir -p .ci/discovery
+    cat > .ci/discovery/stationary-cycle-impossibility-graph.json <<'JSON'
+{
+  "rule": "STATIONARY_DISTRIBUTION_TO_FINITE_CYCLE_OBSTRUCTION",
+  "terminal_status": "IMPOSSIBILITY",
+  "requires_exact_finite_deterministic_projection": true,
+  "nodes": [
+    "Econlib::FiniteMarkovChain.exists_stationary",
+    "Econlib::FiniteMarkovChain.geometric_convergence_to",
+    "Agda::finiteOrbit-collision",
+    "Agda::canonicalNoNontrivialFiniteCycle-theorem",
+    "Agda::canonicalNoFiniteStepConvergenceToFixedPoint"
+  ],
+  "edges": [
+    ["FiniteMarkovChain.exists_stationary", "stationary distribution"],
+    ["stationary distribution", "finite deterministic projection", "projection required"],
+    ["finite deterministic projection", "finiteOrbit-collision"],
+    ["finiteOrbit-collision", "positive-period recurrence"],
+    ["canonicalNoNontrivialFiniteCycle-theorem", "positive-period recurrence", "contradiction"],
+    ["period-1 recurrence", "canonicalNoFiniteStepConvergenceToFixedPoint", "contradiction"]
+  ],
+  "status": "strict graph: no third terminal status"
+}
+JSON
+    grep -Fq '"terminal_status": "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.json
+    grep -Fq '"requires_exact_finite_deterministic_projection": true' .ci/discovery/stationary-cycle-impossibility-graph.json
+    grep -Fq '"status": "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.json
+    ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.json
+    echo "stationary-cycle-impossibility-graph=pass"
+    ''
   else if lane == "semantic-contract" then
     ''
     set -euo pipefail
