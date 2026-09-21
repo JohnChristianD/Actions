@@ -4147,6 +4147,65 @@ canonicalHaarSparsemaxAttentionLinear :
 canonicalHaarSparsemaxAttentionLinear =
   C.canonicalHaarSparsemaxAttention-linear-form
 
+canonicalFixedSparsemaxAttentionCounts :
+  C.canonicalTokenLogitCounts ≡ C.zeroCounts
+canonicalFixedSparsemaxAttentionCounts =
+  C.canonicalFixedSparsemaxAttention-counts
+
+canonicalFullStateHaarSparsemaxAttentionNormInvariant :
+  ∀ (K : C.CanonicalTokenLanguageModelKernel)
+  (s : C.CanonicalFullLearnerState)
+  (n : C.NormPair)
+  (t u : C.CanonicalToken) →
+  C.canonicalFullStateHaarSparsemaxAttention K (C.replaceNorm s n) t u
+  ≡
+  C.canonicalFullStateHaarSparsemaxAttention K s t u
+canonicalFullStateHaarSparsemaxAttentionNormInvariant =
+  C.canonicalFullStateHaarSparsemaxAttention-norm-invariant
+
+canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant :
+  ∀ (K : C.CanonicalTokenLanguageModelKernel)
+  (s : C.CanonicalFullLearnerState)
+  (o : C.F4IntUState)
+  (t u : C.CanonicalToken) →
+  C.canonicalFullStateHaarSparsemaxAttention K (C.replaceOptimizer s o) t u
+  ≡
+  C.canonicalFullStateHaarSparsemaxAttention K s t u
+canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant =
+  C.canonicalFullStateHaarSparsemaxAttention-optimizer-invariant
+
+record CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem : Set₁ where
+  constructor canonicalFullStateHaarSparsemaxInvariantCompositionTheorem
+  field
+    fixedCounts :
+      C.canonicalTokenLogitCounts ≡ C.zeroCounts
+    normInvariant :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.CanonicalFullLearnerState)
+      (n : C.NormPair)
+      (t u : C.CanonicalToken) →
+      C.canonicalFullStateHaarSparsemaxAttention K (C.replaceNorm s n) t u
+      ≡
+      C.canonicalFullStateHaarSparsemaxAttention K s t u
+    optimizerInvariant :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.CanonicalFullLearnerState)
+      (o : C.F4IntUState)
+      (t u : C.CanonicalToken) →
+      C.canonicalFullStateHaarSparsemaxAttention K (C.replaceOptimizer s o) t u
+      ≡
+      C.canonicalFullStateHaarSparsemaxAttention K s t u
+
+open CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem public
+
+canonical-full-state-haar-sparsemax-invariant-composition-theorem :
+  CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
+canonical-full-state-haar-sparsemax-invariant-composition-theorem =
+  canonicalFullStateHaarSparsemaxInvariantCompositionTheorem
+    canonicalFixedSparsemaxAttentionCounts
+    canonicalFullStateHaarSparsemaxAttentionNormInvariant
+    canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant
+
 record CanonicalLinearHaarSparsemaxAttentionCompositionTheorem : Set₁ where
   constructor canonicalLinearHaarSparsemaxAttentionCompositionTheorem
   field
