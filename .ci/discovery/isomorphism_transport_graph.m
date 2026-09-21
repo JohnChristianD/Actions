@@ -39,6 +39,11 @@ transport_kind_for(Conclusion, invariant_equality) :-
 kind_text(invariant_equality) = "INVARIANT_EQUALITY".
 kind_text(invariant_impossibility) = "INVARIANT_IMPOSSIBILITY".
 
+:- pred transportable_law(semantic_law::in) is semidet.
+transportable_law(Law) :-
+    conclusion_fragment(law_signature(Law), Conclusion),
+    transport_kind_for(Conclusion, _).
+
 :- pred write_entries(
     io.text_output_stream::in,
     list(semantic_law)::in,
@@ -92,6 +97,7 @@ count_transportable([Law | Laws], Count) :-
 
 main(!IO) :-
     read_semantic_laws(Laws, !IO),
+    TransportableLaws = list.filter(transportable_law, Laws),
     count_transportable(Laws, Transportable),
     Direct = list.length(Laws) - Transportable,
     (
@@ -138,7 +144,7 @@ main(!IO) :-
                 !IO),
             io.write_string(Stream,
                 "  \"entries\": [\n", !IO),
-            write_entries(Stream, Laws, !IO),
+            write_entries(Stream, TransportableLaws, !IO),
             io.write_string(Stream,
                 "  ],\n", !IO),
             io.write_string(Stream,
