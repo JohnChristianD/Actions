@@ -62,7 +62,7 @@ writeShellApplication {
       test -s ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"forced_symbolic_target": false' ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"single_agda_source": true' ".ci/discovery/theorem-monolith-egraph-sync.json"
-      grep -q '"astar_search": "structural dependency composition only"' ".ci/discovery/theorem-monolith-egraph-sync.json"
+      grep -q '"graph_search": "exhaustive simple dependency paths"' ".ci/discovery/theorem-monolith-egraph-sync.json"
       astar_count="$(sed -n 's/.*"astar_emergent_candidate_count": \\([0-9][0-9]*\\).*/\\1/p' ".ci/discovery/theorem-monolith-egraph-sync.json")"
       test -n "$astar_count"
       test "$astar_count" -gt 0
