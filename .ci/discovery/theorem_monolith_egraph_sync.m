@@ -103,6 +103,8 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream, "  \"emergent_composition_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(Plans)), !IO),
         io.write_string(Stream, ",\n", !IO),
+        io.write_string(Stream, "  \"astar_score_ordered\": true,\n", !IO),
+        io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"emergent_composition_plans\": [\n", !IO),
         write_plan_items(Stream, Plans, !IO),
         io.write_string(Stream, "  ],\n", !IO),
@@ -138,7 +140,8 @@ main(!IO) :-
             class_count(EGraph) > 0,
             enode_count(EGraph) > 0,
             saturation_iterations(Saturation) > 0,
-            ExtractionCost > 0
+            ExtractionCost > 0,
+            all_scores_non_decreasing(All, Plans)
         then
             write_report(
                 All,
