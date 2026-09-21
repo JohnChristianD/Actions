@@ -1,9 +1,8 @@
 {
-  description = "Pinned Nix environment for the Agda kernel and Mercury e-graph lanes";
+  description = "Pinned Nix environment for the Agda kernel, Mercury e-graph lanes, and typed OCaml CI orchestration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee1263483043c0e50321eb4ec7ae";
-
   };
 
   outputs = { self, nixpkgs }:
@@ -36,11 +35,11 @@
       apps = forAllSystems (system: {
         ci = {
           type = "app";
-          program = "${ciProgram system}/bin/actions-ci";
+          program = "\${ciProgram system}/bin/actions-ci";
         };
         default = {
           type = "app";
-          program = "${ciProgram system}/bin/actions-ci";
+          program = "\${ciProgram system}/bin/actions-ci";
         };
       });
 
@@ -52,13 +51,8 @@
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
-              pkgs.gnumake
-              pkgs.git
+              self.packages.\${system}.ci
             ];
-
-            shellHook = ''
-              printf 'mercury=%s\n' "$(mmc --version | head -n 1)"
-            '';
           };
         });
     };
