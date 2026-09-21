@@ -292,7 +292,7 @@ lookup_binding(Name, substitution(Bindings), Id) :-
         )
     ).
 
-- pred bind_variable(
+:- pred bind_variable(
     string::in, eclass_id::in,
     substitution::in, substitution::out) is semidet.
 bind_variable(Name, Id, Sub0, Sub) :-
@@ -471,7 +471,7 @@ saturate_loop(Rules, Limit, Iteration0, E0, E, Iteration, Total) :-
         )
     ).
 
-- pred local_cost(enode::in, int::out) is det.
+:- pred local_cost(enode::in, int::out) is det.
 local_cost(enode(Symbol, Children), Cost) :-
     Cost = 1 + string.length(Symbol) + list.length(Children).
 
@@ -515,7 +515,7 @@ find_analysis(Root, Analyses, Result) :-
         )
     ).
 
-- pred replace_analysis(
+:- pred replace_analysis(
     eclass_id::in, class_analysis::in,
     list(class_analysis)::in, list(class_analysis)::out) is det.
 replace_analysis(_, _, [], []).
