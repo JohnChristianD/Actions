@@ -313,7 +313,7 @@ main(!IO) :-
         not has_vague_status_text(Targets)
     ->
         io.open_output(
-            ".ci/discovery/strict-existence-impossibility-graph.json",
+            "strict-existence-impossibility-graph.json",
             Result,
             !IO),
         (
@@ -353,7 +353,7 @@ main(!IO) :-
             io.set_exit_status(1, !IO)
         ),
         io.open_output(
-            ".ci/discovery/signature-inventory.json",
+            "signature-inventory.json",
             InventoryResult,
             !IO),
         (

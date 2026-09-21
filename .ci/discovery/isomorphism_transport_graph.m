@@ -105,7 +105,7 @@ main(!IO) :-
         list.length(Laws) > 0
     ->
         io.open_output(
-            ".ci/discovery/isomorphism-transport-graph.json",
+            "isomorphism-transport-graph.json",
             Result,
             !IO),
         (
