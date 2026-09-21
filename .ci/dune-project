@@ -1,0 +1,6 @@
+(lang dune 3.0)
+(name actions-ci)
+
+(package
+ (name actions-ci)
+ (synopsis "Typed functional CI orchestrator for the canonical proof pipeline"))
