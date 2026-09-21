@@ -151,7 +151,7 @@ check_symbols! : List Str, Str => Result {} _
 check_symbols! = \symbols, source ->
   when symbols is
       [] -> Ok({})
-      [symbol, ..rest] ->
+      [symbol, .. as rest] ->
           if Str.contains(source, symbol) then
               check_symbols!(rest, source)
           else
@@ -176,7 +176,7 @@ check_source_paths! : List Str => Result {} _
 check_source_paths! = \paths ->
   when paths is
       [] -> Ok({})
-      [path, ..rest] ->
+      [path, .. as rest] ->
           validate_source_path!(path)?
           check_source_paths!(rest)
 
@@ -192,7 +192,7 @@ check_retired_terms_in_text! : List Str, Str, Str => Result {} _
 check_retired_terms_in_text! = \terms, path, text ->
   when terms is
       [] -> Ok({})
-      [term, ..rest] ->
+      [term, .. as rest] ->
           lower_text = Str.with_ascii_lowercased(text)
           lower_term = Str.with_ascii_lowercased(term)
           if Str.contains(lower_text, lower_term) then
@@ -204,7 +204,7 @@ check_retired_terms_in_files! : List Str => Result {} _
 check_retired_terms_in_files! = \files ->
   when files is
       [] -> Ok({})
-      [path, ..rest] ->
+      [path, .. as rest] ->
           check_retired_terms_in_file!(path)?
           check_retired_terms_in_files!(rest)
 
