@@ -24,7 +24,7 @@
 :- import_module int.
 
 graph_plan_expr(Ids) =
-    app("astar-discovered-proof-plan", [left_assoc_expr(Ids)]).
+    app("graph-discovered-proof-plan", [left_assoc_expr(Ids)]).
 
 semantic_rewrite_rules = [
     rewrite_rule(
