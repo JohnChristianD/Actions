@@ -19,6 +19,11 @@
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
 
+:- pred search_emergent_compositions_from_seed_ids(
+    list(semantic_law)::in,
+    list(string)::in,
+    list(list(string))::out) is det.
+
 :- implementation.
 
 :- type graph_node
@@ -228,3 +233,29 @@ search_emergent_composition(Laws, Plan) :-
     seed_nodes(Laws, Seeds),
     astar_collect(Laws, Seeds, [], Results),
     first_plan(Results, Plan).
+
+:- pred seed_nodes_by_ids(
+    list(string)::in,
+    list(semantic_law)::in,
+    list(graph_node)::out) is det.
+seed_nodes_by_ids([], _, []).
+seed_nodes_by_ids([Id | Ids], Laws, Nodes) :-
+    seed_nodes_by_ids(Ids, Laws, Tail),
+    (
+        if law_for_id(Id, Laws, Law), seed_node(Law, Node) then
+            Nodes = [Node | Tail]
+        else
+            Nodes = Tail
+    ).
+
+search_emergent_compositions_from_seed_ids(Laws, SeedIds, Results) :-
+    seed_nodes_by_ids(SeedIds, Laws, Seeds),
+    astar_collect(Laws, Seeds, [], Reversed),
+    list.reverse(Reversed, CandidateResults),
+    all_valid_plans(CandidateResults, Laws, Valid),
+    (
+        if Valid = yes then
+            Results = CandidateResults
+        else
+            Results = []
+    ).
