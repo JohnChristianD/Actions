@@ -96,12 +96,11 @@ agda_program! = |args|
     Ok(OsStr.display(env_value))
 
 run_agda_file! : Str => Try({}, _)
-run_agda_file! = |file_path| {
+run_agda_file! = |file_path|
     agda = agda_program!({})?
     Stdout.line!("==> Agda --safe \${file_path}")?
     run!(agda, ["--safe", "-l", "standard-library", "-i", ".", file_path])?
     Ok({})
-}
 
 run_agda_learner! : {} => Try({}, _)
 run_agda_learner! = || {
@@ -170,35 +169,31 @@ path_has_suffix! = |path, suffixes| {
 }
 
 is_text_path! : Str -> Bool
-is_text_path! = |path| {
+is_text_path! = |path|
     path_has_suffix!(path, text_suffixes)
-}
 
 validate_source_path! : Str => Result {}, _
-validate_source_path! = |path| {
+validate_source_path! = |path|
     if path_has_suffix!(path, forbidden_source_suffixes) then
         Err(ForbiddenSource(path))
     else
         Ok({})
-}
 
 check_source_paths! : List Str => Result {}, _
-check_source_paths! = |paths| {
+check_source_paths! = |paths|
     when paths is
         [] -> Ok({})
         [path, ..rest] ->
             validate_source_path!(path)?
             check_source_paths!(rest)
-}
 
 check_retired_terms_in_file! : Str => Result {}, _
-check_retired_terms_in_file! = |path| {
+check_retired_terms_in_file! = |path|
     if !is_text_path!(path) then
         Ok({})
     else
         text = File.read_utf8!(path)?
         check_retired_terms_in_text!(retired_terms, path, text)
-}
 
 check_retired_terms_in_text! : List Str, Str, Str => Result {}, _
 check_retired_terms_in_text! = |terms, path, text| {
@@ -214,13 +209,12 @@ check_retired_terms_in_text! = |terms, path, text| {
 }
 
 check_retired_terms_in_files! : List Str => Result {}, _
-check_retired_terms_in_files! = |files| {
+check_retired_terms_in_files! = |files|
     when files is
         [] -> Ok({})
         [path, ..rest] ->
             check_retired_terms_in_file!(path)?
             check_retired_terms_in_files!(rest)
-}
 
 run_semantic_contract! : {} => Try({}, _)
 run_semantic_contract! = || {
@@ -282,7 +276,7 @@ run_versions! = || {
 }
 
 run_lane! : Str => Try({}, _)
-run_lane! = |lane| {
+run_lane! = |lane|
     when lane is
         "agda-learner" -> run_agda_learner!({})
         "agda-theorem" -> run_agda_theorem!({})
@@ -301,10 +295,9 @@ run_lane! = |lane| {
             run_surface!({})
         }
         _ -> Err(UnknownLane(lane))
-}
 
 main! : List Arg => Try({}, [Exit(I32), ..])
-main! = |raw_args| {
+main! = |raw_args|
     args = raw_args.map(Arg.display)
 
     lane = List.get(args, 1) ? |_args|
@@ -313,4 +306,3 @@ main! = |raw_args| {
     run_lane!(lane)?
     Stdout.line!("lane=\${lane}")?
     Ok({})
-}
