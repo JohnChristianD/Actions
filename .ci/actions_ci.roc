@@ -6,7 +6,6 @@ import cli.Arg exposing [Arg]
 import cli.Cmd
 import cli.Env
 import cli.File
-import cli.OsStr
 import cli.Stderr
 import cli.Stdout
 
