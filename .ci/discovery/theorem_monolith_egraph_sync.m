@@ -51,9 +51,13 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
 extract_all_laws([], _, _, 0).
 extract_all_laws([Law | Laws], E, Depth, Cost) :-
     add_expr(law_expr(law_id(Law)), E, Class, E1),
-    extract_best(Class, E1, Depth, _, ThisCost),
-    extract_all_laws(Laws, E1, Depth, TailCost),
-    Cost = ThisCost + TailCost.
+    (
+        if extract_best(Class, E1, Depth, _, ThisCost) then
+            extract_all_laws(Laws, E1, Depth, TailCost),
+            Cost = ThisCost + TailCost
+        else
+            Cost = 0
+    ).
 
 :- pred write_report(
     list(semantic_law)::in,
