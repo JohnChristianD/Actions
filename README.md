@@ -313,3 +313,11 @@ CI predecessor handoff is interface-only: theorem jobs consume downloaded `.agda
 ## Non-iid stationary Markov/Walrasian composition
 
 The theorem monolith now contains `ContinuousStationaryMarkovWalrasianData` and `continuousStationaryWalrasian-lift`. The transition is arbitrary; the only stationarity condition is invariance of the aggregate functional. Continuity is carried through the existing `Continuous` seam rather than assuming an iid-uniform shock law. The theorem proves the exact static-Walrasian-to-stationary-Walrasian lift; existence of a stationary law and existence of a Walrasian equilibrium remain separate hypotheses for future structural composition.
+
+## Current endogenous A* composition gate
+
+The canonical CI order is Agda `--safe` first, followed by theorem-only Mercury. Mercury consumes only semantic declarations extracted from `TheoremsMonolith.agda`; it does not import or e-graph the learner monolith. The A* stage seeds non-reflexive composite laws and follows declaration-derived dependencies without a named theorem target. The hash-consed e-graph then saturates those candidate proof plans. CI rejects a discovery report unless the forced-target flag is false and the A* candidate count is positive.
+
+The new theorem composition crosses four interfaces already present in the canonical theorem surface: recurrent associative prefix scanning, direct-product finite-automaton composition, continuous left-inverse exact readout, and arbitrary-transition stationary Markov/Walrasian lifting. The Markov result does not assume iid uniform shocks; it requires an invariant aggregate functional. The representation/stability boundary is explicit: continuous injective exact representation does not imply convergence of an arbitrary update rule, so it is not promoted into a Baird-stability theorem without an algorithmic contraction/convergence hypothesis.
+
+A Bondareva–Shapley result is not reported as emergent merely because a game-theory theorem exists elsewhere. The current Mercury input is the canonical Agda theorem monolith, so a Bondareva–Shapley candidate becomes an endogenous discovery only after its relevant balancedness/core semantics are represented there and an A* proof plan actually connects them.
