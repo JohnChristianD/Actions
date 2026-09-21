@@ -18,6 +18,8 @@
 
 :- pred extract_semantics(io::di, io::uo) is det.
 :- pred read_semantic_laws(list(semantic_law)::out, io::di, io::uo) is det.
+:- pred is_reflexive(semantic_law::in) is semidet.
+:- pred is_composite(semantic_law::in) is semidet.
 
 :- implementation.
 
@@ -333,6 +335,9 @@ semantic_laws_from_declarations(All, [D | Ds], [Law | Laws]) :-
     Law = semantic_law(
         Source, Name, Reflexive, Composite, Signature, Dependencies),
     semantic_laws_from_declarations(All, Ds, Laws).
+
+is_reflexive(semantic_law(_, _, yes, _, _, _)).
+is_composite(semantic_law(_, _, _, yes, _, _)).
 
 read_semantic_laws(Laws, !IO) :-
     theorem_monolith_is_safe(!IO),
