@@ -90,7 +90,7 @@ all_astar_plans_valid([Plan | Plans], Laws) :-
     all_astar_plans_valid(Plans, Laws).
 
 :- pred write_plan_items(
-    io.output_stream::in, list(list(string))::in,
+    io.text_output_stream::in, list(list(string))::in,
     io::di, io::uo) is det.
 write_plan_items(_, [], !IO).
 write_plan_items(Stream, [Plan | Plans], !IO) :-
