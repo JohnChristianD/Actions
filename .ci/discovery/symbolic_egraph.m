@@ -57,6 +57,17 @@
 
 :- pred analyze(egraph::in, list(class_analysis)::out) is det.
 
+:- pred extract_best(
+    eclass_id::in, egraph::in, int::in, expr::out, int::out) is semidet.
+
+:- func class_count(egraph) = int.
+:- func enode_count(egraph) = int.
+
+:- implementation.
+
+:- import_module int.
+:- import_module version_hash_table.
+
 :- pred saturate_loop(
     list(rewrite_rule)::in, egraph::in, egraph::out,
     int::in, int::in, saturation_report::out) is det.
@@ -93,16 +104,6 @@ saturate_until_stable(Rules, E0, E, Report) :-
 
 
 
-:- pred extract_best(
-    eclass_id::in, egraph::in, int::in, expr::out, int::out) is semidet.
-
-:- func class_count(egraph) = int.
-:- func enode_count(egraph) = int.
-
-:- implementation.
-
-:- import_module int.
-:- import_module version_hash_table.
 :- import_module map.
 :- import_module maybe.
 :- import_module solutions.
