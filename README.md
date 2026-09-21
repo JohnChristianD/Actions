@@ -169,24 +169,21 @@ Agda is still the only component allowed to accept the theorem. Mercury can disc
 
 The former unigram, bigram, and onion items were empirical representation hypotheses. They are removed from the canonical README claim surface because they were not source-derived Agda laws and were not outputs of the Mercury theorem graph.
 
-The current hypotheses are exactly the theorem-level compositions exposed by the canonical source and discovered through the dependency graph/e-graph boundary:
+This pass adds **exactly two new theorem hypotheses** to the graph-facing surface:
 
-1. **Integer Haar orthogonality is an exact scaled kernel law.**
-   `canonical-integer-haar-scaled-orthogonality-theorem` composes the source laws `canonicalIntegerHaarCross` and `canonicalIntegerHaarEnergy`. The certificate is deliberately the integer/scaled two-point kernel; it does not claim the normalized real Haar matrix, which would require a `1/sqrt(2)` factor outside the current `Int8` carrier.
+1. **Integer Haar scaled orthogonality** — `canonical-integer-haar-scaled-orthogonality-theorem`. Its source dependencies are exactly `canonicalIntegerHaarCross` and `canonicalIntegerHaarEnergy`: the two-point integer/scaled Haar kernel has zero cross-term and exact energy 2. This is deliberately not the normalized real Haar matrix; `1/sqrt(2)` is outside the canonical `Int8` carrier.
 
-2. **A* cost guidance is an exact theorem composition.**
-   `canonical-a-star-cost-guidance-theorem` composes the zero-cost identity, successor-cost law, and exact token logit-trace append law. Mercury owns the A* graph-search policy; Agda owns the exact cost identities and trace equality used by the certificate.
+2. **A* cost guidance** — `canonical-a-star-cost-guidance-theorem`. Its source dependencies are exactly `canonicalAStarZeroCost`, `canonicalAStarSuccessorCost`, and `canonicalTokenLogitTrace-append`: the graph-search cost identities compose with the exact causal token-trace split law.
 
-3. **The graph can connect the two surfaces to existing sparsemax/recurrent laws without a second normalization.**
-   `canonical-linear-haar-sparsemax-attention-composition-theorem` and `canonical-full-state-haar-sparsemax-invariant-composition-theorem` are source-derived composition certificates. The Haar operation is the integer linear sum/difference transform, while sparsemax remains the existing shared policy/head machinery.
+Mercury owns the discovery path: it extracts declarations from `TheoremsMonolith.agda`, follows identifier-derived dependency edges, orders maximal paths with its A* score, inserts the source laws and graph plans into the e-graph, saturates, analyzes, and extracts. The theorem names above are not a hard-coded Mercury target. Agda `--safe` remains the only proof authority.
 
-These are **graphed emergent hypotheses**, not heuristic claims: the candidate wires come from declarations and dependency occurrences in `TheoremsMonolith.agda`; Mercury enumerates dependency paths, inserts those paths into the e-graph, saturates and analyzes the graph, and extracts source laws. A candidate is only a proved theorem when the corresponding Agda declaration type-checks under `--safe`.
+The existing `canonical-linear-haar-sparsemax-attention-composition-theorem` and `canonical-full-state-haar-sparsemax-invariant-composition-theorem` remain downstream source-derived composition certificates; they are not counted as additional new hypotheses in this pass.
 
 The evidence boundary is therefore:
 
 **empirical representation hypothesis** -> removed from the formal README claim surface
 
-**source-derived theorem dependency** -> eligible Mercury graph hypothesis
+**source-derived theorem dependency** -> graph hypothesis
 
 **Mercury A* + e-graph extraction** -> discovery/proof-plan evidence
 
