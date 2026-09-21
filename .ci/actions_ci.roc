@@ -91,7 +91,7 @@ run! : Str, List Str => Try({}, _)
 run! = |program, args| Cmd.exec!(program, args)
 
 agda_program! : {} => Try(Str, _)
-agda_program! = |{}| {
+agda_program! = |_args| {
     env_value = Env.var!(OsStr.from_str("AGDA_COMMAND"))?
     Ok(OsStr.display(env_value))
 }
@@ -105,33 +105,33 @@ run_agda_file! = |file_path| {
 }
 
 run_agda_learner! : {} => Try({}, _)
-run_agda_learner! = |{}| {
+run_agda_learner! = |_args| {
     run_agda_file!("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda")?
     Ok({})
 }
 
 run_agda_theorem! : {} => Try({}, _)
-run_agda_theorem! = |{}| {
+run_agda_theorem! = |_args| {
     run_agda_file!("Exotic/ERL/FullCoupled/TheoremsMonolith.agda")?
     Ok({})
 }
 
 run_agda_safe! : {} => Try({}, _)
-run_agda_safe! = |{}| {
+run_agda_safe! = |_args| {
     run_agda_learner!({})?
     run_agda_theorem!({})?
     Ok({})
 }
 
 run_mercury! : {} => Try({}, _)
-run_mercury! = |{}| {
+run_mercury! = |_args| {
     run!("mmc", ["--make", ".ci/check_forbidden_theorems"])?
     run!("./.ci/check_forbidden_theorems", [])?
     Ok({})
 }
 
 run_discovery! : {} => Try({}, _)
-run_discovery! = |{}| {
+run_discovery! = |_args| {
     run!("mmc", ["--make", ".ci/discovery/theorem_monolith_egraph_sync"])?
     run!("./.ci/discovery/theorem_monolith_egraph_sync", [])?
     run!("mmc", ["--make", ".ci/discovery/symbolic_egraph_test"])?
@@ -224,7 +224,7 @@ check_retired_terms_in_files! = |files| {
 }
 
 run_semantic_contract! : {} => Try({}, _)
-run_semantic_contract! = |{}| {
+run_semantic_contract! = |_args| {
     theorem_path = "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     learner_path = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     theorem_text = File.read_utf8!(theorem_path)?
@@ -257,7 +257,7 @@ run_semantic_contract! = |{}| {
 }
 
 run_surface! : {} => Try({}, _)
-run_surface! = |{}| {
+run_surface! = |_args| {
     listing = Cmd.new("git") |> Cmd.args(["ls-files"]) |> Cmd.exec_output!()?
     files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
 
@@ -275,7 +275,7 @@ run_surface! = |{}| {
 }
 
 run_versions! : {} => Try({}, _)
-run_versions! = |{}| {
+run_versions! = |_args| {
     agda = agda_program!({})?
     run!(agda, ["--version"])?
     run!("mmc", ["--version"])?
@@ -308,7 +308,7 @@ main! : List Arg => Try({}, [Exit(I32), ..])
 main! = |raw_args| {
     args = raw_args.map(Arg.display)
 
-    lane = List.get(args, 1) ? |{}|
+    lane = List.get(args, 1) ? |_args|
         Err(InvalidInvocation)
 
     run_lane!(lane)?
