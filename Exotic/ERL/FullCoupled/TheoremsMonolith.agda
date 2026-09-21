@@ -11,6 +11,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym)
 open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; zero)
