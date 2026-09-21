@@ -1287,6 +1287,10 @@ canonicalFixedSparsemaxAttention-shared :
         t))
 canonicalFixedSparsemaxAttention-shared K s t = refl
 
+canonicalFixedSparsemaxAttention-counts :
+  canonicalTokenLogitCounts ≡ zeroCounts
+canonicalFixedSparsemaxAttention-counts = refl
+
 canonicalFixedSparsemaxAttention-fixed :
   ∀ (K : CanonicalTokenLanguageModelKernel)
   (s : GRUState) →
@@ -1321,3 +1325,33 @@ canonicalHaarSparsemaxAttention-linear-form :
      (canonicalFixedSparsemaxAttentionWeight K s t)
      (canonicalFixedSparsemaxAttentionWeight K s u))
 canonicalHaarSparsemaxAttention-linear-form K s t u = refl
+
+canonicalFullStateHaarSparsemaxAttention :
+  CanonicalTokenLanguageModelKernel →
+  CanonicalFullLearnerState →
+  CanonicalToken →
+  CanonicalToken →
+  CanonicalHaarPair
+canonicalFullStateHaarSparsemaxAttention K s t u =
+  canonicalHaarSparsemaxAttention K (gru s) t u
+
+canonicalFullStateHaarSparsemaxAttention-norm-invariant :
+  ∀ (K : CanonicalTokenLanguageModelKernel)
+  (s : CanonicalFullLearnerState)
+  (n : NormPair)
+  (t u : CanonicalToken) →
+  canonicalFullStateHaarSparsemaxAttention K (replaceNorm s n) t u
+  ≡
+  canonicalFullStateHaarSparsemaxAttention K s t u
+canonicalFullStateHaarSparsemaxAttention-norm-invariant K s n t u = refl
+
+canonicalFullStateHaarSparsemaxAttention-optimizer-invariant :
+  ∀ (K : CanonicalTokenLanguageModelKernel)
+  (s : CanonicalFullLearnerState)
+  (o : F4IntUState)
+  (t u : CanonicalToken) →
+  canonicalFullStateHaarSparsemaxAttention K (replaceOptimizer s o) t u
+  ≡
+  canonicalFullStateHaarSparsemaxAttention K s t u
+canonicalFullStateHaarSparsemaxAttention-optimizer-invariant K s o t u = refl
+
