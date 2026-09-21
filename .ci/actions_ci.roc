@@ -102,30 +102,30 @@ run_agda_file! = |file_path|
     run!(agda, ["--safe", "-l", "standard-library", "-i", ".", file_path])?
     Ok({})
 
-run_agda_learner! : {} => Try({}, _)
-run_agda_learner! = ||
+run_agda_learner! : List Str => Try({}, _)
+run_agda_learner! = |args|
     run_agda_file!("Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda")?
     Ok({})
 
-run_agda_theorem! : {} => Try({}, _)
-run_agda_theorem! = ||
+run_agda_theorem! : List Str => Try({}, _)
+run_agda_theorem! = |args|
     run_agda_file!("Exotic/ERL/FullCoupled/TheoremsMonolith.agda")?
     Ok({})
 
-run_agda_safe! : {} => Try({}, _)
-run_agda_safe! = ||
-    run_agda_learner!({})?
-    run_agda_theorem!({})?
+run_agda_safe! : List Str => Try({}, _)
+run_agda_safe! = |args|
+    run_agda_learner!([])?
+    run_agda_theorem!([])?
     Ok({})
 
-run_mercury! : {} => Try({}, _)
-run_mercury! = ||
+run_mercury! : List Str => Try({}, _)
+run_mercury! = |args|
     run!("mmc", ["--make", ".ci/check_forbidden_theorems"])?
     run!("./.ci/check_forbidden_theorems", [])?
     Ok({})
 
-run_discovery! : {} => Try({}, _)
-run_discovery! = ||
+run_discovery! : List Str => Try({}, _)
+run_discovery! = |args|
     run!("mmc", ["--make", ".ci/discovery/theorem_monolith_egraph_sync"])?
     run!("./.ci/discovery/theorem_monolith_egraph_sync", [])?
     run!("mmc", ["--make", ".ci/discovery/symbolic_egraph_test"])?
@@ -211,8 +211,8 @@ check_retired_terms_in_files! = |files|
             check_retired_terms_in_file!(path)?
             check_retired_terms_in_files!(rest)
 
-run_semantic_contract! : {} => Try({}, _)
-run_semantic_contract! = ||
+run_semantic_contract! : List Str => Try({}, _)
+run_semantic_contract! = |args|
     theorem_path = "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
     learner_path = "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     theorem_text = File.read_utf8!(theorem_path)?
@@ -243,8 +243,8 @@ run_semantic_contract! = ||
     else
         Ok({})
 
-run_surface! : {} => Try({}, _)
-run_surface! = ||
+run_surface! : List Str => Try({}, _)
+run_surface! = |args|
     listing = Cmd.new("git") |> Cmd.args(["ls-files"]) |> Cmd.exec_output!()?
     files = Str.split_on(Str.trim(listing.stdout_utf8), "\n")
 
@@ -260,8 +260,8 @@ run_surface! = ||
         else
             Ok({})
 
-run_versions! : {} => Try({}, _)
-run_versions! = ||
+run_versions! : List Str => Try({}, _)
+run_versions! = |args|
     agda = agda_program!({})?
     run!(agda, ["--version"])?
     run!("mmc", ["--version"])?
@@ -270,21 +270,21 @@ run_versions! = ||
 run_lane! : Str => Try({}, _)
 run_lane! = |lane|
     when lane is
-        "agda-learner" -> run_agda_learner!({})
-        "agda-theorem" -> run_agda_theorem!({})
-        "agda-safe" -> run_agda_safe!({})
-        "mercury" -> run_mercury!({})
-        "discovery" -> run_discovery!({})
-        "semantic-contract" -> run_semantic_contract!({})
-        "surface" -> run_surface!({})
-        "versions" -> run_versions!({})
+        "agda-learner" -> run_agda_learner!([])
+        "agda-theorem" -> run_agda_theorem!([])
+        "agda-safe" -> run_agda_safe!([])
+        "mercury" -> run_mercury!([])
+        "discovery" -> run_discovery!([])
+        "semantic-contract" -> run_semantic_contract!([])
+        "surface" -> run_surface!([])
+        "versions" -> run_versions!([])
         "all" -> {
-            run_versions!({})?
-            run_agda_safe!({})?
-            run_mercury!({})?
-            run_discovery!({})?
-            run_semantic_contract!({})?
-            run_surface!({})
+            run_versions!([])?
+            run_agda_safe!([])?
+            run_mercury!([])?
+            run_discovery!([])?
+            run_semantic_contract!([])?
+            run_surface!([])
         }
         _ -> Err(UnknownLane(lane))
 
