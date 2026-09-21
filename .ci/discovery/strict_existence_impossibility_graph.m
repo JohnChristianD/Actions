@@ -51,10 +51,20 @@ classify_impossibility(Law, Evidence) :-
     ).
 
 :- pred classify(semantic_law::in, strict_class::out, string::out) is semidet.
-classify(Law, existence, Evidence) :-
-    classify_existence(Law, Evidence).
-classify(Law, impossibility, Evidence) :-
-    classify_impossibility(Law, Evidence).
+classify(Law, Class, Evidence) :-
+    (
+        classify_existence(Law, ExistenceEvidence),
+        not classify_impossibility(Law, _)
+    ->
+        Class = existence,
+        Evidence = ExistenceEvidence
+    ;
+        classify_impossibility(Law, ImpossibilityEvidence),
+        not classify_existence(Law, _)
+    ->
+        Class = impossibility,
+        Evidence = ImpossibilityEvidence
+    ).
 
 :- pred classify_targets(list(semantic_law)::in,
     list(strict_target)::out) is det.
@@ -103,7 +113,13 @@ write_targets(Stream, [Target | Targets], !IO) :-
 strict_plans(Laws, Plans) :-
     classify_targets(Laws, Targets),
     strict_target_laws(Targets, StrictLaws),
-    search_emergent_compositions(StrictLaws, Plans).
+    StrictIds = list.map(
+        (func(Law) = law_id(Law)),
+        StrictLaws),
+    search_emergent_compositions_from_seed_ids(
+        Laws,
+        StrictIds,
+        Plans).
 
 :- pred strict_target_laws(
     list(strict_target)::in,
@@ -139,7 +155,13 @@ main(!IO) :-
     read_semantic_laws(Laws, !IO),
     classify_targets(Laws, Targets),
     strict_target_laws(Targets, StrictLaws),
-    search_emergent_compositions(StrictLaws, Plans),
+    StrictIds = list.map(
+        (func(Law) = law_id(Law)),
+        StrictLaws),
+    search_emergent_compositions_from_seed_ids(
+        Laws,
+        StrictIds,
+        Plans),
     (
         list.length(Targets) > 0,
         list.length(Plans) > 0,
