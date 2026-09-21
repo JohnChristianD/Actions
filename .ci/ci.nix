@@ -173,7 +173,7 @@ writeShellApplication {
         local path="$bad_file"
         case "$path" in
           ./.ci/ci.sh) printf '%s\n' 'ERROR: hand-maintained shell workflow remains; use .ci/ci.nix'; exit 1 ;;
-          ./*.sh|./*.bash|./*.zsh|./*.fish|./*.cmd|./*.bat|./*.ps1|./*.command|./*.py|*.java|*.kt|*.scala|*.groovy|*.clj|*.cljs|*.js|*.mjs|*.cjs|*.ts|*.tsx|*.elm|*.purs|*.hs|*.lhs|*.cabal|*.c|*.h|*.cc|*.cpp|*.cxx|*.hpp|*.hxx|*.cs|*.fs|*.fsx|*.vb|*.csproj|*.fsproj|*.vbproj|*.sln|*.html|*.htm|*.css|*.tex|*.ltx|*.sty|*.cls|*.bib|*.scm|*.scheme|*.ss)
+          ./*.sh|./*.bash|./*.zsh|./*.fish|./*.cmd|./*.bat|./*.ps1|./*.command|./*.py|*.java|*.kt|*.scala|*.groovy|*.clj|*.cljs|*.js|*.mjs|*.cjs|*.ts|*.tsx|*.elm|*.purs|*.hs|*.lhs|*.cabal|*.lua|*.nim|*.nims|*.roc|*.ml|*.mli|*.sml|*.c|*.h|*.cc|*.cpp|*.cxx|*.hpp|*.hxx|*.cs|*.fs|*.fsx|*.vb|*.csproj|*.fsproj|*.vbproj|*.sln|*.html|*.htm|*.css|*.tex|*.ltx|*.sty|*.cls|*.bib|*.scm|*.scheme|*.ss|*.rkt)
             printf 'ERROR: forbidden legacy/noncanonical source file: %s\n' "$path"; exit 1 ;;
           *) ;;
         esac
