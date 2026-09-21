@@ -147,6 +147,23 @@ isomorphismToInjective iso a b eq =
       (cong (from iso) eq)
       (from-to iso b))
 
+isomorphismEqualityTransport :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B)
+  {x y : A} →
+  x ≡ y →
+  to iso x ≡ to iso y
+isomorphismEqualityTransport iso refl = refl
+
+isomorphismDisequalityTransport :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B)
+  {x y : A} →
+  x ≢ y →
+  to iso x ≢ to iso y
+isomorphismDisequalityTransport iso distinct eq =
+  distinct (isomorphismToInjective iso _ _ eq)
+
 isomorphismNoFiniteCycleTransport :
   ∀ {A B : Set}
   (iso : StateIsomorphism A B)

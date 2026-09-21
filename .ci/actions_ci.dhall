@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | SemanticContract | Surface | Versions | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >
 
 let lane = env:CI_LANE
 
@@ -240,6 +240,19 @@ JSON
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.json
     echo "stationary-cycle-impossibility-graph=pass"
     '',
+  IsomorphismTransport = ''
+    set -euo pipefail
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    mmc --make .ci/discovery/isomorphism_transport_graph
+    ./.ci/discovery/isomorphism_transport_graph
+    report=.ci/discovery/isomorphism-transport-graph.json
+    grep -Fq '"rule": "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
+    grep -Fq '"orange_statuses_allowed": false' "$report" || { echo "orange status enabled"; exit 1; }
+    grep -Fq 'Agda::isomorphismEqualityTransport' "$report" || { echo "equality transport kernel missing"; exit 1; }
+    grep -Fq 'Agda::isomorphismDisequalityTransport' "$report" || { echo "disequality transport kernel missing"; exit 1; }
+    ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' "$report" || { echo "vague transport status present"; exit 1; }
+    ''
+,
   SemanticContract = ''
     set -euo pipefail
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
@@ -270,6 +283,8 @@ JSON
     canonicalNoNontrivialFiniteCycle-theorem
     isomorphismIterateConjugacy
     isomorphismToInjective
+    isomorphismEqualityTransport
+    isomorphismDisequalityTransport
     isomorphismNoFiniteCycleTransport
     StateIsomorphism
     canonicalDeterministicFiniteStepDivergenceInevitability
