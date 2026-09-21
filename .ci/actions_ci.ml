@@ -209,7 +209,7 @@ let rec collect_files root =
 let ends_with_any path suffixes =
   List.exists (fun suffix -> Filename.check_suffix path suffix) suffixes
 
-let is_allowed_ocaml path = path = ".ci/actions_ci.ml"
+let is_allowed_ocaml path = path = "./.ci/actions_ci.ml"
 
 let is_forbidden_source path =
   let suffixes =
