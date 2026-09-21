@@ -2,10 +2,11 @@
 
 :- interface.
 :- import_module io.
-:- import_module int.
 :- pred main(io::di, io::uo) is det.
 
 :- implementation.
+
+:- import_module int.
 
 :- import_module interpolated_theorem_egraph.
 :- import_module learner_semantic_extractor.
@@ -17,9 +18,15 @@
 
 :- pred law_for_id(
     string::in, list(semantic_law)::in, semantic_law::out) is semidet.
-law_for_id(Id, Laws, Law) :-
-    list.member(Law, Laws),
-    law_id(Law) = Id.
+law_for_id(_, [], _) :-
+    fail.
+law_for_id(Id, [Law | Laws], Result) :-
+    (
+        if law_id(Law) = Id then
+            Result = Law
+        else
+            law_for_id(Id, Laws, Result)
+    ).
 
 :- pred plan_seed_id(list(string)::in, string::out) is semidet.
 plan_seed_id(Plan, SeedId) :-
