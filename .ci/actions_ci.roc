@@ -88,10 +88,7 @@ retired_terms = [
 ]
 
 run! : Str, List Str => Try({}, _)
-run! = |program, args| {
-    Cmd.exec!(program, args)?
-    Ok({})
-}
+run! = |program, args| Cmd.exec!(program, args)
 
 agda_program! : {} => Try(Str, _)
 agda_program! = |{}| {
