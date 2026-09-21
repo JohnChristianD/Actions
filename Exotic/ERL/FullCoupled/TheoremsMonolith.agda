@@ -2521,3 +2521,76 @@ canonical-polymorphic-sparsemax-egraph-theorem =
     finiteAutomatonProductPrefix-correct
     informationPreserving-symbolic-task-factorization
 
+
+
+------------------------------------------------------------------------
+-- General stationary Markov/Walrasian composition, beyond iid uniform.
+--
+-- The iid-uniform example is only one witness of a stationary functional.
+-- Here the transition is arbitrary and stationarity is expressed solely by
+-- invariance of the aggregate functional.  Continuity is carried as an
+-- explicit topological hypothesis through the existing Continuous seam;
+-- it is not silently replaced by an iid or uniform assumption.
+------------------------------------------------------------------------
+
+record ContinuousStationaryMarkovWalrasianData
+  (State Price Allocation : Set)
+  (Continuous : {A B : Set} → (A → B) → Set) : Set₁ where
+  constructor continuousStationaryMarkovWalrasianData
+  field
+    step : State → State
+    aggregate : (State → Allocation) → Allocation
+    aggregateContinuous : Continuous aggregate
+    invariant :
+      ∀ (allocation : State → Allocation) →
+      aggregate allocation
+      ≡
+      aggregate (λ s → allocation (step s))
+    staticWalrasian :
+      Price → Allocation → Set
+
+open ContinuousStationaryMarkovWalrasianData public
+
+StationaryWalrasian :
+  ∀ {State Price Allocation : Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation
+    (λ {A} {B} f → Set))
+  → Price → (State → Allocation) → Set
+StationaryWalrasian D p allocation =
+  staticWalrasian D p (aggregate D allocation)
+  ×
+  (aggregate D allocation
+   ≡
+   aggregate D (λ s → allocation (step D s)))
+
+continuousStationaryWalrasian-lift :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous)
+  (p : Price)
+  (allocation : State → Allocation) →
+  staticWalrasian D p (aggregate D allocation) →
+  StationaryWalrasian
+    (continuousStationaryMarkovWalrasianData
+      (step D)
+      (aggregate D)
+      (aggregateContinuous D)
+      (invariant D)
+      (staticWalrasian D))
+    p
+    allocation
+continuousStationaryWalrasian-lift D p allocation h =
+  h , invariant D allocation
+
+------------------------------------------------------------------------
+-- The pure composition theorem above is the exact non-iid generalization:
+-- arbitrary Markov transition + invariant aggregate + static Walrasian
+-- equilibrium.  No uniform shock distribution appears anywhere.
+--
+-- Existence is intentionally not claimed here: it additionally requires
+-- a stationary-law existence theorem and a Walrasian existence theorem.
+-- Those are separate hypotheses that an e-graph may compose when their
+-- semantic laws are present; they must not be manufactured by search.
+------------------------------------------------------------------------
