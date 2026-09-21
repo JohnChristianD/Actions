@@ -60,7 +60,8 @@ main(!IO) :-
             ),
             analyze(E8, Analyses),
             list.length(Analyses) > 0,
-            extract_best(Nested, E8, 32, Extracted, Cost),
+            ExtractionDepth = enode_count(E8) + 1,
+            extract_best(Nested, E8, ExtractionDepth, Extracted, Cost),
             Cost > 0,
             (Extracted = atom(_) ; Extracted = app(_, _))
         ->
