@@ -195,18 +195,6 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
     (canonicalPersistentGRU-afterFullStep-iterate
       K n (canonicalFullStep K s))
     (canonicalPersistentGRUPreservation K s)
-
-------------------------------------------------------------------------
--- This theorem is intentionally independent of external search systems,
--- program synthesis, PVS, and JAxtar.  It is a property of the
--- executable learner itself.
---
--- An arbitrary attention-state replacement is policy-invariant and
--- therefore leaves the count and Q-log channels unchanged, but the
--- replacement enters the endogenous Watkins target.  That same target
--- is then consumed by both the GRU and F4 optimizer tells.
-------------------------------------------------------------------------
-
 ------------------------------------------------------------------------
 -- Generic equality composition primitive.
 --
@@ -3736,3 +3724,204 @@ majority3ShapleyEquilibriumWitness =
     majority3ShapleyScaled6
     majority3ShapleyScaled6-correct
 
+
+------------------------------------------------------------------------
+-- Exact global token conjugacy and autoregressive trace algebra.
+--
+-- The token alphabet is exactly Fin 256, canonically isomorphic to the
+-- existing Int8 carrier.  Lists lift that conjugacy globally by map.
+-- The recurrent prefix semantics therefore commute exactly with token
+-- encoding, while the logit trace remains a purely causal list-valued
+-- readout.  No exponential/logarithmic/sinusoidal primitive is needed.
+------------------------------------------------------------------------
+
+canonicalTokenDecodeEncode :
+  ∀ t → C.canonicalTokenDecode
+    (C.canonicalTokenEncode t) ≡ t
+canonicalTokenDecodeEncode t = refl
+
+canonicalTokenEncodeDecode :
+  ∀ x → C.canonicalTokenEncode
+    (C.canonicalTokenDecode x) ≡ x
+canonicalTokenEncodeDecode (C.int8 t) = refl
+
+canonicalTokenListDecodeEncode :
+  ∀ xs →
+  C.canonicalTokenDecodeList
+    (C.canonicalTokenEncodeList xs)
+  ≡ xs
+canonicalTokenListDecodeEncode [] = refl
+canonicalTokenListDecodeEncode (t ∷ ts)
+  rewrite canonicalTokenDecodeEncode t
+  | canonicalTokenListDecodeEncode ts = refl
+
+canonicalTokenListEncodeDecode :
+  ∀ xs →
+  C.canonicalTokenEncodeList
+    (C.canonicalTokenDecodeList xs)
+  ≡ xs
+canonicalTokenListEncodeDecode [] = refl
+canonicalTokenListEncodeDecode (x ∷ xs)
+  rewrite canonicalTokenEncodeDecode x
+  | canonicalTokenListEncodeDecode xs = refl
+
+recurrentListState-append :
+  ∀ {State Input : Set}
+  (R : C.RecurrentNetwork State Input)
+  (xs ys : List Input)
+  (s : State) →
+  C.recurrentListState R (xs ++ ys) s
+  ≡
+  C.recurrentListState R ys
+    (C.recurrentListState R xs s)
+recurrentListState-append R [] ys s = refl
+recurrentListState-append R (x ∷ xs) ys s =
+  recurrentListState-append
+    R
+    xs
+    ys
+    (C.runNetwork R s x)
+
+canonicalTokenStep-conjugacy :
+  ∀ (s : C.GRUState) (t : C.CanonicalToken) →
+  C.runNetwork C.canonicalTokenRecurrentNetwork s t
+  ≡
+  C.runNetwork C.canonicalGRURecurrentNetwork
+    s
+    (C.canonicalTokenEncode t)
+canonicalTokenStep-conjugacy s t = refl
+
+canonicalTokenListState-conjugacy :
+  ∀ (xs : C.CanonicalTokenSequence) (s : C.GRUState) →
+  C.canonicalTokenListState xs s
+  ≡
+  C.recurrentListState
+    C.canonicalGRURecurrentNetwork
+    (C.canonicalTokenEncodeList xs)
+    s
+canonicalTokenListState-conjugacy [] s = refl
+canonicalTokenListState-conjugacy (t ∷ ts) s =
+  canonicalTokenListState-conjugacy
+    ts
+    (C.canonicalTokenStep s t)
+
+canonicalToken-prefix-monoid-homomorphism :
+  RecurrentPrefixMonoidHomomorphism
+    C.GRUState
+    C.CanonicalToken
+canonicalToken-prefix-monoid-homomorphism =
+  recurrentPrefixMonoidHomomorphism
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
+
+canonicalTokenLogitTrace-append :
+  ∀ (K : C.CanonicalTokenLanguageModelKernel)
+  (xs ys : C.CanonicalTokenSequence)
+  (s : C.GRUState) →
+  C.canonicalTokenLogitTrace K (xs ++ ys) s
+  ≡
+  C.canonicalTokenLogitTrace K xs s ++
+  C.canonicalTokenLogitTrace K ys
+    (C.canonicalTokenListState xs s)
+canonicalTokenLogitTrace-append K [] ys s = refl
+canonicalTokenLogitTrace-append K (t ∷ xs) ys s =
+  cong
+    (λ trace →
+      C.logits K s t ++ trace)
+    (canonicalTokenLogitTrace-append
+      K
+      xs
+      ys
+      (C.canonicalTokenStep s t))
+
+------------------------------------------------------------------------
+-- Global positive conjugacy is finite and exact; the corresponding
+-- unbounded Nat-to-Int8 exact injective boundary is impossible.
+------------------------------------------------------------------------
+
+record CanonicalGlobalTokenConjugacyTheorem : Set₁ where
+  constructor canonicalGlobalTokenConjugacyTheorem
+  field
+    tokenDecodeEncode :
+      ∀ t →
+      C.canonicalTokenDecode
+        (C.canonicalTokenEncode t) ≡ t
+    tokenEncodeDecode :
+      ∀ x →
+      C.canonicalTokenEncode
+        (C.canonicalTokenDecode x) ≡ x
+    listDecodeEncode :
+      ∀ xs →
+      C.canonicalTokenDecodeList
+        (C.canonicalTokenEncodeList xs) ≡ xs
+    listEncodeDecode :
+      ∀ xs →
+      C.canonicalTokenEncodeList
+        (C.canonicalTokenDecodeList xs) ≡ xs
+    recurrentStepConjugacy :
+      ∀ s t →
+      C.runNetwork C.canonicalTokenRecurrentNetwork s t
+      ≡
+      C.runNetwork C.canonicalGRURecurrentNetwork
+        s
+        (C.canonicalTokenEncode t)
+    recurrentListConjugacy :
+      ∀ xs s →
+      C.canonicalTokenListState xs s
+      ≡
+      C.recurrentListState
+        C.canonicalGRURecurrentNetwork
+        (C.canonicalTokenEncodeList xs)
+        s
+
+open CanonicalGlobalTokenConjugacyTheorem public
+
+canonical-global-token-conjugacy :
+  CanonicalGlobalTokenConjugacyTheorem
+canonical-global-token-conjugacy =
+  canonicalGlobalTokenConjugacyTheorem
+    canonicalTokenDecodeEncode
+    canonicalTokenEncodeDecode
+    canonicalTokenListDecodeEncode
+    canonicalTokenListEncodeDecode
+    canonicalTokenStep-conjugacy
+    canonicalTokenListState-conjugacy
+
+canonicalNoGlobalNatTokenConjugacy :
+  ∀ (embed : Nat → C.Int8) →
+  ¬ (∀ {m n} → embed m ≡ embed n → m ≡ n)
+canonicalNoGlobalNatTokenConjugacy =
+  C.int8-no-countably-unbounded-injective
+
+record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
+  constructor canonicalGlobalTokenLMCompositionTheorem
+  field
+    globalTokenConjugacy :
+      CanonicalGlobalTokenConjugacyTheorem
+    tokenPrefixMonoid :
+      RecurrentPrefixMonoidHomomorphism
+        C.GRUState
+        C.CanonicalToken
+    traceAppend :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (xs ys : C.CanonicalTokenSequence)
+      (s : C.GRUState) →
+      C.canonicalTokenLogitTrace K (xs ++ ys) s
+      ≡
+      C.canonicalTokenLogitTrace K xs s ++
+      C.canonicalTokenLogitTrace K ys
+        (C.canonicalTokenListState xs s)
+    finiteExactBoundary :
+      ∀ (embed : Nat → C.Int8) →
+      ¬ (∀ {m n} → embed m ≡ embed n → m ≡ n)
+
+open CanonicalGlobalTokenLMCompositionTheorem public
+
+canonical-global-token-lm-composition-theorem :
+  CanonicalGlobalTokenLMCompositionTheorem
+canonical-global-token-lm-composition-theorem =
+  canonicalGlobalTokenLMCompositionTheorem
+    canonical-global-token-conjugacy
+    canonicalToken-prefix-monoid-homomorphism
+    canonicalTokenLogitTrace-append
+    canonicalNoGlobalNatTokenConjugacy
