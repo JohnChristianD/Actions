@@ -38,6 +38,7 @@ let script =
     grep -Fq '"graph_search": "A* cost-guided dependency paths"' "$report" || { echo "missing A* graph label"; exit 1; }
     grep -Fq '"astar_score_ordered": true' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
+    grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     ''
   else if lane == "econlib-crossrepo" then
     ''
@@ -165,6 +166,7 @@ let script =
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     required='
     CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+    canonical-q-munchausen-l2-shared-negation-polarity-theorem
     canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
     FiniteHardSparseKKTEquilibriumTheorem
     DirectProductFiniteAutomatonComposition

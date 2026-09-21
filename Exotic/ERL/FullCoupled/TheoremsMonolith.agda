@@ -1268,6 +1268,39 @@ canonical-biased-watkins-negative-q-munchausen-l2-target-theorem =
     (λ K s → C.canonicalWatkinsTarget-law K s)
     (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
 
+------------------------------------------------------------------------
+-- Polarity clarification for the canonical negative-q-Munchausen + L2 path.
+--
+-- Both components are implemented as modular negation of their respective
+-- inputs.  This is a shared negation operator law, not an order-theoretic
+-- "opposite signs" theorem: Int8 is modular, and no signed-order premise
+-- is introduced here.
+------------------------------------------------------------------------
+
+record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
+  constructor canonicalQMunchausenL2SharedNegationPolarityTheorem
+  field
+    qMunchausenBiasNegation :
+      ∀ x →
+      C.qLog2Bias8 x ≡
+      C.int8Neg
+        (C.int8OfNat
+          ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
+           C.denominator (C.finiteQLog8 x)))
+
+    l2CorrectionNegation :
+      ∀ x →
+      C.l2Correction x ≡ C.int8Neg x
+
+open CanonicalQMunchausenL2SharedNegationPolarityTheorem public
+
+canonical-q-munchausen-l2-shared-negation-polarity-theorem :
+  CanonicalQMunchausenL2SharedNegationPolarityTheorem
+canonical-q-munchausen-l2-shared-negation-polarity-theorem =
+  canonicalQMunchausenL2SharedNegationPolarityTheorem
+    canonical-qLog2Bias8-law
+    (λ x → refl)
+
 canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (_≤_ : C.Int8 → C.Int8 → Set)
