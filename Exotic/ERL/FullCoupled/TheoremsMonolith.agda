@@ -2965,3 +2965,30 @@ bairdSevenStar =
 -- sync checkpoint
 
 -- checkpoint after benchmark formalization
+
+record NonIIDMarkovWalrasianProblem
+  (State Price Allocation : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous) : Set₁ where
+  constructor nonIIDMarkovWalrasianProblem
+  field
+    nonIIDWitness :
+      Σ State (λ s₁ →
+      Σ State (λ s₂ →
+      step D s₁ ≢ step D s₂))
+    stationaryEquilibrium :
+      Price → (State → Allocation) → Set
+
+nonIIDMarkovStationaryWalrasian-lift :
+  ∀ {State Price Allocation : Set}
+    {Continuous : {A B : Set} → (A → B) → Set}
+    {D : ContinuousStationaryMarkovWalrasianData
+      State Price Allocation Continuous} →
+    NonIIDMarkovWalrasianProblem State Price Allocation D →
+    ∀ (p : Price) (allocation : State → Allocation) →
+    staticWalrasian D p (aggregate D allocation) →
+    StationaryWalrasian D p allocation
+nonIIDMarkovStationaryWalrasian-lift _ p allocation h =
+  continuousStationaryWalrasian-lift _ p allocation h
+
