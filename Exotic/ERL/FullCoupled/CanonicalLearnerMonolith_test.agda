@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith_test where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
 open import Agda.Builtin.Nat using (Nat; suc)
 open import Data.Fin using (Fin)
 open import Data.Empty using (⊥)
