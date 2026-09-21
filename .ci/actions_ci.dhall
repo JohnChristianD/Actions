@@ -1,6 +1,6 @@
 let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | SemanticContract | Surface | Versions | All >
 
-let lane = env:CI_LANE as Lane
+let lane = env:CI_LANE
 
 let script = merge {
   AgdaLearner = ''
