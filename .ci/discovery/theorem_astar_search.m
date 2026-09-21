@@ -191,7 +191,7 @@ goal_node(Node, Laws) :-
     Plan = [TerminalId | _],
     SeedId = astar_node.seed(Node),
     law_for_id(SeedId, Laws, SeedLaw),
-    not list.member(TerminalId, law_dependencies(SeedLaw).
+    not list.member(TerminalId, law_dependencies(SeedLaw)).
 
 :- pred insert_children(
     list(astar_node)::in,
