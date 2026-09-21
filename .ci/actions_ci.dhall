@@ -111,7 +111,7 @@ let script =
       "$root/Econlib/GameTheory/ExtensiveForm/Refinements/BeliefSystem.lean"
       "$root/Econlib/GameTheory/ExtensiveForm/Refinements/SequentialEquilibrium.lean"
     )
-    for f in "${files[@]}"; do
+    for f in "''${files[@]}"; do
       [ -f "$f" ] || { echo "missing upstream graph file: $f"; exit 1; }
     done
 
