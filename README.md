@@ -191,7 +191,7 @@ The evidence boundary is therefore:
 
 ## Functional-programming physics methodology
 
-Scott N. Walck's *Learn Physics with Functional Programming: A Hands-on Guide to Exploring Physics with Haskell* is used only as a methodology reference for typed functional modeling: make mathematical state, transformations, and invariants explicit in the program structure. The book was published by No Starch Press in 2023 (ISBN-13 9781718501669). It is not treated as evidence for any theorem about this learner's computational power or for the Haar/A* certificates above.
+Scott N. Walck's *Learn Physics with Functional Programming: A Hands-on Guide to Exploring Physics with Haskell* is used only as a methodology reference for typed functional modeling: make mathematical state, transformations, and invariants explicit in the program structure. The book was published by No Starch Press in 2023 (ISBN-13 9781718501669). Official publisher reference: https://nostarch.com/node/632. It is not treated as evidence for any theorem about this learner's computational power or for the Haar/A* certificates above.
 
 The useful transfer is methodological rather than bibliographic: encode the mathematical object first, give the transformation an explicit type, and make the invariant a separately checkable equality. That matches the repository's division of labor between Agda proof terms, Mercury semantic/e-graph discovery, and typed functional CI orchestration.
 
