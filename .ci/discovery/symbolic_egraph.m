@@ -49,13 +49,6 @@
 :- pred e_match(
     pattern::in, eclass_id::in, egraph::in, substitution::out) is nondet.
 
-:- pred saturate(
-    list(rewrite_rule)::in,
-    int::in,
-    egraph::in,
-    egraph::out,
-    saturation_report::out) is det.
-
 :- pred saturate_until_stable(
     list(rewrite_rule)::in,
     egraph::in,
@@ -445,77 +438,6 @@ apply_rules_to_roots(Rule, [Root | Roots], E0, E, Count) :-
     apply_rule_to_root(Rule, Root, E0, E1, Count1),
     apply_rules_to_roots(Rule, Roots, E1, E, Count2),
     Count = Count1 + Count2.
-
-saturate(Rules, Limit, E0, E, Report) :-
-    saturate_loop(Rules, Limit, 0, E0, E, Iterations, Rewrites),
-    Report = saturation_report(Iterations, Rewrites,
-        (if Rewrites > 0 then yes else no)).
-
-saturate_until_stable(Rules, E0, E, Report) :-
-    saturate_to_stable(Rules, 0, E0, E, Iterations, Rewrites),
-    Report = saturation_report(
-        Iterations,
-        Rewrites,
-        (if Rewrites > 0 then yes else no)).
-
-:- pred saturate_to_stable(
-    list(rewrite_rule)::in,
-    int::in,
-    egraph::in,
-    egraph::out,
-    int::out,
-    int::out) is det.
-saturate_to_stable(Rules, Iteration0, E0, E, Iterations, Total) :-
-    root_classes(E0, Roots),
-    Size0 = class_count(E0) + enode_count(E0),
-    saturate_pass(Rules, Roots, E0, E1, Count),
-    rebuild(E1, E2),
-    Size1 = class_count(E2) + enode_count(E2),
-    Iteration = Iteration0 + 1,
-    (
-        Size1 = Size0,
-        Count = 0
-    ->
-        E = E2,
-        Iterations = Iteration,
-        Total = Count
-    ;
-        saturate_to_stable(
-            Rules, Iteration, E2, E, TailIterations, TailTotal),
-        Iterations = TailIterations,
-        Total = Count + TailTotal
-    ).
-
-:- pred saturate_loop(
-    list(rewrite_rule)::in, int::in, int::in,
-    egraph::in, egraph::out, int::out, int::out) is det.
-saturate_loop(Rules, Limit, Iteration0, E0, E, Iteration, Total) :-
-    (
-        Iteration0 >= Limit
-    ->
-        E = E0,
-        Iteration = Iteration0,
-        Total = 0
-    ;
-        root_classes(E0, Roots),
-        Size0 = class_count(E0) + enode_count(E0),
-        saturate_pass(Rules, Roots, E0, E1, Count),
-        rebuild(E1, E2),
-        Size1 = class_count(E2) + enode_count(E2),
-        Iteration1 = Iteration0 + 1,
-        (
-            Size1 = Size0,
-            Count = 0
-        ->
-            E = E2,
-            Iteration = Iteration1,
-            Total = Count
-        ;
-            saturate_loop(
-                Rules, Limit, Iteration1, E2, E, Iteration, Tail),
-            Total = Count + Tail
-        )
-    ).
 
 :- pred local_cost(enode::in, int::out) is det.
 local_cost(enode(Symbol, Children), Cost) :-
