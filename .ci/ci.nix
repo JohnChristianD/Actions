@@ -62,7 +62,7 @@ writeShellApplication {
       test -s ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"forced_symbolic_target": false' ".ci/discovery/theorem-monolith-egraph-sync.json"
       grep -q '"single_agda_source": true' ".ci/discovery/theorem-monolith-egraph-sync.json"
-      grep -q '"graph_search": "A* cost-guided dependency paths"' ".ci/discovery/theorem-monolith-egraph-sync.json"
+      grep -Fq '"graph_search": "A* cost-guided dependency paths"' ".ci/discovery/theorem-monolith-egraph-sync.json"
       composition_count="$(sed -n 's/.*"emergent_composition_count": \\([0-9][0-9]*\\).*/\\1/p' ".ci/discovery/theorem-monolith-egraph-sync.json")"
       test -n "$composition_count"
       test "$composition_count" -gt 0
