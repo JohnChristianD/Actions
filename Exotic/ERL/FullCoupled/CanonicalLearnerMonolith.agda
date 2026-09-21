@@ -1146,7 +1146,7 @@ canonicalWatkinsTarget K s =
       (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s)))))
     (canonicalEndogenousFeedback K s)
 
-canonicalWatkinsTarget-law : ∀ K s →
+canonicalWatkinsTarget-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalWatkinsTarget K s ≡
   int8Add
     (int8Add
@@ -1162,7 +1162,7 @@ canonicalQLogControlStep K s =
 canonicalSignal : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalSignal = canonicalWatkinsTarget
 
-canonicalSignal-watkins-target : ∀ K s →
+canonicalSignal-watkins-target : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalSignal K s ≡ canonicalWatkinsTarget K s
 canonicalSignal-watkins-target K s = refl
 
@@ -1180,13 +1180,13 @@ canonicalGRUStep K s =
     (gru s)
     (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
 
-canonicalPersistentGRUPreservation : ∀ K s →
+canonicalPersistentGRUPreservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistentGRUPreservation K s =
   persistent-preservation (gru s)
     (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
 
-canonicalRecurrentInput-law : ∀ K s →
+canonicalRecurrentInput-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalGRUStep K s ≡
   gruStep (gru s)
     (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
@@ -1195,7 +1195,7 @@ canonicalRecurrentInput-law K s = refl
 canonicalOptimizerStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → F4IntUState
 canonicalOptimizerStep K s = f4ThetaStep (optimizerKernel K) (optimizer s) (canonicalSignal K s)
 
-canonicalOptimizerStep-qMunchausen-L2 : ∀ K s →
+canonicalOptimizerStep-qMunchausen-L2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalOptimizerStep K s ≡
   f4ThetaStep
     (optimizerKernel K)
@@ -1221,38 +1221,38 @@ canonicalFullStep K s =
   (canonicalQLogControlStep K s)
   (canonicalQLogStep K s)
 
-canonicalFullStep-clock : ∀ {A} K s → clock (canonicalFullStep K s) ≡ suc (clock s)
+canonicalFullStep-clock : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → clock (canonicalFullStep K s) ≡ suc (clock s)
 canonicalFullStep-clock K s = refl
 
-canonicalFullStep-watkins : ∀ {A} K s → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
+canonicalFullStep-watkins : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
 
-canonicalFullStep-attention : ∀ {A} K s → attention (canonicalFullStep K s) ≡ canonicalAttentionStep K s
+canonicalFullStep-attention : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → attention (canonicalFullStep K s) ≡ canonicalAttentionStep K s
 canonicalFullStep-attention K s = refl
 
-canonicalFullStep-gru : ∀ {A} K s → gru (canonicalFullStep K s) ≡ canonicalGRUStep K s
+canonicalFullStep-gru : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → gru (canonicalFullStep K s) ≡ canonicalGRUStep K s
 canonicalFullStep-gru K s = refl
 
-canonicalFullStep-optimizer : ∀ {A} K s → optimizer (canonicalFullStep K s) ≡ canonicalOptimizerStep K s
+canonicalFullStep-optimizer : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → optimizer (canonicalFullStep K s) ≡ canonicalOptimizerStep K s
 canonicalFullStep-optimizer K s = refl
 
-canonicalFullStep-norm : ∀ {A} K s → norm (canonicalFullStep K s) ≡ norm s
+canonicalFullStep-norm : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → norm (canonicalFullStep K s) ≡ norm s
 canonicalFullStep-norm K s = refl
 
-canonicalFullStep-counts : ∀ {A} K s → lcbCounts (canonicalFullStep K s) ≡ canonicalCountStep K s
+canonicalFullStep-counts : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → lcbCounts (canonicalFullStep K s) ≡ canonicalCountStep K s
 canonicalFullStep-counts K s = refl
 
-canonicalFullStep-qLog : ∀ {A} K s → qLogValue (canonicalFullStep K s) ≡ canonicalQLogStep K s
+canonicalFullStep-qLog : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogValue (canonicalFullStep K s) ≡ canonicalQLogStep K s
 canonicalFullStep-qLog K s = refl
 
-canonicalFullStep-qLogControl : ∀ {A} K s → qLogControl (canonicalFullStep K s) ≡ canonicalQLogControlStep K s
+canonicalFullStep-qLogControl : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogControl (canonicalFullStep K s) ≡ canonicalQLogControlStep K s
 canonicalFullStep-qLogControl K s = refl
 
-canonicalNormPairWeightPlusOne-preservation : ∀ {A} K s →
+canonicalNormPairWeightPlusOne-preservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   normPairWeightPlusOne (norm (canonicalFullStep K s)) ≡ normPairWeightPlusOne (norm s)
 canonicalNormPairWeightPlusOne-preservation K s = refl
 
-canonicalStep-not-fixed : ∀ {A} K s → canonicalFullStep K s ≢ s
+canonicalStep-not-fixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → canonicalFullStep K s ≢ s
 canonicalStep-not-fixed K s eq =
   plus-suc-not-self (clock s) zero
     (trans (plus-suc (clock s) zero)
@@ -1260,7 +1260,7 @@ canonicalStep-not-fixed K s eq =
         (trans (sym (canonicalFullStep-clock K s))
           (cong (λ t → clock t) eq))))
 
-canonicalTotalCountStep : ∀ {A} K s → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
+canonicalTotalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
 canonicalTotalCountStep K s = refl
 
 canonicalNoFixedPoint : ∀ {A} K s → canonicalFullStep K s ≢ s
@@ -1270,25 +1270,25 @@ iterateCanonical : ∀ {A} → FullLearnerKernel A → Nat → FullLearnerState 
 iterateCanonical K zero s = s
 iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
 
-clockAfter : ∀ {A} K n s → clock (iterateCanonical K n s) ≡ clock s + n
+clockAfter : ∀ {A} (K : FullLearnerKernel A) (n : Nat) (s : FullLearnerState A) → clock (iterateCanonical K n s) ≡ clock s + n
 clockAfter K zero s = sym (plus-zero (clock s))
 clockAfter K (suc n) s = trans (cong suc (clockAfter K n s)) (sym (plus-suc (clock s) n))
 
-canonicalAperiodic : ∀ {A} K s n → iterateCanonical K (suc n) s ≢ s
+canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≢ s
 canonicalAperiodic K s n cyc = plus-suc-not-self (clock s) n
   (trans (sym (clockAfter K (suc n) s)) (cong clock cyc))
 
-canonicalOrbitNonFixed : ∀ {A} K s n → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
+canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
   canonicalStep-not-fixed K (iterateCanonical K n s) (sym eq)
 
-canonicalNoNontrivialFiniteCycle : ∀ {A} K s n → iterateCanonical K (suc n) s ≡ s → ⊥
+canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
 
-canonicalTotalCountIterate2 : ∀ {A} K s → totalCount (lcbCounts (iterateCanonical K 2 s)) ≡ suc (suc (totalCount (lcbCounts s)))
+canonicalTotalCountIterate2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (iterateCanonical K 2 s)) ≡ suc (suc (totalCount (lcbCounts s)))
 canonicalTotalCountIterate2 K s = refl
 
-canonicalNoCountedTwoCycle : ∀ {A} K s → iterateCanonical K 2 s ≡ s → ⊥
+canonicalNoCountedTwoCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → iterateCanonical K 2 s ≡ s → ⊥
 canonicalNoCountedTwoCycle K s cyc = suc-suc-not-self (totalCount (lcbCounts s))
   (trans (sym (canonicalTotalCountIterate2 K s))
     (cong (λ t → totalCount (lcbCounts t)) cyc))
@@ -1308,5 +1308,5 @@ pessimisticCritic-law i = refl
 canonicalWalshBoundary : walshOrthonormal ≡ walshOrthonormal
 canonicalWalshBoundary = refl
 
-canonicalPersistent : ∀ {A} K s → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
+canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistent = canonicalPersistentGRUPreservation
