@@ -159,6 +159,19 @@ let script =
     echo "econlib-commit=$econlib_rev"
     echo "pomdp-named-in-upstream=$pomdp_named"
     ''
+  else if lane == "strict-existence-impossibility" then
+    ''
+    set -euo pipefail
+    mmc --make .ci/discovery/strict_existence_impossibility_graph
+    ./.ci/discovery/strict_existence_impossibility_graph
+    report=.ci/discovery/strict-existence-impossibility-graph.json
+    grep -Fq '"rule": "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
+    grep -Fq '"orange_statuses_allowed": false' "$report" || { echo "orange status enabled"; exit 1; }
+    grep -Fq '"terminal_statuses": ["EXISTENCE","IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
+    ! grep -Eiq 'frontier|unknown|vague|adapter needed|unresolved|pending' "$report" || { echo "vague status present"; exit 1; }
+    grep -Fq 'strict-existence-impossibility-graph=pass' <(./.ci/discovery/strict_existence_impossibility_graph)
+    ''
+
   else if lane == "semantic-contract" then
     ''
     set -euo pipefail
