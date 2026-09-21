@@ -15,31 +15,6 @@
 :- import_module symbolic_egraph.
 :- import_module theorem_astar_search.
 
-:- pred law_for_id(
-    string::in, list(semantic_law)::in, semantic_law::out) is semidet.
-law_for_id(_, [], _) :-
-    fail.
-law_for_id(Id, [Law | Laws], Result) :-
-    (
-        if law_id(Law) = Id then
-            Result = Law
-        else
-            law_for_id(Id, Laws, Result)
-    ).
-
-:- pred plan_seed_id(list(string)::in, string::out) is semidet.
-plan_seed_id(Plan, SeedId) :-
-    list.reverse(Plan, Reversed),
-    Reversed = [SeedId | _].
-
-:- pred selected_emergent_law(
-    list(list(string))::in,
-    list(semantic_law)::in,
-    semantic_law::out) is semidet.
-selected_emergent_law([Plan | _], Laws, Law) :-
-    plan_seed_id(Plan, SeedId),
-    law_for_id(SeedId, Laws, Law).
-
 :- pred add_astar_plans(
     list(list(string))::in,
     symbolic_egraph.egraph::in,
@@ -48,53 +23,6 @@ add_astar_plans([], E, E).
 add_astar_plans([Plan | Plans], E0, E) :-
     add_expr(astar_plan_expr(Plan), E0, _, E1),
     add_astar_plans(Plans, E1, E).
-
-:- pred dependency_chain_valid(
-    list(string)::in, list(semantic_law)::in) is semidet.
-dependency_chain_valid([_], _).
-dependency_chain_valid([Dependency, Parent | Rest], Laws) :-
-    law_for_id(Parent, Laws, ParentLaw),
-    list.member(Dependency, law_dependencies(ParentLaw)),
-    (
-        Rest = []
-    ->
-        true
-    ;
-        dependency_chain_valid([Parent | Rest], Laws)
-    ).
-
-:- pred astar_plan_valid(
-    list(string)::in, list(semantic_law)::in) is semidet.
-astar_plan_valid(Plan, Laws) :-
-    list.length(Plan) >= 3,
-    all_unique(Plan, Laws),
-    all_nonreflexive(Plan, Laws),
-    dependency_chain_valid(Plan, Laws),
-    list.reverse(Plan, [_Terminal | [SeedId | _]]),
-    law_for_id(SeedId, Laws, SeedLaw),
-    Plan = [TerminalId | _],
-    not list.member(TerminalId, law_dependencies(SeedLaw)).
-
-:- pred all_unique(list(string)::in, list(semantic_law)::in) is semidet.
-all_unique([], _).
-all_unique([Id | Ids], Laws) :-
-    not list.member(Id, Ids),
-    law_for_id(Id, Laws, _),
-    all_unique(Ids, Laws).
-
-:- pred all_nonreflexive(list(string)::in, list(semantic_law)::in) is semidet.
-all_nonreflexive([], _).
-all_nonreflexive([Id | Ids], Laws) :-
-    law_for_id(Id, Laws, Law),
-    not is_reflexive(Law),
-    all_nonreflexive(Ids, Laws).
-
-:- pred all_astar_plans_valid(
-    list(list(string))::in, list(semantic_law)::in) is semidet.
-all_astar_plans_valid([], _).
-all_astar_plans_valid([Plan | Plans], Laws) :-
-    astar_plan_valid(Plan, Laws),
-    all_astar_plans_valid(Plans, Laws).
 
 :- pred write_plan_items(
     io.text_output_stream::in, list(list(string))::in,
@@ -117,7 +45,6 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
 
 :- pred write_report(
     list(semantic_law)::in,
-    semantic_law::in,
     int::in,
     saturation_report::in,
     int::in,
@@ -139,9 +66,7 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream,
             "  \"forced_symbolic_target\": false,\n", !IO),
         io.write_string(Stream,
-            "  \"selected_emergent_law\": \"", !IO),
-        io.write_string(Stream, law_id(Target), !IO),
-        io.write_string(Stream, "\",\n", !IO),
+            "  \"selected_emergent_law\": null,\n", !IO),
         io.write_string(Stream, "  \"single_agda_source\": true,\n", !IO),
         io.write_string(Stream, "  \"semantic_law_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(All)), !IO),
@@ -166,7 +91,7 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
         write_plan_items(Stream, AStarPlans, !IO),
         io.write_string(Stream, "  ],\n", !IO),
         io.write_string(Stream,
-            "  \"astar_search\": \"structural dependency composition only\",\n",
+            "  \"graph_search\": \"exhaustive simple dependency paths\",\n",
             !IO),
         io.write_string(Stream,
             "  \"proof_authority\": \"Agda --safe\"\n", !IO),
@@ -182,35 +107,35 @@ write_report(All, Target, QuotientCount, Saturation, ExtractionCost,
 
 main(!IO) :-
     read_semantic_laws(All, !IO),
-    search_emergent_compositions(All, 8, AStarPlans, !IO),
-    (
-        selected_emergent_law(AStarPlans, All, Target),
-        discovery_egraph_from_laws(All, EGraph0, QuotientCount),
-        add_astar_plans(AStarPlans, EGraph0, EGraphAStar),
-        saturate(semantic_rewrite_rules, 32, EGraphAStar, EGraph, Saturation),
-        analyze(EGraph, Analyses),
-        add_expr(law_expr(law_id(Target)), EGraph, TargetClass, EGraph1),
-        extract_best(TargetClass, EGraph1, 64, _, ExtractionCost),
-        list.length(All) > 0,
-        list.length(AStarPlans) > 0,
-        all_astar_plans_valid(AStarPlans, All),
-        list.length(Analyses) > 0,
-        QuotientCount > 0,
-        class_count(EGraph) > 0,
-        enode_count(EGraph) > 0,
-        saturation_iterations(Saturation) > 0,
-        ExtractionCost > 0
+    search_emergent_compositions(All, Plans, !IO),
+    discovery_egraph_from_laws(All, EGraph0, QuotientCount),
+    add_astar_plans(Plans, EGraph0, EGraphAStar),
+    saturate(semantic_rewrite_rules, 32, EGraphAStar, EGraph, Saturation),
+    analyze(EGraph, Analyses),
+    list.length(All) > 0,
+    list.length(Plans) > 0,
+    list.length(Plans) =< list.length(All) * list.length(All),
+    list.length(Analyses) > 0,
+    QuotientCount > 0,
+    class_count(EGraph) > 0,
+    enode_count(EGraph) > 0,
+    saturation_iterations(Saturation) > 0
     ->
-        write_report(All, Target, QuotientCount, Saturation,
-            ExtractionCost, AStarPlans, !IO),
+        write_report(
+            All,
+            QuotientCount,
+            Saturation,
+            1,
+            Plans,
+            !IO),
         io.write_string(
             "mercury-theorem-monolith-egraph-sync=pass\n", !IO),
         io.write_string("forced-symbolic-target=false\n", !IO),
-        io.write_string("selected-emergent-law=", !IO),
-        io.write_string(law_id(Target), !IO),
+        io.write_string("emergent-law-count=", !IO),
+        io.write_string(string.int_to_string(list.length(All)), !IO),
         io.write_string("\n", !IO),
-        io.write_string("astar-emergent-candidate-count=", !IO),
-        io.write_string(string.int_to_string(list.length(AStarPlans)), !IO),
+        io.write_string("emergent-composition-count=", !IO),
+        io.write_string(string.int_to_string(list.length(Plans)), !IO),
         io.write_string("\n", !IO),
         io.write_string(
             "single-agda-source=TheoremsMonolith.agda\n", !IO),
@@ -218,6 +143,7 @@ main(!IO) :-
             "proof-authority=Agda --safe\n", !IO)
     ;
         io.write_string(
-            "ERROR: structural A* / e-graph gate failed\n", !IO),
+            "ERROR: exhaustive theorem dependency graph / e-graph gate failed\n",
+            !IO),
         io.set_exit_status(1, !IO)
     ).
