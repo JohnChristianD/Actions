@@ -2,14 +2,12 @@
 
 :- interface.
 
-:- import_module io.
 :- import_module list.
 :- import_module learner_semantic_extractor.
 
 :- pred search_emergent_compositions(
     list(semantic_law)::in,
-    list(list(string))::out,
-    io::di, io::uo) is det.
+    list(list(string))::out) is det.
 
 :- pred search_emergent_composition(
     list(semantic_law)::in,
@@ -110,20 +108,19 @@ insert_children([Node | Nodes], Frontier0, Frontier) :-
     list(semantic_law)::in,
     list(graph_node)::in,
     list(list(string))::in,
-    list(list(string))::out,
-    io::di, io::uo) is det.
-graph_collect(_, [], Results, Results, !IO).
-graph_collect(Laws, [Node | Frontier], Results0, Results, !IO) :-
+    list(list(string))::out) is det.
+graph_collect(_, [], Results, Results).
+graph_collect(Laws, [Node | Frontier], Results0, Results) :-
     (
         if maximal_dependency_chain(Node, Laws) then
             graph_collect(
                 Laws, Frontier,
-                [Node ^ plan | Results0], Results, !IO)
+                [Node ^ plan | Results0], Results)
         else
             expand_node(Node, Laws, Children),
             insert_children(Children, Frontier, Frontier1),
             graph_collect(
-                Laws, Frontier1, Results0, Results, !IO)
+                Laws, Frontier1, Results0, Results)
     ).
 
 :- pred all_unique(list(string)::in) is semidet.
@@ -154,13 +151,13 @@ all_valid_plans([Plan | Plans], Laws) :-
     valid_plan(Plan, Laws),
     all_valid_plans(Plans, Laws).
 
-search_emergent_compositions(Laws, Results, !IO) :-
+search_emergent_compositions(Laws, Results) :-
     seed_nodes(Laws, Seeds),
-    graph_collect(Laws, Seeds, [], Reversed, !IO),
+    graph_collect(Laws, Seeds, [], Reversed),
     list.reverse(Reversed, Results),
     all_valid_plans(Results, Laws).
 
 search_emergent_composition(Laws, Plan) :-
     seed_nodes(Laws, Seeds),
-    graph_collect(Laws, Seeds, [], Results, _IO),
+    graph_collect(Laws, Seeds, [], Results),
     list.member(Plan, Results).
