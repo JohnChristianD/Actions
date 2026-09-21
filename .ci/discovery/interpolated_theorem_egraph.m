@@ -15,17 +15,13 @@
     list(semantic_law)::in,
     symbolic_egraph.egraph::out,
     int::out) is det.
-:- func forced_target_id = string.
 :- func semantic_rewrite_rules = list(rewrite_rule).
-:- func astar_plan_expr(list(string)) = expr.
+ :- func astar_plan_expr(list(string)) = expr.
 :- func law_expr(string) = expr.
 
 :- implementation.
 
 :- import_module int.
-
-forced_target_id =
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda#canonical-polymorphic-sparsemax-egraph-theorem".
 
 astar_plan_expr(Ids) =
     app("astar-discovered-proof-plan", [left_assoc_expr(Ids)]).
