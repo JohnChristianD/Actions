@@ -43,9 +43,15 @@ all_unique([X | Xs]) :-
 
 :- pred law_for_id(
     string::in, list(semantic_law)::in, semantic_law::out) is semidet.
-law_for_id(Id, Laws, Law) :-
-    list.member(Law, Laws),
-    law_id(Law) = Id.
+law_for_id(_, [], _) :-
+    fail.
+law_for_id(Id, [Law | Laws], Result) :-
+    (
+        if law_id(Law) = Id then
+            Result = Law
+        else
+            law_for_id(Id, Laws, Result)
+    ).
 
 :- pred seed_node(semantic_law::in, astar_node::out) is semidet.
 seed_node(Law, Node) :-
@@ -150,14 +156,14 @@ missing_depth(Node, Missing) :-
     list(astar_node)::out) is det.
 expand_node(Node, Laws, Children) :-
     Plan = plan(Node),
-    Plan = [TerminalId | _],
     (
-        law_for_id(TerminalId, Laws, TerminalLaw)
-    ->
-        Dependencies = law_dependencies(TerminalLaw),
-        expand_dependencies(Dependencies, Node, [], Children)
-    ;
-        Children = []
+        if Plan = [TerminalId | _],
+           law_for_id(TerminalId, Laws, TerminalLaw)
+        then
+            Dependencies = law_dependencies(TerminalLaw),
+            expand_dependencies(Dependencies, Node, [], Children)
+        else
+            Children = []
     ).
 
 :- pred expand_dependencies(
