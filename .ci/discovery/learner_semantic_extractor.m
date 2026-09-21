@@ -83,8 +83,10 @@ top_level_record_header(Line, Name, SignatureFragment) :-
     first_word(Line, "record"),
     Words = string.words(string.strip(Line)),
     Words = ["record", Name | _],
-    Name = "ExactUniversalApproximationThroughContinuousLeftInverse",
-    SignatureFragment = "".
+    string.sub_string_search(Line, ":"),
+    Parts = string.split_at_string(":", Line),
+    Parts = [_, After | _],
+    SignatureFragment = string.strip(After).
 
 :- pred top_level_declaration_header(
     string::in, string::out) is semidet.
@@ -96,7 +98,7 @@ top_level_declaration_header(Line, Name) :-
 
 :- pred theoremish_name(string::in) is semidet.
 theoremish_name(Name) :-
-    Name = "ExactUniversalApproximationThroughContinuousLeftInverse".
+    string.sub_string_search(Name, "Theorem", _).
 
 :- pred theoremish(string::in) is semidet.
 theoremish(Signature) :-
