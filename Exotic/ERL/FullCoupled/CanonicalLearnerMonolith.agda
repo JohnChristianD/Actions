@@ -435,176 +435,6 @@ hardSignGate x with hardSign x
 ... | zeroSign = zero8
 ... | positive = one8
 
-record LearnedSparsemaxAttention (A : Nat) : Set where
-  constructor learnedSparsemaxAttention
-  field
-    actionSpaceA : ActionSpace A
-    attentionQ : QVec A
-    attentionCounts : CountVec A
-open LearnedSparsemaxAttention public
-
-identityAttention : ∀ {A} → ActionSpace A → LearnedSparsemaxAttention A
-identityAttention K = learnedSparsemaxAttention K zeroQ zeroCounts
-
-learnedSparsemaxAttentionWeights : ∀ {A} → LearnedSparsemaxAttention A → Fin A
-learnedSparsemaxAttentionWeights a = sparsemaxPolicy (actionSpaceA a) (attentionQ a) (attentionCounts a)
-record HalfInt : Set where
-  constructor mkHalfInt
-  field halfNumerator : Nat
-open HalfInt public
-
-IntVec4 : Set
-IntVec4 = Nat × (Nat × (Nat × Nat))
-
-WalshVec4 : Set
-WalshVec4 = HalfInt × (HalfInt × (HalfInt × HalfInt))
-
-row0 : IntVec4
-row0 = 1 , (1 , (1 , 1))
-row1 : IntVec4
-row1 = 1 , (0 , (1 , 0))
-row2 : IntVec4
-row2 = 1 , (1 , (0 , 0))
-row3 : IntVec4
-row3 = 1 , (0 , (0 , 1))
-
-dot4 : IntVec4 → IntVec4 → Nat
-dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
-  (a * e) + (b * f) + (c * g) + (d * h)
-
-walshOrthonormal :
-  dot4 row0 row0 ≡ 4 × dot4 row1 row1 ≡ 2 ×
-  dot4 row2 row2 ≡ 2 × dot4 row3 row3 ≡ 2
-walshOrthonormal = refl , (refl , (refl , refl))
-
-liftAttention : ∀ {A} → Fin A → IntVec4
-liftAttention p =
-  toℕ p , (0 , (0 , 0))
-
-walshHadamardApply : IntVec4 → WalshVec4
-walshHadamardApply (a , (b , (c , d))) =
-  mkHalfInt ((a + b) + (c + d)) ,
-  (mkHalfInt ((a + b) + (c + d)) ,
-   (mkHalfInt (a + b) , mkHalfInt (c + d)))
-
-Int8WalshVec4 : Set
-Int8WalshVec4 = Int8 × (Int8 × (Int8 × Int8))
-
-Int8Vec4 : Set
-Int8Vec4 = Int8 × (Int8 × (Int8 × Int8))
-
-h4Row0 : Int8Vec4
-h4Row0 = int8OfNat 1 , (int8OfNat 1 , (int8OfNat 1 , int8OfNat 1))
-
-h4Row1 : Int8Vec4
-h4Row1 = int8OfNat 1 , (int8OfNat 255 , (int8OfNat 1 , int8OfNat 255))
-
-h4Row2 : Int8Vec4
-h4Row2 = int8OfNat 1 , (int8OfNat 1 , (int8OfNat 255 , int8OfNat 255))
-
-h4Row3 : Int8Vec4
-h4Row3 = int8OfNat 1 , (int8OfNat 255 , (int8OfNat 255 , int8OfNat 1))
-
-int8Dot4 : Int8Vec4 → Int8Vec4 → Int8
-int8Dot4 (a , (b , (c , d))) (e , (f , (g , h))) =
-  int8Add
-    (int8Add (int8Mul a e) (int8Mul b f))
-    (int8Add (int8Mul c g) (int8Mul d h))
-
-record H4GramLaw : Set where
-  constructor h4GramLaw
-  field
-    r00 : int8Dot4 h4Row0 h4Row0 ≡ int8OfNat 4
-    r01 : int8Dot4 h4Row0 h4Row1 ≡ zero8
-    r02 : int8Dot4 h4Row0 h4Row2 ≡ zero8
-    r03 : int8Dot4 h4Row0 h4Row3 ≡ zero8
-    r10 : int8Dot4 h4Row1 h4Row0 ≡ zero8
-    r11 : int8Dot4 h4Row1 h4Row1 ≡ int8OfNat 4
-    r12 : int8Dot4 h4Row1 h4Row2 ≡ zero8
-    r13 : int8Dot4 h4Row1 h4Row3 ≡ zero8
-    r20 : int8Dot4 h4Row2 h4Row0 ≡ zero8
-    r21 : int8Dot4 h4Row2 h4Row1 ≡ zero8
-    r22 : int8Dot4 h4Row2 h4Row2 ≡ int8OfNat 4
-    r23 : int8Dot4 h4Row2 h4Row3 ≡ zero8
-    r30 : int8Dot4 h4Row3 h4Row0 ≡ zero8
-    r31 : int8Dot4 h4Row3 h4Row1 ≡ zero8
-    r32 : int8Dot4 h4Row3 h4Row2 ≡ zero8
-    r33 : int8Dot4 h4Row3 h4Row3 ≡ int8OfNat 4
-
-walshHadamardOrthogonality4 : H4GramLaw
-walshHadamardOrthogonality4 = record
-  { r00 = refl
-  ; r01 = refl
-  ; r02 = refl
-  ; r03 = refl
-  ; r10 = refl
-  ; r11 = refl
-  ; r12 = refl
-  ; r13 = refl
-  ; r20 = refl
-  ; r21 = refl
-  ; r22 = refl
-  ; r23 = refl
-  ; r30 = refl
-  ; r31 = refl
-  ; r32 = refl
-  ; r33 = refl
-  }
-
-
-------------------------------------------------------------------------
--- Exact finite Walsh-Rademacher phase layer.
---
--- This is a finite, proof-friendly rotary analogue: each phase is a
--- signed permutation of two 2D planes. It is not sine-cosine RoPE.
-------------------------------------------------------------------------
-
-data Phase4 : Set where
-  phase0 phase1 phase2 phase3 : Phase4
-
-phase4 : Nat → Phase4
-phase4 zero = phase0
-phase4 (suc zero) = phase1
-phase4 (suc (suc zero)) = phase2
-phase4 (suc (suc (suc zero))) = phase3
-phase4 (suc (suc (suc (suc n)))) = phase4 n
-
-walshQuantize4 : WalshVec4 → Int8Vec4
-walshQuantize4 (a , (b , (c , d))) =
-  int8OfNat (halfNumerator a) ,
-  (int8OfNat (halfNumerator b) ,
-    (int8OfNat (halfNumerator c) , int8OfNat (halfNumerator d)))
-
-phaseRotate4 : Phase4 → Int8Vec4 → Int8Vec4
-phaseRotate4 phase0 v = v
-phaseRotate4 phase1 (a , (b , (c , d))) =
-  int8Neg b , (a , (int8Neg d , c))
-phaseRotate4 phase2 (a , (b , (c , d))) =
-  int8Neg a , (int8Neg b , (int8Neg c , int8Neg d))
-phaseRotate4 phase3 (a , (b , (c , d))) =
-  b , (int8Neg a , (d , int8Neg c))
-
-walshRademacherRope4 : Nat → WalshVec4 → Int8Vec4
-walshRademacherRope4 clockValue w =
-  phaseRotate4 (phase4 clockValue) (walshQuantize4 w)
-
-walshRademacherRopeReadout : Nat → WalshVec4 → Int8
-walshRademacherRopeReadout clockValue w with walshRademacherRope4 clockValue w
-... | a , (b , (c , d)) =
-  int8Add
-    (int8Add a b)
-    (int8Add c d)
-
-data PowerOfFour : Nat → Set where
-  powerOfFour-one : PowerOfFour 1
-  powerOfFour-step : ∀ {d} → PowerOfFour d → PowerOfFour (d * 4)
-
-canonicalWalshWidth : Nat
-canonicalWalshWidth = 4
-
-canonicalWalshWidth-power4 : PowerOfFour canonicalWalshWidth
-canonicalWalshWidth-power4 = powerOfFour-step powerOfFour-one
-
 record GRUMatrices : Set where
   constructor gruMatrices
   field matrixZ matrixR matrixH : Int8
@@ -905,43 +735,14 @@ gruStateInt8CoordinateCount = 9
 criticInt8CoordinateCount : Nat
 criticInt8CoordinateCount = 2
 
-walshInt8CoordinateCount : Nat
-walshInt8CoordinateCount = 4
-
-gruCriticWH8CoordinateCount : Nat
-gruCriticWH8CoordinateCount = 15
 gruPersistentQuotientCoordinateCount : Nat
 gruPersistentQuotientCoordinateCount = 8
-gruCriticWH8PersistentQuotientCoordinateCount : Nat
-gruCriticWH8PersistentQuotientCoordinateCount = 14
 
 fullLearnerInt8CoordinateCount : Nat
 fullLearnerInt8CoordinateCount = 23
 
 fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 23
 fullLearnerInt8CoordinateCount-law = refl
-
-gruCriticWH8CoordinateCount-law : gruCriticWH8CoordinateCount ≡ 15
-gruCriticWH8CoordinateCount-law = refl
-
-gruCriticWH8PersistentQuotientCoordinateCount-law : gruCriticWH8PersistentQuotientCoordinateCount ≡ 14
-gruCriticWH8PersistentQuotientCoordinateCount-law = refl
-
-record GRUCriticWH8State (A : Nat) : Set where
-  constructor gruCriticWH8State
-  field gruPart : GRUState
-        criticPart : CriticState A
-        walshPart : Int8WalshVec4
-open GRUCriticWH8State public
-
-GRUCriticWH8Equivalent : ∀ {A} → GRUCriticWH8State A → GRUCriticWH8State A → Set
-GRUCriticWH8Equivalent s t =
-  persistentGRU (gruPart s) ≡ persistentGRU (gruPart t) ×
-  criticPart s ≡ criticPart t ×
-  walshPart s ≡ walshPart t
-
-gruCriticWH8Equivalent-refl : ∀ {A} (s : GRUCriticWH8State A) → GRUCriticWH8Equivalent s s
-gruCriticWH8Equivalent-refl s = refl , (refl , refl)
 
 record F4IntUState : Set where
   constructor f4IntUState
@@ -989,7 +790,6 @@ record FullLearnerState (A : Nat) : Set₁ where
   field
     clock : Nat
     watkins : WatkinsState A
-    attention : LearnedSparsemaxAttention A
     gru : GRUState
     optimizer : F4IntUState
     norm : NormPair
@@ -1003,8 +803,6 @@ record FullLearnerKernel (A : Nat) : Set₁ where
   field
     actionSpaceK : ActionSpace A
     watkinsKernel : WatkinsKernel A
-    attentionStep : LearnedSparsemaxAttention A → Int8 → LearnedSparsemaxAttention A
-    attentionToGRU : WalshVec4 → Int8
     optimizerKernel : F4IntUKernel
     lcbKernel : LCBCountKernel
 open FullLearnerKernel public
@@ -1067,21 +865,12 @@ softSparse-zero-to-hardSparse :
 softSparse-zero-to-hardSparse K s h {a} distinct =
   ≤-antisym (h distinct) z≤n
 
-replaceAttention : ∀ {A} → FullLearnerState A → LearnedSparsemaxAttention A → FullLearnerState A
-replaceAttention s a = fullLearnerState (clock s) (watkins s) a (gru s) (optimizer s)
-  (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
-
-canonicalPolicy-attention-invariant :
-  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (a : LearnedSparsemaxAttention A) →
-  canonicalPolicy K (replaceAttention s a) ≡ canonicalPolicy K s
-canonicalPolicy-attention-invariant K s a = refl
-
 replaceNorm : ∀ {A} → FullLearnerState A → NormPair → FullLearnerState A
-replaceNorm s n = fullLearnerState (clock s) (watkins s) (attention s) (gru s) (optimizer s)
+replaceNorm s n = fullLearnerState (clock s) (watkins s) (gru s) (optimizer s)
   n (lcbCounts s) (qLogControl s) (qLogValue s)
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
-replaceOptimizer s o = fullLearnerState (clock s) (watkins s) (attention s) (gru s) o
+replaceOptimizer s o = fullLearnerState (clock s) (watkins s) (gru s) o
   (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
 
 canonicalPolicy-norm-invariant :
@@ -1127,25 +916,14 @@ canonicalQLogBias K s = qLog2Bias8 (canonicalPolicyWeightCode K s)
 canonicalReward8 : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalReward8 K s = canonicalPolicyWeightCode K s
 
-canonicalAttentionMix : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
-canonicalAttentionMix K s =
-  let
-    p = learnedSparsemaxAttentionWeights (attention s)
-    w = walshHadamardApply (liftAttention p)
-  in
-  int8Add
-    (attentionToGRU K w)
-    (walshRademacherRopeReadout (clock s) w)
-
 canonicalDiscount8 : Int8
 canonicalDiscount8 = one8
 
 ------------------------------------------------------------------------
 -- Closed-loop endogenous feedback.
 --
--- LCB/sparsemax policy and learned sparsemax attention stay distinct.
--- Attention flows through Walsh-Hadamard + finite phase mixing into GRU.
--- GRU and F4/L2 state feed the next Watkins target, closing the loop.
+-- The Watkins target, GRU state, F4/L2 state, q-log control/value,
+-- and count/policy channels form the canonical feedback loop.
 ------------------------------------------------------------------------
 
 canonicalGRUFeedback : ∀ {A} → FullLearnerState A → Int8
@@ -1166,10 +944,8 @@ canonicalQLogValueFeedback s = rationalCode (qLogValue s)
 canonicalEndogenousFeedback : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalEndogenousFeedback K s =
   int8Add
-    (canonicalAttentionMix K s)
+    (canonicalGRUFeedback s)
     (int8Add
-      (canonicalGRUFeedback s)
-      (int8Add
         (canonicalF4L2Feedback K s)
         (int8Add
           (canonicalQLogControlFeedback s)
@@ -1208,14 +984,11 @@ canonicalWatkinsStep K s =
   watkinsStep (watkinsKernel K)
   (watkinsState (critic (watkins s)) (canonicalSignal K s) (trace (watkins s)))
 
-canonicalAttentionStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → LearnedSparsemaxAttention A
-canonicalAttentionStep K s = attentionStep K (attention s) (canonicalSignal K s)
-
 canonicalGRUStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → GRUState
 canonicalGRUStep K s =
   gruStep
     (gru s)
-    (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
+(canonicalSignal K s)
 
 canonicalPersistentGRUPreservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
@@ -1250,7 +1023,6 @@ canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) �
 canonicalFullStep K s =
   fullLearnerState (suc (clock s))
   (canonicalWatkinsStep K s)
-  (canonicalAttentionStep K s)
   (canonicalGRUStep K s)
   (canonicalOptimizerStep K s)
   (norm s)
@@ -1263,9 +1035,6 @@ canonicalFullStep-clock K s = refl
 
 canonicalFullStep-watkins : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
-
-canonicalFullStep-attention : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → attention (canonicalFullStep K s) ≡ canonicalAttentionStep K s
-canonicalFullStep-attention K s = refl
 
 canonicalFullStep-gru : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → gru (canonicalFullStep K s) ≡ canonicalGRUStep K s
 canonicalFullStep-gru K s = refl
