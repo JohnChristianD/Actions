@@ -1,4 +1,4 @@
- :- module theorem_graph_search.
+:- module theorem_graph_search.
 
 :- interface.
 
