@@ -111,6 +111,15 @@ jobs:
           set -euo pipefail
           nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
 
+      - name: Stationary distribution finite-cycle impossibility graph
+        timeout-minutes: 15
+        env:
+          CI_LANE: stationary-cycle-impossibility
+        run: |
+          set -euo pipefail
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+
+
       - name: Semantic contract
         timeout-minutes: 15
         env:
