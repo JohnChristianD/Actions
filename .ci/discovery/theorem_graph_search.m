@@ -15,6 +15,10 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred all_scores_non_decreasing(
+    list(semantic_law)::in,
+    list(list(string))::in) is semidet.
+
 :- implementation.
 
 :- type graph_node
