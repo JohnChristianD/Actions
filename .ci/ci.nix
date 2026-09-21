@@ -125,7 +125,7 @@ writeShellApplication {
         find . -type f -not -path './.git/*' -name '*Monolith.agda' -print
         exit 1
       fi
-      while IFS= read -r -d '' monolith; do
+      while IFS= read -r -d  monolith; do
         case "$monolith" in
           Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda|Exotic/ERL/FullCoupled/TheoremsMonolith.agda) ;;
           *) printf 'ERROR: noncanonical monolith remains: %s\n' "$monolith"; exit 1 ;;
@@ -133,6 +133,113 @@ writeShellApplication {
       done < <(find . -type f -not -path './.git/*' -name '*Monolith.agda' -print0)
       local bad_file
       while IFS= read -r -d '' bad_file; do
+        local path="$bad_file"
+        case "$path" in
+          ./.ci/ci.sh) printf '%s\n' 'ERROR: hand-maintained shell workflow remains; use .ci/ci.nix'; exit 1 ;;
+          ./*.sh|./*.bash|./*.zsh|./*.fish|./*.cmd|./*.bat|./*.ps1|./*.command|./*.py|*.java|*.kt|*.scala|*.groovy|*.clj|*.cljs|*.js|*.mjs|*.cjs|*.ts|*.tsx|*.elm|*.purs|*.hs|*.lhs|*.cabal|*.c|*.h|*.cc|*.cpp|*.cxx|*.hpp|*.hxx|*.cs|*.fs|*.fsx|*.vb|*.csproj|*.fsproj|*.vbproj|*.sln|*.html|*.htm|*.css|*.tex|*.ltx|*.sty|*.cls|*.bib|*.scm|*.scheme|*.ss)
+            printf 'ERROR: forbidden legacy/noncanonical source file: %s\n' "$path"; exit 1 ;;
+          *) ;;
+        esac
+      done < <(find . -type f -not -path './.git/*' -print0)
+      printf '%s\n' 'single-theorem-source=TheoremsMonolith.agda; single-learner-source=CanonicalLearnerMonolith.agda; generated-Agda=absent; wiki=absent'
+      local legacy_term_hits
+      legacy_term_hits="$(grep -RniE --exclude-dir=.git --exclude=ci.nix 'guix|guile|(^|[^[:alnum:]])scheme([^[:alnum:]]|$)|evolutionary-search|evolutionary algorithm|Sparsemax2Pair|fixedTemperatureSparsemax|ActionScore|policyLeftWeight|TSTS|Gresher' . || true)"
+      if [[ -n "$legacy_term_hits" ]]; then
+        printf '%s\n' 'ERROR: retired execution/search terminology remains in the repository:'
+        printf '%s\n' "$legacy_term_hits"
+        exit 1
+      fi
+      printf '%s\n' 'surface=clean; retired execution/search terminology and noncanonical language files=absent'
+    }
+
+    run_versions() {
+      nix --version
+      "$AGDA_COMMAND" --version
+      mmc --version
+    }
+
+    case "''${1:-surface}" in
+      agda-learner) run_agda_learner ;;
+      agda-theorem) run_agda_theorem ;;
+      agda-safe) run_agda_safe ;;
+      mercury) run_mercury ;;
+      discovery) run_discovery ;;
+      semantic-contract) run_semantic_contract ;;
+      surface) run_surface ;;
+      versions) run_versions ;;
+      all)
+        run_versions
+        run_agda_safe
+        run_mercury
+        run_discovery
+        run_semantic_contract
+        run_surface
+        ;;
+      *)
+        printf 'usage: %s {agda-safe|agda-learner|agda-theorem|mercury|discovery|semantic-contract|surface|versions|all}\n' "$0"
+        exit 2
+        ;;
+    esac
+  '';
+}
+\0' monolith; do
+        case "$monolith" in
+          Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda|Exotic/ERL/FullCoupled/TheoremsMonolith.agda) ;;
+          *) printf 'ERROR: noncanonical monolith remains: %s\n' "$monolith"; exit 1 ;;
+        esac
+      done < <(find . -type f -not -path './.git/*' -name '*Monolith.agda' -print0)
+      local bad_file
+      while IFS= read -r -d  bad_file; do
+        local path="$bad_file"
+        case "$path" in
+          ./.ci/ci.sh) printf '%s\n' 'ERROR: hand-maintained shell workflow remains; use .ci/ci.nix'; exit 1 ;;
+          ./*.sh|./*.bash|./*.zsh|./*.fish|./*.cmd|./*.bat|./*.ps1|./*.command|./*.py|*.java|*.kt|*.scala|*.groovy|*.clj|*.cljs|*.js|*.mjs|*.cjs|*.ts|*.tsx|*.elm|*.purs|*.hs|*.lhs|*.cabal|*.c|*.h|*.cc|*.cpp|*.cxx|*.hpp|*.hxx|*.cs|*.fs|*.fsx|*.vb|*.csproj|*.fsproj|*.vbproj|*.sln|*.html|*.htm|*.css|*.tex|*.ltx|*.sty|*.cls|*.bib|*.scm|*.scheme|*.ss)
+            printf 'ERROR: forbidden legacy/noncanonical source file: %s\n' "$path"; exit 1 ;;
+          *) ;;
+        esac
+      done < <(find . -type f -not -path './.git/*' -print0)
+      printf '%s\n' 'single-theorem-source=TheoremsMonolith.agda; single-learner-source=CanonicalLearnerMonolith.agda; generated-Agda=absent; wiki=absent'
+      local legacy_term_hits
+      legacy_term_hits="$(grep -RniE --exclude-dir=.git --exclude=ci.nix 'guix|guile|(^|[^[:alnum:]])scheme([^[:alnum:]]|$)|evolutionary-search|evolutionary algorithm|Sparsemax2Pair|fixedTemperatureSparsemax|ActionScore|policyLeftWeight|TSTS|Gresher' . || true)"
+      if [[ -n "$legacy_term_hits" ]]; then
+        printf '%s\n' 'ERROR: retired execution/search terminology remains in the repository:'
+        printf '%s\n' "$legacy_term_hits"
+        exit 1
+      fi
+      printf '%s\n' 'surface=clean; retired execution/search terminology and noncanonical language files=absent'
+    }
+
+    run_versions() {
+      nix --version
+      "$AGDA_COMMAND" --version
+      mmc --version
+    }
+
+    case "''${1:-surface}" in
+      agda-learner) run_agda_learner ;;
+      agda-theorem) run_agda_theorem ;;
+      agda-safe) run_agda_safe ;;
+      mercury) run_mercury ;;
+      discovery) run_discovery ;;
+      semantic-contract) run_semantic_contract ;;
+      surface) run_surface ;;
+      versions) run_versions ;;
+      all)
+        run_versions
+        run_agda_safe
+        run_mercury
+        run_discovery
+        run_semantic_contract
+        run_surface
+        ;;
+      *)
+        printf 'usage: %s {agda-safe|agda-learner|agda-theorem|mercury|discovery|semantic-contract|surface|versions|all}\n' "$0"
+        exit 2
+        ;;
+    esac
+  '';
+}
+\0' bad_file; do
         local path="$bad_file"
         case "$path" in
           ./.ci/ci.sh) printf '%s\n' 'ERROR: hand-maintained shell workflow remains; use .ci/ci.nix'; exit 1 ;;
