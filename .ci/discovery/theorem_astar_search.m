@@ -236,7 +236,8 @@ astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
         else if Frontier0 = [] then
             Results = Results0
         else
-            pop_best(Frontier0, Node, Frontier1),
+            Frontier0 = [First | Rest],
+            pop_best_acc(Rest, First, [], Node, Frontier1),
             (
                 if goal_node(Node, Laws) then
                     Results1 = [plan(Node) | Results0],
