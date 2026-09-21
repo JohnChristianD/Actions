@@ -90,6 +90,74 @@ let script =
     echo "econlib-commit=$econlib_rev"
     echo "adapter-present=$adapter_present"
     ''
+  else if lane == "econlib-equilibrium-search" then
+    ''
+    set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
+    econlib_rev=$(git -C "$tmp/Econlib" rev-parse HEAD)
+
+    root="$tmp/Econlib"
+    local_theorem="Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+
+    files=(
+      "$root/Econlib/Equilibrium/Economy.lean"
+      "$root/Econlib/Equilibrium/Existence.lean"
+      "$root/Econlib/Equilibrium/AggregateAccounting.lean"
+      "$root/Econlib/Probability/Markov/Ergodic.lean"
+      "$root/Econlib/GameTheory/ExtensiveForm/Core/Strategy.lean"
+      "$root/Econlib/GameTheory/ExtensiveForm/Refinements/BeliefSystem.lean"
+      "$root/Econlib/GameTheory/ExtensiveForm/Refinements/SequentialEquilibrium.lean"
+    )
+    for f in "${files[@]}"; do
+      [ -f "$f" ] || { echo "missing upstream graph file: $f"; exit 1; }
+    done
+
+    grep -Fq 'RegularEconomy' "$root/Econlib/Equilibrium/Existence.lean"
+    grep -Fq 'theorem exists_equilibrium' "$root/Econlib/Equilibrium/Existence.lean"
+    grep -Fq 'WalrasianEquilibrium' "$root/Econlib/Equilibrium/Economy.lean"
+    grep -Fq 'StationaryWalrasianEquilibrium' "$root/Econlib/Equilibrium/AggregateAccounting.lean"
+    grep -Fq 'exists_stationary' "$root/Econlib/Probability/Markov/Ergodic.lean"
+
+    grep -Fq 'BehavioralStrategy' "$root/Econlib/GameTheory/ExtensiveForm/Core/Strategy.lean"
+    grep -Fq 'BeliefSystem' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/BeliefSystem.lean"
+    grep -Fq 'SequentialEquilibrium' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/SequentialEquilibrium.lean"
+
+    grep -Fq 'ContinuousStationaryMarkovWalrasianData' "$local_theorem"
+    grep -Fq 'continuousStationaryWalrasian-lift' "$local_theorem"
+    grep -Fq 'GeneralizedWalrasianEquilibrium' "$local_theorem"
+    grep -Fq 'nonIIDMarkovStationaryWalrasian-lift' "$local_theorem"
+
+    pomdp_named=false
+    grep -Riq 'POMDP|partially observable' "$root/Econlib" && pomdp_named=true || true
+
+    mkdir -p .ci/discovery
+    {
+      printf '%s\n' '{'
+      printf '  "econlib_repo": "danlyng/Econlib",\n'
+      printf '  "econlib_commit": "%s",\n' "$econlib_rev"
+      printf '  "regularity_assumption": "RegularEconomy",\n'
+      printf '  "static_existence": "Economy.exists_equilibrium",\n'
+      printf '  "non_iid_transition": "arbitrary Markov/kernel transition",\n'
+      printf '  "stationary_law_node": "FiniteMarkovChain.exists_stationary",\n'
+      printf '  "stationary_equilibrium_node": "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
+      printf '  "local_non_iid_lift": "nonIIDMarkovStationaryWalrasian-lift",\n'
+      printf '  "local_generalized_lift": "generalizedWalrasianEquilibrium-from-static",\n'
+      printf '  "partial_observation_nodes": ["BehavioralStrategy", "BeliefSystem", "SequentialEquilibrium"],\n'
+      printf '  "pomdp_named_in_econlib": %s,\n' "$pomdp_named"
+      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Econlib::Markov stationary law", "Econlib::StationaryWalrasianEquilibrium", "Actions::nonIIDMarkovStationaryWalrasian-lift", "Actions::GeneralizedWalrasianEquilibrium", "Econlib::BehavioralStrategy", "Econlib::BeliefSystem", "Econlib::SequentialEquilibrium"],\n'
+      printf '  "pomdp_bridge_status": "frontier: belief-state/sufficient-statistic adapter into stationary aggregate equilibrium is required"\n'
+      printf '%s\n' '}'
+    } > .ci/discovery/econlib-equilibrium-graph.json
+
+    grep -Fq '"regularity_assumption": "RegularEconomy"' .ci/discovery/econlib-equilibrium-graph.json
+    grep -Fq '"non_iid_transition": "arbitrary Markov/kernel transition"' .ci/discovery/econlib-equilibrium-graph.json
+    grep -Fq '"pomdp_bridge_status": "frontier:' .ci/discovery/econlib-equilibrium-graph.json
+    echo "econlib-equilibrium-search=pass"
+    echo "econlib-commit=$econlib_rev"
+    echo "pomdp-named-in-upstream=$pomdp_named"
+    ''
   else if lane == "semantic-contract" then
     ''
     set -euo pipefail
