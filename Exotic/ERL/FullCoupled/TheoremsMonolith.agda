@@ -2262,6 +2262,47 @@ hardSparse-prefix-equilibrium H s hs = hardSparseAbsorbing H s hs
 
 
 
+------------------------------------------------------------------------
+-- Exact deterministic finite-step divergence boundary.
+--
+-- The canonical full learner has an explicit Nat clock with
+-- canonicalFullStep-clock : clock (F s) ≡ suc (clock s).
+-- Therefore exact state equality after any positive number of learner
+-- steps is impossible. This is a checked property of this learner's
+-- actual transition function, not a generic stability analogy.
+------------------------------------------------------------------------
+
+canonicalDeterministicFiniteStepDivergenceInevitability :
+  ∀ {A}
+  (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState)
+  (n : Nat) →
+  C.iterateCanonical K (suc n) s ≢ s
+canonicalDeterministicFiniteStepDivergenceInevitability =
+  C.canonicalAperiodic
+
+canonicalNoFiniteStepConvergenceToFixedPoint :
+  ∀ {A}
+  (K : C.CanonicalFullLearnerKernel)
+  (s equilibrium : C.CanonicalFullLearnerState) →
+  C.canonicalFullStep K equilibrium ≡ equilibrium →
+  ¬ (Σ Nat (λ n → C.iterateCanonical K n s ≡ equilibrium))
+canonicalNoFiniteStepConvergenceToFixedPoint K s equilibrium fixedPoint reached =
+  C.canonicalNoFixedPoint K equilibrium fixedPoint
+
+------------------------------------------------------------------------
+-- Consequence for the UAP + biased Bellman/KKT composition:
+--
+-- Exact UAP/continuous-left-inverse and the executable biased
+-- Watkins + negative-q-Munchausen + L2/KKT target semantics are
+-- representational/target-level facts. They do not make the canonical
+-- full learner transition itself have a fixed state. The exact learner
+-- theorem above proves that no such canonicalFullStep fixed state exists.
+-- Any finite-step convergence theorem must therefore be about a separately
+-- specified invariant quotient/operator, not inferred from UAP or target
+-- optimality alone.
+------------------------------------------------------------------------
+
 -- Recovered from legacy theorem partition Part1a.agda
 canonicalIterateComposition :
   ∀ (K : C.CanonicalFullLearnerKernel)
