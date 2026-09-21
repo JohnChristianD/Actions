@@ -1,30 +1,27 @@
-let lane = env:CI_LANE as Text
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | SemanticContract | Surface | Versions | All >
 
-let script =
-  if lane == "agda-learner" then
-    ''
+let lane = env:CI_LANE as Lane
+
+let script = merge {
+  AgdaLearner = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    ''
-  else if lane == "agda-theorem" then
-    ''
+    '',
+  AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    ''
-  else if lane == "agda-safe" then
-    ''
+    '',
+  AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    ''
-  else if lane == "mercury" then
-    ''
+    '',
+  Mercury = ''
     set -euo pipefail
     mmc --make .ci/check_forbidden_theorems
     ./.ci/check_forbidden_theorems
-    ''
-  else if lane == "discovery" then
-    ''
+    '',
+  Discovery = ''
     set -euo pipefail
     mmc --make .ci/discovery/theorem_monolith_egraph_sync
     ./.ci/discovery/theorem_monolith_egraph_sync
@@ -39,9 +36,8 @@ let script =
     grep -Fq '"astar_score_ordered": true' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
-    ''
-  else if lane == "econlib-crossrepo" then
-    ''
+    '',
+  EconlibCrossrepo = ''
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -90,9 +86,8 @@ let script =
     echo "econlib-crossrepo-sync=pass"
     echo "econlib-commit=$econlib_rev"
     echo "adapter-present=$adapter_present"
-    ''
-  else if lane == "econlib-equilibrium-search" then
-    ''
+    '',
+  EconlibEquilibriumSearch = ''
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -162,9 +157,8 @@ let script =
     echo "econlib-equilibrium-search=pass"
     echo "econlib-commit=$econlib_rev"
     echo "pomdp-named-in-upstream=$pomdp_named"
-    ''
-  else if lane == "strict-existence-impossibility" then
-    ''
+    '',
+  StrictExistenceImpossibility = ''
     set -euo pipefail
     mmc --make .ci/discovery/strict_existence_impossibility_graph
     ./.ci/discovery/strict_existence_impossibility_graph
@@ -174,10 +168,8 @@ let script =
     grep -Fq '"terminal_statuses": ["EXISTENCE","IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
     ! grep -Eiq 'frontier|unknown|vague|adapter needed|unresolved|pending' "$report" || { echo "vague status present"; exit 1; }
     grep -Fq 'strict-existence-impossibility-graph=pass' <(./.ci/discovery/strict_existence_impossibility_graph)
-    ''
-
-  else if lane == "stationary-cycle-impossibility" then
-    ''
+    '',
+  StationaryCycleImpossibility = ''
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -190,6 +182,7 @@ let script =
     grep -Fq 'finiteOrbit-collision' "$finite"
     grep -Fq 'canonicalNoNontrivialFiniteCycle-theorem' "$theorem"
     grep -Fq 'canonicalNoFiniteStepConvergenceToFixedPoint' "$theorem"
+    grep -Fq 'isomorphismNoFiniteCycleTransport' "$theorem"
     grep -Fq 'exists_stationary' "$ergodic"
     grep -Fq 'theorem geometric_convergence_to' "$ergodic"
     grep -Fq '0 < P.transition' "$ergodic"
@@ -233,6 +226,8 @@ let script =
     ["period-1 recurrent cycle", "canonicalNoFiniteStepConvergenceToFixedPoint", "contradiction"]
   ],
   "logic_guard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
+  "isomorphism_transport_node": "Agda::isomorphismNoFiniteCycleTransport",
+  "isomorphism_transport_role": "exact conjugacy preserves finite-cycle exclusion on the isomorphic state space",
   "status": "strict graph: no third terminal status"
 }
 JSON
@@ -244,9 +239,8 @@ JSON
     grep -Fq '"status": "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.json
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.json
     echo "stationary-cycle-impossibility-graph=pass"
-    ''
-  else if lane == "semantic-contract" then
-    ''
+    '',
+  SemanticContract = ''
     set -euo pipefail
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
@@ -274,6 +268,10 @@ JSON
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalInt8DiscreteUAPOnOrbit
     canonicalNoNontrivialFiniteCycle-theorem
+    isomorphismIterateConjugacy
+    isomorphismToInjective
+    isomorphismNoFiniteCycleTransport
+    StateIsomorphism
     canonicalDeterministicFiniteStepDivergenceInevitability
     canonicalNoFiniteStepConvergenceToFixedPoint
     CanonicalGlobalTokenConjugacyTheorem
@@ -309,9 +307,8 @@ JSON
     [ ! -f .ci/discovery/learner-semantic-laws.tsv ] || { echo "generated semantic law artifact present"; exit 1; }
     grep -Eiq 'walsh|rope|target-network|target_network|target network|normalization|regularization' "$learner" && { echo "forbidden semantic term present"; exit 1; } || true
     grep -Fq 'open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C' "$theorem" || { echo "non-canonical theorem source"; exit 1; }
-    ''
-  else if lane == "surface" then
-    ''
+    '',
+  Surface = ''
     set -euo pipefail
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
@@ -321,16 +318,14 @@ JSON
     ! git ls-files | grep -E "$forbidden" || { echo "forbidden source suffix present"; exit 1; }
     retired='guix|guile|scheme|evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
     ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired term present"; exit 1; }
-    ''
-  else if lane == "versions" then
-    ''
+    '',
+  Versions = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
-    ''
-  else if lane == "all" then
-    ''
+    '',
+  All = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version
     mmc --version
@@ -346,10 +341,7 @@ JSON
     mmc --make .ci/discovery/interpolated_theorem_egraph_test
     ./.ci/discovery/interpolated_theorem_egraph_test
     ''
-  else
-    ''
-    echo "unknown CI lane: $CI_LANE"
-    exit 2
-    ''
+}
+lane
 
 in script

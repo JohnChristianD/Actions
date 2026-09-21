@@ -98,6 +98,79 @@ canonicalNoNontrivialFiniteCycle-theorem :
   C.iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
 
+------------------------------------------------------------------------
+-- Isomorphism/conjugacy laws for deterministic state evolution.
+-- A state isomorphism preserves iteration traces and transports finite-cycle
+-- exclusion to the isomorphic state representation.
+------------------------------------------------------------------------
+
+record StateIsomorphism (A B : Set) : Set where
+  constructor stateIsomorphism
+  field
+    to : A → B
+    from : B → A
+    from-to : ∀ a → from (to a) ≡ a
+    to-from : ∀ b → to (from b) ≡ b
+
+open StateIsomorphism public
+
+iterateIsomorphism :
+  ∀ {A : Set} → (A → A) → Nat → A → A
+iterateIsomorphism f zero a = a
+iterateIsomorphism f (suc n) a = iterateIsomorphism f n (f a)
+
+isomorphismIterateConjugacy :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B)
+  (f : A → A)
+  (g : B → B) →
+  (∀ a → to iso (f a) ≡ g (to iso a)) →
+  ∀ n a →
+  to iso (iterateIsomorphism f n a) ≡
+  iterateIsomorphism g n (to iso a)
+isomorphismIterateConjugacy iso f g stepConjugacy zero a = refl
+isomorphismIterateConjugacy iso f g stepConjugacy (suc n) a =
+  trans
+    (isomorphismIterateConjugacy iso f g stepConjugacy n (f a))
+    (cong (iterateIsomorphism g n) (stepConjugacy a))
+
+isomorphismToInjective :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B) →
+  ∀ a b →
+  to iso a ≡ to iso b →
+  a ≡ b
+isomorphismToInjective iso a b eq =
+  trans
+    (sym (from-to iso a))
+    (trans
+      (cong (from iso) eq)
+      (from-to iso b))
+
+isomorphismNoFiniteCycleTransport :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B)
+  (f : A → A)
+  (g : B → B) →
+  (∀ a → to iso (f a) ≡ g (to iso a)) →
+  (∀ n a → iterateIsomorphism f (suc n) a ≢ a) →
+  ∀ n a →
+  iterateIsomorphism g (suc n) (to iso a) ≢ to iso a
+isomorphismNoFiniteCycleTransport iso f g stepConjugacy noCycle n a cyc =
+  noCycle n a
+    (isomorphismToInjective
+      iso
+      (iterateIsomorphism f (suc n) a)
+      a
+      (trans
+        (isomorphismIterateConjugacy iso f g stepConjugacy (suc n) a)
+        cyc))
+
+------------------------------------------------------------------------
+-- The generic transport law makes canonical finite-cycle exclusion stable
+-- under exact state isomorphism rather than tied to one representation.
+------------------------------------------------------------------------
+
 record CanonicalConnectedCompositionTheorem : Set₁ where
   constructor canonicalConnectedCompositionTheorem
   field
