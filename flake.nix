@@ -1,5 +1,5 @@
 {
-  description = "Pinned Nix environment for the Agda kernel, Mercury e-graph lanes, and typed functional Roc CI scripting";
+  description = "Pinned Nix environment for the Agda kernel, Mercury e-graph, and typed Dhall CI scripting";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee1263483043c0e50321eb4ec7ae";
@@ -25,8 +25,8 @@
           pkgs = pkgsFor system;
         in
         {
-          ci = pkgs.roc;
-          default = pkgs.roc;
+          ci = pkgs.haskellPackages.dhall;
+          default = pkgs.haskellPackages.dhall;
         });
 
       apps = forAllSystems (system:
@@ -36,11 +36,11 @@
         {
           ci = {
             type = "app";
-            program = "\${pkgs.roc}/bin/roc";
+            program = "${pkgs.haskellPackages.dhall}/bin/dhall";
           };
           default = {
             type = "app";
-            program = "\${pkgs.roc}/bin/roc";
+            program = "${pkgs.haskellPackages.dhall}/bin/dhall";
           };
         });
 
@@ -52,9 +52,8 @@
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
-              pkgs.roc
+              pkgs.haskellPackages.dhall
             ];
           };
         });
     };
-}
