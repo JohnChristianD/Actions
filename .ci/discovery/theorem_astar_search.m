@@ -70,7 +70,7 @@ seed_nodes([Law | Laws], Nodes) :-
 
 :- func node_f(astar_node) = int.
 node_f(Node) =
-    astar_node.cost(Node) + astar_node.heuristic(Node).
+    cost(Node) + heuristic(Node).
 
 :- pred node_before(astar_node::in, astar_node::in) is semidet.
 node_before(A, B) :-
@@ -82,16 +82,16 @@ node_before(A, B) :-
         else if FA > FB then
             fail
         else
-            HA = astar_node.heuristic(A),
-            HB = astar_node.heuristic(B),
+            HA = heuristic(A),
+            HB = heuristic(B),
             (
                 if HA < HB then
                     true
                 else if HA > HB then
                     fail
                 else
-                    CA = astar_node.cost(A),
-                    CB = astar_node.cost(B),
+                    CA = cost(A),
+                    CB = cost(B),
                     CA < CB
             )
     ).
@@ -135,7 +135,7 @@ pop_best_acc([Candidate | Rest], Best0, Acc0, Best, Remaining) :-
 
 :- pred missing_depth(astar_node::in, int::out) is det.
 missing_depth(Node, Missing) :-
-    Length = list.length(astar_node.plan(Node)),
+    Length = list.length(plan(Node)),
     (
         Length >= goal_depth
     ->
@@ -149,7 +149,7 @@ missing_depth(Node, Missing) :-
     list(semantic_law)::in,
     list(astar_node)::out) is det.
 expand_node(Node, Laws, Children) :-
-    Plan = astar_node.plan(Node),
+    Plan = plan(Node),
     Plan = [TerminalId | _],
     (
         law_for_id(TerminalId, Laws, TerminalLaw)
@@ -168,7 +168,7 @@ expand_node(Node, Laws, Children) :-
 expand_dependencies([], _, Acc, Children) :-
     list.reverse(Acc, Children).
 expand_dependencies([Dependency | Dependencies], Node, Acc0, Children) :-
-    Plan0 = astar_node.plan(Node),
+    Plan0 = plan(Node),
     (
         list.member(Dependency, Plan0)
     ->
@@ -176,15 +176,15 @@ expand_dependencies([Dependency | Dependencies], Node, Acc0, Children) :-
     ;
         NewPlan = [Dependency | Plan0],
         NewNode0 = astar_node(
-            astar_node.seed(Node),
+            seed(Node),
             NewPlan,
-            astar_node.cost(Node) + 1,
+            cost(Node) + 1,
             0),
         missing_depth(NewNode0, NewHeuristic),
         Child = astar_node(
-            astar_node.seed(Node),
+            seed(Node),
             NewPlan,
-            astar_node.cost(Node) + 1,
+            cost(Node) + 1,
             NewHeuristic),
         expand_dependencies(
             Dependencies, Node, [Child | Acc0], Children)
@@ -194,11 +194,11 @@ expand_dependencies([Dependency | Dependencies], Node, Acc0, Children) :-
     astar_node::in,
     list(semantic_law)::in) is semidet.
 goal_node(Node, Laws) :-
-    Plan = astar_node.plan(Node),
+    Plan = plan(Node),
     list.length(Plan) >= goal_depth,
     all_unique(Plan),
     Plan = [TerminalId | _],
-    SeedId = astar_node.seed(Node),
+    SeedId = seed(Node),
     law_for_id(SeedId, Laws, SeedLaw),
     not list.member(TerminalId, law_dependencies(SeedLaw)).
 
@@ -234,12 +234,12 @@ astar_collect(Laws, Frontier0, Expansions, MaxExpansions, MaxResults,
     (
         goal_node(Node, Laws)
     ->
-        Results1 = [astar_node.plan(Node) | Results0],
+        Results1 = [plan(Node) | Results0],
         astar_collect(
             Laws, Frontier1, Expansions, MaxExpansions, MaxResults,
             Results1, Results, !IO)
     ;
-        astar_node.cost(Node) < max_depth
+        cost(Node) < max_depth
     ->
         expand_node(Node, Laws, Children),
         insert_children(Children, Frontier1, Frontier2),
@@ -269,9 +269,9 @@ search_det(Laws, Frontier0, Expansions, Plan) :-
     (
         goal_node(Node, Laws)
     ->
-        Plan = astar_node.plan(Node)
+        Plan = plan(Node)
     ;
-        astar_node.cost(Node) < max_depth,
+        cost(Node) < max_depth,
         expand_node(Node, Laws, Children),
         insert_children(Children, Frontier1, Frontier2),
         search_det(Laws, Frontier2, Expansions + 1, Plan)
