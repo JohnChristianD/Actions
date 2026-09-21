@@ -32,7 +32,6 @@ jobs:
         with:
           agda-version: '2.8.0.2'
           agda-stdlib-version: '2.4'
-      - run: echo "AGDA_COMMAND=${{ steps.setup-agda.outputs.agda-path }}" >> "$GITHUB_ENV"
       - name: Provision swap
         run: |
           if ! swapon --show=NAME | grep -qx '/swapfile'; then
@@ -43,14 +42,20 @@ jobs:
           fi
       - name: Check canonical learner monolith
         timeout-minutes: 15
-        run: nix run .#ci -- agda-learner
+        env:
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+        run: nix develop .#default -c actions-ci agda-learner
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
-        run: nix run .#ci -- agda-theorem
-      - name: Check Agda version
+        env:
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+        run: nix develop .#default -c actions-ci agda-theorem
+      - name: Check Agda/Mercury tool versions
         if: always()
-        run: "$AGDA_COMMAND --version"
+        env:
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+        run: nix develop .#default -c actions-ci versions
 
   mercury:
     name: Mercury theorem-only e-graph
@@ -64,7 +69,7 @@ jobs:
       - name: Run theorem-only Mercury discovery and canonical semantic contract
         timeout-minutes: 15
         run: |
-          nix run .#ci -- mercury
-          nix run .#ci -- discovery
-          nix run .#ci -- semantic-contract
-          nix run .#ci -- surface
+          nix develop .#default -c actions-ci mercury
+          nix develop .#default -c actions-ci discovery
+          nix develop .#default -c actions-ci semantic-contract
+          nix develop .#default -c actions-ci surface
