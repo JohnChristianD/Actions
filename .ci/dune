@@ -1,5 +1,0 @@
-(executable
- (name actions_ci)
- (public_name actions-ci)
- (libraries unix)
- (package actions-ci))
