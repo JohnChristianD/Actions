@@ -19,45 +19,18 @@ open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Nat.Properties using (≤-antisym; +-identityʳ; +-suc)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
-phase4-period4 :
-  ∀ n →
-  C.phase4
-    (suc (suc (suc (suc n))))
-  ≡
-  C.phase4 n
-phase4-period4 n = refl
-
-walshRademacherRope4-period4 :
-  ∀ n w →
-  C.walshRademacherRope4
-    (suc (suc (suc (suc n))))
-    w
-  ≡
-  C.walshRademacherRope4 n w
-walshRademacherRope4-period4 n w = refl
-
 replaceClock :
   C.CanonicalFullLearnerState → Nat → C.CanonicalFullLearnerState
 replaceClock s n =
   C.fullLearnerState
     n
     (C.watkins s)
-    (C.attention s)
     (C.gru s)
     (C.optimizer s)
     (C.norm s)
     (C.lcbCounts s)
     (C.qLogControl s)
     (C.qLogValue s)
-
-canonicalAttentionMix-clock-period4 :
-  ∀ K s →
-  C.canonicalAttentionMix K
-    (replaceClock s
-      (suc (suc (suc (suc (C.clock s))))))
-  ≡
-  C.canonicalAttentionMix K s
-canonicalAttentionMix-clock-period4 K s = refl
 
 record CanonicalAQLoopTheorem : Set₁ where
   constructor canonicalAQLoopTheorem
@@ -72,40 +45,18 @@ record CanonicalAQLoopTheorem : Set₁ where
           (C.lcbCounts s)
           (C.critic (C.watkins s)))
         (C.valuesCount (C.lcbCounts s))
-
-    learnedAttentionComposition :
-      ∀ K s →
-      C.canonicalAttentionMix K s ≡
-      let
-        p = C.learnedSparsemaxAttentionWeights (C.attention s)
-        w = C.walshHadamardApply (C.liftAttention p)
-      in
-      C.int8Add
-        (C.attentionToGRU K w)
-        (C.walshRademacherRopeReadout (C.clock s) w)
-
     sharedWatkinsSignal :
       ∀ K s →
       C.canonicalSignal K s ≡
       C.canonicalWatkinsTarget K s
-
-    gruAttentionCoupling :
+    gruSignalCoupling :
       ∀ K s →
       C.canonicalGRUStep K s ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (C.canonicalSignal K s)
-          (C.canonicalAttentionMix K s))
-
+      C.gruStep (C.gru s) (C.canonicalSignal K s)
     f4SignalCoupling :
       ∀ K s →
       C.canonicalOptimizerStep K s ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer s)
-        (C.canonicalSignal K s)
-
+      C.f4ThetaStep (C.optimizerKernel K) (C.optimizer s) (C.canonicalSignal K s)
     watkinsEndogenousCoupling :
       ∀ K s →
       C.canonicalWatkinsTarget K s ≡
@@ -114,10 +65,19 @@ record CanonicalAQLoopTheorem : Set₁ where
           (C.int8Add
             (C.canonicalReward8 K s)
             (C.canonicalQLogBias K s))
-          (C.int8Mul
-            C.canonicalDiscount8
+          (C.int8Mul C.canonicalDiscount8
             (C.maxCriticValue8 (C.critic (C.watkins s)))))
         (C.canonicalEndogenousFeedback K s)
+
+open CanonicalAQLoopTheorem public
+
+canonical-aq-loop-theorem : CanonicalAQLoopTheorem
+canonical-aq-loop-theorem =
+  canonicalAQLoopTheorem
+    (λ K s → refl)
+    (λ K s → refl)
+    (λ K s → refl)
+    (λ K s → refl)
 
 open CanonicalAQLoopTheorem public
 
@@ -150,15 +110,7 @@ canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
 record CanonicalConnectedCompositionTheorem : Set₁ where
   constructor canonicalConnectedCompositionTheorem
   field
-    aqLoop :
-      CanonicalAQLoopTheorem
-    ropePhasePeriod :
-      ∀ n w →
-      C.walshRademacherRope4
-        (suc (suc (suc (suc n))))
-        w
-      ≡
-      C.walshRademacherRope4 n w
+    aqLoop : CanonicalAQLoopTheorem
     clockGrowth :
       ∀ K n s →
       C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
@@ -171,7 +123,6 @@ canonical-connected-composition-theorem :
 canonical-connected-composition-theorem =
   canonicalConnectedCompositionTheorem
     canonical-aq-loop-theorem
-    walshRademacherRope4-period4
     canonicalClockAfter
     canonicalNoNontrivialFiniteCycle-theorem
 
@@ -187,56 +138,36 @@ canonical-connected-composition-theorem =
 ------------------------------------------------------------------------
 
 data LearnerReplacement : Set where
-  attentionReplacement : LearnedSparsemaxAttention → LearnerReplacement
   normReplacement : NormPair → LearnerReplacement
   optimizerReplacement : F4IntUState → LearnerReplacement
 
 applyLearnerReplacement :
-  LearnerReplacement →
-  FullLearnerState →
-  FullLearnerState
-applyLearnerReplacement (attentionReplacement a) s =
-  replaceAttention s a
-applyLearnerReplacement (normReplacement n) s =
-  replaceNorm s n
-applyLearnerReplacement (optimizerReplacement o) s =
-  replaceOptimizer s o
+  LearnerReplacement → FullLearnerState → FullLearnerState
+applyLearnerReplacement (normReplacement n) s = replaceNorm s n
+applyLearnerReplacement (optimizerReplacement o) s = replaceOptimizer s o
 
 applyLearnerReplacements :
-  List LearnerReplacement →
-  FullLearnerState →
-  FullLearnerState
+  List LearnerReplacement → FullLearnerState → FullLearnerState
 applyLearnerReplacements [] s = s
 applyLearnerReplacements (r ∷ rs) s =
   applyLearnerReplacements rs (applyLearnerReplacement r s)
 
 canonicalPolicy-learnerReplacement-invariant :
   ∀ K s r →
-  canonicalPolicy K (applyLearnerReplacement r s)
-  ≡
-  canonicalPolicy K s
-canonicalPolicy-learnerReplacement-invariant K s
-  (attentionReplacement a) =
-  canonicalPolicy-attention-invariant K s a
-canonicalPolicy-learnerReplacement-invariant K s
-  (normReplacement n) =
+  canonicalPolicy K (applyLearnerReplacement r s) ≡ canonicalPolicy K s
+canonicalPolicy-learnerReplacement-invariant K s (normReplacement n) =
   canonicalPolicy-norm-invariant K s n
-canonicalPolicy-learnerReplacement-invariant K s
-  (optimizerReplacement o) =
+canonicalPolicy-learnerReplacement-invariant K s (optimizerReplacement o) =
   canonicalPolicy-optimizer-invariant K s o
 
 canonicalPolicy-learnerReplacement-composition :
   ∀ K s rs →
-  canonicalPolicy K (applyLearnerReplacements rs s)
-  ≡
-  canonicalPolicy K s
+  canonicalPolicy K (applyLearnerReplacements rs s) ≡ canonicalPolicy K s
 canonicalPolicy-learnerReplacement-composition K s [] = refl
 canonicalPolicy-learnerReplacement-composition K s (r ∷ rs) =
   trans
     (canonicalPolicy-learnerReplacement-composition
-      K
-      (applyLearnerReplacement r s)
-      rs)
+      K (applyLearnerReplacement r s) rs)
     (canonicalPolicy-learnerReplacement-invariant K s r)
 
 canonicalNormPair-afterFullStep-iterate :
@@ -275,131 +206,6 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
 -- replacement enters the endogenous Watkins target.  That same target
 -- is then consumed by both the GRU and F4 optimizer tells.
 ------------------------------------------------------------------------
-
-record FiniteAttentionWatkinsGRUF4MediatorTheorem : Set₁ where
-  constructor finiteAttentionWatkinsGRUF4MediatorTheorem
-  field
-    attentionPolicyInvariant :
-      ∀ K s a →
-      C.canonicalPolicy K (C.replaceAttention s a)
-      ≡
-      C.canonicalPolicy K s
-
-    attentionCountInvariant :
-      ∀ K s a →
-      C.canonicalCountStep K (C.replaceAttention s a)
-      ≡
-      C.canonicalCountStep K s
-
-    attentionQLogInvariant :
-      ∀ K s a →
-      C.canonicalQLogStep K (C.replaceAttention s a)
-      ≡
-      C.canonicalQLogStep K s
-
-    attentionTargetExpansion :
-      ∀ K s a →
-      C.canonicalWatkinsTarget K (C.replaceAttention s a)
-      ≡
-      C.int8Add
-        (C.int8Add
-          (C.int8Add
-            (C.canonicalReward8 K s)
-            (C.canonicalQLogBias K s))
-          (C.int8Mul
-            C.canonicalDiscount8
-            (C.maxCriticValue8 (C.critic (C.watkins s)))))
-        (C.int8Add
-          (C.canonicalAttentionMix K (C.replaceAttention s a))
-          (C.int8Add
-            (C.canonicalGRUFeedback s)
-            (C.int8Add
-              (C.canonicalF4L2Feedback K s)
-              (C.int8Add
-                (C.canonicalQLogControlFeedback s)
-                (C.canonicalQLogValueFeedback s)))))
-
-    sharedTargetFeedsGRU :
-      ∀ K s a →
-      C.canonicalGRUStep K (C.replaceAttention s a)
-      ≡
-      C.gruStep
-        (C.gru s)
-        (C.int8Add
-          (C.canonicalWatkinsTarget K (C.replaceAttention s a))
-          (C.canonicalAttentionMix K (C.replaceAttention s a)))
-
-    sharedTargetFeedsF4 :
-      ∀ K s a →
-      C.canonicalOptimizerStep K (C.replaceAttention s a)
-      ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer s)
-        (C.canonicalWatkinsTarget K (C.replaceAttention s a))
-
-    fullStepCountChannelInvariant :
-      ∀ K s a →
-      C.lcbCounts
-        (C.canonicalFullStep K (C.replaceAttention s a))
-      ≡
-      C.lcbCounts
-        (C.canonicalFullStep K s)
-
-    fullStepQLogChannelInvariant :
-      ∀ K s a →
-      C.qLogValue
-        (C.canonicalFullStep K (C.replaceAttention s a))
-      ≡
-      C.qLogValue
-        (C.canonicalFullStep K s)
-
-    fullStepNormPairInvariant :
-      ∀ K s a →
-      C.normPairWeightPlusOne
-        (C.norm (C.canonicalFullStep K (C.replaceAttention s a)))
-      ≡
-      C.normPairWeightPlusOne (C.norm s)
-
-    fullStepPersistentGRUInvariant :
-      ∀ K s a →
-      C.persistentGRU
-        (C.gru (C.canonicalFullStep K (C.replaceAttention s a)))
-      ≡
-      C.persistentGRU (C.gru (C.replaceAttention s a))
-
-open FiniteAttentionWatkinsGRUF4MediatorTheorem public
-
-finite-attention-watkins-gru-f4-mediator-theorem :
-  FiniteAttentionWatkinsGRUF4MediatorTheorem
-finite-attention-watkins-gru-f4-mediator-theorem =
-  finiteAttentionWatkinsGRUF4MediatorTheorem
-    (λ K s a → C.canonicalPolicy-attention-invariant K s a)
-    (λ K s a →
-      refl)
-    (λ K s a →
-      refl)
-    (λ K s a →
-      refl)
-    (λ K s a →
-      C.canonicalRecurrentInput-law K (C.replaceAttention s a))
-    (λ K s a →
-      C.canonicalOptimizerStep-qMunchausen-L2 K (C.replaceAttention s a))
-    (λ K s a →
-      refl)
-    (λ K s a →
-      refl)
-    (λ K s a →
-      trans
-        (C.canonicalNormPairWeightPlusOne-preservation
-          K
-          (C.replaceAttention s a))
-        refl)
-    (λ K s a →
-      C.canonicalPersistentGRUPreservation
-        K
-        (C.replaceAttention s a))
-
 
 ------------------------------------------------------------------------
 -- Generic equality composition primitive.
@@ -726,7 +532,7 @@ CanonicalGRUF4NormPrefixState =
 
 CanonicalGRUF4NormPrefixInput : Set
 CanonicalGRUF4NormPrefixInput =
-  C.Int8 × C.Int8
+  C.Int8
 
 canonicalGRUF4NormPrefixNetwork :
   C.CanonicalFullLearnerKernel →
@@ -735,26 +541,22 @@ canonicalGRUF4NormPrefixNetwork :
     CanonicalGRUF4NormPrefixInput
 canonicalGRUF4NormPrefixNetwork K =
   C.recurrentNetwork
-    (λ { (g , (o , n)) (signal , attentionMix) →
-      ( C.gruStep g (C.int8Add signal attentionMix)
+    (λ { (g , (o , n)) signal →
+      ( C.gruStep g signal
       , ( C.f4ThetaStep (C.optimizerKernel K) o signal
         , n)) })
 
 canonicalGRUF4NormPrefix-step-law :
   ∀ (K : C.CanonicalFullLearnerKernel)
-  (g : C.GRUState)
-  (o : C.F4IntUState)
-  (n : C.NormPair)
-  (signal attentionMix : C.Int8) →
-  C.runNetwork
-    (canonicalGRUF4NormPrefixNetwork K)
-    (g , (o , n))
-    (signal , attentionMix)
+  (g : C.GRUState) (o : C.F4IntUState) (n : C.NormPair)
+  (signal : C.Int8) →
+  C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
+    (g , (o , n)) signal
   ≡
-  ( C.gruStep g (C.int8Add signal attentionMix)
+  ( C.gruStep g signal
   , ( C.f4ThetaStep (C.optimizerKernel K) o signal
     , n))
-canonicalGRUF4NormPrefix-step-law K g o n signal attentionMix = refl
+canonicalGRUF4NormPrefix-step-law K g o n signal = refl
 
 canonicalGRUF4Norm-prefix-monoid-homomorphism :
   RecurrentPrefixMonoidHomomorphism
@@ -768,10 +570,9 @@ canonicalGRUF4Norm-prefix-monoid-homomorphism =
 canonicalFullStep-GRUF4Norm-prefix-bridge :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState) →
-  C.runNetwork
-    (canonicalGRUF4NormPrefixNetwork K)
+  C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
     (C.gru s , (C.optimizer s , C.norm s))
-    (C.canonicalSignal K s , C.canonicalAttentionMix K s)
+    (C.canonicalSignal K s)
   ≡
   ( C.gru (C.canonicalFullStep K s)
   , ( C.optimizer (C.canonicalFullStep K s)
@@ -787,37 +588,33 @@ canonicalFullStep-GRUF4Norm-prefix-bridge K s = refl
 -- semantics or theorem registry is introduced here.
 ------------------------------------------------------------------------
 
-record CanonicalHadamardAttentionRopePrefixCompositionTheorem : Set₁ where
-  constructor canonicalHadamardAttentionRopePrefixCompositionTheorem
+record CanonicalGRUF4NormWatkinsPrefixCompositionTheorem : Set₁ where
+  constructor canonicalGRUF4NormWatkinsPrefixCompositionTheorem
   field
     recurrentScan :
-      RecurrentPrefixMonoidHomomorphism
-        C.GRUState
-        C.Int8
+      RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
     targetCorrectness :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      C.canonicalSignal K s ≡
-      C.canonicalWatkinsTarget K s
-    attentionMixCorrectness :
+      C.canonicalSignal K s ≡ C.canonicalWatkinsTarget K s
+    gruf4NormCorrectness :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      C.canonicalAttentionMix K s ≡
-      let
-        p = C.learnedSparsemaxAttentionWeights (C.attention s)
-        w = C.walshHadamardApply (C.liftAttention p)
-      in
-      C.int8Add
-        (C.attentionToGRU K w)
-        (C.walshRademacherRopeReadout (C.clock s) w)
+      C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
+        (C.gru s , (C.optimizer s , C.norm s))
+        (C.canonicalSignal K s)
+      ≡
+      ( C.gru (C.canonicalFullStep K s)
+      , ( C.optimizer (C.canonicalFullStep K s)
+        , C.norm (C.canonicalFullStep K s)))
 
-canonical-hadamard-attention-rope-prefix-composition-theorem :
-  CanonicalHadamardAttentionRopePrefixCompositionTheorem
-canonical-hadamard-attention-rope-prefix-composition-theorem =
-  canonicalHadamardAttentionRopePrefixCompositionTheorem
+canonical-gruf4-norm-watkins-prefix-composition-theorem :
+  CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+canonical-gruf4-norm-watkins-prefix-composition-theorem =
+  canonicalGRUF4NormWatkinsPrefixCompositionTheorem
     canonical-recurrent-prefix-monoid-homomorphism
     C.canonicalSignal-watkins-target
-    (λ K s → refl)
+    canonicalFullStep-GRUF4Norm-prefix-bridge
 
 
 ------------------------------------------------------------------------
@@ -2787,20 +2584,6 @@ recurrentPrefixStepWork-split m (suc n)
 
 ------------------------------------------------------------------------
 
--- Recovered Part2 theorem
-canonical-hadamard-attention-rope-prefix-composition-theorem :
-  CanonicalHadamardAttentionRopePrefixCompositionTheorem
-canonical-hadamard-attention-rope-prefix-composition-theorem =
-  canonicalHadamardAttentionRopePrefixCompositionTheorem
-    C.walshHadamardOrthogonality4
-    (λ K s → learnedAttentionComposition canonical-aq-loop-theorem K s)
-    walshRademacherRope4-period4
-    finite-attention-watkins-gru-f4-mediator-theorem
-    canonicalGRU-recurrent-associative-scan-theorem
-    (λ K s n h → canonicalWatkinsTarget-recurrent-prefix-correct K s n h)
-    recurrentPrefixStepWork-law
-    recurrentPrefixStepWork-split
-
 ------------------------------------------------------------------------
 -- Explicit equality-composition theorem.
 --
@@ -3142,100 +2925,63 @@ record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
   constructor canonicalPolymorphicSparsemaxCompositionTheorem
   field
     genericPolicy :
-      ∀ {A}
-      (K : C.FullLearnerKernel A)
-      (s : C.FullLearnerState A) →
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
       C.canonicalPolicy K s ≡
       C.sparsemaxPolicy
         (C.actionSpaceK K)
-        (C.lcbScore
-          (C.lcbKernel K)
-          (C.lcbCounts s)
+        (C.lcbScore (C.lcbKernel K) (C.lcbCounts s)
           (C.critic (C.watkins s)))
         (C.valuesCount (C.lcbCounts s))
-
-    attentionProjectionInvariant :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (a : C.LearnedSparsemaxAttention C.canonicalActionCount) →
-      C.canonicalPolicy K (C.replaceAttention s a)
-      ≡ C.canonicalPolicy K s
-
     normProjectionInvariant :
       ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (n : C.NormPair) →
-      C.canonicalPolicy K (C.replaceNorm s n)
-      ≡ C.canonicalPolicy K s
-
+      (s : C.CanonicalFullLearnerState) (n : C.NormPair) →
+      C.canonicalPolicy K (C.replaceNorm s n) ≡ C.canonicalPolicy K s
     optimizerProjectionInvariant :
       ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (o : C.F4IntUState) →
-      C.canonicalPolicy K (C.replaceOptimizer s o)
-      ≡ C.canonicalPolicy K s
-
+      (s : C.CanonicalFullLearnerState) (o : C.F4IntUState) →
+      C.canonicalPolicy K (C.replaceOptimizer s o) ≡ C.canonicalPolicy K s
     hardSparseComposition :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
-      (n : C.NormPair)
-      (o : C.F4IntUState) →
+      (n : C.NormPair) (o : C.F4IntUState) →
       C.HardSparse K s →
-      C.HardSparse
-        K
-        (C.replaceNorm (C.replaceOptimizer s o) n)
-
+      C.HardSparse K (C.replaceNorm (C.replaceOptimizer s o) n)
     recurrentPrefixComposition :
       RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
-
     s4PlusS5RecurrentScan :
       S4PlusS5RecurrentScanTheorem C.GRUState C.Int8
-
     finiteAutomataProductPrefix :
       ∀ {A B I : Nat}
       (stepA : Fin A → Fin I → Fin A)
       (stepB : Fin B → Fin I → Fin B)
-      (xs : Nat → Fin I)
-      (n : Nat)
-      (s : Fin A)
-      (t : Fin B) →
-      C.recurrentPrefixState
-        (C.recurrentNetwork stepA)
-        xs n s
+      (xs : Nat → Fin I) (n : Nat) (s : Fin A) (t : Fin B) →
+      C.recurrentPrefixState (C.recurrentNetwork stepA) xs n s
       ≡
-      proj₁
-        (C.recurrentPrefixState
-          (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
-          xs n
-          (s , t))
+      proj₁ (C.recurrentPrefixState
+        (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
+        xs n (s , t))
       ×
-      C.recurrentPrefixState
-        (C.recurrentNetwork stepB)
-        xs n t
+      C.recurrentPrefixState (C.recurrentNetwork stepB) xs n t
       ≡
-      proj₂
-        (C.recurrentPrefixState
-          (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
-          xs n
-          (s , t))
-
+      proj₂ (C.recurrentPrefixState
+        (C.recurrentNetwork (finiteAutomatonProductStep stepA stepB))
+        xs n (s , t))
     informationPreservingTask :
       ∀ {State Feature Output : Set}
-      (observe : State → Feature)
-      (inverse : Feature → State)
+      (observe : State → Feature) (inverse : Feature → State)
       (leftInverse : ∀ s → inverse (observe s) ≡ s)
-      (target : State → Output)
-      (s : State) →
+      (target : State → Output) (s : State) →
       target s ≡ target (inverse (observe s))
 
 open CanonicalPolymorphicSparsemaxCompositionTheorem public
 
 canonical-polymorphic-sparsemax-egraph-theorem :
   CanonicalPolymorphicSparsemaxCompositionTheorem
+canonical-polymorphic-sparsemax-egraph-theorem :
+  CanonicalPolymorphicSparsemaxCompositionTheorem
 canonical-polymorphic-sparsemax-egraph-theorem =
   canonicalPolymorphicSparsemaxCompositionTheorem
     (λ K s → refl)
-    C.canonicalPolicy-attention-invariant
     C.canonicalPolicy-norm-invariant
     C.canonicalPolicy-optimizer-invariant
     C.hardSparse-composition-normPair-F4-L2
