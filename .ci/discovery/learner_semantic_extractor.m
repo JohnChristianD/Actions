@@ -4,7 +4,6 @@
 
 :- import_module io.
 
-:- pred main(io::di, io::uo) is det.
 :- pred extract_semantics(io::di, io::uo) is det.
 
 :- implementation.
@@ -431,6 +430,3 @@ count_composite([D | Ds], All, Composite, NonReflexive) :-
     count_composite(Ds, All, TailComposite, TailNonReflexive),
     Composite = ThisComposite + TailComposite,
     NonReflexive = ThisNonReflexive + TailNonReflexive.
-
-main(!IO) :-
-    extract_semantics(!IO).
