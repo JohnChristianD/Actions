@@ -2586,3 +2586,57 @@ continuousStationaryWalrasian-lift D p allocation h =
 -- Those are separate hypotheses that an e-graph may compose when their
 -- semantic laws are present; they must not be manufactured by search.
 ------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Endogenous cross-domain composition target for Mercury A*.
+--
+-- This record deliberately names theorem-level interfaces, not learner
+-- implementation symbols.  Its proof is an Agda witness; Mercury may
+-- discover the dependency path structurally from this declaration.
+------------------------------------------------------------------------
+
+record MarkovStationaryWalrasianCompositionTheorem : Set₁ where
+  constructor markovStationaryWalrasianCompositionTheorem
+  field
+    recurrentScan :
+      RecurrentAssociativeScanTheorem C.GRUState C.Int8
+
+    continuousExactReadout :
+      ∀ {State Feature Output : Set}
+        {observe : State → Feature}
+        {inverse : Feature → State}
+        {Continuous : {A B : Set} → (A → B) → Set} →
+      ContinuousLeftInverseTheorem
+        State Feature observe inverse Continuous →
+      (target : State → Output) →
+      ∀ s →
+      target s ≡ target (inverse (observe s))
+
+    stationaryWalrasianLift :
+      ∀ {State Price Allocation : Set}
+        {Continuous : {A B : Set} → (A → B) → Set}
+        (D : ContinuousStationaryMarkovWalrasianData
+          State Price Allocation Continuous)
+        (p : Price)
+        (allocation : State → Allocation) →
+      staticWalrasian D p (aggregate D allocation) →
+      StationaryWalrasian D p allocation
+
+open MarkovStationaryWalrasianCompositionTheorem public
+
+markov-stationary-walrasian-composition-theorem :
+  MarkovStationaryWalrasianCompositionTheorem
+markov-stationary-walrasian-composition-theorem =
+  markovStationaryWalrasianCompositionTheorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    continuousLeftInverse-exactReadout-transfer
+    continuousStationaryWalrasian-lift
+
+------------------------------------------------------------------------
+-- The resulting target is deliberately not an iid-uniform theorem:
+-- the Markov component contributes only an arbitrary step and an invariant
+-- aggregate functional.  The recurrent/topological pieces are imported
+-- through theorem interfaces, so A* can connect them without a theorem-name
+-- lookup table.
+------------------------------------------------------------------------
