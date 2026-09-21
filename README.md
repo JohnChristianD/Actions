@@ -24,7 +24,7 @@ The division is deliberately strict:
 
 `CanonicalLearnerMonolith.agda` + `TheoremsMonolith.agda`
 -> Mercury semantic extraction
--> Mercury semantic manifest
+-> Mercury in-memory semantic law extraction
 -> Mercury e-graph normalization
 -> Mercury theorem-monolith sync gate
 -> Nix-pinned `agda --safe`
@@ -127,11 +127,11 @@ The constructor for the composed theorem directly includes the bounded theorem a
 
 ## Mercury e-graph sync contract
 
-The forced target is:
+The discovery target is not fixed; every non-reflexive source law is a seed, and dependency expansion continues until each maximal simple dependency chain is reached:
 
 `TheoremsMonolith.agda#canonical-endogenous-minimax-bellman-shapley-uap-theorem`
 
-The Mercury sync gate requires the target dependency set to contain the continuous-left-inverse transfer, bounded exact approximation, infinite-state orbit embedding, Nat-clock pigeonhole contradiction, and global-`Int8` UAP impossibility law.
+The Mercury sync gate requires only that source-derived laws and emergent composition plans are nonempty, structurally valid, and successfully inserted, saturated, analyzed, and extracted. No theorem name, dependency list, candidate-count cap, or symbolic target is hard-coded.
 
 The sync report records:
 
@@ -222,7 +222,7 @@ This is a cardinality contradiction, not a claim that chaotic reservoirs are req
 
 ## Equality-saturation e-graph boundary
 
-The Mercury implementation now contains the standard equality-saturation stages that were previously missing from the repository-specific congruence structure: e-matching, rewrite application, repeated saturation to a fixed point or iteration cap, rebuilding/congruence maintenance, e-class analysis, and cost-guided extraction. The theorem-sync gate exercises the same pipeline against the source-derived semantic manifest. It does not make Mercury a proof authority: Agda `--safe` remains authoritative.
+The Mercury implementation now contains the standard equality-saturation stages that were previously missing from the repository-specific congruence structure: e-matching, rewrite application, repeated saturation to an endogenous fixed point, rebuilding/congruence maintenance, e-class analysis, and cost-guided extraction. The theorem-sync gate exercises the same pipeline against the source-derived in-memory semantic law set. It does not make Mercury a proof authority: Agda `--safe` remains authoritative.
 
 
 ## Topology, import, and reservoir-universality boundary
@@ -239,7 +239,7 @@ For this repository's exact finite algebra the stronger obstruction is cardinali
 
 ## Mercury proof-source synchronization
 
-Mercury semantic extraction now checks that `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` explicitly declares `{-# OPTIONS --safe #-}` before generating the semantic manifest. The theorem e-graph then consumes that source-derived manifest and exercises e-matching, rewrite application, saturation, rebuild, e-class analysis, and cost-guided extraction. Agda remains the proof authority; Mercury is the semantic synchronization/equality-saturation verification layer.
+Mercury semantic extraction now checks that `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` explicitly declares `{-# OPTIONS --safe #-}` before building the in-memory semantic law set. The theorem e-graph then consumes that source-derived semantic law set and exercises e-matching, rewrite application, saturation, rebuild, e-class analysis, and cost-guided extraction. Agda remains the proof authority; Mercury is the semantic synchronization/equality-saturation verification layer.
 
 ## Model class, topology, Nat cardinality, and reservoir distinction
 
@@ -261,7 +261,7 @@ For this repository the formal result is stronger and simpler: an injective `Nat
 
 ## Mercury synchronization boundary
 
-Mercury now treats the `{-# OPTIONS --safe #-}` theorem monolith as the proof-source contract. The extractor verifies the safe declaration, recognizes the record-valued exact-UAP certificate, and derives the semantic manifest directly from the theorem monolith only. The theorem e-graph explicitly requires the exact-UAP certificate and the finite-`Int8` continuous-left-inverse contradiction in the forced target dependency graph, then runs e-matching, rewriting, saturation, rebuild, e-class analysis, and cost-guided extraction. Agda `--safe` remains authoritative; Mercury is synchronized semantic/equality-saturation verification.
+Mercury now treats the `{-# OPTIONS --safe #-}` theorem monolith as the proof-source contract. The extractor verifies the safe declaration, recognizes the record-valued exact-UAP certificate, and derives the in-memory semantic law set directly from the theorem monolith only. The theorem e-graph derives dependencies from declaration signatures/bodies, enumerates maximal simple dependency paths, inserts every source law and graph plan, then runs e-matching, rewriting, fixed-point saturation, rebuild, e-class analysis, and cost-guided extraction. Agda `--safe` remains authoritative; Mercury is synchronized semantic/equality-saturation verification.
 
 ## Theorem-only equality saturation and canonical composition
 
@@ -280,7 +280,7 @@ No Sion theorem, regret bound, or statistical sample-complexity theorem is part 
 No CHAD/automatic-differentiation theorem family is imported into this canonical learner/theorem graph. The current repository proof surface contains no CHAD source, and complexity results are stated only where an exact theorem already exists in the canonical theorem monolith.
 
 
-The Nix CI invokes Mercury discovery only against `TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` is kernel-checked because it is the canonical imported learner definition, but learner declarations are not inserted into the Mercury semantic manifest or e-graph. No Sion-style environment-dependent regret or statistical sample-complexity theorem is part of this exact surface; no regret theorem is retained.
+The Nix CI invokes Mercury discovery only against `TheoremsMonolith.agda`. `CanonicalLearnerMonolith.agda` is kernel-checked because it is the canonical imported learner definition, but learner declarations are not inserted into the Mercury in-memory semantic law extraction or e-graph. No Sion-style environment-dependent regret or statistical sample-complexity theorem is part of this exact surface; no regret theorem is retained.
 
 ### Injectivity and finite-capacity boundary
 
@@ -303,7 +303,7 @@ The Nat-indexed orbit, exact iterate composition, left-inverse injectivity, and 
 
 The canonical learner remains exactly one executable source, `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`, and the canonical theorem surface remains exactly one public facade, `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`. `TheoremsMonolith/Part1a` through `Part5` are CI compilation partitions only; they are not separate learner semantics.
 
-The theorem/e-graph boundary now reads only the canonical `TheoremsMonolith.agda` source. Mercury's A* stage has no named theorem target or hard-coded dependency list: it seeds non-reflexive composite laws, follows declaration-derived dependencies, and hands structural candidate plans to the hash-consed e-graph for saturation and extraction. Agda `--safe` remains the semantic authority; a Mercury candidate is not reported as an Agda theorem until the kernel checks the source theorem.
+The theorem/e-graph boundary reads only the canonical `TheoremsMonolith.agda` source. Mercury graph search has no named theorem target, hard-coded dependency list, lookup table, fixed depth, or candidate-count cap: it seeds non-reflexive laws, follows declaration-derived dependencies, and hands every maximal simple dependency path to the hash-consed e-graph for saturation and extraction. Agda `--safe` remains the semantic authority; a Mercury candidate is not reported as an Agda theorem until the kernel checks the source theorem.
 
 The Tsallis-2 measure is no longer conceptually restricted to the canonical two-action specialization. `ActionWeights d = Fin d -> Nat` provides the general exact finite-action definition; the existing two-action policy remains a specialization of the learner semantics rather than the definition of the measure. The hard support sparsity boundary is `(d-k)/d`; Tsallis-2 is the weighted effective-support measure `(dQ-S²)/(dQ)`, with the zero-vector convention equal to 1.
 
@@ -314,9 +314,9 @@ CI predecessor handoff is interface-only: theorem jobs consume downloaded `.agda
 
 The theorem monolith now contains `ContinuousStationaryMarkovWalrasianData` and `continuousStationaryWalrasian-lift`. The transition is arbitrary; the only stationarity condition is invariance of the aggregate functional. Continuity is carried through the existing `Continuous` seam rather than assuming an iid-uniform shock law. The theorem proves the exact static-Walrasian-to-stationary-Walrasian lift; existence of a stationary law and existence of a Walrasian equilibrium remain separate hypotheses for future structural composition.
 
-## Current endogenous A* composition gate
+## Current endogenous graph composition gate
 
-The canonical CI order is Agda `--safe` first, followed by theorem-only Mercury. Mercury consumes only semantic declarations extracted from `TheoremsMonolith.agda`; it does not import or e-graph the learner monolith. The A* stage seeds non-reflexive composite laws and follows declaration-derived dependencies without a named theorem target. The hash-consed e-graph then saturates those candidate proof plans. CI rejects a discovery report unless the forced-target flag is false and the A* candidate count is positive.
+The canonical CI order is Agda `--safe` first, followed by theorem-only Mercury. Mercury consumes only semantic declarations extracted from `TheoremsMonolith.agda`; it does not import or e-graph the learner monolith. The graph stage seeds every non-reflexive law and follows declaration-derived dependencies without a named theorem target. The hash-consed e-graph then inserts every law and every maximal simple dependency plan, saturates to an endogenous fixed point, and extracts all source-derived laws. CI requires the non-forced report flag and a positive emergent-composition count.
 
 The new theorem composition crosses four interfaces already present in the canonical theorem surface: recurrent associative prefix scanning, direct-product finite-automaton composition, continuous left-inverse exact readout, and arbitrary-transition stationary Markov/Walrasian lifting. The Markov result does not assume iid uniform shocks; it requires an invariant aggregate functional. The representation/stability boundary is explicit: continuous injective exact representation does not imply convergence of an arbitrary update rule, so it is not promoted into a Baird-stability theorem without an algorithmic contraction/convergence hypothesis.
 
