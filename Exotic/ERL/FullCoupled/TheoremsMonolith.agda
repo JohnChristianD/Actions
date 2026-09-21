@@ -1809,6 +1809,105 @@ canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
     (leftInverse witness)
 
 ------------------------------------------------------------------------
+-- Finite-observation impossibility for an exact unbounded counter.
+--
+-- This is the precise Turing-boundary theorem available from the current
+-- semantic surface.  It does not claim that every recurrent learner is
+-- non-Turing-complete.  It rules out any exact simulation whose unbounded
+-- Nat counter is injectively represented through the finite Int8
+-- observation with an exact decoder on the represented states.
+------------------------------------------------------------------------
+
+record ExactNatObservationSimulation
+  (State : Set)
+  (encode : Nat → State)
+  (observe : State → C.Int8)
+  (decode : C.Int8 → State) : Set₁ where
+  constructor exactNatObservationSimulation
+  field
+    encodeInjective :
+      ∀ {m n : Nat} →
+      encode m ≡ encode n →
+      m ≡ n
+    exactDecode :
+      ∀ n →
+      decode (observe (encode n)) ≡ encode n
+
+open ExactNatObservationSimulation public
+
+noExactNatSimulation-through-finite-Int8 :
+  ∀ {State : Set}
+  (encode : Nat → State)
+  (observe : State → C.Int8)
+  (decode : C.Int8 → State) →
+  (∀ {m n : Nat} → encode m ≡ encode n → m ≡ n) →
+  (∀ n → decode (observe (encode n)) ≡ encode n) →
+  ⊥
+noExactNatSimulation-through-finite-Int8
+  encode observe decode encodeInjective exactDecode =
+  C.int8-no-countably-unbounded-injective
+    (λ n → observe (encode n))
+    (λ {m} {n} obsEq →
+      encodeInjective
+        (trans
+          (sym (exactDecode m))
+          (trans
+            (cong decode obsEq)
+            (exactDecode n))))
+
+record ExactTuringCounterObservation
+  (State : Set)
+  (encode : Nat → State)
+  (observe : State → C.Int8)
+  (decode : C.Int8 → State) : Set₁ where
+  constructor exactTuringCounterObservation
+  field
+    counterInjective :
+      ∀ {m n : Nat} →
+      encode m ≡ encode n →
+      m ≡ n
+    counterDecode :
+      ∀ n →
+      decode (observe (encode n)) ≡ encode n
+
+noExactTuringCounterObservation-through-Int8 :
+  ∀ {State : Set}
+  (encode : Nat → State)
+  (observe : State → C.Int8)
+  (decode : C.Int8 → State) →
+  ExactTuringCounterObservation State encode observe decode →
+  ⊥
+noExactTuringCounterObservation-through-Int8
+  encode observe decode witness =
+  noExactNatSimulation-through-finite-Int8
+    encode
+    observe
+    decode
+    (counterInjective witness)
+    (counterDecode witness)
+
+canonicalNoExactTuringCounterObservation :
+  ∀
+  (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState)
+  (observe : C.CanonicalFullLearnerState → C.Int8)
+  (decode : C.Int8 → C.CanonicalFullLearnerState) →
+  ExactTuringCounterObservation
+    C.CanonicalFullLearnerState
+    (λ n → C.iterateCanonical K n s)
+    observe
+    decode →
+  ⊥
+canonicalNoExactTuringCounterObservation
+  K s observe decode witness =
+  noExactTuringCounterObservation-through-Int8
+    (λ n → C.iterateCanonical K n s)
+    observe
+    decode
+    witness
+
+
+------------------------------------------------------------------------
 -- Continuous left-inverse transfer.
 --
 -- The strict import boundary does not contain topology. Continuity is
