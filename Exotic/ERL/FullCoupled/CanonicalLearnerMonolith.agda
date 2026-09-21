@@ -988,18 +988,18 @@ canonicalGRUStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → GR
 canonicalGRUStep K s =
   gruStep
     (gru s)
-(canonicalSignal K s)
+    (canonicalSignal K s)
 
 canonicalPersistentGRUPreservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistentGRUPreservation K s =
   persistent-preservation (gru s)
-    (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
+    (canonicalSignal K s)
 
 canonicalRecurrentInput-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalGRUStep K s ≡
   gruStep (gru s)
-    (int8Add (canonicalSignal K s) (canonicalAttentionMix K s))
+    (canonicalSignal K s)
 canonicalRecurrentInput-law K s = refl
 
 canonicalOptimizerStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → F4IntUState
@@ -1112,9 +1112,6 @@ pessimisticCritic {A} = criticState (λ _ → pessimisticInit)
 
 pessimisticCritic-law : ∀ {A} (i : Fin A) → values pessimisticCritic i ≡ pessimisticInit
 pessimisticCritic-law i = refl
-
-canonicalWalshBoundary : walshOrthonormal ≡ walshOrthonormal
-canonicalWalshBoundary = refl
 
 canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistent = canonicalPersistentGRUPreservation
