@@ -43,14 +43,24 @@ run_discovery() {
   )
 
   test -s ".ci/discovery/theorem-monolith-egraph-sync.json"
+  grep -q '"forced_symbolic_target": false' ".ci/discovery/theorem-monolith-egraph-sync.json"
+  grep -q '"single_agda_source": true' ".ci/discovery/theorem-monolith-egraph-sync.json"
+  grep -q '"astar_search": "structural dependency composition only"' ".ci/discovery/theorem-monolith-egraph-sync.json"
+  astar_count="$(
+    sed -n 's/.*"astar_emergent_candidate_count": \\([0-9][0-9]*\\).*/\\1/p' \
+      ".ci/discovery/theorem-monolith-egraph-sync.json"
+  )"
+  test -n "$astar_count"
+  test "$astar_count" -gt 0
   printf '%s\n' "theorem-monolith-egraph-sync-report=present"
+  printf 'astar-emergent-candidate-count=%s\n' "$astar_count"
 }
 
 run_surface() {
   local theorem_monolith_count learner_monolith_count total_monolith_count
 
-  if grep -Eq '^[[:space:]]*concurrency:' .github/workflows/nix-composition.yml; then
-    printf '%s\n' "ERROR: workflow concurrency may cancel or evict runs; rely on independent bounded jobs instead"
+  if grep -Eq '^[[:space:]]+cancel-in-progress:[[:space:]]+true' .github/workflows/nix-composition.yml; then
+    printf '%s\n' "ERROR: CI concurrency is allowed only when runs cannot be cancelled"
     exit 1
   fi
 
