@@ -274,7 +274,7 @@ search_emergent_compositions(Laws, MaxResults, Results, !IO) :-
     list(astar_node)::in,
     int::in,
     list(string)::out) is semidet.
-search_det(Laws, [], _, _) :-
+search_det(_, [], _, _) :-
     fail.
 search_det(Laws, [First | Rest], Expansions, Plan) :-
     pop_best_acc(Rest, First, [], Node, Frontier1),
