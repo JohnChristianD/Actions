@@ -23,7 +23,9 @@ There is no generated Agda theorem projection. Mercury synchronizes only against
 The division is deliberately strict:
 
 `CanonicalLearnerMonolith.agda` + `TheoremsMonolith.agda`
+-> Roc typed-functional CI orchestration
 -> Mercury source-derived in-memory semantic law extraction
+-> Mercury A* cost-guided dependency search
 -> Mercury e-graph normalization
 -> Mercury theorem-monolith sync gate
 -> Nix-pinned `agda --safe`
@@ -41,9 +43,9 @@ The e-graph is a discovery/proof-plan normalization layer, not a second proof au
 
 ## Nix toolchain strategy
 
-CI installs Nix once and enters the repository flake. The flake pins nixpkgs at the repository revision and supplies the upstream Agda setup, Mercury 22.01.9, and Roc. Roc is the only repository-side CI program source: \`.ci/actions_ci.roc\` is a typed functional executable source, while Nix remains the declarative environment/build layer.
+CI installs Nix once and enters the repository flake. The flake pins nixpkgs at the repository revision and supplies the upstream Agda setup, Mercury 22.01.9, and Roc. Roc is the only repository-side CI program source: `.ci/actions_ci.roc` is a typed functional executable source, while Nix remains the declarative environment/build layer.
 
-The Roc program invokes Agda \`--safe\`, Mercury, theorem-only A* graph search, e-graph saturation, the semantic contract, and the canonical source audit directly as processes. It does not invoke a shell interpreter, Node, Python, Lua, or a JavaScript runtime.
+The Roc program invokes Agda `--safe`, Mercury, theorem-only A* graph search, e-graph saturation, the semantic contract, and the canonical source audit directly as processes. It does not invoke a shell interpreter, Node, Python, Lua, or a JavaScript runtime.
 
 Roc is used specifically for its pure functional model, explicit effects, native execution, and documented terminal-command and CI-script examples. The exact pinned nixpkgs revision already contains the Roc compiler used by the Linux CI runner.
 
@@ -55,16 +57,16 @@ Roc matches the actual CI job: it is a pure functional language with explicit ef
 
 The executable path is:
 
-\`.ci/actions_ci.roc\`
+`.ci/actions_ci.roc`
 -> Roc process execution
 -> Agda / Mercury binaries
 -> theorem-source extraction
 -> A* dependency frontier
 -> e-graph saturation
 -> cost-guided extraction
--> \`theorem-monolith-egraph-sync.json\`
+-> `theorem-monolith-egraph-sync.json`
 
-A* is a graph-search cost policy, not a proof authority. Agda \`--safe\` accepts proofs; Mercury derives the theorem dependency graph and equality-saturation plan; Roc only orchestrates those existing authorities.
+A* is a graph-search cost policy, not a proof authority. Agda `--safe` accepts proofs; Mercury derives the theorem dependency graph and equality-saturation plan; Roc only orchestrates those existing authorities.
 
 ## Infinite-state proof
 
@@ -199,15 +201,15 @@ The boundary remains:
 
 Roc dispatches four connected lanes:
 
-\`agda-safe\`, \`mercury\`, \`discovery\`, and \`surface\`.
+`agda-safe`, `mercury`, `discovery`, and `surface`.
 
-The Agda lane checks the canonical learner and theorem monolith with \`agda --safe\`.
+The Agda lane checks the canonical learner and theorem monolith with `agda --safe`.
 
 The Mercury lane runs the theorem-policy gate.
 
-The discovery lane runs theorem-only semantic extraction, A* cost-guided dependency-path search, e-graph insertion, saturation, analysis, and cost-guided extraction. The sync report is required to state \`forced_symbolic_target=false\`, \`single_agda_source=true\`, \`astar_score_ordered=true\`, and a positive emergent composition count.
+The discovery lane runs theorem-only semantic extraction, A* cost-guided dependency-path search, e-graph insertion, saturation, analysis, and cost-guided extraction. The sync report is required to state `forced_symbolic_target=false`, `single_agda_source=true`, `astar_score_ordered=true`, and a positive emergent composition count.
 
-The semantic-contract lane checks required theorem declarations directly in \`TheoremsMonolith.agda\` and rejects forbidden unrelated learner mechanisms. The surface lane derives its file inventory from \`git ls-files\`, rejects retired script/source languages, rejects a second generated theorem monolith, and requires \`.ci/actions_ci.roc\`.
+The semantic-contract lane checks required theorem declarations directly in `TheoremsMonolith.agda` and rejects forbidden unrelated learner mechanisms. The surface lane derives its file inventory from `git ls-files`, rejects retired script/source languages, rejects a second generated theorem monolith, and requires `.ci/actions_ci.roc`.
 
 ## Deliberate mathematical boundary
 
