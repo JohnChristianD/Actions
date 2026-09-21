@@ -741,6 +741,7 @@ fullCommutingSquareConjugacyTheorem-from-witness :
   FullCommutingSquareConjugacyTheorem
     State Feature step observe featureStep inverse
 fullCommutingSquareConjugacyTheorem-from-witness
+  {State} {Feature} {step} {observe} {featureStep}
   inverse squareWitness leftInverse rightInverse =
   fullCommutingSquareConjugacyTheorem
     squareWitness
