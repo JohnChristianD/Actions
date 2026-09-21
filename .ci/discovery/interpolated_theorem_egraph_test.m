@@ -36,7 +36,7 @@ main(!IO) :-
         list.filter(
             (pred(L::in) is semidet :-
                 semantic_law.source(L) =
-                    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"),
+                    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"),
             Laws) = Laws,
         list.length(Laws) > 0,
         NonReflexive > 0,

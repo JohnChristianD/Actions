@@ -13,8 +13,8 @@
 
 :- func checked_paths = list(string).
 checked_paths = [
-    "../Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda",
-    "../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+    "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda",
+    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
 ].
 
 :- func forbidden = list(string).

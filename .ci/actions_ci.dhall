@@ -18,17 +18,17 @@ let script = merge {
     '',
   Mercury = ''
     set -euo pipefail
-    mmc --make .ci/check_forbidden_theorems
-    ./.ci/check_forbidden_theorems
+    mmc --make -I .ci check_forbidden_theorems
+    ./check_forbidden_theorems
     '',
   Discovery = ''
     set -euo pipefail
-    mmc --make .ci/discovery/theorem_monolith_egraph_sync
-    ./.ci/discovery/theorem_monolith_egraph_sync
-    mmc --make .ci/discovery/symbolic_egraph_test
-    ./.ci/discovery/symbolic_egraph_test
-    mmc --make .ci/discovery/interpolated_theorem_egraph_test
-    ./.ci/discovery/interpolated_theorem_egraph_test
+    mmc --make -I .ci/discovery theorem_monolith_egraph_sync
+    ./theorem_monolith_egraph_sync
+    mmc --make -I .ci/discovery symbolic_egraph_test
+    ./symbolic_egraph_test
+    mmc --make -I .ci/discovery interpolated_theorem_egraph_test
+    ./interpolated_theorem_egraph_test
     report=.ci/discovery/theorem-monolith-egraph-sync.json
     grep -Fq '"forced_symbolic_target": true' "$report" && { echo "forced symbolic target"; exit 1; } || true
     grep -Fq '"single_agda_source": false' "$report" && { echo "non-canonical Agda source"; exit 1; } || true
@@ -160,14 +160,14 @@ let script = merge {
     '',
   StrictExistenceImpossibility = ''
     set -euo pipefail
-    mmc --make .ci/discovery/strict_existence_impossibility_graph
-    ./.ci/discovery/strict_existence_impossibility_graph
+    mmc --make -I .ci/discovery strict_existence_impossibility_graph
+    ./strict_existence_impossibility_graph
     report=.ci/discovery/strict-existence-impossibility-graph.json
     grep -Fq '"rule": "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
     grep -Fq '"orange_statuses_allowed": false' "$report" || { echo "orange status enabled"; exit 1; }
     grep -Fq '"terminal_statuses": ["EXISTENCE","IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
     ! grep -Eiq 'frontier|unknown|vague|adapter needed|unresolved|pending' "$report" || { echo "vague status present"; exit 1; }
-    grep -Fq 'strict-existence-impossibility-graph=pass' <(./.ci/discovery/strict_existence_impossibility_graph)
+    grep -Fq 'strict-existence-impossibility-graph=pass' <(./strict_existence_impossibility_graph)
     '',
   StationaryCycleImpossibility = ''
     set -euo pipefail
@@ -243,8 +243,8 @@ JSON
   IsomorphismTransport = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    mmc --make .ci/discovery/isomorphism_transport_graph
-    ./.ci/discovery/isomorphism_transport_graph
+    mmc --make -I .ci/discovery isomorphism_transport_graph
+    ./isomorphism_transport_graph
     report=.ci/discovery/isomorphism-transport-graph.json
     grep -Fq '"rule": "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
     grep -Fq '"orange_statuses_allowed": false' "$report" || { echo "orange status enabled"; exit 1; }
@@ -349,14 +349,14 @@ JSON
     dhall --version
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    mmc --make .ci/check_forbidden_theorems
-    ./.ci/check_forbidden_theorems
-    mmc --make .ci/discovery/theorem_monolith_egraph_sync
-    ./.ci/discovery/theorem_monolith_egraph_sync
-    mmc --make .ci/discovery/symbolic_egraph_test
-    ./.ci/discovery/symbolic_egraph_test
-    mmc --make .ci/discovery/interpolated_theorem_egraph_test
-    ./.ci/discovery/interpolated_theorem_egraph_test
+    mmc --make -I .ci check_forbidden_theorems
+    ./check_forbidden_theorems
+    mmc --make -I .ci/discovery theorem_monolith_egraph_sync
+    ./theorem_monolith_egraph_sync
+    mmc --make -I .ci/discovery symbolic_egraph_test
+    ./symbolic_egraph_test
+    mmc --make -I .ci/discovery interpolated_theorem_egraph_test
+    ./interpolated_theorem_egraph_test
     ''
 }
 lane
