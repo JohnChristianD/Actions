@@ -89,6 +89,12 @@ jobs:
         env:
           CI_LANE: econlib-equilibrium-search
         run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+      - name: Strict existence or impossibility graph
+        timeout-minutes: 15
+        env:
+          CI_LANE: strict-existence-impossibility
+        run: nix develop .#default -c dhall text --file .ci/actions_ci.dhall | bash -e
+
       - name: Semantic contract
         timeout-minutes: 15
         env:
