@@ -27,8 +27,6 @@
 
 :- implementation.
 
-:- import_module bool.
-:- import_module list.
 :- import_module string.
 
 :- pred parse_line(string::in, semantic_law::out) is semidet.
