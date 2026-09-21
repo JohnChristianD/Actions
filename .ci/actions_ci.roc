@@ -284,7 +284,7 @@ run_lane! = \lane ->
           run_surface!({})
       _ -> Err(UnknownLane(lane))
 
-main! : List Arg => Result {} [Exit(I32), ..]
+main! : List Arg => Result {} _
 main! = \raw_args ->
   args = raw_args.map(Arg.display)
 
