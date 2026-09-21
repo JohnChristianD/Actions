@@ -3744,6 +3744,12 @@ record ConjugateWalrasianTransport
     aggregateAgreement :
       aggregate DFeature featureAllocation
       ≡ aggregate DState allocation
+    staticEquilibriumTransport :
+      ∀ p a →
+      staticWalrasian DState p a →
+      staticWalrasian DFeature p a
+
+open ConjugateWalrasianTransport public
 
 conjugateWalrasianTransport-preserves-equilibrium :
   ∀ {State Feature Price Allocation : Set}
@@ -3757,27 +3763,24 @@ conjugateWalrasianTransport-preserves-equilibrium :
       Feature Price Allocation ContinuousFeature}
   {observe : State → Feature}
   {inverse : Feature → State}
-  {allocation : State → Allocation}
-  {featureAllocation : Feature → Allocation} →
+  {allocation : State → Allocation} →
+  GeneralizedWalrasianEquilibrium DState
+    _ allocation →
+  (featureAllocation : Feature → Allocation) →
   ConjugateWalrasianTransport
     State Feature Price Allocation
     DState DFeature observe inverse allocation featureAllocation →
-  GeneralizedWalrasianEquilibrium DState
-    (let p = _ in p)
-    allocation →
   GeneralizedWalrasianEquilibrium DFeature
-    (let p = _ in p)
-    featureAllocation
-conjugateWalrasianTransport-preserves-equilibrium transport witness =
+    _ featureAllocation
+conjugateWalrasianTransport-preserves-equilibrium
+  witness featureAllocation transport =
   generalizedWalrasianEquilibrium
-    (subst
-      (λ a → staticWalrasian DFeature _ a)
-      (sym (aggregateAgreement witness))
+    (staticEquilibriumTransport
+      transport
+      _
+      _
       (staticEquilibrium witness))
-    (subst
-      (λ a → a ≡ aggregate DFeature (λ s → featureAllocation s))
-      (sym (aggregateAgreement witness))
-      (invariant DFeature featureAllocation))
+    (invariant DFeature featureAllocation)
 
 
 ------------------------------------------------------------------------
