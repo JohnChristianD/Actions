@@ -83,7 +83,7 @@ top_level_record_header(Line, Name, SignatureFragment) :-
     first_word(Line, "record"),
     Words = string.words(string.strip(Line)),
     Words = ["record", Name | _],
-    string.sub_string_search(Line, ":"),
+    string.sub_string_search(Line, ":", _),
     Parts = string.split_at_string(":", Line),
     Parts = [_, After | _],
     SignatureFragment = string.strip(After).
