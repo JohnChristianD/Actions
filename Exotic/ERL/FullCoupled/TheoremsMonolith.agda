@@ -778,6 +778,151 @@ canonicalFullStep-GRUF4Norm-prefix-bridge :
     , C.norm (C.canonicalFullStep K s)))
 canonicalFullStep-GRUF4Norm-prefix-bridge K s = refl
 
+
+------------------------------------------------------------------------
+-- Componentwise learner prefix homomorphisms.
+--
+-- Each transition is sourced directly from CanonicalLearnerMonolith.
+-- The prefix action supplies the monoid law; no external component
+-- semantics or theorem registry is introduced here.
+------------------------------------------------------------------------
+
+canonicalF4RecurrentNetwork :
+  C.CanonicalFullLearnerKernel →
+  C.RecurrentNetwork C.F4IntUState C.Int8
+canonicalF4RecurrentNetwork K =
+  C.recurrentNetwork (C.f4ThetaStep (C.optimizerKernel K))
+
+canonicalF4-prefix-correct :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (xs : Nat → C.Int8)
+  (n : Nat)
+  (s : C.F4IntUState) →
+  C.applyEndomorphism
+    (C.recurrentPrefixEndomorphism
+      (canonicalF4RecurrentNetwork K)
+      xs
+      n)
+    s
+  ≡
+  C.recurrentPrefixState
+    (canonicalF4RecurrentNetwork K)
+    xs
+    n
+    s
+canonicalF4-prefix-correct K =
+  C.recurrentPrefix-correct
+    (canonicalF4RecurrentNetwork K)
+
+canonicalF4-prefix-monoid-homomorphism :
+  ∀ (K : C.CanonicalFullLearnerKernel) →
+  RecurrentPrefixMonoidHomomorphism
+    C.F4IntUState
+    C.Int8
+canonicalF4-prefix-monoid-homomorphism K =
+  recurrentPrefixMonoidHomomorphism
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
+
+canonicalNormPairRecurrentNetwork :
+  C.RecurrentNetwork C.NormPair C.Int8
+canonicalNormPairRecurrentNetwork =
+  C.recurrentNetwork (λ s _ → s)
+
+canonicalNormPair-prefix-correct :
+  ∀ (xs : Nat → C.Int8)
+  (n : Nat)
+  (s : C.NormPair) →
+  C.applyEndomorphism
+    (C.recurrentPrefixEndomorphism
+      canonicalNormPairRecurrentNetwork
+      xs
+      n)
+    s
+  ≡
+  s
+canonicalNormPair-prefix-correct xs zero s = refl
+canonicalNormPair-prefix-correct xs (suc n) s =
+  canonicalNormPair-prefix-correct xs n s
+
+canonicalNormPair-prefix-monoid-homomorphism :
+  RecurrentPrefixMonoidHomomorphism
+    C.NormPair
+    C.Int8
+canonicalNormPair-prefix-monoid-homomorphism =
+  recurrentPrefixMonoidHomomorphism
+    (λ R s → prefixListEndomorphism-unit R s)
+    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
+
+canonicalNormPair-policy-invariant :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState)
+  (n : C.NormPair) →
+  C.canonicalPolicy K
+    (C.replaceNorm s n)
+  ≡
+  C.canonicalPolicy K s
+canonicalNormPair-policy-invariant K s n =
+  C.canonicalPolicy-norm-invariant K s n
+
+canonicalF4-policy-invariant :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState)
+  (o : C.F4IntUState) →
+  C.canonicalPolicy K
+    (C.replaceOptimizer s o)
+  ≡
+  C.canonicalPolicy K s
+canonicalF4-policy-invariant K s o =
+  C.canonicalPolicy-optimizer-invariant K s o
+
+canonicalFullStep-GRUF4Norm-prefix-bridge :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
+  C.runNetwork
+    (canonicalGRUF4NormRecurrentNetwork K)
+    (C.gru s , (C.optimizer s , C.norm s))
+    (C.canonicalSignal K s , C.canonicalAttentionMix K s)
+  ≡
+  ( C.gru (C.canonicalFullStep K s)
+  , ( C.optimizer (C.canonicalFullStep K s)
+    , C.norm (C.canonicalFullStep K s)))
+canonicalFullStep-GRUF4Norm-prefix-bridge K s =
+  canonicalFullStep-GRUF4Norm-product-bridge K s
+
+record CanonicalHadamardAttentionRopePrefixCompositionTheorem : Set₁ where
+  constructor canonicalHadamardAttentionRopePrefixCompositionTheorem
+  field
+    recurrentScan :
+      RecurrentPrefixMonoidHomomorphism
+        C.GRUState
+        C.Int8
+    targetCorrectness :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalSignal K s ≡
+      C.canonicalWatkinsTarget K s
+    attentionMixCorrectness :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalAttentionMix K s ≡
+      let
+        p = C.learnedSparsemaxAttentionWeights (C.attention s)
+        w = C.walshHadamardApply (C.liftAttention p)
+      in
+      C.int8Add
+        (C.attentionToGRU K w)
+        (C.walshRademacherRopeReadout (C.clock s) w)
+
+canonical-hadamard-attention-rope-prefix-composition-theorem :
+  CanonicalHadamardAttentionRopePrefixCompositionTheorem
+canonical-hadamard-attention-rope-prefix-composition-theorem =
+  canonicalHadamardAttentionRopePrefixCompositionTheorem
+    canonical-recurrent-prefix-monoid-homomorphism
+    C.canonicalSignal-watkins-target
+    (λ K s → refl)
+
+
 ------------------------------------------------------------------------
 -- Generic symbolic impossibility at the observation boundary.
 --
