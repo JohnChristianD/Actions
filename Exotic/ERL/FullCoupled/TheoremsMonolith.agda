@@ -2671,27 +2671,92 @@ productPrefix-componentPrefix step₁ step₂ (x ∷ xs) q₁ q₂ =
 -- representation theorems and this stability boundary are separate layers.
 ------------------------------------------------------------------------
 
+data TrivialContinuity : Set where
+  trivialContinuity : TrivialContinuity
+
+iterateUpdate :
+  ∀ {State : Set} →
+  (State → State) → Nat → State → State
+iterateUpdate update zero state = state
+iterateUpdate update (suc n) state =
+  update (iterateUpdate update n state)
+
+GloballyEventuallyFixed :
+  ∀ {State : Set} →
+  (State → State) → State → Set
+GloballyEventuallyFixed update fixed =
+  ∀ state → Σ Nat (λ n → iterateUpdate update n state ≡ fixed)
+
+successor-never-globally-eventually-fixed-at-zero :
+  ¬ GloballyEventuallyFixed suc 0
+successor-never-globally-eventually-fixed-at-zero h =
+  no-suc-zero
+    (trans
+      (sym (iterateUpdate-suc 1))
+      (proj₂ (h 1)))
+  where
+    iterateUpdate-suc :
+      ∀ n → iterateUpdate suc n 1 ≡ suc n
+    iterateUpdate-suc zero = refl
+    iterateUpdate-suc (suc n) =
+      cong suc (iterateUpdate-suc n)
+
+    no-suc-zero : ∀ {n : Nat} → suc n ≢ 0
+    no-suc-zero ()
+
+exact-injective-continuous-leftInverse-does-not-imply-update-stability :
+  ¬
+    (∀ {State Feature : Set}
+       (observe : State → Feature)
+       (inverse : Feature → State)
+       (Continuous : {A B : Set} → (A → B) → Set)
+       (update : State → State)
+       (fixed : State) →
+       ContinuousLeftInverseTheorem
+         State Feature observe inverse Continuous →
+       GloballyEventuallyFixed update fixed)
+exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
+  successor-never-globally-eventually-fixed-at-zero
+    (h
+      (λ n → n)
+      (λ n → n)
+      (λ _ → TrivialContinuity)
+      suc
+      0
+      (continuousLeftInverseTheorem
+        (λ _ → trivialContinuity)
+        (λ _ → trivialContinuity)
+        (λ _ → refl)))
+
+------------------------------------------------------------------------
+-- Baird is retained as a negative algorithmic-stability boundary.
+-- The theorem above is the formal separation: exact injective continuous
+-- representation is a representational property and does not entail
+-- convergence of an arbitrary update rule.  It therefore cannot be
+-- promoted into a Baird-stability theorem without adding algorithmic
+-- hypotheses such as an appropriate contraction/convergence condition.
+------------------------------------------------------------------------
+
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
   constructor offPolicyFunctionApproximationStabilityBoundary
   field
-    exactRepresentationDoesNotImplyConvergence :
-      ∀ {State Feature : Set}
-        (observe : State → Feature)
-        (inverse : Feature → State)
-        (Continuous : {A B : Set} → (A → B) → Set) →
-      ContinuousLeftInverseTheorem
-        State Feature observe inverse Continuous →
-      Set
+    representationVsUpdateStability :
+      ¬
+        (∀ {State Feature : Set}
+           (observe : State → Feature)
+           (inverse : Feature → State)
+           (Continuous : {A B : Set} → (A → B) → Set)
+           (update : State → State)
+           (fixed : State) →
+           ContinuousLeftInverseTheorem
+             State Feature observe inverse Continuous →
+           GloballyEventuallyFixed update fixed)
 
-    bairdDivergenceBoundary :
-      Set
-
-offPolicyFunctionApproximationStabilityBoundary-witness :
+offPolicyFunctionApproximationStabilityBoundary :
   OffPolicyFunctionApproximationStabilityBoundary
-offPolicyFunctionApproximationStabilityBoundary-witness =
+offPolicyFunctionApproximationStabilityBoundary =
   offPolicyFunctionApproximationStabilityBoundary
-    (λ _ _ _ _ → ⊤)
-    ⊤
+    exact-injective-continuous-leftInverse-does-not-imply-update-stability
 
 
 ------------------------------------------------------------------------
