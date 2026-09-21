@@ -2992,3 +2992,39 @@ nonIIDMarkovStationaryWalrasian-lift :
 nonIIDMarkovStationaryWalrasian-lift _ p allocation h =
   continuousStationaryWalrasian-lift _ p allocation h
 
+
+majority3CoalitionWorth : Fin 8 → Nat
+majority3CoalitionWorth c with toℕ c
+... | zero = 0
+... | suc zero = 0
+... | suc (suc zero) = 0
+... | suc (suc (suc zero)) = 1
+... | suc (suc (suc (suc zero))) = 0
+... | suc (suc (suc (suc (suc zero)))) = 1
+... | suc (suc (suc (suc (suc (suc zero))))) = 1
+... | suc (suc (suc (suc (suc (suc (suc zero)))))) = 1
+
+majority3ShapleyScaled6 : Fin 3 → Nat
+majority3ShapleyScaled6 _ = 2
+
+majority3ShapleyScaled6-correct :
+  ∀ i → majority3ShapleyScaled6 i ≡ 2
+majority3ShapleyScaled6-correct _ = refl
+
+record Majority3ShapleyEquilibrium : Set₁ where
+  constructor majority3ShapleyEquilibrium
+  field
+    characteristicFunction : Fin 8 → Nat
+    worth : ∀ c → characteristicFunction c ≡ majority3CoalitionWorth c
+    scaledShapley : Fin 3 → Nat
+    scaledShapley-def : ∀ i → scaledShapley i ≡ 2
+
+majority3ShapleyEquilibriumWitness :
+  Majority3ShapleyEquilibrium
+majority3ShapleyEquilibriumWitness =
+  majority3ShapleyEquilibrium
+    majority3CoalitionWorth
+    (λ _ → refl)
+    majority3ShapleyScaled6
+    majority3ShapleyScaled6-correct
+
