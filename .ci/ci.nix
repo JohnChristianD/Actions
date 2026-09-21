@@ -28,7 +28,7 @@ writeShellApplication {
 
     run_agda_learner() {
       "$AGDA_COMMAND" --version
-      run_agda_file "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith_test.agda"
+      run_agda_file "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
     }
 
     run_agda_theorem() {
