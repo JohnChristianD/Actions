@@ -4,7 +4,7 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
-open import Data.Nat.Properties using (+-identityʳ; +-suc)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder; ℕ→Fin-notInjective)
 open import Level using (0ℓ)
@@ -1029,6 +1029,40 @@ HardSparse {A} K s =
   ∀ {a : Fin A} →
   a ≢ canonicalPolicy K s →
   numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ≡ zero
+
+SoftSparseBounded : ∀ {A} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  Nat →
+  Set
+SoftSparseBounded {A} K s epsilon =
+  ∀ {a : Fin A} →
+  a ≢ canonicalPolicy K s →
+  numerator
+    (sparsemaxWeight
+      (actionSpaceK K)
+      (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s)))
+      (valuesCount (lcbCounts s))
+      a)
+  ≤ epsilon
+
+hardSparse-to-softSparse-zero :
+  ∀ {A}
+  (K : FullLearnerKernel A)
+  (s : FullLearnerState A) →
+  HardSparse K s →
+  SoftSparseBounded K s zero
+hardSparse-to-softSparse-zero K s h {a} distinct =
+  h distinct
+
+softSparse-zero-to-hardSparse :
+  ∀ {A}
+  (K : FullLearnerKernel A)
+  (s : FullLearnerState A) →
+  SoftSparseBounded K s zero →
+  HardSparse K s
+softSparse-zero-to-hardSparse K s h {a} distinct =
+  ≤-antisym (h distinct) z≤n
 
 replaceAttention : ∀ {A} → FullLearnerState A → LearnedSparsemaxAttention A → FullLearnerState A
 replaceAttention s a = fullLearnerState (clock s) (watkins s) a (gru s) (optimizer s)
