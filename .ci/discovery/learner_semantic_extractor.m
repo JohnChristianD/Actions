@@ -2,6 +2,7 @@
 
 :- interface.
 
+:- import_module bool.
 :- import_module io.
 :- import_module list.
 
@@ -20,10 +21,8 @@
 
 :- implementation.
 
-:- import_module char.
-:- import_module bool.
+ :- import_module char.
 :- import_module int.
-:- import_module list.
 :- import_module string.
 
 :- type semantic_decl

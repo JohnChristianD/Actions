@@ -795,7 +795,7 @@ noLeftInverse-from-observation-collision :
   ¬ (Σ (λ inverse →
       ∀ u → inverse (observe u) ≡ u))
 noLeftInverse-from-observation-collision
-  observe obsEq distinct =
+  observe {s} {t} obsEq distinct =
   λ witness →
     distinct
       (let
