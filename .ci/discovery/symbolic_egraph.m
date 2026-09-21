@@ -56,6 +56,12 @@
     egraph::out,
     saturation_report::out) is det.
 
+:- pred saturate_until_stable(
+    list(rewrite_rule)::in,
+    egraph::in,
+    egraph::out,
+    saturation_report::out) is det.
+
 :- pred analyze(egraph::in, list(class_analysis)::out) is det.
 
 :- pred extract_best(
@@ -444,6 +450,41 @@ saturate(Rules, Limit, E0, E, Report) :-
     saturate_loop(Rules, Limit, 0, E0, E, Iterations, Rewrites),
     Report = saturation_report(Iterations, Rewrites,
         (if Rewrites > 0 then yes else no)).
+
+saturate_until_stable(Rules, E0, E, Report) :-
+    saturate_to_stable(Rules, 0, E0, E, Iterations, Rewrites),
+    Report = saturation_report(
+        Iterations,
+        Rewrites,
+        (if Rewrites > 0 then yes else no)).
+
+:- pred saturate_to_stable(
+    list(rewrite_rule)::in,
+    int::in,
+    egraph::in,
+    egraph::out,
+    int::out,
+    int::out) is det.
+saturate_to_stable(Rules, Iteration0, E0, E, Iterations, Total) :-
+    root_classes(E0, Roots),
+    Size0 = class_count(E0) + enode_count(E0),
+    saturate_pass(Rules, Roots, E0, E1, Count),
+    rebuild(E1, E2),
+    Size1 = class_count(E2) + enode_count(E2),
+    Iteration = Iteration0 + 1,
+    (
+        Size1 = Size0,
+        Count = 0
+    ->
+        E = E2,
+        Iterations = Iteration,
+        Total = Count
+    ;
+        saturate_to_stable(
+            Rules, Iteration, E2, E, TailIterations, TailTotal),
+        Iterations = TailIterations,
+        Total = Count + TailTotal
+    ).
 
 :- pred saturate_loop(
     list(rewrite_rule)::in, int::in, int::in,
