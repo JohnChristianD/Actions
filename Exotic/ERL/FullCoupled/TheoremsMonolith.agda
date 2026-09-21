@@ -3548,6 +3548,238 @@ markov-stationary-walrasian-composition-theorem =
 ------------------------------------------------------------------------
 
 
+
+------------------------------------------------------------------------
+-- Exact reconstruction on the observed image and explicit global
+-- conjugacy equations.
+--
+-- The existing left/right inverse fields imply these laws, but these
+-- declarations make the reconstruction and conjugacy surfaces explicit
+-- for theorem-graph discovery.
+------------------------------------------------------------------------
+
+record ExactReconstructionOnImage
+  (State Feature : Set)
+  (observe : State → Feature)
+  (inverse : Feature → State) : Set₁ where
+  constructor exactReconstructionOnImage
+  field
+    reconstruct :
+      ∀ s → inverse (observe s) ≡ s
+    imageReconstructs :
+      ∀ f → (Σ State (λ s → observe s ≡ f)) →
+      observe (inverse f) ≡ f
+
+open ExactReconstructionOnImage public
+
+exactReconstructionOnImage-from-inverses :
+  ∀ {State Feature : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State} →
+  (∀ s → inverse (observe s) ≡ s) →
+  (∀ f → observe (inverse f) ≡ f) →
+  ExactReconstructionOnImage State Feature observe inverse
+exactReconstructionOnImage-from-inverses leftInverse rightInverse =
+  exactReconstructionOnImage
+    leftInverse
+    (λ f _ → rightInverse f)
+
+record GlobalConjugacyEquivalence
+  (State Feature : Set)
+  (step : State → State)
+  (observe : State → Feature)
+  (featureStep : Feature → Feature)
+  (inverse : Feature → State) : Set₁ where
+  constructor globalConjugacyEquivalence
+  field
+    forward :
+      ∀ s → observe (step s) ≡ featureStep (observe s)
+    stateReconstruction :
+      ∀ s → inverse (observe s) ≡ s
+    featureReconstruction :
+      ∀ f → observe (inverse f) ≡ f
+    stateDynamicsFromFeature :
+      ∀ s → step s ≡ inverse (featureStep (observe s))
+    featureDynamicsFromState :
+      ∀ f → featureStep f ≡ observe (step (inverse f))
+
+globalConjugacyEquivalence-from-full :
+  ∀ {State Feature : Set}
+  {step : State → State}
+  {observe : State → Feature}
+  {featureStep : Feature → Feature}
+  {inverse : Feature → State} →
+  FullCommutingSquareConjugacyTheorem
+    State Feature step observe featureStep inverse →
+  GlobalConjugacyEquivalence
+    State Feature step observe featureStep inverse
+globalConjugacyEquivalence-from-full witness =
+  globalConjugacyEquivalence
+    (λ s →
+      CommutingSquareTheorem.square
+        (FullCommutingSquareConjugacyTheorem.squareWitness witness)
+        s)
+    (FullCommutingSquareConjugacyTheorem.leftInverse witness)
+    (FullCommutingSquareConjugacyTheorem.rightInverse witness)
+    (λ s →
+      trans
+        (sym
+          (FullCommutingSquareConjugacyTheorem.leftInverse
+            witness
+            (step s)))
+        (cong inverse
+          (CommutingSquareTheorem.square
+            (FullCommutingSquareConjugacyTheorem.squareWitness witness)
+            s)))
+    (FullCommutingSquareConjugacyTheorem.backwardSquare witness)
+
+canonicalExactReconstructionOnImage :
+  ∀ {Feature : Set}
+  (observe : C.CanonicalFullLearnerState → Feature)
+  (inverse : Feature → C.CanonicalFullLearnerState) →
+  (∀ s → inverse (observe s) ≡ s) →
+  (∀ f → observe (inverse f) ≡ f) →
+  ExactReconstructionOnImage
+    C.CanonicalFullLearnerState
+    Feature
+    observe
+    inverse
+canonicalExactReconstructionOnImage observe inverse leftInverse rightInverse =
+  exactReconstructionOnImage-from-inverses leftInverse rightInverse
+
+canonicalGlobalConjugacyEquivalence :
+  ∀ {Feature : Set}
+  (step : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+  (observe : C.CanonicalFullLearnerState → Feature)
+  (featureStep : Feature → Feature)
+  (inverse : Feature → C.CanonicalFullLearnerState) →
+  FullCommutingSquareConjugacyTheorem
+    C.CanonicalFullLearnerState
+    Feature
+    step
+    observe
+    featureStep
+    inverse →
+  GlobalConjugacyEquivalence
+    C.CanonicalFullLearnerState
+    Feature
+    step
+    observe
+    featureStep
+    inverse
+canonicalGlobalConjugacyEquivalence
+  step observe featureStep inverse witness =
+  globalConjugacyEquivalence-from-full witness
+
+------------------------------------------------------------------------
+-- Generalized stationary Walrasian equilibrium transport.
+--
+-- The equilibrium layer accepts arbitrary Markov state transitions and
+-- an invariant aggregate functional.  No iid, uniform, or finite-state
+-- restriction is introduced.  Existence is never manufactured: it is
+-- supplied as a static Walrasian witness and then lifted exactly.
+------------------------------------------------------------------------
+
+record GeneralizedWalrasianEquilibrium
+  (State Price Allocation : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous)
+  (p : Price)
+  (allocation : State → Allocation) : Set₁ where
+  constructor generalizedWalrasianEquilibrium
+  field
+    staticEquilibrium :
+      staticWalrasian D p (aggregate D allocation)
+    stationaryAggregate :
+      aggregate D allocation
+      ≡ aggregate D (λ s → allocation (step D s))
+
+open GeneralizedWalrasianEquilibrium public
+
+generalizedWalrasianEquilibrium-from-static :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous)
+  (p : Price)
+  (allocation : State → Allocation) →
+  staticWalrasian D p (aggregate D allocation) →
+  GeneralizedWalrasianEquilibrium D p allocation
+generalizedWalrasianEquilibrium-from-static D p allocation h =
+  generalizedWalrasianEquilibrium h (invariant D allocation)
+
+generalizedWalrasianEquilibrium-as-stationary :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous)
+  (p : Price)
+  (allocation : State → Allocation) →
+  GeneralizedWalrasianEquilibrium D p allocation →
+  StationaryWalrasian D p allocation
+generalizedWalrasianEquilibrium-as-stationary D p allocation witness =
+  staticEquilibrium witness , stationaryAggregate witness
+
+record ConjugateWalrasianTransport
+  (State Feature Price Allocation : Set)
+  {ContinuousState ContinuousFeature :
+    {A B : Set} → (A → B) → Set}
+  (DState :
+    ContinuousStationaryMarkovWalrasianData
+      State Price Allocation ContinuousState)
+  (DFeature :
+    ContinuousStationaryMarkovWalrasianData
+      Feature Price Allocation ContinuousFeature)
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (allocation : State → Allocation)
+  (featureAllocation : Feature → Allocation) : Set₁ where
+  constructor conjugateWalrasianTransport
+  field
+    reconstruction :
+      ExactReconstructionOnImage State Feature observe inverse
+    allocationReadout :
+      ∀ s → featureAllocation (observe s) ≡ allocation s
+    aggregateAgreement :
+      aggregate DFeature featureAllocation
+      ≡ aggregate DState allocation
+
+conjugateWalrasianTransport-preserves-equilibrium :
+  ∀ {State Feature Price Allocation : Set}
+  {ContinuousState ContinuousFeature :
+    {A B : Set} → (A → B) → Set}
+  {DState :
+    ContinuousStationaryMarkovWalrasianData
+      State Price Allocation ContinuousState}
+  {DFeature :
+    ContinuousStationaryMarkovWalrasianData
+      Feature Price Allocation ContinuousFeature}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {allocation : State → Allocation}
+  {featureAllocation : Feature → Allocation} →
+  ConjugateWalrasianTransport
+    State Feature Price Allocation
+    DState DFeature observe inverse allocation featureAllocation →
+  GeneralizedWalrasianEquilibrium DState
+    (let p = _ in p)
+    allocation →
+  GeneralizedWalrasianEquilibrium DFeature
+    (let p = _ in p)
+    featureAllocation
+conjugateWalrasianTransport-preserves-equilibrium transport witness =
+  generalizedWalrasianEquilibrium
+    (subst
+      (λ a → staticWalrasian DFeature _ a)
+      (sym (aggregateAgreement witness))
+      (staticEquilibrium witness))
+    (subst
+      (λ a → a ≡ aggregate DFeature (λ s → featureAllocation s))
+      (sym (aggregateAgreement witness))
+      (invariant DFeature featureAllocation))
+
+
 ------------------------------------------------------------------------
 -- Exact benchmark specifications for Mercury's theorem-only graph.
 ------------------------------------------------------------------------
