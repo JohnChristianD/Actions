@@ -173,6 +173,24 @@ valid_chain([Child, Parent | Rest], Laws) :-
     list.member(Child, law_dependencies(ParentLaw)),
     valid_chain([Parent | Rest], Laws).
 
+:- pred plan_score(
+    list(semantic_law)::in,
+    list(string)::in,
+    int::out) is det.
+plan_score(Laws, Plan, Score) :-
+    Score = node_score(Laws, graph_node(Plan)).
+
+:- pred all_scores_non_decreasing(
+    list(semantic_law)::in,
+    list(list(string))::in) is semidet.
+all_scores_non_decreasing(_, []).
+all_scores_non_decreasing(_, [_]).
+all_scores_non_decreasing(Laws, [First, Second | Rest]) :-
+    plan_score(Laws, First, FirstScore),
+    plan_score(Laws, Second, SecondScore),
+    FirstScore =< SecondScore,
+    all_scores_non_decreasing(Laws, [Second | Rest]).
+
 :- pred all_valid_plans(
     list(list(string))::in, list(semantic_law)::in, bool::out) is det.
 all_valid_plans([], _, yes).
