@@ -95,31 +95,6 @@ top_level_declaration_header(Line, Name) :-
     Name \= "--",
     string.sub_string_search(Line, ":", _).
 
-:- pred theoremish_name(string::in) is semidet.
-theoremish_name(Name) :-
-    string.sub_string_search(Name, "Theorem", _).
-
-:- pred theoremish(string::in) is semidet.
-theoremish(Signature) :-
-    string.sub_string_search(Signature, "_≡_", _)
-    ;
-    string.sub_string_search(Signature, "≡", _)
-    ;
-    string.sub_string_search(Signature, "_≢_", _)
-    ;
-    string.sub_string_search(Signature, "≢", _)
-    ;
-    string.sub_string_search(Signature, "→ ⊥", _)
-    ;
-    string.sub_string_search(Signature, "Continuous", _)
-    ;
-    string.sub_string_search(Signature, "Set₁", _)
-    ;
-    %% Record-valued theorem instances are theorem objects too.  The
-    %% canonical theorem monolith uses the suffix "Theorem" for these
-    %% structured witnesses.
-    string.sub_string_search(Signature, "Theorem", _).
-
 :- pred body_clause(string::in, string::in, string::out) is semidet.
 body_clause(Name, Line, Body) :-
     top_level_line(Line),
@@ -171,9 +146,8 @@ contains_identifier(Text, Name) :-
 
 :- pred semantic_signature(semantic_decl::in) is semidet.
 semantic_signature(semantic_decl(_, Name, Signature, _)) :-
-    theoremish_name(Name)
-    ;
-    theoremish(Signature).
+    Name \= "",
+    Signature \= "".
 
 :- pred parse_lines(string::in, list(string)::in,
     list(semantic_decl)::out) is det.
@@ -193,8 +167,7 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
             then
                 scan_lines(Source, Rest,
                     signature_state(RecordName, [RecordFragment]), Acc0, Out)
-            else if top_level_header(Line, Name, Fragment),
-                    theoremish(Fragment)
+            else if top_level_header(Line, Name, Fragment)
             then
                 scan_lines(Source, Rest,
                     signature_state(Name, [Fragment]), Acc0, Out)
