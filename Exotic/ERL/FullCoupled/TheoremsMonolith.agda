@@ -2952,8 +2952,8 @@ open FiniteTUShapleyAllocationEquilibrium public
 -- Canonical polymorphic sparsemax e-graph composition.
 --
 -- The policy carrier is Fin A, not a distinguished binary pair.  The
--- quotienting laws remain exact because attention, norm, and optimizer
--- replacement are outside the policy projection.
+-- quotienting laws remain exact because norm and optimizer replacement
+-- are outside the policy projection.
 ------------------------------------------------------------------------
 
 record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
