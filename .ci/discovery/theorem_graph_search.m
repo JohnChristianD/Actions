@@ -2,6 +2,7 @@
 
 :- interface.
 
+:- import_module bool.
 :- import_module list.
 :- import_module learner_semantic_extractor.
 
