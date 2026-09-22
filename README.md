@@ -408,6 +408,16 @@ The component theorems remain valid Agda surfaces, but the separation graph prom
 
 A strict result still requires all three semantic obligations: the baseline must embed into the full connected class, a concrete function must be constructed through the entire path, and a canonical Agda theorem must prove that witness is not representable by the baseline. The repository currently has the connected composition and the factor-recurrence mechanism, but it does not yet have that nonrepresentability witness. Therefore the graph remains NOT_ESTABLISHED.
 
+### Strict full-connected neural-function-class separation
+
+The strict separation graph has one function-class object only: the full connected composition. Individual HardSign, Haar, attention, recurrence, optimizer, factor, and observation surfaces are not treated as independent separation claims. They are promoted into the smallest existing composed theorem that consumes their semantics, or remain ordinary Agda/CI prerequisites until such a composition exists.
+
+A future strict separation result must discharge three explicit proof obligations on the Agda surface: (1) an input/output-semantics-preserving inclusion `F_base ⊆ F_full_connected`; (2) a concrete witness `f ∈ F_full_connected` that traverses the entire connected path; and (3) a canonical nonrepresentability proof `f ∉ F_base`. A graph path alone never establishes separation.
+
+The existing `hardSignGate-idempotent` result is exact but is not itself a function-class separation theorem. Likewise, F4 plus NormPair provides an existing optimizer/normalization seam, but the repository does not yet prove that strong regularization forces factor recurrence or strict class expansion. A tropical/max-plus optimizer-geometry theorem, or a recurrent affine/HardSign finite-automaton expressivity theorem, is admitted only after an actual Agda proposition exists and the theorem is consumed by the full connected composition.
+
+The S4/S5 seam is connected formally through `S4PlusS5RecurrentScanTheorem` and `CanonicalFullLearnerConnectedScanConjugacyTheorem`. This does not yet prove `F_S4 ⊆ F_full_connected ⊆ F_S5` or strict intermediate status; those class inclusions and the required witness/nonrepresentability theorem remain explicit future obligations.
+
 ### Factor recurrence, Nat algebra, regularization, and generalization
 
 A useful mathematical schema is:
