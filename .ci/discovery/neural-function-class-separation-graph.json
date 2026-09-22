@@ -1,52 +1,146 @@
 {
-  "graph": "strict-neural-function-class-separation",
-  "rule": "SEPARATION_REQUIRES_WITNESS_AND_NONREPRESENTABILITY",
-  "terminal_statuses": ["SEPARATED", "NOT_ESTABLISHED"],
-  "orange_statuses_allowed": false,
-  "meaning": "A strict class separation is a semantic theorem only when the extended class contains a concrete witness function that the baseline class cannot represent. Composition, orthogonality, recurrence, or universal approximation alone do not establish that witness.",
-  "function_classes": {
+  "graph": "strict-neural-function-class-separation-full-connected-composition",
+  "status": "NOT_ESTABLISHED",
+  "proof_rule": "SEPARATED iff the full connected extended class contains a concrete witness f and the baseline class has a canonical Agda proof that f is not representable.",
+  "scope": {
     "baseline": "F_base",
-    "extended": "F_attn_haar",
-    "ambient": "X -> Y"
+    "extended": "F_full_connected",
+    "restriction": "No isolated attention-only, Haar-only, recurrence-only, optimizer-only, or factor-only separation claims. Every candidate witness must traverse the connected full learner composition."
   },
-  "strict_target": "exists f : X -> Y. f in F_attn_haar and f notin F_base",
-  "required_edges": [
-    ["F_base", "F_attn_haar", "inclusion: F_base subseteq F_attn_haar"],
-    ["attention_or_haar_composition", "F_attn_haar", "constructive membership witness"],
-    ["nonrepresentability_certificate", "f notin F_base", "strict separation witness"]
-  ],
-  "existing_graph_support": [
+  "connected_composition": [
     {
-      "node": "CanonicalIntegerHaarScaledOrthogonalityTheorem",
-      "role": "exact Haar orthogonality surface"
+      "node": "F_base",
+      "role": "baseline neural function class with explicitly fixed resource restrictions"
     },
     {
-      "node": "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
-      "role": "exact attention/Haar/sparsemax composition surface"
-    },
-    {
-      "node": "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
-      "role": "full-state learner-replacement invariance surface"
+      "node": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "role": "connected recurrent learner/scan/Watkins/optimizer composition surface"
     },
     {
       "node": "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "role": "closure of the preceding exact composition surfaces"
+      "role": "connected Haar+sparsemax full-state closure surface"
     },
     {
-      "node": "CanonicalExactCompositionTuringCompletenessContract",
-      "role": "computability-capacity boundary; not a neural-function-class separation"
+      "node": "CanonicalBoundedFactorLiftTheorem",
+      "role": "lifts exact full-state trajectories into a bounded observed factor representation"
+    },
+    {
+      "node": "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "role": "factor-level recurrence witness mechanism without full-state recurrence"
+    },
+    {
+      "node": "CanonicalEndogenousObservationBoundaryTheorem",
+      "role": "endogenous observation boundary"
+    },
+    {
+      "node": "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "role": "topological observation closure built on the connected learner boundary"
+    },
+    {
+      "node": "CanonicalFiniteObservationInformationBoundaryTheorem",
+      "role": "finite observation/information boundary"
+    },
+    {
+      "node": "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "role": "connected exact RNN-LM observation/topology capability"
+    },
+    {
+      "node": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+      "role": "higher-order endogenous RNN-LM/POMDP observation closure"
+    },
+    {
+      "node": "F_full_connected",
+      "role": "function class induced by the entire connected composition"
     }
   ],
-  "factor_recurrence_separation": {
-    "theorem": "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-    "role": "shows that a finite observation/factor can recur while the exact underlying state remains nonrecurrent",
-    "implication": "It separates observation-level recurrence from state-level recurrence. It does not by itself show that attention or Haar represents a function outside a baseline neural class."
-  },
-  "current_result": {
-    "status": "NOT_ESTABLISHED",
-    "reason": "The repository currently contains exact attention/Haar composition theorems and factor-recurrence separation, but no concrete F_attn_haar witness together with a proof that the witness is outside a precisely defined F_base."
-  },
-  "promotion_condition": "Promote to SEPARATED only after both inclusion and a concrete nonrepresentability proof are present on the canonical Agda surface and reachable by theorem_graph_search and theorem_monolith_egraph_sync.",
+  "edges": [
+    [
+      "F_base",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "baseline embeds into the full connected architecture only if the resource-preserving inclusion is proved"
+    ],
+    [
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "CanonicalHaarSparsemaxFullStateClosureTheorem",
+      "full learner state composes with the existing Haar/sparsemax closure"
+    ],
+    [
+      "CanonicalHaarSparsemaxFullStateClosureTheorem",
+      "CanonicalBoundedFactorLiftTheorem",
+      "full-state representation is connected to bounded factor lifting"
+    ],
+    [
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "bounded factor lift supplies the exact-state/factor distinction used by factor recurrence"
+    ],
+    [
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalEndogenousObservationBoundaryTheorem",
+      "factor recurrence is interpreted through the endogenous observation boundary"
+    ],
+    [
+      "CanonicalEndogenousObservationBoundaryTheorem",
+      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "observation boundary closes topologically"
+    ],
+    [
+      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "CanonicalFiniteObservationInformationBoundaryTheorem",
+      "topological observation closure reaches the finite-information boundary"
+    ],
+    [
+      "CanonicalFiniteObservationInformationBoundaryTheorem",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "finite information boundary participates in exact RNN-LM observation capability"
+    ],
+    [
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+      "RNN-LM observation capability closes with endogenous POMDP observation transport"
+    ],
+    [
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+      "F_full_connected",
+      "the entire connected composition defines the extended class"
+    ]
+  ],
+  "separation_obligation": [
+    "prove F_base subseteq F_full_connected under identical input/output semantics",
+    "construct one concrete f in F_full_connected using the entire connected path",
+    "prove f notin F_base with a canonical nonrepresentability theorem",
+    "register the witness and nonrepresentability theorem on the Agda surface",
+    "make theorem_graph_search and theorem_monolith_egraph_sync discover the same connected path"
+  ],
+  "factor_recurrence_regularization": [
+    {
+      "concept": "factor recurrence",
+      "equation": "q(s_t)=q(s_u) with s_t != s_u",
+      "mathematical_use": "defines an observation quotient in which distinct exact states share a representation"
+    },
+    {
+      "concept": "regularization",
+      "equation": "min_theta L(theta)+lambda R(theta)",
+      "mathematical_use": "restricts or biases the learned parameter/trajectory family through a penalty or constraint"
+    },
+    {
+      "concept": "graphable correlation",
+      "equation": "R(theta) -> bound/stability/invariance property -> reduced variation of q(s_t) or controlled factor dynamics",
+      "status": "candidate relationship, not currently proved by the repository"
+    },
+    {
+      "concept": "what would make it a theorem",
+      "equation": "regularizer certificate + factor map q + recurrence/separation certificate + quantitative bound",
+      "status": "requires an explicit theorem linking the chosen regularizer to a recurrence, contraction, invariance, quotient stability, or generalization bound"
+    }
+  ],
+  "current_result": "NOT_ESTABLISHED",
+  "reason": "The repository has the connected composition surfaces and factor-recurrence mechanism, but it does not yet contain the strict nonrepresentability witness needed for a neural function-class separation, nor a theorem proving that a specific regularizer mathematically forces or predicts factor recurrence.",
+  "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
   "proof_authority": "Agda --safe",
-  "source_theorem_monolith": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+  "canonical_sources": [
+    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    ".ci/discovery/theorem_graph_search.m",
+    ".ci/discovery/theorem_monolith_egraph_sync.m"
+  ]
 }
