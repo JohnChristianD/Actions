@@ -65,3 +65,41 @@ The active theorem facade now owns the exact bounded-factor / injective-lift lay
 - `canonical-bounded-factor-lift-theorem` — packages the three facts as one theorem surface.
 
 The finite-carrier witness is now proved directly in `TheoremsMonolith.agda`; `FiniteUniversalBoundary.agda` is therefore retired. The legacy F4/finite-cycle/operator modules that depended on the superseded learner surface were pruned from the canonical branch. Benchmark/game-port modules remain separate where they carry distinct environment semantics rather than duplicate learner proof semantics.
+
+## Non-orange-bypass theorem graph
+
+```text
+T1  CanonicalAQLoopTheorem
+        |
+        v
+T2  canonicalFullStep / exact shared signal coupling
+        |
+        v
+T3  canonicalClockAfter + canonicalOrbit-state-injective
+        |
+        +------------------------------+
+        |                              |
+        v                              v
+T4  recurrent-prefix monoid       T5  Haar/sparsemax replacement closure
+        |                              |
+        +---------------+--------------+
+                        v
+T6  exact finite Int8 F4 representation
+        |
+        v
+T7  canonicalF4ThetaQ-bounded
+        |
+        v
+T8  pigeonhole finite-factor collision
+        |
+        v
+T9  canonicalF4-factor-collision-separates-full-state
+        |
+        v
+T10 repeated F4 representation != repeated full exact state
+        |
+        v
+T11 exact computational boundary / no exact two-counter contract
+```
+
+The graph is deliberately directional: no finite F4 factor is promoted to a full-state inverse, no L2 contraction is assumed, and no e-graph/A* candidate is treated as an Agda proof. The finite collision is discharged at the exact `Fin 256` representation boundary, while full-state separation comes from the independently proved clock-growth injectivity.
