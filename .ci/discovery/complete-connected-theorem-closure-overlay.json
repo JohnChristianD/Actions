@@ -71,5 +71,19 @@
     "Vec_Fin": "cleaner for fixed-length indexed sequence proofs"
   },
   "inductive_bias": "causal recurrent sequential composition; not intrinsically hierarchical, convolutional, or symmetric",
-  "future_admission": "Every future theorem must enter through a real composed parent or remain foundational outside strict separation."
+  "future_admission": "Every future theorem must enter through a real composed parent or remain foundational outside strict separation.",
+  "strict_separation_contract": {
+    "status": "CONTRACT_ADDED_NOT_PROVED",
+    "agda_records": [
+      "FunctionClassInclusion",
+      "StrictFunctionClassSeparation",
+      "CanonicalStrictNeuralFunctionClassSeparationContract"
+    ],
+    "gate": [
+      "inclusion",
+      "connected witness membership",
+      "baseline nonrepresentability",
+      "Agda --safe verification"
+    ]
+  }
 }
