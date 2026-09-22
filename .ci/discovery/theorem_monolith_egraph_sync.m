@@ -126,12 +126,17 @@ main(!IO) :-
     read_semantic_laws(All, !IO),
     search_emergent_compositions(All, Plans),
     (
-        if graph_search_completion(All, RequiredPlans, RequiredSubcompositionPlans)
+        if graph_search_completion(
+            All,
+            RequiredPlans,
+            RequiredSubcompositionPlans),
+           graph_monotone_energy_plan(All, MonotoneEnergyPlan)
         then
             true
         else
             RequiredPlans = [],
-            RequiredSubcompositionPlans = []
+            RequiredSubcompositionPlans = [],
+            MonotoneEnergyPlan = []
     ),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(Plans, EGraph0, EGraphGraph),
@@ -145,6 +150,7 @@ main(!IO) :-
             list.length(Plans) > 0,
             list.length(RequiredPlans) = 4,
             list.length(RequiredSubcompositionPlans) = 3,
+            list.length(MonotoneEnergyPlan) > 0,
             list.length(Analyses) > 0,
             class_count(EGraph) > 0,
             enode_count(EGraph) > 0,
