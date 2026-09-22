@@ -371,3 +371,15 @@ CI execution
 ```
 
 The proof, discovery, policy, environment, and execution layers remain separate by design.
+
+
+## Scheduled commit-totality README refresh
+
+The repository now has a slow, deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it weekly against the default branch. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window. Dhall is used as the declarative text-generation layer, while Nix supplies the reproducible runtime.
+
+<!-- BEGIN RECENT COMMIT TOTALITY -->
+last-processed-commit: 091ee6eca250e9a6505f6793b0c3fdfb7f45f1d6
+unprocessed-commit-count: 0
+
+The next scheduled run will account for every commit after this bootstrap point.
+<!-- END RECENT COMMIT TOTALITY -->
