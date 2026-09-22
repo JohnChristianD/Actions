@@ -5205,7 +5205,7 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
     fullLearnerScanConjugacy :
       CanonicalFullLearnerConnectedScanConjugacyTheorem
     exactTuringBoundary :
-      CanonicalExactCompositionTuringCompletenessContract
+      ¬ CanonicalExactCompositionTuringCompletenessContract
     haarSparsemaxClosure :
       CanonicalHaarSparsemaxFullStateClosureTheorem
     finiteCycleIsomorphismTransport :
