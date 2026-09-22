@@ -173,12 +173,43 @@ The endogenous boundary is also an explicit A* graph-search target: `CanonicalEn
 
 ## 2026-09-22 Lyapunov-free stationary graph seam and endogenous topology
 
-The graph-search stationary convergence path no longer requires the monotone-energy/Lyapunov contract. FiniteObservationStationaryLimitTheorem separates the three facts that actually matter at the semantic boundary: the transition law, convergence of the observed trajectory to a candidate limit, and preservation of that limit by the transition operator. The resulting stationary conclusion is a fixed-point consequence; no Lyapunov observable is introduced.
-
-MonotoneConvergenceToStationaryDistributionTheorem remains available as an optional stronger contract for proofs that genuinely have a monotone energy, but it is no longer a required graph-search node. Likewise, CanonicalMonotoneEnergyStationarySubcompositionTheorem is not required for the stationary graph gate. This prevents an unrelated Lyapunov proof obligation from blocking a finite-observation stationary-limit path.
+The graph-search stationary convergence path uses the Lyapunov-free `FiniteObservationStationaryLimitTheorem`: transition law, trajectory convergence, and limit preservation are explicit. The canonical proof surface therefore carries no standalone Lyapunov theorem or Lyapunov stationary subcomposition. Exact clock growth, finite-cycle exclusion, and finite-factor recurrence are retained directly because they are temporal/finite-carrier facts rather than descent arguments.
 
 The new CanonicalEndogenousTopologicalObservationBoundaryTheorem composes the existing full-learner scan-conjugacy theorem, finite-cycle/isomorphism transport, and the endogenous observation boundary. Its content is compositional rather than a new axiom: topology preserves the exact scan/cycle structure while the finite observation still cannot provide a global exact state inverse. The endogenous Watkins target remains exactly state-dependent; conditional exact readout under a hypothetical inverse therefore does not imply that the finite observation can recover the target globally.
 
 Watkins-Dayan is used only as the RL comparison boundary: classical Q-learning convergence is a tabular/asymptotic result with repeated state-action visitation and stochastic-approximation conditions. A recurrent function-approximating learner should not inherit that conclusion merely from sharing a Watkins-style target. The canonical monolith instead exposes the exact endogenous target coupling and separately proves the finite-observation information boundary.
 
 Lyapunov-style theorems are therefore no longer needed for the topology, finite-cycle, observation-injectivity, recurrent-prefix, or exact-computability results already present. They remain appropriate only where the intended conclusion is genuinely a stability/drift/boundedness/convergence claim that cannot be discharged by exact topology, fixed-point semantics, or a direct finite-state Markov argument.
+
+## 2026-09-22 minimal probability semantics and endogenous POMDP seam
+
+The canonical theorem monolith now carries a minimal exact finite probability semantics without importing a second analytic arithmetic tower. `FiniteProbabilityMass` stores Nat weights, a positive denominator, and an exact normalization proof; the coordinate probability is represented by the exact weight/denominator pair. `FiniteProbabilityMassSemanticsTheorem` transports those masses through exact finite state isomorphisms pointwise.
+
+`FinitePOMDPProbabilitySemanticsTheorem` packages normalized transition and observation kernels with the existing Int8 reward channel. It is deliberately a semantics seam, not a belief-state update or stochastic convergence theorem. The new `CanonicalEndogenousPOMDPObservationBoundaryTheorem` composes that probability seam with the existing endogenous observation boundary, so the graph now surfaces the probabilistic endogenous composition automatically.
+
+No Lyapunov theorem is required by this path.
+
+## 2026-09-22 exact RNN-LM graph promotion candidates
+
+The exact RNN-LM surface was already present but was not fully promoted into the theorem graph gate. The graph now requires CanonicalGlobalTokenConjugacyTheorem, CanonicalGlobalTokenLMCompositionTheorem, CanonicalExactRNNLMTheorem, and ArchitecturePreservingCanonicalRNNLMIsomorphism.
+
+Two theoremized subcompositions are also pre-graphed:
+
+1. CanonicalExactRNNLMCapabilitySubcompositionTheorem packages the exact token-model theorem, global token-LM composition, architecture-preserving transport, and the endogenous topological observation boundary.
+2. CanonicalExactRNNLMObservationSubcompositionTheorem packages the exact RNN-LM theorem with endogenous observation, finite-information, and exact-computability boundaries.
+
+These are promotion candidates, not replacements for the canonical learner. Mercury/A* must first recover their dependency paths; Agda --safe remains the proof authority. They are deliberately sequence-model capability surfaces, not a claim that the current executable policy is a general unconstrained language model.
+
+The topology theorem is now useful as a real dependency rather than documentation-only: the first RNN-LM capability subcomposition depends on CanonicalEndogenousTopologicalObservationBoundaryTheorem, which itself transports exact scan/cycle structure while retaining the finite-observation information boundary.
+
+## 2026-09-22 MarkovStationary Walrasian source correction
+
+The Walrasian node is tied to the upstream Lean EconlibExamples/Equilibrium/MarkovStationary.lean composition, not a generic invented stationary-Walrasian theorem. The local MarkovStationaryWalrasianCompositionTheorem remains a graph node and is now required by theorem search. The upstream example is a concrete witness for its specified economy; it should not be silently promoted to a general equilibrium-existence theorem. The cross-repository CI lane already checks the upstream Economy.WalrasianEquilibrium, Economy.exists_equilibrium, and MarkovStationary surfaces before accepting the adapter graph.
+
+## 2026-09-22 exact RNN-LM observation/topology and vocabulary closure
+
+The theorem graph now includes an endogenous exact RNN-LM observation/topology capability closure. Its intended dependency path is exact RNN-LM semantics → architecture-preserving token transport → endogenous observation boundary → endogenous topological boundary → finite-observation information boundary.
+
+The graph also includes CanonicalTokenVocabularyUpperBoundTheorem. The canonical token encoder/decoder are exact inverses against Int8, so this is an exact finite-cardinality boundary for the canonical token carrier, not a statistical estimate of real-world language-model vocabulary size.
+
+Both are promotion candidates until Agda --safe and the Mercury dependency graph type-check them.

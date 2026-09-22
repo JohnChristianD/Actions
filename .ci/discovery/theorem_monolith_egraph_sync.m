@@ -136,7 +136,10 @@ main(!IO) :-
                All, FiniteObservationStationaryLimitPlan),
            graph_finite_observation_stationary_plan(
                All, FiniteObservationStationaryPlan),
-           graph_endogenous_observation_plan(All, EndogenousObservationPlan)
+           graph_endogenous_observation_plan(All, EndogenousObservationPlan),
+           graph_finite_probability_mass_plan(All, FiniteProbabilityMassPlan),
+           graph_finite_pomdp_probability_plan(All, FinitePOMDPProbabilityPlan),
+           graph_endogenous_pomdp_observation_plan(All, EndogenousPOMDPObservationPlan)
         then
             true
         else
@@ -144,7 +147,10 @@ main(!IO) :-
             RequiredSubcompositionPlans = [],
             FiniteObservationStationaryLimitPlan = [],
             FiniteObservationStationaryPlan = [],
-            EndogenousObservationPlan = []
+            EndogenousObservationPlan = [],
+            FiniteProbabilityMassPlan = [],
+            FinitePOMDPProbabilityPlan = [],
+            EndogenousPOMDPObservationPlan = []
     ),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(
@@ -161,11 +167,14 @@ main(!IO) :-
             list.length(Plans) > 0,
             list.length(AutomaticCompositePlans) > 0,
             list.length(EndogenousCompositePlans) > 0,
-            list.length(RequiredPlans) = 7,
-            list.length(RequiredSubcompositionPlans) = 3,
+            list.length(RequiredPlans) = 20,
+            list.length(RequiredSubcompositionPlans) = 5,
             list.length(FiniteObservationStationaryLimitPlan) > 0,
             list.length(FiniteObservationStationaryPlan) > 0,
             list.length(EndogenousObservationPlan) > 0,
+            list.length(FiniteProbabilityMassPlan) > 0,
+            list.length(FinitePOMDPProbabilityPlan) > 0,
+            list.length(EndogenousPOMDPObservationPlan) > 0,
             list.length(Analyses) > 0,
             class_count(EGraph) > 0,
             enode_count(EGraph) > 0,

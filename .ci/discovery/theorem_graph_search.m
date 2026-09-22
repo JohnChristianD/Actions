@@ -23,6 +23,18 @@
     list(semantic_law)::in,
     list(list(string))::out) is det.
 
+:- pred graph_finite_probability_mass_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_finite_pomdp_probability_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_endogenous_pomdp_observation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred all_scores_non_decreasing(
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
@@ -298,30 +310,36 @@ all_named_required_plans([Name | Names], Laws, [Plan | Plans]) :-
 
 :- func graph_required_theorems = list(string).
 graph_required_theorems = [
+    "CanonicalFiniteObservationInformationBoundaryTheorem",
     "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
     "FiniteObservationStationaryLimitTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
     "ExactContractComputabilityBoundaryTheorem",
     "FiniteFunctionExactIsomorphismTransportTheorem",
     "FiniteRecurrentFunctionExactTranslationTheorem",
-    "FinitePOMDPExactIsomorphismTransportTheorem"
+    "FinitePOMDPExactTransport",
+    "FiniteBeliefUpdateExactTransportTheorem",
+    "FiniteProbabilityMassSemanticsTheorem",
+    "FinitePOMDPProbabilitySemanticsTheorem",
+    "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
+    "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+    "MarkovStationaryWalrasianCompositionTheorem",
+    "CanonicalGlobalTokenConjugacyTheorem",
+    "CanonicalGlobalTokenLMCompositionTheorem",
+    "CanonicalExactRNNLMTheorem",
+    "ArchitecturePreservingCanonicalRNNLMIsomorphism",
+    "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+    "CanonicalTokenVocabularyUpperBoundTheorem"
 ].
 
 :- func graph_required_subcompositions = list(string).
 graph_required_subcompositions = [
     "CanonicalClockObservationSubcompositionTheorem",
     "CanonicalFiniteObservationStationarySubcompositionTheorem",
-    "CanonicalBoundednessPEBoundarySubcompositionTheorem"
+    "CanonicalBoundednessPEBoundarySubcompositionTheorem",
+    "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
+    "CanonicalExactRNNLMObservationSubcompositionTheorem"
 ].
-
-:- pred graph_monotone_energy_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-graph_monotone_energy_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalMonotoneEnergyStationarySubcompositionTheorem",
-        Laws,
-        Plan).
 
 :- pred graph_finite_observation_stationary_limit_plan(
     list(semantic_law)::in,

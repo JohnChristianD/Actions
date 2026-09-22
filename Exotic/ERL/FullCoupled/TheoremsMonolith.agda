@@ -4405,42 +4405,58 @@ finiteRecurrentFunctionExactTranslation isoA step stepA conjugacy =
 -- representation isomorphism into a stochastic claim.
 ------------------------------------------------------------------------
 
-record FinitePOMDPExactIsomorphismTransportTheorem
-  (State Action Observation Distribution : Set)
-  (stateIso : StateIsomorphism (Fin 256) State)
-  (actionIso : StateIsomorphism (Fin 256) Action)
-  (observationIso : StateIsomorphism (Fin 256) Observation)
+record FinitePOMDPExactTransport
+  (nState nAction nObservation : Nat)
+  (State Action Observation Distribution Reward : Set)
+  (stateIso : StateIsomorphism (Fin nState) State)
+  (actionIso : StateIsomorphism (Fin nAction) Action)
+  (observationIso : StateIsomorphism (Fin nObservation) Observation)
   (transition : State → Action → Distribution)
   (observationKernel : State → Distribution)
-  (reward : State → Action → C.Int8) : Set₁ where
-  constructor finitePOMDPExactIsomorphismTransportTheorem
+  (reward : State → Action → Reward) : Set₁ where
+  constructor finitePOMDPExactTransport
   field
     translatedTransition :
-      Fin 256 → Fin 256 → Distribution
+      Fin nState → Fin nAction → Distribution
     translatedObservationKernel :
-      Fin 256 → Distribution
+      Fin nState → Distribution
     translatedReward :
-      Fin 256 → Fin 256 → C.Int8
+      Fin nState → Fin nAction → Reward
     transitionExact :
       ∀ s a →
-      translatedTransition
-        (StateIsomorphism.to stateIso s)
-        (StateIsomorphism.to actionIso a)
-      ≡
-      transition s a
+      translatedTransition (to stateIso s) (to actionIso a) ≡ transition s a
     observationExact :
       ∀ s →
-      translatedObservationKernel
-        (StateIsomorphism.to stateIso s)
-      ≡
-      observationKernel s
+      translatedObservationKernel (to stateIso s) ≡ observationKernel s
     rewardExact :
       ∀ s a →
-      translatedReward
-        (StateIsomorphism.to stateIso s)
-        (StateIsomorphism.to actionIso a)
-      ≡
-      reward s a
+      translatedReward (to stateIso s) (to actionIso a) ≡ reward s a
+
+finite-pomdp-exact-transport :
+  ∀ {nState nAction nObservation : Nat}
+    {State Action Observation Distribution Reward : Set}
+    (stateIso : StateIsomorphism (Fin nState) State)
+    (actionIso : StateIsomorphism (Fin nAction) Action)
+    (observationIso : StateIsomorphism (Fin nObservation) Observation)
+    (transition : State → Action → Distribution)
+    (observationKernel : State → Distribution)
+    (reward : State → Action → Reward) →
+  FinitePOMDPExactTransport
+    nState nAction nObservation
+    State Action Observation Distribution Reward
+    stateIso actionIso observationIso
+    transition observationKernel reward
+finite-pomdp-exact-transport stateIso actionIso observationIso transition observationKernel reward =
+  finitePOMDPExactTransport
+    (λ s a → transition (from stateIso s) (from actionIso a))
+    (λ s → observationKernel (from stateIso s))
+    (λ s a → reward (from stateIso s) (from actionIso a))
+    (λ s a →
+      cong₂ transition (from-to stateIso s) (from-to actionIso a))
+    (λ s →
+      cong observationKernel (from-to stateIso s))
+    (λ s a →
+      cong₂ reward (from-to stateIso s) (from-to actionIso a))
 
 ------------------------------------------------------------------------
 -- Architecture-preserving RNN-LM isomorphism.
@@ -5493,43 +5509,6 @@ canonical-finite-observation-information-boundary-theorem =
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
 ------------------------------------------------------------------------
--- Exact Nat-clock versus Lyapunov-style energy boundary.
--- The clock gives discrete temporal injectivity and cycle exclusion; it is
--- not a scalar descent, boundedness, or convergence certificate.
-------------------------------------------------------------------------
-
-record CanonicalNatClockLyapunovSeparationTheorem : Set₁ where
-  constructor canonicalNatClockLyapunovSeparationTheorem
-  field
-    clockStrictAdvance :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) →
-      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
-    noFiniteCycle :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (n : Nat) →
-      C.iterateCanonical K (suc n) s ≢ s
-    finiteFactorRecurrenceWithoutFullRecurrence :
-      ∀ {A : Set}
-        (orbit : Nat → A)
-        (factor : A → Fin 256) →
-        ∃ m n →
-          m ≢ n ×
-          factor (orbit m) ≡ factor (orbit n)
-
-open CanonicalNatClockLyapunovSeparationTheorem public
-
-canonical-nat-clock-lyapunov-separation-theorem :
-  CanonicalNatClockLyapunovSeparationTheorem
-canonical-nat-clock-lyapunov-separation-theorem =
-  canonicalNatClockLyapunovSeparationTheorem
-    (λ K s → canonicalClockAfter K 1 s)
-    canonicalNoNontrivialFiniteCycle-theorem
-    (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
-      canonical-finite-factor-recurrence-without-state-recurrence)
-
-------------------------------------------------------------------------
 -- Exact Turing-completeness mixture boundary.
 -- This records the simultaneous contract being ruled out; it does not claim
 -- that every weaker notion of Turing completeness is impossible.
@@ -5622,26 +5601,6 @@ finiteObservationStationaryLimitTheorem-is-stationary :
 finiteObservationStationaryLimitTheorem-is-stationary theorem =
   FiniteObservationStationaryLimitTheorem.limitPreserved theorem
     (FiniteObservationStationaryLimitTheorem.converges theorem)
-
-record MonotoneConvergenceToStationaryDistributionTheorem
-  (Distribution : Set)
-  (Value : Set)
-  (_≤_ : Value → Value → Set)
-  (P : Distribution → Distribution)
-  (V : Distribution → Value)
-  (μ : Nat → Distribution)
-  (μ∞ : Distribution)
-  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
-  constructor monotoneConvergenceToStationaryDistributionTheorem
-  field
-    transitionLaw :
-      ∀ n → μ (suc n) ≡ P (μ n)
-    monotoneLyapunov :
-      ∀ n → V (μ (suc n)) ≤ V (μ n)
-    converges :
-      Converges μ μ∞
-    limitPreserved :
-      Converges μ μ∞ → P μ∞ ≡ μ∞
 
 ------------------------------------------------------------------------
 -- PE is an information condition, not a boundedness corollary. The
@@ -5745,43 +5704,6 @@ canonical-clock-observation-subcomposition-theorem K s =
     canonicalClockAfter
     (canonical-global-int8-left-inverse-impossibility-theorem K s)
 
-record CanonicalMonotoneEnergyStationarySubcompositionTheorem : Set₁ where
-  constructor canonicalMonotoneEnergyStationarySubcompositionTheorem
-  field
-    stationaryConvergenceContract :
-      ∀ {Distribution Value : Set}
-        (_≤_ : Value → Value → Set)
-        (P : Distribution → Distribution)
-        (V : Distribution → Value)
-        (μ : Nat → Distribution)
-        (μ∞ : Distribution)
-        (Converges : (Nat → Distribution) → Distribution → Set) →
-      (∀ n → μ (suc n) ≡ P (μ n)) →
-      (∀ n → V (μ (suc n)) ≤ V (μ n)) →
-      Converges μ μ∞ →
-      (Converges μ μ∞ → P μ∞ ≡ μ∞) →
-      MonotoneConvergenceToStationaryDistributionTheorem
-        Distribution
-        Value
-        _≤_
-        P
-        V
-        μ
-        μ∞
-        Converges
-
-canonical-monotone-energy-stationary-subcomposition-theorem :
-  CanonicalMonotoneEnergyStationarySubcompositionTheorem
-canonical-monotone-energy-stationary-subcomposition-theorem =
-  canonicalMonotoneEnergyStationarySubcompositionTheorem
-    (λ _≤_ P V μ μ∞ Converges transitionLaw monotoneLyapunov
-       convergence limitPreserved →
-      monotoneConvergenceToStationaryDistributionTheorem
-        transitionLaw
-        monotoneLyapunov
-        convergence
-        limitPreserved)
-
 record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
   constructor canonicalBoundednessPEBoundarySubcompositionTheorem
   field
@@ -5797,3 +5719,303 @@ canonical-boundedness-pe-boundary-subcomposition-theorem =
     canonical-bounded-factor-lift-theorem
     canonical-persistent-excitation-requirement-theorem
 
+------------------------------------------------------------------------
+-- Minimal exact finite probability semantics.
+--
+-- No analytic probability import is required here. A finite distribution
+-- is represented by non-negative Nat weights with a positive denominator
+-- and an exact normalization certificate. Each coordinate therefore denotes
+-- the rational mass weight/denominator without introducing a second
+-- arithmetic tower into the canonical theorem surface.
+------------------------------------------------------------------------
+
+natListSum : List Nat → Nat
+natListSum [] = zero
+natListSum (x ∷ xs) = x + natListSum xs
+
+finiteProbabilityWeightSum :
+  ∀ (n : Nat) → (Fin n → Nat) → Nat
+finiteProbabilityWeightSum n w =
+  natListSum (map w (C.finList n))
+
+record FiniteProbabilityMass (n : Nat) : Set₁ where
+  constructor finiteProbabilityMass
+  field
+    weight : Fin n → Nat
+    total : Nat
+    positive : zero < total
+    normalized :
+      finiteProbabilityWeightSum n weight ≡ total
+
+open FiniteProbabilityMass public
+
+finiteProbabilityMass-normalized :
+  ∀ {n : Nat} (p : FiniteProbabilityMass n) →
+  finiteProbabilityWeightSum n (weight p) ≡ total p
+finiteProbabilityMass-normalized p = normalized p
+
+finiteProbabilityMass-transport-weight :
+  ∀ {n : Nat} {A : Set}
+  (iso : StateIsomorphism (Fin n) A)
+  (p : FiniteProbabilityMass n) →
+  A → Nat
+finiteProbabilityMass-transport-weight iso p a =
+  weight p (from iso a)
+
+finiteProbabilityMass-transport-exact :
+  ∀ {n : Nat} {A : Set}
+  (iso : StateIsomorphism (Fin n) A)
+  (p : FiniteProbabilityMass n)
+  (i : Fin n) →
+  finiteProbabilityMass-transport-weight iso p (to iso i) ≡
+  weight p i
+finiteProbabilityMass-transport-exact iso p i = refl
+
+record FiniteProbabilityMassSemanticsTheorem : Set₁ where
+  constructor finiteProbabilityMassSemanticsTheorem
+  field
+    normalizedMass :
+      ∀ {n : Nat} (p : FiniteProbabilityMass n) →
+      finiteProbabilityWeightSum n (weight p) ≡ total p
+    exactIsomorphismTransport :
+      ∀ {n : Nat} {A : Set}
+        (iso : StateIsomorphism (Fin n) A)
+        (p : FiniteProbabilityMass n)
+        (i : Fin n) →
+      finiteProbabilityMass-transport-weight iso p (to iso i) ≡
+      weight p i
+
+finite-probability-mass-semantics-theorem :
+  FiniteProbabilityMassSemanticsTheorem
+finite-probability-mass-semantics-theorem =
+  finiteProbabilityMassSemanticsTheorem
+    finiteProbabilityMass-normalized
+    finiteProbabilityMass-transport-exact
+
+------------------------------------------------------------------------
+-- Polymorphic exact finite POMDP probability semantics.
+--
+-- State/action/observation cardinalities and reward codomain are parameters.
+-- The canonical Int8/Fin-256 learner is therefore an instance rather than
+-- part of the theorem statement.
+------------------------------------------------------------------------
+
+record FinitePOMDPProbabilitySemantics
+  (nState nAction nObservation : Nat)
+  (Reward : Set) : Set₁ where
+  constructor finitePOMDPProbabilitySemantics
+  field
+    transitionProbability :
+      Fin nState → Fin nAction → FiniteProbabilityMass nState
+    observationProbability :
+      Fin nState → FiniteProbabilityMass nObservation
+    reward :
+      Fin nState → Fin nAction → Reward
+
+open FinitePOMDPProbabilitySemantics public
+
+record FinitePOMDPProbabilitySemanticsTheorem : Set₁ where
+  constructor finitePOMDPProbabilitySemanticsTheorem
+  field
+    transitionNormalized :
+      ∀ {nState nAction nObservation : Nat}
+        {Reward : Set}
+        (M : FinitePOMDPProbabilitySemantics nState nAction nObservation Reward)
+        (s : Fin nState) (a : Fin nAction) →
+      finiteProbabilityWeightSum nState
+        (weight (transitionProbability M s a))
+      ≡ total (transitionProbability M s a)
+    observationNormalized :
+      ∀ {nState nAction nObservation : Nat}
+        {Reward : Set}
+        (M : FinitePOMDPProbabilitySemantics nState nAction nObservation Reward)
+        (s : Fin nState) →
+      finiteProbabilityWeightSum nObservation
+        (weight (observationProbability M s))
+      ≡ total (observationProbability M s)
+    transitionTransport :
+      ∀ {nState nAction nObservation : Nat}
+        {Reward : Set}
+        (M : FinitePOMDPProbabilitySemantics nState nAction nObservation Reward)
+        {State : Set}
+        (iso : StateIsomorphism (Fin nState) State)
+        (i : Fin nState) →
+      finiteProbabilityMass-transport-weight
+        iso
+        (transitionProbability M i (from iso (to iso i)))
+        (to iso i)
+      ≡ weight (transitionProbability M i (from iso (to iso i))) i
+
+finite-pomdp-probability-semantics-theorem :
+  FinitePOMDPProbabilitySemanticsTheorem
+finite-pomdp-probability-semantics-theorem =
+  finitePOMDPProbabilitySemanticsTheorem
+    (λ M s a → finiteProbabilityMass-normalized (transitionProbability M s a))
+    (λ M s → finiteProbabilityMass-normalized (observationProbability M s))
+    (λ M iso i →
+      finiteProbabilityMass-transport-exact
+        iso
+        (transitionProbability M i (from iso (to iso i)))
+        i)
+
+------------------------------------------------------------------------
+-- Belief states are finite probability masses; exact transport does not
+-- require importing a second algebraic tower or hard-coding Fin 256.
+------------------------------------------------------------------------
+
+BeliefState : Nat → Set₁
+BeliefState n = FiniteProbabilityMass n
+
+record FiniteBeliefUpdateExactTransportTheorem : Set₁ where
+  constructor finiteBeliefUpdateExactTransportTheorem
+  field
+    translatedUpdate :
+      ∀ {n nObservation : Nat}
+        {A Observation : Set}
+        (stateIso : StateIsomorphism (Fin n) A)
+        (observationIso : StateIsomorphism (Fin nObservation) Observation)
+        (update : A → Observation → BeliefState n) →
+      Fin n → Fin nObservation → BeliefState n
+    exactTransport :
+      ∀ {n nObservation : Nat}
+        {A B Observation : Set}
+        (stateIso : StateIsomorphism (Fin n) A)
+        (observationIso : StateIsomorphism (Fin nObservation) Observation)
+        (update : A → Observation → BeliefState n)
+        (i : Fin n) (o : Fin nObservation) →
+      translatedUpdate stateIso observationIso update i o ≡
+      update (to stateIso i) (to observationIso o)
+
+finite-belief-update-exact-transport :
+  FiniteBeliefUpdateExactTransportTheorem
+finite-belief-update-exact-transport =
+  finiteBeliefUpdateExactTransportTheorem
+    (λ stateIso observationIso update i o →
+      update (to stateIso i) (to observationIso o))
+    (λ stateIso observationIso update i o → refl)
+
+------------------------------------------------------------------------
+-- New endogenous composition: probabilistic POMDP semantics plus exact
+-- belief-state transport preserve the endogenous observation boundary.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousPOMDPObservationBoundaryTheorem : Set₁ where
+  constructor canonicalEndogenousPOMDPObservationBoundaryTheorem
+  field
+    endogenousObservationBoundary :
+      CanonicalEndogenousObservationBoundaryTheorem
+    probabilitySemantics :
+      FinitePOMDPProbabilitySemanticsTheorem
+    beliefTransport :
+      FiniteBeliefUpdateExactTransportTheorem
+
+canonical-endogenous-pomdp-observation-boundary-theorem :
+  CanonicalEndogenousPOMDPObservationBoundaryTheorem
+canonical-endogenous-pomdp-observation-boundary-theorem =
+  canonicalEndogenousPOMDPObservationBoundaryTheorem
+    canonical-endogenous-observation-boundary-theorem
+    finite-pomdp-probability-semantics-theorem
+    finite-belief-update-exact-transport
+    finite-pomdp-probability-semantics-theorem
+
+------------------------------------------------------------------------
+-- Exact RNN-LM capability subcomposition candidates.
+--
+-- These are deliberately packaging laws: they expose the strongest
+-- already-proved exact sequence-model surfaces to graph search without
+-- adding a new semantic axiom. They are promotion candidates only after
+-- the Agda theorem graph type-checks.
+------------------------------------------------------------------------
+
+record CanonicalExactRNNLMCapabilitySubcompositionTheorem : Set₁ where
+  constructor canonicalExactRNNLMCapabilitySubcompositionTheorem
+  field
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    globalTokenComposition :
+      CanonicalGlobalTokenLMCompositionTheorem
+    architectureTransport :
+      ArchitecturePreservingCanonicalRNNLMIsomorphism
+    endogenousTopologicalBoundary :
+      CanonicalEndogenousTopologicalObservationBoundaryTheorem
+
+canonical-exact-rnn-lm-capability-subcomposition-theorem :
+  CanonicalExactRNNLMCapabilitySubcompositionTheorem
+canonical-exact-rnn-lm-capability-subcomposition-theorem =
+  canonicalExactRNNLMCapabilitySubcompositionTheorem
+    canonical-exact-rnn-lm-theorem
+    canonical-global-token-lm-composition-theorem
+    architecture-preserving-canonical-rnn-lm-identity
+    canonical-endogenous-topological-observation-boundary-theorem
+
+record CanonicalExactRNNLMObservationSubcompositionTheorem : Set₁ where
+  constructor canonicalExactRNNLMObservationSubcompositionTheorem
+  field
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    endogenousObservation :
+      CanonicalEndogenousObservationBoundaryTheorem
+    finiteInformationBoundary :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+    exactComputabilityBoundary :
+      ExactContractComputabilityBoundaryTheorem
+
+canonical-exact-rnn-lm-observation-subcomposition-theorem :
+  CanonicalExactRNNLMObservationSubcompositionTheorem
+canonical-exact-rnn-lm-observation-subcomposition-theorem =
+  canonicalExactRNNLMObservationSubcompositionTheorem
+    canonical-exact-rnn-lm-theorem
+    canonical-endogenous-observation-boundary-theorem
+    canonical-finite-observation-information-boundary-theorem
+    exact-contract-computability-boundary-theorem
+
+------------------------------------------------------------------------
+-- Exact RNN-LM observation/topology capability closure.
+------------------------------------------------------------------------
+
+record CanonicalExactRNNLMObservationTopologyCapabilityTheorem : Set₁ where
+  constructor canonicalExactRNNLMObservationTopologyCapabilityTheorem
+  field
+    capability :
+      CanonicalExactRNNLMCapabilitySubcompositionTheorem
+    observation :
+      CanonicalExactRNNLMObservationSubcompositionTheorem
+    topology :
+      CanonicalEndogenousTopologicalObservationBoundaryTheorem
+    information :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+
+canonical-exact-rnn-lm-observation-topology-capability-theorem :
+  CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+canonical-exact-rnn-lm-observation-topology-capability-theorem =
+  canonicalExactRNNLMObservationTopologyCapabilityTheorem
+    canonical-exact-rnn-lm-capability-subcomposition-theorem
+    canonical-exact-rnn-lm-observation-subcomposition-theorem
+    canonical-endogenous-topological-observation-boundary-theorem
+    canonical-finite-observation-information-boundary-theorem
+
+------------------------------------------------------------------------
+-- Exact vocabulary-cardinality boundary.
+------------------------------------------------------------------------
+
+record CanonicalTokenVocabularyUpperBoundTheorem : Set₁ where
+  constructor canonicalTokenVocabularyUpperBoundTheorem
+  field
+    encodeDecode :
+      ∀ x →
+      C.canonicalTokenEncode
+        (C.canonicalTokenDecode x) ≡ x
+    decodeEncode :
+      ∀ t →
+      C.canonicalTokenDecode
+        (C.canonicalTokenEncode t) ≡ t
+    finiteCarrier :
+      C.CanonicalToken ≡ C.Int8
+
+canonical-token-vocabulary-upper-bound-theorem :
+  CanonicalTokenVocabularyUpperBoundTheorem
+canonical-token-vocabulary-upper-bound-theorem =
+  canonicalTokenVocabularyUpperBoundTheorem
+    canonicalTokenEncodeDecode
+    canonicalTokenDecodeEncode
+    refl

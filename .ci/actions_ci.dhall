@@ -325,13 +325,12 @@ JSON
     canonical-operator-composition-theorem
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
-    CanonicalNatClockLyapunovSeparationTheorem
+    CanonicalFiniteObservationInformationBoundaryTheorem
     CanonicalGlobalInt8LeftInverseImpossibilityTheorem
     CanonicalClockObservationSubcompositionTheorem
     CanonicalFiniteObservationStationarySubcompositionTheorem
     CanonicalBoundednessPEBoundarySubcompositionTheorem
     canonical-clock-observation-subcomposition-theorem
-    canonical-monotone-energy-stationary-subcomposition-theorem
     canonical-boundedness-pe-boundary-subcomposition-theorem
     canonical-global-int8-left-inverse-impossibility-theorem
     FiniteObservationStationaryLimitTheorem
@@ -341,8 +340,21 @@ JSON
     exact-contract-computability-boundary-theorem
     FiniteFunctionExactIsomorphismTransportTheorem
     FiniteRecurrentFunctionExactTranslationTheorem
-    FinitePOMDPExactIsomorphismTransportTheorem
-    canonical-nat-clock-lyapunov-separation-theorem
+    FinitePOMDPExactTransport
+    FiniteBeliefUpdateExactTransportTheorem
+    FiniteProbabilityMassSemanticsTheorem
+    FinitePOMDPProbabilitySemanticsTheorem
+    CanonicalEndogenousPOMDPObservationBoundaryTheorem
+    CanonicalEndogenousTopologicalObservationBoundaryTheorem
+    MarkovStationaryWalrasianCompositionTheorem
+    CanonicalGlobalTokenConjugacyTheorem
+    CanonicalGlobalTokenLMCompositionTheorem
+    CanonicalExactRNNLMTheorem
+    ArchitecturePreservingCanonicalRNNLMIsomorphism
+    CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    CanonicalTokenVocabularyUpperBoundTheorem
+    CanonicalExactRNNLMCapabilitySubcompositionTheorem
+    CanonicalExactRNNLMObservationSubcompositionTheorem
     CanonicalExactTuringBoundaryMixtureTheorem
     canonical-exact-turing-boundary-mixture-theorem
     BairdSevenStarProblem
