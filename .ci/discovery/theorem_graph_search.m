@@ -116,6 +116,16 @@ graph_connected_f4_frank_wolfe_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+:- pred graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+        Laws,
+        Plan).
+
 :- pred graph_finite_maxwell_gru_representation_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
@@ -477,6 +487,7 @@ graph_required_theorems = [
     "ConnectedJensenMinimaxRegretOptimizerTheorem",
     "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
     "ConnectedF4FrankWolfeKKTTheorem",
+    "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
     "FiniteMaxwellGRUExactRepresentationCandidate",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
