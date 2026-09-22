@@ -262,6 +262,15 @@ graph_monotone_energy_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+:- pred graph_finite_observation_stationary_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_observation_stationary_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalFiniteObservationStationarySubcompositionTheorem",
+        Laws,
+        Plan).
+
 :- pred graph_endogenous_observation_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
