@@ -5483,15 +5483,15 @@ canonical-clock-observation-subcomposition-theorem K s =
 record CanonicalMonotoneEnergyStationarySubcompositionTheorem : Set₁ where
   constructor canonicalMonotoneEnergyStationarySubcompositionTheorem
   field
-    monotoneEnergyStationaryContract :
+    stationaryConvergenceContract :
       MonotoneConvergenceToStationaryDistributionTheorem
         C.CanonicalFullLearnerState
-        Nat
+        C.Int8
         _≤_
-        (λ s → C.clock s)
-        (λ s → C.clock s)
-        (λ n → C.replaceClock (C.defaultCanonicalState) n)
-        (C.replaceClock (C.defaultCanonicalState) zero)
+        (λ _ → C.defaultCanonicalState)
+        (λ _ → C.zero8)
+        (λ _ → C.defaultCanonicalState)
+        (C.defaultCanonicalState)
         (λ _ _ → ⊤)
 
 canonical-monotone-energy-stationary-subcomposition-theorem :
@@ -5515,6 +5515,9 @@ record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
 canonical-boundedness-pe-boundary-subcomposition-theorem :
   CanonicalBoundednessPEBoundarySubcompositionTheorem
 canonical-boundedness-pe-boundary-subcomposition-theorem =
+  canonicalBoundednessPEBoundarySubcompositionTheorem
+    canonical-bounded-factor-lift-theorem
+    canonical-persistent-excitation-requirement-theorem
   canonicalBoundednessPEBoundarySubcompositionTheorem
     canonical-bounded-factor-lift-theorem
     canonical-persistent-excitation-requirement-theorem
