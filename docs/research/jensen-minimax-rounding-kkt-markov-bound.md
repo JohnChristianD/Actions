@@ -103,3 +103,43 @@ The graph therefore contains `ConnectedLionJensenMinimaxRegretRoundingKKTMarkovT
 6. Supply stationary Markov fixed-point existence/uniqueness and quantitative mixing/error information.
 7. Prove all terms use the same objective, state, horizon, and rounding representation.
 8. Only then promote the connected candidate to a proved quantitative regret theorem.
+
+
+## F4 + Frank-Wolfe correction
+
+The optimizer-specific seam is F4 + Frank-Wolfe, not a request for another Lion theorem.
+
+The repository already has an exact finite F4 recurrent component through C.F4IntUState, C.f4ThetaStep, and CanonicalGRUF4NormWatkinsPrefixCompositionTheorem. The new connected boundary is ConnectedF4FrankWolfeKKTTheorem. It carries only a finite certificate:
+
+FWgap <= D_F4 + K
+
+where the Frank-Wolfe gap, an F4 descent residual, and a KKT residual are explicit finite proof inputs. No optimization library was added.
+
+SciSpace confirms the relevant mathematical seam. Wang, Lions and Muons: Optimization via Stochastic Frank-Wolfe (2025), DOI 10.48550/arXiv.2506.04192, explicitly connects convergence in the Frank-Wolfe gap with KKT convergence under a norm constraint. Jaggi, Revisiting Frank-Wolfe: Projection-Free Sparse Convex Optimization (2013), provides the duality-gap certificate framework. Oliveira, A note on the Frank-Wolfe algorithm for a class of nonconvex and nonsmooth optimization problems (2023), DOI 10.5802/ojmo.21, gives stationarity results for a nonconvex/nonsmooth class. These are research inputs, not automatically Agda facts.
+
+The eventual optimizer-regret composition may therefore have the form
+
+R <= J + B + K + L + W + M
+
+with W the Frank-Wolfe contribution, but this is still a candidate composition until the F4 state, objective, feasible set, FW update, gap-to-KKT theorem, Jensen witness, rounding bias, Lion term if retained, and stationary-Markov term are represented over one shared state/objective.
+
+## Maxwell-only finite representation boundary
+
+No additional physics library or theorem library was introduced. The graph now contains a candidate FiniteMaxwellGRUExactRepresentationCandidate.
+
+Its scope is intentionally narrower than “a GRU represents all physics”: it asks whether a finite exact representation can encode a specified finite Maxwell-admissible transition system. The graph must not silently introduce gravity, quantum dynamics, thermodynamics, or other physical laws. Exact finite-function representability does not by itself prove the continuous Maxwell PDEs; a finite state semantics, discretization/update rule, and exact encoding/conjugacy are required.
+
+The existing FiniteFunctionExactIsomorphismTransportTheorem is the representation mechanism. Mercury A*/e-graph can search and compose these finite theorem interfaces, while the graph's promotion gate prevents an unsupported Maxwell claim from becoming a proved theorem.
+
+### Current open obligations
+
+1. Give the exact finite F4 state/update semantics used by the Frank-Wolfe objective.
+2. Give the Frank-Wolfe feasible set and linear minimization oracle.
+3. Prove the FW-gap/descent-to-KKT implication required by the chosen assumptions.
+4. Connect that certificate to the existing F4 recurrent prefix theorem.
+5. If composing into regret, share one objective/state with Jensen, rounding, KKT, Markov, and any retained Lion seam.
+6. Define the finite Maxwell state/input/output encoding.
+7. State the discrete Maxwell constraints/update being represented.
+8. Prove exact GRU encoding/decoding or conjugacy for that finite Maxwell transition.
+9. Keep Maxwell as the physical-law boundary; do not promote unsupported additional physics.
+10. Run the Agda/Mercury/e-graph verification before promoting either candidate.
