@@ -152,3 +152,10 @@ A monotone Lyapunov observable plus boundedness is not being promoted to a stati
 Persistent excitation is likewise recorded as a separate requirement. The current canonical Agda surface does not contain the matrix/Gramian probability or adaptive-identification machinery needed for a genuine PE proof. Therefore the new theorem surface is a contract boundary, not a fake PE proof: bounded Int8 representation is not silently treated as PE.
 
 The exact Turing-completeness obstruction remains contract-specific. It does not generalize automatically to every computational function class; the decisive assumptions are the specified exact autonomous clock and finite observation/contract structure.
+
+
+## 2026-09-22 graph-search completion: four requirements and three subcompositions
+
+The graph-search layer now has four explicit required theorem nodes: global Int8 left-inverse impossibility, the monotone-energy/stationary-distribution convergence contract, persistent-excitation requirement, and exact-contract computability boundary. It also has three explicit subcomposition nodes: exact clock plus finite-observation information loss, monotone energy plus stationary-limit preservation, and bounded-factor plus PE boundary.
+
+These are dependency-graph obligations, not hidden implications. In particular, the monotone-energy composition preserves its convergence and limit-preservation assumptions, and the PE composition preserves PE as an independent information condition. Mercury/A* discovers paths; Agda --safe remains proof authority.
