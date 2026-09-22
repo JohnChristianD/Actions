@@ -3644,9 +3644,9 @@ record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
              State Feature observe inverse Continuous →
            GloballyEventuallyFixed update fixed)
 
-offPolicyFunctionApproximationStabilityBoundary :
+offPolicyFunctionApproximationStabilityBoundaryWitness :
   OffPolicyFunctionApproximationStabilityBoundary
-offPolicyFunctionApproximationStabilityBoundary =
+offPolicyFunctionApproximationStabilityBoundaryWitness =
   offPolicyFunctionApproximationStabilityBoundary
     exact-injective-continuous-leftInverse-does-not-imply-update-stability
 
@@ -3704,7 +3704,7 @@ markov-stationary-walrasian-composition-theorem =
     canonicalGRU-recurrent-associative-scan-theorem
     (λ step₁ step₂ →
       directProductFiniteAutomatonComposition-theorem step₁ step₂)
-    offPolicyFunctionApproximationStabilityBoundary
+    offPolicyFunctionApproximationStabilityBoundaryWitness
     continuousLeftInverse-exactReadout-transfer
     continuousStationaryWalrasian-lift
 
