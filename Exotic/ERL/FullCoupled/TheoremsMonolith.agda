@@ -6718,7 +6718,7 @@ record ConnectedJensenMinimaxRegretOptimizerTheorem : Set₁ where
         (⊤)
         step
         hardSparse
-        (λ _ → ⊤)
+        (λ _ → tt)
         equilibrium
 
     regretBoundary :
