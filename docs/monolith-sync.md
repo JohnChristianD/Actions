@@ -19,6 +19,8 @@ Mercury does not force a named theorem target. It derives maximal dependency pat
 6. `canonical-learner-replacement-closure-theorem`: closes policy invariance under an arbitrary finite list of existing NormPair/optimizer replacements;
 7. the broader recurrent-prefix, finite-product, exact-readout, and stationary-Walrasian composition surfaces already present in the monolith.
 
+8. `RecurrentScanConjugacyTheorem` / `canonical-recurrent-scan-conjugacy-theorem`: local transition conjugacy lifts exactly to every recurrent prefix, giving a representation-independent scan closure law.
+
 Agda `--safe` is authoritative. Mercury extracts the canonical theorem monolith, builds the dependency graph, performs A* cost-guided path search, inserts source laws and graph plans into the e-graph, saturates sound rewrite relations, rebuilds, analyzes e-classes, and extracts costed representatives. It does not prove the Agda induction or invent semantic laws.
 
 ## Sparsity boundary
