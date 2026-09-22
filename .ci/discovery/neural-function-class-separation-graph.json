@@ -142,7 +142,7 @@
     }
   ],
   "current_result": "NOT_ESTABLISHED",
-  "reason": "Candidate-specific strict-separation contracts now bind the named exotic candidates to inclusion, connected witness membership, and baseline nonrepresentability. The model-specific witness constructions remain absent, so no candidate is promoted to SEPARATED.",
+  "reason": "A literature-aligned strict separation is now present on the Agda surface for the algebraically supported baseline: a Fin 256 recurrent class embeds into a connected recurrent extension, while the canonical unbounded clock trace is not finite-state realizable. The four exotic labels reuse that completed separation surface; their additional route-specific sign/optimizer-affine, non-tropical, non-automata, or replacement-quotient semantics remain unestablished.",
   "pregraphed_candidates": [
     {
       "name": "CanonicalEndogenousAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
@@ -737,11 +737,50 @@
     "research_basis": "Peer-reviewed recurrent expressivity work commonly separates representation and lower-bound/impossibility obligations; the repository adopts the same witness-plus-nonrepresentability discipline without importing external claims as proof."
   },
   "candidate_specific_contracts": {
-    "automata_sign_optimizer_affine": "CanonicalAutomataSignOptimizerAffineGRUStrictSeparationContract",
-    "non_tropical": "CanonicalNonTropicalSignOptimizerAffineGRUStrictSeparationContract",
-    "non_tropical_non_automata": "CanonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationContract",
-    "replacement_quotient": "CanonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationContract",
-    "status": "CONTRACTS_ADDED_NOT_PROVED",
-    "note": "The generic Set fields deliberately mark unresolved model-specific preservation/quotient obligations without pretending they are proved. Only concrete Agda propositions can replace them."
+    "automata_sign_optimizer_affine": {
+      "theorem": "canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem",
+      "status": "LITERATURE_ALIGNED_BASELINE_COMPLETED_ROUTE_SPECIFIC_UNPROVED"
+    },
+    "non_tropical": {
+      "theorem": "canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem",
+      "status": "LITERATURE_ALIGNED_BASELINE_COMPLETED_ROUTE_SPECIFIC_UNPROVED"
+    },
+    "non_tropical_non_automata": {
+      "theorem": "canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem",
+      "status": "LITERATURE_ALIGNED_BASELINE_COMPLETED_ROUTE_SPECIFIC_UNPROVED"
+    },
+    "replacement_quotient": {
+      "theorem": "canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem",
+      "status": "LITERATURE_ALIGNED_BASELINE_COMPLETED_ROUTE_SPECIFIC_UNPROVED"
+    },
+    "shared_separation_basis": "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
+  },
+  "literature_aligned_strict_separation": {
+    "status": "PROVED_ON_AGDA_SURFACE_UNVERIFIED_BY_FRESH_CI",
+    "baseline_class": "CanonicalFiniteStateRecurrentFunctionClass: recurrent realizations with hidden state Fin 256",
+    "extended_class": "CanonicalConnectedRecurrentFunctionClass: recurrent realizations with state Fin 256 ⊎ CanonicalFullLearnerState",
+    "inclusion_theorem": "canonicalFiniteStateRecurrent-function-inclusion",
+    "witness_function": "canonicalConnectedLearnerClock K s = clock(s) + n",
+    "witness_in_extended": "canonicalConnectedLearnerClock-realization",
+    "witness_not_in_baseline": "canonicalConnectedLearnerClock-not-finite-state",
+    "strict_theorem": "canonicalFiniteStateVsConnectedRecurrentStrictSeparation",
+    "nonrepresentability_basis": "finite-state pigeonhole collision + exact clock growth + natPlus-left-cancel",
+    "literature_basis": [
+      "Merrill et al. 2020: rational recurrence / weighted finite-state-machine hierarchy and non-rational state expressivity",
+      "Svete & Cotterell 2023: recurrent language models characterized via probabilistic finite-state automata and strict expressivity subsets"
+    ],
+    "caveat": "This completes the strict separation implied by the repository's existing exact-clock and finite-state invariants. It does not by itself prove a route-specific sign/optimizer-affine GRU theorem."
+  },
+  "strict_separation_contracts": {
+    "completed_route": "finite-state/rational-recurrence baseline versus unbounded connected recurrent clock trace",
+    "proof_surface": [
+      "FunctionClassInclusion",
+      "StrictFunctionClassSeparation",
+      "canonicalFiniteStateRecurrent-function-inclusion",
+      "canonicalFiniteStateIteration-collision",
+      "canonicalConnectedLearnerClock-realization",
+      "canonicalConnectedLearnerClock-not-finite-state",
+      "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
+    ]
   }
 }
