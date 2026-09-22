@@ -148,3 +148,21 @@ Primary sources:
 - https://aclanthology.org/2023.emnlp-main.502/
 
 Verification boundary: the new contract is written to the branch, but fresh Agda/Nix CI has not yet been observed for the new head.
+
+
+## Candidate-specific strict separation contracts
+
+The Agda surface now binds the four active exotic routes to the strict proof gate:
+
+1. automata/sign/optimizer-affine GRU;
+2. non-tropical sign/optimizer-affine GRU;
+3. non-tropical, explicitly non-automata sign/optimizer-affine GRU;
+4. endogenous learner-replacement quotient/sign-optimizer-affine GRU.
+
+Each contract requires the connected full-class witness and the canonical baseline nonrepresentability proof, while exposing the route-specific missing construction. These are intentionally contracts rather than axioms or placeholder proofs.
+
+## Research update
+
+SciSpace identified relevant formal expressivity work. Svete & Cotterell (EMNLP 2023) prove that simple RNN LMs form a strict subset of the distributions expressible by finite-state models and derive neuron lower bounds. Svete et al. (2024) give constructive bounded-precision RNN-LM representations of arbitrary regular LMs. Merrill et al. (2020) develop a formal hierarchy of RNN architectures based on space complexity and rational recurrence. These results support the repository's witness-plus-nonrepresentability discipline, but none establishes the repository-specific GRU/F4/NormPair/Watkins candidates.
+
+Research boundary: external expressivity results are evidence for proof structure, not imported premises. The repository's strict claims still require native Agda witnesses and `Agda --safe` verification.
