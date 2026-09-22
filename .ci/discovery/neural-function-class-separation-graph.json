@@ -1,6 +1,6 @@
 {
   "graph": "strict-neural-function-class-separation-full-connected-composition",
-  "status": "NOT_ESTABLISHED",
+  "status": "PARTIALLY_ESTABLISHED",
   "proof_rule": "SEPARATED iff the full connected extended class contains a concrete witness f and the baseline class has a canonical Agda proof that f is not representable.",
   "scope": {
     "baseline": "F_base",
@@ -143,6 +143,15 @@
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
   "reason": "The finite-state/rational-recurrence strict separation is represented by an explicit Agda theorem term, while route-specific sign/optimizer-affine candidates remain candidates until their own model-specific witness and nonrepresentability certificates exist.",
+  "computability_complexity_boundary": {
+    "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
+    "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
+    "transcendental_rnn_claim": "No standard theorem class named transcendental RNN follows merely from topology, a left-inverse representation law, or use of a Tsallis q-log/q-algebra. Those ingredients can change the representation or transition algebra, but computability depends on the precise state domain, arithmetic model, allowed constants/functions, precision, and interaction/time convention.",
+    "unbounded_model_boundary": "The current Agda surface proves an unbounded Nat-indexed exact clock witness and strict separation from the repository's Fin 256 recurrent baseline. It does not prove Turing completeness, super-Turing power, a named complexity class, or an upper bound for the entire connected composition.",
+    "complexity_gate": "A named computational-complexity result requires an explicit machine/decision/transduction problem, cost model, input encoding, arithmetic representation, and resource bound. An untruncated recurrent horizon by itself is not a complexity class.",
+    "q_log_boundary": "The q-log/Tsallis component is a semantic operation in the current learner state. No repository theorem currently derives a complexity-class change from it.",
+    "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power."
+  },
   "pregraphed_candidates": [
     {
       "name": "CanonicalEndogenousAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
