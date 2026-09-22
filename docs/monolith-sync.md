@@ -55,3 +55,13 @@ The autonomous iterateCanonical scan is deliberately kept separate from arbitrar
 The proposed exact Turing-completeness record was repaired into a contract plus canonicalExactCompositionTuringCompletenessContract-impossible. The obstruction is endogenous: the exact canonicalFullStep is fixed-point-free because its clock increments, so the contract's universal exact step simulation fails already on the self-loop two-counter machine. No weaker precision, extra input stream, or substitute architecture was introduced.
 
 Knowledge delta: the canonical theorem/docs now record the distinction between autonomous scan conjugacy and input-prefix conjugacy, explicit modified-Watkins full coupling, and the exact obstruction to the proposed Turing-completeness contract.
+## Bounded-factor completion
+
+The active theorem facade now owns the exact bounded-factor / injective-lift layer:
+
+- `canonicalF4ThetaQ-bounded` — every exact F4 theta representation remains in `Fin 256`.
+- `canonicalF4ThetaQ-not-orbit-injective` — the finite F4 factor cannot injectively encode the unbounded Nat orbit index.
+- `canonicalF4-factor-collision-separates-full-state` — a repeated F4 representation can occur only at distinct full exact states, because the canonical clock makes the full orbit index-injective.
+- `canonical-bounded-factor-lift-theorem` — packages the three facts as one theorem surface.
+
+The finite-carrier witness is now proved directly in `TheoremsMonolith.agda`; `FiniteUniversalBoundary.agda` is therefore retired. The legacy F4/finite-cycle/operator modules that depended on the superseded learner surface were pruned from the canonical branch. Benchmark/game-port modules remain separate where they carry distinct environment semantics rather than duplicate learner proof semantics.
