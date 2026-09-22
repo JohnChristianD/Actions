@@ -263,7 +263,7 @@ record CanonicalLearnerReplacementClosureTheorem : Set₁ where
       (rs : List LearnerReplacement) →
       C.canonicalPolicy
         K
-        (C.applyLearnerReplacements rs s)
+        (applyLearnerReplacements rs s)
       ≡
       C.canonicalPolicy K s
 
@@ -1999,6 +1999,61 @@ canonicalNoExactTuringCounterObservation
     decode
     witness
 
+
+------------------------------------------------------------------------
+-- Exact Turing-completeness contract for the canonical composition.
+--
+-- This is tied to the actual CanonicalFullLearnerState,
+-- CanonicalFullLearnerKernel, canonicalFullStep, and exact Int8 semantics.
+-- It does not quantify over a substitute RNN or an arbitrary-precision
+-- surrogate.  An inhabitant requires a genuine universal two-counter
+-- simulation with exact state equality and a halting/output correspondence.
+-- The declaration itself does not assert that such an inhabitant exists.
+------------------------------------------------------------------------
+
+record ExactTwoCounterConfiguration : Set where
+  constructor exactTwoCounterConfiguration
+  field
+    control : Nat
+    counter₁ : Nat
+    counter₂ : Nat
+
+record ExactTwoCounterMachine : Set₁ where
+  constructor exactTwoCounterMachine
+  field
+    step : ExactTwoCounterConfiguration → ExactTwoCounterConfiguration
+    halting : ExactTwoCounterConfiguration → C.BoolLike
+
+open ExactTwoCounterConfiguration ExactTwoCounterMachine public
+
+record CanonicalExactCompositionTuringCompletenessTheorem : Set₁ where
+  constructor canonicalExactCompositionTuringCompletenessTheorem
+  field
+    compile :
+      ExactTwoCounterMachine →
+      C.CanonicalFullLearnerKernel
+    encode :
+      (M : ExactTwoCounterMachine) →
+      ExactTwoCounterConfiguration →
+      C.CanonicalFullLearnerState
+    decode :
+      (M : ExactTwoCounterMachine) →
+      C.CanonicalFullLearnerState →
+      ExactTwoCounterConfiguration
+    exactEncodeDecode :
+      ∀ M c →
+      decode M (encode M c) ≡ c
+    exactStepSimulation :
+      ∀ M c →
+      encode M (step M c) ≡
+      C.canonicalFullStep
+        (compile M)
+        (encode M c)
+    output :
+      C.CanonicalFullLearnerState → C.BoolLike
+    exactHaltingCorrespondence :
+      ∀ M c →
+      output (encode M c) ≡ halting M c
 
 ------------------------------------------------------------------------
 -- Continuous left-inverse transfer.
