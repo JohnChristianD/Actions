@@ -53,6 +53,10 @@
     list(string)::out) is semidet.
 
 
+:- pred graph_connected_jensen_minimax_regret_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred all_scores_non_decreasing(
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
@@ -83,6 +87,12 @@ graph_finite_pomdp_probability_plan(Laws, Plan) :-
 graph_endogenous_pomdp_observation_plan(Laws, Plan) :-
     search_named_required_plan(
         "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
+        Laws,
+        Plan).
+
+graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedJensenMinimaxRegretOptimizerTheorem",
         Laws,
         Plan).
 
