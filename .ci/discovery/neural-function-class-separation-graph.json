@@ -208,7 +208,12 @@
       "theorem_monolith_egraph_sync discovers the same path",
       "the inclusion and nonrepresentability witness obligations are discharged",
       "only then may status change from NOT_ESTABLISHED to SEPARATED"
-    ]
+    ],
+    "complete_graph_contract": {
+      "new_theorems": "Every future theorem must declare its composed parent and enter the graph through that parent.",
+      "disconnected_status": "A theorem with no path into the full connected composition is not eligible for strict function-class separation status.",
+      "strict_status": "SEPARATED requires the explicit inclusion, connected witness membership, and baseline nonrepresentability proof already specified above."
+    }
   },
   "hard_sign_and_tropical_geometry": {
     "existing_exact_surface": "hardSignGate-idempotent",
@@ -224,9 +229,10 @@
     "required_to_upgrade": "Add explicit Agda class definitions, both inclusion proofs, and a concrete full-composition witness with baseline nonrepresentability."
   },
   "internal_verification": {
-    "requested_authority": "repository-internal Nix/Dhall verification rather than GitHub status",
-    "dhall_surface": ".ci/actions_ci.dhall",
-    "declared_internal_lanes": [
+    "authority": "Nix develop .#default executing Dhall-rendered .ci/actions_ci.dhall",
+    "verification_lanes": [
+      "AgdaLearner",
+      "AgdaTheorem",
       "AgdaSafe",
       "Mercury",
       "Discovery",
@@ -235,10 +241,9 @@
       "Versions",
       "All"
     ],
-    "nix_surface": "No tracked *.nix, flake.nix, shell.nix, or default.nix file was found in the repository search surface.",
-    "observed_execution_status": "UNOBSERVED",
-    "reason": "The available repository connector can inspect the Dhall contract and source tree but does not execute the repository's local Nix/Dhall toolchain. No GitHub status is being substituted for this internal result.",
-    "gate_policy": "Do not infer green, orange, or passing from absence of an observable internal execution result."
+    "current_observed_state": "UNVERIFIED_IN_THIS_SESSION",
+    "reason": "The connector exposes repository configuration but does not execute the repository's Nix/Dhall environment. Do not substitute GitHub status or claim an internal pass without an observed Nix/Dhall run.",
+    "no_bypass_rule": "An orange/pending internal run is a wait state; do not cancel or bypass it. Repair only on an evidenced defect."
   },
   "pregraphed_exotic_first": {
     "existing_candidates_checked": [
@@ -272,5 +277,47 @@
       "strict baseline nonrepresentability witness if this is used for function-class separation"
     ],
     "tropical_extension": "A tropical/max-plus optimizer-geometry lemma could later serve as a composition-preserving boundary description, but no such lemma is admitted until its Agda proposition exists."
+  },
+  "pregraphed_exotic_promotions": [
+    {
+      "theorem": "hardSignGate-idempotent",
+      "promotion_target": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "role": "exact HardSign projection/idempotence seam; not an independent separation claim"
+    },
+    {
+      "theorem": "DirectProductFiniteAutomatonComposition",
+      "promotion_target": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "role": "finite-automaton composition seam for recurrent affine/state-machine witnesses; strict separation still requires a baseline nonrepresentability witness"
+    },
+    {
+      "theorem": "canonicalF4-factor-collision-separates-full-state",
+      "promotion_target": "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "role": "existing F4 factor-collision mechanism promoted into the connected factor-recurrence composition"
+    },
+    {
+      "theorem": "CanonicalPolymorphicSparsemaxCompositionTheorem",
+      "promotion_target": "CanonicalHaarSparsemaxFullStateClosureTheorem",
+      "role": "existing sparsemax/recurrent composition promoted into the full attention/Haar closure"
+    }
+  ],
+  "emergent_endogenous_candidate": {
+    "name": "HardSign-F4-NormPair recurrent finite-automaton factor geometry",
+    "status": "CANDIDATE_NOT_PROVED",
+    "existing_inputs": [
+      "hardSignGate-idempotent",
+      "F4 optimizer",
+      "NormPair learner replacement seam",
+      "DirectProductFiniteAutomatonComposition",
+      "canonicalF4-factor-collision-separates-full-state",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem"
+    ],
+    "candidate_statement": "A recurrent affine learner whose observable factor is HardSign-quantized and whose F4/NormPair dynamics preserve a finite invariant factor image may realize arbitrary finite automata while retaining exact-state nonrecurrence.",
+    "missing_certificates": [
+      "explicit affine finite-automaton realization for the canonical learner",
+      "finite invariant-set or boundedness certificate for the HardSign/F4/NormPair factor",
+      "explicit full-connected function-class witness",
+      "baseline nonrepresentability theorem"
+    ],
+    "tropical_extension": "A max-plus/tropical optimizer-geometry theorem would fit as a composed geometry lemma only after an actual Agda proposition and witness are supplied; no such theorem is currently pre-graphed."
   }
 }
