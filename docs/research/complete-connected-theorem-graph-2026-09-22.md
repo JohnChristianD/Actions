@@ -202,3 +202,51 @@ The four pre-graphed labels now all reuse the completed finite-state-versus-unbo
 ### Verification boundary
 
 Fresh Nix/Dhall/Agda/Mercury CI for the new head has not yet been observed. The claim is therefore "Agda source-surface theorem term present", not "fresh Agda --safe CI verified".
+
+
+## Graph-resumption and emergent-theorem audit — 2026-09-22
+
+### Emergent endogenous theorem
+
+There is a genuine new endogenous theorem on the Agda source surface:
+
+`CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem`.
+
+It composes the global token conjugacy, the verified token-vocabulary upper bound, exact RNN-LM capability, capability/observation subcomposition, observation topology, and endogenous RNN-LM/POMDP observation topology. This is an actual constructor-backed closure theorem, not the older HardSign/F4 candidate.
+
+The HardSign/F4 finite-automaton factor-geometry object remains a candidate. No Agda proof has been found that supplies its affine automaton realization and quotient preservation.
+
+### Literature-aligned novel pre-graphing
+
+Three additional candidates are now pre-graphed without promoting them to proved theorems:
+
+1. `CanonicalEndogenousAperiodicClockRNNStrictSeparationCandidate`: the explicit unbounded clock witness against a finite/rational baseline.
+2. `CanonicalEndogenousRationalRecurrenceBoundaryCandidate`: the exact boundary between finite-factor/rational recurrence and the nonrecurrent exact learner state.
+3. `CanonicalEndogenousStateSpaceConjugacyExpressivityBoundaryCandidate`: a same-witness state-space-conjugacy route through the connected learner.
+
+The closest formal literature supports these shapes. Merrill et al. formulate RNN expressivity using space complexity and rational recurrence and explicitly distinguish rational from non-rational state expressiveness. Peng et al. formalize rational recurrence through finite weighted automata. Svete & Cotterell characterize simple RNN language-model distributions via probabilistic finite-state models and prove strict-subset/state-space lower-bound results. Nowak et al. establish an upper/lower expressivity framing for recurrent neural language models. These works motivate the candidate algebra; none substitutes for the repository's Agda witness.
+
+### Transformative recent commits
+
+The resumed history shows real transformative changes after the earlier graph-contract work:
+
+- `d53313518cf4cce673f1ac108fec075e007f6e6d`: introduced the emergent HardSign/automaton candidate and verification boundary.
+- `f8a3826d701646411aef4281ccb246a80c747390`: promoted pre-graphed automata/HardSign seams into the connected graph.
+- `def9ee9551fdb2869c8df36d5b47bc06aaee63b7`: added the automata sign/optimizer-affine candidate.
+- `dcfdde047e276a1a22d9634f1a75354080d6cd41`: added the actual nonlinear sequence-storage/generation algebraic proof.
+- `6f74b4f7e8b465351f442d963ef21d3f7b940411` and `1ca9b5b0d94ad47028162cc91d52192509a9d492`: introduced/documented the learner-replacement quotient route.
+- `8ad84a107c17e2443bd91a0d9aa31323ffe3fec0`: bound the four exotic separation routes to explicit proof gates.
+
+The subsequent `eef7033d...`, `813954a...`, and `7d224cd...` commits are repair/verification plumbing, not new mathematical transformations.
+
+### Disconnected-theorem rule
+
+The graph is now explicitly pruned semantically: a theorem with no real consumer is not an independent strict-separation node. Existing foundational proof records remain only when an actual composed theorem consumes them; otherwise they are classified as foundational and excluded from the strict graph. Future promotion order is:
+
+`foundational theorem -> smallest existing composed consumer -> full connected learner -> F_full_connected`.
+
+No conceptual edge is synthesized merely to make the graph connected.
+
+### Verification boundary
+
+Run #764 failed for two concrete reasons on the previous head: the Agda theorem monolith used unavailable `Data.Fin.Properties` exports and an unqualified recurrent-realization field; the Mercury e-graph sync module did not export all graph-plan predicates it called. Both defects were repaired minimally in separate commits. Fresh CI for the resulting head is now required before any theorem is described as CI-verified.
