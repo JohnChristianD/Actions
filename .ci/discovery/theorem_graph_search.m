@@ -241,7 +241,7 @@ all_named_required_plans([Name | Names], Laws, [Plan | Plans]) :-
 :- func graph_required_theorems = list(string).
 graph_required_theorems = [
     "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
-    "MonotoneConvergenceToStationaryDistributionTheorem",
+    "FiniteObservationStationaryLimitTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
     "ExactContractComputabilityBoundaryTheorem"
 ].
@@ -249,7 +249,7 @@ graph_required_theorems = [
 :- func graph_required_subcompositions = list(string).
 graph_required_subcompositions = [
     "CanonicalClockObservationSubcompositionTheorem",
-    "CanonicalMonotoneEnergyStationarySubcompositionTheorem",
+    "CanonicalFiniteObservationStationarySubcompositionTheorem",
     "CanonicalBoundednessPEBoundarySubcompositionTheorem"
 ].
 
@@ -259,6 +259,15 @@ graph_required_subcompositions = [
 graph_monotone_energy_plan(Laws, Plan) :-
     search_named_required_plan(
         "CanonicalMonotoneEnergyStationarySubcompositionTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_observation_stationary_limit_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_observation_stationary_limit_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteObservationStationaryLimitTheorem",
         Laws,
         Plan).
 
