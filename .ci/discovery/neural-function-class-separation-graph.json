@@ -51,6 +51,10 @@
     {
       "node": "F_full_connected",
       "role": "function class induced by the entire connected composition"
+    },
+    {
+      "node": "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "role": "connected Jensen/minimax regret, rounding-bias, KKT, and stationary-Markov optimizer boundary"
     }
   ],
   "edges": [
@@ -103,6 +107,21 @@
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected",
       "the entire connected composition defines the extended class"
+    ],
+    [
+      "MarkovStationaryWalrasianCompositionTheorem",
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "stationary Markov aggregate transport feeds the connected optimizer boundary"
+    ],
+    [
+      "FiniteHardSparseKKTEquilibriumTheorem",
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "KKT absorbing-class semantics supply the stationary optimizer condition"
+    ],
+    [
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "F_full_connected",
+      "the optimizer-regret boundary is admitted only through the full connected composition"
     ]
   ],
   "separation_obligation": [
@@ -150,7 +169,8 @@
     "unbounded_model_boundary": "The current Agda surface proves an unbounded Nat-indexed exact clock witness and strict separation from the repository's Fin 256 recurrent baseline. It does not prove Turing completeness, super-Turing power, a named complexity class, or an upper bound for the entire connected composition.",
     "complexity_gate": "A named computational-complexity result requires an explicit machine/decision/transduction problem, cost model, input encoding, arithmetic representation, and resource bound. An untruncated recurrent horizon by itself is not a complexity class.",
     "q_log_boundary": "The q-log/Tsallis component is a semantic operation in the current learner state. No repository theorem currently derives a complexity-class change from it.",
-    "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power."
+    "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power.",
+    "optimizer_regret_boundary": "Jensen/minimax regret plus rounding bias plus KKT residual plus stationary Markov mixing is represented conditionally as R ≤ J + B + K + M; no unconditional numeric regret rate is claimed."
   },
   "pregraphed_candidates": [
     {
@@ -168,6 +188,22 @@
       ],
       "distinction": "Automata-backed sign-optimizer-affine candidate. It is deliberately separate from the existing non-automata and non-tropical candidates while remaining inside the strict fully connected graph.",
       "promotion_gate": "Promote only after an Agda witness proves sign/optimizer-affine preservation, finite-automaton realization, transition compatibility, exact GRU conjugacy, same-witness neighborhood separation, topology compatibility, inclusion, and baseline nonrepresentability."
+    },
+    {
+      "name": "ConnectedJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "RecurrentAssociativeScanTheorem",
+        "FiniteHardSparseKKTEquilibriumTheorem",
+        "UniqueKKTAbsorbingClass",
+        "MarkovStationaryWalrasianCompositionTheorem",
+        "ConnectedJensenMinimaxRegretOptimizerTheorem"
+      ],
+      "distinction": "Connected optimizer-regret boundary combining Jensen/minimax regret, explicit rounding bias, KKT absorbing-class stationarity, and Markov fixed-point/Walrasian transport.",
+      "quantitative_contract": "R ≤ J + B + K + M",
+      "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
     }
   ],
   "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
@@ -207,6 +243,10 @@
       [
         "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
         "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      ],
+      [
+        "JensenMinimaxRegretRoundingKKTMarkovData",
+        "ConnectedJensenMinimaxRegretOptimizerTheorem"
       ]
     ],
     "excluded_from_strict_graph": [
@@ -218,7 +258,8 @@
       "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalEndogenousObservationBoundaryTheorem",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem"
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "JensenMinimaxRegretRoundingKKTMarkovData"
     ],
     "note": "These records remain on the Agda proof surface and may remain required CI declarations; exclusion here means they are not treated as independent function-class separation claims."
   },
