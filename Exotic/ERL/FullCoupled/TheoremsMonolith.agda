@@ -6757,6 +6757,43 @@ connected-jensen-minimax-regret-optimizer-theorem C =
   regretBound C
 
 ------------------------------------------------------------------------
+-- Lion-extended connected optimizer boundary.
+-- This is a real Agda proposition consuming the existing connected
+-- Jensen/minimax/rounding/KKT/Markov theorem. Its Lion contribution is
+-- represented by the explicit descent residual in the regret data.
+------------------------------------------------------------------------
+
+record ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem : Set₁ where
+  constructor connectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem
+  field
+    connectedOptimizer :
+      ConnectedJensenMinimaxRegretOptimizerTheorem
+    lionExtendedBound :
+      minimaxRegret
+        (regretBoundary connectedOptimizer)
+      ≤
+      jensenGap (regretBoundary connectedOptimizer)
+      + roundingBias (regretBoundary connectedOptimizer)
+      + kktResidual (regretBoundary connectedOptimizer)
+      + lionDescentResidual (regretBoundary connectedOptimizer)
+      + markovMixing (regretBoundary connectedOptimizer)
+
+open ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem public
+
+connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem :
+  (C : ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem) →
+  minimaxRegret
+    (regretBoundary (connectedOptimizer C))
+  ≤
+  jensenGap (regretBoundary (connectedOptimizer C))
+  + roundingBias (regretBoundary (connectedOptimizer C))
+  + kktResidual (regretBoundary (connectedOptimizer C))
+  + lionDescentResidual (regretBoundary (connectedOptimizer C))
+  + markovMixing (regretBoundary (connectedOptimizer C))
+connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem C =
+  lionExtendedBound C
+
+------------------------------------------------------------------------
 -- Promotion boundary:
 -- the Jensen/minimax regret surface is not a standalone optimizer theorem.
 -- It is graph-complete only through the recurrent scan, stationary Markov
