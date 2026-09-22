@@ -386,7 +386,25 @@ graph_required_theorems = [
     "CanonicalExactRNNLMObservationSubcompositionTheorem",
     "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
     "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
-    "CanonicalTokenVocabularyUpperBoundTheorem"
+    "CanonicalTokenVocabularyUpperBoundTheorem",
+    "StateIsomorphism",
+    "RecurrentPrefixMonoidHomomorphism",
+    "FreeMonoidActionHomomorphism",
+    "ObservationTaskFactorization",
+    "PointwiseSandwich",
+    "MinimaxBellmanShapleyOperator",
+    "DiscreteLeftInverseWitness",
+    "ExactNatObservationSimulation",
+    "ExactTuringCounterObservation",
+    "ExactTwoCounterConfiguration",
+    "ExactTwoCounterMachine",
+    "UniqueKKTAbsorbingClass",
+    "ContinuousStationaryMarkovWalrasianData",
+    "ExactReconstructionOnImage",
+    "BairdSevenStarProblem",
+    "NonIIDMarkovWalrasianProblem",
+    "FiniteProbabilityMass",
+    "FinitePOMDPProbabilitySemantics"
 ].
 
 :- func graph_required_subcompositions = list(string).
