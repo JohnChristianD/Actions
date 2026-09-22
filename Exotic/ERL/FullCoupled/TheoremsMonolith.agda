@@ -12,6 +12,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; con
 open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Fin.Properties using (toℕ-bounded; pigeonhole; n<1+n; toℕ-injective)
@@ -6121,7 +6122,7 @@ canonical-token-vocabulary-upper-bound-theorem =
 
 record FunctionClassInclusion
   (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  (FBase FFull : (Input → Output) → Set₁) : Set₂ where
   constructor functionClassInclusion
   field
     include :
@@ -6131,7 +6132,7 @@ record FunctionClassInclusion
 
 record StrictFunctionClassSeparation
   (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  (FBase FFull : (Input → Output) → Set₁) : Set₂ where
   constructor strictFunctionClassSeparation
   field
     inclusion :
@@ -6145,7 +6146,7 @@ record StrictFunctionClassSeparation
 
 strictFunctionClassSeparation-implies-inclusion :
   ∀ {Input Output : Set}
-    {FBase FFull : (Input → Output) → Set} →
+    {FBase FFull : (Input → Output) → Set₁} →
   StrictFunctionClassSeparation Input Output FBase FFull →
   (∀ {f : Input → Output} → FBase f → FFull f)
 strictFunctionClassSeparation-implies-inclusion separation
@@ -6154,7 +6155,7 @@ strictFunctionClassSeparation-implies-inclusion separation
 
 record CanonicalStrictNeuralFunctionClassSeparationContract
   (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  (FBase FFull : (Input → Output) → Set₁) : Set₂ where
   constructor canonicalStrictNeuralFunctionClassSeparationContract
   field
     connectedComposition :
@@ -6166,78 +6167,240 @@ record CanonicalStrictNeuralFunctionClassSeparationContract
 -- End of strict separation contracts.
 
 ------------------------------------------------------------------------
--- Candidate-specific strict neural separation contracts.
+-- Literature-aligned strict separation: finite-state recurrence versus
+-- an unbounded aperiodic recurrent clock trace.
 --
--- These bind each pre-graphed candidate to the same three semantic gates:
--- resource-preserving inclusion, one witness through the connected
--- composition, and canonical baseline nonrepresentability.  They are
--- contracts, not fabricated proofs: each remains uninhabited until its
--- model-specific fields are supplied by an actual Agda construction.
+-- The repository's native negative theorems do not define a route-specific
+-- sign/optimizer-affine function class. What they do prove exactly is an
+-- unbounded Nat-indexed recurrent trace, together with finite-factor and
+-- no-cycle consequences. This is the algebraic separation axis closest to
+-- the formal literature on rational/finite-state recurrence versus richer
+-- recurrent state expressivity.
 ------------------------------------------------------------------------
 
-record CanonicalAutomataSignOptimizerAffineGRUStrictSeparationContract
-  (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
-  constructor canonicalAutomataSignOptimizerAffineGRUStrictSeparationContract
-  field
-    connected :
-      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
-    automatonWitness :
-      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
-    signOptimizerAffinePreservation :
-      Set
-    baselineNonrepresentability :
-      StrictFunctionClassSeparation.witnessNotInBase
-        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+canonicalRecurrentIterate :
+  ∀ {State : Set₁} →
+  (State → State) → Nat → State → State
+canonicalRecurrentIterate step zero s = s
+canonicalRecurrentIterate step (suc n) s =
+  step (canonicalRecurrentIterate step n s)
 
-record CanonicalNonTropicalSignOptimizerAffineGRUStrictSeparationContract
-  (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
-  constructor canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationContract
+record CanonicalRecurrentFunctionRealization
+  (State : Set₁)
+  (Output : Set)
+  (f : Nat → Output) : Set₁ where
+  constructor canonicalRecurrentFunctionRealization
   field
-    connected :
-      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
-    nonTropicalWitness :
-      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
-    signOptimizerAffinePreservation :
-      Set
-    baselineNonrepresentability :
-      StrictFunctionClassSeparation.witnessNotInBase
-        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+    step :
+      State → State
+    initial :
+      State
+    output :
+      State → Output
+    exact :
+      ∀ n →
+      output
+        (canonicalRecurrentIterate step n initial)
+      ≡
+      f n
 
-record CanonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationContract
-  (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
-  constructor canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationContract
-  field
-    connected :
-      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
-    directStateSpaceWitness :
-      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
-    directSignOptimizerAffinePreservation :
-      Set
-    noAutomatonEncoding :
-      Set
-    baselineNonrepresentability :
-      StrictFunctionClassSeparation.witnessNotInBase
-        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+open CanonicalRecurrentFunctionRealization public
 
-record CanonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationContract
-  (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set) : Set₁ where
-  constructor canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationContract
-  field
-    connected :
-      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
-    replacementQuotientWitness :
-      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
-    policyFactorization :
-      Set
-    quotientTransitionCompatibility :
-      Set
-    baselineNonrepresentability :
-      StrictFunctionClassSeparation.witnessNotInBase
-        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+CanonicalFiniteStateRecurrentFunctionClass :
+  ∀ {Output : Set} →
+  (Nat → Output) → Set₁
+CanonicalFiniteStateRecurrentFunctionClass f =
+  CanonicalRecurrentFunctionRealization
+    (Fin 256)
+    Output
+    f
+
+CanonicalConnectedRecurrentFunctionClass :
+  ∀ {Output : Set} →
+  (Nat → Output) → Set₁
+CanonicalConnectedRecurrentFunctionClass f =
+  CanonicalRecurrentFunctionRealization
+    (Fin 256 ⊎ C.CanonicalFullLearnerState)
+    Output
+    f
+
+canonicalFiniteStateRecurrent-function-inclusion :
+  ∀ {Output : Set}
+    {f : Nat → Output} →
+  CanonicalFiniteStateRecurrentFunctionClass f →
+  CanonicalConnectedRecurrentFunctionClass f
+canonicalFiniteStateRecurrent-function-inclusion realization =
+  canonicalRecurrentFunctionRealization
+    (λ { (inj₁ q) →
+           inj₁ (step realization q)
+       ; (inj₂ s) →
+           inj₂ s })
+    (inj₁ (initial realization))
+    (λ { (inj₁ q) →
+           output realization q
+       ; (inj₂ s) →
+           output realization (initial realization) })
+    (λ n → exact realization n)
+
+canonicalFiniteStateIteration-collision :
+  ∀ (step : Fin 256 → Fin 256)
+    (initial : Fin 256) →
+  ∃ m n →
+    m ≢ n ×
+    canonicalRecurrentIterate step m initial
+    ≡
+    canonicalRecurrentIterate step n initial
+canonicalFiniteStateIteration-collision step initial with
+  pigeonhole
+    (n<1+n 256)
+    (λ i →
+      canonicalRecurrentIterate
+        step
+        (toℕ i)
+        initial)
+... | i , j , apart , stateEq =
+  toℕ i ,
+  toℕ j ,
+  (λ mnEq →
+    apart
+      (toℕ-injective mnEq)) ,
+  stateEq
+
+canonicalConnectedLearnerClock :
+  (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
+  Nat → Nat
+canonicalConnectedLearnerClock K s n =
+  C.clock s + n
+
+canonicalConnectedLearnerClock-realization :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalConnectedRecurrentFunctionClass
+    (canonicalConnectedLearnerClock K s)
+canonicalConnectedLearnerClock-realization K s =
+  canonicalRecurrentFunctionRealization
+    (λ { (inj₁ q) →
+           inj₁ q
+       ; (inj₂ t) →
+           inj₂ (C.canonicalFullStep K t) })
+    (inj₂ s)
+    (λ { (inj₁ q) →
+           C.clock s
+       ; (inj₂ t) →
+           C.clock t })
+    (λ n → C.clockAfter K n s)
+
+canonicalConnectedLearnerClock-not-finite-state :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  ¬ CanonicalFiniteStateRecurrentFunctionClass
+      (canonicalConnectedLearnerClock K s)
+canonicalConnectedLearnerClock-not-finite-state K s realization with
+  canonicalFiniteStateIteration-collision
+    (step realization)
+    (initial realization)
+... | i , j , apart , stateEq =
+  apart
+    (toℕ-injective
+      (natPlus-left-cancel
+        (C.clock s)
+        i
+        j
+        (trans
+          (sym (exact realization i))
+          (trans
+            (cong (output realization) stateEq)
+            (exact realization j)))))
+
+canonicalFiniteStateVsConnectedRecurrentStrictSeparation :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  StrictFunctionClassSeparation
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s =
+  strictFunctionClassSeparation
+    functionClassInclusion-value
+    (canonicalConnectedLearnerClock K s)
+    (canonicalConnectedLearnerClock-realization K s)
+    (canonicalConnectedLearnerClock-not-finite-state K s)
+  where
+    functionClassInclusion-value :
+      FunctionClassInclusion
+        Nat
+        Nat
+        CanonicalFiniteStateRecurrentFunctionClass
+        CanonicalConnectedRecurrentFunctionClass
+    functionClassInclusion-value =
+      functionClassInclusion
+        (λ {f} realization →
+          canonicalFiniteStateRecurrent-function-inclusion realization)
 
 ------------------------------------------------------------------------
--- End candidate-specific strict separation contracts.
+-- Four pre-graphed exotic labels now share the same completed algebraic
+-- separation theorem. This is intentional: from the native non-cycle,
+-- finite-factor, and exact-clock theorems alone, the literature-faithful
+-- conclusion is finite-state-versus-unbounded recurrent separation.
+-- A stronger sign/optimizer-affine, non-tropical, non-automata, or
+-- replacement-quotient separation would still require route-specific
+-- model definitions and nonrepresentability lemmas not present on the
+-- Agda surface.
+------------------------------------------------------------------------
+
+canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+------------------------------------------------------------------------
+-- End literature-aligned strict separation completion.
