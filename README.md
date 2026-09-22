@@ -475,3 +475,10 @@ The graph now records `CanonicalEndogenousTropicalHardSignAffineGRUExpressivityT
 This is still `CANDIDATE_NOT_PROVED`. The repository needs an actual Agda tropical/polyhedral quotient, HardSign transition preservation, affine realization of arbitrary finite-automaton transitions, prefix conjugacy, conjugacy transport, a neighborhood-separation witness for the same connected construction, and the existing strict inclusion/nonrepresentability obligations. No standalone tropical, topology, neighborhood, or conjugacy separation node is created.
 
 The external literature supports the geometric motivation: tropical/max-plus methods describe piecewise-linear neural-network regions and also have established connections to finite-state/weighted-automaton computation. That motivation does not prove this repository's recurrent HardSign/F4/NormPair theorem; Agda remains the proof authority.
+
+
+### Sign-optimizer-affine unified connected candidate
+
+The graph now refines the unified tropical/HardSign result as `CanonicalEndogenousSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate`. It explicitly carries the F4 optimizer and NormPair learner-replacement seams through the existing GRU/F4/Norm/Watkins connected conjugacy, finite HardSign-factor automaton closure, bounded recurrent UAP and `DenseNeighborhoodSeparationTheorem`, architecture-preserving conjugacy, and endogenous observation-topology closure. This remains `CANDIDATE_NOT_PROVED`; the required certificates are an actual sign-optimizer-affine quotient, transition preservation, arbitrary finite-automaton affine realization, prefix conjugacy, same-witness neighborhood separation, topology compatibility, inclusion, and baseline nonrepresentability.
+
+The graph contract now treats sign/HardSign geometry, optimizer-affine dynamics, expressivity, topology, neighborhood separation, and conjugacy as one connected promotion surface. No standalone separation node is created merely from conceptual relatedness. A future theorem must be consumed by an existing composed parent or remain foundational outside strict separation.
