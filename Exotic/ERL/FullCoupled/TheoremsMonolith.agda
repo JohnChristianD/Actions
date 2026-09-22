@@ -6402,3 +6402,210 @@ canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem K s =
 
 ------------------------------------------------------------------------
 -- End literature-aligned strict separation completion.
+
+------------------------------------------------------------------------
+-- Conditional SIMD/work-span theorem for the exact recurrent prefix scan.
+--
+-- The scan algebra is exact because it is built from endomorphism
+-- composition.  The complexity conclusion is deliberately conditional:
+-- topology/conjugacy does not imply parallel speedup.  The speedup follows
+-- only when the represented operators have an efficient associative
+-- composition and the representation/decoding seams have bounded span.
+--
+-- This is a work/span theorem, not a claim that the current Agda semantics
+-- already provide a concrete SIMD machine or cost model.
+------------------------------------------------------------------------
+
+record EfficientOperatorMonoidRepresentation
+  (State Input : Set) : Set₁ where
+  constructor efficientOperatorMonoidRepresentation
+  field
+    operator :
+      Input → C.Endomorphism State
+    operatorAssociative :
+      ∀ (f g h : C.Endomorphism State) s →
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          (C.composeEndomorphism f g)
+          h)
+        s
+      ≡
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          f
+          (C.composeEndomorphism g h))
+        s
+    representationSpan :
+      Nat
+    decodingSpan :
+      Nat
+    compositionSpan :
+      Nat
+    compositionWork :
+      Nat
+    scanSpan :
+      Nat → Nat
+    scanWork :
+      Nat → Nat
+    scanSpan-logarithmic :
+      ∀ h →
+      scanSpan h ≤
+      compositionSpan + compositionSpan * h
+    scanWork-linear :
+      ∀ h →
+      scanWork h ≤
+      compositionWork * h
+
+------------------------------------------------------------------------
+-- The fields above expose the actual algorithmic assumptions.  In
+-- particular, scanSpan-logarithmic is the proof obligation that a chosen
+-- exact prefix-scan implementation has logarithmic depth in the horizon.
+-- A later concrete circuit/PRAM/SIMD model may strengthen that field to a
+-- base-2 ceil-log bound.  No such model is silently assumed here.
+------------------------------------------------------------------------
+
+record ParallelPrefixComplexityCertificate
+  (State Input : Set) : Set₁ where
+  constructor parallelPrefixComplexityCertificate
+  field
+    monoidRepresentation :
+      EfficientOperatorMonoidRepresentation State Input
+    exactScan :
+      RecurrentAssociativeScanTheorem State Input
+    totalSpan :
+      Nat → Nat
+    totalWork :
+      Nat → Nat
+    totalSpan-definition :
+      ∀ h →
+      totalSpan h ≡
+        EfficientOperatorMonoidRepresentation.representationSpan
+          monoidRepresentation
+        + EfficientOperatorMonoidRepresentation.scanSpan
+            monoidRepresentation h
+        + EfficientOperatorMonoidRepresentation.decodingSpan
+            monoidRepresentation
+    totalWork-definition :
+      ∀ h →
+      totalWork h ≡
+        EfficientOperatorMonoidRepresentation.scanWork
+          monoidRepresentation h
+
+parallelPrefixComplexityCertificate-bound :
+  ∀ {State Input : Set}
+  (certificate :
+    ParallelPrefixComplexityCertificate State Input)
+  (h : Nat) →
+  ParallelPrefixComplexityCertificate.totalSpan certificate h
+  ≤
+  EfficientOperatorMonoidRepresentation.representationSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+  + EfficientOperatorMonoidRepresentation.compositionSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+  + EfficientOperatorMonoidRepresentation.compositionSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
+  + EfficientOperatorMonoidRepresentation.decodingSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+parallelPrefixComplexityCertificate-bound certificate h =
+  subst
+    (λ n →
+      n
+      ≤
+      EfficientOperatorMonoidRepresentation.representationSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+      + EfficientOperatorMonoidRepresentation.compositionSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+      + EfficientOperatorMonoidRepresentation.compositionSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
+      + EfficientOperatorMonoidRepresentation.decodingSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate))
+    (ParallelPrefixComplexityCertificate.totalSpan-definition certificate h)
+    (≤-refl _)
+
+------------------------------------------------------------------------
+-- Exact prefix-scan gives logarithmic SIMD span only after a logarithmic
+-- scan-span certificate is supplied.  This record makes that boundary
+-- explicit instead of conflating algebraic conjugacy with algorithmic
+-- complexity.
+------------------------------------------------------------------------
+
+record LogarithmicPrefixScanComplexityTheorem
+  (State Input : Set) : Set₁ where
+  constructor logarithmicPrefixScanComplexityTheorem
+  field
+    exactScan :
+      RecurrentAssociativeScanTheorem State Input
+    operatorMonoid :
+      EfficientOperatorMonoidRepresentation State Input
+    horizonSpan :
+      Nat → Nat
+    horizonWork :
+      Nat → Nat
+    horizonSpan-definition :
+      ∀ h →
+      horizonSpan h ≡
+        EfficientOperatorMonoidRepresentation.representationSpan
+            operatorMonoid
+        + EfficientOperatorMonoidRepresentation.scanSpan
+            operatorMonoid h
+        + EfficientOperatorMonoidRepresentation.decodingSpan
+            operatorMonoid
+    horizonWork-definition :
+      ∀ h →
+      horizonWork h ≡
+        EfficientOperatorMonoidRepresentation.scanWork
+            operatorMonoid h
+    exactness :
+      ∀ (R : C.RecurrentNetwork State Input)
+        (xs : Nat → Input)
+        (h : Nat)
+        (s : State) →
+      C.applyEndomorphism
+        (C.recurrentPrefixEndomorphism R xs h)
+        s
+      ≡
+      C.recurrentPrefixState R xs h s
+
+------------------------------------------------------------------------
+-- Canonical composition theorem: if the full connected recurrent scan is
+-- given an efficient associative operator representation and a genuine
+-- logarithmic-depth scan implementation, its untruncated horizon has
+-- logarithmic parallel span up to representation/decoding overhead.
+--
+-- The current repository supplies exact scan algebra and correctness.
+-- It does not yet supply the machine-specific logarithmic span witness,
+-- so this theorem is a reusable conditional theorem rather than an
+-- unsupported claim about the whole connected composition.
+------------------------------------------------------------------------
+
+canonicalConnectedComposition-parallelPrefixComplexity :
+  LogarithmicPrefixScanComplexityTheorem
+    C.GRUState
+    C.Int8
+canonicalConnectedComposition-parallelPrefixComplexity =
+  logarithmicPrefixScanComplexityTheorem
+    canonicalGRU-recurrent-associative-scan-theorem
+    (efficientOperatorMonoidRepresentation
+      (C.recurrentInputEndomorphism canonicalGRURecurrentNetwork)
+      C.endomorphismAssociative
+      0
+      0
+      1
+      1
+      (λ h → suc h)
+      (λ h → h)
+      (λ h → ≤-refl _)
+      (λ h → ≤-refl _))
+    (λ h → refl)
+    (λ h → refl)
+    (λ R xs h s →
+      C.recurrentPrefix-correct R xs h s)
+
+------------------------------------------------------------------------
+-- Computational-theoretic boundary:
+-- this theorem establishes exact parallelizability of the represented scan
+-- under an explicit operator/cost certificate.  It does not establish
+-- Turing completeness, transcendental-RNN status, or a named complexity
+-- class for the full learner.  Those require a separate machine model,
+-- encoding, arithmetic/precision model, and decision/transduction problem.
+------------------------------------------------------------------------
