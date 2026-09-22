@@ -6699,26 +6699,6 @@ jensen-minimax-regret-rounding-kkt-markov-bound D =
       (stationaryMarkovFixedPoint D))
 
 ------------------------------------------------------------------------
--- Lion optimization/descent/KKT extension.
---
--- The literature supplies convergence/stationarity results for Lion under
--- explicit smoothness/noise/model assumptions.  This Nat-valued carrier does
--- not import those analytic hypotheses; it records a supplied descent-to-KKT
--- contribution so the connected regret composition cannot silently omit the
--- optimizer-specific term.
-------------------------------------------------------------------------
-
-record LionOptimizationDescentKKTData : Set₁ where
-  constructor lionOptimizationDescentKKTData
-  field
-    lionDescentResidual : Nat
-    lionKKTResidual : Nat
-    descentToKKT :
-      lionKKTResidual
-      ≤
-      lionDescentResidual
-
-------------------------------------------------------------------------
 -- Full connected optimizer composition.  The recurrent scan and
 -- stationary Markov/Walrasian interfaces are explicit dependencies rather
 -- than disconnected theorem names.
