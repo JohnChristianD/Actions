@@ -15,6 +15,10 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred search_all_composite_law_plans(
+    list(semantic_law)::in,
+    list(list(string))::out) is det.
+
 :- pred all_scores_non_decreasing(
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
@@ -228,6 +232,37 @@ search_named_required_plan(Name, Laws, Plan) :-
     seed_node(Law, Seed),
     astar_collect(Laws, [Seed], [], Results),
     first_plan(Results, Plan).
+
+:- pred search_composite_law_plans(
+    list(semantic_law)::in,
+    list(semantic_law)::out) is det.
+search_composite_law_plans([], []).
+search_composite_law_plans([Law | Laws], Result) :-
+    search_composite_law_plans(Laws, Tail),
+    (
+        if is_composite(Law) then
+            Result = [Law | Tail]
+        else
+            Result = Tail
+    ).
+
+search_all_composite_law_plans(Laws, Plans) :-
+    search_composite_law_plans(Laws, CompositeLaws),
+    search_composite_law_plans_to_plans(Laws, CompositeLaws, Plans).
+
+:- pred search_composite_law_plans_to_plans(
+    list(semantic_law)::in,
+    list(semantic_law)::in,
+    list(list(string))::out) is det.
+search_composite_law_plans_to_plans(_, [], []).
+search_composite_law_plans_to_plans(Laws, [Law | Rest], [Plan | Plans]) :-
+    (
+        if search_named_required_plan(law_name(Law), Laws, Plan0) then
+            Plan = Plan0
+        else
+            Plan = [law_id(Law)]
+    ),
+    search_composite_law_plans_to_plans(Laws, Rest, Plans).
 
 :- pred all_named_required_plans(
     list(string)::in,
