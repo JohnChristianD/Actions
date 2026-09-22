@@ -169,3 +169,16 @@ The Mercury graph-search layer now also has an explicit A* plan query for `Canon
 
 
 The endogenous boundary is also an explicit A* graph-search target: `CanonicalEndogenousObservationBoundaryTheorem` must have a dependency plan before the sync gate passes. This keeps the new result discoverable rather than merely present in the Agda monolith.
+
+
+## 2026-09-22 Lyapunov-free stationary graph seam and endogenous topology
+
+The graph-search stationary convergence path no longer requires the monotone-energy/Lyapunov contract. FiniteObservationStationaryLimitTheorem separates the three facts that actually matter at the semantic boundary: the transition law, convergence of the observed trajectory to a candidate limit, and preservation of that limit by the transition operator. The resulting stationary conclusion is a fixed-point consequence; no Lyapunov observable is introduced.
+
+MonotoneConvergenceToStationaryDistributionTheorem remains available as an optional stronger contract for proofs that genuinely have a monotone energy, but it is no longer a required graph-search node. Likewise, CanonicalMonotoneEnergyStationarySubcompositionTheorem is not required for the stationary graph gate. This prevents an unrelated Lyapunov proof obligation from blocking a finite-observation stationary-limit path.
+
+The new CanonicalEndogenousTopologicalObservationBoundaryTheorem composes the existing full-learner scan-conjugacy theorem, finite-cycle/isomorphism transport, and the endogenous observation boundary. Its content is compositional rather than a new axiom: topology preserves the exact scan/cycle structure while the finite observation still cannot provide a global exact state inverse. The endogenous Watkins target remains exactly state-dependent; conditional exact readout under a hypothetical inverse therefore does not imply that the finite observation can recover the target globally.
+
+Watkins-Dayan is used only as the RL comparison boundary: classical Q-learning convergence is a tabular/asymptotic result with repeated state-action visitation and stochastic-approximation conditions. A recurrent function-approximating learner should not inherit that conclusion merely from sharing a Watkins-style target. The canonical monolith instead exposes the exact endogenous target coupling and separately proves the finite-observation information boundary.
+
+Lyapunov-style theorems are therefore no longer needed for the topology, finite-cycle, observation-injectivity, recurrent-prefix, or exact-computability results already present. They remain appropriate only where the intended conclusion is genuinely a stability/drift/boundedness/convergence claim that cannot be discharged by exact topology, fixed-point semantics, or a direct finite-state Markov argument.
