@@ -2085,7 +2085,7 @@ record CanonicalExactCompositionTuringCompletenessContract : Set₁ where
       C.CanonicalFullLearnerState → C.BoolLike
     exactHaltingCorrespondence :
       ∀ M c →
-      output (encode M c) ≡ halting M c
+      output (encode M c) ≡ ExactTwoCounterMachine.halting M c
 
 ------------------------------------------------------------------------
 -- Exact obstruction for the proposed universal contract.
