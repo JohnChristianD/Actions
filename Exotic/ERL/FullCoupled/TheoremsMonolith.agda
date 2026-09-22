@@ -260,7 +260,7 @@ record CanonicalLearnerReplacementClosureTheorem : Set₁ where
     policyInvariant :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
-      (rs : List C.LearnerReplacement) →
+      (rs : List LearnerReplacement) →
       C.canonicalPolicy
         K
         (C.applyLearnerReplacements rs s)
@@ -1121,6 +1121,65 @@ canonical-recurrent-scan-conjugacy-theorem =
   recurrentScanConjugacyTheorem
     (λ replace step h → replace)
     (λ replace step h xs n s → recurrentPrefix-scan-lifts-conjugacy replace step h xs n s)
+
+record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
+  constructor canonicalFullLearnerConnectedScanConjugacyTheorem
+  field
+    localConjugacy :
+      (replace : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+      (K : C.CanonicalFullLearnerKernel) →
+      (∀ s →
+        replace (C.canonicalFullStep K s) ≡
+        C.canonicalFullStep K (replace s)) →
+      Set
+    scanConjugacy :
+      (replace : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+      (K : C.CanonicalFullLearnerKernel) →
+      (h :
+        ∀ s →
+        replace (C.canonicalFullStep K s) ≡
+        C.canonicalFullStep K (replace s)) →
+      ∀ n s →
+        replace (C.iterateCanonical K n s) ≡
+        C.iterateCanonical K n (replace s)
+    connectedStep :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
+        (C.gru s , (C.optimizer s , C.norm s))
+        (C.canonicalSignal K s)
+      ≡
+      ( C.gru (C.canonicalFullStep K s)
+      , ( C.optimizer (C.canonicalFullStep K s)
+        , C.norm (C.canonicalFullStep K s)))
+
+canonicalFullLearner-iterate-conjugacy :
+  ∀
+  (replace : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+  (K : C.CanonicalFullLearnerKernel)
+  (h :
+    ∀ s →
+    replace (C.canonicalFullStep K s) ≡
+    C.canonicalFullStep K (replace s)) →
+  ∀ n s →
+  replace (C.iterateCanonical K n s) ≡
+  C.iterateCanonical K n (replace s)
+canonicalFullLearner-iterate-conjugacy replace K h zero s = refl
+canonicalFullLearner-iterate-conjugacy replace K h (suc n) s =
+  trans
+    (canonicalFullLearner-iterate-conjugacy
+      replace K h n (C.canonicalFullStep K s))
+    (cong
+      (C.iterateCanonical K n)
+      (h s))
+
+canonical-full-learner-connected-scan-conjugacy-theorem :
+  CanonicalFullLearnerConnectedScanConjugacyTheorem
+canonical-full-learner-connected-scan-conjugacy-theorem =
+  canonicalFullLearnerConnectedScanConjugacyTheorem
+    (λ replace K h → ∀ s → replace (C.canonicalFullStep K s) ≡ C.canonicalFullStep K (replace s))
+    (λ replace K h → canonicalFullLearner-iterate-conjugacy replace K h)
+    canonicalFullStep-GRUF4Norm-prefix-bridge
 
 record S4PlusS5RecurrentScanTheorem (State Input : Set) : Set₁ where
   constructor s4PlusS5RecurrentScanTheorem
@@ -4609,7 +4668,7 @@ canonical-full-state-haar-sparsemax-invariant-composition-theorem =
 canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant :
   ∀ (K : C.CanonicalTokenLanguageModelKernel)
   (s : C.CanonicalFullLearnerState)
-  (r : C.LearnerReplacement)
+  (r : LearnerReplacement)
   (t u : C.CanonicalToken) →
   C.canonicalFullStateHaarSparsemaxAttention K
     (C.applyLearnerReplacement r s) t u
@@ -4653,7 +4712,7 @@ record CanonicalHaarSparsemaxFullStateClosureTheorem : Set₁ where
     learnerReplacementInvariant :
       ∀ (K : C.CanonicalTokenLanguageModelKernel)
       (s : C.CanonicalFullLearnerState)
-      (r : C.LearnerReplacement)
+      (r : LearnerReplacement)
       (t u : C.CanonicalToken) →
       C.canonicalFullStateHaarSparsemaxAttention K
         (C.applyLearnerReplacement r s) t u

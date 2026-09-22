@@ -42,3 +42,6 @@ The recent F4 history was inspected. The current canonical F4 state is `F4IntUSt
 The former empirical README representation hypotheses were not source-derived theorem laws and were removed from the canonical claim surface. The replacement hypothesis set is exactly two source-derived theorem hypotheses: the integer Haar orthogonality certificate and the A* cost-guidance certificate. The existing Haar/sparsemax composition certificates remain downstream composition surfaces, not additional new hypotheses. The distinction is deliberate: Mercury discovers dependency paths; only Agda `--safe` turns a source declaration into a proof.
 
 The methodology reference for this pass is Scott N. Walck, *Learn Physics with Functional Programming: A Hands-on Guide to Exploring Physics with Haskell* (No Starch Press, 2023, ISBN-13 9781718501669). It is used as a typed-functional-programming modeling reference, not as evidence for the learner's theorem claims.
+
+
+9. `CanonicalFullLearnerConnectedScanConjugacyTheorem`: the full learner's local transition conjugacy lifts to arbitrary iteration depth while retaining the existing GRU/F4/Norm connected-coupling bridge.

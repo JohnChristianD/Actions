@@ -309,6 +309,8 @@ JSON
     RecurrentScanConjugacyTheorem
     recurrentPrefix-scan-lifts-conjugacy
     canonical-recurrent-scan-conjugacy-theorem
+    CanonicalFullLearnerConnectedScanConjugacyTheorem
+    canonical-full-learner-connected-scan-conjugacy-theorem
     CanonicalHaarSparsemaxFullStateClosureTheorem
     canonical-haar-sparsemax-full-state-closure-theorem
     BairdSevenStarProblem

@@ -44,3 +44,11 @@ This classification is a semantic equivalence-class description of the current A
 
 - Pérez, Marinković, and Barceló, On the Turing Completeness of Modern Neural Network Architectures: https://arxiv.org/abs/1901.03429
 - Carmantini et al., Turing Computation with Recurrent Artificial Neural Networks: https://arxiv.org/abs/1511.01427
+
+## Scan-wide connected coupling
+
+The graph now has an explicit bridge from local full-learner transition conjugacy to arbitrary `iterateCanonical` depth, plus the existing GRU/F4/Norm projection bridge. This closes the ambiguity between a local commuting law and a whole-learner scan law: the latter is an induction over the actual full transition. The theorem does not claim Turing completeness or incompleteness; it only transports an explicitly supplied conjugacy witness across the learner's deterministic scan.
+
+## Turing-completeness ambiguity pruning
+
+The literature distinguishes computational universality claims by their resource assumptions. Pérez et al. prove Turing completeness for particular Transformer/Neural-GPU constructions under their stated assumptions; Carmantini et al. give constructive recurrent-network simulations; finite-precision RNN work emphasizes that precision and computation-time assumptions materially change the result. Therefore this repository should not infer universality or non-universality from the architecture label alone. Its formal negative result is narrower: exact unbounded-Nat counter recovery through finite `Int8` observation is impossible. The current model remains an infinite-state deterministic system because of its `Nat` components, so a full Turing-completeness classification requires a separate machine-simulation witness or impossibility theorem.
