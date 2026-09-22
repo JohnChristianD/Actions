@@ -143,6 +143,24 @@
   ],
   "current_result": "NOT_ESTABLISHED",
   "reason": "The repository has the connected composition surfaces and factor-recurrence mechanism, but it does not yet contain the strict nonrepresentability witness needed for a neural function-class separation, nor a theorem proving that a specific regularizer mathematically forces or predicts factor recurrence.",
+  "pregraphed_candidates": [
+    {
+      "name": "CanonicalEndogenousAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "DirectProductFiniteAutomatonComposition",
+        "CanonicalBoundedFactorLiftTheorem",
+        "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+        "DenseNeighborhoodSeparationTheorem",
+        "FullCommutingSquareConjugacyTheorem",
+        "CanonicalEndogenousTopologicalObservationBoundaryTheorem"
+      ],
+      "distinction": "Automata-backed sign-optimizer-affine candidate. It is deliberately separate from the existing non-automata and non-tropical candidates while remaining inside the strict fully connected graph.",
+      "promotion_gate": "Promote only after an Agda witness proves sign/optimizer-affine preservation, finite-automaton realization, transition compatibility, exact GRU conjugacy, same-witness neighborhood separation, topology compatibility, inclusion, and baseline nonrepresentability."
+    }
+  ],
   "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
   "proof_authority": "Agda --safe",
   "canonical_sources": [
