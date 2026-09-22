@@ -5559,22 +5559,25 @@ record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
   constructor canonicalFiniteObservationStationarySubcompositionTheorem
   field
     stationaryContract :
-      ∀ {Observation : Set}
-        (P : Observation → Observation → Set)
-        (μ : Nat → Observation)
-        (π : Observation)
-        (Converges : (Nat → Observation) → Observation → Set) →
+      ∀ {Distribution : Set}
+        (P : Distribution → Distribution)
+        (μ : Nat → Distribution)
+        (π : Distribution)
+        (Converges : (Nat → Distribution) → Distribution → Set) →
       FiniteObservationMarkovStationaryConvergenceTheorem
-        Distribution P μ π Converges
+        Distribution
+        P
+        μ
+        π
+        Converges
 
 canonical-finite-observation-stationary-subcomposition-theorem :
   CanonicalFiniteObservationStationarySubcompositionTheorem
 canonical-finite-observation-stationary-subcomposition-theorem =
   canonicalFiniteObservationStationarySubcompositionTheorem
-    (λ P μ π Converges →
+    (λ {Distribution} P μ π Converges →
       finiteObservationMarkovStationaryConvergenceTheorem
-        (λ _ → _)
-        (λ n → P (μ n))
+        (λ _ → tt)
         (λ n → refl)
         tt
         tt
