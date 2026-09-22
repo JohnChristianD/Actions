@@ -75,13 +75,12 @@
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
-              pkgs.rakudo
-              pkgs.chibi
+              pkgs.tcl
             ];
             shellHook = ''
-              export PATH="\${pkgs.mercury}/bin:$PATH"
+              export PATH="${pkgs.mercury}/bin:$PATH"
             '';
           };
         });
     };
-}
+};
