@@ -604,5 +604,47 @@
     "future_entry": "All future sign/HardSign, optimizer-affine, GRU expressivity, topology, neighborhood-separation, or conjugacy theorems must enter through an existing composed parent; non-tropical results may bypass the tropical candidate but may not bypass the fully connected composition.",
     "strict_graph_invariant": "The strict neural-function-class graph contains only F_base -> fully connected composition -> F_full_connected. Candidate refinements are classified metadata until Agda witnesses and transport proofs exist.",
     "upgrade_gate": "SEPARATED only after explicit inclusion, connected witness membership, and canonical baseline nonrepresentability are proved on the Agda surface."
+  },
+  "nontropical_nonautomata_signoptimizer_affine_candidate": {
+    "name": "CanonicalEndogenousNonTropicalNonAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+    "distinction": "Non-tropical and explicitly non-automata: this candidate does not use DirectProductFiniteAutomatonComposition, finite-automaton realization, or a finite-state quotient as a proof ingredient.",
+    "composition_order": [
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "hardSignGate-idempotent",
+      "F4 optimizer",
+      "NormPair learner replacement seam",
+      "CanonicalHaarSparsemaxFullStateClosureTheorem",
+      "CanonicalBoundedFactorLiftTheorem",
+      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DenseNeighborhoodSeparationTheorem",
+      "CanonicalEndogenousObservationBoundaryTheorem",
+      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+      "F_full_connected"
+    ],
+    "candidate_statement": "If the canonical sign/HardSign optimizer-affine recurrent transition admits a non-automata invariant representation or conjugate state-space restriction whose expressivity witness is proved directly at the function/state-space level, then that witness may be transported through the existing connected recurrent, bounded-UAP, neighborhood-separation, architecture-isomorphism, and endogenous observation-topology surfaces. The construction need not pass through a finite-state automaton or tropical/max-plus quotient.",
+    "required_certificates": [
+      "actual Agda non-automata sign/optimizer-affine invariant or conjugate state-space construction",
+      "HardSign/sign transition preservation without finite-automaton encoding",
+      "direct expressivity witness stated as a function or state-space property rather than automaton realization",
+      "exact recurrent/state conjugacy",
+      "same-witness DenseNeighborhoodSeparation proof",
+      "observation-topology compatibility",
+      "F_base subseteq F_full_connected",
+      "baseline nonrepresentability"
+    ],
+    "promotion_rule": "Promote only through the existing fully connected composition. Do not create separate sign, optimizer, topology, neighborhood, or conjugacy separation nodes, and do not reintroduce automata merely to force connectivity.",
+    "literature_boundary": "GRU dynamical-systems work and invertible recurrent-dynamics work motivate direct state-space/dynamical expressivity and conjugacy routes; they do not establish this repository's combined theorem."
+  },
+  "complete_graph_contract_v5": {
+    "future_entry": "Future non-tropical, non-automata sign/HardSign, optimizer-affine, GRU expressivity, topology, neighborhood-separation, or conjugacy theorems must declare an existing composed parent and a real Agda dependency. Automaton and tropical constructions are optional proof routes, never mandatory connectivity devices.",
+    "no_disconnected_promotion": "A theorem with no real consumer remains foundational until an existing composed theorem consumes it. Conceptual similarity cannot create an edge.",
+    "strict_graph_invariant": "Only the F_base -> fully connected composition -> F_full_connected chain participates in strict neural-function-class separation.",
+    "strict_upgrade_gate": "SEPARATED requires explicit resource-preserving inclusion, a concrete connected witness, and canonical baseline nonrepresentability."
   }
 }
