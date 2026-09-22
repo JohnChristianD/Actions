@@ -26,6 +26,30 @@
 :- pred graph_finite_probability_mass_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
+graph_finite_probability_mass_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteProbabilityMassSemanticsTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_pomdp_probability_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_pomdp_probability_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FinitePOMDPProbabilitySemanticsTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_endogenous_pomdp_observation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_endogenous_pomdp_observation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
+        Laws,
+        Plan).
+
 
 :- pred graph_finite_pomdp_probability_plan(
     list(semantic_law)::in,
