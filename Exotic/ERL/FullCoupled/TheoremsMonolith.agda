@@ -4326,6 +4326,123 @@ canonical-global-token-conjugacy =
 
 
 ------------------------------------------------------------------------
+-- Exact transport of arbitrary finite functions through exact
+-- representation isomorphisms.  The construction is representation-
+-- independent and therefore also applies to finite recurrent interfaces.
+------------------------------------------------------------------------
+
+record FiniteFunctionExactIsomorphismTransportTheorem
+  (m n : Nat)
+  (A B : Set)
+  (isoA : StateIsomorphism (Fin m) A)
+  (isoB : StateIsomorphism (Fin n) B)
+  (f : Fin m → Fin n) : Set₁ where
+  constructor finiteFunctionExactIsomorphismTransportTheorem
+  field
+    translatedFunction : A → B
+    exactTransport :
+      ∀ x →
+      StateIsomorphism.to isoB (f x) ≡
+      translatedFunction (StateIsomorphism.to isoA x)
+
+finiteFunctionExactIsomorphismTransport :
+  ∀ {m n : Nat}
+    {A B : Set}
+    (isoA : StateIsomorphism (Fin m) A)
+    (isoB : StateIsomorphism (Fin n) B)
+    (f : Fin m → Fin n) →
+  FiniteFunctionExactIsomorphismTransportTheorem m n A B isoA isoB f
+finiteFunctionExactIsomorphismTransport isoA isoB f =
+  finiteFunctionExactIsomorphismTransportTheorem
+    (λ a →
+      StateIsomorphism.to isoB
+        (f (StateIsomorphism.from isoA a)))
+    (λ x → refl)
+
+record FiniteRecurrentFunctionExactTranslationTheorem
+  (m : Nat)
+  (A : Set)
+  (isoA : StateIsomorphism (Fin m) A)
+  (step : Fin m → Fin m)
+  (stepA : A → A) : Set₁ where
+  constructor finiteRecurrentFunctionExactTranslationTheorem
+  field
+    recurrentConjugacy :
+      ∀ x →
+      StateIsomorphism.to isoA (step x) ≡
+      stepA (StateIsomorphism.to isoA x)
+    translatedFunction :
+      ∀ {n : Nat}
+        (B : Set)
+        (isoB : StateIsomorphism (Fin n) B)
+        (f : Fin m → Fin n) →
+      FiniteFunctionExactIsomorphismTransportTheorem m n A B isoA isoB f
+
+finiteRecurrentFunctionExactTranslation :
+  ∀ {m : Nat}
+    {A : Set}
+    (isoA : StateIsomorphism (Fin m) A)
+    (step : Fin m → Fin m)
+    (stepA : A → A)
+    (conjugacy :
+      ∀ x →
+      StateIsomorphism.to isoA (step x) ≡
+      stepA (StateIsomorphism.to isoA x)) →
+  FiniteRecurrentFunctionExactTranslationTheorem m A isoA step stepA
+finiteRecurrentFunctionExactTranslation isoA step stepA conjugacy =
+  finiteRecurrentFunctionExactTranslationTheorem
+    conjugacy
+    (λ {n} B isoB f →
+      finiteFunctionExactIsomorphismTransport isoA isoB f)
+
+
+------------------------------------------------------------------------
+-- Exact finite POMDP-model transport seam.
+--
+-- This is deliberately a transport theorem, not a probabilistic
+-- convergence theorem: the probability/distribution semantics remain
+-- explicit parameters so the graph never silently turns a deterministic
+-- representation isomorphism into a stochastic claim.
+------------------------------------------------------------------------
+
+record FinitePOMDPExactIsomorphismTransportTheorem
+  (State Action Observation Distribution : Set)
+  (stateIso : StateIsomorphism (Fin 256) State)
+  (actionIso : StateIsomorphism (Fin 256) Action)
+  (observationIso : StateIsomorphism (Fin 256) Observation)
+  (transition : State → Action → Distribution)
+  (observationKernel : State → Distribution)
+  (reward : State → Action → C.Int8) : Set₁ where
+  constructor finitePOMDPExactIsomorphismTransportTheorem
+  field
+    translatedTransition :
+      Fin 256 → Fin 256 → Distribution
+    translatedObservationKernel :
+      Fin 256 → Distribution
+    translatedReward :
+      Fin 256 → Fin 256 → C.Int8
+    transitionExact :
+      ∀ s a →
+      translatedTransition
+        (StateIsomorphism.to stateIso s)
+        (StateIsomorphism.to actionIso a)
+      ≡
+      transition s a
+    observationExact :
+      ∀ s →
+      translatedObservationKernel
+        (StateIsomorphism.to stateIso s)
+      ≡
+      observationKernel s
+    rewardExact :
+      ∀ s a →
+      translatedReward
+        (StateIsomorphism.to stateIso s)
+        (StateIsomorphism.to actionIso a)
+      ≡
+      reward s a
+
+------------------------------------------------------------------------
 -- Architecture-preserving RNN-LM isomorphism.
 --
 -- An alternate implementation counts as faithful only when the exact
