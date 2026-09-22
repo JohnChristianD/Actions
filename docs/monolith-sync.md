@@ -103,3 +103,9 @@ T11 exact computational boundary / no exact two-counter contract
 ```
 
 The graph is deliberately directional: no finite F4 factor is promoted to a full-state inverse, no L2 contraction is assumed, and no e-graph/A* candidate is treated as an Agda proof. The finite collision is discharged at the exact `Fin 256` representation boundary, while full-state separation comes from the independently proved clock-growth injectivity.
+
+## Lyapunov / cycle / operator distinction
+
+The canonical theorem surface already proves exact finite-cycle exclusion and generic state-isomorphism/conjugacy transport. Those are transition-semantic theorems: they follow from exact iteration and the clock-growth law. The repository does not currently expose a theorem named or typed as a Lyapunov function with a descent condition such as `V (step s) < V s`, nor does the existing `canonicalIntegerHaarEnergy` constitute such a Lyapunov certificate; it is an exact integer Haar energy identity.
+
+The operator-composition result is likewise already present through the canonical `Endomorphism` composition algebra. `CanonicalOperatorCompositionTheorem` now packages identity, composition, and associativity in the theorem monolith, so the standalone connected-operator-composition module is semantically redundant and has been removed. The new endogenous result remains the bounded-factor/injective-lift theorem: finite F4 recurrence is separated from full-state recurrence by exact clock injectivity.
