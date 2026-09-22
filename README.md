@@ -6,269 +6,242 @@ The canonical proof surface is Agda. Mercury extracts the declarations that Agda
 
 A discovered graph path is not a proof. A candidate becomes authoritative only when the corresponding proposition is present on the Agda proof surface and accepted by the Agda checker.
 
-## Language roles
+## Language roles and why these choices fit
 
-### Agda
+### Agda: proof and semantic authority
 
-Agda is the semantic and proof authority.
-
-The canonical learner definitions are in:
+Agda is used for the canonical learner definitions and theorem surface:
 
 ```
 Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-```
-
-The canonical theorem surface is:
-
-```
 Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-This role is chosen because dependent types let the project encode propositions and their proofs in one type-checked language. The theorem monolith is also explicitly declared with Agda's safe mode. Safe mode excludes several mechanisms that could bypass ordinary consistency checks, including postulates and unfinished proof holes. The result is a narrow proof authority rather than a general-purpose automation language.
+This is the strongest role match in this stack for proof authority because dependent types represent propositions as types and proofs as ordinary type-correct terms. The repository runs the theorem surface with `--safe`. Safe Agda disables mechanisms such as postulates, unfinished metas, skipped termination checks, and several other consistency escape hatches. Agda also mechanically checks termination for accepted recursive definitions.
 
-Agda is not used for graph search or CI orchestration. Keeping those concerns outside the proof kernel reduces the authority surface.
+Agda is kept out of graph search and CI orchestration. The language that establishes proof correctness is therefore not also the language that invents the candidate dependency path.
 
-### Mercury
+This is a role-specific claim, not a universal claim that Agda is the safest language for every autonomous-agent task. It is the best fit here because the critical asset is a machine-checked proof object.
 
-Mercury is the semantic extraction and graph-search engine.
+### Mercury: semantic extraction and graph search
 
-The discovery programs under `.ci/discovery/` parse the theorem monolith, identify declarations and dependencies, classify composite laws, run dependency searches, construct e-graph candidates, and perform cost-guided extraction.
+Mercury implements the discovery layer under `.ci/discovery/`.
 
-Mercury is well matched to this role because its type, mode, and determinism declarations are compiler checked. The language also has a declarative semantics, so the search machinery can be written as typed predicates with explicit data-flow and solution-count contracts.
+Its type, mode, determinism, purity, and declarative-semantics machinery make it a strong fit for a search engine whose own behavior should have explicit contracts. The Mercury compiler checks type, mode, and determinism declarations, and Mercury defines a declarative semantics for legal programs.
 
-Mercury is not the proof authority. It can discover a useful dependency path without establishing the mathematical proposition represented by that path.
+Modes constrain data flow, determinism constrains solution counts, and purity constrains ordinary computations to explicit effects. This is a stronger static contract for the graph engine than an ordinary dynamically typed scripting layer would provide.
 
-### Dhall
+Mercury remains subordinate to Agda. It discovers, classifies, ranks, and extracts candidates; it does not certify the mathematical proposition.
 
-Dhall is the CI policy language.
+### Dhall: CI policy
 
-`.ci/actions_ci.dhall` declares the verification lanes, commands, theorem graph gates, and other checks that the repository expects CI to execute.
+Dhall is used for `.ci/actions_ci.dhall`.
 
-Dhall is useful here because configuration evaluation is intentionally much narrower than arbitrary general-purpose program execution. It is total and strongly typed, which makes it suitable for expressing a machine-checked policy without giving the policy layer the same authority as the theorem prover.
+A CI declaration is a typed, declarative specification of the verification lanes, commands, and gates that CI is required to execute. Dhall is a strong fit for this boundary because it is a total functional configuration language rather than a Turing-complete scripting environment. Its type system and finite evaluation model constrain configuration failures before the configuration is consumed.
 
-Dhall therefore answers "what should CI require?" rather than "is this mathematical theorem true?"
+Dhall can require Agda, Mercury, graph checks, and other tests to pass. It cannot itself prove an Agda theorem.
 
-### Nix
+### Nix: reproducible environment
 
-Nix is the reproducibility and environment-composition layer.
+Nix defines the toolchain and build environment.
 
-It defines the packages, toolchains, build inputs, and reproducible environment used by the project. That makes it the right boundary for controlling build variation rather than proof meaning.
+The Nix language is pure, functional, declarative, and lazy. Nix derivations describe build inputs and outputs, while the Nix store gives dependency results stable identities based on their dependency graph. This makes Nix a strong fit for reproducible environment construction without making it part of theorem semantics.
 
-Nix is not a theorem prover, semantic-law extractor, or CI policy authority.
+Nix is not a proof authority or semantic checker. Its safety value here comes from keeping environment construction separate and reproducible.
 
-### GitHub Actions
+### GitHub Actions: execution substrate
 
-GitHub Actions is the execution substrate.
+GitHub Actions is the outer execution layer. It schedules workflows and runs the commands declared by the repository policy.
 
-It schedules the configured workflows and runs the repository's checks. A successful workflow means the configured commands returned success. It does not independently establish the truth of an Agda proposition.
+It is intentionally not treated as a semantic authority. A successful workflow means the configured commands completed successfully under the configured environment; it does not independently prove an Agda proposition.
 
-## Why these roles are separated
-
-The safety claim is role-specific, not a claim that this is universally the safest programming-language stack.
-
-For proof authority, Agda has the strongest fit in this stack because its type system directly represents proofs and safe mode removes several escape hatches.
-
-For semantic search, Mercury has the strongest fit in this stack because types, modes, determinism, and declarative semantics constrain the search implementation itself.
-
-For configuration policy, Dhall has the strongest fit in this stack because total evaluation and static typing constrain configuration computation.
-
-For reproducible builds, Nix has the strongest fit in this stack because environment and dependency construction are its primary concern.
-
-For workflow execution, GitHub Actions is appropriate because it is the repository's execution substrate rather than an additional semantic authority.
-
-These are comparative role statements, not a literature-wide ranking. There is no sound basis for claiming that these languages are universally safer than every other language used for autonomous agents.
-
-## What "CI declaration" means
-
-A CI declaration is the declarative description of the checks that the continuous-integration system is required to run.
-
-In this repository the layers are:
+## Why the stack is split
 
 ```
+Agda
+  |
+  | proves and type-checks
+  v
+Mercury
+  |
+  | extracts, searches, saturates, ranks
+  v
 Dhall
   |
-  | declares lanes, commands, and gates
-  v
-GitHub Actions
-  |
-  | schedules and executes workflows
+  | declares required checks
   v
 Nix
   |
   | supplies the reproducible environment
   v
-Agda + Mercury + repository checks
+GitHub Actions
   |
-  +-- Agda: theorem and type authority
+  | executes the declared checks
+  v
+verification result
+```
+
+The arrows describe orchestration, not mathematical implication. In particular, a Mercury e-graph result cannot become a theorem merely because a path was found.
+
+## Complete Agda record relationship graph
+
+The canonical theorem monolith currently contains 95 top-level record declarations.
+
+The following graph is derived from the actual record declarations and their direct record-to-record references. Every record is listed exactly once. This includes foundational data records, theorem contracts, transport structures, problem specifications, and composition records. Non-record definitions are not disguised as theorem records.
+
+```
+01. CanonicalAQLoopTheorem
+02. StateIsomorphism
+03. CanonicalConnectedCompositionTheorem
+    +-- depends on: CanonicalAQLoopTheorem
+04. CanonicalLearnerReplacementClosureTheorem
+05. EqualityCompositionTheorem
+06. RecurrentAssociativeScanTheorem
+07. RecurrentPrefixMonoidHomomorphism
+08. CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+    +-- depends on: RecurrentPrefixMonoidHomomorphism
+09. CommutingSquareTheorem
+10. CommutingSquareLeftInverseTheorem
+    +-- depends on: CommutingSquareTheorem
+11. FullCommutingSquareConjugacyTheorem
+    +-- depends on: CommutingSquareTheorem
+12. FreeMonoidActionHomomorphism
+13. ObservationTaskFactorization
+14. RecurrentScanConjugacyTheorem
+15. CanonicalFullLearnerConnectedScanConjugacyTheorem
+16. S4PlusS5RecurrentScanTheorem
+    +-- depends on: RecurrentAssociativeScanTheorem
+17. PointwiseSandwich
+18. MinimaxBellmanShapleyOperator
+19. MinimaxBellmanShapleyInclusionTheorem
+    +-- depends on: PointwiseSandwich, MinimaxBellmanShapleyOperator
+20. CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+21. CanonicalQMunchausenL2SharedNegationPolarityTheorem
+22. DiscreteExactUAPTheorem
+23. DiscreteLeftInverseWitness
+24. DiscreteExactUniversalUAP
+25. DiscreteExactUniversalUAPLeftInverseEquivalence
+    +-- depends on: DiscreteLeftInverseWitness, DiscreteExactUniversalUAP
+26. ExactNatObservationSimulation
+27. ExactTuringCounterObservation
+28. ExactTwoCounterConfiguration
+29. ExactTwoCounterMachine
+    +-- depends on: ExactTwoCounterConfiguration
+30. CanonicalExactCompositionTuringCompletenessContract
+    +-- depends on: ExactTwoCounterConfiguration, ExactTwoCounterMachine
+31. ContinuousLeftInverseTheorem
+32. BoundedContinuousLeftInverseExactApproximationTheorem
+    +-- depends on: ContinuousLeftInverseTheorem
+33. RingStateInjectivityTheorem
+34. DenseNeighborhoodSeparationTheorem
+35. CanonicalRecurrentBoundedExactUniversalApproximationTheorem
+    +-- depends on: RecurrentAssociativeScanTheorem, ContinuousLeftInverseTheorem, DenseNeighborhoodSeparationTheorem
+36. CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
+    +-- depends on: PointwiseSandwich, MinimaxBellmanShapleyOperator, MinimaxBellmanShapleyInclusionTheorem, CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem, DiscreteExactUAPTheorem, ContinuousLeftInverseTheorem, BoundedContinuousLeftInverseExactApproximationTheorem, RingStateInjectivityTheorem, DenseNeighborhoodSeparationTheorem, CanonicalRecurrentBoundedExactUniversalApproximationTheorem
+37. FiniteMixedProductRecurrenceTheorem
+38. AbsorbingFiniteEquilibriumTheorem
+39. HardSparseAbsorbingPrefixTheorem
+40. FiniteHardSparseKKTEquilibriumTheorem
+41. UniqueKKTAbsorbingClass
+42. FiniteRankStabilityCertificate
+43. FiniteNonIIDWalrasianEquilibrium
+44. FiniteTUShapleyAllocationEquilibrium
+45. CanonicalPolymorphicSparsemaxCompositionTheorem
+    +-- depends on: RecurrentPrefixMonoidHomomorphism, S4PlusS5RecurrentScanTheorem
+46. ContinuousStationaryMarkovWalrasianData
+47. DirectProductFiniteAutomatonComposition
+48. OffPolicyFunctionApproximationStabilityBoundary
+    +-- depends on: ContinuousLeftInverseTheorem
+49. MarkovStationaryWalrasianCompositionTheorem
+    +-- depends on: RecurrentAssociativeScanTheorem, ContinuousLeftInverseTheorem, ContinuousStationaryMarkovWalrasianData, DirectProductFiniteAutomatonComposition, OffPolicyFunctionApproximationStabilityBoundary
+50. ExactReconstructionOnImage
+51. GlobalConjugacyEquivalence
+52. GeneralizedWalrasianEquilibrium
+    +-- depends on: ContinuousStationaryMarkovWalrasianData
+53. ConjugateWalrasianTransport
+    +-- depends on: ContinuousStationaryMarkovWalrasianData, ExactReconstructionOnImage, GeneralizedWalrasianEquilibrium
+54. BairdSevenStarProblem
+55. NonIIDMarkovWalrasianProblem
+    +-- depends on: ContinuousStationaryMarkovWalrasianData
+56. Majority3ShapleyEquilibrium
+57. CanonicalGlobalTokenConjugacyTheorem
+58. FiniteFunctionExactIsomorphismTransportTheorem
+    +-- depends on: StateIsomorphism
+59. FiniteRecurrentFunctionExactTranslationTheorem
+    +-- depends on: StateIsomorphism, FiniteFunctionExactIsomorphismTransportTheorem
+60. FinitePOMDPExactTransport
+    +-- depends on: StateIsomorphism
+61. ArchitecturePreservingCanonicalRNNLMIsomorphism
+    +-- depends on: StateIsomorphism
+62. CanonicalExactRNNLMTheorem
+    +-- depends on: CanonicalGlobalTokenConjugacyTheorem
+63. CanonicalGlobalTokenLMCompositionTheorem
+    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalGlobalTokenConjugacyTheorem
+64. CanonicalIntegerHaarScaledOrthogonalityTheorem
+65. CanonicalAStarCostGuidanceTheorem
+66. CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
+67. CanonicalHaarSparsemaxFullStateClosureTheorem
+68. CanonicalLinearHaarSparsemaxAttentionCompositionTheorem
+69. CanonicalFiniteCycleExclusionIsomorphismTheorem
+    +-- depends on: StateIsomorphism
+70. CanonicalOperatorCompositionTheorem
+71. CanonicalBoundedFactorLiftTheorem
+72. FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+73. CanonicalEndogenousObservationBoundaryTheorem
+74. CanonicalEndogenousTopologicalObservationBoundaryTheorem
+    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalEndogenousObservationBoundaryTheorem
+75. CanonicalPureNonOrangeBypassCompletionTheorem
+    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, CanonicalHaarSparsemaxFullStateClosureTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, CanonicalBoundedFactorLiftTheorem, FiniteFactorRecurrenceWithoutStateRecurrenceTheorem, CanonicalEndogenousObservationBoundaryTheorem, CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem
+76. CanonicalFiniteObservationInformationBoundaryTheorem
+    +-- depends on: DiscreteExactUniversalUAP
+77. CanonicalExactTuringBoundaryMixtureTheorem
+    +-- depends on: CanonicalExactCompositionTuringCompletenessContract, CanonicalFiniteObservationInformationBoundaryTheorem
+78. CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+79. FiniteObservationStationaryLimitTheorem
+80. CanonicalPersistentExcitationRequirementTheorem
+81. ExactContractComputabilityBoundaryTheorem
+    +-- depends on: CanonicalExactCompositionTuringCompletenessContract
+82. CanonicalFiniteObservationStationarySubcompositionTheorem
+    +-- depends on: FiniteObservationStationaryLimitTheorem
+83. CanonicalClockObservationSubcompositionTheorem
+    +-- depends on: CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+84. CanonicalBoundednessPEBoundarySubcompositionTheorem
+    +-- depends on: CanonicalBoundedFactorLiftTheorem, CanonicalPersistentExcitationRequirementTheorem
+85. FiniteProbabilityMass
+86. FiniteProbabilityMassSemanticsTheorem
+    +-- depends on: StateIsomorphism, FiniteProbabilityMass
+87. FinitePOMDPProbabilitySemantics
+    +-- depends on: FiniteProbabilityMass
+88. FinitePOMDPProbabilitySemanticsTheorem
+    +-- depends on: StateIsomorphism, FinitePOMDPProbabilitySemantics
+89. FiniteBeliefUpdateExactTransportTheorem
+    +-- depends on: StateIsomorphism
+90. CanonicalEndogenousPOMDPObservationBoundaryTheorem
+    +-- depends on: CanonicalEndogenousObservationBoundaryTheorem, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
+91. CanonicalExactRNNLMCapabilitySubcompositionTheorem
+    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem, CanonicalEndogenousTopologicalObservationBoundaryTheorem
+92. CanonicalExactRNNLMObservationSubcompositionTheorem
+    +-- depends on: CanonicalExactRNNLMTheorem, CanonicalEndogenousObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, ExactContractComputabilityBoundaryTheorem
+93. CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    +-- depends on: CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalExactRNNLMCapabilitySubcompositionTheorem, CanonicalExactRNNLMObservationSubcompositionTheorem
+94. CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+    +-- depends on: CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalEndogenousPOMDPObservationBoundaryTheorem, CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+95. CanonicalTokenVocabularyUpperBoundTheorem
+```
+
+The direction is:
+
+```
+record A
   |
-  +-- Mercury: extraction, dependency search, e-graph and A* guidance
-  |
-  +-- other checks: repository-specific verification
+  +-- depends on --> record B
 ```
 
-Dhall can require that Agda passes. Dhall cannot prove an Agda theorem.
-
-## Complete Agda theorem relationship
-
-The graph below covers the theorem records currently declared in `TheoremsMonolith.agda`. It deliberately separates the foundational carrier/transport type from the theorem records.
-
-```
-Canonical learner and scan foundation
-|
-+-- CanonicalAQLoopTheorem
-+-- CanonicalConnectedCompositionTheorem
-+-- CanonicalLearnerReplacementClosureTheorem
-+-- EqualityCompositionTheorem
-+-- RecurrentAssociativeScanTheorem
-+-- CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-+-- CommutingSquareTheorem
-+-- CommutingSquareLeftInverseTheorem
-+-- FullCommutingSquareConjugacyTheorem
-+-- RecurrentScanConjugacyTheorem
-+-- CanonicalFullLearnerConnectedScanConjugacyTheorem
-+-- S4PlusS5RecurrentScanTheorem
-|
-+-- Control, approximation, and computability
-|   +-- MinimaxBellmanShapleyInclusionTheorem
-|   +-- CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-|   +-- CanonicalQMunchausenL2SharedNegationPolarityTheorem
-|   +-- DiscreteExactUAPTheorem
-|   +-- DiscreteExactUniversalUAP
-|   +-- DiscreteExactUniversalUAPLeftInverseEquivalence
-|   +-- CanonicalExactCompositionTuringCompletenessContract
-|   +-- ContinuousLeftInverseTheorem
-|   +-- BoundedContinuousLeftInverseExactApproximationTheorem
-|   +-- RingStateInjectivityTheorem
-|   +-- DenseNeighborhoodSeparationTheorem
-|   +-- CanonicalRecurrentBoundedExactUniversalApproximationTheorem
-|   +-- CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
-|
-+-- Finite recurrence, equilibrium, and optimizer boundaries
-|   +-- FiniteMixedProductRecurrenceTheorem
-|   +-- AbsorbingFiniteEquilibriumTheorem
-|   +-- HardSparseAbsorbingPrefixTheorem
-|   +-- FiniteHardSparseKKTEquilibriumTheorem
-|   +-- FiniteRankStabilityCertificate
-|   +-- FiniteNonIIDWalrasianEquilibrium
-|   +-- FiniteTUShapleyAllocationEquilibrium
-|   +-- CanonicalPolymorphicSparsemaxCompositionTheorem
-|   +-- DirectProductFiniteAutomatonComposition
-|   +-- OffPolicyFunctionApproximationStabilityBoundary
-|
-+-- Equilibrium and conjugacy transport
-|   +-- MarkovStationaryWalrasianCompositionTheorem
-|   +-- GlobalConjugacyEquivalence
-|   +-- GeneralizedWalrasianEquilibrium
-|   +-- ConjugateWalrasianTransport
-|   +-- Majority3ShapleyEquilibrium
-|
-+-- Token, recurrent-network, and finite-function transport
-|   +-- CanonicalGlobalTokenConjugacyTheorem
-|   +-- FiniteFunctionExactIsomorphismTransportTheorem
-|   +-- FiniteRecurrentFunctionExactTranslationTheorem
-|   +-- FinitePOMDPExactTransport
-|   +-- ArchitecturePreservingCanonicalRNNLMIsomorphism
-|   +-- CanonicalExactRNNLMTheorem
-|   +-- CanonicalGlobalTokenLMCompositionTheorem
-|
-+-- Attention, Haar structure, and operator composition
-|   +-- CanonicalIntegerHaarScaledOrthogonalityTheorem
-|   +-- CanonicalAStarCostGuidanceTheorem
-|   +-- CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
-|   +-- CanonicalHaarSparsemaxFullStateClosureTheorem
-|   +-- CanonicalLinearHaarSparsemaxAttentionCompositionTheorem
-|   +-- CanonicalFiniteCycleExclusionIsomorphismTheorem
-|   +-- CanonicalOperatorCompositionTheorem
-|   +-- CanonicalBoundedFactorLiftTheorem
-|   +-- FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
-|
-+-- Endogenous observation and information boundaries
-|   +-- CanonicalEndogenousObservationBoundaryTheorem
-|   +-- CanonicalEndogenousTopologicalObservationBoundaryTheorem
-|   +-- CanonicalPureNonOrangeBypassCompletionTheorem
-|   +-- CanonicalFiniteObservationInformationBoundaryTheorem
-|   +-- CanonicalExactTuringBoundaryMixtureTheorem
-|   +-- CanonicalGlobalInt8LeftInverseImpossibilityTheorem
-|
-+-- Stationarity, persistent excitation, and computability
-|   +-- FiniteObservationStationaryLimitTheorem
-|   +-- CanonicalPersistentExcitationRequirementTheorem
-|   +-- ExactContractComputabilityBoundaryTheorem
-|   +-- CanonicalFiniteObservationStationarySubcompositionTheorem
-|   +-- CanonicalClockObservationSubcompositionTheorem
-|   +-- CanonicalBoundednessPEBoundarySubcompositionTheorem
-|
-+-- Probability and POMDP semantics
-|   +-- FiniteProbabilityMassSemanticsTheorem
-|   +-- FinitePOMDPProbabilitySemanticsTheorem
-|   +-- FiniteBeliefUpdateExactTransportTheorem
-|   +-- CanonicalEndogenousPOMDPObservationBoundaryTheorem
-|
-+-- RNN-LM capability closure
-|   +-- CanonicalExactRNNLMCapabilitySubcompositionTheorem
-|   +-- CanonicalExactRNNLMObservationSubcompositionTheorem
-|   +-- CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-|   +-- CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-|   +-- CanonicalTokenVocabularyUpperBoundTheorem
-```
-
-The theorem graph has two directions.
-
-The semantic direction starts with executable definitions and exact local laws in Agda:
-
-```
-CanonicalLearnerMonolith
-        |
-        v
-TheoremsMonolith
-        |
-        v
-declared theorem records and laws
-```
-
-The discovery direction then reads those declarations without becoming a second proof authority:
-
-```
-TheoremsMonolith
-        |
-        v
-learner_semantic_extractor
-        |
-        v
-theorem_graph_search
-        |
-        +-- dependency paths
-        +-- composite-law plans
-        +-- endogenous-composition search
-        |
-        v
-theorem_monolith_egraph_sync
-        |
-        +-- equality saturation
-        +-- A* cost-guided extraction
-        |
-        v
-candidate composition
-        |
-        v
-Agda theorem declaration and checking
-```
-
-The current graph pre-registers all 77 theorem records above. The five dedicated subcomposition gates are:
-
-```
-CanonicalClockObservationSubcompositionTheorem
-CanonicalFiniteObservationStationarySubcompositionTheorem
-CanonicalBoundednessPEBoundarySubcompositionTheorem
-CanonicalExactRNNLMCapabilitySubcompositionTheorem
-CanonicalExactRNNLMObservationSubcompositionTheorem
-```
-
-This pre-graph is a gate and discovery index. It does not promote a graph path to a proof.
+A composite record therefore points toward the record surfaces it packages or assumes.
 
 ## Emergent endogenous closure
 
-The current strongest cross-domain endogenous composition is:
+The newest higher-order endogenous closure is:
 
 ```
 CanonicalExactRNNLMTheorem
@@ -294,28 +267,36 @@ CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
         +-- CanonicalFiniteObservationInformationBoundaryTheorem
 ```
 
-This is a composition of already declared exact surfaces. It is not a new primitive axiom and should be described as an emergent closure rather than as a newly discovered foundational law.
+This is an emergent composition of already declared exact surfaces, not a new primitive axiom. Its significance is the exposed cross-domain closure between exact RNN-LM capability, endogenous observation topology, finite information limits, and finite POMDP probability and belief transport.
 
-## Exact vocabulary capacity of this formulation
+## Exact vocabulary capacity
 
-The canonical token carrier is:
+The canonical token carrier is exactly:
 
 ```
 CanonicalToken = Fin 256
 CanonicalToken <-> Int8
 ```
 
-The encode and decode functions are exact inverses. Therefore the formal vocabulary has exactly:
+The encode and decode maps are exact inverses. Therefore this formulation has exactly 256 distinct token symbols.
+
+For exactly `n` tokens, the sequence space has:
 
 ```
-256 distinct token symbols
+256^n
 ```
 
-This is a theorem about this formulation's token carrier. It is not a claim about arbitrary language models.
+Across all finite lengths, the set of finite token sequences is countably infinite. That does not enlarge the vocabulary; the alphabet remains exactly 256 symbols.
 
-The sequence type is `List CanonicalToken`. Consequently the model can represent arbitrarily long finite token sequences over the 256-symbol alphabet. The 256 bound concerns the vocabulary alphabet, not the number of possible sequences.
+The logit vector is:
 
-`CanonicalTokenVocabularyUpperBoundTheorem` currently proves the exact carrier equivalence. A separate numeric cardinality theorem would be a different statement; it should not be conflated with the carrier equality.
+```
+CanonicalToken -> Int8
+```
+
+so one unconstrained Int8 logit vector has `256^256` possible coordinate assignments. That is an output-vector state-space count, not a vocabulary size and not a parameter-count estimate.
+
+`CanonicalTokenVocabularyUpperBoundTheorem` proves the exact carrier equivalence and inverse encode/decode laws. A separate numeric cardinality theorem would be a different formal statement.
 
 ## Formal scope
 
@@ -332,13 +313,13 @@ These are formal structural correspondences. They are not claims of empirical la
 
 ## Exactness policy
 
-The repository does not treat an e-graph extraction as proof.
+An e-graph extraction is never treated as a proof.
 
-It also does not obtain a green result by weakening a theorem, replacing a missing proof with a trivial proposition, silently changing a carrier, or changing the semantic target merely to satisfy a graph gate.
+The repository does not obtain a green gate by weakening a theorem, replacing a missing proof with a trivial proposition, changing a carrier to make a theorem fit, or silently changing the semantic target.
 
-The finite probability and POMDP layers are exact finite semantics. They are not a claim of full measure-theoretic probability.
+The finite probability and POMDP layers are exact finite semantics, not full measure-theoretic probability.
 
-The RNN-LM layers are exact formal capability and transport statements. They are not benchmark results.
+The RNN-LM layers are exact formal capability and transport statements, not empirical language-model performance claims.
 
 ## Repository surfaces
 
