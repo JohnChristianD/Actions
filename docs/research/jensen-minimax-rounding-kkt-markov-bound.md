@@ -143,3 +143,25 @@ The existing FiniteFunctionExactIsomorphismTransportTheorem is the representatio
 8. Prove exact GRU encoding/decoding or conjugacy for that finite Maxwell transition.
 9. Keep Maxwell as the physical-law boundary; do not promote unsupported additional physics.
 10. Run the Agda/Mercury/e-graph verification before promoting either candidate.
+
+
+## Graph automation, F4/Frank-Wolfe promotion, and Maxwell boundary
+
+The repository has one canonical Agda theorem source: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`. The modular graphing pipeline is Mercury-driven: `.ci/discovery/learner_semantic_extractor.m` extracts declarations and identifier-level dependencies, `.ci/discovery/theorem_graph_search.m` performs A*-ordered dependency discovery, and `.ci/discovery/theorem_monolith_egraph_sync.m` feeds the discovered plans into the symbolic e-graph. `.ci/actions_ci.dhall` orchestrates those modules; it is not the theorem-edge authority.
+
+The F4/Frank-Wolfe seam now has an actual Agda connected consumer, `ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem`, downstream of `ConnectedF4FrankWolfeKKTTheorem`. Its finite certificate establishes the conditional chain
+[
+R le J+B+K+W+M,
+]
+where (W) is the Frank-Wolfe residual. This is still a certificate theorem, not an analytic Frank-Wolfe convergence theorem: a concrete objective, feasible set, linear minimization oracle, stationarity/KKT implication, and shared-state instantiation are still required for a quantitative optimization result.
+
+The current CI failure was structural rather than evidence that the graph design was invalid: the e-graph gate still expected the older required-plan count, and the Agda theorem source used `subst` and `≤-refl` without importing them. Those were repaired without adding libraries or weakening checks.
+
+Maxwell remains deliberately unpromoted. A repository search found no Maxwell state/update semantics in the canonical theorem monolith, so a Maxwell theorem cannot be honestly completed by inventing a finite discretization. Literature supports the promotion gate: compatible/constraint-preserving finite-element or discrete schemes can preserve Maxwell divergence constraints, but the repository still needs one explicit finite state, discrete update, input/output encoding, and exact GRU conjugacy. The graph therefore keeps `FiniteMaxwellGRUExactRepresentationCandidate` as `CANDIDATE_NOT_PROVED` and forbids implicit addition of non-Maxwell physics.
+
+Relevant research sources:
+- Oliveira, “A note on the Frank-Wolfe algorithm for a class of nonconvex and nonsmooth optimization problems,” OJMO (2023), DOI: https://doi.org/10.5802/ojmo.21
+- Ghojogh et al., “KKT Conditions, First-Order and Second-Order Optimization, and Distributed Optimization: Tutorial and Survey,” arXiv: https://arxiv.org/abs/2110.01858
+- Campos Pinto & Sonnendrücker, “Gauss-compatible Galerkin schemes for time-dependent Maxwell equations,” Mathematics of Computation (2016), DOI: https://doi.org/10.1090/MCOM/3079
+- Berchenko-Kogan & Stern, “Constraint-Preserving Hybrid Finite Element Methods for Maxwell’s Equations,” Foundations of Computational Mathematics (2021), DOI: https://doi.org/10.1007/S10208-020-09476-7
+
