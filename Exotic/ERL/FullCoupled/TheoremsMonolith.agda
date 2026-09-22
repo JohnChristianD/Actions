@@ -5455,3 +5455,67 @@ exact-contract-computability-boundary-theorem =
     canonicalExactCompositionTuringCompletenessContract-impossible
     tt
 
+
+------------------------------------------------------------------------
+-- 2026-09-22 graph-search requirement/subcomposition completion.
+------------------------------------------------------------------------
+
+record CanonicalClockObservationSubcompositionTheorem : Set₁ where
+  constructor canonicalClockObservationSubcompositionTheorem
+  field
+    exactClockGrowth :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (n : Nat)
+        (s : C.CanonicalFullLearnerState) →
+      C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
+    globalLeftInverseObstruction :
+      CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+
+canonical-clock-observation-subcomposition-theorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalClockObservationSubcompositionTheorem
+canonical-clock-observation-subcomposition-theorem K s =
+  canonicalClockObservationSubcompositionTheorem
+    canonicalClockAfter
+    (canonical-global-int8-left-inverse-impossibility-theorem K s)
+
+record CanonicalMonotoneEnergyStationarySubcompositionTheorem : Set₁ where
+  constructor canonicalMonotoneEnergyStationarySubcompositionTheorem
+  field
+    monotoneEnergyStationaryContract :
+      MonotoneConvergenceToStationaryDistributionTheorem
+        C.CanonicalFullLearnerState
+        Nat
+        _≤_
+        (λ s → C.clock s)
+        (λ s → C.clock s)
+        (λ n → C.replaceClock (C.defaultCanonicalState) n)
+        (C.replaceClock (C.defaultCanonicalState) zero)
+        (λ _ _ → ⊤)
+
+canonical-monotone-energy-stationary-subcomposition-theorem :
+  CanonicalMonotoneEnergyStationarySubcompositionTheorem
+canonical-monotone-energy-stationary-subcomposition-theorem =
+  canonicalMonotoneEnergyStationarySubcompositionTheorem
+    (monotoneConvergenceToStationaryDistributionTheorem
+      (λ n → refl)
+      (λ n → refl)
+      tt
+      (λ _ → refl))
+
+record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
+  constructor canonicalBoundednessPEBoundarySubcompositionTheorem
+  field
+    boundednessBoundary :
+      CanonicalBoundedFactorLiftTheorem
+    persistentExcitationRequirement :
+      CanonicalPersistentExcitationRequirementTheorem
+
+canonical-boundedness-pe-boundary-subcomposition-theorem :
+  CanonicalBoundednessPEBoundarySubcompositionTheorem
+canonical-boundedness-pe-boundary-subcomposition-theorem =
+  canonicalBoundednessPEBoundarySubcompositionTheorem
+    canonical-bounded-factor-lift-theorem
+    canonical-persistent-excitation-requirement-theorem
+
