@@ -5613,6 +5613,9 @@ record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
         (μ : Nat → Distribution)
         (π : Distribution)
         (Converges : (Nat → Distribution) → Distribution → Set) →
+      (∀ n → μ (suc n) ≡ P (μ n)) →
+      Converges μ π →
+      (Converges μ π → P π ≡ π) →
       FiniteObservationStationaryLimitTheorem
         Distribution P μ π Converges
 
@@ -5620,11 +5623,11 @@ canonical-finite-observation-stationary-subcomposition-theorem :
   CanonicalFiniteObservationStationarySubcompositionTheorem
 canonical-finite-observation-stationary-subcomposition-theorem =
   canonicalFiniteObservationStationarySubcompositionTheorem
-    (λ {Distribution} P μ π Converges →
+    (λ P μ π Converges transitionLaw convergence limitPreserved →
       finiteObservationStationaryLimitTheorem
-        (λ _ → refl)
-        (λ _ → ⊤)
-        (λ _ → refl))
+        transitionLaw
+        convergence
+        limitPreserved)
 
 record CanonicalClockObservationSubcompositionTheorem : Set₁ where
   constructor canonicalClockObservationSubcompositionTheorem
