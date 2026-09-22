@@ -4987,24 +4987,61 @@ canonicalF4-factor-collision-separates-full-state :
           (C.iterateCanonical K n s))) ×
     C.iterateCanonical K m s ≢
     C.iterateCanonical K n s
-canonicalF4-factor-collision-separates-full-state K s =
-  let notInjective =
-        canonicalF4ThetaQ-not-orbit-injective K s
-      collision =
-        notInjective
-          (λ {m} {n} eq →
-            m ≡ n)
-  in
-  -- The finite carrier supplies the first two components; full-state
-  -- separation then follows from the exact clock-index injectivity.
-  canonicalF4-factor-collision-from-notInjective
-    K s
-    collision
-  where
-  canonicalF4-factor-collision-from-notInjective :
-    ∀ {A} (K : C.FullLearnerKernel A)
-      (s : C.FullLearnerState A) →
-    ¬ (∀ {m n : Nat} →
+canonicalF4-factor-collision-separates-full-state K s with
+  C.pigeonholeNatToInt8
+    (λ n →
+      C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K n s))))
+... | m , n , apart , factorEq =
+  m , n , apart ,
+  factorEq ,
+  (λ fullEq →
+    apart
+      (C.canonicalOrbit-state-injective K s
+        (cong C.clock fullEq)))
+
+------------------------------------------------------------------------
+-- Pure non-orange-bypass theorem graph endpoint:
+--
+-- exact coupled transition
+--   -> exact clock growth
+--   -> full-orbit index injectivity
+--   -> finite Int8 F4 factor boundedness
+--   -> finite-factor collision
+--   -> repeated F4 representation with distinct full exact states.
+------------------------------------------------------------------------
+
+record CanonicalBoundedFactorLiftTheorem : Set₁ where
+  constructor canonicalBoundedFactorLiftTheorem
+  field
+    bounded :
+      ∀ {A} (K : C.FullLearnerKernel A)
+        (s : C.FullLearnerState A) (n : Nat) →
+      toℕ (C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K n s)))) < 256
+    factorNotInjective :
+      ∀ {A} (K : C.FullLearnerKernel A)
+        (s : C.FullLearnerState A) →
+      ¬ (∀ {m n : Nat} →
+          C.code
+            (C.thetaQ
+              (C.optimizer
+                (C.iterateCanonical K m s)))
+          ≡
+          C.code
+            (C.thetaQ
+              (C.optimizer
+                (C.iterateCanonical K n s))) →
+          m ≡ n)
+    collisionSeparatesFullState :
+      ∀ {A} (K : C.FullLearnerKernel A)
+        (s : C.FullLearnerState A) →
+      ∃ m n →
+        m ≢ n ×
         C.code
           (C.thetaQ
             (C.optimizer
@@ -5013,25 +5050,16 @@ canonicalF4-factor-collision-separates-full-state K s =
         C.code
           (C.thetaQ
             (C.optimizer
-              (C.iterateCanonical K n s))) →
-        m ≡ n) →
-    ∃ m n →
-      m ≢ n ×
-      C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K m s)))
-      ≡
-      C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K n s))) ×
-      C.iterateCanonical K m s ≢
-      C.iterateCanonical K n s
-  canonicalF4-factor-collision-from-notInjective K s notInj =
-    -- This helper is intentionally left as a theorem contract until the
-    -- repository's finite-carrier witness constructor is absorbed here.
-    ⊥-elim
-      (notInj
-        (λ {m} {n} eq → refl))
+              (C.iterateCanonical K n s))) ×
+        C.iterateCanonical K m s ≢
+        C.iterateCanonical K n s
 
+open CanonicalBoundedFactorLiftTheorem public
+
+canonical-bounded-factor-lift-theorem :
+  CanonicalBoundedFactorLiftTheorem
+canonical-bounded-factor-lift-theorem =
+  canonicalBoundedFactorLiftTheorem
+    canonicalF4ThetaQ-bounded
+    canonicalF4ThetaQ-not-orbit-injective
+    canonicalF4-factor-collision-separates-full-state
