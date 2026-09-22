@@ -327,6 +327,12 @@ JSON
     canonical-pure-non-orange-bypass-completion-theorem
     CanonicalNatClockLyapunovSeparationTheorem
     CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+    CanonicalClockObservationSubcompositionTheorem
+    CanonicalMonotoneEnergyStationarySubcompositionTheorem
+    CanonicalBoundednessPEBoundarySubcompositionTheorem
+    canonical-clock-observation-subcomposition-theorem
+    canonical-monotone-energy-stationary-subcomposition-theorem
+    canonical-boundedness-pe-boundary-subcomposition-theorem
     canonical-global-int8-left-inverse-impossibility-theorem
     MonotoneConvergenceToStationaryDistributionTheorem
     CanonicalPersistentExcitationRequirementTheorem
