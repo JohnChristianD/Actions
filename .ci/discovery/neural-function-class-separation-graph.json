@@ -1059,6 +1059,56 @@
       "sha": "7d224cdcb5d70cb05d4279f633cd5e63182009fc",
       "message": "Export all graph-plan predicates consumed by e-graph sync",
       "transformative": false
+    },
+    {
+      "sha": "12963d970f841c3a3835348eb3eec3ab3e082c6d",
+      "message": "Connect Lion descent/KKT term to optimizer regret boundary",
+      "transformative": true
+    },
+    {
+      "sha": "35513a055396f394b081f6ed97d9e53303865c71",
+      "message": "Remove unused Lion theorem surface and keep connected residual only",
+      "transformative": false
+    },
+    {
+      "sha": "ba56504d8c76ea94d097497e0eecee9b0cddc577",
+      "message": "Compose Lion descent term into regret bound proof",
+      "transformative": true
+    },
+    {
+      "sha": "cdf31dda7072c78fa3e1a54e758c06f2ec245b32",
+      "message": "Add connected Lion regret theorem surface",
+      "transformative": true
+    },
+    {
+      "sha": "a00b979fb6acc6cac839b03fb0095eb0909d00f3",
+      "message": "Derive Lion connected bound from existing optimizer theorem",
+      "transformative": true
+    },
+    {
+      "sha": "b44b5c26d9e4830aa812453bea64970fd73f3166",
+      "message": "Pregraph connected Lion descent/KKT regret boundary",
+      "transformative": true
+    },
+    {
+      "sha": "229012a0b5e3aa569364c45a0a3b6789ae256ddc",
+      "message": "Expose connected Lion regret graph plan",
+      "transformative": true
+    },
+    {
+      "sha": "b0375a4ec342788fb9cfa57df0aef4e79463060c",
+      "message": "Add Lion descent and KKT research to regret boundary",
+      "transformative": true
+    },
+    {
+      "sha": "a2078322eb0c0db0767ab7850f0a43623e161ec8",
+      "message": "Register connected Lion theorem in composition graph",
+      "transformative": true
+    },
+    {
+      "sha": "9d35f23e53fee0f4f13ebd9eda47dd9cf1e3a5d3",
+      "message": "Make Lion and connected regret theorems required graph nodes",
+      "transformative": true
     }
   ],
   "complete_graph_contract_v7": {
