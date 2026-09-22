@@ -53,6 +53,10 @@
     list(string)::out) is semidet.
 
 
+:- pred graph_connected_jensen_minimax_regret_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred all_scores_non_decreasing(
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
@@ -67,6 +71,43 @@
     list(list(string))::out) is det.
 
 :- implementation.
+
+:- pred graph_finite_observation_stationary_limit_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_observation_stationary_limit_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteObservationStationaryLimitTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_observation_stationary_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_observation_stationary_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalFiniteObservationStationarySubcompositionTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_endogenous_observation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_endogenous_observation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalEndogenousObservationBoundaryTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_endogenous_rnnlm_pomdp_observation_topology_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_endogenous_rnnlm_pomdp_observation_topology_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+        Laws,
+        Plan).
+
 
 graph_finite_probability_mass_plan(Laws, Plan) :-
     search_named_required_plan(
@@ -83,6 +124,52 @@ graph_finite_pomdp_probability_plan(Laws, Plan) :-
 graph_endogenous_pomdp_observation_plan(Laws, Plan) :-
     search_named_required_plan(
         "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
+        Laws,
+        Plan).
+
+graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedJensenMinimaxRegretOptimizerTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_connected_lion_jensen_minimax_regret_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_lion_jensen_minimax_regret_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_connected_f4_frank_wolfe_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_f4_frank_wolfe_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedF4FrankWolfeKKTTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_maxwell_gru_representation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_finite_maxwell_gru_representation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteMaxwellGRUExactRepresentationCandidate",
         Laws,
         Plan).
 
@@ -430,6 +517,15 @@ graph_required_theorems = [
     "CanonicalExactRNNLMObservationSubcompositionTheorem",
     "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
     "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+    "EfficientOperatorMonoidRepresentation",
+    "ParallelPrefixComplexityCertificate",
+    "LogarithmicScanSpanCertificate",
+    "LogarithmicPrefixScanComplexityTheorem",
+    "ConnectedJensenMinimaxRegretOptimizerTheorem",
+    "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+    "ConnectedF4FrankWolfeKKTTheorem",
+    "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+    "FiniteMaxwellGRUExactRepresentationCandidate",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
@@ -459,42 +555,6 @@ graph_required_subcompositions = [
     "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
     "CanonicalExactRNNLMObservationSubcompositionTheorem"
 ].
-
-:- pred graph_finite_observation_stationary_limit_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-graph_finite_observation_stationary_limit_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "FiniteObservationStationaryLimitTheorem",
-        Laws,
-        Plan).
-
-:- pred graph_finite_observation_stationary_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-graph_finite_observation_stationary_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalFiniteObservationStationarySubcompositionTheorem",
-        Laws,
-        Plan).
-
-:- pred graph_endogenous_observation_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-graph_endogenous_observation_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalEndogenousObservationBoundaryTheorem",
-        Laws,
-        Plan).
-
-:- pred graph_endogenous_rnnlm_pomdp_observation_topology_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-graph_endogenous_rnnlm_pomdp_observation_topology_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
-        Laws,
-        Plan).
 
 :- pred graph_search_completion(
     list(semantic_law)::in,

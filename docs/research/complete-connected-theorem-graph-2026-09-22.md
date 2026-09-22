@@ -250,3 +250,37 @@ No conceptual edge is synthesized merely to make the graph connected.
 ### Verification boundary
 
 Run #764 failed for two concrete reasons on the previous head: the Agda theorem monolith used unavailable `Data.Fin.Properties` exports and an unqualified recurrent-realization field; the Mercury e-graph sync module did not export all graph-plan predicates it called. Both defects were repaired minimally in separate commits. Fresh CI for the resulting head is now required before any theorem is described as CI-verified.
+
+
+## Exact-prefix parallel complexity boundary — 2026-09-22
+
+The graph now distinguishes exact algebraic scan correctness from algorithmic parallel complexity.
+
+The repository already proves an exact recurrent prefix endomorphism algebra: recurrentPrefix-correct, recurrentPrefix-split, RecurrentAssociativeScanTheorem, and RecurrentPrefixMonoidHomomorphism. These establish that finite prefixes compose associatively through endomorphism composition; they do not by themselves establish a SIMD span bound.
+
+A new conditional proof surface was added:
+- EfficientOperatorMonoidRepresentation;
+- ParallelPrefixComplexityCertificate;
+- LogarithmicScanSpanCertificate;
+- LogarithmicPrefixScanComplexityTheorem.
+
+The resulting theorem boundary is precise. If a concrete machine/cost model supplies:
+1. an associative operator representation of each recurrent step;
+2. exact prefix-scan correctness;
+3. bounded representation and decoding span;
+4. a genuine logarithmic-depth scan certificate;
+5. linear work for operator composition/scan;
+
+then horizon-H evaluation has logarithmic parallel span up to representation/decoding constants and linear work under that model.
+
+This is consistent with the parallel-prefix literature: Ladner and Fischer give logarithmic-depth prefix circuits for associative operations; Kogge's recurrence-parallelization result obtains logarithmic time when the recurrence admits suitable composition functions; later work explicitly identifies recurrences whose loop bodies can be reconstructed into parallel scans. These are external algorithmic precedents, not premises of the repository theorem.
+
+Primary literature:
+- Ladner & Fischer, Parallel Prefix Computation, JACM 1980, DOI 10.1145/322217.322232.
+- Kogge, Parallel solution of recurrence problems, IBM Journal of Research and Development 1974, DOI 10.1147/RD.182.0138.
+- Jiang, Chen & Agrawal, Revealing parallel scans and reductions in recurrences through function reconstruction, PACT 2018, DOI 10.1145/3243176.3243204.
+- Hinze, An Algebra of Scans, MPC 2004, DOI 10.1007/978-3-540-27764-4_11.
+
+Critical limitation: the current repository does not yet contain a concrete SIMD/PRAM operator-cost model or an actual logarithmic scan-span witness for the full connected learner. Therefore CanonicalConnectedCompositionLogarithmicSIMDSpanCandidate remains CANDIDATE_NOT_PROVED. The new Agda surface proves the conditional implication, not the missing machine-specific premise.
+
+No claim of O(log H) follows merely from conjugacy, topology, left-invertibility, or the Tsallis/q-log representation. Those properties preserve or transport information; they do not supply a parallel schedule.

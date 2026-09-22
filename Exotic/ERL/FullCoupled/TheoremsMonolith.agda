@@ -8,7 +8,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 -- part of the canonical proof surface.
 ------------------------------------------------------------------------
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym; subst)
 open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
@@ -16,10 +16,10 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Fin.Properties using (pigeonhole; toℕ-injective; toℕ-mono-<)
-open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; zero)
+open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Nat.Properties using (≤-antisym; +-identityʳ; +-suc; n<1+n)
+open import Data.Nat.Properties using (≤-antisym; ≤-refl; +-identityʳ; +-suc; n<1+n)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 replaceClock :
@@ -2077,7 +2077,7 @@ record CanonicalExactCompositionTuringCompletenessContract : Set₁ where
       decode M (encode M c) ≡ c
     exactStepSimulation :
       ∀ M c →
-      encode M (step M c) ≡
+      encode M (ExactTwoCounterMachine.step M c) ≡
       C.canonicalFullStep
         (compile M)
         (encode M c)
@@ -2085,7 +2085,7 @@ record CanonicalExactCompositionTuringCompletenessContract : Set₁ where
       C.CanonicalFullLearnerState → C.BoolLike
     exactHaltingCorrespondence :
       ∀ M c →
-      output (encode M c) ≡ halting M c
+      output (encode M c) ≡ ExactTwoCounterMachine.halting M c
 
 ------------------------------------------------------------------------
 -- Exact obstruction for the proposed universal contract.
@@ -6402,3 +6402,533 @@ canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem K s =
 
 ------------------------------------------------------------------------
 -- End literature-aligned strict separation completion.
+
+------------------------------------------------------------------------
+-- Conditional SIMD/work-span theorem for the exact recurrent prefix scan.
+--
+-- The scan algebra is exact because it is built from endomorphism
+-- composition. Complexity is conditional: topology, conjugacy, and
+-- left-invertibility do not themselves imply parallel speedup.
+------------------------------------------------------------------------
+
+twoPow : Nat → Nat
+twoPow zero = suc zero
+twoPow (suc k) = twoPow k + twoPow k
+
+nat-plus-right-mono :
+  ∀ {a b c : Nat} → a ≤ b → a + c ≤ b + c
+nat-plus-right-mono z≤n = z≤n
+nat-plus-right-mono (s≤s p) = s≤s (nat-plus-right-mono p)
+
+record EfficientOperatorMonoidRepresentation
+  (State Input : Set) : Set₁ where
+  constructor efficientOperatorMonoidRepresentation
+  field
+    operator :
+      Input → C.Endomorphism State
+    operatorAssociative :
+      ∀ (f g h : C.Endomorphism State) s →
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          (C.composeEndomorphism f g)
+          h)
+        s
+      ≡
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          f
+          (C.composeEndomorphism g h))
+        s
+    representationSpan : Nat
+    decodingSpan : Nat
+    compositionSpan : Nat
+    compositionWork : Nat
+    scanSpan : Nat → Nat
+    scanWork : Nat → Nat
+    scanSpan-linear :
+      ∀ h →
+      scanSpan h ≤ compositionSpan + compositionSpan * h
+    scanWork-linear :
+      ∀ h →
+      scanWork h ≤ compositionWork * h
+
+record ParallelPrefixComplexityCertificate
+  (State Input : Set) : Set₁ where
+  constructor parallelPrefixComplexityCertificate
+  field
+    monoidRepresentation :
+      EfficientOperatorMonoidRepresentation State Input
+    exactScan :
+      RecurrentAssociativeScanTheorem State Input
+    totalSpan :
+      Nat → Nat
+    totalWork :
+      Nat → Nat
+    totalSpan-definition :
+      ∀ h →
+      totalSpan h ≡
+        EfficientOperatorMonoidRepresentation.representationSpan
+          monoidRepresentation
+        + EfficientOperatorMonoidRepresentation.scanSpan
+            monoidRepresentation h
+        + EfficientOperatorMonoidRepresentation.decodingSpan
+            monoidRepresentation
+    totalWork-definition :
+      ∀ h →
+      totalWork h ≡
+        EfficientOperatorMonoidRepresentation.scanWork
+          monoidRepresentation h
+
+parallelPrefixComplexityCertificate-bound :
+  ∀ {State Input : Set}
+  (certificate :
+    ParallelPrefixComplexityCertificate State Input)
+  (h : Nat) →
+  ParallelPrefixComplexityCertificate.totalSpan certificate h
+  ≤
+  EfficientOperatorMonoidRepresentation.representationSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+  + EfficientOperatorMonoidRepresentation.compositionSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+  + EfficientOperatorMonoidRepresentation.compositionSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
+  + EfficientOperatorMonoidRepresentation.decodingSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+parallelPrefixComplexityCertificate-bound certificate h =
+  subst
+    (λ n →
+      n
+      ≤
+      EfficientOperatorMonoidRepresentation.representationSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+      + EfficientOperatorMonoidRepresentation.compositionSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+      + EfficientOperatorMonoidRepresentation.compositionSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
+      + EfficientOperatorMonoidRepresentation.decodingSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate))
+    (ParallelPrefixComplexityCertificate.totalSpan-definition certificate h)
+    (≤-refl _)
+
+------------------------------------------------------------------------
+-- A genuine O(log H) statement is represented by a doubling-scale
+-- certificate: whenever H is below 2^k, scan span is bounded linearly
+-- in k, with constants independent of H.
+------------------------------------------------------------------------
+
+record LogarithmicScanSpanCertificate
+  (State Input : Set) : Set₁ where
+  constructor logarithmicScanSpanCertificate
+  field
+    scanSpan : Nat → Nat
+    coefficient : Nat
+    additive : Nat
+    scanSpan-bound :
+      ∀ k h →
+      h ≤ twoPow k →
+      scanSpan h ≤ coefficient * k + additive
+
+record LogarithmicPrefixScanComplexityTheorem
+  (State Input : Set) : Set₁ where
+  constructor logarithmicPrefixScanComplexityTheorem
+  field
+    exactScan :
+      RecurrentAssociativeScanTheorem State Input
+    operatorMonoid :
+      EfficientOperatorMonoidRepresentation State Input
+    logarithmicSpan :
+      LogarithmicScanSpanCertificate State Input
+    representationOverhead :
+      Nat
+    decodingOverhead :
+      Nat
+    horizonSpan :
+      Nat → Nat
+    horizonWork :
+      Nat → Nat
+    horizonSpan-definition :
+      ∀ h →
+      horizonSpan h ≡
+        LogarithmicScanSpanCertificate.scanSpan logarithmicSpan h
+        + representationOverhead
+        + decodingOverhead
+    horizonWork-linear :
+      ∀ h →
+      horizonWork h ≤
+      EfficientOperatorMonoidRepresentation.compositionWork operatorMonoid * h
+    exactness :
+      ∀ (R : C.RecurrentNetwork State Input)
+        (xs : Nat → Input)
+        (h : Nat)
+        (s : State) →
+      C.applyEndomorphism
+        (C.recurrentPrefixEndomorphism R xs h)
+        s
+      ≡
+      C.recurrentPrefixState R xs h s
+    horizonSpan-logarithmic :
+      ∀ k h →
+      h ≤ twoPow k →
+      horizonSpan h ≤
+        LogarithmicScanSpanCertificate.coefficient logarithmicSpan * k
+        + LogarithmicScanSpanCertificate.additive logarithmicSpan
+        + representationOverhead
+        + decodingOverhead
+
+horizonSpan-logarithmic-bound :
+  ∀ {State Input : Set}
+  (certificate :
+    LogarithmicPrefixScanComplexityTheorem State Input)
+  (k h : Nat) →
+  h ≤ twoPow k →
+  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
+  ≤
+  LogarithmicScanSpanCertificate.coefficient
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+  + LogarithmicScanSpanCertificate.additive
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
+horizonSpan-logarithmic-bound certificate k h hk =
+  subst
+    (λ n →
+      n
+      ≤
+      LogarithmicScanSpanCertificate.coefficient
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+      + LogarithmicScanSpanCertificate.additive
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+      + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+      + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate)
+    (LogarithmicPrefixScanComplexityTheorem.horizonSpan-definition certificate h)
+    (nat-plus-right-mono
+      (nat-plus-right-mono
+        (LogarithmicScanSpanCertificate.scanSpan-bound
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+          k
+          h
+          hk)
+        (LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate))
+      (LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate))
+
+canonicalConnectedComposition-parallelPrefixComplexity-contract :
+  (certificate :
+    LogarithmicPrefixScanComplexityTheorem
+      C.GRUState
+      C.Int8)
+  (k h : Nat) →
+  h ≤ twoPow k →
+  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
+  ≤
+  LogarithmicScanSpanCertificate.coefficient
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+  + LogarithmicScanSpanCertificate.additive
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
+canonicalConnectedComposition-parallelPrefixComplexity-contract =
+  horizonSpan-logarithmic-bound
+
+------------------------------------------------------------------------
+-- Computational-theoretic boundary:
+-- exact prefix algebra is proved on the repository surface. O(log H) SIMD
+-- span is a conditional algorithmic theorem until the concrete operator-cost,
+-- representation/decoding, and doubling-scale scan certificate are supplied.
+-- Exactness, conjugacy, and left-invertibility alone do not supply a
+-- parallel schedule or a speedup theorem.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Jensen/minimax regret + rounding-bias + KKT + stationary-Markov
+-- connected optimization boundary.
+--
+-- This is intentionally conditional.  Jensen/minimax duality supplies a
+-- regret comparison only when the required convex-concave/minimax
+-- hypotheses are instantiated.  KKT stationarity and Markov fixed-point
+-- structure do not follow merely from rounding or recurrence.
+--
+-- The quantitative carrier is Nat so this layer remains independent of
+-- an imported real-analysis library.  A concrete real-valued instantiation
+-- may refine these quantities through a separate representation theorem.
+------------------------------------------------------------------------
+
+record JensenMinimaxRegretRoundingKKTMarkovData : Set₁ where
+  constructor jensenMinimaxRegretRoundingKKTMarkovData
+  field
+    minimaxRegret : Nat
+    jensenGap : Nat
+    roundingBias : Nat
+    kktResidual : Nat
+    lionDescentResidual : Nat
+    markovMixing : Nat
+
+    jensenMinimaxRegret :
+      minimaxRegret ≤ jensenGap + roundingBias
+
+    kktRoundingAbsorption :
+      jensenGap + roundingBias
+      ≤
+      jensenGap + roundingBias + kktResidual
+
+    lionDescentKKT :
+      jensenGap + roundingBias + kktResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + lionDescentResidual
+
+    stationaryMarkovFixedPoint :
+      jensenGap + roundingBias + kktResidual + lionDescentResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + lionDescentResidual + markovMixing
+
+open JensenMinimaxRegretRoundingKKTMarkovData public
+
+jensen-minimax-regret-rounding-kkt-markov-bound :
+  (D : JensenMinimaxRegretRoundingKKTMarkovData) →
+  minimaxRegret D
+  ≤
+  jensenGap D
+  + roundingBias D
+  + kktResidual D
+  + lionDescentResidual D
+  + markovMixing D
+jensen-minimax-regret-rounding-kkt-markov-bound D =
+  ≤-trans
+    (jensenMinimaxRegret D)
+    (≤-trans
+      (kktRoundingAbsorption D)
+      (≤-trans
+        (lionDescentKKT D)
+        (stationaryMarkovFixedPoint D)))
+
+------------------------------------------------------------------------
+-- Full connected optimizer composition.  The recurrent scan and
+-- stationary Markov/Walrasian interfaces are explicit dependencies rather
+-- than disconnected theorem names.
+------------------------------------------------------------------------
+
+record ConnectedJensenMinimaxRegretOptimizerTheorem : Set₁ where
+  constructor connectedJensenMinimaxRegretOptimizerTheorem
+  field
+    recurrentScan :
+      RecurrentAssociativeScanTheorem C.GRUState C.Int8
+
+    stationaryMarkovWalrasian :
+      MarkovStationaryWalrasianCompositionTheorem
+
+    finiteKKTAbsorbing :
+      ∀ {State : Set}
+        {step : State → State}
+        {hardSparse : State → Set}
+        {equilibrium : State} →
+      FiniteHardSparseKKTEquilibriumTheorem
+        State step hardSparse equilibrium →
+      UniqueKKTAbsorbingClass
+        State
+        (⊤)
+        step
+        hardSparse
+        (λ _ → tt)
+        equilibrium
+
+    regretBoundary :
+      JensenMinimaxRegretRoundingKKTMarkovData
+
+    regretBound :
+      minimaxRegret regretBoundary
+      ≤
+      jensenGap regretBoundary
+      + roundingBias regretBoundary
+      + kktResidual regretBoundary
+      + lionDescentResidual regretBoundary
+      + markovMixing regretBoundary
+
+open ConnectedJensenMinimaxRegretOptimizerTheorem public
+
+connected-jensen-minimax-regret-optimizer-theorem :
+  ConnectedJensenMinimaxRegretOptimizerTheorem →
+  minimaxRegret regretBoundary
+  ≤
+  jensenGap regretBoundary
+  + roundingBias regretBoundary
+  + kktResidual regretBoundary
+  + lionDescentResidual regretBoundary
+  + markovMixing regretBoundary
+connected-jensen-minimax-regret-optimizer-theorem C =
+  regretBound C
+
+------------------------------------------------------------------------
+-- Lion-extended connected optimizer boundary.
+-- This is a real Agda proposition consuming the existing connected
+-- Jensen/minimax/rounding/KKT/Markov theorem. Its Lion contribution is
+-- represented by the explicit descent residual in the regret data.
+------------------------------------------------------------------------
+
+record ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem : Set₁ where
+  constructor connectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem
+  field
+    connectedOptimizer :
+      ConnectedJensenMinimaxRegretOptimizerTheorem
+
+open ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem public
+
+connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem :
+  (C : ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem) →
+  minimaxRegret
+    (regretBoundary (connectedOptimizer C))
+  ≤
+  jensenGap (regretBoundary (connectedOptimizer C))
+  + roundingBias (regretBoundary (connectedOptimizer C))
+  + kktResidual (regretBoundary (connectedOptimizer C))
+  + lionDescentResidual (regretBoundary (connectedOptimizer C))
+  + markovMixing (regretBoundary (connectedOptimizer C))
+connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem C =
+  regretBound (connectedOptimizer C)
+
+------------------------------------------------------------------------
+-- F4 + Frank-Wolfe connected optimization boundary.
+--
+-- The F4 component is already an exact finite recurrent state in this
+-- monolith.  Frank-Wolfe is introduced only through its finite certificate:
+-- a supplied gap/descent relation and KKT compatibility. No optimization
+-- library or continuous-analysis dependency is imported.
+------------------------------------------------------------------------
+
+record F4FrankWolfeKKTDescentData : Set₁ where
+  constructor f4FrankWolfeKKTDescentData
+  field
+    frankWolfeGap : Nat
+    f4DescentResidual : Nat
+    kktResidual : Nat
+    frankWolfeDescent :
+      frankWolfeGap ≤ f4DescentResidual
+    descentKKT :
+      f4DescentResidual ≤ f4DescentResidual + kktResidual
+
+------------------------------------------------------------------------
+-- This is deliberately conditional: it consumes the already-proved exact
+-- F4/GRU prefix composition and records the Frank-Wolfe certificate as a
+-- connected optimizer seam rather than a disconnected theorem.
+------------------------------------------------------------------------
+
+record ConnectedF4FrankWolfeKKTTheorem : Set₁ where
+  constructor connectedF4FrankWolfeKKTTheorem
+  field
+    f4Composition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+    certificate :
+      F4FrankWolfeKKTDescentData
+    connectedBound :
+      frankWolfeGap certificate
+      ≤
+      f4DescentResidual certificate + kktResidual certificate
+
+open ConnectedF4FrankWolfeKKTTheorem public
+
+connected-f4-frank-wolfe-kkt-theorem :
+  (C : ConnectedF4FrankWolfeKKTTheorem) →
+  frankWolfeGap (certificate C)
+  ≤
+  f4DescentResidual (certificate C)
+  + kktResidual (certificate C)
+connected-f4-frank-wolfe-kkt-theorem C =
+  connectedBound C
+
+------------------------------------------------------------------------
+-- Fully connected F4 + Frank-Wolfe optimizer composition boundary.
+--
+-- This consumes the exact F4/Frank-Wolfe seam together with the existing
+-- stationary Markov/Walrasian and KKT interfaces.  The finite certificate
+-- keeps the statement library-free; analytic Frank-Wolfe/KKT hypotheses
+-- remain explicit promotion obligations.
+------------------------------------------------------------------------
+
+record F4FrankWolfeJensenRoundingKKTMarkovData : Set₁ where
+  constructor f4FrankWolfeJensenRoundingKKTMarkovData
+  field
+    regret : Nat
+    jensenGap : Nat
+    roundingBias : Nat
+    kktResidual : Nat
+    frankWolfeResidual : Nat
+    markovMixing : Nat
+
+    jensenBound :
+      regret ≤ jensenGap + roundingBias
+
+    roundingKKTBound :
+      jensenGap + roundingBias
+      ≤
+      jensenGap + roundingBias + kktResidual
+
+    kktFrankWolfeBound :
+      jensenGap + roundingBias + kktResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + frankWolfeResidual
+
+    stationaryMarkovBound :
+      jensenGap + roundingBias + kktResidual + frankWolfeResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + frankWolfeResidual + markovMixing
+
+open F4FrankWolfeJensenRoundingKKTMarkovData public
+
+f4-frank-wolfe-jensen-rounding-kkt-markov-bound :
+  (D : F4FrankWolfeJensenRoundingKKTMarkovData) →
+  regret D
+  ≤
+  jensenGap D
+  + roundingBias D
+  + kktResidual D
+  + frankWolfeResidual D
+  + markovMixing D
+f4-frank-wolfe-jensen-rounding-kkt-markov-bound D =
+  ≤-trans
+    (jensenBound D)
+    (≤-trans
+      (roundingKKTBound D)
+      (≤-trans
+        (kktFrankWolfeBound D)
+        (stationaryMarkovBound D)))
+
+record ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem : Set₁ where
+  constructor connectedF4FrankWolfeJensenRoundingKKTMarkovTheorem
+  field
+    f4FrankWolfe :
+      ConnectedF4FrankWolfeKKTTheorem
+    stationaryMarkovWalrasian :
+      MarkovStationaryWalrasianCompositionTheorem
+    certificate :
+      F4FrankWolfeJensenRoundingKKTMarkovData
+    connectedBound :
+      regret certificate
+      ≤
+      jensenGap certificate
+      + roundingBias certificate
+      + kktResidual certificate
+      + frankWolfeResidual certificate
+      + markovMixing certificate
+
+open ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem public
+
+connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem :
+  (C : ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem) →
+  regret (certificate C)
+  ≤
+  jensenGap (certificate C)
+  + roundingBias (certificate C)
+  + kktResidual (certificate C)
+  + frankWolfeResidual (certificate C)
+  + markovMixing (certificate C)
+connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem C =
+  connectedBound C
+
+
+------------------------------------------------------------------------
+-- Promotion boundary:
+-- the Jensen/minimax regret surface is not a standalone optimizer theorem.
+-- It is graph-complete only through the recurrent scan, stationary Markov
+-- fixed-point/Walrasian interface, and KKT absorbing-class certificate.
+-- A concrete Jensen inequality, constraint qualification, rounding model,
+-- and stationary-law witness remain required before this becomes a proved
+-- numeric regret theorem.
+------------------------------------------------------------------------
