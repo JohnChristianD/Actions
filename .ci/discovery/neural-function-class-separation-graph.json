@@ -59,6 +59,10 @@
     {
       "node": "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
       "role": "connected Lion descent/KKT extension of the Jensen/minimax regret, rounding-bias, stationary-Markov optimizer boundary"
+    },
+    {
+      "node": "ConnectedF4FrankWolfeKKTTheorem",
+      "role": "connected F4 finite recurrent optimizer composition with a Frank-Wolfe descent/gap and KKT certificate"
     }
   ],
   "edges": [
@@ -136,6 +140,21 @@
       "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
       "F_full_connected",
       "the Lion-extended optimizer-regret boundary is admitted only through the full connected composition"
+    ],
+    [
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "ConnectedF4FrankWolfeKKTTheorem",
+      "exact F4 recurrent composition is the state-side dependency of the Frank-Wolfe/KKT certificate"
+    ],
+    [
+      "ConnectedF4FrankWolfeKKTTheorem",
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "Frank-Wolfe is admitted as an optimizer-specific descent/gap seam, not a disconnected theorem"
+    ],
+    [
+      "FiniteFunctionExactIsomorphismTransportTheorem",
+      "FiniteMaxwellGRUExactRepresentationCandidate",
+      "finite exact-function transport supplies the representation mechanism; Maxwell semantics remain an explicit proof obligation"
     ]
   ],
   "separation_obligation": [
@@ -185,7 +204,9 @@
     "q_log_boundary": "The q-log/Tsallis component is a semantic operation in the current learner state. No repository theorem currently derives a complexity-class change from it.",
     "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power.",
     "optimizer_regret_boundary": "Jensen/minimax regret plus rounding bias plus KKT residual plus stationary Markov mixing is represented conditionally as R ≤ J + B + K + M; no unconditional numeric regret rate is claimed.",
-    "optimizer_regret_boundary_lion": "Lion is represented conditionally by an explicit descent/stationarity residual L, giving R ≤ J + B + K + L + M. Literature-backed Lion rates are not imported as Agda facts; the concrete update, assumptions, and analytic proof remain promotion obligations."
+    "optimizer_regret_boundary_lion": "Lion is represented conditionally by an explicit descent/stationarity residual L, giving R ≤ J + B + K + L + M. Literature-backed Lion rates are not imported as Agda facts; the concrete update, assumptions, and analytic proof remain promotion obligations.",
+    "f4_frank_wolfe": "F4 remains finite/exact; Frank-Wolfe is represented by a supplied gap/descent/KKT certificate. No optimization library is added. The eventual connected regret extension is R ≤ J + B + K + L + W + M only after shared-state composition.",
+    "maxwell_scope": "The physics graph is deliberately restricted to Maxwell-admissible finite encodings. Exact finite representation is a computability claim about finite functions, not a claim that finite GRUs solve the continuous Maxwell PDEs without discretization/semantics."
   },
   "pregraphed_candidates": [
     {
@@ -240,6 +261,33 @@
         "Convergence Analysis of the Lion Optimizer in Centralized and Distributed Settings, arXiv:2508.12327"
       ],
       "promotion_gate": "Promote only after a concrete Lion update model, descent/stationarity lemma, smoothness/noise assumptions, KKT constraint qualification, rounding-bias bound, Jensen/minimax duality witness, and stationary-Markov fixed-point/mixing witness are jointly instantiated and kernel-checked."
+    },
+    {
+      "name": "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "ConnectedF4FrankWolfeKKTTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+        "ConnectedF4FrankWolfeKKTTheorem",
+        "ConnectedJensenMinimaxRegretOptimizerTheorem"
+      ],
+      "distinction": "F4 is the exact finite recurrent optimizer component; Frank-Wolfe contributes a conditional gap/descent certificate that can feed the existing Jensen/rounding/KKT/Markov optimizer boundary.",
+      "quantitative_contract": "FWgap ≤ D_F4 + K; eventual regret seam R ≤ J + B + K + L + W + M only after a shared-state composition is proved.",
+      "promotion_gate": "Require a concrete Frank-Wolfe update, objective/feasible-set assumptions, gap-to-KKT implication, F4 state compatibility, rounding/Jensen witnesses, and stationary-Markov witness."
+    },
+    {
+      "name": "FiniteMaxwellGRUExactRepresentationCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "FiniteFunctionExactIsomorphismTransportTheorem",
+        "FiniteMaxwellGRUExactRepresentationCandidate"
+      ],
+      "distinction": "Finite exact GRU representation is restricted to finite encodings of Maxwell-admissible update data; it does not add non-Maxwell physical laws or claim a proof of the continuous Maxwell PDEs.",
+      "quantitative_contract": "Exact finite transition/function representation under an explicitly supplied finite Maxwell state/input/output encoding.",
+      "promotion_gate": "Define the finite Maxwell state semantics, discrete Maxwell constraints/update, exact encoding/decoding maps, and prove GRU conjugacy without adding physical laws."
     }
   ],
   "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
@@ -311,14 +359,7 @@
       "membership": "An explicit Agda witness f together with a proof f in F_full_connected that traverses the full connected composition.",
       "nonrepresentability": "An explicit Agda proof f notin F_base; naming a candidate witness without this proof does not establish separation."
     },
-    "future_admission_gate": [
-      "pre-graphed Agda proposition exists",
-      "theorem_graph_search discovers a path through the full connected composition",
-      "theorem_monolith_egraph_sync discovers the same path",
-      "the inclusion and nonrepresentability witness obligations are discharged",
-      "only then may status change from NOT_ESTABLISHED to SEPARATED",
-      "optimizer-specific candidates must identify their descent/stationarity residual and a real consuming connected theorem; literature alone does not upgrade candidate status"
-    ],
+    "future_admission_gate": "pre-graphed Agda proposition exists,theorem_graph_search discovers a path through the full connected composition,theorem_monolith_egraph_sync discovers the same path,the inclusion and nonrepresentability witness obligations are discharged,only then may status change from NOT_ESTABLISHED to SEPARATED,optimizer-specific candidates must identify their descent/stationarity residual and a real consuming connected theorem; literature alone does not upgrade candidate status; optimizer candidates such as F4/Frank-Wolfe must have a real consuming connected theorem; physics candidates must name their exact finite encoding and physical-law scope.",
     "complete_graph_contract": {
       "new_theorem_entry": "Every future theorem must name one existing composed parent, expose an actual Agda dependency into that parent, and be discovered by theorem_graph_search and theorem_monolith_egraph_sync.",
       "disconnected_rule": "No direct dependency means no strict separation status. Promote only when an existing composed theorem consumes the theorem's semantics; otherwise keep it as a foundational proof-surface record.",
@@ -992,6 +1033,27 @@
         "Agda --safe composition"
       ],
       "no_synthetic_edge": true
+    },
+    {
+      "name": "F4FrankWolfeMaxwellFiniteRepresentationCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+        "ConnectedF4FrankWolfeKKTTheorem",
+        "FiniteMaxwellGRUExactRepresentationCandidate"
+      ],
+      "candidate_statement": "Compose the exact finite F4 recurrent optimizer with a Frank-Wolfe gap/KKT seam while restricting the represented physics vocabulary to finite Maxwell-admissible transitions.",
+      "required_certificates": [
+        "F4 exact recurrent composition",
+        "Frank-Wolfe update and feasible set",
+        "gap/descent to KKT lemma",
+        "finite Maxwell state semantics",
+        "exact finite encoding/conjugacy",
+        "shared objective and state"
+      ],
+      "no_synthetic_edge": true
     }
   ],
   "transformative_recent_commits_since_graph_contract": [
@@ -1118,6 +1180,8 @@
     "strict_invariant": "Only F_base -> full connected composition -> F_full_connected participates in strict function-class separation.",
     "upgrade_gate": "SEPARATED requires explicit resource-preserving inclusion, a connected witness, and canonical baseline nonrepresentability.",
     "novel_candidate_rule": "New exotic candidates are pre-graphed only when they have an explicit parent/path and literature-motivated algebraic shape; candidate status never substitutes for an Agda proposition or proof.",
-    "no_synthetic_edges": true
+    "no_synthetic_edges": true,
+    "f4_frank_wolfe": "Every future F4/Frank-Wolfe theorem must be downstream of the exact F4 recurrent composition and must terminate in a connected consumer; standalone gap/KKT claims remain dependencies.",
+    "maxwell": "Every future physics theorem must explicitly declare Maxwell-only scope, finite encoding, and exact representation/conjugacy; no extra physical law is admitted implicitly."
   }
 }
