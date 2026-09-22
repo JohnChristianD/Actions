@@ -5457,6 +5457,67 @@ exact-contract-computability-boundary-theorem =
 
 
 ------------------------------------------------------------------------
+-- 2026-09-22 emergent endogenous observation boundary.
+--
+-- The canonical Watkins target is an endogenous function of the exact
+-- learner state.  A left-invertible observation would preserve exact
+-- endogenous target readout, but the finite Int8 observation cannot be
+-- globally left-invertible because the canonical Nat-clock orbit is
+-- injective while every Int8 observation has a finite carrier.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousObservationBoundaryTheorem : Set₁ where
+  constructor canonicalEndogenousObservationBoundaryTheorem
+  field
+    exactOrbitEmbedding :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (s : C.CanonicalFullLearnerState)
+        {m n : Nat} →
+      C.iterateCanonical K m s ≡
+      C.iterateCanonical K n s →
+      m ≡ n
+    finiteObservationRecurrence :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (s : C.CanonicalFullLearnerState)
+        (observe : C.CanonicalFullLearnerState → C.Int8) →
+      ∃ m n →
+        m ≢ n ×
+        observe (C.iterateCanonical K m s) ≡
+        observe (C.iterateCanonical K n s)
+    noGlobalLeftInverse :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (s : C.CanonicalFullLearnerState)
+        (observe : C.CanonicalFullLearnerState → C.Int8)
+        (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      ¬ (∀ t → inverse (observe t) ≡ t)
+    endogenousTargetReadoutUnderLeftInverse :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (observe : C.CanonicalFullLearnerState → C.Int8)
+        (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+      ∀ s →
+      C.canonicalWatkinsTarget K s ≡
+      C.canonicalWatkinsTarget K (inverse (observe s))
+
+open CanonicalEndogenousObservationBoundaryTheorem public
+
+canonical-endogenous-observation-boundary-theorem :
+  CanonicalEndogenousObservationBoundaryTheorem
+canonical-endogenous-observation-boundary-theorem =
+  canonicalEndogenousObservationBoundaryTheorem
+    canonicalInfiniteStateOrbitEmbedding
+    (λ K s observe →
+      FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
+        canonical-finite-factor-recurrence-without-state-recurrence
+        (λ n → observe (C.iterateCanonical K n s)))
+    (λ K s observe inverse →
+      canonical-global-int8-left-inverse-impossibility-theorem K s
+        .noGlobalLeftInverse observe inverse)
+    (λ K observe inverse leftInverse s →
+      canonicalWatkinsTarget-endogenous-leftInverse
+        K observe inverse leftInverse s)
+
+------------------------------------------------------------------------
 -- 2026-09-22 graph-search requirement/subcomposition completion.
 ------------------------------------------------------------------------
 
