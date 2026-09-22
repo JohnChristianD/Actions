@@ -254,6 +254,25 @@ canonicalPolicy-learnerReplacement-composition K s (r ∷ rs) =
       K (applyLearnerReplacement r s) rs)
     (canonicalPolicy-learnerReplacement-invariant K s r)
 
+record CanonicalLearnerReplacementClosureTheorem : Set₁ where
+  constructor canonicalLearnerReplacementClosureTheorem
+  field
+    policyInvariant :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (rs : List C.LearnerReplacement) →
+      C.canonicalPolicy
+        K
+        (C.applyLearnerReplacements rs s)
+      ≡
+      C.canonicalPolicy K s
+
+canonical-learner-replacement-closure-theorem :
+  CanonicalLearnerReplacementClosureTheorem
+canonical-learner-replacement-closure-theorem =
+  canonicalLearnerReplacementClosureTheorem
+    C.canonicalPolicy-learnerReplacement-composition
+
 canonicalNormPair-afterFullStep-iterate :
   ∀ K n s →
   normPairWeightPlusOne
