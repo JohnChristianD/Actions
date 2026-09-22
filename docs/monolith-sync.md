@@ -126,6 +126,12 @@ The theorem graph now exposes `CanonicalFiniteObservationInformationBoundaryTheo
 
 This does not assert that every finite observation is useless for every target. It rules out exact left-invertible observation of the entire unbounded canonical orbit through `Int8`, and therefore rules out universal exact readout through that observation.
 
+## 2026-09-22 pre-graphed theorem completion gate
+
+The semantic-contract gate now requires the bounded-factor lift, finite-cycle isomorphism transport, operator composition, and finite-observation information-boundary theorem surfaces before the pure non-orange-bypass endpoint is accepted. These are graph endpoints over existing monolith declarations, not parallel proof modules.
+
+The four historical working branches are synchronized to the same canonical main commit after this gate update. Their refs remain only as names; they carry no divergent content.
+
 ## Branch consolidation
 
 `main` is the canonical integrated head. The three divergent branch heads were audited against their merge bases. Their meaningful additions were already represented in the canonical CI/Dhall surface or were retained as the Econlib stationary-Markov graph documentation. No branch-specific Agda theorem surface remains outside the two monoliths.
