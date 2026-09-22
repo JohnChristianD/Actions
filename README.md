@@ -503,3 +503,9 @@ The candidate is not a proved theorem. Admission requires an actual Agda direct 
 The graph now records `CanonicalEndogenousSignOptimizerAffineReplacementQuotientGRUExpressivityTopologyNeighborhoodConjugacyCandidate`. This is a distinct non-tropical, non-automata route: the canonical policy is already invariant under arbitrary finite sequences of `NormPair` and F4 optimizer replacements, while the GRU/F4/NormPair transition is tied exactly into the connected Watkins scan. The candidate asks whether those replacement orbits admit an explicit Agda quotient whose output semantics and transition can then be transported through the existing bounded recurrent, neighborhood-separation, architecture-conjugacy, and endogenous observation-topology surfaces.
 
 It remains `CANDIDATE_NOT_PROVED`. The missing artifact is an actual quotient relation, policy factorization, transition compatibility, nontrivial quotient witness, and the existing inclusion/nonrepresentability obligations. `CanonicalLearnerReplacementClosureTheorem` is therefore treated as an absorbed semantic dependency rather than an independent separation claim.
+
+
+### Strict separation proof contract
+
+The canonical theorem surface now makes the three strict neural-function-class obligations explicit through `FunctionClassInclusion`, `StrictFunctionClassSeparation`, and `CanonicalStrictNeuralFunctionClassSeparationContract`: same input/output semantics, a connected-class witness, and canonical baseline nonrepresentability. These are proof contracts, not a fabricated concrete separation result. The sign/optimizer-affine candidates remain `CANDIDATE_NOT_PROVED` until a model-specific term inhabits the contract and Agda `--safe` verifies it.
+
