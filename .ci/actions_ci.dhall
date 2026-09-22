@@ -353,6 +353,7 @@ JSON
     ArchitecturePreservingCanonicalRNNLMIsomorphism
     CanonicalExactRNNLMObservationTopologyCapabilityTheorem
     CanonicalTokenVocabularyUpperBoundTheorem
+    CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
     CanonicalExactRNNLMCapabilitySubcompositionTheorem
     CanonicalExactRNNLMObservationSubcompositionTheorem
     CanonicalExactTuringBoundaryMixtureTheorem
