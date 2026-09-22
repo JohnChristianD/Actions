@@ -55,6 +55,10 @@
     {
       "node": "ConnectedJensenMinimaxRegretOptimizerTheorem",
       "role": "connected Jensen/minimax regret, rounding-bias, KKT, and stationary-Markov optimizer boundary"
+    },
+    {
+      "node": "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "role": "connected Lion descent/KKT extension of the Jensen/minimax regret, rounding-bias, stationary-Markov optimizer boundary"
     }
   ],
   "edges": [
