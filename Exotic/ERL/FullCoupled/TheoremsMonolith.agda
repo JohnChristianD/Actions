@@ -5218,6 +5218,8 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
       FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
     finiteObservationInformationBoundary :
       CanonicalFiniteObservationInformationBoundaryTheorem
+    endogenousObservationBoundary :
+      CanonicalEndogenousObservationBoundaryTheorem
 
 open CanonicalPureNonOrangeBypassCompletionTheorem public
 
@@ -5234,6 +5236,7 @@ canonical-pure-non-orange-bypass-completion-theorem =
     canonical-bounded-factor-lift-theorem
     canonical-finite-factor-recurrence-without-state-recurrence
     canonical-finite-observation-information-boundary-theorem
+    canonical-endogenous-observation-boundary-theorem
 
 
 ------------------------------------------------------------------------
@@ -5511,8 +5514,10 @@ canonical-endogenous-observation-boundary-theorem =
         canonical-finite-factor-recurrence-without-state-recurrence
         (λ n → observe (C.iterateCanonical K n s)))
     (λ K s observe inverse →
-      canonical-global-int8-left-inverse-impossibility-theorem K s
-        .noGlobalLeftInverse observe inverse)
+      CanonicalGlobalInt8LeftInverseImpossibilityTheorem.noGlobalLeftInverse
+        (canonical-global-int8-left-inverse-impossibility-theorem K s)
+        observe
+        inverse)
     (λ K observe inverse leftInverse s →
       canonicalWatkinsTarget-endogenous-leftInverse
         K observe inverse leftInverse s)
