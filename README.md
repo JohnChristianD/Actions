@@ -386,23 +386,49 @@ The next scheduled run will account for every commit after this bootstrap point.
 
 ## Strict neural-function-class separation
 
-The repository now carries a strict separation criterion graph at
-`.ci/discovery/neural-function-class-separation-graph.json`.
+The strict separation graph is intentionally a graph of one object only: the full connected composition. It does not treat attention, Haar orthogonality, recurrence, factor recurrence, optimizer coupling, or observation topology as separate function-class wins.
 
-The graph deliberately distinguishes composition from strict neural-function-class
-expressivity. A strict result requires both:
+The canonical path is:
 
-1. an inclusion of the baseline class into the attention/Haar-extended class; and
-2. a concrete function in the extended class together with a proof that the
-   function is not in the baseline class.
+```
+F_base
+  -> CanonicalFullLearnerConnectedScanConjugacyTheorem
+  -> CanonicalHaarSparsemaxFullStateClosureTheorem
+  -> CanonicalBoundedFactorLiftTheorem
+  -> FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+  -> CanonicalEndogenousObservationBoundaryTheorem
+  -> CanonicalEndogenousTopologicalObservationBoundaryTheorem
+  -> CanonicalFiniteObservationInformationBoundaryTheorem
+  -> CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+  -> CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+  -> F_full_connected
+```
 
-The existing Haar/attention theorems establish exact composition and closure
-surfaces, while `FiniteFactorRecurrenceWithoutStateRecurrenceTheorem` establishes
-that a finite factor can recur without recurrence of the exact full state. Neither
-fact alone supplies the required nonrepresentability witness. The current graph
-therefore terminates at `NOT_ESTABLISHED`, not at a claimed separation.
+The component theorems remain valid Agda surfaces, but the separation graph promotes them into composed surfaces rather than giving them independent separation status. S4PlusS5RecurrentScanTheorem is present on the theorem surface and is absorbed into the connected learner/scan composition; the full learner theorem also exposes the exact Watkins target flow through the recurrent and F4/L2 optimizer steps.
 
-Promotion to `SEPARATED` requires the witness and nonrepresentability proof to be
-added to the canonical Agda theorem surface and then discovered by both graph
-search and theorem/e-graph synchronization. This avoids treating architectural
-novelty, orthogonality, or factor recurrence as a strict function-class theorem.
+A strict result still requires all three semantic obligations: the baseline must embed into the full connected class, a concrete function must be constructed through the entire path, and a canonical Agda theorem must prove that witness is not representable by the baseline. The repository currently has the connected composition and the factor-recurrence mechanism, but it does not yet have that nonrepresentability witness. Therefore the graph remains NOT_ESTABLISHED.
+
+### Factor recurrence, Nat algebra, regularization, and generalization
+
+A useful mathematical schema is:
+
+```
+(Nat,+,·)
+    -> regularized parameter dynamics
+    -> bounded/stable factor image q(S)
+    -> finite-factor recurrence
+    -> optional generalization/stability bound
+```
+
+The important point is that Nat being an unbounded semiring does not itself imply recurrence. The recurrence theorem needs a separate boundedness, invariant-set, contraction, quotient-finiteness, or equivalent certificate on the observed factor. A regularizer can be a candidate source of that certificate, but only after its actual objective is connected to a trajectory bound or stability inequality.
+
+For example, if a regularized update can be proved to satisfy a factor contraction such as
+
+```
+d_F(q(T_theta(s)), q(T_theta(s'))) <= rho d_F(q(s), q(s'))
+with rho < 1,
+```
+
+then a finite/invariant factor space can yield eventual recurrence. A separate stability or complexity argument can then address generalization; recurrence alone is not a generalization guarantee. Empirical/theoretical literature supports the broader separation between recurrent stability, regularization, and overfitting/generalization rather than identifying them as the same theorem.
+
+This relationship is recorded as a candidate in .ci/discovery/neural-function-class-separation-graph.json; it is not promoted to an Agda theorem until the repository has an explicit regularizer, factor map, and quantitative certificate.
