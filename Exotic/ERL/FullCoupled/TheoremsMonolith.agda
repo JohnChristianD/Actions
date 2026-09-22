@@ -1060,6 +1060,78 @@ recurrentWord-observation-collision-impossible
 -- S5 remain broader architectural families than this abstract law.
 ------------------------------------------------------------------------
 
+record RecurrentScanConjugacyTheorem (State Input : Set) : Set₁ where
+  constructor recurrentScanConjugacyTheorem
+  field
+    localConjugacy :
+      (replace : State → State)
+      (step : State → Input → State) →
+      (∀ (s : State) (x : Input) →
+        replace (step s x) ≡ step (replace s) x)
+      → State
+      → List Input
+      → Nat
+      → State
+      → Set
+    scanLiftsConjugacy :
+      (replace : State → State)
+      (step : State → Input → State) →
+      (h :
+        ∀ (s : State) (x : Input) →
+        replace (step s x) ≡ step (replace s) x) →
+      ∀ (xs : List Input) (n : Nat) (s : State) →
+        replace
+          (C.recurrentPrefixState
+            (C.recurrentNetwork step)
+            xs n s)
+        ≡
+        C.recurrentPrefixState
+          (C.recurrentNetwork step)
+          xs n
+          (replace s)
+
+recurrentPrefix-scan-lifts-conjugacy :
+  ∀ {State Input : Set}
+  (replace : State → State)
+  (step : State → Input → State)
+  (h :
+    ∀ (s : State) (x : Input) →
+    replace (step s x) ≡ step (replace s) x) →
+  ∀ (xs : List Input) (n : Nat) (s : State) →
+    replace
+      (C.recurrentPrefixState
+        (C.recurrentNetwork step)
+        xs n s)
+    ≡
+    C.recurrentPrefixState
+      (C.recurrentNetwork step)
+      xs n
+      (replace s)
+recurrentPrefix-scan-lifts-conjugacy replace step h xs zero s = refl
+recurrentPrefix-scan-lifts-conjugacy replace step h xs (suc n) s =
+  trans
+    (recurrentPrefix-scan-lifts-conjugacy
+      replace
+      step
+      h
+      xs
+      n
+      (step s (C.lookupInput xs n)))
+    (cong
+      (λ q →
+        C.recurrentPrefixState
+          (C.recurrentNetwork step)
+          xs n
+          q)
+      (h s (C.lookupInput xs n)))
+
+canonical-recurrent-scan-conjugacy-theorem :
+  RecurrentScanConjugacyTheorem C.GRUState C.Int8
+canonical-recurrent-scan-conjugacy-theorem =
+  recurrentScanConjugacyTheorem
+    (λ replace step h → replace)
+    (λ replace step h xs n s → recurrentPrefix-scan-lifts-conjugacy replace step h xs n s)
+
 record S4PlusS5RecurrentScanTheorem (State Input : Set) : Set₁ where
   constructor s4PlusS5RecurrentScanTheorem
   field
