@@ -5550,25 +5550,38 @@ record CanonicalMonotoneEnergyStationarySubcompositionTheorem : Set₁ where
   constructor canonicalMonotoneEnergyStationarySubcompositionTheorem
   field
     stationaryConvergenceContract :
+      ∀ {Distribution Value : Set}
+        (_≤_ : Value → Value → Set)
+        (P : Distribution → Distribution)
+        (V : Distribution → Value)
+        (μ : Nat → Distribution)
+        (μ∞ : Distribution)
+        (Converges : (Nat → Distribution) → Distribution → Set) →
+      (∀ n → μ (suc n) ≡ P (μ n)) →
+      (∀ n → V (μ (suc n)) ≤ V (μ n)) →
+      Converges μ μ∞ →
+      (Converges μ μ∞ → P μ∞ ≡ μ∞) →
       MonotoneConvergenceToStationaryDistributionTheorem
-        Nat
-        Nat
+        Distribution
+        Value
         _≤_
-        (λ x → x)
-        (λ _ → zero)
-        (λ _ → zero)
-        zero
-        (λ _ _ → ⊤)
+        P
+        V
+        μ
+        μ∞
+        Converges
 
 canonical-monotone-energy-stationary-subcomposition-theorem :
   CanonicalMonotoneEnergyStationarySubcompositionTheorem
 canonical-monotone-energy-stationary-subcomposition-theorem =
   canonicalMonotoneEnergyStationarySubcompositionTheorem
-    (monotoneConvergenceToStationaryDistributionTheorem
-      (λ n → refl)
-      (λ n → refl)
-      tt
-      (λ _ → refl))
+    (λ _≤_ P V μ μ∞ Converges transitionLaw monotoneLyapunov
+       convergence limitPreserved →
+      monotoneConvergenceToStationaryDistributionTheorem
+        transitionLaw
+        monotoneLyapunov
+        convergence
+        limitPreserved)
 
 record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
   constructor canonicalBoundednessPEBoundarySubcompositionTheorem
