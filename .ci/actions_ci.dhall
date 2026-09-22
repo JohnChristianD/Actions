@@ -326,6 +326,13 @@ JSON
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
     CanonicalNatClockLyapunovSeparationTheorem
+    CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+    canonical-global-int8-left-inverse-impossibility-theorem
+    MonotoneConvergenceToStationaryDistributionTheorem
+    CanonicalPersistentExcitationRequirementTheorem
+    canonical-persistent-excitation-requirement-theorem
+    ExactContractComputabilityBoundaryTheorem
+    exact-contract-computability-boundary-theorem
     canonical-nat-clock-lyapunov-separation-theorem
     CanonicalExactTuringBoundaryMixtureTheorem
     canonical-exact-turing-boundary-mixture-theorem
