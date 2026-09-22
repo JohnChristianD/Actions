@@ -73,3 +73,33 @@ That result gives a concrete example of why Markov dependence and stationary bia
 6. Only then promote the candidate from `CANDIDATE_NOT_PROVED` to a proved quantitative regret theorem.
 
 No standalone Jensen, rounding, KKT, or stationary-Markov node is treated as a final theorem in the strict graph. Each is a dependency of the connected optimizer theorem.
+
+
+## Lion optimization/descent/KKT extension
+
+The connected optimizer boundary now reserves an explicit Lion-specific residual term:
+
+`R <= J + B + K + L + M`
+
+where `L` is a supplied Lion descent/stationarity contribution. This is deliberately a proof input, not an imported convergence theorem.
+
+SciSpace identified three directly relevant results:
+
+- Dong, Li, and Lin, *Convergence Rate Analysis of LION* (2024), arXiv:2411.07724: the paper analyzes Lion as a constrained optimization method and reports convergence to a KKT point at rate `O(sqrt(d) K^(-1/4))` in an `l1`-gradient measure; it also gives an unconstrained critical-point result. https://arxiv.org/abs/2411.07724
+- Wang, *Lions and Muons: Optimization via Stochastic Frank-Wolfe* (2025), arXiv:2506.04192: Lion and Muon with weight decay are interpreted as stochastic Frank-Wolfe instances; convergence is measured by the Frank-Wolfe gap, and under a norm constraint this gap implies convergence to a KKT point. https://arxiv.org/abs/2506.04192
+- Jiang and Zhang, *Convergence Analysis of the Lion Optimizer in Centralized and Distributed Settings* (2025), arXiv:2508.12327: reports `O(d^(1/2) T^(-1/4))` for standard Lion under stated assumptions and `O(d^(1/2) T^(-1/3))` for a variance-reduced variant, with distributed/communication-efficient variants. https://arxiv.org/abs/2508.12327
+
+These results strengthen the research basis for the optimizer seam, but they do not automatically prove the repository's connected theorem. In particular, the repository still needs one shared objective/state representation, an explicit Lion update rule, the exact smoothness/noise assumptions used by the selected convergence result, a descent or stationarity inequality that yields `L`, and a KKT constraint-qualification/multiplier witness compatible with the existing KKT record.
+
+The graph therefore contains `ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem` and `CanonicalLionSignMomentumKKTDescentBoundaryCandidate` as `CANDIDATE_NOT_PROVED`. They are not standalone separation theorems. The Lion seam is consumed by the connected Jensen/minimax/rounding/KKT/Markov optimizer boundary, preserving the no-disconnected-theorem rule.
+
+### Updated open obligations
+
+1. Instantiate the Jensen/minimax duality witness.
+2. Instantiate the rounding map and quantitative bias bound.
+3. Instantiate the KKT constraint qualification and stationarity/multiplier witness.
+4. Instantiate the Lion update and descent/stationarity certificate producing `L`.
+5. Prove compatibility between the Lion stationarity measure and the repository KKT residual.
+6. Supply stationary Markov fixed-point existence/uniqueness and quantitative mixing/error information.
+7. Prove all terms use the same objective, state, horizon, and rounding representation.
+8. Only then promote the connected candidate to a proved quantitative regret theorem.
