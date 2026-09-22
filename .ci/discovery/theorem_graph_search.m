@@ -96,6 +96,16 @@ graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+:- pred graph_connected_lion_jensen_minimax_regret_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_lion_jensen_minimax_regret_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+        Laws,
+        Plan).
+
 all_generated_plans_valid(Laws, Plans) :-
     all_valid_plans(Plans, Laws, yes).
 
