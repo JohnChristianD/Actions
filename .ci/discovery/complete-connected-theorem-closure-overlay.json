@@ -1,0 +1,51 @@
+{
+  "graph": "complete-connected-theorem-closure-overlay",
+  "status": "CANDIDATE_NOT_PROVED",
+  "strict_graph_invariant": "Only real Agda dependencies create graph edges; conceptual similarity never creates a dependency.",
+  "emergent_endogenous_theorem": {
+    "name": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+    "dependencies": [
+      "CanonicalGlobalTokenConjugacyTheorem",
+      "CanonicalTokenVocabularyUpperBoundTheorem",
+      "CanonicalExactRNNLMTheorem",
+      "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
+      "CanonicalExactRNNLMObservationSubcompositionTheorem",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+    ],
+    "promotion_gate": [
+      "Add an actual Agda record consuming the listed theorem records.",
+      "Type-check the record with Agda --safe.",
+      "Require theorem_graph_search to discover the same dependency path.",
+      "Require theorem_monolith_egraph_sync to discover the same path.",
+      "Keep strict function-class separation status NOT_ESTABLISHED until inclusion, connected witness membership, and baseline nonrepresentability are proved."
+    ]
+  },
+  "foundational_zero_dependency_policy": {
+    "rule": "Do not fabricate edges for problem specifications or foundational records.",
+    "examples": [
+      "BairdSevenStarProblem",
+      "NonIIDMarkovWalrasianProblem",
+      "Majority3ShapleyEquilibrium"
+    ],
+    "handling": "They remain proof-surface/problem records until a real composed theorem consumes their semantics."
+  },
+  "vocabulary": {
+    "canonical_token": "Fin 256",
+    "carrier_equivalence": "CanonicalToken <-> Int8",
+    "latin_condition": "A Latin tokenizer is representable exactly when its token inventory is no larger than 256; this is not an unrestricted Unicode claim."
+  },
+  "nat_successor": {
+    "totality": "closed",
+    "remaining_obligation": "model-specific representation/transition successor compatibility",
+    "finite_sequence_boundary": "requires an explicit finite-position boundary or terminal convention"
+  },
+  "sequence_container": {
+    "Data.List": "appropriate for variable-length finite sequences and concatenation",
+    "Vec_Fin": "cleaner for fixed-length indexed sequence proofs"
+  },
+  "inductive_bias": "causal recurrent sequential composition; not intrinsically hierarchical, convolutional, or symmetric",
+  "future_admission": "Every future theorem must enter through a real composed parent or remain foundational outside strict separation."
+}
