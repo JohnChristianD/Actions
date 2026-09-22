@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 module Exotic.ERL.FullCoupled.ExactBoundedFactorLiftTheorems where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; sym)
 open import Data.Nat using (Nat; suc)
 open import Data.Fin using (toℕ)
 open import Data.Fin.Properties using (toℕ-bounded)
@@ -78,8 +78,8 @@ finiteFactor-recurrence-lift-impossible :
     ⊥
 finiteFactor-recurrence-lift-impossible
   orbit factor factorInjectiveOnOrbit {n} {p} eq =
-  nat-suc-not-equal
-    (factorInjectiveOnOrbit eq)
+  C.plus-suc-not-self n p
+    (sym (factorInjectiveOnOrbit eq))
 
 ------------------------------------------------------------------------
 -- Endogenous bounded-factor / exact-injective-lift theorem.
