@@ -454,6 +454,8 @@ graph_required_theorems = [
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
+    "ConnectedJensenMinimaxRegretOptimizerTheorem",
+    "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
