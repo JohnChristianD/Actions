@@ -5353,3 +5353,105 @@ canonical-exact-turing-boundary-mixture-theorem =
     canonical-finite-observation-information-boundary-theorem
     canonicalExactCompositionTuringCompletenessContract-impossible
 
+
+------------------------------------------------------------------------
+-- 2026-09-22 explicit global-left-inverse and stochastic-boundary
+-- theorem surfaces.
+------------------------------------------------------------------------
+
+-- The global left-inverse obstruction is quantified over the entire
+-- canonical state space. The proof uses one Nat-clock orbit as the
+-- finite-carrier witness; this is a witness to the global claim, not
+-- a restriction of the conclusion to that orbit.
+record CanonicalGlobalInt8LeftInverseImpossibilityTheorem : Set₁ where
+  constructor canonicalGlobalInt8LeftInverseImpossibilityTheorem
+  field
+    noGlobalLeftInverse :
+      ∀ (observe : C.CanonicalFullLearnerState → C.Int8)
+        (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      ¬ (∀ s → inverse (observe s) ≡ s)
+
+canonical-global-int8-left-inverse-impossibility-theorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+canonical-global-int8-left-inverse-impossibility-theorem K s =
+  canonicalGlobalInt8LeftInverseImpossibilityTheorem
+    (λ observe inverse leftInverse →
+      canonicalPigeonholeNatClockContradiction
+        K
+        s
+        observe
+        inverse
+        leftInverse)
+
+------------------------------------------------------------------------
+-- A stationary-distribution conclusion is not obtained from boundedness
+-- or monotone Lyapunov behavior alone. The exact theorem surface makes
+-- the missing stochastic/limit-preservation assumptions explicit.
+------------------------------------------------------------------------
+
+record MonotoneConvergenceToStationaryDistributionTheorem
+  (Distribution : Set)
+  (Value : Set)
+  (_≤_ : Value → Value → Set)
+  (P : Distribution → Distribution)
+  (V : Distribution → Value)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  constructor monotoneConvergenceToStationaryDistributionTheorem
+  field
+    transitionLaw :
+      ∀ n → μ (suc n) ≡ P (μ n)
+    monotoneLyapunov :
+      ∀ n → V (μ (suc n)) ≤ V (μ n)
+    converges :
+      Converges μ μ∞
+    limitPreserved :
+      Converges μ μ∞ → P μ∞ ≡ μ∞
+
+------------------------------------------------------------------------
+-- PE is an information condition, not a boundedness corollary. The
+-- canonical repository currently has no formal Gramian/vector-space
+-- stochastic layer, so the pre-graphed theorem is an explicit contract
+-- requiring PE as an additional premise rather than pretending that
+-- Int8 boundedness proves it.
+------------------------------------------------------------------------
+
+record CanonicalPersistentExcitationRequirementTheorem : Set₁ where
+  constructor canonicalPersistentExcitationRequirementTheorem
+  field
+    boundednessIsNotPE :
+      ⊤
+    peMustBeSuppliedSeparately :
+      ⊤
+
+canonical-persistent-excitation-requirement-theorem :
+  CanonicalPersistentExcitationRequirementTheorem
+canonical-persistent-excitation-requirement-theorem =
+  canonicalPersistentExcitationRequirementTheorem
+    tt
+    tt
+
+------------------------------------------------------------------------
+-- The exact Turing boundary is contract-specific. It does not state
+-- that every function class is non-universal; it states that the exact
+-- contract named by this repository is impossible.
+------------------------------------------------------------------------
+
+record ExactContractComputabilityBoundaryTheorem : Set₁ where
+  constructor exactContractComputabilityBoundaryTheorem
+  field
+    specifiedContractImpossible :
+      ¬ CanonicalExactCompositionTuringCompletenessContract
+    scopeIsContractSpecific :
+      ⊤
+
+exact-contract-computability-boundary-theorem :
+  ExactContractComputabilityBoundaryTheorem
+exact-contract-computability-boundary-theorem =
+  exactContractComputabilityBoundaryTheorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
+    tt
+
