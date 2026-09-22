@@ -1,93 +1,208 @@
-# Actions — Exact Recurrent Learner, RNN-LM, and Theorem-Graph Monograph
+# Actions — Exact Recurrent Learner and Theorem-Graph Monograph
 
-This repository develops a small, exact formal system for recurrent learning, sequence models, finite observation boundaries, optimizer composition, and theorem discovery. The canonical executable learner and canonical theorem surface are intentionally separated: Agda is the proof authority, Mercury performs semantic extraction and graph search, Dhall declares the CI lanes, and Nix supplies reproducible composition.
+This repository formalizes a bounded recurrent learner, exact sequence-model semantics, finite-observation information boundaries, optimizer composition, and theorem discovery. The executable learner and theorem surface are separate: Agda is the proof authority; Mercury extracts semantic laws and searches dependency paths; Dhall declares the CI contract; Nix provides reproducible build composition.
 
-The central methodological rule is simple: exact statements remain exact. A graph candidate is not promoted merely because its name sounds plausible; its dependency path must be exposed and its Agda statement must type-check. The repository therefore treats theorem discovery as a search problem over already-declared semantic laws, with A*-style cost guidance and e-graph equality saturation used as discovery/extraction machinery rather than as a replacement for proof.
+The governing rule is: a graph candidate is not a theorem. A candidate must be reachable from declared semantic laws and then accepted by the Agda type checker. A* and e-graphs guide discovery and extraction; they do not replace proof.
 
-## CORL / continual and online learning perspective
+## What each language does
 
-The formal learner is a recurrent state machine with explicit state, recurrent scans, policy readout, and optimizer state. This makes continual/online-learning questions concrete: what information is retained, which transformations are policy-invariant, which observations lose information, and which exact compositions remain transportable?
+**Agda — semantic and proof authority.** The canonical learner semantics live in `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`; the active theorem surface lives in `TheoremsMonolith.agda`. Agda's dependent type theory makes propositions and proofs part of the same typed language. With `--safe`, Agda disables postulates, unfinished proofs, unchecked termination, unsafe positivity/universe options, and other features that could undermine consistency. citeturn1search0turn1search2
 
-The strongest conclusions are structural rather than empirical. The canonical state evolution has exact clock growth and excludes nontrivial finite cycles. Exact finite-state observations can recur even when the full state does not. A global exact left inverse from the finite observation carrier is therefore blocked on the unbounded exact orbit.
+**Mercury — graph-search and semantic extraction engine.** The `.ci/discovery/*.m` programs extract named semantic laws, represent dependency edges, run deterministic/semideterministic searches, build e-graph candidates, and use A*-style cost guidance. Mercury's type, mode, and determinism declarations are compiler-checked; its formal semantics require legal programs to satisfy those declarations. citeturn0search3turn0search0turn0search6
 
-## Informatics and formal semantics
+**Dhall — declarative CI policy.** `.ci/actions_ci.dhall` is not the theorem prover. It describes which verification lanes, commands, and graph gates CI should run. Dhall is total and strongly typed, with evaluation that terminates for well-typed expressions and no arbitrary general-purpose side effects. That makes it useful for expressing a machine-checkable automation policy without turning the policy language into another general-purpose execution authority. citeturn0search2turn0search9
 
-The repository treats recurrent prefixes as algebraic objects. A recurrent prefix induces an endomorphism; list concatenation is translated into composition under the chosen execution convention; componentwise products preserve the same monoid law. Exact state isomorphisms transport equality, disequality, iteration conjugacy, and finite-cycle exclusion.
+**Nix — reproducibility and environment composition.** Nix supplies the reproducible package/build layer around the language toolchains and checks. It should be viewed as build-environment authority, not mathematical proof authority and not the theorem-discovery engine.
 
-## Neuromorphic interpretation
+**GitHub Actions — execution substrate, not a proof language.** GitHub Actions runs the declared CI workflows in response to repository events. It can build and test the project, but a green workflow only means the configured checks passed; it does not make an unproved Agda proposition true. citeturn1search3turn1search8
 
-The recurrent learner can be read as a discrete event-driven dynamical system with bounded integer carriers and explicit recurrent state. This is a formal analogy, not a hardware claim. The topology layer is a genuine dependency: the endogenous topological observation boundary combines exact scan conjugacy, finite-cycle transport, and the information loss induced by a finite observation carrier.
+### What “CI declaration” means
 
-## Biostatistics and stochastic semantics
+“CI declaration” means the **Dhall description of the verification pipeline**: the set of lanes, commands, gates, and orchestration rules that CI is supposed to execute. It is a declarative specification of *what must be checked*, while GitHub Actions is the mechanism that actually schedules/runs those checks.
 
-Finite probability semantics are represented with exact natural-number weights and a positive total rather than introducing an unnecessary second analytic tower. Finite POMDP probability objects, exact transport, and belief-state update transport form a separate semantic seam.
+In this repository the distinction is:
 
-The stationary theorem surface is deliberately conditional: a stationary-limit theorem records a transition law, a convergence premise, and preservation of the limiting law. It does not smuggle a Lyapunov argument into the development. The MarkovStationary Walrasian material is likewise kept distinct from a general equilibrium-existence claim.
+```
+Dhall
+  │ declares verification lanes and gates
+  ▼
+GitHub Actions / runner
+  │ executes the declared checks
+  ▼
+Nix
+  │ supplies reproducible tool/build environment
+  ▼
+Agda + Mercury + auxiliary checks
+  │
+  ├── Agda: proves/checks theorem statements
+  └── Mercury: extracts/searches theorem dependencies
+```
 
-## Mathematical physics
+The important asymmetry is deliberate: **Dhall can say that Agda must pass; Dhall cannot prove the Agda theorem.**
 
-The finite recurrent carrier, exact orbit structure, endomorphism monoids, product composition, and topology/observation boundary provide a discrete dynamical-systems language. The repository does not infer physical laws from the learner; it isolates mathematical structures that also occur in discrete dynamics: trajectories, invariants, recurrence, conjugacy, finite projections, and stationary measures.
+## The Agda theorem relationship
 
-A deterministic finite cycle would admit a stationary probability witness on its cycle, but the canonical exact learner separately proves that its own full-state evolution has no nontrivial finite cycle. Stationarity and recurrence are therefore kept logically distinct.
+The canonical dependency architecture is:
 
-## Theoretical computer science
+```
+                         ┌──────────────────────────────┐
+                         │ CanonicalLearnerMonolith.agda│
+                         │ executable/state semantics   │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │ TheoremsMonolith.agda        │
+                         │ exact theorem declarations   │
+                         └──────────────┬───────────────┘
+                                        │
+                         Agda --safe    │ proof/type authority
+                                        ▼
+                 ┌──────────────────────────────────────────┐
+                 │ learner_semantic_extractor               │
+                 │ semantic-law extraction                   │
+                 └──────────────────┬───────────────────────┘
+                                    │
+                                    ▼
+                 ┌──────────────────────────────────────────┐
+                 │ theorem_graph_search.m                   │
+                 │ dependency search + A* + emergent paths │
+                 └──────────────────┬───────────────────────┘
+                                    │
+                                    ▼
+                 ┌──────────────────────────────────────────┐
+                 │ theorem_monolith_egraph_sync.m           │
+                 │ equality saturation + extraction gates   │
+                 └──────────────────┬───────────────────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ Dhall CI declaration │
+                         │ verification policy  │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         GitHub Actions / Nix
+                         execute the checks
+```
 
-The strongest computational boundary is exact rather than asymptotic. The canonical learner has a finite Int8 state carrier while its exact clock is unbounded. This yields pigeonhole obstructions to globally injective finite-state representations of the unbounded orbit and rules out the repository's specified exact one-step two-counter simulation contract.
+The arrow direction here is intentionally not “proof flows upward.” **Agda establishes the propositions; the discovery machinery reads those established declarations and searches for compositions.** A graph path discovered by Mercury/e-graphs still needs an Agda statement before it becomes proof.
 
-That statement is intentionally narrower than a universal claim about every possible notion of Turing completeness.
+## The current emergent endogenous result
 
-## RNN-LM capability surface
+The newest cross-domain endogenous composition is:
 
-The canonical token carrier has exact encode/decode inverses with Int8. The exact RNN-LM theorem, global token conjugacy, token prefix monoid law, logit-trace append law, shared sparsemax policy/weight surfaces, and architecture-preserving RNN-LM isomorphism are represented as formal capabilities rather than performance claims.
+```
+CanonicalExactRNNLMTheorem
+        │
+        ├── global token-LM composition
+        ├── architecture-preserving transport
+        │
+        ▼
+CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+        │
+        ├── endogenous observation boundary
+        ├── endogenous topology boundary
+        └── finite-information boundary
+        │
+        ▼
+CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+        ▲
+        │
+        ├── finite POMDP probability semantics
+        └── exact belief-update transport
+```
 
-The theorem graph now pre-graphs an exact RNN-LM observation/topology capability closure:
+This is an **emergent composition theorem**, not a new primitive axiom. Its novelty is in the dependency closure exposed by the graph: an exact RNN-LM capability surface is now connected to the endogenous finite-observation/topology boundary and to finite POMDP probability/belief transport.
 
-Exact RNN-LM → token conjugacy → architecture-preserving transport → endogenous observation → endogenous topology → finite-information boundary.
+## Theorem: how much vocabulary can this formulation store?
 
-Two lower-level RNN-LM subcompositions remain visible so graph search can choose their paths independently. They are promotion candidates until Agda --safe and the Mercury graph type-check them.
+For the particular canonical formulation, the answer is exact:
 
-The vocabulary result is similarly exact. CanonicalTokenVocabularyUpperBoundTheorem states an exact finite-carrier boundary for the canonical token alphabet. It is not a claim about the vocabulary size of arbitrary real-world language models.
+```
+CanonicalToken
+    ≡ Fin 256
+    ≡ Int8
 
-## nLab / category-theory / philosophy of structure
+therefore:
 
-The category-theoretic reading is intentionally modest. State representations behave like objects connected by isomorphisms; recurrent transitions behave like endomorphisms; exact conjugacy transports dynamical properties; recurrent prefixes form an action of a free monoid on the state space; product constructions lift componentwise actions.
+    |CanonicalToken| = 256
+```
 
-The philosophical lesson is methodological: preserve distinctions between object, representation, observation, and proof. An observation map is not the state itself. A transport theorem is not an existence theorem. A graph path is not a proof until its terminal Agda statement type-checks. An e-graph equality is a candidate semantic identification, not authority over the formal development.
+The monolith defines `CanonicalToken = Fin 256`, and the encode/decode functions are exact inverses against `Int8`. Therefore this formulation has **256 distinct canonical token symbols** in its formal vocabulary.
 
-## Monograph architecture
+That is a theorem about this formal carrier, not about arbitrary language models. It also does **not** mean the model can only represent 256 different sequences: the sequence type is `List CanonicalToken`, so there are arbitrarily long finite sequences over the 256-symbol alphabet. The vocabulary bound is 256 symbols; sequence-space cardinality is a different question.
 
-The development is organized around one canonical learner module and one canonical theorem monolith.
+The current `CanonicalTokenVocabularyUpperBoundTheorem` expresses the exact carrier equivalence. It should not be described as a statistical estimate or as a bound on real-world LLM vocabularies.
 
-- Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda — executable/state semantics.
-- Exotic/ERL/FullCoupled/TheoremsMonolith.agda — active exact theorem surface.
-- .ci/discovery/theorem_graph_search.m — semantic-law extraction and dependency search.
-- .ci/discovery/theorem_monolith_egraph_sync.m — e-graph synchronization and graph gates.
-- .ci/actions_ci.dhall — declarative CI orchestration.
-- docs/monolith-sync.md — synchronization and promotion notes.
+## Formal perspectives
 
-GitHub workflows are intended to run the declared checks on repository events; the workflow graph is an execution artifact, while the Agda theorem graph remains the semantic authority. GitHub documents workflow files under .github/workflows and the visualization graph for workflow dependencies. citeturn0search0turn0search3
+The learner has several deliberately separated mathematical readings.
+
+- **Continual/online learning:** explicit recurrent state, policy readout, optimizer state, and information-retaining/lossy observations.
+- **Informatics:** recurrent prefixes induce endomorphisms; composition gives the recurrent prefix monoid.
+- **Dynamical systems:** exact clock growth, cycle exclusion, conjugacy, finite-factor recurrence, and observation boundaries.
+- **Stochastic semantics:** exact finite probability masses, finite POMDP kernels, and belief-update transport.
+- **Theoretical computer science:** finite-carrier pigeonhole boundaries and the explicitly specified exact-computability contract.
+- **RNN-LM semantics:** finite token carrier, recurrent token processing, logit traces, sparsemax surfaces, token-LM composition, and architecture-preserving transport.
+
+These are formal structural correspondences. They are not claims that the learner is an empirical state-of-the-art language model, a physical system, a biological model, or a general equilibrium theorem.
+
+## Safety and suitability of the language stack for autonomous agents
+
+There is no defensible literature-wide theorem saying that these are the “safest languages overall” for autonomous agents. Safety is role-dependent.
+
+For **proof authority**, Agda's `--safe` mode is unusually strong because it explicitly rejects several mechanisms that can undermine consistency, including postulates, unfinished metas, unchecked termination, unsafe positivity, and inconsistent universe options. citeturn1search0turn1search2
+
+For **search/orchestration logic**, Mercury has a strong static contract around types, modes, and determinism, and its declarative semantics are explicitly specified. That is valuable for autonomous graph search because incorrect data-flow or solution-count assumptions can become compiler errors rather than comments. citeturn0search3turn0search0turn0search6
+
+For **configuration policy**, Dhall has an especially relevant safety profile: it is total rather than Turing-complete, and its type system rules out classes of evaluation failures before configuration is consumed. citeturn0search2
+
+Nix is valuable primarily for reproducibility and isolation of the build environment; GitHub Actions is the execution substrate. Neither should be mistaken for a proof system.
+
+So the strongest accurate claim is not “best out of every language.” It is: **the stack gives different layers different safety contracts, with Agda holding semantic proof authority, Mercury constraining search behavior, Dhall constraining configuration evaluation, and Nix constraining environment construction.** That separation is more important than declaring a universal winner.
 
 ## Exactness policy
 
-No theorem is promoted by weakening a gate, replacing a missing proof with a vacuous proposition, or silently changing a carrier to make a composition fit.
+The repository should not obtain a green result by weakening a theorem, replacing a missing proof with `⊤`, silently changing a carrier, or treating an e-graph extraction as proof. Likewise, the POMDP probability seam is a finite exact semantics layer, not a claim of full measure-theoretic probability, and the RNN-LM surface is a formal capability boundary, not a benchmark result.
 
-- no Lyapunov theorem is required merely to discuss a stationary-limit contract;
-- no generic Walrasian existence theorem is fabricated from the concrete MarkovStationary example;
-- no sparsemax specialization is treated as an intrinsic dyadic law;
-- no F4 contraction theorem is claimed without an actual contraction hypothesis/proof;
-- no e-graph extraction is treated as proof authority;
-- no RNN-LM capability theorem is interpreted as a benchmark or universal language-model performance claim.
+The graph-search system can discover compositions of declared laws. Agda remains responsible for establishing the resulting proposition.
 
-The desired end state is a graph in which the strongest useful exact subcompositions emerge automatically from declared semantic laws, after which selected, type-checked compositions can be promoted into the canonical learner monolith.
+## Status
 
-## Status and limitations
+The canonical proof surface is:
 
-The repository is a formal development, not empirical validation of a deployed learner. Exact equalities are meaningful relative to the carriers and operations actually formalized. Generalization to continuous probability, infinite vocabularies, unrestricted neural architectures, biological systems, physical systems, or economic environments requires additional formal hypotheses.
+- `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
 
-The graph-search system is deliberately not an autonomous mathematical oracle. It can discover and rank compositions of declared semantic laws; Agda remains responsible for establishing the actual proposition.
+The discovery surface is:
 
-## Citation and contribution
+- `.ci/discovery/learner_semantic_extractor.m`
+- `.ci/discovery/theorem_graph_search.m`
+- `.ci/discovery/theorem_monolith_egraph_sync.m`
 
-For a contribution, preserve the distinction between semantic declarations, graph candidates, and checked theorem proofs. New mathematical surfaces should first be added to the theorem monolith, then exposed to graph search, then type-checked before promotion.
+The automation/build surfaces are:
 
-The README is intentionally a monograph-style map of the current formal vocabulary rather than a replacement for the individual theorem statements.
+- `.ci/actions_ci.dhall`
+- Nix configuration and package/build definitions
+- GitHub Actions workflows
+
+The intended workflow is therefore:
+
+```
+declare exact law
+      ↓
+prove/type-check in Agda
+      ↓
+extract semantic law
+      ↓
+search dependency graph
+      ↓
+e-graph/A* candidate extraction
+      ↓
+promote only when Agda proves the composed theorem
+      ↓
+CI executes the declared verification contract
+```
+
+This keeps the mathematical authority, discovery machinery, and automation machinery distinct while allowing them to cooperate.
