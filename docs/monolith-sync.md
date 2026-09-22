@@ -141,3 +141,14 @@ The four historical working branches are synchronized to the same canonical main
 The Nat clock is now recorded as a separate semantic axis from Lyapunov-style energy arguments. Exact clock growth gives temporal index separation and excludes finite cycles; it does not assert descent, boundedness, or convergence. The finite-observation theorem records the complementary fact that an exact unbounded time index cannot be recovered injectively through a finite Int8 observation.
 
 The exact Turing boundary is expressed as a contract mixture: the repository rules out the specified exact autonomous one-step two-counter simulation while retaining the exact Nat clock and finite-observation boundary. This is not a claim that every weaker computational-completeness notion is impossible; any future positive construction must explicitly relax at least one contract component.
+
+
+## 2026-09-22 explicit global inverse, stationary-limit, and PE boundary
+
+The finite-observation information boundary is now stated with an explicit global quantifier: for any fixed canonical kernel and initial state, no observe : CanonicalFullLearnerState → Int8 has a global inverse : Int8 → CanonicalFullLearnerState satisfying inverse (observe s) ≡ s for every canonical state. The Nat-clock orbit supplies the finite-carrier contradiction, while the conclusion itself is global.
+
+A monotone Lyapunov observable plus boundedness is not being promoted to a stationary-distribution convergence theorem. The new MonotoneConvergenceToStationaryDistributionTheorem explicitly requires the transition law, a monotone Lyapunov quantity, a convergence notion, and preservation of the limit by the transition operator. This keeps the stochastic limit step separate from the optimizer's existing boundedness result.
+
+Persistent excitation is likewise recorded as a separate requirement. The current canonical Agda surface does not contain the matrix/Gramian probability or adaptive-identification machinery needed for a genuine PE proof. Therefore the new theorem surface is a contract boundary, not a fake PE proof: bounded Int8 representation is not silently treated as PE.
+
+The exact Turing-completeness obstruction remains contract-specific. It does not generalize automatically to every computational function class; the decisive assumptions are the specified exact autonomous clock and finite observation/contract structure.
