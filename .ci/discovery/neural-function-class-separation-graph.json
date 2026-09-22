@@ -194,5 +194,33 @@
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem"
     ],
     "note": "These records remain on the Agda proof surface and may remain required CI declarations; exclusion here means they are not treated as independent function-class separation claims."
+  },
+  "future_theorem_policy": {
+    "rule": "Every future theorem enters the strict separation graph only through an existing fully connected composition node. A disconnected theorem may be retained on the Agda/CI surface, but it is not a function-class separation claim until a composed theorem consumes its semantics.",
+    "required_witnesses": {
+      "inclusion": "An explicit Agda term proving F_base subseteq F_full_connected under the same input/output semantics and resource convention.",
+      "membership": "An explicit Agda witness f together with a proof f in F_full_connected that traverses the full connected composition.",
+      "nonrepresentability": "An explicit Agda proof f notin F_base; naming a candidate witness without this proof does not establish separation."
+    },
+    "future_admission_gate": [
+      "pre-graphed Agda proposition exists",
+      "theorem_graph_search discovers a path through the full connected composition",
+      "theorem_monolith_egraph_sync discovers the same path",
+      "the inclusion and nonrepresentability witness obligations are discharged",
+      "only then may status change from NOT_ESTABLISHED to SEPARATED"
+    ]
+  },
+  "hard_sign_and_tropical_geometry": {
+    "existing_exact_surface": "hardSignGate-idempotent",
+    "existing_surface_status": "proved on the canonical Agda surface, but not currently a connected function-class separation theorem",
+    "promotion_rule": "Promote HardSign geometry only by adding it as a semantic dependency of an existing full connected composed theorem; do not create a standalone HardSign separation node.",
+    "tropical_candidate": "A tropical/max-plus optimizer-geometry theorem may be admitted as a future candidate only after an actual Agda proposition exists and it is consumed by the full connected composition.",
+    "affine_finite_automata_candidate": "A recurrent affine/HardSign finite-automaton expressivity theorem may be admitted only with an explicit finite-automaton realization witness and, for strict separation, a baseline nonrepresentability proof.",
+    "regularization_seam": "F4 optimizer plus NormPair supplies the existing optimizer/normalization replacement seam; no theorem currently proves that strong regularization forces factor recurrence or a strict function-class expansion."
+  },
+  "s4_s5_claim": {
+    "current_formal_claim": "The graph connects the S4/S5 recurrent scan seam into the full learner composition via S4PlusS5RecurrentScanTheorem and CanonicalFullLearnerConnectedScanConjugacyTheorem.",
+    "not_yet_proved": "This is not yet a strict theorem that F_S4 subseteq F_full_connected subseteq F_S5, nor a proof that the full class is strictly intermediate.",
+    "required_to_upgrade": "Add explicit Agda class definitions, both inclusion proofs, and a concrete full-composition witness with baseline nonrepresentability."
   }
 }
