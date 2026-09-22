@@ -130,7 +130,8 @@ main(!IO) :-
             All,
             RequiredPlans,
             RequiredSubcompositionPlans),
-           graph_monotone_energy_plan(All, MonotoneEnergyPlan),
+           graph_finite_observation_stationary_limit_plan(
+               All, FiniteObservationStationaryLimitPlan),
            graph_finite_observation_stationary_plan(
                All, FiniteObservationStationaryPlan),
            graph_endogenous_observation_plan(All, EndogenousObservationPlan)
@@ -139,7 +140,7 @@ main(!IO) :-
         else
             RequiredPlans = [],
             RequiredSubcompositionPlans = [],
-            MonotoneEnergyPlan = [],
+            FiniteObservationStationaryLimitPlan = [],
             FiniteObservationStationaryPlan = [],
             EndogenousObservationPlan = []
     ),
@@ -155,7 +156,7 @@ main(!IO) :-
             list.length(Plans) > 0,
             list.length(RequiredPlans) = 4,
             list.length(RequiredSubcompositionPlans) = 3,
-            list.length(MonotoneEnergyPlan) > 0,
+            list.length(FiniteObservationStationaryLimitPlan) > 0,
             list.length(FiniteObservationStationaryPlan) > 0,
             list.length(EndogenousObservationPlan) > 0,
             list.length(Analyses) > 0,
