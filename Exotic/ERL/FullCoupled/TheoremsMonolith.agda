@@ -6785,6 +6785,76 @@ connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem C =
   regretBound (connectedOptimizer C)
 
 ------------------------------------------------------------------------
+-- F4 + Frank-Wolfe connected optimization boundary.
+--
+-- The F4 component is already an exact finite recurrent state in this
+-- monolith.  Frank-Wolfe is introduced only through its finite certificate:
+-- a supplied gap/descent relation and KKT compatibility. No optimization
+-- library or continuous-analysis dependency is imported.
+------------------------------------------------------------------------
+
+record F4FrankWolfeKKTDescentData : Set₁ where
+  constructor f4FrankWolfeKKTDescentData
+  field
+    frankWolfeGap : Nat
+    f4DescentResidual : Nat
+    kktResidual : Nat
+    frankWolfeDescent :
+      frankWolfeGap ≤ f4DescentResidual
+    descentKKT :
+      f4DescentResidual ≤ f4DescentResidual + kktResidual
+
+------------------------------------------------------------------------
+-- This is deliberately conditional: it consumes the already-proved exact
+-- F4/GRU prefix composition and records the Frank-Wolfe certificate as a
+-- connected optimizer seam rather than a disconnected theorem.
+------------------------------------------------------------------------
+
+record ConnectedF4FrankWolfeKKTTheorem : Set₁ where
+  constructor connectedF4FrankWolfeKKTTheorem
+  field
+    f4Composition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+    certificate :
+      F4FrankWolfeKKTDescentData
+    connectedBound :
+      frankWolfeGap certificate
+      ≤
+      f4DescentResidual certificate + kktResidual certificate
+
+open ConnectedF4FrankWolfeKKTTheorem public
+
+connected-f4-frank-wolfe-kkt-theorem :
+  (C : ConnectedF4FrankWolfeKKTTheorem) →
+  frankWolfeGap (certificate C)
+  ≤
+  f4DescentResidual (certificate C)
+  + kktResidual (certificate C)
+connected-f4-frank-wolfe-kkt-theorem C =
+  connectedBound C
+
+------------------------------------------------------------------------
+-- Finite Maxwell-only representation seam.
+--
+-- This is a candidate interface, not a claim that the repository has proved
+-- Maxwell's PDEs. The state/output vocabulary is explicitly restricted to
+-- finite encodings of Maxwell-admissible update data; no additional physical
+-- law is introduced by the theorem graph.
+------------------------------------------------------------------------
+
+record FiniteMaxwellGRURepresentationCandidate : Set₁ where
+  constructor finiteMaxwellGRURepresentationCandidate
+  field
+    finiteMaxwellState : Set
+    finiteMaxwellInput : Set
+    finiteMaxwellOutput : Set
+    gruRepresentation :
+      finiteMaxwellState → finiteMaxwellInput → finiteMaxwellState
+    exactFiniteFunction :
+      ∀ (f : finiteMaxwellState → finiteMaxwellInput → finiteMaxwellOutput) →
+      Set
+
+------------------------------------------------------------------------
 -- Promotion boundary:
 -- the Jensen/minimax regret surface is not a standalone optimizer theorem.
 -- It is graph-complete only through the recurrent scan, stationary Markov
