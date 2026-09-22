@@ -8,7 +8,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 -- part of the canonical proof surface.
 ------------------------------------------------------------------------
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym; subst)
 open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
@@ -19,7 +19,7 @@ open import Data.Fin.Properties using (pigeonhole; toℕ-injective; toℕ-mono-<
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Nat.Properties using (≤-antisym; +-identityʳ; +-suc; n<1+n)
+open import Data.Nat.Properties using (≤-antisym; ≤-refl; +-identityʳ; +-suc; n<1+n)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 replaceClock :
@@ -6832,6 +6832,96 @@ connected-f4-frank-wolfe-kkt-theorem :
   + kktResidual (certificate C)
 connected-f4-frank-wolfe-kkt-theorem C =
   connectedBound C
+
+------------------------------------------------------------------------
+-- Fully connected F4 + Frank-Wolfe optimizer composition boundary.
+--
+-- This consumes the exact F4/Frank-Wolfe seam together with the existing
+-- stationary Markov/Walrasian and KKT interfaces.  The finite certificate
+-- keeps the statement library-free; analytic Frank-Wolfe/KKT hypotheses
+-- remain explicit promotion obligations.
+------------------------------------------------------------------------
+
+record F4FrankWolfeJensenRoundingKKTMarkovData : Set₁ where
+  constructor f4FrankWolfeJensenRoundingKKTMarkovData
+  field
+    regret : Nat
+    jensenGap : Nat
+    roundingBias : Nat
+    kktResidual : Nat
+    frankWolfeResidual : Nat
+    markovMixing : Nat
+
+    jensenBound :
+      regret ≤ jensenGap + roundingBias
+
+    roundingKKTBound :
+      jensenGap + roundingBias
+      ≤
+      jensenGap + roundingBias + kktResidual
+
+    kktFrankWolfeBound :
+      jensenGap + roundingBias + kktResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + frankWolfeResidual
+
+    stationaryMarkovBound :
+      jensenGap + roundingBias + kktResidual + frankWolfeResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + frankWolfeResidual + markovMixing
+
+open F4FrankWolfeJensenRoundingKKTMarkovData public
+
+f4-frank-wolfe-jensen-rounding-kkt-markov-bound :
+  (D : F4FrankWolfeJensenRoundingKKTMarkovData) →
+  regret D
+  ≤
+  jensenGap D
+  + roundingBias D
+  + kktResidual D
+  + frankWolfeResidual D
+  + markovMixing D
+f4-frank-wolfe-jensen-rounding-kkt-markov-bound D =
+  ≤-trans
+    (jensenBound D)
+    (≤-trans
+      (roundingKKTBound D)
+      (≤-trans
+        (kktFrankWolfeBound D)
+        (stationaryMarkovBound D)))
+
+record ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem : Set₁ where
+  constructor connectedF4FrankWolfeJensenRoundingKKTMarkovTheorem
+  field
+    f4FrankWolfe :
+      ConnectedF4FrankWolfeKKTTheorem
+    stationaryMarkovWalrasian :
+      MarkovStationaryWalrasianCompositionTheorem
+    certificate :
+      F4FrankWolfeJensenRoundingKKTMarkovData
+    connectedBound :
+      regret certificate
+      ≤
+      jensenGap certificate
+      + roundingBias certificate
+      + kktResidual certificate
+      + frankWolfeResidual certificate
+      + markovMixing certificate
+
+open ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem public
+
+connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem :
+  (C : ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem) →
+  regret (certificate C)
+  ≤
+  jensenGap (certificate C)
+  + roundingBias (certificate C)
+  + kktResidual (certificate C)
+  + frankWolfeResidual (certificate C)
+  + markovMixing (certificate C)
+connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem C =
+  connectedBound C
+
 
 ------------------------------------------------------------------------
 -- Promotion boundary:
