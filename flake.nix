@@ -78,9 +78,9 @@
               pkgs.tcl
             ];
             shellHook = ''
-              export PATH="${pkgs.mercury}/bin:$PATH"
+              export PATH="\${pkgs.mercury}/bin:$PATH"
             '';
           };
         });
     };
-};
+}
