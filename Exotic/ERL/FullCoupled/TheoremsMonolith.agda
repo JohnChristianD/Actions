@@ -5485,13 +5485,13 @@ record CanonicalMonotoneEnergyStationarySubcompositionTheorem : Set₁ where
   field
     stationaryConvergenceContract :
       MonotoneConvergenceToStationaryDistributionTheorem
-        C.CanonicalFullLearnerState
-        C.Int8
+        Nat
+        Nat
         _≤_
-        (λ _ → C.defaultCanonicalState)
-        (λ _ → C.zero8)
-        (λ _ → C.defaultCanonicalState)
-        (C.defaultCanonicalState)
+        (λ x → x)
+        (λ _ → zero)
+        (λ _ → zero)
+        zero
         (λ _ _ → ⊤)
 
 canonical-monotone-energy-stationary-subcomposition-theorem :
