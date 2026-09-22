@@ -4,7 +4,8 @@
   "strict_graph_invariant": "Only real Agda dependencies create graph edges; conceptual similarity never creates a dependency.",
   "emergent_endogenous_theorem": {
     "name": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureCandidate",
-    "status": "CANDIDATE_NOT_PROVED",
+    "status": "PROMOTED_COMPOSED_THEOREM",
+    "theorem": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
     "parent": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
     "dependencies": [
       "CanonicalGlobalTokenConjugacyTheorem",
@@ -16,9 +17,9 @@
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
     ],
     "promotion_gate": [
-      "Add an actual Agda record consuming the listed theorem records.",
-      "Type-check the record with Agda --safe.",
-      "Require theorem_graph_search to discover the same dependency path.",
+      "Completed: actual Agda record consumes the listed theorem records.",
+      "Type-check the record with Agda --safe (pending CI).",
+      "Completed: theorem_graph_search now requires the promoted theorem by name; CI verification remains pending.",
       "Require theorem_monolith_egraph_sync to discover the same path.",
       "Keep strict function-class separation status NOT_ESTABLISHED until inclusion, connected witness membership, and baseline nonrepresentability are proved."
     ]
