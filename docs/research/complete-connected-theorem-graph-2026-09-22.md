@@ -127,3 +127,24 @@ The exact non-ambiguous conclusion is:
 - graph completeness: consume real dependencies into composed theorems; never synthesize edges;
 - recent repair commits: real and on `main`;
 - verification: still not green/observed for those latest main commits, so no repair should be claimed verified merely from their presence.
+
+
+## Strict separation contract added
+
+The theorem monolith now contains three explicit proof-surface contracts:
+
+- `FunctionClassInclusion`: same input/output semantics with an explicit `FBase f -> FFull f` map.
+- `StrictFunctionClassSeparation`: the inclusion plus a concrete witness `f`, a proof `f ∈ FFull`, and a proof `f ∉ FBase`.
+- `CanonicalStrictNeuralFunctionClassSeparationContract`: connects that strict obligation to the existing endogenous RNN-LM/POMDP/topology composition.
+
+This closes the previously implicit logical gap without promoting any candidate to a strict separation theorem. A candidate still needs a model-specific inhabited term and `Agda --safe` verification.
+
+### Research boundary
+
+SciSpace review found peer-reviewed recurrent expressivity work using constructive representation/simulation in one direction and structural lower-bound or impossibility arguments in the other. Svete et al. (NAACL 2024) characterize recurrent neural language-model capacity via probabilistic finite-state automata and explicit representation constructions; Svete & Cotterell (EMNLP 2023) characterize simple RNN LMs as a strict subset of finite-state-model distributions and give lower bounds on neuron requirements. These sources motivate the witness/nonrepresentability structure but do not prove the repository's sign/optimizer-affine GRU candidates.
+
+Primary sources:
+- https://aclanthology.org/2024.naacl-long.380/
+- https://aclanthology.org/2023.emnlp-main.502/
+
+Verification boundary: the new contract is written to the branch, but fresh Agda/Nix CI has not yet been observed for the new head.
