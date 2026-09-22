@@ -189,9 +189,6 @@ valid_chain([Child, Parent | Rest], Laws) :-
 plan_score(Laws, Plan, Score) :-
     Score = node_score(Laws, graph_node(Plan)).
 
-:- pred all_scores_non_decreasing(
-    list(semantic_law)::in,
-    list(list(string))::in) is semidet.
 all_scores_non_decreasing(_, []).
 all_scores_non_decreasing(_, [_]).
 all_scores_non_decreasing(Laws, [First, Second | Rest]) :-
