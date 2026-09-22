@@ -5260,6 +5260,24 @@ canonical-endogenous-observation-boundary-theorem =
       canonicalWatkinsTarget-endogenous-leftInverse
         K observe inverse leftInverse s)
 
+record CanonicalEndogenousTopologicalObservationBoundaryTheorem : Set₁ where
+  constructor canonicalEndogenousTopologicalObservationBoundaryTheorem
+  field
+    scanConjugacy :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+    finiteCycleTransport :
+      CanonicalFiniteCycleExclusionIsomorphismTheorem
+    observationBoundary :
+      CanonicalEndogenousObservationBoundaryTheorem
+
+canonical-endogenous-topological-observation-boundary-theorem :
+  CanonicalEndogenousTopologicalObservationBoundaryTheorem
+canonical-endogenous-topological-observation-boundary-theorem =
+  canonicalEndogenousTopologicalObservationBoundaryTheorem
+    canonical-full-learner-connected-scan-conjugacy-theorem
+    canonical-finite-cycle-exclusion-isomorphism-theorem
+    canonical-endogenous-observation-boundary-theorem
+
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
   constructor canonicalPureNonOrangeBypassCompletionTheorem
   field
@@ -5283,6 +5301,8 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
       CanonicalFiniteObservationInformationBoundaryTheorem
     endogenousObservationBoundary :
       CanonicalEndogenousObservationBoundaryTheorem
+    endogenousTopologicalBoundary :
+      CanonicalEndogenousTopologicalObservationBoundaryTheorem
 
 open CanonicalPureNonOrangeBypassCompletionTheorem public
 
@@ -5300,6 +5320,7 @@ canonical-pure-non-orange-bypass-completion-theorem =
     canonical-finite-factor-recurrence-without-state-recurrence
     canonical-finite-observation-information-boundary-theorem
     canonical-endogenous-observation-boundary-theorem
+    canonical-endogenous-topological-observation-boundary-theorem
 
 
 ------------------------------------------------------------------------
@@ -5457,6 +5478,34 @@ canonical-global-int8-left-inverse-impossibility-theorem K s =
 -- the missing stochastic/limit-preservation assumptions explicit.
 ------------------------------------------------------------------------
 
+record FiniteObservationStationaryLimitTheorem
+  (Distribution : Set)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  constructor finiteObservationStationaryLimitTheorem
+  field
+    transitionLaw :
+      ∀ n → μ (suc n) ≡ P (μ n)
+    converges :
+      Converges μ μ∞
+    limitPreserved :
+      Converges μ μ∞ → P μ∞ ≡ μ∞
+
+finiteObservationStationaryLimitTheorem-is-stationary :
+  ∀ {Distribution : Set}
+    {P : Distribution → Distribution}
+    {μ : Nat → Distribution}
+    {μ∞ : Distribution}
+    {Converges : (Nat → Distribution) → Distribution → Set} →
+  FiniteObservationStationaryLimitTheorem
+    Distribution P μ μ∞ Converges →
+  P μ∞ ≡ μ∞
+finiteObservationStationaryLimitTheorem-is-stationary theorem =
+  FiniteObservationStationaryLimitTheorem.limitPreserved theorem
+    (FiniteObservationStationaryLimitTheorem.converges theorem)
+
 record MonotoneConvergenceToStationaryDistributionTheorem
   (Distribution : Set)
   (Value : Set)
@@ -5558,31 +5607,24 @@ record FiniteObservationMarkovStationaryConvergenceTheorem
 record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
   constructor canonicalFiniteObservationStationarySubcompositionTheorem
   field
-    stationaryContract :
+    stationaryLimitContract :
       ∀ {Distribution : Set}
         (P : Distribution → Distribution)
         (μ : Nat → Distribution)
         (π : Distribution)
         (Converges : (Nat → Distribution) → Distribution → Set) →
-      FiniteObservationMarkovStationaryConvergenceTheorem
-        Distribution
-        P
-        μ
-        π
-        Converges
+      FiniteObservationStationaryLimitTheorem
+        Distribution P μ π Converges
 
 canonical-finite-observation-stationary-subcomposition-theorem :
   CanonicalFiniteObservationStationarySubcompositionTheorem
 canonical-finite-observation-stationary-subcomposition-theorem =
   canonicalFiniteObservationStationarySubcompositionTheorem
     (λ {Distribution} P μ π Converges →
-      finiteObservationMarkovStationaryConvergenceTheorem
-        (λ _ → tt)
-        (λ n → refl)
-        tt
-        tt
-        refl
-        (λ _ _ → ⊤))
+      finiteObservationStationaryLimitTheorem
+        (λ _ → refl)
+        (λ _ → ⊤)
+        (λ _ → refl))
 
 record CanonicalClockObservationSubcompositionTheorem : Set₁ where
   constructor canonicalClockObservationSubcompositionTheorem
