@@ -137,6 +137,8 @@ main(!IO) :-
            graph_finite_observation_stationary_plan(
                All, FiniteObservationStationaryPlan),
            graph_endogenous_observation_plan(All, EndogenousObservationPlan),
+           graph_endogenous_rnnlm_pomdp_observation_topology_plan(
+               All, EndogenousRNNLMPOMDPObservationTopologyPlan),
            graph_finite_probability_mass_plan(All, FiniteProbabilityMassPlan),
            graph_finite_pomdp_probability_plan(All, FinitePOMDPProbabilityPlan),
            graph_endogenous_pomdp_observation_plan(All, EndogenousPOMDPObservationPlan)
@@ -148,6 +150,7 @@ main(!IO) :-
             FiniteObservationStationaryLimitPlan = [],
             FiniteObservationStationaryPlan = [],
             EndogenousObservationPlan = [],
+            EndogenousRNNLMPOMDPObservationTopologyPlan = [],
             FiniteProbabilityMassPlan = [],
             FinitePOMDPProbabilityPlan = [],
             EndogenousPOMDPObservationPlan = []
@@ -172,6 +175,7 @@ main(!IO) :-
             list.length(FiniteObservationStationaryLimitPlan) > 0,
             list.length(FiniteObservationStationaryPlan) > 0,
             list.length(EndogenousObservationPlan) > 0,
+            list.length(EndogenousRNNLMPOMDPObservationTopologyPlan) > 0,
             list.length(FiniteProbabilityMassPlan) > 0,
             list.length(FinitePOMDPProbabilityPlan) > 0,
             list.length(EndogenousPOMDPObservationPlan) > 0,
