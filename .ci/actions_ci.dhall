@@ -325,6 +325,10 @@ JSON
     canonical-operator-composition-theorem
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
+    CanonicalNatClockLyapunovSeparationTheorem
+    canonical-nat-clock-lyapunov-separation-theorem
+    CanonicalExactTuringBoundaryMixtureTheorem
+    canonical-exact-turing-boundary-mixture-theorem
     BairdSevenStarProblem
     bairdSevenStar
     NonIIDMarkovWalrasianProblem
