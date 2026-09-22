@@ -476,6 +476,8 @@ graph_required_theorems = [
     "LogarithmicPrefixScanComplexityTheorem",
     "ConnectedJensenMinimaxRegretOptimizerTheorem",
     "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+    "ConnectedF4FrankWolfeKKTTheorem",
+    "FiniteMaxwellGRUExactRepresentationCandidate",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
