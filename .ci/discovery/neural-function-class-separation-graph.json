@@ -808,6 +808,21 @@
     "graph_role": "real endogenous closure theorem; composes vocabulary, exact RNN-LM capability, observation topology, and endogenous POMDP observation transport.",
     "distinction": "An actual composed theorem record, not merely the older HardSign/F4 candidate."
   },
+  "parallel_scan_complexity_boundary": {
+    "name": "CanonicalConnectedCompositionLogarithmicSIMDSpanCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+    "real_dependencies": [
+      "RecurrentAssociativeScanTheorem",
+      "RecurrentPrefixMonoidHomomorphism",
+      "EfficientOperatorMonoidRepresentation",
+      "LogarithmicScanSpanCertificate"
+    ],
+    "claim_boundary": "If the connected recurrent transition admits an efficient associative operator representation, exact prefix scan, bounded representation/decoding overhead, and a genuine logarithmic-depth scan certificate, then horizon-H evaluation has O(log H) parallel span up to constant seam overhead and O(H) work under the supplied cost model.",
+    "proof_status": "Conditional theorem surface added; no concrete SIMD/PRAM logarithmic scan certificate is yet present in the repository.",
+    "important_non_implication": "Conjugacy, left-invertibility, and exactness alone do not imply O(log H) span.",
+    "no_synthetic_edge": true
+  },
   "novel_exotic_pregraphed_theorems": [
     {
       "name": "CanonicalEndogenousAperiodicClockRNNStrictSeparationCandidate",
