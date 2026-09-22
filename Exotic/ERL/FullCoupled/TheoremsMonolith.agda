@@ -5310,16 +5310,26 @@ record FiniteFactorRecurrenceWithoutStateRecurrenceTheorem : Set₁ where
         m ≢ n →
         orbit m ≢ orbit n
 
+canonical-finite-factor-recurrence-without-state-recurrence-factor :
+  ∀ {A : Set} →
+  (orbit : Nat → A) →
+  (factor : A → Fin 256) →
+  ∃ m n →
+    m ≢ n ×
+    factor (orbit m) ≡ factor (orbit n)
+canonical-finite-factor-recurrence-without-state-recurrence-factor
+  orbit factor with pigeonhole (n<1+n 256)
+  (λ i → factor (orbit (toℕ i)))
+... | i , j , apart , factorEq =
+  toℕ i , toℕ j ,
+  (λ mnEq → apart (toℕ-injective mnEq)) ,
+  factorEq
+
 canonical-finite-factor-recurrence-without-state-recurrence :
   FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
 canonical-finite-factor-recurrence-without-state-recurrence =
   finiteFactorRecurrenceWithoutStateRecurrenceTheorem
-    (λ orbit factor with pigeonhole (n<1+n 256)
-      (λ i → factor (orbit (toℕ i)))
-      ... | i , j , apart , factorEq =
-        toℕ i , toℕ j ,
-        (λ mnEq → apart (toℕ-injective mnEq)) ,
-        factorEq)
+    canonical-finite-factor-recurrence-without-state-recurrence-factor
     (λ orbit orbitInjective {m} {n} apart stateEq →
       apart (orbitInjective stateEq))
 
