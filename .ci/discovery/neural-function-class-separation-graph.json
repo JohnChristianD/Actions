@@ -132,6 +132,13 @@
       "concept": "what would make it a theorem",
       "equation": "regularizer certificate + factor map q + recurrence/separation certificate + quantitative bound",
       "status": "requires an explicit theorem linking the chosen regularizer to a recurrence, contraction, invariance, quotient stability, or generalization bound"
+    },
+    {
+      "concept": "unbounded semiring plus regularization",
+      "equation": "(N,+,·) -> regularized parameter dynamics -> bounded/stable factor image -> finite-factor recurrence",
+      "status": "candidate graphable route, not a repository theorem",
+      "condition": "Nat is algebraically unbounded, so recurrence does not follow from the semiring alone. A separate regularizer or invariant-set certificate must bound the observed factor trajectory or make it finite.",
+      "generalization_link": "If the regularizer also yields algorithmic stability, contraction, or controlled hypothesis-class complexity, a separate generalization bound can be composed with factor recurrence. Recurrence itself is not a generalization guarantee."
     }
   ],
   "current_result": "NOT_ESTABLISHED",
@@ -142,5 +149,50 @@
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
     ".ci/discovery/theorem_graph_search.m",
     ".ci/discovery/theorem_monolith_egraph_sync.m"
-  ]
+  ],
+  "promotion_policy": {
+    "rule": "Disconnected component theorems are not separation nodes. They are promoted into the smallest existing composed theorem that already packages their semantics, and the strict graph retains only the single full connected composition.",
+    "promotions": [
+      [
+        "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem"
+      ],
+      [
+        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
+        "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem"
+      ],
+      [
+        "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
+        "CanonicalHaarSparsemaxFullStateClosureTheorem"
+      ],
+      [
+        "S4PlusS5RecurrentScanTheorem",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem"
+      ],
+      [
+        "CanonicalBoundedFactorLiftTheorem",
+        "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem"
+      ],
+      [
+        "CanonicalEndogenousObservationBoundaryTheorem",
+        "CanonicalEndogenousTopologicalObservationBoundaryTheorem"
+      ],
+      [
+        "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      ]
+    ],
+    "excluded_from_strict_graph": [
+      "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+      "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
+      "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
+      "S4PlusS5RecurrentScanTheorem",
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalEndogenousObservationBoundaryTheorem",
+      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem"
+    ],
+    "note": "These records remain on the Agda proof surface and may remain required CI declarations; exclusion here means they are not treated as independent function-class separation claims."
+  }
 }
