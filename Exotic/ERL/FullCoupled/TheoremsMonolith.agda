@@ -6659,6 +6659,7 @@ record JensenMinimaxRegretRoundingKKTMarkovData : Set₁ where
     jensenGap : Nat
     roundingBias : Nat
     kktResidual : Nat
+    lionDescentResidual : Nat
     markovMixing : Nat
 
     jensenMinimaxRegret :
@@ -6669,10 +6670,15 @@ record JensenMinimaxRegretRoundingKKTMarkovData : Set₁ where
       ≤
       jensenGap + roundingBias + kktResidual
 
-    stationaryMarkovFixedPoint :
+    lionDescentKKT :
       jensenGap + roundingBias + kktResidual
       ≤
-      jensenGap + roundingBias + kktResidual + markovMixing
+      jensenGap + roundingBias + kktResidual + lionDescentResidual
+
+    stationaryMarkovFixedPoint :
+      jensenGap + roundingBias + kktResidual + lionDescentResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + lionDescentResidual + markovMixing
 
 open JensenMinimaxRegretRoundingKKTMarkovData public
 
@@ -6683,6 +6689,7 @@ jensen-minimax-regret-rounding-kkt-markov-bound :
   jensenGap D
   + roundingBias D
   + kktResidual D
+  + lionDescentResidual D
   + markovMixing D
 jensen-minimax-regret-rounding-kkt-markov-bound D =
   ≤-trans
@@ -6690,6 +6697,26 @@ jensen-minimax-regret-rounding-kkt-markov-bound D =
     (≤-trans
       (kktRoundingAbsorption D)
       (stationaryMarkovFixedPoint D))
+
+------------------------------------------------------------------------
+-- Lion optimization/descent/KKT extension.
+--
+-- The literature supplies convergence/stationarity results for Lion under
+-- explicit smoothness/noise/model assumptions.  This Nat-valued carrier does
+-- not import those analytic hypotheses; it records a supplied descent-to-KKT
+-- contribution so the connected regret composition cannot silently omit the
+-- optimizer-specific term.
+------------------------------------------------------------------------
+
+record LionOptimizationDescentKKTData : Set₁ where
+  constructor lionOptimizationDescentKKTData
+  field
+    lionDescentResidual : Nat
+    lionKKTResidual : Nat
+    descentToKKT :
+      lionKKTResidual
+      ≤
+      lionDescentResidual
 
 ------------------------------------------------------------------------
 -- Full connected optimizer composition.  The recurrent scan and
@@ -6730,6 +6757,7 @@ record ConnectedJensenMinimaxRegretOptimizerTheorem : Set₁ where
       jensenGap regretBoundary
       + roundingBias regretBoundary
       + kktResidual regretBoundary
+      + lionDescentResidual regretBoundary
       + markovMixing regretBoundary
 
 open ConnectedJensenMinimaxRegretOptimizerTheorem public
@@ -6741,6 +6769,7 @@ connected-jensen-minimax-regret-optimizer-theorem :
   jensenGap regretBoundary
   + roundingBias regretBoundary
   + kktResidual regretBoundary
+  + lionDescentResidual regretBoundary
   + markovMixing regretBoundary
 connected-jensen-minimax-regret-optimizer-theorem C =
   regretBound C
