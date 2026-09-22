@@ -5148,3 +5148,86 @@ canonical-bounded-factor-lift-theorem =
     canonicalF4ThetaQ-bounded
     canonicalF4ThetaQ-not-orbit-injective
     canonicalF4-factor-collision-separates-full-state
+
+
+------------------------------------------------------------------------
+-- Emergent endogenous factor-recurrence separation.
+--
+-- Exact aperiodic full-state evolution can force recurrence in a finite
+-- observation/factor without forcing recurrence of the underlying state.
+-- The result is endogenous: it uses only the finite factor carrier and
+-- exact orbit injectivity, with no Lyapunov or external stability premise.
+------------------------------------------------------------------------
+
+record FiniteFactorRecurrenceWithoutStateRecurrenceTheorem : Set₁ where
+  constructor finiteFactorRecurrenceWithoutStateRecurrenceTheorem
+  field
+    factorRecurs :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (factor : A → Fin 256) →
+        ∃ m n →
+          m ≢ n ×
+          factor (orbit m) ≡ factor (orbit n)
+    stateSeparates :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (orbitInjective : ∀ {m n : Nat} → orbit m ≡ orbit n → m ≡ n)
+        {m n : Nat} →
+        m ≢ n →
+        orbit m ≢ orbit n
+
+canonical-finite-factor-recurrence-without-state-recurrence :
+  FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+canonical-finite-factor-recurrence-without-state-recurrence =
+  finiteFactorRecurrenceWithoutStateRecurrenceTheorem
+    (λ orbit factor with pigeonhole (n<1+n 256)
+      (λ i → factor (orbit (toℕ i)))
+      ... | i , j , apart , factorEq =
+        toℕ i , toℕ j ,
+        (λ mnEq → apart (toℕ-injective mnEq)) ,
+        factorEq)
+    (λ orbit orbitInjective {m} {n} apart stateEq →
+      apart (orbitInjective stateEq))
+
+------------------------------------------------------------------------
+-- Pre-graphed completion endpoint for the active theorem seams.
+-- Each field is an already-proved canonical theorem; this record adds no
+-- alternate proof path or cancellation. It only exposes the dependency
+-- graph at the monolith boundary.
+------------------------------------------------------------------------
+
+record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
+  constructor canonicalPureNonOrangeBypassCompletionTheorem
+  field
+    recurrentPrefix :
+      RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
+    fullLearnerScanConjugacy :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+    exactTuringBoundary :
+      CanonicalExactCompositionTuringCompletenessContract
+    haarSparsemaxClosure :
+      CanonicalHaarSparsemaxFullStateClosureTheorem
+    finiteCycleIsomorphismTransport :
+      CanonicalFiniteCycleExclusionIsomorphismTheorem
+    operatorComposition :
+      CanonicalOperatorCompositionTheorem
+    boundedFactorLift :
+      CanonicalBoundedFactorLiftTheorem
+    emergentFactorSeparation :
+      FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+
+open CanonicalPureNonOrangeBypassCompletionTheorem public
+
+canonical-pure-non-orange-bypass-completion-theorem :
+  CanonicalPureNonOrangeBypassCompletionTheorem
+canonical-pure-non-orange-bypass-completion-theorem =
+  canonicalPureNonOrangeBypassCompletionTheorem
+    canonical-recurrent-prefix-monoid-homomorphism
+    canonical-full-learner-connected-scan-conjugacy-theorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
+    canonical-haar-sparsemax-full-state-closure-theorem
+    canonical-finite-cycle-exclusion-isomorphism-theorem
+    canonical-operator-composition-theorem
+    canonical-bounded-factor-lift-theorem
+    canonical-finite-factor-recurrence-without-state-recurrence
