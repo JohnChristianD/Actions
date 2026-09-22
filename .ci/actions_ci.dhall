@@ -313,6 +313,10 @@ JSON
     canonicalExactCompositionTuringCompletenessContract-impossible
     CanonicalHaarSparsemaxFullStateClosureTheorem
     canonical-haar-sparsemax-full-state-closure-theorem
+    FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+    canonical-finite-factor-recurrence-without-state-recurrence
+    CanonicalPureNonOrangeBypassCompletionTheorem
+    canonical-pure-non-orange-bypass-completion-theorem
     BairdSevenStarProblem
     bairdSevenStar
     NonIIDMarkovWalrasianProblem
