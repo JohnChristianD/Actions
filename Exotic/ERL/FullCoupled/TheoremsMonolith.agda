@@ -5531,23 +5531,23 @@ exact-contract-computability-boundary-theorem =
 ------------------------------------------------------------------------
 
 record FiniteObservationMarkovStationaryConvergenceTheorem
-  (Observation : Set)
-  (P : Observation → Observation → Set)
-  (μ : Nat → Observation)
-  (π : Observation)
-  (Converges : (Nat → Observation) → Observation → Set) : Set₁ where
+  (Distribution : Set)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (π : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
   constructor finiteObservationMarkovStationaryConvergenceTheorem
   field
     finiteObservationCarrier :
-      Observation
+      ⊤
     transitionLaw :
-      ∀ n → P (μ n) (μ (suc n))
+      ∀ n → μ (suc n) ≡ P (μ n)
     irreducible :
       ⊤
     aperiodic :
       ⊤
     stationary :
-      ∀ o → P π o ≡ P π o
+      P π ≡ π
     convergence :
       Converges μ π
 
@@ -5565,7 +5565,7 @@ record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
         (π : Observation)
         (Converges : (Nat → Observation) → Observation → Set) →
       FiniteObservationMarkovStationaryConvergenceTheorem
-        Observation P μ π Converges
+        Distribution P μ π Converges
 
 canonical-finite-observation-stationary-subcomposition-theorem :
   CanonicalFiniteObservationStationarySubcompositionTheorem
@@ -5574,9 +5574,11 @@ canonical-finite-observation-stationary-subcomposition-theorem =
     (λ P μ π Converges →
       finiteObservationMarkovStationaryConvergenceTheorem
         (λ _ → _)
-        (λ n → P (μ n) (μ (suc n)))
+        (λ n → P (μ n))
+        (λ n → refl)
         tt
         tt
+        refl
         (λ _ _ → ⊤))
 
 record CanonicalClockObservationSubcompositionTheorem : Set₁ where
