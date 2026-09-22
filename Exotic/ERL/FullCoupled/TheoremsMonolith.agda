@@ -5088,71 +5088,6 @@ canonicalF4-factor-collision-separates-full-state K s with
           (cong C.clock fullEq))))
 
 ------------------------------------------------------------------------
--- Exact Nat-clock versus Lyapunov-style energy boundary.
--- The clock gives discrete temporal injectivity and cycle exclusion; it is
--- not a scalar descent, boundedness, or convergence certificate.
-------------------------------------------------------------------------
-
-record CanonicalNatClockLyapunovSeparationTheorem : Set₁ where
-  constructor canonicalNatClockLyapunovSeparationTheorem
-  field
-    clockStrictAdvance :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) →
-      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
-    noFiniteCycle :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (n : Nat) →
-      C.iterateCanonical K (suc n) s ≢ s
-    finiteFactorRecurrenceWithoutFullRecurrence :
-      ∀ {A : Set}
-        (orbit : Nat → A)
-        (factor : A → Fin 256) →
-        ∃ m n →
-          m ≢ n ×
-          factor (orbit m) ≡ factor (orbit n)
-
-open CanonicalNatClockLyapunovSeparationTheorem public
-
-canonical-nat-clock-lyapunov-separation-theorem :
-  CanonicalNatClockLyapunovSeparationTheorem
-canonical-nat-clock-lyapunov-separation-theorem =
-  canonicalNatClockLyapunovSeparationTheorem
-    canonicalClockStep
-    canonicalNoNontrivialFiniteCycle-theorem
-    (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
-      canonical-finite-factor-recurrence-without-state-recurrence)
-
-------------------------------------------------------------------------
--- Exact Turing-completeness mixture boundary.
--- This records the simultaneous contract being ruled out; it does not claim
--- that every weaker notion of Turing completeness is impossible.
-------------------------------------------------------------------------
-
-record CanonicalExactTuringBoundaryMixtureTheorem : Set₁ where
-  constructor canonicalExactTuringBoundaryMixtureTheorem
-  field
-    exactClock :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) →
-      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
-    finiteObservationBoundary :
-      CanonicalFiniteObservationInformationBoundaryTheorem
-    exactContractImpossible :
-      ¬ CanonicalExactCompositionTuringCompletenessContract
-
-open CanonicalExactTuringBoundaryMixtureTheorem public
-
-canonical-exact-turing-boundary-mixture-theorem :
-  CanonicalExactTuringBoundaryMixtureTheorem
-canonical-exact-turing-boundary-mixture-theorem =
-  canonicalExactTuringBoundaryMixtureTheorem
-    canonicalClockStep
-    canonical-finite-observation-information-boundary-theorem
-    canonicalExactCompositionTuringCompletenessContract-impossible
-
-------------------------------------------------------------------------
 -- Pure non-orange-bypass theorem graph endpoint:
 --
 -- exact coupled transition
@@ -5353,3 +5288,68 @@ canonical-finite-observation-information-boundary-theorem =
       canonical-finite-factor-recurrence-without-state-recurrence)
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
+------------------------------------------------------------------------
+-- Exact Nat-clock versus Lyapunov-style energy boundary.
+-- The clock gives discrete temporal injectivity and cycle exclusion; it is
+-- not a scalar descent, boundedness, or convergence certificate.
+------------------------------------------------------------------------
+
+record CanonicalNatClockLyapunovSeparationTheorem : Set₁ where
+  constructor canonicalNatClockLyapunovSeparationTheorem
+  field
+    clockStrictAdvance :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
+    noFiniteCycle :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (n : Nat) →
+      C.iterateCanonical K (suc n) s ≢ s
+    finiteFactorRecurrenceWithoutFullRecurrence :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (factor : A → Fin 256) →
+        ∃ m n →
+          m ≢ n ×
+          factor (orbit m) ≡ factor (orbit n)
+
+open CanonicalNatClockLyapunovSeparationTheorem public
+
+canonical-nat-clock-lyapunov-separation-theorem :
+  CanonicalNatClockLyapunovSeparationTheorem
+canonical-nat-clock-lyapunov-separation-theorem =
+  canonicalNatClockLyapunovSeparationTheorem
+    canonicalClockStep
+    canonicalNoNontrivialFiniteCycle-theorem
+    (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
+      canonical-finite-factor-recurrence-without-state-recurrence)
+
+------------------------------------------------------------------------
+-- Exact Turing-completeness mixture boundary.
+-- This records the simultaneous contract being ruled out; it does not claim
+-- that every weaker notion of Turing completeness is impossible.
+------------------------------------------------------------------------
+
+record CanonicalExactTuringBoundaryMixtureTheorem : Set₁ where
+  constructor canonicalExactTuringBoundaryMixtureTheorem
+  field
+    exactClock :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
+    finiteObservationBoundary :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+    exactContractImpossible :
+      ¬ CanonicalExactCompositionTuringCompletenessContract
+
+open CanonicalExactTuringBoundaryMixtureTheorem public
+
+canonical-exact-turing-boundary-mixture-theorem :
+  CanonicalExactTuringBoundaryMixtureTheorem
+canonical-exact-turing-boundary-mixture-theorem =
+  canonicalExactTuringBoundaryMixtureTheorem
+    canonicalClockStep
+    canonical-finite-observation-information-boundary-theorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
+
