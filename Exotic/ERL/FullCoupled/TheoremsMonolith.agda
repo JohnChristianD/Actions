@@ -6164,3 +6164,80 @@ record CanonicalStrictNeuralFunctionClassSeparationContract
 
 ------------------------------------------------------------------------
 -- End of strict separation contracts.
+
+------------------------------------------------------------------------
+-- Candidate-specific strict neural separation contracts.
+--
+-- These bind each pre-graphed candidate to the same three semantic gates:
+-- resource-preserving inclusion, one witness through the connected
+-- composition, and canonical baseline nonrepresentability.  They are
+-- contracts, not fabricated proofs: each remains uninhabited until its
+-- model-specific fields are supplied by an actual Agda construction.
+------------------------------------------------------------------------
+
+record CanonicalAutomataSignOptimizerAffineGRUStrictSeparationContract
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor canonicalAutomataSignOptimizerAffineGRUStrictSeparationContract
+  field
+    connected :
+      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
+    automatonWitness :
+      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
+    signOptimizerAffinePreservation :
+      Set
+    baselineNonrepresentability :
+      StrictFunctionClassSeparation.witnessNotInBase
+        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+
+record CanonicalNonTropicalSignOptimizerAffineGRUStrictSeparationContract
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationContract
+  field
+    connected :
+      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
+    nonTropicalWitness :
+      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
+    signOptimizerAffinePreservation :
+      Set
+    baselineNonrepresentability :
+      StrictFunctionClassSeparation.witnessNotInBase
+        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+
+record CanonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationContract
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationContract
+  field
+    connected :
+      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
+    directStateSpaceWitness :
+      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
+    directSignOptimizerAffinePreservation :
+      Set
+    noAutomatonEncoding :
+      Set
+    baselineNonrepresentability :
+      StrictFunctionClassSeparation.witnessNotInBase
+        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+
+record CanonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationContract
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationContract
+  field
+    connected :
+      CanonicalStrictNeuralFunctionClassSeparationContract Input Output FBase FFull
+    replacementQuotientWitness :
+      FFull (StrictFunctionClassSeparation.witness (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected))
+    policyFactorization :
+      Set
+    quotientTransitionCompatibility :
+      Set
+    baselineNonrepresentability :
+      StrictFunctionClassSeparation.witnessNotInBase
+        (CanonicalStrictNeuralFunctionClassSeparationContract.separation connected)
+
+------------------------------------------------------------------------
+-- End candidate-specific strict separation contracts.

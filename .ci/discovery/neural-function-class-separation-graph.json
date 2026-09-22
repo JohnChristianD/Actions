@@ -142,7 +142,7 @@
     }
   ],
   "current_result": "NOT_ESTABLISHED",
-  "reason": "The missing logical separation contract is now present on the Agda surface, but no concrete baseline inclusion and nonrepresentability witness has been fabricated. Candidate sign/optimizer-affine results remain unproved until a model-specific term inhabits the contract.",
+  "reason": "Candidate-specific strict-separation contracts now bind the named exotic candidates to inclusion, connected witness membership, and baseline nonrepresentability. The model-specific witness constructions remain absent, so no candidate is promoted to SEPARATED.",
   "pregraphed_candidates": [
     {
       "name": "CanonicalEndogenousAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
@@ -735,5 +735,13 @@
     "status": "CONTRACT_ADDED_NOT_PROVED",
     "promotion_rule": "A concrete candidate changes to SEPARATED only when a model-specific Agda term inhabits the contract and Agda --safe verifies it.",
     "research_basis": "Peer-reviewed recurrent expressivity work commonly separates representation and lower-bound/impossibility obligations; the repository adopts the same witness-plus-nonrepresentability discipline without importing external claims as proof."
+  },
+  "candidate_specific_contracts": {
+    "automata_sign_optimizer_affine": "CanonicalAutomataSignOptimizerAffineGRUStrictSeparationContract",
+    "non_tropical": "CanonicalNonTropicalSignOptimizerAffineGRUStrictSeparationContract",
+    "non_tropical_non_automata": "CanonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationContract",
+    "replacement_quotient": "CanonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationContract",
+    "status": "CONTRACTS_ADDED_NOT_PROVED",
+    "note": "The generic Set fields deliberately mark unresolved model-specific preservation/quotient obligations without pretending they are proved. Only concrete Agda propositions can replace them."
   }
 }
