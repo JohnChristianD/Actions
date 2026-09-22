@@ -304,6 +304,8 @@ JSON
     canonical-linear-haar-sparsemax-attention-composition-theorem
     CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
     canonical-full-state-haar-sparsemax-invariant-composition-theorem
+    CanonicalLearnerReplacementClosureTheorem
+    canonical-learner-replacement-closure-theorem
     CanonicalHaarSparsemaxFullStateClosureTheorem
     canonical-haar-sparsemax-full-state-closure-theorem
     BairdSevenStarProblem
