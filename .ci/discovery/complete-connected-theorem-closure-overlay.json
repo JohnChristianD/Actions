@@ -23,6 +23,34 @@
       "Keep strict function-class separation status NOT_ESTABLISHED until inclusion, connected witness membership, and baseline nonrepresentability are proved."
     ]
   },
+  "emergent_vocabulary_boundary_theorem": {
+    "name": "CanonicalEndogenousFiniteVocabularyRecurrentSequenceClosureCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalExactRNNLMTheorem",
+    "statement": "The connected recurrent, conjugate, list-state, and observation components can generate arbitrarily long finite token sequences while preserving a per-step token codomain of exactly Fin 256. Recurrence and conjugacy enlarge the reachable sequence language across time; they do not enlarge the one-step vocabulary carrier.",
+    "dependencies": [
+      "CanonicalTokenVocabularyUpperBoundTheorem",
+      "CanonicalGlobalTokenConjugacyTheorem",
+      "CanonicalExactRNNLMTheorem",
+      "canonicalTokenListState-conjugacy",
+      "RecurrentPrefixMonoidHomomorphism",
+      "FreeMonoidActionHomomorphism"
+    ],
+    "cardinality_boundary": {
+      "per_step": "at most 256 token values",
+      "length_n": "at most 256^n token sequences",
+      "all_finite_lengths": "countably many finite sequences over the fixed finite alphabet",
+      "important_distinction": "The number of representable sequences can grow without bound even though the vocabulary remains fixed at 256."
+    },
+    "non_expansion_rule": "No recurrent state component, conjugacy, prefix monoid action, list encoding, or observation transport is allowed to be interpreted as a vocabulary expansion unless an actual decoder with a larger codomain is introduced and proved.",
+    "promotion_gate": [
+      "Add an actual Agda record consuming the listed dependencies.",
+      "Prove the per-step codomain remains CanonicalToken.",
+      "Prove the finite-sequence construction and conjugacy transport.",
+      "Discover the same path in theorem_graph_search and theorem_monolith_egraph_sync.",
+      "Do not classify it as a strict function-class separation theorem."
+    ]
+  },
   "foundational_zero_dependency_policy": {
     "rule": "Do not fabricate edges for problem specifications or foundational records.",
     "examples": [
@@ -35,7 +63,8 @@
   "vocabulary": {
     "canonical_token": "Fin 256",
     "carrier_equivalence": "CanonicalToken <-> Int8",
-    "latin_condition": "A Latin tokenizer is representable exactly when its token inventory is no larger than 256; this is not an unrestricted Unicode claim."
+    "latin_condition": "A Latin tokenizer is representable exactly when its token inventory is no larger than 256; this is not an unrestricted Unicode claim.",
+    "state_vs_vocabulary": "CanonicalFullLearnerState contains unbounded Nat components and finite Int8/action components, but these state resources do not change the CanonicalToken output carrier."
   },
   "nat_successor": {
     "totality": "closed",
