@@ -4910,6 +4910,49 @@ canonical-linear-haar-sparsemax-attention-composition-theorem =
 
 
 ------------------------------------------------------------------------
+-- Operator-composition closure is already an exact theorem of the
+-- canonical endomorphism algebra. The standalone operator-complexity
+-- module therefore adds no new learner semantics.
+------------------------------------------------------------------------
+
+record CanonicalOperatorCompositionTheorem : Set₁ where
+  constructor canonicalOperatorCompositionTheorem
+  field
+    identity :
+      ∀ {S : Set} (s : S) →
+      C.applyEndomorphism
+        (C.identityEndomorphism {State = S}) s
+      ≡ s
+    composition :
+      ∀ {S : Set}
+        (f g : C.Endomorphism S) (s : S) →
+      C.applyEndomorphism
+        (C.composeEndomorphism f g) s
+      ≡
+      C.applyEndomorphism f
+        (C.applyEndomorphism g s)
+    associativity :
+      ∀ {S : Set}
+        (f g h : C.Endomorphism S) (s : S) →
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          (C.composeEndomorphism f g) h) s
+      ≡
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          f (C.composeEndomorphism g h)) s
+
+open CanonicalOperatorCompositionTheorem public
+
+canonical-operator-composition-theorem :
+  CanonicalOperatorCompositionTheorem
+canonical-operator-composition-theorem =
+  canonicalOperatorCompositionTheorem
+    (λ s → refl)
+    (λ f g s → refl)
+    C.endomorphismAssociative
+
+------------------------------------------------------------------------
 -- Exact bounded-factor / injective-lift completion.
 --
 -- The F4 theta coordinate is represented by Int8 = Fin 256.  Its exact
