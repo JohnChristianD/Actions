@@ -142,7 +142,7 @@
     }
   ],
   "current_result": "NOT_ESTABLISHED",
-  "reason": "The repository has the connected composition surfaces and factor-recurrence mechanism, but it does not yet contain the strict nonrepresentability witness needed for a neural function-class separation, nor a theorem proving that a specific regularizer mathematically forces or predicts factor recurrence.",
+  "reason": "The missing logical separation contract is now present on the Agda surface, but no concrete baseline inclusion and nonrepresentability witness has been fabricated. Candidate sign/optimizer-affine results remain unproved until a model-specific term inhabits the contract.",
   "pregraphed_candidates": [
     {
       "name": "CanonicalEndogenousAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
@@ -720,5 +720,20 @@
     "disconnected_pruning": "No-dependency records are never promoted by conceptual similarity. If a composed theorem already consumes them, record that real promotion; otherwise retain them only as foundational proof-surface facts.",
     "strict_graph_invariant": "Strict neural-function-class separation remains only F_base -> full connected composition -> F_full_connected.",
     "separation_gate": "SEPARATED requires explicit resource-preserving inclusion, connected witness membership, and canonical baseline nonrepresentability on the Agda surface."
+  },
+  "separation_contracts": {
+    "agda_records": [
+      "FunctionClassInclusion",
+      "StrictFunctionClassSeparation",
+      "CanonicalStrictNeuralFunctionClassSeparationContract"
+    ],
+    "semantic_obligations": [
+      "input/output semantics preserving F_base subseteq F_full_connected",
+      "concrete witness f in F_full_connected traversing the connected composition",
+      "canonical proof f notin F_base"
+    ],
+    "status": "CONTRACT_ADDED_NOT_PROVED",
+    "promotion_rule": "A concrete candidate changes to SEPARATED only when a model-specific Agda term inhabits the contract and Agda --safe verifies it.",
+    "research_basis": "Peer-reviewed recurrent expressivity work commonly separates representation and lower-bound/impossibility obligations; the repository adopts the same witness-plus-nonrepresentability discipline without importing external claims as proof."
   }
 }

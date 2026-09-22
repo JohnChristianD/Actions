@@ -6104,28 +6104,63 @@ canonical-token-vocabulary-upper-bound-theorem =
 -- global token conjugacy, exact RNN-LM capability, and endogenous
 -- observation/topology closure. It adds no new semantic axiom: every
 -- field is an already-proved theorem record, so the graph edge is real.
+
+------------------------------------------------------------------------
+-- Strict neural function-class separation contracts.
+--
+-- A graph path is not a separation proof. The strict semantic boundary
+-- requires (1) an input/output-semantics-preserving inclusion, (2) one
+-- concrete witness in the full connected class, and (3) a proof that the
+-- same witness is not representable by the baseline class.
+--
+-- These records are intentionally generic so the missing obligations can
+-- be inhabited without inventing a baseline architecture. The concrete
+-- sign/optimizer-affine candidates remain unpromoted until these contracts
+-- receive actual model-specific witnesses.
 ------------------------------------------------------------------------
 
-record CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem : Set₁ where
-  constructor canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+record FunctionClassInclusion
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor functionClassInclusion
   field
-    vocabulary :
-      CanonicalTokenVocabularyUpperBoundTheorem
-    conjugacy :
-      CanonicalGlobalTokenConjugacyTheorem
-    exactRNNLM :
-      CanonicalExactRNNLMTheorem
-    observationTopology :
-      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-    endogenousPOMDPTopology :
-      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+    include :
+      ∀ {f : Input → Output} →
+      FBase f →
+      FFull f
 
-canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem :
-  CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
-canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem =
-  canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
-    canonical-token-vocabulary-upper-bound-theorem
-    canonical-global-token-conjugacy
-    canonical-exact-rnn-lm-theorem
-    canonical-exact-rnn-lm-observation-topology-capability-theorem
-    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+record StrictFunctionClassSeparation
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor strictFunctionClassSeparation
+  field
+    inclusion :
+      FunctionClassInclusion Input Output FBase FFull
+    witness :
+      Input → Output
+    witnessInFull :
+      FFull witness
+    witnessNotInBase :
+      ¬ FBase witness
+
+strictFunctionClassSeparation-implies-inclusion :
+  ∀ {Input Output : Set}
+    {FBase FFull : (Input → Output) → Set} →
+  StrictFunctionClassSeparation Input Output FBase FFull →
+  (∀ {f : Input → Output} → FBase f → FFull f)
+strictFunctionClassSeparation-implies-inclusion separation
+  = FunctionClassInclusion.include
+      (StrictFunctionClassSeparation.inclusion separation)
+
+record CanonicalStrictNeuralFunctionClassSeparationContract
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set) : Set₁ where
+  constructor canonicalStrictNeuralFunctionClassSeparationContract
+  field
+    connectedComposition :
+      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+    separation :
+      StrictFunctionClassSeparation Input Output FBase FFull
+
+------------------------------------------------------------------------
+-- End of strict separation contracts.
