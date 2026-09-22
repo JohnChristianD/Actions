@@ -5,6 +5,7 @@
 :- import_module bool.
 :- import_module int.
 :- import_module list.
+:- import_module string.
 :- import_module learner_semantic_extractor.
 
 :- pred search_emergent_compositions(
