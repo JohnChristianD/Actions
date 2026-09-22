@@ -2077,7 +2077,7 @@ record CanonicalExactCompositionTuringCompletenessContract : Set₁ where
       decode M (encode M c) ≡ c
     exactStepSimulation :
       ∀ M c →
-      encode M (step M c) ≡
+      encode M (ExactTwoCounterMachine.step M c) ≡
       C.canonicalFullStep
         (compile M)
         (encode M c)
@@ -6571,6 +6571,6 @@ canonicalConnectedComposition-parallelPrefixComplexity-contract _ = ⊤
 -- exact prefix algebra is proved on the repository surface. O(log H) SIMD
 -- span is a conditional algorithmic theorem until a concrete operator-cost,
 -- representation/decoding, and logarithmic scan certificate is supplied.
--- This does not establish Turing completeness, a "transcendental RNN"
+-- This does not establish Turing completeness, a special RNN computation
 -- category, or a named complexity class for the full learner.
 ------------------------------------------------------------------------
