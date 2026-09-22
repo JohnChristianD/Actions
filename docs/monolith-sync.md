@@ -159,3 +159,10 @@ The exact Turing-completeness obstruction remains contract-specific. It does not
 The graph-search layer now has four explicit required theorem nodes: global Int8 left-inverse impossibility, the monotone-energy/stationary-distribution convergence contract, persistent-excitation requirement, and exact-contract computability boundary. It also has three explicit subcomposition nodes: exact clock plus finite-observation information loss, monotone energy plus stationary-limit preservation, and bounded-factor plus PE boundary.
 
 These are dependency-graph obligations, not hidden implications. In particular, the monotone-energy composition preserves its convergence and limit-preservation assumptions, and the PE composition preserves PE as an independent information condition. Mercury/A* discovers paths; Agda --safe remains proof authority.
+
+
+## 2026-09-22 emergent endogenous observation boundary
+
+The canonical theorem facade now exposes `CanonicalEndogenousObservationBoundaryTheorem`. It composes exact Nat-clock orbit embedding, finite Int8 observation recurrence, explicit global left-inverse impossibility, and exact endogenous Watkins-target readout under a hypothetical left inverse. The result is a genuine information boundary: exact endogenous target readout is available conditional on exact state recovery, while the finite Int8 observation cannot supply that global recovery. This does not claim that the Watkins target itself is unrecoverable from every finite feature; it rules out global state recovery through the specified Int8 observation.
+
+The Mercury graph-search layer now also has an explicit A* plan query for `CanonicalMonotoneEnergyStationarySubcompositionTheorem`, and the theorem e-graph gate requires that plan to be found. The monotone-energy node remains a contract surface: monotone energy, trajectory convergence, and limit preservation are explicit assumptions; boundedness alone is not silently converted into stationary-distribution convergence. This matches standard Foster-Lyapunov usage, where additional drift/recurrence conditions are needed for stationary conclusions. citeturn1search14turn1search16
