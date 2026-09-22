@@ -214,6 +214,12 @@
       "disconnected_rule": "No direct dependency means no strict separation status. Promote only when an existing composed theorem consumes the theorem's semantics; otherwise keep it as a foundational proof-surface record.",
       "strict_upgrade": "SEPARATED requires explicit F_base subseteq F_full_connected inclusion, an explicit connected witness, and a canonical f notin F_base proof.",
       "no_synthetic_edges": "Graph completeness means every admitted theorem is discoverable and classified; it does not mean inventing dependency edges to force connectivity."
+    },
+    "complete_graph_contract_v2": {
+      "future_theorem_entry": "Every future theorem, topology result, neighborhood separation result, or conjugacy result must declare an existing composed parent and a real Agda dependency before entering the strict connected graph.",
+      "promotion_order": "foundational theorem -> smallest existing composed theorem -> connected full learner -> F_full_connected",
+      "no_dependency_rule": "A symbol with no direct record dependency is not promoted merely because it is conceptually related. It is either absorbed by a theorem that actually consumes it or remains foundational outside strict separation.",
+      "strict_separation_gate": "Only explicit inclusion + connected witness membership + canonical nonrepresentability can change the strict graph from NOT_ESTABLISHED to SEPARATED."
     }
   },
   "hard_sign_and_tropical_geometry": {
@@ -476,5 +482,44 @@
       "baseline nonrepresentability witness if promoted to strict separation"
     ],
     "literature_boundary": "Tropical geometry is established for piecewise-linear/ReLU neural-network geometry and max-plus algebra has established finite-automaton uses, but those results do not prove this repository's recurrent HardSign/F4/NormPair construction. The repository must admit an Agda proposition before this candidate becomes a theorem."
+  },
+  "tropical_hardsign_affine_topology_conjugacy_emergent_theorem": {
+    "name": "CanonicalEndogenousTropicalHardSignAffineGRUExpressivityTopologyConjugacyCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "role": "single composed candidate tying the tropical/HardSign finite-automaton quotient to the repository's existing topology, neighborhood-separation, and exact-conjugacy surfaces",
+    "composition_order": [
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "hardSignGate-idempotent",
+      "DirectProductFiniteAutomatonComposition",
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+      "F_full_connected"
+    ],
+    "dependency_evidence": {
+      "neighborhood_separation": "CanonicalRecurrentBoundedExactUniversalApproximationTheorem explicitly depends on ContinuousLeftInverseTheorem and DenseNeighborhoodSeparationTheorem in the repository's theorem ledger.",
+      "conjugacy": "ArchitecturePreservingCanonicalRNNLMIsomorphism explicitly depends on StateIsomorphism; the canonical connected learner already has an exact scan/step conjugacy surface.",
+      "observation_topology": "CanonicalExactRNNLMObservationTopologyCapabilityTheorem is composed from CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalExactRNNLMCapabilitySubcompositionTheorem, and CanonicalExactRNNLMObservationSubcompositionTheorem.",
+      "endogenous_closure": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem consumes CanonicalExactRNNLMObservationTopologyCapabilityTheorem together with the finite-information and endogenous POMDP boundaries."
+    },
+    "candidate_statement": "If the connected recurrent affine GRU/F4/NormPair/Watkins learner admits a HardSign-preserving finite invariant quotient with a tropical/polyhedral transition description and an explicit automaton conjugacy, then the quotient can be studied simultaneously through exact state conjugacy, dense-neighborhood separation, and endogenous observation topology; this would yield a unified finite-automaton expressivity/topology witness without asserting strict separation until the baseline nonrepresentability proof exists.",
+    "required_certificates": [
+      "actual Agda definition of the tropical/polyhedral finite quotient",
+      "HardSign quotient preservation under the canonical full transition",
+      "explicit affine realization of every finite automaton transition",
+      "prefix-level automaton conjugacy",
+      "transport of the quotient witness through StateIsomorphism/architecture-preserving conjugacy",
+      "neighborhood separation proof for the same witness rather than a disconnected witness",
+      "observation-topology compatibility with the endogenous boundary",
+      "F_base subseteq F_full_connected inclusion",
+      "baseline nonrepresentability proof for strict function-class separation"
+    ],
+    "promotion_rule": "Do not create a standalone tropical, topology, neighborhood, or conjugacy separation node. Promote each only through the existing composed theorem that already consumes its semantics; the strict graph retains the unified full-connected candidate.",
+    "status_rule": "Remain CANDIDATE_NOT_PROVED until the Agda proposition, connected witness, and required transport/separation certificates exist."
   }
 }
