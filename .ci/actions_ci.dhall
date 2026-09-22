@@ -171,10 +171,9 @@ let script = merge {
     git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
 
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    finite=Exotic/ERL/FullCoupled/FiniteUniversalBoundary.agda
     ergodic="$tmp/Econlib/Econlib/Probability/Markov/Ergodic.lean"
 
-    grep -Fq 'finiteOrbit-collision' "$finite"
+    grep -Fq 'canonicalF4-factor-collision-separates-full-state' "$theorem"
     grep -Fq 'canonicalNoNontrivialFiniteCycle-theorem' "$theorem"
     grep -Fq 'canonicalNoFiniteStepConvergenceToFixedPoint' "$theorem"
     grep -Fq 'isomorphismNoFiniteCycleTransport' "$theorem"
