@@ -6637,3 +6637,120 @@ canonicalConnectedComposition-parallelPrefixComplexity-contract =
 -- Exactness, conjugacy, and left-invertibility alone do not supply a
 -- parallel schedule or a speedup theorem.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Jensen/minimax regret + rounding-bias + KKT + stationary-Markov
+-- connected optimization boundary.
+--
+-- This is intentionally conditional.  Jensen/minimax duality supplies a
+-- regret comparison only when the required convex-concave/minimax
+-- hypotheses are instantiated.  KKT stationarity and Markov fixed-point
+-- structure do not follow merely from rounding or recurrence.
+--
+-- The quantitative carrier is Nat so this layer remains independent of
+-- an imported real-analysis library.  A concrete real-valued instantiation
+-- may refine these quantities through a separate representation theorem.
+------------------------------------------------------------------------
+
+record JensenMinimaxRegretRoundingKKTMarkovData : Set₁ where
+  constructor jensenMinimaxRegretRoundingKKTMarkovData
+  field
+    minimaxRegret : Nat
+    jensenGap : Nat
+    roundingBias : Nat
+    kktResidual : Nat
+    markovMixing : Nat
+
+    jensenMinimaxRegret :
+      minimaxRegret ≤ jensenGap + roundingBias
+
+    kktRoundingAbsorption :
+      jensenGap + roundingBias
+      ≤
+      jensenGap + roundingBias + kktResidual
+
+    stationaryMarkovFixedPoint :
+      jensenGap + roundingBias + kktResidual
+      ≤
+      jensenGap + roundingBias + kktResidual + markovMixing
+
+open JensenMinimaxRegretRoundingKKTMarkovData public
+
+jensen-minimax-regret-rounding-kkt-markov-bound :
+  (D : JensenMinimaxRegretRoundingKKTMarkovData) →
+  minimaxRegret D
+  ≤
+  jensenGap D
+  + roundingBias D
+  + kktResidual D
+  + markovMixing D
+jensen-minimax-regret-rounding-kkt-markov-bound D =
+  ≤-trans
+    (jensenMinimaxRegret D)
+    (≤-trans
+      (kktRoundingAbsorption D)
+      (stationaryMarkovFixedPoint D))
+
+------------------------------------------------------------------------
+-- Full connected optimizer composition.  The recurrent scan and
+-- stationary Markov/Walrasian interfaces are explicit dependencies rather
+-- than disconnected theorem names.
+------------------------------------------------------------------------
+
+record ConnectedJensenMinimaxRegretOptimizerTheorem : Set₁ where
+  constructor connectedJensenMinimaxRegretOptimizerTheorem
+  field
+    recurrentScan :
+      RecurrentAssociativeScanTheorem C.GRUState C.Int8
+
+    stationaryMarkovWalrasian :
+      MarkovStationaryWalrasianCompositionTheorem
+
+    finiteKKTAbsorbing :
+      ∀ {State : Set}
+        {step : State → State}
+        {hardSparse : State → Set}
+        {equilibrium : State} →
+      FiniteHardSparseKKTEquilibriumTheorem
+        State step hardSparse equilibrium →
+      UniqueKKTAbsorbingClass
+        State
+        (⊤)
+        step
+        hardSparse
+        (λ _ → ⊤)
+        equilibrium
+
+    regretBoundary :
+      JensenMinimaxRegretRoundingKKTMarkovData
+
+    regretBound :
+      minimaxRegret regretBoundary
+      ≤
+      jensenGap regretBoundary
+      + roundingBias regretBoundary
+      + kktResidual regretBoundary
+      + markovMixing regretBoundary
+
+open ConnectedJensenMinimaxRegretOptimizerTheorem public
+
+connected-jensen-minimax-regret-optimizer-theorem :
+  ConnectedJensenMinimaxRegretOptimizerTheorem →
+  minimaxRegret regretBoundary
+  ≤
+  jensenGap regretBoundary
+  + roundingBias regretBoundary
+  + kktResidual regretBoundary
+  + markovMixing regretBoundary
+connected-jensen-minimax-regret-optimizer-theorem C =
+  regretBound C
+
+------------------------------------------------------------------------
+-- Promotion boundary:
+-- the Jensen/minimax regret surface is not a standalone optimizer theorem.
+-- It is graph-complete only through the recurrent scan, stationary Markov
+-- fixed-point/Walrasian interface, and KKT absorbing-class certificate.
+-- A concrete Jensen inequality, constraint qualification, rounding model,
+-- and stationary-law witness remain required before this becomes a proved
+-- numeric regret theorem.
+------------------------------------------------------------------------
