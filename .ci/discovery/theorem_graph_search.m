@@ -383,6 +383,7 @@ graph_required_theorems = [
     "FinitePOMDPExactTransport",
     "ArchitecturePreservingCanonicalRNNLMIsomorphism",
     "CanonicalExactRNNLMTheorem",
+    "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
     "CanonicalGlobalTokenLMCompositionTheorem",
     "CanonicalIntegerHaarScaledOrthogonalityTheorem",
     "CanonicalAStarCostGuidanceTheorem",
