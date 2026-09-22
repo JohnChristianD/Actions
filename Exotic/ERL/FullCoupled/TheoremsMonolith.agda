@@ -5995,6 +5995,33 @@ canonical-exact-rnn-lm-observation-topology-capability-theorem =
     canonical-finite-observation-information-boundary-theorem
 
 ------------------------------------------------------------------------
+-- Emergent endogenous RNN-LM/POMDP/topology capability closure.
+--
+-- This is a packaging theorem over already-declared exact surfaces:
+-- sequence-model capability, endogenous topology/information boundaries,
+-- and finite POMDP probability/belief transport. It adds no new semantic
+-- axiom; it exposes the cross-domain dependency to graph search.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem : Set₁ where
+  constructor canonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+  field
+    rnnlmCapability :
+      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    pomdpObservation :
+      CanonicalEndogenousPOMDPObservationBoundaryTheorem
+    finiteInformation :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+
+canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem :
+  CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem =
+  canonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+    canonical-exact-rnn-lm-observation-topology-capability-theorem
+    canonical-endogenous-pomdp-observation-boundary-theorem
+    canonical-finite-observation-information-boundary-theorem
+
+------------------------------------------------------------------------
 -- Exact vocabulary-cardinality boundary.
 ------------------------------------------------------------------------
 
