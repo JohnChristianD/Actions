@@ -38,6 +38,28 @@
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
           };
+          slow-readme-update = let
+            script = pkgs.writeShellApplication {
+              name = "slow-readme-update";
+              runtimeInputs = [
+                pkgs.coreutils
+                pkgs.gawk
+                pkgs.gnused
+                pkgs.git
+                pkgs.python3
+                pkgs.haskellPackages.dhall
+              ];
+              text = ''
+                generated=$(mktemp)
+                trap 'rm -f "$generated"' EXIT
+                dhall text --file .ci/slow-readme-update.dhall > "$generated"
+                bash "$generated"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/slow-readme-update";
+          };
           default = {
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
