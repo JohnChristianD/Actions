@@ -106,6 +106,26 @@ graph_connected_lion_jensen_minimax_regret_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+:- pred graph_connected_f4_frank_wolfe_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_f4_frank_wolfe_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedF4FrankWolfeKKTTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_maxwell_gru_representation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_finite_maxwell_gru_representation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteMaxwellGRUExactRepresentationCandidate",
+        Laws,
+        Plan).
+
 all_generated_plans_valid(Laws, Plans) :-
     all_valid_plans(Plans, Laws, yes).
 
