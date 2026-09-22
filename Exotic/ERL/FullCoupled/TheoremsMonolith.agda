@@ -6768,15 +6768,6 @@ record ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem : Set₁ where
   field
     connectedOptimizer :
       ConnectedJensenMinimaxRegretOptimizerTheorem
-    lionExtendedBound :
-      minimaxRegret
-        (regretBoundary connectedOptimizer)
-      ≤
-      jensenGap (regretBoundary connectedOptimizer)
-      + roundingBias (regretBoundary connectedOptimizer)
-      + kktResidual (regretBoundary connectedOptimizer)
-      + lionDescentResidual (regretBoundary connectedOptimizer)
-      + markovMixing (regretBoundary connectedOptimizer)
 
 open ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem public
 
@@ -6791,7 +6782,7 @@ connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem :
   + lionDescentResidual (regretBoundary (connectedOptimizer C))
   + markovMixing (regretBoundary (connectedOptimizer C))
 connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem C =
-  lionExtendedBound C
+  regretBound (connectedOptimizer C)
 
 ------------------------------------------------------------------------
 -- Promotion boundary:
