@@ -1,21 +1,19 @@
-let maxCommits : Natural = 200
 in ''#!/usr/bin/env bash
 set -euo pipefail
 
 README=README.md
 BEGIN='<!-- BEGIN RECENT COMMIT TOTALITY -->'
 END='<!-- END RECENT COMMIT TOTALITY -->'
-MAX_COMMITS=200
 HEAD_SHA=$(git rev-parse HEAD)
 
 last_processed=$(sed -n 's/^last-processed-commit: //p' "$README" | head -n 1)
-if [ -n "$last_processed" ] && git cat-file -e "$last_processed^{commit}" 2>/dev/null; then
-  range="$last_processed..HEAD"
-else
-  range="HEAD~$MAX_COMMITS..HEAD"
+if [ -z "$last_processed" ] || ! git cat-file -e "$last_processed^{commit}" 2>/dev/null; then
+  echo "ERROR: README commit-totality marker is missing or invalid" >&2
+  exit 1
 fi
 
-commits=$(git log --format='%H%x09%s' "$range" | head -n "$MAX_COMMITS")
+range="$last_processed..HEAD"
+commits=$(git log --format='%H%x09%s' "$range")
 count=$(printf '%s\n' "$commits" | sed '/^$/d' | wc -l | tr -d ' ')
 
 if [ "$count" -eq 0 ]; then
