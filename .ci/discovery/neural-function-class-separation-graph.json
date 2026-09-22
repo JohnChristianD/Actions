@@ -521,5 +521,46 @@
     ],
     "promotion_rule": "Do not create a standalone tropical, topology, neighborhood, or conjugacy separation node. Promote each only through the existing composed theorem that already consumes its semantics; the strict graph retains the unified full-connected candidate.",
     "status_rule": "Remain CANDIDATE_NOT_PROVED until the Agda proposition, connected witness, and required transport/separation certificates exist."
+  },
+  "signoptimizer_affine_topology_neighborhood_conjugacy": {
+    "name": "CanonicalEndogenousSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalEndogenousTropicalHardSignAffineGRUExpressivityTopologyConjugacyCandidate",
+    "role": "refinement of the unified connected candidate using the explicit sign-optimizer-affine seam; not a new disconnected separation node",
+    "composition_order": [
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "hardSignGate-idempotent",
+      "F4 optimizer",
+      "NormPair learner replacement seam",
+      "DirectProductFiniteAutomatonComposition",
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DenseNeighborhoodSeparationTheorem",
+      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+      "F_full_connected"
+    ],
+    "candidate_statement": "If the canonical sign/HardSign optimizer-affine recurrent transition admits a finite invariant quotient with a tropical or polyhedral region description and an explicit affine automaton conjugacy, then the same connected witness can be transported through the existing state/architecture conjugacy, neighborhood-separation surface, and endogenous observation-topology surfaces. This would unify sign-optimizer-affine GRU expressivity, topology, neighborhood separation, and conjugacy without asserting strict function-class separation until baseline nonrepresentability is proved.",
+    "required_certificates": [
+      "actual Agda sign-optimizer-affine quotient definition",
+      "HardSign/sign transition preservation",
+      "explicit affine realization of arbitrary finite automaton transitions",
+      "prefix automaton conjugacy",
+      "StateIsomorphism/architecture-preserving transport",
+      "same-witness DenseNeighborhoodSeparation proof",
+      "observation-topology compatibility",
+      "F_base subseteq F_full_connected",
+      "baseline nonrepresentability"
+    ],
+    "promotion_rule": "The sign-optimizer-affine result is promoted through the existing unified composed candidate; no standalone sign, optimizer, topology, neighborhood, or conjugacy separation node is admitted."
+  },
+  "complete_graph_contract_v3": {
+    "future_entry": "Every future theorem or witness concerning sign/HardSign geometry, optimizer-affine dynamics, expressivity, topology, neighborhood separation, or conjugacy must either be consumed by an existing composed parent or remain foundational outside strict separation.",
+    "strict_graph_invariant": "The strict graph contains only the fully connected composition; conceptual relatedness alone never creates an edge.",
+    "upgrade_gate": "SEPARATED only after explicit inclusion, connected witness membership, and canonical baseline nonrepresentability are proved on the Agda surface."
   }
 }
