@@ -4910,6 +4910,44 @@ canonical-linear-haar-sparsemax-attention-composition-theorem =
 
 
 ------------------------------------------------------------------------
+-- Canonical finite-cycle exclusion transported through an exact state
+-- isomorphism. This packages the already-proved generic conjugacy law;
+-- it is not a Lyapunov descent theorem.
+------------------------------------------------------------------------
+
+record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
+  constructor canonicalFiniteCycleExclusionIsomorphismTheorem
+  field
+    iterateConjugacy :
+      ∀ {A B : Set}
+        (iso : StateIsomorphism A B)
+        (f : A → A)
+        (g : B → B) →
+        (∀ a → to iso (f a) ≡ g (to iso a)) →
+        ∀ n a →
+        to iso (iterateIsomorphism f n a)
+        ≡
+        iterateIsomorphism g n (to iso a)
+    cycleTransport :
+      ∀ {A B : Set}
+        (iso : StateIsomorphism A B)
+        (f : A → A)
+        (g : B → B) →
+        (∀ a → to iso (f a) ≡ g (to iso a)) →
+        (∀ n a → iterateIsomorphism f (suc n) a ≢ a) →
+        ∀ n a →
+        iterateIsomorphism g (suc n) (to iso a) ≢ to iso a
+
+open CanonicalFiniteCycleExclusionIsomorphismTheorem public
+
+canonical-finite-cycle-exclusion-isomorphism-theorem :
+  CanonicalFiniteCycleExclusionIsomorphismTheorem
+canonical-finite-cycle-exclusion-isomorphism-theorem =
+  canonicalFiniteCycleExclusionIsomorphismTheorem
+    isomorphismIterateConjugacy
+    isomorphismNoFiniteCycleTransport
+
+------------------------------------------------------------------------
 -- Operator-composition closure is already an exact theorem of the
 -- canonical endomorphism algebra. The standalone operator-complexity
 -- module therefore adds no new learner semantics.
