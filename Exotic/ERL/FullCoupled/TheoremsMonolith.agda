@@ -6122,7 +6122,7 @@ canonical-token-vocabulary-upper-bound-theorem =
 
 record FunctionClassInclusion
   (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set₁) : Set₂ where
+  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
   constructor functionClassInclusion
   field
     include :
@@ -6132,7 +6132,7 @@ record FunctionClassInclusion
 
 record StrictFunctionClassSeparation
   (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set₁) : Set₂ where
+  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
   constructor strictFunctionClassSeparation
   field
     inclusion :
@@ -6155,7 +6155,7 @@ strictFunctionClassSeparation-implies-inclusion separation
 
 record CanonicalStrictNeuralFunctionClassSeparationContract
   (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set₁) : Set₂ where
+  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
   constructor canonicalStrictNeuralFunctionClassSeparationContract
   field
     connectedComposition :
