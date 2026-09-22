@@ -298,6 +298,11 @@
       "theorem": "CanonicalPolymorphicSparsemaxCompositionTheorem",
       "promotion_target": "CanonicalHaarSparsemaxFullStateClosureTheorem",
       "role": "existing sparsemax/recurrent composition promoted into the full attention/Haar closure"
+    },
+    {
+      "theorem": "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "promotion_target": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "role": "exact GRU/F4/NormPair/Watkins prefix bridge consumed by the connectedStep field; promoted as a dependency, not an independent separation claim"
     }
   ],
   "emergent_endogenous_candidate": {
@@ -319,5 +324,54 @@
       "baseline nonrepresentability theorem"
     ],
     "tropical_extension": "A max-plus/tropical optimizer-geometry theorem would fit as a composed geometry lemma only after an actual Agda proposition and witness are supplied; no such theorem is currently pre-graphed."
+  },
+  "finite_factor_automaton_closure_graph": {
+    "status": "CONNECTED_CANDIDATE_NOT_PROVED",
+    "scope": "factor-level automaton closure inside the existing full connected learner composition; not an independent function-class separation claim",
+    "path": [
+      "F_base",
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "hardSignGate-idempotent",
+      "DirectProductFiniteAutomatonComposition",
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalFiniteCycleExclusionIsomorphismTheorem",
+      "F_full_connected"
+    ],
+    "exact_dependency_note": "CanonicalFullLearnerConnectedScanConjugacyTheorem has an exact connectedStep field instantiated by canonicalFullStep-GRUF4Norm-prefix-bridge, so the GRU/F4/NormPair/Watkins composition is a real Agda dependency rather than a synthetic graph edge.",
+    "closure_target": "Given an explicit HardSign-preserving finite invariant factor quotient and an affine realization map for each finite automaton transition, prove that the quotient realizes arbitrary finite automata while exact-state finite-cycle exclusion remains intact.",
+    "required_certificates": [
+      "explicit affine realization of an arbitrary finite automaton by the canonical recurrent interface",
+      "HardSign quotient preservation under the connected learner transition",
+      "finite invariant factor image or equivalent bounded quotient certificate",
+      "factor-to-automaton conjugacy on prefixes",
+      "exact-state nonrecurrence/finite-cycle exclusion compatibility",
+      "strict baseline nonrepresentability witness if used for function-class separation"
+    ],
+    "status_rule": "Do not promote to SEPARATED until the inclusion, connected witness membership, and baseline nonrepresentability obligations are all proved on the Agda surface."
+  },
+  "tropical_quotient_optimizer_affine_candidate": {
+    "name": "CanonicalTropicalQuotientOptimizerAffineGRUExpressivityCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+    "composition": [
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "hardSignGate-idempotent",
+      "F4 optimizer",
+      "NormPair learner replacement seam",
+      "finite factor automaton closure"
+    ],
+    "candidate_statement": "A tropical/max-plus or polyhedral quotient of the optimizer-affine recurrent transition could provide a geometry-preserving conjugacy of the GRU/F4/NormPair connected learner on a finite HardSign factor, yielding a combinatorial expressivity certificate for finite automata.",
+    "admission_gate": [
+      "actual Agda proposition defining the tropical/max-plus quotient or equivalent polyhedral invariant",
+      "proof that the quotient is preserved by the canonical recurrent affine transition",
+      "explicit finite-automaton realization witness",
+      "theorem_graph_search discovers the composed path",
+      "theorem_monolith_egraph_sync discovers the same composed path",
+      "strict separation still requires inclusion plus baseline nonrepresentability"
+    ],
+    "literature_boundary": "Tropical neural-network geometry supports polyhedral/tropical descriptions of piecewise-linear expressivity, but this repository does not yet have the recurrent HardSign/F4/NormPair theorem. Literature is motivation, not proof authority."
   }
 }
