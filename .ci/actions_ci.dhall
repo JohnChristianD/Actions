@@ -328,13 +328,13 @@ JSON
     CanonicalNatClockLyapunovSeparationTheorem
     CanonicalGlobalInt8LeftInverseImpossibilityTheorem
     CanonicalClockObservationSubcompositionTheorem
-    CanonicalMonotoneEnergyStationarySubcompositionTheorem
+    CanonicalFiniteObservationStationarySubcompositionTheorem
     CanonicalBoundednessPEBoundarySubcompositionTheorem
     canonical-clock-observation-subcomposition-theorem
     canonical-monotone-energy-stationary-subcomposition-theorem
     canonical-boundedness-pe-boundary-subcomposition-theorem
     canonical-global-int8-left-inverse-impossibility-theorem
-    MonotoneConvergenceToStationaryDistributionTheorem
+    FiniteObservationStationaryLimitTheorem
     CanonicalPersistentExcitationRequirementTheorem
     canonical-persistent-excitation-requirement-theorem
     ExactContractComputabilityBoundaryTheorem
