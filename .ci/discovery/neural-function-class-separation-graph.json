@@ -122,6 +122,16 @@
       "ConnectedJensenMinimaxRegretOptimizerTheorem",
       "F_full_connected",
       "the optimizer-regret boundary is admitted only through the full connected composition"
+    ],
+    [
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "Lion descent/stationarity contributes an explicit optimizer residual to the connected regret boundary"
+    ],
+    [
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "F_full_connected",
+      "the Lion-extended optimizer-regret boundary is admitted only through the full connected composition"
     ]
   ],
   "separation_obligation": [
@@ -170,7 +180,8 @@
     "complexity_gate": "A named computational-complexity result requires an explicit machine/decision/transduction problem, cost model, input encoding, arithmetic representation, and resource bound. An untruncated recurrent horizon by itself is not a complexity class.",
     "q_log_boundary": "The q-log/Tsallis component is a semantic operation in the current learner state. No repository theorem currently derives a complexity-class change from it.",
     "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power.",
-    "optimizer_regret_boundary": "Jensen/minimax regret plus rounding bias plus KKT residual plus stationary Markov mixing is represented conditionally as R ≤ J + B + K + M; no unconditional numeric regret rate is claimed."
+    "optimizer_regret_boundary": "Jensen/minimax regret plus rounding bias plus KKT residual plus stationary Markov mixing is represented conditionally as R ≤ J + B + K + M; no unconditional numeric regret rate is claimed.",
+    "optimizer_regret_boundary_lion": "Lion is represented conditionally by an explicit descent/stationarity residual L, giving R ≤ J + B + K + L + M. Literature-backed Lion rates are not imported as Agda facts; the concrete update, assumptions, and analytic proof remain promotion obligations."
   },
   "pregraphed_candidates": [
     {
@@ -204,6 +215,27 @@
       "distinction": "Connected optimizer-regret boundary combining Jensen/minimax regret, explicit rounding bias, KKT absorbing-class stationarity, and Markov fixed-point/Walrasian transport.",
       "quantitative_contract": "R ≤ J + B + K + M",
       "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
+    },
+    {
+      "name": "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "RecurrentAssociativeScanTheorem",
+        "FiniteHardSparseKKTEquilibriumTheorem",
+        "MarkovStationaryWalrasianCompositionTheorem",
+        "ConnectedJensenMinimaxRegretOptimizerTheorem",
+        "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem"
+      ],
+      "distinction": "Connected optimizer boundary extended with Lion sign-momentum descent/stationarity as an explicit optimizer-specific residual term; it does not assert a Lion convergence rate without analytic assumptions.",
+      "quantitative_contract": "R ≤ J + B + K + L + M",
+      "literature_basis": [
+        "Convergence Rate Analysis of LION, arXiv:2411.07724",
+        "Lions and Muons: Optimization via Stochastic Frank-Wolfe, arXiv:2506.04192",
+        "Convergence Analysis of the Lion Optimizer in Centralized and Distributed Settings, arXiv:2508.12327"
+      ],
+      "promotion_gate": "Promote only after a concrete Lion update model, descent/stationarity lemma, smoothness/noise assumptions, KKT constraint qualification, rounding-bias bound, Jensen/minimax duality witness, and stationary-Markov fixed-point/mixing witness are jointly instantiated and kernel-checked."
     }
   ],
   "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
@@ -247,6 +279,10 @@
       [
         "JensenMinimaxRegretRoundingKKTMarkovData",
         "ConnectedJensenMinimaxRegretOptimizerTheorem"
+      ],
+      [
+        "ConnectedJensenMinimaxRegretOptimizerTheorem",
+        "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem"
       ]
     ],
     "excluded_from_strict_graph": [
@@ -259,7 +295,8 @@
       "CanonicalEndogenousObservationBoundaryTheorem",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "JensenMinimaxRegretRoundingKKTMarkovData"
+      "JensenMinimaxRegretRoundingKKTMarkovData",
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem"
     ],
     "note": "These records remain on the Agda proof surface and may remain required CI declarations; exclusion here means they are not treated as independent function-class separation claims."
   },
@@ -275,7 +312,8 @@
       "theorem_graph_search discovers a path through the full connected composition",
       "theorem_monolith_egraph_sync discovers the same path",
       "the inclusion and nonrepresentability witness obligations are discharged",
-      "only then may status change from NOT_ESTABLISHED to SEPARATED"
+      "only then may status change from NOT_ESTABLISHED to SEPARATED",
+      "optimizer-specific candidates must identify their descent/stationarity residual and a real consuming connected theorem; literature alone does not upgrade candidate status"
     ],
     "complete_graph_contract": {
       "new_theorem_entry": "Every future theorem must name one existing composed parent, expose an actual Agda dependency into that parent, and be discovered by theorem_graph_search and theorem_monolith_egraph_sync.",
@@ -929,6 +967,27 @@
         "baseline nonrepresentability"
       ],
       "no_synthetic_edge": true
+    },
+    {
+      "name": "CanonicalLionSignMomentumKKTDescentBoundaryCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "literature_basis": "Lion convergence and constrained-stationarity analyses",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "ConnectedJensenMinimaxRegretOptimizerTheorem",
+        "CanonicalLionSignMomentumKKTDescentBoundaryCandidate"
+      ],
+      "candidate_statement": "Formalize the Lion sign-momentum descent/stationarity contribution as the optimizer-specific L term in the connected regret composition, without treating Lion as a standalone separation theorem.",
+      "required_certificates": [
+        "concrete Lion update rule and state",
+        "smoothness/noise assumptions",
+        "descent or stationarity inequality",
+        "KKT constraint qualification and multiplier witness",
+        "shared objective with Jensen/rounding/Markov terms",
+        "Agda --safe composition"
+      ],
+      "no_synthetic_edge": true
     }
   ],
   "transformative_recent_commits_since_graph_contract": [
@@ -999,7 +1058,7 @@
     }
   ],
   "complete_graph_contract_v7": {
-    "future_entry": "Every future theorem, candidate, topology result, neighborhood result, or conjugacy result must name a real composed Agda parent and be discoverable by theorem_graph_search plus theorem_monolith_egraph_sync.",
+    "future_entry": "Every future theorem, candidate, topology result, neighborhood result, conjugacy result, or optimizer-specific descent result must name a real composed Agda parent and be discoverable by theorem_graph_search plus theorem_monolith_egraph_sync.",
     "promotion_order": "foundational theorem -> smallest existing composed consumer -> full connected learner -> F_full_connected",
     "disconnected_pruning": "No-dependency theorems are removed from the strict separation graph as independent nodes. Their proof records remain available only when required by a consuming composed theorem; otherwise they are classified foundational and not graph-promoted.",
     "strict_invariant": "Only F_base -> full connected composition -> F_full_connected participates in strict function-class separation.",
