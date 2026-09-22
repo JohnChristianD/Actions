@@ -130,13 +130,15 @@ main(!IO) :-
             All,
             RequiredPlans,
             RequiredSubcompositionPlans),
-           graph_monotone_energy_plan(All, MonotoneEnergyPlan)
+           graph_monotone_energy_plan(All, MonotoneEnergyPlan),
+           graph_endogenous_observation_plan(All, EndogenousObservationPlan)
         then
             true
         else
             RequiredPlans = [],
             RequiredSubcompositionPlans = [],
-            MonotoneEnergyPlan = []
+            MonotoneEnergyPlan = [],
+            EndogenousObservationPlan = []
     ),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(Plans, EGraph0, EGraphGraph),
@@ -151,6 +153,7 @@ main(!IO) :-
             list.length(RequiredPlans) = 4,
             list.length(RequiredSubcompositionPlans) = 3,
             list.length(MonotoneEnergyPlan) > 0,
+            list.length(EndogenousObservationPlan) > 0,
             list.length(Analyses) > 0,
             class_count(EGraph) > 0,
             enode_count(EGraph) > 0,
