@@ -47,7 +47,7 @@ It is not intrinsically hierarchical, convolutional, or symmetric. Those structu
 
 The cleanest new endogenous closure is:
 
-`CanonicalEndogenousExactRNNLMVocabularyObservationClosureCandidate`
+`CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem`
 
 Proposed composition:
 
@@ -59,7 +59,7 @@ Proposed composition:
 → `CanonicalExactRNNLMObservationTopologyCapabilityTheorem`
 → `CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem`.
 
-This is a composed closure candidate, not a proved new theorem. Its promotion gate is an actual Agda record consuming these existing records, followed by Agda `--safe`, Mercury discovery, and e-graph synchronization.
+This is now a genuine Agda composition theorem: `canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem` constructs it directly from the seven existing theorem records. The Agda term is present on the proof surface. Fresh `Agda --safe`, Mercury discovery, and e-graph synchronization are still required before calling repository CI verification green.
 
 The candidate is genuinely endogenous because the terminal node is already the repository's endogenous RNN-LM/POMDP observation closure, rather than an external automaton or disconnected topology statement.
 
@@ -123,7 +123,7 @@ The exact non-ambiguous conclusion is:
 - Nat successor: total already;
 - remaining successor obligation: model-specific transition/representation compatibility, with a finite-boundary condition for finite sequences;
 - inductive bias: causal recurrent sequential composition;
-- emergent endogenous theorem: the RNN-LM vocabulary/observation endogenous closure candidate above;
+- emergent endogenous theorem: the RNN-LM vocabulary/observation endogenous closure is now proved as an Agda composition term, with fresh CI still pending;
 - graph completeness: consume real dependencies into composed theorems; never synthesize edges;
 - recent repair commits: real and on `main`;
 - verification: still not green/observed for those latest main commits, so no repair should be claimed verified merely from their presence.
