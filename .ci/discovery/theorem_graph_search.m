@@ -36,6 +36,22 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_finite_observation_stationary_limit_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_finite_observation_stationary_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_endogenous_observation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_endogenous_rnnlm_pomdp_observation_topology_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 
 :- pred all_scores_non_decreasing(
     list(semantic_law)::in,
