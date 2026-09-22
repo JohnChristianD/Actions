@@ -278,7 +278,10 @@ graph_required_theorems = [
     "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
     "FiniteObservationStationaryLimitTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
-    "ExactContractComputabilityBoundaryTheorem"
+    "ExactContractComputabilityBoundaryTheorem",
+    "FiniteFunctionExactIsomorphismTransportTheorem",
+    "FiniteRecurrentFunctionExactTranslationTheorem",
+    "FinitePOMDPExactIsomorphismTransportTheorem"
 ].
 
 :- func graph_required_subcompositions = list(string).
