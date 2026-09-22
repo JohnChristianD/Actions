@@ -509,3 +509,20 @@ It remains `CANDIDATE_NOT_PROVED`. The missing artifact is an actual quotient re
 
 The canonical theorem surface now makes the three strict neural-function-class obligations explicit through `FunctionClassInclusion`, `StrictFunctionClassSeparation`, and `CanonicalStrictNeuralFunctionClassSeparationContract`: same input/output semantics, a connected-class witness, and canonical baseline nonrepresentability. These are proof contracts, not a fabricated concrete separation result. The sign/optimizer-affine candidates remain `CANDIDATE_NOT_PROVED` until a model-specific term inhabits the contract and Agda `--safe` verifies it.
 
+
+
+### Literature-aligned strict neural separation completion
+
+The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a `Fin 256` recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
+
+This matches the formal literature axis of rational/finite-state recurrence versus richer recurrent state expressivity used by Merrill et al. (ACL 2020) and the finite-state characterization/strict-subset results of Svete & Cotterell (EMNLP 2023):
+- https://aclanthology.org/2020.acl-main.43/
+- https://aclanthology.org/2023.emnlp-main.502/
+
+The four existing exotic labels now reuse this completed strict separation surface:
+`canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem`,
+`canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem`,
+`canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem`,
+and `canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem`.
+
+Their route-specific claims remain explicitly unproved: the shared strict theorem is the finite-state/rational-recurrence separation implied by the existing Agda invariants, not a fabricated sign/optimizer-affine GRU theorem.
