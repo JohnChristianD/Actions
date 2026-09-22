@@ -253,6 +253,15 @@ graph_required_subcompositions = [
     "CanonicalBoundednessPEBoundarySubcompositionTheorem"
 ].
 
+:- pred graph_monotone_energy_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_monotone_energy_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalMonotoneEnergyStationarySubcompositionTheorem",
+        Laws,
+        Plan).
+
 :- pred graph_search_completion(
     list(semantic_law)::in,
     list(list(string))::out,
