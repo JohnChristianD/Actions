@@ -1107,14 +1107,14 @@ recurrentPrefix-scan-lifts-conjugacy replace step h xs (suc n) s =
       h
       xs
       n
-      (step s (C.lookupInput xs n)))
+      (step s (xs n)))
     (cong
       (λ q →
         C.recurrentPrefixState
           (C.recurrentNetwork step)
           xs n
           q)
-      (h s (C.lookupInput xs n)))
+      (h s (xs n)))
 
 canonical-recurrent-scan-conjugacy-theorem :
   RecurrentScanConjugacyTheorem C.GRUState C.Int8
