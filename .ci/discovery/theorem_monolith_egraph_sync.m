@@ -141,7 +141,9 @@ main(!IO) :-
                All, EndogenousRNNLMPOMDPObservationTopologyPlan),
            graph_finite_probability_mass_plan(All, FiniteProbabilityMassPlan),
            graph_finite_pomdp_probability_plan(All, FinitePOMDPProbabilityPlan),
-           graph_endogenous_pomdp_observation_plan(All, EndogenousPOMDPObservationPlan)
+           graph_endogenous_pomdp_observation_plan(All, EndogenousPOMDPObservationPlan),
+           all_generated_plans_valid(All, AutomaticCompositePlans),
+           all_generated_plans_valid(All, EndogenousCompositePlans)
         then
             true
         else
