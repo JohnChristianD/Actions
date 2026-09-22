@@ -408,6 +408,16 @@ The component theorems remain valid Agda surfaces, but the separation graph prom
 
 A strict result still requires all three semantic obligations: the baseline must embed into the full connected class, a concrete function must be constructed through the entire path, and a canonical Agda theorem must prove that witness is not representable by the baseline. The repository currently has the connected composition and the factor-recurrence mechanism, but it does not yet have that nonrepresentability witness. Therefore the graph remains NOT_ESTABLISHED.
 
+### Internal Nix/Dhall verification authority
+
+The repository's internal verification authority is the Nix environment invoking the Dhall-rendered `.ci/actions_ci.dhall` lanes. The configured lanes include Agda safe checking, Mercury discovery, e-graph synchronization, semantic-contract checks, surface checks, and version checks. Repository configuration is observable here, but an internal Nix/Dhall execution result is not observable through the repository connector alone, so the graph must remain UNVERIFIED rather than substituting a GitHub status.
+
+Orange/pending internal verification is a wait state, not a bypass condition. Repairs are made only when an actual defect is observed.
+
+### Pre-graphed exotic promotion
+
+The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `canonicalF4-factor-collision-separates-full-state`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
+
 ### Strict full-connected neural-function-class separation
 
 The strict separation graph has one function-class object only: the full connected composition. Individual HardSign, Haar, attention, recurrence, optimizer, factor, and observation surfaces are not treated as independent separation claims. They are promoted into the smallest existing composed theorem that consumes their semantics, or remain ordinary Agda/CI prerequisites until such a composition exists.
