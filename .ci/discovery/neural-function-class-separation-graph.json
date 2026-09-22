@@ -141,8 +141,8 @@
       "generalization_link": "If the regularizer also yields algorithmic stability, contraction, or controlled hypothesis-class complexity, a separate generalization bound can be composed with factor recurrence. Recurrence itself is not a generalization guarantee."
     }
   ],
-  "current_result": "NOT_ESTABLISHED",
-  "reason": "A literature-aligned strict separation is now present on the Agda surface for the algebraically supported baseline: a Fin 256 recurrent class embeds into a connected recurrent extension, while the canonical unbounded clock trace is not finite-state realizable. The four exotic labels reuse that completed separation surface; their additional route-specific sign/optimizer-affine, non-tropical, non-automata, or replacement-quotient semantics remain unestablished.",
+  "current_result": "PARTIALLY_ESTABLISHED",
+  "reason": "The finite-state/rational-recurrence strict separation is represented by an explicit Agda theorem term, while route-specific sign/optimizer-affine candidates remain candidates until their own model-specific witness and nonrepresentability certificates exist.",
   "pregraphed_candidates": [
     {
       "name": "CanonicalEndogenousAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate",
@@ -782,5 +782,164 @@
       "canonicalConnectedLearnerClock-not-finite-state",
       "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
     ]
+  },
+  "emergent_endogenous_theorem_observed": {
+    "name": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
+    "status": "PROVED_ON_AGDA_SOURCE_SURFACE_UNVERIFIED_BY_FRESH_CI",
+    "constructor": "canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem",
+    "dependencies": [
+      "CanonicalGlobalTokenConjugacyTheorem",
+      "CanonicalTokenVocabularyUpperBoundTheorem",
+      "CanonicalExactRNNLMTheorem",
+      "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
+      "CanonicalExactRNNLMObservationSubcompositionTheorem",
+      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
+      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+    ],
+    "graph_role": "real endogenous closure theorem; composes vocabulary, exact RNN-LM capability, observation topology, and endogenous POMDP observation transport.",
+    "distinction": "An actual composed theorem record, not merely the older HardSign/F4 candidate."
+  },
+  "novel_exotic_pregraphed_theorems": [
+    {
+      "name": "CanonicalEndogenousAperiodicClockRNNStrictSeparationCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "canonicalFiniteStateVsConnectedRecurrentStrictSeparation",
+      "literature_basis": "finite-state/rational recurrence versus unbounded state-space growth",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "canonicalConnectedLearnerClock-realization",
+        "canonicalConnectedLearnerClock-not-finite-state",
+        "canonicalFiniteStateVsConnectedRecurrentStrictSeparation",
+        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      ],
+      "required_certificates": [
+        "explicit input/output semantics for the clock transduction",
+        "resource-preserving baseline inclusion",
+        "connected witness membership",
+        "baseline nonrepresentability",
+        "observation-topology transport"
+      ],
+      "no_synthetic_edge": true
+    },
+    {
+      "name": "CanonicalEndogenousRationalRecurrenceBoundaryCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "literature_basis": "rational recurrence/WFA state expressivity boundary",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "CanonicalBoundedFactorLiftTheorem",
+        "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+        "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      ],
+      "candidate_statement": "Characterize the exact boundary between the finite-factor/rational-recurrence observation quotient and the nonrecurrent exact learner state, without identifying factor recurrence with exact-state recurrence.",
+      "required_certificates": [
+        "actual Agda rational-recurrence class definition",
+        "factor-to-WFA or equivalent recurrence witness",
+        "exact-state/non-factor distinction",
+        "connected observation transport"
+      ],
+      "no_synthetic_edge": true
+    },
+    {
+      "name": "CanonicalEndogenousStateSpaceConjugacyExpressivityBoundaryCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "literature_basis": "RNN hierarchy separation by state expressivity and space complexity",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "CanonicalBoundedFactorLiftTheorem",
+        "DenseNeighborhoodSeparationTheorem",
+        "FullCommutingSquareConjugacyTheorem",
+        "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
+        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      ],
+      "candidate_statement": "Use an explicit state-space conjugacy to transport a strict witness/nonrepresentability boundary through the connected learner, rather than treating topology or neighborhood separation as standalone expressivity claims.",
+      "required_certificates": [
+        "explicit state-space conjugacy",
+        "same-witness neighborhood separation",
+        "observation topology compatibility",
+        "baseline inclusion",
+        "baseline nonrepresentability"
+      ],
+      "no_synthetic_edge": true
+    }
+  ],
+  "transformative_recent_commits_since_graph_contract": [
+    {
+      "sha": "d53313518cf4cce673f1ac108fec075e007f6e6d",
+      "message": "Record internal verification boundary and emergent hard-sign automaton candidate",
+      "transformative": true
+    },
+    {
+      "sha": "f8a3826d701646411aef4281ccb246a80c747390",
+      "message": "Promote pre-graphed automata and HardSign seams into connected graph",
+      "transformative": true
+    },
+    {
+      "sha": "def9ee9551fdb2869c8df36d5b47bc06aaee63b7",
+      "message": "Pregraph automata sign optimizer affine candidate",
+      "transformative": true
+    },
+    {
+      "sha": "dcfdde047e276a1a22d9634f1a75354080d6cd41",
+      "message": "Add algebraic proof of nonlinear sequence storage generation",
+      "transformative": true
+    },
+    {
+      "sha": "1ca9b5b0d94ad47028162cc91d52192509a9d492",
+      "message": "Document learner replacement quotient candidate",
+      "transformative": true
+    },
+    {
+      "sha": "6f74b4f7e8b465351f442d963ef21d3f7b940411",
+      "message": "Graph learner replacement quotient endogenous candidate",
+      "transformative": true
+    },
+    {
+      "sha": "8ad84a107c17e2443bd91a0d9aa31323ffe3fec0",
+      "message": "Bind exotic neural separation candidates to proof gates",
+      "transformative": true
+    },
+    {
+      "sha": "7ce23960a9c90a726911db89da38ab1611b20066",
+      "message": "Repair graph plan implementations below Mercury implementation",
+      "transformative": false
+    },
+    {
+      "sha": "2e67442f438a35634e3e91b6a9b7dab24d3ec078",
+      "message": "Repair recurrent scan input lookup compatibility",
+      "transformative": false
+    },
+    {
+      "sha": "3dece4065ed03770fe261a7bf91b8d6a73c08413",
+      "message": "Repair endogenous graph search string import",
+      "transformative": false
+    },
+    {
+      "sha": "eef7033d66b068f2b5f7ff0336166982fee93123",
+      "message": "Align strict separation record universes",
+      "transformative": false
+    },
+    {
+      "sha": "813954a3612d3763986f0c902aa55e7424fa3fb3",
+      "message": "Repair finite-state separation proof against Agda 2.8 API",
+      "transformative": false
+    },
+    {
+      "sha": "7d224cdcb5d70cb05d4279f633cd5e63182009fc",
+      "message": "Export all graph-plan predicates consumed by e-graph sync",
+      "transformative": false
+    }
+  ],
+  "complete_graph_contract_v7": {
+    "future_entry": "Every future theorem, candidate, topology result, neighborhood result, or conjugacy result must name a real composed Agda parent and be discoverable by theorem_graph_search plus theorem_monolith_egraph_sync.",
+    "promotion_order": "foundational theorem -> smallest existing composed consumer -> full connected learner -> F_full_connected",
+    "disconnected_pruning": "No-dependency theorems are removed from the strict separation graph as independent nodes. Their proof records remain available only when required by a consuming composed theorem; otherwise they are classified foundational and not graph-promoted.",
+    "strict_invariant": "Only F_base -> full connected composition -> F_full_connected participates in strict function-class separation.",
+    "upgrade_gate": "SEPARATED requires explicit resource-preserving inclusion, a connected witness, and canonical baseline nonrepresentability.",
+    "novel_candidate_rule": "New exotic candidates are pre-graphed only when they have an explicit parent/path and literature-motivated algebraic shape; candidate status never substitutes for an Agda proposition or proof.",
+    "no_synthetic_edges": true
   }
 }
