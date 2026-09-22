@@ -3255,6 +3255,24 @@ productPrefix step [] q = q
 productPrefix step (x ∷ xs) q =
   productPrefix step xs (step q x)
 
+productPrefix-componentPrefix :
+  ∀ {Q₁ Q₂ Input : Set}
+  (step₁ : Q₁ → Input → Q₁)
+  (step₂ : Q₂ → Input → Q₂)
+  (xs : List Input) (q₁ : Q₁) (q₂ : Q₂) →
+  productPrefix
+    (λ { (a , b) x → step₁ a x , step₂ b x })
+    xs
+    (q₁ , q₂)
+  ≡
+  (componentPrefix step₁ xs q₁ ,
+   componentPrefix step₂ xs q₂)
+productPrefix-componentPrefix step₁ step₂ [] q₁ q₂ = refl
+productPrefix-componentPrefix step₁ step₂ (x ∷ xs) q₁ q₂ =
+  productPrefix-componentPrefix
+    step₁ step₂ xs (step₁ q₁ x) (step₂ q₂ x)
+
+
 record DirectProductFiniteAutomatonComposition
   (Q₁ Q₂ Input : Set) : Set₁ where
   constructor directProductFiniteAutomatonComposition
@@ -3288,22 +3306,6 @@ directProductFiniteAutomatonComposition-theorem step₁ step₂ =
     (λ _ _ _ → refl)
     (λ xs q₁ q₂ → productPrefix-componentPrefix step₁ step₂ xs q₁ q₂)
 
-productPrefix-componentPrefix :
-  ∀ {Q₁ Q₂ Input : Set}
-  (step₁ : Q₁ → Input → Q₁)
-  (step₂ : Q₂ → Input → Q₂)
-  (xs : List Input) (q₁ : Q₁) (q₂ : Q₂) →
-  productPrefix
-    (λ { (a , b) x → step₁ a x , step₂ b x })
-    xs
-    (q₁ , q₂)
-  ≡
-  (componentPrefix step₁ xs q₁ ,
-   componentPrefix step₂ xs q₂)
-productPrefix-componentPrefix step₁ step₂ [] q₁ q₂ = refl
-productPrefix-componentPrefix step₁ step₂ (x ∷ xs) q₁ q₂ =
-  productPrefix-componentPrefix
-    step₁ step₂ xs (step₁ q₁ x) (step₂ q₂ x)
 
 
 ------------------------------------------------------------------------
