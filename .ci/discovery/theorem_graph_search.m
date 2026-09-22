@@ -19,6 +19,10 @@
     list(semantic_law)::in,
     list(list(string))::out) is det.
 
+:- pred search_endogenous_composite_plans(
+    list(semantic_law)::in,
+    list(list(string))::out) is det.
+
 :- pred all_scores_non_decreasing(
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
@@ -248,6 +252,25 @@ search_composite_law_plans([Law | Laws], Result) :-
 
 search_all_composite_law_plans(Laws, Plans) :-
     search_composite_law_plans(Laws, CompositeLaws),
+    search_composite_law_plans_to_plans(Laws, CompositeLaws, Plans).
+
+:- pred search_endogenous_composite_laws(
+    list(semantic_law)::in,
+    list(semantic_law)::out) is det.
+search_endogenous_composite_laws([], []).
+search_endogenous_composite_laws([Law | Laws], Result) :-
+    search_endogenous_composite_laws(Laws, Tail),
+    (
+        if is_composite(Law),
+           string.sub_string_search(law_name(Law), "endogenous", _)
+        then
+            Result = [Law | Tail]
+        else
+            Result = Tail
+    ).
+
+search_endogenous_composite_plans(Laws, Plans) :-
+    search_endogenous_composite_laws(Laws, CompositeLaws),
     search_composite_law_plans_to_plans(Laws, CompositeLaws, Plans).
 
 :- pred search_composite_law_plans_to_plans(
