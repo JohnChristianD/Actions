@@ -519,6 +519,42 @@ graph_required_subcompositions = [
     "CanonicalExactRNNLMObservationSubcompositionTheorem"
 ].
 
+:- pred graph_finite_observation_stationary_limit_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_observation_stationary_limit_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteObservationStationaryLimitTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_observation_stationary_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_finite_observation_stationary_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalFiniteObservationStationarySubcompositionTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_endogenous_observation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_endogenous_observation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalEndogenousObservationBoundaryTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_endogenous_rnnlm_pomdp_observation_topology_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_endogenous_rnnlm_pomdp_observation_topology_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
+        Laws,
+        Plan).
+
 :- pred graph_search_completion(
     list(semantic_law)::in,
     list(list(string))::out,
