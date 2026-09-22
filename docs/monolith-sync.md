@@ -118,3 +118,14 @@ The active theorem surface now includes `FiniteFactorRecurrenceWithoutStateRecur
 `CanonicalPureNonOrangeBypassCompletionTheorem` is the pre-graphed monolith endpoint. It packages the recurrent-prefix monoid law, full-learner scan conjugacy, exact Turing-boundary contract, Haar/sparsemax closure, finite-cycle isomorphism transport, operator composition, bounded-factor lift, and the new factor-recurrence separation theorem without introducing a second proof surface.
 
 The remaining `FullCoupled/*.agda` files outside the two monoliths are intentionally retained because they provide distinct game/environment benchmark semantics or the signed-divisibility arithmetic bridge. They are not semantically redundant theorem facades.
+
+
+## Deeper endogenous information boundary
+
+The theorem graph now exposes `CanonicalFiniteObservationInformationBoundaryTheorem`. It composes four already-canonical facts: the full canonical orbit is Nat-index injective; every `Fin 256` factor recurs; an exact `Int8` observation cannot have a left inverse on the full canonical orbit; and universal exact discrete UAP through such an observation is impossible. This is stronger than merely saying a finite factor recurs: it identifies the precise information-preservation boundary created by the finite observation carrier.
+
+This does not assert that every finite observation is useless for every target. It rules out exact left-invertible observation of the entire unbounded canonical orbit through `Int8`, and therefore rules out universal exact readout through that observation.
+
+## Branch consolidation
+
+`main` is the canonical integrated head. The three divergent branch heads were audited against their merge bases. Their meaningful additions were already represented in the canonical CI/Dhall surface or were retained as the Econlib stationary-Markov graph documentation. No branch-specific Agda theorem surface remains outside the two monoliths.
