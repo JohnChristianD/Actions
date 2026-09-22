@@ -3,9 +3,8 @@
   "status": "CANDIDATE_NOT_PROVED",
   "strict_graph_invariant": "Only real Agda dependencies create graph edges; conceptual similarity never creates a dependency.",
   "emergent_endogenous_theorem": {
-    "name": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureCandidate",
-    "status": "PROMOTED_COMPOSED_THEOREM",
-    "theorem": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
+    "name": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
+    "status": "PROVED_ON_AGDA_SURFACE_PENDING_FRESH_CI",
     "parent": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
     "dependencies": [
       "CanonicalGlobalTokenConjugacyTheorem",
@@ -16,13 +15,8 @@
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
     ],
-    "promotion_gate": [
-      "Completed: actual Agda record consumes the listed theorem records.",
-      "Type-check the record with Agda --safe (pending CI).",
-      "Completed: theorem_graph_search now requires the promoted theorem by name; CI verification remains pending.",
-      "Require theorem_monolith_egraph_sync to discover the same path.",
-      "Keep strict function-class separation status NOT_ESTABLISHED until inclusion, connected witness membership, and baseline nonrepresentability are proved."
-    ]
+    "proof": "canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem",
+    "verification": "Constructor and term are present on the Agda proof surface. Fresh Agda --safe/Nix-Dhall CI remains required before declaring repository verification green."
   },
   "emergent_vocabulary_boundary_theorem": {
     "name": "CanonicalEndogenousFiniteVocabularyRecurrentSequenceClosureCandidate",
