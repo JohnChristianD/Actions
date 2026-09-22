@@ -208,6 +208,59 @@ all_valid_plans([Plan | Plans], Laws, Valid) :-
             Valid = no
     ).
 
+
+:- pred law_for_name(
+    string::in, list(semantic_law)::in, semantic_law::out) is semidet.
+law_for_name(_, [], _) :-
+    fail.
+law_for_name(Name, [Law | Laws], Result) :-
+    (
+        if law_name(Law) = Name then
+            Result = Law
+        else
+            law_for_name(Name, Laws, Result)
+    ).
+
+:- pred search_named_required_plan(
+    string::in, list(semantic_law)::in, list(string)::out) is semidet.
+search_named_required_plan(Name, Laws, Plan) :-
+    law_for_name(Name, Laws, Law),
+    seed_node(Law, Seed),
+    astar_collect(Laws, [Seed], [], Results),
+    first_plan(Results, Plan).
+
+:- pred all_named_required_plans(
+    list(string)::in,
+    list(semantic_law)::in,
+    list(list(string))::out) is semidet.
+all_named_required_plans([], _, []).
+all_named_required_plans([Name | Names], Laws, [Plan | Plans]) :-
+    search_named_required_plan(Name, Laws, Plan),
+    all_named_required_plans(Names, Laws, Plans).
+
+:- func graph_required_theorems = list(string).
+graph_required_theorems = [
+    "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
+    "MonotoneConvergenceToStationaryDistributionTheorem",
+    "CanonicalPersistentExcitationRequirementTheorem",
+    "ExactContractComputabilityBoundaryTheorem"
+].
+
+:- func graph_required_subcompositions = list(string).
+graph_required_subcompositions = [
+    "CanonicalClockObservationSubcompositionTheorem",
+    "CanonicalMonotoneEnergyStationarySubcompositionTheorem",
+    "CanonicalBoundednessPEBoundarySubcompositionTheorem"
+].
+
+:- pred graph_search_completion(
+    list(semantic_law)::in,
+    list(list(string))::out,
+    list(list(string))::out) is semidet.
+graph_search_completion(Laws, RequirementPlans, SubcompositionPlans) :-
+    all_named_required_plans(graph_required_theorems, Laws, RequirementPlans),
+    all_named_required_plans(graph_required_subcompositions, Laws, SubcompositionPlans).
+
 search_emergent_compositions(Laws, Results) :-
     seed_nodes(Laws, Seeds),
     astar_collect(Laws, Seeds, [], Reversed),
