@@ -135,3 +135,9 @@ The four historical working branches are synchronized to the same canonical main
 ## Branch consolidation
 
 `main` is the canonical integrated head. The three divergent branch heads were audited against their merge bases. Their meaningful additions were already represented in the canonical CI/Dhall surface or were retained as the Econlib stationary-Markov graph documentation. No branch-specific Agda theorem surface remains outside the two monoliths.
+
+## 2026-09-22 clock/Lyapunov and exact-computability boundary
+
+The Nat clock is now recorded as a separate semantic axis from Lyapunov-style energy arguments. Exact clock growth gives temporal index separation and excludes finite cycles; it does not assert descent, boundedness, or convergence. The finite-observation theorem records the complementary fact that an exact unbounded time index cannot be recovered injectively through a finite Int8 observation.
+
+The exact Turing boundary is expressed as a contract mixture: the repository rules out the specified exact autonomous one-step two-counter simulation while retaining the exact Nat clock and finite-observation boundary. This is not a claim that every weaker computational-completeness notion is impossible; any future positive construction must explicitly relax at least one contract component.
