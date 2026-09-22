@@ -383,3 +383,26 @@ unprocessed-commit-count: 0
 
 The next scheduled run will account for every commit after this bootstrap point.
 <!-- END RECENT COMMIT TOTALITY -->
+
+## Strict neural-function-class separation
+
+The repository now carries a strict separation criterion graph at
+`.ci/discovery/neural-function-class-separation-graph.json`.
+
+The graph deliberately distinguishes composition from strict neural-function-class
+expressivity. A strict result requires both:
+
+1. an inclusion of the baseline class into the attention/Haar-extended class; and
+2. a concrete function in the extended class together with a proof that the
+   function is not in the baseline class.
+
+The existing Haar/attention theorems establish exact composition and closure
+surfaces, while `FiniteFactorRecurrenceWithoutStateRecurrenceTheorem` establishes
+that a finite factor can recur without recurrence of the exact full state. Neither
+fact alone supplies the required nonrepresentability witness. The current graph
+therefore terminates at `NOT_ESTABLISHED`, not at a claimed separation.
+
+Promotion to `SEPARATED` requires the witness and nonrepresentability proof to be
+added to the canonical Agda theorem surface and then discovered by both graph
+search and theorem/e-graph synchronization. This avoids treating architectural
+novelty, orthogonality, or factor recurrence as a strict function-class theorem.
