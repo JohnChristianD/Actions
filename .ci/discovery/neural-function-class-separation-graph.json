@@ -63,6 +63,10 @@
     {
       "node": "ConnectedF4FrankWolfeKKTTheorem",
       "role": "connected F4 finite recurrent optimizer composition with a Frank-Wolfe descent/gap and KKT certificate"
+    },
+    {
+      "node": "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+      "role": "fully connected F4 + Frank-Wolfe + Jensen/rounding/KKT/stationary-Markov optimizer boundary"
     }
   ],
   "edges": [
@@ -155,6 +159,16 @@
       "FiniteFunctionExactIsomorphismTransportTheorem",
       "FiniteMaxwellGRUExactRepresentationCandidate",
       "finite exact-function transport supplies the representation mechanism; Maxwell semantics remain an explicit proof obligation"
+    ],
+    [
+      "ConnectedF4FrankWolfeKKTTheorem",
+      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+      "the exact F4/Frank-Wolfe seam is consumed by the fully connected optimizer theorem"
+    ],
+    [
+      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+      "F_full_connected",
+      "the F4/Frank-Wolfe optimizer boundary is admitted only through the fully connected composition"
     ]
   ],
   "separation_obligation": [
@@ -205,7 +219,7 @@
     "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power.",
     "optimizer_regret_boundary": "Jensen/minimax regret plus rounding bias plus KKT residual plus stationary Markov mixing is represented conditionally as R ≤ J + B + K + M; no unconditional numeric regret rate is claimed.",
     "optimizer_regret_boundary_lion": "Lion is represented conditionally by an explicit descent/stationarity residual L, giving R ≤ J + B + K + L + M. Literature-backed Lion rates are not imported as Agda facts; the concrete update, assumptions, and analytic proof remain promotion obligations.",
-    "f4_frank_wolfe": "F4 remains finite/exact; Frank-Wolfe is represented by a supplied gap/descent/KKT certificate. No optimization library is added. The eventual connected regret extension is R ≤ J + B + K + L + W + M only after shared-state composition.",
+    "f4_frank_wolfe": "F4 is finite/exact; Frank-Wolfe is represented by a supplied gap/descent/KKT certificate. The fully connected optimizer seam is R ≤ J + B + K + W + M. This remains conditional until concrete objective, feasible-set, oracle, stationarity, and shared-state witnesses are kernel-checked.",
     "maxwell_scope": "The physics graph is deliberately restricted to Maxwell-admissible finite encodings. Exact finite representation is a computability claim about finite functions, not a claim that finite GRUs solve the continuous Maxwell PDEs without discretization/semantics."
   },
   "pregraphed_candidates": [
@@ -1183,5 +1197,21 @@
     "no_synthetic_edges": true,
     "f4_frank_wolfe": "Every future F4/Frank-Wolfe theorem must be downstream of the exact F4 recurrent composition and must terminate in a connected consumer; standalone gap/KKT claims remain dependencies.",
     "maxwell": "Every future physics theorem must explicitly declare Maxwell-only scope, finite encoding, and exact representation/conjugacy; no extra physical law is admitted implicitly."
+  },
+  "maxwell_status": {
+    "status": "CANDIDATE_NOT_PROVED",
+    "surviving_surface": "FiniteMaxwellGRUExactRepresentationCandidate remains graph-pregraphed only; no Maxwell theorem is present in the Agda monolith.",
+    "reason": "The repository contains no Maxwell state/update semantics, so promoting a theorem would invent physics rather than compose an existing proof surface.",
+    "promotion_gate": [
+      "finite Maxwell state semantics",
+      "discrete Maxwell update preserving declared constraints",
+      "exact finite input/output encoding",
+      "exact GRU conjugacy"
+    ],
+    "scope": "Maxwell-only; no additional physical laws may be introduced implicitly."
+  },
+  "automation_contract": {
+    "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
+    "future_theorems": "Future theorem declarations are automatically visible to semantic extraction and A*/e-graph ingestion. Manual graph edits are regression metadata only; no theorem may be promoted without an actual Agda declaration and a discovered dependency path."
   }
 }
