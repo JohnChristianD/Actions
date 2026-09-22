@@ -210,9 +210,10 @@
       "only then may status change from NOT_ESTABLISHED to SEPARATED"
     ],
     "complete_graph_contract": {
-      "new_theorems": "Every future theorem must declare its composed parent and enter the graph through that parent.",
-      "disconnected_status": "A theorem with no path into the full connected composition is not eligible for strict function-class separation status.",
-      "strict_status": "SEPARATED requires the explicit inclusion, connected witness membership, and baseline nonrepresentability proof already specified above."
+      "new_theorem_entry": "Every future theorem must name one existing composed parent, expose an actual Agda dependency into that parent, and be discovered by theorem_graph_search and theorem_monolith_egraph_sync.",
+      "disconnected_rule": "No direct dependency means no strict separation status. Promote only when an existing composed theorem consumes the theorem's semantics; otherwise keep it as a foundational proof-surface record.",
+      "strict_upgrade": "SEPARATED requires explicit F_base subseteq F_full_connected inclusion, an explicit connected witness, and a canonical f notin F_base proof.",
+      "no_synthetic_edges": "Graph completeness means every admitted theorem is discoverable and classified; it does not mean inventing dependency edges to force connectivity."
     }
   },
   "hard_sign_and_tropical_geometry": {
@@ -373,5 +374,107 @@
       "strict separation still requires inclusion plus baseline nonrepresentability"
     ],
     "literature_boundary": "Tropical neural-network geometry supports polyhedral/tropical descriptions of piecewise-linear expressivity, but this repository does not yet have the recurrent HardSign/F4/NormPair theorem. Literature is motivation, not proof authority."
+  },
+  "zero_dependency_pruning": {
+    "rule": "A theorem-like record with no direct record dependencies is not a strict separation node. If an existing composed theorem already consumes its semantics, record that promotion target; otherwise retain it only as a foundational contract/data/problem surface until a real Agda composition exists.",
+    "already_promoted_or_absorbed": [
+      [
+        "CanonicalAQLoopTheorem",
+        "CanonicalConnectedCompositionTheorem"
+      ],
+      [
+        "S4PlusS5RecurrentScanTheorem",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem"
+      ],
+      [
+        "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem"
+      ],
+      [
+        "CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem"
+      ],
+      [
+        "CanonicalQMunchausenL2SharedNegationPolarityTheorem",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem"
+      ],
+      [
+        "DiscreteLeftInverseWitness",
+        "DiscreteExactUniversalUAPLeftInverseEquivalence"
+      ],
+      [
+        "ExactTwoCounterConfiguration",
+        "CanonicalExactCompositionTuringCompletenessContract"
+      ],
+      [
+        "ContinuousLeftInverseTheorem",
+        "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
+      ],
+      [
+        "DenseNeighborhoodSeparationTheorem",
+        "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
+      ],
+      [
+        "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
+        "CanonicalClockObservationSubcompositionTheorem"
+      ],
+      [
+        "FiniteObservationStationaryLimitTheorem",
+        "CanonicalFiniteObservationStationarySubcompositionTheorem"
+      ],
+      [
+        "CanonicalPersistentExcitationRequirementTheorem",
+        "CanonicalBoundednessPEBoundarySubcompositionTheorem"
+      ]
+    ],
+    "not_fabricated": [
+      "ExactNatObservationSimulation",
+      "ExactTuringCounterObservation",
+      "RingStateInjectivityTheorem",
+      "FiniteMixedProductRecurrenceTheorem",
+      "AbsorbingFiniteEquilibriumTheorem",
+      "HardSparseAbsorbingPrefixTheorem",
+      "FiniteHardSparseKKTEquilibriumTheorem",
+      "FiniteRankStabilityCertificate",
+      "FiniteNonIIDWalrasianEquilibrium",
+      "FiniteTUShapleyAllocationEquilibrium",
+      "BairdSevenStarProblem",
+      "Majority3ShapleyEquilibrium",
+      "CanonicalAStarCostGuidanceTheorem",
+      "CanonicalTokenVocabularyUpperBoundTheorem"
+    ],
+    "note": "These remaining zero-dependency surfaces are not silently assigned synthetic edges. They stay outside strict separation until an actual Agda record consumes them. The strict graph therefore remains fully connected without inventing dependencies."
+  },
+  "tropical_hardsign_finite_automaton_quotient_candidate": {
+    "name": "CanonicalEndogenousTropicalHardSignFiniteAutomatonQuotientCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+    "path": [
+      "F_base",
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "hardSignGate-idempotent",
+      "DirectProductFiniteAutomatonComposition",
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalFiniteCycleExclusionIsomorphismTheorem",
+      "F_full_connected"
+    ],
+    "candidate_statement": "If the canonical recurrent affine transition admits a finite HardSign-preserving invariant quotient whose transition regions have a max-plus/polyhedral description, then that quotient may realize arbitrary finite automata while exact-state finite-cycle exclusion remains intact; the tropical object would be a geometry-preserving description of the quotient, not a substitute for the automaton conjugacy proof.",
+    "new_emergent_content": [
+      "finite-state quotient is already represented by HardSign factor recurrence plus DirectProductFiniteAutomatonComposition",
+      "tropical/polyhedral geometry supplies a plausible description language for piecewise-linear transition regions",
+      "the repository's exact GRU/F4/NormPair/Watkins bridge supplies the recurrent affine connected transition seam",
+      "the exact-state clock/finite-cycle exclusion seam can separate finite quotient recurrence from exact-state recurrence"
+    ],
+    "missing_certificates": [
+      "actual Agda definition of the finite quotient and its transition map",
+      "HardSign quotient preservation under the canonical full transition",
+      "polyhedral or tropical region characterization of each quotient transition",
+      "explicit affine realization for every finite automaton transition",
+      "prefix-level conjugacy between quotient dynamics and the target automaton",
+      "baseline nonrepresentability witness if promoted to strict separation"
+    ],
+    "literature_boundary": "Tropical geometry is established for piecewise-linear/ReLU neural-network geometry and max-plus algebra has established finite-automaton uses, but those results do not prove this repository's recurrent HardSign/F4/NormPair construction. The repository must admit an Agda proposition before this candidate becomes a theorem."
   }
 }
