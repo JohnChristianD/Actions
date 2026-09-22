@@ -1,0 +1,52 @@
+{
+  "graph": "strict-neural-function-class-separation",
+  "rule": "SEPARATION_REQUIRES_WITNESS_AND_NONREPRESENTABILITY",
+  "terminal_statuses": ["SEPARATED", "NOT_ESTABLISHED"],
+  "orange_statuses_allowed": false,
+  "meaning": "A strict class separation is a semantic theorem only when the extended class contains a concrete witness function that the baseline class cannot represent. Composition, orthogonality, recurrence, or universal approximation alone do not establish that witness.",
+  "function_classes": {
+    "baseline": "F_base",
+    "extended": "F_attn_haar",
+    "ambient": "X -> Y"
+  },
+  "strict_target": "exists f : X -> Y. f in F_attn_haar and f notin F_base",
+  "required_edges": [
+    ["F_base", "F_attn_haar", "inclusion: F_base subseteq F_attn_haar"],
+    ["attention_or_haar_composition", "F_attn_haar", "constructive membership witness"],
+    ["nonrepresentability_certificate", "f notin F_base", "strict separation witness"]
+  ],
+  "existing_graph_support": [
+    {
+      "node": "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+      "role": "exact Haar orthogonality surface"
+    },
+    {
+      "node": "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
+      "role": "exact attention/Haar/sparsemax composition surface"
+    },
+    {
+      "node": "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
+      "role": "full-state learner-replacement invariance surface"
+    },
+    {
+      "node": "CanonicalHaarSparsemaxFullStateClosureTheorem",
+      "role": "closure of the preceding exact composition surfaces"
+    },
+    {
+      "node": "CanonicalExactCompositionTuringCompletenessContract",
+      "role": "computability-capacity boundary; not a neural-function-class separation"
+    }
+  ],
+  "factor_recurrence_separation": {
+    "theorem": "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+    "role": "shows that a finite observation/factor can recur while the exact underlying state remains nonrecurrent",
+    "implication": "It separates observation-level recurrence from state-level recurrence. It does not by itself show that attention or Haar represents a function outside a baseline neural class."
+  },
+  "current_result": {
+    "status": "NOT_ESTABLISHED",
+    "reason": "The repository currently contains exact attention/Haar composition theorems and factor-recurrence separation, but no concrete F_attn_haar witness together with a proof that the witness is outside a precisely defined F_base."
+  },
+  "promotion_condition": "Promote to SEPARATED only after both inclusion and a concrete nonrepresentability proof are present on the canonical Agda surface and reachable by theorem_graph_search and theorem_monolith_egraph_sync.",
+  "proof_authority": "Agda --safe",
+  "source_theorem_monolith": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+}
