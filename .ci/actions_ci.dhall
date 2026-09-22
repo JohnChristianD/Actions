@@ -311,7 +311,7 @@ JSON
     canonical-recurrent-scan-conjugacy-theorem
     CanonicalFullLearnerConnectedScanConjugacyTheorem
     canonical-full-learner-connected-scan-conjugacy-theorem
-    CanonicalExactCompositionTuringCompletenessTheorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
     CanonicalHaarSparsemaxFullStateClosureTheorem
     canonical-haar-sparsemax-full-state-closure-theorem
     BairdSevenStarProblem

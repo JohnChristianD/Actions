@@ -271,7 +271,7 @@ canonical-learner-replacement-closure-theorem :
   CanonicalLearnerReplacementClosureTheorem
 canonical-learner-replacement-closure-theorem =
   canonicalLearnerReplacementClosureTheorem
-    C.canonicalPolicy-learnerReplacement-composition
+    canonicalPolicy-learnerReplacement-composition
 
 canonicalNormPair-afterFullStep-iterate :
   ∀ K n s →
@@ -1122,16 +1122,20 @@ canonical-recurrent-scan-conjugacy-theorem =
     (λ replace step h → replace)
     (λ replace step h xs n s → recurrentPrefix-scan-lifts-conjugacy replace step h xs n s)
 
+
+canonicalRecurrentInput-watkinsTarget-law :
+  ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+  C.canonicalGRUStep K s ≡
+  C.gruStep (C.gru s) (C.canonicalWatkinsTarget K s)
+canonicalRecurrentInput-watkinsTarget-law K s =
+  trans
+    (C.canonicalRecurrentInput-law K s)
+    (cong
+      (C.gruStep (C.gru s))
+      (C.canonicalSignal-watkins-target K s))
 record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
   constructor canonicalFullLearnerConnectedScanConjugacyTheorem
   field
-    localConjugacy :
-      (replace : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
-      (K : C.CanonicalFullLearnerKernel) →
-      (∀ s →
-        replace (C.canonicalFullStep K s) ≡
-        C.canonicalFullStep K (replace s)) →
-      Set
     scanConjugacy :
       (replace : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
       (K : C.CanonicalFullLearnerKernel) →
@@ -1152,6 +1156,30 @@ record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
       ( C.gru (C.canonicalFullStep K s)
       , ( C.optimizer (C.canonicalFullStep K s)
         , C.norm (C.canonicalFullStep K s)))
+    watkinsConnected :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.watkins (C.canonicalFullStep K s) ≡
+      C.canonicalWatkinsStep K s
+    watkinsTargetCoupling :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalSignal K s ≡ C.canonicalWatkinsTarget K s
+    gruWatkinsCoupling :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalGRUStep K s ≡
+      C.gruStep
+        (C.gru s)
+        (C.canonicalWatkinsTarget K s)
+    optimizerWatkinsCoupling :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalOptimizerStep K s ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer s)
+        (C.canonicalWatkinsTarget K s)
 
 canonicalFullLearner-iterate-conjugacy :
   ∀
@@ -1177,10 +1205,12 @@ canonical-full-learner-connected-scan-conjugacy-theorem :
   CanonicalFullLearnerConnectedScanConjugacyTheorem
 canonical-full-learner-connected-scan-conjugacy-theorem =
   canonicalFullLearnerConnectedScanConjugacyTheorem
-    (λ replace K h → ∀ s → replace (C.canonicalFullStep K s) ≡ C.canonicalFullStep K (replace s))
     (λ replace K h → canonicalFullLearner-iterate-conjugacy replace K h)
     canonicalFullStep-GRUF4Norm-prefix-bridge
-
+    C.canonicalFullStep-watkins
+    C.canonicalSignal-watkins-target
+    canonicalRecurrentInput-watkinsTarget-law
+    C.canonicalOptimizerStep-qMunchausen-L2
 record S4PlusS5RecurrentScanTheorem (State Input : Set) : Set₁ where
   constructor s4PlusS5RecurrentScanTheorem
   field
@@ -2026,8 +2056,8 @@ record ExactTwoCounterMachine : Set₁ where
 
 open ExactTwoCounterConfiguration ExactTwoCounterMachine public
 
-record CanonicalExactCompositionTuringCompletenessTheorem : Set₁ where
-  constructor canonicalExactCompositionTuringCompletenessTheorem
+record CanonicalExactCompositionTuringCompletenessContract : Set₁ where
+  constructor canonicalExactCompositionTuringCompletenessContract
   field
     compile :
       ExactTwoCounterMachine →
@@ -2054,6 +2084,46 @@ record CanonicalExactCompositionTuringCompletenessTheorem : Set₁ where
     exactHaltingCorrespondence :
       ∀ M c →
       output (encode M c) ≡ halting M c
+
+------------------------------------------------------------------------
+-- Exact obstruction for the proposed universal contract.
+--
+-- The exact canonical full transition has no fixed points because its
+-- Nat clock increments on every step. Therefore the contract above cannot
+-- hold for the self-looping two-counter machine: exact state equality would
+-- force a fixed point of canonicalFullStep. This is tied to the actual
+-- CanonicalFullLearnerState and exact Int8-based component semantics; it
+-- does not replace them with a different-precision or input-augmented model.
+------------------------------------------------------------------------
+
+exactSelfLoopMachine : ExactTwoCounterMachine
+exactSelfLoopMachine =
+  exactTwoCounterMachine
+    (λ c → c)
+    (λ _ → disabled)
+
+canonicalExactCompositionTuringCompletenessContract-impossible :
+  ¬ CanonicalExactCompositionTuringCompletenessContract
+canonicalExactCompositionTuringCompletenessContract-impossible witness =
+  let
+    M = exactSelfLoopMachine
+    c = exactTwoCounterConfiguration zero zero zero
+    K =
+      CanonicalExactCompositionTuringCompletenessContract.compile
+        witness
+        M
+    s =
+      CanonicalExactCompositionTuringCompletenessContract.encode
+        witness
+        M
+        c
+    exactStep =
+      CanonicalExactCompositionTuringCompletenessContract.exactStepSimulation
+        witness
+        M
+        c
+  in
+  C.canonicalNoFixedPoint K s (sym exactStep)
 
 ------------------------------------------------------------------------
 -- Continuous left-inverse transfer.

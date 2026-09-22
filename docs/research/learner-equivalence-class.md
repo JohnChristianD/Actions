@@ -52,3 +52,46 @@ The graph now has an explicit bridge from local full-learner transition conjugac
 ## Turing-completeness ambiguity pruning
 
 The literature distinguishes computational universality claims by their resource assumptions. Pérez et al. prove Turing completeness for particular Transformer/Neural-GPU constructions under their stated assumptions; Carmantini et al. give constructive recurrent-network simulations; finite-precision RNN work emphasizes that precision and computation-time assumptions materially change the result. Therefore this repository should not infer universality or non-universality from the architecture label alone. Its formal negative result is narrower: exact unbounded-Nat counter recovery through finite `Int8` observation is impossible. The current model remains an infinite-state deterministic system because of its `Nat` components, so a full Turing-completeness classification requires a separate machine-simulation witness or impossibility theorem.
+
+## Dedicated novelty review: scan conjugacy and exact coupling
+
+### What is and is not implied
+
+The repository has two distinct scan semantics.
+
+1. The autonomous full transition is canonicalFullStep K : CanonicalFullLearnerState → CanonicalFullLearnerState, and iterateCanonical K n is its n-fold power. A commuting square for canonicalFullStep K therefore lifts to every time iterate by induction.
+
+2. The recurrent-prefix scan is recurrentPrefixState R xs n, where the transition depends on the input element xs n. A theorem about powers of one autonomous time operator does not imply arbitrary input-word prefix conjugacy, because these are different operators. Exact prefix conjugacy instead needs the per-input commuting law and the existing recurrentPrefix-scan-lifts-conjugacy.
+
+So the new full-learner scan theorem is a time-iteration closure theorem, not a silent replacement for the input-prefix theorem.
+
+### Novelty review
+
+The abstract mathematical ingredients are not new. Commuting maps, centralizers, conjugacies, and equivariance are established concepts; recent dynamical-systems work still studies centralizers as maps commuting with fixed dynamics, and recent sequence-model work explicitly studies equivariance of recurrent networks and notes that standard RNNs are generally not flow-equivariant.
+
+The potentially distinctive repository contribution is narrower: an Agda-checked theorem surface that combines the exact discrete Int8 learner, its nested full state, the exact recurrent prefix algebra, the autonomous full transition, explicit modified-Watkins coupling, and scan-wide conjugacy. A targeted primary-source search found no directly matching theorem for this exact composition, precision, and coupling, but this is not exhaustive prior-art clearance.
+
+The strongest defensible novelty wording is therefore: new endogenous theorem/combination in the formalized model, not a claim of a first-ever recurrent conjugacy class.
+
+### Full Watkins coupling boundary
+
+The earlier CanonicalFullLearnerConnectedScanConjugacyTheorem projected only the GRU/F4/Norm network. Watkins was present inside canonicalFullStep, but the connected witness did not explicitly expose the Watkins state or the target flow.
+
+The theorem is now repaired to expose four exact Watkins-coupling facts: full-step Watkins projection equals canonicalWatkinsStep; canonicalSignal equals the exact modified Watkins target; the same target is consumed by the GRU step; and the same target is consumed by the F4/L2 optimizer step. This makes the coupling explicit without introducing a second learner semantics.
+
+### Exact Turing-completeness boundary
+
+The previously proposed CanonicalExactCompositionTuringCompletenessTheorem was too strong and, for the current exact composition, internally inconsistent. Its universal step-simulation field quantifies over arbitrary exact two-counter machines.
+
+A self-looping two-counter machine then requires encode c = canonicalFullStep (compile M) (encode c), while the exact learner proves canonicalFullStep K s ≢ s for every K,s because the Nat clock increments exactly once per step.
+
+The positive universal contract therefore cannot be inhabited for this exact transition system. The formal surface has been repaired into an explicit contract plus an Agda proof that the contract is impossible. That is a stronger exact result than leaving a fake positive universality theorem as an unproven record type.
+
+This does not by itself prove that every conceivable notion of computational universality is impossible for every encoding convention. It proves that this specific exact one-step, state-equality simulation contract cannot hold.
+
+## Primary-source novelty references
+
+- Keller, Flow Equivariant Recurrent Neural Networks (2025): https://arxiv.org/abs/2507.14793
+- Weiss, Goldberg, Yahav, On the Practical Computational Power of Finite Precision RNNs for Language Recognition (2018): https://arxiv.org/abs/1805.04908
+- Pérez, Marinković, Barceló, On the Turing Completeness of Modern Neural Network Architectures (2019): https://arxiv.org/abs/1901.03429
+- Bonomo, Rocha, Varandas, Discrete symmetries of smooth flows and their time-t maps (2024): https://doi.org/10.1016/j.jmaa.2024.128534
