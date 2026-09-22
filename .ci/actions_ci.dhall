@@ -306,6 +306,9 @@ JSON
     canonical-full-state-haar-sparsemax-invariant-composition-theorem
     CanonicalLearnerReplacementClosureTheorem
     canonical-learner-replacement-closure-theorem
+    RecurrentScanConjugacyTheorem
+    recurrentPrefix-scan-lifts-conjugacy
+    canonical-recurrent-scan-conjugacy-theorem
     CanonicalHaarSparsemaxFullStateClosureTheorem
     canonical-haar-sparsemax-full-state-closure-theorem
     BairdSevenStarProblem
