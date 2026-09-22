@@ -126,6 +126,7 @@ main(!IO) :-
     read_semantic_laws(All, !IO),
     search_emergent_compositions(All, Plans),
     search_all_composite_law_plans(All, AutomaticCompositePlans),
+    search_endogenous_composite_plans(All, EndogenousCompositePlans),
     (
         if graph_search_completion(
             All,
@@ -146,7 +147,10 @@ main(!IO) :-
             EndogenousObservationPlan = []
     ),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
-    add_graph_plans(Plans ++ AutomaticCompositePlans, EGraph0, EGraphGraph),
+    add_graph_plans(
+        Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans,
+        EGraph0,
+        EGraphGraph),
     saturate_until_stable(semantic_rewrite_rules, EGraphGraph, EGraph, Saturation),
     analyze(EGraph, Analyses),
     ExtractionDepth = enode_count(EGraph) + 1,
@@ -156,7 +160,8 @@ main(!IO) :-
             list.length(All) > 0,
             list.length(Plans) > 0,
             list.length(AutomaticCompositePlans) > 0,
-            list.length(RequiredPlans) = 4,
+            list.length(EndogenousCompositePlans) > 0,
+            list.length(RequiredPlans) = 7,
             list.length(RequiredSubcompositionPlans) = 3,
             list.length(FiniteObservationStationaryLimitPlan) > 0,
             list.length(FiniteObservationStationaryPlan) > 0,
