@@ -329,7 +329,8 @@ graph_required_theorems = [
     "CanonicalExactRNNLMTheorem",
     "ArchitecturePreservingCanonicalRNNLMIsomorphism",
     "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-    "CanonicalTokenVocabularyUpperBoundTheorem"
+    "CanonicalTokenVocabularyUpperBoundTheorem",
+    "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
 ].
 
 :- func graph_required_subcompositions = list(string).
