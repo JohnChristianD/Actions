@@ -6834,27 +6834,6 @@ connected-f4-frank-wolfe-kkt-theorem C =
   connectedBound C
 
 ------------------------------------------------------------------------
--- Finite Maxwell-only representation seam.
---
--- This is a candidate interface, not a claim that the repository has proved
--- Maxwell's PDEs. The state/output vocabulary is explicitly restricted to
--- finite encodings of Maxwell-admissible update data; no additional physical
--- law is introduced by the theorem graph.
-------------------------------------------------------------------------
-
-record FiniteMaxwellGRURepresentationCandidate : Set₁ where
-  constructor finiteMaxwellGRURepresentationCandidate
-  field
-    finiteMaxwellState : Set
-    finiteMaxwellInput : Set
-    finiteMaxwellOutput : Set
-    gruRepresentation :
-      finiteMaxwellState → finiteMaxwellInput → finiteMaxwellState
-    exactFiniteFunction :
-      ∀ (f : finiteMaxwellState → finiteMaxwellInput → finiteMaxwellOutput) →
-      Set
-
-------------------------------------------------------------------------
 -- Promotion boundary:
 -- the Jensen/minimax regret surface is not a standalone optimizer theorem.
 -- It is graph-complete only through the recurrent scan, stationary Markov
