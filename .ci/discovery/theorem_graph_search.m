@@ -262,6 +262,15 @@ graph_monotone_energy_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+:- pred graph_endogenous_observation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+graph_endogenous_observation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalEndogenousObservationBoundaryTheorem",
+        Laws,
+        Plan).
+
 :- pred graph_search_completion(
     list(semantic_law)::in,
     list(list(string))::out,
