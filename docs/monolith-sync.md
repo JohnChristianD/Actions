@@ -15,6 +15,7 @@ Mercury does not force a named theorem target. It derives maximal dependency pat
 2. `canonical-a-star-cost-guidance-theorem`: exact zero-cost, successor-cost, and token-trace composition laws;
 3. `canonical-linear-haar-sparsemax-attention-composition-theorem`: integer Haar sum/difference composed with the existing sparsemax head;
 4. `canonical-full-state-haar-sparsemax-invariant-composition-theorem`: Haar/sparsemax attention invariance under the existing NormPair and optimizer replacement seams;
+5. `canonical-haar-sparsemax-full-state-closure-theorem`: closes the integer Haar linearity, fixed sparsemax counts, and full-state learner-replacement invariance into one Agda-safe composition surface;
 5. the broader recurrent-prefix, finite-product, exact-readout, and stationary-Walrasian composition surfaces already present in the monolith.
 
 Agda `--safe` is authoritative. Mercury extracts the canonical theorem monolith, builds the dependency graph, performs A* cost-guided path search, inserts source laws and graph plans into the e-graph, saturates sound rewrite relations, rebuilds, analyzes e-classes, and extracts costed representatives. It does not prove the Agda induction or invent semantic laws.
