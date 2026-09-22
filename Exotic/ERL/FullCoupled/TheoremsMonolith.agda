@@ -5216,6 +5216,8 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
       CanonicalBoundedFactorLiftTheorem
     emergentFactorSeparation :
       FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+    finiteObservationInformationBoundary :
+      CanonicalFiniteObservationInformationBoundaryTheorem
 
 open CanonicalPureNonOrangeBypassCompletionTheorem public
 
@@ -5231,6 +5233,7 @@ canonical-pure-non-orange-bypass-completion-theorem =
     canonical-operator-composition-theorem
     canonical-bounded-factor-lift-theorem
     canonical-finite-factor-recurrence-without-state-recurrence
+    canonical-finite-observation-information-boundary-theorem
 
 
 ------------------------------------------------------------------------
