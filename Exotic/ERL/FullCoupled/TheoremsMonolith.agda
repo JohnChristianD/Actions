@@ -16,7 +16,7 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
 open import Data.Fin.Properties using (pigeonhole; toℕ-injective; toℕ-mono-<)
-open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; zero)
+open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Nat.Properties using (≤-antisym; +-identityʳ; +-suc; n<1+n)
@@ -6411,6 +6411,15 @@ canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem K s =
 -- left-invertibility do not themselves imply parallel speedup.
 ------------------------------------------------------------------------
 
+twoPow : Nat → Nat
+twoPow zero = suc zero
+twoPow (suc k) = twoPow k + twoPow k
+
+nat-plus-right-mono :
+  ∀ {a b c : Nat} → a ≤ b → a + c ≤ b + c
+nat-plus-right-mono z≤n = z≤n
+nat-plus-right-mono (s≤s p) = s≤s (nat-plus-right-mono p)
+
 record EfficientOperatorMonoidRepresentation
   (State Input : Set) : Set₁ where
   constructor efficientOperatorMonoidRepresentation
@@ -6436,7 +6445,7 @@ record EfficientOperatorMonoidRepresentation
     compositionWork : Nat
     scanSpan : Nat → Nat
     scanWork : Nat → Nat
-    scanSpan-logarithmic :
+    scanSpan-linear :
       ∀ h →
       scanSpan h ≤ compositionSpan + compositionSpan * h
     scanWork-linear :
@@ -6502,9 +6511,9 @@ parallelPrefixComplexityCertificate-bound certificate h =
     (≤-refl _)
 
 ------------------------------------------------------------------------
--- A genuine O(log H) statement requires an explicit logarithmic span
--- certificate. The logarithm is deliberately a supplied cost-model
--- function rather than a hidden consequence of conjugacy.
+-- A genuine O(log H) statement is represented by a doubling-scale
+-- certificate: whenever H is below 2^k, scan span is bounded linearly
+-- in k, with constants independent of H.
 ------------------------------------------------------------------------
 
 record LogarithmicScanSpanCertificate
@@ -6512,12 +6521,12 @@ record LogarithmicScanSpanCertificate
   constructor logarithmicScanSpanCertificate
   field
     scanSpan : Nat → Nat
-    logHorizon : Nat → Nat
+    coefficient : Nat
+    additive : Nat
     scanSpan-bound :
-      ∀ h →
-      scanSpan h ≤ logHorizon h
-    logHorizon-is-logarithmic :
-      Set
+      ∀ k h →
+      h ≤ twoPow k →
+      scanSpan h ≤ coefficient * k + additive
 
 record LogarithmicPrefixScanComplexityTheorem
   (State Input : Set) : Set₁ where
@@ -6540,8 +6549,8 @@ record LogarithmicPrefixScanComplexityTheorem
     horizonSpan-definition :
       ∀ h →
       horizonSpan h ≡
-        representationOverhead
-        + LogarithmicScanSpanCertificate.scanSpan logarithmicSpan h
+        LogarithmicScanSpanCertificate.scanSpan logarithmicSpan h
+        + representationOverhead
         + decodingOverhead
     horizonWork-linear :
       ∀ h →
@@ -6557,20 +6566,74 @@ record LogarithmicPrefixScanComplexityTheorem
         s
       ≡
       C.recurrentPrefixState R xs h s
+    horizonSpan-logarithmic :
+      ∀ k h →
+      h ≤ twoPow k →
+      horizonSpan h ≤
+        LogarithmicScanSpanCertificate.coefficient logarithmicSpan * k
+        + LogarithmicScanSpanCertificate.additive logarithmicSpan
+        + representationOverhead
+        + decodingOverhead
+
+horizonSpan-logarithmic-bound :
+  ∀ {State Input : Set}
+  (certificate :
+    LogarithmicPrefixScanComplexityTheorem State Input)
+  (k h : Nat) →
+  h ≤ twoPow k →
+  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
+  ≤
+  LogarithmicScanSpanCertificate.coefficient
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+  + LogarithmicScanSpanCertificate.additive
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
+horizonSpan-logarithmic-bound certificate k h hk =
+  subst
+    (λ n →
+      n
+      ≤
+      LogarithmicScanSpanCertificate.coefficient
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+      + LogarithmicScanSpanCertificate.additive
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+      + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+      + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate)
+    (LogarithmicPrefixScanComplexityTheorem.horizonSpan-definition certificate h)
+    (nat-plus-right-mono
+      (nat-plus-right-mono
+        (LogarithmicScanSpanCertificate.scanSpan-bound
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+          k
+          h
+          hk)
+        (LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate))
+      (LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate))
 
 canonicalConnectedComposition-parallelPrefixComplexity-contract :
-  LogarithmicPrefixScanComplexityTheorem
-    C.GRUState
-    C.Int8
-  →
-  Set
-canonicalConnectedComposition-parallelPrefixComplexity-contract _ = ⊤
+  (certificate :
+    LogarithmicPrefixScanComplexityTheorem
+      C.GRUState
+      C.Int8)
+  (k h : Nat) →
+  h ≤ twoPow k →
+  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
+  ≤
+  LogarithmicScanSpanCertificate.coefficient
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+  + LogarithmicScanSpanCertificate.additive
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
+canonicalConnectedComposition-parallelPrefixComplexity-contract =
+  horizonSpan-logarithmic-bound
 
 ------------------------------------------------------------------------
 -- Computational-theoretic boundary:
 -- exact prefix algebra is proved on the repository surface. O(log H) SIMD
--- span is a conditional algorithmic theorem until a concrete operator-cost,
--- representation/decoding, and logarithmic scan certificate is supplied.
--- This does not establish Turing completeness, a special RNN computation
--- category, or a named complexity class for the full learner.
+-- span is a conditional algorithmic theorem until the concrete operator-cost,
+-- representation/decoding, and doubling-scale scan certificate are supplied.
+-- Exactness, conjugacy, and left-invertibility alone do not supply a
+-- parallel schedule or a speedup theorem.
 ------------------------------------------------------------------------
