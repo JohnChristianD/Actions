@@ -4523,6 +4523,72 @@ canonical-full-state-haar-sparsemax-invariant-composition-theorem =
     canonicalFullStateHaarSparsemaxAttentionNormInvariant
     canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant
 
+canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant :
+  ∀ (K : C.CanonicalTokenLanguageModelKernel)
+  (s : C.CanonicalFullLearnerState)
+  (r : C.LearnerReplacement)
+  (t u : C.CanonicalToken) →
+  C.canonicalFullStateHaarSparsemaxAttention K
+    (C.applyLearnerReplacement r s) t u
+  ≡
+  C.canonicalFullStateHaarSparsemaxAttention K s t u
+canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant
+  K s (C.normReplacement n) t u =
+  canonicalFullStateHaarSparsemaxAttentionNormInvariant K s n t u
+canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant
+  K s (C.optimizerReplacement o) t u =
+  canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant K s o t u
+
+record CanonicalHaarSparsemaxFullStateClosureTheorem : Set₁ where
+  constructor canonicalHaarSparsemaxFullStateClosureTheorem
+  field
+    fixedCounts :
+      C.canonicalTokenLogitCounts ≡ C.zeroCounts
+    haarOrthogonality :
+      C.int8Add
+        (C.int8Mul C.one8 C.one8)
+        (C.int8Mul C.one8 (C.int8Neg C.one8))
+      ≡ C.zero8
+    haarLinear :
+      ∀ (x y : C.Int8) →
+      C.canonicalHaarMix x y
+      ≡
+      (C.int8Add x y , C.int8Sub x y)
+    composedAttention :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.GRUState)
+      (t u : C.CanonicalToken) →
+      C.canonicalHaarSparsemaxAttention K s t u
+      ≡
+      (C.int8Add
+         (C.canonicalFixedSparsemaxAttentionWeight K s t)
+         (C.canonicalFixedSparsemaxAttentionWeight K s u)
+       ,
+       C.int8Sub
+         (C.canonicalFixedSparsemaxAttentionWeight K s t)
+         (C.canonicalFixedSparsemaxAttentionWeight K s u))
+    learnerReplacementInvariant :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (s : C.CanonicalFullLearnerState)
+      (r : C.LearnerReplacement)
+      (t u : C.CanonicalToken) →
+      C.canonicalFullStateHaarSparsemaxAttention K
+        (C.applyLearnerReplacement r s) t u
+      ≡
+      C.canonicalFullStateHaarSparsemaxAttention K s t u
+
+open CanonicalHaarSparsemaxFullStateClosureTheorem public
+
+canonical-haar-sparsemax-full-state-closure-theorem :
+  CanonicalHaarSparsemaxFullStateClosureTheorem
+canonical-haar-sparsemax-full-state-closure-theorem =
+  canonicalHaarSparsemaxFullStateClosureTheorem
+    canonicalFixedSparsemaxAttentionCounts
+    canonicalIntegerHaarOrthogonality
+    canonicalIntegerHaarLinearForm
+    canonicalHaarSparsemaxAttentionLinear
+    canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant
+
 record CanonicalLinearHaarSparsemaxAttentionCompositionTheorem : Set₁ where
   constructor canonicalLinearHaarSparsemaxAttentionCompositionTheorem
   field
