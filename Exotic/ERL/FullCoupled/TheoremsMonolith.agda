@@ -1063,16 +1063,6 @@ recurrentWord-observation-collision-impossible
 record RecurrentScanConjugacyTheorem (State Input : Set) : Set₁ where
   constructor recurrentScanConjugacyTheorem
   field
-    localConjugacy :
-      (replace : State → State)
-      (step : State → Input → State) →
-      (∀ (s : State) (x : Input) →
-        replace (step s x) ≡ step (replace s) x)
-      → State
-      → List Input
-      → Nat
-      → State
-      → Set
     scanLiftsConjugacy :
       (replace : State → State)
       (step : State → Input → State) →
