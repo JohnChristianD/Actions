@@ -5231,3 +5231,57 @@ canonical-pure-non-orange-bypass-completion-theorem =
     canonical-operator-composition-theorem
     canonical-bounded-factor-lift-theorem
     canonical-finite-factor-recurrence-without-state-recurrence
+
+
+------------------------------------------------------------------------
+-- Emergent endogenous finite-observation information boundary.
+--
+-- Combining exact Nat-indexed orbit separation with the finite Int8
+-- observation boundary yields a stronger statement than factor recurrence
+-- alone: no single Int8 observation of a canonical full-state orbit can
+-- admit an exact left inverse. Consequently universal exact discrete UAP
+-- through such an observation is impossible on that orbit.
+------------------------------------------------------------------------
+
+record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
+  constructor canonicalFiniteObservationInformationBoundaryTheorem
+  field
+    exactOrbitEmbedding :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      ∀ {m n : Nat} →
+      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+      m ≡ n
+    finiteFactorRecurrence :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (factor : A → Fin 256) →
+        ∃ m n →
+          m ≢ n ×
+          factor (orbit m) ≡ factor (orbit n)
+    noExactInt8LeftInverse :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (observe : C.CanonicalFullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      (∀ t → inverse (observe t) ≡ t) →
+      ⊥
+    noUniversalDiscreteUAP :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (observe : C.CanonicalFullLearnerState → C.Int8) →
+      DiscreteExactUniversalUAP
+        C.CanonicalFullLearnerState
+        C.Int8
+        observe →
+      ⊥
+
+canonical-finite-observation-information-boundary-theorem :
+  CanonicalFiniteObservationInformationBoundaryTheorem
+canonical-finite-observation-information-boundary-theorem =
+  canonicalFiniteObservationInformationBoundaryTheorem
+    canonicalInfiniteStateOrbitEmbedding
+    (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
+      canonical-finite-factor-recurrence-without-state-recurrence)
+    canonicalPigeonholeNatClockContradiction
+    canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
