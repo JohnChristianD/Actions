@@ -418,7 +418,6 @@ Orange/pending internal verification is a wait state, not a bypass condition. Re
 
 The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `canonicalF4-factor-collision-separates-full-state`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
 
-#
 ## Finite-factor automaton closure and tropical quotient candidate
 
 The strict graph now records a connected finite-factor automaton closure candidate rather than treating HardSign, automata, F4, NormPair, or tropical geometry as isolated separation claims. The concrete dependency seam is `CanonicalGRUF4NormWatkinsPrefixCompositionTheorem` -> `CanonicalFullLearnerConnectedScanConjugacyTheorem`: the latter's `connectedStep` is instantiated by the exact `canonicalFullStep-GRUF4Norm-prefix-bridge`. The proposed closure then passes through the existing HardSign idempotence, finite-automaton product composition, bounded-factor lift, factor-recurrence/non-state-recurrence theorem, and finite-cycle exclusion.
@@ -426,6 +425,12 @@ The strict graph now records a connected finite-factor automaton closure candida
 The current candidate is `CanonicalEndogenousHardSignFactorAutomatonClosureCandidate`: an explicit HardSign-preserving finite invariant factor of the recurrent affine learner could realize arbitrary finite automata while the exact state remains nonrecurrent. It remains `CANDIDATE_NOT_PROVED` until the affine realization, quotient-preservation, finite-invariant-factor, and exact-state compatibility certificates exist on the Agda surface.
 
 A second candidate, `CanonicalTropicalQuotientOptimizerAffineGRUExpressivityCandidate`, records a possible max-plus/tropical or polyhedral quotient of the optimizer-affine GRU/F4/NormPair transition. This is deliberately a candidate only: no tropical/max-plus optimizer theorem is currently on the canonical Agda proof surface, and literature motivation cannot substitute for an Agda proposition. Strict separation still requires the existing inclusion, connected witness, and baseline nonrepresentability obligations.
+
+The graph now records a stronger combined candidate, `CanonicalEndogenousTropicalHardSignFiniteAutomatonQuotientCandidate`: a finite HardSign-preserving invariant quotient of the connected recurrent affine learner whose transition regions admit a max-plus/polyhedral description. This is the natural endogenous seam between the existing finite-factor automaton closure and tropical geometry. It remains `CANDIDATE_NOT_PROVED`; the missing pieces are an Agda quotient definition, transition preservation, polyhedral/tropical region characterization, affine realization for arbitrary finite automata, and the prefix conjugacy. The exact-state finite-cycle exclusion remains a separate compatibility obligation.
+
+The literature supports the *shape* of this candidate, not its repository proof: tropical geometry gives a polyhedral/max-plus description of piecewise-linear neural computation, while max-plus algebra is also used in finite-automaton and weighted-automaton settings. That does not establish the repository's recurrent HardSign/F4/NormPair construction. The Agda surface remains the proof authority.
+
+The zero-dependency pruning policy is now explicit in `.ci/discovery/neural-function-class-separation-graph.json`: theorem-like records with no direct record dependencies are either promoted into an existing composed theorem when an actual Agda dependency exists, or retained as foundational contracts/data/problems without synthetic edges. Thus graph completeness means every admitted theorem is classified and discoverable, not that disconnected semantics are fabricated into a connected path.
 
 ## Strict full-connected neural-function-class separation
 
