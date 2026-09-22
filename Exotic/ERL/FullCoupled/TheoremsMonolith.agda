@@ -6005,6 +6005,45 @@ canonical-exact-rnn-lm-observation-topology-capability-theorem =
     canonical-finite-observation-information-boundary-theorem
 
 ------------------------------------------------------------------------
+-- Exact endogenous vocabulary/observation closure.
+--
+-- This is a genuine composition theorem, not a candidate label: every
+-- field is an already-proved Agda theorem surface consumed by the closure.
+-- It packages finite token conjugacy/vocabulary, exact RNN-LM capability,
+-- observation topology, and the endogenous POMDP observation boundary.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem : Set₁ where
+  constructor canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+  field
+    tokenConjugacy :
+      CanonicalGlobalTokenConjugacyTheorem
+    vocabulary :
+      CanonicalTokenVocabularyUpperBoundTheorem
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    capability :
+      CanonicalExactRNNLMCapabilitySubcompositionTheorem
+    observation :
+      CanonicalExactRNNLMObservationSubcompositionTheorem
+    topology :
+      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    endogenousObservation :
+      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+
+canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem :
+  CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem =
+  canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+    canonical-global-token-conjugacy
+    canonical-token-vocabulary-upper-bound-theorem
+    canonical-exact-rnn-lm-theorem
+    canonical-exact-rnn-lm-capability-subcomposition-theorem
+    canonical-exact-rnn-lm-observation-subcomposition-theorem
+    canonical-exact-rnn-lm-observation-topology-capability-theorem
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+
+------------------------------------------------------------------------
 -- Emergent endogenous RNN-LM/POMDP/topology capability closure.
 --
 -- This is a packaging theorem over already-declared exact surfaces:
