@@ -418,7 +418,16 @@ Orange/pending internal verification is a wait state, not a bypass condition. Re
 
 The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `canonicalF4-factor-collision-separates-full-state`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
 
-### Strict full-connected neural-function-class separation
+#
+## Finite-factor automaton closure and tropical quotient candidate
+
+The strict graph now records a connected finite-factor automaton closure candidate rather than treating HardSign, automata, F4, NormPair, or tropical geometry as isolated separation claims. The concrete dependency seam is `CanonicalGRUF4NormWatkinsPrefixCompositionTheorem` -> `CanonicalFullLearnerConnectedScanConjugacyTheorem`: the latter's `connectedStep` is instantiated by the exact `canonicalFullStep-GRUF4Norm-prefix-bridge`. The proposed closure then passes through the existing HardSign idempotence, finite-automaton product composition, bounded-factor lift, factor-recurrence/non-state-recurrence theorem, and finite-cycle exclusion.
+
+The current candidate is `CanonicalEndogenousHardSignFactorAutomatonClosureCandidate`: an explicit HardSign-preserving finite invariant factor of the recurrent affine learner could realize arbitrary finite automata while the exact state remains nonrecurrent. It remains `CANDIDATE_NOT_PROVED` until the affine realization, quotient-preservation, finite-invariant-factor, and exact-state compatibility certificates exist on the Agda surface.
+
+A second candidate, `CanonicalTropicalQuotientOptimizerAffineGRUExpressivityCandidate`, records a possible max-plus/tropical or polyhedral quotient of the optimizer-affine GRU/F4/NormPair transition. This is deliberately a candidate only: no tropical/max-plus optimizer theorem is currently on the canonical Agda proof surface, and literature motivation cannot substitute for an Agda proposition. Strict separation still requires the existing inclusion, connected witness, and baseline nonrepresentability obligations.
+
+## Strict full-connected neural-function-class separation
 
 The strict separation graph has one function-class object only: the full connected composition. Individual HardSign, Haar, attention, recurrence, optimizer, factor, and observation surfaces are not treated as independent separation claims. They are promoted into the smallest existing composed theorem that consumes their semantics, or remain ordinary Agda/CI prerequisites until such a composition exists.
 
