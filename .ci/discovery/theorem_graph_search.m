@@ -42,8 +42,6 @@
 :- pred all_generated_plans_valid(
     list(semantic_law)::in,
     list(list(string))::in) is semidet.
-all_generated_plans_valid(Laws, Plans) :-
-    all_valid_plans(Plans, Laws, yes).
 
 :- pred search_emergent_compositions_from_seed_ids(
     list(semantic_law)::in,
@@ -51,6 +49,9 @@ all_generated_plans_valid(Laws, Plans) :-
     list(list(string))::out) is det.
 
 :- implementation.
+
+all_generated_plans_valid(Laws, Plans) :-
+    all_valid_plans(Plans, Laws, yes).
 
 :- type graph_node
     ---> graph_node(
