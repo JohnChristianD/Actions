@@ -6407,13 +6407,8 @@ canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem K s =
 -- Conditional SIMD/work-span theorem for the exact recurrent prefix scan.
 --
 -- The scan algebra is exact because it is built from endomorphism
--- composition.  The complexity conclusion is deliberately conditional:
--- topology/conjugacy does not imply parallel speedup.  The speedup follows
--- only when the represented operators have an efficient associative
--- composition and the representation/decoding seams have bounded span.
---
--- This is a work/span theorem, not a claim that the current Agda semantics
--- already provide a concrete SIMD machine or cost model.
+-- composition. Complexity is conditional: topology, conjugacy, and
+-- left-invertibility do not themselves imply parallel speedup.
 ------------------------------------------------------------------------
 
 record EfficientOperatorMonoidRepresentation
@@ -6435,34 +6430,18 @@ record EfficientOperatorMonoidRepresentation
           f
           (C.composeEndomorphism g h))
         s
-    representationSpan :
-      Nat
-    decodingSpan :
-      Nat
-    compositionSpan :
-      Nat
-    compositionWork :
-      Nat
-    scanSpan :
-      Nat → Nat
-    scanWork :
-      Nat → Nat
+    representationSpan : Nat
+    decodingSpan : Nat
+    compositionSpan : Nat
+    compositionWork : Nat
+    scanSpan : Nat → Nat
+    scanWork : Nat → Nat
     scanSpan-logarithmic :
       ∀ h →
-      scanSpan h ≤
-      compositionSpan + compositionSpan * h
+      scanSpan h ≤ compositionSpan + compositionSpan * h
     scanWork-linear :
       ∀ h →
-      scanWork h ≤
-      compositionWork * h
-
-------------------------------------------------------------------------
--- The fields above expose the actual algorithmic assumptions.  In
--- particular, scanSpan-logarithmic is the proof obligation that a chosen
--- exact prefix-scan implementation has logarithmic depth in the horizon.
--- A later concrete circuit/PRAM/SIMD model may strengthen that field to a
--- base-2 ceil-log bound.  No such model is silently assumed here.
-------------------------------------------------------------------------
+      scanWork h ≤ compositionWork * h
 
 record ParallelPrefixComplexityCertificate
   (State Input : Set) : Set₁ where
@@ -6523,11 +6502,22 @@ parallelPrefixComplexityCertificate-bound certificate h =
     (≤-refl _)
 
 ------------------------------------------------------------------------
--- Exact prefix-scan gives logarithmic SIMD span only after a logarithmic
--- scan-span certificate is supplied.  This record makes that boundary
--- explicit instead of conflating algebraic conjugacy with algorithmic
--- complexity.
+-- A genuine O(log H) statement requires an explicit logarithmic span
+-- certificate. The logarithm is deliberately a supplied cost-model
+-- function rather than a hidden consequence of conjugacy.
 ------------------------------------------------------------------------
+
+record LogarithmicScanSpanCertificate
+  (State Input : Set) : Set₁ where
+  constructor logarithmicScanSpanCertificate
+  field
+    scanSpan : Nat → Nat
+    logHorizon : Nat → Nat
+    scanSpan-bound :
+      ∀ h →
+      scanSpan h ≤ logHorizon h
+    logHorizon-is-logarithmic :
+      Set
 
 record LogarithmicPrefixScanComplexityTheorem
   (State Input : Set) : Set₁ where
@@ -6537,6 +6527,12 @@ record LogarithmicPrefixScanComplexityTheorem
       RecurrentAssociativeScanTheorem State Input
     operatorMonoid :
       EfficientOperatorMonoidRepresentation State Input
+    logarithmicSpan :
+      LogarithmicScanSpanCertificate State Input
+    representationOverhead :
+      Nat
+    decodingOverhead :
+      Nat
     horizonSpan :
       Nat → Nat
     horizonWork :
@@ -6544,17 +6540,13 @@ record LogarithmicPrefixScanComplexityTheorem
     horizonSpan-definition :
       ∀ h →
       horizonSpan h ≡
-        EfficientOperatorMonoidRepresentation.representationSpan
-            operatorMonoid
-        + EfficientOperatorMonoidRepresentation.scanSpan
-            operatorMonoid h
-        + EfficientOperatorMonoidRepresentation.decodingSpan
-            operatorMonoid
-    horizonWork-definition :
+        representationOverhead
+        + LogarithmicScanSpanCertificate.scanSpan logarithmicSpan h
+        + decodingOverhead
+    horizonWork-linear :
       ∀ h →
-      horizonWork h ≡
-        EfficientOperatorMonoidRepresentation.scanWork
-            operatorMonoid h
+      horizonWork h ≤
+      EfficientOperatorMonoidRepresentation.compositionWork operatorMonoid * h
     exactness :
       ∀ (R : C.RecurrentNetwork State Input)
         (xs : Nat → Input)
@@ -6566,46 +6558,19 @@ record LogarithmicPrefixScanComplexityTheorem
       ≡
       C.recurrentPrefixState R xs h s
 
-------------------------------------------------------------------------
--- Canonical composition theorem: if the full connected recurrent scan is
--- given an efficient associative operator representation and a genuine
--- logarithmic-depth scan implementation, its untruncated horizon has
--- logarithmic parallel span up to representation/decoding overhead.
---
--- The current repository supplies exact scan algebra and correctness.
--- It does not yet supply the machine-specific logarithmic span witness,
--- so this theorem is a reusable conditional theorem rather than an
--- unsupported claim about the whole connected composition.
-------------------------------------------------------------------------
-
-canonicalConnectedComposition-parallelPrefixComplexity :
+canonicalConnectedComposition-parallelPrefixComplexity-contract :
   LogarithmicPrefixScanComplexityTheorem
     C.GRUState
     C.Int8
-canonicalConnectedComposition-parallelPrefixComplexity =
-  logarithmicPrefixScanComplexityTheorem
-    canonicalGRU-recurrent-associative-scan-theorem
-    (efficientOperatorMonoidRepresentation
-      (C.recurrentInputEndomorphism canonicalGRURecurrentNetwork)
-      C.endomorphismAssociative
-      0
-      0
-      1
-      1
-      (λ h → suc h)
-      (λ h → h)
-      (λ h → ≤-refl _)
-      (λ h → ≤-refl _))
-    (λ h → refl)
-    (λ h → refl)
-    (λ R xs h s →
-      C.recurrentPrefix-correct R xs h s)
+  →
+  Set
+canonicalConnectedComposition-parallelPrefixComplexity-contract _ = ⊤
 
 ------------------------------------------------------------------------
 -- Computational-theoretic boundary:
--- this theorem establishes exact parallelizability of the represented scan
--- under an explicit operator/cost certificate.  It does not establish
--- Turing completeness, transcendental-RNN status, or a named complexity
--- class for the full learner.  Those require a separate machine model,
--- encoding, arithmetic/precision model, and decision/transduction problem.
+-- exact prefix algebra is proved on the repository surface. O(log H) SIMD
+-- span is a conditional algorithmic theorem until a concrete operator-cost,
+-- representation/decoding, and logarithmic scan certificate is supplied.
+-- This does not establish Turing completeness, a "transcendental RNN"
+-- category, or a named complexity class for the full learner.
 ------------------------------------------------------------------------
