@@ -315,6 +315,14 @@ JSON
     canonical-haar-sparsemax-full-state-closure-theorem
     FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
     canonical-finite-factor-recurrence-without-state-recurrence
+    CanonicalFiniteObservationInformationBoundaryTheorem
+    canonical-finite-observation-information-boundary-theorem
+    CanonicalBoundedFactorLiftTheorem
+    canonical-bounded-factor-lift-theorem
+    CanonicalFiniteCycleExclusionIsomorphismTheorem
+    canonical-finite-cycle-exclusion-isomorphism-theorem
+    CanonicalOperatorCompositionTheorem
+    canonical-operator-composition-theorem
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
     BairdSevenStarProblem
