@@ -89,7 +89,7 @@ top_level_header(Line, Name, SignatureFragment) :-
     top_level_line(Line),
     first_word(Line, Name),
     not syntax_head(Name),
-    Name \\= "--",
+    Name \= "--",
     string.sub_string_search(Line, ":", _),
     Parts = string.split_at_string(":", Line),
     Parts = [_, After | _],

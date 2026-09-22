@@ -1279,6 +1279,14 @@ CanonicalFixedSparsemaxAttentionVector :
 CanonicalFixedSparsemaxAttentionVector K s t =
   canonicalFixedSparsemaxAttentionWeight K s t
 
+canonicalFixedSparsemaxAttentionVector :
+  CanonicalTokenLanguageModelKernel →
+  GRUState →
+  CanonicalToken →
+  Int8
+canonicalFixedSparsemaxAttentionVector K s t =
+  CanonicalFixedSparsemaxAttentionVector K s t
+
 canonicalFixedSparsemaxAttention-shared :
   ∀ (K : CanonicalTokenLanguageModelKernel)
   (s : GRUState)
