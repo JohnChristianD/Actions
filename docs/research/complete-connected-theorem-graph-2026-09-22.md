@@ -166,3 +166,39 @@ Each contract requires the connected full-class witness and the canonical baseli
 SciSpace identified relevant formal expressivity work. Svete & Cotterell (EMNLP 2023) prove that simple RNN LMs form a strict subset of the distributions expressible by finite-state models and derive neuron lower bounds. Svete et al. (2024) give constructive bounded-precision RNN-LM representations of arbitrary regular LMs. Merrill et al. (2020) develop a formal hierarchy of RNN architectures based on space complexity and rational recurrence. These results support the repository's witness-plus-nonrepresentability discipline, but none establishes the repository-specific GRU/F4/NormPair/Watkins candidates.
 
 Research boundary: external expressivity results are evidence for proof structure, not imported premises. The repository's strict claims still require native Agda witnesses and `Agda --safe` verification.
+
+
+## Literature-aligned strict separation completion — 2026-09-22
+
+The missing strict-separation proof surface is now completed at the strongest algebraic level supported by the repository's existing exact-clock, finite-factor, and no-cycle results.
+
+### Exact Agda construction
+
+The new proof surface defines:
+
+- `CanonicalRecurrentFunctionRealization`: a Nat-indexed function realized by an explicit recurrent state transition, initial state, and output map;
+- `CanonicalFiniteStateRecurrentFunctionClass`: the same realization restricted to `Fin 256` hidden state;
+- `CanonicalConnectedRecurrentFunctionClass`: a direct recurrent extension with state `Fin 256 ⊎ CanonicalFullLearnerState`;
+- `canonicalFiniteStateRecurrent-function-inclusion`: an explicit inclusion by embedding finite state in the left summand;
+- `canonicalConnectedLearnerClock K s`: the exact trace `clock(s) + n`;
+- `canonicalConnectedLearnerClock-realization`: the trace realized by the connected full learner transition;
+- `canonicalConnectedLearnerClock-not-finite-state`: nonrepresentability from finite-state pigeonhole collision, exact clock growth, and `natPlus-left-cancel`;
+- `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: the completed strict witness/inclusion/nonrepresentability theorem.
+
+The separation is constructive: the baseline has only 256 hidden states, while the witness has an unbounded exact clock trace. The proof does not rely on training behavior, numerical approximation, or an empirical benchmark.
+
+### Literature alignment
+
+This is closest to the formal RNN hierarchy built around rational recurrence and finite-state descriptions. Merrill et al. define a hierarchy using space complexity and whether the recurrent update can be described by a weighted finite-state machine; their paper explicitly contrasts rational and non-rational state expressivity. See https://aclanthology.org/2020.acl-main.43/.
+
+It is also closely aligned with Svete & Cotterell's probabilistic finite-state treatment of recurrent language models: they characterize simple RNN LMs through finite-state automata and prove strict subset results together with state-space lower bounds. See https://aclanthology.org/2023.emnlp-main.502/.
+
+These papers do not prove the repository's sign/optimizer-affine GRU claims. They justify the algebraic form of the completed theorem: class inclusion, one explicit larger-class witness, and a canonical nonrepresentability proof.
+
+### Route-specific boundary
+
+The four pre-graphed labels now all reuse the completed finite-state-versus-unbounded-recurrent theorem through the endogenous connected observation/topology contract. The shared theorem is real and complete on the Agda source surface. The labels do not thereby acquire separate proofs that their sign/optimizer-affine, non-tropical, explicitly non-automata, or learner-replacement-quotient mechanisms preserve the witness. Those require additional native route definitions and route-specific nonrepresentability lemmas.
+
+### Verification boundary
+
+Fresh Nix/Dhall/Agda/Mercury CI for the new head has not yet been observed. The claim is therefore "Agda source-surface theorem term present", not "fresh Agda --safe CI verified".
