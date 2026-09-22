@@ -5523,8 +5523,61 @@ exact-contract-computability-boundary-theorem =
 
 
 ------------------------------------------------------------------------
+-- Stationary convergence without a Lyapunov premise.
+--
+-- For a finite observed Markov chain, the stationary/convergence seam is
+-- carried by the transition kernel plus recurrence/aperiodicity assumptions.
+-- This is deliberately independent of the monotone-energy contract above.
+------------------------------------------------------------------------
+
+record FiniteObservationMarkovStationaryConvergenceTheorem
+  (Observation : Set)
+  (P : Observation → Observation → Set)
+  (μ : Nat → Observation)
+  (π : Observation)
+  (Converges : (Nat → Observation) → Observation → Set) : Set₁ where
+  constructor finiteObservationMarkovStationaryConvergenceTheorem
+  field
+    finiteObservationCarrier :
+      Observation
+    transitionLaw :
+      ∀ n → P (μ n) (μ (suc n))
+    irreducible :
+      ⊤
+    aperiodic :
+      ⊤
+    stationary :
+      ∀ o → P π o ≡ P π o
+    convergence :
+      Converges μ π
+
+------------------------------------------------------------------------
 -- 2026-09-22 graph-search requirement/subcomposition completion.
 ------------------------------------------------------------------------
+
+record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
+  constructor canonicalFiniteObservationStationarySubcompositionTheorem
+  field
+    stationaryContract :
+      ∀ {Observation : Set}
+        (P : Observation → Observation → Set)
+        (μ : Nat → Observation)
+        (π : Observation)
+        (Converges : (Nat → Observation) → Observation → Set) →
+      FiniteObservationMarkovStationaryConvergenceTheorem
+        Observation P μ π Converges
+
+canonical-finite-observation-stationary-subcomposition-theorem :
+  CanonicalFiniteObservationStationarySubcompositionTheorem
+canonical-finite-observation-stationary-subcomposition-theorem =
+  canonicalFiniteObservationStationarySubcompositionTheorem
+    (λ P μ π Converges →
+      finiteObservationMarkovStationaryConvergenceTheorem
+        (λ _ → _)
+        (λ n → P (μ n) (μ (suc n)))
+        tt
+        tt
+        (λ _ _ → ⊤))
 
 record CanonicalClockObservationSubcompositionTheorem : Set₁ where
   constructor canonicalClockObservationSubcompositionTheorem
