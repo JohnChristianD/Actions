@@ -15,11 +15,11 @@ open import Data.Unit using (⊤; tt)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Fin.Properties using (toℕ-bounded; pigeonhole; n<1+n; toℕ-injective)
+open import Data.Fin.Properties using (pigeonhole; toℕ-injective; toℕ-mono-<)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Nat.Properties using (≤-antisym; +-identityʳ; +-suc)
+open import Data.Nat.Properties using (≤-antisym; +-identityʳ; +-suc; n<1+n)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 replaceClock :
@@ -6261,9 +6261,7 @@ canonicalFiniteStateIteration-collision step initial with
 ... | i , j , apart , stateEq =
   toℕ i ,
   toℕ j ,
-  (λ mnEq →
-    apart
-      (toℕ-injective mnEq)) ,
+  toℕ-mono-< apart ,
   stateEq
 
 canonicalConnectedLearnerClock :
@@ -6298,8 +6296,8 @@ canonicalConnectedLearnerClock-not-finite-state :
       (canonicalConnectedLearnerClock K s)
 canonicalConnectedLearnerClock-not-finite-state K s realization with
   canonicalFiniteStateIteration-collision
-    (step realization)
-    (initial realization)
+    (CanonicalRecurrentFunctionRealization.step realization)
+    (CanonicalRecurrentFunctionRealization.initial realization)
 ... | i , j , apart , stateEq =
   apart
     (toℕ-injective
