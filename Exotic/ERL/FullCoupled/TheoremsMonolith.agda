@@ -14,7 +14,7 @@ open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Fin.Properties using (toℕ-bounded)
+open import Data.Fin.Properties using (toℕ-bounded; pigeonhole; n<1+n; toℕ-injective)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
@@ -4988,19 +4988,23 @@ canonicalF4-factor-collision-separates-full-state :
     C.iterateCanonical K m s ≢
     C.iterateCanonical K n s
 canonicalF4-factor-collision-separates-full-state K s with
-  C.pigeonholeNatToInt8
-    (λ n →
+  pigeonhole
+    (n<1+n 256)
+    (λ i →
       C.code
         (C.thetaQ
           (C.optimizer
-            (C.iterateCanonical K n s))))
-... | m , n , apart , factorEq =
-  m , n , apart ,
+            (C.iterateCanonical K (toℕ i) s))))
+... | i , j , apart , factorEq =
+  toℕ i ,
+  toℕ j ,
+  (λ mnEq → apart (toℕ-injective mnEq)) ,
   factorEq ,
   (λ fullEq →
     apart
-      (C.canonicalOrbit-state-injective K s
-        (cong C.clock fullEq)))
+      (toℕ-injective
+        (C.canonicalOrbit-state-injective K s
+          (cong C.clock fullEq))))
 
 ------------------------------------------------------------------------
 -- Pure non-orange-bypass theorem graph endpoint:
