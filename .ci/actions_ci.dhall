@@ -339,6 +339,9 @@ JSON
     canonical-persistent-excitation-requirement-theorem
     ExactContractComputabilityBoundaryTheorem
     exact-contract-computability-boundary-theorem
+    FiniteFunctionExactIsomorphismTransportTheorem
+    FiniteRecurrentFunctionExactTranslationTheorem
+    FinitePOMDPExactIsomorphismTransportTheorem
     canonical-nat-clock-lyapunov-separation-theorem
     CanonicalExactTuringBoundaryMixtureTheorem
     canonical-exact-turing-boundary-mixture-theorem
