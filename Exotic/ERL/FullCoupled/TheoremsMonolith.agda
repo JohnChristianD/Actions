@@ -6696,7 +6696,9 @@ jensen-minimax-regret-rounding-kkt-markov-bound D =
     (jensenMinimaxRegret D)
     (≤-trans
       (kktRoundingAbsorption D)
-      (stationaryMarkovFixedPoint D))
+      (≤-trans
+        (lionDescentKKT D)
+        (stationaryMarkovFixedPoint D)))
 
 ------------------------------------------------------------------------
 -- Full connected optimizer composition.  The recurrent scan and
