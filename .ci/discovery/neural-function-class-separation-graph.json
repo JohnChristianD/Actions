@@ -222,5 +222,55 @@
     "current_formal_claim": "The graph connects the S4/S5 recurrent scan seam into the full learner composition via S4PlusS5RecurrentScanTheorem and CanonicalFullLearnerConnectedScanConjugacyTheorem.",
     "not_yet_proved": "This is not yet a strict theorem that F_S4 subseteq F_full_connected subseteq F_S5, nor a proof that the full class is strictly intermediate.",
     "required_to_upgrade": "Add explicit Agda class definitions, both inclusion proofs, and a concrete full-composition witness with baseline nonrepresentability."
+  },
+  "internal_verification": {
+    "requested_authority": "repository-internal Nix/Dhall verification rather than GitHub status",
+    "dhall_surface": ".ci/actions_ci.dhall",
+    "declared_internal_lanes": [
+      "AgdaSafe",
+      "Mercury",
+      "Discovery",
+      "SemanticContract",
+      "Surface",
+      "Versions",
+      "All"
+    ],
+    "nix_surface": "No tracked *.nix, flake.nix, shell.nix, or default.nix file was found in the repository search surface.",
+    "observed_execution_status": "UNOBSERVED",
+    "reason": "The available repository connector can inspect the Dhall contract and source tree but does not execute the repository's local Nix/Dhall toolchain. No GitHub status is being substituted for this internal result.",
+    "gate_policy": "Do not infer green, orange, or passing from absence of an observable internal execution result."
+  },
+  "pregraphed_exotic_first": {
+    "existing_candidates_checked": [
+      "hardSignGate-idempotent",
+      "FiniteHardSparseKKTEquilibriumTheorem",
+      "CanonicalPolymorphicSparsemaxCompositionTheorem",
+      "CanonicalExactTuringBoundaryMixtureTheorem",
+      "CanonicalBoundednessPEBoundarySubcompositionTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "S4PlusS5RecurrentScanTheorem"
+    ],
+    "promotion_rule": "Use an existing pre-graphed theorem before proposing a new theorem, but promote it into the full connected composition only when the actual Agda dependency relation supports that composition. Do not manufacture an edge merely to make the graph connected.",
+    "hard_sign_status": "hardSignGate-idempotent is proved on the canonical Agda surface; it is not yet a strict function-class separation witness.",
+    "tropical_status": "No tropical/max-plus optimizer-geometry theorem is currently present on the repository proof surface."
+  },
+  "emergent_endogenous_theorem_candidate": {
+    "name": "CanonicalEndogenousHardSignFactorAutomatonClosureCandidate",
+    "status": "CANDIDATE_NOT_PROVED",
+    "shape": "full_connected_learner -> recurrent_affine/hardSign factor quotient -> finite automaton realization -> factor recurrence while exact-state finite-cycle exclusion remains intact",
+    "ingredients_already_present": [
+      "hardSignGate-idempotent",
+      "DirectProductFiniteAutomatonComposition",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "CanonicalBoundedFactorLiftTheorem",
+      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
+      "CanonicalFiniteCycleExclusionIsomorphismTheorem"
+    ],
+    "missing_witnesses": [
+      "explicit Agda realization map from the full connected recurrent affine state to a finite automaton quotient",
+      "proof that the hardSign quotient is preserved by the connected learner transition",
+      "strict baseline nonrepresentability witness if this is used for function-class separation"
+    ],
+    "tropical_extension": "A tropical/max-plus optimizer-geometry lemma could later serve as a composition-preserving boundary description, but no such lemma is admitted until its Agda proposition exists."
   }
 }
