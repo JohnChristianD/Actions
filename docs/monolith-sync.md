@@ -109,3 +109,12 @@ The graph is deliberately directional: no finite F4 factor is promoted to a full
 The canonical theorem surface already proves exact finite-cycle exclusion and generic state-isomorphism/conjugacy transport. Those are transition-semantic theorems: they follow from exact iteration and the clock-growth law. The repository does not currently expose a theorem named or typed as a Lyapunov function with a descent condition such as `V (step s) < V s`, nor does the existing `canonicalIntegerHaarEnergy` constitute such a Lyapunov certificate; it is an exact integer Haar energy identity.
 
 The operator-composition result is likewise already present through the canonical `Endomorphism` composition algebra. `CanonicalOperatorCompositionTheorem` now packages identity, composition, and associativity in the theorem monolith, so the standalone connected-operator-composition module is semantically redundant and has been removed. The new endogenous result remains the bounded-factor/injective-lift theorem: finite F4 recurrence is separated from full-state recurrence by exact clock injectivity.
+
+
+## Emergent factor-recurrence separation
+
+The active theorem surface now includes `FiniteFactorRecurrenceWithoutStateRecurrenceTheorem` and `canonical-finite-factor-recurrence-without-state-recurrence`. It states the endogenous representation boundary explicitly: any orbit observed through `Fin 256` has two distinct time indices with equal factor value, while an injective exact orbit keeps the corresponding full states distinct. This is a finite-factor/aperiodic-orbit separation result; it is not a Lyapunov descent theorem and does not assert that the F4 update is contractive.
+
+`CanonicalPureNonOrangeBypassCompletionTheorem` is the pre-graphed monolith endpoint. It packages the recurrent-prefix monoid law, full-learner scan conjugacy, exact Turing-boundary contract, Haar/sparsemax closure, finite-cycle isomorphism transport, operator composition, bounded-factor lift, and the new factor-recurrence separation theorem without introducing a second proof surface.
+
+The remaining `FullCoupled/*.agda` files outside the two monoliths are intentionally retained because they provide distinct game/environment benchmark semantics or the signed-divisibility arithmetic bridge. They are not semantically redundant theorem facades.
