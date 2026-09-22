@@ -125,6 +125,14 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
 main(!IO) :-
     read_semantic_laws(All, !IO),
     search_emergent_compositions(All, Plans),
+    (
+        if graph_search_completion(All, RequiredPlans, RequiredSubcompositionPlans)
+        then
+            true
+        else
+            RequiredPlans = [],
+            RequiredSubcompositionPlans = []
+    ),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(Plans, EGraph0, EGraphGraph),
     saturate_until_stable(semantic_rewrite_rules, EGraphGraph, EGraph, Saturation),
@@ -135,6 +143,8 @@ main(!IO) :-
         if
             list.length(All) > 0,
             list.length(Plans) > 0,
+            list.length(RequiredPlans) = 4,
+            list.length(RequiredSubcompositionPlans) = 3,
             list.length(Analyses) > 0,
             class_count(EGraph) > 0,
             enode_count(EGraph) > 0,
