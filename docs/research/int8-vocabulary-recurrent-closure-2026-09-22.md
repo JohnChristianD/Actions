@@ -51,9 +51,11 @@ Composition:
 → `RecurrentPrefixMonoidHomomorphism`
 → `FreeMonoidActionHomomorphism`.
 
-Status: `CANDIDATE_NOT_PROVED`.
+Status: `PROMOTED_COMPOSED_THEOREM` for the vocabulary/observation closure; finite-sequence-generation closure remains a separate candidate.
 
-Its intended theorem is that the connected recurrent/conjugate system can generate arbitrarily long finite sequences over a fixed 256-token alphabet, without changing the one-step vocabulary cardinality.
+The promoted theorem is `CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem`. It is an actual Agda record packaging the exact vocabulary boundary, global token conjugacy, exact RNN-LM theorem, observation/topology capability, and endogenous RNN-LM/POMDP/topology capability. Its fields are existing theorem records, so the graph edge is semantic rather than synthetic.
+
+The finite-sequence-generation claim remains a separate candidate: the repository already contains `canonicalTokenListState-conjugacy`, `canonicalToken-prefix-monoid-homomorphism`, and `FreeMonoidActionHomomorphism`, but no single record yet states the full arbitrary-length generation closure.
 
 ## Graph discipline
 
