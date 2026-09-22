@@ -6056,3 +6056,37 @@ canonical-token-vocabulary-upper-bound-theorem =
     canonicalTokenEncodeDecode
     canonicalTokenDecodeEncode
     refl
+
+
+------------------------------------------------------------------------
+-- Emergent endogenous exact RNN-LM vocabulary/observation closure.
+--
+-- This packages the exact finite vocabulary boundary together with the
+-- global token conjugacy, exact RNN-LM capability, and endogenous
+-- observation/topology closure. It adds no new semantic axiom: every
+-- field is an already-proved theorem record, so the graph edge is real.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem : Set₁ where
+  constructor canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+  field
+    vocabulary :
+      CanonicalTokenVocabularyUpperBoundTheorem
+    conjugacy :
+      CanonicalGlobalTokenConjugacyTheorem
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    observationTopology :
+      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    endogenousPOMDPTopology :
+      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+
+canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem :
+  CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem =
+  canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+    canonical-token-vocabulary-upper-bound-theorem
+    canonical-global-token-conjugacy
+    canonical-exact-rnn-lm-theorem
+    canonical-exact-rnn-lm-observation-topology-capability-theorem
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
