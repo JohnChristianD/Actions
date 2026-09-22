@@ -5386,7 +5386,7 @@ canonical-nat-clock-lyapunov-separation-theorem :
   CanonicalNatClockLyapunovSeparationTheorem
 canonical-nat-clock-lyapunov-separation-theorem =
   canonicalNatClockLyapunovSeparationTheorem
-    canonicalClockStep
+    (λ K s → canonicalClockAfter K 1 s)
     canonicalNoNontrivialFiniteCycle-theorem
     (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
       canonical-finite-factor-recurrence-without-state-recurrence)
@@ -5594,9 +5594,6 @@ record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
 canonical-boundedness-pe-boundary-subcomposition-theorem :
   CanonicalBoundednessPEBoundarySubcompositionTheorem
 canonical-boundedness-pe-boundary-subcomposition-theorem =
-  canonicalBoundednessPEBoundarySubcompositionTheorem
-    canonical-bounded-factor-lift-theorem
-    canonical-persistent-excitation-requirement-theorem
   canonicalBoundednessPEBoundarySubcompositionTheorem
     canonical-bounded-factor-lift-theorem
     canonical-persistent-excitation-requirement-theorem
