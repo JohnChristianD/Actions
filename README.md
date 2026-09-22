@@ -466,3 +466,12 @@ with rho < 1,
 then a finite/invariant factor space can yield eventual recurrence. A separate stability or complexity argument can then address generalization; recurrence alone is not a generalization guarantee. Empirical/theoretical literature supports the broader separation between recurrent stability, regularization, and overfitting/generalization rather than identifying them as the same theorem.
 
 This relationship is recorded as a candidate in .ci/discovery/neural-function-class-separation-graph.json; it is not promoted to an Agda theorem until the repository has an explicit regularizer, factor map, and quantitative certificate.
+
+
+### Unified tropical / HardSign topology-neighborhood-conjugacy candidate
+
+The graph now records `CanonicalEndogenousTropicalHardSignAffineGRUExpressivityTopologyConjugacyCandidate` as a single composed candidate rather than four disconnected claims. Its intended chain is the existing GRU/F4/NormPair/Watkins connected learner, HardSign finite-factor automaton quotient, the bounded recurrent UAP surface with `DenseNeighborhoodSeparationTheorem`, the endogenous observation-topology closure, and the architecture-preserving RNN-LM conjugacy surface. The exact RNN-LM observation topology theorem and the endogenous RNN-LM/POMDP topology theorem are used only through their documented dependencies.
+
+This is still `CANDIDATE_NOT_PROVED`. The repository needs an actual Agda tropical/polyhedral quotient, HardSign transition preservation, affine realization of arbitrary finite-automaton transitions, prefix conjugacy, conjugacy transport, a neighborhood-separation witness for the same connected construction, and the existing strict inclusion/nonrepresentability obligations. No standalone tropical, topology, neighborhood, or conjugacy separation node is created.
+
+The external literature supports the geometric motivation: tropical/max-plus methods describe piecewise-linear neural-network regions and also have established connections to finite-state/weighted-automaton computation. That motivation does not prove this repository's recurrent HardSign/F4/NormPair theorem; Agda remains the proof authority.
