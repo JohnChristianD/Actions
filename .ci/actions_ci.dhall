@@ -287,7 +287,7 @@ JSON
     CanonicalIntegerHaarScaledOrthogonalityTheorem
     canonical-integer-haar-scaled-orthogonality-theorem
     CanonicalAStarCostGuidanceTheorem
-    CanonicalEndogenousAStarTransportClosureTheorem
+    CanonicalEndogenousEGraphAStarTransportClosureTheorem
     canonical-a-star-cost-guidance-theorem
     canonical-linear-haar-sparsemax-attention-composition-theorem
     canonical-full-state-haar-sparsemax-invariant-composition-theorem
