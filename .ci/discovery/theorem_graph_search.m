@@ -468,6 +468,7 @@ graph_required_theorems = [
     "LogarithmicPrefixScanComplexityTheorem",
     "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
     "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+    "hodgeMaxwell-discontinuous-gru-refutes-connected-representation",
     "ConnectedMaxwellTsallisExactConjugacyTheorem",
     "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
     "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
