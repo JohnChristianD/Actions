@@ -87,11 +87,11 @@
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "role": "fully connected hard-sign-style idempotent transport over the exact finite Hodge-Maxwell/Tsallis carrier; requires an explicit GRU-side projection conjugacy"
-    },
+    }
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "role": "fully connected conditional bridge from the finite Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
-    }
+    },
   ],
   "edges": [
     [
@@ -240,16 +240,6 @@
       "generalized Walrasian existence is promoted through an actual composed theorem"
     ],
     [
-      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "the hard-sign-style idempotent transport consumes the already-connected finite Maxwell/Tsallis composition"
-    ],
-    [
-      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "F_full_connected",
-      "the idempotent projection bridge is a connected conditional theorem rather than an isolated HardSign claim"
-    ],
-    [
       "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "the Walrasian bridge consumes the already-connected hard-sign-style Hodge-Maxwell/Tsallis projection"
@@ -258,6 +248,16 @@
       "ConnectedGeneralizedWalrasianExistenceTheorem",
       "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "the Walrasian bridge consumes the existing generalized stationary existence closure"
+    ],
+    [
+      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "the hard-sign-style idempotent transport consumes the already-connected finite Maxwell/Tsallis composition"
+    ],
+    [
+      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "F_full_connected",
+      "the idempotent projection bridge is a connected conditional theorem rather than an isolated HardSign claim"
     ]
   ],
   "separation_obligation": [
@@ -1546,7 +1546,8 @@
       "class": "GRAPH_REPAIR",
       "reason": "aligns the hard completion gate with the actual required theorem count"
     }
-  ],
+  ]
+  ,
   "novel_pregraphed_candidates_2026_09_23": [
     {
       "node": "FiniteHardSignSubgradientBoundaryCandidate",
@@ -1558,14 +1559,8 @@
         "connected GRU conjugacy consumer"
       ],
       "dependency_edges": [
-        [
-          "ConjugateWalrasianTransport",
-          "FiniteHardSignSubgradientBoundaryCandidate"
-        ],
-        [
-          "ContinuousLeftInverseTheorem",
-          "FiniteHardSignSubgradientBoundaryCandidate"
-        ]
+        ["ConjugateWalrasianTransport", "FiniteHardSignSubgradientBoundaryCandidate"],
+        ["ContinuousLeftInverseTheorem", "FiniteHardSignSubgradientBoundaryCandidate"]
       ],
       "reason_not_promoted": "finite limits and topology alone do not supply differentiability, convexity, or a valid derivative for a discontinuous sign map"
     },
@@ -1580,14 +1575,8 @@
         "connected Maxwell/Tsallis consumer"
       ],
       "dependency_edges": [
-        [
-          "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
-          "FiniteTsallisQLogDifferentiabilityConvexityCandidate"
-        ],
-        [
-          "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
-          "FiniteTsallisQLogDifferentiabilityConvexityCandidate"
-        ]
+        ["ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem", "FiniteTsallisQLogDifferentiabilityConvexityCandidate"],
+        ["ConnectedMaxwellTsallisFiniteExactConjugacyTheorem", "FiniteTsallisQLogDifferentiabilityConvexityCandidate"]
       ],
       "reason_not_promoted": "the existing Tsallis layer is algebraic transport; it does not formalize q-log differentiation or a convexity theorem"
     },
@@ -1602,14 +1591,8 @@
         "connected equilibrium consumer"
       ],
       "dependency_edges": [
-        [
-          "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-          "HodgeMaxwellConvexDualityBridgeCandidate"
-        ],
-        [
-          "ConnectedGeneralizedWalrasianExistenceTheorem",
-          "HodgeMaxwellConvexDualityBridgeCandidate"
-        ]
+        ["ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem", "HodgeMaxwellConvexDualityBridgeCandidate"],
+        ["ConnectedGeneralizedWalrasianExistenceTheorem", "HodgeMaxwellConvexDualityBridgeCandidate"]
       ],
       "reason_not_promoted": "Hodge-Maxwell equations and equilibrium existence are not made convex-dual by topology alone; the bridge requires explicit convex-analytic data"
     },
@@ -1623,14 +1606,12 @@
         "explicit stationary/generalized equilibrium witness"
       ],
       "dependency_edges": [
-        [
-          "ConnectedGeneralizedWalrasianExistenceTheorem",
-          "RegularWalrasianStaticExistenceAdapterCandidate"
-        ]
+        ["ConnectedGeneralizedWalrasianExistenceTheorem", "RegularWalrasianStaticExistenceAdapterCandidate"]
       ],
       "reason_not_promoted": "cross-language semantic equivalence is still an unproved adapter obligation"
     }
-  ],
+  ]
+  ,
   "algebraic_carrier_upgrade": {
     "status": "REPRESENTATION_UPGRADE_ONLY",
     "modules": [
