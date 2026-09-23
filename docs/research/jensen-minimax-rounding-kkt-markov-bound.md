@@ -165,3 +165,35 @@ Relevant research sources:
 - Campos Pinto & Sonnendrücker, “Gauss-compatible Galerkin schemes for time-dependent Maxwell equations,” Mathematics of Computation (2016), DOI: https://doi.org/10.1090/MCOM/3079
 - Berchenko-Kogan & Stern, “Constraint-Preserving Hybrid Finite Element Methods for Maxwell’s Equations,” Foundations of Computational Mathematics (2021), DOI: https://doi.org/10.1007/S10208-020-09476-7
 
+
+
+## Corrected optimizer boundary and emergent Maxwell/Tsallis theorem — 2026-09-23
+
+The intended optimizer boundary is the custom optimizer plus the non-/Frank-Wolfe rounding-bias residual regret composition. Lion is not an independent optimizer theorem in the strict graph, and standalone KKT is not treated as an independent optimizer endpoint. KKT records remain foundational dependencies only where a connected consumer requires them.
+
+The new endogenous theorem surface is:
+
+`ConnectedMaxwellTsallisFiniteExactConjugacyTheorem`
+
+with the dependency shape
+
+`CanonicalFullLearnerConnectedScanConjugacyTheorem`
+→ `FiniteFunctionExactIsomorphismTransportTheorem`
+→ `ConnectedMaxwellTsallisFiniteExactConjugacyTheorem`
+
+Its intended composition is:
+1. finite Maxwell-admissible state/update semantics;
+2. universal exact transport for finite functions;
+3. exact finite encoding and decoding;
+4. encode/decode inverse laws;
+5. exact transition conjugacy;
+6. a finite Tsallis/divergence carrier and an explicit divergence-transport law.
+
+The theorem is deliberately conditional. The repository does not contain a continuous Maxwell-PDE-to-finite-state discretization theorem, so the new Agda surface does not claim one. It proves the exact conjugacy interface once the finite Maxwell semantics and divergence structure are supplied.
+
+The nLab Maxwell page presents Maxwell's equations in differential-form form as `d F = 0` and `d ⋆ F = j_el`; this is used only to define the physical-law boundary, not to manufacture a discretization. The nLab entropy material describes Tsallis entropy through finite measured spaces and functorial/additive/homogeneous structure, while its conjugation-action material identifies intertwiners with invariants of conjugation. These ideas motivate the repository's finite semantics, divergence transport, and exact conjugacy fields.
+
+The graphing path is now automatic: Agda declaration → `learner_semantic_extractor.m` → `theorem_graph_search.m` → `theorem_monolith_egraph_sync.m`. Dhall remains the orchestrator rather than a second theorem-edge authority.
+
+The required-plan gate was advanced from 100 to 101 for the new Maxwell/Tsallis composition, while the Lion plan was removed from the required strict graph. No new external library was introduced.
+
