@@ -6751,7 +6751,7 @@ connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
 -- Horizon-indexed rounding-bias residual regret surfaces.
 --
 -- Regret is cumulative and explicitly indexed by a finite horizon H.  No
--- standalone Lion or KKT optimizer theorem is retained.  A custom optimizer
+-- no standalone optimizer theorem is retained.  A custom optimizer
 -- contributes its own residual; the F4/Frank-Wolfe consumer contributes a
 -- Frank-Wolfe residual directly.
 ------------------------------------------------------------------------
