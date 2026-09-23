@@ -85,7 +85,7 @@ The arrows describe orchestration, not mathematical implication. In particular, 
 
 ## Complete Agda record relationship graph
 
-The canonical theorem monolith currently contains 118 top-level record declarations. The numbered graph below is a legacy snapshot; the canonical declaration set is the Agda monolith plus the synchronized JSON graph.
+Both canonical Agda monoliths are the authoritative theorem/data source; the current branch contains 123 top-level record declarations across them. The numbered graph below is a legacy snapshot; the canonical declaration set is the Agda monolith plus the synchronized JSON graph.
 
 The following graph is derived from the actual record declarations and their direct record-to-record references. Every record is listed exactly once. This includes foundational data records, theorem contracts, transport structures, problem specifications, and composition records. Non-record definitions are not disguised as theorem records.
 
@@ -177,23 +177,14 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalGlobalTokenConjugacyTheorem
 64. CanonicalIntegerHaarScaledOrthogonalityTheorem
 65. CanonicalAStarCostGuidanceTheorem
-66. CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
-67. CanonicalHaarSparsemaxFullStateClosureTheorem
-68. CanonicalLinearHaarSparsemaxAttentionCompositionTheorem
 69. CanonicalFiniteCycleExclusionIsomorphismTheorem
     +-- depends on: StateIsomorphism
 70. CanonicalOperatorCompositionTheorem
-71. CanonicalBoundedFactorLiftTheorem
-72. FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
-73. CanonicalEndogenousObservationBoundaryTheorem
-74. CanonicalEndogenousTopologicalObservationBoundaryTheorem
-    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalEndogenousObservationBoundaryTheorem
+    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, retired finite-observation layer
 75. CanonicalPureNonOrangeBypassCompletionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, CanonicalHaarSparsemaxFullStateClosureTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, CanonicalBoundedFactorLiftTheorem, FiniteFactorRecurrenceWithoutStateRecurrenceTheorem, CanonicalEndogenousObservationBoundaryTheorem, CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem
-76. CanonicalFiniteObservationInformationBoundaryTheorem
+    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, retired finite-observation layer, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
     +-- depends on: DiscreteExactUniversalUAP
-77. CanonicalExactTuringBoundaryMixtureTheorem
-    +-- depends on: CanonicalExactCompositionTuringCompletenessContract, CanonicalFiniteObservationInformationBoundaryTheorem
+    +-- depends on: CanonicalExactCompositionTuringCompletenessContract, retired finite-observation layer
 78. CanonicalGlobalInt8LeftInverseImpossibilityTheorem
 79. FiniteObservationStationaryLimitTheorem
 80. CanonicalPersistentExcitationRequirementTheorem
@@ -204,7 +195,7 @@ The following graph is derived from the actual record declarations and their dir
 83. CanonicalClockObservationSubcompositionTheorem
     +-- depends on: CanonicalGlobalInt8LeftInverseImpossibilityTheorem
 84. CanonicalBoundednessPEBoundarySubcompositionTheorem
-    +-- depends on: CanonicalBoundedFactorLiftTheorem, CanonicalPersistentExcitationRequirementTheorem
+    +-- depends on: retired finite-observation layer, CanonicalPersistentExcitationRequirementTheorem
 85. FiniteProbabilityMass
 86. FiniteProbabilityMassSemanticsTheorem
     +-- depends on: StateIsomorphism, FiniteProbabilityMass
@@ -214,17 +205,11 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: StateIsomorphism, FinitePOMDPProbabilitySemantics
 89. FiniteBeliefUpdateExactTransportTheorem
     +-- depends on: StateIsomorphism
-90. CanonicalEndogenousPOMDPObservationBoundaryTheorem
-    +-- depends on: CanonicalEndogenousObservationBoundaryTheorem, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
-91. CanonicalExactRNNLMCapabilitySubcompositionTheorem
-    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem, CanonicalEndogenousTopologicalObservationBoundaryTheorem
-92. CanonicalExactRNNLMObservationSubcompositionTheorem
-    +-- depends on: CanonicalExactRNNLMTheorem, CanonicalEndogenousObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, ExactContractComputabilityBoundaryTheorem
-93. CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-    +-- depends on: CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalExactRNNLMCapabilitySubcompositionTheorem, CanonicalExactRNNLMObservationSubcompositionTheorem
-94. CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-    +-- depends on: CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalEndogenousPOMDPObservationBoundaryTheorem, CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-95. CanonicalTokenVocabularyUpperBoundTheorem
+    +-- depends on: retired finite-observation layer, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
+    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem, retired finite-observation layer
+    +-- depends on: CanonicalExactRNNLMTheorem, retired finite-observation layer, retired finite-observation layer, ExactContractComputabilityBoundaryTheorem
+    +-- depends on: retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
+    +-- depends on: retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
 
 Current canonical tail after the historical index:
 
@@ -267,64 +252,46 @@ record A
 
 A composite record therefore points toward the record surfaces it packages or assumes.
 
-## Emergent endogenous closure
+## Current connected closure
 
-The newest higher-order endogenous closure is:
+The current connected endpoint is deliberately smaller than the former finite-observation stack:
 
 ```
-CanonicalExactRNNLMTheorem
+CanonicalFullLearnerConnectedScanConjugacyTheorem
         |
+        +-- CanonicalExactRNNLMTheorem
         +-- CanonicalGlobalTokenLMCompositionTheorem
-        +-- ArchitecturePreservingCanonicalRNNLMIsomorphism
+        +-- CanonicalF4GlobalOptimizerStabilityTheorem
+        +-- CanonicalIntegerHaarScaledOrthogonalityTheorem
         |
         v
-CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-        |
-        +-- CanonicalEndogenousObservationBoundaryTheorem
-        +-- CanonicalEndogenousTopologicalObservationBoundaryTheorem
-        +-- CanonicalFiniteObservationInformationBoundaryTheorem
+CanonicalPureNonOrangeBypassCompletionTheorem
         |
         v
-CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-        |
-        +-- CanonicalEndogenousPOMDPObservationBoundaryTheorem
-        |      |
-        |      +-- FinitePOMDPProbabilitySemanticsTheorem
-        |      +-- FiniteBeliefUpdateExactTransportTheorem
-        |
-        +-- CanonicalFiniteObservationInformationBoundaryTheorem
+F_full_connected
 ```
 
-This is an emergent composition of already declared exact surfaces, not a new primitive axiom. Its significance is the exposed cross-domain closure between exact RNN-LM capability, endogenous observation topology, finite information limits, and finite POMDP probability and belief transport.
+Finite Hodge-Maxwell and Maxwell surfaces remain separate, explicitly connected semantic branches. They enter the full graph through their real finite representation/composition theorems; no synthetic continuous-PDE-to-GRU edge is introduced.
 
-## Exact vocabulary capacity
+## Exact integer token carrier
 
-The canonical token carrier is exactly:
-
-```
-CanonicalToken = Fin 256
-CanonicalToken <-> Int8
-```
-
-The encode and decode maps are exact inverses. Therefore this formulation has exactly 256 distinct token symbols.
-
-For exactly `n` tokens, the sequence space has:
+The canonical token carrier is now:
 
 ```
-256^n
+CanonicalToken = ℤ
 ```
 
-Across all finite lengths, the set of finite token sequences is countably infinite. That does not enlarge the vocabulary; the alphabet remains exactly 256 symbols.
+The recurrent token-step and list-state conjugacy are exact over this unbounded integer carrier. The executable Int8 components remain an implementation-side bounded representation; no fixed finite vocabulary is silently identified with the canonical token semantics.
 
-The logit vector is:
+The correct distinction is:
 
 ```
-CanonicalToken -> Int8
+unbounded semantic carrier  ->  ℤ
+explicit finite-state bound  ->  Fin n   (n : Nat)
+retired fixed token carrier  ->  Fin 256
 ```
 
-so one unconstrained Int8 logit vector has `256^256` possible coordinate assignments. That is an output-vector state-space count, not a vocabulary size and not a parameter-count estimate.
-
-`CanonicalTokenVocabularyUpperBoundTheorem` proves the exact carrier equivalence and inverse encode/decode laws. A separate numeric cardinality theorem would be a different formal statement.
+Sequences remain ordinary finite lists, so prefix concatenation and recurrent scan composition are exact structural operations. No theorem about convexity, smoothness, or universal continuous Maxwell representation follows merely from the ordered-ring structure of `ℤ`.
 
 ## Formal scope
 
@@ -334,8 +301,8 @@ The repository contains several deliberately separate readings:
 - Informatics: recurrent prefixes and their composition.
 - Dynamical systems: exact clock growth, cycle exclusion, conjugacy, finite-factor recurrence, and observation boundaries.
 - Stochastic semantics: finite probability masses, finite POMDP kernels, and exact belief-update transport.
-- Theoretical computer science: finite-carrier information limits and the explicitly stated exact-computability boundary.
-- RNN-LM semantics: finite tokens, recurrent processing, logit traces, sparsemax operations, token-LM composition, and architecture-preserving transport.
+- Theoretical computer science: explicit finite-carrier boundaries where a theorem actually supplies `Fin n`, together with the stated exact-computability boundary.
+- RNN-LM semantics: integer-token recurrent processing, logit traces, token-LM composition, and architecture-preserving transport.
 
 These are formal structural correspondences. They are not claims of empirical language-model performance, biological validity, physical realism, or a general equilibrium theorem.
 
@@ -421,14 +388,14 @@ The canonical path is:
 ```
 F_base
   -> CanonicalFullLearnerConnectedScanConjugacyTheorem
-  -> CanonicalHaarSparsemaxFullStateClosureTheorem
-  -> CanonicalBoundedFactorLiftTheorem
-  -> FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
-  -> CanonicalEndogenousObservationBoundaryTheorem
-  -> CanonicalEndogenousTopologicalObservationBoundaryTheorem
-  -> CanonicalFiniteObservationInformationBoundaryTheorem
-  -> CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-  -> CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+  -> retired finite-observation layer
+  -> retired finite-observation layer
+  -> retired finite-observation layer
+  -> retired finite-observation layer
+  -> retired finite-observation layer
+  -> retired finite-observation layer
+  -> retired finite-observation layer
+  -> retired finite-observation layer
   -> F_full_connected
 ```
 
@@ -444,7 +411,7 @@ Orange/pending internal verification is a wait state, not a bypass condition. Re
 
 ### Pre-graphed exotic promotion
 
-The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `canonicalF4-factor-collision-separates-full-state`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
+The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `retired finite-observation layer`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
 
 ## Finite-factor automaton closure and tropical quotient candidate
 
@@ -541,7 +508,7 @@ The canonical theorem surface now makes the three strict neural-function-class o
 
 ### Literature-aligned strict neural separation completion
 
-The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a `Fin 256` recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
+The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a `retired fixed finite-token carrier` recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
 
 This matches the formal literature axis of rational/finite-state recurrence versus richer recurrent state expressivity used by Merrill et al. (ACL 2020) and the finite-state characterization/strict-subset results of Svete & Cotterell (EMNLP 2023):
 - https://aclanthology.org/2020.acl-main.43/
