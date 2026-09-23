@@ -5384,8 +5384,8 @@ record ContinuousHodgeMaxwellExactRepresentationData
 
     maxwellEquation :
       ∀ s →
-      d (fieldF s) ≡ zero3 ×
-      dStar (star (fieldF s)) ≡ fieldJ s
+      (d (fieldF s) ≡ zero3) ×
+      (dStar (star (fieldF s)) ≡ fieldJ s)
 
     step : Solution → Solution
     gruStep : GRU → GRU
