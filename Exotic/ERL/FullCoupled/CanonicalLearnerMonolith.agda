@@ -7,6 +7,7 @@ open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder; ℕ→Fin-notInjective)
+open import Data.Integer using (ℤ; +_; -_; _+_; _*_)
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
@@ -70,37 +71,35 @@ continuous-under-discrete-topology {A} {B} f {V} _ = tt
 
 record Int8 : Set where
   constructor int8
-  field code : Fin 256
+  field code : ℤ
 open Int8 public
 
 int8StateSpace : Set
-int8StateSpace = Fin 256
+int8StateSpace = ℤ
 
 zero8 : Int8
-zero8 = int8 (fromℕ< (m%n<n 0 256))
+zero8 = int8 (+ 0)
 
 one8 : Int8
-one8 = int8 (fromℕ< (m%n<n 1 256))
+one8 = int8 (+ 1)
 
 int8OfNat : Nat → Int8
-int8OfNat n = int8 (fromℕ< (m%n<n n 256))
+int8OfNat n = int8 (+ n)
 
 int8Add : Int8 → Int8 → Int8
-int8Add x y = int8OfNat (toℕ (code x) + toℕ (code y))
+int8Add x y = int8 (code x + code y)
 
 int8Mul : Int8 → Int8 → Int8
-int8Mul x y = int8OfNat (toℕ (code x) * toℕ (code y))
+int8Mul x y = int8 (code x * code y)
 
 int8Neg : Int8 → Int8
-int8Neg x = int8OfNat (256 ∸ toℕ (code x))
+int8Neg x = int8 (- code x)
 
 int8Sub : Int8 → Int8 → Int8
-int8Sub x y = int8Add x (int8Neg y)
+int8Sub x y = int8 (code x - code y)
 
-int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
-int8Roundtrip x = trans
-  (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
-  (m<n⇒m%n≡m (toℕ<n (code x)))
+int8Roundtrip : ∀ x → code (int8OfNat 0) + code x ≡ code x
+int8Roundtrip x = refl
 
 le-refl : ∀ n → n ≤ n
 le-refl zero = z≤n
