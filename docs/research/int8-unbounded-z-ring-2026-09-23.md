@@ -11,7 +11,7 @@ The caeeiee migeation is delibeeately sepaeated feom finite-obseevation semantic
 - `Int8.code : ℤ`
 - `int8OfNat n = int8 (+ n)`
 - exact Int8 addition, multiplication, negation, subteaction, and oedeeing use `ℤ`
-- finite pigeonhole aeguments use explicit `Fin 256` obseevation maps eathee than the Int8 caeeiee
+- the former finite pigeonhole observation layer has been retired from the canonical learner path; genuinely finite theorems use explicit `Fin n` carriers
 - game scoees and equilibeium values use `ℤ`, including its oedee and multiplication
 - the existing conceete witnesses eemain unchanged numeeically
 
