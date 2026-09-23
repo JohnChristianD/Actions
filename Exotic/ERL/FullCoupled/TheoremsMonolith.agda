@@ -7033,6 +7033,112 @@ connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
 
 
 ------------------------------------------------------------------------
+-- Intended custom-optimizer regret seams.
+--
+-- No standalone Lion or standalone KKT optimizer theorem is required.
+-- The optimizer contributes one residual directly; Frank-Wolfe contributes
+-- a separate W residual through the already-connected F4/FW seam.
+------------------------------------------------------------------------
+
+record CustomOptimizerRoundingBiasRegretData : Set₁ where
+  constructor customOptimizerRoundingBiasRegretData
+  field
+    regret : Nat
+    jensenGap : Nat
+    roundingBias : Nat
+    optimizerResidual : Nat
+    markovMixing : Nat
+
+    jensenRounding :
+      regret ≤ jensenGap + roundingBias
+
+    customOptimizerResidual :
+      jensenGap + roundingBias
+      ≤
+      jensenGap + roundingBias + optimizerResidual
+
+    stationaryMixing :
+      jensenGap + roundingBias + optimizerResidual
+      ≤
+      jensenGap + roundingBias + optimizerResidual + markovMixing
+
+open CustomOptimizerRoundingBiasRegretData public
+
+connected-custom-optimizer-rounding-bias-regret-bound :
+  (D : CustomOptimizerRoundingBiasRegretData) →
+  regret D
+  ≤
+  jensenGap D
+  + roundingBias D
+  + optimizerResidual D
+  + markovMixing D
+connected-custom-optimizer-rounding-bias-regret-bound D =
+  ≤-trans
+    (jensenRounding D)
+    (≤-trans
+      (customOptimizerResidual D)
+      (stationaryMixing D))
+
+record ConnectedCustomOptimizerRoundingBiasRegretTheorem : Set₁ where
+  constructor connectedCustomOptimizerRoundingBiasRegretTheorem
+  field
+    fullLearner :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+    certificate :
+      CustomOptimizerRoundingBiasRegretData
+    connectedBound :
+      regret certificate
+      ≤
+      jensenGap certificate
+      + roundingBias certificate
+      + optimizerResidual certificate
+      + markovMixing certificate
+
+open ConnectedCustomOptimizerRoundingBiasRegretTheorem public
+
+connected-custom-optimizer-rounding-bias-regret-theorem :
+  (C : ConnectedCustomOptimizerRoundingBiasRegretTheorem) →
+  regret (certificate C)
+  ≤
+  jensenGap (certificate C)
+  + roundingBias (certificate C)
+  + optimizerResidual (certificate C)
+  + markovMixing (certificate C)
+connected-custom-optimizer-rounding-bias-regret-theorem C =
+  connectedBound C
+
+record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
+  constructor connectedF4FrankWolfeRoundingBiasRegretTheorem
+  field
+    f4FrankWolfe :
+      ConnectedF4FrankWolfeKKTTheorem
+    certificate :
+      CustomOptimizerRoundingBiasRegretData
+    frankWolfeResidual :
+      frankWolfeGap (certificate f4FrankWolfe)
+    connectedBound :
+      regret certificate
+      ≤
+      jensenGap certificate
+      + roundingBias certificate
+      + frankWolfeResidual
+        + markovMixing certificate
+
+open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
+
+connected-f4-frank-wolfe-rounding-bias-regret-theorem :
+  (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
+  regret (certificate C)
+  ≤
+  jensenGap (certificate C)
+  + roundingBias (certificate C)
+  + frankWolfeResidual C
+  + markovMixing (certificate C)
+connected-f4-frank-wolfe-rounding-bias-regret-theorem C =
+  connectedBound C
+
+
+------------------------------------------------------------------------
 -- Promotion boundary:
 -- the Jensen/minimax regret surface is not a standalone optimizer theorem.
 -- It is graph-complete only through the recurrent scan, stationary Markov
