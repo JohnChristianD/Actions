@@ -533,35 +533,6 @@ graph_f4_normpair_gru_global_conjugacy_injectivity_plan(Laws, Plan) :-
         Laws,
         Plan).
 
-graph_connected_arbitrary_finite_coordinate_hodge_maxwell_gru_f4_watkins_egraph_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-        Laws,
-        Plan).
-graph_connected_hodge_maxwell_gru_f4_watkins_global_encode_injectivity_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
-        Laws,
-        Plan).
-
-graph_connected_finite_coordinate_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_egraph_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-        Laws,
-        Plan).
-
-graph_connected_infinite_dimensional_hodge_maxwell_gru_f4_watkins_egraph_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-        Laws,
-        Plan).
-
-graph_connected_infinite_dimensional_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_egraph_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-        Laws,
-        Plan).
-
 graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_egraph_composition_plan(Laws, Plan) :-
     search_named_required_plan(
         "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
