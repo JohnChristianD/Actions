@@ -1597,4 +1597,15 @@
       "reason_not_promoted": "cross-language semantic equivalence is still an unproved adapter obligation"
     }
   ]
+  ,
+  "algebraic_carrier_upgrade": {
+    "status": "REPRESENTATION_UPGRADE_ONLY",
+    "modules": [
+      "Exotic/econlib/GameTheory.agda",
+      "Exotic/econlib/Equilibrium.agda"
+    ],
+    "carrier": "Int8.code : ℤ",
+    "removed_boundary": "Fin 256 modulo encoding",
+    "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, or regular-Walrasian edges from the carrier upgrade alone; require an actual proof-relevant consumer."
+  }
 }
