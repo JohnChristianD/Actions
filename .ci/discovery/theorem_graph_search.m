@@ -119,36 +119,6 @@ graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
         Laws,
         Plan).
 
-:- pred graph_connected_lion_jensen_minimax_regret_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-graph_connected_lion_jensen_minimax_regret_plan(Laws, Plan) :-
-    search_named_required_plan(
-        Laws,
-        Plan).
-
-:- pred graph_connected_f4_frank_wolfe_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-graph_connected_f4_frank_wolfe_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedF4FrankWolfeKKTTheorem",
-    "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
-    "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
-        Laws,
-        Plan).
-
-:- pred graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(Laws, Plan) :-
-    search_named_required_plan(
-        Laws,
-        Plan).
-
 :- pred graph_connected_custom_optimizer_rounding_bias_regret_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
@@ -537,7 +507,8 @@ graph_required_theorems = [
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
-    "ConnectedF4FrankWolfeKKTTheorem",
+    "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+    "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
     "FiniteMaxwellGRUExactRepresentationCandidate",
     "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
