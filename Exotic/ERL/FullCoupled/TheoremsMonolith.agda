@@ -5375,6 +5375,75 @@ connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-infinite
         (λ s → refl)))
 
 ------------------------------------------------------------------------
+-- Legacy endpoint adapters into the single carrier-agnostic endpoint.
+--
+-- The finite/infinite records remain source-compatible, but their promoted
+-- semantics are now consumed by one exact endpoint rather than two branches.
+------------------------------------------------------------------------
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-compose :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (carrierComposition :
+    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU)
+  (endpoint :
+    ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+      GRU) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-compose
+  carrierComposition
+  endpoint =
+  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    carrierComposition
+    (connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition
+      carrierComposition)
+    endpoint
+    (globalInjectivityComposition
+      (connected carrierComposition))
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-finite :
+  ∀ {GRU Scalar : Set}
+  {n : Nat}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (finiteEndpoint :
+    ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+      GRU Scalar n) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-finite
+  finiteEndpoint =
+  connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-compose
+    (connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-finite
+      (ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+        .finiteCoordinate
+        finiteEndpoint))
+    (ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+      .exactEndpoint
+      finiteEndpoint)
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-infinite :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {InfiniteDimensional : Set → Set₁}
+  (infiniteEndpoint :
+    ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+      GRU) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-infinite
+  infiniteEndpoint =
+  connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-compose
+    (connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-infinite
+      (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+        .infiniteDimensional
+        infiniteEndpoint))
+    (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+      .exactEndpoint
+      infiniteEndpoint)
+
+------------------------------------------------------------------------
 -- F4/NormPair/GRU global conjugacy + injectivity contract.
 --
 -- A projection from the full learner state to a GRU/F4/NormPair feature
