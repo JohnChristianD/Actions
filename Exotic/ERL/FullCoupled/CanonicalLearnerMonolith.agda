@@ -808,7 +808,7 @@ SoftSparseBounded : ∀ {A : Set} →
   Nat →
   Set
 SoftSparseBounded {A} K s epsilon =
-  ∀ {a : Fin A} →
+  ∀ {a : Nat} →
   a ≢ canonicalPolicy K s →
   numerator
     (sparsemaxWeight
@@ -1084,7 +1084,7 @@ pessimisticInit = int8OfNat 128
 pessimisticCritic : ∀ {A} → CriticState A
 pessimisticCritic {A} = criticState (λ _ → pessimisticInit)
 
-pessimisticCritic-law : ∀ {A} (i : Fin A) → values pessimisticCritic i ≡ pessimisticInit
+pessimisticCritic-law : ∀ {A} (i : Nat) → values pessimisticCritic i ≡ pessimisticInit
 pessimisticCritic-law i = refl
 
 canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
