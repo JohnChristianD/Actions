@@ -4681,6 +4681,118 @@ connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
           (learnerSolutionLeftInverse connected t)))
 
 ------------------------------------------------------------------------
+-- Unified carrier-promotion certificate.
+--
+-- Finite-coordinate and infinite-dimensional representations are both
+-- instances of the same exact carrier-promotion surface. The promotion
+-- carries a semantic witness, an explicit target carrier, and an exact
+-- StateIsomorphism. No particular dimension model is privileged here.
+------------------------------------------------------------------------
+
+record HodgeMaxwellCarrierPromotion (Solution : Set) : Set₁ where
+  constructor hodgeMaxwellCarrierPromotion
+  field
+    property : Set₁
+    witness : property
+    targetCarrier : Set
+    exactCarrierIsomorphism :
+      StateIsomorphism Solution targetCarrier
+
+open HodgeMaxwellCarrierPromotion public
+
+record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  field
+    connected :
+      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU
+
+    carrierPromotion :
+      HodgeMaxwellCarrierPromotion
+        (ContinuousHodgeMaxwellExactRepresentationData.Solution
+          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+            (hodgeMaxwell connected)))
+
+    globalInjectivityComposition :
+      ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+        GRU
+
+open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-egraph-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
+  (carrierPromotion :
+    HodgeMaxwellCarrierPromotion
+      (ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected)))) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-egraph-composition
+  connected
+  carrierPromotion =
+  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    connected
+    carrierPromotion
+    (connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
+      connected)
+
+record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
+  field
+    carrierComposition :
+      ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    exactGRUF4MaxwellStep :
+      ∀ s →
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell
+            (connected carrierComposition)))
+        (learnerToSolution
+          (connected carrierComposition)
+          (C.canonicalFullStep
+            (learnerKernel
+              (connected carrierComposition))
+            s))
+      ≡
+      ContinuousHodgeMaxwellExactRepresentationData.gruStep
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell
+            (connected carrierComposition)))
+        (ContinuousHodgeMaxwellExactRepresentationData.encode
+          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+            (hodgeMaxwell
+              (connected carrierComposition)))
+          (learnerToSolution
+            (connected carrierComposition)
+            s))
+
+open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem public
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (carrierComposition :
+    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition
+  carrierComposition =
+  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
+    carrierComposition
+    (connected-hodge-maxwell-gru-f4-watkins-egraph-composition
+      (connected carrierComposition))
+
+------------------------------------------------------------------------
 -- Infinite-dimensional promotion boundary for the carrier-polymorphic
 -- Hodge-Maxwell/F4/Watkins bridge.
 --
@@ -5146,6 +5258,56 @@ connected-finite-coordinate-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-re
         .learnerCoordinateGlobalInjective
         finiteCoordinate
         eq)
+
+------------------------------------------------------------------------
+-- Unified end-to-end carrier-agnostic Hodge-Maxwell/F4/Watkins endpoint.
+--
+-- The finite/infinite distinction is now below one carrier-promotion
+-- theorem. The exact prefix+horizon-regret endpoint is therefore shared
+-- without duplicating its semantic proof by dimension case.
+------------------------------------------------------------------------
+
+record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  field
+    carrierComposition :
+      ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    exactStepComposition :
+      ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
+        GRU
+
+    exactEndpoint :
+      ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+        GRU
+
+    globalInjectivityComposition :
+      ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+        GRU
+
+open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (carrierComposition :
+    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
+  carrierComposition =
+  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    carrierComposition
+    (connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition
+      carrierComposition)
+    (connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
+      (connected carrierComposition))
+    (globalInjectivityComposition
+      (connected carrierComposition))
 
 ------------------------------------------------------------------------
 -- F4/NormPair/GRU global conjugacy + injectivity contract.
