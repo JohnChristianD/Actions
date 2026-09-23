@@ -4697,20 +4697,20 @@ record ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjug
     exactHorizonRegret :
       ∀ H →
       cumulativeRegret
-        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
           (f4Watkins (connected))) H
       ≤
       jensenGap
-        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
           (f4Watkins (connected))) H
       + roundingBias
-        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
           (f4Watkins (connected))) H
       + frankWolfeResidual
-        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
           (f4Watkins (connected))) H
       + markovMixing
-        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
           (f4Watkins (connected))) H
 
     eGraphExtraction :
