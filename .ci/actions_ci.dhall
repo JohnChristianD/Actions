@@ -254,7 +254,6 @@ JSON
     CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
     canonical-q-munchausen-l2-shared-negation-polarity-theorem
     canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
-    FiniteHardSparseKKTEquilibriumTheorem
     DirectProductFiniteAutomatonComposition
     canonical-recurrent-prefix-monoid-homomorphism
     canonicalF4-prefix-monoid-homomorphism
