@@ -535,4 +535,4 @@ The current repository runtime boundary is unchanged: Tcl and Lua remain absent.
 
 - ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
 - CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-- ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+- ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
