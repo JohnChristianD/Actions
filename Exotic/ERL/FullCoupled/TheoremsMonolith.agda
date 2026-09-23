@@ -7065,6 +7065,157 @@ connected-finite-discrete-hodge-maxwell-gru-representation-theorem
             i)))
 
 ------------------------------------------------------------------------
+-- Hodge-Maxwell middle-degree involution transport.
+--
+-- This is the exact graph play suggested by the existing surfaces:
+-- continuous left-invertibility gives observation injectivity, the exact
+-- state isomorphism transports the Hodge action into the GRU carrier,
+-- topology is carried by the explicit continuity witness, and
+-- DenseNeighborhoodSeparation is retained as the orbit-separation witness.
+--
+-- The decisive premise is an observed-square law induced by an exact GRU
+-- involution.  Topology alone does not manufacture star-square = identity.
+------------------------------------------------------------------------
+
+record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+  (State Feature GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (embed : Nat → State)
+  (star : State → State)
+  (starGRU : GRU → GRU)
+  (observeGRU : GRU → Feature)
+  (iso : StateIsomorphism State GRU) : Set₁ where
+  constructor hodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+  field
+    observation :
+      ContinuousLeftInverseTheorem
+        State
+        Feature
+        observe
+        inverse
+        Continuous
+
+    neighborhoodSeparation :
+      DenseNeighborhoodSeparationTheorem
+        State
+        Feature
+        embed
+        observe
+
+    observeFactorization :
+      ∀ s →
+      observe s ≡
+      observeGRU (to iso s)
+
+    starConjugacy :
+      ∀ s →
+      to iso (star s) ≡
+      starGRU (to iso s)
+
+    gruInvolution :
+      ∀ g →
+      starGRU (starGRU g) ≡ g
+
+open HodgeMaxwellMiddleDegreeInvolutionTransportTheorem public
+
+hodgeMaxwell-middle-degree-involution :
+  ∀ {State Feature GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {embed : Nat → State}
+  {star : State → State}
+  {starGRU : GRU → GRU}
+  {observeGRU : GRU → Feature}
+  {iso : StateIsomorphism State GRU}
+  (witness :
+    HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+      State
+      Feature
+      GRU
+      observe
+      inverse
+      embed
+      star
+      starGRU
+      observeGRU
+      iso) →
+  ∀ s →
+  star (star s) ≡ s
+hodgeMaxwell-middle-degree-involution witness s =
+  continuousLeftInverse-injective
+    (observation witness)
+    (trans
+      (observeFactorization witness (star (star s)))
+      (trans
+        (cong observeGRU
+          (starConjugacy witness (star s)))
+        (trans
+          (cong observeGRU
+            (cong starGRU (starConjugacy witness s)))
+          (trans
+            (cong observeGRU
+              (gruInvolution witness (to iso s)))
+            (sym (observeFactorization witness s)))))
+
+------------------------------------------------------------------------
+-- Tsallis divergence is graphically relevant only as a finite algebraic
+-- transport layer.  It does not alter the Maxwell differential equations.
+-- The composition below is exact when both existing theorem surfaces share
+-- the same finite Maxwell state carrier.
+------------------------------------------------------------------------
+
+record ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+  (n : Nat) : Set₁ where
+  constructor connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+  field
+    hodgeMaxwell :
+      ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+
+    tsallis :
+      ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+        n
+        (Solution (semantics hodgeMaxwell))
+
+open ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem public
+
+connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem :
+  ∀ {n : Nat}
+  (H :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (T :
+    ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+      n
+      (Solution (semantics H))) →
+  ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
+connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem H T =
+  connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem H T
+
+------------------------------------------------------------------------
+-- External regular-equilibrium existence remains a frontier.
+--
+-- The local graph already proves static -> generalized -> stationary
+-- transport.  A regular Walrasian existence theorem from an external
+-- formalization still needs an explicit cross-language adapter before it
+-- can become an Agda existence theorem.  Graph search can expose that
+-- route, but cannot turn a source-level grep contract into a proof.
+------------------------------------------------------------------------
+
+record RegularWalrasianExistenceAdapterCandidate : Set₁ where
+  constructor regularWalrasianExistenceAdapterCandidate
+  field
+    upstreamRegularExistence :
+      Set
+    localStaticBridge :
+      Set
+    stationaryLift :
+      Set
+    adapterProof :
+      Set
+
+------------------------------------------------------------------------
 -- Horizon monotonicity is not part of the F4 regret theorem by itself.
 -- The cumulative recurrence proves exact accumulation only.  Monotonicity
 -- requires a nonnegative per-round regret certificate.
