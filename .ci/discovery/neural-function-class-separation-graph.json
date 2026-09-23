@@ -965,15 +965,16 @@
         "ExactGRUFunctionSpaceRepresentationHypothesis",
         "ConnectedMaxwellContinuousPDERepresentationCandidate"
       ],
-      "candidate_statement": "Exact representation of the full Maxwell PDE solution/function space, formulated over differential-form fields rather than a finite-cardinality discretization.",
+      "candidate_statement": "Exact representation of the full continuous Maxwell PDE solution/function space, formulated over differential-form fields with an arbitrary GRU carrier.",
       "required_certificates": [
         "formal differential-form/function-space semantics",
-        "well-posed domain and boundary conditions",
-        "exact GRU representation over the chosen function space",
+        "well-posed domain, metric, source, and boundary conditions",
+        "continuity witnesses for the declared operators and representation maps",
+        "exact GRU representation over the chosen function-space carrier",
         "representation preserves dF=0 and d⋆F=j",
-        "exact encode/decode or an explicit function-space isomorphism"
+        "exact encode/decode or an explicit function-space StateIsomorphism"
       ],
-      "impossibility_boundary": "The existing carrier-polymorphic exactness theorem is insufficient; the finite cardinality argument prevents silently promoting it to all continuous Maxwell fields.",
+      "impossibility_boundary": "The carrier-polymorphic exactness theorem proves representation consequences once those witnesses are supplied; it does not prove that every continuous Maxwell solution space admits such a GRU representation.",
       "no_synthetic_edge": true
     },
     {
