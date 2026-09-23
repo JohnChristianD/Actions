@@ -42,21 +42,10 @@
       "note": "Generic finite-state pigeonhole remains valid for any explicit finite n; the former fixed finite-token carrier is retired."
     }
   },
-  "finite_hodge_maxwell_boundary": {
-    "status": "RETAINED",
-    "theorem_family": [
-      "FiniteHodgeMaxwellExactDiscretizationTheorem",
-      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
-      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-      "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
-      "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem"
-    ],
-    "interpretation": "Finite representations remain parameterized by Nat cardinality. No claim of universal continuous Maxwell representation is added."
-  },
   "analytic_boundary": {
     "convexity": "not implied by ℤ being an ordered unbounded ring",
     "smoothness": "not implied by topology or discrete Z continuity",
-    "continuous_maxwell": "requires explicit differential-form/function-space/domain/metric/source/boundary semantics plus exact encode/decode and transition conjugacy"
+    "continuous_maxwell": "requires explicit differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encode/decode, and transition conjugacy; no finite carrier is assumed"
   },
   "foundational_zero_dependency_policy": {
     "rule": "Do not fabricate edges for problem specifications or foundational records.",
@@ -90,5 +79,21 @@
       "baseline nonrepresentability",
       "Agda --safe verification"
     ]
+  },
+  "maxwell_hodge_boundary": {
+    "status": "CARRIER_POLYMORPHIC_CONTINUOUS_SEMANTICS",
+    "theorem_family": [
+      "ContinuousHodgeMaxwellExactRepresentationData",
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+      "ConnectedMaxwellTsallisExactConjugacyTheorem",
+      "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
+      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem"
+    ],
+    "interpretation": "Maxwell and Hodge-Maxwell no longer depend on Fin n. The exact GRU carrier is arbitrary; continuity, global encode/decode, Maxwell equations, recurrent conjugacy, and Hodge involution prerequisites are explicit proof obligations.",
+    "universal_continuous_boundary": "The graph now has a conditional continuous representation schema, not an existence theorem for every Maxwell solution space. Differential-form/function-space/domain/metric/source/boundary semantics and an exact GRU isomorphism must still be supplied.",
+    "global_injectivity": "The exact encode/decode laws yield a StateIsomorphism and an explicit global encode-injectivity theorem.",
+    "z_role": "ℤ remains the exact algebraic carrier for the canonical learner where applicable; it is not a universal carrier for arbitrary continuous Maxwell function spaces."
   }
 }
