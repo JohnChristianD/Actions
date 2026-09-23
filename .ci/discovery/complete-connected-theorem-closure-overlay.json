@@ -93,7 +93,9 @@
       "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+      "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
     ],
     "interpretation": "Maxwell and Hodge-Maxwell no longer depend on Fin n. The exact GRU carrier is arbitrary; continuity, global encode/decode, Maxwell equations, recurrent conjugacy, and Hodge involution prerequisites are explicit proof obligations.",
     "universal_continuous_boundary": "The carrier-polymorphic theorem can be instantiated by an infinite-dimensional Maxwell function space once the caller supplies the exact differential-form/function-space semantics, continuity witnesses, encoder/decoder, conjugacy, and an explicit dimension predicate. It does not infer any of those from Set alone.",
@@ -117,6 +119,29 @@
       "transport": "Existing learner-to-solution inverse plus global Hodge-Maxwell encode/decode injectivity transport the exact learner state; the existing prefix+horizon-regret endpoint is inherited unchanged.",
       "existence_boundary": "No theorem claims every infinite-dimensional Maxwell function space admits the supplied exact GRU representation."
     },
-    "finite_dimensional_boundary": "Finite-coordinate transport is conditionally proved with an exact-length list coordinate isomorphism. A general vector-space/module finite-dimensionality and universal coordinate-existence theorem remains outside the current surface."
+    "finite_dimensional_boundary": "Finite-coordinate transport is conditionally proved with an exact-length list coordinate isomorphism. A general vector-space/module finite-dimensionality and universal coordinate-existence theorem remains outside the current surface.",
+    "additional_gru_f4_maxwell_compositions": {
+      "status": "PROVED_ON_AGDA_SURFACE",
+      "theorems": [
+        "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+        "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+      ],
+      "finite_and_infinite_separate": true,
+      "ci_cancellation": false,
+      "paths": [
+        [
+          "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+          "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem"
+        ],
+        [
+          "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+          "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+        ],
+        [
+          "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+          "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+        ]
+      ]
+    }
   }
 }
