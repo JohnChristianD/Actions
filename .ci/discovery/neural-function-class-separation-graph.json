@@ -276,7 +276,6 @@
     }
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
-  "reason": "Fixed Fin 256 is retired from the canonical learner, theorem monolith, strict-separation graph, graph-search plans, CI ledger, and auxiliary game surface. Exact unbounded Z algebra and Z-token conjugacy remain. Generic finite Hodge-Maxwell/Maxwell results remain parameterized by Nat cardinality n, with conditional involution transport and an explicit infinite-family finite-carrier impossibility theorem. Convexity, smoothness, and a universal continuous Maxwell-to-GRU representation remain unproved because ordered-ring structure and topology alone do not supply convex-space or differentiable function-space semantics.",
   "computability_complexity_boundary": {
     "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
     "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
@@ -484,52 +483,6 @@
       "strict baseline nonrepresentability witness if this is used for function-class separation"
     ],
     "tropical_extension": "A tropical/max-plus optimizer-geometry lemma could later serve as a composition-preserving boundary description, but no such lemma is admitted until its Agda proposition exists."
-  },
-  "pregraphed_exotic_promotions": [
-    {
-      "theorem": "hardSignGate-idempotent",
-      "promotion_target": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "role": "exact HardSign projection/idempotence seam; not an independent separation claim"
-    },
-    {
-      "theorem": "DirectProductFiniteAutomatonComposition",
-      "promotion_target": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "role": "finite-automaton composition seam for recurrent affine/state-machine witnesses; strict separation still requires a baseline nonrepresentability witness"
-    },
-    {
-      "theorem": "canonicalF4-factor-collision-separates-full-state",
-      "promotion_target": "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-      "role": "existing F4 factor-collision mechanism promoted into the connected factor-recurrence composition"
-    },
-    {
-      "theorem": "CanonicalPolymorphicSparsemaxCompositionTheorem",
-      "promotion_target": "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "role": "existing sparsemax/recurrent composition promoted into the full attention/Haar closure"
-    },
-    {
-      "theorem": "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
-      "promotion_target": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "role": "exact GRU/F4/NormPair/Watkins prefix bridge consumed by the connectedStep field; promoted as a dependency, not an independent separation claim"
-    }
-  ],
-  "emergent_endogenous_candidate": {
-    "name": "HardSign-F4-NormPair recurrent finite-automaton factor geometry",
-    "status": "CANDIDATE_NOT_PROVED",
-    "existing_inputs": [
-      "hardSignGate-idempotent",
-      "F4 optimizer",
-      "NormPair learner replacement seam",
-      "DirectProductFiniteAutomatonComposition",
-      "canonicalF4-factor-collision-separates-full-state"
-    ],
-    "candidate_statement": "A recurrent affine learner whose observable factor is HardSign-quantized and whose F4/NormPair dynamics preserve a finite invariant factor image may realize arbitrary finite automata while retaining exact-state nonrecurrence.",
-    "missing_certificates": [
-      "explicit affine finite-automaton realization for the canonical learner",
-      "finite invariant-set or boundedness certificate for the HardSign/F4/NormPair factor",
-      "explicit full-connected function-class witness",
-      "baseline nonrepresentability theorem"
-    ],
-    "tropical_extension": "A max-plus/tropical optimizer-geometry theorem would fit as a composed geometry lemma only after an actual Agda proposition and witness are supplied; no such theorem is currently pre-graphed."
   },
   "finite_factor_automaton_closure_graph": {
     "status": "CONNECTED_CANDIDATE_NOT_PROVED",
@@ -925,17 +878,6 @@
       "canonicalConnectedLearnerClock-not-finite-state",
       "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
     ]
-  },
-  "emergent_endogenous_theorem_observed": {
-    "name": "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
-    "status": "PROVED_ON_AGDA_SOURCE_SURFACE_UNVERIFIED_BY_FRESH_CI",
-    "constructor": "canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem",
-    "dependencies": [
-      "CanonicalGlobalTokenEncodingConjugacyTheorem",
-      "CanonicalExactRNNLMTheorem"
-    ],
-    "graph_role": "real endogenous closure theorem; composes vocabulary, exact RNN-LM capability, observation topology, and endogenous POMDP observation transport.",
-    "distinction": "An actual composed theorem record, not merely the older HardSign/F4 candidate."
   },
   "parallel_scan_complexity_boundary": {
     "name": "CanonicalConnectedCompositionLogarithmicSIMDSpanCandidate",
@@ -1534,14 +1476,15 @@
     "token_boundary": "CanonicalToken remains retired finite-observation layer; only its encoding into Int8=Z is retained. The impossible total Int8→Fin256 decode/conjugacy theorem is pruned rather than reinterpreted."
   },
   "limit_convexity_topology_ordering_resolution": {
-    "convexity": "Requires a convex set/barycentric or vector-space structure over an ordered field plus a convexity predicate; ℤ order is insufficient.",
-    "smoothness": "Requires differential structure and real/appropriate topological-linear structure; discrete topology or order does not imply differentiability.",
-    "maxwell_continuous": "Requires explicit differential-form/function-space/domain/metric/source/boundary semantics and exact encode/decode/transition conjugacy."
+    "convexity": "Requires a convex set/barycentric or vector-space structure over an ordered field plus a convexity predicate.",
+    "smoothness": "Requires differential structure and suitable topological-linear/function-space semantics.",
+    "maxwell_continuous": "Requires explicit differential-form/function-space/domain/metric/source/boundary semantics plus exact encode/decode and transition conjugacy."
   },
+  "reason": "Fixed finite-token/observation surfaces have been permanently retired from the canonical learner and theorem graph. Exact unbounded Z algebra and Z-token conjugacy remain. Generic finite Maxwell/Hodge-Maxwell results remain parameterized by Nat cardinality n; conditional involution transport and the explicit infinite-family finite-carrier impossibility theorem remain. Convexity, smoothness, and universal continuous Maxwell representation are not inferred from ordered-ring or discrete-topology structure.",
   "carrier_policy": {
     "exact_unbounded_carrier": "ℤ",
     "finite_state_parameters": "Nat -> Fin n",
-    "retired_fixed_carrier": "Fin 256",
+    "retired_fixed_carrier": "fixed finite-token carrier",
     "rule": "Finite-cardinality conclusions require an explicit Fin n carrier; Z-valued algebra alone never supplies a finite pigeonhole premise."
   }
 }
