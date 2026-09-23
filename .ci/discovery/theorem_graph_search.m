@@ -469,6 +469,7 @@ graph_required_theorems = [
     "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
     "ConnectedMaxwellTsallisExactConjugacyTheorem",
     "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
+    "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
     "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
     "ConnectedGeneralizedWalrasianExistenceTheorem",
     "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
