@@ -1055,7 +1055,6 @@
       "limitation": "requires an explicit collision witness; it does not prove that every continuous Maxwell solution space has such a collision"
     },
     "pruned_finite_dependencies": [
-      "FiniteFunctionExactIsomorphismTransportTheorem",
       "finite Hodge-Maxwell discretization surfaces",
       "finite-carrier Maxwell/Tsallis branches",
       "finite-carrier Maxwell pigeonhole boundary"
