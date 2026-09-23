@@ -122,30 +122,40 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
         io.set_exit_status(1, !IO)
     ).
 
-main(!IO) :-
-    read_semantic_laws(All, !IO),
-    search_emergent_compositions(All, Plans),
-    search_all_composite_law_plans(All, AutomaticCompositePlans),
-    search_endogenous_composite_plans(All, EndogenousCompositePlans),
+resolve_graph_requirements(
+    Laws,
+    AutomaticCompositePlans,
+    EndogenousCompositePlans,
+    RequiredPlans,
+    RequiredSubcompositionPlans,
+    FiniteObservationStationaryLimitPlan,
+    FiniteObservationStationaryPlan,
+    EndogenousObservationPlan,
+    EndogenousRNNLMPOMDPObservationTopologyPlan,
+    FiniteProbabilityMassPlan,
+    FinitePOMDPProbabilityPlan,
+    EndogenousPOMDPObservationPlan) :-
     (
-        if graph_search_completion(
-            All,
-            RequiredPlans,
-            RequiredSubcompositionPlans),
-           graph_finite_observation_stationary_limit_plan(
-               All, FiniteObservationStationaryLimitPlan),
-           graph_finite_observation_stationary_plan(
-               All, FiniteObservationStationaryPlan),
-           graph_endogenous_observation_plan(All, EndogenousObservationPlan),
-           graph_endogenous_rnnlm_pomdp_observation_topology_plan(
-               All, EndogenousRNNLMPOMDPObservationTopologyPlan),
-           graph_finite_probability_mass_plan(All, FiniteProbabilityMassPlan),
-           graph_finite_pomdp_probability_plan(All, FinitePOMDPProbabilityPlan),
-           graph_endogenous_pomdp_observation_plan(All, EndogenousPOMDPObservationPlan),
-           all_generated_plans_valid(All, AutomaticCompositePlans),
-           all_generated_plans_valid(All, EndogenousCompositePlans)
+        if graph_search_completion(Laws, RP, RSP),
+           graph_finite_observation_stationary_limit_plan(Laws, FOSLP),
+           graph_finite_observation_stationary_plan(Laws, FOSP),
+           graph_endogenous_observation_plan(Laws, EOP),
+           graph_endogenous_rnnlm_pomdp_observation_topology_plan(Laws, ERPO),
+           graph_finite_probability_mass_plan(Laws, FPMP),
+           graph_finite_pomdp_probability_plan(Laws, FPPP),
+           graph_endogenous_pomdp_observation_plan(Laws, EPBP),
+           all_generated_plans_valid(Laws, AutomaticCompositePlans),
+           all_generated_plans_valid(Laws, EndogenousCompositePlans)
         then
-            true
+            RequiredPlans = RP,
+            RequiredSubcompositionPlans = RSP,
+            FiniteObservationStationaryLimitPlan = FOSLP,
+            FiniteObservationStationaryPlan = FOSP,
+            EndogenousObservationPlan = EOP,
+            EndogenousRNNLMPOMDPObservationTopologyPlan = ERPO,
+            FiniteProbabilityMassPlan = FPMP,
+            FinitePOMDPProbabilityPlan = FPPP,
+            EndogenousPOMDPObservationPlan = EPBP
         else
             RequiredPlans = [],
             RequiredSubcompositionPlans = [],
@@ -156,7 +166,26 @@ main(!IO) :-
             FiniteProbabilityMassPlan = [],
             FinitePOMDPProbabilityPlan = [],
             EndogenousPOMDPObservationPlan = []
-    ),
+    ).
+
+main(!IO) :-
+    read_semantic_laws(All, !IO),
+    search_emergent_compositions(All, Plans),
+    search_all_composite_law_plans(All, AutomaticCompositePlans),
+    search_endogenous_composite_plans(All, EndogenousCompositePlans),
+    resolve_graph_requirements(
+        All,
+        AutomaticCompositePlans,
+        EndogenousCompositePlans,
+        RequiredPlans,
+        RequiredSubcompositionPlans,
+        FiniteObservationStationaryLimitPlan,
+        FiniteObservationStationaryPlan,
+        EndogenousObservationPlan,
+        EndogenousRNNLMPOMDPObservationTopologyPlan,
+        FiniteProbabilityMassPlan,
+        FinitePOMDPProbabilityPlan,
+        EndogenousPOMDPObservationPlan),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(
         Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans,
