@@ -194,8 +194,7 @@ pongMiscSpec : ClosedLoopSpec 3 P.PongState
 pongMiscSpec = closedLoopSpec
   (P.pongState 0 0 0 0 1 1 0)
   8 8
-  (λ s → fromℕ< (m%n<n
-    ((canonicalBit learnerKernel s) + cycle3 (clock s)) % 3
+  (λ s → (canonicalBit learnerKernel s) + cycle3 (clock s)) % 3
   parity
   P.pongStep
   (λ total s with P.natEq total 8
