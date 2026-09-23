@@ -37,25 +37,16 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
-:- pred graph_endogenous_pomdp_observation_plan(
+
+:- pred graph_stationary_limit_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
-:- pred graph_finite_observation_stationary_limit_plan(
+:- pred graph_stationary_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
-:- pred graph_finite_observation_stationary_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
 
-:- pred graph_endogenous_observation_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-:- pred graph_endogenous_rnnlm_pomdp_observation_topology_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
 
 
 :- pred graph_connected_jensen_minimax_regret_plan(
@@ -77,27 +68,13 @@
 
 :- implementation.
 
-graph_finite_observation_stationary_limit_plan(Laws, Plan) :-
+graph_stationary_limit_plan(Laws, Plan) :-
     search_named_required_plan(
-        "FiniteObservationStationaryLimitTheorem",
         Laws,
         Plan).
 
-graph_finite_observation_stationary_plan(Laws, Plan) :-
+graph_stationary_plan(Laws, Plan) :-
     search_named_required_plan(
-        "CanonicalFiniteObservationStationarySubcompositionTheorem",
-        Laws,
-        Plan).
-
-graph_endogenous_observation_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalEndogenousObservationBoundaryTheorem",
-        Laws,
-        Plan).
-
-graph_endogenous_rnnlm_pomdp_observation_topology_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
         Laws,
         Plan).
 
@@ -110,12 +87,6 @@ graph_finite_probability_mass_plan(Laws, Plan) :-
 graph_finite_pomdp_probability_plan(Laws, Plan) :-
     search_named_required_plan(
         "FinitePOMDPProbabilitySemanticsTheorem",
-        Laws,
-        Plan).
-
-graph_endogenous_pomdp_observation_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
         Laws,
         Plan).
 
@@ -498,38 +469,22 @@ graph_required_theorems = [
     "FinitePOMDPExactTransport",
     "ArchitecturePreservingCanonicalRNNLMIsomorphism",
     "CanonicalExactRNNLMTheorem",
-    "CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem",
     "CanonicalGlobalTokenLMCompositionTheorem",
     "CanonicalIntegerHaarScaledOrthogonalityTheorem",
     "CanonicalAStarCostGuidanceTheorem",
-    "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
-    "CanonicalHaarSparsemaxFullStateClosureTheorem",
-    "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
     "CanonicalFiniteCycleExclusionIsomorphismTheorem",
     "CanonicalOperatorCompositionTheorem",
-    "CanonicalBoundedFactorLiftTheorem",
     "CanonicalF4GlobalOptimizerStabilityTheorem",
-    "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-    "CanonicalEndogenousObservationBoundaryTheorem",
-    "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
     "CanonicalPureNonOrangeBypassCompletionTheorem",
-    "CanonicalFiniteObservationInformationBoundaryTheorem",
-    "CanonicalExactTuringBoundaryMixtureTheorem",
     "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
-    "FiniteObservationStationaryLimitTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
     "ExactContractComputabilityBoundaryTheorem",
-    "CanonicalFiniteObservationStationarySubcompositionTheorem",
     "CanonicalClockObservationSubcompositionTheorem",
     "CanonicalBoundednessPEBoundarySubcompositionTheorem",
     "FiniteProbabilityMassSemanticsTheorem",
     "FinitePOMDPProbabilitySemanticsTheorem",
     "FiniteBeliefUpdateExactTransportTheorem",
     "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
-    "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
-    "CanonicalExactRNNLMObservationSubcompositionTheorem",
-    "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-    "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
     "EfficientOperatorMonoidRepresentation",
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
@@ -545,7 +500,6 @@ graph_required_theorems = [
     "ConnectedGeneralizedWalrasianExistenceTheorem",
     "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
     "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-    "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
     "FreeMonoidActionHomomorphism",
@@ -568,10 +522,7 @@ graph_required_theorems = [
 :- func graph_required_subcompositions = list(string).
 graph_required_subcompositions = [
     "CanonicalClockObservationSubcompositionTheorem",
-    "CanonicalFiniteObservationStationarySubcompositionTheorem",
     "CanonicalBoundednessPEBoundarySubcompositionTheorem",
-    "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
-    "CanonicalExactRNNLMObservationSubcompositionTheorem"
 ].
 
 graph_search_completion(Laws, RequirementPlans, SubcompositionPlans) :-
