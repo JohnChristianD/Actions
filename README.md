@@ -288,7 +288,7 @@ The correct distinction is:
 ```
 unbounded semantic carrier  ->  ℤ
 explicit finite-state bound  ->  Fin n   (n : Nat)
-retired fixed token carrier  ->  Fin 256
+retired fixed finite-token carrier
 ```
 
 Sequences remain ordinary finite lists, so prefix concatenation and recurrent scan composition are exact structural operations. No theorem about convexity, smoothness, or universal continuous Maxwell representation follows merely from the ordered-ring structure of `ℤ`.
