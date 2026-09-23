@@ -508,6 +508,7 @@ graph_required_theorems = [
     "CanonicalFiniteCycleExclusionIsomorphismTheorem",
     "CanonicalOperatorCompositionTheorem",
     "CanonicalBoundedFactorLiftTheorem",
+    "CanonicalF4GlobalOptimizerStabilityTheorem",
     "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
     "CanonicalEndogenousObservationBoundaryTheorem",
     "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
