@@ -4561,11 +4561,15 @@ canonical-exact-rnn-lm-theorem =
 -- unbounded Nat-to-Int8 exact injective boundary is impossible.
 ------------------------------------------------------------------------
 
-canonicalNoGlobalNatTokenConjugacy :
-  ∀ (embed : Nat → C.Int8) →
-  ¬ (∀ {m n} → embed m ≡ embed n → m ≡ n)
-canonicalNoGlobalNatTokenConjugacy =
-  C.int8-no-countably-unbounded-injective
+canonicalNoGlobalFiniteObservationConjugacy :
+  ∀ (observe : C.Int8 → Fin 256)
+  (embed : Nat → C.Int8) →
+  ¬ (∀ {m n} →
+      observe (embed m) ≡ observe (embed n) →
+      m ≡ n)
+canonicalNoGlobalFiniteObservationConjugacy observe embed =
+  C.finiteObservation-no-countably-unbounded-injective
+    (λ n → observe (embed n))
 
 record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
   constructor canonicalGlobalTokenLMCompositionTheorem
@@ -4585,9 +4589,12 @@ record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
       C.canonicalTokenLogitTrace K xs s ++
       C.canonicalTokenLogitTrace K ys
         (C.canonicalTokenListState xs s)
-    finiteExactBoundary :
-      ∀ (embed : Nat → C.Int8) →
-      ¬ (∀ {m n} → embed m ≡ embed n → m ≡ n)
+    finiteObservationBoundary :
+      ∀ (observe : C.Int8 → Fin 256)
+      (embed : Nat → C.Int8) →
+      ¬ (∀ {m n} →
+          observe (embed m) ≡ observe (embed n) →
+          m ≡ n)
 
 open CanonicalGlobalTokenLMCompositionTheorem public
 
@@ -4598,7 +4605,7 @@ canonical-global-token-lm-composition-theorem =
     canonical-global-token-conjugacy
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
-    canonicalNoGlobalNatTokenConjugacy
+    canonicalNoGlobalFiniteObservationConjugacy
 
   
 ------------------------------------------------------------------------
@@ -4989,153 +4996,2694 @@ canonical-operator-composition-theorem =
     C.endomorphismAssociative
 
 ------------------------------------------------------------------------
--- Exact bounded-factor / injective-lift completion.
+-- Exact finite-observation / injective-lift completion.
 --
--- The F4 theta coordinate is represented by Int8 = Fin 256.  Its exact
--- canonical orbit is therefore uniformly bounded at the representation
--- boundary, while the full canonical orbit remains index-injective by
--- clock growth.  The two facts coexist: a finite factor may recur without
--- the full exact state recurring.
+-- Int8 is now an exact unbounded integer carrier. Finite recurrence therefore
+-- belongs only to an explicit observation map into Fin 256. The F4 optimizer
+-- remains an exact Z-valued transition.
 ------------------------------------------------------------------------
 
-canonicalF4ThetaQ-bounded :
+canonicalF4FiniteObservationRecurrence :
   ∀ {A} (K : C.FullLearnerKernel A)
-    (s : C.FullLearnerState A) (n : Nat) →
-  toℕ (C.code
-    (C.thetaQ
-      (C.optimizer
-        (C.iterateCanonical K n s)))) < 256
-canonicalF4ThetaQ-bounded K s n =
-  toℕ-bounded
-    (C.code
-      (C.thetaQ
-        (C.optimizer
-          (C.iterateCanonical K n s))))
-
-canonicalF4ThetaQ-not-orbit-injective :
-  ∀ {A} (K : C.FullLearnerKernel A)
-    (s : C.FullLearnerState A) →
-  ¬ (∀ {m n : Nat} →
-      C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K m s)))
-      ≡
-      C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K n s))) →
-      m ≡ n)
-canonicalF4ThetaQ-not-orbit-injective K s =
-  C.int8-no-countably-unbounded-injective
-    (λ n →
-      C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K n s))))
-
-finiteFactor-recurrence-lift-impossible :
-  ∀ {S F : Set}
-    (orbit : Nat → S)
-    (factor : S → F)
-    (factorInjectiveOnOrbit :
-      ∀ {m n : Nat} →
-      factor (orbit m) ≡ factor (orbit n) →
-      m ≡ n)
-    {n p : Nat} →
-    factor (orbit n) ≡ factor (orbit (n + suc p)) →
-    ⊥
-finiteFactor-recurrence-lift-impossible
-  orbit factor factorInjectiveOnOrbit {n} {p} eq =
-  C.plus-suc-not-self n p
-    (sym (factorInjectiveOnOrbit eq))
-
-canonicalF4-factor-collision-separates-full-state :
-  ∀ {A} (K : C.FullLearnerKernel A)
-    (s : C.FullLearnerState A) →
+    (s : C.FullLearnerState A)
+    (observe : C.Int8 → Fin 256) →
   ∃ m n →
     m ≢ n ×
-    C.code
-      (C.thetaQ
-        (C.optimizer
-          (C.iterateCanonical K m s)))
+    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
+    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s))))
+canonicalF4FiniteObservationRecurrence K s observe =
+  canonical-finite-factor-recurrence-without-state-recurrence-factor
+    (λ n → C.iterateCanonical K n s)
+    (λ state → observe (C.code (C.thetaQ (C.optimizer state))))
+
+canonicalF4FiniteObservationNotOrbitInjective :
+  ∀ {A} (K : C.FullLearnerKernel A)
+    (s : C.FullLearnerState A)
+    (observe : C.Int8 → Fin 256) →
+  ¬ (∀ {m n : Nat} →
+      observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
+      observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) →
+      m ≡ n)
+canonicalF4FiniteObservationNotOrbitInjective K s observe injective =
+  let collision = canonicalF4FiniteObservationRecurrence K s observe
+  in
+  collisionWitness collision injective
+  where
+    collisionWitness :
+      ∀ {A : Set} {orbit : Nat → A} {factor : A → Fin 256} →
+      (∃ m n → m ≢ n × factor (orbit m) ≡ factor (orbit n)) →
+      (∀ {m n} → factor (orbit m) ≡ factor (orbit n) → m ≡ n) →
+      ⊥
+    collisionWitness (m , n , apart , factorEq) inj = apart (inj factorEq)
+
+canonicalF4FiniteObservationCollisionSeparatesFullState :
+  ∀ {A} (K : C.FullLearnerKernel A)
+    (s : C.FullLearnerState A)
+    (observe : C.Int8 → Fin 256) →
+  ∃ m n →
+    m ≢ n ×
+    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
+    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) ×
+    C.iterateCanonical K m s ≢ C.iterateCanonical K n s
+canonicalF4FiniteObservationCollisionSeparatesFullState K s observe =
+  let collision = canonicalF4FiniteObservationRecurrence K s observe
+  in
+  collisionWithStateSeparation collision
+  where
+    collisionWithStateSeparation :
+      ∀ {A : Set} {orbit : Nat → A} {factor : A → Fin 256} →
+      (∃ m n → m ≢ n × factor (orbit m) ≡ factor (orbit n)) →
+      ∃ m n → m ≢ n × factor (orbit m) ≡ factor (orbit n) × orbit m ≢ orbit n
+    collisionWithStateSeparation (m , n , apart , factorEq) =
+      m , n , apart , factorEq ,
+      (λ stateEq → apart (canonicalOrbit-state-injective K s stateEq))
+
+------------------------------------------------------------------------
+-- Exact global optimizer stability on the unbounded integer carrier.
+------------------------------------------------------------------------
+
+record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
+  constructor canonicalF4GlobalOptimizerStabilityTheorem
+  field
+    thetaTranslation :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.thetaQ (C.canonicalOptimizerStep K s) ≡
+      C.int8Add
+        (C.int8Add (C.thetaQ (C.optimizer s)) (C.canonicalSignal K s))
+        (C.l2Correction (C.globalL2 (C.optimizerKernel K)))
+    stableNonThetaCoordinates :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.rTheta (C.canonicalOptimizerStep K s) ≡ C.zero8 ×
+      C.eQ (C.canonicalOptimizerStep K s) ≡ C.eQ (C.optimizer s) ×
+      C.rE (C.canonicalOptimizerStep K s) ≡ C.rE (C.optimizer s) ×
+      C.rL (C.canonicalOptimizerStep K s) ≡ C.rL (C.optimizer s)
+    equalInputStability :
+      ∀ {A} (K : C.FullLearnerKernel A)
+        (s t : C.FullLearnerState A) →
+      C.optimizer s ≡ C.optimizer t →
+      C.canonicalSignal K s ≡ C.canonicalSignal K t →
+      C.canonicalOptimizerStep K s ≡ C.canonicalOptimizerStep K t
+
+open CanonicalF4GlobalOptimizerStabilityTheorem public
+
+canonical-f4-global-optimizer-stability-theorem :
+  CanonicalF4GlobalOptimizerStabilityTheorem
+canonical-f4-global-optimizer-stability-theorem =
+  canonicalF4GlobalOptimizerStabilityTheorem
+    (λ K s → C.f4ParameterInvariant (C.optimizerKernel K) (C.optimizer s) (C.canonicalSignal K s))
+    (λ K s → refl , (refl , (refl , refl)))
+    (λ K s t optimizerEq signalEq →
+      cong₂
+        (λ optimizer signal → C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
+        optimizerEq signalEq)
+
+------------------------------------------------------------------------
+-- Emergent endogenous factor-recurrence separation.
+--
+-- Exact aperiodic full-state evolution can force recurrence in a finite
+-- observation/factor without forcing recurrence of the underlying state.
+-- The result is endogenous: it uses only the finite factor carrier and
+-- exact orbit injectivity, with no Lyapunov or external stability premise.
+------------------------------------------------------------------------
+
+record FiniteFactorRecurrenceWithoutStateRecurrenceTheorem : Set₁ where
+  constructor finiteFactorRecurrenceWithoutStateRecurrenceTheorem
+  field
+    factorRecurs :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (factor : A → Fin 256) →
+        ∃ m n →
+          m ≢ n ×
+          factor (orbit m) ≡ factor (orbit n)
+    stateSeparates :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (orbitInjective : ∀ {m n : Nat} → orbit m ≡ orbit n → m ≡ n)
+        {m n : Nat} →
+        m ≢ n →
+        orbit m ≢ orbit n
+
+canonical-finite-factor-recurrence-without-state-recurrence-factor :
+  ∀ {A : Set} →
+  (orbit : Nat → A) →
+  (factor : A → Fin 256) →
+  ∃ m n →
+    m ≢ n ×
+    factor (orbit m) ≡ factor (orbit n)
+canonical-finite-factor-recurrence-without-state-recurrence-factor
+  orbit factor with pigeonhole (n<1+n 256)
+  (λ i → factor (orbit (toℕ i)))
+... | i , j , apart , factorEq =
+  toℕ i , toℕ j ,
+  (λ mnEq → apart (toℕ-injective mnEq)) ,
+  factorEq
+
+canonical-finite-factor-recurrence-without-state-recurrence :
+  FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+canonical-finite-factor-recurrence-without-state-recurrence =
+  finiteFactorRecurrenceWithoutStateRecurrenceTheorem
+    canonical-finite-factor-recurrence-without-state-recurrence-factor
+    (λ orbit orbitInjective {m} {n} apart stateEq →
+      apart (orbitInjective stateEq))
+
+------------------------------------------------------------------------
+-- Pre-graphed completion endpoint for the active theorem seams.
+-- Each field is an already-proved canonical theorem; this record adds no
+-- alternate proof path or cancellation. It only exposes the dependency
+-- graph at the monolith boundary.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- 2026-09-22 emergent endogenous observation boundary.
+--
+-- The canonical Watkins target is an endogenous function of the exact
+-- learner state.  A left-invertible observation would preserve exact
+-- endogenous target readout, but the finite Int8 observation cannot be
+-- globally left-invertible because the canonical Nat-clock orbit is
+-- injective while every Int8 observation has a finite carrier.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousObservationBoundaryTheorem : Set₁ where
+  constructor canonicalEndogenousObservationBoundaryTheorem
+  field
+    exactOrbitEmbedding :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (s : C.CanonicalFullLearnerState)
+        {m n : Nat} →
+      C.iterateCanonical K m s ≡
+      C.iterateCanonical K n s →
+      m ≡ n
+    finiteObservationRecurrence :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (s : C.CanonicalFullLearnerState)
+        (observe : C.CanonicalFullLearnerState → C.Int8) →
+      ∃ m n →
+        m ≢ n ×
+        observe (C.iterateCanonical K m s) ≡
+        observe (C.iterateCanonical K n s)
+    noGlobalLeftInverse :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (s : C.CanonicalFullLearnerState)
+        (observe : C.CanonicalFullLearnerState → C.Int8)
+        (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      ¬ (∀ t → inverse (observe t) ≡ t)
+    endogenousTargetReadoutUnderLeftInverse :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (observe : C.CanonicalFullLearnerState → C.Int8)
+        (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      (leftInverse : ∀ t → inverse (observe t) ≡ t) →
+      ∀ s →
+      C.canonicalWatkinsTarget K s ≡
+      C.canonicalWatkinsTarget K (inverse (observe s))
+
+open CanonicalEndogenousObservationBoundaryTheorem public
+
+canonical-endogenous-observation-boundary-theorem :
+  CanonicalEndogenousObservationBoundaryTheorem
+canonical-endogenous-observation-boundary-theorem =
+  canonicalEndogenousObservationBoundaryTheorem
+    canonicalInfiniteStateOrbitEmbedding
+    (λ K s observe →
+      FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
+        canonical-finite-factor-recurrence-without-state-recurrence
+        (λ n → observe (C.iterateCanonical K n s)))
+    (λ K s observe inverse →
+      CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem.noGlobalLeftInverse
+        (canonical-global-finite-observation-left-inverse-impossibility-theorem K s)
+        observe
+        inverse)
+    (λ K observe inverse leftInverse s →
+      canonicalWatkinsTarget-endogenous-leftInverse
+        K observe inverse leftInverse s)
+
+record CanonicalEndogenousTopologicalObservationBoundaryTheorem : Set₁ where
+  constructor canonicalEndogenousTopologicalObservationBoundaryTheorem
+  field
+    scanConjugacy :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+    finiteCycleTransport :
+      CanonicalFiniteCycleExclusionIsomorphismTheorem
+    observationBoundary :
+      CanonicalEndogenousObservationBoundaryTheorem
+
+canonical-endogenous-topological-observation-boundary-theorem :
+  CanonicalEndogenousTopologicalObservationBoundaryTheorem
+canonical-endogenous-topological-observation-boundary-theorem =
+  canonicalEndogenousTopologicalObservationBoundaryTheorem
+    canonical-full-learner-connected-scan-conjugacy-theorem
+    canonical-finite-cycle-exclusion-isomorphism-theorem
+    canonical-endogenous-observation-boundary-theorem
+
+record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
+  constructor canonicalPureNonOrangeBypassCompletionTheorem
+  field
+    recurrentPrefix :
+      RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
+    fullLearnerScanConjugacy :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+    exactTuringBoundary :
+      ¬ CanonicalExactCompositionTuringCompletenessContract
+    haarSparsemaxClosure :
+      CanonicalHaarSparsemaxFullStateClosureTheorem
+    finiteCycleIsomorphismTransport :
+      CanonicalFiniteCycleExclusionIsomorphismTheorem
+    operatorComposition :
+      CanonicalOperatorCompositionTheorem
+    boundedFactorLift :
+      CanonicalBoundedFactorLiftTheorem
+    emergentFactorSeparation :
+      FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
+    finiteObservationInformationBoundary :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+    endogenousObservationBoundary :
+      CanonicalEndogenousObservationBoundaryTheorem
+    endogenousTopologicalBoundary :
+      CanonicalEndogenousTopologicalObservationBoundaryTheorem
+
+open CanonicalPureNonOrangeBypassCompletionTheorem public
+
+canonical-pure-non-orange-bypass-completion-theorem :
+  CanonicalPureNonOrangeBypassCompletionTheorem
+canonical-pure-non-orange-bypass-completion-theorem =
+  canonicalPureNonOrangeBypassCompletionTheorem
+    canonical-recurrent-prefix-monoid-homomorphism
+    canonical-full-learner-connected-scan-conjugacy-theorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
+    canonical-haar-sparsemax-full-state-closure-theorem
+    canonical-finite-cycle-exclusion-isomorphism-theorem
+    canonical-operator-composition-theorem
+    canonical-bounded-factor-lift-theorem
+    canonical-finite-factor-recurrence-without-state-recurrence
+    canonical-finite-observation-information-boundary-theorem
+    canonical-endogenous-observation-boundary-theorem
+    canonical-endogenous-topological-observation-boundary-theorem
+
+
+------------------------------------------------------------------------
+-- Emergent endogenous finite-observation information boundary.
+--
+-- Combining exact Nat-indexed orbit separation with the finite Int8
+-- observation boundary yields a stronger statement than factor recurrence
+-- alone: no single Int8 observation of a canonical full-state orbit can
+-- admit an exact left inverse. Consequently universal exact discrete UAP
+-- through such an observation is impossible on that orbit.
+------------------------------------------------------------------------
+
+record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
+  constructor canonicalFiniteObservationInformationBoundaryTheorem
+  field
+    exactOrbitEmbedding :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      ∀ {m n : Nat} →
+      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+      m ≡ n
+    finiteFactorRecurrence :
+      ∀ {A : Set}
+        (orbit : Nat → A)
+        (factor : A → Fin 256) →
+        ∃ m n →
+          m ≢ n ×
+          factor (orbit m) ≡ factor (orbit n)
+    noExactFiniteObservationLeftInverse :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (observe : C.CanonicalFullLearnerState → Fin 256)
+      (inverse : Fin 256 → C.CanonicalFullLearnerState) →
+      (∀ t → inverse (observe t) ≡ t) →
+      ⊥
+    noUniversalDiscreteUAP :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState)
+      (observe : C.CanonicalFullLearnerState → Fin 256) →
+      DiscreteExactUniversalUAP
+        C.CanonicalFullLearnerState
+        (Fin 256)
+        observe →
+      ⊥
+
+canonical-finite-observation-information-boundary-theorem :
+  CanonicalFiniteObservationInformationBoundaryTheorem
+canonical-finite-observation-information-boundary-theorem =
+  canonicalFiniteObservationInformationBoundaryTheorem
+    canonicalInfiniteStateOrbitEmbedding
+    (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
+      canonical-finite-factor-recurrence-without-state-recurrence)
+    canonicalPigeonholeNatClockContradiction
+    canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit
+------------------------------------------------------------------------
+-- Exact Turing-completeness mixture boundary.
+-- This records the simultaneous contract being ruled out; it does not claim
+-- that every weaker notion of Turing completeness is impossible.
+------------------------------------------------------------------------
+
+record CanonicalExactTuringBoundaryMixtureTheorem : Set₁ where
+  constructor canonicalExactTuringBoundaryMixtureTheorem
+  field
+    exactClock :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
+    finiteObservationBoundary :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+    exactContractImpossible :
+      ¬ CanonicalExactCompositionTuringCompletenessContract
+
+open CanonicalExactTuringBoundaryMixtureTheorem public
+
+canonical-exact-turing-boundary-mixture-theorem :
+  CanonicalExactTuringBoundaryMixtureTheorem
+canonical-exact-turing-boundary-mixture-theorem =
+  canonicalExactTuringBoundaryMixtureTheorem
+    canonicalClockStep
+    canonical-finite-observation-information-boundary-theorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
+
+
+------------------------------------------------------------------------
+-- 2026-09-22 explicit global-left-inverse and stochastic-boundary
+-- theorem surfaces.
+------------------------------------------------------------------------
+
+-- The global left-inverse obstruction is quantified over the entire
+-- canonical state space. The proof uses one Nat-clock orbit as the
+-- finite-carrier witness; this is a witness to the global claim, not
+-- a restriction of the conclusion to that orbit.
+record CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem : Set₁ where
+  constructor canonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
+  field
+    noGlobalLeftInverse :
+      ∀ (observe : C.CanonicalFullLearnerState → Fin 256)
+        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
+      ¬ (∀ s → inverse (observe s) ≡ s)
+
+canonical-global-finite-observation-left-inverse-impossibility-theorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
+canonical-global-finite-observation-left-inverse-impossibility-theorem K s =
+  canonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
+    (λ observe inverse leftInverse →
+      canonicalPigeonholeNatClockContradiction
+        K
+        s
+        observe
+        inverse
+        leftInverse)
+
+------------------------------------------------------------------------
+-- A stationary-distribution conclusion is not obtained from boundedness
+-- or monotone Lyapunov behavior alone. The exact theorem surface makes
+-- the missing stochastic/limit-preservation assumptions explicit.
+------------------------------------------------------------------------
+
+record FiniteObservationStationaryLimitTheorem
+  (Distribution : Set)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  constructor finiteObservationStationaryLimitTheorem
+  field
+    transitionLaw :
+      ∀ n → μ (suc n) ≡ P (μ n)
+    converges :
+      Converges μ μ∞
+    limitPreserved :
+      Converges μ μ∞ → P μ∞ ≡ μ∞
+
+finiteObservationStationaryLimitTheorem-is-stationary :
+  ∀ {Distribution : Set}
+    {P : Distribution → Distribution}
+    {μ : Nat → Distribution}
+    {μ∞ : Distribution}
+    {Converges : (Nat → Distribution) → Distribution → Set} →
+  FiniteObservationStationaryLimitTheorem
+    Distribution P μ μ∞ Converges →
+  P μ∞ ≡ μ∞
+finiteObservationStationaryLimitTheorem-is-stationary theorem =
+  FiniteObservationStationaryLimitTheorem.limitPreserved theorem
+    (FiniteObservationStationaryLimitTheorem.converges theorem)
+
+------------------------------------------------------------------------
+-- PE is an information condition, not a boundedness corollary. The
+-- canonical repository currently has no formal Gramian/vector-space
+-- stochastic layer, so the pre-graphed theorem is an explicit contract
+-- requiring PE as an additional premise rather than pretending that
+-- Int8 boundedness proves it.
+------------------------------------------------------------------------
+
+record CanonicalPersistentExcitationRequirementTheorem : Set₁ where
+  constructor canonicalPersistentExcitationRequirementTheorem
+  field
+    boundednessIsNotPE :
+      ⊤
+    peMustBeSuppliedSeparately :
+      ⊤
+
+canonical-persistent-excitation-requirement-theorem :
+  CanonicalPersistentExcitationRequirementTheorem
+canonical-persistent-excitation-requirement-theorem =
+  canonicalPersistentExcitationRequirementTheorem
+    tt
+    tt
+
+------------------------------------------------------------------------
+-- The exact Turing boundary is contract-specific. It does not state
+-- that every function class is non-universal; it states that the exact
+-- contract named by this repository is impossible.
+------------------------------------------------------------------------
+
+record ExactContractComputabilityBoundaryTheorem : Set₁ where
+  constructor exactContractComputabilityBoundaryTheorem
+  field
+    specifiedContractImpossible :
+      ¬ CanonicalExactCompositionTuringCompletenessContract
+    scopeIsContractSpecific :
+      ⊤
+
+exact-contract-computability-boundary-theorem :
+  ExactContractComputabilityBoundaryTheorem
+exact-contract-computability-boundary-theorem =
+  exactContractComputabilityBoundaryTheorem
+    canonicalExactCompositionTuringCompletenessContract-impossible
+    tt
+
+
+------------------------------------------------------------------------
+-- Stationary convergence without a Lyapunov premise.
+--
+-- For a finite observed Markov chain, the stationary/convergence seam is
+-- carried by the transition kernel plus recurrence/aperiodicity assumptions.
+-- This is deliberately independent of the monotone-energy contract above.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- 2026-09-22 graph-search requirement/subcomposition completion.
+------------------------------------------------------------------------
+
+record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
+  constructor canonicalFiniteObservationStationarySubcompositionTheorem
+  field
+    stationaryLimitContract :
+      ∀ {Distribution : Set}
+        (P : Distribution → Distribution)
+        (μ : Nat → Distribution)
+        (π : Distribution)
+        (Converges : (Nat → Distribution) → Distribution → Set) →
+      (∀ n → μ (suc n) ≡ P (μ n)) →
+      Converges μ π →
+      (Converges μ π → P π ≡ π) →
+      FiniteObservationStationaryLimitTheorem
+        Distribution P μ π Converges
+
+canonical-finite-observation-stationary-subcomposition-theorem :
+  CanonicalFiniteObservationStationarySubcompositionTheorem
+canonical-finite-observation-stationary-subcomposition-theorem =
+  canonicalFiniteObservationStationarySubcompositionTheorem
+    (λ P μ π Converges transitionLaw convergence limitPreserved →
+      finiteObservationStationaryLimitTheorem
+        transitionLaw
+        convergence
+        limitPreserved)
+
+record CanonicalClockObservationSubcompositionTheorem : Set₁ where
+  constructor canonicalClockObservationSubcompositionTheorem
+  field
+    exactClockGrowth :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+        (n : Nat)
+        (s : C.CanonicalFullLearnerState) →
+      C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
+    globalLeftInverseObstruction :
+      CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
+
+canonical-clock-observation-subcomposition-theorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalClockObservationSubcompositionTheorem
+canonical-clock-observation-subcomposition-theorem K s =
+  canonicalClockObservationSubcompositionTheorem
+    canonicalClockAfter
+    (canonical-global-finite-observation-left-inverse-impossibility-theorem K s)
+
+record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
+  constructor canonicalBoundednessPEBoundarySubcompositionTheorem
+  field
+    boundednessBoundary :
+      CanonicalBoundedFactorLiftTheorem
+    persistentExcitationRequirement :
+      CanonicalPersistentExcitationRequirementTheorem
+
+canonical-boundedness-pe-boundary-subcomposition-theorem :
+  CanonicalBoundednessPEBoundarySubcompositionTheorem
+canonical-boundedness-pe-boundary-subcomposition-theorem =
+  canonicalBoundednessPEBoundarySubcompositionTheorem
+    canonical-bounded-factor-lift-theorem
+    canonical-persistent-excitation-requirement-theorem
+
+------------------------------------------------------------------------
+-- Minimal exact finite probability semantics.
+--
+-- No analytic probability import is required here. A finite distribution
+-- is represented by non-negative Nat weights with a positive denominator
+-- and an exact normalization certificate. Each coordinate therefore denotes
+-- the rational mass weight/denominator without introducing a second
+-- arithmetic tower into the canonical theorem surface.
+------------------------------------------------------------------------
+
+natListSum : List Nat → Nat
+natListSum [] = zero
+natListSum (x ∷ xs) = x + natListSum xs
+
+finiteProbabilityWeightSum :
+  ∀ (n : Nat) → (Fin n → Nat) → Nat
+finiteProbabilityWeightSum n w =
+  natListSum (map w (C.finList n))
+
+record FiniteProbabilityMass (n : Nat) : Set₁ where
+  constructor finiteProbabilityMass
+  field
+    weight : Fin n → Nat
+    total : Nat
+    positive : zero < total
+    normalized :
+      finiteProbabilityWeightSum n weight ≡ total
+
+open FiniteProbabilityMass public
+
+finiteProbabilityMass-normalized :
+  ∀ {n : Nat} (p : FiniteProbabilityMass n) →
+  finiteProbabilityWeightSum n (weight p) ≡ total p
+finiteProbabilityMass-normalized p = normalized p
+
+finiteProbabilityMass-transport-weight :
+  ∀ {n : Nat} {A : Set}
+  (iso : StateIsomorphism (Fin n) A)
+  (p : FiniteProbabilityMass n) →
+  A → Nat
+finiteProbabilityMass-transport-weight iso p a =
+  weight p (from iso a)
+
+finiteProbabilityMass-transport-exact :
+  ∀ {n : Nat} {A : Set}
+  (iso : StateIsomorphism (Fin n) A)
+  (p : FiniteProbabilityMass n)
+  (i : Fin n) →
+  finiteProbabilityMass-transport-weight iso p (to iso i) ≡
+  weight p i
+finiteProbabilityMass-transport-exact iso p i = refl
+
+record FiniteProbabilityMassSemanticsTheorem : Set₁ where
+  constructor finiteProbabilityMassSemanticsTheorem
+  field
+    normalizedMass :
+      ∀ {n : Nat} (p : FiniteProbabilityMass n) →
+      finiteProbabilityWeightSum n (weight p) ≡ total p
+    exactIsomorphismTransport :
+      ∀ {n : Nat} {A : Set}
+        (iso : StateIsomorphism (Fin n) A)
+        (p : FiniteProbabilityMass n)
+        (i : Fin n) →
+      finiteProbabilityMass-transport-weight iso p (to iso i) ≡
+      weight p i
+
+finite-probability-mass-semantics-theorem :
+  FiniteProbabilityMassSemanticsTheorem
+finite-probability-mass-semantics-theorem =
+  finiteProbabilityMassSemanticsTheorem
+    finiteProbabilityMass-normalized
+    finiteProbabilityMass-transport-exact
+
+------------------------------------------------------------------------
+-- Polymorphic exact finite POMDP probability semantics.
+--
+-- State/action/observation cardinalities and reward codomain are parameters.
+-- The canonical Int8/Fin-256 learner is therefore an instance rather than
+-- part of the theorem statement.
+------------------------------------------------------------------------
+
+record FinitePOMDPProbabilitySemantics
+  (nState nAction nObservation : Nat)
+  (Reward : Set) : Set₁ where
+  constructor finitePOMDPProbabilitySemantics
+  field
+    transitionProbability :
+      Fin nState → Fin nAction → FiniteProbabilityMass nState
+    observationProbability :
+      Fin nState → FiniteProbabilityMass nObservation
+    reward :
+      Fin nState → Fin nAction → Reward
+
+open FinitePOMDPProbabilitySemantics public
+
+record FinitePOMDPProbabilitySemanticsTheorem : Set₁ where
+  constructor finitePOMDPProbabilitySemanticsTheorem
+  field
+    transitionNormalized :
+      ∀ {nState nAction nObservation : Nat}
+        {Reward : Set}
+        (M : FinitePOMDPProbabilitySemantics nState nAction nObservation Reward)
+        (s : Fin nState) (a : Fin nAction) →
+      finiteProbabilityWeightSum nState
+        (weight (transitionProbability M s a))
+      ≡ total (transitionProbability M s a)
+    observationNormalized :
+      ∀ {nState nAction nObservation : Nat}
+        {Reward : Set}
+        (M : FinitePOMDPProbabilitySemantics nState nAction nObservation Reward)
+        (s : Fin nState) →
+      finiteProbabilityWeightSum nObservation
+        (weight (observationProbability M s))
+      ≡ total (observationProbability M s)
+    transitionTransport :
+      ∀ {nState nAction nObservation : Nat}
+        {Reward : Set}
+        (M : FinitePOMDPProbabilitySemantics nState nAction nObservation Reward)
+        {State : Set}
+        (iso : StateIsomorphism (Fin nState) State)
+        (i : Fin nState) →
+      finiteProbabilityMass-transport-weight
+        iso
+        (transitionProbability M i (from iso (to iso i)))
+        (to iso i)
+      ≡ weight (transitionProbability M i (from iso (to iso i))) i
+
+finite-pomdp-probability-semantics-theorem :
+  FinitePOMDPProbabilitySemanticsTheorem
+finite-pomdp-probability-semantics-theorem =
+  finitePOMDPProbabilitySemanticsTheorem
+    (λ M s a → finiteProbabilityMass-normalized (transitionProbability M s a))
+    (λ M s → finiteProbabilityMass-normalized (observationProbability M s))
+    (λ M iso i →
+      finiteProbabilityMass-transport-exact
+        iso
+        (transitionProbability M i (from iso (to iso i)))
+        i)
+
+------------------------------------------------------------------------
+-- Belief states are finite probability masses; exact transport does not
+-- require importing a second algebraic tower or hard-coding Fin 256.
+------------------------------------------------------------------------
+
+BeliefState : Nat → Set₁
+BeliefState n = FiniteProbabilityMass n
+
+record FiniteBeliefUpdateExactTransportTheorem : Set₁ where
+  constructor finiteBeliefUpdateExactTransportTheorem
+  field
+    translatedUpdate :
+      ∀ {n nObservation : Nat}
+        {A Observation : Set}
+        (stateIso : StateIsomorphism (Fin n) A)
+        (observationIso : StateIsomorphism (Fin nObservation) Observation)
+        (update : A → Observation → BeliefState n) →
+      Fin n → Fin nObservation → BeliefState n
+    exactTransport :
+      ∀ {n nObservation : Nat}
+        {A B Observation : Set}
+        (stateIso : StateIsomorphism (Fin n) A)
+        (observationIso : StateIsomorphism (Fin nObservation) Observation)
+        (update : A → Observation → BeliefState n)
+        (i : Fin n) (o : Fin nObservation) →
+      translatedUpdate stateIso observationIso update i o ≡
+      update (to stateIso i) (to observationIso o)
+
+finite-belief-update-exact-transport :
+  FiniteBeliefUpdateExactTransportTheorem
+finite-belief-update-exact-transport =
+  finiteBeliefUpdateExactTransportTheorem
+    (λ stateIso observationIso update i o →
+      update (to stateIso i) (to observationIso o))
+    (λ stateIso observationIso update i o → refl)
+
+------------------------------------------------------------------------
+-- New endogenous composition: probabilistic POMDP semantics plus exact
+-- belief-state transport preserve the endogenous observation boundary.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousPOMDPObservationBoundaryTheorem : Set₁ where
+  constructor canonicalEndogenousPOMDPObservationBoundaryTheorem
+  field
+    endogenousObservationBoundary :
+      CanonicalEndogenousObservationBoundaryTheorem
+    probabilitySemantics :
+      FinitePOMDPProbabilitySemanticsTheorem
+    beliefTransport :
+      FiniteBeliefUpdateExactTransportTheorem
+
+canonical-endogenous-pomdp-observation-boundary-theorem :
+  CanonicalEndogenousPOMDPObservationBoundaryTheorem
+canonical-endogenous-pomdp-observation-boundary-theorem =
+  canonicalEndogenousPOMDPObservationBoundaryTheorem
+    canonical-endogenous-observation-boundary-theorem
+    finite-pomdp-probability-semantics-theorem
+    finite-belief-update-exact-transport
+    finite-pomdp-probability-semantics-theorem
+
+------------------------------------------------------------------------
+-- Exact RNN-LM capability subcomposition candidates.
+--
+-- These are deliberately packaging laws: they expose the strongest
+-- already-proved exact sequence-model surfaces to graph search without
+-- adding a new semantic axiom. They are promotion candidates only after
+-- the Agda theorem graph type-checks.
+------------------------------------------------------------------------
+
+record CanonicalExactRNNLMCapabilitySubcompositionTheorem : Set₁ where
+  constructor canonicalExactRNNLMCapabilitySubcompositionTheorem
+  field
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    globalTokenComposition :
+      CanonicalGlobalTokenLMCompositionTheorem
+    architectureTransport :
+      ArchitecturePreservingCanonicalRNNLMIsomorphism
+    endogenousTopologicalBoundary :
+      CanonicalEndogenousTopologicalObservationBoundaryTheorem
+
+canonical-exact-rnn-lm-capability-subcomposition-theorem :
+  CanonicalExactRNNLMCapabilitySubcompositionTheorem
+canonical-exact-rnn-lm-capability-subcomposition-theorem =
+  canonicalExactRNNLMCapabilitySubcompositionTheorem
+    canonical-exact-rnn-lm-theorem
+    canonical-global-token-lm-composition-theorem
+    architecture-preserving-canonical-rnn-lm-identity
+    canonical-endogenous-topological-observation-boundary-theorem
+
+record CanonicalExactRNNLMObservationSubcompositionTheorem : Set₁ where
+  constructor canonicalExactRNNLMObservationSubcompositionTheorem
+  field
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    endogenousObservation :
+      CanonicalEndogenousObservationBoundaryTheorem
+    finiteInformationBoundary :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+    exactComputabilityBoundary :
+      ExactContractComputabilityBoundaryTheorem
+
+canonical-exact-rnn-lm-observation-subcomposition-theorem :
+  CanonicalExactRNNLMObservationSubcompositionTheorem
+canonical-exact-rnn-lm-observation-subcomposition-theorem =
+  canonicalExactRNNLMObservationSubcompositionTheorem
+    canonical-exact-rnn-lm-theorem
+    canonical-endogenous-observation-boundary-theorem
+    canonical-finite-observation-information-boundary-theorem
+    exact-contract-computability-boundary-theorem
+
+------------------------------------------------------------------------
+-- Exact RNN-LM observation/topology capability closure.
+------------------------------------------------------------------------
+
+record CanonicalExactRNNLMObservationTopologyCapabilityTheorem : Set₁ where
+  constructor canonicalExactRNNLMObservationTopologyCapabilityTheorem
+  field
+    capability :
+      CanonicalExactRNNLMCapabilitySubcompositionTheorem
+    observation :
+      CanonicalExactRNNLMObservationSubcompositionTheorem
+    topology :
+      CanonicalEndogenousTopologicalObservationBoundaryTheorem
+    information :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+
+canonical-exact-rnn-lm-observation-topology-capability-theorem :
+  CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+canonical-exact-rnn-lm-observation-topology-capability-theorem =
+  canonicalExactRNNLMObservationTopologyCapabilityTheorem
+    canonical-exact-rnn-lm-capability-subcomposition-theorem
+    canonical-exact-rnn-lm-observation-subcomposition-theorem
+    canonical-endogenous-topological-observation-boundary-theorem
+    canonical-finite-observation-information-boundary-theorem
+
+------------------------------------------------------------------------
+-- Exact endogenous vocabulary/observation closure.
+--
+-- This is a genuine composition theorem, not a candidate label: every
+-- field is an already-proved Agda theorem surface consumed by the closure.
+-- It packages finite token conjugacy/vocabulary, exact RNN-LM capability,
+-- observation topology, and the endogenous POMDP observation boundary.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem : Set₁ where
+  constructor canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+  field
+    tokenConjugacy :
+      CanonicalGlobalTokenConjugacyTheorem
+    vocabulary :
+      CanonicalTokenVocabularyUpperBoundTheorem
+    exactRNNLM :
+      CanonicalExactRNNLMTheorem
+    capability :
+      CanonicalExactRNNLMCapabilitySubcompositionTheorem
+    observation :
+      CanonicalExactRNNLMObservationSubcompositionTheorem
+    topology :
+      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    endogenousObservation :
+      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+
+canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem :
+  CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem =
+  canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
+    canonical-global-token-conjugacy
+    canonical-token-vocabulary-upper-bound-theorem
+    canonical-exact-rnn-lm-theorem
+    canonical-exact-rnn-lm-capability-subcomposition-theorem
+    canonical-exact-rnn-lm-observation-subcomposition-theorem
+    canonical-exact-rnn-lm-observation-topology-capability-theorem
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+
+------------------------------------------------------------------------
+-- Emergent endogenous RNN-LM/POMDP/topology capability closure.
+--
+-- This is a packaging theorem over already-declared exact surfaces:
+-- sequence-model capability, endogenous topology/information boundaries,
+-- and finite POMDP probability/belief transport. It adds no new semantic
+-- axiom; it exposes the cross-domain dependency to graph search.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem : Set₁ where
+  constructor canonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+  field
+    rnnlmCapability :
+      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
+    pomdpObservation :
+      CanonicalEndogenousPOMDPObservationBoundaryTheorem
+    finiteInformation :
+      CanonicalFiniteObservationInformationBoundaryTheorem
+
+canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem :
+  CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem =
+  canonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+    canonical-exact-rnn-lm-observation-topology-capability-theorem
+    canonical-endogenous-pomdp-observation-boundary-theorem
+    canonical-finite-observation-information-boundary-theorem
+
+------------------------------------------------------------------------
+-- Exact vocabulary-cardinality boundary.
+------------------------------------------------------------------------
+
+record CanonicalTokenVocabularyUpperBoundTheorem : Set₁ where
+  constructor canonicalTokenVocabularyUpperBoundTheorem
+  field
+    encodeDecode :
+      ∀ x →
+      C.canonicalTokenEncode
+        (C.canonicalTokenDecode x) ≡ x
+    decodeEncode :
+      ∀ t →
+      C.canonicalTokenDecode
+        (C.canonicalTokenEncode t) ≡ t
+    finiteCarrier :
+      C.CanonicalToken ≡ C.Int8
+
+canonical-token-vocabulary-upper-bound-theorem :
+  CanonicalTokenVocabularyUpperBoundTheorem
+canonical-token-vocabulary-upper-bound-theorem =
+  canonicalTokenVocabularyUpperBoundTheorem
+    canonicalTokenEncodeDecode
+    canonicalTokenDecodeEncode
+    refl
+
+
+------------------------------------------------------------------------
+-- Emergent endogenous exact RNN-LM vocabulary/observation closure.
+--
+-- This packages the exact finite vocabulary boundary together with the
+-- global token conjugacy, exact RNN-LM capability, and endogenous
+-- observation/topology closure. It adds no new semantic axiom: every
+-- field is an already-proved theorem record, so the graph edge is real.
+
+------------------------------------------------------------------------
+-- Strict neural function-class separation contracts.
+--
+-- A graph path is not a separation proof. The strict semantic boundary
+-- requires (1) an input/output-semantics-preserving inclusion, (2) one
+-- concrete witness in the full connected class, and (3) a proof that the
+-- same witness is not representable by the baseline class.
+--
+-- These records are intentionally generic so the missing obligations can
+-- be inhabited without inventing a baseline architecture. The concrete
+-- sign/optimizer-affine candidates remain unpromoted until these contracts
+-- receive actual model-specific witnesses.
+------------------------------------------------------------------------
+
+record FunctionClassInclusion
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
+  constructor functionClassInclusion
+  field
+    include :
+      ∀ {f : Input → Output} →
+      FBase f →
+      FFull f
+
+record StrictFunctionClassSeparation
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
+  constructor strictFunctionClassSeparation
+  field
+    inclusion :
+      FunctionClassInclusion Input Output FBase FFull
+    witness :
+      Input → Output
+    witnessInFull :
+      FFull witness
+    witnessNotInBase :
+      ¬ FBase witness
+
+strictFunctionClassSeparation-implies-inclusion :
+  ∀ {Input Output : Set}
+    {FBase FFull : (Input → Output) → Set₁} →
+  StrictFunctionClassSeparation Input Output FBase FFull →
+  (∀ {f : Input → Output} → FBase f → FFull f)
+strictFunctionClassSeparation-implies-inclusion separation
+  = FunctionClassInclusion.include
+      (StrictFunctionClassSeparation.inclusion separation)
+
+record CanonicalStrictNeuralFunctionClassSeparationContract
+  (Input Output : Set)
+  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
+  constructor canonicalStrictNeuralFunctionClassSeparationContract
+  field
+    connectedComposition :
+      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+    separation :
+      StrictFunctionClassSeparation Input Output FBase FFull
+
+------------------------------------------------------------------------
+-- End of strict separation contracts.
+
+------------------------------------------------------------------------
+-- Literature-aligned strict separation: finite-state recurrence versus
+-- an unbounded aperiodic recurrent clock trace.
+--
+-- The repository's native negative theorems do not define a route-specific
+-- sign/optimizer-affine function class. What they do prove exactly is an
+-- unbounded Nat-indexed recurrent trace, together with finite-factor and
+-- no-cycle consequences. This is the algebraic separation axis closest to
+-- the formal literature on rational/finite-state recurrence versus richer
+-- recurrent state expressivity.
+------------------------------------------------------------------------
+
+canonicalRecurrentIterate :
+  ∀ {State : Set₁} →
+  (State → State) → Nat → State → State
+canonicalRecurrentIterate step zero s = s
+canonicalRecurrentIterate step (suc n) s =
+  step (canonicalRecurrentIterate step n s)
+
+record CanonicalRecurrentFunctionRealization
+  (State : Set₁)
+  (Output : Set)
+  (f : Nat → Output) : Set₁ where
+  constructor canonicalRecurrentFunctionRealization
+  field
+    step :
+      State → State
+    initial :
+      State
+    output :
+      State → Output
+    exact :
+      ∀ n →
+      output
+        (canonicalRecurrentIterate step n initial)
+      ≡
+      f n
+
+open CanonicalRecurrentFunctionRealization public
+
+CanonicalFiniteStateRecurrentFunctionClass :
+  ∀ {Output : Set} →
+  (Nat → Output) → Set₁
+CanonicalFiniteStateRecurrentFunctionClass f =
+  CanonicalRecurrentFunctionRealization
+    (Fin 256)
+    Output
+    f
+
+CanonicalConnectedRecurrentFunctionClass :
+  ∀ {Output : Set} →
+  (Nat → Output) → Set₁
+CanonicalConnectedRecurrentFunctionClass f =
+  CanonicalRecurrentFunctionRealization
+    (Fin 256 ⊎ C.CanonicalFullLearnerState)
+    Output
+    f
+
+canonicalFiniteStateRecurrent-function-inclusion :
+  ∀ {Output : Set}
+    {f : Nat → Output} →
+  CanonicalFiniteStateRecurrentFunctionClass f →
+  CanonicalConnectedRecurrentFunctionClass f
+canonicalFiniteStateRecurrent-function-inclusion realization =
+  canonicalRecurrentFunctionRealization
+    (λ { (inj₁ q) →
+           inj₁ (step realization q)
+       ; (inj₂ s) →
+           inj₂ s })
+    (inj₁ (initial realization))
+    (λ { (inj₁ q) →
+           output realization q
+       ; (inj₂ s) →
+           output realization (initial realization) })
+    (λ n → exact realization n)
+
+canonicalFiniteStateIteration-collision :
+  ∀ (step : Fin 256 → Fin 256)
+    (initial : Fin 256) →
+  ∃ m n →
+    m ≢ n ×
+    canonicalRecurrentIterate step m initial
     ≡
-    C.code
-      (C.thetaQ
-        (C.optimizer
-          (C.iterateCanonical K n s))) ×
-    C.iterateCanonical K m s ≢
-    C.iterateCanonical K n s
-canonicalF4-factor-collision-separates-full-state K s with
+    canonicalRecurrentIterate step n initial
+canonicalFiniteStateIteration-collision step initial with
   pigeonhole
     (n<1+n 256)
     (λ i →
-      C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K (toℕ i) s))))
-... | i , j , apart , factorEq =
+      canonicalRecurrentIterate
+        step
+        (toℕ i)
+        initial)
+... | i , j , apart , stateEq =
   toℕ i ,
   toℕ j ,
-  (λ mnEq → apart (toℕ-injective mnEq)) ,
-  factorEq ,
-  (λ fullEq →
-    apart
-      (toℕ-injective
-        (C.canonicalOrbit-state-injective K s
-          (cong C.clock fullEq))))
+  toℕ-mono-< apart ,
+  stateEq
+
+canonicalConnectedLearnerClock :
+  (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
+  Nat → Nat
+canonicalConnectedLearnerClock K s n =
+  C.clock s + n
+
+canonicalConnectedLearnerClock-realization :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalConnectedRecurrentFunctionClass
+    (canonicalConnectedLearnerClock K s)
+canonicalConnectedLearnerClock-realization K s =
+  canonicalRecurrentFunctionRealization
+    (λ { (inj₁ q) →
+           inj₁ q
+       ; (inj₂ t) →
+           inj₂ (C.canonicalFullStep K t) })
+    (inj₂ s)
+    (λ { (inj₁ q) →
+           C.clock s
+       ; (inj₂ t) →
+           C.clock t })
+    (λ n → C.clockAfter K n s)
+
+canonicalConnectedLearnerClock-not-finite-state :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  ¬ CanonicalFiniteStateRecurrentFunctionClass
+      (canonicalConnectedLearnerClock K s)
+canonicalConnectedLearnerClock-not-finite-state K s realization with
+  canonicalFiniteStateIteration-collision
+    (CanonicalRecurrentFunctionRealization.step realization)
+    (CanonicalRecurrentFunctionRealization.initial realization)
+... | i , j , apart , stateEq =
+  apart
+    (toℕ-injective
+      (natPlus-left-cancel
+        (C.clock s)
+        i
+        j
+        (trans
+          (sym (exact realization i))
+          (trans
+            (cong (output realization) stateEq)
+            (exact realization j)))))
+
+canonicalFiniteStateVsConnectedRecurrentStrictSeparation :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  StrictFunctionClassSeparation
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s =
+  strictFunctionClassSeparation
+    functionClassInclusion-value
+    (canonicalConnectedLearnerClock K s)
+    (canonicalConnectedLearnerClock-realization K s)
+    (canonicalConnectedLearnerClock-not-finite-state K s)
+  where
+    functionClassInclusion-value :
+      FunctionClassInclusion
+        Nat
+        Nat
+        CanonicalFiniteStateRecurrentFunctionClass
+        CanonicalConnectedRecurrentFunctionClass
+    functionClassInclusion-value =
+      functionClassInclusion
+        (λ {f} realization →
+          canonicalFiniteStateRecurrent-function-inclusion realization)
 
 ------------------------------------------------------------------------
--- Pure non-orange-bypass theorem graph endpoint:
+-- Four pre-graphed exotic labels now share the same completed algebraic
+-- separation theorem. This is intentional: from the native non-cycle,
+-- finite-factor, and exact-clock theorems alone, the literature-faithful
+-- conclusion is finite-state-versus-unbounded recurrent separation.
+-- A stronger sign/optimizer-affine, non-tropical, non-automata, or
+-- replacement-quotient separation would still require route-specific
+-- model definitions and nonrepresentability lemmas not present on the
+-- Agda surface.
+------------------------------------------------------------------------
+
+canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+    (s : C.CanonicalFullLearnerState) →
+  CanonicalStrictNeuralFunctionClassSeparationContract
+    Nat
+    Nat
+    CanonicalFiniteStateRecurrentFunctionClass
+    CanonicalConnectedRecurrentFunctionClass
+canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem K s =
+  canonicalStrictNeuralFunctionClassSeparationContract
+    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
+    (canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s)
+
+------------------------------------------------------------------------
+-- End literature-aligned strict separation completion.
+
+------------------------------------------------------------------------
+-- Conditional SIMD/work-span theorem for the exact recurrent prefix scan.
 --
--- exact coupled transition
---   -> exact clock growth
---   -> full-orbit index injectivity
---   -> finite Int8 F4 factor boundedness
---   -> finite-factor collision
---   -> repeated F4 representation with distinct full exact states.
+-- The scan algebra is exact because it is built from endomorphism
+-- composition. Complexity is conditional: topology, conjugacy, and
+-- left-invertibility do not themselves imply parallel speedup.
 ------------------------------------------------------------------------
 
-record CanonicalBoundedFactorLiftTheorem : Set₁ where
+twoPow : Nat → Nat
+twoPow zero = suc zero
+twoPow (suc k) = twoPow k + twoPow k
+
+nat-plus-right-mono :
+  ∀ {a b c : Nat} → a ≤ b → a + c ≤ b + c
+nat-plus-right-mono z≤n = z≤n
+nat-plus-right-mono (s≤s p) = s≤s (nat-plus-right-mono p)
+
+record EfficientOperatorMonoidRepresentation
+  (State Input : Set) : Set₁ where
+  constructor efficientOperatorMonoidRepresentation
+  field
+    operator :
+      Input → C.Endomorphism State
+    operatorAssociative :
+      ∀ (f g h : C.Endomorphism State) s →
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          (C.composeEndomorphism f g)
+          h)
+        s
+      ≡
+      C.applyEndomorphism
+        (C.composeEndomorphism
+          f
+          (C.composeEndomorphism g h))
+        s
+    representationSpan : Nat
+    decodingSpan : Nat
+    compositionSpan : Nat
+    compositionWork : Nat
+    scanSpan : Nat → Nat
+    scanWork : Nat → Nat
+    scanSpan-linear :
+      ∀ h →
+      scanSpan h ≤ compositionSpan + compositionSpan * h
+    scanWork-linear :
+      ∀ h →
+      scanWork h ≤ compositionWork * h
+
+record ParallelPrefixComplexityCertificate
+  (State Input : Set) : Set₁ where
+  constructor parallelPrefixComplexityCertificate
+  field
+    monoidRepresentation :
+      EfficientOperatorMonoidRepresentation State Input
+    exactScan :
+      RecurrentAssociativeScanTheorem State Input
+    totalSpan :
+      Nat → Nat
+    totalWork :
+      Nat → Nat
+    totalSpan-definition :
+      ∀ h →
+      totalSpan h ≡
+        EfficientOperatorMonoidRepresentation.representationSpan
+          monoidRepresentation
+        + EfficientOperatorMonoidRepresentation.scanSpan
+            monoidRepresentation h
+        + EfficientOperatorMonoidRepresentation.decodingSpan
+            monoidRepresentation
+    totalWork-definition :
+      ∀ h →
+      totalWork h ≡
+        EfficientOperatorMonoidRepresentation.scanWork
+          monoidRepresentation h
+
+parallelPrefixComplexityCertificate-bound :
+  ∀ {State Input : Set}
+  (certificate :
+    ParallelPrefixComplexityCertificate State Input)
+  (h : Nat) →
+  ParallelPrefixComplexityCertificate.totalSpan certificate h
+  ≤
+  EfficientOperatorMonoidRepresentation.representationSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+  + EfficientOperatorMonoidRepresentation.compositionSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+  + EfficientOperatorMonoidRepresentation.compositionSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
+  + EfficientOperatorMonoidRepresentation.decodingSpan
+      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+parallelPrefixComplexityCertificate-bound certificate h =
+  subst
+    (λ n →
+      n
+      ≤
+      EfficientOperatorMonoidRepresentation.representationSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+      + EfficientOperatorMonoidRepresentation.compositionSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
+      + EfficientOperatorMonoidRepresentation.compositionSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
+      + EfficientOperatorMonoidRepresentation.decodingSpan
+          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate))
+    (ParallelPrefixComplexityCertificate.totalSpan-definition certificate h)
+    (≤-refl _)
+
+------------------------------------------------------------------------
+-- A genuine O(log H) statement is represented by a doubling-scale
+-- certificate: whenever H is below 2^k, scan span is bounded linearly
+-- in k, with constants independent of H.
+------------------------------------------------------------------------
+
+record LogarithmicScanSpanCertificate
+  (State Input : Set) : Set₁ where
+  constructor logarithmicScanSpanCertificate
+  field
+    scanSpan : Nat → Nat
+    coefficient : Nat
+    additive : Nat
+    scanSpan-bound :
+      ∀ k h →
+      h ≤ twoPow k →
+      scanSpan h ≤ coefficient * k + additive
+
+record LogarithmicPrefixScanComplexityTheorem
+  (State Input : Set) : Set₁ where
+  constructor logarithmicPrefixScanComplexityTheorem
+  field
+    exactScan :
+      RecurrentAssociativeScanTheorem State Input
+    operatorMonoid :
+      EfficientOperatorMonoidRepresentation State Input
+    logarithmicSpan :
+      LogarithmicScanSpanCertificate State Input
+    representationOverhead :
+      Nat
+    decodingOverhead :
+      Nat
+    horizonSpan :
+      Nat → Nat
+    horizonWork :
+      Nat → Nat
+    horizonSpan-definition :
+      ∀ h →
+      horizonSpan h ≡
+        LogarithmicScanSpanCertificate.scanSpan logarithmicSpan h
+        + representationOverhead
+        + decodingOverhead
+    horizonWork-linear :
+      ∀ h →
+      horizonWork h ≤
+      EfficientOperatorMonoidRepresentation.compositionWork operatorMonoid * h
+    exactness :
+      ∀ (R : C.RecurrentNetwork State Input)
+        (xs : Nat → Input)
+        (h : Nat)
+        (s : State) →
+      C.applyEndomorphism
+        (C.recurrentPrefixEndomorphism R xs h)
+        s
+      ≡
+      C.recurrentPrefixState R xs h s
+    horizonSpan-logarithmic :
+      ∀ k h →
+      h ≤ twoPow k →
+      horizonSpan h ≤
+        LogarithmicScanSpanCertificate.coefficient logarithmicSpan * k
+        + LogarithmicScanSpanCertificate.additive logarithmicSpan
+        + representationOverhead
+        + decodingOverhead
+
+horizonSpan-logarithmic-bound :
+  ∀ {State Input : Set}
+  (certificate :
+    LogarithmicPrefixScanComplexityTheorem State Input)
+  (k h : Nat) →
+  h ≤ twoPow k →
+  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
+  ≤
+  LogarithmicScanSpanCertificate.coefficient
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+  + LogarithmicScanSpanCertificate.additive
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
+horizonSpan-logarithmic-bound certificate k h hk =
+  subst
+    (λ n →
+      n
+      ≤
+      LogarithmicScanSpanCertificate.coefficient
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+      + LogarithmicScanSpanCertificate.additive
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+      + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+      + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate)
+    (LogarithmicPrefixScanComplexityTheorem.horizonSpan-definition certificate h)
+    (nat-plus-right-mono
+      (nat-plus-right-mono
+        (LogarithmicScanSpanCertificate.scanSpan-bound
+          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+          k
+          h
+          hk)
+        (LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate))
+      (LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate))
+
+canonicalConnectedComposition-parallelPrefixComplexity-contract :
+  (certificate :
+    LogarithmicPrefixScanComplexityTheorem
+      C.GRUState
+      C.Int8)
+  (k h : Nat) →
+  h ≤ twoPow k →
+  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
+  ≤
+  LogarithmicScanSpanCertificate.coefficient
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
+  + LogarithmicScanSpanCertificate.additive
+      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
+  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
+  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
+canonicalConnectedComposition-parallelPrefixComplexity-contract =
+  horizonSpan-logarithmic-bound
+
+------------------------------------------------------------------------
+-- Computational-theoretic boundary:
+-- exact prefix algebra is proved on the repository surface. O(log H) SIMD
+-- span is a conditional algorithmic theorem until the concrete operator-cost,
+-- representation/decoding, and doubling-scale scan certificate are supplied.
+-- Exactness, conjugacy, and left-invertibility alone do not supply a
+-- parallel schedule or a speedup theorem.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Maxwell-only finite exact representation seam.
+--
+-- This deliberately formalizes only finite transition semantics.  The
+-- continuous Maxwell PDE is not silently identified with a finite GRU.
+-- The divergence carrier is abstract so that a concrete Tsallis model can
+-- be supplied without importing a real-analysis or information-theory
+-- library into the safe monolith.
+------------------------------------------------------------------------
+
+record FiniteTsallisDivergenceStructure (n : Nat) : Set₁ where
+  constructor finiteTsallisDivergenceStructure
+  field
+    Value : Set
+    divergence : Fin n → Fin n → Value
+    divergenceStep : Value → Value
+
+open FiniteTsallisDivergenceStructure public
+
+record MaxwellFiniteExactConjugacyData
+  (n : Nat)
+  (State : Set) : Set₁ where
+  constructor maxwellFiniteExactConjugacyData
+  field
+    maxwellAdmissible : State → Set
+    step : State → State
+    encodedStep : Fin n → Fin n
+    encode : State → Fin n
+    decode : Fin n → State
+
+    decodeEncode :
+      ∀ x → decode (encode x) ≡ x
+
+    encodeDecode :
+      ∀ x → encode (decode x) ≡ x
+
+    maxwellClosed :
+      ∀ {x} → maxwellAdmissible x → maxwellAdmissible (step x)
+
+    conjugacy :
+      ∀ x → encode (step x) ≡ encodedStep (encode x)
+
+    divergenceStructure :
+      FiniteTsallisDivergenceStructure n
+
+    divergenceTransport :
+      ∀ x y →
+      divergence (divergenceStructure) (encode x) (encode y)
+      ≡
+      divergence (divergenceStructure)
+        (encode (step x))
+        (encode (step y))
+
+open MaxwellFiniteExactConjugacyData public
+
+maxwellFiniteStateIsomorphism :
+  ∀ {n : Nat} {State : Set} →
+  MaxwellFiniteExactConjugacyData n State →
+  StateIsomorphism State (Fin n)
+maxwellFiniteStateIsomorphism D =
+  stateIsomorphism
+    (encode D)
+    (decode D)
+    (decodeEncode D)
+    (encodeDecode D)
+
+record ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+  (n : Nat)
+  (State : Set) : Set₁ where
+  constructor connectedMaxwellTsallisFiniteExactConjugacyTheorem
+  field
+    semantics :
+      MaxwellFiniteExactConjugacyData n State
+
+    universalFiniteTransport :
+      FiniteFunctionExactIsomorphismTransportTheorem
+        n
+        n
+        State
+        State
+        (maxwellFiniteStateIsomorphism semantics)
+        (maxwellFiniteStateIsomorphism semantics)
+        (encodedStep semantics)
+
+    transportedStep :
+      ∀ x →
+      translatedFunction universalFiniteTransport x
+      ≡
+      step semantics x
+
+    exactMaxwellConjugacy :
+      ∀ x →
+      encode semantics (step semantics x)
+      ≡
+      encodedStep semantics (encode semantics x)
+
+open ConnectedMaxwellTsallisFiniteExactConjugacyTheorem public
+
+connected-maxwell-tsallis-finite-exact-conjugacy-theorem :
+  ∀ {n : Nat} {State : Set} →
+  ConnectedMaxwellTsallisFiniteExactConjugacyTheorem n State →
+  ∀ x →
+  encode (semantics _) (step (semantics _) x)
+  ≡
+  encodedStep (semantics _) (encode (semantics _) x)
+connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
+  exactMaxwellConjugacy C
+
+
+------------------------------------------------------------------------
+-- F4-Watkins is the sole custom optimizer boundary.
+--
+-- Regret is a genuine finite-horizon/time-indexed cumulative quantity:
+-- R 0 = 0 and R (H + 1) = R H + r H.  The theorem then bounds R H
+-- pointwise for every finite horizon H.  No standalone Lion/KKT/FW theorem
+-- is retained.
+------------------------------------------------------------------------
+
+record F4FrankWolfeRoundingBiasRegretData : Set₁ where
+  constructor f4FrankWolfeRoundingBiasRegretData
+  field
+    perRoundRegret : Nat → Nat
+    cumulativeRegret : Nat → Nat
+    jensenGap : Nat → Nat
+    roundingBias : Nat → Nat
+    frankWolfeResidual : Nat → Nat
+    markovMixing : Nat → Nat
+
+    cumulativeZero :
+      cumulativeRegret zero ≡ zero
+
+    cumulativeStep :
+      ∀ H →
+      cumulativeRegret (suc H)
+      ≡
+      cumulativeRegret H + perRoundRegret H
+
+    regretBoundAt :
+      ∀ H →
+      cumulativeRegret H
+      ≤
+      jensenGap H
+      + roundingBias H
+      + frankWolfeResidual H
+      + markovMixing H
+
+open F4FrankWolfeRoundingBiasRegretData public
+
+f4-frank-wolfe-horizon-regret-bound :
+  (D : F4FrankWolfeRoundingBiasRegretData) →
+  ∀ H →
+  cumulativeRegret D H
+  ≤
+  jensenGap D H
+  + roundingBias D H
+  + frankWolfeResidual D H
+  + markovMixing D H
+f4-frank-wolfe-horizon-regret-bound D H =
+  regretBoundAt D H
+
+record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
+  constructor connectedF4FrankWolfeRoundingBiasRegretTheorem
+  field
+    f4Composition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+    certificate :
+      F4FrankWolfeRoundingBiasRegretData
+    connectedBound :
+      ∀ H →
+      cumulativeRegret certificate H
+      ≤
+      jensenGap certificate H
+      + roundingBias certificate H
+      + frankWolfeResidual certificate H
+      + markovMixing certificate H
+
+open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
+
+connected-f4-frank-wolfe-horizon-regret-theorem :
+  (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
+  ∀ H →
+  cumulativeRegret (certificate C) H
+  ≤
+  jensenGap (certificate C) H
+  + roundingBias (certificate C) H
+  + frankWolfeResidual (certificate C) H
+  + markovMixing (certificate C) H
+connected-f4-frank-wolfe-horizon-regret-theorem C H =
+  connectedBound C H
+
+
+------------------------------------------------------------------------
+-- Promotion boundary:
+-- the Jensen/minimax regret surface is not a standalone optimizer theorem.
+-- It is graph-complete only through the recurrent scan and the stationary
+-- Markov fixed-point/Walrasian interface. A concrete Jensen inequality,
+-- rounding model, and stationary-law witness remain required before this
+-- becomes a proved numeric regret theorem.
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Exact finite continuous differential Hodge-Maxwell representation.
+--
+-- The Maxwell source semantics are the differential-form equations
+--   d F = 0
+--   d (star F) = j
+-- used by nLab.  This theorem does not discretize or approximate those
+-- equations: Form2, Form3, d, star, current, and the solution predicate
+-- are exact semantic objects supplied by the certificate.
+--
+-- "Finite continuous" means a finite exact family of continuous
+-- differential-form solutions.  The finite index is an exact encoding of
+-- that family, not an approximation of the underlying PDE.
+------------------------------------------------------------------------
+
+record FiniteContinuousHodgeMaxwellExactRepresentationData
+  (n : Nat) : Set₁ where
+  constructor finiteContinuousHodgeMaxwellExactRepresentationData
+  field
+    Form2 : Set
+    FormStar : Set
+    Form3 : Set
+    d : Form2 → Form3
+    star : Form2 → FormStar
+    dStar : FormStar → Form3
+    zero3 : Form3
+    Solution : Set
+    fieldF : Solution → Form2
+    fieldJ : Solution → Form3
+    maxwellEquation :
+      ∀ s →
+      d (fieldF s) ≡ zero3 ×
+      dStar (star (fieldF s)) ≡ fieldJ s
+    step : Solution → Solution
+    encodedStep : Fin n → Fin n
+    encode : Solution → Fin n
+    decode : Fin n → Solution
+    decodeEncode : ∀ s → decode (encode s) ≡ s
+    encodeDecode : ∀ i → encode (decode i) ≡ i
+    maxwellClosed :
+      ∀ s →
+      maxwellEquation (step s)
+    conjugacy :
+      ∀ s →
+      encode (step s) ≡ encodedStep (encode s)
+
+open FiniteContinuousHodgeMaxwellExactRepresentationData public
+
+finiteContinuousHodgeMaxwell-state-isomorphism :
+  ∀ {n : Nat}
+  (D : FiniteContinuousHodgeMaxwellExactRepresentationData n) →
+  StateIsomorphism (Fin n) (Solution D)
+finiteContinuousHodgeMaxwell-state-isomorphism D =
+  stateIsomorphism
+    (decode D)
+    (encode D)
+    (decodeEncode D)
+    (encodeDecode D)
+
+record ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+  (n : Nat) : Set₁ where
+  constructor connectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+  field
+    semantics :
+      FiniteContinuousHodgeMaxwellExactRepresentationData n
+    representation :
+      FiniteRecurrentFunctionExactTranslationTheorem
+        n
+        (Solution semantics)
+        (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+        (encodedStep semantics)
+        (step semantics)
+    exactMaxwellPDERepresentation :
+      ∀ s →
+      StateIsomorphism.to
+        (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+        (encodedStep semantics
+          (StateIsomorphism.to
+            (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+            s))
+      ≡
+      step semantics
+        (StateIsomorphism.to
+          (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+          s)
+    exactFieldEquations :
+      ∀ s →
+      maxwellEquation semantics
+        (StateIsomorphism.to
+          (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+          s)
+
+connected-finite-continuous-hodge-maxwell-gru-representation-theorem :
+  ∀ {n : Nat}
+  (D : FiniteContinuousHodgeMaxwellExactRepresentationData n) →
+  ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+connected-finite-continuous-hodge-maxwell-gru-representation-theorem D =
+  connectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+    D
+    (finiteRecurrentFunctionExactTranslation
+      (finiteContinuousHodgeMaxwell-state-isomorphism D)
+      (encodedStep D)
+      (step D)
+      (conjugacy D))
+    (λ s → conjugacy D s)
+    (λ s → maxwellEquation D s)
+
+------------------------------------------------------------------------
+-- Exact finite discretization layer.
+--
+-- A finite discretization is exact here only when the discrete operators
+-- commute with the declared continuous differential-form semantics on the
+-- finite solution family, zero/current transport is exact, and the encoded
+-- 3-form carrier is injective.  This is a theorem about a specified finite
+-- discretization certificate, not an assertion that the full infinite
+-- dimensional Maxwell solution space is finite.
+------------------------------------------------------------------------
+
+record FiniteHodgeMaxwellDiscretizationData
+  (n p q r : Nat) : Set₁ where
+  constructor finiteHodgeMaxwellDiscretizationData
+  field
+    continuous :
+      FiniteContinuousHodgeMaxwellExactRepresentationData n
+
+    discreteD : Fin p → Fin r
+    discreteStar : Fin p → Fin q
+    discreteDStar : Fin q → Fin r
+    discreteZero3 : Fin r
+    discreteCurrent :
+      Solution continuous → Fin r
+
+    encodeF :
+      Form2 continuous → Fin p
+    encodeStar :
+      FormStar continuous → Fin q
+    encode3 :
+      Form3 continuous → Fin r
+
+    encodeZero3 :
+      encode3 (zero3 continuous)
+      ≡
+      discreteZero3
+
+    encodeCurrent :
+      ∀ s →
+      encode3 (fieldJ continuous s)
+      ≡
+      discreteCurrent s
+
+    commuteD :
+      ∀ s →
+      encode3 (d continuous (fieldF continuous s))
+      ≡
+      discreteD (encodeF (fieldF continuous s))
+
+    commuteStar :
+      ∀ s →
+      encodeStar (star continuous (fieldF continuous s))
+      ≡
+      discreteStar (encodeF (fieldF continuous s))
+
+    commuteDStar :
+      ∀ s →
+      encode3
+        (dStar continuous
+          (star continuous (fieldF continuous s)))
+      ≡
+      discreteDStar
+        (encodeStar (star continuous (fieldF continuous s)))
+
+    encode3Injective :
+      ∀ x y →
+      encode3 x ≡ encode3 y →
+      x ≡ y
+
+open FiniteHodgeMaxwellDiscretizationData public
+
+finiteDiscreteMaxwellEquation :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  Solution (continuous D) →
+  Set
+finiteDiscreteMaxwellEquation D s =
+  discreteD D (encodeF D (fieldF (continuous D) s))
+  ≡
+  discreteZero3 D
+  ×
+  discreteDStar D
+    (discreteStar D
+      (encodeF D (fieldF (continuous D) s)))
+  ≡
+  discreteCurrent D s
+
+finite-hodge-maxwell-discretization-preserves :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  ∀ s →
+  finiteDiscreteMaxwellEquation D s
+finite-hodge-maxwell-discretization-preserves D s =
+  (
+    trans
+      (sym (commuteD D s))
+      (trans
+        (cong (encode3 D)
+          (proj₁ (maxwellEquation (continuous D) s)))
+        (encodeZero3 D)),
+    trans
+      (sym
+        (cong (discreteDStar D)
+          (commuteStar D s)))
+      (trans
+        (sym (commuteDStar D s))
+        (trans
+          (cong (encode3 D)
+            (proj₂ (maxwellEquation (continuous D) s)))
+          (encodeCurrent D s)))
+  )
+
+finite-hodge-maxwell-discretization-reflects :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  ∀ s →
+  finiteDiscreteMaxwellEquation D s →
+  maxwellEquation (continuous D) s
+finite-hodge-maxwell-discretization-reflects D s discreteEq =
+  (
+    encode3Injective D _ _
+      (trans
+        (commuteD D s)
+        (trans
+          (proj₁ discreteEq)
+          (sym (encodeZero3 D)))),
+    encode3Injective D _ _
+      (trans
+        (commuteDStar D s)
+        (trans
+          (cong (discreteDStar D)
+            (commuteStar D s))
+          (trans
+            (proj₂ discreteEq)
+            (sym (encodeCurrent D s)))))
+  )
+
+record FiniteHodgeMaxwellExactDiscretizationTheorem
+  (n p q r : Nat) : Set₁ where
+  constructor finiteHodgeMaxwellExactDiscretizationTheorem
+  field
+    certificateData :
+      FiniteHodgeMaxwellDiscretizationData n p q r
+    preserves :
+      ∀ s →
+      finiteDiscreteMaxwellEquation certificateData s
+    reflects :
+      ∀ s →
+      finiteDiscreteMaxwellEquation certificateData s →
+      maxwellEquation (continuous certificateData) s
+
+open FiniteHodgeMaxwellExactDiscretizationTheorem public
+
+finite-hodge-maxwell-exact-discretization-theorem :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  FiniteHodgeMaxwellExactDiscretizationTheorem n p q r
+finite-hodge-maxwell-exact-discretization-theorem D =
+  finiteHodgeMaxwellExactDiscretizationTheorem
+    D
+    (λ s → finite-hodge-maxwell-discretization-preserves D s)
+    (λ s eq → finite-hodge-maxwell-discretization-reflects D s eq)
+
+------------------------------------------------------------------------
+-- Novel pre-graphed algebraic frontier:
+-- exact finite Hodge-star involution is useful when a future model supplies
+-- a same-degree finite star operator.  It is a candidate surface only; the
+-- discretization theorem above does not assume involutivity.
+------------------------------------------------------------------------
+
+record FiniteDiscreteHodgeMaxwellStarInvolutionCandidate
+  (p : Nat) : Set₁ where
+  constructor finiteDiscreteHodgeMaxwellStarInvolutionCandidate
+  field
+    star :
+      Fin p → Fin p
+    involutive :
+      ∀ i → star (star i) ≡ i
+
+------------------------------------------------------------------------
+-- Fully connected consumer of both exact layers.
+-- The shared-semantics equality prevents a synthetic edge between unrelated
+-- finite PDE certificates and a GRU representation.
+------------------------------------------------------------------------
+
+record ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+  (n p q r : Nat) : Set₁ where
+  constructor connectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+  field
+    discretization :
+      FiniteHodgeMaxwellExactDiscretizationTheorem n p q r
+    representation :
+      ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+    sharedSemantics :
+      semantics representation
+      ≡
+      continuous (certificateData discretization)
+    exactContinuousFieldEquations :
+      ∀ i →
+      maxwellEquation (semantics representation)
+        (to
+          (finiteContinuousHodgeMaxwell-state-isomorphism
+            (semantics representation))
+          i)
+    exactDiscreteFieldEquations :
+      ∀ i →
+      finiteDiscreteMaxwellEquation
+        (certificateData discretization)
+        (subst
+          (λ S →
+            Solution S)
+          (sharedSemantics)
+          (to
+            (finiteContinuousHodgeMaxwell-state-isomorphism
+              (semantics representation))
+            i))
+
+open ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem public
+
+connected-finite-discrete-hodge-maxwell-gru-representation-theorem :
+  ∀ {n p q r : Nat}
+  (D :
+    FiniteHodgeMaxwellExactDiscretizationTheorem n p q r)
+  (R :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (shared :
+    semantics R ≡ continuous (certificateData D)) →
+  ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+    n
+    p
+    q
+    r
+connected-finite-discrete-hodge-maxwell-gru-representation-theorem
+  D R shared =
+  connectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+    D
+    R
+    shared
+    (λ i →
+      exactFieldEquations R
+        (to
+          (finiteContinuousHodgeMaxwell-state-isomorphism
+            (semantics R))
+          i))
+    (λ i →
+      preserves D
+        (subst
+          (λ S → Solution S)
+          shared
+          (to
+            (finiteContinuousHodgeMaxwell-state-isomorphism
+              (semantics R))
+            i)))
+
+------------------------------------------------------------------------
+-- Hodge-Maxwell middle-degree involution transport.
+--
+-- This is the exact graph play suggested by the existing surfaces:
+-- continuous left-invertibility gives observation injectivity, the exact
+-- state isomorphism transports the Hodge action into the GRU carrier,
+-- topology is carried by the explicit continuity witness, and
+-- DenseNeighborhoodSeparation is retained as the orbit-separation witness.
+--
+-- The decisive premise is an observed-square law induced by an exact GRU
+-- involution.  Topology alone does not manufacture star-square = identity.
+------------------------------------------------------------------------
+
+record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+  (State Feature GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (embed : Nat → State)
+  (star : State → State)
+  (starGRU : GRU → GRU)
+  (observeGRU : GRU → Feature)
+  (iso : StateIsomorphism State GRU) : Set₁ where
+  constructor hodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+  field
+    observation :
+      ContinuousLeftInverseTheorem
+        State
+        Feature
+        observe
+        inverse
+        Continuous
+
+    neighborhoodSeparation :
+      DenseNeighborhoodSeparationTheorem
+        State
+        Feature
+        embed
+        observe
+
+    observeFactorization :
+      ∀ s →
+      observe s ≡
+      observeGRU (to iso s)
+
+    starConjugacy :
+      ∀ s →
+      to iso (star s) ≡
+      starGRU (to iso s)
+
+    gruInvolution :
+      ∀ g →
+      starGRU (starGRU g) ≡ g
+
+open HodgeMaxwellMiddleDegreeInvolutionTransportTheorem public
+
+hodgeMaxwell-middle-degree-involution :
+  ∀ {State Feature GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {embed : Nat → State}
+  {star : State → State}
+  {starGRU : GRU → GRU}
+  {observeGRU : GRU → Feature}
+  {iso : StateIsomorphism State GRU}
+  (witness :
+    HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+      State
+      Feature
+      GRU
+      observe
+      inverse
+      embed
+      star
+      starGRU
+      observeGRU
+      iso) →
+  ∀ s →
+  star (star s) ≡ s
+hodgeMaxwell-middle-degree-involution witness s =
+  continuousLeftInverse-injective
+    (observation witness)
+    (trans
+      (observeFactorization witness (star (star s)))
+      (trans
+        (cong observeGRU
+          (starConjugacy witness (star s)))
+        (trans
+          (cong observeGRU
+            (cong starGRU (starConjugacy witness s)))
+          (trans
+            (cong observeGRU
+              (gruInvolution witness (to iso s)))
+            (sym (observeFactorization witness s))))
+
+------------------------------------------------------------------------
+-- Tsallis divergence is graphically relevant only as a finite algebraic
+-- transport layer.  It does not alter the Maxwell differential equations.
+-- The composition below is exact when both existing theorem surfaces share
+-- the same finite Maxwell state carrier.
+------------------------------------------------------------------------
+
+record ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+  (n : Nat) : Set₁ where
+  constructor connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+  field
+    hodgeMaxwell :
+      ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+
+    tsallis :
+      ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+        n
+        (Solution (semantics hodgeMaxwell))
+
+open ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem public
+
+connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem :
+  ∀ {n : Nat}
+  (H :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (T :
+    ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+      n
+      (Solution (semantics H))) →
+  ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
+connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem H T =
+  connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem H T
+
+------------------------------------------------------------------------
+-- Novel finite hard-sign-style idempotent transport.
+--
+-- A hard-sign projection is an idempotent map. On the exact finite
+-- Hodge-Maxwell/Tsallis carrier, an explicitly supplied conjugacy to a
+-- finite GRU-side projection transports that idempotence back to the
+-- solution semantics. This is the exact algebraic bridge; it does not
+-- infer convexity, differentiability, or a q-log derivative.
+------------------------------------------------------------------------
+
+record FiniteIdempotentConjugacyTransportTheorem
+  (A B : Set)
+  (projectA : A → A)
+  (projectB : B → B)
+  (iso : StateIsomorphism A B) : Set₁ where
+  constructor finiteIdempotentConjugacyTransportTheorem
+  field
+    conjugacy :
+      ∀ a →
+      to iso (projectA a) ≡
+      projectB (to iso a)
+    sourceIdempotent :
+      ∀ a →
+      projectA (projectA a) ≡
+      projectA a
+
+finiteIdempotentConjugacyTransport :
+  ∀ {A B : Set}
+  {projectA : A → A}
+  {projectB : B → B}
+  {iso : StateIsomorphism A B} →
+  FiniteIdempotentConjugacyTransportTheorem
+    A
+    B
+    projectA
+    projectB
+    iso →
+  ∀ a →
+  projectB (projectB (to iso a)) ≡
+  projectB (to iso a)
+finiteIdempotentConjugacyTransport witness a =
+  trans
+    (sym (cong projectB (conjugacy witness a)))
+    (trans
+      (sym (conjugacy witness (projectA a)))
+      (trans
+        (cong (to iso) (sourceIdempotent witness a))
+        (conjugacy witness a)))
+
+record ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+  (n : Nat)
+  (H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (project : Solution (semantics H) → Solution (semantics H))
+  (projectFin : Fin n → Fin n) : Set₁ where
+  constructor connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+  field
+    composition :
+      ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
+    transport :
+      FiniteIdempotentConjugacyTransportTheorem
+        (Solution (semantics H))
+        (Fin n)
+        project
+        projectFin
+        (finiteContinuousHodgeMaxwell-state-isomorphism
+          (semantics H))
+    idempotent :
+      ∀ s → project (project s) ≡ project s
+
+connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport :
+  ∀ {n : Nat}
+  {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n}
+  {project : Solution (semantics H) → Solution (semantics H)}
+  {projectFin : Fin n → Fin n} →
+  ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n →
+  FiniteIdempotentConjugacyTransportTheorem
+    (Solution (semantics H))
+    (Fin n)
+    project
+    projectFin
+    (finiteContinuousHodgeMaxwell-state-isomorphism
+      (semantics H)) →
+  ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+    n
+    H
+    project
+    projectFin
+connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport
+  composition
+  transport =
+  connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+    composition
+    transport
+    (finiteIdempotentConjugacyTransport transport)
+
+------------------------------------------------------------------------
+-- Novel fully connected Hodge-Maxwell/Tsallis/Walrasian projection bridge.
+--
+-- This is a proof-relevant compatibility contract, not a synthetic edge:
+-- it consumes the existing finite Hodge-Maxwell/Tsallis idempotent surface
+-- and the existing generalized Walrasian existence surface.  The bridge
+-- explicitly identifies Walrasian equilibrium witnesses with fixed points
+-- of the supplied solution-side projection.  No convexity, differentiability,
+-- q-log derivative, or regular-economy existence theorem is inferred here.
+------------------------------------------------------------------------
+
+record ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+  (n : Nat)
+  (H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (project : Solution (semantics H) → Solution (semantics H))
+  (projectFin : Fin n → Fin n)
+  (State Price Allocation : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous)
+  (decode : Solution (semantics H) → Allocation) : Set₁ where
+  constructor connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+  field
+    hodgeTsallisProjection :
+      ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+        n
+        H
+        project
+        projectFin
+    walrasianExistence :
+      ConnectedGeneralizedWalrasianExistenceTheorem
+        State
+        Price
+        Allocation
+        D
+    equilibriumToFixedPoint :
+      ∀ {p : Price} {allocation : Allocation} →
+      GeneralizedWalrasianEquilibrium D p allocation →
+      Σ
+        (λ s →
+          project s ≡ s ×
+          decode s ≡ allocation)
+    fixedPointToEquilibrium :
+      ∀ {p : Price} (s : Solution (semantics H)) →
+      project s ≡ s →
+      GeneralizedWalrasianEquilibrium D p (decode s)
+
+open ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem public
+
+------------------------------------------------------------------------
+-- The fixed-point/equilibrium bridge is deliberately conditional.  Given
+-- static Walrasian existence already packaged by the connected theorem,
+-- the bridge supplies a finite Hodge-Maxwell/Tsallis projection fixed point
+-- for every price.  The reverse direction is carried by the explicit
+-- fixedPointToEquilibrium field above.
+------------------------------------------------------------------------
+
+connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosure-fixedPoint-existence :
+  ∀ {n : Nat}
+  {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n}
+  {project : Solution (semantics H) → Solution (semantics H)}
+  {projectFin : Fin n → Fin n}
+  {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous}
+  {decode : Solution (semantics H) → Allocation} →
+  ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+    n
+    H
+    project
+    projectFin
+    State
+    Price
+    Allocation
+    D
+    decode →
+  ∀ p →
+  Σ (λ s → project s ≡ s)
+connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosure-fixedPoint-existence
+  theorem
+  p =
+  let
+    walrasian =
+      connected-generalized-walrasian-equilibrium-existence
+        D
+        (ConnectedGeneralizedWalrasianExistenceTheorem.staticExistence
+          (walrasianExistence theorem))
+        p
+    witness =
+      equilibriumToFixedPoint theorem (proj₂ walrasian)
+  in
+  proj₁ witness , proj₁ (proj₂ witness)
+
+
+------------------------------------------------------------------------
+-- Infinite-family finite-carrier impossibility for continuous Maxwell.
+--
+-- This is the exact pigeonhole boundary available from the current
+-- representation surface. It does not identify "infinite-dimensional"
+-- with an arbitrary mathematical property: the caller supplies an explicit
+-- injectively indexed Nat-family of continuous Maxwell solutions.
+--
+-- The proof uses the existing finite exact GRU representation, a continuous
+-- left-invertible observation, and the already-connected neighborhood
+-- separation surface. Exact state isomorphism supplies the finite carrier;
+-- the finite encoder then cannot injectively encode the explicit infinite
+-- solution family.
+------------------------------------------------------------------------
+
+record ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+  (n : Nat)
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics (representation)) → Feature)
+  (inverse : Feature → Solution (semantics (representation)))
+  (embed :
+    Nat → Solution (semantics (representation))) : Set₁ where
+  constructor
+    connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+  field
+    observation :
+      ContinuousLeftInverseTheorem
+        (Solution (semantics (representation)))
+        Feature
+        observe
+        inverse
+        Continuous
+
+    neighborhoodSeparation :
+      DenseNeighborhoodSeparationTheorem
+        (Solution (semantics (representation)))
+        Feature
+        embed
+        observe
+
+    infiniteFamilyInjective :
+      ∀ {m n₁} →
+      embed m ≡ embed n₁ →
+      m ≡ n₁
+
+    noFiniteExactCarrier :
+      ⊥
+
+open ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem public
+
+connectedContinuousMaxwellFiniteCarrierFamilyInjective :
+  ∀ {n : Nat}
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics (representation)) → Feature)
+  (inverse : Feature → Solution (semantics (representation)))
+  (embed :
+    Nat → Solution (semantics (representation)))
+  (observationWitness :
+    ContinuousLeftInverseTheorem
+      (Solution (semantics (representation)))
+      Feature
+      observe
+      inverse
+      Continuous)
+  (separation :
+    DenseNeighborhoodSeparationTheorem
+      (Solution (semantics (representation)))
+      Feature
+      embed
+      observe) →
+  ∀ {m n₁} →
+  embed m ≡ embed n₁ →
+  m ≡ n₁
+connectedContinuousMaxwellFiniteCarrierFamilyInjective
+  representation
+  observe
+  inverse
+  embed
+  observationWitness
+  separation
+  eq =
+  denseNeighborhoodSeparation separation
+    (trans
+      (cong observe eq)
+      (refl))
+
+connectedContinuousMaxwellFiniteCarrierPigeonhole :
+  ∀ {n : Nat}
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics (representation)) → Feature)
+  (inverse : Feature → Solution (semantics (representation)))
+  (embed :
+    Nat → Solution (semantics (representation)))
+  (observationWitness :
+    ContinuousLeftInverseTheorem
+      (Solution (semantics (representation)))
+      Feature
+      observe
+      inverse
+      Continuous)
+  (separation :
+    DenseNeighborhoodSeparationTheorem
+      (Solution (semantics (representation)))
+      Feature
+      embed
+      observe) →
+  ⊥
+connectedContinuousMaxwellFiniteCarrierPigeonhole
+  representation
+  observe
+  inverse
+  embed
+  observationWitness
+  separation =
+  let
+    finiteEncode :
+      Solution (semantics representation) → Fin n =
+      encode (semantics representation)
+    finiteFamily :
+      Nat → Fin n =
+      λ k → finiteEncode (embed k)
+    familyInjective :
+      ∀ {m n₁} →
+      finiteFamily m ≡ finiteFamily n₁ →
+      m ≡ n₁
+    familyInjective eq =
+      denseNeighborhoodSeparation separation
+        (trans
+          (cong observe
+            (trans
+              (sym
+                (decodeEncode
+                  (semantics representation)
+                  (embed m)))
+              (trans
+                (cong
+                  (decode (semantics representation))
+                  eq)
+                (decodeEncode
+                  (semantics representation)
+                  (embed n₁)))))
+          (refl))
+  in
+  ℕ→Fin-notInjective finiteFamily familyInjective
+
+connected-continuous-maxwell-finite-carrier-pigeonhole-theorem :
+  ∀ {n : Nat}
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics representation) → Feature)
+  (inverse : Feature → Solution (semantics representation))
+  (embed :
+    Nat → Solution (semantics representation))
+  (observationWitness :
+    ContinuousLeftInverseTheorem
+      (Solution (semantics representation))
+      Feature
+      observe
+      inverse
+      Continuous)
+  (separation :
+    DenseNeighborhoodSeparationTheorem
+      (Solution (semantics representation))
+      Feature
+      embed
+      observe) →
+  ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+    n
+connected-continuous-maxwell-finite-carrier-pigeonhole-theorem
+  representation
+  observe
+  inverse
+  embed
+  observationWitness
+  separation =
+  connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+    observationWitness
+    separation
+    (connectedContinuousMaxwellFiniteCarrierFamilyInjective
+      representation
+      observe
+      inverse
+      embed
+      observationWitness
+      separation)
+    (connectedContinuousMaxwellFiniteCarrierPigeonhole
+      representation
+      observe
+      inverse
+      embed
+      observationWitness
+      separation)
+
+------------------------------------------------------------------------
+-- Local generalized Walrasian existence closure.
+--
+-- Once static Walrasian existence is supplied for every price, the existing
+-- invariant aggregate and static-to-generalized lift produce a generalized
+-- equilibrium for every price. No external regular-economy adapter is hidden
+-- in this theorem; that cross-language step remains an explicit frontier.
+------------------------------------------------------------------------
+
+record ConnectedGeneralizedWalrasianExistenceTheorem
+  (State Price Allocation : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous) : Set₁ where
+  constructor connectedGeneralizedWalrasianExistenceTheorem
+  field
+    markovStationaryComposition :
+      MarkovStationaryWalrasianCompositionTheorem
+    staticExistence :
+      ∀ p →
+      Σ
+        (λ allocation →
+          staticWalrasian D p allocation)
+
+open ConnectedGeneralizedWalrasianExistenceTheorem public
+
+connected-generalized-walrasian-equilibrium-existence :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous)
+  (staticExistence :
+    ∀ p →
+    Σ
+      (λ allocation →
+        staticWalrasian D p allocation)) →
+  ∀ p →
+  Σ
+    (λ allocation →
+      GeneralizedWalrasianEquilibrium D p allocation)
+connected-generalized-walrasian-equilibrium-existence
+  D
+  staticExistence
+  p =
+  let
+    witness = staticExistence p
+  in
+  proj₁ witness ,
+  generalizedWalrasianEquilibrium-from-static
+    D
+    p
+    (proj₁ witness)
+    (proj₂ witness)
+
+connected-generalized-walrasian-existence-theorem :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous)
+  (staticExistence :
+    ∀ p →
+    Σ
+      (λ allocation →
+        staticWalrasian D p allocation)) →
+  ConnectedGeneralizedWalrasianExistenceTheorem
+    State
+    Price
+    Allocation
+    D
+connected-generalized-walrasian-existence-theorem
+  D
+  staticExistence =
+  connectedGeneralizedWalrasianExistenceTheorem
+    markov-stationary-walrasian-composition-theorem
+    staticExistence
+
+------------------------------------------------------------------------
+-- Horizon monotonicity is not part of the F4 regret theorem by itself.
+-- The cumulative recurrence proves exact accumulation only.  Monotonicity
+-- requires a nonnegative per-round regret certificate.
+------------------------------------------------------------------------
+
+f4-add-right-nonnegative :
+  ∀ (n m : Nat) → n ≤ n + m
+f4-add-right-nonnegative n zero = ≤-refl
+f4-add-right-nonnegative n (suc m) =
+  s≤s (f4-add-right-nonnegative n m)
+
+f4-cumulative-regret-monotone :
+  ∀ (D : F4FrankWolfeRoundingBiasRegretData)
+  (nonnegative : ∀ H → zero ≤ perRoundRegret D H) →
+  ∀ H →
+  cumulativeRegret D H ≤ cumulativeRegret D (suc H)
+f4-cumulative-regret-monotone D nonnegative H =
+  subst
+    (λ q → cumulativeRegret D H ≤ q)
+    (sym (cumulativeStep D H))
+    (f4-add-right-nonnegative
+      (cumulativeRegret D H)
+      (perRoundRegret D H))record CanonicalBoundedFactorLiftTheorem : Set₁ where
   constructor canonicalBoundedFactorLiftTheorem
   field
-    bounded :
-      ∀ {A} (K : C.FullLearnerKernel A)
-        (s : C.FullLearnerState A) (n : Nat) →
-      toℕ (C.code
-        (C.thetaQ
-          (C.optimizer
-            (C.iterateCanonical K n s)))) < 256
-    factorNotInjective :
-      ∀ {A} (K : C.FullLearnerKernel A)
-        (s : C.FullLearnerState A) →
-      ¬ (∀ {m n : Nat} →
-          C.code
-            (C.thetaQ
-              (C.optimizer
-                (C.iterateCanonical K m s)))
-          ≡
-          C.code
-            (C.thetaQ
-              (C.optimizer
-                (C.iterateCanonical K n s))) →
-          m ≡ n)
-    collisionSeparatesFullState :
-      ∀ {A} (K : C.FullLearnerKernel A)
-        (s : C.FullLearnerState A) →
+    finiteObservation :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A)
+        (observe : C.Int8 → Fin 256) →
       ∃ m n →
         m ≢ n ×
-        C.code
-          (C.thetaQ
-            (C.optimizer
-              (C.iterateCanonical K m s)))
-        ≡
-        C.code
-          (C.thetaQ
-            (C.optimizer
-              (C.iterateCanonical K n s))) ×
-        C.iterateCanonical K m s ≢
-        C.iterateCanonical K n s
+        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
+        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s))))
+    factorNotInjective :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A)
+        (observe : C.Int8 → Fin 256) →
+      ¬ (∀ {m n : Nat} →
+          observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
+          observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) →
+          m ≡ n)
+    collisionSeparatesFullState :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A)
+        (observe : C.Int8 → Fin 256) →
+      ∃ m n →
+        m ≢ n ×
+        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
+        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) ×
+        C.iterateCanonical K m s ≢ C.iterateCanonical K n s
 
 open CanonicalBoundedFactorLiftTheorem public
 
@@ -5143,9 +7691,9 @@ canonical-bounded-factor-lift-theorem :
   CanonicalBoundedFactorLiftTheorem
 canonical-bounded-factor-lift-theorem =
   canonicalBoundedFactorLiftTheorem
-    canonicalF4ThetaQ-bounded
-    canonicalF4ThetaQ-not-orbit-injective
-    canonicalF4-factor-collision-separates-full-state
+    canonicalF4FiniteObservationRecurrence
+    canonicalF4FiniteObservationNotOrbitInjective
+    canonicalF4FiniteObservationCollisionSeparatesFullState
 
 
 ------------------------------------------------------------------------
