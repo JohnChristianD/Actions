@@ -248,3 +248,33 @@ by the existing invariant aggregate and `generalizedWalrasianEquilibrium-from-st
 The new declarations raise the Agda record count from 115 to 117 and the required graph plan count from 105 to 107.
 
 Verification state: the latest PR head has a GitHub Actions run `35807726298` in `pending` state, with no job result exposed yet. No workflow success is claimed until an observed completion exists.
+
+## 2026-09-23 final continuation: runtime and analytic-limit clarification
+
+Dhall remains the correct current orchestration language, but its totality does not imply that Tcl or Lua are mathematically or operationally redundant for every possible future tool. The official Dhall documentation states that type-correct expressions evaluate in finite time and documents rendering Dhall into external formats such as Bash; this repository in fact uses dhall text to generate shell text. https://docs.dhall-lang.org/discussions/Safety-guarantees.html https://docs.dhall-lang.org/howtos/How-to-integrate-Dhall.html
+
+Therefore the repository rule is now explicit: **no Tcl/Lua dependency unless a concrete future executable or library has an observed runtime dependency on it**. Total Dhall can replace configuration-generation work that fits its language, but it cannot prove that an arbitrary future Tcl/Lua consumer has no runtime semantics that must be preserved.
+
+The proposed analytic inference also needs a hard separation. A finite limit is the basis of a derivative only after a differentiability structure, a function, and a difference-quotient limit have been specified. Topology by itself supplies convergence language; it does not manufacture derivatives. Convexity is likewise an additional property of a function/domain and is not implied merely by finite limits or topology. In particular, a HardSign map is discontinuous at its switching boundary, so an ordinary derivative there cannot be inferred from a total configuration language or from topology. A Tsallis/q-log convexity or derivative theorem similarly requires an explicit q-log operation, domain restrictions, and exact derivative/convexity laws. These are now pre-graphed as candidate-only nodes rather than promoted proofs.
+
+The Hodge-Maxwell connection is still exact at the differential-form level: nLab gives dF = 0 and d star F = j, and the Hodge-Maxwell theorem gives a closed representative satisfying the sourced equation under its compact oriented Riemannian hypotheses. The Hodge star itself changes degree from k to n-k, so a raw same-degree involution needs the appropriate middle-degree/signature assumptions rather than topology alone. https://ncatlab.org/nlab/show/Maxwell%27s%2Bequations https://ncatlab.org/nlab/show/Hodge-Maxwell%2Btheorem https://en.wikipedia.org/wiki/Hodge_star_operator
+
+### CI repairs observed after the graph continuation
+
+The first observed post-continuation CI run failed for two concrete syntax/infrastructure reasons, not because of a newly disproved theorem:
+
+1. Agda rejected the field declaration data : ... in FiniteHodgeMaxwellExactDiscretizationTheorem; data is a language keyword. The field was renamed to certificateData, with the two dependent references updated.
+2. The Mercury discovery job reported an undefined graph_search_completion/3 while compiling theorem_monolith_egraph_sync.m. The branch's current theorem_graph_search.m contains the completion predicate again; this is a graph-infrastructure repair, not a theorem change.
+
+No CI success is claimed until a fresh run on the repaired head completes successfully.
+
+### Current candidate boundary
+
+The new pre-graphed candidates are deliberately not in the strict required-theorem plan:
+
+- FiniteHardSignSubgradientBoundaryCandidate
+- FiniteTsallisQLogDifferentiabilityConvexityCandidate
+- HodgeMaxwellConvexDualityBridgeCandidate
+- RegularWalrasianStaticExistenceAdapterCandidate
+
+They are candidate metadata only. Promotion requires an actual Agda declaration, real dependency edges, a connected consumer, and a machine-checked proof. The external regular-Walrasian adapter remains the only direct route from the external RegularEconomy existence result to the local generalized equilibrium theorem.
