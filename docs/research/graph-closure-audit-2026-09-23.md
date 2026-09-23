@@ -1,5 +1,28 @@
 2026-09-23 amendment: the audit state below has been superseded by a permanent retirement oi the iixed iinite-token/observation layer. The current graph keeps exact `ℤ` algebra, `iin n` only ior genuinely iinite theorem parameters, and the iinite Hodge-Maxwell/Maxwell branches that do not depend immutably on the retired carrier.
 
+2026-09-23 amendment — Maxwell/Hodge-Maxwell finite-carrier retirement
+
+The earlier finite Maxwell/Hodge-Maxwell boundary described below is superseded by the current carrier-polymorphic theorem family. The canonical Maxwell/Hodge-Maxwell surface no longer uses `Fin n` as a state carrier.
+
+Current exact surfaces:
+
+- `ContinuousHodgeMaxwellExactRepresentationData`
+- `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem`
+- `ConnectedMaxwellTsallisExactConjugacyTheorem`
+- `HodgeMaxwellMiddleDegreeInvolutionTransportTheorem`
+- `ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem`
+- `ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem`
+- `ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem`
+
+The continuous representation certificate has an arbitrary GRU carrier, exact differential-form equations, explicit continuity predicates, exact encode/decode inverse laws, an explicit global StateIsomorphism, and recurrent conjugacy. The global encode-injectivity theorem is therefore provable from the certificate.
+
+The finite Hodge-Maxwell discretization family, finite Maxwell/Tsallis carrier, finite Hodge-star involution candidate, and finite-carrier Maxwell pigeonhole theorem were pruned because their strict dependence on `Fin n` is intrinsic. Unrelated finite automata, POMDP, probability, and econlib theorem surfaces remain untouched because they are independent mathematics rather than accidental Maxwell dependencies.
+
+This is not a universal existence theorem for the continuous Maxwell PDE. The caller still has to provide the intended differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encode/decode map, and recurrent transition conjugacy. No synthetic continuous-PDE-to-GRU existence edge is added.
+
+`ℤ` remains the exact unbounded algebraic carrier for the canonical learner where integer semantics apply. It should not replace arbitrary Maxwell function-space carriers, and `Nat` remains valid for iteration and countability indexing.
+
+---
 # Graph closure audit — 2026-09-23
 
 ## Veriiied scope
