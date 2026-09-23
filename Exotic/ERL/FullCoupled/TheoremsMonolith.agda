@@ -4628,6 +4628,163 @@ record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 
 open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 ------------------------------------------------------------------------
+-- Infinite-dimensional promotion boundary for the carrier-polymorphic
+-- Hodge-Maxwell/F4/Watkins bridge.
+--
+-- Agda's Set carrier is intentionally dimension-agnostic. This promotion
+-- therefore accepts an arbitrary caller-supplied predicate describing what
+-- "infinite-dimensional" means for the chosen Maxwell solution carrier.
+-- No vector-space, module, topological-dimension, basis, or cardinal theorem
+-- is inferred by this wrapper. The connected proof itself remains exact and
+-- end-to-end: the supplied dimension witness is carried alongside the same
+-- learner/solution inverse, step conjugacy, and global injectivity.
+------------------------------------------------------------------------
+
+record ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {InfiniteDimensional : Set → Set₁} : Set₁ where
+  constructor connectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  field
+    connected :
+      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    infiniteDimensionalSolution :
+      InfiniteDimensional
+        (ContinuousHodgeMaxwellExactRepresentationData.Solution
+          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+            (hodgeMaxwell connected)))
+
+    learnerGlobalEncodeInjective :
+      ∀ {s t : C.CanonicalFullLearnerState} →
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected))
+        (learnerToSolution connected s)
+      ≡
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected))
+        (learnerToSolution connected t) →
+      s ≡ t
+
+open ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
+
+connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {InfiniteDimensional : Set → Set₁}
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU)
+  (dimension :
+    InfiniteDimensional
+      (ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected)))) →
+  ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    GRU
+connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
+  connected
+  dimension =
+  connectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    connected
+    dimension
+    (λ {s} {t} eq →
+      trans
+        (sym (learnerSolutionLeftInverse connected s))
+        (trans
+          (cong (solutionToLearner connected)
+            (ContinuousHodgeMaxwellExactRepresentationData
+              .globalEncodeInjective
+              (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+                .semantics
+                (hodgeMaxwell connected))
+              eq))
+          (learnerSolutionLeftInverse connected t)))
+
+------------------------------------------------------------------------
+-- End-to-end infinite-dimensional promotion of the exact prefix/regret
+-- endpoint. The dimension predicate remains caller-supplied; all other
+-- semantic obligations are inherited from the already-composed endpoint.
+------------------------------------------------------------------------
+
+record ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {InfiniteDimensional : Set → Set₁} : Set₁ where
+  constructor connectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  field
+    infiniteDimensional :
+      ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    exactEndpoint :
+      ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+        GRU
+
+    learnerCoordinateGlobalInjective :
+      ∀ {s t : C.CanonicalFullLearnerState} →
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell
+            (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+              .connected
+              infiniteDimensional)))
+        (learnerToSolution
+          (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+            .connected
+            infiniteDimensional)
+          s)
+      ≡
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell
+            (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+              .connected
+              infiniteDimensional)))
+        (learnerToSolution
+          (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+            .connected
+            infiniteDimensional)
+          t) →
+      s ≡ t
+
+open ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
+
+connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {InfiniteDimensional : Set → Set₁}
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU)
+  (dimension :
+    InfiniteDimensional
+      (ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected)))) →
+  ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU
+connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
+  connected
+  dimension =
+  connectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    (connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
+      connected
+      dimension)
+    (connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
+      connected)
+    (λ {s} {t} eq →
+      ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .learnerGlobalEncodeInjective
+        (connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
+          connected
+          dimension)
+        eq)
+
+------------------------------------------------------------------------
 -- Finite-dimensional coordinate specialization of the carrier-polymorphic
 -- Hodge-Maxwell representation.
 --
