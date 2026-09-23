@@ -185,16 +185,12 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, retired finite-observation layer, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
     +-- depends on: DiscreteExactUniversalUAP
     +-- depends on: CanonicalExactCompositionTuringCompletenessContract, retired finite-observation layer
-78. CanonicalGlobalInt8LeftInverseImpossibilityTheorem
 79. FiniteObservationStationaryLimitTheorem
 80. CanonicalPersistentExcitationRequirementTheorem
 81. ExactContractComputabilityBoundaryTheorem
     +-- depends on: CanonicalExactCompositionTuringCompletenessContract
-82. CanonicalFiniteObservationStationarySubcompositionTheorem
     +-- depends on: FiniteObservationStationaryLimitTheorem
-83. CanonicalClockObservationSubcompositionTheorem
-    +-- depends on: CanonicalGlobalInt8LeftInverseImpossibilityTheorem
-84. CanonicalBoundednessPEBoundarySubcompositionTheorem
+    +-- depends on: retired theorem surface
     +-- depends on: retired finite-observation layer, CanonicalPersistentExcitationRequirementTheorem
 85. FiniteProbabilityMass
 86. FiniteProbabilityMassSemanticsTheorem
