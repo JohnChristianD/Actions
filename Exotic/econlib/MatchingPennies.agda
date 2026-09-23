@@ -5,9 +5,6 @@ module Exotic.econlib.MatchingPennies where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Nat using (_≤_; z≤n; s≤s)
-open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (_×_; _,_)
 
 data Action : Set where
@@ -17,24 +14,24 @@ data Action : Set where
 record Game2 : Set₁ where
   constructor game2
   field
-    payoff : Action → Action → Fin 256 × Fin 256
+    payoff : Action → Action → Nat × Nat
 
 open Game2 public
 
 matchingPennies : Game2
 matchingPennies = game2 λ where
-  heads heads → (fromℕ< (m%n<n 1 256) , fromℕ< (m%n<n 0 256))
-  heads tails → (fromℕ< (m%n<n 0 256) , fromℕ< (m%n<n 1 256))
-  tails heads → (fromℕ< (m%n<n 0 256) , fromℕ< (m%n<n 1 256))
-  tails tails → (fromℕ< (m%n<n 1 256) , fromℕ< (m%n<n 0 256))
+  heads heads → (1 , 0)
+  heads tails → (0 , 1)
+  tails heads → (0 , 1)
+  tails tails → (1 , 0)
 
 leftScore : Action → Action → Nat
 leftScore a b with payoff matchingPennies a b
-... | x , y = toℕ x
+... | x , y = x
 
 rightScore : Action → Action → Nat
 rightScore a b with payoff matchingPennies a b
-... | x , y = toℕ y
+... | x , y = y
 
 record PureNash (a b : Action) : Set where
   constructor pureNash
