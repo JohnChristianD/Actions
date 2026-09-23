@@ -533,6 +533,8 @@ graph_required_theorems = [
     "FiniteHodgeMaxwellExactDiscretizationTheorem",
     "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
     "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+    "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
+    "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
