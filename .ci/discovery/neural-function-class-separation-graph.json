@@ -91,7 +91,7 @@
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "role": "fully connected conditional bridge from the finite Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
-    },
+    }
   ],
   "edges": [
     [
