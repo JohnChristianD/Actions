@@ -7007,6 +7007,13 @@ record ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
       semantics representation
       ≡
       continuous (data discretization)
+    exactContinuousFieldEquations :
+      ∀ i →
+      maxwellEquation (semantics representation)
+        (to
+          (finiteContinuousHodgeMaxwell-state-isomorphism
+            (semantics representation))
+          i)
     exactDiscreteFieldEquations :
       ∀ i →
       finiteDiscreteMaxwellEquation
@@ -7041,6 +7048,12 @@ connected-finite-discrete-hodge-maxwell-gru-representation-theorem
     D
     R
     shared
+    (λ i →
+      exactFieldEquations R
+        (to
+          (finiteContinuousHodgeMaxwell-state-isomorphism
+            (semantics R))
+          i))
     (λ i →
       preserves D
         (subst
