@@ -7,7 +7,7 @@ open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder)
-open import Data.Integer using (ℤ; +_; -_; -[1+_]; ∣_; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
 import Data.Integer.Properties as IntegerProperties
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_; map)
@@ -303,7 +303,8 @@ topCodes : ∀ {A} → Nat → List (ScoreEntry A) → List Nat
 topCodes zero xs = []
 topCodes (suc k) [] = []
 int8Magnitude : Int8 → Nat
-int8Magnitude x = ∣ code x ∣
+int8Magnitude (int8 (+ n)) = n
+int8Magnitude (int8 (-[1+ n ])) = suc n
 
 topCodes (suc k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
@@ -352,13 +353,13 @@ updateLCBCount a (lcbCountState counts total) =
   lcbCountState (incAt counts a) (suc total)
 
 finiteQLog8 : Int8 → FiniteRational
-finiteQLog8 x with ∣ code x ∣
+finiteQLog8 x with int8Magnitude x
 ... | zero = finiteRational 1 0 1
 ... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
 
 finiteQLog8-denominator-nonZero :
   ∀ {x} → NonZero (denominator (finiteQLog8 x))
-finiteQLog8-denominator-nonZero {x} with ∣ code x ∣
+finiteQLog8-denominator-nonZero {x} with int8Magnitude x
 ... | zero = Data.Nat.nonZero
 ... | suc n = Data.Nat.nonZero
 
@@ -371,7 +372,7 @@ negativeFiniteQLogLaw :
   finiteRational 1
     (numerator (finiteQLog8 x))
     (denominator (finiteQLog8 x))
-negativeFiniteQLogLaw x with ∣ code x ∣
+negativeFiniteQLogLaw x with int8Magnitude x
 ... | zero = refl
 ... | suc n = refl
 
