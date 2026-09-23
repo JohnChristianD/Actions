@@ -75,6 +75,14 @@
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "role": "composes the finite Hodge-Maxwell exact representation with the existing finite Tsallis/divergence exact-conjugacy surface on the identical finite solution carrier"
+    },
+    {
+      "node": "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
+      "role": "exact impossibility for any declared finite Maxwell/GRU carrier when the continuous solution semantics contain an explicit injective Nat-indexed family"
+    },
+    {
+      "node": "ConnectedGeneralizedWalrasianExistenceTheorem",
+      "role": "local exact existence closure from per-price static Walrasian existence through invariant aggregate and generalized stationary lift"
     }
   ],
   "edges": [
@@ -202,6 +210,26 @@
       "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "existing Tsallis finite exact-conjugacy theorem supplies the divergence/transition algebraic side"
+    ],
+    [
+      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
+      "the finite GRU representation supplies the exact finite carrier whose encoder cannot injectively represent an explicit infinite solution family"
+    ],
+    [
+      "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
+      "F_full_connected",
+      "continuous Maxwell finite-carrier impossibility is a connected semantic boundary, not an unconnected dimensionality slogan"
+    ],
+    [
+      "MarkovStationaryWalrasianCompositionTheorem",
+      "ConnectedGeneralizedWalrasianExistenceTheorem",
+      "existing Markov/stationary composition is consumed by the local generalized existence closure"
+    ],
+    [
+      "ConnectedGeneralizedWalrasianExistenceTheorem",
+      "F_full_connected",
+      "generalized Walrasian existence is promoted through an actual composed theorem"
     ]
   ],
   "separation_obligation": [
@@ -335,7 +363,7 @@
       "no_synthetic_edge": true
     }
   ],
-  "no_invention_policy": "Do not invent external existence adapters or raw Hodge-star square laws. Promote only actual Agda propositions and retain missing cross-language/math premises as candidate metadata.",
+  "no_invention_policy": "Promote only actual Agda propositions with real consuming fields. External regular-economy equivalence and a generic theorem that all infinite-dimensional Maxwell spaces contain a Nat-indexed family remain explicit premises/candidates rather than synthetic edges.",
   "proof_authority": "Agda --safe",
   "canonical_sources": [
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
@@ -1311,6 +1339,15 @@
       "role": "The existing Tsallis theorem supplies a finite divergence/transition transport layer over the same finite Maxwell carrier.",
       "q_log_boundary": "No explicit q-log law is currently encoded in the Maxwell theorem. A q-log-specific theorem is not admitted unless a concrete q-log operation and exact algebraic law are declared and consumed.",
       "non_effect": "Tsallis divergence transport does not change Maxwell equations dF=0 and d⋆F=j."
+    },
+    "infinite_family_impossibility": {
+      "status": "PROVED_CONDITIONAL",
+      "theorem": "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
+      "exact_premise": "an explicit injectively indexed Nat-family of continuous Maxwell solutions under the declared semantics",
+      "contradiction": "ℕ→Fin-notInjective after transporting the exact family through the finite encoder",
+      "topology_role": "DenseNeighborhoodSeparation supplies family-index separation; ContinuousLeftInverse is retained as the exact observation/reconstruction surface",
+      "representation_role": "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem supplies the exact finite state isomorphism",
+      "boundary": "This does not by itself prove that every physically relevant infinite-dimensional Maxwell function space contains the required internal family; that family must be supplied explicitly."
     }
   },
   "automation_contract": {
@@ -1440,7 +1477,14 @@
       "MarkovStationaryWalrasianCompositionTheorem"
     ],
     "external_existence": "NOT_YET_ADAPTERIZED",
-    "conclusion": "Graphing can expose the complete route, but external RegularEconomy existence cannot become a local Agda existence theorem until the cross-language adapter is an actual proof term."
+    "conclusion": "Graphing can expose the complete route, but external RegularEconomy existence cannot become a local Agda existence theorem until the cross-language adapter is an actual proof term.",
+    "local_existence": {
+      "status": "PROVED_CONDITIONAL",
+      "theorem": "ConnectedGeneralizedWalrasianExistenceTheorem",
+      "premise": "∀ p → Σ allocation . staticWalrasian D p allocation",
+      "result": "∀ p → Σ allocation . GeneralizedWalrasianEquilibrium D p allocation",
+      "proof_shape": "static existence + invariant aggregate + generalizedWalrasianEquilibrium-from-static"
+    }
   },
   "tcl_lua_status": {
     "repository_current": "Neither Tcl nor Lua is a runtime dependency of the current toolchain.",
