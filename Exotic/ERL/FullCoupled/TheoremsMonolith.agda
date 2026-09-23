@@ -3526,11 +3526,6 @@ record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
   field
     aStarGuidance :
       CanonicalAStarCostGuidanceTheorem
-    eGraphEqualityComposition :
-      ∀ {A : Set} {x y z : A} →
-      x ≡ y →
-      y ≡ z →
-      EqualityCompositionTheorem
     representationTransport :
       GeneralizedRepresentationTransportCompositionTheorem
     endogenousTraceTransport :
@@ -3720,39 +3715,6 @@ canonical-f4-normPair-sure-stability-composition-theorem =
     canonical-endogenous-e-graph-a-star-transport-closure-theorem
 
 ------------------------------------------------------------------------
--- The requested Frank-Wolfe probability/topology boundary is explicit:
--- the current exact certificate contains Nat-valued residuals and a
--- deterministic horizon inequality, but no probability measure, almost-sure
--- statement, topology, or limiting argument.  Therefore no such theorem is
--- promoted here by name alone.  A future probabilistic/topological result
--- must supply those structures as real Agda premises before graph admission.
-------------------------------------------------------------------------
-
-record FrankWolfeProbabilityTopologyBoundaryTheorem : Set₁ where
-  constructor frankWolfeProbabilityTopologyBoundaryTheorem
-  field
-    exactRoundingRegret :
-      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
-    topologicalContinuity :
-      ∀ {State Feature : Set}
-        {observe : State → Feature}
-        {inverse : Feature → State}
-        {Continuous : {A B : Set} → (A → B) → Set} →
-      ContinuousLeftInverseTheorem State Feature observe inverse Continuous →
-      Continuous observe × Continuous inverse
-
-frankWolfe-probability-topology-boundary-theorem :
-  ∀ {State Feature : Set}
-    {observe : State → Feature}
-    {inverse : Feature → State}
-    {Continuous : {A B : Set} → (A → B) → Set} →
-  (F : FrankWolfeProbabilityTopologyBoundaryTheorem) →
-  ContinuousLeftInverseTheorem State Feature observe inverse Continuous →
-  Continuous observe × Continuous inverse
-frankWolfe-probability-topology-boundary-theorem F witness =
-  topologicalContinuity F witness
-
-------------------------------------------------------------------------
 -- Markovian stationary point boundary.  The existing stationary theorem
 -- gives an exact stationary aggregate/Walrasian witness, not an existence
 -- or convergence theorem for a stationary point.  Existence remains a
@@ -3768,8 +3730,11 @@ record MarkovianStationaryPointCompositionTheorem : Set₁ where
       ∀ {State Price Allocation : Set}
         {Continuous : {A B : Set} → (A → B) → Set}
         (D : ContinuousStationaryMarkovWalrasianData
-          State Price Allocation Continuous) →
-      ConnectedGeneralizedWalrasianExistenceTheorem State Price Allocation
+          State Price Allocation Continuous)
+        (staticExistence :
+          ∀ p → Σ (λ allocation → staticWalrasian D p allocation)) →
+      ConnectedGeneralizedWalrasianExistenceTheorem
+        State Price Allocation D
     endogenousEGraphAStar :
       CanonicalEndogenousEGraphAStarTransportClosureTheorem
 
@@ -3778,7 +3743,8 @@ markovian-stationary-point-composition-theorem :
 markovian-stationary-point-composition-theorem =
   markovianStationaryPointCompositionTheorem
     markov-stationary-walrasian-composition-theorem
-    (λ D → connected-generalized-walrasian-existence-theorem D)
+    (λ D staticExistence →
+      connected-generalized-walrasian-existence-theorem D staticExistence)
     canonical-endogenous-e-graph-a-star-transport-closure-theorem
 
 ------------------------------------------------------------------------
@@ -4671,7 +4637,8 @@ connected-hodge-maxwell-gru-f4-watkins-egraph-extract :
   ∀ s →
   EqualityCompositionTheorem
 connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s =
-  eGraphEqualityComposition C
+  CanonicalEndogenousEGraphAStarTransportClosureTheorem.eGraphEqualityComposition
+    (eGraphAStarClosure C)
     (cong
       (ContinuousHodgeMaxwellExactRepresentationData.encode
         (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
