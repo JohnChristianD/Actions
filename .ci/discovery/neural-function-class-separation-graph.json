@@ -1528,5 +1528,75 @@
       "explicit Gaussian, mixture, scale-mixture, or heavy-tail distribution and tail/moment law"
     ],
     "rule": "Do not graph probability/measure/topology/POMDP/Tsallis-q-exp/heavy-tail Frank-Wolfe theorems until an actual Agda declaration supplies the premises and a composed consumer exists."
+  },
+  "current_head_audit_2026_09_24": {
+    "head": "32fd737d99b8cb81c9f70aea53428e0b3dfd2549",
+    "compared_from_previous_audit_head": "dc023ef31f7297431bbcbccdbcb69ac389580d0b",
+    "commits_ahead": 58,
+    "conclusion": "Actual semantic changes occurred, but the final main branch has already collapsed the finite/infinite Maxwell case split into the carrier-agnostic connected composition. No further Agda repair is justified.",
+    "retained_transformative_commits": [
+      {
+        "sha": "92d05e51818c5d15dfb4fc97a0a18cd6c28b1897",
+        "message": "Promote carrier-polymorphic Hodge-Maxwell to infinite-dimensional graph surfaces",
+        "class": "TRANSFORMATIVE_AGDA",
+        "evidence": "TheoremsMonolith.agda +157 lines"
+      },
+      {
+        "sha": "50f47fb37c5652e05b5d76d6dfb2780074f6264a",
+        "message": "Repair infinite-dimensional injectivity projection",
+        "class": "SEMANTIC_REPAIR",
+        "evidence": "repair immediately preceding the carrier-agnostic injectivity promotion"
+      },
+      {
+        "sha": "6df56aebf113dca1db0cc2979e38012f4f217b20",
+        "message": "Add carrier-agnostic GRU-F4-Maxwell injectivity composition",
+        "class": "TRANSFORMATIVE_AGDA",
+        "evidence": "TheoremsMonolith.agda +60 lines"
+      },
+      {
+        "sha": "319efe8ac8632b2cd41ef97d071665c4f370879d",
+        "message": "Add finite-coordinate GRU-F4-Maxwell exact endpoint",
+        "class": "TRANSFORMATIVE_AGDA",
+        "evidence": "TheoremsMonolith.agda +76 lines; later absorbed into the unified carrier endpoint"
+      },
+      {
+        "sha": "a206dc303108f76136eaac3ec9f69b231c5d799a",
+        "message": "Remove Maxwell finite and infinite compatibility adapters",
+        "class": "TRANSFORMATIVE_PRUNING",
+        "evidence": "TheoremsMonolith.agda -540 lines; collapses obsolete case adapters in favor of the unified carrier surface"
+      }
+    ],
+    "superseded_transformative_commits": [
+      {
+        "sha": "d88326f7af56978a3c0ab25d542a6e08af0bfae6",
+        "message": "Generalize Maxwell composition over arbitrary finite coordinate dimension without Fin",
+        "class": "SUPERSEDED_BY_CARRIER_AGNOSTIC_COMPOSITION",
+        "evidence": "The finite-coordinate specialization and its helper names are absent from the current main branch source and graph"
+      }
+    ],
+    "graph_only_or_pruning_commits": [
+      "66ebe16eda731f99ab83d49a40ad3bdf7c2b8082",
+      "889f3cd804d46f98ddc1fff7af00a59eac3aa714",
+      "f9a038e645da4997ef2ebfdb5777e83570f9cacb",
+      "b026fdc00cf2df0da78b97174228bd8961325644",
+      "d0c2c3b9a6485cada58500763c6ef57c0a835247",
+      "2ee52aab4c6d465dd2807256f7736fb6bcd7065d",
+      "2bbc50e0398688aef841cf8e88d405a2c66d9755",
+      "f4e83c19eac230c9aedc9f03e45a0e10db85457c",
+      "36209894eaf24944a3a2fbe3568b393ce32d8efd",
+      "5d146c509e572db5bf7bbb4301dedecf9f54e2a8",
+      "8df0d228d4a86f16e7e1f8718a0aed5c3d88ef85"
+    ],
+    "final_alignment_checks": {
+      "unified_carrier_source_present": true,
+      "unified_exact_step_source_present": true,
+      "unified_exact_prefix_endpoint_source_present": true,
+      "f4_normpair_global_conjugacy_source_present": true,
+      "unified_theorems_registered_in_graph_search": true,
+      "unified_theorems_registered_in_ci": true,
+      "obsolete_finite_infinite_names_absent_from_main_surfaces": true,
+      "latest_head_ci_status_observable": false
+    },
+    "search_index_caveat": "GitHub code-search results can surface stale historical blobs. The current default-branch fetches are authoritative for this audit."
   }
 }
