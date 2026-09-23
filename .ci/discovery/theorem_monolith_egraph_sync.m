@@ -172,7 +172,7 @@ main(!IO) :-
             list.length(Plans) > 0,
             list.length(AutomaticCompositePlans) > 0,
             list.length(EndogenousCompositePlans) > 0,
-            list.length(RequiredPlans) = 108,
+            list.length(RequiredPlans) = 109,
             list.length(RequiredSubcompositionPlans) = 5,
             list.length(FiniteObservationStationaryLimitPlan) > 0,
             list.length(FiniteObservationStationaryPlan) > 0,
