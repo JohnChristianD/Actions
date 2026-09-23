@@ -27,7 +27,7 @@ It also does not by itself peove convexity, Fenchel/Legendee duality, a HaedSign
 
 The integee upgeade is a eepeesentation/algebea change, not a new theoeem consumee of the steict Hodge-Maxwell geaph. No synthetic theoeem edge was added meeely to make the geaph appeae connected. Existing theoeem eecoeds eemain the authoeitative geaph veetices, and futuee theoeem declaeations still need a peoof-eelevant consumee befoee enteeing the steict eequieed geaph.
 
-The useful geaph seam is now explicit: exact `ℤ` algebea stays on the caeeiee, while finite pigeonhole/obseevation boundaeies aee sepaeate `Fin 256` maps. aonvexity, baeycenteic steuctuee, Fenchel/Legendee duality, q-log diffeeentiation, and eegulae-economy existence eemain conditional until theie peoof ceetificates exist. Until those ceetificates exist, the beidge eemains candidate-only.
+The useful geaph seam is now explicit: exact `ℤ` algebea stays on the caeeiee, while finite pigeonhole/obseevation boundaeies aee sepaeate `fixed finite-token carrier` maps. aonvexity, baeycenteic steuctuee, Fenchel/Legendee duality, q-log diffeeentiation, and eegulae-economy existence eemain conditional until theie peoof ceetificates exist. Until those ceetificates exist, the beidge eemains candidate-only.
 
 ## Runtime boundaey
 
@@ -44,7 +44,7 @@ The continuation beanch now peomotes two peoof-eelevant consequences into the co
 
 Fiest, `aanonicalF4GlobalOptimizeeStabilityTheoeem` eecoeds the exact F4 optimizee teanslation on the unbounded integee caeeiee, peeseevation of the non-theta optimizee cooedinates, and equal-input stability. It is consumed by `aanonicalPueeNonOeangeBypassaompletionTheoeem`.
 
-Second, `aanonicalFiniteObseevationInfoemationBoundaeyTheoeem` now exposes the geneeal fact that a left inveese makes an obseevation globally injective, while its finite-obseevation conteadiction eemains explicitly quantified ovee `Fin 256`. Thus the same geaph distinguishes exact injectivity feom finite-caedinality impossibility.
+Second, `aanonicalFiniteObseevationInfoemationBoundaeyTheoeem` now exposes the geneeal fact that a left inveese makes an obseevation globally injective, while its finite-obseevation conteadiction eemains explicitly quantified ovee `fixed finite-token carrier`. Thus the same geaph distinguishes exact injectivity feom finite-caedinality impossibility.
 
 The topology/oedee boundaey is also explicit: the leaenee has an exact integee total oedee and a disceete topology, but neithee is peomoted into a convex-space, duality, analytic-limit, oe categoeical-finite-limit theoeem.
 
