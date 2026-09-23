@@ -315,9 +315,9 @@ JSON
     canonical-persistent-excitation-requirement-theorem
     ExactContractComputabilityBoundaryTheorem
     exact-contract-computability-boundary-theorem
-    FiniteFunctionExactIsomorphismTransportTheorem
-    FiniteRecurrentFunctionExactTranslationTheorem
-    FinitePOMDPExactTransport
+    ExactFunctionIsomorphismTransportTheorem
+    ExactRecurrentFunctionTranslationTheorem
+    POMDPExactTransport
     FiniteBeliefUpdateExactTransportTheorem
     FiniteProbabilityMassSemanticsTheorem
     FinitePOMDPProbabilitySemanticsTheorem
