@@ -324,7 +324,7 @@ JSON
     CanonicalGlobalTokenLMCompositionTheorem
     ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
     CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-    ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
     bairdSevenStar
