@@ -5252,6 +5252,8 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
       CanonicalOperatorCompositionTheorem
     boundedFactorLift :
       CanonicalBoundedFactorLiftTheorem
+    f4OptimizerStability :
+      CanonicalF4GlobalOptimizerStabilityTheorem
     emergentFactorSeparation :
       FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
     finiteObservationInformationBoundary :
@@ -5274,6 +5276,7 @@ canonical-pure-non-orange-bypass-completion-theorem =
     canonical-finite-cycle-exclusion-isomorphism-theorem
     canonical-operator-composition-theorem
     canonical-bounded-factor-lift-theorem
+    canonical-f4-global-optimizer-stability-theorem
     canonical-finite-factor-recurrence-without-state-recurrence
     canonical-finite-observation-information-boundary-theorem
     canonical-endogenous-observation-boundary-theorem
@@ -5306,6 +5309,11 @@ record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
         ∃ m n →
           m ≢ n ×
           factor (orbit m) ≡ factor (orbit n)
+    leftInverseImpliesGlobalInjectivity :
+      ∀ (observe : C.CanonicalFullLearnerState → Fin 256)
+        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
+      (∀ t → inverse (observe t) ≡ t) →
+      ∀ {s t} → observe s ≡ observe t → s ≡ t
     noExactFiniteObservationLeftInverse :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
@@ -5330,6 +5338,8 @@ canonical-finite-observation-information-boundary-theorem =
     canonicalInfiniteStateOrbitEmbedding
     (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
       canonical-finite-factor-recurrence-without-state-recurrence)
+    (λ observe inverse leftInverse {s} {t} eq →
+      discreteLeftInverse-observe-injective leftInverse eq)
     canonicalPigeonholeNatClockContradiction
     canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit
 ------------------------------------------------------------------------
