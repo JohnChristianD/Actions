@@ -67,6 +67,10 @@
     {
       "node": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "role": "fully connected carrier-polymorphic exact continuous Hodge-Maxwell representation with explicit differential-form semantics, continuity predicates, global StateIsomorphism, and recurrent conjugacy"
+    },
+    {
+      "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
+      "role": "narrow connected impossibility boundary: an explicit distinct-solution collision in the global Hodge-Maxwell encoder contradicts the exact connected representation certificate"
     }
   ],
   "edges": [
@@ -74,11 +78,6 @@
       "F_base",
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "baseline embeds into the full connected architecture only if the resource-preserving inclusion is proved"
-    ],
-    [
-      "FiniteFunctionExactIsomorphismTransportTheorem",
-      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-      "finite exact-function transport is the representation layer for continuous Hodge-Maxwell solution families"
     ],
     [
       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
@@ -91,19 +90,9 @@
       "the horizon-indexed F4 rounding-bias residual regret endpoint is retained only as the connected optimizer endpoint"
     ],
     [
-      "FiniteFunctionExactIsomorphismTransportTheorem",
-      "ConnectedMaxwellTsallisExactConjugacyTheorem",
-      "universal finite exact-function transport supplies the encoding-independent representation mechanism"
-    ],
-    [
       "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "F_full_connected",
       "Maxwell/Tsallis exact representation enters the full graph only through the composed theorem"
-    ],
-    [
-      "FiniteFunctionExactIsomorphismTransportTheorem",
-      "ConnectedMaxwellTsallisExactConjugacyTheorem",
-      "universal finite exact transport composes with Maxwell semantics and exact conjugacy"
     ],
     [
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
@@ -209,6 +198,16 @@
       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
       "the involution theorem consumes the exact global StateIsomorphism supplied by the continuous representation"
+    ],
+    [
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+      "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
+      "the collision boundary consumes the same carrier-polymorphic connected Hodge-Maxwell representation and its explicit global encoder injectivity"
+    ],
+    [
+      "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
+      "F_full_connected",
+      "the negative representation boundary is graphable only as a connected impossibility consumer, not as a standalone class-separation claim"
     ]
   ],
   "separation_obligation": [
@@ -1054,7 +1053,13 @@
     "global_injectivity": "PROVED_CONDITIONAL on the supplied exact representation certificate",
     "continuous_pde_boundary": "No existence theorem for arbitrary infinite-dimensional Maxwell solution spaces is inferred without explicit function-space/domain/metric/source/boundary semantics and an exact GRU representation certificate.",
     "hodge_involution": "PROVED_CONDITIONAL on the explicit GRU involution and observed factorization",
-    "no_synthetic_edge": true
+    "no_synthetic_edge": true,
+    "noninjectivity_boundary": {
+      "status": "PROVED_CONDITIONAL",
+      "theorem": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
+      "scope": "arbitrary GRU carrier; no Fin n dependency",
+      "limitation": "requires an explicit collision witness; it does not prove that every continuous Maxwell solution space has such a collision"
+    }
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
