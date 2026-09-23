@@ -312,7 +312,7 @@
     }
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
-  "reason": "The exact Z carrier/finite-observation separation and F4 optimizer stability are now represented by proof-relevant Agda surfaces and connected consumers. The remaining analytic convexity/duality, non-discrete topology, categorical-limit, and external RegularWalrasian adapter claims remain conditional because their required structures or witnesses are absent.",
+  "reason": "The exact Z carrier/finite-observation separation, F4 optimizer stability, and left-inverse injectivity are represented by proof-relevant Agda surfaces and connected consumers. Remaining analytic convexity/duality, non-discrete topology, categorical-limit, and external RegularWalrasian adapter claims remain conditional.",
   "computability_complexity_boundary": {
     "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
     "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
@@ -1281,14 +1281,14 @@
       "transformative": true
     },
     {
-      "sha": "1679f35615c2a73997d0cbd4b61320bcc7ae8c3c",
-      "message": "Separate F4 finite observations from exact Z optimizer algebra",
-      "transformative": true
-    },
-    {
       "sha": "3ef3d14b6d2aa2d0b317e16826bc3d9fc03876ce",
       "message": "Prune duplicate theorem boundaries and make endogenous finite observations explicit",
       "transformative": false
+    },
+    {
+      "sha": "aeb81e06e4d06eeb7576961dd2bfa810616e3908",
+      "message": "Repair F4 finite observation promotion without duplicate expansion",
+      "transformative": true
     }
   ],
   "complete_graph_contract_v7": {
@@ -1472,16 +1472,16 @@
       "reason": "restores the finite-cardinality obstruction through explicit observations rather than raw Int8 bounds"
     },
     {
-      "sha": "1679f35615c2a73997d0cbd4b61320bcc7ae8c3c",
-      "message": "Separate F4 finite observations from exact Z optimizer algebra",
-      "class": "TRANSFORMATIVE",
-      "reason": "promotes an exact Z-valued F4 stability surface and replaces false raw-carrier boundedness with explicit finite observation recurrence"
-    },
-    {
       "sha": "3ef3d14b6d2aa2d0b317e16826bc3d9fc03876ce",
       "message": "Prune duplicate theorem boundaries and make endogenous finite observations explicit",
       "class": "PRUNING_REPAIR",
       "reason": "removes duplicate declarations and repairs finite observation typing without changing the learner carrier"
+    },
+    {
+      "sha": "aeb81e06e4d06eeb7576961dd2bfa810616e3908",
+      "message": "Repair F4 finite observation promotion without duplicate expansion",
+      "class": "TRANSFORMATIVE",
+      "reason": "restores the intended proof-relevant F4 observation/stability/injectivity promotion with a bounded diff after the prior accidental expansion was superseded"
     }
   ],
   "hodge_involution_status": {
