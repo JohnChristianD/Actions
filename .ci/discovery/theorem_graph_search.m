@@ -573,10 +573,6 @@ graph_required_subcompositions = [
     "CanonicalExactRNNLMObservationSubcompositionTheorem"
 ].
 
-:- pred graph_search_completion(
-    list(semantic_law)::in,
-    list(list(string))::out,
-    list(list(string))::out) is semidet.
 graph_search_completion(Laws, RequirementPlans, SubcompositionPlans) :-
     all_named_required_plans(graph_required_theorems, Laws, RequirementPlans),
     all_named_required_plans(graph_required_subcompositions, Laws, SubcompositionPlans).
