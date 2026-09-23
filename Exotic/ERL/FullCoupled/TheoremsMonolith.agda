@@ -5164,34 +5164,34 @@ canonicalConnectedComposition-parallelPrefixComplexity-contract =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Maxwell-only finite exact representation seam.
+-- Maxwell/Hodge exact representation seam.
 --
--- This deliberately formalizes only finite transition semantics.  The
--- continuous Maxwell PDE is not silently identified with a finite GRU.
--- The divergence carrier is abstract so that a concrete Tsallis model can
--- be supplied without importing a real-analysis or information-theory
--- library into the safe monolith.
+-- This family is now carrier-polymorphic. The GRU carrier is an arbitrary
+-- set supplied by the exact representation certificate; no finite cardinality
+-- or Nat-sized state enumeration is assumed. Continuous differential-form
+-- semantics are represented by explicit continuity predicates, so the theorem
+-- is an exact conditional representation schema rather than an assertion that
+-- every physical Maxwell solution space is automatically representable.
 ------------------------------------------------------------------------
 
-record FiniteTsallisDivergenceStructure (n : Nat) : Set₁ where
-  constructor finiteTsallisDivergenceStructure
+record TsallisDivergenceStructure (Carrier : Set) : Set₁ where
+  constructor tsallisDivergenceStructure
   field
     Value : Set
-    divergence : Fin n → Fin n → Value
+    divergence : Carrier → Carrier → Value
     divergenceStep : Value → Value
 
-open FiniteTsallisDivergenceStructure public
+open TsallisDivergenceStructure public
 
-record MaxwellFiniteExactConjugacyData
-  (n : Nat)
-  (State : Set) : Set₁ where
-  constructor maxwellFiniteExactConjugacyData
+record MaxwellExactConjugacyData
+  (Carrier State : Set) : Set₁ where
+  constructor maxwellExactConjugacyData
   field
     maxwellAdmissible : State → Set
     step : State → State
-    encodedStep : Fin n → Fin n
-    encode : State → Fin n
-    decode : Fin n → State
+    encodedStep : Carrier → Carrier
+    encode : State → Carrier
+    decode : Carrier → State
 
     decodeEncode :
       ∀ x → decode (encode x) ≡ x
@@ -5206,7 +5206,7 @@ record MaxwellFiniteExactConjugacyData
       ∀ x → encode (step x) ≡ encodedStep (encode x)
 
     divergenceStructure :
-      FiniteTsallisDivergenceStructure n
+      TsallisDivergenceStructure Carrier
 
     divergenceTransport :
       ∀ x y →
@@ -5216,40 +5216,29 @@ record MaxwellFiniteExactConjugacyData
         (encode (step x))
         (encode (step y))
 
-open MaxwellFiniteExactConjugacyData public
+open MaxwellExactConjugacyData public
 
-maxwellFiniteStateIsomorphism :
-  ∀ {n : Nat} {State : Set} →
-  MaxwellFiniteExactConjugacyData n State →
-  StateIsomorphism State (Fin n)
-maxwellFiniteStateIsomorphism D =
+maxwellStateIsomorphism :
+  ∀ {Carrier State : Set} →
+  MaxwellExactConjugacyData Carrier State →
+  StateIsomorphism State Carrier
+maxwellStateIsomorphism D =
   stateIsomorphism
     (encode D)
     (decode D)
     (decodeEncode D)
     (encodeDecode D)
 
-record ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
-  (n : Nat)
-  (State : Set) : Set₁ where
-  constructor connectedMaxwellTsallisFiniteExactConjugacyTheorem
+record ConnectedMaxwellTsallisExactConjugacyTheorem
+  (Carrier State : Set) : Set₁ where
+  constructor connectedMaxwellTsallisExactConjugacyTheorem
   field
     semantics :
-      MaxwellFiniteExactConjugacyData n State
+      MaxwellExactConjugacyData Carrier State
 
-    universalFiniteTransport :
-      FiniteFunctionExactIsomorphismTransportTheorem
-        n
-        n
-        State
-        State
-        (maxwellFiniteStateIsomorphism semantics)
-        (maxwellFiniteStateIsomorphism semantics)
-        (encodedStep semantics)
-
-    transportedStep :
+    translatedStep :
       ∀ x →
-      translatedFunction universalFiniteTransport x
+      decode semantics (encodedStep semantics (encode semantics x))
       ≡
       step semantics x
 
@@ -5259,129 +5248,34 @@ record ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
       ≡
       encodedStep semantics (encode semantics x)
 
-open ConnectedMaxwellTsallisFiniteExactConjugacyTheorem public
+open ConnectedMaxwellTsallisExactConjugacyTheorem public
 
-connected-maxwell-tsallis-finite-exact-conjugacy-theorem :
-  ∀ {n : Nat} {State : Set} →
-  ConnectedMaxwellTsallisFiniteExactConjugacyTheorem n State →
+connected-maxwell-tsallis-exact-conjugacy-theorem :
+  ∀ {Carrier State : Set} →
+  ConnectedMaxwellTsallisExactConjugacyTheorem Carrier State →
   ∀ x →
   encode (semantics _) (step (semantics _) x)
   ≡
   encodedStep (semantics _) (encode (semantics _) x)
-connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
+connected-maxwell-tsallis-exact-conjugacy-theorem C =
   exactMaxwellConjugacy C
 
-
 ------------------------------------------------------------------------
--- F4-Watkins is the sole custom optimizer boundary.
---
--- Regret is a genuine finite-horizon/time-indexed cumulative quantity:
--- R 0 = 0 and R (H + 1) = R H + r H.  The theorem then bounds R H
--- pointwise for every finite horizon H.  No standalone Lion/KKT/FW theorem
--- is retained.
-------------------------------------------------------------------------
-
-record F4FrankWolfeRoundingBiasRegretData : Set₁ where
-  constructor f4FrankWolfeRoundingBiasRegretData
-  field
-    perRoundRegret : Nat → Nat
-    cumulativeRegret : Nat → Nat
-    jensenGap : Nat → Nat
-    roundingBias : Nat → Nat
-    frankWolfeResidual : Nat → Nat
-    markovMixing : Nat → Nat
-
-    cumulativeZero :
-      cumulativeRegret zero ≡ zero
-
-    cumulativeStep :
-      ∀ H →
-      cumulativeRegret (suc H)
-      ≡
-      cumulativeRegret H + perRoundRegret H
-
-    regretBoundAt :
-      ∀ H →
-      cumulativeRegret H
-      ≤
-      jensenGap H
-      + roundingBias H
-      + frankWolfeResidual H
-      + markovMixing H
-
-open F4FrankWolfeRoundingBiasRegretData public
-
-f4-frank-wolfe-horizon-regret-bound :
-  (D : F4FrankWolfeRoundingBiasRegretData) →
-  ∀ H →
-  cumulativeRegret D H
-  ≤
-  jensenGap D H
-  + roundingBias D H
-  + frankWolfeResidual D H
-  + markovMixing D H
-f4-frank-wolfe-horizon-regret-bound D H =
-  regretBoundAt D H
-
-record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
-  constructor connectedF4FrankWolfeRoundingBiasRegretTheorem
-  field
-    f4Composition :
-      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-    certificate :
-      F4FrankWolfeRoundingBiasRegretData
-    connectedBound :
-      ∀ H →
-      cumulativeRegret certificate H
-      ≤
-      jensenGap certificate H
-      + roundingBias certificate H
-      + frankWolfeResidual certificate H
-      + markovMixing certificate H
-
-open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
-
-connected-f4-frank-wolfe-horizon-regret-theorem :
-  (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
-  ∀ H →
-  cumulativeRegret (certificate C) H
-  ≤
-  jensenGap (certificate C) H
-  + roundingBias (certificate C) H
-  + frankWolfeResidual (certificate C) H
-  + markovMixing (certificate C) H
-connected-f4-frank-wolfe-horizon-regret-theorem C H =
-  connectedBound C H
-
-
-------------------------------------------------------------------------
--- Promotion boundary:
--- the Jensen/minimax regret surface is not a standalone optimizer theorem.
--- It is graph-complete only through the recurrent scan and the stationary
--- Markov fixed-point/Walrasian interface. A concrete Jensen inequality,
--- rounding model, and stationary-law witness remain required before this
--- becomes a proved numeric regret theorem.
-------------------------------------------------------------------------
-
-
-------------------------------------------------------------------------
--- Exact finite continuous differential Hodge-Maxwell representation.
+-- Exact continuous differential Hodge-Maxwell representation.
 --
 -- The Maxwell source semantics are the differential-form equations
 --   d F = 0
 --   d (star F) = j
--- used by nLab.  This theorem does not discretize or approximate those
--- equations: Form2, Form3, d, star, current, and the solution predicate
--- are exact semantic objects supplied by the certificate.
---
--- "Finite continuous" means a finite exact family of continuous
--- differential-form solutions.  The finite index is an exact encoding of
--- that family, not an approximation of the underlying PDE.
+-- on the supplied exact form/state objects. No finite state enumeration is
+-- assumed. The encode/decode pair is an explicit global StateIsomorphism to
+-- the supplied GRU carrier, and the continuity predicate is an explicit
+-- proof obligation rather than an inferred property.
 ------------------------------------------------------------------------
 
-record FiniteContinuousHodgeMaxwellExactRepresentationData
-  (n : Nat) : Set₁ where
-  constructor finiteContinuousHodgeMaxwellExactRepresentationData
+record ContinuousHodgeMaxwellExactRepresentationData
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor continuousHodgeMaxwellExactRepresentationData
   field
     Form2 : Set
     FormStar : Set
@@ -5390,369 +5284,146 @@ record FiniteContinuousHodgeMaxwellExactRepresentationData
     star : Form2 → FormStar
     dStar : FormStar → Form3
     zero3 : Form3
+
     Solution : Set
     fieldF : Solution → Form2
     fieldJ : Solution → Form3
+
     maxwellEquation :
       ∀ s →
       d (fieldF s) ≡ zero3 ×
       dStar (star (fieldF s)) ≡ fieldJ s
+
     step : Solution → Solution
-    encodedStep : Fin n → Fin n
-    encode : Solution → Fin n
-    decode : Fin n → Solution
-    decodeEncode : ∀ s → decode (encode s) ≡ s
-    encodeDecode : ∀ i → encode (decode i) ≡ i
+    gruStep : GRU → GRU
+    encode : Solution → GRU
+    decode : GRU → Solution
+
+    decodeEncode :
+      ∀ s → decode (encode s) ≡ s
+
+    encodeDecode :
+      ∀ g → encode (decode g) ≡ g
+
     maxwellClosed :
       ∀ s →
       maxwellEquation (step s)
+
     conjugacy :
       ∀ s →
-      encode (step s) ≡ encodedStep (encode s)
+      encode (step s) ≡ gruStep (encode s)
 
-open FiniteContinuousHodgeMaxwellExactRepresentationData public
+    continuousD : Continuous d
+    continuousStar : Continuous star
+    continuousDStar : Continuous dStar
+    continuousFieldF : Continuous fieldF
+    continuousFieldJ : Continuous fieldJ
+    continuousStep : Continuous step
+    continuousGRUStep : Continuous gruStep
+    continuousEncode : Continuous encode
+    continuousDecode : Continuous decode
 
-finiteContinuousHodgeMaxwell-state-isomorphism :
-  ∀ {n : Nat}
-  (D : FiniteContinuousHodgeMaxwellExactRepresentationData n) →
-  StateIsomorphism (Fin n) (Solution D)
-finiteContinuousHodgeMaxwell-state-isomorphism D =
+open ContinuousHodgeMaxwellExactRepresentationData public
+
+continuousHodgeMaxwell-state-isomorphism :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
+  StateIsomorphism (Solution D) GRU
+continuousHodgeMaxwell-state-isomorphism D =
   stateIsomorphism
-    (decode D)
     (encode D)
+    (decode D)
     (decodeEncode D)
     (encodeDecode D)
 
-record ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
-  (n : Nat) : Set₁ where
-  constructor connectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+continuousHodgeMaxwell-global-encode-injective :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
+  ∀ {x y} →
+  encode D x ≡ encode D y →
+  x ≡ y
+continuousHodgeMaxwell-global-encode-injective D {x} {y} eq =
+  trans
+    (sym (decodeEncode D x))
+    (trans
+      (cong (decode D) eq)
+      (decodeEncode D y))
+
+record ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedContinuousHodgeMaxwellGRURepresentationTheorem
   field
     semantics :
-      FiniteContinuousHodgeMaxwellExactRepresentationData n
-    representation :
-      FiniteRecurrentFunctionExactTranslationTheorem
-        n
+      ContinuousHodgeMaxwellExactRepresentationData GRU
+
+    globalStateIsomorphism :
+      StateIsomorphism
         (Solution semantics)
-        (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
-        (encodedStep semantics)
-        (step semantics)
-    exactMaxwellPDERepresentation :
+        GRU
+
+    exactGRUStepRepresentation :
       ∀ s →
-      StateIsomorphism.to
-        (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
-        (encodedStep semantics
-          (StateIsomorphism.to
-            (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
-            s))
+      to globalStateIsomorphism (step semantics s)
       ≡
-      step semantics
-        (StateIsomorphism.to
-          (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
-          s)
+      gruStep semantics
+        (to globalStateIsomorphism s)
+
     exactFieldEquations :
       ∀ s →
-      maxwellEquation semantics
-        (StateIsomorphism.to
-          (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
-          s)
+      maxwellEquation semantics s
 
-connected-finite-continuous-hodge-maxwell-gru-representation-theorem :
-  ∀ {n : Nat}
-  (D : FiniteContinuousHodgeMaxwellExactRepresentationData n) →
-  ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
-connected-finite-continuous-hodge-maxwell-gru-representation-theorem D =
-  connectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
-    D
-    (finiteRecurrentFunctionExactTranslation
-      (finiteContinuousHodgeMaxwell-state-isomorphism D)
-      (encodedStep D)
-      (step D)
-      (conjugacy D))
-    (λ s → conjugacy D s)
-    (λ s → maxwellEquation D s)
-
-------------------------------------------------------------------------
--- Exact finite discretization layer.
---
--- A finite discretization is exact here only when the discrete operators
--- commute with the declared continuous differential-form semantics on the
--- finite solution family, zero/current transport is exact, and the encoded
--- 3-form carrier is injective.  This is a theorem about a specified finite
--- discretization certificate, not an assertion that the full infinite
--- dimensional Maxwell solution space is finite.
-------------------------------------------------------------------------
-
-record FiniteHodgeMaxwellDiscretizationData
-  (n p q r : Nat) : Set₁ where
-  constructor finiteHodgeMaxwellDiscretizationData
-  field
-    continuous :
-      FiniteContinuousHodgeMaxwellExactRepresentationData n
-
-    discreteD : Fin p → Fin r
-    discreteStar : Fin p → Fin q
-    discreteDStar : Fin q → Fin r
-    discreteZero3 : Fin r
-    discreteCurrent :
-      Solution continuous → Fin r
-
-    encodeF :
-      Form2 continuous → Fin p
-    encodeStar :
-      FormStar continuous → Fin q
-    encode3 :
-      Form3 continuous → Fin r
-
-    encodeZero3 :
-      encode3 (zero3 continuous)
-      ≡
-      discreteZero3
-
-    encodeCurrent :
-      ∀ s →
-      encode3 (fieldJ continuous s)
-      ≡
-      discreteCurrent s
-
-    commuteD :
-      ∀ s →
-      encode3 (d continuous (fieldF continuous s))
-      ≡
-      discreteD (encodeF (fieldF continuous s))
-
-    commuteStar :
-      ∀ s →
-      encodeStar (star continuous (fieldF continuous s))
-      ≡
-      discreteStar (encodeF (fieldF continuous s))
-
-    commuteDStar :
-      ∀ s →
-      encode3
-        (dStar continuous
-          (star continuous (fieldF continuous s)))
-      ≡
-      discreteDStar
-        (encodeStar (star continuous (fieldF continuous s)))
-
-    encode3Injective :
-      ∀ x y →
-      encode3 x ≡ encode3 y →
+    globalEncodeInjective :
+      ∀ {x y} →
+      encode semantics x ≡ encode semantics y →
       x ≡ y
 
-open FiniteHodgeMaxwellDiscretizationData public
-
-finiteDiscreteMaxwellEquation :
-  ∀ {n p q r : Nat}
-  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
-  Solution (continuous D) →
-  Set
-finiteDiscreteMaxwellEquation D s =
-  discreteD D (encodeF D (fieldF (continuous D) s))
-  ≡
-  discreteZero3 D
-  ×
-  discreteDStar D
-    (discreteStar D
-      (encodeF D (fieldF (continuous D) s)))
-  ≡
-  discreteCurrent D s
-
-finite-hodge-maxwell-discretization-preserves :
-  ∀ {n p q r : Nat}
-  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
-  ∀ s →
-  finiteDiscreteMaxwellEquation D s
-finite-hodge-maxwell-discretization-preserves D s =
-  (
-    trans
-      (sym (commuteD D s))
-      (trans
-        (cong (encode3 D)
-          (proj₁ (maxwellEquation (continuous D) s)))
-        (encodeZero3 D)),
-    trans
-      (sym
-        (cong (discreteDStar D)
-          (commuteStar D s)))
-      (trans
-        (sym (commuteDStar D s))
-        (trans
-          (cong (encode3 D)
-            (proj₂ (maxwellEquation (continuous D) s)))
-          (encodeCurrent D s)))
-  )
-
-finite-hodge-maxwell-discretization-reflects :
-  ∀ {n p q r : Nat}
-  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
-  ∀ s →
-  finiteDiscreteMaxwellEquation D s →
-  maxwellEquation (continuous D) s
-finite-hodge-maxwell-discretization-reflects D s discreteEq =
-  (
-    encode3Injective D _ _
-      (trans
-        (commuteD D s)
-        (trans
-          (proj₁ discreteEq)
-          (sym (encodeZero3 D)))),
-    encode3Injective D _ _
-      (trans
-        (commuteDStar D s)
-        (trans
-          (cong (discreteDStar D)
-            (commuteStar D s))
-          (trans
-            (proj₂ discreteEq)
-            (sym (encodeCurrent D s)))))
-  )
-
-record FiniteHodgeMaxwellExactDiscretizationTheorem
-  (n p q r : Nat) : Set₁ where
-  constructor finiteHodgeMaxwellExactDiscretizationTheorem
-  field
-    certificateData :
-      FiniteHodgeMaxwellDiscretizationData n p q r
-    preserves :
-      ∀ s →
-      finiteDiscreteMaxwellEquation certificateData s
-    reflects :
-      ∀ s →
-      finiteDiscreteMaxwellEquation certificateData s →
-      maxwellEquation (continuous certificateData) s
-
-open FiniteHodgeMaxwellExactDiscretizationTheorem public
-
-finite-hodge-maxwell-exact-discretization-theorem :
-  ∀ {n p q r : Nat}
-  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
-  FiniteHodgeMaxwellExactDiscretizationTheorem n p q r
-finite-hodge-maxwell-exact-discretization-theorem D =
-  finiteHodgeMaxwellExactDiscretizationTheorem
+connected-continuous-hodge-maxwell-gru-representation-theorem :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
+  ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU
+connected-continuous-hodge-maxwell-gru-representation-theorem D =
+  connectedContinuousHodgeMaxwellGRURepresentationTheorem
     D
-    (λ s → finite-hodge-maxwell-discretization-preserves D s)
-    (λ s eq → finite-hodge-maxwell-discretization-reflects D s eq)
-
-------------------------------------------------------------------------
--- Novel pre-graphed algebraic frontier:
--- exact finite Hodge-star involution is useful when a future model supplies
--- a same-degree finite star operator.  It is a candidate surface only; the
--- discretization theorem above does not assume involutivity.
-------------------------------------------------------------------------
-
-record FiniteDiscreteHodgeMaxwellStarInvolutionCandidate
-  (p : Nat) : Set₁ where
-  constructor finiteDiscreteHodgeMaxwellStarInvolutionCandidate
-  field
-    star :
-      Fin p → Fin p
-    involutive :
-      ∀ i → star (star i) ≡ i
-
-------------------------------------------------------------------------
--- Fully connected consumer of both exact layers.
--- The shared-semantics equality prevents a synthetic edge between unrelated
--- finite PDE certificates and a GRU representation.
-------------------------------------------------------------------------
-
-record ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
-  (n p q r : Nat) : Set₁ where
-  constructor connectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
-  field
-    discretization :
-      FiniteHodgeMaxwellExactDiscretizationTheorem n p q r
-    representation :
-      ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
-    sharedSemantics :
-      semantics representation
-      ≡
-      continuous (certificateData discretization)
-    exactContinuousFieldEquations :
-      ∀ i →
-      maxwellEquation (semantics representation)
-        (to
-          (finiteContinuousHodgeMaxwell-state-isomorphism
-            (semantics representation))
-          i)
-    exactDiscreteFieldEquations :
-      ∀ i →
-      finiteDiscreteMaxwellEquation
-        (certificateData discretization)
-        (subst
-          (λ S →
-            Solution S)
-          (sharedSemantics)
-          (to
-            (finiteContinuousHodgeMaxwell-state-isomorphism
-              (semantics representation))
-            i))
-
-open ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem public
-
-connected-finite-discrete-hodge-maxwell-gru-representation-theorem :
-  ∀ {n p q r : Nat}
-  (D :
-    FiniteHodgeMaxwellExactDiscretizationTheorem n p q r)
-  (R :
-    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (shared :
-    semantics R ≡ continuous (certificateData D)) →
-  ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
-    n
-    p
-    q
-    r
-connected-finite-discrete-hodge-maxwell-gru-representation-theorem
-  D R shared =
-  connectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
-    D
-    R
-    shared
-    (λ i →
-      exactFieldEquations R
-        (to
-          (finiteContinuousHodgeMaxwell-state-isomorphism
-            (semantics R))
-          i))
-    (λ i →
-      preserves D
-        (subst
-          (λ S → Solution S)
-          shared
-          (to
-            (finiteContinuousHodgeMaxwell-state-isomorphism
-              (semantics R))
-            i)))
+    (continuousHodgeMaxwell-state-isomorphism D)
+    (λ s → conjugacy D s)
+    (λ s → maxwellEquation D s)
+    (continuousHodgeMaxwell-global-encode-injective D)
 
 ------------------------------------------------------------------------
 -- Hodge-Maxwell middle-degree involution transport.
 --
--- This is the exact graph play suggested by the existing surfaces:
--- continuous left-invertibility gives observation injectivity, the exact
--- state isomorphism transports the Hodge action into the GRU carrier,
--- topology is carried by the explicit continuity witness, and
--- DenseNeighborhoodSeparation is retained as the orbit-separation witness.
---
--- The decisive premise is an observed-square law induced by an exact GRU
--- involution.  Topology alone does not manufacture star-square = identity.
+-- This theorem is now explicitly downstream of the carrier-polymorphic
+-- continuous Hodge-Maxwell representation. Global injectivity into the GRU
+-- carrier comes from the supplied StateIsomorphism; star-square=id still
+-- requires the explicit GRU involution and observed factorization.
 ------------------------------------------------------------------------
 
 record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-  (State Feature GRU : Set)
+  (GRU : Set)
+  {Feature : Set}
   {Continuous : {A B : Set} → (A → B) → Set}
-  (observe : State → Feature)
-  (inverse : Feature → State)
-  (embed : Nat → State)
-  (star : State → State)
+  (representation :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
+  (observe :
+    Solution (semantics representation) → Feature)
+  (inverse :
+    Feature → Solution (semantics representation))
+  (embed :
+    Nat → Solution (semantics representation))
+  (star :
+    Solution (semantics representation) →
+    Solution (semantics representation))
   (starGRU : GRU → GRU)
-  (observeGRU : GRU → Feature)
-  (iso : StateIsomorphism State GRU) : Set₁ where
+  (observeGRU : GRU → Feature) : Set₁ where
   constructor hodgeMaxwellMiddleDegreeInvolutionTransportTheorem
   field
     observation :
       ContinuousLeftInverseTheorem
-        State
+        (Solution (semantics representation))
         Feature
         observe
         inverse
@@ -5760,7 +5431,7 @@ record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
 
     neighborhoodSeparation :
       DenseNeighborhoodSeparationTheorem
-        State
+        (Solution (semantics representation))
         Feature
         embed
         observe
@@ -5768,12 +5439,21 @@ record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
     observeFactorization :
       ∀ s →
       observe s ≡
-      observeGRU (to iso s)
+      observeGRU
+        (to
+          (globalStateIsomorphism representation)
+          s)
 
     starConjugacy :
       ∀ s →
-      to iso (star s) ≡
-      starGRU (to iso s)
+      to
+        (globalStateIsomorphism representation)
+        (star s)
+      ≡
+      starGRU
+        (to
+          (globalStateIsomorphism representation)
+          s)
 
     gruInvolution :
       ∀ g →
@@ -5782,27 +5462,32 @@ record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
 open HodgeMaxwellMiddleDegreeInvolutionTransportTheorem public
 
 hodgeMaxwell-middle-degree-involution :
-  ∀ {State Feature GRU : Set}
+  ∀ {GRU : Set}
+  {Feature : Set}
   {Continuous : {A B : Set} → (A → B) → Set}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {embed : Nat → State}
-  {star : State → State}
+  {representation :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
+  {observe :
+    Solution (semantics representation) → Feature}
+  {inverse :
+    Feature → Solution (semantics representation)}
+  {embed :
+    Nat → Solution (semantics representation)}
+  {star :
+    Solution (semantics representation) →
+    Solution (semantics representation)}
   {starGRU : GRU → GRU}
   {observeGRU : GRU → Feature}
-  {iso : StateIsomorphism State GRU}
   (witness :
     HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-      State
-      Feature
       GRU
+      representation
       observe
       inverse
       embed
       star
       starGRU
-      observeGRU
-      iso) →
+      observeGRU) →
   ∀ s →
   star (star s) ≡ s
 hodgeMaxwell-middle-degree-involution witness s =
@@ -5818,58 +5503,51 @@ hodgeMaxwell-middle-degree-involution witness s =
             (cong starGRU (starConjugacy witness s)))
           (trans
             (cong observeGRU
-              (gruInvolution witness (to iso s)))
-            (sym (observeFactorization witness s))))
+              (gruInvolution witness
+                (to (globalStateIsomorphism representation) s)))
+            (sym (observeFactorization witness s)))))
 
 ------------------------------------------------------------------------
--- Tsallis divergence is graphically relevant only as a finite algebraic
--- transport layer.  It does not alter the Maxwell differential equations.
--- The composition below is exact when both existing theorem surfaces share
--- the same finite Maxwell state carrier.
+-- Hodge-Maxwell/Tsallis divergence composition over the same arbitrary carrier.
 ------------------------------------------------------------------------
 
-record ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
-  (n : Nat) : Set₁ where
-  constructor connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+record ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedHodgeMaxwellTsallisDivergenceCompositionTheorem
   field
     hodgeMaxwell :
-      ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU
 
     tsallis :
-      ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
-        n
+      ConnectedMaxwellTsallisExactConjugacyTheorem
+        GRU
         (Solution (semantics hodgeMaxwell))
 
-open ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem public
+open ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem public
 
-connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem :
-  ∀ {n : Nat}
-  (H :
-    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+connected-hodge-maxwell-tsallis-divergence-composition-theorem :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (H : ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
   (T :
-    ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
-      n
+    ConnectedMaxwellTsallisExactConjugacyTheorem
+      GRU
       (Solution (semantics H))) →
-  ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
-connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem H T =
-  connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem H T
+  ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
+connected-hodge-maxwell-tsallis-divergence-composition-theorem H T =
+  connectedHodgeMaxwellTsallisDivergenceCompositionTheorem H T
 
 ------------------------------------------------------------------------
--- Novel finite hard-sign-style idempotent transport.
---
--- A hard-sign projection is an idempotent map. On the exact finite
--- Hodge-Maxwell/Tsallis carrier, an explicitly supplied conjugacy to a
--- finite GRU-side projection transports that idempotence back to the
--- solution semantics. This is the exact algebraic bridge; it does not
--- infer convexity, differentiability, or a q-log derivative.
+-- Idempotent conjugacy transport is carrier-polymorphic.
 ------------------------------------------------------------------------
 
-record FiniteIdempotentConjugacyTransportTheorem
+record IdempotentConjugacyTransportTheorem
   (A B : Set)
   (projectA : A → A)
   (projectB : B → B)
   (iso : StateIsomorphism A B) : Set₁ where
-  constructor finiteIdempotentConjugacyTransportTheorem
+  constructor idempotentConjugacyTransportTheorem
   field
     conjugacy :
       ∀ a →
@@ -5880,12 +5558,12 @@ record FiniteIdempotentConjugacyTransportTheorem
       projectA (projectA a) ≡
       projectA a
 
-finiteIdempotentConjugacyTransport :
+idempotentConjugacyTransport :
   ∀ {A B : Set}
   {projectA : A → A}
   {projectB : B → B}
   {iso : StateIsomorphism A B} →
-  FiniteIdempotentConjugacyTransportTheorem
+  IdempotentConjugacyTransportTheorem
     A
     B
     projectA
@@ -5894,7 +5572,7 @@ finiteIdempotentConjugacyTransport :
   ∀ a →
   projectB (projectB (to iso a)) ≡
   projectB (to iso a)
-finiteIdempotentConjugacyTransport witness a =
+idempotentConjugacyTransport witness a =
   trans
     (sym (cong projectB (conjugacy witness a)))
     (trans
@@ -5903,70 +5581,69 @@ finiteIdempotentConjugacyTransport witness a =
         (cong (to iso) (sourceIdempotent witness a))
         (conjugacy witness a)))
 
-record ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
-  (n : Nat)
-  (H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (project : Solution (semantics H) → Solution (semantics H))
-  (projectFin : Fin n → Fin n) : Set₁ where
-  constructor connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+record ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (H :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
+  (project :
+    Solution (semantics H) → Solution (semantics H))
+  (projectGRU : GRU → GRU) : Set₁ where
+  constructor connectedHodgeMaxwellTsallisIdempotentProjectionTheorem
   field
     composition :
-      ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
+      ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
     transport :
-      FiniteIdempotentConjugacyTransportTheorem
+      IdempotentConjugacyTransportTheorem
         (Solution (semantics H))
-        (Fin n)
+        GRU
         project
-        projectFin
-        (finiteContinuousHodgeMaxwell-state-isomorphism
-          (semantics H))
+        projectGRU
+        (globalStateIsomorphism H)
     idempotent :
       ∀ s → project (project s) ≡ project s
 
-connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport :
-  ∀ {n : Nat}
-  {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n}
-  {project : Solution (semantics H) → Solution (semantics H)}
-  {projectFin : Fin n → Fin n} →
-  ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n →
-  FiniteIdempotentConjugacyTransportTheorem
+connectedHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {H :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
+  {project :
+    Solution (semantics H) → Solution (semantics H)}
+  {projectGRU : GRU → GRU} →
+  ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU →
+  IdempotentConjugacyTransportTheorem
     (Solution (semantics H))
-    (Fin n)
+    GRU
     project
-    projectFin
-    (finiteContinuousHodgeMaxwell-state-isomorphism
-      (semantics H)) →
-  ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
-    n
+    projectGRU
+    (globalStateIsomorphism H) →
+  ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
+    GRU
     H
     project
-    projectFin
-connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport
+    projectGRU
+connectedHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport
   composition
   transport =
-  connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+  connectedHodgeMaxwellTsallisIdempotentProjectionTheorem
     composition
     transport
-    (finiteIdempotentConjugacyTransport transport)
+    (idempotentConjugacyTransport transport)
 
 ------------------------------------------------------------------------
--- Novel fully connected Hodge-Maxwell/Tsallis/Walrasian projection bridge.
---
--- This is a proof-relevant compatibility contract, not a synthetic edge:
--- it consumes the existing finite Hodge-Maxwell/Tsallis idempotent surface
--- and the existing generalized Walrasian existence surface.  The bridge
--- explicitly identifies Walrasian equilibrium witnesses with fixed points
--- of the supplied solution-side projection.  No convexity, differentiability,
--- q-log derivative, or regular-economy existence theorem is inferred here.
+-- Hodge-Maxwell/Tsallis/Walrasian projection bridge.
 ------------------------------------------------------------------------
 
-record ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
-  (n : Nat)
-  (H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (project : Solution (semantics H) → Solution (semantics H))
-  (projectFin : Fin n → Fin n)
-  (State Price Allocation : Set)
+record ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+  (GRU : Set)
   {Continuous : {A B : Set} → (A → B) → Set}
+  (H :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
+  (project :
+    Solution (semantics H) → Solution (semantics H))
+  (projectGRU : GRU → GRU)
+  (State Price Allocation : Set)
   (D :
     ContinuousStationaryMarkovWalrasianData
       State
@@ -5974,14 +5651,14 @@ record ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
       Allocation
       Continuous)
   (decode : Solution (semantics H) → Allocation) : Set₁ where
-  constructor connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+  constructor connectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
   field
     hodgeTsallisProjection :
-      ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
-        n
+      ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
+        GRU
         H
         project
-        projectFin
+        projectGRU
     walrasianExistence :
       ConnectedGeneralizedWalrasianExistenceTheorem
         State
@@ -5999,265 +5676,6 @@ record ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
       ∀ {p : Price} (s : Solution (semantics H)) →
       project s ≡ s →
       GeneralizedWalrasianEquilibrium D p (decode s)
-
-open ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem public
-
-------------------------------------------------------------------------
--- The fixed-point/equilibrium bridge is deliberately conditional.  Given
--- static Walrasian existence already packaged by the connected theorem,
--- the bridge supplies a finite Hodge-Maxwell/Tsallis projection fixed point
--- for every price.  The reverse direction is carried by the explicit
--- fixedPointToEquilibrium field above.
-------------------------------------------------------------------------
-
-connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosure-fixedPoint-existence :
-  ∀ {n : Nat}
-  {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n}
-  {project : Solution (semantics H) → Solution (semantics H)}
-  {projectFin : Fin n → Fin n}
-  {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  {D :
-    ContinuousStationaryMarkovWalrasianData
-      State
-      Price
-      Allocation
-      Continuous}
-  {decode : Solution (semantics H) → Allocation} →
-  ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
-    n
-    H
-    project
-    projectFin
-    State
-    Price
-    Allocation
-    D
-    decode →
-  ∀ p →
-  Σ (λ s → project s ≡ s)
-connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosure-fixedPoint-existence
-  theorem
-  p =
-  let
-    walrasian =
-      connected-generalized-walrasian-equilibrium-existence
-        D
-        (ConnectedGeneralizedWalrasianExistenceTheorem.staticExistence
-          (walrasianExistence theorem))
-        p
-    witness =
-      equilibriumToFixedPoint theorem (proj₂ walrasian)
-  in
-  proj₁ witness , proj₁ (proj₂ witness)
-
-
-------------------------------------------------------------------------
--- Infinite-family finite-carrier impossibility for continuous Maxwell.
---
--- This is the exact pigeonhole boundary available from the current
--- representation surface. It does not identify "infinite-dimensional"
--- with an arbitrary mathematical property: the caller supplies an explicit
--- injectively indexed Nat-family of continuous Maxwell solutions.
---
--- The proof uses the existing finite exact GRU representation, a continuous
--- left-invertible observation, and the already-connected neighborhood
--- separation surface. Exact state isomorphism supplies the finite carrier;
--- the finite encoder then cannot injectively encode the explicit infinite
--- solution family.
-------------------------------------------------------------------------
-
-record ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
-  (n : Nat)
-  {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (representation :
-    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (observe :
-    Solution (semantics (representation)) → Feature)
-  (inverse : Feature → Solution (semantics (representation)))
-  (embed :
-    Nat → Solution (semantics (representation))) : Set₁ where
-  constructor connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
-  field
-    observation :
-      ContinuousLeftInverseTheorem
-        (Solution (semantics (representation)))
-        Feature
-        observe
-        inverse
-        Continuous
-
-    neighborhoodSeparation :
-      DenseNeighborhoodSeparationTheorem
-        (Solution (semantics (representation)))
-        Feature
-        embed
-        observe
-
-    infiniteFamilyInjective :
-      ∀ {m n₁} →
-      embed m ≡ embed n₁ →
-      m ≡ n₁
-
-    noFiniteExactCarrier :
-      ⊥
-
-open ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem public
-
-connectedContinuousMaxwellFiniteCarrierFamilyInjective :
-  ∀ {n : Nat}
-  {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (representation :
-    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (observe :
-    Solution (semantics (representation)) → Feature)
-  (inverse : Feature → Solution (semantics (representation)))
-  (embed :
-    Nat → Solution (semantics (representation)))
-  (observationWitness :
-    ContinuousLeftInverseTheorem
-      (Solution (semantics (representation)))
-      Feature
-      observe
-      inverse
-      Continuous)
-  (separation :
-    DenseNeighborhoodSeparationTheorem
-      (Solution (semantics (representation)))
-      Feature
-      embed
-      observe) →
-  ∀ {m n₁} →
-  embed m ≡ embed n₁ →
-  m ≡ n₁
-connectedContinuousMaxwellFiniteCarrierFamilyInjective
-  representation
-  observe
-  inverse
-  embed
-  observationWitness
-  separation
-  eq =
-  denseNeighborhoodSeparation separation
-    (trans
-      (cong observe eq)
-      (refl))
-
-connectedContinuousMaxwellFiniteCarrierPigeonhole :
-  ∀ {n : Nat}
-  {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (representation :
-    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (observe :
-    Solution (semantics (representation)) → Feature)
-  (inverse : Feature → Solution (semantics (representation)))
-  (embed :
-    Nat → Solution (semantics (representation)))
-  (observationWitness :
-    ContinuousLeftInverseTheorem
-      (Solution (semantics (representation)))
-      Feature
-      observe
-      inverse
-      Continuous)
-  (separation :
-    DenseNeighborhoodSeparationTheorem
-      (Solution (semantics (representation)))
-      Feature
-      embed
-      observe) →
-  ⊥
-connectedContinuousMaxwellFiniteCarrierPigeonhole
-  representation
-  observe
-  inverse
-  embed
-  observationWitness
-  separation =
-  let
-    finiteEncode :
-      Solution (semantics representation) → Fin n =
-      encode (semantics representation)
-    finiteFamily :
-      Nat → Fin n =
-      λ k → finiteEncode (embed k)
-    familyInjective :
-      ∀ {m n₁} →
-      finiteFamily m ≡ finiteFamily n₁ →
-      m ≡ n₁
-    familyInjective eq =
-      denseNeighborhoodSeparation separation
-        (trans
-          (cong observe
-            (trans
-              (sym
-                (decodeEncode
-                  (semantics representation)
-                  (embed m)))
-              (trans
-                (cong
-                  (decode (semantics representation))
-                  eq)
-                (decodeEncode
-                  (semantics representation)
-                  (embed n₁)))))
-          (refl))
-  in
-  ℕ→Fin-notInjective finiteFamily familyInjective
-
-connected-continuous-maxwell-finite-carrier-pigeonhole-theorem :
-  ∀ {n : Nat}
-  {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (representation :
-    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
-  (observe :
-    Solution (semantics representation) → Feature)
-  (inverse : Feature → Solution (semantics representation))
-  (embed :
-    Nat → Solution (semantics representation))
-  (observationWitness :
-    ContinuousLeftInverseTheorem
-      (Solution (semantics representation))
-      Feature
-      observe
-      inverse
-      Continuous)
-  (separation :
-    DenseNeighborhoodSeparationTheorem
-      (Solution (semantics representation))
-      Feature
-      embed
-      observe) →
-  ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
-    n
-connected-continuous-maxwell-finite-carrier-pigeonhole-theorem
-  representation
-  observe
-  inverse
-  embed
-  observationWitness
-  separation =
-  connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
-    observationWitness
-    separation
-    (connectedContinuousMaxwellFiniteCarrierFamilyInjective
-      representation
-      observe
-      inverse
-      embed
-      observationWitness
-      separation)
-    (connectedContinuousMaxwellFiniteCarrierPigeonhole
-      representation
-      observe
-      inverse
-      embed
-      observationWitness
-      separation)
 
 ------------------------------------------------------------------------
 -- Local generalized Walrasian existence closure.
