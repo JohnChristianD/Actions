@@ -87,6 +87,14 @@
     {
       "node": "MarkovianStationaryPointCompositionTheorem",
       "role": "stationary-point/existence composition over the existing Markov-stationary Walrasian interface without fabricating convergence"
+    },
+    {
+      "node": "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "role": "fully connected exact extraction endpoint consuming continuous Hodge-Maxwell/GRU semantics, exact GRU/F4/Norm/Watkins prefix composition, horizon-indexed deterministic regret, and endogenous e-graph/A* extraction"
+    },
+    {
+      "node": "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
+      "role": "conditional global conjugacy/injectivity surface for a full-learner observation; consumes F4/NormPair stability and connected scan conjugacy and requires an explicit global inverse/conjugacy witness"
     }
   ],
   "edges": [
@@ -239,7 +247,27 @@
       "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "F_full_connected",
       "the negative representation boundary is graphable only as a connected impossibility consumer, not as a standalone class-separation claim"
-    ]
+    ],
+    {
+      "from": "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "to": "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "kind": "promotes existing exact bridge into prefix+horizon-regret extraction endpoint"
+    },
+    {
+      "from": "CanonicalF4NormPairSureStabilityCompositionTheorem",
+      "to": "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
+      "kind": "consumed stability dependency"
+    },
+    {
+      "from": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "to": "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
+      "kind": "consumed conjugacy dependency"
+    },
+    {
+      "from": "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "to": "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
+      "kind": "extracts through canonical endogenous e-graph/A* closure"
+    }
   ],
   "separation_obligation": [
     "prove F_base subseteq F_full_connected under identical input/output semantics",
@@ -1405,11 +1433,16 @@
     "finite_carrier_rule": "no Fin n dependency is introduced"
   },
   "future_graph_contract_v10": {
-    "future_entry": "Future F4/NormPair, Frank-Wolfe probability/topology, and Markov-stationary theorem surfaces must enter through these composed parents when the Agda dependencies are real.",
-    "probability_boundary": "The current Frank-Wolfe theorem is deterministic and Nat-valued; probability, almost-sure convergence, measure structure, and asymptotic rates require explicit new Agda premises.",
-    "topology_boundary": "ContinuousLeftInverseTheorem transports exact readout and injectivity; it does not itself prove optimizer convergence or a Frank-Wolfe limit theorem.",
-    "stationary_boundary": "MarkovStationaryWalrasianCompositionTheorem supplies invariant-aggregate stationarity; stationary-point existence/convergence remains conditional on an explicit existence witness such as ConnectedGeneralizedWalrasianExistenceTheorem.",
-    "no_synthetic_edge": true
+    "future_entry": "Future F4/NormPair, Frank-Wolfe probability/measure/topology, Markov-stationary, and POMDP/Tsallis-q-exp/heavy-tail theorem surfaces must enter through an actually consuming composed Agda parent.",
+    "probability_boundary": "The current Frank-Wolfe certificate is deterministic and Nat-valued. Probability-space/distribution objects, sigma-algebra or measurable-space semantics, integration/expectation, almost-sure statements, and measure-theoretic convergence must be explicit Agda premises before any probability theorem is admitted.",
+    "topology_boundary": "ContinuousLeftInverseTheorem transports exact readout/injectivity; it does not prove optimizer convergence, compactness, weak convergence, or a Frank-Wolfe limit theorem.",
+    "stationary_boundary": "MarkovStationaryWalrasianCompositionTheorem supplies invariant-aggregate stationarity; stationary-point existence/convergence remains conditional on an explicit existence or convergence witness.",
+    "pomdp_boundary": "POMDPExactTransport is exact carrier/transition/observation/reward transport only; it does not supply a policy-optimality, belief-state, filtering, or probabilistic convergence theorem.",
+    "tsallis_boundary": "Tsallis divergence/exact conjugacy is carrier-polymorphic, but a q-exponential generalization requires an explicit q-parameterized exponential/logarithm, normalization, domain, and transport law on the Agda surface.",
+    "heavy_tail_boundary": "Gaussian and heavy-tail models require explicit probability distributions and tail/moment assumptions. A Gaussian is light-tailed; it cannot by itself witness heavy-tail behavior. Any combined Gaussian/heavy-tail theorem must state the mixture, scale-mixture, generalized distribution, or asymptotic tail object explicitly.",
+    "no_synthetic_edge": true,
+    "global_injectivity_boundary": "Exact continuous Maxwell injectivity is now global over an arbitrary Set carrier when a global encode/decode isomorphism is supplied; finite functions/Fin enumeration are not required. Injectivity still depends on the exact left-inverse/global reconstruction witness.",
+    "carrier_semantics": "Set parameters are semantic carriers for arbitrary state/function spaces. Nat-indexed streams/horizons and List prefixes encode discrete time, finite words/prefix data, and recursive algebra; neither is a claim that the physical Maxwell carrier is Nat- or List-valued."
   },
   "pruning_policy_v10": {
     "removed_from_canonical_path": [
@@ -1424,12 +1457,14 @@
     "status": "BOUNDARY_NOT_A_THEOREM",
     "exact_surface": "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
     "missing_premises": [
-      "probability space or distribution object",
-      "measurability/integration",
-      "almost-sure or expectation semantics",
-      "topological/metric structure for optimizer iterates",
-      "limit or convergence statement"
+      "probability space/distribution object",
+      "measurability and integration/expectation",
+      "almost-sure or probabilistic semantics",
+      "topological/metric structure on optimizer iterates",
+      "limit/convergence statement",
+      "explicit q-exponential/Tsallis parameterization if generalized exponents are claimed",
+      "explicit Gaussian, mixture, scale-mixture, or heavy-tail distribution and tail/moment law"
     ],
-    "rule": "Do not graph a probability+topology Frank-Wolfe theorem until an actual Agda declaration supplies these premises and a composed consumer exists."
+    "rule": "Do not graph probability/measure/topology/POMDP/Tsallis-q-exp/heavy-tail Frank-Wolfe theorems until an actual Agda declaration supplies the premises and a composed consumer exists."
   }
 }
