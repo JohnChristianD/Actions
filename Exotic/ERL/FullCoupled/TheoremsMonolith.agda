@@ -4700,7 +4700,7 @@ record ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
       to finiteListCoordinates
         (learnerToSolution (connected) s)
       ≡
-      to finiteDimensionalCoordinates
+      to finiteListCoordinates
         (learnerToSolution (connected) t) →
       s ≡ t
 
