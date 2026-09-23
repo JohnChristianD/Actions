@@ -6701,3 +6701,129 @@ connected-f4-frank-wolfe-horizon-regret-theorem C H =
 -- rounding model, and stationary-law witness remain required before this
 -- becomes a proved numeric regret theorem.
 ------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Exact finite continuous differential Hodge-Maxwell representation.
+--
+-- The Maxwell source semantics are the differential-form equations
+--   d F = 0
+--   d (star F) = j
+-- used by nLab.  This theorem does not discretize or approximate those
+-- equations: Form2, Form3, d, star, current, and the solution predicate
+-- are exact semantic objects supplied by the certificate.
+--
+-- "Finite continuous" means a finite exact family of continuous
+-- differential-form solutions.  The finite index is an exact encoding of
+-- that family, not an approximation of the underlying PDE.
+------------------------------------------------------------------------
+
+record FiniteContinuousHodgeMaxwellExactRepresentationData
+  (n : Nat) : Set₁ where
+  constructor finiteContinuousHodgeMaxwellExactRepresentationData
+  field
+    Form2 : Set
+    Form3 : Set
+    d : Form2 → Form3
+    star : Form2 → Form2
+    current : Form2 → Form3
+    zero3 : Form3
+    Solution : Set
+    fieldF : Solution → Form2
+    fieldJ : Solution → Form3
+    maxwellEquation :
+      ∀ s →
+      d (fieldF s) ≡ zero3 ×
+      d (star (fieldF s)) ≡ fieldJ s
+    step : Solution → Solution
+    encodedStep : Fin n → Fin n
+    encode : Solution → Fin n
+    decode : Fin n → Solution
+    decodeEncode : ∀ s → decode (encode s) ≡ s
+    encodeDecode : ∀ i → encode (decode i) ≡ i
+    maxwellClosed :
+      ∀ s →
+      maxwellEquation (step s)
+    conjugacy :
+      ∀ s →
+      encode (step s) ≡ encodedStep (encode s)
+
+open FiniteContinuousHodgeMaxwellExactRepresentationData public
+
+finiteContinuousHodgeMaxwell-state-isomorphism :
+  ∀ {n : Nat}
+  (D : FiniteContinuousHodgeMaxwellExactRepresentationData n) →
+  StateIsomorphism (Fin n) (Solution D)
+finiteContinuousHodgeMaxwell-state-isomorphism D =
+  stateIsomorphism
+    (decode D)
+    (encode D)
+    (decodeEncode D)
+    (encodeDecode D)
+
+record ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+  (n : Nat) : Set₁ where
+  constructor connectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+  field
+    semantics :
+      FiniteContinuousHodgeMaxwellExactRepresentationData n
+    representation :
+      FiniteRecurrentFunctionExactTranslationTheorem
+        n
+        (Solution semantics)
+        (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+        (encodedStep semantics)
+        (step semantics)
+    exactMaxwellPDERepresentation :
+      ∀ s →
+      StateIsomorphism.to
+        (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+        (encodedStep semantics
+          (StateIsomorphism.to
+            (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+            s))
+      ≡
+      step semantics
+        (StateIsomorphism.to
+          (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+          s)
+    exactFieldEquations :
+      ∀ s →
+      maxwellEquation semantics
+        (StateIsomorphism.to
+          (finiteContinuousHodgeMaxwell-state-isomorphism semantics)
+          s)
+
+connected-finite-continuous-hodge-maxwell-gru-representation-theorem :
+  ∀ {n : Nat}
+  (D : FiniteContinuousHodgeMaxwellExactRepresentationData n) →
+  ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+connected-finite-continuous-hodge-maxwell-gru-representation-theorem D =
+  connectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+    D
+    (finiteRecurrentFunctionExactTranslation
+      (finiteContinuousHodgeMaxwell-state-isomorphism D)
+      (encodedStep D)
+      (step D)
+      (conjugacy D))
+    (λ s → conjugacy D s)
+    (λ s → maxwellEquation D s)
+
+------------------------------------------------------------------------
+-- Horizon monotonicity is not part of the F4 regret theorem by itself.
+-- The cumulative recurrence proves exact accumulation only.  Monotonicity
+-- requires a nonnegative per-round regret certificate.
+------------------------------------------------------------------------
+
+f4-cumulative-regret-monotone :
+  ∀ (D : F4FrankWolfeRoundingBiasRegretData)
+  (nonnegative : ∀ H → zero ≤ perRoundRegret D H) →
+  ∀ H →
+  cumulativeRegret D H ≤ cumulativeRegret D (suc H)
+f4-cumulative-regret-monotone D nonnegative H =
+  trans
+    (≤-refl)
+    (subst
+      (λ q → cumulativeRegret D H ≤ q)
+      (sym (cumulativeStep D H))
+      (s≤s (≤-refl)))
