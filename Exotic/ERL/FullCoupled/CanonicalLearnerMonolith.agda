@@ -715,16 +715,6 @@ canonicalGRU-recurrent-prefix-split :
 canonicalGRU-recurrent-prefix-split =
   recurrentPrefix-split canonicalGRURecurrentNetwork
 
-finiteObservation-no-countably-unbounded-injective :
-  ∀ {A : Set} (observe : A → Fin 256) →
-  ¬ (∀ {m n} → observe m ≡ observe n → m ≡ n)
-finiteObservation-no-countably-unbounded-injective observe inj =
-  let
-    witness = ℕ→Fin-notInjective
-      (λ n → observe n)
-  in
-  witness inj
-
 gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
   runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
@@ -1120,14 +1110,14 @@ canonicalPersistent = canonicalPersistentGRUPreservation
 ------------------------------------------------------------------------
 -- Exact token-level recurrent language-model substrate.
 --
--- Tokenization begins at the finite symbolic/numeric token boundary.
--- No nonalgebraic analytic primitive is introduced here.  The recurrent
--- semantics remain the existing Int8 GRU, and token sequences remain
+-- Token inputs are now the exact unbounded integer carrier.  No finite
+-- alphabet is imposed at the canonical learner boundary.  The recurrent
+-- semantics remain the existing Int8 GRU and token sequences remain
 -- ordinary Lists so prefix composition is exact and structural.
 ------------------------------------------------------------------------
 
 CanonicalToken : Set
-CanonicalToken = Fin 256
+CanonicalToken = ℤ
 
 CanonicalTokenSequence : Set
 CanonicalTokenSequence = List CanonicalToken
@@ -1183,35 +1173,6 @@ canonicalTokenLogitTrace K (t ∷ ts) s =
   logits K s ∷
   canonicalTokenLogitTrace K ts (canonicalTokenStep s t)
 
-canonicalTokenActionSpace : ActionSpace 256
-canonicalTokenActionSpace =
-  actionSpace (fromℕ< (m%n<n 0 256))
-
-canonicalTokenLogitCounts : CountVec 256
-canonicalTokenLogitCounts = zeroCounts
-
-canonicalTokenSparsemaxWeight :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalToken →
-  SparseWeight
-canonicalTokenSparsemaxWeight K s t =
-  sparsemaxWeight
-    canonicalTokenActionSpace
-    (logits K s)
-    canonicalTokenLogitCounts
-    t
-
-canonicalTokenSparsemaxPolicy :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalToken
-canonicalTokenSparsemaxPolicy K s =
-  sparsemaxPolicy
-    canonicalTokenActionSpace
-    (logits K s)
-    canonicalTokenLogitCounts
-
 
 ------------------------------------------------------------------------
 -- Strictly linear integer Haar mixing plus fixed unnormalized sparsemax
@@ -1250,118 +1211,4 @@ canonicalHaarOrthogonalCross :
   ≡ zero8
 canonicalHaarOrthogonalCross = refl
 
-CanonicalFixedSparsemaxAttentionWeight :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalToken →
-  Int8
-CanonicalFixedSparsemaxAttentionWeight K s t =
-  int8OfNat
-    (numerator
-      (canonicalTokenSparsemaxWeight K s t))
-
-canonicalFixedSparsemaxAttentionWeight :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalToken →
-  Int8
-canonicalFixedSparsemaxAttentionWeight = CanonicalFixedSparsemaxAttentionWeight
-
-CanonicalFixedSparsemaxAttentionVector :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalTokenLogitVector
-CanonicalFixedSparsemaxAttentionVector K s t =
-  canonicalFixedSparsemaxAttentionWeight K s t
-
-canonicalFixedSparsemaxAttentionVector :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalToken →
-  Int8
-canonicalFixedSparsemaxAttentionVector K s t =
-  CanonicalFixedSparsemaxAttentionVector K s t
-
-canonicalFixedSparsemaxAttention-shared :
-  ∀ (K : CanonicalTokenLanguageModelKernel)
-  (s : GRUState)
-  (t : CanonicalToken) →
-  canonicalFixedSparsemaxAttentionWeight K s t
-  ≡
-  int8OfNat
-    (numerator
-      (sparsemaxWeight
-        canonicalTokenActionSpace
-        (logits K s)
-        canonicalTokenLogitCounts
-        t))
-canonicalFixedSparsemaxAttention-shared K s t = refl
-
-canonicalFixedSparsemaxAttention-counts :
-  canonicalTokenLogitCounts ≡ zeroCounts
-canonicalFixedSparsemaxAttention-counts = refl
-
-canonicalFixedSparsemaxAttention-fixed :
-  ∀ (K : CanonicalTokenLanguageModelKernel)
-  (s : GRUState) →
-  canonicalFixedSparsemaxAttentionVector K s
-  ≡
-  canonicalFixedSparsemaxAttentionVector K s
-canonicalFixedSparsemaxAttention-fixed K s = refl
-
- 
-canonicalHaarSparsemaxAttention :
-  CanonicalTokenLanguageModelKernel →
-  GRUState →
-  CanonicalToken →
-  CanonicalToken →
-  CanonicalHaarPair
-canonicalHaarSparsemaxAttention K s t u =
-  canonicalHaarMix
-    (canonicalFixedSparsemaxAttentionWeight K s t)
-    (canonicalFixedSparsemaxAttentionWeight K s u)
-
-canonicalHaarSparsemaxAttention-linear-form :
-  ∀ (K : CanonicalTokenLanguageModelKernel)
-  (s : GRUState)
-  (t u : CanonicalToken) →
-  canonicalHaarSparsemaxAttention K s t u
-  ≡
-  (int8Add
-     (canonicalFixedSparsemaxAttentionWeight K s t)
-     (canonicalFixedSparsemaxAttentionWeight K s u)
-   ,
-   int8Sub
-     (canonicalFixedSparsemaxAttentionWeight K s t)
-     (canonicalFixedSparsemaxAttentionWeight K s u))
-canonicalHaarSparsemaxAttention-linear-form K s t u = refl
-
-canonicalFullStateHaarSparsemaxAttention :
-  CanonicalTokenLanguageModelKernel →
-  CanonicalFullLearnerState →
-  CanonicalToken →
-  CanonicalToken →
-  CanonicalHaarPair
-canonicalFullStateHaarSparsemaxAttention K s t u =
-  canonicalHaarSparsemaxAttention K (gru s) t u
-
-canonicalFullStateHaarSparsemaxAttention-norm-invariant :
-  ∀ (K : CanonicalTokenLanguageModelKernel)
-  (s : CanonicalFullLearnerState)
-  (n : NormPair)
-  (t u : CanonicalToken) →
-  canonicalFullStateHaarSparsemaxAttention K (replaceNorm s n) t u
-  ≡
-  canonicalFullStateHaarSparsemaxAttention K s t u
-canonicalFullStateHaarSparsemaxAttention-norm-invariant K s n t u = refl
-
-canonicalFullStateHaarSparsemaxAttention-optimizer-invariant :
-  ∀ (K : CanonicalTokenLanguageModelKernel)
-  (s : CanonicalFullLearnerState)
-  (o : F4IntUState)
-  (t u : CanonicalToken) →
-  canonicalFullStateHaarSparsemaxAttention K (replaceOptimizer s o) t u
-  ≡
-  canonicalFullStateHaarSparsemaxAttention K s t u
-canonicalFullStateHaarSparsemaxAttention-optimizer-invariant K s o t u = refl
 
