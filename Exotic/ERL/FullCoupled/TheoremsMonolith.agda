@@ -4557,6 +4557,25 @@ record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 
 open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 
+connected-hodge-maxwell-gru-f4-watkins-egraph-extract :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (C :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU) →
+  ∀ s →
+  EqualityCompositionTheorem
+connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s =
+  eGraphEqualityComposition C
+    (cong
+      (ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell C)))
+      (sym (learnerStepConjugacy C s)))
+    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.exactGRUStepRepresentation
+      (hodgeMaxwell C)
+      (learnerToSolution C s))
+
 connected-hodge-maxwell-gru-f4-watkins-egraph-composition :
   ∀ {GRU : Set}
   {Continuous : {A B : Set} → (A → B) → Set}
@@ -4577,15 +4596,8 @@ connected-hodge-maxwell-gru-f4-watkins-egraph-composition :
         (hodgeMaxwell C))
       (learnerToSolution C s))
 connected-hodge-maxwell-gru-f4-watkins-egraph-composition C s =
-  trans
-    (cong
-      (ContinuousHodgeMaxwellExactRepresentationData.encode
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          (hodgeMaxwell C)))
-      (sym (learnerStepConjugacy C s)))
-    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.exactGRUStepRepresentation
-      (hodgeMaxwell C)
-      (learnerToSolution C s))
+  EqualityCompositionTheorem.composedStep
+    (connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s)
 
 ------------------------------------------------------------------------
 -- Hodge-Maxwell middle-degree involution transport.
