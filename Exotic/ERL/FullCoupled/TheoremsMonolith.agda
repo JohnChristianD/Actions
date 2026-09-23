@@ -4369,18 +4369,18 @@ record StationaryLimitTheorem
     limitPreserved :
       Converges μ μ∞ → P μ∞ ≡ μ∞
 
-finiteObservationStationaryLimitTheorem-is-stationary :
+stationaryLimitTheorem-is-stationary :
   ∀ {Distribution : Set}
     {P : Distribution → Distribution}
     {μ : Nat → Distribution}
     {μ∞ : Distribution}
     {Converges : (Nat → Distribution) → Distribution → Set} →
-  FiniteObservationStationaryLimitTheorem
+  StationaryLimitTheorem
     Distribution P μ μ∞ Converges →
   P μ∞ ≡ μ∞
-finiteObservationStationaryLimitTheorem-is-stationary theorem =
-  FiniteObservationStationaryLimitTheorem.limitPreserved theorem
-    (FiniteObservationStationaryLimitTheorem.converges theorem)
+stationaryLimitTheorem-is-stationary theorem =
+  StationaryLimitTheorem.limitPreserved theorem
+    (StationaryLimitTheorem.converges theorem)
 
 ------------------------------------------------------------------------
 -- PE is an information condition, not a boundedness corollary. The
@@ -4439,8 +4439,8 @@ exact-contract-computability-boundary-theorem =
 -- 2026-09-22 graph-search requirement/subcomposition completion.
 ------------------------------------------------------------------------
 
-record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
-  constructor canonicalFiniteObservationStationarySubcompositionTheorem
+record CanonicalStationarySubcompositionTheorem : Set₁ where
+  constructor canonicalStationarySubcompositionTheorem
   field
     stationaryLimitContract :
       ∀ {Distribution : Set}
@@ -4451,13 +4451,13 @@ record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
       (∀ n → μ (suc n) ≡ P (μ n)) →
       Converges μ π →
       (Converges μ π → P π ≡ π) →
-      FiniteObservationStationaryLimitTheorem
+      StationaryLimitTheorem
         Distribution P μ π Converges
 
 canonical-stationary-subcomposition-theorem :
-  CanonicalFiniteObservationStationarySubcompositionTheorem
+  CanonicalStationarySubcompositionTheorem
 canonical-finite-observation-stationary-subcomposition-theorem =
-  canonicalFiniteObservationStationarySubcompositionTheorem
+  canonicalStationarySubcompositionTheorem
     (λ P μ π Converges transitionLaw convergence limitPreserved →
       finiteObservationStationaryLimitTheorem
         transitionLaw
