@@ -70,11 +70,13 @@
 
 graph_stationary_limit_plan(Laws, Plan) :-
     search_named_required_plan(
+        "StationaryLimitTheorem",
         Laws,
         Plan).
 
 graph_stationary_plan(Laws, Plan) :-
     search_named_required_plan(
+        "CanonicalStationarySubcompositionTheorem",
         Laws,
         Plan).
 
@@ -476,15 +478,11 @@ graph_required_theorems = [
     "CanonicalOperatorCompositionTheorem",
     "CanonicalF4GlobalOptimizerStabilityTheorem",
     "CanonicalPureNonOrangeBypassCompletionTheorem",
-    "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
     "ExactContractComputabilityBoundaryTheorem",
-    "CanonicalClockObservationSubcompositionTheorem",
-    "CanonicalBoundednessPEBoundarySubcompositionTheorem",
     "FiniteProbabilityMassSemanticsTheorem",
     "FinitePOMDPProbabilitySemanticsTheorem",
     "FiniteBeliefUpdateExactTransportTheorem",
-    "CanonicalEndogenousPOMDPObservationBoundaryTheorem",
     "EfficientOperatorMonoidRepresentation",
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
@@ -507,8 +505,6 @@ graph_required_theorems = [
     "PointwiseSandwich",
     "MinimaxBellmanShapleyOperator",
     "DiscreteLeftInverseWitness",
-    "ExactNatObservationSimulation",
-    "ExactTuringCounterObservation",
     "ExactTwoCounterConfiguration",
     "ExactTwoCounterMachine",
     "ContinuousStationaryMarkovWalrasianData",
@@ -516,13 +512,14 @@ graph_required_theorems = [
     "BairdSevenStarProblem",
     "NonIIDMarkovWalrasianProblem",
     "FiniteProbabilityMass",
-    "FinitePOMDPProbabilitySemantics"
+    "FinitePOMDPProbabilitySemantics",
+    "StationaryLimitTheorem"
 ].
 
 :- func graph_required_subcompositions = list(string).
 graph_required_subcompositions = [
-    "CanonicalClockObservationSubcompositionTheorem",
-    "CanonicalBoundednessPEBoundarySubcompositionTheorem",
+    "CanonicalStationarySubcompositionTheorem",
+    "CanonicalBoundednessPEBoundarySubcompositionTheorem"
 ].
 
 graph_search_completion(Laws, RequirementPlans, SubcompositionPlans) :-
