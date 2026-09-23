@@ -29,13 +29,7 @@
     list(list(string))::out,
     list(list(string))::out) is semidet.
 
-:- pred graph_finite_probability_mass_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
 
-:- pred graph_finite_pomdp_probability_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
 
 
 :- pred graph_stationary_limit_plan(
@@ -80,18 +74,6 @@ graph_stationary_plan(Laws, Plan) :-
         Laws,
         Plan).
 
-graph_finite_probability_mass_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "FiniteProbabilityMassSemanticsTheorem",
-        Laws,
-        Plan).
-
-graph_finite_pomdp_probability_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "FinitePOMDPProbabilitySemanticsTheorem",
-        Laws,
-        Plan).
-
 graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
     graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(Laws, Plan).
 
@@ -128,8 +110,7 @@ graph_connected_maxwell_tsallis_exact_conjugacy_plan(Laws, Plan) :-
 
 graph_continuous_hodge_maxwell_gru_representation_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-    "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+        "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
         Laws,
         Plan).
 
@@ -427,25 +408,15 @@ graph_required_theorems = [
     "DiscreteExactUniversalUAPLeftInverseEquivalence",
     "CanonicalExactCompositionTuringCompletenessContract",
     "ContinuousLeftInverseTheorem",
-    "BoundedContinuousLeftInverseExactApproximationTheorem",
     "RingStateInjectivityTheorem",
     "DenseNeighborhoodSeparationTheorem",
-    "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
     "CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem",
-    "FiniteMixedProductRecurrenceTheorem",
-    "AbsorbingFiniteEquilibriumTheorem",
-    "HardSparseAbsorbingPrefixTheorem",
-    "FiniteRankStabilityCertificate",
-    "FiniteNonIIDWalrasianEquilibrium",
-    "FiniteTUShapleyAllocationEquilibrium",
     "CanonicalPolymorphicSparsemaxCompositionTheorem",
-    "DirectProductFiniteAutomatonComposition",
     "OffPolicyFunctionApproximationStabilityBoundary",
     "MarkovStationaryWalrasianCompositionTheorem",
     "GlobalConjugacyEquivalence",
     "GeneralizedWalrasianEquilibrium",
     "ConjugateWalrasianTransport",
-    "Majority3ShapleyEquilibrium",
         "ExactFunctionIsomorphismTransportTheorem",
     "ExactRecurrentFunctionTranslationTheorem",
     "POMDPExactTransport",
@@ -460,9 +431,6 @@ graph_required_theorems = [
     "CanonicalPureNonOrangeBypassCompletionTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
     "ExactContractComputabilityBoundaryTheorem",
-    "FiniteProbabilityMassSemanticsTheorem",
-    "FinitePOMDPProbabilitySemanticsTheorem",
-    "FiniteBeliefUpdateExactTransportTheorem",
     "EfficientOperatorMonoidRepresentation",
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
@@ -488,10 +456,7 @@ graph_required_theorems = [
     "ExactTwoCounterMachine",
     "ContinuousStationaryMarkovWalrasianData",
     "ExactReconstructionOnImage",
-    "BairdSevenStarProblem",
     "NonIIDMarkovWalrasianProblem",
-    "FiniteProbabilityMass",
-    "FinitePOMDPProbabilitySemantics",
     "StationaryLimitTheorem"
 ].
 
