@@ -1083,6 +1083,10 @@
       "finite-carrier Maxwell/Tsallis branches",
       "finite-carrier Maxwell pigeonhole boundary"
     ],
+    "arbitrary_solution_space_quantifier": "For every instantiated ContinuousHodgeMaxwellExactRepresentationData GRU, the field Solution is an arbitrary Set carrier: no fixed dimension, Fin n bound, or finite enumeration is assumed. The connected representation theorem is universally instantiable over every such supplied solution carrier and arbitrary GRU carrier.",
+    "global_injectivity_scope": "continuousHodgeMaxwell-global-encode-injective proves the encoder is injective over the entire Solution carrier of the supplied representation datum: for all x y in that Solution, encode x ≡ encode y implies x ≡ y. This is global within one arbitrary solution space, not merely local, finite, or observation-image injectivity.",
+    "representation_existence_boundary": "The theorem does not prove that every mathematically possible Hodge-Maxwell solution space admits a continuous GRU representation. The exact universal statement is: for every supplied representation datum, its arbitrary Solution carrier receives the exact global StateIsomorphism and global encoder injectivity proved by the Agda theorem.",
+    "set_of_sets_family_boundary": "A literal family/set-of-sets is a universe-lifted or dependent-family object (for example I : Set and A : I → Set, with a dependent sum in Set₁); it is not the same claim as one arbitrary Solution : Set. No cross-family injectivity theorem is claimed or needed by the current Hodge-Maxwell surface. Such a family-wide theorem must introduce an indexed family and a dependent encoder before graph admission.",
     "finite_dimensional_boundary": "A continuous finite-dimensional Hodge-Maxwell specialization is graphable only after an explicit finite-dimensional function-space certificate is added. The current Agda surface does not encode finite-dimensionality, so no finite-dimensional existence theorem is promoted.",
     "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers."
   },
