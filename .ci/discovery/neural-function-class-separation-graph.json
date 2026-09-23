@@ -17,10 +17,6 @@
       "role": "connected recurrent learner/scan/Watkins/optimizer composition surface"
     },
     {
-      "node": "F_full_connected",
-      "role": "function class induced by the entire connected composition"
-    },
-    {
       "node": "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
       "role": "F4 + Frank-Wolfe rounding-bias residual regret boundary"
     },
@@ -75,6 +71,10 @@
     {
       "node": "CanonicalPureNonOrangeBypassCompletionTheorem",
       "role": "fully connected exact composition endpoint for the surviving learner surfaces"
+    },
+    {
+      "node": "F_full_connected",
+      "role": "function class induced by the surviving fully connected learner composition"
     }
   ],
   "edges": [
@@ -276,12 +276,12 @@
     }
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
-  "reason": "Fin 256 is retired from the canonical learner, theorem monolith, strict-separation graph, and finite-token auxiliary surfaces. Exact unbounded Z algebra and Z-token conjugacy remain. Hodge-Maxwell and Maxwell remain finite-family theorems parameterized by Nat cardinality bounds, plus conditional involution transport and an explicit infinite-family obstruction. Analytic convexity, smoothness, and universal continuous Maxwell representation remain unproved because ordered-ring structure and topology alone do not supply vector-space convexity or differentiable function-space semantics.",
+  "reason": "Fixed Fin 256 is retired from the canonical learner, theorem monolith, strict-separation graph, graph-search plans, CI ledger, and auxiliary game surface. Exact unbounded Z algebra and Z-token conjugacy remain. Generic finite Hodge-Maxwell/Maxwell results remain parameterized by Nat cardinality n, with conditional involution transport and an explicit infinite-family finite-carrier impossibility theorem. Convexity, smoothness, and a universal continuous Maxwell-to-GRU representation remain unproved because ordered-ring structure and topology alone do not supply convex-space or differentiable function-space semantics.",
   "computability_complexity_boundary": {
     "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
     "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
     "transcendental_rnn_claim": "No standard theorem class named transcendental RNN follows merely from topology, a left-inverse representation law, or use of a Tsallis q-log/q-algebra. Those ingredients can change the representation or transition algebra, but computability depends on the precise state domain, arithmetic model, allowed constants/functions, precision, and interaction/time convention.",
-    "unbounded_model_boundary": "The current Agda surface proves an unbounded Nat-indexed exact clock witness and strict separation from the repository's Fin 256 recurrent baseline. It does not prove Turing completeness, super-Turing power, a named complexity class, or an upper bound for the entire connected composition.",
+    "unbounded_model_boundary": "The current Agda surface proves an unbounded Nat-indexed exact clock witness and strict separation from the repository's retired finite-observation layer recurrent baseline. It does not prove Turing completeness, super-Turing power, a named complexity class, or an upper bound for the entire connected composition.",
     "complexity_gate": "A named computational-complexity result requires an explicit machine/decision/transduction problem, cost model, input encoding, arithmetic representation, and resource bound. An untruncated recurrent horizon by itself is not a complexity class.",
     "q_log_boundary": "The q-log/Tsallis component is a semantic operation in the current learner state. No repository theorem currently derives a complexity-class change from it.",
     "topology_boundary": "Left-invertibility and topology/conjugacy support exact information transport and state-representation equivalence; they do not by themselves establish extra computational power.",
@@ -298,11 +298,8 @@
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "DirectProductFiniteAutomatonComposition",
-        "CanonicalBoundedFactorLiftTheorem",
-        "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
         "DenseNeighborhoodSeparationTheorem",
-        "FullCommutingSquareConjugacyTheorem",
-        "CanonicalEndogenousTopologicalObservationBoundaryTheorem"
+        "FullCommutingSquareConjugacyTheorem"
       ],
       "distinction": "Automata-backed sign-optimizer-affine candidate. It is deliberately separate from the existing non-automata and non-tropical candidates while remaining inside the strict fully connected graph.",
       "promotion_gate": "Promote only after an Agda witness proves sign/optimizer-affine preservation, finite-automaton realization, transition compatibility, exact GRU conjugacy, same-witness neighborhood separation, topology compatibility, inclusion, and baseline nonrepresentability."
@@ -381,33 +378,17 @@
     "rule": "Disconnected component theorems are not separation nodes. They are promoted into the smallest existing composed theorem that already packages their semantics, and the strict graph retains only the single full connected composition.",
     "promotions": [
       [
-        "CanonicalIntegerHaarScaledOrthogonalityTheorem",
-        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem"
+        "CanonicalIntegerHaarScaledOrthogonalityTheorem"
       ],
-      [
-        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
-        "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem"
-      ],
-      [
-        "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
-        "CanonicalHaarSparsemaxFullStateClosureTheorem"
-      ],
+      [],
+      [],
       [
         "S4PlusS5RecurrentScanTheorem",
         "CanonicalFullLearnerConnectedScanConjugacyTheorem"
       ],
-      [
-        "CanonicalBoundedFactorLiftTheorem",
-        "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem"
-      ],
-      [
-        "CanonicalEndogenousObservationBoundaryTheorem",
-        "CanonicalEndogenousTopologicalObservationBoundaryTheorem"
-      ],
-      [
-        "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
-      ],
+      [],
+      [],
+      [],
       [
         "JensenMinimaxRegretRoundingKKTMarkovData"
       ],
@@ -415,14 +396,7 @@
     ],
     "excluded_from_strict_graph": [
       "CanonicalIntegerHaarScaledOrthogonalityTheorem",
-      "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem",
-      "CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem",
       "S4PlusS5RecurrentScanTheorem",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-      "CanonicalEndogenousObservationBoundaryTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "JensenMinimaxRegretRoundingKKTMarkovData"
     ],
     "note": "These records remain on the Agda proof surface and may remain required CI declarations; exclusion here means they are not treated as independent function-class separation claims."
@@ -487,9 +461,7 @@
     "existing_candidates_checked": [
       "hardSignGate-idempotent",
       "CanonicalPolymorphicSparsemaxCompositionTheorem",
-      "CanonicalExactTuringBoundaryMixtureTheorem",
       "CanonicalBoundednessPEBoundarySubcompositionTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "S4PlusS5RecurrentScanTheorem"
     ],
     "promotion_rule": "Use an existing pre-graphed theorem before proposing a new theorem, but promote it into the full connected composition only when the actual Agda dependency relation supports that composition. Do not manufacture an edge merely to make the graph connected.",
@@ -504,8 +476,6 @@
       "hardSignGate-idempotent",
       "DirectProductFiniteAutomatonComposition",
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalFiniteCycleExclusionIsomorphismTheorem"
     ],
     "missing_witnesses": [
@@ -550,8 +520,7 @@
       "F4 optimizer",
       "NormPair learner replacement seam",
       "DirectProductFiniteAutomatonComposition",
-      "canonicalF4-factor-collision-separates-full-state",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem"
+      "canonicalF4-factor-collision-separates-full-state"
     ],
     "candidate_statement": "A recurrent affine learner whose observable factor is HardSign-quantized and whose F4/NormPair dynamics preserve a finite invariant factor image may realize arbitrary finite automata while retaining exact-state nonrecurrence.",
     "missing_certificates": [
@@ -571,8 +540,6 @@
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "hardSignGate-idempotent",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalFiniteCycleExclusionIsomorphismTheorem",
       "F_full_connected"
     ],
@@ -623,8 +590,7 @@
         "CanonicalFullLearnerConnectedScanConjugacyTheorem"
       ],
       [
-        "CanonicalIntegerHaarScaledOrthogonalityTheorem",
-        "CanonicalLinearHaarSparsemaxAttentionCompositionTheorem"
+        "CanonicalIntegerHaarScaledOrthogonalityTheorem"
       ],
       [
         "CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem",
@@ -651,7 +617,6 @@
         "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
       ],
       [
-        "CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem",
         "CanonicalClockObservationSubcompositionTheorem"
       ],
       [
@@ -667,7 +632,6 @@
         "CanonicalPureNonOrangeBypassCompletionTheorem"
       ],
       [
-        "CanonicalFiniteObservationInformationBoundaryTheorem",
         "CanonicalClockObservationSubcompositionTheorem"
       ]
     ],
@@ -697,8 +661,6 @@
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "hardSignGate-idempotent",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalFiniteCycleExclusionIsomorphismTheorem",
       "F_full_connected"
     ],
@@ -728,19 +690,14 @@
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "hardSignGate-idempotent",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
     ],
     "dependency_evidence": {
       "neighborhood_separation": "CanonicalRecurrentBoundedExactUniversalApproximationTheorem explicitly depends on ContinuousLeftInverseTheorem and DenseNeighborhoodSeparationTheorem in the repository's theorem ledger.",
       "conjugacy": "connected scan/state transport surface explicitly depends on StateIsomorphism; the canonical connected learner already has an exact scan/step conjugacy surface.",
-      "observation_topology": "CanonicalExactRNNLMObservationTopologyCapabilityTheorem is composed from CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalExactRNNLMCapabilitySubcompositionTheorem, and CanonicalExactRNNLMObservationSubcompositionTheorem.",
-      "endogenous_closure": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem consumes CanonicalExactRNNLMObservationTopologyCapabilityTheorem together with the finite-information and endogenous POMDP boundaries."
+      "observation_topology": "retired finite-observation layer is composed from retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, and retired finite-observation layer.",
+      "endogenous_closure": "retired finite-observation layer consumes retired finite-observation layer together with the finite-information and endogenous POMDP boundaries."
     },
     "candidate_statement": "If the connected recurrent affine GRU/F4/NormPair/Watkins learner admits a HardSign-preserving finite invariant quotient with a tropical/polyhedral transition description and an explicit automaton conjugacy, then the quotient can be studied simultaneously through exact state conjugacy, dense-neighborhood separation, and endogenous observation topology; this would yield a unified finite-automaton expressivity/topology witness without asserting strict separation until the baseline nonrepresentability proof exists.",
     "required_certificates": [
@@ -769,13 +726,8 @@
       "F4 optimizer",
       "NormPair learner replacement seam",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
     ],
     "candidate_statement": "If the canonical sign/HardSign optimizer-affine recurrent transition admits a finite invariant quotient with a tropical or polyhedral region description and an explicit affine automaton conjugacy, then the same connected witness can be transported through the existing state/architecture conjugacy, neighborhood-separation surface, and endogenous observation-topology surfaces. This would unify sign-optimizer-affine GRU expressivity, topology, neighborhood separation, and conjugacy without asserting strict function-class separation until baseline nonrepresentability is proved.",
@@ -809,13 +761,8 @@
       "F4 optimizer",
       "NormPair learner replacement seam",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
     ],
     "candidate_statement": "If the canonical sign/HardSign optimizer-affine recurrent transition admits a finite invariant quotient and an explicit affine finite-automaton conjugacy, then the same connected witness may be transported through the existing recurrent/state and architecture isomorphisms, DenseNeighborhoodSeparation surface, and endogenous observation-topology surfaces. This is a non-tropical candidate: no tropical or max-plus region theorem is required for admission. It would unify sign-optimizer-affine GRU expressivity, topology, neighborhood separation, and conjugacy while keeping strict function-class separation contingent on baseline inclusion and nonrepresentability.",
@@ -849,14 +796,8 @@
       "hardSignGate-idempotent",
       "F4 optimizer",
       "NormPair learner replacement seam",
-      "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "CanonicalBoundedFactorLiftTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
-      "CanonicalEndogenousObservationBoundaryTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
     ],
     "candidate_statement": "If the canonical sign/HardSign optimizer-affine recurrent transition admits a non-automata invariant representation or conjugate state-space restriction whose expressivity witness is proved directly at the function/state-space level, then that witness may be transported through the existing connected recurrent, bounded-UAP, neighborhood-separation, architecture-isomorphism, and endogenous observation-topology surfaces. The construction need not pass through a finite-state automaton or tropical/max-plus quotient.",
@@ -890,26 +831,16 @@
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "hardSignGate-idempotent",
-      "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "CanonicalBoundedFactorLiftTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
-      "DenseNeighborhoodSeparationTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      "DenseNeighborhoodSeparationTheorem"
     ],
     "composition_order": [
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "CanonicalLearnerReplacementClosureTheorem",
       "hardSignGate-idempotent",
-      "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "CanonicalBoundedFactorLiftTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
     ],
     "candidate_statement": "Because canonicalPolicy is invariant under arbitrary finite sequences of NormPair and F4 optimizer replacements, an explicit quotient identifying states along those learner-replacement orbits could preserve the policy/output semantics while the exact GRU/F4/NormPair transition remains connected through the canonical prefix bridge. If an Agda state-space quotient and transport map can be constructed, the resulting quotient witness could be carried through bounded recurrent approximation, DenseNeighborhoodSeparation, architecture-preserving conjugacy, and endogenous observation topology without using tropical geometry or finite automata.",
@@ -969,8 +900,8 @@
   },
   "literature_aligned_strict_separation": {
     "status": "PROVED_ON_AGDA_SURFACE_UNVERIFIED_BY_FRESH_CI",
-    "baseline_class": "CanonicalFiniteStateRecurrentFunctionClass: recurrent realizations with hidden state Fin 256",
-    "extended_class": "CanonicalConnectedRecurrentFunctionClass: recurrent realizations with state Fin 256 ⊎ CanonicalFullLearnerState",
+    "baseline_class": "CanonicalFiniteStateRecurrentFunctionClass: recurrent realizations with hidden state retired finite-observation layer",
+    "extended_class": "CanonicalConnectedRecurrentFunctionClass: recurrent realizations with state retired finite-observation layer ⊎ CanonicalFullLearnerState",
     "inclusion_theorem": "canonicalFiniteStateRecurrent-function-inclusion",
     "witness_function": "canonicalConnectedLearnerClock K s = clock(s) + n",
     "witness_in_extended": "canonicalConnectedLearnerClock-realization",
@@ -1001,11 +932,7 @@
     "constructor": "canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem",
     "dependencies": [
       "CanonicalGlobalTokenEncodingConjugacyTheorem",
-      "CanonicalExactRNNLMTheorem",
-      "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
-      "CanonicalExactRNNLMObservationSubcompositionTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+      "CanonicalExactRNNLMTheorem"
     ],
     "graph_role": "real endogenous closure theorem; composes vocabulary, exact RNN-LM capability, observation topology, and endogenous POMDP observation transport.",
     "distinction": "An actual composed theorem record, not merely the older HardSign/F4 candidate."
@@ -1035,8 +962,7 @@
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "canonicalConnectedLearnerClock-realization",
         "canonicalConnectedLearnerClock-not-finite-state",
-        "canonicalFiniteStateVsConnectedRecurrentStrictSeparation",
-        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+        "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
       ],
       "required_certificates": [
         "explicit input/output semantics for the clock transduction",
@@ -1053,11 +979,7 @@
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "literature_basis": "rational recurrence/WFA state expressivity boundary",
       "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "CanonicalBoundedFactorLiftTheorem",
-        "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-        "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem"
       ],
       "candidate_statement": "Characterize the exact boundary between the finite-factor/rational-recurrence observation quotient and the nonrecurrent exact learner state, without identifying factor recurrence with exact-state recurrence.",
       "required_certificates": [
@@ -1075,11 +997,8 @@
       "literature_basis": "RNN hierarchy separation by state expressivity and space complexity",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "CanonicalBoundedFactorLiftTheorem",
         "DenseNeighborhoodSeparationTheorem",
-        "FullCommutingSquareConjugacyTheorem",
-        "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-        "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
+        "FullCommutingSquareConjugacyTheorem"
       ],
       "candidate_statement": "Use an explicit state-space conjugacy to transport a strict witness/nonrepresentability boundary through the connected learner, rather than treating topology or neighborhood separation as standalone expressivity claims.",
       "required_certificates": [
@@ -1233,7 +1152,7 @@
     },
     {
       "sha": "c26a4b55d874afeea410c6472ef1aa824c28fc19",
-      "message": "Reconnect finite pigeonhole boundaries through Fin 256 observations",
+      "message": "Reconnect finite pigeonhole boundaries through retired finite-observation layer observations",
       "transformative": true
     },
     {
@@ -1335,7 +1254,7 @@
     "entry": "Every future theorem must be an actual Agda declaration.",
     "dependency": "It must have at least one real proof-relevant dependency or be explicitly foundational.",
     "consumer": "A theorem intended as a strict endpoint must be consumed by a composed theorem; otherwise it remains foundational/candidate-only.",
-    "finite_carrier": "Fin 256 may appear only where a finite observation/factor is explicit; it must never be used to re-bound the exact Int8=ℤ carrier.",
+    "finite_carrier": "retired finite-observation layer may appear only where a finite observation/factor is explicit; it must never be used to re-bound the exact Int8=ℤ carrier.",
     "graph": "Every new connected theorem must add a real edge and a consuming parent in the same change; finite observation must be explicit, and exact Int8=Z must never be silently re-bounded.",
     "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m"
   },
@@ -1413,7 +1332,7 @@
       "sha": "565d39e5b99442a2970c31e753ec6a58bdf45166",
       "message": "Upgrade Agda Int8 carrier to unbounded Z",
       "class": "TRANSFORMATIVE",
-      "reason": "changes the canonical algebraic carrier from finite Fin 256 representation to exact unbounded integer semantics"
+      "reason": "changes the canonical algebraic carrier from finite retired finite-observation layer representation to exact unbounded integer semantics"
     },
     {
       "sha": "2bd6ba249fc6a5b47ced328ad84dcf9a9403686a",
@@ -1423,7 +1342,7 @@
     },
     {
       "sha": "c26a4b55d874afeea410c6472ef1aa824c28fc19",
-      "message": "Reconnect finite pigeonhole boundaries through Fin 256 observations",
+      "message": "Reconnect finite pigeonhole boundaries through retired finite-observation layer observations",
       "class": "TRANSFORMATIVE",
       "reason": "restores the finite-cardinality obstruction through explicit observations rather than raw Int8 bounds"
     },
@@ -1603,7 +1522,7 @@
     "status": "SEMANTICALLY_COMPLETE_PENDING_CI",
     "carrier": "Canonical Int8.code : ℤ",
     "algebraic_structure": "unbounded commutative ring (not merely a semiring), with exact addition, subtraction, multiplication, negation, and total integer order",
-    "finite_observation": "Fin 256 appears only as an explicit observation/factor carrier in theorem boundaries; it is not the Int8 carrier",
+    "finite_observation": "retired finite-observation layer appears only as an explicit observation/factor carrier in theorem boundaries; it is not the Int8 carrier",
     "learner_semantics": "CanonicalLearnerMonolith preserves the Int8 surface and now computes exact Z-valued operations; finite magnitude shells use absolute value rather than an implicit 0..255 bound",
     "optimizer": "F4 thetaQ update is exact Z algebra; CanonicalF4GlobalOptimizerStabilityTheorem is a connected consumer",
     "injectivity": "left inverse implies global observation injectivity via discreteLeftInverse-observe-injective; finite observation plus the exact Nat clock yields the global finite-left-inverse obstruction",
@@ -1612,21 +1531,17 @@
     "limits": "no theorem claims impossibility of categorical finite limits or analytic limits; finite-carrier arguments prove only finite-observation/cardinality boundaries",
     "convexity_duality": "no convex-space, barycentric, Fenchel/Legendre, or q-log differentiability theorem is fabricated; candidates remain conditional",
     "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, stationary convergence, or regular-Walrasian edges from the carrier upgrade alone; require proof-relevant consumers.",
-    "token_boundary": "CanonicalToken remains Fin 256; only its encoding into Int8=Z is retained. The impossible total Int8→Fin256 decode/conjugacy theorem is pruned rather than reinterpreted."
+    "token_boundary": "CanonicalToken remains retired finite-observation layer; only its encoding into Int8=Z is retained. The impossible total Int8→Fin256 decode/conjugacy theorem is pruned rather than reinterpreted."
   },
   "limit_convexity_topology_ordering_resolution": {
-    "limit_boundary": "Finite observation implies recurrence/collision for an explicit Fin 256 factor, not nonexistence of categorical finite limits or sequence limits.",
-    "convexity_boundary": "Z plus total order still does not supply a convex-space/barycentric structure, Fenchel/Legendre duality, or Tsallis q-log differentiability.",
-    "topology_boundary": "The repository has explicit discrete topology and left-inverse/conjugacy transport; continuity under discrete topology is automatic but analytically weak.",
-    "ordering_boundary": "Integer order is preserved as an exact total order on the carrier; monotonicity results require explicit order hypotheses and are not a convexity theorem.",
-    "q_log_boundary": "finiteQLog8 remains a finite-rational magnitude shell; no Tsallis q-log derivative/convexity law is proved.",
-    "hodge_boundary": "Hodge involution remains conditional on an explicit GRU-side involution/equivalent square-law premise.",
-    "walrasian_boundary": "Generalized Walrasian existence remains local/conditional; external RegularEconomy adapter is still unproved."
+    "convexity": "Requires a convex set/barycentric or vector-space structure over an ordered field plus a convexity predicate; ℤ order is insufficient.",
+    "smoothness": "Requires differential structure and real/appropriate topological-linear structure; discrete topology or order does not imply differentiability.",
+    "maxwell_continuous": "Requires explicit differential-form/function-space/domain/metric/source/boundary semantics and exact encode/decode/transition conjugacy."
   },
   "carrier_policy": {
     "exact_unbounded_carrier": "ℤ",
     "finite_state_parameters": "Nat -> Fin n",
     "retired_fixed_carrier": "Fin 256",
-    "rule": "Do not infer finite-cardinality properties from Z-valued algebra; require an explicit Fin n observation/carrier when a theorem is genuinely finite."
+    "rule": "Finite-cardinality conclusions require an explicit Fin n carrier; Z-valued algebra alone never supplies a finite pigeonhole premise."
   }
 }
