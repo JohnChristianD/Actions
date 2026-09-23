@@ -5939,6 +5939,5 @@ hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation :
       x ≡ y)
 hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
   H witness =
-  λ globalInjective →
-    distinct witness
-      (globalInjective (collision witness))
+  λ _ →
+    hodgeMaxwell-globalEncodeCollision-impossible H witness
