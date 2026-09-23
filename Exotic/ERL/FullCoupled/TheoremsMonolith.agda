@@ -6639,445 +6639,45 @@ canonicalConnectedComposition-parallelPrefixComplexity-contract =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Jensen/minimax regret + rounding-bias + KKT + stationary-Markov
--- connected optimization boundary.
+-- Horizon-indexed rounding-bias residual regret surfaces.
 --
--- This is intentionally conditional.  Jensen/minimax duality supplies a
--- regret comparison only when the required convex-concave/minimax
--- hypotheses are instantiated.  KKT stationarity and Markov fixed-point
--- structure do not follow merely from rounding or recurrence.
---
--- The quantitative carrier is Nat so this layer remains independent of
--- an imported real-analysis library.  A concrete real-valued instantiation
--- may refine these quantities through a separate representation theorem.
-------------------------------------------------------------------------
-
-record JensenMinimaxRegretRoundingKKTMarkovData : Set₁ where
-  constructor jensenMinimaxRegretRoundingKKTMarkovData
-  field
-    minimaxRegret : Nat
-    jensenGap : Nat
-    roundingBias : Nat
-    kktResidual : Nat
-    lionDescentResidual : Nat
-    markovMixing : Nat
-
-    jensenMinimaxRegret :
-      minimaxRegret ≤ jensenGap + roundingBias
-
-    kktRoundingAbsorption :
-      jensenGap + roundingBias
-      ≤
-      jensenGap + roundingBias + kktResidual
-
-    lionDescentKKT :
-      jensenGap + roundingBias + kktResidual
-      ≤
-      jensenGap + roundingBias + kktResidual + lionDescentResidual
-
-    stationaryMarkovFixedPoint :
-      jensenGap + roundingBias + kktResidual + lionDescentResidual
-      ≤
-      jensenGap + roundingBias + kktResidual + lionDescentResidual + markovMixing
-
-open JensenMinimaxRegretRoundingKKTMarkovData public
-
-jensen-minimax-regret-rounding-kkt-markov-bound :
-  (D : JensenMinimaxRegretRoundingKKTMarkovData) →
-  minimaxRegret D
-  ≤
-  jensenGap D
-  + roundingBias D
-  + kktResidual D
-  + lionDescentResidual D
-  + markovMixing D
-jensen-minimax-regret-rounding-kkt-markov-bound D =
-  ≤-trans
-    (jensenMinimaxRegret D)
-    (≤-trans
-      (kktRoundingAbsorption D)
-      (≤-trans
-        (lionDescentKKT D)
-        (stationaryMarkovFixedPoint D)))
-
-------------------------------------------------------------------------
--- Full connected optimizer composition.  The recurrent scan and
--- stationary Markov/Walrasian interfaces are explicit dependencies rather
--- than disconnected theorem names.
-------------------------------------------------------------------------
-
-record ConnectedJensenMinimaxRegretOptimizerTheorem : Set₁ where
-  constructor connectedJensenMinimaxRegretOptimizerTheorem
-  field
-    recurrentScan :
-      RecurrentAssociativeScanTheorem C.GRUState C.Int8
-
-    stationaryMarkovWalrasian :
-      MarkovStationaryWalrasianCompositionTheorem
-
-    finiteKKTAbsorbing :
-      ∀ {State : Set}
-        {step : State → State}
-        {hardSparse : State → Set}
-        {equilibrium : State} →
-      FiniteHardSparseKKTEquilibriumTheorem
-        State step hardSparse equilibrium →
-      UniqueKKTAbsorbingClass
-        State
-        (⊤)
-        step
-        hardSparse
-        (λ _ → tt)
-        equilibrium
-
-    regretBoundary :
-      JensenMinimaxRegretRoundingKKTMarkovData
-
-    regretBound :
-      minimaxRegret regretBoundary
-      ≤
-      jensenGap regretBoundary
-      + roundingBias regretBoundary
-      + kktResidual regretBoundary
-      + lionDescentResidual regretBoundary
-      + markovMixing regretBoundary
-
-open ConnectedJensenMinimaxRegretOptimizerTheorem public
-
-connected-jensen-minimax-regret-optimizer-theorem :
-  ConnectedJensenMinimaxRegretOptimizerTheorem →
-  minimaxRegret regretBoundary
-  ≤
-  jensenGap regretBoundary
-  + roundingBias regretBoundary
-  + kktResidual regretBoundary
-  + lionDescentResidual regretBoundary
-  + markovMixing regretBoundary
-connected-jensen-minimax-regret-optimizer-theorem C =
-  regretBound C
-
-------------------------------------------------------------------------
--- Lion-extended connected optimizer boundary.
--- This is a real Agda proposition consuming the existing connected
--- Jensen/minimax/rounding/KKT/Markov theorem. Its Lion contribution is
--- represented by the explicit descent residual in the regret data.
-------------------------------------------------------------------------
-
-record ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem : Set₁ where
-  constructor connectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem
-  field
-    connectedOptimizer :
-      ConnectedJensenMinimaxRegretOptimizerTheorem
-
-open ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem public
-
-connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem :
-  (C : ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem) →
-  minimaxRegret
-    (regretBoundary (connectedOptimizer C))
-  ≤
-  jensenGap (regretBoundary (connectedOptimizer C))
-  + roundingBias (regretBoundary (connectedOptimizer C))
-  + kktResidual (regretBoundary (connectedOptimizer C))
-  + lionDescentResidual (regretBoundary (connectedOptimizer C))
-  + markovMixing (regretBoundary (connectedOptimizer C))
-connected-lion-jensen-minimax-regret-rounding-kkt-markov-theorem C =
-  regretBound (connectedOptimizer C)
-
-------------------------------------------------------------------------
--- F4 + Frank-Wolfe connected optimization boundary.
---
--- The F4 component is already an exact finite recurrent state in this
--- monolith.  Frank-Wolfe is introduced only through its finite certificate:
--- a supplied gap/descent relation and KKT compatibility. No optimization
--- library or continuous-analysis dependency is imported.
-------------------------------------------------------------------------
-
-record F4FrankWolfeKKTDescentData : Set₁ where
-  constructor f4FrankWolfeKKTDescentData
-  field
-    frankWolfeGap : Nat
-    f4DescentResidual : Nat
-    kktResidual : Nat
-    frankWolfeDescent :
-      frankWolfeGap ≤ f4DescentResidual
-    descentKKT :
-      f4DescentResidual ≤ f4DescentResidual + kktResidual
-
-------------------------------------------------------------------------
--- This is deliberately conditional: it consumes the already-proved exact
--- F4/GRU prefix composition and records the Frank-Wolfe certificate as a
--- connected optimizer seam rather than a disconnected theorem.
-------------------------------------------------------------------------
-
-record ConnectedF4FrankWolfeKKTTheorem : Set₁ where
-  constructor connectedF4FrankWolfeKKTTheorem
-  field
-    f4Composition :
-      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-    certificate :
-      F4FrankWolfeKKTDescentData
-    connectedBound :
-      frankWolfeGap certificate
-      ≤
-      f4DescentResidual certificate + kktResidual certificate
-
-open ConnectedF4FrankWolfeKKTTheorem public
-
-connected-f4-frank-wolfe-kkt-theorem :
-  (C : ConnectedF4FrankWolfeKKTTheorem) →
-  frankWolfeGap (certificate C)
-  ≤
-  f4DescentResidual (certificate C)
-  + kktResidual (certificate C)
-connected-f4-frank-wolfe-kkt-theorem C =
-  connectedBound C
-
-------------------------------------------------------------------------
--- Fully connected F4 + Frank-Wolfe optimizer composition boundary.
---
--- This consumes the exact F4/Frank-Wolfe seam together with the existing
--- stationary Markov/Walrasian and KKT interfaces.  The finite certificate
--- keeps the statement library-free; analytic Frank-Wolfe/KKT hypotheses
--- remain explicit promotion obligations.
-------------------------------------------------------------------------
-
-record F4FrankWolfeJensenRoundingKKTMarkovData : Set₁ where
-  constructor f4FrankWolfeJensenRoundingKKTMarkovData
-  field
-    regret : Nat
-    jensenGap : Nat
-    roundingBias : Nat
-    kktResidual : Nat
-    frankWolfeResidual : Nat
-    markovMixing : Nat
-
-    jensenBound :
-      regret ≤ jensenGap + roundingBias
-
-    roundingKKTBound :
-      jensenGap + roundingBias
-      ≤
-      jensenGap + roundingBias + kktResidual
-
-    kktFrankWolfeBound :
-      jensenGap + roundingBias + kktResidual
-      ≤
-      jensenGap + roundingBias + kktResidual + frankWolfeResidual
-
-    stationaryMarkovBound :
-      jensenGap + roundingBias + kktResidual + frankWolfeResidual
-      ≤
-      jensenGap + roundingBias + kktResidual + frankWolfeResidual + markovMixing
-
-open F4FrankWolfeJensenRoundingKKTMarkovData public
-
-f4-frank-wolfe-jensen-rounding-kkt-markov-bound :
-  (D : F4FrankWolfeJensenRoundingKKTMarkovData) →
-  regret D
-  ≤
-  jensenGap D
-  + roundingBias D
-  + kktResidual D
-  + frankWolfeResidual D
-  + markovMixing D
-f4-frank-wolfe-jensen-rounding-kkt-markov-bound D =
-  ≤-trans
-    (jensenBound D)
-    (≤-trans
-      (roundingKKTBound D)
-      (≤-trans
-        (kktFrankWolfeBound D)
-        (stationaryMarkovBound D)))
-
-record ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem : Set₁ where
-  constructor connectedF4FrankWolfeJensenRoundingKKTMarkovTheorem
-  field
-    f4FrankWolfe :
-      ConnectedF4FrankWolfeKKTTheorem
-    stationaryMarkovWalrasian :
-      MarkovStationaryWalrasianCompositionTheorem
-    certificate :
-      F4FrankWolfeJensenRoundingKKTMarkovData
-    connectedBound :
-      regret certificate
-      ≤
-      jensenGap certificate
-      + roundingBias certificate
-      + kktResidual certificate
-      + frankWolfeResidual certificate
-      + markovMixing certificate
-
-open ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem public
-
-connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem :
-  (C : ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem) →
-  regret (certificate C)
-  ≤
-  jensenGap (certificate C)
-  + roundingBias (certificate C)
-  + kktResidual (certificate C)
-  + frankWolfeResidual (certificate C)
-  + markovMixing (certificate C)
-connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem C =
-  connectedBound C
-
-
-------------------------------------------------------------------------
--- Maxwell-only finite exact representation seam.
---
--- This deliberately formalizes only finite transition semantics.  The
--- continuous Maxwell PDE is not silently identified with a finite GRU.
--- The divergence carrier is abstract so that a concrete Tsallis model can
--- be supplied without importing a real-analysis or information-theory
--- library into the safe monolith.
-------------------------------------------------------------------------
-
-record FiniteTsallisDivergenceStructure (n : Nat) : Set₁ where
-  constructor finiteTsallisDivergenceStructure
-  field
-    Value : Set
-    divergence : Fin n → Fin n → Value
-    divergenceStep : Value → Value
-
-open FiniteTsallisDivergenceStructure public
-
-record MaxwellFiniteExactConjugacyData
-  (n : Nat)
-  (State : Set) : Set₁ where
-  constructor maxwellFiniteExactConjugacyData
-  field
-    maxwellAdmissible : State → Set
-    step : State → State
-    encodedStep : Fin n → Fin n
-    encode : State → Fin n
-    decode : Fin n → State
-
-    decodeEncode :
-      ∀ x → decode (encode x) ≡ x
-
-    encodeDecode :
-      ∀ x → encode (decode x) ≡ x
-
-    maxwellClosed :
-      ∀ {x} → maxwellAdmissible x → maxwellAdmissible (step x)
-
-    conjugacy :
-      ∀ x → encode (step x) ≡ encodedStep (encode x)
-
-    divergenceStructure :
-      FiniteTsallisDivergenceStructure n
-
-    divergenceTransport :
-      ∀ x y →
-      divergence (divergenceStructure) (encode x) (encode y)
-      ≡
-      divergence (divergenceStructure)
-        (encode (step x))
-        (encode (step y))
-
-open MaxwellFiniteExactConjugacyData public
-
-maxwellFiniteStateIsomorphism :
-  ∀ {n : Nat} {State : Set} →
-  MaxwellFiniteExactConjugacyData n State →
-  StateIsomorphism State (Fin n)
-maxwellFiniteStateIsomorphism D =
-  stateIsomorphism
-    (encode D)
-    (decode D)
-    (decodeEncode D)
-    (encodeDecode D)
-
-record ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
-  (n : Nat)
-  (State : Set) : Set₁ where
-  constructor connectedMaxwellTsallisFiniteExactConjugacyTheorem
-  field
-    semantics :
-      MaxwellFiniteExactConjugacyData n State
-
-    universalFiniteTransport :
-      FiniteFunctionExactIsomorphismTransportTheorem
-        n
-        n
-        State
-        State
-        (maxwellFiniteStateIsomorphism semantics)
-        (maxwellFiniteStateIsomorphism semantics)
-        (encodedStep semantics)
-
-    transportedStep :
-      ∀ x →
-      translatedFunction universalFiniteTransport x
-      ≡
-      step semantics x
-
-    exactMaxwellConjugacy :
-      ∀ x →
-      encode semantics (step semantics x)
-      ≡
-      encodedStep semantics (encode semantics x)
-
-open ConnectedMaxwellTsallisFiniteExactConjugacyTheorem public
-
-connected-maxwell-tsallis-finite-exact-conjugacy-theorem :
-  ∀ {n : Nat} {State : Set} →
-  ConnectedMaxwellTsallisFiniteExactConjugacyTheorem n State →
-  ∀ x →
-  encode (semantics _) (step (semantics _) x)
-  ≡
-  encodedStep (semantics _) (encode (semantics _) x)
-connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
-  exactMaxwellConjugacy C
-
-
-------------------------------------------------------------------------
--- Intended custom-optimizer regret seams.
---
--- No standalone Lion or standalone KKT optimizer theorem is required.
--- The optimizer contributes one residual directly; Frank-Wolfe contributes
--- a separate W residual through the already-connected F4/FW seam.
+-- Regret is cumulative and explicitly indexed by a finite horizon H.  No
+-- standalone Lion or KKT optimizer theorem is retained.  A custom optimizer
+-- contributes its own residual; the F4/Frank-Wolfe consumer contributes a
+-- Frank-Wolfe residual directly.
 ------------------------------------------------------------------------
 
 record CustomOptimizerRoundingBiasRegretData : Set₁ where
   constructor customOptimizerRoundingBiasRegretData
   field
-    regret : Nat
-    jensenGap : Nat
-    roundingBias : Nat
-    optimizerResidual : Nat
-    markovMixing : Nat
+    cumulativeRegret : Nat → Nat
+    jensenGap : Nat → Nat
+    roundingBias : Nat → Nat
+    optimizerResidual : Nat → Nat
+    markovMixing : Nat → Nat
 
-    jensenRounding :
-      regret ≤ jensenGap + roundingBias
-
-    customOptimizerResidual :
-      jensenGap + roundingBias
+    regretBoundAt :
+      ∀ H →
+      cumulativeRegret H
       ≤
-      jensenGap + roundingBias + optimizerResidual
-
-    stationaryMixing :
-      jensenGap + roundingBias + optimizerResidual
-      ≤
-      jensenGap + roundingBias + optimizerResidual + markovMixing
+      jensenGap H
+      + roundingBias H
+      + optimizerResidual H
+      + markovMixing H
 
 open CustomOptimizerRoundingBiasRegretData public
 
-connected-custom-optimizer-rounding-bias-regret-bound :
+custom-optimizer-rounding-bias-regret-bound :
   (D : CustomOptimizerRoundingBiasRegretData) →
-  regret D
+  ∀ H →
+  cumulativeRegret D H
   ≤
-  jensenGap D
-  + roundingBias D
-  + optimizerResidual D
-  + markovMixing D
-connected-custom-optimizer-rounding-bias-regret-bound D =
-  ≤-trans
-    (jensenRounding D)
-    (≤-trans
-      (customOptimizerResidual D)
-      (stationaryMixing D))
+  jensenGap D H
+  + roundingBias D H
+  + optimizerResidual D H
+  + markovMixing D H
+custom-optimizer-rounding-bias-regret-bound D H =
+  regretBoundAt D H
 
 record ConnectedCustomOptimizerRoundingBiasRegretTheorem : Set₁ where
   constructor connectedCustomOptimizerRoundingBiasRegretTheorem
@@ -7087,55 +6687,89 @@ record ConnectedCustomOptimizerRoundingBiasRegretTheorem : Set₁ where
     certificate :
       CustomOptimizerRoundingBiasRegretData
     connectedBound :
-      regret certificate
+      ∀ H →
+      cumulativeRegret certificate H
       ≤
-      jensenGap certificate
-      + roundingBias certificate
-      + optimizerResidual certificate
-      + markovMixing certificate
+      jensenGap certificate H
+      + roundingBias certificate H
+      + optimizerResidual certificate H
+      + markovMixing certificate H
 
 open ConnectedCustomOptimizerRoundingBiasRegretTheorem public
 
 connected-custom-optimizer-rounding-bias-regret-theorem :
   (C : ConnectedCustomOptimizerRoundingBiasRegretTheorem) →
-  regret (certificate C)
+  ∀ H →
+  cumulativeRegret (certificate C) H
   ≤
-  jensenGap (certificate C)
-  + roundingBias (certificate C)
-  + optimizerResidual (certificate C)
-  + markovMixing (certificate C)
-connected-custom-optimizer-rounding-bias-regret-theorem C =
-  connectedBound C
+  jensenGap (certificate C) H
+  + roundingBias (certificate C) H
+  + optimizerResidual (certificate C) H
+  + markovMixing (certificate C) H
+connected-custom-optimizer-rounding-bias-regret-theorem C H =
+  connectedBound C H
+
+record F4FrankWolfeRoundingBiasRegretData : Set₁ where
+  constructor f4FrankWolfeRoundingBiasRegretData
+  field
+    cumulativeRegret : Nat → Nat
+    jensenGap : Nat → Nat
+    roundingBias : Nat → Nat
+    frankWolfeResidual : Nat → Nat
+    markovMixing : Nat → Nat
+
+    regretBoundAt :
+      ∀ H →
+      cumulativeRegret H
+      ≤
+      jensenGap H
+      + roundingBias H
+      + frankWolfeResidual H
+      + markovMixing H
+
+open F4FrankWolfeRoundingBiasRegretData public
+
+f4-frank-wolfe-rounding-bias-regret-bound :
+  (D : F4FrankWolfeRoundingBiasRegretData) →
+  ∀ H →
+  cumulativeRegret D H
+  ≤
+  jensenGap D H
+  + roundingBias D H
+  + frankWolfeResidual D H
+  + markovMixing D H
+f4-frank-wolfe-rounding-bias-regret-bound D H =
+  regretBoundAt D H
 
 record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
   constructor connectedF4FrankWolfeRoundingBiasRegretTheorem
   field
-    f4FrankWolfe :
-      ConnectedF4FrankWolfeKKTTheorem
+    f4Composition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
     certificate :
-      CustomOptimizerRoundingBiasRegretData
-    frankWolfeResidual :
-      frankWolfeGap (certificate f4FrankWolfe)
+      F4FrankWolfeRoundingBiasRegretData
     connectedBound :
-      regret certificate
+      ∀ H →
+      cumulativeRegret certificate H
       ≤
-      jensenGap certificate
-      + roundingBias certificate
-      + frankWolfeResidual
-        + markovMixing certificate
+      jensenGap certificate H
+      + roundingBias certificate H
+      + frankWolfeResidual certificate H
+      + markovMixing certificate H
 
 open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
 
 connected-f4-frank-wolfe-rounding-bias-regret-theorem :
   (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
-  regret (certificate C)
+  ∀ H →
+  cumulativeRegret (certificate C) H
   ≤
-  jensenGap (certificate C)
-  + roundingBias (certificate C)
-  + frankWolfeResidual C
-  + markovMixing (certificate C)
-connected-f4-frank-wolfe-rounding-bias-regret-theorem C =
-  connectedBound C
+  jensenGap (certificate C) H
+  + roundingBias (certificate C) H
+  + frankWolfeResidual (certificate C) H
+  + markovMixing (certificate C) H
+connected-f4-frank-wolfe-rounding-bias-regret-theorem C H =
+  connectedBound C H
 
 
 ------------------------------------------------------------------------
