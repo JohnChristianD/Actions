@@ -308,8 +308,9 @@ JSON
     canonical-operator-composition-theorem
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
-    CanonicalBoundednessPEBoundarySubcompositionTheorem
-    canonical-boundedness-pe-boundary-subcomposition-theorem
+    StationaryLimitTheorem
+    stationaryLimitTheorem-is-stationary
+    CanonicalStationarySubcompositionTheorem
     CanonicalPersistentExcitationRequirementTheorem
     canonical-persistent-excitation-requirement-theorem
     ExactContractComputabilityBoundaryTheorem
