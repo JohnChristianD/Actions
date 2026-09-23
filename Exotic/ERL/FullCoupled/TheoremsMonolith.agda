@@ -7194,28 +7194,6 @@ connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem H T =
   connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem H T
 
 ------------------------------------------------------------------------
--- External regular-equilibrium existence remains a frontier.
---
--- The local graph already proves static -> generalized -> stationary
--- transport.  A regular Walrasian existence theorem from an external
--- formalization still needs an explicit cross-language adapter before it
--- can become an Agda existence theorem.  Graph search can expose that
--- route, but cannot turn a source-level grep contract into a proof.
-------------------------------------------------------------------------
-
-record RegularWalrasianExistenceAdapterCandidate : Set₁ where
-  constructor regularWalrasianExistenceAdapterCandidate
-  field
-    upstreamRegularExistence :
-      Set
-    localStaticBridge :
-      Set
-    stationaryLift :
-      Set
-    adapterProof :
-      Set
-
-------------------------------------------------------------------------
 -- Horizon monotonicity is not part of the F4 regret theorem by itself.
 -- The cumulative recurrence proves exact accumulation only.  Monotonicity
 -- requires a nonnegative per-round regret certificate.
