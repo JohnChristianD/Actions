@@ -129,6 +129,7 @@ graph_connected_maxwell_tsallis_exact_conjugacy_plan(Laws, Plan) :-
 graph_continuous_hodge_maxwell_gru_representation_plan(Laws, Plan) :-
     search_named_required_plan(
         "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+    "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
         Laws,
         Plan).
 
