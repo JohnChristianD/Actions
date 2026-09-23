@@ -77,6 +77,14 @@
       "role": "fully connected arbitrary finite-coordinate specialization of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; for every scalar carrier and dimension n it consumes an explicit StateIsomorphism from the Maxwell solution carrier to the exact-length list coordinate carrier Σ xs : List Scalar , length xs ≡ n and derives global learner-coordinate injectivity"
     },
     {
+      "node": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "role": "fully connected infinite-dimensional promotion of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; the solution carrier remains arbitrary and the theorem consumes an explicit caller-supplied InfiniteDimensional predicate without choosing coordinates, basis, scalar field, or dimension representation"
+    },
+    {
+      "node": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "role": "fully connected end-to-end infinite-dimensional promotion of the exact prefix+horizon-regret Hodge-Maxwell/F4/Watkins endpoint; it consumes the infinite-dimensional promotion plus the existing exact endpoint and adds no new coordinate or convergence assumptions"
+    },
+    {
       "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "role": "narrow connected impossibility boundary: an explicit distinct-solution collision in the global Hodge-Maxwell encoder contradicts the exact connected representation certificate"
     },
@@ -276,7 +284,22 @@
       "from": "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "to": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "kind": "consumes the exact-length list coordinate isomorphism for arbitrary n and lifts global injectivity through the existing learner-to-solution inverse"
-    }
+    },
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "consumes a caller-supplied InfiniteDimensional predicate on the arbitrary Maxwell solution carrier and lifts the existing global encoder injectivity through the learner-to-solution inverse"
+    ],
+    [
+      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "end-to-end promotion consumes the infinite-dimensional semantic certificate and preserves the exact connected learner witness"
+    ],
+    [
+      "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "consumes the existing exact prefix+horizon-regret endpoint as the analytic/extraction component; no new probability, measure, or convergence claim is introduced"
+    ]
   ],
   "separation_obligation": [
     "prove F_base subseteq F_full_connected under identical input/output semantics",
@@ -1094,9 +1117,9 @@
     ],
     "arbitrary_solution_space_quantifier": "For every instantiated ContinuousHodgeMaxwellExactRepresentationData GRU, the field Solution is an arbitrary Set carrier: no fixed dimension, Fin n bound, or finite enumeration is assumed. The connected representation theorem is universally instantiable over every such supplied solution carrier and arbitrary GRU carrier.",
     "global_injectivity_scope": "continuousHodgeMaxwell-global-encode-injective proves the encoder is injective over the entire Solution carrier of the supplied representation datum: for all x y in that Solution, encode x ≡ encode y implies x ≡ y. This is global within one arbitrary solution space, not merely local, finite, or observation-image injectivity.",
-    "representation_existence_boundary": "The theorem does not prove that every mathematically possible Hodge-Maxwell solution space admits a continuous GRU representation. The exact universal statement is: for every supplied representation datum, its arbitrary Solution carrier receives the exact global StateIsomorphism and global encoder injectivity proved by the Agda theorem.",
+    "representation_existence_boundary": "Theorem remains conditional on supplied representation semantics. Infinite-dimensional promotion additionally requires only a caller-supplied predicate/witness certifying the intended notion of infinite dimensionality; it does not construct that certificate.",
     "set_of_sets_family_boundary": "A literal family/set-of-sets is a universe-lifted or dependent-family object (for example I : Set and A : I → Set, with a dependent sum in Set₁); it is not the same claim as one arbitrary Solution : Set. No cross-family injectivity theorem is claimed or needed by the current Hodge-Maxwell surface. Such a family-wide theorem must introduce an indexed family and a dependent encoder before graph admission.",
-    "finite_dimensional_boundary": "A continuous finite-dimensional Hodge-Maxwell specialization is graphable only after an explicit finite-dimensional function-space certificate is added. The current Agda surface does not encode finite-dimensionality, so no finite-dimensional existence theorem is promoted.",
+    "finite_dimensional_boundary": "Finite-coordinate transport is now proved conditionally by an exact-length list coordinate isomorphism. A literal vector-space/module dimension theorem and universal coordinate-existence theorem remain explicit boundaries.",
     "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers.",
     "arbitrary_finite_coordinate_composition": {
       "theorem": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
@@ -1105,6 +1128,15 @@
       "coordinate_carrier": "FiniteCoordinateList Scalar n = Σ (xs : List Scalar) (λ xs → length xs ≡ n)",
       "result": "global injectivity of the learner coordinate observation",
       "semantic_limit": "This is an arbitrary finite-coordinate specialization expressed with exact-length lists. It avoids Fin while retaining a genuine finite coordinate length n; it does not itself formalize vector-space/module axioms or prove existence of the coordinate isomorphism for every physical Maxwell solution space."
+    },
+    "infinite_dimensional_promotion": {
+      "theorem": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "end_to_end_theorem": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "status": "PROVED_ON_AGDA_SURFACE",
+      "quantification": "∀ GRU : Set, for every supplied connected Hodge-Maxwell/F4/Watkins bridge and every caller-supplied InfiniteDimensional predicate with a witness on that arbitrary Solution carrier",
+      "carrier_scope": "arbitrary Solution : Set; no Fin n, finite enumeration, basis, scalar field, or coordinate chart is required",
+      "result": "global learner-state injectivity is transported through the exact Maxwell encoder, and the existing exact prefix+horizon-regret endpoint is promoted unchanged",
+      "semantic_limit": "The wrapper does not define or prove what infinite-dimensional means. The caller must supply the dimension predicate/witness appropriate to the intended function-space semantics; no universal PDE existence theorem is inferred."
     }
   },
   "automation_contract": {
@@ -1461,9 +1493,10 @@
     "pomdp_boundary": "POMDPExactTransport is exact carrier/transition/observation/reward transport only; it does not supply a policy-optimality, belief-state, filtering, or probabilistic convergence theorem.",
     "tsallis_boundary": "Tsallis divergence/exact conjugacy is carrier-polymorphic, but a q-exponential generalization requires an explicit q-parameterized exponential/logarithm, normalization, domain, and transport law on the Agda surface.",
     "heavy_tail_boundary": "Gaussian and heavy-tail models require explicit probability distributions and tail/moment assumptions. A Gaussian is light-tailed; it cannot by itself witness heavy-tail behavior. Any combined Gaussian/heavy-tail theorem must state the mixture, scale-mixture, generalized distribution, or asymptotic tail object explicitly.",
-    "no_synthetic_edge": true,
+    "no_synthetic_edge": "Future physics theorems must enter through an actually consuming Agda parent. Infinite-dimensional promotion is a semantic wrapper around supplied dimension evidence, not a synthetic PDE-to-GRU existence edge.",
     "global_injectivity_boundary": "Exact continuous Maxwell injectivity is now global over an arbitrary Set carrier when a global encode/decode isomorphism is supplied; finite functions/Fin enumeration are not required. Injectivity still depends on the exact left-inverse/global reconstruction witness.",
-    "carrier_semantics": "Set parameters are semantic carriers for arbitrary state/function spaces. Nat-indexed streams/horizons and List prefixes encode discrete time, finite words/prefix data, and recursive algebra; neither is a claim that the physical Maxwell carrier is Nat- or List-valued."
+    "carrier_semantics": "Set parameters are semantic carriers for arbitrary state/function spaces. Nat-indexed streams/horizons and List prefixes encode discrete time, finite words/prefix data, and recursive algebra; neither is a claim that the physical Maxwell carrier is Nat- or List-valued.",
+    "infinite_dimensional_boundary": "Infinite-dimensional Maxwell results may enter through the carrier-polymorphic connected surface when an explicit dimension predicate/witness is supplied. The graph must not infer vector-space dimension, separability, basis existence, or PDE solvability from Set alone."
   },
   "pruning_policy_v10": {
     "removed_from_canonical_path": [
