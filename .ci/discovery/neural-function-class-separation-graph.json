@@ -73,6 +73,14 @@
       "role": "fully connected extraction seam joining exact continuous Hodge-Maxwell GRU semantics to the existing F4/Watkins composition through an explicit learner-to-solution inverse and step-conjugacy bridge"
     },
     {
+      "node": "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+      "role": "carrier-agnostic exact global learner injectivity composition consuming the connected Hodge-Maxwell/F4/Watkins bridge and transporting the Maxwell encoder StateIsomorphism through the learner-to-solution inverse"
+    },
+    {
+      "node": "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "role": "fully connected finite-coordinate exact prefix+horizon-regret endpoint consuming the arbitrary finite-coordinate Hodge-Maxwell/F4/Watkins theorem, the carrier-agnostic injectivity composition, and the existing exact continuous endpoint"
+    },
+    {
       "node": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "role": "fully connected arbitrary finite-coordinate specialization of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; for every scalar carrier and dimension n it consumes an explicit StateIsomorphism from the Maxwell solution carrier to the exact-length list coordinate carrier Σ xs : List Scalar , length xs ≡ n and derives global learner-coordinate injectivity"
     },
@@ -299,6 +307,26 @@
       "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
       "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
       "consumes the existing exact prefix+horizon-regret endpoint as the analytic/extraction component; no new probability, measure, or convergence claim is introduced"
+    ],
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+      "the new carrier-agnostic theorem consumes the exact Maxwell/F4/Watkins bridge and proves learner-state injectivity through its global encoder and learner-to-solution inverse"
+    ],
+    [
+      "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "the finite exact endpoint consumes the explicit exact-length coordinate isomorphism and its already-proved learner-coordinate injectivity"
+    ],
+    [
+      "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "the finite exact endpoint reuses the existing exact prefix+horizon-regret extraction endpoint"
+    ],
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+      "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "the finite exact endpoint consumes the carrier-agnostic global learner injectivity composition"
     ]
   ],
   "separation_obligation": [
@@ -1137,6 +1165,29 @@
       "carrier_scope": "arbitrary Solution : Set; no Fin n, finite enumeration, basis, scalar field, or coordinate chart is required",
       "result": "global learner-state injectivity is transported through the exact Maxwell encoder, and the existing exact prefix+horizon-regret endpoint is promoted unchanged",
       "semantic_limit": "The wrapper does not define or prove what infinite-dimensional means. The caller must supply the dimension predicate/witness appropriate to the intended function-space semantics; no universal PDE existence theorem is inferred."
+    },
+    "additional_gru_f4_maxwell_compositions": {
+      "status": "PROVED_ON_AGDA_SURFACE",
+      "theorems": [
+        "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+        "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+      ],
+      "composition_paths": [
+        [
+          "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+          "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem"
+        ],
+        [
+          "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+          "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+        ],
+        [
+          "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+          "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+        ]
+      ],
+      "preservation": "finite-coordinate and infinite-dimensional theorem families remain separate; no CI registration or theorem surface is collapsed",
+      "semantic_limit": "All dimension/coordinate claims remain explicit caller-supplied proof data."
     }
   },
   "automation_contract": {
