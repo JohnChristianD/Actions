@@ -87,7 +87,7 @@
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "role": "fully connected hard-sign-style idempotent transport over the exact finite Hodge-Maxwell/Tsallis carrier; requires an explicit GRU-side projection conjugacy"
-    }
+    },
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "role": "fully connected conditional bridge from the finite Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
