@@ -17,6 +17,7 @@ open import Relation.Nullary using (¬_)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
+open import Data.Fin using (Fin)
 open import Data.Nat.Properties using (≤-antisym; ≤-refl; +-identityʳ; +-suc; n<1+n)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
@@ -4561,6 +4562,117 @@ hodgeMaxwell-discontinuous-gru-refutes-connected-representation D notContinuous 
   λ representation →
     notContinuous
       (continuousGRUStep (semantics representation))
+
+------------------------------------------------------------------------
+-- Finite-dimensional coordinate specialization of the carrier-polymorphic
+-- Hodge-Maxwell representation.
+--
+-- The repository does not currently formalize vector-space dimension.  The
+-- exact finite-dimensional bridge therefore uses an explicit coordinate
+-- isomorphism to Fin n -> Scalar as its proof-relevant finite-dimensional
+-- certificate.  This avoids inventing a dimension theorem while making the
+-- finite-dimensional specialization composable with the existing connected
+-- Hodge-Maxwell/F4/Watkins extraction.
+------------------------------------------------------------------------
+
+record FiniteDimensionalHodgeMaxwellCoordinateCertificate
+  (GRU Scalar : Set)
+  (n : Nat)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor finiteDimensionalHodgeMaxwellCoordinateCertificate
+  field
+    connectedRepresentation :
+      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+        GRU
+
+    coordinateIsomorphism :
+      StateIsomorphism
+        (ContinuousHodgeMaxwellExactRepresentationData.Solution
+          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+            connectedRepresentation))
+        (Fin n → Scalar)
+
+open FiniteDimensionalHodgeMaxwellCoordinateCertificate public
+
+finiteDimensionalHodgeMaxwell-coordinate-global-injective :
+  ∀ {GRU Scalar : Set}
+  {n : Nat}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (C : FiniteDimensionalHodgeMaxwellCoordinateCertificate
+    GRU Scalar n) →
+  ∀ {x y} →
+  to (coordinateIsomorphism C) x ≡
+  to (coordinateIsomorphism C) y →
+  x ≡ y
+finiteDimensionalHodgeMaxwell-coordinate-global-injective C =
+  isomorphismToInjective
+    (coordinateIsomorphism C)
+
+------------------------------------------------------------------------
+-- Fully connected finite-dimensional Hodge-Maxwell/F4/Watkins extraction.
+--
+-- The coordinate witness is consumed by the already connected
+-- Hodge-Maxwell/F4/Watkins composition.  The resulting observation is global:
+-- equality of the finite coordinate representations of two full learner
+-- states implies equality of the full exact learner states.
+------------------------------------------------------------------------
+
+record ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  (GRU Scalar : Set)
+  (n : Nat)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  field
+    connected :
+      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    finiteDimensionalCoordinates :
+      StateIsomorphism
+        (ContinuousHodgeMaxwellExactRepresentationData.Solution
+          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+            (hodgeMaxwell (connected))))
+        (Fin n → Scalar)
+
+    learnerCoordinateGlobalInjective :
+      ∀ {s t : C.CanonicalFullLearnerState} →
+      to finiteDimensionalCoordinates
+        (learnerToSolution (connected) s)
+      ≡
+      to finiteDimensionalCoordinates
+        (learnerToSolution (connected) t) →
+      s ≡ t
+
+open ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
+
+connected-finite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition :
+  ∀ {GRU Scalar : Set}
+  {n : Nat}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU)
+  (coordinates :
+    StateIsomorphism
+      (ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected)))
+      (Fin n → Scalar)) →
+  ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    GRU Scalar n
+connected-finite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
+  connected
+  coordinates =
+  connectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    connected
+    coordinates
+    (λ {s} {t} eq →
+      trans
+        (sym (learnerSolutionLeftInverse connected s))
+        (trans
+          (cong (solutionToLearner connected)
+            (isomorphismToInjective coordinates _ _ eq))
+          (learnerSolutionLeftInverse connected t)))
 
 ------------------------------------------------------------------------
 -- Fully connected Hodge-Maxwell / GRU / F4 / Watkins extraction seam.
