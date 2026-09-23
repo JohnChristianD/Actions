@@ -79,6 +79,18 @@
     {
       "node": "hodgeMaxwell-discontinuous-gru-refutes-connected-representation",
       "role": "connected impossibility boundary: a GRU step that is not continuous cannot inhabit the exact continuous Hodge-Maxwell representation certificate"
+    },
+    {
+      "node": "CanonicalF4NormPairSureStabilityCompositionTheorem",
+      "role": "fully connected deterministic F4/NormPair stability composition consuming exact optimizer stability, policy replacement invariance, Frank-Wolfe residual regret, Markov-stationary closure, and endogenous e-graph/A* transport"
+    },
+    {
+      "node": "FrankWolfeProbabilityTopologyBoundaryTheorem",
+      "role": "explicit boundary separating the existing exact Nat-valued Frank-Wolfe/regret certificate from future probabilistic or topological convergence claims"
+    },
+    {
+      "node": "MarkovianStationaryPointCompositionTheorem",
+      "role": "stationary-point/existence composition over the existing Markov-stationary Walrasian interface without fabricating convergence"
     }
   ],
   "edges": [
@@ -1384,7 +1396,8 @@
   "future_theorem_graph_contract_v9": {
     "physics": "Hodge-Maxwell/Maxwell exact representation is carrier-polymorphic. Fin n is excluded from that family unless a future theorem explicitly introduces a genuinely finite observation/carrier. A finite-dimensional continuous specialization requires a proof-relevant finite-dimensionality certificate.",
     "future": "Every future theorem must be an actual Agda declaration with real dependency edges, then a connected consumer before strict endpoint admission."
-  }  ,"egraph_astar_semantic_closure": {
+  },
+  "egraph_astar_semantic_closure": {
     "theorem": "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
     "edge": [
       "CanonicalAStarCostGuidanceTheorem",
@@ -1394,5 +1407,21 @@
     "discovery_seam": "semantic_law dependency/equivalence graph traversed by A*",
     "meaning": "e-graph equality composition supplies the equivalence-space composition seam while A* supplies cost-guided traversal; they are coupled in discovery and consumed by one Agda closure rather than represented as unrelated branches",
     "finite_carrier_rule": "no Fin n dependency is introduced"
+  },
+  "future_graph_contract_v10": {
+    "future_entry": "Future F4/NormPair, Frank-Wolfe probability/topology, and Markov-stationary theorem surfaces must enter through these composed parents when the Agda dependencies are real.",
+    "probability_boundary": "The current Frank-Wolfe theorem is deterministic and Nat-valued; probability, almost-sure convergence, measure structure, and asymptotic rates require explicit new Agda premises.",
+    "topology_boundary": "ContinuousLeftInverseTheorem transports exact readout and injectivity; it does not itself prove optimizer convergence or a Frank-Wolfe limit theorem.",
+    "stationary_boundary": "MarkovStationaryWalrasianCompositionTheorem supplies invariant-aggregate stationarity; stationary-point existence/convergence remains conditional on an explicit existence witness such as ConnectedGeneralizedWalrasianExistenceTheorem.",
+    "no_synthetic_edge": true
+  },
+  "pruning_policy_v10": {
+    "removed_from_canonical_path": [
+      "DirectProductFiniteAutomatonComposition",
+      "CanonicalFiniteStateRecurrentFunctionClass",
+      "BoundedContinuousLeftInverseExactApproximationTheorem",
+      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
+    ],
+    "rule": "Do not replace semantically finite theorems with Nat aliases. Promote only when an actual surviving Agda composition consumes the result; otherwise classify as foundational/problem metadata."
   }
 }
