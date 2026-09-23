@@ -1,58 +1,69 @@
-# Horizon-indexed rounding-bias residual regret boundary
+# F4 horizon-indexed rounding-bias residual regret boundary
 
-Status: connected theorem surface; not an unconditional numeric regret-rate theorem.
+Status: connected theorem surface; no standalone optimizer/KKT endpoint.
 
-The repository's strict optimizer boundary now treats regret as cumulative regret indexed by a finite horizon H. The surviving contracts are:
+The sole custom optimizer is F4. The strict consumer is:
 
-- Custom optimizer:
-  R(H) ≤ J(H) + B(H) + O(H) + M(H).
-- F4/Frank-Wolfe:
-  R(H) ≤ J(H) + B(H) + W(H) + M(H).
+CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+→ ConnectedF4FrankWolfeRoundingBiasRegretTheorem
 
-Here R is cumulative regret through horizon H, J is the Jensen/minimax contribution, B is rounding bias, O is a supplied custom-optimizer residual, W is a supplied Frank-Wolfe residual, and M is the stationary/Markov residual. The Agda statements are horizon-indexed pointwise inequalities, rather than scalar regret inequalities.
+The certificate carries a per-round regret sequence r(H) and cumulative regret R(H), with the exact horizon law:
 
-The important distinction is that this is a residual decomposition, not yet a sublinear regret-rate theorem. A statement such as O(sqrt(H)) or O(log H) would require explicit assumptions and a concrete objective, loss sequence, feasible set, and optimizer dynamics. The current safe monolith does not invent those analytic hypotheses.
+- R(0) = 0
+- R(H+1) = R(H) + r(H)
 
-## Strict graph boundary
+For every finite horizon H, the connected theorem establishes:
 
-The following standalone surfaces were pruned because they were not required dependencies of the retained consumer theorems:
+R(H) ≤ J(H) + B(H) + W(H) + M(H)
 
-- ConnectedJensenMinimaxRegretOptimizerTheorem
-- ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem
-- ConnectedF4FrankWolfeKKTTheorem
-- ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem
+where J is the Jensen/minimax contribution, B is rounding bias, W is the F4/Frank-Wolfe residual, and M is the stationary/Markov residual.
 
-KKT structures may still exist elsewhere in the repository when another theorem actually consumes them. They are not optimizer endpoints here. Likewise, Lion has no strict optimizer endpoint.
+This is genuinely time/horizon-dependent. It is deliberately not a claimed asymptotic rate such as O(√H) or O(log H). Such a rate would require explicit loss functions, feasible-set assumptions, optimizer dynamics, and analytic/probabilistic hypotheses.
 
-The retained consumers are:
+## Pruned surfaces
 
-- ConnectedCustomOptimizerRoundingBiasRegretTheorem
-- ConnectedF4FrankWolfeRoundingBiasRegretTheorem
+Standalone or disconnected optimizer surfaces are no longer part of the canonical theorem source or strict graph:
 
-The F4/Frank-Wolfe consumer depends directly on CanonicalGRUF4NormWatkinsPrefixCompositionTheorem, so the residual is attached to the actual GRU-F4-Watkins composition rather than to a disconnected Frank-Wolfe certificate.
+- Lion optimizer/regret surfaces
+- standalone Frank-Wolfe optimizer surfaces
+- standalone KKT surfaces
+- generic custom-optimizer regret surface
+- disconnected Jensen/minimax optimizer surface
 
-## Maxwell/Tsallis boundary
+KKT is therefore not an optimizer endpoint. A future KKT certificate may enter only if an actual retained composed theorem consumes it.
 
-The Maxwell theorem remains finite-semantics-only:
+## QSA boundary
 
-CanonicalFullLearnerConnectedScanConjugacyTheorem
-→ FiniteFunctionExactIsomorphismTransportTheorem
-→ ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+A finite deterministic or exact-algebraic quasi-stochastic-approximation shell can be formalized with discrete exact carriers such as Nat or exact rationals. A convergence theorem for stochastic approximation is different: standard ODE-method proofs use continuous-time limits, stability, probability/noise assumptions, and often measurable, metric, or topological structure. Recent stochastic-approximation work explicitly treats ODE tracking and finite-time tracking error in that analytic setting. citeturn0search0turn0search5
 
-The finite theorem requires explicit Maxwell-admissible state semantics, exact finite encoding/decoding, inverse laws, exact transition conjugacy, universal finite exact-function transport, and a finite Tsallis/divergence structure. This is exact representation of the specified finite transition/function; it is not a claim of exact representation of the continuous Maxwell PDE.
+Therefore:
+- rationals are not intrinsically required merely to state an exact finite QSA recurrence;
+- real analysis is not required for the finite algebraic shell;
+- real-analysis, topology, and probability machinery is required once the theorem claims continuous-time limits, almost-sure convergence, asymptotic stability, or stochastic approximation rates.
 
-The Tsallis carrier remains abstract in Agda. A concrete Tsallis divergence instantiation would need an explicit finite probability/measure representation and its defining laws before promotion. nLab's Maxwell page uses the differential-form equations dF = 0 and d⋆F = j_el; its entropy material treats finite entropy/divergence structure and Tsallis entropy on finite measured spaces. Those sources motivate the semantic boundary, but they do not by themselves prove the repository's concrete finite instance.
+## Maxwell boundary
 
-## Automation contract
+nLab presents Maxwell theory in differential-form language as dF = 0 and d⋆F = j on a spacetime manifold. citeturn0search1turn0search4
 
-The canonical path remains:
+The repository's finite Maxwell theorem cannot honestly be promoted to exact representation of all continuous Maxwell PDEs. A finite exact-function isomorphism proves exactness only for a specified finite transition/function. Universal Maxwell-PDE representation is a function-space problem.
 
-learner_semantic_extractor.m
-→ theorem_graph_search.m
-→ theorem_monolith_egraph_sync.m
+An actual all-PDE theorem would need:
+1. formal differential-form/function-space semantics;
+2. a precise domain, metric, source, and boundary/initial-condition model;
+3. an exact representation theorem for that function space by the GRU architecture;
+4. preservation of dF = 0 and d⋆F = j under representation;
+5. an exact encode/decode or function-space isomorphism.
 
-Future theorem admission requires an actual Agda declaration, a real dependency or explicit foundational status, and a consuming composed theorem for optimizer/physics candidates. A scalar regret field is not sufficient for a horizon-regret endpoint; the cumulative regret must be a function of H.
+Until those are formalized, the strict boundary remains finite Maxwell exactness rather than universal continuous-PDE exactness.
 
-## Verification boundary
+## Future theorem graph contract
 
-This note records the graph/proof-shape contract. It does not claim that the remaining regret theorem has a numerical regret rate, nor that the Maxwell/Tsallis candidate has been promoted to an unconditional physics theorem.
+Every future theorem must:
+1. exist as an actual Agda declaration;
+2. have real dependency edges or be explicitly foundational;
+3. expose a consuming connected theorem before becoming a strict endpoint when optimizer/physics-specific;
+4. use cumulative horizon-indexed regret for regret claims;
+5. keep finite exact representation separate from continuous analytic/PDE representation;
+6. pass learner-semantic-extractor → theorem-graph-search → e-graph-sync.
+
+Disconnected theorem declarations are pruned rather than retained as decorative graph nodes.
