@@ -114,13 +114,18 @@
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
-      "FiniteMaxwellGRUExactRepresentationCandidate",
-      "finite exact-function transport supplies the representation mechanism; Maxwell semantics remain an explicit proof obligation"
-    ],
-    [
-      "FiniteFunctionExactIsomorphismTransportTheorem",
       "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
       "finite exact-function transport is the representation layer for finite continuous Hodge-Maxwell solution families"
+    ],
+    [
+      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "F_full_connected",
+      "the promoted finite Hodge-Maxwell representation is consumed only through the fully connected composition"
+    ],
+    [
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+      "F_full_connected",
+      "the horizon-indexed F4 rounding-bias residual regret endpoint is retained only as the connected optimizer endpoint"
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
@@ -230,17 +235,17 @@
       "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
     },
     {
-      "name": "FiniteMaxwellGRUExactRepresentationCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
+      "name": "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "status": "PROVED_CONDITIONAL_ON_EXACT_FINITE_SEMANTICS",
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "FiniteFunctionExactIsomorphismTransportTheorem",
-        "FiniteMaxwellGRUExactRepresentationCandidate"
+        "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem"
       ],
-      "distinction": "Finite exact GRU representation is restricted to finite encodings of Maxwell-admissible update data; it does not add non-Maxwell physical laws or claim a proof of the continuous Maxwell PDEs.",
-      "quantitative_contract": "Exact finite transition/function representation under an explicitly supplied finite Maxwell state/input/output encoding.",
-      "promotion_gate": "Define the finite Maxwell state semantics, discrete Maxwell constraints/update, exact encoding/decoding maps, and prove GRU conjugacy without adding physical laws."
+      "distinction": "Exact theorem for every explicitly supplied finite family of exact differential-form Hodge-Maxwell solutions with an exact finite encoding and recurrent transition conjugacy. It does not assert that arbitrary continuous Maxwell PDEs admit finite exact encodings.",
+      "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the finite state isomorphism and recurrent transition conjugacy.",
+      "promotion_gate": "The finite Maxwell semantics, exact encoder/decoder, closure, step preservation, and conjugacy are all explicit Agda fields; no physical law is inferred."
     }
   ],
   "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
