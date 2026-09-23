@@ -5596,6 +5596,26 @@ connected-continuous-hodge-maxwell-gru-representation-theorem D =
     (continuousHodgeMaxwell-global-encode-injective D)
 
 ------------------------------------------------------------------------
+-- A discontinuous GRU step is a direct impossibility boundary for this
+-- exact continuous Hodge-Maxwell representation family. The theorem is
+-- conditional on the same explicit Continuity predicate used by the
+-- representation certificate; it does not assert a universal continuity
+-- theorem for arbitrary GRU architectures.
+------------------------------------------------------------------------
+
+hodgeMaxwell-discontinuous-gru-refutes-connected-representation :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
+  ¬ Continuous (gruStep D) →
+  ¬ ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+      GRU
+hodgeMaxwell-discontinuous-gru-refutes-connected-representation D notContinuous =
+  λ representation →
+    notContinuous
+      (continuousGRUStep (semantics representation))
+
+------------------------------------------------------------------------
 -- Hodge-Maxwell middle-degree involution transport.
 --
 -- This theorem is now explicitly downstream of the carrier-polymorphic
