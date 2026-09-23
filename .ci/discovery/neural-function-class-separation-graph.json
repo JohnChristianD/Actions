@@ -79,7 +79,7 @@
     {
       "node": "hodgeMaxwell-discontinuous-gru-refutes-connected-representation",
       "role": "connected impossibility boundary: a GRU step that is not continuous cannot inhabit the exact continuous Hodge-Maxwell representation certificate"
-    },
+    }
   ],
   "edges": [
     [
@@ -534,11 +534,11 @@
       ],
       [
         "ContinuousLeftInverseTheorem",
-        "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
+        "DiscreteExactUAPTheorem"
       ],
       [
         "DenseNeighborhoodSeparationTheorem",
-        "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
+        "DiscreteExactUAPTheorem"
       ],
       [
         "CanonicalF4GlobalOptimizerStabilityTheorem",
@@ -547,14 +547,6 @@
     ],
     "not_fabricated": [
       "RingStateInjectivityTheorem",
-      "FiniteMixedProductRecurrenceTheorem",
-      "AbsorbingFiniteEquilibriumTheorem",
-      "HardSparseAbsorbingPrefixTheorem",
-      "FiniteRankStabilityCertificate",
-      "FiniteNonIIDWalrasianEquilibrium",
-      "FiniteTUShapleyAllocationEquilibrium",
-      "BairdSevenStarProblem",
-      "Majority3ShapleyEquilibrium",
       "CanonicalAStarCostGuidanceTheorem",
       "CanonicalEndogenousEGraphAStarTransportClosureTheorem"
     ],
@@ -599,11 +591,11 @@
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "hardSignGate-idempotent",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DiscreteExactUAPTheorem",
       "F_full_connected"
     ],
     "dependency_evidence": {
-      "neighborhood_separation": "CanonicalRecurrentBoundedExactUniversalApproximationTheorem explicitly depends on ContinuousLeftInverseTheorem and DenseNeighborhoodSeparationTheorem in the repository's theorem ledger.",
+      "neighborhood_separation": "DiscreteExactUAPTheorem explicitly depends on ContinuousLeftInverseTheorem and DenseNeighborhoodSeparationTheorem in the repository's theorem ledger.",
       "conjugacy": "connected scan/state transport surface explicitly depends on StateIsomorphism; the canonical connected learner already has an exact scan/step conjugacy surface.",
       "observation_topology": "retired finite-observation layer is composed from retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, and retired finite-observation layer.",
       "endogenous_closure": "retired finite-observation layer consumes retired finite-observation layer together with the finite-information and endogenous POMDP boundaries."
@@ -635,7 +627,7 @@
       "F4 optimizer",
       "NormPair learner replacement seam",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DiscreteExactUAPTheorem",
       "DenseNeighborhoodSeparationTheorem",
       "F_full_connected"
     ],
@@ -670,7 +662,7 @@
       "F4 optimizer",
       "NormPair learner replacement seam",
       "DirectProductFiniteAutomatonComposition",
-      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DiscreteExactUAPTheorem",
       "DenseNeighborhoodSeparationTheorem",
       "F_full_connected"
     ],
@@ -705,7 +697,7 @@
       "hardSignGate-idempotent",
       "F4 optimizer",
       "NormPair learner replacement seam",
-      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DiscreteExactUAPTheorem",
       "DenseNeighborhoodSeparationTheorem",
       "F_full_connected"
     ],
@@ -740,7 +732,7 @@
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "hardSignGate-idempotent",
-      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DiscreteExactUAPTheorem",
       "DenseNeighborhoodSeparationTheorem"
     ],
     "composition_order": [
@@ -748,7 +740,7 @@
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "CanonicalLearnerReplacementClosureTheorem",
       "hardSignGate-idempotent",
-      "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
+      "DiscreteExactUAPTheorem",
       "DenseNeighborhoodSeparationTheorem",
       "F_full_connected"
     ],
@@ -805,35 +797,7 @@
       "theorem": "canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem",
       "status": "LITERATURE_ALIGNED_BASELINE_COMPLETED_ROUTE_SPECIFIC_UNPROVED"
     },
-    "shared_separation_basis": "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
-  },
-  "literature_aligned_strict_separation": {
-    "status": "PROVED_ON_AGDA_SURFACE_UNVERIFIED_BY_FRESH_CI",
-    "baseline_class": "CanonicalFiniteStateRecurrentFunctionClass: recurrent realizations with hidden state retired finite-observation layer",
-    "extended_class": "CanonicalConnectedRecurrentFunctionClass: recurrent realizations with state retired finite-observation layer ⊎ CanonicalFullLearnerState",
-    "inclusion_theorem": "canonicalFiniteStateRecurrent-function-inclusion",
-    "witness_function": "canonicalConnectedLearnerClock K s = clock(s) + n",
-    "witness_in_extended": "canonicalConnectedLearnerClock-realization",
-    "witness_not_in_baseline": "canonicalConnectedLearnerClock-not-finite-state",
-    "strict_theorem": "canonicalFiniteStateVsConnectedRecurrentStrictSeparation",
-    "nonrepresentability_basis": "finite-state pigeonhole collision + exact clock growth + natPlus-left-cancel",
-    "literature_basis": [
-      "Merrill et al. 2020: rational recurrence / weighted finite-state-machine hierarchy and non-rational state expressivity",
-      "Svete & Cotterell 2023: recurrent language models characterized via probabilistic finite-state automata and strict expressivity subsets"
-    ],
-    "caveat": "This completes the strict separation implied by the repository's existing exact-clock and finite-state invariants. It does not by itself prove a route-specific sign/optimizer-affine GRU theorem."
-  },
-  "strict_separation_contracts": {
-    "completed_route": "finite-state/rational-recurrence baseline versus unbounded connected recurrent clock trace",
-    "proof_surface": [
-      "FunctionClassInclusion",
-      "StrictFunctionClassSeparation",
-      "canonicalFiniteStateRecurrent-function-inclusion",
-      "canonicalFiniteStateIteration-collision",
-      "canonicalConnectedLearnerClock-realization",
-      "canonicalConnectedLearnerClock-not-finite-state",
-      "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
-    ]
+    "shared_separation_basis": "CanonicalFullLearnerConnectedScanConjugacyTheorem"
   },
   "parallel_scan_complexity_boundary": {
     "name": "CanonicalConnectedCompositionLogarithmicSIMDSpanCandidate",
@@ -854,13 +818,13 @@
     {
       "name": "CanonicalEndogenousAperiodicClockRNNStrictSeparationCandidate",
       "status": "CANDIDATE_NOT_PROVED",
-      "parent": "canonicalFiniteStateVsConnectedRecurrentStrictSeparation",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "literature_basis": "finite-state/rational recurrence versus unbounded state-space growth",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "canonicalConnectedLearnerClock-realization",
-        "canonicalConnectedLearnerClock-not-finite-state",
-        "canonicalFiniteStateVsConnectedRecurrentStrictSeparation"
+        "canonicalDeterministicFiniteStepDivergenceInevitability",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem"
       ],
       "required_certificates": [
         "explicit input/output semantics for the clock transduction",
