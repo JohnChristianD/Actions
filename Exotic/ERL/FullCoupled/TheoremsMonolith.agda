@@ -1680,23 +1680,6 @@ canonicalInfiniteStateOrbitEmbedding K s =
   canonicalOrbit-state-injective K s
 
 
-canonicalPigeonholeNatClockContradiction :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → Fin 256)
-  (inverse : Fin 256 → C.CanonicalFullLearnerState) →
-  (∀ t → inverse (observe t) ≡ t) →
-  ⊥
-canonicalPigeonholeNatClockContradiction K s observe inverse leftInverse =
-  C.finiteObservation-no-countably-unbounded-injective
-    (λ n → observe (C.iterateCanonical K n s))
-    (λ {m} {n} eq →
-      canonicalOrbit-state-injective K s
-        (trans
-          (sym (leftInverse (C.iterateCanonical K m s)))
-          (trans
-            (cong inverse eq)
-            (leftInverse (C.iterateCanonical K n s)))))
 
 ------------------------------------------------------------------------
 -- Full discrete exact-UAP factorization.
@@ -1889,147 +1872,6 @@ canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
     (canonicalWatkinsTargetSignalStream K s)
     n
     h
-
-canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → Fin 256)
-  (inverse : Fin 256 → C.CanonicalFullLearnerState)
-  {Output : Set} →
-  DiscreteExactUAPTheorem
-    C.CanonicalFullLearnerState
-    (Fin 256)
-    Output
-    observe
-    inverse →
-  ⊥
-canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit
-  K s observe inverse witness =
-  canonicalPigeonholeNatClockContradiction
-    K
-    s
-    observe
-    inverse
-    (leftInverse witness)
-
-canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → Fin 256) →
-  DiscreteExactUniversalUAP
-    C.CanonicalFullLearnerState
-    (Fin 256)
-    observe →
-  ⊥
-canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit
-  K s observe universal =
-  let
-    witness = discreteExactUniversalUAP-to-leftInverse universal
-  in
-  canonicalPigeonholeNatClockContradiction
-    K
-    s
-    observe
-    (inverse witness)
-    (leftInverse witness)
-
-------------------------------------------------------------------------
--- Finite-observation impossibility for an exact unbounded counter.
---
--- This is the precise Turing-boundary theorem available from the current
--- semantic surface.  It does not claim that every recurrent learner is
--- non-Turing-complete.  It rules out any exact simulation whose unbounded
--- Nat counter is injectively represented through the finite Int8
--- observation with an exact decoder on the represented states.
-------------------------------------------------------------------------
-
-record ExactNatObservationSimulation
-  (State : Set)
-  (encode : Nat → State)
-  (observe : State → Fin 256)
-  (decode : Fin 256 → State) : Set₁ where
-  constructor exactNatObservationSimulation
-  field
-    encodeInjective :
-      ∀ {m n : Nat} →
-      encode m ≡ encode n →
-      m ≡ n
-    exactDecode :
-      ∀ n →
-      decode (observe (encode n)) ≡ encode n
-
-open ExactNatObservationSimulation public
-
-noExactNatSimulation-through-finite-observation :
-  ∀ {State : Set}
-  (encode : Nat → State)
-  (observe : State → Fin 256)
-  (decode : Fin 256 → State) →
-  (∀ {m n : Nat} → encode m ≡ encode n → m ≡ n) →
-  (∀ n → decode (observe (encode n)) ≡ encode n) →
-  ⊥
-noExactNatSimulation-through-finite-observation
-  encode observe decode encodeInjective exactDecode =
-  C.finiteObservation-no-countably-unbounded-injective
-    (λ n → observe (encode n))
-    (λ {m} {n} obsEq →
-      encodeInjective
-        (trans
-          (sym (exactDecode m))
-          (trans
-            (cong decode obsEq)
-            (exactDecode n))))
-
-record ExactTuringCounterObservation
-  (State : Set)
-  (encode : Nat → State)
-  (observe : State → C.Int8)
-  (decode : C.Int8 → State) : Set₁ where
-  constructor exactTuringCounterObservation
-  field
-    counterInjective :
-      ∀ {m n : Nat} →
-      encode m ≡ encode n →
-      m ≡ n
-    counterDecode :
-      ∀ n →
-      decode (observe (encode n)) ≡ encode n
-
-noExactTuringCounterObservation-through-finite-observation :
-  ∀ {State : Set}
-  (encode : Nat → State)
-  (observe : State → Fin 256)
-  (decode : Fin 256 → State) →
-  ExactTuringCounterObservation State encode observe decode →
-  ⊥
-noExactTuringCounterObservation-through-finite-observation
-  encode observe decode witness =
-  noExactNatSimulation-through-finite-observation
-    encode
-    observe
-    decode
-    (ExactTuringCounterObservation.counterInjective witness)
-    (ExactTuringCounterObservation.counterDecode witness)
-
-canonicalNoExactTuringCounterObservation :
-  ∀
-  (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → Fin 256)
-  (decode : Fin 256 → C.CanonicalFullLearnerState) →
-  ExactTuringCounterObservation
-    C.CanonicalFullLearnerState
-    (λ n → C.iterateCanonical K n s)
-    observe
-    decode →
-  ⊥
-canonicalNoExactTuringCounterObservation
-  K s observe decode witness =
-  noExactTuringCounterObservation-through-finite-observation
-    (λ n → C.iterateCanonical K n s)
-    observe
-    decode
-    witness
 
 
 ------------------------------------------------------------------------
@@ -2776,27 +2618,6 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         (λ n → C.iterateCanonical K n s)
         observe
 
-    pigeonholeNatClockContradiction :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (observe : C.CanonicalFullLearnerState → C.Int8)
-      (inverse : C.Int8 → C.CanonicalFullLearnerState) →
-      (∀ t → inverse (observe t) ≡ t) →
-      ⊥
-
-    noGlobalInt8DiscreteUAP :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (observe : C.CanonicalFullLearnerState → C.Int8)
-      (inverse : C.Int8 → C.CanonicalFullLearnerState)
-      {Output : Set} →
-      DiscreteExactUAPTheorem
-        C.CanonicalFullLearnerState
-        C.Int8
-        Output
-        observe
-        inverse →
-      ⊥
 
 canonical-endogenous-minimax-bellman-shapley-uap-theorem : CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
 canonical-endogenous-minimax-bellman-shapley-uap-theorem =
@@ -2826,8 +2647,6 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalRingStateInjective
     canonicalInfiniteStateOrbitEmbedding
     canonicalDenseNeighborhoodSeparation
-    canonicalPigeonholeNatClockContradiction
-    canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit
 
 
 ------------------------------------------------------------------------
@@ -3980,8 +3799,8 @@ majority3ShapleyEquilibriumWitness =
 ------------------------------------------------------------------------
 -- Exact global token conjugacy and autoregressive trace algebra.
 --
--- The token alphabet is exactly Fin 256, canonically isomorphic to the
--- existing Int8 carrier.  Lists lift that conjugacy globally by map.
+-- The canonical token carrier is the exact unbounded integer carrier;
+-- encoding into the executable Int8 carrier is explicit.  Lists lift that conjugacy globally by map.
 -- The recurrent prefix semantics therefore commute exactly with token
 -- encoding, while the logit trace remains a purely causal list-valued
 -- readout.  No exponential/logarithmic/sinusoidal primitive is needed.
@@ -4051,61 +3870,6 @@ canonicalTokenLogitTrace-append K (t ∷ xs) ys s =
     (λ trace →
       C.logits K s ∷ trace)
     (canonicalTokenLogitTrace-append
-      K
-      xs
-      ys
-      (C.canonicalTokenStep s t))
-
-canonicalTokenSparsemaxWeight-shared :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.GRUState)
-  (t : C.CanonicalToken) →
-  C.canonicalTokenSparsemaxWeight K s t
-  ≡
-  C.sparsemaxWeight
-    C.canonicalTokenActionSpace
-    (C.logits K s)
-    C.canonicalTokenLogitCounts
-    t
-canonicalTokenSparsemaxWeight-shared K s t = refl
-
-canonicalTokenSparsemaxPolicy-shared :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.GRUState) →
-  C.canonicalTokenSparsemaxPolicy K s
-  ≡
-  C.sparsemaxPolicy
-    C.canonicalTokenActionSpace
-    (C.logits K s)
-    C.canonicalTokenLogitCounts
-canonicalTokenSparsemaxPolicy-shared K s = refl
-
-canonicalTokenSparsemaxTrace :
-  C.CanonicalTokenLanguageModelKernel →
-  C.CanonicalTokenSequence →
-  C.GRUState →
-  List C.SparseWeight
-canonicalTokenSparsemaxTrace K [] s = []
-canonicalTokenSparsemaxTrace K (t ∷ ts) s =
-  C.canonicalTokenSparsemaxWeight K s t ∷
-  canonicalTokenSparsemaxTrace K ts
-    (C.canonicalTokenStep s t)
-
-canonicalTokenSparsemaxTrace-append :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (xs ys : C.CanonicalTokenSequence)
-  (s : C.GRUState) →
-  canonicalTokenSparsemaxTrace K (xs ++ ys) s
-  ≡
-  canonicalTokenSparsemaxTrace K xs s ++
-  canonicalTokenSparsemaxTrace K ys
-    (C.canonicalTokenListState xs s)
-canonicalTokenSparsemaxTrace-append K [] ys s = refl
-canonicalTokenSparsemaxTrace-append K (t ∷ xs) ys s =
-  cong
-    (λ trace →
-      C.canonicalTokenSparsemaxWeight K s t ∷ trace)
-    (canonicalTokenSparsemaxTrace-append
       K
       xs
       ys
@@ -4295,24 +4059,6 @@ record CanonicalExactRNNLMTheorem : Set₁ where
       C.canonicalTokenLogitTrace K xs s ++
       C.canonicalTokenLogitTrace K ys
         (C.canonicalTokenListState xs s)
-    sparsemaxHead :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.GRUState) →
-      C.canonicalTokenSparsemaxPolicy K s
-      ≡
-      C.sparsemaxPolicy
-        C.canonicalTokenActionSpace
-        (C.logits K s)
-        C.canonicalTokenLogitCounts
-    sparsemaxTrace :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (xs ys : C.CanonicalTokenSequence)
-      (s : C.GRUState) →
-      canonicalTokenSparsemaxTrace K (xs ++ ys) s
-      ≡
-      canonicalTokenSparsemaxTrace K xs s ++
-      canonicalTokenSparsemaxTrace K ys
-        (C.canonicalTokenListState xs s)
 
 open CanonicalExactRNNLMTheorem public
 
@@ -4321,23 +4067,11 @@ canonical-exact-rnn-lm-theorem =
   canonicalExactRNNLMTheorem
     canonical-global-token-encoding-conjugacy
     canonicalTokenLogitTrace-append
-    canonicalTokenSparsemaxPolicy-shared
-    canonicalTokenSparsemaxTrace-append
 
 ------------------------------------------------------------------------
 -- Global positive conjugacy is finite and exact; the corresponding
 -- unbounded Nat-to-Int8 exact injective boundary is impossible.
 ------------------------------------------------------------------------
-
-canonicalNoGlobalFiniteObservationConjugacy :
-  ∀ (observe : C.Int8 → Fin 256)
-  (embed : Nat → C.Int8) →
-  ¬ (∀ {m n} →
-      observe (embed m) ≡ observe (embed n) →
-      m ≡ n)
-canonicalNoGlobalFiniteObservationConjugacy observe embed =
-  C.finiteObservation-no-countably-unbounded-injective
-    (λ n → observe (embed n))
 
 record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
   constructor canonicalGlobalTokenLMCompositionTheorem
@@ -4357,12 +4091,6 @@ record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
       C.canonicalTokenLogitTrace K xs s ++
       C.canonicalTokenLogitTrace K ys
         (C.canonicalTokenListState xs s)
-    finiteObservationBoundary :
-      ∀ (observe : C.Int8 → Fin 256)
-      (embed : Nat → C.Int8) →
-      ¬ (∀ {m n} →
-          observe (embed m) ≡ observe (embed n) →
-          m ≡ n)
 
 open CanonicalGlobalTokenLMCompositionTheorem public
 
@@ -4373,9 +4101,7 @@ canonical-global-token-lm-composition-theorem =
     canonical-global-token-encoding-conjugacy
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
-    canonicalNoGlobalFiniteObservationConjugacy
 
-  
 ------------------------------------------------------------------------
 -- Exact integer Haar kernel and A* cost algebra surfaces.
 --
@@ -4449,237 +4175,6 @@ canonical-a-star-cost-guidance-theorem =
     canonicalAStarZeroCost
     canonicalAStarSuccessorCost
     canonicalTokenLogitTrace-append
-
-
-------------------------------------------------------------------------
--- Linear Haar + fixed unnormalized sparsemax attention composition.
---
--- This is deliberately not a second attention normalization: the
--- coefficients are the existing sparsemax numerators with zero counts,
--- while Haar is the strictly linear (sum,difference) integer transform.
-------------------------------------------------------------------------
-
-canonicalIntegerHaarOrthogonality :
-  C.int8Add
-    (C.int8Mul C.one8 C.one8)
-    (C.int8Mul C.one8 (C.int8Neg C.one8))
-  ≡ C.zero8
-canonicalIntegerHaarOrthogonality = C.canonicalHaarOrthogonalCross
-
-canonicalIntegerHaarLinearForm :
-  ∀ (x y : C.Int8) →
-  C.canonicalHaarMix x y
-  ≡
-  (C.int8Add x y , C.int8Sub x y)
-canonicalIntegerHaarLinearForm = C.canonicalHaarMix-linear-form
-
-canonicalFixedSparsemaxAttentionShared :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.GRUState)
-  (t : C.CanonicalToken) →
-  C.canonicalFixedSparsemaxAttentionWeight K s t
-  ≡
-  C.int8OfNat
-    (C.numerator
-      (C.sparsemaxWeight
-        C.canonicalTokenActionSpace
-        (C.logits K s)
-        C.canonicalTokenLogitCounts
-        t))
-canonicalFixedSparsemaxAttentionShared =
-  C.canonicalFixedSparsemaxAttention-shared
-
-canonicalHaarSparsemaxAttentionLinear :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.GRUState)
-  (t u : C.CanonicalToken) →
-  C.canonicalHaarSparsemaxAttention K s t u
-  ≡
-  (C.int8Add
-     (C.canonicalFixedSparsemaxAttentionWeight K s t)
-     (C.canonicalFixedSparsemaxAttentionWeight K s u)
-   ,
-   C.int8Sub
-     (C.canonicalFixedSparsemaxAttentionWeight K s t)
-     (C.canonicalFixedSparsemaxAttentionWeight K s u))
-canonicalHaarSparsemaxAttentionLinear =
-  C.canonicalHaarSparsemaxAttention-linear-form
-
-canonicalFixedSparsemaxAttentionCounts :
-  C.canonicalTokenLogitCounts ≡ C.zeroCounts
-canonicalFixedSparsemaxAttentionCounts =
-  C.canonicalFixedSparsemaxAttention-counts
-
-canonicalFullStateHaarSparsemaxAttentionNormInvariant :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.CanonicalFullLearnerState)
-  (n : C.NormPair)
-  (t u : C.CanonicalToken) →
-  C.canonicalFullStateHaarSparsemaxAttention K (C.replaceNorm s n) t u
-  ≡
-  C.canonicalFullStateHaarSparsemaxAttention K s t u
-canonicalFullStateHaarSparsemaxAttentionNormInvariant =
-  C.canonicalFullStateHaarSparsemaxAttention-norm-invariant
-
-canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.CanonicalFullLearnerState)
-  (o : C.F4IntUState)
-  (t u : C.CanonicalToken) →
-  C.canonicalFullStateHaarSparsemaxAttention K (C.replaceOptimizer s o) t u
-  ≡
-  C.canonicalFullStateHaarSparsemaxAttention K s t u
-canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant =
-  C.canonicalFullStateHaarSparsemaxAttention-optimizer-invariant
-
-record CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem : Set₁ where
-  constructor canonicalFullStateHaarSparsemaxInvariantCompositionTheorem
-  field
-    fixedCounts :
-      C.canonicalTokenLogitCounts ≡ C.zeroCounts
-    normInvariant :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.CanonicalFullLearnerState)
-      (n : C.NormPair)
-      (t u : C.CanonicalToken) →
-      C.canonicalFullStateHaarSparsemaxAttention K (C.replaceNorm s n) t u
-      ≡
-      C.canonicalFullStateHaarSparsemaxAttention K s t u
-    optimizerInvariant :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.CanonicalFullLearnerState)
-      (o : C.F4IntUState)
-      (t u : C.CanonicalToken) →
-      C.canonicalFullStateHaarSparsemaxAttention K (C.replaceOptimizer s o) t u
-      ≡
-      C.canonicalFullStateHaarSparsemaxAttention K s t u
-
-open CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem public
-
-canonical-full-state-haar-sparsemax-invariant-composition-theorem :
-  CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
-canonical-full-state-haar-sparsemax-invariant-composition-theorem =
-  canonicalFullStateHaarSparsemaxInvariantCompositionTheorem
-    canonicalFixedSparsemaxAttentionCounts
-    canonicalFullStateHaarSparsemaxAttentionNormInvariant
-    canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant
-
-canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant :
-  ∀ (K : C.CanonicalTokenLanguageModelKernel)
-  (s : C.CanonicalFullLearnerState)
-  (r : LearnerReplacement)
-  (t u : C.CanonicalToken) →
-  C.canonicalFullStateHaarSparsemaxAttention K
-    (C.applyLearnerReplacement r s) t u
-  ≡
-  C.canonicalFullStateHaarSparsemaxAttention K s t u
-canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant
-  K s (C.normReplacement n) t u =
-  canonicalFullStateHaarSparsemaxAttentionNormInvariant K s n t u
-canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant
-  K s (C.optimizerReplacement o) t u =
-  canonicalFullStateHaarSparsemaxAttentionOptimizerInvariant K s o t u
-
-record CanonicalHaarSparsemaxFullStateClosureTheorem : Set₁ where
-  constructor canonicalHaarSparsemaxFullStateClosureTheorem
-  field
-    fixedCounts :
-      C.canonicalTokenLogitCounts ≡ C.zeroCounts
-    haarOrthogonality :
-      C.int8Add
-        (C.int8Mul C.one8 C.one8)
-        (C.int8Mul C.one8 (C.int8Neg C.one8))
-      ≡ C.zero8
-    haarLinear :
-      ∀ (x y : C.Int8) →
-      C.canonicalHaarMix x y
-      ≡
-      (C.int8Add x y , C.int8Sub x y)
-    composedAttention :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.GRUState)
-      (t u : C.CanonicalToken) →
-      C.canonicalHaarSparsemaxAttention K s t u
-      ≡
-      (C.int8Add
-         (C.canonicalFixedSparsemaxAttentionWeight K s t)
-         (C.canonicalFixedSparsemaxAttentionWeight K s u)
-       ,
-       C.int8Sub
-         (C.canonicalFixedSparsemaxAttentionWeight K s t)
-         (C.canonicalFixedSparsemaxAttentionWeight K s u))
-    learnerReplacementInvariant :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.CanonicalFullLearnerState)
-      (r : LearnerReplacement)
-      (t u : C.CanonicalToken) →
-      C.canonicalFullStateHaarSparsemaxAttention K
-        (C.applyLearnerReplacement r s) t u
-      ≡
-      C.canonicalFullStateHaarSparsemaxAttention K s t u
-
-open CanonicalHaarSparsemaxFullStateClosureTheorem public
-
-canonical-haar-sparsemax-full-state-closure-theorem :
-  CanonicalHaarSparsemaxFullStateClosureTheorem
-canonical-haar-sparsemax-full-state-closure-theorem =
-  canonicalHaarSparsemaxFullStateClosureTheorem
-    canonicalFixedSparsemaxAttentionCounts
-    canonicalIntegerHaarOrthogonality
-    canonicalIntegerHaarLinearForm
-    canonicalHaarSparsemaxAttentionLinear
-    canonicalFullStateHaarSparsemaxAttention-learnerReplacement-invariant
-
-record CanonicalLinearHaarSparsemaxAttentionCompositionTheorem : Set₁ where
-  constructor canonicalLinearHaarSparsemaxAttentionCompositionTheorem
-  field
-    haarOrthogonality :
-      C.int8Add
-        (C.int8Mul C.one8 C.one8)
-        (C.int8Mul C.one8 (C.int8Neg C.one8))
-      ≡ C.zero8
-    haarLinear :
-      ∀ (x y : C.Int8) →
-      C.canonicalHaarMix x y
-      ≡
-      (C.int8Add x y , C.int8Sub x y)
-    sparsemaxAttention :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.GRUState)
-      (t : C.CanonicalToken) →
-      C.canonicalFixedSparsemaxAttentionWeight K s t
-      ≡
-      C.int8OfNat
-        (C.numerator
-          (C.sparsemaxWeight
-            C.canonicalTokenActionSpace
-            (C.logits K s)
-            C.canonicalTokenLogitCounts
-            t))
-    composedAttention :
-      ∀ (K : C.CanonicalTokenLanguageModelKernel)
-      (s : C.GRUState)
-      (t u : C.CanonicalToken) →
-      C.canonicalHaarSparsemaxAttention K s t u
-      ≡
-      (C.int8Add
-         (C.canonicalFixedSparsemaxAttentionWeight K s t)
-         (C.canonicalFixedSparsemaxAttentionWeight K s u)
-       ,
-       C.int8Sub
-         (C.canonicalFixedSparsemaxAttentionWeight K s t)
-         (C.canonicalFixedSparsemaxAttentionWeight K s u))
-
-open CanonicalLinearHaarSparsemaxAttentionCompositionTheorem public
-
-canonical-linear-haar-sparsemax-attention-composition-theorem :
-  CanonicalLinearHaarSparsemaxAttentionCompositionTheorem
-canonical-linear-haar-sparsemax-attention-composition-theorem =
-  canonicalLinearHaarSparsemaxAttentionCompositionTheorem
-    canonicalIntegerHaarOrthogonality
-    canonicalIntegerHaarLinearForm
-    canonicalFixedSparsemaxAttentionShared
-    canonicalHaarSparsemaxAttentionLinear
 
 
 ------------------------------------------------------------------------
@@ -4764,66 +4259,6 @@ canonical-operator-composition-theorem =
     C.endomorphismAssociative
 
 ------------------------------------------------------------------------
--- Exact finite-observation / injective-lift completion.
---
--- Int8 is now an exact unbounded integer carrier. Finite recurrence therefore
--- belongs only to an explicit observation map into Fin 256. The F4 optimizer
--- remains an exact Z-valued transition.
-------------------------------------------------------------------------
-
-canonicalF4FiniteObservationRecurrence :
-  ∀ {A} (K : C.FullLearnerKernel A)
-    (s : C.FullLearnerState A)
-    (observe : C.Int8 → Fin 256) →
-  ∃ m n →
-    m ≢ n ×
-    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
-    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s))))
-canonicalF4FiniteObservationRecurrence K s observe =
-  canonical-finite-factor-recurrence-without-state-recurrence-factor
-    (λ n → C.iterateCanonical K n s)
-    (λ state → observe (C.code (C.thetaQ (C.optimizer state))))
-
-canonicalF4FiniteObservationNotOrbitInjective :
-  ∀ {A} (K : C.FullLearnerKernel A)
-    (s : C.FullLearnerState A)
-    (observe : C.Int8 → Fin 256) →
-  ¬ (∀ {m n : Nat} →
-      observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
-      observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) →
-      m ≡ n)
-canonicalF4FiniteObservationNotOrbitInjective K s observe injective =
-  collisionWitness (canonicalF4FiniteObservationRecurrence K s observe) injective
-  where
-    collisionWitness :
-      ∀ {A : Set} {orbit : Nat → A} {factor : A → Fin 256} →
-      (∃ m n → m ≢ n × factor (orbit m) ≡ factor (orbit n)) →
-      (∀ {m n} → factor (orbit m) ≡ factor (orbit n) → m ≡ n) →
-      ⊥
-    collisionWitness (m , n , apart , factorEq) inj = apart (inj factorEq)
-
-canonicalF4FiniteObservationCollisionSeparatesFullState :
-  ∀ {A} (K : C.FullLearnerKernel A)
-    (s : C.FullLearnerState A)
-    (observe : C.Int8 → Fin 256) →
-  ∃ m n →
-    m ≢ n ×
-    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
-    observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) ×
-    C.iterateCanonical K m s ≢ C.iterateCanonical K n s
-canonicalF4FiniteObservationCollisionSeparatesFullState K s observe =
-  collisionWithStateSeparation
-    (canonicalF4FiniteObservationRecurrence K s observe)
-  where
-    collisionWithStateSeparation :
-      ∀ {A : Set} {orbit : Nat → A} {factor : A → Fin 256} →
-      (∃ m n → m ≢ n × factor (orbit m) ≡ factor (orbit n)) →
-      ∃ m n → m ≢ n × factor (orbit m) ≡ factor (orbit n) × orbit m ≢ orbit n
-    collisionWithStateSeparation (m , n , apart , factorEq) =
-      m , n , apart , factorEq ,
-      (λ stateEq → apart (canonicalOrbit-state-injective K s stateEq))
-
-------------------------------------------------------------------------
 -- Exact global optimizer stability on the unbounded integer carrier.
 ------------------------------------------------------------------------
 
@@ -4875,181 +4310,6 @@ canonical-f4-global-optimizer-stability-theorem =
 --   -> repeated F4 representation with distinct full exact states.
 ------------------------------------------------------------------------
 
-record CanonicalBoundedFactorLiftTheorem : Set₁ where
-  constructor canonicalBoundedFactorLiftTheorem
-  field
-    finiteObservation :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A)
-        (observe : C.Int8 → Fin 256) →
-      ∃ m n →
-        m ≢ n ×
-        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
-        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s))))
-    factorNotInjective :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A)
-        (observe : C.Int8 → Fin 256) →
-      ¬ (∀ {m n : Nat} →
-          observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
-          observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) →
-          m ≡ n)
-    collisionSeparatesFullState :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A)
-        (observe : C.Int8 → Fin 256) →
-      ∃ m n →
-        m ≢ n ×
-        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K m s)))) ≡
-        observe (C.code (C.thetaQ (C.optimizer (C.iterateCanonical K n s)))) ×
-        C.iterateCanonical K m s ≢ C.iterateCanonical K n s
-
-open CanonicalBoundedFactorLiftTheorem public
-
-canonical-bounded-factor-lift-theorem :
-  CanonicalBoundedFactorLiftTheorem
-canonical-bounded-factor-lift-theorem =
-  canonicalBoundedFactorLiftTheorem
-    canonicalF4FiniteObservationRecurrence
-    canonicalF4FiniteObservationNotOrbitInjective
-    canonicalF4FiniteObservationCollisionSeparatesFullState
-
-
-------------------------------------------------------------------------
--- Emergent endogenous factor-recurrence separation.
---
--- Exact aperiodic full-state evolution can force recurrence in a finite
--- observation/factor without forcing recurrence of the underlying state.
--- The result is endogenous: it uses only the finite factor carrier and
--- exact orbit injectivity, with no Lyapunov or external stability premise.
-------------------------------------------------------------------------
-
-record FiniteFactorRecurrenceWithoutStateRecurrenceTheorem : Set₁ where
-  constructor finiteFactorRecurrenceWithoutStateRecurrenceTheorem
-  field
-    factorRecurs :
-      ∀ {A : Set}
-        (orbit : Nat → A)
-        (factor : A → Fin 256) →
-        ∃ m n →
-          m ≢ n ×
-          factor (orbit m) ≡ factor (orbit n)
-    stateSeparates :
-      ∀ {A : Set}
-        (orbit : Nat → A)
-        (orbitInjective : ∀ {m n : Nat} → orbit m ≡ orbit n → m ≡ n)
-        {m n : Nat} →
-        m ≢ n →
-        orbit m ≢ orbit n
-
-canonical-finite-factor-recurrence-without-state-recurrence-factor :
-  ∀ {A : Set} →
-  (orbit : Nat → A) →
-  (factor : A → Fin 256) →
-  ∃ m n →
-    m ≢ n ×
-    factor (orbit m) ≡ factor (orbit n)
-canonical-finite-factor-recurrence-without-state-recurrence-factor
-  orbit factor with pigeonhole (n<1+n 256)
-  (λ i → factor (orbit (toℕ i)))
-... | i , j , apart , factorEq =
-  toℕ i , toℕ j ,
-  (λ mnEq → apart (toℕ-injective mnEq)) ,
-  factorEq
-
-canonical-finite-factor-recurrence-without-state-recurrence :
-  FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
-canonical-finite-factor-recurrence-without-state-recurrence =
-  finiteFactorRecurrenceWithoutStateRecurrenceTheorem
-    canonical-finite-factor-recurrence-without-state-recurrence-factor
-    (λ orbit orbitInjective {m} {n} apart stateEq →
-      apart (orbitInjective stateEq))
-
-------------------------------------------------------------------------
--- Pre-graphed completion endpoint for the active theorem seams.
--- Each field is an already-proved canonical theorem; this record adds no
--- alternate proof path or cancellation. It only exposes the dependency
--- graph at the monolith boundary.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- 2026-09-22 emergent endogenous observation boundary.
---
--- The canonical Watkins target is an endogenous function of the exact
--- learner state.  A left-invertible observation would preserve exact
--- endogenous target readout, but the finite Int8 observation cannot be
--- globally left-invertible because the canonical Nat-clock orbit is
--- injective while every Int8 observation has a finite carrier.
-------------------------------------------------------------------------
-
-record CanonicalEndogenousObservationBoundaryTheorem : Set₁ where
-  constructor canonicalEndogenousObservationBoundaryTheorem
-  field
-    exactOrbitEmbedding :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-        (s : C.CanonicalFullLearnerState)
-        {m n : Nat} →
-      C.iterateCanonical K m s ≡
-      C.iterateCanonical K n s →
-      m ≡ n
-    finiteObservationRecurrence :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-        (s : C.CanonicalFullLearnerState)
-        (observe : C.CanonicalFullLearnerState → Fin 256) →
-      ∃ m n →
-        m ≢ n ×
-        observe (C.iterateCanonical K m s) ≡
-        observe (C.iterateCanonical K n s)
-    noGlobalLeftInverse :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-        (s : C.CanonicalFullLearnerState)
-        (observe : C.CanonicalFullLearnerState → Fin 256)
-        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
-      ¬ (∀ t → inverse (observe t) ≡ t)
-    endogenousTargetReadoutUnderLeftInverse :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-        (observe : C.CanonicalFullLearnerState → Fin 256)
-        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
-      (leftInverse : ∀ t → inverse (observe t) ≡ t) →
-      ∀ s →
-      C.canonicalWatkinsTarget K s ≡
-      C.canonicalWatkinsTarget K (inverse (observe s))
-
-open CanonicalEndogenousObservationBoundaryTheorem public
-
-canonical-endogenous-observation-boundary-theorem :
-  CanonicalEndogenousObservationBoundaryTheorem
-canonical-endogenous-observation-boundary-theorem =
-  canonicalEndogenousObservationBoundaryTheorem
-    canonicalInfiniteStateOrbitEmbedding
-    (λ K s observe →
-      FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
-        canonical-finite-factor-recurrence-without-state-recurrence
-        (λ n → observe (C.iterateCanonical K n s)))
-    (λ K s observe inverse →
-      CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem.noGlobalLeftInverse
-        (canonical-global-finite-observation-left-inverse-impossibility-theorem K s)
-        observe
-        inverse)
-    (λ K observe inverse leftInverse s →
-      canonicalWatkinsTarget-endogenous-leftInverse
-        K observe inverse leftInverse s)
-
-record CanonicalEndogenousTopologicalObservationBoundaryTheorem : Set₁ where
-  constructor canonicalEndogenousTopologicalObservationBoundaryTheorem
-  field
-    scanConjugacy :
-      CanonicalFullLearnerConnectedScanConjugacyTheorem
-    finiteCycleTransport :
-      CanonicalFiniteCycleExclusionIsomorphismTheorem
-    observationBoundary :
-      CanonicalEndogenousObservationBoundaryTheorem
-
-canonical-endogenous-topological-observation-boundary-theorem :
-  CanonicalEndogenousTopologicalObservationBoundaryTheorem
-canonical-endogenous-topological-observation-boundary-theorem =
-  canonicalEndogenousTopologicalObservationBoundaryTheorem
-    canonical-full-learner-connected-scan-conjugacy-theorem
-    canonical-finite-cycle-exclusion-isomorphism-theorem
-    canonical-endogenous-observation-boundary-theorem
-
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
   constructor canonicalPureNonOrangeBypassCompletionTheorem
   field
@@ -5059,24 +4319,15 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
       CanonicalFullLearnerConnectedScanConjugacyTheorem
     exactTuringBoundary :
       ¬ CanonicalExactCompositionTuringCompletenessContract
-    haarSparsemaxClosure :
-      CanonicalHaarSparsemaxFullStateClosureTheorem
     finiteCycleIsomorphismTransport :
       CanonicalFiniteCycleExclusionIsomorphismTheorem
     operatorComposition :
       CanonicalOperatorCompositionTheorem
-    boundedFactorLift :
-      CanonicalBoundedFactorLiftTheorem
     f4OptimizerStability :
       CanonicalF4GlobalOptimizerStabilityTheorem
-    emergentFactorSeparation :
-      FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
-    finiteObservationInformationBoundary :
-      CanonicalFiniteObservationInformationBoundaryTheorem
-    endogenousObservationBoundary :
-      CanonicalEndogenousObservationBoundaryTheorem
-    endogenousTopologicalBoundary :
-      CanonicalEndogenousTopologicalObservationBoundaryTheorem
+    integerHaarOrthogonality :
+      CanonicalIntegerHaarScaledOrthogonalityTheorem
+
 
 open CanonicalPureNonOrangeBypassCompletionTheorem public
 
@@ -5087,15 +4338,10 @@ canonical-pure-non-orange-bypass-completion-theorem =
     canonical-recurrent-prefix-monoid-homomorphism
     canonical-full-learner-connected-scan-conjugacy-theorem
     canonicalExactCompositionTuringCompletenessContract-impossible
-    canonical-haar-sparsemax-full-state-closure-theorem
     canonical-finite-cycle-exclusion-isomorphism-theorem
     canonical-operator-composition-theorem
-    canonical-bounded-factor-lift-theorem
     canonical-f4-global-optimizer-stability-theorem
-    canonical-finite-factor-recurrence-without-state-recurrence
-    canonical-finite-observation-information-boundary-theorem
-    canonical-endogenous-observation-boundary-theorem
-    canonical-endogenous-topological-observation-boundary-theorem
+    canonical-integer-haar-scaled-orthogonality-theorem
 
 
 ------------------------------------------------------------------------
@@ -5108,128 +4354,13 @@ canonical-pure-non-orange-bypass-completion-theorem =
 -- through such an observation is impossible on that orbit.
 ------------------------------------------------------------------------
 
-record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
-  constructor canonicalFiniteObservationInformationBoundaryTheorem
-  field
-    exactOrbitEmbedding :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) →
-      ∀ {m n : Nat} →
-      C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
-      m ≡ n
-    finiteFactorRecurrence :
-      ∀ {A : Set}
-        (orbit : Nat → A)
-        (factor : A → Fin 256) →
-        ∃ m n →
-          m ≢ n ×
-          factor (orbit m) ≡ factor (orbit n)
-    leftInverseImpliesGlobalInjectivity :
-      ∀ (observe : C.CanonicalFullLearnerState → Fin 256)
-        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
-      (∀ t → inverse (observe t) ≡ t) →
-      ∀ {s t} → observe s ≡ observe t → s ≡ t
-    noExactFiniteObservationLeftInverse :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (observe : C.CanonicalFullLearnerState → Fin 256)
-      (inverse : Fin 256 → C.CanonicalFullLearnerState) →
-      (∀ t → inverse (observe t) ≡ t) →
-      ⊥
-    noUniversalDiscreteUAP :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (observe : C.CanonicalFullLearnerState → Fin 256) →
-      DiscreteExactUniversalUAP
-        C.CanonicalFullLearnerState
-        (Fin 256)
-        observe →
-      ⊥
-
-canonical-finite-observation-information-boundary-theorem :
-  CanonicalFiniteObservationInformationBoundaryTheorem
-canonical-finite-observation-information-boundary-theorem =
-  canonicalFiniteObservationInformationBoundaryTheorem
-    canonicalInfiniteStateOrbitEmbedding
-    (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
-      canonical-finite-factor-recurrence-without-state-recurrence)
-    (λ observe inverse leftInverse {s} {t} eq →
-      discreteLeftInverse-observe-injective leftInverse eq)
-    canonicalPigeonholeNatClockContradiction
-    canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit
-------------------------------------------------------------------------
--- Exact Turing-completeness mixture boundary.
--- This records the simultaneous contract being ruled out; it does not claim
--- that every weaker notion of Turing completeness is impossible.
-------------------------------------------------------------------------
-
-record CanonicalExactTuringBoundaryMixtureTheorem : Set₁ where
-  constructor canonicalExactTuringBoundaryMixtureTheorem
-  field
-    exactClock :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) →
-      C.clock (C.canonicalFullStep K s) ≡ suc (C.clock s)
-    finiteObservationBoundary :
-      CanonicalFiniteObservationInformationBoundaryTheorem
-    exactContractImpossible :
-      ¬ CanonicalExactCompositionTuringCompletenessContract
-
-open CanonicalExactTuringBoundaryMixtureTheorem public
-
-canonical-exact-turing-boundary-mixture-theorem :
-  CanonicalExactTuringBoundaryMixtureTheorem
-canonical-exact-turing-boundary-mixture-theorem =
-  canonicalExactTuringBoundaryMixtureTheorem
-    canonicalClockStep
-    canonical-finite-observation-information-boundary-theorem
-    canonicalExactCompositionTuringCompletenessContract-impossible
-
-
-------------------------------------------------------------------------
--- 2026-09-22 explicit global-left-inverse and stochastic-boundary
--- theorem surfaces.
-------------------------------------------------------------------------
-
--- The global left-inverse obstruction is quantified over the entire
--- canonical state space. The proof uses one Nat-clock orbit as the
--- finite-carrier witness; this is a witness to the global claim, not
--- a restriction of the conclusion to that orbit.
-record CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem : Set₁ where
-  constructor canonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
-  field
-    noGlobalLeftInverse :
-      ∀ (observe : C.CanonicalFullLearnerState → Fin 256)
-        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
-      ¬ (∀ s → inverse (observe s) ≡ s)
-
-canonical-global-finite-observation-left-inverse-impossibility-theorem :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-    (s : C.CanonicalFullLearnerState) →
-  CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
-canonical-global-finite-observation-left-inverse-impossibility-theorem K s =
-  canonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
-    (λ observe inverse leftInverse →
-      canonicalPigeonholeNatClockContradiction
-        K
-        s
-        observe
-        inverse
-        leftInverse)
-
-------------------------------------------------------------------------
--- A stationary-distribution conclusion is not obtained from boundedness
--- or monotone Lyapunov behavior alone. The exact theorem surface makes
--- the missing stochastic/limit-preservation assumptions explicit.
-------------------------------------------------------------------------
-
-record FiniteObservationStationaryLimitTheorem
+record StationaryLimitTheorem
   (Distribution : Set)
   (P : Distribution → Distribution)
   (μ : Nat → Distribution)
   (μ∞ : Distribution)
   (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
-  constructor finiteObservationStationaryLimitTheorem
+  constructor stationaryLimitTheorem
   field
     transitionLaw :
       ∀ n → μ (suc n) ≡ P (μ n)
@@ -5323,7 +4454,7 @@ record CanonicalFiniteObservationStationarySubcompositionTheorem : Set₁ where
       FiniteObservationStationaryLimitTheorem
         Distribution P μ π Converges
 
-canonical-finite-observation-stationary-subcomposition-theorem :
+canonical-stationary-subcomposition-theorem :
   CanonicalFiniteObservationStationarySubcompositionTheorem
 canonical-finite-observation-stationary-subcomposition-theorem =
   canonicalFiniteObservationStationarySubcompositionTheorem
@@ -5333,40 +4464,6 @@ canonical-finite-observation-stationary-subcomposition-theorem =
         convergence
         limitPreserved)
 
-record CanonicalClockObservationSubcompositionTheorem : Set₁ where
-  constructor canonicalClockObservationSubcompositionTheorem
-  field
-    exactClockGrowth :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-        (n : Nat)
-        (s : C.CanonicalFullLearnerState) →
-      C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
-    globalLeftInverseObstruction :
-      CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
-
-canonical-clock-observation-subcomposition-theorem :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-    (s : C.CanonicalFullLearnerState) →
-  CanonicalClockObservationSubcompositionTheorem
-canonical-clock-observation-subcomposition-theorem K s =
-  canonicalClockObservationSubcompositionTheorem
-    canonicalClockAfter
-    (canonical-global-finite-observation-left-inverse-impossibility-theorem K s)
-
-record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
-  constructor canonicalBoundednessPEBoundarySubcompositionTheorem
-  field
-    boundednessBoundary :
-      CanonicalBoundedFactorLiftTheorem
-    persistentExcitationRequirement :
-      CanonicalPersistentExcitationRequirementTheorem
-
-canonical-boundedness-pe-boundary-subcomposition-theorem :
-  CanonicalBoundednessPEBoundarySubcompositionTheorem
-canonical-boundedness-pe-boundary-subcomposition-theorem =
-  canonicalBoundednessPEBoundarySubcompositionTheorem
-    canonical-bounded-factor-lift-theorem
-    canonical-persistent-excitation-requirement-theorem
 
 ------------------------------------------------------------------------
 -- Minimal exact finite probability semantics.
@@ -5509,7 +4606,7 @@ finite-pomdp-probability-semantics-theorem =
 
 ------------------------------------------------------------------------
 -- Belief states are finite probability masses; exact transport does not
--- require importing a second algebraic tower or hard-coding Fin 256.
+-- require importing a second algebraic tower or hard-coding the retired finite-token carrier.
 ------------------------------------------------------------------------
 
 BeliefState : Nat → Set₁
@@ -5546,187 +4643,6 @@ finite-belief-update-exact-transport =
 ------------------------------------------------------------------------
 -- New endogenous composition: probabilistic POMDP semantics plus exact
 -- belief-state transport preserve the endogenous observation boundary.
-------------------------------------------------------------------------
-
-record CanonicalEndogenousPOMDPObservationBoundaryTheorem : Set₁ where
-  constructor canonicalEndogenousPOMDPObservationBoundaryTheorem
-  field
-    endogenousObservationBoundary :
-      CanonicalEndogenousObservationBoundaryTheorem
-    probabilitySemantics :
-      FinitePOMDPProbabilitySemanticsTheorem
-    beliefTransport :
-      FiniteBeliefUpdateExactTransportTheorem
-
-canonical-endogenous-pomdp-observation-boundary-theorem :
-  CanonicalEndogenousPOMDPObservationBoundaryTheorem
-canonical-endogenous-pomdp-observation-boundary-theorem =
-  canonicalEndogenousPOMDPObservationBoundaryTheorem
-    canonical-endogenous-observation-boundary-theorem
-    finite-pomdp-probability-semantics-theorem
-    finite-belief-update-exact-transport
-    finite-pomdp-probability-semantics-theorem
-
-------------------------------------------------------------------------
--- Exact RNN-LM capability subcomposition candidates.
---
--- These are deliberately packaging laws: they expose the strongest
--- already-proved exact sequence-model surfaces to graph search without
--- adding a new semantic axiom. They are promotion candidates only after
--- the Agda theorem graph type-checks.
-------------------------------------------------------------------------
-
-record CanonicalExactRNNLMCapabilitySubcompositionTheorem : Set₁ where
-  constructor canonicalExactRNNLMCapabilitySubcompositionTheorem
-  field
-    exactRNNLM :
-      CanonicalExactRNNLMTheorem
-    globalTokenComposition :
-      CanonicalGlobalTokenLMCompositionTheorem
-    endogenousTopologicalBoundary :
-      CanonicalEndogenousTopologicalObservationBoundaryTheorem
-
-canonical-exact-rnn-lm-capability-subcomposition-theorem :
-  CanonicalExactRNNLMCapabilitySubcompositionTheorem
-canonical-exact-rnn-lm-capability-subcomposition-theorem =
-  canonicalExactRNNLMCapabilitySubcompositionTheorem
-    canonical-exact-rnn-lm-theorem
-    canonical-global-token-lm-composition-theorem
-    canonical-endogenous-topological-observation-boundary-theorem
-
-record CanonicalExactRNNLMObservationSubcompositionTheorem : Set₁ where
-  constructor canonicalExactRNNLMObservationSubcompositionTheorem
-  field
-    exactRNNLM :
-      CanonicalExactRNNLMTheorem
-    endogenousObservation :
-      CanonicalEndogenousObservationBoundaryTheorem
-    finiteInformationBoundary :
-      CanonicalFiniteObservationInformationBoundaryTheorem
-    exactComputabilityBoundary :
-      ExactContractComputabilityBoundaryTheorem
-
-canonical-exact-rnn-lm-observation-subcomposition-theorem :
-  CanonicalExactRNNLMObservationSubcompositionTheorem
-canonical-exact-rnn-lm-observation-subcomposition-theorem =
-  canonicalExactRNNLMObservationSubcompositionTheorem
-    canonical-exact-rnn-lm-theorem
-    canonical-endogenous-observation-boundary-theorem
-    canonical-finite-observation-information-boundary-theorem
-    exact-contract-computability-boundary-theorem
-
-------------------------------------------------------------------------
--- Exact RNN-LM observation/topology capability closure.
-------------------------------------------------------------------------
-
-record CanonicalExactRNNLMObservationTopologyCapabilityTheorem : Set₁ where
-  constructor canonicalExactRNNLMObservationTopologyCapabilityTheorem
-  field
-    capability :
-      CanonicalExactRNNLMCapabilitySubcompositionTheorem
-    observation :
-      CanonicalExactRNNLMObservationSubcompositionTheorem
-    topology :
-      CanonicalEndogenousTopologicalObservationBoundaryTheorem
-    information :
-      CanonicalFiniteObservationInformationBoundaryTheorem
-
-canonical-exact-rnn-lm-observation-topology-capability-theorem :
-  CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-canonical-exact-rnn-lm-observation-topology-capability-theorem =
-  canonicalExactRNNLMObservationTopologyCapabilityTheorem
-    canonical-exact-rnn-lm-capability-subcomposition-theorem
-    canonical-exact-rnn-lm-observation-subcomposition-theorem
-    canonical-endogenous-topological-observation-boundary-theorem
-    canonical-finite-observation-information-boundary-theorem
-
-------------------------------------------------------------------------
--- Exact endogenous vocabulary/observation closure.
---
--- This is a genuine composition theorem, not a candidate label: every
--- field is an already-proved Agda theorem surface consumed by the closure.
--- It packages finite token conjugacy/vocabulary, exact RNN-LM capability,
--- observation topology, and the endogenous POMDP observation boundary.
-------------------------------------------------------------------------
-
-record CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem : Set₁ where
-  constructor canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
-  field
-    tokenEncoding :
-      CanonicalGlobalTokenEncodingConjugacyTheorem
-    exactRNNLM :
-      CanonicalExactRNNLMTheorem
-    capability :
-      CanonicalExactRNNLMCapabilitySubcompositionTheorem
-    observation :
-      CanonicalExactRNNLMObservationSubcompositionTheorem
-    topology :
-      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-    endogenousObservation :
-      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-
-canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem :
-  CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
-canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem =
-  canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
-    canonical-global-token-encoding-conjugacy
-    canonical-exact-rnn-lm-theorem
-    canonical-exact-rnn-lm-capability-subcomposition-theorem
-    canonical-exact-rnn-lm-observation-subcomposition-theorem
-    canonical-exact-rnn-lm-observation-topology-capability-theorem
-    canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem
-
-------------------------------------------------------------------------
--- Emergent endogenous RNN-LM/POMDP/topology capability closure.
---
--- This is a packaging theorem over already-declared exact surfaces:
--- sequence-model capability, endogenous topology/information boundaries,
--- and finite POMDP probability/belief transport. It adds no new semantic
--- axiom; it exposes the cross-domain dependency to graph search.
-------------------------------------------------------------------------
-
-record CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem : Set₁ where
-  constructor canonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-  field
-    rnnlmCapability :
-      CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-    pomdpObservation :
-      CanonicalEndogenousPOMDPObservationBoundaryTheorem
-    finiteInformation :
-      CanonicalFiniteObservationInformationBoundaryTheorem
-
-canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem :
-  CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem =
-  canonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-    canonical-exact-rnn-lm-observation-topology-capability-theorem
-    canonical-endogenous-pomdp-observation-boundary-theorem
-    canonical-finite-observation-information-boundary-theorem
-
-------------------------------------------------------------------------
--- Exact vocabulary-cardinality boundary.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Emergent endogenous exact RNN-LM vocabulary/observation closure.
---
--- This packages the exact finite vocabulary boundary together with the
--- global token conjugacy, exact RNN-LM capability, and endogenous
--- observation/topology closure. It adds no new semantic axiom: every
--- field is an already-proved theorem record, so the graph edge is real.
-
-------------------------------------------------------------------------
--- Strict neural function-class separation contracts.
---
--- A graph path is not a separation proof. The strict semantic boundary
--- requires (1) an input/output-semantics-preserving inclusion, (2) one
--- concrete witness in the full connected class, and (3) a proof that the
--- same witness is not representable by the baseline class.
---
--- These records are intentionally generic so the missing obligations can
--- be inhabited without inventing a baseline architecture. The concrete
--- sign/optimizer-affine candidates remain unpromoted until these contracts
--- receive actual model-specific witnesses.
 ------------------------------------------------------------------------
 
 record FunctionClassInclusion
@@ -5768,7 +4684,7 @@ record CanonicalStrictNeuralFunctionClassSeparationContract
   constructor canonicalStrictNeuralFunctionClassSeparationContract
   field
     connectedComposition :
-      CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
     separation :
       StrictFunctionClassSeparation Input Output FBase FFull
 
@@ -5817,61 +4733,55 @@ open CanonicalRecurrentFunctionRealization public
 
 CanonicalFiniteStateRecurrentFunctionClass :
   ∀ {Output : Set} →
+  Nat →
   (Nat → Output) → Set₁
-CanonicalFiniteStateRecurrentFunctionClass f =
+CanonicalFiniteStateRecurrentFunctionClass n f =
   CanonicalRecurrentFunctionRealization
-    (Fin 256)
+    (Fin n)
     Output
     f
 
 CanonicalConnectedRecurrentFunctionClass :
   ∀ {Output : Set} →
+  Nat →
   (Nat → Output) → Set₁
-CanonicalConnectedRecurrentFunctionClass f =
+CanonicalConnectedRecurrentFunctionClass n f =
   CanonicalRecurrentFunctionRealization
-    (Fin 256 ⊎ C.CanonicalFullLearnerState)
+    (Fin n ⊎ C.CanonicalFullLearnerState)
     Output
     f
 
 canonicalFiniteStateRecurrent-function-inclusion :
   ∀ {Output : Set}
+    {n : Nat}
     {f : Nat → Output} →
-  CanonicalFiniteStateRecurrentFunctionClass f →
-  CanonicalConnectedRecurrentFunctionClass f
+  CanonicalFiniteStateRecurrentFunctionClass n f →
+  CanonicalConnectedRecurrentFunctionClass n f
 canonicalFiniteStateRecurrent-function-inclusion realization =
   canonicalRecurrentFunctionRealization
-    (λ { (inj₁ q) →
-           inj₁ (step realization q)
-       ; (inj₂ s) →
-           inj₂ s })
+    (λ { (inj₁ q) → inj₁ (step realization q)
+       ; (inj₂ s) → inj₂ s })
     (inj₁ (initial realization))
-    (λ { (inj₁ q) →
-           output realization q
-       ; (inj₂ s) →
-           output realization (initial realization) })
-    (λ n → exact realization n)
+    (λ { (inj₁ q) → output realization q
+       ; (inj₂ s) → output realization (initial realization) })
+    (λ n₁ → exact realization n₁)
 
 canonicalFiniteStateIteration-collision :
-  ∀ (step : Fin 256 → Fin 256)
-    (initial : Fin 256) →
-  ∃ m n →
-    m ≢ n ×
+  ∀ {n : Nat}
+    (step : Fin n → Fin n)
+    (initial : Fin n) →
+  ∃ m k →
+    m ≢ k ×
     canonicalRecurrentIterate step m initial
     ≡
-    canonicalRecurrentIterate step n initial
-canonicalFiniteStateIteration-collision step initial with
+    canonicalRecurrentIterate step k initial
+canonicalFiniteStateIteration-collision {n} step initial with
   pigeonhole
-    (n<1+n 256)
-    (λ i →
-      canonicalRecurrentIterate
-        step
-        (toℕ i)
-        initial)
+    (n<1+n n)
+    (λ i → canonicalRecurrentIterate step (toℕ i) initial)
 ... | i , j , apart , stateEq =
-  toℕ i ,
-  toℕ j ,
-  toℕ-mono-< apart ,
-  stateEq
+  toℕ i , toℕ j , toℕ-mono-< apart , stateEq
+
 
 canonicalConnectedLearnerClock :
   (K : C.CanonicalFullLearnerKernel)
@@ -5881,11 +4791,13 @@ canonicalConnectedLearnerClock K s n =
   C.clock s + n
 
 canonicalConnectedLearnerClock-realization :
-  ∀ (K : C.CanonicalFullLearnerKernel)
+  ∀ (n : Nat)
+    (K : C.CanonicalFullLearnerKernel)
     (s : C.CanonicalFullLearnerState) →
   CanonicalConnectedRecurrentFunctionClass
+    n
     (canonicalConnectedLearnerClock K s)
-canonicalConnectedLearnerClock-realization K s =
+canonicalConnectedLearnerClock-realization n K s =
   canonicalRecurrentFunctionRealization
     (λ { (inj₁ q) →
            inj₁ q
@@ -5899,11 +4811,13 @@ canonicalConnectedLearnerClock-realization K s =
     (λ n → C.clockAfter K n s)
 
 canonicalConnectedLearnerClock-not-finite-state :
-  ∀ (K : C.CanonicalFullLearnerKernel)
+  ∀ (n : Nat)
+    (K : C.CanonicalFullLearnerKernel)
     (s : C.CanonicalFullLearnerState) →
   ¬ CanonicalFiniteStateRecurrentFunctionClass
+      n
       (canonicalConnectedLearnerClock K s)
-canonicalConnectedLearnerClock-not-finite-state K s realization with
+canonicalConnectedLearnerClock-not-finite-state n K s realization with
   canonicalFiniteStateIteration-collision
     (CanonicalRecurrentFunctionRealization.step realization)
     (CanonicalRecurrentFunctionRealization.initial realization)
@@ -5921,30 +4835,32 @@ canonicalConnectedLearnerClock-not-finite-state K s realization with
             (exact realization j)))))
 
 canonicalFiniteStateVsConnectedRecurrentStrictSeparation :
-  ∀ (K : C.CanonicalFullLearnerKernel)
+  ∀ (n : Nat)
+    (K : C.CanonicalFullLearnerKernel)
     (s : C.CanonicalFullLearnerState) →
   StrictFunctionClassSeparation
     Nat
     Nat
-    CanonicalFiniteStateRecurrentFunctionClass
-    CanonicalConnectedRecurrentFunctionClass
-canonicalFiniteStateVsConnectedRecurrentStrictSeparation K s =
+    (CanonicalFiniteStateRecurrentFunctionClass n)
+    (CanonicalConnectedRecurrentFunctionClass n)
+canonicalFiniteStateVsConnectedRecurrentStrictSeparation n K s =
   strictFunctionClassSeparation
     functionClassInclusion-value
     (canonicalConnectedLearnerClock K s)
-    (canonicalConnectedLearnerClock-realization K s)
-    (canonicalConnectedLearnerClock-not-finite-state K s)
+    (canonicalConnectedLearnerClock-realization n K s)
+    (canonicalConnectedLearnerClock-not-finite-state n K s)
   where
     functionClassInclusion-value :
       FunctionClassInclusion
         Nat
         Nat
-        CanonicalFiniteStateRecurrentFunctionClass
-        CanonicalConnectedRecurrentFunctionClass
+        (CanonicalFiniteStateRecurrentFunctionClass n)
+        (CanonicalConnectedRecurrentFunctionClass n)
     functionClassInclusion-value =
       functionClassInclusion
         (λ {f} realization →
           canonicalFiniteStateRecurrent-function-inclusion realization)
+
 
 ------------------------------------------------------------------------
 -- Four pre-graphed exotic labels now share the same completed algebraic
