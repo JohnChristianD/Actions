@@ -90,7 +90,8 @@ policyAction2 : FullLearnerState → Nat
 policyAction2 = canonicalBit learnerKernel
 
 policyAction4 : FullLearnerState → Nat
-policyAction4 s = ((cycle2 (clock s) * 2) + (canonicalBit learnerKernel s)) 4)
+policyAction4 s =
+  ((cycle2 (clock s) * 2) + (canonicalBit learnerKernel s)) % 4
   where
     cycle2 : Nat → Nat
     cycle2 zero = zero
@@ -98,12 +99,12 @@ policyAction4 s = ((cycle2 (clock s) * 2) + (canonicalBit learnerKernel s)) 4)
     cycle2 (suc (suc n)) = cycle2 n
 
 policyAction5 : FullLearnerState → Nat
-policyAction5 s = fromℕ< (m%n<n
-  ((cycle4 (clock s) * 2) + (canonicalBit learnerKernel s)) 5)
+policyAction5 s =
+  ((cycle4 (clock s) * 2) + (canonicalBit learnerKernel s)) % 5
 
 policyAction6 : FullLearnerState → Nat
-policyAction6 s = fromℕ< (m%n<n
-  ((cycle3 (clock s) * 2) + (canonicalBit learnerKernel s)) 6)
+policyAction6 s =
+  ((cycle3 (clock s) * 2) + (canonicalBit learnerKernel s)) % 6
 
 cartPoleSpec : ClosedLoopSpec 2 P.CartPoleQuantizedState
 cartPoleSpec = closedLoopSpec
