@@ -115,18 +115,14 @@ graph_endogenous_pomdp_observation_plan(Laws, Plan) :-
         Plan).
 
 graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
-    search_named_required_plan(
-        Laws,
-        Plan).
+    graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(Laws, Plan).
 
 :- pred graph_connected_custom_optimizer_rounding_bias_regret_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
 graph_connected_custom_optimizer_rounding_bias_regret_plan(Laws, Plan) :-
-    search_named_required_plan(
-        Laws,
-        Plan).
+    graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(Laws, Plan).
 
 :- pred graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(
     list(semantic_law)::in,
@@ -152,9 +148,36 @@ graph_connected_maxwell_tsallis_finite_exact_conjugacy_plan(Laws, Plan) :-
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
-graph_finite_maxwell_gru_representation_plan(Laws, Plan) :-
+graph_finite_continuous_hodge_maxwell_gru_representation_plan(Laws, Plan) :-
     search_named_required_plan(
         "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_finite_maxwell_gru_representation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_finite_maxwell_gru_representation_plan(Laws, Plan) :-
+    graph_finite_continuous_hodge_maxwell_gru_representation_plan(Laws, Plan).
+
+:- pred graph_finite_hodge_maxwell_exact_discretization_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_finite_hodge_maxwell_exact_discretization_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "FiniteHodgeMaxwellExactDiscretizationTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_connected_finite_discrete_hodge_maxwell_gru_representation_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_finite_discrete_hodge_maxwell_gru_representation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
         Laws,
         Plan).
 
@@ -507,6 +530,8 @@ graph_required_theorems = [
     "LogarithmicPrefixScanComplexityTheorem",
     "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
     "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+    "FiniteHodgeMaxwellExactDiscretizationTheorem",
+    "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
     "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
