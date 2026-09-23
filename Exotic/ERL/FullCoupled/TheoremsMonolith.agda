@@ -4717,7 +4717,7 @@ connected-finite-list-hodge-maxwell-gru-f4-watkins-egraph-composition :
       (ContinuousHodgeMaxwellExactRepresentationData.Solution
         (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
           (hodgeMaxwell connected)))
-      (Fin n → Scalar)) →
+      (List Scalar)) →
   ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
     GRU Scalar
 connected-finite-list-hodge-maxwell-gru-f4-watkins-egraph-composition
