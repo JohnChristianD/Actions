@@ -5164,6 +5164,99 @@ canonicalConnectedComposition-parallelPrefixComplexity-contract =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
+-- F4-Watkins is the sole custom optimizer boundary.
+--
+-- Regret is a genuine finite-horizon/time-indexed cumulative quantity:
+-- R 0 = 0 and R (H + 1) = R H + r H.  The theorem then bounds R H
+-- pointwise for every finite horizon H.  No standalone Lion/KKT/FW theorem
+-- is retained.
+------------------------------------------------------------------------
+
+record F4FrankWolfeRoundingBiasRegretData : Set₁ where
+  constructor f4FrankWolfeRoundingBiasRegretData
+  field
+    perRoundRegret : Nat → Nat
+    cumulativeRegret : Nat → Nat
+    jensenGap : Nat → Nat
+    roundingBias : Nat → Nat
+    frankWolfeResidual : Nat → Nat
+    markovMixing : Nat → Nat
+
+    cumulativeZero :
+      cumulativeRegret zero ≡ zero
+
+    cumulativeStep :
+      ∀ H →
+      cumulativeRegret (suc H)
+      ≡
+      cumulativeRegret H + perRoundRegret H
+
+    regretBoundAt :
+      ∀ H →
+      cumulativeRegret H
+      ≤
+      jensenGap H
+      + roundingBias H
+      + frankWolfeResidual H
+      + markovMixing H
+
+open F4FrankWolfeRoundingBiasRegretData public
+
+f4-frank-wolfe-horizon-regret-bound :
+  (D : F4FrankWolfeRoundingBiasRegretData) →
+  ∀ H →
+  cumulativeRegret D H
+  ≤
+  jensenGap D H
+  + roundingBias D H
+  + frankWolfeResidual D H
+  + markovMixing D H
+f4-frank-wolfe-horizon-regret-bound D H =
+  regretBoundAt D H
+
+record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
+  constructor connectedF4FrankWolfeRoundingBiasRegretTheorem
+  field
+    f4Composition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+    certificate :
+      F4FrankWolfeRoundingBiasRegretData
+    connectedBound :
+      ∀ H →
+      cumulativeRegret certificate H
+      ≤
+      jensenGap certificate H
+      + roundingBias certificate H
+      + frankWolfeResidual certificate H
+      + markovMixing certificate H
+
+open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
+
+connected-f4-frank-wolfe-horizon-regret-theorem :
+  (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
+  ∀ H →
+  cumulativeRegret (certificate C) H
+  ≤
+  jensenGap (certificate C) H
+  + roundingBias (certificate C) H
+  + frankWolfeResidual (certificate C) H
+  + markovMixing (certificate C) H
+connected-f4-frank-wolfe-horizon-regret-theorem C H =
+  connectedBound C H
+
+
+------------------------------------------------------------------------
+-- Promotion boundary:
+-- the Jensen/minimax regret surface is not a standalone optimizer theorem.
+-- It is graph-complete only through the recurrent scan and the stationary
+-- Markov fixed-point/Walrasian interface. A concrete Jensen inequality,
+-- rounding model, and stationary-law witness remain required before this
+-- becomes a proved numeric regret theorem.
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+
 -- Maxwell/Hodge exact representation seam.
 --
 -- This family is now carrier-polymorphic. The GRU carrier is an arbitrary
