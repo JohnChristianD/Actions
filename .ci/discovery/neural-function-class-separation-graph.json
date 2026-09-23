@@ -17,38 +17,6 @@
       "role": "connected recurrent learner/scan/Watkins/optimizer composition surface"
     },
     {
-      "node": "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "role": "connected Haar+sparsemax full-state closure surface"
-    },
-    {
-      "node": "CanonicalBoundedFactorLiftTheorem",
-      "role": "lifts exact full-state trajectories into a bounded observed factor representation"
-    },
-    {
-      "node": "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-      "role": "factor-level recurrence witness mechanism without full-state recurrence"
-    },
-    {
-      "node": "CanonicalEndogenousObservationBoundaryTheorem",
-      "role": "endogenous observation boundary"
-    },
-    {
-      "node": "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "role": "topological observation closure built on the connected learner boundary"
-    },
-    {
-      "node": "CanonicalFiniteObservationInformationBoundaryTheorem",
-      "role": "finite observation/information boundary"
-    },
-    {
-      "node": "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "role": "connected exact RNN-LM observation/topology capability"
-    },
-    {
-      "node": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
-      "role": "higher-order endogenous RNN-LM/POMDP observation closure"
-    },
-    {
       "node": "F_full_connected",
       "role": "function class induced by the entire connected composition"
     },
@@ -94,19 +62,19 @@
     },
     {
       "node": "CanonicalGlobalTokenEncodingConjugacyTheorem",
-      "role": "finite-token alphabet encoding with exact recurrent step/list conjugacy; no total decode from unbounded Z"
+      "role": "exact recurrent step/list conjugacy over the unbounded integer token carrier"
     },
     {
-      "node": "CanonicalF4FiniteObservationRecurrence",
-      "role": "explicit Fin 256 observation recurrence for the exact Z-valued F4 orbit"
+      "node": "CanonicalF4GlobalOptimizerStabilityTheorem",
+      "role": "exact Z-valued F4 optimizer stability consumed by the connected completion"
     },
     {
-      "node": "CanonicalF4FiniteObservationNotOrbitInjective",
-      "role": "finite-observation non-injectivity for the F4 orbit"
+      "node": "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+      "role": "exact integer Haar orthogonality consumed by the connected completion"
     },
     {
-      "node": "CanonicalF4FiniteObservationCollisionSeparatesFullState",
-      "role": "finite-observation collision plus exact-state separation for the F4 orbit"
+      "node": "CanonicalPureNonOrangeBypassCompletionTheorem",
+      "role": "fully connected exact composition endpoint for the surviving learner surfaces"
     }
   ],
   "edges": [
@@ -114,51 +82,6 @@
       "F_base",
       "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "baseline embeds into the full connected architecture only if the resource-preserving inclusion is proved"
-    ],
-    [
-      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "full learner state composes with the existing Haar/sparsemax closure"
-    ],
-    [
-      "CanonicalHaarSparsemaxFullStateClosureTheorem",
-      "CanonicalBoundedFactorLiftTheorem",
-      "full-state representation is connected to bounded factor lifting"
-    ],
-    [
-      "CanonicalBoundedFactorLiftTheorem",
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-      "bounded factor lift supplies the exact-state/factor distinction used by factor recurrence"
-    ],
-    [
-      "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
-      "CanonicalEndogenousObservationBoundaryTheorem",
-      "factor recurrence is interpreted through the endogenous observation boundary"
-    ],
-    [
-      "CanonicalEndogenousObservationBoundaryTheorem",
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "observation boundary closes topologically"
-    ],
-    [
-      "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "CanonicalFiniteObservationInformationBoundaryTheorem",
-      "topological observation closure reaches the finite-information boundary"
-    ],
-    [
-      "CanonicalFiniteObservationInformationBoundaryTheorem",
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "finite information boundary participates in exact RNN-LM observation capability"
-    ],
-    [
-      "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
-      "RNN-LM observation capability closes with endogenous POMDP observation transport"
-    ],
-    [
-      "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
-      "F_full_connected",
-      "the entire connected composition defines the extended class"
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
@@ -281,39 +204,39 @@
       "the exact Z-valued F4 optimizer stability theorem is now consumed by the connected non-orange completion"
     ],
     [
-      "CanonicalBoundedFactorLiftTheorem",
-      "CanonicalPureNonOrangeBypassCompletionTheorem",
-      "the F4 finite-observation lift is consumed by the connected non-orange completion"
-    ],
-    [
-      "CanonicalFiniteObservationInformationBoundaryTheorem",
-      "CanonicalClockObservationSubcompositionTheorem",
-      "the finite observation boundary exposes both recurrence and left-inverse injectivity to the clock-observation composition"
-    ],
-    [
       "CanonicalGlobalTokenEncodingConjugacyTheorem",
       "CanonicalExactRNNLMTheorem",
       "finite-token encoding conjugacy supplies the recurrent token transport without an impossible total Z-to-Fin decode"
     ],
     [
-      "CanonicalF4FiniteObservationRecurrence",
-      "CanonicalBoundedFactorLiftTheorem",
-      "the bounded-factor record is now parameterized by an explicit Fin 256 observation and consumes the exact F4 recurrence witness"
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "F_full_connected",
+      "the full connected learner/scan composition is the direct connected semantic carrier after finite-observation pruning"
     ],
     [
-      "CanonicalF4FiniteObservationNotOrbitInjective",
-      "CanonicalBoundedFactorLiftTheorem",
-      "finite-observation collision is the factor non-injectivity field"
+      "CanonicalGlobalTokenEncodingConjugacyTheorem",
+      "CanonicalExactRNNLMTheorem",
+      "exact token conjugacy supplies the Z-token recurrent representation"
     ],
     [
-      "CanonicalF4FiniteObservationCollisionSeparatesFullState",
-      "CanonicalBoundedFactorLiftTheorem",
-      "finite-observation collision plus state separation is the lift field"
+      "CanonicalGlobalTokenLMCompositionTheorem",
+      "CanonicalExactRNNLMTheorem",
+      "global token LM composition is the composed token-sequence consumer"
     ],
     [
-      "CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem",
-      "CanonicalFiniteObservationInformationBoundaryTheorem",
-      "left-inverse impossibility closes the finite-information observation boundary"
+      "CanonicalF4GlobalOptimizerStabilityTheorem",
+      "CanonicalPureNonOrangeBypassCompletionTheorem",
+      "exact Z-valued optimizer stability is consumed by the connected completion"
+    ],
+    [
+      "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+      "CanonicalPureNonOrangeBypassCompletionTheorem",
+      "exact integer Haar orthogonality is consumed by the connected completion"
+    ],
+    [
+      "CanonicalPureNonOrangeBypassCompletionTheorem",
+      "F_full_connected",
+      "the surviving fully connected theorem is the semantic endpoint"
     ]
   ],
   "separation_obligation": [
@@ -353,7 +276,7 @@
     }
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
-  "reason": "Exact Z algebra and explicit finite observations are separated; global left-inverse injectivity and Hodge-Maxwell/Tsallis composition remain graph-connected. The nonportable total Int8-to-Fin256 token decode and architecture-isomorphism surfaces are pruned. Analytic convexity/duality, categorical/analytic limit claims, and external regular-Walrasian existence remain conditional.",
+  "reason": "Fin 256 is retired from the canonical learner, theorem monolith, strict-separation graph, and finite-token auxiliary surfaces. Exact unbounded Z algebra and Z-token conjugacy remain. Hodge-Maxwell and Maxwell remain finite-family theorems parameterized by Nat cardinality bounds, plus conditional involution transport and an explicit infinite-family obstruction. Analytic convexity, smoothness, and universal continuous Maxwell representation remain unproved because ordered-ring structure and topology alone do not supply vector-space convexity or differentiable function-space semantics.",
   "computability_complexity_boundary": {
     "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
     "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
@@ -1699,5 +1622,11 @@
     "q_log_boundary": "finiteQLog8 remains a finite-rational magnitude shell; no Tsallis q-log derivative/convexity law is proved.",
     "hodge_boundary": "Hodge involution remains conditional on an explicit GRU-side involution/equivalent square-law premise.",
     "walrasian_boundary": "Generalized Walrasian existence remains local/conditional; external RegularEconomy adapter is still unproved."
+  },
+  "carrier_policy": {
+    "exact_unbounded_carrier": "ℤ",
+    "finite_state_parameters": "Nat -> Fin n",
+    "retired_fixed_carrier": "Fin 256",
+    "rule": "Do not infer finite-cardinality properties from Z-valued algebra; require an explicit Fin n observation/carrier when a theorem is genuinely finite."
   }
 }
