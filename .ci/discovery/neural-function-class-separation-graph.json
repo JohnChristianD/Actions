@@ -53,16 +53,20 @@
       "role": "function class induced by the entire connected composition"
     },
     {
-      "node": "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "role": "connected Jensen/minimax regret, rounding-bias, KKT, and stationary-Markov optimizer boundary"
-    },
-    {
       "node": "ConnectedF4FrankWolfeKKTTheorem",
       "role": "connected F4 finite recurrent optimizer composition with a Frank-Wolfe descent/gap and KKT certificate"
     },
     {
-      "node": "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
-      "role": "fully connected F4 + Frank-Wolfe + Jensen/rounding/KKT/stationary-Markov optimizer boundary"
+      "node": "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+      "role": "custom-optimizer Jensen/rounding-bias/residual/stationary regret boundary"
+    },
+    {
+      "node": "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+      "role": "F4 + Frank-Wolfe rounding-bias residual regret boundary"
+    },
+    {
+      "node": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "role": "Maxwell-only finite exact encoding/decoding/conjugacy with finite Tsallis/divergence structure"
     }
   ],
   "edges": [
@@ -117,44 +121,14 @@
       "the entire connected composition defines the extended class"
     ],
     [
-      "MarkovStationaryWalrasianCompositionTheorem",
-      "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "stationary Markov aggregate transport feeds the connected optimizer boundary"
-    ],
-    [
-      "FiniteHardSparseKKTEquilibriumTheorem",
-      "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "KKT absorbing-class semantics supply the stationary optimizer condition"
-    ],
-    [
-      "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "F_full_connected",
-      "the optimizer-regret boundary is admitted only through the full connected composition"
-    ],
-    [
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "ConnectedF4FrankWolfeKKTTheorem",
       "exact F4 recurrent composition is the state-side dependency of the Frank-Wolfe/KKT certificate"
     ],
     [
-      "ConnectedF4FrankWolfeKKTTheorem",
-      "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "Frank-Wolfe is admitted as an optimizer-specific descent/gap seam, not a disconnected theorem"
-    ],
-    [
       "FiniteFunctionExactIsomorphismTransportTheorem",
       "FiniteMaxwellGRUExactRepresentationCandidate",
       "finite exact-function transport supplies the representation mechanism; Maxwell semantics remain an explicit proof obligation"
-    ],
-    [
-      "ConnectedF4FrankWolfeKKTTheorem",
-      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
-      "the exact F4/Frank-Wolfe seam is consumed by the fully connected optimizer theorem"
-    ],
-    [
-      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
-      "F_full_connected",
-      "the F4/Frank-Wolfe optimizer boundary is admitted only through the fully connected composition"
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
@@ -165,6 +139,21 @@
       "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "F_full_connected",
       "Maxwell/Tsallis finite exact representation enters the full graph only through the composed theorem"
+    ],
+    [
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+      "custom optimizer is the sole optimizer-specific residual consumer"
+    ],
+    [
+      "ConnectedF4FrankWolfeKKTTheorem",
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+      "Frank-Wolfe residual is consumed by the rounding-bias regret boundary"
+    ],
+    [
+      "FiniteFunctionExactIsomorphismTransportTheorem",
+      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "universal finite exact transport composes with Maxwell semantics and exact conjugacy"
     ]
   ],
   "separation_obligation": [
@@ -250,20 +239,6 @@
       "distinction": "Connected optimizer-regret boundary combining Jensen/minimax regret, explicit rounding bias, KKT absorbing-class stationarity, and Markov fixed-point/Walrasian transport.",
       "quantitative_contract": "R ≤ J + B + K + M",
       "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
-    },
-    {
-      "name": "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "ConnectedF4FrankWolfeKKTTheorem",
-      "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
-        "ConnectedF4FrankWolfeKKTTheorem",
-        "ConnectedJensenMinimaxRegretOptimizerTheorem"
-      ],
-      "distinction": "F4 is the exact finite recurrent optimizer component; Frank-Wolfe contributes a conditional gap/descent certificate that can feed the existing Jensen/rounding/KKT/Markov optimizer boundary.",
-      "quantitative_contract": "FWgap ≤ D_F4 + K; eventual regret seam R ≤ J + B + K + L + W + M only after a shared-state composition is proved.",
-      "promotion_gate": "Require a concrete Frank-Wolfe update, objective/feasible-set assumptions, gap-to-KKT implication, F4 state compatibility, rounding/Jensen witnesses, and stationary-Markov witness."
     },
     {
       "name": "FiniteMaxwellGRUExactRepresentationCandidate",
@@ -1202,16 +1177,29 @@
   },
   "excluded_from_strict_graph": [],
   "custom_optimizer_boundary": {
-    "policy": "Do not promote Lion as an optimizer theorem. KKT records remain foundational proof dependencies only when a connected consumer actually requires them.",
-    "rounding_regret": "The intended optimizer seam is the non-/Frank-Wolfe rounding-bias residual regret composition.",
-    "no_independent_optimizer_nodes": [
-      "Lion",
-      "standalone KKT optimizer theorem"
-    ]
+    "policy": "The strict optimizer graph has no independent Lion endpoint and no standalone KKT optimizer endpoint.",
+    "generic_contract": "R ≤ J + B + O + M, where O is the supplied custom-optimizer residual.",
+    "frank_wolfe_contract": "R ≤ J + B + W + M, where W is supplied through the connected F4/Frank-Wolfe seam.",
+    "foundational_kkt": "KKT structures may remain foundational proof records but are not strict optimizer endpoints."
   },
   "nlab_semantic_boundary": {
     "maxwell": "nLab presents Maxwell equations as differential-form equations dF=0 and d⋆F=j_el; the repository may use this only to define the declared finite Maxwell semantics, not as an unproved continuous-to-finite theorem.",
     "tsallis": "The nLab entropy-as-a-functor material treats Tsallis entropy as a structure on finite measured spaces and morphisms; the repository candidate therefore requires a finite measured-state/divergence structure before promotion.",
     "conjugacy": "nLab's conjugation-action page identifies intertwiners/equivariant maps as invariants of conjugation; the repository's exact finite conjugacy must be stated as an explicit encode/decode transition intertwining law."
+  },
+  "legacy_graph_surface": {
+    "excluded_from_strict_endpoints": [
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem"
+    ],
+    "reason": "These older compositions expose optimizer-specific KKT/Lion terms that are superseded by the custom-optimizer and F4/Frank-Wolfe rounding-bias residual seams."
+  },
+  "future_theorem_graph_contract": {
+    "entry": "Every future theorem must be an actual Agda declaration.",
+    "dependency": "It must have at least one real dependency or be explicitly marked foundational.",
+    "consumer": "Optimizer/physics theorem candidates must name a consuming composed theorem before strict graph admission.",
+    "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m.",
+    "pruning": "Disconnected endpoint claims are not admitted; promote through a consuming composed theorem or retain as a foundational proof record."
   }
 }
