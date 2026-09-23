@@ -73,6 +73,10 @@
       "role": "fully connected extraction seam joining exact continuous Hodge-Maxwell GRU semantics to the existing F4/Watkins composition through an explicit learner-to-solution inverse and step-conjugacy bridge"
     },
     {
+      "node": "ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "role": "fully connected finite-dimensional-coordinate specialization of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; consumes an explicit StateIsomorphism from the Maxwell solution carrier to Fin n -> Scalar and derives global injectivity of the corresponding learner coordinate observation"
+    },
+    {
       "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "role": "narrow connected impossibility boundary: an explicit distinct-solution collision in the global Hodge-Maxwell encoder contradicts the exact connected representation certificate"
     },
@@ -267,6 +271,11 @@
       "from": "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
       "to": "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
       "kind": "extracts through canonical endogenous e-graph/A* closure"
+    },
+    {
+      "from": "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "to": "ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "kind": "consumes explicit finite-dimensional coordinate isomorphism and lifts global injectivity through the existing learner-to-solution inverse"
     }
   ],
   "separation_obligation": [
@@ -1088,7 +1097,17 @@
     "representation_existence_boundary": "The theorem does not prove that every mathematically possible Hodge-Maxwell solution space admits a continuous GRU representation. The exact universal statement is: for every supplied representation datum, its arbitrary Solution carrier receives the exact global StateIsomorphism and global encoder injectivity proved by the Agda theorem.",
     "set_of_sets_family_boundary": "A literal family/set-of-sets is a universe-lifted or dependent-family object (for example I : Set and A : I → Set, with a dependent sum in Set₁); it is not the same claim as one arbitrary Solution : Set. No cross-family injectivity theorem is claimed or needed by the current Hodge-Maxwell surface. Such a family-wide theorem must introduce an indexed family and a dependent encoder before graph admission.",
     "finite_dimensional_boundary": "A continuous finite-dimensional Hodge-Maxwell specialization is graphable only after an explicit finite-dimensional function-space certificate is added. The current Agda surface does not encode finite-dimensionality, so no finite-dimensional existence theorem is promoted.",
-    "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers."
+    "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers.",
+    "finite_dimensional_composition": {
+      "theorem": "ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "status": "PROVED_ON_AGDA_SURFACE",
+      "dimension_parameter": "n : Nat",
+      "coordinate_carrier": "Fin n → Scalar",
+      "certificate": "StateIsomorphism from the arbitrary Maxwell Solution carrier of the connected representation to the finite coordinate carrier",
+      "result": "global injectivity of the finite-coordinate observation on CanonicalFullLearnerState, derived from the connected learner-to-solution left inverse and coordinate isomorphism",
+      "semantic_limit": "This is the repository's exact finite-dimensional-coordinate specialization. The theorem monolith does not currently formalize vector-space/module axioms or prove that every physically defined finite-dimensional Maxwell solution space admits such a coordinate certificate.",
+      "no_fin_n_maxwell_base": "The base Hodge-Maxwell representation remains carrier-polymorphic; Fin n appears only in this explicit specialization."
+    }
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
