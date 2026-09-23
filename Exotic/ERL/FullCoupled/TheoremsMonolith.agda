@@ -7006,7 +7006,7 @@ record ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
     sharedSemantics :
       semantics representation
       ≡
-      continuous (data discretization)
+      continuous (certificateData discretization)
     exactContinuousFieldEquations :
       ∀ i →
       maxwellEquation (semantics representation)
@@ -7017,7 +7017,7 @@ record ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
     exactDiscreteFieldEquations :
       ∀ i →
       finiteDiscreteMaxwellEquation
-        (data discretization)
+        (certificateData discretization)
         (subst
           (λ S →
             Solution S)
