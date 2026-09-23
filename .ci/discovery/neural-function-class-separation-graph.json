@@ -53,10 +53,6 @@
       "role": "function class induced by the entire connected composition"
     },
     {
-      "node": "ConnectedF4FrankWolfeKKTTheorem",
-      "role": "connected F4 finite recurrent optimizer composition with a Frank-Wolfe descent/gap and KKT certificate"
-    },
-    {
       "node": "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
       "role": "custom-optimizer Jensen/rounding-bias/residual/stationary regret boundary"
     },
@@ -121,11 +117,6 @@
       "the entire connected composition defines the extended class"
     ],
     [
-      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
-      "ConnectedF4FrankWolfeKKTTheorem",
-      "exact F4 recurrent composition is the state-side dependency of the Frank-Wolfe/KKT certificate"
-    ],
-    [
       "FiniteFunctionExactIsomorphismTransportTheorem",
       "FiniteMaxwellGRUExactRepresentationCandidate",
       "finite exact-function transport supplies the representation mechanism; Maxwell semantics remain an explicit proof obligation"
@@ -146,14 +137,19 @@
       "custom optimizer is the sole optimizer-specific residual consumer"
     ],
     [
-      "ConnectedF4FrankWolfeKKTTheorem",
-      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
-      "Frank-Wolfe residual is consumed by the rounding-bias regret boundary"
-    ],
-    [
       "FiniteFunctionExactIsomorphismTransportTheorem",
       "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "universal finite exact transport composes with Maxwell semantics and exact conjugacy"
+    ],
+    [
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+      "exact GRU-F4-Watkins composition is consumed directly by the horizon-indexed Frank-Wolfe rounding-bias residual regret theorem"
+    ],
+    [
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+      "the custom optimizer is consumed only through the horizon-indexed rounding-bias residual regret theorem"
     ]
   ],
   "separation_obligation": [
@@ -1175,12 +1171,21 @@
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
     "future_theorems": "Every future theorem declaration is extracted from the canonical Agda monolith, dependency-searched by theorem_graph_search.m, and offered to theorem_monolith_egraph_sync.m. A theorem becomes strict graph material only when an actual composed consumer exists; candidate physics/optimizer nodes remain pregraphed until their explicit certificates are present."
   },
-  "excluded_from_strict_graph": [],
+  "excluded_from_strict_graph": [
+    "ConnectedJensenMinimaxRegretOptimizerTheorem",
+    "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+    "ConnectedF4FrankWolfeKKTTheorem",
+    "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem"
+  ],
   "custom_optimizer_boundary": {
-    "policy": "The strict optimizer graph has no independent Lion endpoint and no standalone KKT optimizer endpoint.",
-    "generic_contract": "R ≤ J + B + O + M, where O is the supplied custom-optimizer residual.",
-    "frank_wolfe_contract": "R ≤ J + B + W + M, where W is supplied through the connected F4/Frank-Wolfe seam.",
-    "foundational_kkt": "KKT structures may remain foundational proof records but are not strict optimizer endpoints."
+    "policy": "No independent Lion, KKT, or Frank-Wolfe optimizer endpoint is admitted.",
+    "generic_contract": "For every horizon H, R(H) ≤ J(H) + B(H) + O(H) + M(H), where O is the supplied custom-optimizer residual.",
+    "frank_wolfe_contract": "For every horizon H, R(H) ≤ J(H) + B(H) + W(H) + M(H), where W is the supplied Frank-Wolfe residual.",
+    "connected_consumers": [
+      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem"
+    ],
+    "foundational_kkt": "KKT records are retained only when an existing theorem genuinely depends on them; they are not optimizer endpoints."
   },
   "nlab_semantic_boundary": {
     "maxwell": "nLab presents Maxwell equations as differential-form equations dF=0 and d⋆F=j_el; the repository may use this only to define the declared finite Maxwell semantics, not as an unproved continuous-to-finite theorem.",
@@ -1188,12 +1193,13 @@
     "conjugacy": "nLab's conjugation-action page identifies intertwiners/equivariant maps as invariants of conjugation; the repository's exact finite conjugacy must be stated as an explicit encode/decode transition intertwining law."
   },
   "legacy_graph_surface": {
-    "excluded_from_strict_endpoints": [
+    "pruned_disconnected_theorems": [
       "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
-      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem"
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "ConnectedF4FrankWolfeKKTTheorem",
+      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem"
     ],
-    "reason": "These older compositions expose optimizer-specific KKT/Lion terms that are superseded by the custom-optimizer and F4/Frank-Wolfe rounding-bias residual seams."
+    "reason": "Removed from the theorem source and strict graph because they were standalone optimizer/KKT/Lion/FW surfaces rather than required dependencies. Their intended residual contribution is retained only in the consuming horizon-indexed rounding-bias regret theorems."
   },
   "future_theorem_graph_contract": {
     "entry": "Every future theorem must be an actual Agda declaration.",
@@ -1201,5 +1207,14 @@
     "consumer": "Optimizer/physics theorem candidates must name a consuming composed theorem before strict graph admission.",
     "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m.",
     "pruning": "Disconnected endpoint claims are not admitted; promote through a consuming composed theorem or retain as a foundational proof record."
+  },
+  "complete_graph_contract_v8": {
+    "future_entry": "Every future theorem must be an actual Agda declaration with a real parent dependency or an explicitly foundational role.",
+    "regret_rule": "Any future regret theorem must expose cumulative regret as a function of horizon H; a scalar Nat inequality is insufficient for a horizon-regret endpoint.",
+    "optimizer_rule": "Optimizer-specific facts must terminate in a consuming connected regret theorem; no standalone Lion, KKT, or Frank-Wolfe endpoint.",
+    "f4_rule": "F4/Frank-Wolfe regret consumers must depend directly on CanonicalGRUF4NormWatkinsPrefixCompositionTheorem.",
+    "physics_rule": "Maxwell candidates remain finite-semantics-only until their explicit promotion gates are proved.",
+    "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m.",
+    "no_synthetic_edges": true
   }
 }
