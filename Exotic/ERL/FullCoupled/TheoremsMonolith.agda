@@ -4627,6 +4627,59 @@ record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
       EqualityCompositionTheorem
 
 open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
+
+------------------------------------------------------------------------
+-- Carrier-agnostic global learner injectivity promoted from the exact
+-- Hodge-Maxwell/F4/Watkins bridge.
+------------------------------------------------------------------------
+
+record ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+  field
+    connected :
+      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    learnerGlobalEncodeInjective :
+      ∀ {s t : C.CanonicalFullLearnerState} →
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected))
+        (learnerToSolution connected s)
+      ≡
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell connected))
+        (learnerToSolution connected t) →
+      s ≡ t
+
+open ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem public
+
+connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU) →
+  ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+    GRU
+connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
+  connected =
+  connectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+    connected
+    (λ {s} {t} eq →
+      trans
+        (sym (learnerSolutionLeftInverse connected s))
+        (trans
+          (cong (solutionToLearner connected)
+            (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+              .globalEncodeInjective
+              (hodgeMaxwell connected)
+              eq))
+          (learnerSolutionLeftInverse connected t)))
+
 ------------------------------------------------------------------------
 -- Infinite-dimensional promotion boundary for the carrier-polymorphic
 -- Hodge-Maxwell/F4/Watkins bridge.
@@ -4669,6 +4722,11 @@ record ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheo
         (learnerToSolution connected t) →
       s ≡ t
 
+
+    globalInjectivityComposition :
+      ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+        GRU
+
 open ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 
 connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition :
@@ -4701,6 +4759,8 @@ connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
               (hodgeMaxwell connected)
               eq))
           (learnerSolutionLeftInverse connected t)))
+    (connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
+      connected)
 
 ------------------------------------------------------------------------
 -- End-to-end infinite-dimensional promotion of the exact prefix/regret
