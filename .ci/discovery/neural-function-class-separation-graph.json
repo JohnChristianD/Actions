@@ -980,17 +980,16 @@
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
-        "ConnectedF4FrankWolfeKKTTheorem",
+        "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
         "FiniteMaxwellGRUExactRepresentationCandidate"
       ],
-      "candidate_statement": "Compose the exact finite F4 recurrent optimizer with a Frank-Wolfe gap/KKT seam while restricting the represented physics vocabulary to finite Maxwell-admissible transitions.",
+      "candidate_statement": "Compose the exact finite F4 recurrent optimizer with the horizon-indexed Frank-Wolfe rounding-bias residual regret consumer while restricting the represented physics vocabulary to finite Maxwell-admissible transitions.",
       "required_certificates": [
-        "F4 exact recurrent composition",
-        "Frank-Wolfe update and feasible set",
-        "gap/descent to KKT lemma",
+        "F4 exact recurrent GRU-Watkins composition",
+        "horizon-indexed Frank-Wolfe rounding-bias residual regret certificate",
         "finite Maxwell state semantics",
         "exact finite encoding/conjugacy",
-        "shared objective and state"
+        "shared finite state/objective semantics"
       ],
       "no_synthetic_edge": true
     },
@@ -1021,119 +1020,89 @@
   ],
   "transformative_recent_commits_since_graph_contract": [
     {
-      "sha": "d53313518cf4cce673f1ac108fec075e007f6e6d",
-      "message": "Record internal verification boundary and emergent hard-sign automaton candidate",
+      "sha": "e1c5fe2f2d60d94738daf2734fff5401c13cc235",
+      "message": "Refine custom optimizer boundary and pregraph Maxwell Tsallis exact composition",
       "transformative": true
     },
     {
-      "sha": "f8a3826d701646411aef4281ccb246a80c747390",
-      "message": "Promote pre-graphed automata and HardSign seams into connected graph",
+      "sha": "a25d21985563c4900fc81fc54d052add376522dd",
+      "message": "Add Maxwell Tsallis finite exact conjugacy theorem surface",
       "transformative": true
     },
     {
-      "sha": "def9ee9551fdb2869c8df36d5b47bc06aaee63b7",
-      "message": "Pregraph automata sign optimizer affine candidate",
+      "sha": "637910875831696d06638d5967d12624c5091594",
+      "message": "Make Tsallis divergence transport nontrivial",
       "transformative": true
     },
     {
-      "sha": "dcfdde047e276a1a22d9634f1a75354080d6cd41",
-      "message": "Add algebraic proof of nonlinear sequence storage generation",
+      "sha": "d98083742479fa5e58bc532729a43bfeb323e56a",
+      "message": "Register automated Maxwell Tsallis exact conjugacy graph plan",
       "transformative": true
     },
     {
-      "sha": "1ca9b5b0d94ad47028162cc91d52192509a9d492",
-      "message": "Document learner replacement quotient candidate",
+      "sha": "ea1aeb2e0b6d339f162968d6c76e30c18589f296",
+      "message": "Remove Lion plan and keep Maxwell composition automated",
       "transformative": true
     },
     {
-      "sha": "6f74b4f7e8b465351f442d963ef21d3f7b940411",
-      "message": "Graph learner replacement quotient endogenous candidate",
+      "sha": "fa9cd438fca539ed133de32d5faa872ad5c9d999",
+      "message": "Add custom optimizer and Frank-Wolfe rounding regret seams",
       "transformative": true
     },
     {
-      "sha": "8ad84a107c17e2443bd91a0d9aa31323ffe3fec0",
-      "message": "Bind exotic neural separation candidates to proof gates",
+      "sha": "152339ff2c88fba82865e750d875ea8946762b7b",
+      "message": "Promote custom optimizer and Frank-Wolfe regret compositions",
       "transformative": true
     },
     {
-      "sha": "7ce23960a9c90a726911db89da38ab1611b20066",
-      "message": "Repair graph plan implementations below Mercury implementation",
+      "sha": "810230525aa65b769f59f15896863e5504977839",
+      "message": "Automate custom and Frank-Wolfe rounding regret graph plans",
+      "transformative": true
+    },
+    {
+      "sha": "794c5b58aa7b5197a16336e7d3a43cfc5665f43a",
+      "message": "Prune standalone optimizer/KKT surfaces and make regret bounds horizon-indexed",
+      "transformative": true
+    },
+    {
+      "sha": "92e7082cddab048124f873b5843503bbd000c6c8",
+      "message": "Prune disconnected optimizer endpoints and graph horizon-regret consumers",
+      "transformative": true
+    },
+    {
+      "sha": "fbf8c305d27a52a7e4c3ea2aa2c3173b2367df1c",
+      "message": "Align Mercury graph search with connected horizon-regret consumers",
+      "transformative": true
+    },
+    {
+      "sha": "8426f42aa691893ce18469cd8db220dc02f2eab1",
+      "message": "Update e-graph required theorem count after endpoint pruning",
       "transformative": false
     },
     {
-      "sha": "2e67442f438a35634e3e91b6a9b7dab24d3ec078",
-      "message": "Repair recurrent scan input lookup compatibility",
+      "sha": "b67e385448523295ed43ee4726b6b99f13e53fb4",
+      "message": "Document horizon-indexed regret boundary and optimizer pruning",
       "transformative": false
     },
     {
-      "sha": "3dece4065ed03770fe261a7bf91b8d6a73c08413",
-      "message": "Repair endogenous graph search string import",
+      "sha": "44094eb7cca4f9858ef858df48877fcd0c211afb",
+      "message": "Remove unused Tcl dev-shell dependency",
       "transformative": false
     },
     {
-      "sha": "eef7033d66b068f2b5f7ff0336166982fee93123",
-      "message": "Align strict separation record universes",
+      "sha": "d1e95f009d48966546975049fae094e00bfefed2",
+      "message": "Restore Maxwell/Tsallis finite exact conjugacy theorem surface after optimizer pruning",
       "transformative": false
     },
     {
-      "sha": "813954a3612d3763986f0c902aa55e7424fa3fb3",
-      "message": "Repair finite-state separation proof against Agda 2.8 API",
+      "sha": "19bd9d94da73f2f6d09efd92b98ddaff44c3b1e4",
+      "message": "Align e-graph gate with complete theorem plan count",
       "transformative": false
     },
     {
-      "sha": "7d224cdcb5d70cb05d4279f633cd5e63182009fc",
-      "message": "Export all graph-plan predicates consumed by e-graph sync",
+      "sha": "f5df9df8741e4ec3578092ef34fbc0181160403e",
+      "message": "Clarify optimizer pruning boundary comment",
       "transformative": false
-    },
-    {
-      "sha": "12963d970f841c3a3835348eb3eec3ab3e082c6d",
-      "message": "Connect Lion descent/KKT term to optimizer regret boundary",
-      "transformative": true
-    },
-    {
-      "sha": "35513a055396f394b081f6ed97d9e53303865c71",
-      "message": "Remove unused Lion theorem surface and keep connected residual only",
-      "transformative": false
-    },
-    {
-      "sha": "ba56504d8c76ea94d097497e0eecee9b0cddc577",
-      "message": "Compose Lion descent term into regret bound proof",
-      "transformative": true
-    },
-    {
-      "sha": "cdf31dda7072c78fa3e1a54e758c06f2ec245b32",
-      "message": "Add connected Lion regret theorem surface",
-      "transformative": true
-    },
-    {
-      "sha": "a00b979fb6acc6cac839b03fb0095eb0909d00f3",
-      "message": "Derive Lion connected bound from existing optimizer theorem",
-      "transformative": true
-    },
-    {
-      "sha": "b44b5c26d9e4830aa812453bea64970fd73f3166",
-      "message": "Pregraph connected Lion descent/KKT regret boundary",
-      "transformative": true
-    },
-    {
-      "sha": "229012a0b5e3aa569364c45a0a3b6789ae256ddc",
-      "message": "Expose connected Lion regret graph plan",
-      "transformative": true
-    },
-    {
-      "sha": "b0375a4ec342788fb9cfa57df0aef4e79463060c",
-      "message": "Add Lion descent and KKT research to regret boundary",
-      "transformative": true
-    },
-    {
-      "sha": "a2078322eb0c0db0767ab7850f0a43623e161ec8",
-      "message": "Register connected Lion theorem in composition graph",
-      "transformative": true
-    },
-    {
-      "sha": "9d35f23e53fee0f4f13ebd9eda47dd9cf1e3a5d3",
-      "message": "Make Lion and connected regret theorems required graph nodes",
-      "transformative": true
     }
   ],
   "complete_graph_contract_v7": {
@@ -1216,5 +1185,18 @@
     "physics_rule": "Maxwell candidates remain finite-semantics-only until their explicit promotion gates are proved.",
     "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m.",
     "no_synthetic_edges": true
+  },
+  "no_disconnected_optimizer_endpoints": {
+    "pruned": [
+      "ConnectedJensenMinimaxRegretOptimizerTheorem",
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "ConnectedF4FrankWolfeKKTTheorem",
+      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem"
+    ],
+    "retained": [
+      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem"
+    ],
+    "horizon_contract": "R(H) is cumulative regret through horizon H; the bound is quantified for every H."
   }
 }
