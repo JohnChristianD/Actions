@@ -7,7 +7,7 @@ open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder; ℕ→Fin-notInjective)
-open import Data.Integer using (ℤ; +_; -_; _+_; _*_)
+open import Data.Integer using (ℤ; +_; -_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
@@ -87,10 +87,10 @@ int8OfNat : Nat → Int8
 int8OfNat n = int8 (+ n)
 
 int8Add : Int8 → Int8 → Int8
-int8Add x y = int8 (code x + code y)
+int8Add x y = int8 (code x +ℤ code y)
 
 int8Mul : Int8 → Int8 → Int8
-int8Mul x y = int8 (code x * code y)
+int8Mul x y = int8 (code x *ℤ code y)
 
 int8Neg : Int8 → Int8
 int8Neg x = int8 (- code x)
@@ -98,8 +98,8 @@ int8Neg x = int8 (- code x)
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8 (code x - code y)
 
-int8Roundtrip : ∀ x → code (int8OfNat 0) + code x ≡ code x
-int8Roundtrip x = refl
+int8Roundtrip : ∀ n → code (int8OfNat n) ≡ + n
+int8Roundtrip n = refl
 
 le-refl : ∀ n → n ≤ n
 le-refl zero = z≤n
