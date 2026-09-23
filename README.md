@@ -252,8 +252,9 @@ ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
 ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
 ConnectedGeneralizedWalrasianExistenceTheorem
 ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
 
-Note: the machine-counted declaration total is 117. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
+Note: the machine-counted declaration total is 118. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
 ```
 
 The direction is:
@@ -557,7 +558,7 @@ Their route-specific claims remain explicitly unproved: the shared strict theore
 
 ### 2026-09-23 idempotent hard-sign-style transport boundary
 
-The finite Hodge-Maxwell/Tsallis composition now has a promoted idempotent-projection transport theorem: `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem`. It consumes the existing connected finite Maxwell/Tsallis carrier plus an explicit conjugacy between a solution-side projection and a finite `Fin n` projection, then transports finite-carrier idempotence back to the solution semantics. This is the machine-checkable seam for a future HardSign projection; it does not infer differentiability, convexity, or a q-log derivative.
+The new ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem is a proof-relevant bridge, not a synthetic edge: it consumes the existing finite Hodge-Maxwell/Tsallis idempotent projection and generalized Walrasian existence theorem, and requires explicit fixed-point/equilibrium compatibility in both directions. It does not infer convexity, q-log differentiability, regular-economy existence, or a Hodge-star law.\n\nThe finite Hodge-Maxwell/Tsallis composition now has a promoted idempotent-projection transport theorem: `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem`. It consumes the existing connected finite Maxwell/Tsallis carrier plus an explicit conjugacy between a solution-side projection and a finite `Fin n` projection, then transports finite-carrier idempotence back to the solution semantics. This is the machine-checkable seam for a future HardSign projection; it does not infer differentiability, convexity, or a q-log derivative.
 
 The analytic convexity/duality route remains conditional. nLab defines convex spaces using barycentric operations over a semiring-like parameter structure and treats duality as additional structure; topology, finite carriers, or Dhall totality do not by themselves provide those convex operations or a Fenchel/Legendre duality witness. The graph therefore keeps `FiniteHardSignSubgradientBoundaryCandidate`, `FiniteTsallisQLogDifferentiabilityConvexityCandidate`, and `HodgeMaxwellConvexDualityBridgeCandidate` candidate-only until their missing algebraic/analytic certificates exist.
 
