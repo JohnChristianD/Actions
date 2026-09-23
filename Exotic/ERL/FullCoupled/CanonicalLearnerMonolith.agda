@@ -4,13 +4,11 @@ module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
-open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym)
-open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-decTotalOrder)
 open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
 import Data.Integer.Properties as IntegerProperties
 open import Level using (0ℓ)
-open import Data.List.Base using (List; []; _∷_; map)
+open import Data.List.Base using (List; []; _∷_; map; length)
 open import Data.List.Sort as Sort
 open import Relation.Binary.Bundles using (DecTotalOrder)
 open import Relation.Binary.Construct.On as On
@@ -160,22 +158,24 @@ open FiniteRational public
 data BoolLike : Set where
   enabled disabled : BoolLike
 
-record ActionSpace (A : Nat) : Set where
+record ActionSpace (A : Set) : Set where
   constructor actionSpace
-  field witness : Fin A
+  field
+    candidates : List Nat
+    witness : Nat
 open ActionSpace public
 
-QVec : Nat → Set
-QVec A = Fin A → Int8
+QVec : ∀ {A : Set} → Set
+QVec {A} = Nat → Int8
 
-CountVec : Nat → Set
-CountVec A = Fin A → Nat
+CountVec : ∀ {A : Set} → Set
+CountVec {A} = Nat → Nat
 
-zeroQ : ∀ {A} → QVec A
-zeroQ {A} _ = zero8
+zeroQ : ∀ {A : Set} → QVec {A}
+zeroQ _ = zero8
 
-zeroCounts : ∀ {A} → CountVec A
-zeroCounts {A} _ = zero
+zeroCounts : ∀ {A : Set} → CountVec {A}
+zeroCounts _ = zero
 
 natEq : Nat → Nat → BoolLike
 natEq zero zero = enabled
@@ -199,29 +199,22 @@ maxNat zero n = n
 maxNat (suc m) zero = suc m
 maxNat (suc m) (suc n) = suc (maxNat m n)
 
-raiseFin : ∀ {A} → Fin A → Fin (suc A)
-raiseFin i = fromℕ< (s≤s (toℕ<n i))
-
-finList : (A : Nat) → List (Fin A)
-finList zero = []
-finList (suc A) = fromℕ< (m%n<n 0 (suc A)) ∷ map raiseFin (finList A)
-
-updateAt : ∀ {A} → QVec A → Fin A → Int8 → QVec A
-updateAt q a r i with natEq (toℕ i) (toℕ a)
+updateAt : ∀ {A : Set} → QVec {A} → Nat → Int8 → QVec {A}
+updateAt q a r i with natEq i a
 ... | enabled = int8Add (q i) r
 ... | disabled = q i
 
-incAt : ∀ {A} → CountVec A → Fin A → CountVec A
-incAt c a i with natEq (toℕ i) (toℕ a)
+incAt : ∀ {A : Set} → CountVec {A} → Nat → CountVec {A}
+incAt c a i with natEq i a
 ... | enabled = suc (c i)
 ... | disabled = c i
 
-record CriticState (A : Nat) : Set where
+record CriticState (A : Set) : Set where
   constructor criticState
-  field values : QVec A
+  field values : QVec {A}
 open CriticState public
 
-record WatkinsKernel (A : Nat) : Set₁ where
+record WatkinsKernel (A : Set) : Set₁ where
   constructor mkWatkinsKernel
   field
     updateCritic : CriticState A → Int8 → CriticState A
@@ -229,22 +222,22 @@ record WatkinsKernel (A : Nat) : Set₁ where
     traceUpdate : BoolLike → BoolLike → BoolLike
 open WatkinsKernel public
 
-record WatkinsState (A : Nat) : Set where
+record WatkinsState (A : Set) : Set where
   constructor watkinsState
   field critic : CriticState A
         signal : Int8
         trace : BoolLike
 open WatkinsState public
 
-watkinsStep : ∀ {A} → WatkinsKernel A → WatkinsState A → WatkinsState A
+watkinsStep : ∀ {A : Set} → WatkinsKernel A → WatkinsState A → WatkinsState A
 watkinsStep K s = watkinsState
   (updateCritic K (critic s) (signal s))
   (signal s)
   (traceUpdate K (trace s) (greedy K (critic s) (signal s)))
 
-record LCBCountState (A : Nat) : Set where
+record LCBCountState (A : Set) : Set where
   constructor lcbCountState
-  field valuesCount : CountVec A
+  field valuesCount : CountVec {A}
         totalCount : Nat
 open LCBCountState public
 
@@ -266,29 +259,29 @@ finiteLCBBonus8 _ = zero8
 lcbNegate : Int8 → Int8
 lcbNegate x = int8 (- code x)
 
-scoreA : ∀ {A} → QVec A → CountVec A → Fin A → Int8
+scoreA : ∀ {A : Set} → QVec {A} → CountVec {A} → Nat → Int8
 scoreA q c a = int8Add (q a) (lcbNegate (finiteLCBBonus8 (c a)))
 
-lcbScore : ∀ {A} → LCBCountKernel → LCBCountState A → CriticState A → QVec A
+lcbScore : ∀ {A : Set} → LCBCountKernel → LCBCountState A → CriticState A → QVec {A}
 lcbScore L c q a = int8Add (values q a) (lcbNegate (bonus L (valuesCount c a)))
 
 sparsemaxTemperature : Nat
 sparsemaxTemperature = 16
 
-ScoreEntry : Nat → Set
-ScoreEntry A = Int8 × Fin A
+ScoreEntry : Set
+ScoreEntry = Int8 × Nat
 
 int8Order : DecTotalOrder 0ℓ 0ℓ 0ℓ
 int8Order = On.decTotalOrder IntegerProperties.≤-decTotalOrder code
 
-scoreEntryOrder : ∀ A → DecTotalOrder 0ℓ 0ℓ 0ℓ
-scoreEntryOrder A = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order (≤-decTotalOrder A))
+scoreEntryOrder : DecTotalOrder 0ℓ 0ℓ 0ℓ
+scoreEntryOrder = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order ≤-decTotalOrder)
 
-scoreList : ∀ {A} → QVec A → CountVec A → List (ScoreEntry A)
-scoreList {A} q c = map (λ a → (scoreA q c a , a)) (finList A)
+scoreList : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → List ScoreEntry
+scoreList K q c = map (λ a → (scoreA q c a , a)) (candidates K)
 
-sortScores : ∀ {A} → List (ScoreEntry A) → List (ScoreEntry A)
-sortScores {A} = Sort.sort (scoreEntryOrder A)
+sortScores : List ScoreEntry → List ScoreEntry
+sortScores = Sort.sort scoreEntryOrder
 
 natAt : Nat → List Nat → Nat
 natAt k [] = zero
@@ -299,7 +292,7 @@ sumList : List Nat → Nat
 sumList [] = zero
 sumList (x ∷ xs) = x + sumList xs
 
-topCodes : ∀ {A} → Nat → List (ScoreEntry A) → List Nat
+topCodes : Nat → List ScoreEntry → List Nat
 topCodes zero xs = []
 topCodes (suc k) [] = []
 int8Magnitude : Int8 → Nat
@@ -308,29 +301,29 @@ int8Magnitude (int8 (-[1+ n ])) = suc n
 
 topCodes (suc k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
-supportValid : ∀ {A} → List (ScoreEntry A) → Nat → Nat → BoolLike
+supportValid : List ScoreEntry → Nat → Nat → BoolLike
 supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
 ... | enabled = enabled
 ... | disabled = disabled
 
-searchSupport : ∀ {A} → List (ScoreEntry A) → Nat → Nat → Nat → Nat → Nat
+searchSupport : List ScoreEntry → Nat → Nat → Nat → Nat → Nat
 searchSupport xs temperature zero current best = best
 searchSupport xs temperature (suc n) current best with supportValid xs temperature current
 ... | enabled = searchSupport xs temperature n (suc current) (maxNat best current)
 ... | disabled = searchSupport xs temperature n (suc current) best
 
-supportSize : ∀ {A} → ActionSpace A → QVec A → CountVec A → Nat
-supportSize {A} K q c = searchSupport (sortScores (scoreList q c)) sparsemaxTemperature A (suc zero) (suc zero)
+supportSize : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat
+supportSize K q c = searchSupport (sortScores (scoreList K q c)) sparsemaxTemperature (length (candidates K)) (suc zero) (suc zero)
 
 record SparseWeight : Set where
   constructor sparseWeight
   field numerator denominator : Nat
 open SparseWeight public
 
-sparsemaxWeight : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A → SparseWeight
-sparsemaxWeight {A} K q c a = sparseWeight ((k * int8Magnitude (scoreA q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
+sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat → SparseWeight
+sparsemaxWeight K q c a = sparseWeight ((k * int8Magnitude (scoreA q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
   where
-    xs = sortScores (scoreList q c)
+    xs = sortScores (scoreList K q c)
     k = supportSize K q c
     s = sumList (topCodes k xs)
 
@@ -339,16 +332,16 @@ weightPositive (sparseWeight n d) with natEq n zero
 ... | enabled = disabled
 ... | disabled = enabled
 
-selectPositive : ∀ {A} → ActionSpace A → QVec A → CountVec A → List (ScoreEntry A) → Fin A
+selectPositive : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → List ScoreEntry → Nat
 selectPositive K q c [] = witness K
 selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c a)
 ... | enabled = a
 ... | disabled = selectPositive K q c xs
 
-sparsemaxPolicy : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A
-sparsemaxPolicy {A} K q c = selectPositive K q c (sortScores (scoreList q c))
+sparsemaxPolicy : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat
+sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 
-updateLCBCount : ∀ {A} → Fin A → LCBCountState A → LCBCountState A
+updateLCBCount : ∀ {A : Set} → Nat → LCBCountState A → LCBCountState A
 updateLCBCount a (lcbCountState counts total) =
   lcbCountState (incAt counts a) (suc total)
 
@@ -404,18 +397,7 @@ canonicalQLogControl =
 qLogSignal : SignedQLogControl → Int8 → Int8
 qLogSignal c x = int8Add x (coefficient c)
 
-canonicalActionCount : Nat
-canonicalActionCount = 64
-
-canonicalActionSpace : ActionSpace canonicalActionCount
-canonicalActionSpace = actionSpace (fromℕ< (m%n<n 0 canonicalActionCount))
-
-actionSpace4 : ActionSpace 4
-actionSpace4 = actionSpace (fromℕ< (m%n<n 0 4))
-
-defaultActionSpace : ActionSpace 64
-defaultActionSpace = canonicalActionSpace
-
+-- Action cardinality is supplied by the adaptive candidate list in ActionSpace.
 data HardSign : Set where
   negative zeroSign positive : HardSign
 
@@ -777,7 +759,7 @@ normPairWeight n = int8Add (l1 n) (path n)
 normPairWeightPlusOne : NormPair → Int8
 normPairWeightPlusOne n = int8Add one8 (normPairWeight n)
 
-record FullLearnerState (A : Nat) : Set₁ where
+record FullLearnerState (A : Set) : Set₁ where
   constructor fullLearnerState
   field
     clock : Nat
@@ -790,7 +772,7 @@ record FullLearnerState (A : Nat) : Set₁ where
     qLogValue : FiniteRational
 open FullLearnerState public
 
-record FullLearnerKernel (A : Nat) : Set₁ where
+record FullLearnerKernel (A : Set) : Set₁ where
   constructor mkFullLearnerKernel
   field
     actionSpaceK : ActionSpace A
@@ -800,27 +782,27 @@ record FullLearnerKernel (A : Nat) : Set₁ where
 open FullLearnerKernel public
 
 CanonicalFullLearnerState : Set₁
-CanonicalFullLearnerState = FullLearnerState canonicalActionCount
+CanonicalFullLearnerState = FullLearnerState ⊤
 
 CanonicalFullLearnerKernel : Set₁
-CanonicalFullLearnerKernel = FullLearnerKernel canonicalActionCount
+CanonicalFullLearnerKernel = FullLearnerKernel ⊤
 
-canonicalPolicy : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Fin A
+canonicalPolicy : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Nat
 canonicalPolicy K s = sparsemaxPolicy (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s))
 
-canonicalPolicyWeight : ∀ {A} → FullLearnerKernel A → FullLearnerState A → SparseWeight
+canonicalPolicyWeight : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → SparseWeight
 canonicalPolicyWeight K s = sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) (canonicalPolicy K s)
 
-canonicalPolicyWeightCode : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
+canonicalPolicyWeightCode : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalPolicyWeightCode K s = int8OfNat (numerator (canonicalPolicyWeight K s))
 
-HardSparse : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Set
+HardSparse : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Set
 HardSparse {A} K s =
-  ∀ {a : Fin A} →
+  ∀ {a : Nat} →
   a ≢ canonicalPolicy K s →
   numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ≡ zero
 
-SoftSparseBounded : ∀ {A} →
+SoftSparseBounded : ∀ {A : Set} →
   FullLearnerKernel A →
   FullLearnerState A →
   Nat →
@@ -899,8 +881,8 @@ maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
 ... | yes _ = maxCriticValueList xs
 ... | no _ = x
 
-maxCriticValue8 : ∀ {A} → CriticState A → Int8
-maxCriticValue8 q = maxCriticValueList (map (λ a → values q a) (finList _))
+maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
+maxCriticValue8 K q = maxCriticValueList (map (λ a → values q a) (candidates K))
 
 canonicalQLogBias : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalQLogBias K s = qLog2Bias8 (canonicalPolicyWeightCode K s)
@@ -948,7 +930,7 @@ canonicalWatkinsTarget K s =
   int8Add
     (int8Add
       (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
-      (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s)))))
+      (int8Mul canonicalDiscount8 (maxCriticValue8 (actionSpaceK K) (critic (watkins s)))))
     (canonicalEndogenousFeedback K s)
 
 canonicalWatkinsTarget-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
