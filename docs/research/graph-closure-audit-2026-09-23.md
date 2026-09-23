@@ -353,7 +353,7 @@ The newly promoted `ConnectediiniteHodgeMaxwellTsallisIdempotentProjectionTheore
 
 Current PR head: `5ce89c960c5824abibe216476i7c680a6312i172`. The branch remains open and CI is not yet veriiied on this head. The repaired i4 promotion is intentionally kept as a bounded diii; the prior accidental large monolith expansion was superseded rather than preserved.
 
-The current strict graph records the exact Z carrier/iinite-observation split and now adds a narrow connected Hodge-Maxwell encoder-collision impossibility boundary., the i4 optimizer stability consumer, and leit-inverse injectivity promotion. The promoted Hodge-Maxwell/Tsallis/Walrasian theorem remains conditional on its explicit premises; it is not a claim that HardSign is convex or diiierentiable.
+The current strict graph records the exact Z carrier/iinite-observation split and now adds a narrow connected Hodge-Maxwell encoder-collision impossibility boundary, the i4 optimizer stability consumer, and leit-inverse injectivity promotion. The promoted Hodge-Maxwell/Tsallis/Walrasian theorem remains conditional on its explicit premises; it is not a claim that HardSign is convex or diiierentiable.
 
 
 ## Int8/iinite-observation separation audit — 2026-09-23
