@@ -85,10 +85,6 @@
       "role": "fully connected deterministic F4/NormPair stability composition consuming exact optimizer stability, policy replacement invariance, Frank-Wolfe residual regret, Markov-stationary closure, and endogenous e-graph/A* transport"
     },
     {
-      "node": "FrankWolfeProbabilityTopologyBoundaryTheorem",
-      "role": "explicit boundary separating the existing exact Nat-valued Frank-Wolfe/regret certificate from future probabilistic or topological convergence claims"
-    },
-    {
       "node": "MarkovianStationaryPointCompositionTheorem",
       "role": "stationary-point/existence composition over the existing Markov-stationary Walrasian interface without fabricating convergence"
     }
@@ -1423,5 +1419,17 @@
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
     ],
     "rule": "Do not replace semantically finite theorems with Nat aliases. Promote only when an actual surviving Agda composition consumes the result; otherwise classify as foundational/problem metadata."
+  },
+  "f4_probability_topology_boundary": {
+    "status": "BOUNDARY_NOT_A_THEOREM",
+    "exact_surface": "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+    "missing_premises": [
+      "probability space or distribution object",
+      "measurability/integration",
+      "almost-sure or expectation semantics",
+      "topological/metric structure for optimizer iterates",
+      "limit or convergence statement"
+    ],
+    "rule": "Do not graph a probability+topology Frank-Wolfe theorem until an actual Agda declaration supplies these premises and a composed consumer exists."
   }
 }
