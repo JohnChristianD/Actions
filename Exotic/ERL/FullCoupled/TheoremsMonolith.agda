@@ -7162,8 +7162,7 @@ record ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
   (inverse : Feature → Solution (semantics (representation)))
   (embed :
     Nat → Solution (semantics (representation))) : Set₁ where
-  constructor
-    connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+  constructor connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
   field
     observation :
       ContinuousLeftInverseTheorem
