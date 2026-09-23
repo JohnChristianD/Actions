@@ -59,6 +59,14 @@
     {
       "node": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "role": "Maxwell-only finite exact encoding/decoding/conjugacy with finite Tsallis/divergence structure"
+    },
+    {
+      "node": "FiniteHodgeMaxwellExactDiscretizationTheorem",
+      "role": "independent exact finite discretization layer: discrete d/star/current operators commute exactly with continuous Hodge-Maxwell semantics on the declared finite solution family"
+    },
+    {
+      "node": "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+      "role": "fully connected consumer combining the exact finite discretization certificate with the exact finite continuous Hodge-Maxwell GRU representation under explicit shared semantics"
     }
   ],
   "edges": [
@@ -151,6 +159,21 @@
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
       "F4-Watkins is the sole custom optimizer composition and directly consumes the horizon-indexed rounding-bias residual regret theorem"
+    ],
+    [
+      "FiniteHodgeMaxwellExactDiscretizationTheorem",
+      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+      "the discrete exactness layer is consumed by the composed GRU theorem; sharedSemantics forbids unrelated certificate composition"
+    ],
+    [
+      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+      "the continuous finite-family GRU representation supplies the same-solution-family recurrent encoding consumed by the discrete exactness layer"
+    ],
+    [
+      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+      "F_full_connected",
+      "the fully connected discrete Hodge-Maxwell representation enters the strict function-class graph only through the composed consumer"
     ]
   ],
   "separation_obligation": [
@@ -246,9 +269,25 @@
       "distinction": "Exact theorem for every explicitly supplied finite family of exact differential-form Hodge-Maxwell solutions with an exact finite encoding and recurrent transition conjugacy. It does not assert that arbitrary continuous Maxwell PDEs admit finite exact encodings.",
       "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the finite state isomorphism and recurrent transition conjugacy.",
       "promotion_gate": "The finite Maxwell semantics, exact encoder/decoder, closure, step preservation, and conjugacy are all explicit Agda fields; no physical law is inferred."
+    },
+    {
+      "name": "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "FiniteHodgeMaxwellExactDiscretizationTheorem",
+      "path": [
+        "FiniteHodgeMaxwellExactDiscretizationTheorem",
+        "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate"
+      ],
+      "candidate_statement": "Optional same-degree finite Hodge-star involution strengthening: star(star i) = i on a finite discrete carrier. This is not assumed by the exact discretization theorem because general Hodge stars change degree and may carry dimension/signature-dependent factors.",
+      "required_certificates": [
+        "explicit finite same-degree star operator",
+        "exact involution witness",
+        "compatibility with the declared discrete Maxwell operators"
+      ],
+      "no_synthetic_edge": true
     }
   ],
-  "no_invention_policy": "Do not invent a new exotic theorem merely to complete the graph. Existing pre-graphed theorem surfaces are used first; new theorem promotion requires an actual Agda proposition.",
+  "no_invention_policy": "Do not invent a theorem merely to connect the graph. The finite Hodge-Maxwell discretization theorem is promoted because it is now an explicit Agda proposition with preservation/reflection proofs; the optional Hodge-star involution remains candidate-only.",
   "proof_authority": "Agda --safe",
   "canonical_sources": [
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
@@ -324,6 +363,11 @@
       "promotion_order": "foundational theorem -> smallest existing composed theorem -> connected full learner -> F_full_connected",
       "no_dependency_rule": "A symbol with no direct record dependency is not promoted merely because it is conceptually related. It is either absorbed by a theorem that actually consumes it or remains foundational outside strict separation.",
       "strict_separation_gate": "Only explicit inclusion + connected witness membership + canonical nonrepresentability can change the strict graph from NOT_ESTABLISHED to SEPARATED."
+    },
+    "exact_discretization_layer": {
+      "rule": "Any theorem claiming exact finite discretization of a differential Hodge-Maxwell PDE must depend on FiniteHodgeMaxwellExactDiscretizationTheorem or supply an equivalent explicit certificate. The continuous finite-family theorem does not silently supply a discretization.",
+      "consumer": "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+      "admission": "Agda --safe declaration + extractor discoverability + e-graph synchronization + no synthetic edges"
     }
   },
   "hard_sign_and_tropical_geometry": {
@@ -1053,6 +1097,23 @@
       ],
       "impossibility_boundary": "The existing finite-function exactness theorem is insufficient; the finite cardinality argument prevents silently promoting it to all continuous Maxwell fields.",
       "no_synthetic_edge": true
+    },
+    {
+      "name": "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "FiniteHodgeMaxwellExactDiscretizationTheorem",
+      "path": [
+        "FiniteHodgeMaxwellExactDiscretizationTheorem",
+        "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate"
+      ],
+      "literature_basis": "optional finite Hodge-star algebraic strengthening, kept separate from the core discretization theorem",
+      "candidate_statement": "Optional same-degree finite Hodge-star involution strengthening: star(star i) = i on a finite discrete carrier. This is not assumed by the exact discretization theorem because general Hodge stars change degree and may carry dimension/signature-dependent factors.",
+      "required_certificates": [
+        "explicit finite same-degree star operator",
+        "exact involution witness",
+        "compatibility with the declared discrete Maxwell operators"
+      ],
+      "no_synthetic_edge": true
     }
   ],
   "transformative_recent_commits_since_graph_contract": [
@@ -1158,22 +1219,24 @@
     "surviving_surface": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "scope": "Maxwell-only finite semantics with exact finite encoding/decoding/conjugacy and a finite Tsallis/divergence structure.",
     "promotion_gate": [
-      "finite Maxwell state semantics",
-      "Maxwell-admissible finite transition/update",
-      "universal finite exact-function transport",
-      "exact finite encoding and decoding",
-      "encode/decode inverse laws",
-      "exact transition conjugacy",
-      "finite Tsallis/divergence structure",
-      "divergence preservation or explicitly stated divergence transport law"
+      "finite differential-form semantics",
+      "exact continuous Hodge-Maxwell equations dF=0 and d⋆F=j",
+      "explicit finite solution family",
+      "exact finite state encoding/decoding",
+      "exact recurrent transition conjugacy",
+      "exact finite discretization operators",
+      "commuting d/star/current diagrams",
+      "injective finite 3-form carrier for reflection"
     ],
     "nlab_basis": [
       "nLab Maxwell's equations: differential-form presentation dF = 0 and d⋆F = j_el",
       "nLab entropy/relative entropy: finite probability-space entropy and divergence structure",
       "nLab/John Baez entropy as a functor: Tsallis entropy characterized on finite measured categories"
     ],
-    "continuous_pde_boundary": "A finite exact-function isomorphism cannot by itself prove exact representation of all continuous Maxwell PDE fields. Exact all-PDE representation requires a function-space/differential-form semantics and an explicit exact GRU representation theorem for that infinite-dimensional domain; absent that, no such proof is admitted.",
-    "nlab_equations": "Maxwell is represented by dF = 0 and d⋆F = j on a spacetime manifold; the existing finite theorem does not identify a finite state space with the full solution space."
+    "continuous_pde_boundary": "A finite exact-function isomorphism and an exact finite discretization certificate do not imply exact representation of the full infinite-dimensional continuous Maxwell solution space.",
+    "nlab_equations": "Maxwell is represented by dF = 0 and d⋆F = j on a spacetime manifold; the existing finite theorem does not identify a finite state space with the full solution space.",
+    "exact_discretization_surface": "FiniteHodgeMaxwellExactDiscretizationTheorem",
+    "connected_discrete_consumer": "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem"
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
@@ -1254,5 +1317,37 @@
     "qsa": "Separate exact finite algebraic QSA from analytic stochastic-approximation convergence.",
     "future": "Every future theorem must be an actual Agda declaration with real dependency edges, then a connected consumer before strict endpoint admission.",
     "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m"
-  }
+  },
+  "post_audit_recent_commit_classification": [
+    {
+      "sha": "7dea0190f1aeb0cf56022633b6b9ce5cd778757a",
+      "message": "Promote exact finite Hodge-Maxwell graph theorem and QSA completion boundary",
+      "class": "TRANSFORMATIVE",
+      "reason": "promoted a new exact finite continuous Hodge-Maxwell representation theorem and relaxed the QSA promotion boundary only where the repository already has the composed analytic interfaces"
+    },
+    {
+      "sha": "d93fe8c8afa791bc33d2bf939cb6b59db285c376",
+      "message": "Register exact finite Hodge-Maxwell theorem in dependency search",
+      "class": "GRAPH_INFRASTRUCTURE",
+      "reason": "made the promoted theorem discoverable"
+    },
+    {
+      "sha": "5603d69db122b4ada1375de9819142b56a204ab5",
+      "message": "Align e-graph gate with promoted Hodge-Maxwell theorem",
+      "class": "GRAPH_INFRASTRUCTURE",
+      "reason": "synchronized the e-graph gate with the promoted theorem surface"
+    },
+    {
+      "sha": "868186d0d856b640aa40653bd545067ce0e7e167",
+      "message": "Remove stale Maxwell candidate plan and use promoted theorem",
+      "class": "PRUNING_REPAIR",
+      "reason": "removed an obsolete candidate after promotion; no new mathematical claim"
+    },
+    {
+      "sha": "468c4cecf54c0693c19db6437b41d99fcf61b314",
+      "message": "Remove stale Maxwell candidate from connected graph",
+      "class": "PRUNING_REPAIR",
+      "reason": "replaced the stale candidate edge with the promoted connected theorem"
+    }
+  ]
 }
