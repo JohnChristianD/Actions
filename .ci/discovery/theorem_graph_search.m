@@ -150,6 +150,16 @@ graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+:- pred graph_connected_maxwell_tsallis_finite_exact_conjugacy_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_maxwell_tsallis_finite_exact_conjugacy_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+        Laws,
+        Plan).
+
 :- pred graph_finite_maxwell_gru_representation_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
