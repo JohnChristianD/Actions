@@ -460,7 +460,6 @@
     "existing_candidates_checked": [
       "hardSignGate-idempotent",
       "CanonicalPolymorphicSparsemaxCompositionTheorem",
-      "CanonicalBoundednessPEBoundarySubcompositionTheorem",
       "S4PlusS5RecurrentScanTheorem"
     ],
     "promotion_rule": "Use an existing pre-graphed theorem before proposing a new theorem, but promote it into the full connected composition only when the actual Agda dependency relation supports that composition. Do not manufacture an edge merely to make the graph connected.",
@@ -1345,7 +1344,7 @@
       "sha": "9d71257816de10bf5c11d1d4731af637d43437e7",
       "message": "Keep finite token alphabet explicit over exact Z carrier",
       "class": "SEMANTIC_REPAIR",
-      "reason": "removes an impossible total Int8-to-Fin256 decode while preserving finite-token input semantics"
+      "reason": "removes an impossible total Int8-to-retired fixed finite-token carrier decode while preserving finite-token input semantics"
     },
     {
       "sha": "5df54c69d1c8d028f8e8478ee452c311fd2b2f13",
@@ -1457,7 +1456,7 @@
     "limits": "no theorem claims impossibility of categorical finite limits or analytic limits; finite-carrier arguments prove only finite-observation/cardinality boundaries",
     "convexity_duality": "no convex-space, barycentric, Fenchel/Legendre, or q-log differentiability theorem is fabricated; candidates remain conditional",
     "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, stationary convergence, or regular-Walrasian edges from the carrier upgrade alone; require proof-relevant consumers.",
-    "token_boundary": "CanonicalToken remains retired finite-observation layer; only its encoding into Int8=Z is retained. The impossible total Int8→Fin256 decode/conjugacy theorem is pruned rather than reinterpreted."
+    "token_boundary": "CanonicalToken remains retired finite-observation layer; only its encoding into Int8=Z is retained. The impossible total Int8→retired fixed finite-token carrier decode/conjugacy theorem is pruned rather than reinterpreted."
   },
   "limit_convexity_topology_ordering_resolution": {
     "convexity": "Requires a convex set/barycentric or vector-space structure over an ordered field plus a convexity predicate.",
