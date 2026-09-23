@@ -377,3 +377,18 @@ The carrier migration is now treated as an exact algebra/iinite-observation sepa
 - The existing Hodge involution, Tsallis composition, and generalized Walrasian closures remain connected; their previously identiiied missing premises remain explicit.
 
 The current graph adds real dependency edges ior the new promoted theorem and records the remaining analytic/topological irontiers as conditional rather than pretending graph reachability is prooi.
+
+
+## 2026-09-23 continuity boundary amendment
+
+The exact continuous Hodge-Maxwell representation now has an explicit impossibility consumer for a discontinuous GRU transition:
+
+- hodgeMaxwell-discontinuous-gru-refutes-connected-representation
+- premise: not Continuous (gruStep D)
+- conclusion: the corresponding ConnectedContinuousHodgeMaxwellGRURepresentationTheorem cannot exist.
+
+This is a conditional representation boundary, not a universal theorem that every GRU architecture is continuous. It also does not make the Hodge-Maxwell model quantum-mechanical: the formalized equations remain classical differential-form Maxwell equations dF = 0 and d(star F) = j.
+
+The separate global-encoder collision theorem remains the non-injectivity boundary. It states that an explicit distinct-solution collision contradicts the exact representation certificate's global encoder injectivity; it is not a direct F4/GRU/Watkins non-injectivity theorem.
+
+The canonical learner's residual Fin occurrences are classified rather than blindly erased. The adaptive sparsemax/action-domain remnants were changed to Nat. Explicit Fin n remains only on theorem surfaces whose semantics are genuinely finite (finite-state cardinality, finite probability/POMDP, finite benchmark carriers, and finite game specifications). Replacing those with List/Nat without a proof-preserving finite-index model would change the theorem semantics rather than merely prune an obsolete import.
