@@ -71,7 +71,7 @@
     {
       "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "role": "narrow connected impossibility boundary: an explicit distinct-solution collision in the global Hodge-Maxwell encoder contradicts the exact connected representation certificate"
-    }
+    },
     {
       "node": "hodgeMaxwell-discontinuous-gru-refutes-connected-representation",
       "role": "connected impossibility boundary: a GRU step that is not continuous cannot inhabit the exact continuous Hodge-Maxwell representation certificate"
