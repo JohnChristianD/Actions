@@ -3987,36 +3987,6 @@ majority3ShapleyEquilibriumWitness =
 -- readout.  No exponential/logarithmic/sinusoidal primitive is needed.
 ------------------------------------------------------------------------
 
-canonicalTokenDecodeEncode :
-  ∀ t → C.canonicalTokenDecode
-    (C.canonicalTokenEncode t) ≡ t
-canonicalTokenDecodeEncode t = refl
-
-canonicalTokenEncodeDecode :
-  ∀ x → C.canonicalTokenEncode
-    (C.canonicalTokenDecode x) ≡ x
-canonicalTokenEncodeDecode (C.int8 t) = refl
-
-canonicalTokenListDecodeEncode :
-  ∀ xs →
-  C.canonicalTokenDecodeList
-    (C.canonicalTokenEncodeList xs)
-  ≡ xs
-canonicalTokenListDecodeEncode [] = refl
-canonicalTokenListDecodeEncode (t ∷ ts)
-  rewrite canonicalTokenDecodeEncode t
-  | canonicalTokenListDecodeEncode ts = refl
-
-canonicalTokenListEncodeDecode :
-  ∀ xs →
-  C.canonicalTokenEncodeList
-    (C.canonicalTokenDecodeList xs)
-  ≡ xs
-canonicalTokenListEncodeDecode [] = refl
-canonicalTokenListEncodeDecode (x ∷ xs)
-  rewrite canonicalTokenEncodeDecode x
-  | canonicalTokenListEncodeDecode xs = refl
-
 recurrentListState-append :
   ∀ {State Input : Set}
   (R : C.RecurrentNetwork State Input)
@@ -4141,25 +4111,9 @@ canonicalTokenSparsemaxTrace-append K (t ∷ xs) ys s =
       ys
       (C.canonicalTokenStep s t))
 
-record CanonicalGlobalTokenConjugacyTheorem : Set₁ where
-  constructor canonicalGlobalTokenConjugacyTheorem
+record CanonicalGlobalTokenEncodingConjugacyTheorem : Set₁ where
+  constructor canonicalGlobalTokenEncodingConjugacyTheorem
   field
-    tokenDecodeEncode :
-      ∀ t →
-      C.canonicalTokenDecode
-        (C.canonicalTokenEncode t) ≡ t
-    tokenEncodeDecode :
-      ∀ x →
-      C.canonicalTokenEncode
-        (C.canonicalTokenDecode x) ≡ x
-    listDecodeEncode :
-      ∀ xs →
-      C.canonicalTokenDecodeList
-        (C.canonicalTokenEncodeList xs) ≡ xs
-    listEncodeDecode :
-      ∀ xs →
-      C.canonicalTokenEncodeList
-        (C.canonicalTokenDecodeList xs) ≡ xs
     recurrentStepConjugacy :
       ∀ s t →
       C.runNetwork C.canonicalTokenRecurrentNetwork s t
@@ -4176,16 +4130,12 @@ record CanonicalGlobalTokenConjugacyTheorem : Set₁ where
         (C.canonicalTokenEncodeList xs)
         s
 
-open CanonicalGlobalTokenConjugacyTheorem public
+open CanonicalGlobalTokenEncodingConjugacyTheorem public
 
-canonical-global-token-conjugacy :
-  CanonicalGlobalTokenConjugacyTheorem
-canonical-global-token-conjugacy =
-  canonicalGlobalTokenConjugacyTheorem
-    canonicalTokenDecodeEncode
-    canonicalTokenEncodeDecode
-    canonicalTokenListDecodeEncode
-    canonicalTokenListEncodeDecode
+canonical-global-token-encoding-conjugacy :
+  CanonicalGlobalTokenEncodingConjugacyTheorem
+canonical-global-token-encoding-conjugacy =
+  canonicalGlobalTokenEncodingConjugacyTheorem
     canonicalTokenStep-conjugacy
     canonicalTokenListState-conjugacy
 
@@ -4517,7 +4467,7 @@ record CanonicalExactRNNLMTheorem : Set₁ where
   constructor canonicalExactRNNLMTheorem
   field
     globalTokenConjugacy :
-      CanonicalGlobalTokenConjugacyTheorem
+      CanonicalGlobalTokenEncodingConjugacyTheorem
     recurrentTrace :
       ∀ (K : C.CanonicalTokenLanguageModelKernel)
       (xs ys : C.CanonicalTokenSequence)
@@ -4551,7 +4501,7 @@ open CanonicalExactRNNLMTheorem public
 canonical-exact-rnn-lm-theorem : CanonicalExactRNNLMTheorem
 canonical-exact-rnn-lm-theorem =
   canonicalExactRNNLMTheorem
-    canonical-global-token-conjugacy
+    canonical-global-token-encoding-conjugacy
     canonicalTokenLogitTrace-append
     canonicalTokenSparsemaxPolicy-shared
     canonicalTokenSparsemaxTrace-append
@@ -4575,7 +4525,7 @@ record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
   constructor canonicalGlobalTokenLMCompositionTheorem
   field
     globalTokenConjugacy :
-      CanonicalGlobalTokenConjugacyTheorem
+      CanonicalGlobalTokenEncodingConjugacyTheorem
     tokenPrefixMonoid :
       RecurrentPrefixMonoidHomomorphism
         C.GRUState
@@ -4589,9 +4539,12 @@ record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
       C.canonicalTokenLogitTrace K xs s ++
       C.canonicalTokenLogitTrace K ys
         (C.canonicalTokenListState xs s)
-    finiteExactBoundary :
-      ∀ (embed : Nat → C.Int8) →
-      ¬ (∀ {m n} → embed m ≡ embed n → m ≡ n)
+    finiteObservationBoundary :
+      ∀ (observe : C.Int8 → Fin 256)
+      (embed : Nat → C.Int8) →
+      ¬ (∀ {m n} →
+          observe (embed m) ≡ observe (embed n) →
+          m ≡ n)
 
 open CanonicalGlobalTokenLMCompositionTheorem public
 
@@ -4599,7 +4552,7 @@ canonical-global-token-lm-composition-theorem :
   CanonicalGlobalTokenLMCompositionTheorem
 canonical-global-token-lm-composition-theorem =
   canonicalGlobalTokenLMCompositionTheorem
-    canonical-global-token-conjugacy
+    canonical-global-token-encoding-conjugacy
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
     canonicalNoGlobalFiniteObservationConjugacy
@@ -5884,10 +5837,8 @@ canonical-exact-rnn-lm-observation-topology-capability-theorem =
 record CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem : Set₁ where
   constructor canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
   field
-    tokenConjugacy :
-      CanonicalGlobalTokenConjugacyTheorem
-    vocabulary :
-      CanonicalTokenVocabularyUpperBoundTheorem
+    tokenEncoding :
+      CanonicalGlobalTokenEncodingConjugacyTheorem
     exactRNNLM :
       CanonicalExactRNNLMTheorem
     capability :
@@ -5903,8 +5854,7 @@ canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem :
   CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
 canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem =
   canonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem
-    canonical-global-token-conjugacy
-    canonical-token-vocabulary-upper-bound-theorem
+    canonical-global-token-encoding-conjugacy
     canonical-exact-rnn-lm-theorem
     canonical-exact-rnn-lm-capability-subcomposition-theorem
     canonical-exact-rnn-lm-observation-subcomposition-theorem
@@ -5941,29 +5891,6 @@ canonical-endogenous-rnn-lm-pomdp-observation-topology-capability-theorem =
 ------------------------------------------------------------------------
 -- Exact vocabulary-cardinality boundary.
 ------------------------------------------------------------------------
-
-record CanonicalTokenVocabularyUpperBoundTheorem : Set₁ where
-  constructor canonicalTokenVocabularyUpperBoundTheorem
-  field
-    encodeDecode :
-      ∀ x →
-      C.canonicalTokenEncode
-        (C.canonicalTokenDecode x) ≡ x
-    decodeEncode :
-      ∀ t →
-      C.canonicalTokenDecode
-        (C.canonicalTokenEncode t) ≡ t
-    finiteCarrier :
-      C.CanonicalToken ≡ C.Int8
-
-canonical-token-vocabulary-upper-bound-theorem :
-  CanonicalTokenVocabularyUpperBoundTheorem
-canonical-token-vocabulary-upper-bound-theorem =
-  canonicalTokenVocabularyUpperBoundTheorem
-    canonicalTokenEncodeDecode
-    canonicalTokenDecodeEncode
-    refl
-
 
 ------------------------------------------------------------------------
 -- Emergent endogenous exact RNN-LM vocabulary/observation closure.
