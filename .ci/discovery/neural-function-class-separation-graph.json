@@ -22,7 +22,7 @@
     },
     {
       "node": "ConnectedMaxwellTsallisExactConjugacyTheorem",
-      "role": "Maxwell-only finite exact encoding/decoding/conjugacy with finite Tsallis/divergence structure"
+      "role": "Maxwell exact encoding/decoding/conjugacy over an arbitrary carrier with carrier-polymorphic Tsallis/divergence structure"
     },
     {
       "node": "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
@@ -30,7 +30,7 @@
     },
     {
       "node": "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "role": "composes the finite Hodge-Maxwell exact representation with the existing finite Tsallis/divergence exact-conjugacy surface on the identical finite solution carrier"
+      "role": "composes the carrier-polymorphic continuous Hodge-Maxwell representation with the carrier-polymorphic Tsallis/divergence exact-conjugacy surface on the same GRU carrier"
     },
     {
       "node": "ConnectedGeneralizedWalrasianExistenceTheorem",
@@ -38,11 +38,11 @@
     },
     {
       "node": "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "role": "fully connected hard-sign-style idempotent transport over the exact finite Hodge-Maxwell/Tsallis carrier; requires an explicit GRU-side projection conjugacy"
+      "role": "fully connected hard-sign-style idempotent transport over the carrier-polymorphic Hodge-Maxwell/Tsallis surface; requires an explicit GRU-side projection conjugacy"
     },
     {
       "node": "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-      "role": "fully connected conditional bridge from the finite Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
+      "role": "fully connected conditional bridge from the carrier-polymorphic Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
     },
     {
       "node": "CanonicalGlobalTokenEncodingConjugacyTheorem",
@@ -83,7 +83,7 @@
     [
       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "F_full_connected",
-      "the promoted finite Hodge-Maxwell representation is consumed only through the fully connected composition"
+      "the promoted carrier-polymorphic Hodge-Maxwell representation is consumed only through the fully connected composition"
     ],
     [
       "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
@@ -98,7 +98,7 @@
     [
       "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "F_full_connected",
-      "Maxwell/Tsallis finite exact representation enters the full graph only through the composed theorem"
+      "Maxwell/Tsallis exact representation enters the full graph only through the composed theorem"
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
@@ -123,17 +123,17 @@
     [
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "F_full_connected",
-      "Tsallis divergence is an optional algebraic transport layer over the already exact finite Maxwell/GRU semantics"
+      "Tsallis divergence is an optional algebraic transport layer over the already exact carrier-polymorphic Maxwell/GRU semantics"
     ],
     [
       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "the Tsallis composition explicitly reuses the same finite Maxwell solution carrier"
+      "the Tsallis composition explicitly reuses the same carrier-polymorphic Maxwell solution carrier"
     ],
     [
       "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "existing Tsallis finite exact-conjugacy theorem supplies the divergence/transition algebraic side"
+      "existing Tsallis exact-conjugacy theorem supplies the divergence/transition algebraic side"
     ],
     [
       "MarkovStationaryWalrasianCompositionTheorem",
@@ -158,7 +158,7 @@
     [
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "the hard-sign-style idempotent transport consumes the already-connected finite Maxwell/Tsallis composition"
+      "the hard-sign-style idempotent transport consumes the already-connected carrier-polymorphic Maxwell/Tsallis composition"
     ],
     [
       "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
@@ -259,7 +259,7 @@
     "optimizer_regret_boundary": "Jensen/minimax regret plus rounding bias plus KKT residual plus stationary Markov mixing is represented conditionally as R ≤ J + B + K + M; no unconditional numeric regret rate is claimed.",
     "optimizer_regret_boundary_lion": "Lion is represented conditionally by an explicit descent/stationarity residual L, giving R ≤ J + B + K + L + M. Literature-backed Lion rates are not imported as Agda facts; the concrete update, assumptions, and analytic proof remain promotion obligations.",
     "f4_frank_wolfe": "F4 is finite/exact; Frank-Wolfe is represented by a supplied gap/descent/KKT certificate. The fully connected optimizer seam is R ≤ J + B + K + W + M. This remains conditional until concrete objective, feasible-set, oracle, stationarity, and shared-state witnesses are kernel-checked.",
-    "maxwell_scope": "The physics graph is deliberately restricted to Maxwell-admissible finite encodings. Exact finite representation is a computability claim about finite functions, not a claim that finite GRUs solve the continuous Maxwell PDEs without discretization/semantics."
+    "maxwell_scope": "The physics graph uses carrier-polymorphic exact differential-form Maxwell/Hodge-Maxwell semantics. A finite GRU representation is a special-case representation theorem; no universal continuous-PDE representation is inferred without explicit function-space/domain/metric/source/boundary semantics and exact encode/decode plus transition conjugacy."
   },
   "pregraphed_candidates": [
     {
@@ -290,16 +290,16 @@
     },
     {
       "name": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-      "status": "PROVED_CONDITIONAL_ON_EXACT_FINITE_SEMANTICS",
+      "status": "PROVED_CONDITIONAL_ON_EXACT_REPRESENTATION_SEMANTICS",
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "FiniteFunctionExactIsomorphismTransportTheorem",
         "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
       ],
-      "distinction": "Exact theorem for every explicitly supplied finite family of exact differential-form Hodge-Maxwell solutions with an exact finite encoding and recurrent transition conjugacy. It does not assert that arbitrary continuous Maxwell PDEs admit finite exact encodings.",
-      "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the finite state isomorphism and recurrent transition conjugacy.",
-      "promotion_gate": "The finite Maxwell semantics, exact encoder/decoder, closure, step preservation, and conjugacy are all explicit Agda fields; no physical law is inferred."
+      "distinction": "Exact theorem for every explicitly supplied family of exact differential-form Hodge-Maxwell solutions, with an arbitrary GRU carrier, exact encode/decode StateIsomorphism, continuity witnesses, Maxwell-equation preservation, and recurrent transition conjugacy. It does not assert existence of such a certificate for every physical or infinite-dimensional Maxwell solution space.",
+      "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the supplied global state isomorphism and recurrent transition conjugacy.",
+      "promotion_gate": "The differential-form semantics, continuity predicates, exact encoder/decoder, state isomorphism, closure, and conjugacy are explicit Agda fields; universal existence of those witnesses remains outside the theorem."
     },
     {
       "name": "RegularWalrasianExistenceAdapterCandidate",
@@ -935,7 +935,7 @@
     },
     {
       "name": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-      "status": "PROVED",
+      "status": "PROVED_CONDITIONAL_ON_EXACT_REPRESENTATION_SEMANTICS",
       "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
       "path": [
         "FiniteFunctionExactIsomorphismTransportTheorem",
@@ -953,7 +953,10 @@
       ],
       "physical_scope": "Maxwell equations only.",
       "exactness_boundary": "The theorem is exact for the declared finite family of continuous Maxwell solutions. It does not assert that the full infinite-dimensional continuous Maxwell solution space is finite or globally representable by a finite-cardinality GRU.",
-      "no_synthetic_edge": true
+      "no_synthetic_edge": true,
+      "distinction": "Exact theorem for every explicitly supplied family of exact differential-form Hodge-Maxwell solutions, with an arbitrary GRU carrier, exact encode/decode StateIsomorphism, continuity witnesses, Maxwell-equation preservation, and recurrent transition conjugacy. It does not assert existence of such a certificate for every physical or infinite-dimensional Maxwell solution space.",
+      "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the supplied global state isomorphism and recurrent transition conjugacy.",
+      "promotion_gate": "The differential-form semantics, continuity predicates, exact encoder/decoder, state isomorphism, closure, and conjugacy are explicit Agda fields; universal existence of those witnesses remains outside the theorem."
     },
     {
       "name": "ConnectedMaxwellContinuousPDERepresentationCandidate",
@@ -1100,7 +1103,7 @@
     "regret_rule": "Any future regret theorem must expose cumulative regret as a function of horizon H; a scalar Nat inequality is insufficient for a horizon-regret endpoint.",
     "optimizer_rule": "Optimizer-specific facts must terminate in a consuming connected regret theorem; no standalone Lion, KKT, or Frank-Wolfe endpoint.",
     "f4_rule": "F4/Frank-Wolfe regret consumers must depend directly on CanonicalGRUF4NormWatkinsPrefixCompositionTheorem.",
-    "physics_rule": "Maxwell candidates remain finite-semantics-only until their explicit promotion gates are proved.",
+    "physics_rule": "Hodge-Maxwell/Maxwell exact representation is carrier-polymorphic; finite exact representations remain a special case and may not be promoted into a universal continuous-PDE existence theorem without explicit function-space semantics and an exact GRU certificate.",
     "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m.",
     "no_synthetic_edges": true
   },
@@ -1327,7 +1330,7 @@
       ],
       "dependency_edges": [
         [
-          "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+          "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
           "HodgeMaxwellConvexDualityBridgeCandidate"
         ],
         [
@@ -1375,11 +1378,12 @@
     "smoothness": "Requires differential structure and suitable topological-linear/function-space semantics.",
     "maxwell_continuous": "Requires explicit differential-form/function-space/domain/metric/source/boundary semantics plus exact encode/decode and transition conjugacy."
   },
-  "reason": "Fixed finite-token/observation surfaces have been permanently retired from the canonical learner and theorem graph. Exact unbounded Z algebra and Z-token conjugacy remain. Generic finite Maxwell/Hodge-Maxwell results remain parameterized by Nat cardinality n; conditional involution transport and the explicit infinite-family finite-carrier impossibility theorem remain. Convexity, smoothness, and universal continuous Maxwell representation are not inferred from ordered-ring or discrete-topology structure.",
+  "reason": "Fixed finite-token/observation surfaces have been permanently retired from the canonical learner and theorem graph. Exact unbounded Z algebra and Z-token conjugacy remain. Maxwell/Hodge-Maxwell representation is now carrier-polymorphic; Nat remains for iteration/counting and Fin n remains only where a theorem explicitly declares a finite carrier. Convexity, smoothness, and universal continuous Maxwell existence are not inferred from ordered-ring or discrete-topology structure.",
   "carrier_policy": {
     "exact_unbounded_carrier": "ℤ",
-    "finite_state_parameters": "Nat -> Fin n",
+    "finite_state_parameters": "Nat -> Fin n only for explicitly finite theorem parameters",
+    "maxwell_hodge_carrier": "arbitrary Set/function-space carrier supplied by the exact representation certificate",
     "retired_fixed_carrier": "fixed finite-token carrier",
-    "rule": "Finite-cardinality conclusions require an explicit Fin n carrier; Z-valued algebra alone never supplies a finite pigeonhole premise."
+    "rule": "Finite-cardinality conclusions require an explicit Fin n carrier; Z-valued algebra alone never supplies a finite pigeonhole premise, and continuous Maxwell/Hodge-Maxwell semantics are not forced into Fin n."
   }
 }
