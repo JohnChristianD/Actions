@@ -570,22 +570,8 @@
         "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
       ],
       [
-        "CanonicalClockObservationSubcompositionTheorem"
-      ],
-      [
-        "FiniteObservationStationaryLimitTheorem",
-        "CanonicalFiniteObservationStationarySubcompositionTheorem"
-      ],
-      [
-        "CanonicalPersistentExcitationRequirementTheorem",
-        "CanonicalBoundednessPEBoundarySubcompositionTheorem"
-      ],
-      [
         "CanonicalF4GlobalOptimizerStabilityTheorem",
         "CanonicalPureNonOrangeBypassCompletionTheorem"
-      ],
-      [
-        "CanonicalClockObservationSubcompositionTheorem"
       ]
     ],
     "not_fabricated": [
@@ -600,7 +586,7 @@
       "Majority3ShapleyEquilibrium",
       "CanonicalAStarCostGuidanceTheorem"
     ],
-    "note": "Finite-observation theorem surfaces are now explicitly separated from the exact Int8=ℤ algebra. The F4 optimizer stability theorem is promoted into the connected non-orange completion; the global left-inverse injectivity law is promoted into the finite-observation information boundary. No synthetic edge is used for topology, categorical limits, convexity, duality, or analytic q-log properties."
+    "note": "Deleted finite-observation branches are no longer promotion targets. Surviving zero-dependency records are retained only when the graph explicitly identifies their real composed consumer; no synthetic edge is introduced for topology, convexity, duality, or analytic claims."
   },
   "tropical_hardsign_finite_automaton_quotient_candidate": {
     "name": "CanonicalEndogenousTropicalHardSignFiniteAutomatonQuotientCandidate",
