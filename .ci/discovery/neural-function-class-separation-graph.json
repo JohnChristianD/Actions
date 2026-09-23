@@ -119,6 +119,11 @@
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
+      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "finite exact-function transport is the representation layer for finite continuous Hodge-Maxwell solution families"
+    ],
+    [
+      "FiniteFunctionExactIsomorphismTransportTheorem",
       "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "universal finite exact-function transport supplies the encoding-independent representation mechanism"
     ],
@@ -956,7 +961,7 @@
     },
     {
       "name": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
-      "status": "CANDIDATE_NOT_PROVED",
+      "status": "PROVED",
       "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
@@ -999,6 +1004,28 @@
         "finite Tsallis/divergence transport",
         "shared finite state semantics"
       ],
+      "no_synthetic_edge": true
+    },
+    {
+      "name": "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "status": "PROVED",
+      "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
+      "path": [
+        "FiniteFunctionExactIsomorphismTransportTheorem",
+        "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem"
+      ],
+      "candidate_statement": "Exact GRU translation of every specified finite family of continuous differential-form Hodge-Maxwell solutions whose exact finite encoding/decoding and transition conjugacy are supplied.",
+      "required_certificates": [
+        "exact differential-form semantics for Form2 and Form3",
+        "exact de Rham differential and Hodge-star operators",
+        "exact Maxwell equations dF=0 and d(star F)=j",
+        "finite exact encoding and decoding",
+        "encode/decode inverse laws",
+        "exact transition conjugacy",
+        "finite recurrent exact translation"
+      ],
+      "physical_scope": "Maxwell equations only.",
+      "exactness_boundary": "The theorem is exact for the declared finite family of continuous Maxwell solutions. It does not assert that the full infinite-dimensional continuous Maxwell solution space is finite or globally representable by a finite-state GRU.",
       "no_synthetic_edge": true
     },
     {
@@ -1212,7 +1239,7 @@
     "status": "RESEARCH_BOUNDARY",
     "exact_algebraic_core": "Finite deterministic QSA identities can be formalized over Nat or exact rationals without real analysis.",
     "convergence_core": "Classical stochastic/quasi-stochastic approximation convergence proofs generally require probability, limits/topology, measurability, stability/ODE or martingale arguments; real analysis is therefore needed for the continuous/asymptotic theorem, not for the finite algebraic shell.",
-    "promotion_rule": "Do not add a QSA convergence theorem to the strict graph until its analytic probability/limit semantics are formalized. A finite exact-QSA recurrence may be pregraphed separately."
+    "promotion_rule": "QSA convergence may enter the strict graph once the repository's explicit topology, stability, probability, and Markov-stationarity theorems are composed into the required limit/convergence endpoint; finite exact-QSA recurrences remain separately graphable."
   },
   "complete_graph_contract_v9": {
     "optimizer": "F4 is the sole custom optimizer. No generic optimizer, Lion, standalone FW, or KKT endpoint.",
