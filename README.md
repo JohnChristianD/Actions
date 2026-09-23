@@ -85,7 +85,7 @@ The arrows describe orchestration, not mathematical implication. In particular, 
 
 ## Complete Agda record relationship graph
 
-The canonical theorem monolith currently contains 115 top-level record declarations. The numbered graph below is a legacy snapshot; the canonical declaration set is the Agda monolith plus the synchronized JSON graph.
+The canonical theorem monolith currently contains 117 top-level record declarations. The numbered graph below is a legacy snapshot; the canonical declaration set is the Agda monolith plus the synchronized JSON graph.
 
 The following graph is derived from the actual record declarations and their direct record-to-record references. Every record is listed exactly once. This includes foundational data records, theorem contracts, transport structures, problem specifications, and composition records. Non-record definitions are not disguised as theorem records.
 
@@ -249,8 +249,10 @@ FiniteDiscreteHodgeMaxwellStarInvolutionCandidate
 ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
 HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
 ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+ConnectedGeneralizedWalrasianExistenceTheorem
 
-Note: the machine-counted declaration total is 115. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
+Note: the machine-counted declaration total is 117. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
 ```
 
 The direction is:
