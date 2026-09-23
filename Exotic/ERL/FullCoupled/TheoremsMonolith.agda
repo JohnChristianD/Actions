@@ -6815,15 +6815,21 @@ connected-finite-continuous-hodge-maxwell-gru-representation-theorem D =
 -- requires a nonnegative per-round regret certificate.
 ------------------------------------------------------------------------
 
+f4-add-right-nonnegative :
+  ∀ (n m : Nat) → n ≤ n + m
+f4-add-right-nonnegative n zero = ≤-refl
+f4-add-right-nonnegative n (suc m) =
+  s≤s (f4-add-right-nonnegative n m)
+
 f4-cumulative-regret-monotone :
   ∀ (D : F4FrankWolfeRoundingBiasRegretData)
   (nonnegative : ∀ H → zero ≤ perRoundRegret D H) →
   ∀ H →
   cumulativeRegret D H ≤ cumulativeRegret D (suc H)
 f4-cumulative-regret-monotone D nonnegative H =
-  trans
-    (≤-refl)
-    (subst
-      (λ q → cumulativeRegret D H ≤ q)
-      (sym (cumulativeStep D H))
-      (s≤s (≤-refl)))
+  subst
+    (λ q → cumulativeRegret D H ≤ q)
+    (sym (cumulativeStep D H))
+    (f4-add-right-nonnegative
+      (cumulativeRegret D H)
+      (perRoundRegret D H))
