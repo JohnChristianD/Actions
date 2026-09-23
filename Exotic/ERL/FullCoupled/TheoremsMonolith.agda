@@ -1607,8 +1607,8 @@ canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
 
 canonicalWatkinsTarget-endogenous-leftInverse :
   ∀ (K : C.CanonicalFullLearnerKernel)
-  (observe : C.CanonicalFullLearnerState → C.Int8)
-  (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+  (observe : C.CanonicalFullLearnerState → Fin 256)
+  (inverse : Fin 256 → C.CanonicalFullLearnerState) →
   (leftInverse : ∀ t → inverse (observe t) ≡ t) →
   ∀ s →
   C.canonicalWatkinsTarget K s ≡
@@ -1683,12 +1683,12 @@ canonicalInfiniteStateOrbitEmbedding K s =
 canonicalPigeonholeNatClockContradiction :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → C.Int8)
-  (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+  (observe : C.CanonicalFullLearnerState → Fin 256)
+  (inverse : Fin 256 → C.CanonicalFullLearnerState) →
   (∀ t → inverse (observe t) ≡ t) →
   ⊥
 canonicalPigeonholeNatClockContradiction K s observe inverse leftInverse =
-  C.int8-no-countably-unbounded-injective
+  C.finiteObservation-no-countably-unbounded-injective
     (λ n → observe (C.iterateCanonical K n s))
     (λ {m} {n} eq →
       canonicalOrbit-state-injective K s
@@ -1890,7 +1890,7 @@ canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
     n
     h
 
-canonicalNoGlobalInt8DiscreteUAPOnOrbit :
+canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
   (observe : C.CanonicalFullLearnerState → C.Int8)
@@ -1903,7 +1903,7 @@ canonicalNoGlobalInt8DiscreteUAPOnOrbit :
     observe
     inverse →
   ⊥
-canonicalNoGlobalInt8DiscreteUAPOnOrbit
+canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit
   K s observe inverse witness =
   canonicalPigeonholeNatClockContradiction
     K
@@ -1912,16 +1912,16 @@ canonicalNoGlobalInt8DiscreteUAPOnOrbit
     inverse
     (leftInverse witness)
 
-canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit :
+canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → C.Int8) →
+  (observe : C.CanonicalFullLearnerState → Fin 256) →
   DiscreteExactUniversalUAP
     C.CanonicalFullLearnerState
-    C.Int8
+    (Fin 256)
     observe →
   ⊥
-canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
+canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit
   K s observe universal =
   let
     witness = discreteExactUniversalUAP-to-leftInverse universal
@@ -1946,8 +1946,8 @@ canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
 record ExactNatObservationSimulation
   (State : Set)
   (encode : Nat → State)
-  (observe : State → C.Int8)
-  (decode : C.Int8 → State) : Set₁ where
+  (observe : State → Fin 256)
+  (decode : Fin 256 → State) : Set₁ where
   constructor exactNatObservationSimulation
   field
     encodeInjective :
@@ -1960,15 +1960,15 @@ record ExactNatObservationSimulation
 
 open ExactNatObservationSimulation public
 
-noExactNatSimulation-through-finite-Int8 :
+noExactNatSimulation-through-finite-observation :
   ∀ {State : Set}
   (encode : Nat → State)
-  (observe : State → C.Int8)
-  (decode : C.Int8 → State) →
+  (observe : State → Fin 256)
+  (decode : Fin 256 → State) →
   (∀ {m n : Nat} → encode m ≡ encode n → m ≡ n) →
   (∀ n → decode (observe (encode n)) ≡ encode n) →
   ⊥
-noExactNatSimulation-through-finite-Int8
+noExactNatSimulation-through-finite-observation
   encode observe decode encodeInjective exactDecode =
   C.int8-no-countably-unbounded-injective
     (λ n → observe (encode n))
@@ -1995,16 +1995,16 @@ record ExactTuringCounterObservation
       ∀ n →
       decode (observe (encode n)) ≡ encode n
 
-noExactTuringCounterObservation-through-Int8 :
+noExactTuringCounterObservation-through-finite-observation :
   ∀ {State : Set}
   (encode : Nat → State)
   (observe : State → C.Int8)
   (decode : C.Int8 → State) →
   ExactTuringCounterObservation State encode observe decode →
   ⊥
-noExactTuringCounterObservation-through-Int8
+noExactTuringCounterObservation-through-finite-observation
   encode observe decode witness =
-  noExactNatSimulation-through-finite-Int8
+  noExactNatSimulation-through-finite-observation
     encode
     observe
     decode
@@ -2015,8 +2015,8 @@ canonicalNoExactTuringCounterObservation :
   ∀
   (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → C.Int8)
-  (decode : C.Int8 → C.CanonicalFullLearnerState) →
+  (observe : C.CanonicalFullLearnerState → Fin 256)
+  (decode : Fin 256 → C.CanonicalFullLearnerState) →
   ExactTuringCounterObservation
     C.CanonicalFullLearnerState
     (λ n → C.iterateCanonical K n s)
@@ -2025,7 +2025,7 @@ canonicalNoExactTuringCounterObservation :
   ⊥
 canonicalNoExactTuringCounterObservation
   K s observe decode witness =
-  noExactTuringCounterObservation-through-Int8
+  noExactTuringCounterObservation-through-finite-observation
     (λ n → C.iterateCanonical K n s)
     observe
     decode
@@ -2660,8 +2660,8 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
 
     endogenousFactorization :
       ∀ (K : C.CanonicalFullLearnerKernel)
-      (observe : C.CanonicalFullLearnerState → C.Int8)
-      (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      (observe : C.CanonicalFullLearnerState → Fin 256)
+      (inverse : Fin 256 → C.CanonicalFullLearnerState) →
       (leftInverse : ∀ t → inverse (observe t) ≡ t) →
       ∀ s →
       C.canonicalWatkinsTarget K s ≡
@@ -2827,7 +2827,7 @@ canonical-endogenous-minimax-bellman-shapley-uap-theorem =
     canonicalInfiniteStateOrbitEmbedding
     canonicalDenseNeighborhoodSeparation
     canonicalPigeonholeNatClockContradiction
-    canonicalNoGlobalInt8DiscreteUAPOnOrbit
+    canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit
 
 
 ------------------------------------------------------------------------
@@ -5260,8 +5260,8 @@ canonical-endogenous-observation-boundary-theorem =
         canonical-finite-factor-recurrence-without-state-recurrence
         (λ n → observe (C.iterateCanonical K n s)))
     (λ K s observe inverse →
-      CanonicalGlobalInt8LeftInverseImpossibilityTheorem.noGlobalLeftInverse
-        (canonical-global-int8-left-inverse-impossibility-theorem K s)
+      CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem.noGlobalLeftInverse
+        (canonical-global-finite-observation-left-inverse-impossibility-theorem K s)
         observe
         inverse)
     (λ K observe inverse leftInverse s →
@@ -5357,7 +5357,7 @@ record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
         ∃ m n →
           m ≢ n ×
           factor (orbit m) ≡ factor (orbit n)
-    noExactInt8LeftInverse :
+    noExactFiniteObservationLeftInverse :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
       (observe : C.CanonicalFullLearnerState → C.Int8)
@@ -5367,10 +5367,10 @@ record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
     noUniversalDiscreteUAP :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
-      (observe : C.CanonicalFullLearnerState → C.Int8) →
+      (observe : C.CanonicalFullLearnerState → Fin 256) →
       DiscreteExactUniversalUAP
         C.CanonicalFullLearnerState
-        C.Int8
+        (Fin 256)
         observe →
       ⊥
 
@@ -5382,7 +5382,7 @@ canonical-finite-observation-information-boundary-theorem =
     (FiniteFactorRecurrenceWithoutStateRecurrenceTheorem.factorRecurs
       canonical-finite-factor-recurrence-without-state-recurrence)
     canonicalPigeonholeNatClockContradiction
-    canonicalNoGlobalInt8DiscreteUniversalUAPOnOrbit
+    canonicalNoGlobalFiniteObservationDiscreteUniversalUAPOnOrbit
 ------------------------------------------------------------------------
 -- Exact Turing-completeness mixture boundary.
 -- This records the simultaneous contract being ruled out; it does not claim
@@ -5421,20 +5421,20 @@ canonical-exact-turing-boundary-mixture-theorem =
 -- canonical state space. The proof uses one Nat-clock orbit as the
 -- finite-carrier witness; this is a witness to the global claim, not
 -- a restriction of the conclusion to that orbit.
-record CanonicalGlobalInt8LeftInverseImpossibilityTheorem : Set₁ where
-  constructor canonicalGlobalInt8LeftInverseImpossibilityTheorem
+record CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem : Set₁ where
+  constructor canonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
   field
     noGlobalLeftInverse :
-      ∀ (observe : C.CanonicalFullLearnerState → C.Int8)
-        (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      ∀ (observe : C.CanonicalFullLearnerState → Fin 256)
+        (inverse : Fin 256 → C.CanonicalFullLearnerState) →
       ¬ (∀ s → inverse (observe s) ≡ s)
 
-canonical-global-int8-left-inverse-impossibility-theorem :
+canonical-global-finite-observation-left-inverse-impossibility-theorem :
   ∀ (K : C.CanonicalFullLearnerKernel)
     (s : C.CanonicalFullLearnerState) →
-  CanonicalGlobalInt8LeftInverseImpossibilityTheorem
-canonical-global-int8-left-inverse-impossibility-theorem K s =
-  canonicalGlobalInt8LeftInverseImpossibilityTheorem
+  CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
+canonical-global-finite-observation-left-inverse-impossibility-theorem K s =
+  canonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
     (λ observe inverse leftInverse →
       canonicalPigeonholeNatClockContradiction
         K
@@ -5568,7 +5568,7 @@ record CanonicalClockObservationSubcompositionTheorem : Set₁ where
         (s : C.CanonicalFullLearnerState) →
       C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
     globalLeftInverseObstruction :
-      CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+      CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
 
 canonical-clock-observation-subcomposition-theorem :
   ∀ (K : C.CanonicalFullLearnerKernel)
@@ -5577,7 +5577,7 @@ canonical-clock-observation-subcomposition-theorem :
 canonical-clock-observation-subcomposition-theorem K s =
   canonicalClockObservationSubcompositionTheorem
     canonicalClockAfter
-    (canonical-global-int8-left-inverse-impossibility-theorem K s)
+    (canonical-global-finite-observation-left-inverse-impossibility-theorem K s)
 
 record CanonicalBoundednessPEBoundarySubcompositionTheorem : Set₁ where
   constructor canonicalBoundednessPEBoundarySubcompositionTheorem
