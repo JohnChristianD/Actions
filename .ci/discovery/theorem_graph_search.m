@@ -65,6 +65,8 @@
 graph_stationary_limit_plan(Laws, Plan) :-
     search_named_required_plan(
         "StationaryLimitTheorem",
+        "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+        "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
         Laws,
         Plan).
 
@@ -519,3 +521,16 @@ search_emergent_compositions_from_seed_ids(Laws, SeedIds, Results) :-
         else
             Results = []
     ).
+
+
+graph_connected_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+        Laws,
+        Plan).
+
+graph_f4_normpair_gru_global_conjugacy_injectivity_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
+        Laws,
+        Plan).
