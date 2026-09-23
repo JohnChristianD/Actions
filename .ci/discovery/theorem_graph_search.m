@@ -542,6 +542,7 @@ graph_required_theorems = [
     "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
     "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
     "ConnectedGeneralizedWalrasianExistenceTheorem",
+    "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
