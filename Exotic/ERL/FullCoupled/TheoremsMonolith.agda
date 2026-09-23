@@ -4671,6 +4671,142 @@ connected-hodge-maxwell-gru-f4-watkins-egraph-composition C s =
   EqualityCompositionTheorem.composedStep
     (connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s)
 
+
+------------------------------------------------------------------------
+-- Fully connected continuous Hodge-Maxwell/F4/Watkins exact prefix +
+-- horizon-regret + conjugacy extraction endpoint.
+--
+-- The endpoint consumes the existing exact prefix composition, the
+-- horizon-indexed deterministic regret certificate, and the canonical
+-- endogenous e-graph/A* closure.  No probability, measure, or convergence
+-- theorem is inferred from the Nat-valued regret surface.
+------------------------------------------------------------------------
+
+record ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  field
+    connected :
+      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU
+
+    exactPrefixComposition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+
+    exactHorizonRegret :
+      ∀ H →
+      cumulativeRegret
+        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+          (f4Watkins (connected))) H
+      ≤
+      jensenGap
+        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+          (f4Watkins (connected))) H
+      + roundingBias
+        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+          (f4Watkins (connected))) H
+      + frankWolfeResidual
+        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+          (f4Watkins (connected))) H
+      + markovMixing
+        (F4FrankWolfeRoundingBiasRegretTheorem.certificate
+          (f4Watkins (connected))) H
+
+    eGraphExtraction :
+      ∀ s → EqualityCompositionTheorem
+
+open ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
+
+connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (C :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU) →
+  ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU
+connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition C =
+  connectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    C
+    (f4Composition (f4Watkins C))
+    (connected-f4-frank-wolfe-horizon-regret-theorem (f4Watkins C))
+    (λ s → connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s)
+
+------------------------------------------------------------------------
+-- F4/NormPair/GRU global conjugacy + injectivity contract.
+--
+-- A projection from the full learner state to a GRU/F4/NormPair feature
+-- carrier is not globally injective merely because each component is exact:
+-- the full state also contains Watkins, LCB counts, q-log control/value, and
+-- the clock.  Therefore the global theorem takes an explicit observation
+-- inverse/conjugacy witness rather than manufacturing injectivity.
+------------------------------------------------------------------------
+
+record CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
+  (Feature : Set)
+  (observe : C.CanonicalFullLearnerState → Feature)
+  (featureStep : Feature → Feature)
+  (inverse : Feature → C.CanonicalFullLearnerState) : Set₁ where
+  constructor canonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
+  field
+    f4NormPairStability :
+      CanonicalF4NormPairSureStabilityCompositionTheorem
+
+    connectedScanConjugacy :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+
+    globalConjugacy :
+      GlobalConjugacyEquivalence
+        C.CanonicalFullLearnerState
+        Feature
+        C.canonicalFullStep
+        observe
+        featureStep
+        inverse
+
+open CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem public
+
+canonical-f4-normPair-gru-global-injective :
+  ∀ {Feature : Set}
+  {observe : C.CanonicalFullLearnerState → Feature}
+  {featureStep : Feature → Feature}
+  {inverse : Feature → C.CanonicalFullLearnerState} →
+  CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
+    Feature
+    observe
+    featureStep
+    inverse →
+  ∀ {s t : C.CanonicalFullLearnerState} →
+  observe s ≡ observe t →
+  s ≡ t
+canonical-f4-normPair-gru-global-injective witness eq =
+  trans
+    (sym (stateReconstruction (globalConjugacy witness _)))
+    (trans
+      (cong inverse eq)
+      (stateReconstruction (globalConjugacy witness _)))
+
+canonical-f4-normPair-gru-global-conjugacy :
+  ∀ {Feature : Set}
+  {observe : C.CanonicalFullLearnerState → Feature}
+  {featureStep : Feature → Feature}
+  {inverse : Feature → C.CanonicalFullLearnerState} →
+  CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
+    Feature
+    observe
+    featureStep
+    inverse →
+  GlobalConjugacyEquivalence
+    C.CanonicalFullLearnerState
+    Feature
+    C.canonicalFullStep
+    observe
+    featureStep
+    inverse
+canonical-f4-normPair-gru-global-conjugacy witness =
+  globalConjugacy witness
+
 ------------------------------------------------------------------------
 -- Hodge-Maxwell middle-degree involution transport.
 --
