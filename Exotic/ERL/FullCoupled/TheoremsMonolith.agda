@@ -7194,6 +7194,126 @@ connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem H T =
   connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem H T
 
 ------------------------------------------------------------------------
+-- Novel finite hard-sign-style idempotent transport.
+--
+-- A hard-sign projection is an idempotent map.  On the exact finite
+-- Hodge-Maxwell/Tsallis carrier, an explicitly supplied conjugacy to a
+-- finite GRU-side projection transports that idempotence back to the
+-- solution semantics.  This is the exact algebraic bridge; it does not
+-- infer convexity, differentiability, or a q-log derivative.
+------------------------------------------------------------------------
+
+record FiniteIdempotentConjugacyTransportTheorem
+  (A B : Set)
+  (projectA : A → A)
+  (projectB : B → B)
+  (iso : StateIsomorphism A B) : Set₁ where
+  constructor finiteIdempotentConjugacyTransportTheorem
+  field
+    conjugacy :
+      ∀ a →
+      to iso (projectA a) ≡
+      projectB (to iso a)
+    sourceIdempotent :
+      ∀ a →
+      projectA (projectA a) ≡
+      projectA a
+
+finiteIdempotentConjugacyTransport :
+  ∀ {A B : Set}
+  {projectA : A → A}
+  {projectB : B → B}
+  {iso : StateIsomorphism A B} →
+  FiniteIdempotentConjugacyTransportTheorem
+    A
+    B
+    projectA
+    projectB
+    iso →
+  ∀ a →
+  projectB (projectB (to iso a)) ≡
+  projectB (to iso a)
+finiteIdempotentConjugacyTransport witness a =
+  trans
+    (sym (conjugacy witness (projectA a)))
+    (trans
+      (cong projectB (conjugacy witness a))
+      (cong
+        (λ x → projectB (to iso x))
+        (sourceIdempotent witness a)))
+
+record ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+  (n : Nat)
+  (project :
+    ∀ {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n} →
+    Solution (semantics H) →
+    Solution (semantics H))
+  (projectFin : Fin n → Fin n) : Set₁ where
+  constructor
+    connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+  field
+    composition :
+      ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
+    transport :
+      FiniteIdempotentConjugacyTransportTheorem
+        (Solution (semantics (hodgeMaxwell composition)))
+        (Fin n)
+        (project {H = hodgeMaxwell composition})
+        projectFin
+        (finiteContinuousHodgeMaxwell-state-isomorphism
+          (semantics (hodgeMaxwell composition)))
+    idempotent :
+      ∀ s →
+      project {H = hodgeMaxwell composition}
+        (project {H = hodgeMaxwell composition} s)
+      ≡
+      project {H = hodgeMaxwell composition} s
+
+connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport :
+  ∀ {n : Nat}
+  {project :
+    ∀ {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n} →
+    Solution (semantics H) →
+    Solution (semantics H)}
+  {projectFin : Fin n → Fin n} →
+  (composition :
+    ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n) →
+  (transport :
+    FiniteIdempotentConjugacyTransportTheorem
+      (Solution (semantics (hodgeMaxwell composition)))
+      (Fin n)
+      (project {H = hodgeMaxwell composition})
+      projectFin
+      (finiteContinuousHodgeMaxwell-state-isomorphism
+        (semantics (hodgeMaxwell composition)))) →
+  ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+    n
+    project
+    projectFin
+connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport
+  composition
+  transport =
+  connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+    composition
+    transport
+    (λ s →
+      isomorphismToInjective
+        (finiteContinuousHodgeMaxwell-state-isomorphism
+          (semantics (hodgeMaxwell composition)))
+        (project {H = hodgeMaxwell composition}
+          (project {H = hodgeMaxwell composition} s))
+        (project {H = hodgeMaxwell composition} s)
+        (trans
+          (sym
+            (conjugacy
+              transport
+              (project {H = hodgeMaxwell composition} s)))
+          (trans
+            (cong projectFin
+              (conjugacy transport s))
+            (sourceIdempotent transport s))))
+
+------------------------------------------------------------------------
 -- Infinite-family finite-carrier impossibility for continuous Maxwell.
 --
 -- This is the exact pigeonhole boundary available from the current
