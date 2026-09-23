@@ -326,9 +326,9 @@ The newly promoted `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheore
 
 ### Latest continuation state
 
-Current PR head: `a16fba7f89e76d93204c492a8407d683d8cfb5be`. The branch is 28 commits ahead of the merged base `0890e2f664d171e62131d0d66569381253bdd673`, with no behind commits. No review submissions or inline review threads are present. The latest head has not yet exposed a completed GitHub Actions run, so CI remains unverified.
+Current PR head: `5ce89c960c5824abfbe216476f7c680a6312f172`. The branch remains open and CI is not yet verified on this head. The repaired F4 promotion is intentionally kept as a bounded diff; the prior accidental large monolith expansion was superseded rather than preserved.
 
-The current machine-counted Agda record target is 118 and the strict required theorem-plan gate is 108. The promoted idempotent transport theorem is conditional on an explicit projection conjugacy; it is not a claim that HardSign is convex or differentiable.
+The current strict graph records the exact Z carrier/finite-observation split, the F4 optimizer stability consumer, and left-inverse injectivity promotion. The promoted Hodge-Maxwell/Tsallis/Walrasian theorem remains conditional on its explicit premises; it is not a claim that HardSign is convex or differentiable.
 
 
 ## Int8/finite-observation separation audit — 2026-09-23
