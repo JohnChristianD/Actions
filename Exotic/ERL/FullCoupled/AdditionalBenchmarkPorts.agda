@@ -2,7 +2,6 @@
 module Exotic.ERL.FullCoupled.AdditionalBenchmarkPorts where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
-open import Data.Fin using (Fin; toℕ)
 open import Data.Nat.DivMod using (_%_)
 
 open import Exotic.ERL.FullCoupled.CanonicalGamePorts as P
@@ -15,9 +14,9 @@ record UniformBanditState : Set where
   field arms time bestAction totalReward : Nat
 open UniformBanditState public
 
-uniformBanditStep : Fin 2 → UniformBanditState → P.StepResult UniformBanditState
+uniformBanditStep : Nat → UniformBanditState → P.StepResult UniformBanditState
 uniformBanditStep a (uniformBanditState arms t best total) =
-  let ai = toℕ a
+  let ai = a
       reward = uniformReward ai t arms
   in P.stepResult
        (P.int8OfNat reward)
@@ -33,8 +32,8 @@ record TMazeState : Set where
   field corridor correctBranch time : Nat
 open TMazeState public
 
-tMazeStep : Fin 3 → TMazeState → P.StepResult TMazeState
-tMazeStep a (tMazeState corridor correct t) with toℕ a
+tMazeStep : Nat → TMazeState → P.StepResult TMazeState
+tMazeStep a (tMazeState corridor correct t) with a
 ... | zero = P.stepResult
       (P.int8OfNat corridor)
       (tMazeState (suc corridor) correct (suc t))
@@ -69,10 +68,10 @@ record Game2048State : Set where
   field score maxTile occupied time : Nat
 open Game2048State public
 
-mergeReward : Fin 4 → Game2048State → Nat
-mergeReward a s = (toℕ a + occupied s + maxTile s) % 16
+mergeReward : Nat → Game2048State → Nat
+mergeReward a s = (a + occupied s + maxTile s) % 16
 
-game2048Step : Fin 4 → Game2048State → P.StepResult Game2048State
+game2048Step : Nat → Game2048State → P.StepResult Game2048State
 game2048Step a (game2048State score tile occ t) =
   let r = mergeReward a (game2048State score tile occ t)
       nextTile = tile + (r % 2)
