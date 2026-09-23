@@ -4639,10 +4639,26 @@ open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 -- Hodge-Maxwell/F4/Watkins extraction.
 ------------------------------------------------------------------------
 
-record FiniteListHodgeMaxwellCoordinateCertificate
+------------------------------------------------------------------------
+-- Arbitrary finite-coordinate Hodge-Maxwell specialization.
+--
+-- A finite-dimensional specialization is represented without Fin by an
+-- exact-length list carrier. The dimension n remains universally
+-- parameterized, while the coordinate carrier is the dependent pair
+--   (xs : List Scalar) × length xs ≡ n.
+-- This is a finite coordinate carrier, not a claim that every physical
+-- Maxwell solution space has such coordinates.
+------------------------------------------------------------------------
+
+FiniteCoordinateList : Set → Nat → Set
+FiniteCoordinateList Scalar n =
+  Σ (List Scalar) (λ xs → length xs ≡ n)
+
+record ArbitraryFiniteCoordinateHodgeMaxwellCertificate
   (GRU Scalar : Set)
+  (n : Nat)
   {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor finiteListHodgeMaxwellCoordinateCertificate
+  constructor arbitraryFiniteCoordinateHodgeMaxwellCertificate
   field
     connectedRepresentation :
       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
@@ -4653,61 +4669,62 @@ record FiniteListHodgeMaxwellCoordinateCertificate
         (ContinuousHodgeMaxwellExactRepresentationData.Solution
           (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
             connectedRepresentation))
-        (List Scalar)
+        (FiniteCoordinateList Scalar n)
 
-open FiniteListHodgeMaxwellCoordinateCertificate public
+open ArbitraryFiniteCoordinateHodgeMaxwellCertificate public
 
-finiteListHodgeMaxwell-coordinate-global-injective :
+arbitraryFiniteCoordinateHodgeMaxwell-coordinate-global-injective :
   ∀ {GRU Scalar : Set}
+  {n : Nat}
   {Continuous : {A B : Set} → (A → B) → Set}
-  (C : FiniteListHodgeMaxwellCoordinateCertificate
-    GRU Scalar) →
+  (C : ArbitraryFiniteCoordinateHodgeMaxwellCertificate
+    GRU Scalar n) →
   ∀ {x y} →
   to (coordinateIsomorphism C) x ≡
   to (coordinateIsomorphism C) y →
   x ≡ y
-finiteListHodgeMaxwell-coordinate-global-injective C =
+arbitraryFiniteCoordinateHodgeMaxwell-coordinate-global-injective C =
   isomorphismToInjective
     (coordinateIsomorphism C)
 
 ------------------------------------------------------------------------
--- Fully connected finite-list-coordinate Hodge-Maxwell/F4/Watkins extraction.
---
--- The coordinate witness is consumed by the already connected
--- Hodge-Maxwell/F4/Watkins composition.  The resulting observation is global:
--- equality of the finite coordinate representations of two full learner
--- states implies equality of the full exact learner states.
+-- Fully connected arbitrary finite-coordinate Hodge-Maxwell/F4/Watkins
+-- extraction. The theorem is universally parameterized by the finite
+-- coordinate dimension n and consumes the exact connected Hodge-Maxwell/
+-- F4/Watkins bridge plus its fixed-length list coordinate isomorphism.
 ------------------------------------------------------------------------
 
-record ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+record ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
   (GRU Scalar : Set)
+  (n : Nat)
   {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  constructor connectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
   field
     connected :
       ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
         GRU
 
-    finiteListCoordinates :
+    finiteCoordinateCoordinates :
       StateIsomorphism
         (ContinuousHodgeMaxwellExactRepresentationData.Solution
           (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
             (hodgeMaxwell (connected))))
-        (List Scalar)
+        (FiniteCoordinateList Scalar n)
 
     learnerCoordinateGlobalInjective :
       ∀ {s t : C.CanonicalFullLearnerState} →
-      to finiteListCoordinates
+      to finiteCoordinateCoordinates
         (learnerToSolution (connected) s)
       ≡
-      to finiteListCoordinates
+      to finiteCoordinateCoordinates
         (learnerToSolution (connected) t) →
       s ≡ t
 
-open ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
+open ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 
-connected-finite-list-hodge-maxwell-gru-f4-watkins-egraph-composition :
+connected-arbitrary-finite-coordinate-hodge-maxwell-gru-f4-watkins-egraph-composition :
   ∀ {GRU Scalar : Set}
+  {n : Nat}
   {Continuous : {A B : Set} → (A → B) → Set}
   (connected :
     ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
@@ -4717,13 +4734,13 @@ connected-finite-list-hodge-maxwell-gru-f4-watkins-egraph-composition :
       (ContinuousHodgeMaxwellExactRepresentationData.Solution
         (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
           (hodgeMaxwell connected)))
-      (List Scalar)) →
-  ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-    GRU Scalar
-connected-finite-list-hodge-maxwell-gru-f4-watkins-egraph-composition
+      (FiniteCoordinateList Scalar n)) →
+  ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    GRU Scalar n
+connected-arbitrary-finite-coordinate-hodge-maxwell-gru-f4-watkins-egraph-composition
   connected
   coordinates =
-  connectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  connectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
     connected
     coordinates
     (λ {s} {t} eq →
@@ -4733,7 +4750,6 @@ connected-finite-list-hodge-maxwell-gru-f4-watkins-egraph-composition
           (cong (solutionToLearner connected)
             (isomorphismToInjective coordinates _ _ eq))
           (learnerSolutionLeftInverse connected t)))
-
 
 connected-hodge-maxwell-gru-f4-watkins-egraph-extract :
   ∀ {GRU : Set}
