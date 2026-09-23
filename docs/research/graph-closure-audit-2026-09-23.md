@@ -336,3 +336,19 @@ The current machine-counted Agda record target is 118 and the strict required th
 The Int8 carrier migration must not be read as a finite-cardinality theorem. `Int8.code : ℤ` is unbounded exact integer algebra. Finite pigeonhole conclusions are retained only where a theorem explicitly supplies an observation map into `Fin 256`. This also removes the former false inference that an unbounded Int8 observation itself cannot be injective.
 
 The finite-carrier boundary does not prove categorical finite-limit nonexistence or analytic-limit nonexistence. It proves only the stated impossibility of an exact finite observation/left-inverse for an explicit Nat-indexed injective orbit. Topology, ordering, and barycentric operations still do not supply convex duality without explicit convex/dual certificates.
+
+
+## Continuation closure — 2026-09-23
+
+The carrier migration is now treated as an exact algebra/finite-observation separation, not as a finite-carrier reinterpretation.
+
+- `Int8.code` is `ℤ): exact unbounded commutative-ring algebra with integer ordering.
+- `Fin 256` occurs only where a theorem explicitly supplies a finite observation/factor.
+- The F4 raw `thetaQ` boundedness/collision theorem was pruned. Its replacement is the explicit finite-observation F4 recurrence/collision surface.
+- `CanonicalF4GlobalOptimizerStabilityTheorem` is proof-relevant and consumed by the connected non-orange completion.
+- Left-inverse injectivity is promoted into the finite-observation information boundary.
+- Duplicate theorem declarations in the monolith were removed rather than assigned synthetic graph edges.
+- No categorical finite-limit, analytic-limit, convexity, Fenchel/Legendre duality, or q-log differentiability theorem was inferred from the carrier/order/topology upgrade.
+- The existing Hodge involution, Tsallis composition, and generalized Walrasian closures remain connected; their previously identified missing premises remain explicit.
+
+The current graph adds real dependency edges for the new promoted theorem and records the remaining analytic/topological frontiers as conditional rather than pretending graph reachability is proof.
