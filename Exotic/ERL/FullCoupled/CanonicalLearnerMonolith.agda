@@ -6,8 +6,9 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder; ℕ→Fin-notInjective)
-open import Data.Integer using (ℤ; +_; -_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n; ≤-decTotalOrder)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; ∣_; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+import Data.Integer.Properties as IntegerProperties
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_; map)
 open import Data.List.Sort as Sort
@@ -147,13 +148,9 @@ data Signed : Set where
   pos : Nat → Signed
 
 signedCode : Int8 → Signed
-signedCode x with toℕ (code x) <ᵇ 128
-... | true with toℕ (code x)
-...   | zero = zer
-...   | suc n = pos (suc n)
-... | false with 256 ∸ toℕ (code x)
-...   | zero = zer
-...   | suc n = neg (suc n)
+signedCode (int8 (+ 0)) = zer
+signedCode (int8 (+ (suc n))) = pos (suc n)
+signedCode (int8 (-[1+ n ])) = neg (suc n)
 
 record FiniteRational : Set where
   constructor finiteRational
@@ -267,7 +264,7 @@ finiteLCBBonus8 (suc (suc (suc (suc (suc (suc zero)))))) = int8OfNat 1
 finiteLCBBonus8 _ = zero8
 
 lcbNegate : Int8 → Int8
-lcbNegate x = int8OfNat (256 ∸ toℕ (code x))
+lcbNegate x = int8 (- code x)
 
 scoreA : ∀ {A} → QVec A → CountVec A → Fin A → Int8
 scoreA q c a = int8Add (q a) (lcbNegate (finiteLCBBonus8 (c a)))
@@ -282,7 +279,7 @@ ScoreEntry : Nat → Set
 ScoreEntry A = Int8 × Fin A
 
 int8Order : DecTotalOrder 0ℓ 0ℓ 0ℓ
-int8Order = On.decTotalOrder (≤-decTotalOrder 256) code
+int8Order = On.decTotalOrder IntegerProperties.≤-decTotalOrder code
 
 scoreEntryOrder : ∀ A → DecTotalOrder 0ℓ 0ℓ 0ℓ
 scoreEntryOrder A = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order (≤-decTotalOrder A))
@@ -305,7 +302,10 @@ sumList (x ∷ xs) = x + sumList xs
 topCodes : ∀ {A} → Nat → List (ScoreEntry A) → List Nat
 topCodes zero xs = []
 topCodes (suc k) [] = []
-topCodes (suc k) ((x , a) ∷ xs) = toℕ (code x) ∷ topCodes k xs
+int8Magnitude : Int8 → Nat
+int8Magnitude x = ∣ code x ∣
+
+topCodes (suc k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
 supportValid : ∀ {A} → List (ScoreEntry A) → Nat → Nat → BoolLike
 supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
@@ -327,7 +327,7 @@ record SparseWeight : Set where
 open SparseWeight public
 
 sparsemaxWeight : ∀ {A} → ActionSpace A → QVec A → CountVec A → Fin A → SparseWeight
-sparsemaxWeight {A} K q c a = sparseWeight ((k * toℕ (code (scoreA q c a))) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
+sparsemaxWeight {A} K q c a = sparseWeight ((k * int8Magnitude (scoreA q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
   where
     xs = sortScores (scoreList q c)
     k = supportSize K q c
@@ -352,13 +352,13 @@ updateLCBCount a (lcbCountState counts total) =
   lcbCountState (incAt counts a) (suc total)
 
 finiteQLog8 : Int8 → FiniteRational
-finiteQLog8 x with toℕ (code x)
+finiteQLog8 x with ∣ code x ∣
 ... | zero = finiteRational 1 0 1
 ... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
 
 finiteQLog8-denominator-nonZero :
   ∀ {x} → NonZero (denominator (finiteQLog8 x))
-finiteQLog8-denominator-nonZero {x} with toℕ (code x)
+finiteQLog8-denominator-nonZero {x} with ∣ code x ∣
 ... | zero = Data.Nat.nonZero
 ... | suc n = Data.Nat.nonZero
 
@@ -371,7 +371,7 @@ negativeFiniteQLogLaw :
   finiteRational 1
     (numerator (finiteQLog8 x))
     (denominator (finiteQLog8 x))
-negativeFiniteQLogLaw x with toℕ (code x)
+negativeFiniteQLogLaw x with ∣ code x ∣
 ... | zero = refl
 ... | suc n = refl
 
@@ -419,14 +419,14 @@ data HardSign : Set where
   negative zeroSign positive : HardSign
 
 hardSignNonnegative : Int8 → HardSign
-hardSignNonnegative x with natEq (toℕ (code x)) zero
-... | enabled = zeroSign
-... | disabled = positive
+hardSignNonnegative (int8 (+ 0)) = zeroSign
+hardSignNonnegative (int8 (+ (suc n))) = positive
+hardSignNonnegative (int8 (-[1+ n ])) = negative
 
 hardSign : Int8 → HardSign
-hardSign x with natLt (toℕ (code x)) 128
-... | enabled = hardSignNonnegative x
-... | disabled = negative
+hardSign (int8 (+ 0)) = zeroSign
+hardSign (int8 (+ (suc n))) = positive
+hardSign (int8 (-[1+ n ])) = negative
 
 hardSignGate : Int8 → Int8
 hardSignGate x with hardSign x
@@ -481,12 +481,12 @@ identityActivation8-zero = refl
 gruCandidate8 : Int8 → Int8 → Int8
 gruCandidate8 h x = int8Add h x
 
-complement128 : Nat → Nat
-complement128 n = 128 ∸ n
+complement128 : Int8 → Int8
+complement128 g = int8 (+ 128 - code g)
 
 mix8 : Int8 → Int8 → Int8 → Int8
 mix8 g old new = int8Add
-  (int8Mul (int8OfNat (complement128 (toℕ (code g)))) old)
+  (int8Mul (complement128 g) old)
   (int8Mul g new)
 
 gateCode : Signed → Int8
@@ -715,13 +715,15 @@ canonicalGRU-recurrent-prefix-split :
 canonicalGRU-recurrent-prefix-split =
   recurrentPrefix-split canonicalGRURecurrentNetwork
 
-int8-no-countably-unbounded-injective :
-  ∀ (f : Nat → Int8) →
-  ¬ (∀ {m n} → f m ≡ f n → m ≡ n)
-int8-no-countably-unbounded-injective f inj =
-  ℕ→Fin-notInjective
-    (λ n → code (f n))
-    (λ {m} {n} eq → inj (cong int8 eq))
+finiteObservation-no-countably-unbounded-injective :
+  ∀ {A : Set} (observe : A → Fin 256) →
+  ¬ (∀ {m n} → observe m ≡ observe n → m ≡ n)
+finiteObservation-no-countably-unbounded-injective observe inj =
+  let
+    witness = ℕ→Fin-notInjective
+      (λ n → observe n)
+  in
+  witness inj
 
 gruInputActionAssociativity : ∀ x y z s →
   runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
@@ -902,9 +904,9 @@ hardSparse-composition-normPair-F4-L2 = hardSparse-composition-invariant
 
 maxCriticValueList : List Int8 → Int8
 maxCriticValueList [] = zero8
-maxCriticValueList (x ∷ xs) with toℕ (code x) <ᵇ toℕ (code (maxCriticValueList xs))
-... | true = maxCriticValueList xs
-... | false = x
+maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
+... | yes _ = maxCriticValueList xs
+... | no _ = x
 
 maxCriticValue8 : ∀ {A} → CriticState A → Int8
 maxCriticValue8 q = maxCriticValueList (map (λ a → values q a) (finList _))
