@@ -3905,18 +3905,18 @@ canonical-global-token-encoding-conjugacy =
 
 
 ------------------------------------------------------------------------
--- Exact transport of arbitrary finite functions through exact
--- representation isomorphisms.  The construction is representation-
--- independent and therefore also applies to finite recurrent interfaces.
+-- Exact transport through arbitrary representation isomorphisms.
+--
+-- The transport law is carrier-polymorphic.  Finite carriers are merely
+-- one possible specialization and no longer define the canonical theorem.
 ------------------------------------------------------------------------
 
-record FiniteFunctionExactIsomorphismTransportTheorem
-  (m n : Nat)
-  (A B : Set)
-  (isoA : StateIsomorphism (Fin m) A)
-  (isoB : StateIsomorphism (Fin n) B)
-  (f : Fin m → Fin n) : Set₁ where
-  constructor finiteFunctionExactIsomorphismTransportTheorem
+record ExactFunctionIsomorphismTransportTheorem
+  (S T A B : Set)
+  (isoA : StateIsomorphism S A)
+  (isoB : StateIsomorphism T B)
+  (f : S → T) : Set₁ where
+  constructor exactFunctionIsomorphismTransportTheorem
   field
     translatedFunction : A → B
     exactTransport :
@@ -3924,118 +3924,178 @@ record FiniteFunctionExactIsomorphismTransportTheorem
       StateIsomorphism.to isoB (f x) ≡
       translatedFunction (StateIsomorphism.to isoA x)
 
-finiteFunctionExactIsomorphismTransport :
-  ∀ {m n : Nat}
-    {A B : Set}
-    (isoA : StateIsomorphism (Fin m) A)
-    (isoB : StateIsomorphism (Fin n) B)
-    (f : Fin m → Fin n) →
-  FiniteFunctionExactIsomorphismTransportTheorem m n A B isoA isoB f
-finiteFunctionExactIsomorphismTransport isoA isoB f =
-  finiteFunctionExactIsomorphismTransportTheorem
+exactFunctionIsomorphismTransport :
+  ∀ {S T A B : Set}
+    {isoA : StateIsomorphism S A}
+    {isoB : StateIsomorphism T B}
+    (f : S → T) →
+  ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
+exactFunctionIsomorphismTransport {isoA = isoA} {isoB = isoB} f =
+  exactFunctionIsomorphismTransportTheorem
     (λ a →
       StateIsomorphism.to isoB
         (f (StateIsomorphism.from isoA a)))
     (λ x → refl)
 
-record FiniteRecurrentFunctionExactTranslationTheorem
-  (m : Nat)
-  (A : Set)
-  (isoA : StateIsomorphism (Fin m) A)
-  (step : Fin m → Fin m)
+record ExactRecurrentFunctionTranslationTheorem
+  (S A : Set)
+  (isoA : StateIsomorphism S A)
+  (step : S → S)
   (stepA : A → A) : Set₁ where
-  constructor finiteRecurrentFunctionExactTranslationTheorem
+  constructor exactRecurrentFunctionTranslationTheorem
   field
     recurrentConjugacy :
       ∀ x →
       StateIsomorphism.to isoA (step x) ≡
       stepA (StateIsomorphism.to isoA x)
     translatedFunction :
-      ∀ {n : Nat}
-        (B : Set)
-        (isoB : StateIsomorphism (Fin n) B)
-        (f : Fin m → Fin n) →
-      FiniteFunctionExactIsomorphismTransportTheorem m n A B isoA isoB f
+      ∀ {T B : Set}
+        {isoB : StateIsomorphism T B}
+        (f : S → T) →
+      ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
 
-finiteRecurrentFunctionExactTranslation :
-  ∀ {m : Nat}
-    {A : Set}
-    (isoA : StateIsomorphism (Fin m) A)
-    (step : Fin m → Fin m)
+exactRecurrentFunctionTranslation :
+  ∀ {S A : Set}
+    {isoA : StateIsomorphism S A}
+    (step : S → S)
     (stepA : A → A)
     (conjugacy :
       ∀ x →
       StateIsomorphism.to isoA (step x) ≡
       stepA (StateIsomorphism.to isoA x)) →
-  FiniteRecurrentFunctionExactTranslationTheorem m A isoA step stepA
-finiteRecurrentFunctionExactTranslation isoA step stepA conjugacy =
-  finiteRecurrentFunctionExactTranslationTheorem
+  ExactRecurrentFunctionTranslationTheorem S A isoA step stepA
+exactRecurrentFunctionTranslation step stepA conjugacy =
+  exactRecurrentFunctionTranslationTheorem
     conjugacy
-    (λ {n} B isoB f →
-      finiteFunctionExactIsomorphismTransport isoA isoB f)
-
+    (λ {T} {B} {isoB} f →
+      exactFunctionIsomorphismTransport f)
 
 ------------------------------------------------------------------------
--- Exact finite POMDP-model transport seam.
+-- Exact POMDP-model transport seam.
 --
 -- This is deliberately a transport theorem, not a probabilistic
--- convergence theorem: the probability/distribution semantics remain
--- explicit parameters so the graph never silently turns a deterministic
--- representation isomorphism into a stochastic claim.
+-- convergence theorem.  Distribution semantics remain explicit, while
+-- state/action/observation carriers are arbitrary Sets.
 ------------------------------------------------------------------------
 
-record FinitePOMDPExactTransport
-  (nState nAction nObservation : Nat)
+record POMDPExactTransport
   (State Action Observation Distribution Reward : Set)
-  (stateIso : StateIsomorphism (Fin nState) State)
-  (actionIso : StateIsomorphism (Fin nAction) Action)
-  (observationIso : StateIsomorphism (Fin nObservation) Observation)
+  (StateRep ActionRep ObservationRep : Set)
+  (stateIso : StateIsomorphism StateRep State)
+  (actionIso : StateIsomorphism ActionRep Action)
+  (observationIso : StateIsomorphism ObservationRep Observation)
   (transition : State → Action → Distribution)
   (observationKernel : State → Distribution)
   (reward : State → Action → Reward) : Set₁ where
-  constructor finitePOMDPExactTransport
+  constructor pomdpExactTransport
   field
     translatedTransition :
-      Fin nState → Fin nAction → Distribution
+      StateRep → ActionRep → Distribution
     translatedObservationKernel :
-      Fin nState → Distribution
+      StateRep → Distribution
     translatedReward :
-      Fin nState → Fin nAction → Reward
+      StateRep → ActionRep → Reward
     transitionExact :
       ∀ s a →
-      translatedTransition (to stateIso s) (to actionIso a) ≡ transition s a
+      translatedTransition (StateIsomorphism.to stateIso s)
+        (StateIsomorphism.to actionIso a) ≡
+      transition s a
     observationExact :
       ∀ s →
-      translatedObservationKernel (to stateIso s) ≡ observationKernel s
+      translatedObservationKernel (StateIsomorphism.to stateIso s) ≡
+      observationKernel s
     rewardExact :
       ∀ s a →
-      translatedReward (to stateIso s) (to actionIso a) ≡ reward s a
+      translatedReward
+        (StateIsomorphism.to stateIso s)
+        (StateIsomorphism.to actionIso a) ≡
+      reward s a
 
-finite-pomdp-exact-transport :
-  ∀ {nState nAction nObservation : Nat}
-    {State Action Observation Distribution Reward : Set}
-    (stateIso : StateIsomorphism (Fin nState) State)
-    (actionIso : StateIsomorphism (Fin nAction) Action)
-    (observationIso : StateIsomorphism (Fin nObservation) Observation)
+pomdpExactTransport :
+  ∀ {State Action Observation Distribution Reward StateRep ActionRep ObservationRep : Set}
+    {stateIso : StateIsomorphism StateRep State}
+    {actionIso : StateIsomorphism ActionRep Action}
+    {observationIso : StateIsomorphism ObservationRep Observation}
     (transition : State → Action → Distribution)
     (observationKernel : State → Distribution)
     (reward : State → Action → Reward) →
-  FinitePOMDPExactTransport
-    nState nAction nObservation
+  POMDPExactTransport
     State Action Observation Distribution Reward
+    StateRep ActionRep ObservationRep
     stateIso actionIso observationIso
     transition observationKernel reward
-finite-pomdp-exact-transport stateIso actionIso observationIso transition observationKernel reward =
-  finitePOMDPExactTransport
-    (λ s a → transition (from stateIso s) (from actionIso a))
-    (λ s → observationKernel (from stateIso s))
-    (λ s a → reward (from stateIso s) (from actionIso a))
+pomdpExactTransport transition observationKernel reward =
+  pomdpExactTransport
     (λ s a →
-      cong₂ transition (from-to stateIso s) (from-to actionIso a))
+      transition
+        (StateIsomorphism.from stateIso s)
+        (StateIsomorphism.from actionIso a))
     (λ s →
-      cong observationKernel (from-to stateIso s))
+      observationKernel (StateIsomorphism.from stateIso s))
     (λ s a →
-      cong₂ reward (from-to stateIso s) (from-to actionIso a))
+      reward
+        (StateIsomorphism.from stateIso s)
+        (StateIsomorphism.from actionIso a))
+    (λ s a →
+      cong₂ transition
+        (StateIsomorphism.from-to stateIso s)
+        (StateIsomorphism.from-to actionIso a))
+    (λ s →
+      cong observationKernel
+        (StateIsomorphism.from-to stateIso s))
+    (λ s a →
+      cong₂ reward
+        (StateIsomorphism.from-to stateIso s)
+        (StateIsomorphism.from-to actionIso a))
+
+------------------------------------------------------------------------
+-- The generalized transport family is consumed by one connected seam:
+-- recurrent translation uses function transport, and POMDP transport is
+-- expressed over the same arbitrary representation carriers.
+------------------------------------------------------------------------
+
+record GeneralizedRepresentationTransportCompositionTheorem : Set₁ where
+  constructor generalizedRepresentationTransportCompositionTheorem
+  field
+    functionTransport :
+      ∀ {S T A B : Set}
+        {isoA : StateIsomorphism S A}
+        {isoB : StateIsomorphism T B}
+        (f : S → T) →
+      ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
+    recurrentTranslation :
+      ∀ {S A : Set}
+        {isoA : StateIsomorphism S A}
+        (step : S → S)
+        (stepA : A → A)
+        (conjugacy :
+          ∀ x →
+          StateIsomorphism.to isoA (step x) ≡
+          stepA (StateIsomorphism.to isoA x)) →
+      ExactRecurrentFunctionTranslationTheorem S A isoA step stepA
+    pomdpTransport :
+      ∀ {State Action Observation Distribution Reward StateRep ActionRep ObservationRep : Set}
+        {stateIso : StateIsomorphism StateRep State}
+        {actionIso : StateIsomorphism ActionRep Action}
+        {observationIso : StateIsomorphism ObservationRep Observation}
+        (transition : State → Action → Distribution)
+        (observationKernel : State → Distribution)
+        (reward : State → Action → Reward) →
+      POMDPExactTransport
+        State Action Observation Distribution Reward
+        StateRep ActionRep ObservationRep
+        stateIso actionIso observationIso
+        transition observationKernel reward
+
+generalized-representation-transport-composition-theorem :
+  GeneralizedRepresentationTransportCompositionTheorem
+generalized-representation-transport-composition-theorem =
+  generalizedRepresentationTransportCompositionTheorem
+    (λ f → exactFunctionIsomorphismTransport f)
+    (λ step stepA conjugacy →
+      exactRecurrentFunctionTranslation step stepA conjugacy)
+    (λ transition observationKernel reward →
+      pomdpExactTransport transition observationKernel reward)
 
 ------------------------------------------------------------------------
 -- Architecture-preserving RNN-LM isomorphism.
