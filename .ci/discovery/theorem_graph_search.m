@@ -562,3 +562,21 @@ graph_connected_infinite_dimensional_hodge_maxwell_gru_f4_watkins_exact_prefix_h
         Laws,
         Plan).
 
+graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_egraph_composition_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+        Laws,
+        Plan).
+
+graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_exact_step_composition_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+        Laws,
+        Plan).
+
+graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_egraph_composition_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+        Laws,
+        Plan).
+
