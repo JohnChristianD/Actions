@@ -148,13 +148,13 @@ graph_connected_maxwell_tsallis_finite_exact_conjugacy_plan(Laws, Plan) :-
         Laws,
         Plan).
 
-:- pred graph_finite_maxwell_gru_representation_plan(
+:- pred graph_finite_continuous_hodge_maxwell_gru_representation_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
 graph_finite_maxwell_gru_representation_plan(Laws, Plan) :-
     search_named_required_plan(
-        "FiniteMaxwellGRUExactRepresentationCandidate",
+        "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
         Laws,
         Plan).
 
