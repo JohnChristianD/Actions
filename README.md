@@ -254,7 +254,7 @@ ConnectedGeneralizedWalrasianExistenceTheorem
 ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
 ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
 
-Note: the machine-counted declaration total is 118. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
+Note: the machine-counted declaration total is 120. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
 ```
 
 The direction is:
