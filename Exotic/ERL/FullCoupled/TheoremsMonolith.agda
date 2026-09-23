@@ -5072,6 +5072,82 @@ connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-co
     (λ s → connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s)
 
 ------------------------------------------------------------------------
+-- Finite-coordinate end-to-end promotion of the exact prefix/horizon-regret
+-- endpoint. This remains a distinct theorem family from the
+-- infinite-dimensional promotion.
+------------------------------------------------------------------------
+
+record ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  (GRU Scalar : Set)
+  (n : Nat)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+  field
+    finiteCoordinate :
+      ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        GRU Scalar n
+
+    exactEndpoint :
+      ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+        GRU
+
+    globalInjectivityComposition :
+      ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
+        GRU
+
+    learnerCoordinateGlobalInjective :
+      ∀ {s t : C.CanonicalFullLearnerState} →
+      to
+        (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+          .finiteCoordinateCoordinates
+          finiteCoordinate)
+        (ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem.learnerToSolution
+          (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+            .connected
+            finiteCoordinate)
+          s)
+      ≡
+      to
+        (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+          .finiteCoordinateCoordinates
+          finiteCoordinate)
+        (ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem.learnerToSolution
+          (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+            .connected
+            finiteCoordinate)
+          t) →
+      s ≡ t
+
+open ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
+
+connected-finite-coordinate-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition :
+  ∀ {GRU Scalar : Set}
+  {n : Nat}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (finiteCoordinate :
+    ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU Scalar n) →
+  ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    GRU Scalar n
+connected-finite-coordinate-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
+  finiteCoordinate =
+  connectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    finiteCoordinate
+    (connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
+      (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .connected
+        finiteCoordinate))
+    (connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
+      (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .connected
+        finiteCoordinate))
+    (λ {s} {t} eq →
+      ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .learnerCoordinateGlobalInjective
+        finiteCoordinate
+        eq)
+
+------------------------------------------------------------------------
 -- F4/NormPair/GRU global conjugacy + injectivity contract.
 --
 -- A projection from the full learner state to a GRU/F4/NormPair feature
