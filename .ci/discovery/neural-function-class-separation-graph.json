@@ -533,7 +533,7 @@
       "BairdSevenStarProblem",
       "Majority3ShapleyEquilibrium",
       "CanonicalAStarCostGuidanceTheorem",
-      "CanonicalEndogenousAStarTransportClosureTheorem"
+      "CanonicalEndogenousEGraphAStarTransportClosureTheorem"
     ],
     "note": "Deleted finite-observation branches are no longer promotion targets. Surviving zero-dependency records are retained only when the graph explicitly identifies their real composed consumer; no synthetic edge is introduced for topology, convexity, duality, or analytic claims."
   },
@@ -1397,5 +1397,15 @@
   "future_theorem_graph_contract_v9": {
     "physics": "Hodge-Maxwell/Maxwell exact representation is carrier-polymorphic. Fin n is excluded from that family unless a future theorem explicitly introduces a genuinely finite observation/carrier. A finite-dimensional continuous specialization requires a proof-relevant finite-dimensionality certificate.",
     "future": "Every future theorem must be an actual Agda declaration with real dependency edges, then a connected consumer before strict endpoint admission."
+  }  ,"egraph_astar_semantic_closure": {
+    "theorem": "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
+    "edge": [
+      "CanonicalAStarCostGuidanceTheorem",
+      "CanonicalEndogenousEGraphAStarTransportClosureTheorem"
+    ],
+    "proof_seam": "EqualityCompositionTheorem",
+    "discovery_seam": "semantic_law dependency/equivalence graph traversed by A*",
+    "meaning": "e-graph equality composition supplies the equivalence-space composition seam while A* supplies cost-guided traversal; they are coupled in discovery and consumed by one Agda closure rather than represented as unrelated branches",
+    "finite_carrier_rule": "no Fin n dependency is introduced"
   }
 }
