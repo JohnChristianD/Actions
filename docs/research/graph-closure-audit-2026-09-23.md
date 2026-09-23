@@ -278,3 +278,47 @@ The new pre-graphed candidates are deliberately not in the strict required-theor
 - RegularWalrasianStaticExistenceAdapterCandidate
 
 They are candidate metadata only. Promotion requires an actual Agda declaration, real dependency edges, a connected consumer, and a machine-checked proof. The external regular-Walrasian adapter remains the only direct route from the external RegularEconomy existence result to the local generalized equilibrium theorem.
+
+
+## 2026-09-23 continued audit: finite limits, convex duality, idempotent transport, and runtime
+
+### Finite limits are not implied by the current finite-carrier theorems
+
+The promoted Maxwell discretization and finite-carrier pigeonhole results establish exact finite encodings, finite enumeration/cardinality consequences, and preservation/reflection of the declared field equations. They do not establish categorical finite limits, nor analytic limits. Those are distinct structures. A finite carrier can make a particular finite construction computable, but a limit theorem requires an explicit limiting diagram and universal property; an analytic limit requires a topology/metric or equivalent convergence structure and a limit statement.
+
+### Convexity/duality boundary
+
+nLab describes a convex space through barycentric operations parametrized by a suitable subset of a semiring and separately discusses duality. The present Agda surface has no general convex-space object, ordered-semiring parameter object, Fenchel/Legendre transform, or duality-gap theorem. Therefore the proposed route
+
+`finite carrier + topology + semiring ordering -> convexity/duality`
+
+is not a theorem of the current graph. The new promoted idempotent transport theorem closes a narrower and exact algebraic seam: an explicitly supplied GRU-side idempotent projection conjugate to a solution-side projection remains idempotent on the finite Hodge-Maxwell/Tsallis carrier.
+
+This is the correct HardSign bridge. The existing HardSign gate is idempotent, but a discontinuous sign map does not acquire an ordinary derivative at its switching boundary merely from topology or finite limits. Promotion of a subgradient/convexity theorem still requires a concrete generalized-derivative notion, convex functional, domain, and proof.
+
+### Tsallis q-log boundary
+
+The existing Tsallis layer remains algebraic/divergence transport. A q-log differentiability or convexity theorem needs an explicit q-log operation, admissible q/domain assumptions, and exact derivative/convexity laws. The new idempotent projection transport does not silently provide those laws. The q-log-specific and Hodge-Maxwell convex-duality candidates therefore remain candidate-only.
+
+### Hodge-Maxwell boundary
+
+nLab states Maxwell's equations in differential-form form as `d F = 0` and `d star F = j`. The Hodge star maps k-forms to (n-k)-forms and its square carries degree/signature-dependent signs. The repository's middle-degree involution theorem is therefore correctly conditional on an explicit GRU-side involution and factorization law; topology and left-invertibility are transport mechanisms, not substitutes for the geometric square-law premise.
+
+### Runtime boundary
+
+Official Dhall documentation states that well-typed Dhall expressions normalize successfully in finite time and describes Dhall as a total functional configuration language. Dhall's integration documentation also explicitly describes rendering Dhall to external formats/programs. This is a configuration/orchestration safety property, not a universal replacement theorem for arbitrary runtime semantics. Repository policy remains: Tcl and Lua stay absent until a concrete future dependency demonstrates that one is required.
+
+### Verification note
+
+The latest observed PR workflow for the previous head failed in two concrete places: Agda parsed the reserved field name `data` in the finite Hodge-Maxwell discretization consumer, and Mercury's e-graph sync could not see `graph_search_completion/3` because it was not exported by the theorem-graph-search module. Both failures were repaired on the continuation branch. A fresh workflow completion on the repaired head is required before claiming CI success.
+
+### Candidate frontier after promotion
+
+Still candidate-only:
+
+- `FiniteHardSignSubgradientBoundaryCandidate`
+- `FiniteTsallisQLogDifferentiabilityConvexityCandidate`
+- `HodgeMaxwellConvexDualityBridgeCandidate`
+- `RegularWalrasianStaticExistenceAdapterCandidate`
+
+The newly promoted `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem` is no longer a candidate. It is conditional: its explicit projection-conjugacy certificate is a field of the theorem, and the idempotence conclusion is machine-checkable from that certificate.
