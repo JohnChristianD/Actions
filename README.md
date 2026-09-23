@@ -216,23 +216,18 @@ EfficientOperatorMonoidRepresentation
 ParallelPrefixComplexityCertificate
 LogarithmicScanSpanCertificate
 LogarithmicPrefixScanComplexityTheorem
-FiniteTsallisDivergenceStructure
-MaxwellFiniteExactConjugacyData
-ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+TsallisDivergenceStructure
+MaxwellExactConjugacyData
+ConnectedMaxwellTsallisExactConjugacyTheorem
 F4FrankWolfeRoundingBiasRegretData
 ConnectedF4FrankWolfeRoundingBiasRegretTheorem
-FiniteContinuousHodgeMaxwellExactRepresentationData
-ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
-FiniteHodgeMaxwellDiscretizationData
-FiniteHodgeMaxwellExactDiscretizationTheorem
-FiniteDiscreteHodgeMaxwellStarInvolutionCandidate
-ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+ContinuousHodgeMaxwellExactRepresentationData
+ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
 HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
-ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
 ConnectedGeneralizedWalrasianExistenceTheorem
-ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
-ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
+ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
 
 Note: the machine-counted declaration total is 120. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
 ```
@@ -518,14 +513,14 @@ and `canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem`.
 Their route-specific claims remain explicitly unproved: the shared strict theorem is the finite-state/rational-recurrence separation implied by the existing Agda invariants, not a fabricated sign/optimizer-affine GRU theorem.
 
 
-### 2026-09-23 idempotent hard-sign-style transport boundary
+### 2026-09-23 carrier-polymorphic continuous Maxwell/Hodge-Maxwell boundary
 
-The new ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem is a proof-relevant bridge, not a synthetic edge: it consumes the existing finite Hodge-Maxwell/Tsallis idempotent projection and generalized Walrasian existence theorem, and requires explicit fixed-point/equilibrium compatibility in both directions. It does not infer convexity, q-log differentiability, regular-economy existence, or a Hodge-star law.
+The Maxwell and Hodge-Maxwell theorem family is now carrier-polymorphic: its exact GRU carrier is an arbitrary `Set`, not `Fin n`. The continuous representation certificate carries the exact differential-form equations, explicit continuity predicates, a global encode/decode StateIsomorphism, recurrent-step conjugacy, and an explicit global encode-injectivity proof.
 
-The finite Hodge-Maxwell/Tsallis composition now has a promoted idempotent-projection transport theorem: `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem`. It consumes the existing connected finite Maxwell/Tsallis carrier plus an explicit conjugacy between a solution-side projection and a finite `Fin n` projection, then transports finite-carrier idempotence back to the solution semantics. This is the machine-checkable seam for a future HardSign projection; it does not infer differentiability, convexity, or a q-log derivative.
+`HodgeMaxwellMiddleDegreeInvolutionTransportTheorem` is now a genuine downstream consumer of that continuous representation. It transports an explicitly supplied GRU involution through the exact StateIsomorphism and observed factorization; continuous left-invertibility then proves `star (star s) ≡ s`. The involution premise remains explicit because injectivity and topology alone do not imply the Hodge-star square law.
 
-The analytic convexity/duality route remains conditional. nLab defines convex spaces using barycentric operations over a semiring-like parameter structure and treats duality as additional structure; topology, finite carriers, or Dhall totality do not by themselves provide those convex operations or a Fenchel/Legendre duality witness. The graph therefore keeps `FiniteHardSignSubgradientBoundaryCandidate`, `FiniteTsallisQLogDifferentiabilityConvexityCandidate`, and `HodgeMaxwellConvexDualityBridgeCandidate` candidate-only until their missing algebraic/analytic certificates exist.
+The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-polymorphic. The former finite-cardinality Maxwell branch, finite Hodge-Maxwell discretization branch, and finite-carrier Maxwell pigeonhole impossibility theorem are pruned because their strict dependencies were intrinsically tied to `Fin n`.
 
-The finite-carrier result should also be described precisely: a finite `Fin n` carrier supports finite enumeration/cardinality arguments. It does not, by itself, prove the existence of categorical finite limits or analytic limits. nLab's Hodge-star result likewise requires degree, metric/signature, and geometric structure for the double-star law; the repository's involution theorem remains conditional on an explicit GRU-side involution.
+This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
 
 The current repository runtime boundary is unchanged: Tcl and Lua remain absent. Dhall's official documentation states that well-typed programs normalize successfully in finite time and describes Dhall as a total functional configuration language; its integration model explicitly renders or hands configuration to external programs. That safety property does not make an arbitrary future Tcl/Lua runtime semantically redundant. Keep those packages absent unless a concrete future executable or library demonstrates a runtime dependency.
