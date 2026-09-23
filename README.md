@@ -85,7 +85,7 @@ The arrows describe orchestration, not mathematical implication. In particular, 
 
 ## Complete Agda record relationship graph
 
-The canonical theorem monolith currently contains 95 top-level record declarations.
+The canonical theorem monolith currently contains 115 top-level record declarations. The numbered graph below is a legacy snapshot; the canonical declaration set is the Agda monolith plus the synchronized JSON graph.
 
 The following graph is derived from the actual record declarations and their direct record-to-record references. Every record is listed exactly once. This includes foundational data records, theorem contracts, transport structures, problem specifications, and composition records. Non-record definitions are not disguised as theorem records.
 
@@ -225,6 +225,32 @@ The following graph is derived from the actual record declarations and their dir
 94. CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
     +-- depends on: CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalEndogenousPOMDPObservationBoundaryTheorem, CanonicalExactRNNLMObservationTopologyCapabilityTheorem
 95. CanonicalTokenVocabularyUpperBoundTheorem
+
+Current canonical tail after the historical index:
+
+96. FunctionClassInclusion
+97. StrictFunctionClassSeparation
+98. CanonicalStrictNeuralFunctionClassSeparationContract
+99. CanonicalRecurrentFunctionRealization
+100. EfficientOperatorMonoidRepresentation
+101. ParallelPrefixComplexityCertificate
+102. LogarithmicScanSpanCertificate
+103. LogarithmicPrefixScanComplexityTheorem
+104. FiniteTsallisDivergenceStructure
+105. MaxwellFiniteExactConjugacyData
+106. ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+107. F4FrankWolfeRoundingBiasRegretData
+108. ConnectedF4FrankWolfeRoundingBiasRegretTheorem
+109. FiniteContinuousHodgeMaxwellExactRepresentationData
+110. ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem
+111. FiniteHodgeMaxwellDiscretizationData
+112. FiniteHodgeMaxwellExactDiscretizationTheorem
+113. FiniteDiscreteHodgeMaxwellStarInvolutionCandidate
+114. ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+115. HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
+116. ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem
+
+Note: the machine-counted declaration total is 115 because the historical numbered list contains one omitted pre-existing record in the middle; the canonical source and graph JSON are authoritative for exact enumeration.
 ```
 
 The direction is:
