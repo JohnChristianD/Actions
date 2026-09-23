@@ -7158,7 +7158,7 @@ hodgeMaxwell-middle-degree-involution witness s =
           (trans
             (cong observeGRU
               (gruInvolution witness (to iso s)))
-            (sym (observeFactorization witness s)))))
+            (sym (observeFactorization witness s))))
 
 ------------------------------------------------------------------------
 -- Tsallis divergence is graphically relevant only as a finite algebraic
