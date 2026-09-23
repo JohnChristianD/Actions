@@ -229,3 +229,22 @@ Proved/conditional exact surfaces now include:
 `ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem`
 
 Remaining candidates are the full infinite-dimensional continuous-Maxwell representation claim, the optional raw discrete Hodge-star involution strengthening, the regular-Walrasian external existence adapter, and any q-log-specific extension not yet formalized on the Agda surface.
+
+
+## 2026-09-23 continuation: finite-carrier impossibility and generalized-equilibrium existence
+
+A new exact boundary is now represented by `ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem`. Its premise is deliberately narrower than the phrase "infinite-dimensional Maxwell": the caller must supply an explicit injective `Nat`-indexed family of continuous Maxwell solutions under the declared semantics. The exact finite GRU representation then maps that family into `Fin n`, and the standard-library result `ℕ→Fin-notInjective` gives the contradiction. The existing `DenseNeighborhoodSeparationTheorem` supplies family-index separation; `ContinuousLeftInverseTheorem` remains part of the connected observation surface; the exact finite GRU representation supplies the finite state isomorphism. This is an exact finite-cardinality obstruction, not a theorem that every infinite-dimensional function space automatically contains the required family.
+
+A second exact closure is `ConnectedGeneralizedWalrasianExistenceTheorem`. Given the existing `ContinuousStationaryMarkovWalrasianData` and a local witness
+
+`∀ p → Σ allocation . staticWalrasian D p allocation`
+
+the theorem constructs
+
+`∀ p → Σ allocation . GeneralizedWalrasianEquilibrium D p allocation`
+
+by the existing invariant aggregate and `generalizedWalrasianEquilibrium-from-static` constructor. The remaining regular-economy frontier is therefore precisely the external-to-local existence adapter: an actual proof object relating Econlib's `RegularEconomy`/Walrasian existence theorem to the repository's `staticWalrasian` predicate.
+
+The new declarations raise the Agda record count from 115 to 117 and the required graph plan count from 105 to 107.
+
+Verification state: the latest PR head has a GitHub Actions run `35807726298` in `pending` state, with no job result exposed yet. No workflow success is claimed until an observed completion exists.
