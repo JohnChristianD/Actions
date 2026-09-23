@@ -154,3 +154,78 @@ The finite-discretization obligation is now closed conditionally and explicitly:
 The F4 surface also already contains conditional horizon monotonicity from nonnegative per-round regret. The remaining optimizer boundary is therefore not missing a basic monotonicity lemma; the stronger quantitative rate remains certificate-dependent.
 
 The remaining Maxwell frontier is the full continuous PDE/function-space representation claim. That remains candidate-only because neither finite encoding nor finite discretization yields a theorem about the whole infinite-dimensional solution space. The optional same-degree finite Hodge-star involution is likewise candidate-only.
+
+
+## 2026-09-23 continuation: Tsallis, involution, Walrasian, and runtime boundaries
+
+### Tsallis / q-log algebraic relevance
+
+The finite Hodge-Maxwell representation remains defined by the differential-form equations
+
+`dF = 0`
+and
+`d⋆F = j`.
+
+The repository's Tsallis surface is a finite divergence/transition transport structure attached to a finite state carrier. nLab's entropy and relative-entropy pages support the finite information-theoretic role of entropy/divergence, while the Maxwell equations remain independent differential-form equations. citehttps://ncatlab.org/nlab/show/entropyhttps://ncatlab.org/nlab/show/relative%2Bentropy
+
+Accordingly, the exact graph now distinguishes:
+
+`Hodge-Maxwell semantics -> exact finite representation -> optional Tsallis divergence transport`
+
+A q-log-specific Maxwell theorem is not promoted. The repository would need an explicit q-log operation and an exact algebraic law before that generalized operation becomes part of the proof graph.
+
+### Hodge-Maxwell involution
+
+The new `HodgeMaxwellMiddleDegreeInvolutionTransportTheorem` packages four concrete surfaces: continuous left-inverse injectivity, an exact state isomorphism into a GRU carrier, observed-factorization/conjugacy, and the existing dense-neighborhood separation context.
+
+Its actual proof is exact:
+
+`observe(star(star(s))) = observe(s)`
+
+plus observation injectivity yields
+
+`star(star(s)) = s`.
+
+The theorem deliberately requires an explicit GRU-side involution and observation-factorization law. Left-invertibility, topology, and neighborhood separation do not by themselves imply the Hodge-star square law. nLab gives the general Hodge-star type `Ω^k -> Ω^(n-k)` and, in Minkowski spacetime, records the dimension/signature-dependent double-star law; hence a same-degree involution is a middle-degree/specified-signature statement, not a generic property. citehttps://ncatlab.org/nlab/show/Hodge%2Bstar%2Boperatorhttps://ncatlab.org/nlab/show/Hodge%2Bstar%2Boperator%2Bon%2BMinkowski%2Bspacetime%2B--%2Bsection
+
+### Generalized regular Walrasian equilibrium
+
+The local Agda graph already supplies the exact transport chain:
+
+`staticWalrasian -> GeneralizedWalrasianEquilibrium -> StationaryWalrasian`
+
+and the Markov composition consumes the recurrent scan, left-inverse exact readout, stability boundary, and stationary Walrasian lift.
+
+The remaining frontier is existence from an external regular-economy formalization. Current Econlib documents `RegularEconomy`, `Economy.exists_equilibrium`, and `Economy.WalrasianEquilibrium`, as well as finite Markov stationary-law results. citeturn904481search0turn904481search1
+
+Graphing can make the route explicit, yet it cannot turn the external Lean object into a local Agda proof without an actual cross-language adapter. That adapter stays candidate-only.
+
+### Tcl / Lua / Dhall
+
+The current repository has neither Tcl nor Lua as a runtime dependency. Lua source suffixes are explicitly rejected by the repository's CI source-surface contract, while the Nix shell itself is centered on Mercury and Dhall.
+
+Dhall is total and non-Turing-complete: type-correct expressions normalize successfully in finite time. Its official integration docs also describe using Dhall as a programmable configuration language or rendering it into external text formats. That makes Dhall a strong configuration/orchestration layer, not a universal replacement for an arbitrary Tcl or Lua runtime. citehttps://docs.dhall-lang.org/discussions/Safety-guarantees.htmlhttps://docs.dhall-lang.org/howtos/How-to-integrate-Dhall.html
+
+Future rule: keep Tcl and Lua absent unless a concrete future tool has an observed runtime dependency; then add only that tool's minimal package.
+
+### Recent transformations after the merged discretization boundary
+
+The actual post-merge transformative commit is `f62dab68e1a3e97aee1025691bc91e5e02009c52`, which adds the Hodge involution transport theorem and the connected Tsallis composition.
+
+`c4923133660b65f2567ee474af566f5957cf7ef0` is a pruning repair: the temporary disconnected Walrasian placeholder was removed from Agda and retained only as graph metadata.
+
+`698d72b8690eef80fead388bbd8fe26f34c5cb02` is graph infrastructure: required theorem registration.
+
+`1004200060acba3f8f03eb2d874181be128db01f` is a graph-gate repair: the required-plan count was raised from the stale 102 to the actual 105.
+
+### Current frontier
+
+Proved/conditional exact surfaces now include:
+
+`ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem`
+`FiniteHodgeMaxwellExactDiscretizationTheorem`
+`ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem`
+`HodgeMaxwellMiddleDegreeInvolutionTransportTheorem`
+`ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem`
+
+Remaining candidates are the full infinite-dimensional continuous-Maxwell representation claim, the optional raw discrete Hodge-star involution strengthening, the regular-Walrasian external existence adapter, and any q-log-specific extension not yet formalized on the Agda surface.
