@@ -258,6 +258,21 @@
       "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "F_full_connected",
       "the idempotent projection bridge is a connected conditional theorem rather than an isolated HardSign claim"
+    ],
+    [
+      "CanonicalF4GlobalOptimizerStabilityTheorem",
+      "CanonicalPureNonOrangeBypassCompletionTheorem",
+      "the exact Z-valued F4 optimizer stability theorem is now consumed by the connected non-orange completion"
+    ],
+    [
+      "CanonicalBoundedFactorLiftTheorem",
+      "CanonicalPureNonOrangeBypassCompletionTheorem",
+      "the F4 finite-observation lift is consumed by the connected non-orange completion"
+    ],
+    [
+      "CanonicalFiniteObservationInformationBoundaryTheorem",
+      "CanonicalClockObservationSubcompositionTheorem",
+      "the finite observation boundary exposes both recurrence and left-inverse injectivity to the clock-observation composition"
     ]
   ],
   "separation_obligation": [
@@ -297,7 +312,7 @@
     }
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
-  "reason": "The finite-state/rational-recurrence strict separation is represented by an explicit Agda theorem term, while route-specific sign/optimizer-affine candidates remain candidates until their own model-specific witness and nonrepresentability certificates exist.",
+  "reason": "The exact Z carrier/finite-observation separation and F4 optimizer stability are now represented by proof-relevant Agda surfaces and connected consumers. The remaining analytic convexity/duality, non-discrete topology, categorical-limit, and external RegularWalrasian adapter claims remain conditional because their required structures or witnesses are absent.",
   "computability_complexity_boundary": {
     "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
     "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
@@ -682,6 +697,14 @@
       [
         "CanonicalPersistentExcitationRequirementTheorem",
         "CanonicalBoundednessPEBoundarySubcompositionTheorem"
+      ],
+      [
+        "CanonicalF4GlobalOptimizerStabilityTheorem",
+        "CanonicalPureNonOrangeBypassCompletionTheorem"
+      ],
+      [
+        "CanonicalFiniteObservationInformationBoundaryTheorem",
+        "CanonicalClockObservationSubcompositionTheorem"
       ]
     ],
     "not_fabricated": [
@@ -699,7 +722,7 @@
       "CanonicalAStarCostGuidanceTheorem",
       "CanonicalTokenVocabularyUpperBoundTheorem"
     ],
-    "note": "These remaining zero-dependency surfaces are not silently assigned synthetic edges. They stay outside strict separation until an actual Agda record consumes them. The strict graph therefore remains fully connected without inventing dependencies."
+    "note": "Finite-observation theorem surfaces are now explicitly separated from the exact Int8=ℤ algebra. The F4 optimizer stability theorem is promoted into the connected non-orange completion; the global left-inverse injectivity law is promoted into the finite-observation information boundary. No synthetic edge is used for topology, categorical limits, convexity, duality, or analytic q-log properties."
   },
   "tropical_hardsign_finite_automaton_quotient_candidate": {
     "name": "CanonicalEndogenousTropicalHardSignFiniteAutomatonQuotientCandidate",
@@ -1243,88 +1266,28 @@
   ],
   "transformative_recent_commits_since_graph_contract": [
     {
-      "sha": "e1c5fe2f2d60d94738daf2734fff5401c13cc235",
-      "message": "Refine custom optimizer boundary and pregraph Maxwell Tsallis exact composition",
+      "sha": "565d39e5b99442a2970c31e753ec6a58bdf45166",
+      "message": "Upgrade Agda Int8 carrier to unbounded Z",
       "transformative": true
     },
     {
-      "sha": "a25d21985563c4900fc81fc54d052add376522dd",
-      "message": "Add Maxwell Tsallis finite exact conjugacy theorem surface",
+      "sha": "2bd6ba249fc6a5b47ced328ad84dcf9a9403686a",
+      "message": "Separate exact Int8 ring algebra from finite observations",
       "transformative": true
     },
     {
-      "sha": "637910875831696d06638d5967d12624c5091594",
-      "message": "Make Tsallis divergence transport nontrivial",
+      "sha": "c26a4b55d874afeea410c6472ef1aa824c28fc19",
+      "message": "Reconnect finite pigeonhole boundaries through Fin 256 observations",
       "transformative": true
     },
     {
-      "sha": "d98083742479fa5e58bc532729a43bfeb323e56a",
-      "message": "Register automated Maxwell Tsallis exact conjugacy graph plan",
+      "sha": "1679f35615c2a73997d0cbd4b61320bcc7ae8c3c",
+      "message": "Separate F4 finite observations from exact Z optimizer algebra",
       "transformative": true
     },
     {
-      "sha": "ea1aeb2e0b6d339f162968d6c76e30c18589f296",
-      "message": "Remove Lion plan and keep Maxwell composition automated",
-      "transformative": true
-    },
-    {
-      "sha": "fa9cd438fca539ed133de32d5faa872ad5c9d999",
-      "message": "Add custom optimizer and Frank-Wolfe rounding regret seams",
-      "transformative": true
-    },
-    {
-      "sha": "152339ff2c88fba82865e750d875ea8946762b7b",
-      "message": "Promote custom optimizer and Frank-Wolfe regret compositions",
-      "transformative": true
-    },
-    {
-      "sha": "810230525aa65b769f59f15896863e5504977839",
-      "message": "Automate custom and Frank-Wolfe rounding regret graph plans",
-      "transformative": true
-    },
-    {
-      "sha": "794c5b58aa7b5197a16336e7d3a43cfc5665f43a",
-      "message": "Prune standalone optimizer/KKT surfaces and make regret bounds horizon-indexed",
-      "transformative": true
-    },
-    {
-      "sha": "92e7082cddab048124f873b5843503bbd000c6c8",
-      "message": "Prune disconnected optimizer endpoints and graph horizon-regret consumers",
-      "transformative": true
-    },
-    {
-      "sha": "fbf8c305d27a52a7e4c3ea2aa2c3173b2367df1c",
-      "message": "Align Mercury graph search with connected horizon-regret consumers",
-      "transformative": true
-    },
-    {
-      "sha": "8426f42aa691893ce18469cd8db220dc02f2eab1",
-      "message": "Update e-graph required theorem count after endpoint pruning",
-      "transformative": false
-    },
-    {
-      "sha": "b67e385448523295ed43ee4726b6b99f13e53fb4",
-      "message": "Document horizon-indexed regret boundary and optimizer pruning",
-      "transformative": false
-    },
-    {
-      "sha": "44094eb7cca4f9858ef858df48877fcd0c211afb",
-      "message": "Remove unused Tcl dev-shell dependency",
-      "transformative": false
-    },
-    {
-      "sha": "d1e95f009d48966546975049fae094e00bfefed2",
-      "message": "Restore Maxwell/Tsallis finite exact conjugacy theorem surface after optimizer pruning",
-      "transformative": false
-    },
-    {
-      "sha": "19bd9d94da73f2f6d09efd92b98ddaff44c3b1e4",
-      "message": "Align e-graph gate with complete theorem plan count",
-      "transformative": false
-    },
-    {
-      "sha": "f5df9df8741e4ec3578092ef34fbc0181160403e",
-      "message": "Clarify optimizer pruning boundary comment",
+      "sha": "3ef3d14b6d2aa2d0b317e16826bc3d9fc03876ce",
+      "message": "Prune duplicate theorem boundaries and make endogenous finite observations explicit",
       "transformative": false
     }
   ],
@@ -1414,10 +1377,11 @@
   },
   "future_theorem_graph_contract": {
     "entry": "Every future theorem must be an actual Agda declaration.",
-    "dependency": "It must have at least one real dependency or be explicitly marked foundational.",
-    "consumer": "Optimizer/physics theorem candidates must name a consuming composed theorem before strict graph admission.",
-    "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m.",
-    "pruning": "Disconnected endpoint claims are not admitted; promote through a consuming composed theorem or retain as a foundational proof record."
+    "dependency": "It must have at least one real proof-relevant dependency or be explicitly foundational.",
+    "consumer": "A theorem intended as a strict endpoint must be consumed by a composed theorem; otherwise it remains foundational/candidate-only.",
+    "finite_carrier": "Fin 256 may appear only where a finite observation/factor is explicit; it must never be used to re-bound the exact Int8=ℤ carrier.",
+    "graph": "Every new connected theorem must add a real edge and a consuming parent in the same change.",
+    "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m"
   },
   "complete_graph_contract_v8": {
     "future_entry": "Every future theorem must be an actual Agda declaration with a real parent dependency or an explicitly foundational role.",
@@ -1488,6 +1452,36 @@
       "message": "Remove stale Maxwell candidate from connected graph",
       "class": "PRUNING_REPAIR",
       "reason": "replaced the stale candidate edge with the promoted connected theorem"
+    },
+    {
+      "sha": "565d39e5b99442a2970c31e753ec6a58bdf45166",
+      "message": "Upgrade Agda Int8 carrier to unbounded Z",
+      "class": "TRANSFORMATIVE",
+      "reason": "changes the canonical algebraic carrier from finite Fin 256 representation to exact unbounded integer semantics"
+    },
+    {
+      "sha": "2bd6ba249fc6a5b47ced328ad84dcf9a9403686a",
+      "message": "Separate exact Int8 ring algebra from finite observations",
+      "class": "TRANSFORMATIVE",
+      "reason": "establishes the semantic boundary between exact Z algebra and explicit finite observation carriers"
+    },
+    {
+      "sha": "c26a4b55d874afeea410c6472ef1aa824c28fc19",
+      "message": "Reconnect finite pigeonhole boundaries through Fin 256 observations",
+      "class": "TRANSFORMATIVE",
+      "reason": "restores the finite-cardinality obstruction through explicit observations rather than raw Int8 bounds"
+    },
+    {
+      "sha": "1679f35615c2a73997d0cbd4b61320bcc7ae8c3c",
+      "message": "Separate F4 finite observations from exact Z optimizer algebra",
+      "class": "TRANSFORMATIVE",
+      "reason": "promotes an exact Z-valued F4 stability surface and replaces false raw-carrier boundedness with explicit finite observation recurrence"
+    },
+    {
+      "sha": "3ef3d14b6d2aa2d0b317e16826bc3d9fc03876ce",
+      "message": "Prune duplicate theorem boundaries and make endogenous finite observations explicit",
+      "class": "PRUNING_REPAIR",
+      "reason": "removes duplicate declarations and repairs finite observation typing without changing the learner carrier"
     }
   ],
   "hodge_involution_status": {
@@ -1546,8 +1540,7 @@
       "class": "GRAPH_REPAIR",
       "reason": "aligns the hard completion gate with the actual required theorem count"
     }
-  ]
-  ,
+  ],
   "novel_pregraphed_candidates_2026_09_23": [
     {
       "node": "FiniteHardSignSubgradientBoundaryCandidate",
@@ -1559,8 +1552,14 @@
         "connected GRU conjugacy consumer"
       ],
       "dependency_edges": [
-        ["ConjugateWalrasianTransport", "FiniteHardSignSubgradientBoundaryCandidate"],
-        ["ContinuousLeftInverseTheorem", "FiniteHardSignSubgradientBoundaryCandidate"]
+        [
+          "ConjugateWalrasianTransport",
+          "FiniteHardSignSubgradientBoundaryCandidate"
+        ],
+        [
+          "ContinuousLeftInverseTheorem",
+          "FiniteHardSignSubgradientBoundaryCandidate"
+        ]
       ],
       "reason_not_promoted": "finite limits and topology alone do not supply differentiability, convexity, or a valid derivative for a discontinuous sign map"
     },
@@ -1575,8 +1574,14 @@
         "connected Maxwell/Tsallis consumer"
       ],
       "dependency_edges": [
-        ["ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem", "FiniteTsallisQLogDifferentiabilityConvexityCandidate"],
-        ["ConnectedMaxwellTsallisFiniteExactConjugacyTheorem", "FiniteTsallisQLogDifferentiabilityConvexityCandidate"]
+        [
+          "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+          "FiniteTsallisQLogDifferentiabilityConvexityCandidate"
+        ],
+        [
+          "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+          "FiniteTsallisQLogDifferentiabilityConvexityCandidate"
+        ]
       ],
       "reason_not_promoted": "the existing Tsallis layer is algebraic transport; it does not formalize q-log differentiation or a convexity theorem"
     },
@@ -1591,8 +1596,14 @@
         "connected equilibrium consumer"
       ],
       "dependency_edges": [
-        ["ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem", "HodgeMaxwellConvexDualityBridgeCandidate"],
-        ["ConnectedGeneralizedWalrasianExistenceTheorem", "HodgeMaxwellConvexDualityBridgeCandidate"]
+        [
+          "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
+          "HodgeMaxwellConvexDualityBridgeCandidate"
+        ],
+        [
+          "ConnectedGeneralizedWalrasianExistenceTheorem",
+          "HodgeMaxwellConvexDualityBridgeCandidate"
+        ]
       ],
       "reason_not_promoted": "Hodge-Maxwell equations and equilibrium existence are not made convex-dual by topology alone; the bridge requires explicit convex-analytic data"
     },
@@ -1606,20 +1617,35 @@
         "explicit stationary/generalized equilibrium witness"
       ],
       "dependency_edges": [
-        ["ConnectedGeneralizedWalrasianExistenceTheorem", "RegularWalrasianStaticExistenceAdapterCandidate"]
+        [
+          "ConnectedGeneralizedWalrasianExistenceTheorem",
+          "RegularWalrasianStaticExistenceAdapterCandidate"
+        ]
       ],
       "reason_not_promoted": "cross-language semantic equivalence is still an unproved adapter obligation"
     }
-  ]
-  ,
+  ],
   "algebraic_carrier_upgrade": {
-    "status": "REPRESENTATION_UPGRADE_ONLY",
-    "modules": [
-      "Exotic/econlib/GameTheory.agda",
-      "Exotic/econlib/Equilibrium.agda"
-    ],
-    "carrier": "Int8.code : ℤ",
-    "removed_boundary": "Fin 256 modulo encoding",
-    "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, or regular-Walrasian edges from the carrier upgrade alone; require an actual proof-relevant consumer."
+    "status": "SEMANTICALLY_COMPLETE_PENDING_CI",
+    "carrier": "Canonical Int8.code : ℤ",
+    "algebraic_structure": "unbounded commutative ring with exact addition, subtraction, multiplication, negation, and total order",
+    "finite_observation": "Fin 256 appears only as an explicit observation/factor carrier in theorem boundaries; it is not the Int8 carrier",
+    "learner_semantics": "CanonicalLearnerMonolith preserves the Int8 surface and now computes exact Z-valued operations; finite magnitude shells use absolute value rather than an implicit 0..255 bound",
+    "optimizer": "F4 thetaQ update is exact Z algebra; CanonicalF4GlobalOptimizerStabilityTheorem is a connected consumer",
+    "injectivity": "left inverse implies global observation injectivity via discreteLeftInverse-observe-injective; finite observation plus the exact Nat clock yields the global finite-left-inverse obstruction",
+    "topology": "discrete topology and exact conjugacy/left-inverse transport are formalized; no non-discrete analytic topology theorem is inferred",
+    "ordering": "int8Order is an exact total order induced from integer order; order alone does not supply convexity",
+    "limits": "no theorem claims impossibility of categorical finite limits or analytic limits; finite-carrier arguments prove only finite-observation/cardinality boundaries",
+    "convexity_duality": "no convex-space, barycentric, Fenchel/Legendre, or q-log differentiability theorem is fabricated; candidates remain conditional",
+    "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, stationary convergence, or regular-Walrasian edges from the carrier upgrade alone; require proof-relevant consumers."
+  },
+  "limit_convexity_topology_ordering_resolution": {
+    "limit_boundary": "Finite observation implies recurrence/collision for an explicit Fin 256 factor, not nonexistence of categorical finite limits or sequence limits.",
+    "convexity_boundary": "The exact Z ring and total order do not create a convex-space/barycentric structure or duality pairing.",
+    "topology_boundary": "The repository has explicit discrete topology and left-inverse/conjugacy transport; continuity under discrete topology is automatic but analytically weak.",
+    "ordering_boundary": "Integer order is preserved as an exact total order on the carrier; monotonicity results require explicit order hypotheses and are not a convexity theorem.",
+    "q_log_boundary": "finiteQLog8 remains a finite-rational magnitude shell; no Tsallis q-log derivative/convexity law is proved.",
+    "hodge_boundary": "Hodge involution remains conditional on an explicit GRU-side involution/equivalent square-law premise.",
+    "walrasian_boundary": "Generalized Walrasian existence remains local/conditional; external RegularEconomy adapter is still unproved."
   }
 }
