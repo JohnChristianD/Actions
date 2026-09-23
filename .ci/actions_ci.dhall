@@ -322,6 +322,8 @@ JSON
     MarkovStationaryWalrasianCompositionTheorem
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
+    ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
     bairdSevenStar
