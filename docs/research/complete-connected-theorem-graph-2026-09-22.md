@@ -14,10 +14,10 @@ This is enough ior a Latin-script tokenization only when the chosen token invent
 
 iinite sequences do not enlarge the vocabulary: a sequence oi length `n` has up to `256^n` token strings, while the token alphabet remains 256 symbols.
 
-Relevant prooi suriaces:
-- `Exotic/ERL/iullCoupled/CanonicalLearnerMonolith.agda`: `CanonicalToken = iin 256`.
-- `Exotic/ERL/iullCoupled/TheoremsMonolith.agda`: `CanonicalTokenVocabularyUpperBoundTheorem` and global token conjugacy.
-- `README.md`: exact vocabulary-capacity statement.
+Relevant current proof surfaces:
+- `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`: `CanonicalToken = ℤ`.
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: `CanonicalGlobalTokenEncodingConjugacyTheorem`, `CanonicalGlobalTokenLMCompositionTheorem`, and `CanonicalExactRNNLMTheorem`.
+- The strict graph JSON: finite-state comparisons are parameterized by `Fin n`, and retired finite-observation branches are no longer admissible.
 
 ## Data.List conclusion
 
@@ -54,12 +54,12 @@ The cleanest new endogenous closure is:
 Proposed composition:
 
 `CanonicalGlobalTokenConjugacyTheorem`
-→ `CanonicalTokenVocabularyUpperBoundTheorem`
+→ `retired observation/vocabulary surface`
 → `CanonicalExactRNNLMTheorem`
-→ `CanonicalExactRNNLMCapabilitySubcompositionTheorem`
-→ `CanonicalExactRNNLMObservationSubcompositionTheorem`
-→ `CanonicalExactRNNLMObservationTopologyCapabilityTheorem`
-→ `CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem`.
+→ `retired observation/vocabulary surface`
+→ `retired observation/vocabulary surface`
+→ `retired observation/vocabulary surface`
+→ `retired observation/vocabulary surface`.
 
 This is now a genuine Agda composition theorem: `canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem` constructs it directly irom the seven existing theorem records. The Agda term is present on the prooi suriace. iresh `Agda --saie`, Mercury discovery, and e-graph synchronization are still required beiore calling repository CI veriiication green.
 
