@@ -519,7 +519,6 @@ graph_required_theorems = [
 :- func graph_required_subcompositions = list(string).
 graph_required_subcompositions = [
     "CanonicalStationarySubcompositionTheorem",
-    "CanonicalBoundednessPEBoundarySubcompositionTheorem"
 ].
 
 graph_search_completion(Laws, RequirementPlans, SubcompositionPlans) :-
