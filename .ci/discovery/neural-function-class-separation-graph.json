@@ -1074,9 +1074,10 @@
     ]
   },
   "nlab_semantic_boundary": {
-    "maxwell": "nLab presents Maxwell equations as differential-form equations dF=0 and d⋆F=j_el; the repository may use this only to define the declared finite Maxwell semantics, not as an unproved continuous-to-finite theorem.",
-    "tsallis": "The nLab entropy-as-a-functor material treats Tsallis entropy as a structure on finite measured spaces and morphisms; the repository candidate therefore requires a finite measured-state/divergence structure before promotion.",
-    "conjugacy": "nLab's conjugation-action page identifies intertwiners/equivariant maps as invariants of conjugation; the repository's exact finite conjugacy must be stated as an explicit encode/decode transition intertwining law."
+    "maxwell": "nLab presents Maxwell equations in differential-form form dF=0 and d⋆F=j_el; the repository now declares those semantics over an arbitrary carrier, but this does not prove that every continuous Maxwell solution space admits a GRU representation.",
+    "tsallis": "The current Agda TsallisDivergenceStructure is a carrier-polymorphic divergence/transition shell. It does not formalize a q-log/q-exponential identity, finite measured-space entropy semantics, or q-log differentiability/convexity; those remain explicit candidate obligations.",
+    "conjugacy": "nLab's conjugation-action viewpoint is compatible with the repository's encode/decode transition-intertwining law. The carrier-polymorphic Maxwell/Tsallis conjugacy does not require a finite carrier.",
+    "q_log": "A q-log/q-exponential generalization cannot be promoted from the presence of a qLog-named learner state field. A future q-log theorem must formalize the operation, q parameter/domain, exact identities, and any claimed trigonometric or spherical-plane consequences before graph admission."
   },
   "legacy_graph_surface": {
     "pruned_disconnected_theorems": [
