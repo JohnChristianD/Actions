@@ -4456,10 +4456,10 @@ record CanonicalStationarySubcompositionTheorem : Set₁ where
 
 canonical-stationary-subcomposition-theorem :
   CanonicalStationarySubcompositionTheorem
-canonical-finite-observation-stationary-subcomposition-theorem =
+canonical-stationary-subcomposition-theorem =
   canonicalStationarySubcompositionTheorem
     (λ P μ π Converges transitionLaw convergence limitPreserved →
-      finiteObservationStationaryLimitTheorem
+      stationaryLimitTheorem
         transitionLaw
         convergence
         limitPreserved)
