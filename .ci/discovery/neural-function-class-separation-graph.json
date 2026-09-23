@@ -1519,4 +1519,68 @@
       "reason": "aligns the hard completion gate with the actual required theorem count"
     }
   ]
+  ,
+  "novel_pregraphed_candidates_2026_09_23": [
+    {
+      "node": "FiniteHardSignSubgradientBoundaryCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "premises_needed": [
+        "explicit finite HardSign carrier and sign convention",
+        "piecewise or generalized-derivative notion at the zero boundary",
+        "convexity certificate for the selected loss/regularizer",
+        "connected GRU conjugacy consumer"
+      ],
+      "dependency_edges": [
+        ["ConjugateWalrasianTransport", "FiniteHardSignSubgradientBoundaryCandidate"],
+        ["ContinuousLeftInverseTheorem", "FiniteHardSignSubgradientBoundaryCandidate"]
+      ],
+      "reason_not_promoted": "finite limits and topology alone do not supply differentiability, convexity, or a valid derivative for a discontinuous sign map"
+    },
+    {
+      "node": "FiniteTsallisQLogDifferentiabilityConvexityCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "premises_needed": [
+        "explicit q-log operation in Agda",
+        "domain restriction and q parameter law",
+        "exact derivative identity on the chosen domain",
+        "convexity/concavity law for the selected Tsallis functional",
+        "connected Maxwell/Tsallis consumer"
+      ],
+      "dependency_edges": [
+        ["ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem", "FiniteTsallisQLogDifferentiabilityConvexityCandidate"],
+        ["ConnectedMaxwellTsallisFiniteExactConjugacyTheorem", "FiniteTsallisQLogDifferentiabilityConvexityCandidate"]
+      ],
+      "reason_not_promoted": "the existing Tsallis layer is algebraic transport; it does not formalize q-log differentiation or a convexity theorem"
+    },
+    {
+      "node": "HodgeMaxwellConvexDualityBridgeCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "premises_needed": [
+        "explicit finite-dimensional function space or finite carrier",
+        "convex functional and dual pairing",
+        "Hodge-star compatibility law",
+        "exact Maxwell constraint preservation",
+        "connected equilibrium consumer"
+      ],
+      "dependency_edges": [
+        ["ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem", "HodgeMaxwellConvexDualityBridgeCandidate"],
+        ["ConnectedGeneralizedWalrasianExistenceTheorem", "HodgeMaxwellConvexDualityBridgeCandidate"]
+      ],
+      "reason_not_promoted": "Hodge-Maxwell equations and equilibrium existence are not made convex-dual by topology alone; the bridge requires explicit convex-analytic data"
+    },
+    {
+      "node": "RegularWalrasianStaticExistenceAdapterCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "premises_needed": [
+        "external WalrasianEquilibrium object adapter",
+        "equivalence to local staticWalrasian",
+        "regular-economy assumptions mapped into local data",
+        "explicit stationary/generalized equilibrium witness"
+      ],
+      "dependency_edges": [
+        ["ConnectedGeneralizedWalrasianExistenceTheorem", "RegularWalrasianStaticExistenceAdapterCandidate"]
+      ],
+      "reason_not_promoted": "cross-language semantic equivalence is still an unproved adapter obligation"
+    }
+  ]
 }
