@@ -90,13 +90,23 @@
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-      "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation"
+      "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
+      "ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem"
     ],
     "interpretation": "Maxwell and Hodge-Maxwell no longer depend on Fin n. The exact GRU carrier is arbitrary; continuity, global encode/decode, Maxwell equations, recurrent conjugacy, and Hodge involution prerequisites are explicit proof obligations.",
     "universal_continuous_boundary": "The graph now has a conditional continuous representation schema, not an existence theorem for every Maxwell solution space. Differential-form/function-space/domain/metric/source/boundary semantics and an exact GRU isomorphism must still be supplied.",
     "global_injectivity": "The exact encode/decode laws yield a StateIsomorphism and an explicit global encode-injectivity theorem.",
     "z_role": "ℤ remains the exact algebraic carrier for the canonical learner where applicable; it is not a universal carrier for arbitrary continuous Maxwell function spaces.",
     "fin_dependency_pruning": "Continuous Hodge-Maxwell composition has no Fin n dependency; finite-function transport is not a prerequisite for the carrier-polymorphic representation.",
-    "noninjectivity_boundary": "An explicit encoder collision contradicts the connected exact representation certificate. A universal collision theorem for all continuous finite-dimensional Maxwell spaces remains unproved because no topological finite-dimensionality primitive exists on the current Agda surface."
+    "noninjectivity_boundary": "An explicit encoder collision contradicts the connected exact representation certificate. A universal collision theorem for all continuous finite-dimensional Maxwell spaces remains unproved because no topological finite-dimensionality primitive exists on the current Agda surface.",
+    "finite_dimensional_coordinate_specialization": {
+      "theorem": "ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "dimension_parameter": "n : Nat",
+      "coordinate_carrier": "Fin n → Scalar",
+      "certificate": "explicit StateIsomorphism from the arbitrary Hodge-Maxwell Solution carrier to the finite coordinate carrier",
+      "result": "global injectivity of the learner's finite-coordinate observation via the connected learner-to-solution left inverse",
+      "boundary": "No vector-space/module dimension axioms are currently formalized; the coordinate isomorphism is the proof-relevant finite-dimensional specialization.",
+      "base_carrier_rule": "The continuous Hodge-Maxwell base remains arbitrary Set-valued; Fin n is introduced only by this explicit specialization."
+    }
   }
 }
