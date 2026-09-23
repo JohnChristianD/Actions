@@ -163,12 +163,14 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: ContinuousStationaryMarkovWalrasianData
 56. Majority3ShapleyEquilibrium
 57. CanonicalGlobalTokenConjugacyTheorem
-58. FiniteFunctionExactIsomorphismTransportTheorem
+58. ExactFunctionIsomorphismTransportTheorem
     +-- depends on: StateIsomorphism
-59. FiniteRecurrentFunctionExactTranslationTheorem
-    +-- depends on: StateIsomorphism, FiniteFunctionExactIsomorphismTransportTheorem
-60. FinitePOMDPExactTransport
+59. ExactRecurrentFunctionTranslationTheorem
+    +-- depends on: StateIsomorphism, ExactFunctionIsomorphismTransportTheorem
+60. POMDPExactTransport
     +-- depends on: StateIsomorphism
+61. GeneralizedRepresentationTransportCompositionTheorem
+    +-- depends on: ExactFunctionIsomorphismTransportTheorem, ExactRecurrentFunctionTranslationTheorem, POMDPExactTransport
 61. ArchitecturePreservingCanonicalRNNLMIsomorphism
     +-- depends on: StateIsomorphism
 62. CanonicalExactRNNLMTheorem
