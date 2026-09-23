@@ -506,7 +506,7 @@ graph_required_theorems = [
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
     "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
-    "FiniteMaxwellGRUExactRepresentationCandidate",
+    "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
     "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
