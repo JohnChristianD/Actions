@@ -21,39 +21,27 @@
       "role": "F4 + Frank-Wolfe rounding-bias residual regret boundary"
     },
     {
-      "node": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "node": "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "role": "Maxwell-only finite exact encoding/decoding/conjugacy with finite Tsallis/divergence structure"
-    },
-    {
-      "node": "FiniteHodgeMaxwellExactDiscretizationTheorem",
-      "role": "independent exact finite discretization layer: discrete d/star/current operators commute exactly with continuous Hodge-Maxwell semantics on the declared finite solution family"
-    },
-    {
-      "node": "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-      "role": "fully connected consumer combining the exact finite discretization certificate with the exact finite continuous Hodge-Maxwell GRU representation under explicit shared semantics"
     },
     {
       "node": "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
       "role": "conditional exact involution transport: continuous left-inverse injectivity plus explicit GRU conjugacy/observation factorization and neighborhood-separation context"
     },
     {
-      "node": "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "node": "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "role": "composes the finite Hodge-Maxwell exact representation with the existing finite Tsallis/divergence exact-conjugacy surface on the identical finite solution carrier"
-    },
-    {
-      "node": "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
-      "role": "exact impossibility for any declared finite Maxwell/GRU carrier when the continuous solution semantics contain an explicit injective Nat-indexed family"
     },
     {
       "node": "ConnectedGeneralizedWalrasianExistenceTheorem",
       "role": "local exact existence closure from per-price static Walrasian existence through invariant aggregate and generalized stationary lift"
     },
     {
-      "node": "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "node": "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "role": "fully connected hard-sign-style idempotent transport over the exact finite Hodge-Maxwell/Tsallis carrier; requires an explicit GRU-side projection conjugacy"
     },
     {
-      "node": "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
+      "node": "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "role": "fully connected conditional bridge from the finite Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
     },
     {
@@ -75,6 +63,10 @@
     {
       "node": "F_full_connected",
       "role": "function class induced by the surviving fully connected learner composition"
+    },
+    {
+      "node": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+      "role": "fully connected carrier-polymorphic exact continuous Hodge-Maxwell representation with explicit differential-form semantics, continuity predicates, global StateIsomorphism, and recurrent conjugacy"
     }
   ],
   "edges": [
@@ -85,11 +77,11 @@
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
-      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "finite exact-function transport is the representation layer for finite continuous Hodge-Maxwell solution families"
     ],
     [
-      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "F_full_connected",
       "the promoted finite Hodge-Maxwell representation is consumed only through the fully connected composition"
     ],
@@ -100,17 +92,17 @@
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
-      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "universal finite exact-function transport supplies the encoding-independent representation mechanism"
     ],
     [
-      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "F_full_connected",
       "Maxwell/Tsallis finite exact representation enters the full graph only through the composed theorem"
     ],
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
-      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "universal finite exact transport composes with Maxwell semantics and exact conjugacy"
     ],
     [
@@ -124,49 +116,24 @@
       "F4-Watkins is the sole custom optimizer composition and directly consumes the horizon-indexed rounding-bias residual regret theorem"
     ],
     [
-      "FiniteHodgeMaxwellExactDiscretizationTheorem",
-      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-      "the discrete exactness layer is consumed by the composed GRU theorem; sharedSemantics forbids unrelated certificate composition"
-    ],
-    [
-      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
-      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-      "the continuous finite-family GRU representation supplies the same-solution-family recurrent encoding consumed by the discrete exactness layer"
-    ],
-    [
-      "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-      "F_full_connected",
-      "the fully connected discrete Hodge-Maxwell representation enters the strict function-class graph only through the composed consumer"
-    ],
-    [
       "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
       "F_full_connected",
       "conditional involution transport enters only as a connected semantic theorem and does not create a standalone class-separation claim"
     ],
     [
-      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "F_full_connected",
       "Tsallis divergence is an optional algebraic transport layer over the already exact finite Maxwell/GRU semantics"
     ],
     [
-      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
-      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "the Tsallis composition explicitly reuses the same finite Maxwell solution carrier"
     ],
     [
-      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
-      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedMaxwellTsallisExactConjugacyTheorem",
+      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "existing Tsallis finite exact-conjugacy theorem supplies the divergence/transition algebraic side"
-    ],
-    [
-      "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
-      "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
-      "the finite GRU representation supplies the exact finite carrier whose encoder cannot injectively represent an explicit infinite solution family"
-    ],
-    [
-      "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
-      "F_full_connected",
-      "continuous Maxwell finite-carrier impossibility is a connected semantic boundary, not an unconnected dimensionality slogan"
     ],
     [
       "MarkovStationaryWalrasianCompositionTheorem",
@@ -179,22 +146,22 @@
       "generalized Walrasian existence is promoted through an actual composed theorem"
     ],
     [
-      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
+      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "the Walrasian bridge consumes the already-connected hard-sign-style Hodge-Maxwell/Tsallis projection"
     ],
     [
       "ConnectedGeneralizedWalrasianExistenceTheorem",
-      "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
+      "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "the Walrasian bridge consumes the existing generalized stationary existence closure"
     ],
     [
-      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "the hard-sign-style idempotent transport consumes the already-connected finite Maxwell/Tsallis composition"
     ],
     [
-      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "F_full_connected",
       "the idempotent projection bridge is a connected conditional theorem rather than an isolated HardSign claim"
     ],
@@ -237,6 +204,11 @@
       "CanonicalPureNonOrangeBypassCompletionTheorem",
       "F_full_connected",
       "the surviving fully connected theorem is the semantic endpoint"
+    ],
+    [
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+      "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
+      "the involution theorem consumes the exact global StateIsomorphism supplied by the continuous representation"
     ]
   ],
   "separation_obligation": [
@@ -317,13 +289,13 @@
       "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
     },
     {
-      "name": "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "name": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "status": "PROVED_CONDITIONAL_ON_EXACT_FINITE_SEMANTICS",
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "FiniteFunctionExactIsomorphismTransportTheorem",
-        "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem"
+        "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
       ],
       "distinction": "Exact theorem for every explicitly supplied finite family of exact differential-form Hodge-Maxwell solutions with an exact finite encoding and recurrent transition conjugacy. It does not assert that arbitrary continuous Maxwell PDEs admit finite exact encodings.",
       "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the finite state isomorphism and recurrent transition conjugacy.",
@@ -936,13 +908,13 @@
       "no_synthetic_edge": true
     },
     {
-      "name": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "name": "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "status": "PROVED",
       "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "FiniteFunctionExactIsomorphismTransportTheorem",
-        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem"
+        "ConnectedMaxwellTsallisExactConjugacyTheorem"
       ],
       "distinction": "Maxwell-only finite exact transition representation composed with universal finite-function transport, exact finite encoding/decoding, exact conjugacy, and a finite Tsallis/divergence structure.",
       "required_certificates": [
@@ -967,7 +939,7 @@
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
         "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
         "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
-        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem"
+        "ConnectedMaxwellTsallisExactConjugacyTheorem"
       ],
       "candidate_statement": "Compose the sole F4 custom optimizer, its genuine horizon-indexed cumulative regret theorem, and the finite Maxwell/Tsallis exact-conjugacy seam without importing a standalone optimizer or KKT endpoint.",
       "required_certificates": [
@@ -983,12 +955,12 @@
       "no_synthetic_edge": true
     },
     {
-      "name": "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem",
+      "name": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "status": "PROVED",
       "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
       "path": [
         "FiniteFunctionExactIsomorphismTransportTheorem",
-        "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem"
+        "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
       ],
       "candidate_statement": "Exact GRU translation of every specified finite family of continuous differential-form Hodge-Maxwell solutions whose exact finite encoding/decoding and transition conjugacy are supplied.",
       "required_certificates": [
@@ -1007,9 +979,9 @@
     {
       "name": "ConnectedMaxwellContinuousPDERepresentationCandidate",
       "status": "CANDIDATE_NOT_PROVED",
-      "parent": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "parent": "ConnectedMaxwellTsallisExactConjugacyTheorem",
       "path": [
-        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+        "ConnectedMaxwellTsallisExactConjugacyTheorem",
         "ContinuousMaxwellDifferentialFormSemantics",
         "ExactGRUFunctionSpaceRepresentationHypothesis",
         "ConnectedMaxwellContinuousPDERepresentationCandidate"
@@ -1103,43 +1075,30 @@
     "maxwell": "Every future physics theorem must explicitly declare Maxwell-only scope, finite encoding, and exact representation/conjugacy; no extra physical law is admitted implicitly."
   },
   "maxwell_status": {
-    "status": "FINITE_SEMANTICS_ONLY",
-    "surviving_surface": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
-    "scope": "Maxwell-only finite semantics with exact finite encoding/decoding/conjugacy and a finite Tsallis/divergence structure.",
-    "promotion_gate": [
-      "finite differential-form semantics",
-      "exact continuous Hodge-Maxwell equations dF=0 and d⋆F=j",
-      "explicit finite solution family",
-      "exact finite state encoding/decoding",
+    "status": "CARRIER_POLYMORPHIC_CONTINUOUS_SEMANTICS",
+    "surviving_surface": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+    "scope": "Exact differential-form Maxwell/Hodge-Maxwell semantics over an arbitrary GRU carrier. No finite cardinality is assumed or encoded in the theorem family.",
+    "representation_gate": [
+      "explicit Form2/FormStar/Form3 sets and exact d, star, dStar operators",
+      "exact Maxwell equations dF=0 and d(star F)=j",
+      "explicit arbitrary GRU carrier",
+      "global exact encode/decode laws yielding a StateIsomorphism",
       "exact recurrent transition conjugacy",
-      "exact finite discretization operators",
-      "commuting d/star/current diagrams",
-      "injective finite 3-form carrier for reflection"
+      "explicit continuity predicates for differential-form operators, fields, transition, GRU step, encode, and decode"
     ],
-    "nlab_basis": [
-      "nLab Maxwell's equations: differential-form presentation dF = 0 and d⋆F = j_el",
-      "nLab entropy/relative entropy: finite probability-space entropy and divergence structure",
-      "nLab/John Baez entropy as a functor: Tsallis entropy characterized on finite measured categories"
-    ],
-    "continuous_pde_boundary": "A finite exact-function isomorphism and an exact finite discretization certificate do not imply exact representation of the full infinite-dimensional continuous Maxwell solution space.",
-    "nlab_equations": "Maxwell is represented by dF = 0 and d⋆F = j on a spacetime manifold; the existing finite theorem does not identify a finite state space with the full solution space.",
-    "exact_discretization_surface": "FiniteHodgeMaxwellExactDiscretizationTheorem",
-    "connected_discrete_consumer": "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-    "tsallis_relevance": {
-      "status": "ALGEBRAIC_AUXILIARY_ONLY",
-      "role": "The existing Tsallis theorem supplies a finite divergence/transition transport layer over the same finite Maxwell carrier.",
-      "q_log_boundary": "No explicit q-log law is currently encoded in the Maxwell theorem. A q-log-specific theorem is not admitted unless a concrete q-log operation and exact algebraic law are declared and consumed.",
-      "non_effect": "Tsallis divergence transport does not change Maxwell equations dF=0 and d⋆F=j."
-    },
-    "infinite_family_impossibility": {
+    "global_injectivity": {
       "status": "PROVED_CONDITIONAL",
-      "theorem": "ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem",
-      "exact_premise": "an explicit injectively indexed Nat-family of continuous Maxwell solutions under the declared semantics",
-      "contradiction": "ℕ→Fin-notInjective after transporting the exact family through the finite encoder",
-      "topology_role": "DenseNeighborhoodSeparation supplies family-index separation; ContinuousLeftInverse is retained as the exact observation/reconstruction surface",
-      "representation_role": "ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem supplies the exact finite state isomorphism",
-      "boundary": "This does not by itself prove that every physically relevant infinite-dimensional Maxwell function space contains the required internal family; that family must be supplied explicitly."
-    }
+      "rule": "The exact encode/decode inverse laws give a global StateIsomorphism and an explicit global encode-injectivity theorem.",
+      "limitation": "This is conditional on the representation certificate; it is not an existence theorem for an arbitrary Maxwell solution space."
+    },
+    "hodge_involution": {
+      "status": "PROVED_CONDITIONAL",
+      "theorem": "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
+      "rule": "The connected continuous representation supplies the StateIsomorphism; continuous left-invertibility plus observed factorization plus an explicit GRU involution yields star(star s)=s.",
+      "missing_if_raw_hodge_claim": "The GRU-side involution or equivalent observed-square certificate remains an explicit premise."
+    },
+    "continuous_pde_boundary": "The graph now permits an exact continuous representation certificate without a finite-state carrier, but it still does not manufacture the analytic/function-space/domain/metric/source/boundary semantics or the existence of a GRU isomorphism from Maxwell equations alone.",
+    "no_synthetic_edge": true
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
@@ -1393,11 +1352,11 @@
       ],
       "dependency_edges": [
         [
-          "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+          "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
           "FiniteTsallisQLogDifferentiabilityConvexityCandidate"
         ],
         [
-          "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+          "ConnectedMaxwellTsallisExactConjugacyTheorem",
           "FiniteTsallisQLogDifferentiabilityConvexityCandidate"
         ]
       ],
