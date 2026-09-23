@@ -97,18 +97,11 @@
       "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
     ],
     "interpretation": "Maxwell and Hodge-Maxwell no longer depend on Fin n. The exact GRU carrier is arbitrary; continuity, global encode/decode, Maxwell equations, recurrent conjugacy, and Hodge involution prerequisites are explicit proof obligations.",
-    "universal_continuous_boundary": "The carrier-polymorphic theorem can be instantiated by an infinite-dimensional Maxwell function space once the caller supplies the exact differential-form/function-space semantics, continuity witnesses, encoder/decoder, conjugacy, and an explicit dimension predicate. It does not infer any of those from Set alone.",
+    "universal_continuous_boundary": "The carrier-polymorphic Maxwell theorem remains conditional on explicit differential-form/function-space semantics, continuity witnesses, exact encode/decode, recurrent conjugacy, and any carrier-promotion evidence supplied by the caller.",
     "global_injectivity": "The exact encode/decode laws yield a StateIsomorphism and an explicit global encode-injectivity theorem.",
     "z_role": "ℤ remains the exact algebraic carrier for the canonical learner where applicable; it is not a universal carrier for arbitrary continuous Maxwell function spaces.",
     "fin_dependency_pruning": "Continuous Hodge-Maxwell composition has no Fin n dependency; finite-function transport is not a prerequisite for the carrier-polymorphic representation.",
     "noninjectivity_boundary": "An explicit encoder collision contradicts the connected exact representation certificate. A universal collision theorem for all continuous finite-dimensional Maxwell spaces remains unproved because no topological finite-dimensionality primitive exists on the current Agda surface.",
-    "arbitrary_finite_coordinate_composition": {
-      "theorem": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "quantification": "∀ Scalar : Set, ∀ n : Nat, for every supplied connected representation and exact-length coordinate isomorphism",
-      "coordinate_carrier": "FiniteCoordinateList Scalar n = Σ (xs : List Scalar) (λ xs → length xs ≡ n)",
-      "result": "global injectivity of the learner coordinate observation",
-      "boundary": "Exact finite-coordinate carrier without Fin. No vector-space/module dimension axioms or universal existence theorem for physical Maxwell solution coordinates are claimed."
-    },
     "unified_carrier_promotion": {
       "theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "exact_step_theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
