@@ -281,8 +281,8 @@ JSON
     StateIsomorphism
     canonicalDeterministicFiniteStepDivergenceInevitability
     canonicalNoFiniteStepConvergenceToFixedPoint
-    CanonicalGlobalTokenConjugacyTheorem
-    canonical-global-token-conjugacy
+    CanonicalGlobalTokenEncodingConjugacyTheorem
+    canonical-global-token-encoding-conjugacy
     CanonicalGlobalTokenLMCompositionTheorem
     canonical-global-token-lm-composition-theorem
     canonicalToken-prefix-monoid-homomorphism
@@ -292,8 +292,6 @@ JSON
     canonicalTokenSparsemaxTrace-append
     CanonicalExactRNNLMTheorem
     canonical-exact-rnn-lm-theorem
-    ArchitecturePreservingCanonicalRNNLMIsomorphism
-    architecture-preserving-canonical-rnn-lm-identity
     CanonicalIntegerHaarScaledOrthogonalityTheorem
     canonical-integer-haar-scaled-orthogonality-theorem
     CanonicalAStarCostGuidanceTheorem
@@ -346,12 +344,10 @@ JSON
     CanonicalEndogenousPOMDPObservationBoundaryTheorem
     CanonicalEndogenousTopologicalObservationBoundaryTheorem
     MarkovStationaryWalrasianCompositionTheorem
-    CanonicalGlobalTokenConjugacyTheorem
+    CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
     CanonicalExactRNNLMTheorem
-    ArchitecturePreservingCanonicalRNNLMIsomorphism
     CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-    CanonicalTokenVocabularyUpperBoundTheorem
     CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
     CanonicalExactRNNLMCapabilitySubcompositionTheorem
     CanonicalExactRNNLMObservationSubcompositionTheorem
