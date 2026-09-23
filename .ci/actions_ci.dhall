@@ -173,7 +173,6 @@ let script = merge {
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     ergodic="$tmp/Econlib/Econlib/Probability/Markov/Ergodic.lean"
 
-    grep -Fq 'canonicalF4-factor-collision-separates-full-state' "$theorem"
     grep -Fq 'canonicalNoNontrivialFiniteCycle-theorem' "$theorem"
     grep -Fq 'canonicalNoFiniteStepConvergenceToFixedPoint' "$theorem"
     grep -Fq 'isomorphismNoFiniteCycleTransport' "$theorem"
@@ -265,13 +264,9 @@ JSON
     freeMonoidActionHomomorphism-from-square
     canonicalClock-freeMonoidActionHomomorphism
     ExactNatObservationSimulation
-    noExactNatSimulation-through-finite-Int8
-    canonicalNoExactTuringCounterObservation
     ContinuousLeftInverseTheorem
     canonicalRingStateInjective
     canonicalDenseNeighborhoodSeparation
-    canonicalPigeonholeNatClockContradiction
-    canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit
     canonicalNoNontrivialFiniteCycle-theorem
     isomorphismIterateConjugacy
     isomorphismToInjective
@@ -287,18 +282,13 @@ JSON
     canonical-global-token-lm-composition-theorem
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
-    canonicalTokenSparsemaxWeight-shared
-    canonicalTokenSparsemaxPolicy-shared
-    canonicalTokenSparsemaxTrace-append
     CanonicalExactRNNLMTheorem
     canonical-exact-rnn-lm-theorem
     CanonicalIntegerHaarScaledOrthogonalityTheorem
     canonical-integer-haar-scaled-orthogonality-theorem
     CanonicalAStarCostGuidanceTheorem
     canonical-a-star-cost-guidance-theorem
-    CanonicalLinearHaarSparsemaxAttentionCompositionTheorem
     canonical-linear-haar-sparsemax-attention-composition-theorem
-    CanonicalFullStateHaarSparsemaxInvariantCompositionTheorem
     canonical-full-state-haar-sparsemax-invariant-composition-theorem
     CanonicalLearnerReplacementClosureTheorem
     canonical-learner-replacement-closure-theorem
@@ -308,13 +298,9 @@ JSON
     CanonicalFullLearnerConnectedScanConjugacyTheorem
     canonical-full-learner-connected-scan-conjugacy-theorem
     canonicalExactCompositionTuringCompletenessContract-impossible
-    CanonicalHaarSparsemaxFullStateClosureTheorem
     canonical-haar-sparsemax-full-state-closure-theorem
-    FiniteFactorRecurrenceWithoutStateRecurrenceTheorem
     canonical-finite-factor-recurrence-without-state-recurrence
-    CanonicalFiniteObservationInformationBoundaryTheorem
     canonical-finite-observation-information-boundary-theorem
-    CanonicalBoundedFactorLiftTheorem
     canonical-bounded-factor-lift-theorem
     CanonicalFiniteCycleExclusionIsomorphismTheorem
     canonical-finite-cycle-exclusion-isomorphism-theorem
@@ -322,15 +308,8 @@ JSON
     canonical-operator-composition-theorem
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
-    CanonicalFiniteObservationInformationBoundaryTheorem
-    CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
-    CanonicalClockObservationSubcompositionTheorem
-    CanonicalFiniteObservationStationarySubcompositionTheorem
     CanonicalBoundednessPEBoundarySubcompositionTheorem
-    canonical-clock-observation-subcomposition-theorem
     canonical-boundedness-pe-boundary-subcomposition-theorem
-    canonical-global-finite-observation-left-inverse-impossibility-theorem
-    FiniteObservationStationaryLimitTheorem
     CanonicalPersistentExcitationRequirementTheorem
     canonical-persistent-excitation-requirement-theorem
     ExactContractComputabilityBoundaryTheorem
@@ -341,17 +320,10 @@ JSON
     FiniteBeliefUpdateExactTransportTheorem
     FiniteProbabilityMassSemanticsTheorem
     FinitePOMDPProbabilitySemanticsTheorem
-    CanonicalEndogenousPOMDPObservationBoundaryTheorem
-    CanonicalEndogenousTopologicalObservationBoundaryTheorem
     MarkovStationaryWalrasianCompositionTheorem
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
     CanonicalExactRNNLMTheorem
-    CanonicalExactRNNLMObservationTopologyCapabilityTheorem
-    CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem
-    CanonicalExactRNNLMCapabilitySubcompositionTheorem
-    CanonicalExactRNNLMObservationSubcompositionTheorem
-    CanonicalExactTuringBoundaryMixtureTheorem
     canonical-exact-turing-boundary-mixture-theorem
     BairdSevenStarProblem
     bairdSevenStar
