@@ -179,8 +179,8 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalGlobalTokenConjugacyTheorem
 64. CanonicalIntegerHaarScaledOrthogonalityTheorem
 65. CanonicalAStarCostGuidanceTheorem
-66. CanonicalEndogenousAStarTransportClosureTheorem
-    +-- depends on: CanonicalAStarCostGuidanceTheorem, GeneralizedRepresentationTransportCompositionTheorem, ExactFunctionIsomorphismTransportTheorem
+66. CanonicalEndogenousEGraphAStarTransportClosureTheorem
+    +-- depends on: CanonicalAStarCostGuidanceTheorem, EqualityCompositionTheorem, GeneralizedRepresentationTransportCompositionTheorem, ExactFunctionIsomorphismTransportTheorem
 69. CanonicalFiniteCycleExclusionIsomorphismTheorem
     +-- depends on: StateIsomorphism
 70. CanonicalOperatorCompositionTheorem
