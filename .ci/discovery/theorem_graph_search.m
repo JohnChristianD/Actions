@@ -65,8 +65,6 @@
 graph_stationary_limit_plan(Laws, Plan) :-
     search_named_required_plan(
         "StationaryLimitTheorem",
-        "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-        "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
         Laws,
         Plan).
 
