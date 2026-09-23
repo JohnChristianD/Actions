@@ -91,11 +91,10 @@
       "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
-      "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
       "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
-      "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
     ],
     "interpretation": "Maxwell and Hodge-Maxwell no longer depend on Fin n. The exact GRU carrier is arbitrary; continuity, global encode/decode, Maxwell equations, recurrent conjugacy, and Hodge involution prerequisites are explicit proof obligations.",
     "universal_continuous_boundary": "The carrier-polymorphic theorem can be instantiated by an infinite-dimensional Maxwell function space once the caller supplies the exact differential-form/function-space semantics, continuity witnesses, encoder/decoder, conjugacy, and an explicit dimension predicate. It does not infer any of those from Set alone.",
@@ -142,6 +141,19 @@
           "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
         ]
       ]
+    },
+    "unified_carrier_promotion": {
+      "status": "PROVED_ON_AGDA_SURFACE",
+      "finite_and_infinite_collapsed": true,
+      "promotion_theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "exact_step_theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+      "exact_endpoint": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "carrier_certificate": "HodgeMaxwellCarrierPromotion Solution = semantic witness + explicit target carrier + exact StateIsomorphism",
+      "finite_adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-finite",
+      "infinite_adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-infinite",
+      "finite_endpoint_adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-finite",
+      "infinite_endpoint_adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-infinite",
+      "ci_policy": "All legacy finite/infinite theorem registrations remain; no CI registration is cancelled."
     }
   }
 }
