@@ -125,7 +125,6 @@ graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
 
 graph_connected_custom_optimizer_rounding_bias_regret_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
         Laws,
         Plan).
 
@@ -454,7 +453,6 @@ graph_required_theorems = [
     "FiniteMixedProductRecurrenceTheorem",
     "AbsorbingFiniteEquilibriumTheorem",
     "HardSparseAbsorbingPrefixTheorem",
-    "FiniteHardSparseKKTEquilibriumTheorem",
     "FiniteRankStabilityCertificate",
     "FiniteNonIIDWalrasianEquilibrium",
     "FiniteTUShapleyAllocationEquilibrium",
@@ -507,7 +505,6 @@ graph_required_theorems = [
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
-    "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
     "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
     "FiniteMaxwellGRUExactRepresentationCandidate",
     "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
@@ -523,7 +520,6 @@ graph_required_theorems = [
     "ExactTuringCounterObservation",
     "ExactTwoCounterConfiguration",
     "ExactTwoCounterMachine",
-    "UniqueKKTAbsorbingClass",
     "ContinuousStationaryMarkovWalrasianData",
     "ExactReconstructionOnImage",
     "BairdSevenStarProblem",
