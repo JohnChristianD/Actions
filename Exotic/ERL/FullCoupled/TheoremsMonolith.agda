@@ -6958,7 +6958,7 @@ record FiniteHodgeMaxwellExactDiscretizationTheorem
       finiteDiscreteMaxwellEquation certificateData s
     reflects :
       ∀ s →
-      finiteDiscreteMaxwellEquation data s →
+      finiteDiscreteMaxwellEquation certificateData s →
       maxwellEquation (continuous certificateData) s
 
 open FiniteHodgeMaxwellExactDiscretizationTheorem public
