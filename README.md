@@ -141,8 +141,6 @@ The following graph is derived from the actual record declarations and their dir
 37. FiniteMixedProductRecurrenceTheorem
 38. AbsorbingFiniteEquilibriumTheorem
 39. HardSparseAbsorbingPrefixTheorem
-40. FiniteHardSparseKKTEquilibriumTheorem
-41. UniqueKKTAbsorbingClass
 42. FiniteRankStabilityCertificate
 43. FiniteNonIIDWalrasianEquilibrium
 44. FiniteTUShapleyAllocationEquilibrium
