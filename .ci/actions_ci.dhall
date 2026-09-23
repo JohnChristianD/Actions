@@ -271,7 +271,7 @@ JSON
     canonicalRingStateInjective
     canonicalDenseNeighborhoodSeparation
     canonicalPigeonholeNatClockContradiction
-    canonicalNoGlobalInt8DiscreteUAPOnOrbit
+    canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit
     canonicalNoNontrivialFiniteCycle-theorem
     isomorphismIterateConjugacy
     isomorphismToInjective
@@ -325,13 +325,13 @@ JSON
     CanonicalPureNonOrangeBypassCompletionTheorem
     canonical-pure-non-orange-bypass-completion-theorem
     CanonicalFiniteObservationInformationBoundaryTheorem
-    CanonicalGlobalInt8LeftInverseImpossibilityTheorem
+    CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem
     CanonicalClockObservationSubcompositionTheorem
     CanonicalFiniteObservationStationarySubcompositionTheorem
     CanonicalBoundednessPEBoundarySubcompositionTheorem
     canonical-clock-observation-subcomposition-theorem
     canonical-boundedness-pe-boundary-subcomposition-theorem
-    canonical-global-int8-left-inverse-impossibility-theorem
+    canonical-global-finite-observation-left-inverse-impossibility-theorem
     FiniteObservationStationaryLimitTheorem
     CanonicalPersistentExcitationRequirementTheorem
     canonical-persistent-excitation-requirement-theorem
