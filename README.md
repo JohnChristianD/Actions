@@ -169,7 +169,7 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: StateIsomorphism, ExactFunctionIsomorphismTransportTheorem
 60. POMDPExactTransport
     +-- depends on: StateIsomorphism
-61. GeneralizedRepresentationTransportCompositionTheorem
+60a. GeneralizedRepresentationTransportCompositionTheorem
     +-- depends on: ExactFunctionIsomorphismTransportTheorem, ExactRecurrentFunctionTranslationTheorem, POMDPExactTransport
 61. ArchitecturePreservingCanonicalRNNLMIsomorphism
     +-- depends on: StateIsomorphism
