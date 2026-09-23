@@ -7,7 +7,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _≤_; z≤n; s≤s)
 open import Data.Fin using (Fin; fromℕ<; toℕ)
 open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
+open import Data.Integer using (ℤ; +_)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
 
@@ -16,11 +16,11 @@ data BoolLike : Set where
 
 record Int8 : Set where
   constructor int8
-  field code : Fin 256
+  field code : ℤ
 open Int8 public
 
 int8OfNat : Nat → Int8
-int8OfNat n = int8 (fromℕ< (m%n<n n 256))
+int8OfNat n = int8 (+ n)
 
 zero8 : Int8
 zero8 = int8OfNat 0
