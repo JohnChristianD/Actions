@@ -329,3 +329,10 @@ The newly promoted `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheore
 Current PR head: `a16fba7f89e76d93204c492a8407d683d8cfb5be`. The branch is 28 commits ahead of the merged base `0890e2f664d171e62131d0d66569381253bdd673`, with no behind commits. No review submissions or inline review threads are present. The latest head has not yet exposed a completed GitHub Actions run, so CI remains unverified.
 
 The current machine-counted Agda record target is 118 and the strict required theorem-plan gate is 108. The promoted idempotent transport theorem is conditional on an explicit projection conjugacy; it is not a claim that HardSign is convex or differentiable.
+
+
+## Int8/finite-observation separation audit — 2026-09-23
+
+The Int8 carrier migration must not be read as a finite-cardinality theorem. `Int8.code : ℤ` is unbounded exact integer algebra. Finite pigeonhole conclusions are retained only where a theorem explicitly supplies an observation map into `Fin 256`. This also removes the former false inference that an unbounded Int8 observation itself cannot be injective.
+
+The finite-carrier boundary does not prove categorical finite-limit nonexistence or analytic-limit nonexistence. It proves only the stated impossibility of an exact finite observation/left-inverse for an explicit Nat-indexed injective orbit. Topology, ordering, and barycentric operations still do not supply convex duality without explicit convex/dual certificates.
