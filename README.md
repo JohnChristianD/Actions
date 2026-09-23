@@ -261,7 +261,7 @@ CanonicalPureNonOrangeBypassCompletionTheorem
 F_full_connected
 ```
 
-Finite Hodge-Maxwell and Maxwell surfaces remain separate, explicitly connected semantic branches. They enter the full graph through their real finite representation/composition theorems; no synthetic continuous-PDE-to-GRU edge is introduced.
+Hodge-Maxwell and Maxwell surfaces are now carrier-polymorphic, explicitly connected semantic branches. Their canonical graph path has no `Fin n` dependency; finite discretization/pigeonhole branches were pruned rather than reinterpreted. No synthetic continuous-PDE-to-GRU existence edge is introduced.
 
 ## Exact integer token carrier
 
@@ -522,5 +522,7 @@ The Maxwell and Hodge-Maxwell theorem family is now carrier-polymorphic: its exa
 The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-polymorphic. The former finite-cardinality Maxwell branch, finite Hodge-Maxwell discretization branch, and finite-carrier Maxwell pigeonhole impossibility theorem are pruned because their strict dependencies were intrinsically tied to `Fin n`.
 
 This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
+
+A finite-dimensional continuous Hodge-Maxwell specialization remains a separate proof obligation: the current Agda surface has no finite-dimensionality predicate, so the graph records that specialization as a boundary rather than inventing one. `ℤ` is retained for exact learner algebra; it is not a replacement for an arbitrary Maxwell function-space carrier.
 
 The current repository runtime boundary is unchanged: Tcl and Lua remain absent. Dhall's official documentation states that well-typed programs normalize successfully in finite time and describes Dhall as a total functional configuration language; its integration model explicitly renders or hands configuration to external programs. That safety property does not make an arbitrary future Tcl/Lua runtime semantically redundant. Keep those packages absent unless a concrete future executable or library demonstrates a runtime dependency.
