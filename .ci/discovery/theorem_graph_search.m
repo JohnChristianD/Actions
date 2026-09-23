@@ -126,7 +126,6 @@ graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
 
 graph_connected_lion_jensen_minimax_regret_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
         Laws,
         Plan).
 
@@ -519,10 +518,10 @@ graph_required_theorems = [
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
     "ConnectedJensenMinimaxRegretOptimizerTheorem",
-    "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
     "ConnectedF4FrankWolfeKKTTheorem",
     "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
     "FiniteMaxwellGRUExactRepresentationCandidate",
+    "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
