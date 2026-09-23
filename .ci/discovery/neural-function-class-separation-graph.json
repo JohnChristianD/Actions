@@ -77,22 +77,6 @@
       "role": "carrier-agnostic exact global learner injectivity composition consuming the connected Hodge-Maxwell/F4/Watkins bridge and transporting the Maxwell encoder StateIsomorphism through the learner-to-solution inverse"
     },
     {
-      "node": "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-      "role": "fully connected finite-coordinate exact prefix+horizon-regret endpoint consuming the arbitrary finite-coordinate Hodge-Maxwell/F4/Watkins theorem, the carrier-agnostic injectivity composition, and the existing exact continuous endpoint"
-    },
-    {
-      "node": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "role": "fully connected arbitrary finite-coordinate specialization of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; for every scalar carrier and dimension n it consumes an explicit StateIsomorphism from the Maxwell solution carrier to the exact-length list coordinate carrier Σ xs : List Scalar , length xs ≡ n and derives global learner-coordinate injectivity"
-    },
-    {
-      "node": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "role": "fully connected infinite-dimensional promotion of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; the solution carrier remains arbitrary and the theorem consumes an explicit caller-supplied InfiniteDimensional predicate without choosing coordinates, basis, scalar field, or dimension representation"
-    },
-    {
-      "node": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-      "role": "fully connected end-to-end infinite-dimensional promotion of the exact prefix+horizon-regret Hodge-Maxwell/F4/Watkins endpoint; it consumes the infinite-dimensional promotion plus the existing exact endpoint and adds no new coordinate or convergence assumptions"
-    },
-    {
       "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "role": "narrow connected impossibility boundary: an explicit distinct-solution collision in the global Hodge-Maxwell encoder contradicts the exact connected representation certificate"
     },
@@ -115,6 +99,18 @@
     {
       "node": "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
       "role": "conditional global conjugacy/injectivity surface for a full-learner observation; consumes F4/NormPair stability and connected scan conjugacy and requires an explicit global inverse/conjugacy witness"
+    },
+    {
+      "node": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "role": "single promoted carrier-agnostic GRU/F4/Watkins/Hodge-Maxwell composition; finite-coordinate and infinite-dimensional evidence are both absorbed through one HodgeMaxwellCarrierPromotion certificate"
+    },
+    {
+      "node": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+      "role": "exact one-step GRU/F4/Maxwell composition consuming the unified carrier promotion and preserving the exact learner-to-solution conjugacy"
+    },
+    {
+      "node": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "role": "single end-to-end carrier-agnostic GRU/F4/Maxwell prefix+horizon-regret endpoint; no finite/infinite case split is present in the promoted theorem"
     }
   ],
   "edges": [
@@ -327,6 +323,31 @@
       "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
       "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
       "the finite exact endpoint consumes the carrier-agnostic global learner injectivity composition"
+    ],
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "single promotion consumes the exact connected GRU/F4/Watkins/Maxwell bridge plus one carrier-promotion certificate"
+    ],
+    [
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+      "unified carrier promotion is consumed to derive the exact one-step GRU/F4/Maxwell equation"
+    ],
+    [
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "exact step composition is promoted into the exact prefix+horizon-regret endpoint"
+    ],
+    [
+      "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "existing exact prefix+horizon-regret endpoint supplies the analytic extraction component without a dimension case split"
+    ],
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
+      "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "unified endpoint retains the carrier-agnostic global learner-state injectivity composition"
     ]
   ],
   "separation_obligation": [
@@ -1188,6 +1209,18 @@
       ],
       "preservation": "finite-coordinate and infinite-dimensional theorem families remain separate; no CI registration or theorem surface is collapsed",
       "semantic_limit": "All dimension/coordinate claims remain explicit caller-supplied proof data."
+    },
+    "unified_carrier_promotion": {
+      "theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "exact_step_theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
+      "exact_endpoint": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "status": "PROVED_ON_AGDA_SURFACE",
+      "finite_and_infinite_collapsed": true,
+      "carrier_certificate": "HodgeMaxwellCarrierPromotion Solution = semantic witness + explicit target carrier + exact StateIsomorphism",
+      "finite_adapter": "FiniteCoordinateList Scalar n via exact-length-list StateIsomorphism",
+      "infinite_adapter": "arbitrary caller-supplied InfiniteDimensional : Set → Set₁ witness, with no fixed coordinate model",
+      "result": "one unified GRU/F4/Maxwell composition path for both cases",
+      "no_case_split_in_promoted_theorem": true
     }
   },
   "automation_contract": {
@@ -1547,7 +1580,9 @@
     "no_synthetic_edge": "Future physics theorems must enter through an actually consuming Agda parent. Infinite-dimensional promotion is a semantic wrapper around supplied dimension evidence, not a synthetic PDE-to-GRU existence edge.",
     "global_injectivity_boundary": "Exact continuous Maxwell injectivity is now global over an arbitrary Set carrier when a global encode/decode isomorphism is supplied; finite functions/Fin enumeration are not required. Injectivity still depends on the exact left-inverse/global reconstruction witness.",
     "carrier_semantics": "Set parameters are semantic carriers for arbitrary state/function spaces. Nat-indexed streams/horizons and List prefixes encode discrete time, finite words/prefix data, and recursive algebra; neither is a claim that the physical Maxwell carrier is Nat- or List-valued.",
-    "infinite_dimensional_boundary": "Infinite-dimensional Maxwell results may enter through the carrier-polymorphic connected surface when an explicit dimension predicate/witness is supplied. The graph must not infer vector-space dimension, separability, basis existence, or PDE solvability from Set alone."
+    "infinite_dimensional_boundary": "Infinite-dimensional Maxwell results may enter through the carrier-polymorphic connected surface when an explicit dimension predicate/witness is supplied. The graph must not infer vector-space dimension, separability, basis existence, or PDE solvability from Set alone.",
+    "case_collapse_rule": "Finite-coordinate and infinite-dimensional Hodge-Maxwell promotions are represented by one carrier-agnostic composed theorem. Case-specific declarations remain only as source/CI compatibility adapters and must route into the unified parent.",
+    "ci_policy": "Do not remove or cancel existing CI theorem registrations while collapsing graph promotion surfaces; add the unified theorem names and retain source-compatible adapters."
   },
   "pruning_policy_v10": {
     "removed_from_canonical_path": [
@@ -1571,5 +1606,30 @@
       "explicit Gaussian, mixture, scale-mixture, or heavy-tail distribution and tail/moment law"
     ],
     "rule": "Do not graph probability/measure/topology/POMDP/Tsallis-q-exp/heavy-tail Frank-Wolfe theorems until an actual Agda declaration supplies the premises and a composed consumer exists."
+  },
+  "carrier_case_adapters": {
+    "status": "SOURCE_COMPATIBILITY_ONLY",
+    "promotion_endpoint": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+    "finite": {
+      "theorem": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-finite",
+      "meaning": "exact-length-list coordinate isomorphism becomes one HodgeMaxwellCarrierPromotion witness"
+    },
+    "finite_endpoint": {
+      "theorem": "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-finite",
+      "meaning": "legacy finite endpoint is routed into the single carrier-agnostic endpoint"
+    },
+    "infinite": {
+      "theorem": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-infinite",
+      "meaning": "caller-supplied InfiniteDimensional witness becomes one HodgeMaxwellCarrierPromotion witness"
+    },
+    "infinite_endpoint": {
+      "theorem": "ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+      "adapter": "connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-from-infinite",
+      "meaning": "legacy infinite endpoint is routed into the single carrier-agnostic endpoint"
+    },
+    "ci_policy": "Legacy CI symbols are retained; no CI registration is removed or cancelled."
   }
 }
