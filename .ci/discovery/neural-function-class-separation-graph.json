@@ -672,7 +672,7 @@
         "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
       ],
       [
-        "CanonicalGlobalInt8LeftInverseImpossibilityTheorem",
+        "CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem",
         "CanonicalClockObservationSubcompositionTheorem"
       ],
       [
