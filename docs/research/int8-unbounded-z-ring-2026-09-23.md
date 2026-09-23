@@ -2,13 +2,14 @@
 
 ## Scope
 
-The two small econlib Agda monoliths, `Exotic/econlib/GameTheory.agda` and `Exotic/econlib/Equilibrium.agda`, now keep the public `Int8` name but change its representation from `Fin 256` to Agda's unbounded integer type `ℤ`.
+The canonical Agda Int8 carriers now keep the public `Int8` name but use Agda's unbounded integer type `ℤ` in the canonical game-port and learner monoliths, while the two econlib monoliths already carry the same upgrade.
 
-The change is intentionally narrow:
+The carrier migration is deliberately separated from finite-observation semantics:
 
 - `Int8.code : ℤ`
 - `int8OfNat n = int8 (+ n)`
-- finite modulo arithmetic and `Fin 256` imports are removed from these two files
+- exact Int8 addition, multiplication, negation, subtraction, and ordering use `ℤ`
+- finite pigeonhole arguments use explicit `Fin 256` observation maps rather than the Int8 carrier
 - game scores and equilibrium values use `ℤ), including its order and multiplication
 - the existing concrete witnesses remain unchanged numerically
 
@@ -24,7 +25,7 @@ It also does not by itself prove convexity, Fenchel/Legendre duality, a HardSign
 
 The integer upgrade is a representation/algebra change, not a new theorem consumer of the strict Hodge-Maxwell graph. No synthetic theorem edge was added merely to make the graph appear connected. Existing theorem records remain the authoritative graph vertices, and future theorem declarations still need a proof-relevant consumer before entering the strict required graph.
 
-The useful next graph seam is therefore an explicit theorem that consumes the new `ℤ)-valued carrier together with independently proved convexity/duality certificates. Until those certificates exist, the bridge remains candidate-only.
+The useful graph seam is now explicit: exact `ℤ` algebra stays on the carrier, while finite pigeonhole/observation boundaries are separate `Fin 256` maps. Convexity, barycentric structure, Fenchel/Legendre duality, q-log differentiation, and regular-economy existence remain conditional until their proof certificates exist. Until those certificates exist, the bridge remains candidate-only.
 
 ## Runtime boundary
 
