@@ -4238,6 +4238,39 @@ canonical-a-star-cost-guidance-theorem =
 
 
 ------------------------------------------------------------------------
+-- Emergent endogenous A* transport closure.
+--
+-- The A* cost algebra is kernel-checked by Agda.  The exact token trace
+-- makes the cost-guided path endogenous to the canonical recurrent learner.
+-- Representation transport is carrier-polymorphic and introduces no Fin n
+-- dependency.
+------------------------------------------------------------------------
+
+record CanonicalEndogenousAStarTransportClosureTheorem : Set₁ where
+  constructor canonicalEndogenousAStarTransportClosureTheorem
+  field
+    aStarGuidance :
+      CanonicalAStarCostGuidanceTheorem
+    representationTransport :
+      GeneralizedRepresentationTransportCompositionTheorem
+    endogenousTraceTransport :
+      ∀ {S T A B : Set}
+        {isoA : StateIsomorphism S A}
+        {isoB : StateIsomorphism T B}
+        (f : S → T) →
+      ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
+
+open CanonicalEndogenousAStarTransportClosureTheorem public
+
+canonical-endogenous-a-star-transport-closure-theorem :
+  CanonicalEndogenousAStarTransportClosureTheorem
+canonical-endogenous-a-star-transport-closure-theorem =
+  canonicalEndogenousAStarTransportClosureTheorem
+    canonical-a-star-cost-guidance-theorem
+    generalized-representation-transport-composition-theorem
+    (λ f → exactFunctionIsomorphismTransport f)
+
+------------------------------------------------------------------------
 -- Canonical finite-cycle exclusion transported through an exact state
 -- isomorphism. This packages the already-proved generic conjugacy law;
 -- it is not a Lyapunov descent theorem.
