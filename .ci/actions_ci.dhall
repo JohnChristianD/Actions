@@ -377,3 +377,6 @@ JSON
 lane
 
 in script
+
+    "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+    "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
