@@ -6951,15 +6951,15 @@ record FiniteHodgeMaxwellExactDiscretizationTheorem
   (n p q r : Nat) : Set₁ where
   constructor finiteHodgeMaxwellExactDiscretizationTheorem
   field
-    data :
+    certificateData :
       FiniteHodgeMaxwellDiscretizationData n p q r
     preserves :
       ∀ s →
-      finiteDiscreteMaxwellEquation data s
+      finiteDiscreteMaxwellEquation certificateData s
     reflects :
       ∀ s →
       finiteDiscreteMaxwellEquation data s →
-      maxwellEquation (continuous data) s
+      maxwellEquation (continuous certificateData) s
 
 open FiniteHodgeMaxwellExactDiscretizationTheorem public
 
