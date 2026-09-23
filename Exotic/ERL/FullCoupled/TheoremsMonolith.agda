@@ -2489,6 +2489,13 @@ canonical-polymorphic-sparsemax-egraph-theorem =
 
 
 ------------------------------------------------------------------------
+-- The finite automaton product was a separate finite-carrier branch and is
+-- deliberately not part of the canonical sparsemax composition.  The
+-- surviving composition is carrier-polymorphic: NormPair/F4 replacement
+-- invariance, exact recurrent scan, and exact readout transport.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- General stationary Markov/Walrasian composition, beyond iid uniform.
 --
 -- The iid-uniform example is only one witness of a stationary functional.
@@ -3675,6 +3682,104 @@ canonical-f4-global-optimizer-stability-theorem =
         (λ optimizer signal →
           C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
         optimizerEq signalEq)
+
+------------------------------------------------------------------------
+-- Fully connected F4/NormPair stability composition.
+--
+-- "Sure stability" here means the exact deterministic stability certificate
+-- already proved by the F4 theorem: theta translation, preservation of the
+-- non-theta coordinates, and equal-input step stability.  It is not a
+-- probabilistic convergence claim.  Frank-Wolfe/rounding regret and the
+-- Markov stationary/Walrasian interface remain explicit downstream fields.
+------------------------------------------------------------------------
+
+record CanonicalF4NormPairSureStabilityCompositionTheorem : Set₁ where
+  constructor canonicalF4NormPairSureStabilityCompositionTheorem
+  field
+    f4Stability :
+      CanonicalF4GlobalOptimizerStabilityTheorem
+    normPairPolicyComposition :
+      CanonicalPolymorphicSparsemaxCompositionTheorem
+    frankWolfeRoundingRegret :
+      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
+    markovStationary :
+      MarkovStationaryWalrasianCompositionTheorem
+    endogenousEGraphAStar :
+      CanonicalEndogenousEGraphAStarTransportClosureTheorem
+
+open CanonicalF4NormPairSureStabilityCompositionTheorem public
+
+canonical-f4-normPair-sure-stability-composition-theorem :
+  CanonicalF4NormPairSureStabilityCompositionTheorem
+canonical-f4-normPair-sure-stability-composition-theorem =
+  canonicalF4NormPairSureStabilityCompositionTheorem
+    canonical-f4-global-optimizer-stability-theorem
+    canonical-polymorphic-sparsemax-egraph-theorem
+    connected-f4-frank-wolfe-rounding-bias-regret-theorem
+    markov-stationary-walrasian-composition-theorem
+    canonical-endogenous-e-graph-a-star-transport-closure-theorem
+
+------------------------------------------------------------------------
+-- The requested Frank-Wolfe probability/topology boundary is explicit:
+-- the current exact certificate contains Nat-valued residuals and a
+-- deterministic horizon inequality, but no probability measure, almost-sure
+-- statement, topology, or limiting argument.  Therefore no such theorem is
+-- promoted here by name alone.  A future probabilistic/topological result
+-- must supply those structures as real Agda premises before graph admission.
+------------------------------------------------------------------------
+
+record FrankWolfeProbabilityTopologyBoundaryTheorem : Set₁ where
+  constructor frankWolfeProbabilityTopologyBoundaryTheorem
+  field
+    exactRoundingRegret :
+      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
+    topologicalContinuity :
+      ∀ {State Feature : Set}
+        {observe : State → Feature}
+        {inverse : Feature → State}
+        {Continuous : {A B : Set} → (A → B) → Set} →
+      ContinuousLeftInverseTheorem State Feature observe inverse Continuous →
+      Continuous observe × Continuous inverse
+
+frankWolfe-probability-topology-boundary-theorem :
+  ∀ {State Feature : Set}
+    {observe : State → Feature}
+    {inverse : Feature → State}
+    {Continuous : {A B : Set} → (A → B) → Set} →
+  (F : FrankWolfeProbabilityTopologyBoundaryTheorem) →
+  ContinuousLeftInverseTheorem State Feature observe inverse Continuous →
+  Continuous observe × Continuous inverse
+frankWolfe-probability-topology-boundary-theorem F witness =
+  topologicalContinuity F witness
+
+------------------------------------------------------------------------
+-- Markovian stationary point boundary.  The existing stationary theorem
+-- gives an exact stationary aggregate/Walrasian witness, not an existence
+-- or convergence theorem for a stationary point.  Existence remains a
+-- supplied theorem premise through ConnectedGeneralizedWalrasianExistenceTheorem.
+------------------------------------------------------------------------
+
+record MarkovianStationaryPointCompositionTheorem : Set₁ where
+  constructor markovianStationaryPointCompositionTheorem
+  field
+    markovStationary :
+      MarkovStationaryWalrasianCompositionTheorem
+    generalizedExistence :
+      ∀ {State Price Allocation : Set}
+        {Continuous : {A B : Set} → (A → B) → Set}
+        (D : ContinuousStationaryMarkovWalrasianData
+          State Price Allocation Continuous) →
+      ConnectedGeneralizedWalrasianExistenceTheorem State Price Allocation
+    endogenousEGraphAStar :
+      CanonicalEndogenousEGraphAStarTransportClosureTheorem
+
+markovian-stationary-point-composition-theorem :
+  MarkovianStationaryPointCompositionTheorem
+markovian-stationary-point-composition-theorem =
+  markovianStationaryPointCompositionTheorem
+    markov-stationary-walrasian-composition-theorem
+    (λ D → connected-generalized-walrasian-existence-theorem D)
+    canonical-endogenous-e-graph-a-star-transport-closure-theorem
 
 ------------------------------------------------------------------------
 -- Pure non-orange-bypass theorem graph endpoint:
