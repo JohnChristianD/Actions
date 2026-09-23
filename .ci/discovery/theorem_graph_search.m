@@ -24,6 +24,11 @@
     list(semantic_law)::in,
     list(list(string))::out) is det.
 
+:- pred graph_search_completion(
+    list(semantic_law)::in,
+    list(list(string))::out,
+    list(list(string))::out) is semidet.
+
 :- pred graph_finite_probability_mass_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
