@@ -69,6 +69,10 @@
       "role": "fully connected carrier-polymorphic exact continuous Hodge-Maxwell representation with explicit differential-form semantics, continuity predicates, global StateIsomorphism, and recurrent conjugacy"
     },
     {
+      "node": "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "role": "fully connected extraction seam joining exact continuous Hodge-Maxwell GRU semantics to the existing F4/Watkins composition through an explicit learner-to-solution inverse and step-conjugacy bridge"
+    },
+    {
       "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "role": "narrow connected impossibility boundary: an explicit distinct-solution collision in the global Hodge-Maxwell encoder contradicts the exact connected representation certificate"
     },
@@ -107,6 +111,16 @@
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
       "exact GRU-F4-Watkins composition is consumed directly by the horizon-indexed Frank-Wolfe rounding-bias residual regret theorem"
+    ],
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
+      "the extraction seam consumes the exact continuous Hodge-Maxwell representation"
+    ],
+    [
+      "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+      "the extraction seam consumes the already-proved connected F4/Watkins regret certificate"
     ],
     [
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
