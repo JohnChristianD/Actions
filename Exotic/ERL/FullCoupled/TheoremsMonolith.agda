@@ -4564,6 +4564,71 @@ hodgeMaxwell-discontinuous-gru-refutes-connected-representation D notContinuous 
       (continuousGRUStep (semantics representation))
 
 ------------------------------------------------------------------------
+-- Fully connected Hodge-Maxwell / GRU / F4 / Watkins extraction seam.
+--
+-- This is deliberately a bridge theorem, not a synthetic conjunction:
+-- the carrier map between the exact learner state and the Hodge-Maxwell
+-- solution carrier, its inverse laws, and its step-conjugacy law are
+-- explicit premises.  Once supplied, the e-graph can extract one exact
+-- recurrent representation carrying both the Hodge-Maxwell semantics and
+-- the already-proved F4/Watkins composition.
+------------------------------------------------------------------------
+
+record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor connectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+  field
+    hodgeMaxwell :
+      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+        GRU
+
+    f4Watkins :
+      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
+
+    eGraphAStarClosure :
+      CanonicalEndogenousEGraphAStarTransportClosureTheorem
+
+    learnerKernel :
+      C.CanonicalFullLearnerKernel
+
+    learnerToSolution :
+      C.CanonicalFullLearnerState →
+      ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          hodgeMaxwell)
+
+    solutionToLearner :
+      ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          hodgeMaxwell) →
+      C.CanonicalFullLearnerState
+
+    learnerSolutionLeftInverse :
+      ∀ s →
+      solutionToLearner (learnerToSolution s) ≡ s
+
+    learnerSolutionRightInverse :
+      ∀ q →
+      learnerToSolution (solutionToLearner q) ≡ q
+
+    learnerStepConjugacy :
+      ∀ s →
+      learnerToSolution (C.canonicalFullStep (learnerKernel C) s)
+      ≡
+      ContinuousHodgeMaxwellExactRepresentationData.step
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          hodgeMaxwell)
+        (learnerToSolution s)
+
+    eGraphEqualityComposition :
+      ∀ {A : Set} {x y z : A} →
+      x ≡ y →
+      y ≡ z →
+      EqualityCompositionTheorem
+
+open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
+------------------------------------------------------------------------
 -- Finite-dimensional coordinate specialization of the carrier-polymorphic
 -- Hodge-Maxwell representation.
 --
@@ -4674,71 +4739,6 @@ connected-finite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
             (isomorphismToInjective coordinates _ _ eq))
           (learnerSolutionLeftInverse connected t)))
 
-------------------------------------------------------------------------
--- Fully connected Hodge-Maxwell / GRU / F4 / Watkins extraction seam.
---
--- This is deliberately a bridge theorem, not a synthetic conjunction:
--- the carrier map between the exact learner state and the Hodge-Maxwell
--- solution carrier, its inverse laws, and its step-conjugacy law are
--- explicit premises.  Once supplied, the e-graph can extract one exact
--- recurrent representation carrying both the Hodge-Maxwell semantics and
--- the already-proved F4/Watkins composition.
-------------------------------------------------------------------------
-
-record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-  field
-    hodgeMaxwell :
-      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-        GRU
-
-    f4Watkins :
-      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
-
-    eGraphAStarClosure :
-      CanonicalEndogenousEGraphAStarTransportClosureTheorem
-
-    learnerKernel :
-      C.CanonicalFullLearnerKernel
-
-    learnerToSolution :
-      C.CanonicalFullLearnerState →
-      ContinuousHodgeMaxwellExactRepresentationData.Solution
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          hodgeMaxwell)
-
-    solutionToLearner :
-      ContinuousHodgeMaxwellExactRepresentationData.Solution
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          hodgeMaxwell) →
-      C.CanonicalFullLearnerState
-
-    learnerSolutionLeftInverse :
-      ∀ s →
-      solutionToLearner (learnerToSolution s) ≡ s
-
-    learnerSolutionRightInverse :
-      ∀ q →
-      learnerToSolution (solutionToLearner q) ≡ q
-
-    learnerStepConjugacy :
-      ∀ s →
-      learnerToSolution (C.canonicalFullStep (learnerKernel C) s)
-      ≡
-      ContinuousHodgeMaxwellExactRepresentationData.step
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          hodgeMaxwell)
-        (learnerToSolution s)
-
-    eGraphEqualityComposition :
-      ∀ {A : Set} {x y z : A} →
-      x ≡ y →
-      y ≡ z →
-      EqualityCompositionTheorem
-
-open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 
 connected-hodge-maxwell-gru-f4-watkins-egraph-extract :
   ∀ {GRU : Set}
