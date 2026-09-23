@@ -78,7 +78,7 @@
     [
       "FiniteFunctionExactIsomorphismTransportTheorem",
       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-      "finite exact-function transport is the representation layer for finite continuous Hodge-Maxwell solution families"
+      "finite exact-function transport is the representation layer for continuous Hodge-Maxwell solution families"
     ],
     [
       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
@@ -302,22 +302,6 @@
       "promotion_gate": "The finite Maxwell semantics, exact encoder/decoder, closure, step preservation, and conjugacy are all explicit Agda fields; no physical law is inferred."
     },
     {
-      "name": "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "FiniteHodgeMaxwellExactDiscretizationTheorem",
-      "path": [
-        "FiniteHodgeMaxwellExactDiscretizationTheorem",
-        "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate"
-      ],
-      "candidate_statement": "Optional same-degree finite Hodge-star involution strengthening: star(star i) = i on a finite discrete carrier. This is not assumed by the exact discretization theorem because general Hodge stars change degree and may carry dimension/signature-dependent factors.",
-      "required_certificates": [
-        "explicit finite same-degree star operator",
-        "exact involution witness",
-        "compatibility with the declared discrete Maxwell operators"
-      ],
-      "no_synthetic_edge": true
-    },
-    {
       "name": "RegularWalrasianExistenceAdapterCandidate",
       "status": "CANDIDATE_NOT_PROVED",
       "parent": "GeneralizedWalrasianEquilibrium",
@@ -379,7 +363,7 @@
       "membership": "An explicit Agda witness f together with a proof f in F_full_connected that traverses the full connected composition.",
       "nonrepresentability": "An explicit Agda proof f notin F_base; naming a candidate witness without this proof does not establish separation."
     },
-    "future_admission_gate": "pre-graphed Agda proposition exists,theorem_graph_search discovers a path through the full connected composition,theorem_monolith_egraph_sync discovers the same path,the inclusion and nonrepresentability witness obligations are discharged,only then may status change from NOT_ESTABLISHED to SEPARATED,optimizer-specific candidates must identify their descent/stationarity residual and a real consuming connected theorem; literature alone does not upgrade candidate status; optimizer candidates such as F4/Frank-Wolfe must have a real consuming connected theorem; physics candidates must name their exact finite encoding and physical-law scope.",
+    "future_admission_gate": "pre-graphed Agda proposition exists,theorem_graph_search discovers a path through the full connected composition,theorem_monolith_egraph_sync discovers the same path,the inclusion and nonrepresentability witness obligations are discharged,only then may status change from NOT_ESTABLISHED to SEPARATED,optimizer-specific candidates must identify their descent/stationarity residual and a real consuming connected theorem; literature alone does not upgrade candidate status; optimizer candidates such as F4/Frank-Wolfe must have a real consuming connected theorem; physics candidates must name their exact differential-form/function-space semantics, carrier, continuity witnesses, and physical-law scope.",
     "complete_graph_contract": {
       "new_theorem_entry": "Every future theorem must name one existing composed parent, expose an actual Agda dependency into that parent, and be discovered by theorem_graph_search and theorem_monolith_egraph_sync.",
       "disconnected_rule": "No direct dependency means no strict separation status. Promote only when an existing composed theorem consumes the theorem's semantics; otherwise keep it as a foundational proof-surface record.",
@@ -391,11 +375,6 @@
       "promotion_order": "foundational theorem -> smallest existing composed theorem -> connected full learner -> F_full_connected",
       "no_dependency_rule": "A symbol with no direct record dependency is not promoted merely because it is conceptually related. It is either absorbed by a theorem that actually consumes it or remains foundational outside strict separation.",
       "strict_separation_gate": "Only explicit inclusion + connected witness membership + canonical nonrepresentability can change the strict graph from NOT_ESTABLISHED to SEPARATED."
-    },
-    "exact_discretization_layer": {
-      "rule": "Any theorem claiming exact finite discretization of a differential Hodge-Maxwell PDE must depend on FiniteHodgeMaxwellExactDiscretizationTheorem or supply an equivalent explicit certificate. The continuous finite-family theorem does not silently supply a discretization.",
-      "consumer": "ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem",
-      "admission": "Agda --safe declaration + extractor discoverability + e-graph synchronization + no synthetic edges"
     }
   },
   "hard_sign_and_tropical_geometry": {
@@ -973,7 +952,7 @@
         "finite recurrent exact translation"
       ],
       "physical_scope": "Maxwell equations only.",
-      "exactness_boundary": "The theorem is exact for the declared finite family of continuous Maxwell solutions. It does not assert that the full infinite-dimensional continuous Maxwell solution space is finite or globally representable by a finite-state GRU.",
+      "exactness_boundary": "The theorem is exact for the declared finite family of continuous Maxwell solutions. It does not assert that the full infinite-dimensional continuous Maxwell solution space is finite or globally representable by a finite-cardinality GRU.",
       "no_synthetic_edge": true
     },
     {
@@ -986,7 +965,7 @@
         "ExactGRUFunctionSpaceRepresentationHypothesis",
         "ConnectedMaxwellContinuousPDERepresentationCandidate"
       ],
-      "candidate_statement": "Exact representation of the full Maxwell PDE solution/function space, formulated over differential-form fields rather than a finite-state discretization.",
+      "candidate_statement": "Exact representation of the full Maxwell PDE solution/function space, formulated over differential-form fields rather than a finite-cardinality discretization.",
       "required_certificates": [
         "formal differential-form/function-space semantics",
         "well-posed domain and boundary conditions",
@@ -994,24 +973,7 @@
         "representation preserves dF=0 and d⋆F=j",
         "exact encode/decode or an explicit function-space isomorphism"
       ],
-      "impossibility_boundary": "The existing finite-function exactness theorem is insufficient; the finite cardinality argument prevents silently promoting it to all continuous Maxwell fields.",
-      "no_synthetic_edge": true
-    },
-    {
-      "name": "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "FiniteHodgeMaxwellExactDiscretizationTheorem",
-      "path": [
-        "FiniteHodgeMaxwellExactDiscretizationTheorem",
-        "FiniteDiscreteHodgeMaxwellStarInvolutionCandidate"
-      ],
-      "literature_basis": "optional finite Hodge-star algebraic strengthening, kept separate from the core discretization theorem",
-      "candidate_statement": "Optional same-degree finite Hodge-star involution strengthening: star(star i) = i on a finite discrete carrier. This is not assumed by the exact discretization theorem because general Hodge stars change degree and may carry dimension/signature-dependent factors.",
-      "required_certificates": [
-        "explicit finite same-degree star operator",
-        "exact involution witness",
-        "compatibility with the declared discrete Maxwell operators"
-      ],
+      "impossibility_boundary": "The existing carrier-polymorphic exactness theorem is insufficient; the finite cardinality argument prevents silently promoting it to all continuous Maxwell fields.",
       "no_synthetic_edge": true
     },
     {
@@ -1077,27 +1039,17 @@
   "maxwell_status": {
     "status": "CARRIER_POLYMORPHIC_CONTINUOUS_SEMANTICS",
     "surviving_surface": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-    "scope": "Exact differential-form Maxwell/Hodge-Maxwell semantics over an arbitrary GRU carrier. No finite cardinality is assumed or encoded in the theorem family.",
+    "scope": "Exact differential-form Maxwell/Hodge-Maxwell semantics over an arbitrary GRU carrier; no Fin n state bound.",
     "representation_gate": [
-      "explicit Form2/FormStar/Form3 sets and exact d, star, dStar operators",
-      "exact Maxwell equations dF=0 and d(star F)=j",
-      "explicit arbitrary GRU carrier",
-      "global exact encode/decode laws yielding a StateIsomorphism",
-      "exact recurrent transition conjugacy",
-      "explicit continuity predicates for differential-form operators, fields, transition, GRU step, encode, and decode"
+      "explicit differential-form objects and equations",
+      "explicit continuity witnesses",
+      "exact encode/decode StateIsomorphism",
+      "exact recurrent conjugacy",
+      "explicit global encode-injectivity"
     ],
-    "global_injectivity": {
-      "status": "PROVED_CONDITIONAL",
-      "rule": "The exact encode/decode inverse laws give a global StateIsomorphism and an explicit global encode-injectivity theorem.",
-      "limitation": "This is conditional on the representation certificate; it is not an existence theorem for an arbitrary Maxwell solution space."
-    },
-    "hodge_involution": {
-      "status": "PROVED_CONDITIONAL",
-      "theorem": "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
-      "rule": "The connected continuous representation supplies the StateIsomorphism; continuous left-invertibility plus observed factorization plus an explicit GRU involution yields star(star s)=s.",
-      "missing_if_raw_hodge_claim": "The GRU-side involution or equivalent observed-square certificate remains an explicit premise."
-    },
-    "continuous_pde_boundary": "The graph now permits an exact continuous representation certificate without a finite-state carrier, but it still does not manufacture the analytic/function-space/domain/metric/source/boundary semantics or the existence of a GRU isomorphism from Maxwell equations alone.",
+    "global_injectivity": "PROVED_CONDITIONAL on the supplied exact representation certificate",
+    "continuous_pde_boundary": "No existence theorem for arbitrary infinite-dimensional Maxwell solution spaces is inferred without explicit function-space/domain/metric/source/boundary semantics and an exact GRU representation certificate.",
+    "hodge_involution": "PROVED_CONDITIONAL on the explicit GRU involution and observed factorization",
     "no_synthetic_edge": true
   },
   "automation_contract": {
@@ -1186,7 +1138,7 @@
       "sha": "7dea0190f1aeb0cf56022633b6b9ce5cd778757a",
       "message": "Promote exact finite Hodge-Maxwell graph theorem and QSA completion boundary",
       "class": "TRANSFORMATIVE",
-      "reason": "promoted a new exact finite continuous Hodge-Maxwell representation theorem and relaxed the QSA promotion boundary only where the repository already has the composed analytic interfaces"
+      "reason": "promoted a new exact continuous Hodge-Maxwell representation theorem and relaxed the QSA promotion boundary only where the repository already has the composed analytic interfaces"
     },
     {
       "sha": "d93fe8c8afa791bc33d2bf939cb6b59db285c376",
