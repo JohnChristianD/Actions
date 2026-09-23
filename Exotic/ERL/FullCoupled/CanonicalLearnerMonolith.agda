@@ -97,7 +97,7 @@ int8Neg : Int8 → Int8
 int8Neg x = int8 (- code x)
 
 int8Sub : Int8 → Int8 → Int8
-int8Sub x y = int8 (code x - code y)
+int8Sub x y = int8 (code x +ℤ (- code y))
 
 int8Roundtrip : ∀ n → code (int8OfNat n) ≡ + n
 int8Roundtrip n = refl
