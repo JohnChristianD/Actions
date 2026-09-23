@@ -91,6 +91,22 @@
     {
       "node": "ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
       "role": "fully connected conditional bridge from the finite Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
+    },
+    {
+      "node": "CanonicalGlobalTokenEncodingConjugacyTheorem",
+      "role": "finite-token alphabet encoding with exact recurrent step/list conjugacy; no total decode from unbounded Z"
+    },
+    {
+      "node": "CanonicalF4FiniteObservationRecurrence",
+      "role": "explicit Fin 256 observation recurrence for the exact Z-valued F4 orbit"
+    },
+    {
+      "node": "CanonicalF4FiniteObservationNotOrbitInjective",
+      "role": "finite-observation non-injectivity for the F4 orbit"
+    },
+    {
+      "node": "CanonicalF4FiniteObservationCollisionSeparatesFullState",
+      "role": "finite-observation collision plus exact-state separation for the F4 orbit"
     }
   ],
   "edges": [
@@ -273,6 +289,31 @@
       "CanonicalFiniteObservationInformationBoundaryTheorem",
       "CanonicalClockObservationSubcompositionTheorem",
       "the finite observation boundary exposes both recurrence and left-inverse injectivity to the clock-observation composition"
+    ],
+    [
+      "CanonicalGlobalTokenEncodingConjugacyTheorem",
+      "CanonicalExactRNNLMTheorem",
+      "finite-token encoding conjugacy supplies the recurrent token transport without an impossible total Z-to-Fin decode"
+    ],
+    [
+      "CanonicalF4FiniteObservationRecurrence",
+      "CanonicalBoundedFactorLiftTheorem",
+      "the bounded-factor record is now parameterized by an explicit Fin 256 observation and consumes the exact F4 recurrence witness"
+    ],
+    [
+      "CanonicalF4FiniteObservationNotOrbitInjective",
+      "CanonicalBoundedFactorLiftTheorem",
+      "finite-observation collision is the factor non-injectivity field"
+    ],
+    [
+      "CanonicalF4FiniteObservationCollisionSeparatesFullState",
+      "CanonicalBoundedFactorLiftTheorem",
+      "finite-observation collision plus state separation is the lift field"
+    ],
+    [
+      "CanonicalGlobalFiniteObservationLeftInverseImpossibilityTheorem",
+      "CanonicalFiniteObservationInformationBoundaryTheorem",
+      "left-inverse impossibility closes the finite-information observation boundary"
     ]
   ],
   "separation_obligation": [
@@ -312,7 +353,7 @@
     }
   ],
   "current_result": "PARTIALLY_ESTABLISHED",
-  "reason": "The exact Z carrier/finite-observation separation, F4 optimizer stability, and left-inverse injectivity are represented by proof-relevant Agda surfaces and connected consumers. Remaining analytic convexity/duality, non-discrete topology, categorical-limit, and external RegularWalrasian adapter claims remain conditional.",
+  "reason": "Exact Z algebra and explicit finite observations are separated; global left-inverse injectivity and Hodge-Maxwell/Tsallis composition remain graph-connected. The nonportable total Int8-to-Fin256 token decode and architecture-isomorphism surfaces are pruned. Analytic convexity/duality, categorical/analytic limit claims, and external regular-Walrasian existence remain conditional.",
   "computability_complexity_boundary": {
     "status": "NOT_ESTABLISHED_FOR_THE_FULL_CONNECTED_COMPOSITION",
     "rational_wfa_relation": "Rational recurrence is a specific algebraic subclass connected to weighted finite-state automata; finite-automaton realizability alone does not classify the entire connected recurrent composition as rational.",
@@ -719,8 +760,7 @@
       "FiniteTUShapleyAllocationEquilibrium",
       "BairdSevenStarProblem",
       "Majority3ShapleyEquilibrium",
-      "CanonicalAStarCostGuidanceTheorem",
-      "CanonicalTokenVocabularyUpperBoundTheorem"
+      "CanonicalAStarCostGuidanceTheorem"
     ],
     "note": "Finite-observation theorem surfaces are now explicitly separated from the exact Int8=ℤ algebra. The F4 optimizer stability theorem is promoted into the connected non-orange completion; the global left-inverse injectivity law is promoted into the finite-observation information boundary. No synthetic edge is used for topology, categorical limits, convexity, duality, or analytic q-log properties."
   },
@@ -769,14 +809,13 @@
       "FiniteFactorRecurrenceWithoutStateRecurrenceTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
     ],
     "dependency_evidence": {
       "neighborhood_separation": "CanonicalRecurrentBoundedExactUniversalApproximationTheorem explicitly depends on ContinuousLeftInverseTheorem and DenseNeighborhoodSeparationTheorem in the repository's theorem ledger.",
-      "conjugacy": "ArchitecturePreservingCanonicalRNNLMIsomorphism explicitly depends on StateIsomorphism; the canonical connected learner already has an exact scan/step conjugacy surface.",
+      "conjugacy": "connected scan/state transport surface explicitly depends on StateIsomorphism; the canonical connected learner already has an exact scan/step conjugacy surface.",
       "observation_topology": "CanonicalExactRNNLMObservationTopologyCapabilityTheorem is composed from CanonicalEndogenousTopologicalObservationBoundaryTheorem, CanonicalFiniteObservationInformationBoundaryTheorem, CanonicalExactRNNLMCapabilitySubcompositionTheorem, and CanonicalExactRNNLMObservationSubcompositionTheorem.",
       "endogenous_closure": "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem consumes CanonicalExactRNNLMObservationTopologyCapabilityTheorem together with the finite-information and endogenous POMDP boundaries."
     },
@@ -812,7 +851,6 @@
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
@@ -853,7 +891,6 @@
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
@@ -895,7 +932,6 @@
       "DenseNeighborhoodSeparationTheorem",
       "CanonicalEndogenousObservationBoundaryTheorem",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
-      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
       "F_full_connected"
@@ -935,7 +971,6 @@
       "CanonicalBoundedFactorLiftTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
-      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem"
@@ -949,7 +984,6 @@
       "CanonicalBoundedFactorLiftTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem",
       "DenseNeighborhoodSeparationTheorem",
-      "ArchitecturePreservingCanonicalRNNLMIsomorphism",
       "CanonicalEndogenousTopologicalObservationBoundaryTheorem",
       "CanonicalExactRNNLMObservationTopologyCapabilityTheorem",
       "CanonicalEndogenousRNNLMPOMDPObservationTopologyCapabilityTheorem",
@@ -1043,8 +1077,7 @@
     "status": "PROVED_ON_AGDA_SOURCE_SURFACE_UNVERIFIED_BY_FRESH_CI",
     "constructor": "canonical-endogenous-exact-rnn-lm-vocabulary-observation-closure-theorem",
     "dependencies": [
-      "CanonicalGlobalTokenConjugacyTheorem",
-      "CanonicalTokenVocabularyUpperBoundTheorem",
+      "CanonicalGlobalTokenEncodingConjugacyTheorem",
       "CanonicalExactRNNLMTheorem",
       "CanonicalExactRNNLMCapabilitySubcompositionTheorem",
       "CanonicalExactRNNLMObservationSubcompositionTheorem",
@@ -1380,7 +1413,7 @@
     "dependency": "It must have at least one real proof-relevant dependency or be explicitly foundational.",
     "consumer": "A theorem intended as a strict endpoint must be consumed by a composed theorem; otherwise it remains foundational/candidate-only.",
     "finite_carrier": "Fin 256 may appear only where a finite observation/factor is explicit; it must never be used to re-bound the exact Int8=ℤ carrier.",
-    "graph": "Every new connected theorem must add a real edge and a consuming parent in the same change.",
+    "graph": "Every new connected theorem must add a real edge and a consuming parent in the same change; finite observation must be explicit, and exact Int8=Z must never be silently re-bounded.",
     "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m"
   },
   "complete_graph_contract_v8": {
@@ -1539,6 +1572,24 @@
       "message": "Update e-graph required theorem count after Hodge/Tsallis additions",
       "class": "GRAPH_REPAIR",
       "reason": "aligns the hard completion gate with the actual required theorem count"
+    },
+    {
+      "sha": "9d71257816de10bf5c11d1d4731af637d43437e7",
+      "message": "Keep finite token alphabet explicit over exact Z carrier",
+      "class": "SEMANTIC_REPAIR",
+      "reason": "removes an impossible total Int8-to-Fin256 decode while preserving finite-token input semantics"
+    },
+    {
+      "sha": "5df54c69d1c8d028f8e8478ee452c311fd2b2f13",
+      "message": "Prune nonportable total-token isomorphism theorem",
+      "class": "PRUNING_REPAIR",
+      "reason": "removes architecture isomorphism fields that depended on the impossible total token decode"
+    },
+    {
+      "sha": "cd9ed15b3926c367be19c18f2218f2b43f7b562c",
+      "message": "Prune impossible total Int8 token decode and retain finite-token encoding conjugacy",
+      "class": "TRANSFORMATIVE_SEMANTIC_REPAIR",
+      "reason": "replaces global token bijection with the semantically valid finite-token encoding/conjugacy surface and updates connected RNN-LM consumers"
     }
   ],
   "novel_pregraphed_candidates_2026_09_23": [
@@ -1628,7 +1679,7 @@
   "algebraic_carrier_upgrade": {
     "status": "SEMANTICALLY_COMPLETE_PENDING_CI",
     "carrier": "Canonical Int8.code : ℤ",
-    "algebraic_structure": "unbounded commutative ring with exact addition, subtraction, multiplication, negation, and total order",
+    "algebraic_structure": "unbounded commutative ring (not merely a semiring), with exact addition, subtraction, multiplication, negation, and total integer order",
     "finite_observation": "Fin 256 appears only as an explicit observation/factor carrier in theorem boundaries; it is not the Int8 carrier",
     "learner_semantics": "CanonicalLearnerMonolith preserves the Int8 surface and now computes exact Z-valued operations; finite magnitude shells use absolute value rather than an implicit 0..255 bound",
     "optimizer": "F4 thetaQ update is exact Z algebra; CanonicalF4GlobalOptimizerStabilityTheorem is a connected consumer",
@@ -1637,11 +1688,12 @@
     "ordering": "int8Order is an exact total order induced from integer order; order alone does not supply convexity",
     "limits": "no theorem claims impossibility of categorical finite limits or analytic limits; finite-carrier arguments prove only finite-observation/cardinality boundaries",
     "convexity_duality": "no convex-space, barycentric, Fenchel/Legendre, or q-log differentiability theorem is fabricated; candidates remain conditional",
-    "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, stationary convergence, or regular-Walrasian edges from the carrier upgrade alone; require proof-relevant consumers."
+    "graph_rule": "Do not synthesize Hodge-Maxwell, convex-duality, stationary convergence, or regular-Walrasian edges from the carrier upgrade alone; require proof-relevant consumers.",
+    "token_boundary": "CanonicalToken remains Fin 256; only its encoding into Int8=Z is retained. The impossible total Int8→Fin256 decode/conjugacy theorem is pruned rather than reinterpreted."
   },
   "limit_convexity_topology_ordering_resolution": {
     "limit_boundary": "Finite observation implies recurrence/collision for an explicit Fin 256 factor, not nonexistence of categorical finite limits or sequence limits.",
-    "convexity_boundary": "The exact Z ring and total order do not create a convex-space/barycentric structure or duality pairing.",
+    "convexity_boundary": "Z plus total order still does not supply a convex-space/barycentric structure, Fenchel/Legendre duality, or Tsallis q-log differentiability.",
     "topology_boundary": "The repository has explicit discrete topology and left-inverse/conjugacy transport; continuity under discrete topology is automatic but analytically weak.",
     "ordering_boundary": "Integer order is preserved as an exact total order on the carrier; monotonicity results require explicit order hypotheses and are not a convexity theorem.",
     "q_log_boundary": "finiteQLog8 remains a finite-rational magnitude shell; no Tsallis q-log derivative/convexity law is proved.",
