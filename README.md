@@ -529,10 +529,12 @@ The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-p
 
 This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
 
-A finite-dimensional continuous Hodge-Maxwell specialization remains a separate proof obligation: the current Agda surface has no finite-dimensionality predicate, so the graph records that specialization as a boundary rather than inventing one. `ℤ` is retained for exact learner algebra; it is not a replacement for an arbitrary Maxwell function-space carrier.
+Finite-coordinate Hodge-Maxwell transport is now proved conditionally through an exact-length list coordinate isomorphism. A literal vector-space/module dimension theorem and universal existence result remain explicit boundaries rather than inferred from the carrier type. `ℤ` is retained for exact learner algebra; it is not a replacement for an arbitrary Maxwell function-space carrier.
 
 The current repository runtime boundary is unchanged: Tcl and Lua remain absent. Dhall's official documentation states that well-typed programs normalize successfully in finite time and describes Dhall as a total functional configuration language; its integration model explicitly renders or hands configuration to external programs. That safety property does not make an arbitrary future Tcl/Lua runtime semantically redundant. Keep those packages absent unless a concrete future executable or library demonstrates a runtime dependency.
 
 - ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
 - CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
 - ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+- ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+- ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
