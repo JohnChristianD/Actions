@@ -533,6 +533,7 @@
       "BairdSevenStarProblem",
       "Majority3ShapleyEquilibrium",
       "CanonicalAStarCostGuidanceTheorem"
+      "CanonicalEndogenousAStarTransportClosureTheorem"
     ],
     "note": "Deleted finite-observation branches are no longer promotion targets. Surviving zero-dependency records are retained only when the graph explicitly identifies their real composed consumer; no synthetic edge is introduced for topology, convexity, duality, or analytic claims."
   },
