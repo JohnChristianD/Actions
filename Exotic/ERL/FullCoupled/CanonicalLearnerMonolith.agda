@@ -1135,9 +1135,6 @@ CanonicalTokenSequence = List CanonicalToken
 canonicalTokenEncode : CanonicalToken → Int8
 canonicalTokenEncode = int8
 
-canonicalTokenDecode : Int8 → CanonicalToken
-canonicalTokenDecode = code
-
 canonicalTokenEncodeList : CanonicalTokenSequence → List Int8
 canonicalTokenEncodeList = map canonicalTokenEncode
 
