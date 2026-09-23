@@ -10,10 +10,10 @@ The carrier migration is deliberately separated from finite-observation semantic
 - `int8OfNat n = int8 (+ n)`
 - exact Int8 addition, multiplication, negation, subtraction, and ordering use `ℤ`
 - finite pigeonhole arguments use explicit `Fin 256` observation maps rather than the Int8 carrier
-- game scores and equilibrium values use `ℤ), including its order and multiplication
+- game scores and equilibrium values use `ℤ`, including its order and multiplication
 - the existing concrete witnesses remain unchanged numerically
 
-The Agda standard library documents `ℤ) as its integer type, with constructors for non-negative and negative integers, integer ordering, addition, subtraction, and multiplication. Its integer examples also use `+ n` as the natural-to-integer conversion. See the standard-library `Data.Integer.Base` and `README.Data.Integer` documentation.
+The Agda standard library documents `ℤ` as its integer type, with constructors for non-negative and negative integers, integer ordering, addition, subtraction, and multiplication. Its integer examples also use `+ n` as the natural-to-integer conversion. See the standard-library `Data.Integer.Base` and `README.Data.Integer` documentation.
 
 ## Mathematical boundary
 
@@ -34,3 +34,16 @@ Dhall remains the repository's total configuration/embedded scripting layer. Its
 ## Verification status
 
 The GitHub-hosted environment was used for the branch mutation and file inspection. A local Agda build could not be run in this environment because outbound DNS/network access was unavailable. Therefore this change must not be reported as locally typechecked until CI or another actual Agda invocation verifies it.
+
+
+## 2026-09-23 connected promotion closure
+
+The continuation branch now promotes two proof-relevant consequences into the connected theorem surface.
+
+First, `CanonicalF4GlobalOptimizerStabilityTheorem` records the exact F4 optimizer translation on the unbounded integer carrier, preservation of the non-theta optimizer coordinates, and equal-input stability. It is consumed by `CanonicalPureNonOrangeBypassCompletionTheorem`.
+
+Second, `CanonicalFiniteObservationInformationBoundaryTheorem` now exposes the general fact that a left inverse makes an observation globally injective, while its finite-observation contradiction remains explicitly quantified over `Fin 256`. Thus the same graph distinguishes exact injectivity from finite-cardinality impossibility.
+
+The topology/order boundary is also explicit: the learner has an exact integer total order and a discrete topology, but neither is promoted into a convex-space, duality, analytic-limit, or categorical-finite-limit theorem.
+
+Verification remains pending until an actual Agda/CI run completes on the new head.
