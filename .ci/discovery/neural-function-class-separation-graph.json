@@ -1513,7 +1513,8 @@
       "BoundedContinuousLeftInverseExactApproximationTheorem",
       "CanonicalRecurrentBoundedExactUniversalApproximationTheorem"
     ],
-    "rule": "Do not replace semantically finite theorems with Nat aliases. Promote only when an actual surviving Agda composition consumes the result; otherwise classify as foundational/problem metadata."
+    "rule": "Do not replace semantically finite theorems with Nat aliases. Promote only when an actual surviving Agda composition consumes the result; otherwise classify as foundational/problem metadata.",
+    "interpretation": "The listed surfaces are excluded from the strict canonical endpoint, not necessarily deleted from the Agda proof source or from dependency registries when surviving composed theorems still consume them."
   },
   "f4_probability_topology_boundary": {
     "status": "BOUNDARY_NOT_A_THEOREM",
@@ -1598,5 +1599,33 @@
       "latest_head_ci_status_observable": false
     },
     "search_index_caveat": "GitHub code-search results can surface stale historical blobs. The current default-branch fetches are authoritative for this audit."
+  },
+  "metadata_pruning_policy_v11": {
+    "status": "ACTIVE_REGISTRY_AUTOPRUNE_WITH_KERNEL_GATE",
+    "authority_order": [
+      "Agda --safe type-check of CanonicalLearnerMonolith.agda",
+      "Agda --safe type-check of TheoremsMonolith.agda",
+      "Mercury semantic extraction from TheoremsMonolith.agda",
+      "Mercury A* dependency graph and e-graph synchronization",
+      "Dhall CI orchestration"
+    ],
+    "active_registry_scope": [
+      ".ci/actions_ci.dhall required theorem-symbol registry",
+      ".ci/discovery/theorem_graph_search.m required theorem/subcomposition registry",
+      "machine-generated discovery reports derived directly from current Agda declarations"
+    ],
+    "prune_rule": "Only machine-owned active registry entries whose identifiers are absent from the current Agda semantic-law inventory may be automatically pruned. Historical commit classifications, research prose, candidate rationale, and other manual metadata are never deleted merely because a theorem is no longer an endpoint.",
+    "dependency_rule": "A theorem excluded from the strict separation/canonical endpoint may remain in Agda and active registries when a surviving composed theorem actually consumes it. Such a theorem is a foundational dependency, not stale metadata.",
+    "concrete_example": {
+      "theorem": "DirectProductFiniteAutomatonComposition",
+      "current_status": "FOUNDATIONAL_CONSUMED_DEPENDENCY",
+      "evidence": "The current TheoremsMonolith.agda defines the record and MarkovStationaryWalrasianCompositionTheorem consumes it through its directProductFiniteAutomaton field.",
+      "implication": "Do not auto-delete it merely because pruning_policy_v10 removes it from the strict canonical path."
+    },
+    "stale_detection": "CI must fail when any machine-owned active registry names a declaration absent from the current Agda semantic-law inventory.",
+    "generation_rule": "Prefer regeneration from extracted Agda declarations over textual mutation. Pruning is a reconciliation step, not a second theorem source.",
+    "dhall_role": "Dhall is the typed finite-total orchestration/configuration layer and can render the pruning/check command.",
+    "tcl_role": "Not required. Tcl is a general command language and adds no proof-aware or graph-authoritative capability here. Keep Tcl absent unless a concrete future runtime dependency exists.",
+    "no_kernel_substitution": "Metadata pruning never proves a theorem. The Agda kernel remains the only proof authority; Mercury and Dhall only reconcile and execute the graph contract."
   }
 }
