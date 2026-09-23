@@ -16,13 +16,8 @@ open Int8 public
 int8OfNat : Nat → Int8
 int8OfNat n = int8 (+ n)
 
-int8Roundtrip : ∀ x → code (int8OfNat (codeNat x)) ≡ code x
-int8Roundtrip x = refl
-  where
-  codeNat : Int8 → Nat
-  codeNat x with code x
-  ... | + n = n
-  ... | -[1+ n ] = zero
+int8Roundtrip : ∀ n → code (int8OfNat n) ≡ + n
+int8Roundtrip n = refl
 
 data Action : Set where
   cooperate : Action
