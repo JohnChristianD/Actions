@@ -4542,7 +4542,7 @@ finite-probability-mass-semantics-theorem =
 -- Polymorphic exact finite POMDP probability semantics.
 --
 -- State/action/observation cardinalities and reward codomain are parameters.
--- The canonical Int8/Fin-256 learner is therefore an instance rather than
+-- The canonical Int8=ℤ learner is therefore the exact unbounded carrier rather than
 -- part of the theorem statement.
 ------------------------------------------------------------------------
 
