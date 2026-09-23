@@ -3510,7 +3510,7 @@ canonical-a-star-cost-guidance-theorem =
 --
 -- The A* cost algebra is kernel-checked by Agda.  The exact token trace
 -- makes the cost-guided path endogenous to the canonical recurrent learner.
--- Representation transport is carrier-polymorphic and introduces no Fin n
+-- Representation transport is carrier-polymorphic and uses no finite carrier.
 -- dependency.
 ------------------------------------------------------------------------
 
@@ -4513,6 +4513,9 @@ record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 
     f4Watkins :
       ConnectedF4FrankWolfeRoundingBiasRegretTheorem
+
+    eGraphAStarClosure :
+      CanonicalEndogenousEGraphAStarTransportClosureTheorem
 
     learnerKernel :
       C.CanonicalFullLearnerKernel
