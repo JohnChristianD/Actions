@@ -6924,6 +6924,117 @@ connected-f4-frank-wolfe-jensen-rounding-kkt-markov-theorem C =
 
 
 ------------------------------------------------------------------------
+-- Maxwell-only finite exact representation seam.
+--
+-- This deliberately formalizes only finite transition semantics.  The
+-- continuous Maxwell PDE is not silently identified with a finite GRU.
+-- The divergence carrier is abstract so that a concrete Tsallis model can
+-- be supplied without importing a real-analysis or information-theory
+-- library into the safe monolith.
+------------------------------------------------------------------------
+
+record FiniteTsallisDivergenceStructure (n : Nat) : Set₁ where
+  constructor finiteTsallisDivergenceStructure
+  field
+    Value : Set
+    divergence : Fin n → Fin n → Value
+    transport :
+      ∀ {x y : Fin n} →
+      divergence x y ≡ divergence x y
+
+open FiniteTsallisDivergenceStructure public
+
+record MaxwellFiniteExactConjugacyData
+  (n : Nat)
+  (State : Set) : Set₁ where
+  constructor maxwellFiniteExactConjugacyData
+  field
+    maxwellAdmissible : State → Set
+    step : State → State
+    encodedStep : Fin n → Fin n
+    encode : State → Fin n
+    decode : Fin n → State
+
+    decodeEncode :
+      ∀ x → decode (encode x) ≡ x
+
+    encodeDecode :
+      ∀ x → encode (decode x) ≡ x
+
+    maxwellClosed :
+      ∀ {x} → maxwellAdmissible x → maxwellAdmissible (step x)
+
+    conjugacy :
+      ∀ x → encode (step x) ≡ encodedStep (encode x)
+
+    divergenceStructure :
+      FiniteTsallisDivergenceStructure n
+
+    divergenceTransport :
+      ∀ x y →
+      divergence (divergenceStructure) (encode x) (encode y)
+      ≡
+      divergence (divergenceStructure)
+        (encode (step x))
+        (encode (step y))
+
+open MaxwellFiniteExactConjugacyData public
+
+maxwellFiniteStateIsomorphism :
+  ∀ {n : Nat} {State : Set} →
+  MaxwellFiniteExactConjugacyData n State →
+  StateIsomorphism State (Fin n)
+maxwellFiniteStateIsomorphism D =
+  stateIsomorphism
+    (encode D)
+    (decode D)
+    (decodeEncode D)
+    (encodeDecode D)
+
+record ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
+  (n : Nat)
+  (State : Set) : Set₁ where
+  constructor connectedMaxwellTsallisFiniteExactConjugacyTheorem
+  field
+    semantics :
+      MaxwellFiniteExactConjugacyData n State
+
+    universalFiniteTransport :
+      FiniteFunctionExactIsomorphismTransportTheorem
+        n
+        n
+        State
+        State
+        (maxwellFiniteStateIsomorphism semantics)
+        (maxwellFiniteStateIsomorphism semantics)
+        (encodedStep semantics)
+
+    transportedStep :
+      ∀ x →
+      translatedFunction universalFiniteTransport x
+      ≡
+      step semantics x
+
+    exactMaxwellConjugacy :
+      ∀ x →
+      encode semantics (step semantics x)
+      ≡
+      encodedStep semantics (encode semantics x)
+
+open ConnectedMaxwellTsallisFiniteExactConjugacyTheorem public
+
+connected-maxwell-tsallis-finite-exact-conjugacy-theorem :
+  ∀ {n : Nat} {State : Set} →
+  ConnectedMaxwellTsallisFiniteExactConjugacyTheorem n State →
+  ∀ x →
+  encode (semantics _) (step (semantics _) x)
+  ≡
+  encodedStep (semantics _) (encode (semantics _) x)
+connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
+  exactMaxwellConjugacy C
+
+
+------------------------------------------------------------------------
 -- Promotion boundary:
 -- the Jensen/minimax regret surface is not a standalone optimizer theorem.
 -- It is graph-complete only through the recurrent scan, stationary Markov
