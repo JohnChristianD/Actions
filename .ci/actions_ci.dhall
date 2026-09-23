@@ -374,9 +374,3 @@ JSON
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     ''
 }
-lane
-
-in script
-
-    "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-    "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
