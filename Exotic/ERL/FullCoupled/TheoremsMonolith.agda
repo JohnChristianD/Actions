@@ -1607,8 +1607,8 @@ canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
 
 canonicalWatkinsTarget-endogenous-leftInverse :
   ∀ (K : C.CanonicalFullLearnerKernel)
-  (observe : C.CanonicalFullLearnerState → Fin 256)
-  (inverse : Fin 256 → C.CanonicalFullLearnerState) →
+  (observe : C.CanonicalFullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.CanonicalFullLearnerState) →
   (leftInverse : ∀ t → inverse (observe t) ≡ t) →
   ∀ s →
   C.canonicalWatkinsTarget K s ≡
@@ -1893,12 +1893,12 @@ canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
 canonicalNoGlobalFiniteObservationDiscreteUAPOnOrbit :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → C.Int8)
-  (inverse : C.Int8 → C.CanonicalFullLearnerState)
+  (observe : C.CanonicalFullLearnerState → Fin 256)
+  (inverse : Fin 256 → C.CanonicalFullLearnerState)
   {Output : Set} →
   DiscreteExactUAPTheorem
     C.CanonicalFullLearnerState
-    C.Int8
+    (Fin 256)
     Output
     observe
     inverse →
@@ -1970,7 +1970,7 @@ noExactNatSimulation-through-finite-observation :
   ⊥
 noExactNatSimulation-through-finite-observation
   encode observe decode encodeInjective exactDecode =
-  C.int8-no-countably-unbounded-injective
+  C.finiteObservation-no-countably-unbounded-injective
     (λ n → observe (encode n))
     (λ {m} {n} obsEq →
       encodeInjective
@@ -1998,8 +1998,8 @@ record ExactTuringCounterObservation
 noExactTuringCounterObservation-through-finite-observation :
   ∀ {State : Set}
   (encode : Nat → State)
-  (observe : State → C.Int8)
-  (decode : C.Int8 → State) →
+  (observe : State → Fin 256)
+  (decode : Fin 256 → State) →
   ExactTuringCounterObservation State encode observe decode →
   ⊥
 noExactTuringCounterObservation-through-finite-observation
@@ -2660,8 +2660,8 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
 
     endogenousFactorization :
       ∀ (K : C.CanonicalFullLearnerKernel)
-      (observe : C.CanonicalFullLearnerState → Fin 256)
-      (inverse : Fin 256 → C.CanonicalFullLearnerState) →
+      (observe : C.CanonicalFullLearnerState → C.Int8)
+      (inverse : C.Int8 → C.CanonicalFullLearnerState) →
       (leftInverse : ∀ t → inverse (observe t) ≡ t) →
       ∀ s →
       C.canonicalWatkinsTarget K s ≡
@@ -5360,8 +5360,8 @@ record CanonicalFiniteObservationInformationBoundaryTheorem : Set₁ where
     noExactFiniteObservationLeftInverse :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
-      (observe : C.CanonicalFullLearnerState → C.Int8)
-      (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+      (observe : C.CanonicalFullLearnerState → Fin 256)
+      (inverse : Fin 256 → C.CanonicalFullLearnerState) →
       (∀ t → inverse (observe t) ≡ t) →
       ⊥
     noUniversalDiscreteUAP :
