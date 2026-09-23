@@ -4632,10 +4632,10 @@ open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
 -- Hodge-Maxwell representation.
 --
 -- The repository does not currently formalize vector-space dimension.  The
--- exact finite-dimensional bridge therefore uses an explicit coordinate
--- isomorphism to Fin n -> Scalar as its proof-relevant finite-dimensional
+-- exact bridge therefore uses an explicit coordinate isomorphism to a
+-- finite Agda List of Scalar values as its proof-relevant finite-coordinate
 -- certificate.  This avoids inventing a dimension theorem while making the
--- finite-dimensional specialization composable with the existing connected
+-- finite-coordinate specialization composable with the existing connected
 -- Hodge-Maxwell/F4/Watkins extraction.
 ------------------------------------------------------------------------
 
@@ -4661,7 +4661,7 @@ finiteListHodgeMaxwell-coordinate-global-injective :
   ∀ {GRU Scalar : Set}
   {Continuous : {A B : Set} → (A → B) → Set}
   (C : FiniteListHodgeMaxwellCoordinateCertificate
-    GRU Scalar n) →
+    GRU Scalar) →
   ∀ {x y} →
   to (coordinateIsomorphism C) x ≡
   to (coordinateIsomorphism C) y →
@@ -4671,7 +4671,7 @@ finiteListHodgeMaxwell-coordinate-global-injective C =
     (coordinateIsomorphism C)
 
 ------------------------------------------------------------------------
--- Fully connected finite-dimensional Hodge-Maxwell/F4/Watkins extraction.
+-- Fully connected finite-list-coordinate Hodge-Maxwell/F4/Watkins extraction.
 --
 -- The coordinate witness is consumed by the already connected
 -- Hodge-Maxwell/F4/Watkins composition.  The resulting observation is global:
@@ -4681,7 +4681,6 @@ finiteListHodgeMaxwell-coordinate-global-injective C =
 
 record ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
   (GRU Scalar : Set)
-  (n : Nat)
   {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
   constructor connectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
   field
@@ -4689,7 +4688,7 @@ record ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
       ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
         GRU
 
-    finiteDimensionalCoordinates :
+    finiteListCoordinates :
       StateIsomorphism
         (ContinuousHodgeMaxwellExactRepresentationData.Solution
           (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
@@ -4698,7 +4697,7 @@ record ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 
     learnerCoordinateGlobalInjective :
       ∀ {s t : C.CanonicalFullLearnerState} →
-      to finiteDimensionalCoordinates
+      to finiteListCoordinates
         (learnerToSolution (connected) s)
       ≡
       to finiteDimensionalCoordinates
