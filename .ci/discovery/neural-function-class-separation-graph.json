@@ -83,6 +83,10 @@
     {
       "node": "ConnectedGeneralizedWalrasianExistenceTheorem",
       "role": "local exact existence closure from per-price static Walrasian existence through invariant aggregate and generalized stationary lift"
+    },
+    {
+      "node": "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "role": "fully connected hard-sign-style idempotent transport over the exact finite Hodge-Maxwell/Tsallis carrier; requires an explicit GRU-side projection conjugacy"
     }
   ],
   "edges": [
@@ -230,6 +234,16 @@
       "ConnectedGeneralizedWalrasianExistenceTheorem",
       "F_full_connected",
       "generalized Walrasian existence is promoted through an actual composed theorem"
+    ],
+    [
+      "ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "the hard-sign-style idempotent transport consumes the already-connected finite Maxwell/Tsallis composition"
+    ],
+    [
+      "ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem",
+      "F_full_connected",
+      "the idempotent projection bridge is a connected conditional theorem rather than an isolated HardSign claim"
     ]
   ],
   "separation_obligation": [
