@@ -145,3 +145,12 @@ d93fe8c8afa791bc33d2bf939cb6b59db285c376 is graph infrastructure: dependency-sea
 The newly pre-graphed frontier is FiniteDiscreteHodgeMaxwellStarInvolutionCandidate. It is deliberately candidate-only because a same-degree involution is not a general property of the Hodge star across arbitrary dimensions/signatures, and the exact discretization theorem does not need it.
 
 The full continuous-PDE representation candidate remains unpromoted. Exact finite encodings plus exact finite discretization are not sufficient to prove an exact finite-state representation of the full infinite-dimensional Maxwell solution space.
+
+
+## Updated closure status
+
+The finite-discretization obligation is now closed conditionally and explicitly: the Agda surface contains preservation and reflection for a supplied finite Hodge-Maxwell discretization certificate, plus a composed consumer that also consumes the continuous finite-family GRU theorem's Maxwell field-equation witness.
+
+The F4 surface also already contains conditional horizon monotonicity from nonnegative per-round regret. The remaining optimizer boundary is therefore not missing a basic monotonicity lemma; the stronger quantitative rate remains certificate-dependent.
+
+The remaining Maxwell frontier is the full continuous PDE/function-space representation claim. That remains candidate-only because neither finite encoding nor finite discretization yields a theorem about the whole infinite-dimensional solution space. The optional same-degree finite Hodge-star involution is likewise candidate-only.
