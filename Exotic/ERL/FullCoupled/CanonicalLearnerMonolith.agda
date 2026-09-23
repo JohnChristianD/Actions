@@ -1138,9 +1138,6 @@ canonicalTokenEncode = int8
 canonicalTokenEncodeList : CanonicalTokenSequence → List Int8
 canonicalTokenEncodeList = map canonicalTokenEncode
 
-canonicalTokenDecodeList : List Int8 → CanonicalTokenSequence
-canonicalTokenDecodeList = map canonicalTokenDecode
-
 canonicalTokenStep : GRUState → CanonicalToken → GRUState
 canonicalTokenStep s t = gruStep s (canonicalTokenEncode t)
 
