@@ -452,7 +452,7 @@ graph_required_theorems = [
     "CanonicalGlobalTokenLMCompositionTheorem",
     "CanonicalIntegerHaarScaledOrthogonalityTheorem",
     "CanonicalAStarCostGuidanceTheorem",
-    "CanonicalEndogenousAStarTransportClosureTheorem",
+    "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
     "CanonicalFiniteCycleExclusionIsomorphismTheorem",
     "CanonicalOperatorCompositionTheorem",
     "CanonicalF4GlobalOptimizerStabilityTheorem",
