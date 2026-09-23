@@ -4696,11 +4696,9 @@ connected-infinite-dimensional-hodge-maxwell-gru-f4-watkins-egraph-composition
         (sym (learnerSolutionLeftInverse connected s))
         (trans
           (cong (solutionToLearner connected)
-            (ContinuousHodgeMaxwellExactRepresentationData
+            (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
               .globalEncodeInjective
-              (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-                .semantics
-                (hodgeMaxwell connected))
+              (hodgeMaxwell connected)
               eq))
           (learnerSolutionLeftInverse connected t)))
 
