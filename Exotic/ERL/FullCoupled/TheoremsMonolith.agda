@@ -7036,7 +7036,7 @@ connected-finite-discrete-hodge-maxwell-gru-representation-theorem :
   (R :
     ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
   (shared :
-    semantics R ≡ continuous (data D)) →
+    semantics R ≡ continuous (certificateData D)) →
   ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
     n
     p
