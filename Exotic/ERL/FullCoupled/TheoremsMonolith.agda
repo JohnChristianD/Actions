@@ -4246,11 +4246,16 @@ canonical-a-star-cost-guidance-theorem =
 -- dependency.
 ------------------------------------------------------------------------
 
-record CanonicalEndogenousAStarTransportClosureTheorem : Set₁ where
-  constructor canonicalEndogenousAStarTransportClosureTheorem
+record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
+  constructor canonicalEndogenousEGraphAStarTransportClosureTheorem
   field
     aStarGuidance :
       CanonicalAStarCostGuidanceTheorem
+    eGraphEqualityComposition :
+      ∀ {A : Set} {x y z : A} →
+      x ≡ y →
+      y ≡ z →
+      EqualityCompositionTheorem
     representationTransport :
       GeneralizedRepresentationTransportCompositionTheorem
     endogenousTraceTransport :
@@ -4260,15 +4265,26 @@ record CanonicalEndogenousAStarTransportClosureTheorem : Set₁ where
         (f : S → T) →
       ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
 
+CanonicalEndogenousAStarTransportClosureTheorem :
+  Set₁
+CanonicalEndogenousAStarTransportClosureTheorem =
+  CanonicalEndogenousEGraphAStarTransportClosureTheorem
+
 open CanonicalEndogenousAStarTransportClosureTheorem public
+
+canonical-endogenous-e-graph-a-star-transport-closure-theorem :
+  CanonicalEndogenousEGraphAStarTransportClosureTheorem
+canonical-endogenous-e-graph-a-star-transport-closure-theorem =
+  canonicalEndogenousEGraphAStarTransportClosureTheorem
+    canonical-a-star-cost-guidance-theorem
+    (λ first second → composeEqualityTheorem first second)
+    generalized-representation-transport-composition-theorem
+    (λ f → exactFunctionIsomorphismTransport f)
 
 canonical-endogenous-a-star-transport-closure-theorem :
   CanonicalEndogenousAStarTransportClosureTheorem
 canonical-endogenous-a-star-transport-closure-theorem =
-  canonicalEndogenousAStarTransportClosureTheorem
-    canonical-a-star-cost-guidance-theorem
-    generalized-representation-transport-composition-theorem
-    (λ f → exactFunctionIsomorphismTransport f)
+  canonical-endogenous-e-graph-a-star-transport-closure-theorem
 
 ------------------------------------------------------------------------
 -- Canonical finite-cycle exclusion transported through an exact state
