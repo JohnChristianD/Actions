@@ -886,26 +886,23 @@
     },
     {
       "name": "ConnectedMaxwellTsallisExactConjugacyTheorem",
-      "status": "PROVED",
-      "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
+      "status": "PROVED_CONDITIONAL_ON_EXACT_CONJUGACY_DATA",
+      "parent": "MaxwellExactConjugacyData",
       "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "FiniteFunctionExactIsomorphismTransportTheorem",
+        "MaxwellExactConjugacyData",
         "ConnectedMaxwellTsallisExactConjugacyTheorem"
       ],
-      "distinction": "Maxwell-only finite exact transition representation composed with universal finite-function transport, exact finite encoding/decoding, exact conjugacy, and a finite Tsallis/divergence structure.",
+      "distinction": "Carrier-polymorphic Maxwell/Tsallis exact transition conjugacy over an arbitrary carrier. No finite-function transport or Fin n carrier is required.",
       "required_certificates": [
-        "finite Maxwell state semantics",
-        "Maxwell-admissible finite transition/update",
-        "universal finite exact-function transport",
-        "exact finite encoding and decoding",
-        "encode/decode inverse laws",
+        "MaxwellExactConjugacyData",
+        "exact encode/decode inverse laws",
+        "Maxwell closure",
         "exact transition conjugacy",
-        "finite Tsallis/divergence structure",
-        "divergence preservation or explicitly stated divergence transport law"
+        "carrier-polymorphic Tsallis/divergence structure",
+        "divergence transport law"
       ],
       "physical_scope": "Maxwell equations only; no additional physical laws are admitted implicitly.",
-      "exactness_boundary": "Exactness applies to the specified finite Maxwell transition/function. It does not claim exact representation of the continuous Maxwell PDE without an explicit finite semantics/discretization.",
+      "exactness_boundary": "Exactness applies to the explicitly supplied Maxwell transition and divergence structure. It does not assert existence of a GRU representation for an arbitrary Maxwell solution space.",
       "no_synthetic_edge": true
     },
     {
@@ -934,23 +931,23 @@
     {
       "name": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "status": "PROVED_CONDITIONAL_ON_EXACT_REPRESENTATION_SEMANTICS",
-      "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
+      "parent": "ContinuousHodgeMaxwellExactRepresentationData",
       "path": [
-        "FiniteFunctionExactIsomorphismTransportTheorem",
+        "ContinuousHodgeMaxwellExactRepresentationData",
         "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
       ],
-      "candidate_statement": "Exact GRU translation of every specified finite family of continuous differential-form Hodge-Maxwell solutions whose exact finite encoding/decoding and transition conjugacy are supplied.",
+      "candidate_statement": "Exact GRU translation of every explicitly supplied continuous differential-form Hodge-Maxwell solution family over an arbitrary GRU carrier.",
       "required_certificates": [
-        "exact differential-form semantics for Form2 and Form3",
-        "exact de Rham differential and Hodge-star operators",
+        "exact differential-form semantics for Form2, FormStar, and Form3",
         "exact Maxwell equations dF=0 and d(star F)=j",
-        "finite exact encoding and decoding",
-        "encode/decode inverse laws",
-        "exact transition conjugacy",
-        "finite recurrent exact translation"
+        "explicit continuity witnesses",
+        "global exact encode/decode inverse laws",
+        "global StateIsomorphism",
+        "exact recurrent transition conjugacy",
+        "Maxwell closure"
       ],
-      "physical_scope": "Maxwell equations only.",
-      "exactness_boundary": "The theorem is exact for the declared finite family of continuous Maxwell solutions. It does not assert that the full infinite-dimensional continuous Maxwell solution space is finite or globally representable by a finite-cardinality GRU.",
+      "physical_scope": "Maxwell/Hodge-Maxwell differential-form semantics only.",
+      "exactness_boundary": "The theorem is exact for the declared continuous solution family and supplied GRU carrier. It does not assert existence of such a certificate for every physical or infinite-dimensional Maxwell solution space.",
       "no_synthetic_edge": true,
       "distinction": "Exact theorem for every explicitly supplied family of exact differential-form Hodge-Maxwell solutions, with an arbitrary GRU carrier, exact encode/decode StateIsomorphism, continuity witnesses, Maxwell-equation preservation, and recurrent transition conjugacy. It does not assert existence of such a certificate for every physical or infinite-dimensional Maxwell solution space.",
       "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the supplied global state isomorphism and recurrent transition conjugacy.",
@@ -959,23 +956,21 @@
     {
       "name": "ConnectedMaxwellContinuousPDERepresentationCandidate",
       "status": "CANDIDATE_NOT_PROVED",
-      "parent": "ConnectedMaxwellTsallisExactConjugacyTheorem",
+      "parent": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "path": [
-        "ConnectedMaxwellTsallisExactConjugacyTheorem",
-        "ContinuousMaxwellDifferentialFormSemantics",
-        "ExactGRUFunctionSpaceRepresentationHypothesis",
+        "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
         "ConnectedMaxwellContinuousPDERepresentationCandidate"
       ],
-      "candidate_statement": "Exact representation of the full continuous Maxwell PDE solution/function space, formulated over differential-form fields with an arbitrary GRU carrier.",
+      "candidate_statement": "Exact representation of a declared continuous Maxwell solution/function space over an arbitrary GRU carrier.",
       "required_certificates": [
         "formal differential-form/function-space semantics",
         "well-posed domain, metric, source, and boundary conditions",
-        "continuity witnesses for the declared operators and representation maps",
+        "continuity witnesses",
         "exact GRU representation over the chosen function-space carrier",
-        "representation preserves dF=0 and d⋆F=j",
+        "preservation of dF=0 and d(star F)=j",
         "exact encode/decode or an explicit function-space StateIsomorphism"
       ],
-      "impossibility_boundary": "The carrier-polymorphic exactness theorem proves representation consequences once those witnesses are supplied; it does not prove that every continuous Maxwell solution space admits such a GRU representation.",
+      "impossibility_boundary": "The carrier-polymorphic theorem proves representation consequences once these witnesses exist; it does not prove that every continuous Maxwell solution space admits such a representation.",
       "no_synthetic_edge": true
     },
     {
@@ -1058,7 +1053,15 @@
       "theorem": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
       "scope": "arbitrary GRU carrier; no Fin n dependency",
       "limitation": "requires an explicit collision witness; it does not prove that every continuous Maxwell solution space has such a collision"
-    }
+    },
+    "pruned_finite_dependencies": [
+      "FiniteFunctionExactIsomorphismTransportTheorem",
+      "finite Hodge-Maxwell discretization surfaces",
+      "finite-carrier Maxwell/Tsallis branches",
+      "finite-carrier Maxwell pigeonhole boundary"
+    ],
+    "finite_dimensional_boundary": "A continuous finite-dimensional Hodge-Maxwell specialization is graphable only after an explicit finite-dimensional function-space certificate is added. The current Agda surface does not encode finite-dimensionality, so no finite-dimensional existence theorem is promoted.",
+    "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers."
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
@@ -1390,5 +1393,9 @@
     "maxwell_hodge_carrier": "arbitrary Set/function-space carrier supplied by the exact representation certificate",
     "retired_fixed_carrier": "fixed finite-token carrier",
     "rule": "Finite-cardinality conclusions require an explicit Fin n carrier; Z-valued algebra alone never supplies a finite pigeonhole premise, and continuous Maxwell/Hodge-Maxwell semantics are not forced into Fin n."
+  },
+  "future_theorem_graph_contract_v9": {
+    "physics": "Hodge-Maxwell/Maxwell exact representation is carrier-polymorphic. Fin n is excluded from that family unless a future theorem explicitly introduces a genuinely finite observation/carrier. A finite-dimensional continuous specialization requires a proof-relevant finite-dimensionality certificate.",
+    "future": "Every future theorem must be an actual Agda declaration with real dependency edges, then a connected consumer before strict endpoint admission."
   }
 }
