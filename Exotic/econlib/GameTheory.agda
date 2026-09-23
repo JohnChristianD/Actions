@@ -5,23 +5,24 @@ module Exotic.econlib.GameTheory where
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 open import Data.Nat using (_≤_; z≤n; s≤s)
-open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
-open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
+open import Data.Integer using (ℤ; +_; _≤_; +≤+)
 open import Data.Product using (_×_; _,_)
 
 record Int8 : Set where
   constructor int8
-  field code : Fin 256
+  field code : ℤ
 open Int8 public
 
 int8OfNat : Nat → Int8
-int8OfNat n = int8 (fromℕ< (m%n<n n 256))
+int8OfNat n = int8 (+ n)
 
-int8Roundtrip : ∀ x → toℕ (code (int8OfNat (toℕ (code x)))) ≡ toℕ (code x)
-int8Roundtrip x =
-  trans (toℕ-fromℕ< (m%n<n (toℕ (code x)) 256))
-    (m<n⇒m%n≡m (toℕ<n (code x)))
+int8Roundtrip : ∀ x → code (int8OfNat (codeNat x)) ≡ code x
+int8Roundtrip x = refl
+  where
+  codeNat : Int8 → Nat
+  codeNat x with code x
+  ... | + n = n
+  ... | -[1+ n ] = zero
 
 data Action : Set where
   cooperate : Action
@@ -42,11 +43,11 @@ rightPayoff : Game2 → Action → Action → Int8
 rightPayoff G a b with payoff G a b
 ... | p , q = q
 
-leftScore : Game2 → Action → Action → Nat
-leftScore G a b = toℕ (code (leftPayoff G a b))
+leftScore : Game2 → Action → Action → ℤ
+leftScore G a b = code (leftPayoff G a b)
 
-rightScore : Game2 → Action → Action → Nat
-rightScore G a b = toℕ (code (rightPayoff G a b))
+rightScore : Game2 → Action → Action → ℤ
+rightScore G a b = code (rightPayoff G a b)
 
 record PureNash (G : Game2) (a b : Action) : Set where
   constructor pureNash
@@ -75,16 +76,16 @@ natSelfLe zero = z≤n
 natSelfLe (suc n) = s≤s (natSelfLe n)
 
 leftBestDefect : ∀ b a' → leftScore prisonersDilemma a' b ≤ leftScore prisonersDilemma defect b
-leftBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-leftBestDefect cooperate defect = natSelfLe 5
-leftBestDefect defect cooperate = z≤n
-leftBestDefect defect defect = natSelfLe 1
+leftBestDefect cooperate cooperate = +≤+ (s≤s (s≤s (s≤s z≤n)))
+leftBestDefect cooperate defect = +≤+ (natSelfLe 5)
+leftBestDefect defect cooperate = +≤+ z≤n
+leftBestDefect defect defect = +≤+ (natSelfLe 1)
 
 rightBestDefect : ∀ a b' → rightScore prisonersDilemma a b' ≤ rightScore prisonersDilemma a defect
-rightBestDefect cooperate cooperate = s≤s (s≤s (s≤s z≤n))
-rightBestDefect cooperate defect = natSelfLe 5
-rightBestDefect defect cooperate = z≤n
-rightBestDefect defect defect = natSelfLe 1
+rightBestDefect cooperate cooperate = +≤+ (s≤s (s≤s (s≤s z≤n)))
+rightBestDefect cooperate defect = +≤+ (natSelfLe 5)
+rightBestDefect defect cooperate = +≤+ z≤n
+rightBestDefect defect defect = +≤+ (natSelfLe 1)
 
 isNashEquilibriumDD : PureNash prisonersDilemma defect defect
 isNashEquilibriumDD = pureNash (leftBestDefect defect) (rightBestDefect defect)
