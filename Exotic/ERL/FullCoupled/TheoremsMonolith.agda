@@ -5638,6 +5638,9 @@ record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
     f4Watkins :
       ConnectedF4FrankWolfeRoundingBiasRegretTheorem
 
+    learnerKernel :
+      C.CanonicalFullLearnerKernel
+
     learnerToSolution :
       C.CanonicalFullLearnerState →
       ContinuousHodgeMaxwellExactRepresentationData.Solution
@@ -5660,7 +5663,7 @@ record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 
     learnerStepConjugacy :
       ∀ s →
-      learnerToSolution (C.canonicalFullStep C.learnerKernel s)
+      learnerToSolution (C.canonicalFullStep (learnerKernel C) s)
       ≡
       ContinuousHodgeMaxwellExactRepresentationData.step
         (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
