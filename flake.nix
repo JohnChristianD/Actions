@@ -75,7 +75,6 @@
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
-              pkgs.tcl
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
