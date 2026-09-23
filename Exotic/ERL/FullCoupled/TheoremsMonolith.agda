@@ -7289,6 +7289,109 @@ connectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport
     (finiteIdempotentConjugacyTransport transport)
 
 ------------------------------------------------------------------------
+-- Novel fully connected Hodge-Maxwell/Tsallis/Walrasian projection bridge.
+--
+-- This is a proof-relevant compatibility contract, not a synthetic edge:
+-- it consumes the existing finite Hodge-Maxwell/Tsallis idempotent surface
+-- and the existing generalized Walrasian existence surface.  The bridge
+-- explicitly identifies Walrasian equilibrium witnesses with fixed points
+-- of the supplied solution-side projection.  No convexity, differentiability,
+-- q-log derivative, or regular-economy existence theorem is inferred here.
+------------------------------------------------------------------------
+
+record ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+  (n : Nat)
+  (H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (project : Solution (semantics H) → Solution (semantics H))
+  (projectFin : Fin n → Fin n)
+  (State Price Allocation : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous)
+  (decode : Solution (semantics H) → Allocation) : Set₁ where
+  constructor connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+  field
+    hodgeTsallisProjection :
+      ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem
+        n
+        H
+        project
+        projectFin
+    walrasianExistence :
+      ConnectedGeneralizedWalrasianExistenceTheorem
+        State
+        Price
+        Allocation
+        D
+    equilibriumToFixedPoint :
+      ∀ {p : Price} {allocation : Allocation} →
+      GeneralizedWalrasianEquilibrium D p allocation →
+      Σ
+        (λ s →
+          project s ≡ s ×
+          decode s ≡ allocation)
+    fixedPointToEquilibrium :
+      ∀ {p : Price} (s : Solution (semantics H)) →
+      project s ≡ s →
+      GeneralizedWalrasianEquilibrium D p (decode s)
+
+open ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem public
+
+------------------------------------------------------------------------
+-- The fixed-point/equilibrium bridge is deliberately conditional.  Given
+-- static Walrasian existence already packaged by the connected theorem,
+-- the bridge supplies a finite Hodge-Maxwell/Tsallis projection fixed point
+-- for every price.  The reverse direction is carried by the explicit
+-- fixedPointToEquilibrium field above.
+------------------------------------------------------------------------
+
+connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosure-fixedPoint-existence :
+  ∀ {n : Nat}
+  {H : ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n}
+  {project : Solution (semantics H) → Solution (semantics H)}
+  {projectFin : Fin n → Fin n}
+  {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous}
+  {decode : Solution (semantics H) → Allocation} →
+  ConnectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
+    n
+    H
+    project
+    projectFin
+    State
+    Price
+    Allocation
+    D
+    decode →
+  ∀ p →
+  Σ (λ s → project s ≡ s)
+connectedFiniteHodgeMaxwellTsallisWalrasianProjectionClosure-fixedPoint-existence
+  theorem
+  p =
+  let
+    walrasian =
+      connected-generalized-walrasian-equilibrium-existence
+        D
+        (ConnectedGeneralizedWalrasianExistenceTheorem.staticExistence
+          (walrasianExistence theorem))
+        p
+    witness =
+      equilibriumToFixedPoint theorem (proj₂ walrasian)
+  in
+  proj₁ witness , proj₁ (proj₂ witness)
+
+
+------------------------------------------------------------------------
 -- Infinite-family finite-carrier impossibility for continuous Maxwell.
 --
 -- This is the exact pigeonhole boundary available from the current
