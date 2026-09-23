@@ -57,10 +57,6 @@
       "role": "connected Jensen/minimax regret, rounding-bias, KKT, and stationary-Markov optimizer boundary"
     },
     {
-      "node": "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
-      "role": "connected Lion descent/KKT extension of the Jensen/minimax regret, rounding-bias, stationary-Markov optimizer boundary"
-    },
-    {
       "node": "ConnectedF4FrankWolfeKKTTheorem",
       "role": "connected F4 finite recurrent optimizer composition with a Frank-Wolfe descent/gap and KKT certificate"
     },
@@ -136,16 +132,6 @@
       "the optimizer-regret boundary is admitted only through the full connected composition"
     ],
     [
-      "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
-      "Lion descent/stationarity contributes an explicit optimizer residual to the connected regret boundary"
-    ],
-    [
-      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
-      "F_full_connected",
-      "the Lion-extended optimizer-regret boundary is admitted only through the full connected composition"
-    ],
-    [
       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
       "ConnectedF4FrankWolfeKKTTheorem",
       "exact F4 recurrent composition is the state-side dependency of the Frank-Wolfe/KKT certificate"
@@ -169,6 +155,16 @@
       "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
       "F_full_connected",
       "the F4/Frank-Wolfe optimizer boundary is admitted only through the fully connected composition"
+    ],
+    [
+      "FiniteFunctionExactIsomorphismTransportTheorem",
+      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "universal finite exact-function transport supplies the encoding-independent representation mechanism"
+    ],
+    [
+      "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "F_full_connected",
+      "Maxwell/Tsallis finite exact representation enters the full graph only through the composed theorem"
     ]
   ],
   "separation_obligation": [
@@ -254,27 +250,6 @@
       "distinction": "Connected optimizer-regret boundary combining Jensen/minimax regret, explicit rounding bias, KKT absorbing-class stationarity, and Markov fixed-point/Walrasian transport.",
       "quantitative_contract": "R ≤ J + B + K + M",
       "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
-    },
-    {
-      "name": "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "RecurrentAssociativeScanTheorem",
-        "FiniteHardSparseKKTEquilibriumTheorem",
-        "MarkovStationaryWalrasianCompositionTheorem",
-        "ConnectedJensenMinimaxRegretOptimizerTheorem",
-        "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem"
-      ],
-      "distinction": "Connected optimizer boundary extended with Lion sign-momentum descent/stationarity as an explicit optimizer-specific residual term; it does not assert a Lion convergence rate without analytic assumptions.",
-      "quantitative_contract": "R ≤ J + B + K + L + M",
-      "literature_basis": [
-        "Convergence Rate Analysis of LION, arXiv:2411.07724",
-        "Lions and Muons: Optimization via Stochastic Frank-Wolfe, arXiv:2506.04192",
-        "Convergence Analysis of the Lion Optimizer in Centralized and Distributed Settings, arXiv:2508.12327"
-      ],
-      "promotion_gate": "Promote only after a concrete Lion update model, descent/stationarity lemma, smoothness/noise assumptions, KKT constraint qualification, rounding-bias bound, Jensen/minimax duality witness, and stationary-Markov fixed-point/mixing witness are jointly instantiated and kernel-checked."
     },
     {
       "name": "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
@@ -1028,27 +1003,6 @@
       "no_synthetic_edge": true
     },
     {
-      "name": "CanonicalLionSignMomentumKKTDescentBoundaryCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "literature_basis": "Lion convergence and constrained-stationarity analyses",
-      "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "ConnectedJensenMinimaxRegretOptimizerTheorem",
-        "CanonicalLionSignMomentumKKTDescentBoundaryCandidate"
-      ],
-      "candidate_statement": "Formalize the Lion sign-momentum descent/stationarity contribution as the optimizer-specific L term in the connected regret composition, without treating Lion as a standalone separation theorem.",
-      "required_certificates": [
-        "concrete Lion update rule and state",
-        "smoothness/noise assumptions",
-        "descent or stationarity inequality",
-        "KKT constraint qualification and multiplier witness",
-        "shared objective with Jensen/rounding/Markov terms",
-        "Agda --safe composition"
-      ],
-      "no_synthetic_edge": true
-    },
-    {
       "name": "F4FrankWolfeMaxwellFiniteRepresentationCandidate",
       "status": "CANDIDATE_NOT_PROVED",
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
@@ -1067,6 +1021,30 @@
         "exact finite encoding/conjugacy",
         "shared objective and state"
       ],
+      "no_synthetic_edge": true
+    },
+    {
+      "name": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "FiniteFunctionExactIsomorphismTransportTheorem",
+        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem"
+      ],
+      "distinction": "Maxwell-only finite exact transition representation composed with universal finite-function transport, exact finite encoding/decoding, exact conjugacy, and a finite Tsallis/divergence structure.",
+      "required_certificates": [
+        "finite Maxwell state semantics",
+        "Maxwell-admissible finite transition/update",
+        "universal finite exact-function transport",
+        "exact finite encoding and decoding",
+        "encode/decode inverse laws",
+        "exact transition conjugacy",
+        "finite Tsallis/divergence structure",
+        "divergence preservation or explicitly stated divergence transport law"
+      ],
+      "physical_scope": "Maxwell equations only; no additional physical laws are admitted implicitly.",
+      "exactness_boundary": "Exactness applies to the specified finite Maxwell transition/function. It does not claim exact representation of the continuous Maxwell PDE without an explicit finite semantics/discretization.",
       "no_synthetic_edge": true
     }
   ],
@@ -1200,18 +1178,40 @@
   },
   "maxwell_status": {
     "status": "CANDIDATE_NOT_PROVED",
-    "surviving_surface": "FiniteMaxwellGRUExactRepresentationCandidate remains graph-pregraphed only; no Maxwell theorem is present in the Agda monolith.",
-    "reason": "The repository contains no Maxwell state/update semantics, so promoting a theorem would invent physics rather than compose an existing proof surface.",
+    "surviving_surface": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+    "scope": "Maxwell-only finite semantics with exact finite encoding/decoding/conjugacy and a finite Tsallis/divergence structure.",
     "promotion_gate": [
       "finite Maxwell state semantics",
-      "discrete Maxwell update preserving declared constraints",
-      "exact finite input/output encoding",
-      "exact GRU conjugacy"
+      "Maxwell-admissible finite transition/update",
+      "universal finite exact-function transport",
+      "exact finite encoding and decoding",
+      "encode/decode inverse laws",
+      "exact transition conjugacy",
+      "finite Tsallis/divergence structure",
+      "divergence preservation or explicitly stated divergence transport law"
     ],
-    "scope": "Maxwell-only; no additional physical laws may be introduced implicitly."
+    "nlab_basis": [
+      "nLab Maxwell's equations: differential-form presentation dF = 0 and d⋆F = j_el",
+      "nLab entropy/relative entropy: finite probability-space entropy and divergence structure",
+      "nLab/John Baez entropy as a functor: Tsallis entropy characterized on finite measured categories"
+    ]
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
-    "future_theorems": "Future theorem declarations are automatically visible to semantic extraction and A*/e-graph ingestion. Manual graph edits are regression metadata only; no theorem may be promoted without an actual Agda declaration and a discovered dependency path."
+    "future_theorems": "Every future theorem declaration is extracted from the canonical Agda monolith, dependency-searched by theorem_graph_search.m, and offered to theorem_monolith_egraph_sync.m. A theorem becomes strict graph material only when an actual composed consumer exists; candidate physics/optimizer nodes remain pregraphed until their explicit certificates are present."
+  },
+  "excluded_from_strict_graph": [],
+  "custom_optimizer_boundary": {
+    "policy": "Do not promote Lion as an optimizer theorem. KKT records remain foundational proof dependencies only when a connected consumer actually requires them.",
+    "rounding_regret": "The intended optimizer seam is the non-/Frank-Wolfe rounding-bias residual regret composition.",
+    "no_independent_optimizer_nodes": [
+      "Lion",
+      "standalone KKT optimizer theorem"
+    ]
+  },
+  "nlab_semantic_boundary": {
+    "maxwell": "nLab presents Maxwell equations as differential-form equations dF=0 and d⋆F=j_el; the repository may use this only to define the declared finite Maxwell semantics, not as an unproved continuous-to-finite theorem.",
+    "tsallis": "The nLab entropy-as-a-functor material treats Tsallis entropy as a structure on finite measured spaces and morphisms; the repository candidate therefore requires a finite measured-state/divergence structure before promotion.",
+    "conjugacy": "nLab's conjugation-action page identifies intertwiners/equivariant maps as invariants of conjugation; the repository's exact finite conjugacy must be stated as an explicit encode/decode transition intertwining law."
   }
 }
