@@ -293,7 +293,6 @@
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
       "path": [
         "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "FiniteFunctionExactIsomorphismTransportTheorem",
         "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
       ],
       "distinction": "Exact theorem for every explicitly supplied family of exact differential-form Hodge-Maxwell solutions, with an arbitrary GRU carrier, exact encode/decode StateIsomorphism, continuity witnesses, Maxwell-equation preservation, and recurrent transition conjugacy. It does not assert existence of such a certificate for every physical or infinite-dimensional Maxwell solution space.",
