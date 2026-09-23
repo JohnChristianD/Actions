@@ -6748,84 +6748,32 @@ connected-maxwell-tsallis-finite-exact-conjugacy-theorem C =
 
 
 ------------------------------------------------------------------------
--- Horizon-indexed rounding-bias residual regret surfaces.
+-- F4-Watkins is the sole custom optimizer boundary.
 --
--- Regret is cumulative and explicitly indexed by a finite horizon H.  No
--- no standalone optimizer theorem is retained.  A custom optimizer
--- contributes its own residual; the F4/Frank-Wolfe consumer contributes a
--- Frank-Wolfe residual directly.
+-- Regret is a genuine finite-horizon/time-indexed cumulative quantity:
+-- R 0 = 0 and R (H + 1) = R H + r H.  The theorem then bounds R H
+-- pointwise for every finite horizon H.  No standalone Lion/KKT/FW theorem
+-- is retained.
 ------------------------------------------------------------------------
-
-record CustomOptimizerRoundingBiasRegretData : Set₁ where
-  constructor customOptimizerRoundingBiasRegretData
-  field
-    cumulativeRegret : Nat → Nat
-    jensenGap : Nat → Nat
-    roundingBias : Nat → Nat
-    optimizerResidual : Nat → Nat
-    markovMixing : Nat → Nat
-
-    regretBoundAt :
-      ∀ H →
-      cumulativeRegret H
-      ≤
-      jensenGap H
-      + roundingBias H
-      + optimizerResidual H
-      + markovMixing H
-
-open CustomOptimizerRoundingBiasRegretData public
-
-custom-optimizer-rounding-bias-regret-bound :
-  (D : CustomOptimizerRoundingBiasRegretData) →
-  ∀ H →
-  cumulativeRegret D H
-  ≤
-  jensenGap D H
-  + roundingBias D H
-  + optimizerResidual D H
-  + markovMixing D H
-custom-optimizer-rounding-bias-regret-bound D H =
-  regretBoundAt D H
-
-record ConnectedCustomOptimizerRoundingBiasRegretTheorem : Set₁ where
-  constructor connectedCustomOptimizerRoundingBiasRegretTheorem
-  field
-    fullLearner :
-      CanonicalFullLearnerConnectedScanConjugacyTheorem
-    certificate :
-      CustomOptimizerRoundingBiasRegretData
-    connectedBound :
-      ∀ H →
-      cumulativeRegret certificate H
-      ≤
-      jensenGap certificate H
-      + roundingBias certificate H
-      + optimizerResidual certificate H
-      + markovMixing certificate H
-
-open ConnectedCustomOptimizerRoundingBiasRegretTheorem public
-
-connected-custom-optimizer-rounding-bias-regret-theorem :
-  (C : ConnectedCustomOptimizerRoundingBiasRegretTheorem) →
-  ∀ H →
-  cumulativeRegret (certificate C) H
-  ≤
-  jensenGap (certificate C) H
-  + roundingBias (certificate C) H
-  + optimizerResidual (certificate C) H
-  + markovMixing (certificate C) H
-connected-custom-optimizer-rounding-bias-regret-theorem C H =
-  connectedBound C H
 
 record F4FrankWolfeRoundingBiasRegretData : Set₁ where
   constructor f4FrankWolfeRoundingBiasRegretData
   field
+    perRoundRegret : Nat → Nat
     cumulativeRegret : Nat → Nat
     jensenGap : Nat → Nat
     roundingBias : Nat → Nat
     frankWolfeResidual : Nat → Nat
     markovMixing : Nat → Nat
+
+    cumulativeZero :
+      cumulativeRegret zero ≡ zero
+
+    cumulativeStep :
+      ∀ H →
+      cumulativeRegret (suc H)
+      ≡
+      cumulativeRegret H + perRoundRegret H
 
     regretBoundAt :
       ∀ H →
@@ -6838,7 +6786,7 @@ record F4FrankWolfeRoundingBiasRegretData : Set₁ where
 
 open F4FrankWolfeRoundingBiasRegretData public
 
-f4-frank-wolfe-rounding-bias-regret-bound :
+f4-frank-wolfe-horizon-regret-bound :
   (D : F4FrankWolfeRoundingBiasRegretData) →
   ∀ H →
   cumulativeRegret D H
@@ -6847,7 +6795,7 @@ f4-frank-wolfe-rounding-bias-regret-bound :
   + roundingBias D H
   + frankWolfeResidual D H
   + markovMixing D H
-f4-frank-wolfe-rounding-bias-regret-bound D H =
+f4-frank-wolfe-horizon-regret-bound D H =
   regretBoundAt D H
 
 record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
@@ -6868,7 +6816,7 @@ record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
 
 open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
 
-connected-f4-frank-wolfe-rounding-bias-regret-theorem :
+connected-f4-frank-wolfe-horizon-regret-theorem :
   (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
   ∀ H →
   cumulativeRegret (certificate C) H
@@ -6877,7 +6825,7 @@ connected-f4-frank-wolfe-rounding-bias-regret-theorem :
   + roundingBias (certificate C) H
   + frankWolfeResidual (certificate C) H
   + markovMixing (certificate C) H
-connected-f4-frank-wolfe-rounding-bias-regret-theorem C H =
+connected-f4-frank-wolfe-horizon-regret-theorem C H =
   connectedBound C H
 
 
