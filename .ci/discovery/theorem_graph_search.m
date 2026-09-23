@@ -429,7 +429,6 @@ graph_required_theorems = [
     "CanonicalOperatorCompositionTheorem",
     "CanonicalF4GlobalOptimizerStabilityTheorem",
     "CanonicalF4NormPairSureStabilityCompositionTheorem",
-    "FrankWolfeProbabilityTopologyBoundaryTheorem",
     "MarkovianStationaryPointCompositionTheorem",
     "CanonicalPureNonOrangeBypassCompletionTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
