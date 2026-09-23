@@ -532,3 +532,6 @@ This does not assert that every infinite-dimensional continuous Maxwell solution
 A finite-dimensional continuous Hodge-Maxwell specialization remains a separate proof obligation: the current Agda surface has no finite-dimensionality predicate, so the graph records that specialization as a boundary rather than inventing one. `ℤ` is retained for exact learner algebra; it is not a replacement for an arbitrary Maxwell function-space carrier.
 
 The current repository runtime boundary is unchanged: Tcl and Lua remain absent. Dhall's official documentation states that well-typed programs normalize successfully in finite time and describes Dhall as a total functional configuration language; its integration model explicitly renders or hands configuration to external programs. That safety property does not make an arbitrary future Tcl/Lua runtime semantically redundant. Keep those packages absent unless a concrete future executable or library demonstrates a runtime dependency.
+
+- ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+- CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
