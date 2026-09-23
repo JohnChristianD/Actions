@@ -589,8 +589,6 @@
       ]
     ],
     "not_fabricated": [
-      "ExactNatObservationSimulation",
-      "ExactTuringCounterObservation",
       "RingStateInjectivityTheorem",
       "FiniteMixedProductRecurrenceTheorem",
       "AbsorbingFiniteEquilibriumTheorem",
