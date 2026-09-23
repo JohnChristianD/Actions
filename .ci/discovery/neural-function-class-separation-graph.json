@@ -73,8 +73,8 @@
       "role": "fully connected extraction seam joining exact continuous Hodge-Maxwell GRU semantics to the existing F4/Watkins composition through an explicit learner-to-solution inverse and step-conjugacy bridge"
     },
     {
-      "node": "ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "role": "fully connected finite-list-coordinate specialization of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; consumes an explicit StateIsomorphism from the Maxwell solution carrier to List Scalar and derives global injectivity of the corresponding learner coordinate observation"
+      "node": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "role": "fully connected arbitrary finite-coordinate specialization of the carrier-polymorphic Hodge-Maxwell/F4/Watkins bridge; for every scalar carrier and dimension n it consumes an explicit StateIsomorphism from the Maxwell solution carrier to the exact-length list coordinate carrier Σ xs : List Scalar , length xs ≡ n and derives global learner-coordinate injectivity"
     },
     {
       "node": "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
@@ -274,8 +274,8 @@
     },
     {
       "from": "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "to": "ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "kind": "consumes explicit finite-list coordinate isomorphism and lifts global injectivity through the existing learner-to-solution inverse"
+      "to": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+      "kind": "consumes the exact-length list coordinate isomorphism for arbitrary n and lifts global injectivity through the existing learner-to-solution inverse"
     }
   ],
   "separation_obligation": [
@@ -1098,15 +1098,13 @@
     "set_of_sets_family_boundary": "A literal family/set-of-sets is a universe-lifted or dependent-family object (for example I : Set and A : I → Set, with a dependent sum in Set₁); it is not the same claim as one arbitrary Solution : Set. No cross-family injectivity theorem is claimed or needed by the current Hodge-Maxwell surface. Such a family-wide theorem must introduce an indexed family and a dependent encoder before graph admission.",
     "finite_dimensional_boundary": "A continuous finite-dimensional Hodge-Maxwell specialization is graphable only after an explicit finite-dimensional function-space certificate is added. The current Agda surface does not encode finite-dimensionality, so no finite-dimensional existence theorem is promoted.",
     "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers.",
-    "finite_list_coordinate_composition": {
-      "theorem": "ConnectedFiniteListHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+    "arbitrary_finite_coordinate_composition": {
+      "theorem": "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "status": "PROVED_ON_AGDA_SURFACE",
-      "dimension_parameter": null,
-      "coordinate_carrier": "List Scalar",
-      "certificate": "StateIsomorphism from the arbitrary Maxwell Solution carrier of the connected representation to the finite List Scalar coordinate carrier",
-      "result": "global injectivity of the finite-list coordinate observation on CanonicalFullLearnerState, derived from the connected learner-to-solution left inverse and coordinate isomorphism",
-      "semantic_limit": "This is an exact finite-list-coordinate specialization. List is finite, but the theorem does not assert vector-space dimension or a fixed coordinate length.",
-      "no_fin_n_maxwell_base": "The base Hodge-Maxwell representation remains carrier-polymorphic; List Scalar appears only in this explicit finite-coordinate specialization."
+      "quantification": "∀ Scalar : Set, ∀ n : Nat, for every supplied connected representation and exact-length coordinate isomorphism",
+      "coordinate_carrier": "FiniteCoordinateList Scalar n = Σ (xs : List Scalar) (λ xs → length xs ≡ n)",
+      "result": "global injectivity of the learner coordinate observation",
+      "semantic_limit": "This is an arbitrary finite-coordinate specialization expressed with exact-length lists. It avoids Fin while retaining a genuine finite coordinate length n; it does not itself formalize vector-space/module axioms or prove existence of the coordinate isomorphism for every physical Maxwell solution space."
     }
   },
   "automation_contract": {
