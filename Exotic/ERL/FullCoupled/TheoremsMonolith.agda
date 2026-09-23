@@ -15,7 +15,7 @@ open import Data.Unit using (⊤; tt)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 open import Data.Fin using (Fin; toℕ)
-open import Data.Fin.Properties using (pigeonhole; toℕ-injective; toℕ-mono-<)
+open import Data.Fin.Properties using (pigeonhole; toℕ-injective; toℕ-mono-<; ℕ→Fin-notInjective)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
@@ -7192,6 +7192,302 @@ connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem :
   ConnectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem n
 connected-finite-hodge-maxwell-tsallis-divergence-composition-theorem H T =
   connectedFiniteHodgeMaxwellTsallisDivergenceCompositionTheorem H T
+
+------------------------------------------------------------------------
+-- Infinite-family finite-carrier impossibility for continuous Maxwell.
+--
+-- This is the exact pigeonhole boundary available from the current
+-- representation surface. It does not identify "infinite-dimensional"
+-- with an arbitrary mathematical property: the caller supplies an explicit
+-- injectively indexed Nat-family of continuous Maxwell solutions.
+--
+-- The proof uses the existing finite exact GRU representation, a continuous
+-- left-invertible observation, and the already-connected neighborhood
+-- separation surface. Exact state isomorphism supplies the finite carrier;
+-- the finite encoder then cannot injectively encode the explicit infinite
+-- solution family.
+------------------------------------------------------------------------
+
+record ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+  (n : Nat)
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics (representation)) → Feature)
+  (inverse : Feature → Solution (semantics (representation)))
+  (embed :
+    Nat → Solution (semantics (representation))) : Set₁ where
+  constructor
+    connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+  field
+    observation :
+      ContinuousLeftInverseTheorem
+        (Solution (semantics (representation)))
+        Feature
+        observe
+        inverse
+        Continuous
+
+    neighborhoodSeparation :
+      DenseNeighborhoodSeparationTheorem
+        (Solution (semantics (representation)))
+        Feature
+        embed
+        observe
+
+    infiniteFamilyInjective :
+      ∀ {m n₁} →
+      embed m ≡ embed n₁ →
+      m ≡ n₁
+
+    noFiniteExactCarrier :
+      ⊥
+
+open ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem public
+
+connectedContinuousMaxwellFiniteCarrierFamilyInjective :
+  ∀ {n : Nat}
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics (representation)) → Feature)
+  (inverse : Feature → Solution (semantics (representation)))
+  (embed :
+    Nat → Solution (semantics (representation)))
+  (observationWitness :
+    ContinuousLeftInverseTheorem
+      (Solution (semantics (representation)))
+      Feature
+      observe
+      inverse
+      Continuous)
+  (separation :
+    DenseNeighborhoodSeparationTheorem
+      (Solution (semantics (representation)))
+      Feature
+      embed
+      observe) →
+  ∀ {m n₁} →
+  embed m ≡ embed n₁ →
+  m ≡ n₁
+connectedContinuousMaxwellFiniteCarrierFamilyInjective
+  representation
+  observe
+  inverse
+  embed
+  observationWitness
+  separation
+  eq =
+  denseNeighborhoodSeparation separation
+    (trans
+      (cong observe eq)
+      (refl))
+
+connectedContinuousMaxwellFiniteCarrierPigeonhole :
+  ∀ {n : Nat}
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics (representation)) → Feature)
+  (inverse : Feature → Solution (semantics (representation)))
+  (embed :
+    Nat → Solution (semantics (representation)))
+  (observationWitness :
+    ContinuousLeftInverseTheorem
+      (Solution (semantics (representation)))
+      Feature
+      observe
+      inverse
+      Continuous)
+  (separation :
+    DenseNeighborhoodSeparationTheorem
+      (Solution (semantics (representation)))
+      Feature
+      embed
+      observe) →
+  ⊥
+connectedContinuousMaxwellFiniteCarrierPigeonhole
+  representation
+  observe
+  inverse
+  embed
+  observationWitness
+  separation =
+  let
+    finiteEncode :
+      Solution (semantics representation) → Fin n =
+      encode (semantics representation)
+    finiteFamily :
+      Nat → Fin n =
+      λ k → finiteEncode (embed k)
+    familyInjective :
+      ∀ {m n₁} →
+      finiteFamily m ≡ finiteFamily n₁ →
+      m ≡ n₁
+    familyInjective eq =
+      denseNeighborhoodSeparation separation
+        (trans
+          (cong observe
+            (trans
+              (sym
+                (decodeEncode
+                  (semantics representation)
+                  (embed m)))
+              (trans
+                (cong
+                  (decode (semantics representation))
+                  eq)
+                (decodeEncode
+                  (semantics representation)
+                  (embed n₁)))))
+          (refl))
+  in
+  ℕ→Fin-notInjective finiteFamily familyInjective
+
+connected-continuous-maxwell-finite-carrier-pigeonhole-theorem :
+  ∀ {n : Nat}
+  {Feature : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (representation :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (observe :
+    Solution (semantics representation) → Feature)
+  (inverse : Feature → Solution (semantics representation))
+  (embed :
+    Nat → Solution (semantics representation))
+  (observationWitness :
+    ContinuousLeftInverseTheorem
+      (Solution (semantics representation))
+      Feature
+      observe
+      inverse
+      Continuous)
+  (separation :
+    DenseNeighborhoodSeparationTheorem
+      (Solution (semantics representation))
+      Feature
+      embed
+      observe) →
+  ConnectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+    n
+connected-continuous-maxwell-finite-carrier-pigeonhole-theorem
+  representation
+  observe
+  inverse
+  embed
+  observationWitness
+  separation =
+  connectedContinuousMaxwellFiniteCarrierPigeonholeImpossibilityTheorem
+    observationWitness
+    separation
+    (connectedContinuousMaxwellFiniteCarrierFamilyInjective
+      representation
+      observe
+      inverse
+      embed
+      observationWitness
+      separation)
+    (connectedContinuousMaxwellFiniteCarrierPigeonhole
+      representation
+      observe
+      inverse
+      embed
+      observationWitness
+      separation)
+
+------------------------------------------------------------------------
+-- Local generalized Walrasian existence closure.
+--
+-- Once static Walrasian existence is supplied for every price, the existing
+-- invariant aggregate and static-to-generalized lift produce a generalized
+-- equilibrium for every price. No external regular-economy adapter is hidden
+-- in this theorem; that cross-language step remains an explicit frontier.
+------------------------------------------------------------------------
+
+record ConnectedGeneralizedWalrasianExistenceTheorem
+  (State Price Allocation : Set)
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous) : Set₁ where
+  constructor connectedGeneralizedWalrasianExistenceTheorem
+  field
+    markovStationaryComposition :
+      MarkovStationaryWalrasianCompositionTheorem
+    staticExistence :
+      ∀ p →
+      Σ
+        (λ allocation →
+          staticWalrasian D p allocation)
+
+open ConnectedGeneralizedWalrasianExistenceTheorem public
+
+connected-generalized-walrasian-equilibrium-existence :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous)
+  (staticExistence :
+    ∀ p →
+    Σ
+      (λ allocation →
+        staticWalrasian D p allocation)) →
+  ∀ p →
+  Σ
+    (λ allocation →
+      GeneralizedWalrasianEquilibrium D p allocation)
+connected-generalized-walrasian-equilibrium-existence
+  D
+  staticExistence
+  p =
+  let
+    witness = staticExistence p
+  in
+  proj₁ witness ,
+  generalizedWalrasianEquilibrium-from-static
+    D
+    p
+    (proj₁ witness)
+    (proj₂ witness)
+
+connected-generalized-walrasian-existence-theorem :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State
+      Price
+      Allocation
+      Continuous)
+  (staticExistence :
+    ∀ p →
+    Σ
+      (λ allocation →
+        staticWalrasian D p allocation)) →
+  ConnectedGeneralizedWalrasianExistenceTheorem
+    State
+    Price
+    Allocation
+    D
+connected-generalized-walrasian-existence-theorem
+  D
+  staticExistence =
+  connectedGeneralizedWalrasianExistenceTheorem
+    markov-stationary-walrasian-composition-theorem
+    staticExistence
 
 ------------------------------------------------------------------------
 -- Horizon monotonicity is not part of the F4 regret theorem by itself.
