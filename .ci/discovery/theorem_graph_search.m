@@ -116,7 +116,6 @@ graph_endogenous_pomdp_observation_plan(Laws, Plan) :-
 
 graph_connected_jensen_minimax_regret_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedJensenMinimaxRegretOptimizerTheorem",
         Laws,
         Plan).
 
@@ -136,6 +135,8 @@ graph_connected_lion_jensen_minimax_regret_plan(Laws, Plan) :-
 graph_connected_f4_frank_wolfe_plan(Laws, Plan) :-
     search_named_required_plan(
         "ConnectedF4FrankWolfeKKTTheorem",
+    "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+    "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
         Laws,
         Plan).
 
@@ -145,7 +146,26 @@ graph_connected_f4_frank_wolfe_plan(Laws, Plan) :-
 
 graph_connected_f4_frank_wolfe_jensen_rounding_kkt_markov_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_connected_custom_optimizer_rounding_bias_regret_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_custom_optimizer_rounding_bias_regret_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+        Laws,
+        Plan).
+
+:- pred graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
         Laws,
         Plan).
 
@@ -517,9 +537,7 @@ graph_required_theorems = [
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
-    "ConnectedJensenMinimaxRegretOptimizerTheorem",
     "ConnectedF4FrankWolfeKKTTheorem",
-    "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
     "FiniteMaxwellGRUExactRepresentationCandidate",
     "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "CanonicalTokenVocabularyUpperBoundTheorem",
