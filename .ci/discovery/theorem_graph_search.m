@@ -532,3 +532,9 @@ graph_f4_normpair_gru_global_conjugacy_injectivity_plan(Laws, Plan) :-
         "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
         Laws,
         Plan).
+
+graph_connected_finite_dimensional_hodge_maxwell_gru_f4_watkins_egraph_composition_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedFiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+        Laws,
+        Plan).
