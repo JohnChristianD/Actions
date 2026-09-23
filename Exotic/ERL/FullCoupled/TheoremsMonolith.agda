@@ -6696,9 +6696,8 @@ connected-f4-frank-wolfe-horizon-regret-theorem C H =
 ------------------------------------------------------------------------
 -- Promotion boundary:
 -- the Jensen/minimax regret surface is not a standalone optimizer theorem.
--- It is graph-complete only through the recurrent scan, stationary Markov
--- fixed-point/Walrasian interface, and KKT absorbing-class certificate.
--- A concrete Jensen inequality, constraint qualification, rounding model,
--- and stationary-law witness remain required before this becomes a proved
--- numeric regret theorem.
+-- It is graph-complete only through the recurrent scan and the stationary
+-- Markov fixed-point/Walrasian interface. A concrete Jensen inequality,
+-- rounding model, and stationary-law witness remain required before this
+-- becomes a proved numeric regret theorem.
 ------------------------------------------------------------------------
