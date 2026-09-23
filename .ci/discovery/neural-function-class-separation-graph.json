@@ -1131,32 +1131,9 @@
     ],
     "arbitrary_solution_space_quantifier": "For every instantiated ContinuousHodgeMaxwellExactRepresentationData GRU, the field Solution is an arbitrary Set carrier: no fixed dimension, Fin n bound, or finite enumeration is assumed. The connected representation theorem is universally instantiable over every such supplied solution carrier and arbitrary GRU carrier.",
     "global_injectivity_scope": "continuousHodgeMaxwell-global-encode-injective proves the encoder is injective over the entire Solution carrier of the supplied representation datum: for all x y in that Solution, encode x ≡ encode y implies x ≡ y. This is global within one arbitrary solution space, not merely local, finite, or observation-image injectivity.",
-    "representation_existence_boundary": "Theorem remains conditional on supplied representation semantics. Infinite-dimensional promotion additionally requires only a caller-supplied predicate/witness certifying the intended notion of infinite dimensionality; it does not construct that certificate.",
+    "representation_existence_boundary": "The unified carrier-agnostic composition remains conditional on the supplied exact Hodge-Maxwell representation and a HodgeMaxwellCarrierPromotion witness. No finite/infinite existence theorem is inferred.",
     "set_of_sets_family_boundary": "A literal family/set-of-sets is a universe-lifted or dependent-family object (for example I : Set and A : I → Set, with a dependent sum in Set₁); it is not the same claim as one arbitrary Solution : Set. No cross-family injectivity theorem is claimed or needed by the current Hodge-Maxwell surface. Such a family-wide theorem must introduce an indexed family and a dependent encoder before graph admission.",
     "z_role": "ℤ remains the exact unbounded algebraic carrier for the canonical learner; it does not replace arbitrary Maxwell function-space carriers.",
-    "additional_gru_f4_maxwell_compositions": {
-      "status": "PROVED_ON_AGDA_SURFACE",
-      "theorems": [
-        "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
-        "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
-      ],
-      "composition_paths": [
-        [
-          "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-          "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem"
-        ],
-        [
-          "ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-          "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
-        ],
-        [
-          "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-          "ConnectedFiniteCoordinateHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"
-        ]
-      ],
-      "preservation": "finite-coordinate and infinite-dimensional theorem families remain separate; no CI registration or theorem surface is collapsed",
-      "semantic_limit": "All dimension/coordinate claims remain explicit caller-supplied proof data."
-    },
     "unified_carrier_promotion": {
       "theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "exact_step_theorem": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
