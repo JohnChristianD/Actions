@@ -6938,9 +6938,7 @@ record FiniteTsallisDivergenceStructure (n : Nat) : Set₁ where
   field
     Value : Set
     divergence : Fin n → Fin n → Value
-    transport :
-      ∀ {x y : Fin n} →
-      divergence x y ≡ divergence x y
+    divergenceStep : Value → Value
 
 open FiniteTsallisDivergenceStructure public
 
