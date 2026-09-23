@@ -1487,7 +1487,7 @@ canonical-qLog2Bias8-law :
     (C.int8OfNat
       ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
        C.denominator (C.finiteQLog8 x)))
-canonical-qLog2Bias8-law x with toℕ (C.code x)
+canonical-qLog2Bias8-law x with ∣ C.code x ∣
 ... | zero = refl
 ... | suc n = refl
 
