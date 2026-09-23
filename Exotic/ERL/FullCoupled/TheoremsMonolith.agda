@@ -5882,3 +5882,63 @@ f4-cumulative-regret-monotone D nonnegative H =
     (f4-add-right-nonnegative
       (cumulativeRegret D H)
       (perRoundRegret D H))
+
+
+------------------------------------------------------------------------
+-- Hodge-Maxwell global injectivity boundary.
+--
+-- A concrete collision witness is incompatible with the exact connected
+-- carrier-polymorphic representation certificate, whose global encoder
+-- is already required to be injective.  This is the narrow negative
+-- boundary: a purported non-injective Hodge-Maxwell variant cannot also
+-- inhabit the exact connected representation theorem.
+------------------------------------------------------------------------
+
+record GlobalEncodeCollisionWitness
+  (Solution GRU : Set)
+  (encode : Solution → GRU) : Set₁ where
+  constructor globalEncodeCollisionWitness
+  field
+    x : Solution
+    y : Solution
+    distinct : x ≢ y
+    collision : encode x ≡ encode y
+
+open GlobalEncodeCollisionWitness public
+
+hodgeMaxwell-globalEncodeCollision-impossible :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (H :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+      GRU {Continuous = Continuous}) →
+  GlobalEncodeCollisionWitness
+    (Solution (semantics H))
+    GRU
+    (encode (semantics H)) →
+  ⊥
+hodgeMaxwell-globalEncodeCollision-impossible H witness =
+  distinct witness
+    (globalEncodeInjective
+      (semantics H)
+      (collision witness))
+
+hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (H :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+      GRU {Continuous = Continuous}) →
+  GlobalEncodeCollisionWitness
+    (Solution (semantics H))
+    GRU
+    (encode (semantics H)) →
+  ¬ (∀ {x y} →
+      encode (semantics H) x ≡
+      encode (semantics H) y →
+      x ≡ y)
+hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
+  H witness =
+  λ globalInjective →
+    distinct witness
+      (globalInjective (collision witness))
