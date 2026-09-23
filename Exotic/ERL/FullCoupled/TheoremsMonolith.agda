@@ -5310,6 +5310,71 @@ connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-reg
       (connected carrierComposition))
 
 ------------------------------------------------------------------------
+-- Case adapters into the unified carrier-promotion surface.
+--
+-- These keep the existing finite/infinite theorem names available to CI and
+-- callers while making the promoted graph endpoint single and dimension
+-- agnostic.
+------------------------------------------------------------------------
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-finite :
+  ∀ {GRU Scalar : Set}
+  {n : Nat}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (finiteComposition :
+    ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU Scalar n) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-finite
+  finiteComposition =
+  connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-egraph-composition
+    (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      .connected
+      finiteComposition)
+    (hodgeMaxwellCarrierPromotion
+      ⊤
+      tt
+      (FiniteCoordinateList Scalar n)
+      (ConnectedArbitraryFiniteCoordinateHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .finiteCoordinateCoordinates
+        finiteComposition))
+
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-infinite :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {InfiniteDimensional : Set → Set₁}
+  (infiniteComposition :
+    ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      GRU) →
+  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+    GRU
+connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-from-infinite
+  infiniteComposition =
+  connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-egraph-composition
+    (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+      .connected
+      infiniteComposition)
+    (hodgeMaxwellCarrierPromotion
+      (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .infiniteDimensionalSolution
+        infiniteComposition)
+      (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+        .infiniteDimensionalSolution
+        infiniteComposition)
+      (ContinuousHodgeMaxwellExactRepresentationData.Solution
+        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+          (hodgeMaxwell
+            (ConnectedInfiniteDimensionalHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
+              .connected
+              infiniteComposition))))
+      (stateIsomorphism
+        (λ s → s)
+        (λ s → s)
+        (λ s → refl)
+        (λ s → refl)))
+
+------------------------------------------------------------------------
 -- F4/NormPair/GRU global conjugacy + injectivity contract.
 --
 -- A projection from the full learner state to a GRU/F4/NormPair feature
