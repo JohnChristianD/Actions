@@ -53,10 +53,6 @@
       "role": "function class induced by the entire connected composition"
     },
     {
-      "node": "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
-      "role": "custom-optimizer Jensen/rounding-bias/residual/stationary regret boundary"
-    },
-    {
       "node": "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
       "role": "F4 + Frank-Wolfe rounding-bias residual regret boundary"
     },
@@ -132,11 +128,6 @@
       "Maxwell/Tsallis finite exact representation enters the full graph only through the composed theorem"
     ],
     [
-      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
-      "custom optimizer is the sole optimizer-specific residual consumer"
-    ],
-    [
       "FiniteFunctionExactIsomorphismTransportTheorem",
       "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "universal finite exact transport composes with Maxwell semantics and exact conjugacy"
@@ -147,9 +138,9 @@
       "exact GRU-F4-Watkins composition is consumed directly by the horizon-indexed Frank-Wolfe rounding-bias residual regret theorem"
     ],
     [
-      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
-      "the custom optimizer is consumed only through the horizon-indexed rounding-bias residual regret theorem"
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+      "F4-Watkins is the sole custom optimizer composition and directly consumes the horizon-indexed rounding-bias residual regret theorem"
     ]
   ],
   "separation_obligation": [
@@ -974,26 +965,6 @@
       "no_synthetic_edge": true
     },
     {
-      "name": "F4FrankWolfeMaxwellFiniteRepresentationCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
-        "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
-        "FiniteMaxwellGRUExactRepresentationCandidate"
-      ],
-      "candidate_statement": "Compose the exact finite F4 recurrent optimizer with the horizon-indexed Frank-Wolfe rounding-bias residual regret consumer while restricting the represented physics vocabulary to finite Maxwell-admissible transitions.",
-      "required_certificates": [
-        "F4 exact recurrent GRU-Watkins composition",
-        "horizon-indexed Frank-Wolfe rounding-bias residual regret certificate",
-        "finite Maxwell state semantics",
-        "exact finite encoding/conjugacy",
-        "shared finite state/objective semantics"
-      ],
-      "no_synthetic_edge": true
-    },
-    {
       "name": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
       "status": "CANDIDATE_NOT_PROVED",
       "parent": "FiniteFunctionExactIsomorphismTransportTheorem",
@@ -1015,6 +986,50 @@
       ],
       "physical_scope": "Maxwell equations only; no additional physical laws are admitted implicitly.",
       "exactness_boundary": "Exactness applies to the specified finite Maxwell transition/function. It does not claim exact representation of the continuous Maxwell PDE without an explicit finite semantics/discretization.",
+      "no_synthetic_edge": true
+    },
+    {
+      "name": "ConnectedF4MaxwellFiniteDivergenceRegretCompositionCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "path": [
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+        "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem"
+      ],
+      "candidate_statement": "Compose the sole F4 custom optimizer, its genuine horizon-indexed cumulative regret theorem, and the finite Maxwell/Tsallis exact-conjugacy seam without importing a standalone optimizer or KKT endpoint.",
+      "required_certificates": [
+        "F4 exact GRU-Watkins composition",
+        "cumulative horizon law",
+        "F4 residual regret bound",
+        "finite Maxwell semantics",
+        "exact finite encoding/decoding",
+        "exact conjugacy",
+        "finite Tsallis/divergence transport",
+        "shared finite state semantics"
+      ],
+      "no_synthetic_edge": true
+    },
+    {
+      "name": "ConnectedMaxwellContinuousPDERepresentationCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "parent": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+      "path": [
+        "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
+        "ContinuousMaxwellDifferentialFormSemantics",
+        "ExactGRUFunctionSpaceRepresentationHypothesis",
+        "ConnectedMaxwellContinuousPDERepresentationCandidate"
+      ],
+      "candidate_statement": "Exact representation of the full Maxwell PDE solution/function space, formulated over differential-form fields rather than a finite-state discretization.",
+      "required_certificates": [
+        "formal differential-form/function-space semantics",
+        "well-posed domain and boundary conditions",
+        "exact GRU representation over the chosen function space",
+        "representation preserves dF=0 and d⋆F=j",
+        "exact encode/decode or an explicit function-space isomorphism"
+      ],
+      "impossibility_boundary": "The existing finite-function exactness theorem is insufficient; the finite cardinality argument prevents silently promoting it to all continuous Maxwell fields.",
       "no_synthetic_edge": true
     }
   ],
@@ -1117,7 +1132,7 @@
     "maxwell": "Every future physics theorem must explicitly declare Maxwell-only scope, finite encoding, and exact representation/conjugacy; no extra physical law is admitted implicitly."
   },
   "maxwell_status": {
-    "status": "CANDIDATE_NOT_PROVED",
+    "status": "FINITE_SEMANTICS_ONLY",
     "surviving_surface": "ConnectedMaxwellTsallisFiniteExactConjugacyTheorem",
     "scope": "Maxwell-only finite semantics with exact finite encoding/decoding/conjugacy and a finite Tsallis/divergence structure.",
     "promotion_gate": [
@@ -1134,7 +1149,9 @@
       "nLab Maxwell's equations: differential-form presentation dF = 0 and d⋆F = j_el",
       "nLab entropy/relative entropy: finite probability-space entropy and divergence structure",
       "nLab/John Baez entropy as a functor: Tsallis entropy characterized on finite measured categories"
-    ]
+    ],
+    "continuous_pde_boundary": "A finite exact-function isomorphism cannot by itself prove exact representation of all continuous Maxwell PDE fields. Exact all-PDE representation requires a function-space/differential-form semantics and an explicit exact GRU representation theorem for that infinite-dimensional domain; absent that, no such proof is admitted.",
+    "nlab_equations": "Maxwell is represented by dF = 0 and d⋆F = j on a spacetime manifold; the existing finite theorem does not identify a finite state space with the full solution space."
   },
   "automation_contract": {
     "graphing": "The canonical Agda monolith is the only theorem source. learner_semantic_extractor.m discovers declarations/dependencies; theorem_graph_search.m performs A* dependency discovery; theorem_monolith_egraph_sync.m ingests the discovered plans into the e-graph. Dhall orchestrates these modules but does not define theorem edges.",
@@ -1147,14 +1164,16 @@
     "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem"
   ],
   "custom_optimizer_boundary": {
-    "policy": "No independent Lion, KKT, or Frank-Wolfe optimizer endpoint is admitted.",
-    "generic_contract": "For every horizon H, R(H) ≤ J(H) + B(H) + O(H) + M(H), where O is the supplied custom-optimizer residual.",
-    "frank_wolfe_contract": "For every horizon H, R(H) ≤ J(H) + B(H) + W(H) + M(H), where W is the supplied Frank-Wolfe residual.",
-    "connected_consumers": [
-      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
-      "ConnectedF4FrankWolfeRoundingBiasRegretTheorem"
-    ],
-    "foundational_kkt": "KKT records are retained only when an existing theorem genuinely depends on them; they are not optimizer endpoints."
+    "policy": "F4 is the only custom optimizer.",
+    "contract": "For every finite horizon H, cumulative regret R(H) is generated by per-round regret r(H): R(0)=0 and R(H+1)=R(H)+r(H), with R(H) ≤ J(H)+B(H)+W(H)+M(H).",
+    "terms": "J is Jensen/minimax contribution; B rounding bias; W the F4/Frank-Wolfe residual; M stationary/Markov residual.",
+    "strict_endpoint": "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+    "excluded": [
+      "Lion",
+      "standalone KKT",
+      "standalone Frank-Wolfe",
+      "generic custom optimizer"
+    ]
   },
   "nlab_semantic_boundary": {
     "maxwell": "nLab presents Maxwell equations as differential-form equations dF=0 and d⋆F=j_el; the repository may use this only to define the declared finite Maxwell semantics, not as an unproved continuous-to-finite theorem.",
@@ -1188,15 +1207,32 @@
   },
   "no_disconnected_optimizer_endpoints": {
     "pruned": [
-      "ConnectedJensenMinimaxRegretOptimizerTheorem",
-      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
+      "FiniteHardSparseKKTEquilibriumTheorem",
+      "UniqueKKTAbsorbingClass",
       "ConnectedF4FrankWolfeKKTTheorem",
-      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem"
+      "ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem",
+      "ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem",
+      "ConnectedJensenMinimaxRegretOptimizerTheorem"
     ],
     "retained": [
-      "ConnectedCustomOptimizerRoundingBiasRegretTheorem",
       "ConnectedF4FrankWolfeRoundingBiasRegretTheorem"
     ],
-    "horizon_contract": "R(H) is cumulative regret through horizon H; the bound is quantified for every H."
+    "rule": "Only a theorem consumed by a strictly connected composition survives as a strict endpoint."
+  },
+  "qsa_boundary": {
+    "status": "RESEARCH_BOUNDARY",
+    "exact_algebraic_core": "Finite deterministic QSA identities can be formalized over Nat or exact rationals without real analysis.",
+    "convergence_core": "Classical stochastic/quasi-stochastic approximation convergence proofs generally require probability, limits/topology, measurability, stability/ODE or martingale arguments; real analysis is therefore needed for the continuous/asymptotic theorem, not for the finite algebraic shell.",
+    "promotion_rule": "Do not add a QSA convergence theorem to the strict graph until its analytic probability/limit semantics are formalized. A finite exact-QSA recurrence may be pregraphed separately."
+  },
+  "complete_graph_contract_v9": {
+    "optimizer": "F4 is the sole custom optimizer. No generic optimizer, Lion, standalone FW, or KKT endpoint.",
+    "regret": "Every strict regret theorem is cumulative and time/horizon indexed: R(0)=0; R(H+1)=R(H)+r(H); the bound is quantified over H.",
+    "pruning": "Delete disconnected theorem surfaces from the canonical source and graph unless an existing retained theorem consumes them.",
+    "physics": "Finite Maxwell exactness and continuous Maxwell-PDE exactness are separate theorem domains; never promote one into the other.",
+    "qsa": "Separate exact finite algebraic QSA from analytic stochastic-approximation convergence.",
+    "future": "Every future theorem must be an actual Agda declaration with real dependency edges, then a connected consumer before strict endpoint admission.",
+    "automation": "learner_semantic_extractor.m → theorem_graph_search.m → theorem_monolith_egraph_sync.m"
   }
 }
