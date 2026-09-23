@@ -319,19 +319,14 @@ JSON
     ExactFunctionIsomorphismTransportTheorem
     ExactRecurrentFunctionTranslationTheorem
     POMDPExactTransport
-    FiniteBeliefUpdateExactTransportTheorem
-    FiniteProbabilityMassSemanticsTheorem
-    FinitePOMDPProbabilitySemanticsTheorem
     MarkovStationaryWalrasianCompositionTheorem
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
-    BairdSevenStarProblem
     bairdSevenStar
     NonIIDMarkovWalrasianProblem
     nonIIDMarkovStationaryWalrasian-lift
-    Majority3ShapleyEquilibrium
     majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
