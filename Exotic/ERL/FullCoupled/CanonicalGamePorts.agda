@@ -5,8 +5,6 @@ module Exotic.ERL.FullCoupled.CanonicalGamePorts where
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (_∸_; _≤_; z≤n; s≤s)
-open import Data.Fin using (Fin; fromℕ<; toℕ)
-open import Data.Fin.Properties using (toℕ-fromℕ<; toℕ<n)
 open import Data.Integer using (ℤ; +_)
 open import Data.Product using (_×_; _,_)
 open import Data.Empty using (⊥)
@@ -47,21 +45,6 @@ leBool zero _ = yes
 leBool (suc _) zero = no
 leBool (suc m) (suc n) = leBool m n
 
-fin2 : Nat → Fin 2
-fin2 n = fromℕ< (m%n<n n 2)
-
-fin3 : Nat → Fin 3
-fin3 n = fromℕ< (m%n<n n 3)
-
-fin4 : Nat → Fin 4
-fin4 n = fromℕ< (m%n<n n 4)
-
-fin5 : Nat → Fin 5
-fin5 n = fromℕ< (m%n<n n 5)
-
-fin6 : Nat → Fin 6
-fin6 n = fromℕ< (m%n<n n 6)
-
 record KnapsackState : Set where
   constructor knapsackState
   field index capacity value : Nat
@@ -93,8 +76,8 @@ record MazeState : Set where
   constructor mazeState
   field row col goalRow goalCol time : Nat
 
-mazeMove : Fin 4 → Nat × Nat → Nat × Nat
-mazeMove a (r , c) with toℕ a
+mazeMove : Nat → Nat × Nat → Nat × Nat
+mazeMove a (r , c) with a
 ... | zero = r ∸ 1 , c
 ... | suc zero = r , suc c
 ... | suc (suc zero) = suc r , c
@@ -107,7 +90,7 @@ mazeOpen r c with leBool r 4
 ...   | no = no
 ...   | yes = yes
 
-mazeStep : Fin 4 → MazeState → StepResult MazeState
+mazeStep : Nat → MazeState → StepResult MazeState
 mazeStep a (mazeState r c gr gc t) with mazeMove a (r , c)
 ... | nr , nc with mazeOpen nr nc
 ...   | no = stepResult (int8OfNat (r + c)) (mazeState r c gr gc (suc t)) zero8 no
@@ -142,8 +125,8 @@ record LBFState : Set where
   constructor lbfState
   field a1r a1c a2r a2c foodR foodC foodLevel time : Nat
 
-lbfStep : Fin 6 → LBFState → StepResult LBFState
-lbfStep a (lbfState r1 c1 r2 c2 fr fc fl t) with toℕ a
+lbfStep : Nat → LBFState → StepResult LBFState
+lbfStep a (lbfState r1 c1 r2 c2 fr fc fl t) with a
 ... | zero = stepResult (int8OfNat r1) (lbfState (r1 ∸ 1) c1 (r2 ∸ 1) c2 fr fc fl (suc t)) zero8 no
 ... | suc zero = stepResult (int8OfNat c1) (lbfState r1 (suc c1) r2 (suc c2) fr fc fl (suc t)) zero8 no
 ... | suc (suc zero) = stepResult (int8OfNat r1) (lbfState (suc r1) c1 (suc r2) c2 fr fc fl (suc t)) zero8 no
@@ -159,7 +142,7 @@ record MetaMazeState : Set where
   constructor metaMazeState
   field row col goalRow goalCol time : Nat
 
-metaMazeStep : Fin 4 → MetaMazeState → StepResult MetaMazeState
+metaMazeStep : Nat → MetaMazeState → StepResult MetaMazeState
 metaMazeStep a (metaMazeState r c gr gc t) with mazeMove a (r , c)
 ... | nr , nc with mazeOpen nr nc
 ...   | no = stepResult (int8OfNat (r + c)) (metaMazeState r c gr gc (suc t)) zero8 no
@@ -169,15 +152,15 @@ metaMazeStep a (metaMazeState r c gr gc t) with mazeMove a (r , c)
 ...       | no = stepResult (int8OfNat (nr + nc)) (metaMazeState nr nc gr gc (suc t)) zero8 no
 ...     | no = stepResult (int8OfNat (nr + nc)) (metaMazeState nr nc gr gc (suc t)) zero8 no
 
-fourRoomsStep : Fin 4 → MazeState → StepResult MazeState
+fourRoomsStep : Nat → MazeState → StepResult MazeState
 fourRoomsStep = mazeStep
 
 record PongState : Set where
   constructor pongState
   field p1 p2 ballR ballC velR velC time : Nat
 
-pongStep : Fin 3 → PongState → StepResult PongState
-pongStep a (pongState p1 p2 br bc vr vc t) with toℕ a
+pongStep : Nat → PongState → StepResult PongState
+pongStep a (pongState p1 p2 br bc vr vc t) with a
 ... | zero = stepResult (int8OfNat (br + bc)) (pongState p1 p2 (br + vr) (bc + vc) vr vc (suc t)) one8 no
 ... | suc zero = stepResult (int8OfNat (br + bc)) (pongState (p1 ∸ 1) p2 (br + vr) (bc + vc) vr vc (suc t)) one8 no
 ... | _ = stepResult (int8OfNat (br + bc)) (pongState (suc p1) p2 (br + vr) (bc + vc) vr vc (suc t)) one8 no
@@ -186,12 +169,12 @@ record MemoryChainState : Set where
   constructor memoryChainState
   field memory query time : Nat
 
-memoryChainStep : Fin 2 → MemoryChainState → StepResult MemoryChainState
+memoryChainStep : Nat → MemoryChainState → StepResult MemoryChainState
 memoryChainStep a (memoryChainState m q t) with leBool t 5
-... | yes with natEq (toℕ a) q
+... | yes with natEq (a) q
 ...   | yes = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
 ...   | no = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
-... | no with natEq (toℕ a) q
+... | no with natEq (a) q
 ...   | yes = stepResult (int8OfNat m) (memoryChainState m q (suc t)) one8 no
 ...   | no = stepResult (int8OfNat m) (memoryChainState m q (suc t)) zero8 no
 
@@ -199,17 +182,17 @@ record DiscountingChainState : Set where
   constructor discountingChainState
   field rewardTime time : Nat
 
-discountingChainStep : Fin 5 → DiscountingChainState → StepResult DiscountingChainState
+discountingChainStep : Nat → DiscountingChainState → StepResult DiscountingChainState
 discountingChainStep a (discountingChainState rt t) with natEq t rt
-... | yes = stepResult (int8OfNat rt) (discountingChainState rt (suc t)) (int8OfNat (toℕ a + 1)) no
+... | yes = stepResult (int8OfNat rt) (discountingChainState rt (suc t)) (int8OfNat (a + 1)) no
 ... | no = stepResult (int8OfNat rt) (discountingChainState rt (suc t)) zero8 no
 
 record CartPoleQuantizedState : Set where
   constructor cartPoleQuantizedState
   field position velocity angle angularVelocity time : Nat
 
-cartPoleQuantizedStep : Fin 2 → CartPoleQuantizedState → StepResult CartPoleQuantizedState
-cartPoleQuantizedStep a (cartPoleQuantizedState p v ang av t) with toℕ a
+cartPoleQuantizedStep : Nat → CartPoleQuantizedState → StepResult CartPoleQuantizedState
+cartPoleQuantizedStep a (cartPoleQuantizedState p v ang av t) with a
 ... | zero = stepResult (int8OfNat p) (cartPoleQuantizedState (p ∸ 1) v ang av (suc t)) zero8 no
 ... | _ = stepResult (int8OfNat p) (cartPoleQuantizedState (suc p) v ang av (suc t)) zero8 no
 
@@ -217,17 +200,17 @@ record BernoulliBanditState : Set where
   constructor bernoulliBanditState
   field best lastAction lastReward time : Nat
 
-bernoulliBanditStep : Fin 2 → BernoulliBanditState → StepResult BernoulliBanditState
-bernoulliBanditStep a (bernoulliBanditState best la lr t) with natEq (toℕ a) best
-... | yes = stepResult (int8OfNat best) (bernoulliBanditState best (toℕ a) 1 (suc t)) one8 no
-... | no = stepResult (int8OfNat best) (bernoulliBanditState best (toℕ a) 0 (suc t)) zero8 no
+bernoulliBanditStep : Nat → BernoulliBanditState → StepResult BernoulliBanditState
+bernoulliBanditStep a (bernoulliBanditState best la lr t) with natEq (a) best
+... | yes = stepResult (int8OfNat best) (bernoulliBanditState best (a) 1 (suc t)) one8 no
+... | no = stepResult (int8OfNat best) (bernoulliBanditState best (a) 0 (suc t)) zero8 no
 
 record RockSampleState : Set where
   constructor rockSampleState
   field row col rockGood time : Nat
 
-rockSampleStep : Fin 6 → RockSampleState → StepResult RockSampleState
-rockSampleStep a (rockSampleState r c g t) with toℕ a
+rockSampleStep : Nat → RockSampleState → StepResult RockSampleState
+rockSampleStep a (rockSampleState r c g t) with a
 ... | zero = stepResult (int8OfNat r) (rockSampleState (r ∸ 1) c g (suc t)) zero8 no
 ... | suc zero = stepResult (int8OfNat c) (rockSampleState r (suc c) g (suc t)) zero8 no
 ... | suc (suc zero) = stepResult (int8OfNat r) (rockSampleState (suc r) c g (suc t)) zero8 no
