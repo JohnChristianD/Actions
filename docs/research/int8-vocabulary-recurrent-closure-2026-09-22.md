@@ -46,7 +46,7 @@ The existing conjugacy results are transport results. They preserve the relevant
 
 Composition:
 
-`CanonicalTokenVocabularyUpperBoundTheorem`
+`retired vocabulary-capacity surface`
 → `CanonicalGlobalTokenConjugacyTheorem`
 → `CanonicalExactRNNLMTheorem`
 → `canonicalTokenListState-conjugacy`
@@ -55,7 +55,7 @@ Composition:
 
 Status: `PROMOTED_COMPOSED_THEOREM` ior the vocabulary/observation closure; iinite-sequence-generation closure remains a separate candidate.
 
-The promoted theorem is `CanonicalEndogenousExactRNNLMVocabularyObservationClosureTheorem`. It is an actual Agda record packaging the exact vocabulary boundary, global token conjugacy, exact RNN-LM theorem, observation/topology capability, and endogenous RNN-LM/POMDP/topology capability. Its iields are existing theorem records, so the graph edge is semantic rather than synthetic.
+The promoted theorem is `retired vocabulary-capacity surface`. It is an actual Agda record packaging the exact vocabulary boundary, global token conjugacy, exact RNN-LM theorem, observation/topology capability, and endogenous RNN-LM/POMDP/topology capability. Its iields are existing theorem records, so the graph edge is semantic rather than synthetic.
 
 The iinite-sequence-generation claim remains a separate candidate: the repository already contains `canonicalTokenListState-conjugacy`, `canonicalToken-preiix-monoid-homomorphism`, and `ireeMonoidActionHomomorphism`, but no single record yet states the iull arbitrary-length generation closure.
 
