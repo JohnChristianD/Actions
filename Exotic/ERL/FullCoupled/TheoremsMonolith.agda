@@ -6723,10 +6723,11 @@ record FiniteContinuousHodgeMaxwellExactRepresentationData
   constructor finiteContinuousHodgeMaxwellExactRepresentationData
   field
     Form2 : Set
+    FormStar : Set
     Form3 : Set
     d : Form2 → Form3
-    star : Form2 → Form2
-    current : Form2 → Form3
+    star : Form2 → FormStar
+    dStar : FormStar → Form3
     zero3 : Form3
     Solution : Set
     fieldF : Solution → Form2
@@ -6734,7 +6735,7 @@ record FiniteContinuousHodgeMaxwellExactRepresentationData
     maxwellEquation :
       ∀ s →
       d (fieldF s) ≡ zero3 ×
-      d (star (fieldF s)) ≡ fieldJ s
+      dStar (star (fieldF s)) ≡ fieldJ s
     step : Solution → Solution
     encodedStep : Fin n → Fin n
     encode : Solution → Fin n
@@ -6808,6 +6809,247 @@ connected-finite-continuous-hodge-maxwell-gru-representation-theorem D =
       (conjugacy D))
     (λ s → conjugacy D s)
     (λ s → maxwellEquation D s)
+
+------------------------------------------------------------------------
+-- Exact finite discretization layer.
+--
+-- A finite discretization is exact here only when the discrete operators
+-- commute with the declared continuous differential-form semantics on the
+-- finite solution family, zero/current transport is exact, and the encoded
+-- 3-form carrier is injective.  This is a theorem about a specified finite
+-- discretization certificate, not an assertion that the full infinite
+-- dimensional Maxwell solution space is finite.
+------------------------------------------------------------------------
+
+record FiniteHodgeMaxwellDiscretizationData
+  (n p q r : Nat) : Set₁ where
+  constructor finiteHodgeMaxwellDiscretizationData
+  field
+    continuous :
+      FiniteContinuousHodgeMaxwellExactRepresentationData n
+
+    discreteD : Fin p → Fin r
+    discreteStar : Fin p → Fin q
+    discreteDStar : Fin q → Fin r
+    discreteZero3 : Fin r
+    discreteCurrent :
+      Solution continuous → Fin r
+
+    encodeF :
+      Form2 continuous → Fin p
+    encodeStar :
+      FormStar continuous → Fin q
+    encode3 :
+      Form3 continuous → Fin r
+
+    encodeZero3 :
+      encode3 (zero3 continuous)
+      ≡
+      discreteZero3
+
+    encodeCurrent :
+      ∀ s →
+      encode3 (fieldJ continuous s)
+      ≡
+      discreteCurrent s
+
+    commuteD :
+      ∀ s →
+      encode3 (d continuous (fieldF continuous s))
+      ≡
+      discreteD (encodeF (fieldF continuous s))
+
+    commuteStar :
+      ∀ s →
+      encodeStar (star continuous (fieldF continuous s))
+      ≡
+      discreteStar (encodeF (fieldF continuous s))
+
+    commuteDStar :
+      ∀ s →
+      encode3
+        (dStar continuous
+          (star continuous (fieldF continuous s)))
+      ≡
+      discreteDStar
+        (encodeStar (star continuous (fieldF continuous s)))
+
+    encode3Injective :
+      ∀ x y →
+      encode3 x ≡ encode3 y →
+      x ≡ y
+
+open FiniteHodgeMaxwellDiscretizationData public
+
+finiteDiscreteMaxwellEquation :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  Solution (continuous D) →
+  Set
+finiteDiscreteMaxwellEquation D s =
+  discreteD D (encodeF D (fieldF (continuous D) s))
+  ≡
+  discreteZero3 D
+  ×
+  discreteDStar D
+    (discreteStar D
+      (encodeF D (fieldF (continuous D) s)))
+  ≡
+  discreteCurrent D s
+
+finite-hodge-maxwell-discretization-preserves :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  ∀ s →
+  finiteDiscreteMaxwellEquation D s
+finite-hodge-maxwell-discretization-preserves D s =
+  (
+    trans
+      (sym (commuteD D s))
+      (trans
+        (cong (encode3 D)
+          (proj₁ (maxwellEquation (continuous D) s)))
+        (encodeZero3 D)),
+    trans
+      (sym
+        (cong (discreteDStar D)
+          (commuteStar D s)))
+      (trans
+        (sym (commuteDStar D s))
+        (trans
+          (cong (encode3 D)
+            (proj₂ (maxwellEquation (continuous D) s)))
+          (encodeCurrent D s)))
+  )
+
+finite-hodge-maxwell-discretization-reflects :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  ∀ s →
+  finiteDiscreteMaxwellEquation D s →
+  maxwellEquation (continuous D) s
+finite-hodge-maxwell-discretization-reflects D s discreteEq =
+  (
+    encode3Injective D _ _
+      (trans
+        (commuteD D s)
+        (trans
+          (proj₁ discreteEq)
+          (sym (encodeZero3 D)))),
+    encode3Injective D _ _
+      (trans
+        (commuteDStar D s)
+        (trans
+          (cong (discreteDStar D)
+            (commuteStar D s))
+          (trans
+            (proj₂ discreteEq)
+            (sym (encodeCurrent D s)))))
+  )
+
+record FiniteHodgeMaxwellExactDiscretizationTheorem
+  (n p q r : Nat) : Set₁ where
+  constructor finiteHodgeMaxwellExactDiscretizationTheorem
+  field
+    data :
+      FiniteHodgeMaxwellDiscretizationData n p q r
+    preserves :
+      ∀ s →
+      finiteDiscreteMaxwellEquation data s
+    reflects :
+      ∀ s →
+      finiteDiscreteMaxwellEquation data s →
+      maxwellEquation (continuous data) s
+
+open FiniteHodgeMaxwellExactDiscretizationTheorem public
+
+finite-hodge-maxwell-exact-discretization-theorem :
+  ∀ {n p q r : Nat}
+  (D : FiniteHodgeMaxwellDiscretizationData n p q r) →
+  FiniteHodgeMaxwellExactDiscretizationTheorem n p q r
+finite-hodge-maxwell-exact-discretization-theorem D =
+  finiteHodgeMaxwellExactDiscretizationTheorem
+    D
+    (λ s → finite-hodge-maxwell-discretization-preserves D s)
+    (λ s eq → finite-hodge-maxwell-discretization-reflects D s eq)
+
+------------------------------------------------------------------------
+-- Novel pre-graphed algebraic frontier:
+-- exact finite Hodge-star involution is useful when a future model supplies
+-- a same-degree finite star operator.  It is a candidate surface only; the
+-- discretization theorem above does not assume involutivity.
+------------------------------------------------------------------------
+
+record FiniteDiscreteHodgeMaxwellStarInvolutionCandidate
+  (p : Nat) : Set₁ where
+  constructor finiteDiscreteHodgeMaxwellStarInvolutionCandidate
+  field
+    star :
+      Fin p → Fin p
+    involutive :
+      ∀ i → star (star i) ≡ i
+
+------------------------------------------------------------------------
+-- Fully connected consumer of both exact layers.
+-- The shared-semantics equality prevents a synthetic edge between unrelated
+-- finite PDE certificates and a GRU representation.
+------------------------------------------------------------------------
+
+record ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+  (n p q r : Nat) : Set₁ where
+  constructor connectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+  field
+    discretization :
+      FiniteHodgeMaxwellExactDiscretizationTheorem n p q r
+    representation :
+      ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n
+    sharedSemantics :
+      semantics representation
+      ≡
+      continuous (data discretization)
+    exactDiscreteFieldEquations :
+      ∀ i →
+      finiteDiscreteMaxwellEquation
+        (data discretization)
+        (subst
+          (λ S →
+            Solution S)
+          (sharedSemantics)
+          (to
+            (finiteContinuousHodgeMaxwell-state-isomorphism
+              (semantics representation))
+            i))
+
+open ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem public
+
+connected-finite-discrete-hodge-maxwell-gru-representation-theorem :
+  ∀ {n p q r : Nat}
+  (D :
+    FiniteHodgeMaxwellExactDiscretizationTheorem n p q r)
+  (R :
+    ConnectedFiniteContinuousHodgeMaxwellGRURepresentationTheorem n)
+  (shared :
+    semantics R ≡ continuous (data D)) →
+  ConnectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+    n
+    p
+    q
+    r
+connected-finite-discrete-hodge-maxwell-gru-representation-theorem
+  D R shared =
+  connectedFiniteDiscreteHodgeMaxwellGRURepresentationTheorem
+    D
+    R
+    shared
+    (λ i →
+      preserves D
+        (subst
+          (λ S → Solution S)
+          shared
+          (to
+            (finiteContinuousHodgeMaxwell-state-isomorphism
+              (semantics R))
+            i)))
 
 ------------------------------------------------------------------------
 -- Horizon monotonicity is not part of the F4 regret theorem by itself.
