@@ -322,3 +322,10 @@ Still candidate-only:
 - `RegularWalrasianStaticExistenceAdapterCandidate`
 
 The newly promoted `ConnectedFiniteHodgeMaxwellTsallisIdempotentProjectionTheorem` is no longer a candidate. It is conditional: its explicit projection-conjugacy certificate is a field of the theorem, and the idempotence conclusion is machine-checkable from that certificate.
+
+
+### Latest continuation state
+
+Current PR head: `a16fba7f89e76d93204c492a8407d683d8cfb5be`. The branch is 28 commits ahead of the merged base `0890e2f664d171e62131d0d66569381253bdd673`, with no behind commits. No review submissions or inline review threads are present. The latest head has not yet exposed a completed GitHub Actions run, so CI remains unverified.
+
+The current machine-counted Agda record target is 118 and the strict required theorem-plan gate is 108. The promoted idempotent transport theorem is conditional on an explicit projection conjugacy; it is not a claim that HardSign is convex or differentiable.
