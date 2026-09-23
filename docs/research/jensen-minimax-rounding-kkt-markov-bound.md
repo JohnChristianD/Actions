@@ -1,199 +1,58 @@
-# Jensen/minimax regret, rounding bias, KKT, and stationary-Markov boundary
+# Horizon-indexed rounding-bias residual regret boundary
 
-Status: candidate theorem surface, not an unconditional numeric regret theorem.
+Status: connected theorem surface; not an unconditional numeric regret-rate theorem.
 
-## Connected theorem
+The repository's strict optimizer boundary now treats regret as cumulative regret indexed by a finite horizon H. The surviving contracts are:
 
-The repository now carries:
+- Custom optimizer:
+  R(H) ≤ J(H) + B(H) + O(H) + M(H).
+- F4/Frank-Wolfe:
+  R(H) ≤ J(H) + B(H) + W(H) + M(H).
 
-`ConnectedJensenMinimaxRegretOptimizerTheorem`
+Here R is cumulative regret through horizon H, J is the Jensen/minimax contribution, B is rounding bias, O is a supplied custom-optimizer residual, W is a supplied Frank-Wolfe residual, and M is the stationary/Markov residual. The Agda statements are horizon-indexed pointwise inequalities, rather than scalar regret inequalities.
 
-with dependency path:
+The important distinction is that this is a residual decomposition, not yet a sublinear regret-rate theorem. A statement such as O(sqrt(H)) or O(log H) would require explicit assumptions and a concrete objective, loss sequence, feasible set, and optimizer dynamics. The current safe monolith does not invent those analytic hypotheses.
 
-`CanonicalFullLearnerConnectedScanConjugacyTheorem`
--> `RecurrentAssociativeScanTheorem`
--> `FiniteHardSparseKKTEquilibriumTheorem`
--> `UniqueKKTAbsorbingClass`
--> `MarkovStationaryWalrasianCompositionTheorem`
--> `ConnectedJensenMinimaxRegretOptimizerTheorem`
+## Strict graph boundary
 
-The quantitative contract is represented as
+The following standalone surfaces were pruned because they were not required dependencies of the retained consumer theorems:
 
-R <= J + B + K + M
+- ConnectedJensenMinimaxRegretOptimizerTheorem
+- ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem
+- ConnectedF4FrankWolfeKKTTheorem
+- ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem
 
-where R is minimax regret, J is the Jensen/minimax gap, B is rounding bias, K is the KKT residual contribution, and M is the stationary-Markov mixing contribution.
+KKT structures may still exist elsewhere in the repository when another theorem actually consumes them. They are not optimizer endpoints here. Likewise, Lion has no strict optimizer endpoint.
 
-The Agda surface proves the arithmetic composition once those component inequalities are supplied. It does not manufacture the component inequalities.
+The retained consumers are:
 
-## Why the Jensen step is conditional
+- ConnectedCustomOptimizerRoundingBiasRegretTheorem
+- ConnectedF4FrankWolfeRoundingBiasRegretTheorem
 
-Abernethy, Agarwal, Bartlett, and Rakhlin identify optimal regret with a Jensen gap under a minimax-duality formulation of online convex optimization:
+The F4/Frank-Wolfe consumer depends directly on CanonicalGRUF4NormWatkinsPrefixCompositionTheorem, so the residual is attached to the actual GRU-F4-Watkins composition rather than to a disconnected Frank-Wolfe certificate.
 
-https://arxiv.org/abs/0903.5328
+## Maxwell/Tsallis boundary
 
-The repository therefore treats a concrete Jensen/minimax inequality as an explicit premise rather than importing the result without specifying the loss class, convexity/concavity assumptions, adversarial model, and admissible strategy space.
+The Maxwell theorem remains finite-semantics-only:
 
-## Rounding-bias dependency
+CanonicalFullLearnerConnectedScanConjugacyTheorem
+→ FiniteFunctionExactIsomorphismTransportTheorem
+→ ConnectedMaxwellTsallisFiniteExactConjugacyTheorem
 
-Low-precision stochastic rounding can introduce a controlled bias. Xia, Massei, Hochstenbach, and Koren analyze stochastic roundoff effects and biased rounding in gradient descent:
+The finite theorem requires explicit Maxwell-admissible state semantics, exact finite encoding/decoding, inverse laws, exact transition conjugacy, universal finite exact-function transport, and a finite Tsallis/divergence structure. This is exact representation of the specified finite transition/function; it is not a claim of exact representation of the continuous Maxwell PDE.
 
-https://arxiv.org/abs/2202.12276
+The Tsallis carrier remains abstract in Agda. A concrete Tsallis divergence instantiation would need an explicit finite probability/measure representation and its defining laws before promotion. nLab's Maxwell page uses the differential-form equations dF = 0 and d⋆F = j_el; its entropy material treats finite entropy/divergence structure and Tsallis entropy on finite measured spaces. Those sources motivate the semantic boundary, but they do not by themselves prove the repository's concrete finite instance.
 
-Xia, Hochstenbach, and Massei analyze stochastic fixed-point rounding under the Polyak-Lojasiewicz condition:
+## Automation contract
 
-https://arxiv.org/abs/2301.09511
+The canonical path remains:
 
-These results do not automatically instantiate the repository theorem. A concrete rounding map, objective assumptions, and quantitative bias bound remain required.
+learner_semantic_extractor.m
+→ theorem_graph_search.m
+→ theorem_monolith_egraph_sync.m
 
-## KKT dependency
+Future theorem admission requires an actual Agda declaration, a real dependency or explicit foundational status, and a consuming composed theorem for optimizer/physics candidates. A scalar regret field is not sufficient for a horizon-regret endpoint; the cumulative regret must be a function of H.
 
-The repository already has `FiniteHardSparseKKTEquilibriumTheorem` and `UniqueKKTAbsorbingClass`. These establish an explicit absorbing-equilibrium interface when their fields are supplied. They do not imply optimizer convergence without an additional stability certificate.
+## Verification boundary
 
-The recent literature also contains direct KKT/stationarity formulations for constrained optimization; one example returned by SciSpace is:
-
-https://doi.org/10.48550/arxiv.2508.18764
-
-## Stationary-Markov dependency
-
-The repository already has `ContinuousStationaryMarkovWalrasianData` and `MarkovStationaryWalrasianCompositionTheorem`. The new theorem composes that existing stationary aggregate interface instead of inventing a stationary law.
-
-For Markovian stochastic approximation, the bias/stationarity relationship has been analyzed by:
-
-https://doi.org/10.1145/3578338.3593526
-
-That result gives a concrete example of why Markov dependence and stationary bias require explicit quantitative assumptions.
-
-## Open proof obligations
-
-1. Instantiate a concrete Jensen/minimax theorem with its convex-concave and duality assumptions.
-2. Instantiate a concrete rounding operator and prove its bias bound.
-3. Supply the KKT constraint qualification/stationarity certificate for the optimizer.
-4. Supply existence/uniqueness and mixing information for the stationary Markov law used by the bound.
-5. Prove that all four quantities use the same objective and state representation.
-6. Only then promote the candidate from `CANDIDATE_NOT_PROVED` to a proved quantitative regret theorem.
-
-No standalone Jensen, rounding, KKT, or stationary-Markov node is treated as a final theorem in the strict graph. Each is a dependency of the connected optimizer theorem.
-
-
-## Lion optimization/descent/KKT extension
-
-The connected optimizer boundary now reserves an explicit Lion-specific residual term:
-
-`R <= J + B + K + L + M`
-
-where `L` is a supplied Lion descent/stationarity contribution. This is deliberately a proof input, not an imported convergence theorem.
-
-SciSpace identified three directly relevant results:
-
-- Dong, Li, and Lin, *Convergence Rate Analysis of LION* (2024), arXiv:2411.07724: the paper analyzes Lion as a constrained optimization method and reports convergence to a KKT point at rate `O(sqrt(d) K^(-1/4))` in an `l1`-gradient measure; it also gives an unconstrained critical-point result. https://arxiv.org/abs/2411.07724
-- Wang, *Lions and Muons: Optimization via Stochastic Frank-Wolfe* (2025), arXiv:2506.04192: Lion and Muon with weight decay are interpreted as stochastic Frank-Wolfe instances; convergence is measured by the Frank-Wolfe gap, and under a norm constraint this gap implies convergence to a KKT point. https://arxiv.org/abs/2506.04192
-- Jiang and Zhang, *Convergence Analysis of the Lion Optimizer in Centralized and Distributed Settings* (2025), arXiv:2508.12327: reports `O(d^(1/2) T^(-1/4))` for standard Lion under stated assumptions and `O(d^(1/2) T^(-1/3))` for a variance-reduced variant, with distributed/communication-efficient variants. https://arxiv.org/abs/2508.12327
-
-These results strengthen the research basis for the optimizer seam, but they do not automatically prove the repository's connected theorem. In particular, the repository still needs one shared objective/state representation, an explicit Lion update rule, the exact smoothness/noise assumptions used by the selected convergence result, a descent or stationarity inequality that yields `L`, and a KKT constraint-qualification/multiplier witness compatible with the existing KKT record.
-
-The graph therefore contains `ConnectedLionJensenMinimaxRegretRoundingKKTMarkovTheorem` and `CanonicalLionSignMomentumKKTDescentBoundaryCandidate` as `CANDIDATE_NOT_PROVED`. They are not standalone separation theorems. The Lion seam is consumed by the connected Jensen/minimax/rounding/KKT/Markov optimizer boundary, preserving the no-disconnected-theorem rule.
-
-### Updated open obligations
-
-1. Instantiate the Jensen/minimax duality witness.
-2. Instantiate the rounding map and quantitative bias bound.
-3. Instantiate the KKT constraint qualification and stationarity/multiplier witness.
-4. Instantiate the Lion update and descent/stationarity certificate producing `L`.
-5. Prove compatibility between the Lion stationarity measure and the repository KKT residual.
-6. Supply stationary Markov fixed-point existence/uniqueness and quantitative mixing/error information.
-7. Prove all terms use the same objective, state, horizon, and rounding representation.
-8. Only then promote the connected candidate to a proved quantitative regret theorem.
-
-
-## F4 + Frank-Wolfe correction
-
-The optimizer-specific seam is F4 + Frank-Wolfe, not a request for another Lion theorem.
-
-The repository already has an exact finite F4 recurrent component through C.F4IntUState, C.f4ThetaStep, and CanonicalGRUF4NormWatkinsPrefixCompositionTheorem. The new connected boundary is ConnectedF4FrankWolfeKKTTheorem. It carries only a finite certificate:
-
-FWgap <= D_F4 + K
-
-where the Frank-Wolfe gap, an F4 descent residual, and a KKT residual are explicit finite proof inputs. No optimization library was added.
-
-SciSpace confirms the relevant mathematical seam. Wang, Lions and Muons: Optimization via Stochastic Frank-Wolfe (2025), DOI 10.48550/arXiv.2506.04192, explicitly connects convergence in the Frank-Wolfe gap with KKT convergence under a norm constraint. Jaggi, Revisiting Frank-Wolfe: Projection-Free Sparse Convex Optimization (2013), provides the duality-gap certificate framework. Oliveira, A note on the Frank-Wolfe algorithm for a class of nonconvex and nonsmooth optimization problems (2023), DOI 10.5802/ojmo.21, gives stationarity results for a nonconvex/nonsmooth class. These are research inputs, not automatically Agda facts.
-
-The eventual optimizer-regret composition may therefore have the form
-
-R <= J + B + K + L + W + M
-
-with W the Frank-Wolfe contribution, but this is still a candidate composition until the F4 state, objective, feasible set, FW update, gap-to-KKT theorem, Jensen witness, rounding bias, Lion term if retained, and stationary-Markov term are represented over one shared state/objective.
-
-## Maxwell-only finite representation boundary
-
-No additional physics library or theorem library was introduced. The graph now contains a candidate FiniteMaxwellGRUExactRepresentationCandidate.
-
-Its scope is intentionally narrower than “a GRU represents all physics”: it asks whether a finite exact representation can encode a specified finite Maxwell-admissible transition system. The graph must not silently introduce gravity, quantum dynamics, thermodynamics, or other physical laws. Exact finite-function representability does not by itself prove the continuous Maxwell PDEs; a finite state semantics, discretization/update rule, and exact encoding/conjugacy are required.
-
-The existing FiniteFunctionExactIsomorphismTransportTheorem is the representation mechanism. Mercury A*/e-graph can search and compose these finite theorem interfaces, while the graph's promotion gate prevents an unsupported Maxwell claim from becoming a proved theorem.
-
-### Current open obligations
-
-1. Give the exact finite F4 state/update semantics used by the Frank-Wolfe objective.
-2. Give the Frank-Wolfe feasible set and linear minimization oracle.
-3. Prove the FW-gap/descent-to-KKT implication required by the chosen assumptions.
-4. Connect that certificate to the existing F4 recurrent prefix theorem.
-5. If composing into regret, share one objective/state with Jensen, rounding, KKT, Markov, and any retained Lion seam.
-6. Define the finite Maxwell state/input/output encoding.
-7. State the discrete Maxwell constraints/update being represented.
-8. Prove exact GRU encoding/decoding or conjugacy for that finite Maxwell transition.
-9. Keep Maxwell as the physical-law boundary; do not promote unsupported additional physics.
-10. Run the Agda/Mercury/e-graph verification before promoting either candidate.
-
-
-## Graph automation, F4/Frank-Wolfe promotion, and Maxwell boundary
-
-The repository has one canonical Agda theorem source: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`. The modular graphing pipeline is Mercury-driven: `.ci/discovery/learner_semantic_extractor.m` extracts declarations and identifier-level dependencies, `.ci/discovery/theorem_graph_search.m` performs A*-ordered dependency discovery, and `.ci/discovery/theorem_monolith_egraph_sync.m` feeds the discovered plans into the symbolic e-graph. `.ci/actions_ci.dhall` orchestrates those modules; it is not the theorem-edge authority.
-
-The F4/Frank-Wolfe seam now has an actual Agda connected consumer, `ConnectedF4FrankWolfeJensenRoundingKKTMarkovTheorem`, downstream of `ConnectedF4FrankWolfeKKTTheorem`. Its finite certificate establishes the conditional chain
-[
-R le J+B+K+W+M,
-]
-where (W) is the Frank-Wolfe residual. This is still a certificate theorem, not an analytic Frank-Wolfe convergence theorem: a concrete objective, feasible set, linear minimization oracle, stationarity/KKT implication, and shared-state instantiation are still required for a quantitative optimization result.
-
-The current CI failure was structural rather than evidence that the graph design was invalid: the e-graph gate still expected the older required-plan count, and the Agda theorem source used `subst` and `≤-refl` without importing them. Those were repaired without adding libraries or weakening checks.
-
-Maxwell remains deliberately unpromoted. A repository search found no Maxwell state/update semantics in the canonical theorem monolith, so a Maxwell theorem cannot be honestly completed by inventing a finite discretization. Literature supports the promotion gate: compatible/constraint-preserving finite-element or discrete schemes can preserve Maxwell divergence constraints, but the repository still needs one explicit finite state, discrete update, input/output encoding, and exact GRU conjugacy. The graph therefore keeps `FiniteMaxwellGRUExactRepresentationCandidate` as `CANDIDATE_NOT_PROVED` and forbids implicit addition of non-Maxwell physics.
-
-Relevant research sources:
-- Oliveira, “A note on the Frank-Wolfe algorithm for a class of nonconvex and nonsmooth optimization problems,” OJMO (2023), DOI: https://doi.org/10.5802/ojmo.21
-- Ghojogh et al., “KKT Conditions, First-Order and Second-Order Optimization, and Distributed Optimization: Tutorial and Survey,” arXiv: https://arxiv.org/abs/2110.01858
-- Campos Pinto & Sonnendrücker, “Gauss-compatible Galerkin schemes for time-dependent Maxwell equations,” Mathematics of Computation (2016), DOI: https://doi.org/10.1090/MCOM/3079
-- Berchenko-Kogan & Stern, “Constraint-Preserving Hybrid Finite Element Methods for Maxwell’s Equations,” Foundations of Computational Mathematics (2021), DOI: https://doi.org/10.1007/S10208-020-09476-7
-
-
-
-## Corrected optimizer boundary and emergent Maxwell/Tsallis theorem — 2026-09-23
-
-The intended optimizer boundary is the custom optimizer plus the non-/Frank-Wolfe rounding-bias residual regret composition. Lion is not an independent optimizer theorem in the strict graph, and standalone KKT is not treated as an independent optimizer endpoint. KKT records remain foundational dependencies only where a connected consumer requires them.
-
-The new endogenous theorem surface is:
-
-`ConnectedMaxwellTsallisFiniteExactConjugacyTheorem`
-
-with the dependency shape
-
-`CanonicalFullLearnerConnectedScanConjugacyTheorem`
-→ `FiniteFunctionExactIsomorphismTransportTheorem`
-→ `ConnectedMaxwellTsallisFiniteExactConjugacyTheorem`
-
-Its intended composition is:
-1. finite Maxwell-admissible state/update semantics;
-2. universal exact transport for finite functions;
-3. exact finite encoding and decoding;
-4. encode/decode inverse laws;
-5. exact transition conjugacy;
-6. a finite Tsallis/divergence carrier and an explicit divergence-transport law.
-
-The theorem is deliberately conditional. The repository does not contain a continuous Maxwell-PDE-to-finite-state discretization theorem, so the new Agda surface does not claim one. It proves the exact conjugacy interface once the finite Maxwell semantics and divergence structure are supplied.
-
-The nLab Maxwell page presents Maxwell's equations in differential-form form as `d F = 0` and `d ⋆ F = j_el`; this is used only to define the physical-law boundary, not to manufacture a discretization. The nLab entropy material describes Tsallis entropy through finite measured spaces and functorial/additive/homogeneous structure, while its conjugation-action material identifies intertwiners with invariants of conjugation. These ideas motivate the repository's finite semantics, divergence transport, and exact conjugacy fields.
-
-The graphing path is now automatic: Agda declaration → `learner_semantic_extractor.m` → `theorem_graph_search.m` → `theorem_monolith_egraph_sync.m`. Dhall remains the orchestrator rather than a second theorem-edge authority.
-
-The required-plan gate was advanced from 100 to 101 for the new Maxwell/Tsallis composition, while the Lion plan was removed from the required strict graph. No new external library was introduced.
-
+This note records the graph/proof-shape contract. It does not claim that the remaining regret theorem has a numerical regret rate, nor that the Maxwell/Tsallis candidate has been promoted to an unconditional physics theorem.
