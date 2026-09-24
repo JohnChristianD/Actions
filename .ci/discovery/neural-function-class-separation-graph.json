@@ -1659,7 +1659,7 @@
   },
   "current_head_audit_2026_09_24": {
     "status": "PENDING_FRESH_CI",
-    "head": "generalize-tsallis-walrasian-composition",
+    "head": "d371bf67d79b3f9e3794fdcceaacec4e63fb792b",
     "note": "Tsallis-2 specialization removed; connected closure now consumes the general carrier-polymorphic Tsallis surface and a regularity-free Walrasian equilibrium witness. Kernel verification remains pending."
   },
   "metadata_pruning_policy_v11": {
