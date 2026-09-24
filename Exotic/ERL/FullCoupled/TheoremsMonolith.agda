@@ -5788,7 +5788,7 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
   (State Price Allocation : Set)
   (D :
-    MegaGeneralizedWalrasianKKTArrowDebreuExistence
+    GeneralizedWalrasianExistence
       State
       Price
       Allocation)
@@ -5865,7 +5865,7 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
   {State Price Allocation : Set}
   {D :
-    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+    MegaGeneralizedWalrasianEquilibrium
       State
       Price
       Allocation}
