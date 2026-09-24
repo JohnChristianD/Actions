@@ -393,6 +393,16 @@ JSON
     canonical-pure-non-orange-bypass-completion-theorem
     StationaryLimitTheorem
     stationaryLimitTheorem-is-stationary
+    TopologicalConvergenceWitness
+    topologicalConvergenceFixedPoint
+    FixedPointExistenceFromConvergence
+    fixedPoint-from-convergence
+    isomorphismFixedPointTransport
+    TransportedFixedPointExistence
+    transportedFixedPointExistence-witness
+    EquilibriumFixedPointClosure
+    equilibrium-from-fixed-point
+    economicEquilibriumExistenceFromConvergentFixedPoint
     CanonicalStationarySubcompositionTheorem
     CanonicalPersistentExcitationRequirementTheorem
     canonical-persistent-excitation-requirement-theorem
