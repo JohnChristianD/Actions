@@ -89,14 +89,6 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
-      - name: Automated economic closure graph
-        timeout-minutes: 10
-        env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | EconomicClosureGraph | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.EconomicClosureGraph'
-        run: |
-          set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
-
       - name: Publish live theorem/economic graph artifacts
         if: always()
         uses: actions/upload-artifact@v4
