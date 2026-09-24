@@ -72,3 +72,13 @@ The repository contains a single unattended graph that is complete as a dependen
 - Updated the economic graph and narrative to show injectivity as supporting evidence, while retaining convergence and fixed-point-to-equilibrium as explicit frontier obligations.
 - Knowledge delta paths: TheoremsMonolith.agda, .ci/actions_ci.dhall, .ci/discovery/theorem_graph_search.m, docs/economics/economic-egraph-emergent-arrow-debreu.mmd, docs/economics/economic-egraph-emergent-arrow-debreu.md, this plan.
 - Verification limitation: no Agda compiler is installed in the execution environment; repository CI has not yet been observed running for the new head.
+
+
+## 2026-09-24 finite-rank convergence bridge follow-up
+
+- Added `topologicalConvergenceWitness-from-finite-rank-stability` to compose the existing `FiniteRankStabilityCertificate` eventual-exact fixation with the existing `TopologicalConvergenceWitness` interface.
+- Kept the convergence relation explicit as a premise, including eventual-equilibrium convergence and equality transport. The theorem therefore does not claim that finite-rank descent alone proves a topological convergence theorem.
+- Added CI gate and theorem-discovery coverage for the new bridge.
+- Updated the economic graph/docs to expose finite-rank stability as a conditional convergence bridge.
+- Knowledge delta paths: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`, `.ci/actions_ci.dhall`, `.ci/discovery/theorem_graph_search.m`, `docs/economics/economic-egraph-emergent-arrow-debreu.mmd`, `docs/economics/economic-egraph-emergent-arrow-debreu.md`, this plan.
+- Verification limitation: Agda is not installed locally; the new theorem requires CI typechecking before it can be treated as verified.
