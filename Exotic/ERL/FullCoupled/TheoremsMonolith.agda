@@ -5759,14 +5759,15 @@ pomdpWalrasianBeliefEquilibriumClosure-from-witness
 
 
 
+
 ------------------------------------------------------------------------
 -- Unified GRU / Hodge-Maxwell / Tsallis-2 / Walrasian / POMDP closure.
 --
 -- Tsallis-2 is represented as an explicit specialization certificate of
--- the existing q-indexed divergence carrier.  The certificate deliberately
--- supplies the q=2 operation instead of assuming a particular q-log formula.
--- This keeps the theorem algebraic and --safe while leaving analytic
--- differentiability/convexity as separate proof obligations.
+-- the existing q-indexed divergence carrier.  The certificate supplies
+-- the q=2 operation instead of assuming a particular q-log formula.
+-- Analytic differentiability/convexity therefore remains a separate
+-- proof obligation.
 ------------------------------------------------------------------------
 
 record Tsallis2Specialization
@@ -5787,10 +5788,6 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
   {Continuous : {A B : Set} → (A → B) → Set}
   (H :
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (T :
-    ConnectedMaxwellTsallisExactConjugacyTheorem
-      GRU
-      (Solution (semantics H)))
   (State Price Allocation : Set)
   (D :
     ContinuousStationaryMarkovWalrasianData
@@ -5808,7 +5805,10 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
     GRU →
     GRU →
     TsallisDivergenceStructure.Value
-      (divergenceStructure (semantics T)))
+      (divergenceStructure
+        (semantics
+          (tsallis
+            hodgeMaxwellTsallis))))
   (Action Observation Distribution Reward : Set)
   (P :
     POMDPWalrasianData
@@ -5834,7 +5834,9 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
       policy
       allocation)
   (solutionOfState :
-    State → Solution (semantics H)) : Set₁ where
+    State → Solution (semantics H))
+  (hodgeMaxwellTsallis :
+    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU) : Set₁ where
   constructor connectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
   field
     globalEncodeInjective :
@@ -5842,15 +5844,16 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
       encode (semantics H) x ≡ encode (semantics H) y →
       x ≡ y
 
-    hodgeMaxwellTsallis :
-      ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
-
     tsallis2 :
       Tsallis2Specialization
         GRU
         (TsallisDivergenceStructure.Value
-          (divergenceStructure (semantics T)))
-        (divergenceStructure (semantics T))
+          (divergenceStructure
+            (semantics
+              (tsallis hodgeMaxwellTsallis))))
+        (divergenceStructure
+          (semantics
+            (tsallis hodgeMaxwellTsallis)))
         qDivergence
 
     walrasianClosure :
@@ -5886,11 +5889,6 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
       allocation s ≡
       decodeAllocation (solutionOfState s)
 
-    solutionObservationCompatibility :
-      ∀ s →
-      encode (semantics H) (solutionOfState s) ≡
-      encode (semantics H) (solutionOfState s)
-
 open ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem public
 
 connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
@@ -5898,10 +5896,6 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
   {Continuous : {A B : Set} → (A → B) → Set}
   {H :
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
-  {T :
-    ConnectedMaxwellTsallisExactConjugacyTheorem
-      GRU
-      (Solution (semantics H))}
   {State Price Allocation : Set}
   {D :
     ContinuousStationaryMarkovWalrasianData
@@ -5919,7 +5913,10 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
     GRU →
     GRU →
     TsallisDivergenceStructure.Value
-      (divergenceStructure (semantics T))}
+      (divergenceStructure
+        (semantics
+          (tsallis
+            hodgeMaxwellTsallis)))}
   {Action Observation Distribution Reward : Set}
   {P :
     POMDPWalrasianData
@@ -5946,14 +5943,18 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
       allocation}
   {solutionOfState :
     State → Solution (semantics H)}
-  (hodgeTsallis :
+  (hodgeMaxwellTsallis :
     ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
   (tsallis2 :
     Tsallis2Specialization
       GRU
       (TsallisDivergenceStructure.Value
-        (divergenceStructure (semantics T)))
-      (divergenceStructure (semantics T))
+        (divergenceStructure
+          (semantics
+            (tsallis hodgeMaxwellTsallis))))
+      (divergenceStructure
+        (semantics
+          (tsallis hodgeMaxwellTsallis)))
       qDivergence)
   (walrasianClosure :
     ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
@@ -5988,7 +5989,6 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
   ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
     GRU
     H
-    T
     State
     Price
     Allocation
@@ -6008,21 +6008,16 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
     policy
     beliefPolicy
     solutionOfState
+    hodgeMaxwellTsallis
 connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem
-  hodgeTsallis
+  hodgeMaxwellTsallis
   tsallis2
   walrasianClosure
   pomdpBeliefClosure
   allocationReadout =
   connectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
-    (globalEncodeInjective hodgeMaxwellRepresentation)
-    hodgeTsallis
+    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.globalEncodeInjective H)
     tsallis2
     walrasianClosure
     pomdpBeliefClosure
     allocationReadout
-    (λ s → refl)
-  where
-  hodgeMaxwellRepresentation :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU
-  hodgeMaxwellRepresentation = H
