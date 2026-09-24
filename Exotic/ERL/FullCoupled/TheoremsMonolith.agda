@@ -3917,6 +3917,8 @@ record TransportedFixedPointExistence
       ∀ a → to iso (f a) ≡ g (to iso a)
     sourceWitness :
       Σ A (λ a → f a ≡ a)
+    transportIso :
+      StateIsomorphism A B
 
 transportedFixedPointExistence-witness :
   ∀ {A B : Set}
@@ -3931,11 +3933,10 @@ transportedFixedPointExistence-witness closure =
     a = proj₁ source
     fixedPoint = proj₂ source
   in
-  to (TransportedFixedPointExistence.iso closure) a ,
+  to (TransportedFixedPointExistence.transportIso closure) a ,
   isomorphismFixedPointTransport
-    (TransportedFixedPointExistence.iso closure)
-    (TransportedFixedPointExistence.f closure)
-    (TransportedFixedPointExistence.g closure)
+    (TransportedFixedPointExistence.transportIso closure)
+    _ _
     (TransportedFixedPointExistence.stepConjugacy closure)
     a
     fixedPoint
