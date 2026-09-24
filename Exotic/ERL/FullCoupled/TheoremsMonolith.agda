@@ -2347,6 +2347,27 @@ finiteRank-stability-implies-eventual-fixed C s =
   eventualExact C s
 
 ------------------------------------------------------------------------
+-- The canonical learner state itself cannot carry the finite-rank
+-- stabilization certificate used by the convergence bridge: its clock makes
+-- every one-step state equality impossible.  Any finite-rank closure must
+-- therefore live on an invariant quotient/factor that forgets that clock.
+------------------------------------------------------------------------
+
+canonicalFullLearner-no-finite-rank-stability :
+  ∀ {A : Set}
+  (K : C.CanonicalFullLearnerKernel)
+  (equilibrium : C.CanonicalFullLearnerState A) →
+  ¬ FiniteRankStabilityCertificate
+    (C.CanonicalFullLearnerState A)
+    (C.canonicalFullStep K)
+    equilibrium
+canonicalFullLearner-no-finite-rank-stability K equilibrium certificate =
+  C.canonicalNoFixedPoint
+    K
+    equilibrium
+    (FiniteRankStabilityCertificate.equilibriumFixed certificate)
+
+------------------------------------------------------------------------
 -- Exact stabilization can feed the existing convergence-witness interface.
 -- The convergence relation is an explicit premise; rank alone does not
 -- manufacture topology.
