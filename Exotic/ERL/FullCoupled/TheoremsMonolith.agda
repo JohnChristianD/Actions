@@ -5182,6 +5182,54 @@ canonical-f4-normPair-gru-global-conjugacy witness =
   globalConjugacy witness
 
 ------------------------------------------------------------------------
+-- GRU/F4 economic injectivity bridge.
+--
+-- The learner-side F4/NormPair/GRU observation and the economic global
+-- square are kept as separate exact injectivity sources. The composition
+-- exposes both witnesses together without pretending that F4 injectivity
+-- alone proves an economic equilibrium statement.
+------------------------------------------------------------------------
+
+gruf4EconomicInjectivityFromGlobalSquare :
+  ∀ {Feature Economic GRU Equilibrium : Set}
+  {observe : C.CanonicalFullLearnerState → Feature}
+  {featureStep : Feature → Feature}
+  {inverse : Feature → C.CanonicalFullLearnerState}
+  {encode : Economic → GRU}
+  {readout : GRU → Economic}
+  {equilibriumMap : Economic → Equilibrium}
+  {carrierEquilibriumMap : GRU → Equilibrium}
+  {economicStep : Economic → Economic}
+  {gruStep : GRU → GRU} →
+  CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
+    Feature
+    observe
+    featureStep
+    inverse →
+  MegaWalrasianGlobalSquareConjugacy
+    Economic
+    GRU
+    Equilibrium
+    encode
+    readout
+    equilibriumMap
+    carrierEquilibriumMap
+    economicStep
+    gruStep →
+  (∀ {s t : C.CanonicalFullLearnerState} →
+    observe s ≡ observe t →
+    s ≡ t)
+  ×
+  (∀ {x y : Economic} →
+    encode x ≡ encode y →
+    x ≡ y)
+gruf4EconomicInjectivityFromGlobalSquare
+  learnerWitness
+  economicSquare =
+  canonical-f4-normPair-gru-global-injective learnerWitness
+  , megaWalrasianGlobalSquare-injective economicSquare
+
+------------------------------------------------------------------------
 -- Hodge-Maxwell middle-degree involution transport.
 --
 -- This theorem is now explicitly downstream of the carrier-polymorphic
