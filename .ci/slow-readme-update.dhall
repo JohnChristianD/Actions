@@ -36,7 +36,7 @@ print("\n".join(rows))
 PY
 )
 
-python3 - "$README" "$BEGIN" "$END" "$HEAD_SHA" "$count" "$body" <<'PY'
+# Fail closed if generated commit rows are not ASCII.\nif LC_ALL=C grep -nP '[^\\x00-\\x7F]' <<< "$body" >/dev/null 2>&1; then\n  echo "ERROR: generated commit-totality body is not ASCII" >&2\n  exit 1\nfi\n\npython3 - "$README" "$BEGIN" "$END" "$HEAD_SHA" "$count" "$body" <<'PY'
 from pathlib import Path
 import sys
 
