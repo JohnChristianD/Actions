@@ -62,13 +62,13 @@
       "status": "PROVED_ON_AGDA_SURFACE_PENDING_FRESH_CI",
       "dependencies": [
         "canonicalPolicy",
-        "C.canonicalFullStep",
-        "ContinuousHodgeMaxwellExactRepresentationData",
-        "policyHodgeMaxwellUpdateSeam",
-        "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
+        "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+        "learnerToSolution",
+        "learnerStepConjugacy",
+        "policyHodgeMaxwellUpdateSeam"
       ],
       "graph": ".ci/discovery/learner-economic-welfare-bridge-graph.md",
-      "note": "The policy-induced learner update is required to be extensionally the canonical learner step; existing Hodge-Maxwell step conjugacy then transports it exactly to the Maxwell solution step. This closes the policy-to-Maxwell update edge without inferring it from readout semantics alone."
+      "note": "A supplied policy-induced learner update is required to be extensionally the canonical learner step; the existing learner-to-Hodge-Maxwell solution map and learner-step conjugacy then transport that update exactly to the Maxwell solution step."
     }
   },
   "analytic_boundary": {
