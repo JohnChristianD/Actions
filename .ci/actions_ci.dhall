@@ -320,8 +320,8 @@ JSON
     exact-contract-computability-boundary-theorem
     ExactFunctionIsomorphismTransportTheorem
     ExactRecurrentFunctionTranslationTheorem
-    RegularityFreeWalrasianData
-    RegularityFreeWalrasianEquilibrium
+    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
     POMDPWalrasianData
     POMDPWalrasianEquilibrium
     POMDPWalrasianTransport
