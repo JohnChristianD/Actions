@@ -90,3 +90,10 @@ Current closure status:
 - Frontier: separation/fixed point -> derived price.
 - Frontier: derived price+clearing -> generalized equilibrium existence.
 - Frontier: classical assumptions -> Arrow-Debreu specialization.
+
+
+### Automated end-to-end graph gate
+
+The closure graph is now checked in CI through the existing Dhall/Nix orchestration. The gate verifies that the canonical Mermaid graph contains the required economic nodes and that the theorem monolith exposes the corresponding production, clearing, derived-price, generalized-equilibrium, and classical-specialization seams.
+
+The gate emits `.ci/discovery/economic-closure-graph.json` as an observed status artifact. It checks graph/source consistency; it does not promote a frontier edge to a proved theorem.
