@@ -322,6 +322,13 @@ JSON
     ExactRecurrentFunctionTranslationTheorem
     MegaWalrasianGlobalSquareConjugacy
     megaWalrasianGlobalSquare-injective
+    MegaParetoImprovement
+    megaParetoOptimal
+    MegaFirstWelfareTheoremConditions
+    megaFirstWelfareTheorem
+    MegaSecondWelfareTheoremConditions
+    megaSecondWelfareTheorem
+    MegaParetoEquilibriumConditionality
     MegaWalrasianEquilibriumWelfareAdapter
     MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
     MegaGeneralizedWalrasianEquilibrium
