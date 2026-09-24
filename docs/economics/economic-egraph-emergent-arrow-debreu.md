@@ -168,6 +168,8 @@ Economic primitives
 ```
 
 
+The finite-rank stability seam is also now an actual Agda bridge: `topologicalConvergenceWitness-from-finite-rank-stability` transports eventual exact fixation into the existing convergence-witness interface while keeping the convergence relation explicit.
+
 The GRU/F4 injectivity seam is now an actual Agda composition. `gruf4EconomicInjectivityFromGlobalSquare` combines the existing F4/NormPair/GRU global observation injectivity with `MegaWalrasianGlobalSquareConjugacy` injectivity. It is supporting evidence for the dynamics path, not a replacement for the convergence proof: injectivity alone does not establish convergence.
 
 The two edges marked `FRONTIER` are the only local mathematical gaps in this target route:
