@@ -427,7 +427,7 @@ graph_required_theorems = [
     "POMDPWalrasianTransport",
     "POMDPBeliefPolicyFactorization",
     "POMDPWalrasianBeliefEquilibriumClosure",
-    "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
+    "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
         "CanonicalExactRNNLMTheorem",
     "CanonicalGlobalTokenLMCompositionTheorem",
     "CanonicalIntegerHaarScaledOrthogonalityTheorem",
