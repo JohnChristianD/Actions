@@ -5967,7 +5967,7 @@ megaFirstWelfareTheorem conditions =
 
 record MegaSecondWelfareTheoremConditions
   (Agent Price Allocation : Set)
-  (paretoOptimal : Allocation → Set₁)
+  (paretoOptimal : Allocation → Set)
   (equilibrium : Price → Allocation → Set) : Set₁ where
   constructor megaSecondWelfareTheoremConditions
   field
