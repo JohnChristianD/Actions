@@ -5819,7 +5819,7 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
   (State Price Allocation : Set)
   (D :
-    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+    MegaGeneralizedWalrasianKKTArrowDebreuExistence
       State
       Price
       Allocation)
@@ -5864,7 +5864,7 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
       ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
 
     walrasianEquilibrium :
-      equilibrium D p (aggregate D allocation)
+      equilibriumWitness D
 
     pomdpBeliefClosure :
       POMDPWalrasianBeliefEquilibriumClosure
@@ -5933,7 +5933,7 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
   (hodgeMaxwellTsallis :
     ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
   (walrasianEquilibrium :
-    equilibrium D p (aggregate D allocation))
+    equilibriumWitness D)
   (pomdpBeliefClosure :
     POMDPWalrasianBeliefEquilibriumClosure
       State
