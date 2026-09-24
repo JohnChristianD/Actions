@@ -52,9 +52,9 @@ let script = merge {
     grep -Fq 'Nonempty E.WalrasianEquilibrium' "$upstream_existence"
     grep -Fq 'stationary Walrasian equilibrium' "$upstream_markov"
 
-    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuData' "$local_theorem"
-    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium' "$local_theorem"
-    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuExistence' "$local_theorem"
+    grep -Fq 'GeneralizedWalrasianData' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianEquilibrium' "$local_theorem"
+    grep -Fq 'GeneralizedWalrasianExistence' "$local_theorem"
     grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
     grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
 
@@ -70,11 +70,11 @@ let script = merge {
       printf '  "econlib_commit": "%s",\n' "$econlib_rev"
       printf '  "upstream_static_existence": "Economy.exists_equilibrium",\n'
       printf '  "upstream_equilibrium_object": "Economy.WalrasianEquilibrium",\n'
-      printf '  "local_mega_equilibrium_target": "MegaGeneralizedWalrasianKKTArrowDebreuExistence",\n'
+      printf '  "local_mega_equilibrium_target": "GeneralizedWalrasianExistence",\n'
       printf '  "local_composition_target": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",\n'
-      printf '  "local_mega_edge": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",\n'
+      printf '  "local_mega_edge": "MegaGeneralizedWalrasianEquilibrium",\n'
       printf '  "adapter_present": %s,\n' "$adapter_present"
-      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
+      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
       printf '  "graph_status": "composition-ready; explicit cross-language adapter still required"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-crossrepo-sync.json
@@ -120,9 +120,9 @@ let script = merge {
     grep -Fq 'BeliefSystem' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/BeliefSystem.lean"
     grep -Fq 'SequentialEquilibrium' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/SequentialEquilibrium.lean"
 
-    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuData' "$local_theorem"
-    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuExistence' "$local_theorem"
-    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium' "$local_theorem"
+    grep -Fq 'GeneralizedWalrasianData' "$local_theorem"
+    grep -Fq 'GeneralizedWalrasianExistence' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianEquilibrium' "$local_theorem"
     grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
 
     pomdp_named=false
@@ -140,11 +140,11 @@ let script = merge {
       printf '  "stationary_law_convergence_node": "FiniteMarkovChain.geometric_convergence_to",\n'
       printf '  "stationary_law_convergence_condition": "strictly positive transition probabilities",\n'
       printf '  "stationary_equilibrium_node": "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
-      printf '  "local_mega_edge": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",\n'
+      printf '  "local_mega_edge": "MegaGeneralizedWalrasianEquilibrium",\n'
       printf '  "local_composition": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",\n'
       printf '  "partial_observation_nodes": ["BehavioralStrategy", "BeliefSystem", "SequentialEquilibrium"],\n'
       printf '  "pomdp_named_in_econlib": %s,\n' "$pomdp_named"
-      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
+      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
       printf '  "pomdp_bridge_status": "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-equilibrium-graph.json
@@ -320,8 +320,8 @@ JSON
     exact-contract-computability-boundary-theorem
     ExactFunctionIsomorphismTransportTheorem
     ExactRecurrentFunctionTranslationTheorem
-    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
-    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+    MegaGeneralizedWalrasianEquilibrium
+    MegaGeneralizedWalrasianEquilibrium
     POMDPWalrasianData
     POMDPWalrasianEquilibrium
     POMDPWalrasianTransport
