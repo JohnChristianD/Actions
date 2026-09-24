@@ -5466,9 +5466,6 @@ record MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
       ∀ {p a} →
       kkt p a →
       equilibrium p a
-    stationaryAggregate :
-      ∀ {allocation : State → Allocation} →
-      aggregate allocation ≡ aggregate allocation
 
 open MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium public
 
@@ -5822,13 +5819,10 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
   {State Price Allocation : Set}
   {D :
-    RegularityFreeWalrasianData
+    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
       State
       Price
       Allocation}
-  {project :
-    Solution (semantics H) → Solution (semantics H)}
-  {projectGRU : GRU → GRU}
   {decodeAllocation :
     Solution (semantics H) → Allocation}
   {Action Observation Distribution Reward : Set}
@@ -5862,13 +5856,7 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
   (hodgeMaxwellTsallis :
     ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
   (walrasianEquilibrium :
-    RegularityFreeWalrasianEquilibrium
-      State
-      Price
-      Allocation
-      D
-      p
-      allocation)
+    equilibrium D p (aggregate D allocation))
   (pomdpBeliefClosure :
     POMDPWalrasianBeliefEquilibriumClosure
       State
@@ -5895,8 +5883,6 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
     Price
     Allocation
     D
-    project
-    projectGRU
     decodeAllocation
     Action
     Observation
