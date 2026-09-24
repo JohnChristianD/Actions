@@ -582,7 +582,7 @@ The canonical theorem surface now makes the three strict neural-function-class o
 
 ### Literature-aligned strict neural separation completion
 
-The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a `pruned fixed finite-token branch` recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
+The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a finite-state recurrent baseline recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
 
 This matches the formal literature axis of rational/finite-state recurrence versus richer recurrent state expressivity used by Merrill et al. (ACL 2020) and the finite-state characterization/strict-subset results of Svete & Cotterell (EMNLP 2023):
 - https://aclanthology.org/2020.acl-main.43/
@@ -676,7 +676,7 @@ Finally, whole-allocation/interdependent preferences and heterogeneous choices a
 
 ## Exact learner–economic solution bridge and generalized Second Welfare theorem
 
-The economic side is no longer represented only as a certificate boundary. The canonical theorem surface now contains an actual learner-to-economic state isomorphism and step-transport theorem:
+The economic side is no longer represented only as a representation boundary. The canonical theorem surface now contains an actual learner-to-economic state isomorphism and step-transport theorem:
 
 - `megaEconomicSolutionStateIsomorphism`
 - `megaEconomicSolutionStepConjugacy`
