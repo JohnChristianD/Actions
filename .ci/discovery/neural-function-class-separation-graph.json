@@ -113,10 +113,6 @@
       "role": "single end-to-end carrier-agnostic GRU/F4/Maxwell prefix+horizon-regret endpoint; no finite/infinite case split is present in the promoted theorem"
     },
     {
-      "node": "RegularityFreeWalrasianEquilibrium",
-      "role": "assumption-relaxed equilibrium surface: continuity is absent and stationarity is an explicit witness"
-    },
-    {
       "node": "POMDPWalrasianEquilibrium",
       "role": "POMDP-generalized Walrasian equilibrium over arbitrary state/action/observation/distribution/reward carriers with explicit stationarity"
     },
@@ -133,8 +129,12 @@
       "role": "connected equilibrium-plus-belief/policy closure consuming an explicit factorization witness"
     },
     {
+      "node": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
+      "role": "single generalized Walrasian/KKT/Arrow-Debreu equilibrium contract consumed by the connected GRU/Hodge-Maxwell/Tsallis/POMDP closure; no finite-dimensional carrier specialization"
+    },
+    {
       "node": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
-      "role": "connected carrier-polymorphic closure consuming generalized GRU global injectivity, the general Hodge-Maxwell/Tsallis divergence composition, a regularity-free Walrasian equilibrium witness, and explicit POMDP belief-policy equilibrium closure"
+      "role": "connected carrier-polymorphic closure consuming generalized GRU global injectivity, general Hodge-Maxwell/Tsallis divergence composition, one mega-generalized Walrasian/KKT/Arrow-Debreu equilibrium witness, and explicit POMDP belief-policy closure"
     }
   ],
   "edges": [
@@ -349,19 +349,14 @@
       "Hodge-Maxwell and Tsallis divergence transport are consumed as the common carrier layer"
     ],
     [
-      "POMDPWalrasianBeliefEquilibriumClosure",
-      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
-      "the explicit POMDP belief-policy equilibrium seam is consumed without inferring filtering or optimality"
-    ],
-    [
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
       "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
       "general carrier-polymorphic Hodge-Maxwell/Tsallis divergence transport is consumed directly; no q=2 specialization is introduced"
     ],
     [
-      "RegularityFreeWalrasianEquilibrium",
+      "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
       "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
-      "regularity-free equilibrium witness is consumed directly as the Walrasian layer"
+      "single generalized equilibrium edge: Walrasian, Arrow-Debreu, and KKT predicates share one carrier-polymorphic contract with explicit bridge witnesses"
     ],
     [
       "POMDPWalrasianBeliefEquilibriumClosure",
@@ -1351,53 +1346,12 @@
     "neighborhood_role": "DenseNeighborhoodSeparation is retained as the orbit-separation context in the connected theorem; it is not falsely used as a substitute for the square-law premise."
   },
   "walrasian_status": {
-    "local_transport": "PROVED",
-    "chain": [
-      "staticWalrasian",
-      "GeneralizedWalrasianEquilibrium",
-      "MarkovStationaryWalrasianCompositionTheorem"
-    ],
-    "external_existence": "NOT_YET_ADAPTERIZED",
-    "conclusion": "Graphing can expose the complete route, but external RegularEconomy existence cannot become a local Agda existence theorem until the cross-language adapter is an actual proof term.",
-    "local_existence": {
-      "status": "PROVED_CONDITIONAL",
-      "theorem": "ConnectedGeneralizedWalrasianExistenceTheorem",
-      "premise": "∀ p → Σ allocation . staticWalrasian D p allocation",
-      "result": "∀ p → Σ allocation . GeneralizedWalrasianEquilibrium D p allocation",
-      "proof_shape": "static existence + invariant aggregate + generalizedWalrasianEquilibrium-from-static"
-    },
-    "external_benchmark": {
-      "repo": "danlyng/Econlib",
-      "role": "benchmark/reference implementation, not proof oracle",
-      "scope": "classical Arrow-Debreu/Walrasian existence and related stationary/Markov accounting structures",
-      "local_authority": "Agda theorem terms and actual consuming graph edges"
-    },
-    "generalization_search": [
-      {
-        "family": "continuum-or-measure-space-agents",
-        "status": "external research candidate; no local proof edge yet"
-      },
-      {
-        "family": "infinite-dimensional-commodity-space",
-        "status": "external research candidate; no local proof edge yet"
-      },
-      {
-        "family": "discontinuous-non-ordered-preferences",
-        "status": "external research candidate; no local proof edge yet"
-      },
-      {
-        "family": "interdependent-or-price-dependent-preferences",
-        "status": "external research candidate; no local proof edge yet"
-      },
-      {
-        "family": "no-free-disposal",
-        "status": "external research candidate; no local proof edge yet"
-      },
-      {
-        "family": "Bayesian-asymmetric-information-equilibrium",
-        "status": "external research candidate; requires explicit local information/probability semantics"
-      }
-    ]
+    "local_transport": "PROVED_CONDITIONAL",
+    "canonical_dependency": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
+    "benchmark": "danlyng/Econlib",
+    "benchmark_role": "reference implementation for classical equilibrium baselines, not proof oracle or graph-completeness oracle",
+    "graph_policy": "one mega-generalized Walrasian/KKT/Arrow-Debreu edge dependency; broader variants are search inputs, not separate current graph candidates",
+    "local_authority": "Agda theorem terms and actual consuming graph edges"
   },
   "tcl_lua_status": {
     "repository_current": "Neither Tcl nor Lua is a runtime dependency of the current toolchain.",
@@ -1659,8 +1613,8 @@
   },
   "current_head_audit_2026_09_24": {
     "status": "PENDING_FRESH_CI",
-    "head": "d371bf67d79b3f9e3794fdcceaacec4e63fb792b",
-    "note": "Tsallis-2 specialization removed; connected closure now consumes the general carrier-polymorphic Tsallis surface and a regularity-free Walrasian equilibrium witness. Kernel verification remains pending."
+    "head": "mega-generalized-walrasian-edge",
+    "note": "Walrasian generalization candidates pruned to one mega-generalized Walrasian/KKT/Arrow-Debreu contract; Tsallis remains fully carrier-polymorphic. Kernel verification remains pending."
   },
   "metadata_pruning_policy_v11": {
     "status": "ACTIVE_REGISTRY_AUTOPRUNE_WITH_KERNEL_GATE",
