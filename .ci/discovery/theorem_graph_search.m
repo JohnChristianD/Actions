@@ -466,6 +466,7 @@ graph_required_theorems = [
     "GeneralizedWalrasianFixedPointClosure",
     "generalizedWalrasianExistence-from-topological-fixed-point",
     "generalizedWalrasianExistence-from-topological-fixed-point-transport",
+    "gruf4EconomicInjectivityFromGlobalSquare",
     "EconomicConvergenceFromPrimitiveAssumptions",
     "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions"
 ].
