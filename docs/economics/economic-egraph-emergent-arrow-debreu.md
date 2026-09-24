@@ -1,6 +1,6 @@
 # Economic e-graph: emergent-only Arrow–Debreu
 
-This graph treats Arrow–Debreu as a derived specialization, never as a primitive semantic node.
+This graph treats Arrow–Debreu as a derived specialization, never as a primitive semantic node. The former gate module has been removed. The remaining interface records only an actual derivation of the classical conditions.
 
 ## Rule
 
@@ -33,6 +33,10 @@ WholeAllocationPreference -> ArrowDebreu
 EquilibriumWitness -> ArrowDebreu
 
 These rewrites are invalid without the missing hypotheses.
+
+## Implementation status
+
+The specialization interface now contains no generic Arrow–Debreu gate. It requires an explicit `ArrowDebreuConditionDerivation`, and the specialization constructor consumes that derivation. No derivation is currently claimed from `GeneralizedWalrasianData` alone.
 
 ## Economic closure target
 
