@@ -10,16 +10,25 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 -- Discovery/CI should target this file.
 ------------------------------------------------------------------------
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym; subst)
-open import Agda.Builtin.Nat using (Nat; suc; _+_; _*_)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
+open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-refl; ≤-trans; ≤-decTotalOrder; n<1+n)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+import Data.Integer.Properties as IntegerProperties
+open import Level using (0ℓ)
+open import Data.List.Base using (List; []; _∷_; _++_; map; length)
+open import Data.List.Sort as Sort
+open import Relation.Binary.Bundles using (DecTotalOrder)
+open import Relation.Binary.Construct.On as On
+import Relation.Binary.Construct.Flip.EqAndOrd as Flip
+open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
+open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
-open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
-open import Data.List.Base using (List; []; _∷_; _++_; map; length)
-open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Nat.Properties using (≤-antisym; ≤-refl; ≤-trans; +-identityʳ; +-suc; n<1+n)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 replaceClock :
