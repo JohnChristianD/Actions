@@ -328,6 +328,10 @@ JSON
     megaFirstWelfareTheorem
     MegaSecondWelfareTheoremConditions
     megaSecondWelfareTheorem
+    MegaSecondWelfareTheoremBoundaryCounterexample
+    megaSecondWelfareTheorem-boundary-counterexample
+    MegaNoStrictAffordableAlternativeBoundary
+    megaNoStrictAffordableAlternative-is-demand-optimality
     MegaParetoEquilibriumConditionality
     MegaWalrasianEquilibriumWelfareAdapter
     MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
