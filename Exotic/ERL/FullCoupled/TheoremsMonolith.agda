@@ -5224,9 +5224,6 @@ record ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
   {Continuous : {A B : Set} → (A → B) → Set}
   (H :
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (project :
-    Solution (semantics H) → Solution (semantics H))
-  (projectGRU : GRU → GRU)
   (State Price Allocation : Set)
   (D :
     ContinuousStationaryMarkovWalrasianData
@@ -5468,6 +5465,71 @@ record MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
       equilibrium p a
 
 open MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium public
+
+------------------------------------------------------------------------
+-- Singular mega-generalized Walrasian / KKT / Arrow-Debreu equilibrium.
+--
+-- This is the only Walrasian dependency exposed to the connected
+-- GRU/Hodge-Maxwell/Tsallis composition. The carrier is arbitrary Set:
+-- there is no Fin n, Vec, finite-agent, finite-commodity, continuity,
+-- differentiability, convexity, monotonicity, or free-disposal assumption
+-- built into the edge. Concrete existence results are supplied through
+-- the explicit hypothesis bundle and existence witness.
+------------------------------------------------------------------------
+
+record MegaGeneralizedWalrasianKKTArrowDebreuData
+  (Agent Commodity Price Allocation : Set) : Set₁ where
+  constructor megaGeneralizedWalrasianKKTArrowDebreuData
+  field
+    consumption : Agent → Set
+    preference : Agent → Allocation → Allocation → Set
+    budget : Price → Agent → Allocation → Set
+    feasible : Allocation → Set
+    marketClearing : Price → Allocation → Set
+    walrasian : Price → Allocation → Set
+    arrowDebreu : Price → Allocation → Set
+    kkt : Price → Allocation → Set
+    equilibrium : Price → Allocation → Set
+
+open MegaGeneralizedWalrasianKKTArrowDebreuData public
+
+record MegaGeneralizedWalrasianKKTArrowDebreuExistence
+  (Agent Commodity Price Allocation : Set)
+  (D :
+    MegaGeneralizedWalrasianKKTArrowDebreuData
+      Agent Commodity Price Allocation) : Set₁ where
+  constructor megaGeneralizedWalrasianKKTArrowDebreuExistence
+  field
+    equilibriumPrice : Price
+    equilibriumAllocation : Allocation
+    walrasianWitness :
+      walrasian D equilibriumPrice equilibriumAllocation
+    arrowDebreuWitness :
+      arrowDebreu D equilibriumPrice equilibriumAllocation
+    kktWitness :
+      kkt D equilibriumPrice equilibriumAllocation
+    equilibriumWitness :
+      equilibrium D equilibriumPrice equilibriumAllocation
+
+open MegaGeneralizedWalrasianKKTArrowDebreuExistence public
+
+megaGeneralizedWalrasianKKTArrowDebreuExistence-from-witness :
+  ∀ {Agent Commodity Price Allocation : Set}
+  {D :
+    MegaGeneralizedWalrasianKKTArrowDebreuData
+      Agent Commodity Price Allocation}
+  (p : Price)
+  (a : Allocation)
+  (w : walrasian D p a)
+  (ad : arrowDebreu D p a)
+  (k : kkt D p a)
+  (e : equilibrium D p a) →
+  MegaGeneralizedWalrasianKKTArrowDebreuExistence
+    Agent Commodity Price Allocation D
+megaGeneralizedWalrasianKKTArrowDebreuExistence-from-witness
+  p a w ad k e =
+  megaGeneralizedWalrasianKKTArrowDebreuExistence
+    p a w ad k e
 
 ------------------------------------------------------------------------
 -- POMDP-generalized Walrasian equilibrium.
