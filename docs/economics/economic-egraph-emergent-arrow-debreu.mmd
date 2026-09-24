@@ -2,20 +2,24 @@ flowchart TD
   E["EconomicStructure"] --> F["FeasibleAllocations"]
   E --> P["PreferenceChoice"]
   E --> R["Production"]
-  P --> I["IndividualOptimality"]
-  F --> I
-  R --> S["Supply / ProfitOptimality"]
-  I --> D["DemandWitness"]
-  D --> A["AggregateDemand"]
-  S --> A
-  A --> B["AggregateResourceBalance"]
-  B --> C["MarketClearing"]
-  I --> Q["Dual / Separation / FixedPoint Certificate"]
-  Q --> V["DerivedPrice"]
-  V --> C
-  C --> G["GeneralizedWalrasianEquilibrium"]
 
-  G --> ADG["ClassicalSpecializationGate"]
+  P --> DC["DemandCostKernel"]
+  F --> DC
+  DC --> FW["FirstWelfare"]
+  FW --> PO["ParetoOptimal"]
+
+  R --> PF["FeasibleFirmPlans"]
+  PF --> S["ProfitOptimalSupply"]
+  S --> RB["AggregateResourceBalance"]
+  DC --> DD["DemandWitness"]
+  DD --> RB
+  RB --> MC["MarketClearing"]
+
+  SEP["Convex / Separation / FixedPoint Certificate"] --> DP["DerivedPrice"]
+  DP --> GE["GeneralizedWalrasianEquilibrium"]
+  MC --> GE
+
+  GE --> ADG["ClassicalSpecializationGate"]
   ADG --> AD["ArrowDebreuSpecialization"]
 
   X1["finite-dimensional commodities"] --> ADG
@@ -24,5 +28,11 @@ flowchart TD
   X4["required convexity / continuity"] --> ADG
   X5["competitive production / profit maximization"] --> ADG
   X6["classical feasibility / clearing"] --> ADG
+
+  FW -. proved .-> V1["Consumer-side closure"]
+  PF -. added seam .-> V2["Production frontier"]
+  MC -. frontier .-> V3["Clearing frontier"]
+  DP -. frontier .-> V4["Price frontier"]
+  AD -. conditional only .-> V5["Arrow-Debreu frontier"]
 
   Z["No free-standing ArrowDebreuEquilibrium"] -. forbidden .-> AD
