@@ -36,7 +36,7 @@ These rewrites are invalid without the missing hypotheses.
 
 ## Implementation status
 
-The unused specialization scaffolding has now been removed. There is no Arrow–Debreu Agda node on this branch because no current downstream theorem consumes a proved classical condition package, and no derivation from `GeneralizedWalrasianData` has been established.
+The unused specialization scaffolding has now been removed. There is no Arrow–Debreu Agda node on this branch. The monolith now also contains an Econlib-style minimal First Welfare derivation kernel: strict-preference costliness plus the budget cost bound derive the no-strict-affordable-alternative clause, which then feeds the existing Pareto contradiction. The cost bounds themselves remain explicit inputs because the generalized carrier does not yet encode local nonsatiation, demand correspondence, or a concrete commodity-space cost model.
 
 ## Economic closure target
 
@@ -51,13 +51,15 @@ The repository currently states that Walrasian, Arrow–Debreu, and KKT are not 
 ## Proof-obligation order
 
 1. Close preference/choice structure.
-2. Close production and profit-optimal supply where production is present.
-3. Close feasibility and aggregate resource balance.
-4. Derive individual demand/supply.
-5. Derive market clearing.
-6. Derive the price/dual certificate rather than treating supporting price as unexplained economic input.
-7. Establish the generalized equilibrium witness.
-8. Add the Arrow–Debreu specialization edge only if the classical assumptions have been proved.
-9. Keep Arrow–Debreu absent otherwise.
+2. Derive the demand-side cost bounds from the concrete budget and local-nonsatiation/demand model.
+3. Use those bounds to derive no-strict-affordable-alternative and prove First Welfare.
+4. Close production and profit-optimal supply where production is present.
+5. Close feasibility and aggregate resource balance.
+6. Derive individual demand/supply.
+7. Derive market clearing.
+8. Derive the price/dual certificate rather than treating supporting price as unexplained economic input.
+9. Establish the generalized equilibrium witness.
+10. Add the Arrow–Debreu specialization edge only if the classical assumptions have been proved.
+11. Keep Arrow–Debreu absent otherwise.
 
 The objective is not to make the theory less general. It is to prevent a classical label from becoming a hidden primitive.
