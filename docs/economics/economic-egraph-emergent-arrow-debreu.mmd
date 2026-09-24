@@ -28,7 +28,8 @@ flowchart TD
     UPR["Economic primitives"] --> UD["Demand + competitive supply"]
     UD --> UBA["Aggregate balance + market clearing"]
     UBA --> UOP["Economic update operator"]
-    UOP --> UCV["Convergence from economic assumptions"]
+    UOP -. exact GRU/F4 representation .-> UGI["GRU-F4 economic injectivity"]
+    UGI -. does not imply convergence alone .-> UCV["Convergence from economic assumptions"]
     UCV -. FRONTIER .-> TOPO
     TOPO --> FPX
     FPX --> UFP["Fixed-point witness"]
