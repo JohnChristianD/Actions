@@ -3955,7 +3955,7 @@ equilibrium-from-fixed-point :
   {step : State → State}
   {Equilibrium : State → Set} →
   EquilibriumFixedPointClosure State step Equilibrium →
-  Σ State (λ s → Equilibrium s) →
+  Σ State (λ s → step s ≡ s) →
   Σ State (λ s → Equilibrium s)
 equilibrium-from-fixed-point closure witness =
   proj₁ witness ,
