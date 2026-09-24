@@ -173,17 +173,17 @@ The following graph is derived from the actual record declarations and their dir
 69. CanonicalFiniteCycleExclusionIsomorphismTheorem
     +-- depends on: StateIsomorphism
 70. CanonicalOperatorCompositionTheorem
-    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, pruned finite-observation branch
+    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem
 75. CanonicalPureNonOrangeBypassCompletionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, pruned finite-observation branch, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch
+    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem
     +-- depends on: DiscreteExactUniversalUAP
-    +-- depends on: CanonicalExactCompositionTuringCompletenessContract, pruned finite-observation branch
+    +-- depends on: CanonicalExactCompositionTuringCompletenessContract
 80. CanonicalPersistentExcitationRequirementTheorem
 81. ExactContractComputabilityBoundaryTheorem
     +-- depends on: CanonicalExactCompositionTuringCompletenessContract
     +-- depends on: StationaryLimitTheorem
-    +-- depends on: retired theorem surface
-    +-- depends on: pruned finite-observation branch, CanonicalPersistentExcitationRequirementTheorem
+
+    +-- depends on:, CanonicalPersistentExcitationRequirementTheorem
 85. FiniteProbabilityMass
 86. FiniteProbabilityMassSemanticsTheorem
     +-- depends on: StateIsomorphism, FiniteProbabilityMass
@@ -193,11 +193,10 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: StateIsomorphism, FinitePOMDPProbabilitySemantics
 89. FiniteBeliefUpdateExactTransportTheorem
     +-- depends on: StateIsomorphism
-    +-- depends on: pruned finite-observation branch, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
-    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem, pruned finite-observation branch
-    +-- depends on: CanonicalExactRNNLMTheorem, pruned finite-observation branch, pruned finite-observation branch, ExactContractComputabilityBoundaryTheorem
-    +-- depends on: pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch
-    +-- depends on: pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch
+    +-- depends on:, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
+    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem
+    +-- depends on: CanonicalExactRNNLMTheorem, ExactContractComputabilityBoundaryTheorem
+    +-- depends on:
 
 Current canonical tail after the historical index:
 
@@ -299,7 +298,7 @@ The correct distinction is:
 ```
 unbounded semantic carrier  ->  ℤ
 explicit finite-state bound  ->  Fin n   (n : Nat)
-pruned fixed finite-token branch
+
 ```
 
 Sequences remain ordinary finite lists, so prefix concatenation and recurrent scan composition are exact structural operations. No theorem about convexity, smoothness, or universal continuous Maxwell representation follows merely from the ordered-ring structure of `ℤ`.
@@ -463,14 +462,14 @@ The canonical path is:
 ```
 F_base
   -> CanonicalFullLearnerConnectedScanConjugacyTheorem
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
-  -> pruned finite-observation branch
+  ->
+  ->
+  ->
+  ->
+  ->
+  ->
+  ->
+  ->
   -> F_full_connected
 ```
 
@@ -486,7 +485,7 @@ Orange/pending internal verification is a wait state, not a bypass condition. Re
 
 ### Pre-graphed exotic promotion
 
-The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `pruned finite-observation branch`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
+The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, ``, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
 
 ## Finite-factor automaton closure and tropical quotient candidate
 
@@ -606,9 +605,7 @@ The Maxwell and Hodge-Maxwell theorem family is now carrier-polymorphic: its exa
 
 The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-polymorphic. The connected GRU/Hodge-Maxwell/Tsallis/Walrasian/POMDP closure uses the general Tsallis divergence surface directly and does not introduce `Fin n` or `Vec` carriers.
 
-Econlib is used as a benchmark/reference implementation, not as an oracle for the Agda graph. Its equilibrium layer provides a concrete Arrow-Debreu/Walrasian existence baseline and related stationary/Markov structures, while the repository's graph search remains responsible for discovering broader compositional surfaces and the Agda source remains the proof authority. External equilibrium literature may supply research inputs, but the graph keeps only the single mega-generalized Walrasian/KKT/Arrow-Debreu dependency rather than maintaining a list of speculative variants. The former finite-cardinality Maxwell branch, finite Hodge-Maxwell discretization branch, and finite-carrier Maxwell pigeonhole impossibility theorem are pruned because their strict dependencies were intrinsically tied to `Fin n`.
-
-This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
+Econlib is used as a benchmark/reference implementation, not as an oracle for the Agda graph. Its equilibrium layer provides a concrete Arrow-Debreu/Walrasian existence baseline and related stationary/Markov structures, while the repository's graph search remains responsible for discovering broader compositional surfaces and the Agda source remains the proof authority. External equilibrium literature may supply research inputs, but the graph keeps only the single mega-generalized Walrasian/KKT/Arrow-Debreu dependency rather than maintaining a list of speculative variants. This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
 
 Finite-coordinate Hodge-Maxwell transport is now proved conditionally through an exact-length list coordinate isomorphism. A literal vector-space/module dimension theorem and universal existence result remain explicit boundaries rather than inferred from the carrier type. `ℤ` is retained for exact learner algebra; it is not a replacement for an arbitrary Maxwell function-space carrier.
 
@@ -620,6 +617,47 @@ The current repository runtime boundary is unchanged: Tcl and Lua remain absent.
 - ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 - ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
 - ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+
+## LCB–Sparsemax policy bridge and Maxwell boundary
+
+The canonical policy is already an exact readout of the learner state:
+
+```
+canonicalPolicy K s
+  ≡ sparsemaxPolicy
+      (actionSpaceK K)
+      (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s)))
+      (valuesCount (lcbCounts s))
+```
+
+This policy surface is consumed by `CanonicalAQLoopTheorem`, alongside the exact GRU-signal, F4 optimizer-step, and endogenous Watkins-target couplings. Thus the repository has a real
+
+```
+GRU ─┐
+F4  ─┼─> canonical full learner ─> Watkins critic/target
+LCB ─┘                              ↓
+                               Sparsemax policy
+```
+
+bridge. The LCB–Sparsemax policy is not a decorative downstream label: its policy equation is an Agda equality and the policy invariance/replacement theorems consume that semantics.
+
+However, this does not yet prove that the LCB–Sparsemax policy itself *solves* Maxwell exactness. The Hodge-Maxwell exactness theorem is currently connected to the learner through the explicit learner-to-solution inverse and step-conjugacy bridge. To make the policy the missing computational closure, an additional proof-relevant map is required from the policy/readout semantics into the Maxwell solution/update semantics, for example a theorem that the policy-induced update is exactly the represented Maxwell step and preserves the differential-form equations.
+
+So the current status is:
+
+```
+LCB + Watkins + Sparsemax
+        ↓
+exact canonical policy readout
+        ↓
+GRU/F4/Watkins connected learner
+        ↓
+learner ↔ Hodge-Maxwell solution
+        ↓
+exact Maxwell state/step representation
+```
+
+The first, second, and fourth arrows are present on the Agda surface. The policy-to-Maxwell update arrow is the remaining substantive seam. The composition is therefore a credible route to an emergent solver architecture, but it should not yet be called a proved policy-driven Maxwell solver.
 
 ## Second Welfare theorem: completed boundary
 
