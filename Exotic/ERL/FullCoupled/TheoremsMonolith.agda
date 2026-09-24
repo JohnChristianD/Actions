@@ -8113,9 +8113,9 @@ record F4NormPairEconomicInjectivityCertificate
   (gruStep : GRU → GRU) : Set₁ where
   constructor f4NormPairEconomicInjectivityCertificate
   field
-    f4CoercivityType : Set₁
+    f4CoercivityType : Set
     f4CoercivityWitness : f4CoercivityType
-    f4BoundednessType : Set₁
+    f4BoundednessType : Set
     f4BoundednessWitness : f4BoundednessType
     f4NormPairStability :
       CanonicalF4NormPairSureStabilityCompositionTheorem
@@ -8147,9 +8147,9 @@ f4-normPair-economic-injectivity-certificate :
   {carrierEquilibriumMap : GRU → Equilibrium}
   {economicStep : Economic → Economic}
   {gruStep : GRU → GRU}
-  (f4CoercivityType : Set₁)
+  (f4CoercivityType : Set)
   (f4CoercivityWitness : f4CoercivityType)
-  (f4BoundednessType : Set₁)
+  (f4BoundednessType : Set)
   (f4BoundednessWitness : f4BoundednessType)
   (economicSquare :
     MegaWalrasianGlobalSquareConjugacy
