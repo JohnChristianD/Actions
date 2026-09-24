@@ -36,7 +36,7 @@ These rewrites are invalid without the missing hypotheses.
 
 ## Implementation status
 
-The specialization interface now contains no generic Arrow–Debreu gate. It requires an explicit `ArrowDebreuConditionDerivation`, and the specialization constructor consumes that derivation. No derivation is currently claimed from `GeneralizedWalrasianData` alone.
+The unused specialization scaffolding has now been removed. There is no Arrow–Debreu Agda node on this branch because no current downstream theorem consumes a proved classical condition package, and no derivation from `GeneralizedWalrasianData` has been established.
 
 ## Economic closure target
 
