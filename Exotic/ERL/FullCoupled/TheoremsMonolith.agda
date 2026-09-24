@@ -2347,6 +2347,51 @@ finiteRank-stability-implies-eventual-fixed C s =
   eventualExact C s
 
 ------------------------------------------------------------------------
+-- Exact stabilization can feed the existing convergence-witness interface.
+-- The convergence relation is an explicit premise; rank alone does not
+-- manufacture topology.
+------------------------------------------------------------------------
+
+topologicalConvergenceWitness-from-finite-rank-stability :
+  ∀ {State : Set}
+  {step : State → State}
+  {equilibrium : State}
+  {orbit : Nat → State}
+  {limit : State}
+  {Converges : (Nat → State) → State → Set} →
+  FiniteRankStabilityCertificate State step equilibrium →
+  (s : State) →
+  (∀ n → orbit n ≡ iterateState step n s) →
+  (∀ n → orbit (suc n) ≡ step (orbit n)) →
+  (∀ {n} → orbit n ≡ equilibrium → Converges orbit equilibrium) →
+  (∀ {x y} → x ≡ y → Converges orbit x → Converges orbit y) →
+  equilibrium ≡ limit →
+  TopologicalConvergenceWitness State step orbit limit Converges
+topologicalConvergenceWitness-from-finite-rank-stability
+  stability s orbitMatches orbitStepLaw eventualConvergence
+  convergenceEqualityTransport equilibriumToLimit =
+  let
+    eventual = finiteRank-stability-implies-eventual-fixed stability s
+    n = proj₁ eventual
+    fixed = proj₂ eventual
+    orbitFixed = trans (sym (orbitMatches n)) fixed
+    convergesAtEquilibrium =
+      eventualConvergence (trans (orbitMatches n) (sym orbitFixed))
+    convergesAtLimit =
+      convergenceEqualityTransport equilibriumToLimit convergesAtEquilibrium
+    limitFixed =
+      trans
+        (cong step (sym equilibriumToLimit))
+        (trans
+          (FiniteRankStabilityCertificate.equilibriumFixed stability)
+          equilibriumToLimit)
+  in
+  topologicalConvergenceWitness
+    orbitStepLaw
+    convergesAtLimit
+    (λ _ → limitFixed)
+
+------------------------------------------------------------------------
 -- Finite non-iid Walrasian equilibrium.
 --
 -- Agents may have distinct endowments and utility functions; the only
