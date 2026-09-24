@@ -90,3 +90,11 @@ The repository contains a single unattended graph that is complete as a dependen
 - Found and corrected the equality orientation in the eventual-equilibrium convergence application: the orbit witness and eventual fixation compose as `trans (orbitMatches n) orbitFixed`.
 - This is a proof-term correction only; the convergence relation and equality-transport premises remain explicit.
 - Verification limitation: Agda is not installed locally; the corrected head requires CI typechecking.
+
+
+## 2026-09-24 finite-rank bridge CI verification
+
+- Workflow `Nix connected composition verification` run #1193 completed successfully for head `d8fc834d8619a0df2b40bbf08aefb7fd5017dd15`.
+- The corrected `topologicalConvergenceWitness-from-finite-rank-stability` proof term is therefore accepted by the repository's CI typechecking/composition gate.
+- The next closure seam was audited against the existing theorem surface. `CanonicalF4GlobalOptimizerStabilityTheorem` supplies exact F4 step-stability facts, but no existing theorem supplies the required `FiniteRankStabilityCertificate.eventualExact` field for the composed MARL/Hodge-Maxwell/GRU-F4/Watkins/Sparsemax economic update.
+- No artificial F4-to-eventual-fixation theorem was added. The remaining obligation is the actual finite-rank/eventual-absorption certificate for the composed update.
