@@ -457,7 +457,11 @@ graph_required_theorems = [
     "ExactTwoCounterConfiguration",
     "ExactTwoCounterMachine",
     "ExactReconstructionOnImage",
-    "StationaryLimitTheorem"
+    "StationaryLimitTheorem",
+    "TopologicalConvergenceWitness",
+    "FixedPointExistenceFromConvergence",
+    "isomorphismFixedPointTransport",
+    "economicEquilibriumExistenceFromConvergentFixedPoint"
 ].
 
 :- func graph_required_subcompositions = list(string).
