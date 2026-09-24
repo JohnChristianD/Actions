@@ -8471,14 +8471,6 @@ recursiveRadner-equilibrium-embeds :
     (allocationProcess , portfolioProcess)
 recursiveRadner-equilibrium-embeds witness =
   D , witness
-  where
-  D :
-    RecursiveRadnerData
-      _ _ _ _ _ _ _
-      priceProcess
-      allocationProcess
-      portfolioProcess
-  D = _
 ------------------------------------------------------------------------
 -- Existence is a separate economic theorem interface.
 --
