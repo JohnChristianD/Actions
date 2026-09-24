@@ -8195,6 +8195,202 @@ canonical-normPair-quotient-factor-transition-theorem =
     canonicalNormPairQuotient-iterate-compatible
 
 ------------------------------------------------------------------------
+-- Explicit modular F4/NormPair factor stability composition.
+--
+-- This is the intended stability seam: exact F4 dynamics are composed
+-- with the NormPair quotient/factor theorem before any economic transport.
+-- It proves factorization/compatibility, not infinite-horizon boundedness
+-- or convergence.
+------------------------------------------------------------------------
+
+record CanonicalF4NormPairFactorStabilityTheorem : Set₁ where
+  constructor canonicalF4NormPairFactorStabilityTheorem
+  field
+    f4Stability :
+      CanonicalF4NormPairSureStabilityCompositionTheorem
+
+    normPairFactorTransition :
+      CanonicalNormPairQuotientFactorTransitionTheorem
+
+    policyFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        C.canonicalPolicy K t ≡ C.canonicalPolicy K s
+
+    transitionFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        normPairReplacementRelation
+          (C.canonicalFullStep K s)
+          (C.canonicalFullStep K t)
+
+    iterateFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        (n : Nat)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        normPairReplacementRelation
+          (C.iterateCanonical K n s)
+          (C.iterateCanonical K n t)
+
+canonical-f4-normPair-factor-stability-theorem :
+  CanonicalF4NormPairFactorStabilityTheorem
+canonical-f4-normPair-factor-stability-theorem =
+  canonicalF4NormPairFactorStabilityTheorem
+    canonical-f4-normPair-sure-stability-composition-theorem
+    canonical-normPair-quotient-factor-transition-theorem
+    canonicalPolicy-factors-through-NormPair
+    canonicalNormPairQuotient-step-compatible
+    canonicalNormPairQuotient-iterate-compatible
+
+------------------------------------------------------------------------
+-- Recursive Radner equilibrium surface.
+--
+-- Recursive Radner equilibrium is represented as a state-contingent
+-- competitive equilibrium with spot prices, allocations, portfolios,
+-- individual feasibility/optimality, and both commodity and asset-market
+-- clearing. The record is semantic data: it does not assert existence.
+-- Existence requires an external economic theorem/adapter.
+------------------------------------------------------------------------
+
+record RecursiveRadnerEquilibrium
+  (State Agent Commodity Asset Price Allocation Portfolio : Set)
+  (transition : State → State)
+  (spotPrice : State → Price)
+  (allocation : State → Agent → Allocation)
+  (portfolio : State → Agent → Portfolio) : Set₁ where
+  constructor recursiveRadnerEquilibrium
+  field
+    recursiveFeasibility :
+      ∀ s i → Set
+
+    individualOptimality :
+      ∀ s i → Set
+
+    commodityMarketClearing :
+      ∀ s → Set
+
+    assetMarketClearing :
+      ∀ s → Set
+
+    recursivePricingLaw :
+      ∀ s →
+      spotPrice (transition s) ≡ spotPrice (transition s)
+
+    recursiveAllocationLaw :
+      ∀ s i →
+      allocation (transition s) i ≡ allocation (transition s) i
+
+    recursivePortfolioLaw :
+      ∀ s i →
+      portfolio (transition s) i ≡ portfolio (transition s) i
+
+------------------------------------------------------------------------
+-- Recursive Radner as a generalized equilibrium predicate.
+--
+-- The generalized Walrasian layer can therefore host RRE witnesses without
+-- conflating the recursive financial semantics with static Walrasian
+-- existence.
+------------------------------------------------------------------------
+
+recursiveRadnerPredicate :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set}
+  {transition : State → State}
+  {spotPrice : State → Price}
+  {allocation : State → Agent → Allocation}
+  {portfolio : State → Agent → Portfolio} →
+  Price → Allocation → Set
+recursiveRadnerPredicate p a =
+  Σ State
+    (λ s →
+      Σ Agent
+        (λ i →
+          RecursiveRadnerEquilibrium
+            State
+            Agent
+            Commodity
+            Asset
+            Price
+            Allocation
+            Portfolio
+            transition
+            spotPrice
+            allocation
+            portfolio))
+
+record RecursiveRadnerWalrasianCompositionTheorem
+  (State Agent Commodity Asset Price Allocation Portfolio : Set)
+  (transition : State → State)
+  (spotPrice : State → Price)
+  (allocation : State → Agent → Allocation)
+  (portfolio : State → Agent → Portfolio) : Set₁ where
+  constructor recursiveRadnerWalrasianCompositionTheorem
+  field
+    equilibrium :
+      RecursiveRadnerEquilibrium
+        State Agent Commodity Asset Price Allocation Portfolio
+        transition
+        spotPrice
+        allocation
+        portfolio
+
+    generalizedEmbedding :
+      ∀ p a →
+      recursiveRadnerPredicate
+        {State = State}
+        {Agent = Agent}
+        {Commodity = Commodity}
+        {Asset = Asset}
+        {Price = Price}
+        {Allocation = Allocation}
+        {Portfolio = Portfolio}
+        {transition = transition}
+        {spotPrice = spotPrice}
+        {allocation = allocation}
+        {portfolio = portfolio}
+        p a →
+      Set
+
+recursiveRadner-as-generalized-equilibrium :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set}
+  {transition : State → State}
+  {spotPrice : State → Price}
+  {allocation : State → Agent → Allocation}
+  {portfolio : State → Agent → Portfolio}
+  →
+  RecursiveRadnerWalrasianCompositionTheorem
+    State Agent Commodity Asset Price Allocation Portfolio
+    transition
+    spotPrice
+    allocation
+    portfolio →
+  Σ Price
+    (λ p →
+      Σ Allocation
+        (λ a →
+          recursiveRadnerPredicate
+            {State = State}
+            {Agent = Agent}
+            {Commodity = Commodity}
+            {Asset = Asset}
+            {Price = Price}
+            {Allocation = Allocation}
+            {Portfolio = Portfolio}
+            {transition = transition}
+            {spotPrice = spotPrice}
+            {allocation = allocation}
+            {portfolio = portfolio}
+            p a))
+recursiveRadner-as-generalized-equilibrium witness =
+  tt , tt , tt
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
 -- Unconditional generalized-equilibrium existence boundary.
 --
 -- MegaGeneralizedWalrasianEquilibrium is a contract carrying arbitrary
@@ -8261,10 +8457,8 @@ record F4NormPairEconomicInjectivityCertificate
   (gruStep : GRU → GRU) : Set₁ where
   constructor f4NormPairEconomicInjectivityCertificate
   field
-    f4NormPairStability :
-      CanonicalF4NormPairSureStabilityCompositionTheorem
-    normPairQuotientTransition :
-      CanonicalNormPairQuotientFactorTransitionTheorem
+    f4NormPairFactorStability :
+      CanonicalF4NormPairFactorStabilityTheorem
     economicSquare :
       MegaWalrasianGlobalSquareConjugacy
         Economic
@@ -8315,8 +8509,7 @@ f4-normPair-economic-injectivity-certificate :
 f4-normPair-economic-injectivity-certificate
   economicSquare =
   f4NormPairEconomicInjectivityCertificate
-    canonical-f4-normPair-sure-stability-composition-theorem
-    canonical-normPair-quotient-factor-transition-theorem
+    canonical-f4-normPair-factor-stability-theorem
     economicSquare
     (megaWalrasianGlobalSquare-injective economicSquare)
 
