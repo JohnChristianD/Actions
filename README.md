@@ -173,17 +173,17 @@ The following graph is derived from the actual record declarations and their dir
 69. CanonicalFiniteCycleExclusionIsomorphismTheorem
     +-- depends on: StateIsomorphism
 70. CanonicalOperatorCompositionTheorem
-    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, retired finite-observation layer
+    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem, pruned finite-observation branch
 75. CanonicalPureNonOrangeBypassCompletionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, retired finite-observation layer, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
+    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, pruned finite-observation branch, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch
     +-- depends on: DiscreteExactUniversalUAP
-    +-- depends on: CanonicalExactCompositionTuringCompletenessContract, retired finite-observation layer
+    +-- depends on: CanonicalExactCompositionTuringCompletenessContract, pruned finite-observation branch
 80. CanonicalPersistentExcitationRequirementTheorem
 81. ExactContractComputabilityBoundaryTheorem
     +-- depends on: CanonicalExactCompositionTuringCompletenessContract
     +-- depends on: StationaryLimitTheorem
     +-- depends on: retired theorem surface
-    +-- depends on: retired finite-observation layer, CanonicalPersistentExcitationRequirementTheorem
+    +-- depends on: pruned finite-observation branch, CanonicalPersistentExcitationRequirementTheorem
 85. FiniteProbabilityMass
 86. FiniteProbabilityMassSemanticsTheorem
     +-- depends on: StateIsomorphism, FiniteProbabilityMass
@@ -193,11 +193,11 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: StateIsomorphism, FinitePOMDPProbabilitySemantics
 89. FiniteBeliefUpdateExactTransportTheorem
     +-- depends on: StateIsomorphism
-    +-- depends on: retired finite-observation layer, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
-    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem, retired finite-observation layer
-    +-- depends on: CanonicalExactRNNLMTheorem, retired finite-observation layer, retired finite-observation layer, ExactContractComputabilityBoundaryTheorem
-    +-- depends on: retired finite-observation layer, retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
-    +-- depends on: retired finite-observation layer, retired finite-observation layer, retired finite-observation layer
+    +-- depends on: pruned finite-observation branch, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
+    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem, pruned finite-observation branch
+    +-- depends on: CanonicalExactRNNLMTheorem, pruned finite-observation branch, pruned finite-observation branch, ExactContractComputabilityBoundaryTheorem
+    +-- depends on: pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch
+    +-- depends on: pruned finite-observation branch, pruned finite-observation branch, pruned finite-observation branch
 
 Current canonical tail after the historical index:
 
@@ -220,7 +220,7 @@ ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 hodgeMaxwell-discontinuous-gru-refutes-connected-representation
 HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
 ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
-MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+MegaGeneralizedWalrasianEquilibrium
 ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
 ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
 
@@ -239,24 +239,50 @@ A composite record therefore points toward the record surfaces it packages or as
 
 ## Current connected closure
 
-The current connected endpoint is deliberately smaller than the former finite-observation stack:
+The important distinction is that the repository's strongest claims are about **relationships between components**, not about independently renaming each component as a theorem.
+
+The current connected semantic seam is:
 
 ```
-CanonicalFullLearnerConnectedScanConjugacyTheorem
-        |
-        +-- CanonicalExactRNNLMTheorem
-        +-- CanonicalGlobalTokenLMCompositionTheorem
-        +-- CanonicalF4GlobalOptimizerStabilityTheorem
-        +-- CanonicalIntegerHaarScaledOrthogonalityTheorem
-        |
-        v
-CanonicalPureNonOrangeBypassCompletionTheorem
-        |
-        v
-F_full_connected
+RNN / recurrent scan
+      |
+      +--> exact prefix/monoid composition
+      |
+      +--> F4 / optimizer dynamics
+      |        |
+      |        +--> horizon-regret certificate
+      |
+      +--> Watkins learner coupling
+      |
+      v
+Hodge-Maxwell exact representation
+      |
+      +--> encode/decode isomorphism
+      +--> recurrent-step conjugacy
+      +--> differential-form equations
+      +--> continuity obligations
+      |
+      v
+connected GRU/F4/Watkins/Hodge-Maxwell bridge
+      |
+      +--> global encode injectivity
+      +--> e-graph/A* transport
+      |
+      v
+downstream Tsallis / generalized Walrasian / POMDP seams
 ```
 
-Hodge-Maxwell and Maxwell surfaces are now carrier-polymorphic, explicitly connected semantic branches. Their canonical graph path has no `Fin n` dependency; finite discretization/pigeonhole branches were pruned rather than reinterpreted. No synthetic continuous-PDE-to-GRU existence edge is introduced.
+This composition deviates from standard isolated RNN, optimizer, and Hodge-Maxwell presentations in one specific way: the interfaces are themselves theorem objects. The recurrent state is not merely an implementation detail; optimizer evolution is attached to the same recurrent scan; the Hodge-Maxwell representation is required to commute with the same state transition; and injectivity is transported through the exact left/right inverse structure.
+
+That does **not** prove that ordinary RNNs are Maxwell solvers, that an optimizer is a physical law, or that a Hodge-Maxwell solution space is automatically representable by a GRU. The representation is conditional: the caller supplies the exact solution carrier, field equations, continuity predicates, encoder/decoder, and step conjugacy.
+
+The main combined-theory deviations are therefore:
+- standard RNN theory usually studies recurrence, expressivity, stability, or sequence processing without an external differential-form semantics;
+- standard optimizer theory usually studies an update map, objective, convergence, regret, or stability without requiring exact conjugacy to a physical/state-space representation;
+- standard Hodge-Maxwell theory studies differential forms, operators, boundary/domain structure, and physical equations without treating a recurrent learner as the exact state representation;
+- this repository composes these through explicit isomorphisms and commuting diagrams, so the novelty is in the **contract between the theories**, not merely the union of their separate features.
+
+The carrier-polymorphic Maxwell/Hodge-Maxwell branch has no `Fin n` requirement. Finite discretization and pigeonhole branches are pruned rather than silently generalized, and no synthetic continuous-PDE-to-GRU existence edge is introduced.
 
 ## Exact integer token carrier
 
@@ -273,7 +299,7 @@ The correct distinction is:
 ```
 unbounded semantic carrier  ->  ℤ
 explicit finite-state bound  ->  Fin n   (n : Nat)
-retired fixed finite-token carrier
+pruned fixed finite-token branch
 ```
 
 Sequences remain ordinary finite lists, so prefix concatenation and recurrent scan composition are exact structural operations. No theorem about convexity, smoothness, or universal continuous Maxwell representation follows merely from the ordered-ring structure of `ℤ`.
@@ -293,18 +319,18 @@ These are formal structural correspondences. They are not claims of empirical la
 
 ## Generalized Walrasian benchmark boundary
 
-The repository exposes one canonical mega-generalized equilibrium edge: `MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium`. It is an explicit Agda proof surface, not an implicit graph label. Its arbitrary carriers cover agent, commodity, price, and allocation spaces; one general equilibrium witness yields explicit Walrasian, Arrow-Debreu, and KKT corollaries through supplied bridge laws. No `Fin n`, `Vec`, finite-agent, finite-commodity, continuity, differentiability, convexity, monotonicity, or free-disposal restriction is baked into the edge.
+The repository now exposes one canonical generalized equilibrium surface: `MegaGeneralizedWalrasianEquilibrium`. It is deliberately smaller than the former multi-label contract. Walrasian, Arrow-Debreu, and KKT are not separate semantic nodes here; the canonical equilibrium relation is generalized, and any characterization bridge must be supplied explicitly.
 
-Specific finite, Markov-stationary, non-iid, regularity-free, and Hodge-Maxwell/Tsallis projection Walrasian edges are pruned from the canonical dependency graph. They are not parallel current theorem dependencies. Future equilibrium breadth is promoted by strengthening this single mega edge with explicit Agda semantics and witnesses, then consumed by the connected GRU/Hodge-Maxwell/Tsallis composition.
+The current `GeneralizedWalrasianData` separates preference, budget, feasibility, market clearing, equilibrium, and characterization data. Its preference relation can depend on the whole allocation, so interdependence is representable, but genuine interdependence still requires an explicit witness rather than following from the type alone. The current welfare layer similarly distinguishes a conditional First Welfare direction from a separate supporting-price reverse direction.
 
-The Podczeck–Yannelis 2024 result is a useful breadth benchmark: it proves Walrasian existence for an infinite-dimensional commodity space while allowing discontinuous, non-ordered, interdependent preferences and no free disposal, under explicit assumptions. It therefore supports the direction of the generalized contract, but it is not itself an Agda proof term or a license to remove the assumptions from a local theorem. citeturn1view0
-
-Econlib remains a benchmark/reference implementation rather than a completeness oracle for the repository's e-graph/A* search. External equilibrium results are search inputs; the Agda term and its actual consuming edge remain authoritative.
+The Podczeck–Yannelis literature is a breadth benchmark for discontinuous, non-ordered, interdependent preferences, including infinite-dimensional commodity spaces and settings without free disposal. It motivates the generality of the contract but does not discharge the repository's Agda obligations. External economics libraries and papers remain reference inputs; the Agda proof term and its actual consuming edge remain authoritative.
 
 
 ## Exactness policy
 
 An e-graph extraction is never treated as a proof.
+
+For the connected RNN/optimizer/Hodge-Maxwell surface, composition is also not treated as proof by proximity. A theorem about each component separately does not imply the theorem about their composition. The missing bridge must expose the actual carrier maps, inverse laws, step-conjugacy, continuity, objective/regret certificate, or other semantic interface needed by the composed claim.
 
 The repository does not obtain a green gate by weakening a theorem, replacing a missing proof with a trivial proposition, changing a carrier to make a theorem fit, or silently changing the semantic target.
 
@@ -364,6 +390,59 @@ CI execution
 The proof, discovery, policy, environment, and execution layers remain separate by design.
 
 
+## Workflow profile: why the repository is unusual
+
+The coding workflow is intentionally closer to a **proof-carrying research pipeline** than to a conventional single-language software project.
+
+A conventional performance-first systems workflow tends to put the executable program, tests, profiler, and version-control history at the center. A numerical array workflow tends to put executable transformations, automatic differentiation, compilation, and benchmarks at the center. A proof-first functional workflow tends to put the theorem prover and its elaborated proof terms at the center, often with a small scripting layer around it. This repository deliberately combines pieces of all three without making any one of them the sole authority.
+
+The distinctive loop is:
+
+```
+canonical semantic source
+    |
+    v
+machine-checked Agda theorem surface
+    |
+    +--> typed/declarative extraction
+    |
+    +--> e-graph + A* candidate discovery
+    |
+    v
+candidate promotion
+    |
+    v
+Agda proof obligation
+    |
+    v
+Dhall/Nix reproducible verification
+    |
+    v
+Git history records the semantic change
+```
+
+That workflow is useful **right now** because your problem is not merely “write a faster program.” You are trying to discover and then certify long chains such as recurrent scan -> optimizer -> Hodge-Maxwell representation -> global conjugacy/injectivity -> economic/POMDP seams. A normal test suite can show that an implementation behaves on examples; it cannot by itself establish that an extracted graph path is mathematically valid. Conversely, a proof-only workflow would make graph exploration and large dependency search cumbersome. The split lets search be aggressive while proof promotion remains conservative.
+
+There are also real costs. The workflow has more moving parts than a normal application repository, and a graph candidate can outrun the compiler if source names, contracts, or CI surfaces drift. That is why the current policy treats e-graph extraction as non-authoritative, keeps speculative nodes explicitly marked, prunes stale graph vocabulary, and requires the actual Agda surface to carry the theorem.
+
+The practical rule for this project is therefore:
+
+```
+discover broadly
+    !=
+prove automatically
+
+compose aggressively
+    !=
+weaken semantics
+
+record every semantic change
+    !=
+treat commit history as proof
+```
+
+For the work being done now, this is most useful as a **search -> prune -> formalize -> verify** loop. It gives you room to explore unconventional cross-domain connections while preserving a hard boundary between an interesting composition and a theorem that actually exists.
+
 ## Scheduled commit-totality README refresh
 
 The repository now has a slow, deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it weekly against the default branch. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window. Dhall is used as the declarative text-generation layer, while Nix supplies the reproducible runtime.
@@ -384,14 +463,14 @@ The canonical path is:
 ```
 F_base
   -> CanonicalFullLearnerConnectedScanConjugacyTheorem
-  -> retired finite-observation layer
-  -> retired finite-observation layer
-  -> retired finite-observation layer
-  -> retired finite-observation layer
-  -> retired finite-observation layer
-  -> retired finite-observation layer
-  -> retired finite-observation layer
-  -> retired finite-observation layer
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
+  -> pruned finite-observation branch
   -> F_full_connected
 ```
 
@@ -407,7 +486,7 @@ Orange/pending internal verification is a wait state, not a bypass condition. Re
 
 ### Pre-graphed exotic promotion
 
-The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `retired finite-observation layer`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
+The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, `pruned finite-observation branch`, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
 
 ## Finite-factor automaton closure and tropical quotient candidate
 
@@ -504,7 +583,7 @@ The canonical theorem surface now makes the three strict neural-function-class o
 
 ### Literature-aligned strict neural separation completion
 
-The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a `retired fixed finite-token carrier` recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
+The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a `pruned fixed finite-token branch` recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
 
 This matches the formal literature axis of rational/finite-state recurrence versus richer recurrent state expressivity used by Merrill et al. (ACL 2020) and the finite-state characterization/strict-subset results of Svete & Cotterell (EMNLP 2023):
 - https://aclanthology.org/2020.acl-main.43/
