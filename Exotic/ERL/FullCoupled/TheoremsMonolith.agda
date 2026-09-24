@@ -19,7 +19,7 @@ open import Relation.Nullary using (¬_)
 open import Data.Nat using (_<ᵇ_; _/_; _≤_; _<_; z≤n; s≤s; zero)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Nat.Properties using (≤-antisym; ≤-refl; +-identityʳ; +-suc; n<1+n)
+open import Data.Nat.Properties using (≤-antisym; ≤-refl; ≤-trans; +-identityʳ; +-suc; n<1+n)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 replaceClock :
@@ -6009,6 +6009,79 @@ megaParetoOptimal
      a →
    ⊥)
 
+record MegaFirstWelfareTheoremConditions
+  (Agent Price Allocation : Set)
+  (weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set)
+  (feasible : Allocation → Set)
+  (budget : Price → Agent → Allocation → Set)
+  (equilibrium : Price → Allocation → Set)
+  (p : Price)
+  (a : Allocation) : Set₁ where
+  constructor megaFirstWelfareTheoremConditions
+  field
+    equilibriumWitness :
+      equilibrium p a
+    feasibleWitness :
+      feasible a
+    noStrictAffordableAlternative :
+      ∀ i b →
+      budget p i b →
+      ¬ strictPreference i b a
+    paretoImprovementAffordability :
+      ∀ {b : Allocation} →
+      feasible b →
+      (improvement :
+        MegaParetoImprovement
+          Agent
+          Allocation
+          weakPreference
+          strictPreference
+          b
+          a) →
+      budget p
+        (proj₁ (strictlyBetter improvement))
+        b
+
+open MegaFirstWelfareTheoremConditions public
+
+megaFirstWelfareTheorem :
+  ∀ {Agent Price Allocation : Set}
+  {weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set}
+  {feasible : Allocation → Set}
+  {budget : Price → Agent → Allocation → Set}
+  {equilibrium : Price → Allocation → Set}
+  {p : Price}
+  {a : Allocation} →
+  MegaFirstWelfareTheoremConditions
+    Agent
+    Price
+    Allocation
+    weakPreference
+    strictPreference
+    feasible
+    budget
+    equilibrium
+    p
+    a →
+  megaParetoOptimal
+    {weakPreference = weakPreference}
+    {strictPreference = strictPreference}
+    feasible
+    a
+megaFirstWelfareTheorem conditions =
+  feasibleWitness conditions ,
+  λ {b} feasibleB improvement →
+    noStrictAffordableAlternative
+      conditions
+      (proj₁ (strictlyBetter improvement))
+      b
+      (paretoImprovementAffordability
+        conditions
+        feasibleB
+        improvement)
+
 ------------------------------------------------------------------------
 -- Econlib-style minimal First Welfare derivation kernel.
 --
@@ -6074,7 +6147,7 @@ record MegaDemandCostKernel
 open MegaDemandCostKernel public
 
 megaNatNoStrictBack :
-  ∀ {m n : Nat} →
+  ∀ {n : Nat} →
   suc n ≤ n →
   ⊥
 megaNatNoStrictBack {zero} ()
@@ -6155,78 +6228,6 @@ megaFirstWelfareTheorem-from-demand-cost kernel =
       (megaNoStrictAffordableAlternative-from-demand-cost kernel)
       (paretoImprovementAffordability kernel))
 
-record MegaFirstWelfareTheoremConditions
-  (Agent Price Allocation : Set)
-  (weakPreference strictPreference :
-    Agent → Allocation → Allocation → Set)
-  (feasible : Allocation → Set)
-  (budget : Price → Agent → Allocation → Set)
-  (equilibrium : Price → Allocation → Set)
-  (p : Price)
-  (a : Allocation) : Set₁ where
-  constructor megaFirstWelfareTheoremConditions
-  field
-    equilibriumWitness :
-      equilibrium p a
-    feasibleWitness :
-      feasible a
-    noStrictAffordableAlternative :
-      ∀ i b →
-      budget p i b →
-      ¬ strictPreference i b a
-    paretoImprovementAffordability :
-      ∀ {b : Allocation} →
-      feasible b →
-      (improvement :
-        MegaParetoImprovement
-          Agent
-          Allocation
-          weakPreference
-          strictPreference
-          b
-          a) →
-      budget p
-        (proj₁ (strictlyBetter improvement))
-        b
-
-open MegaFirstWelfareTheoremConditions public
-
-megaFirstWelfareTheorem :
-  ∀ {Agent Price Allocation : Set}
-  {weakPreference strictPreference :
-    Agent → Allocation → Allocation → Set}
-  {feasible : Allocation → Set}
-  {budget : Price → Agent → Allocation → Set}
-  {equilibrium : Price → Allocation → Set}
-  {p : Price}
-  {a : Allocation} →
-  MegaFirstWelfareTheoremConditions
-    Agent
-    Price
-    Allocation
-    weakPreference
-    strictPreference
-    feasible
-    budget
-    equilibrium
-    p
-    a →
-  megaParetoOptimal
-    {weakPreference = weakPreference}
-    {strictPreference = strictPreference}
-    feasible
-    a
-megaFirstWelfareTheorem conditions =
-  feasibleWitness conditions ,
-  λ {b} feasibleB improvement →
-    noStrictAffordableAlternative
-      conditions
-      (proj₁ (strictlyBetter improvement))
-      b
-      (paretoImprovementAffordability
-        conditions
-        feasibleB
-        improvement)
 
 ------------------------------------------------------------------------
 -- The demand-side theorem above is the exact logical core.  Standard
