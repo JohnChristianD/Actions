@@ -1464,5 +1464,74 @@
     "dhall_role": "Dhall is the typed finite-total orchestration/configuration layer and can render the pruning/check command.",
     "tcl_role": "Not required. Tcl is a general command language and adds no proof-aware or graph-authoritative capability here. Keep Tcl absent unless a concrete future runtime dependency exists.",
     "no_kernel_substitution": "Metadata pruning never proves a theorem. The Agda kernel remains the only proof authority; Mercury and Dhall only reconcile and execute the graph contract."
+  },
+  "normpair_factor_transition": {
+    "status": "PROVED_ON_AGDA_SURFACE_PENDING_FRESH_CI",
+    "source": "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    "theorem": "CanonicalNormPairQuotientFactorTransitionTheorem",
+    "relation": "normPairReplacementRelation s t = Σ NormPair (replaceNorm s n ≡ t)",
+    "generatedBy": "applyNormPairReplacements",
+    "nodes": [
+      "canonicalPolicy-norm-invariant",
+      "canonicalFullStep-replaceNorm",
+      "canonicalFullStep-replaceNorm-iterate",
+      "canonicalPolicy-learnerReplacement-composition",
+      "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+      "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+      "CanonicalEndogenousHardSignFactorAutomatonClosureCandidate",
+      "CanonicalNormPairQuotientFactorTransitionTheorem"
+    ],
+    "edges": [
+      [
+        "canonicalPolicy-norm-invariant",
+        "canonicalNormPairQuotientFactorTransitionTheorem",
+        "policy readout factors through the NormPair replacement relation"
+      ],
+      [
+        "canonicalFullStep-replaceNorm",
+        "canonicalNormPairQuotientFactorTransitionTheorem",
+        "canonicalFullStep respects the NormPair replacement relation"
+      ],
+      [
+        "canonicalFullStep-replaceNorm-iterate",
+        "canonicalNormPairQuotientFactorTransitionTheorem",
+        "iterated transition compatibility is preserved"
+      ],
+      [
+        "canonicalPolicy-learnerReplacement-composition",
+        "canonicalNormPairQuotientFactorTransitionTheorem",
+        "finite NormPair replacement lists factor through the same relation"
+      ],
+      [
+        "hardSparse-composition-normPair-F4-L2",
+        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+        "existing exact hardSparse GRU/F4/NormPair/L2 composition"
+      ],
+      [
+        "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "existing connected learner scan bridge"
+      ],
+      [
+        "CanonicalEndogenousHardSignFactorAutomatonClosureCandidate",
+        "CanonicalNormPairQuotientFactorTransitionTheorem",
+        "NormPair quotient seam now proved; stronger HardSign affine realization remains separate"
+      ]
+    ],
+    "boundary": {
+      "status": "NOT_PROVED",
+      "candidate": "CanonicalEndogenousHardSignFactorAutomatonClosureCandidate",
+      "remaining": [
+        "HardSign-preserving finite invariant factor",
+        "affine realization of arbitrary finite automaton transitions",
+        "nontrivial finite-factor witness",
+        "baseline nonrepresentability witness",
+        "same-witness connected separation proof"
+      ]
+    },
+    "verification": {
+      "authority": "Agda --safe",
+      "freshCi": "pending"
+    }
   }
 }
