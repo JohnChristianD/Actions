@@ -39,12 +39,14 @@ let script = merge {
     set -euo pipefail
     graph=docs/economics/economic-egraph-emergent-arrow-debreu.mmd
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    sync=.ci/discovery/theorem-monolith-egraph-sync.json
     [ -f "$graph" ] || { echo "missing economic closure graph"; exit 1; }
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
+    [ -f "$sync" ] || { echo "missing theorem/e-graph sync report"; exit 1; }
 
-    for node in       EconomicStructure FeasibleAllocations PreferenceChoice Production       DemandCostKernel FirstWelfare ParetoOptimal FeasibleFirmPlans       ProfitOptimalSupply AggregateResourceBalance DemandWitness MarketClearing       "DerivedPrice" GeneralizedWalrasianEquilibrium ClassicalSpecializationGate       ArrowDebreuSpecialization
+    for node in       EconomicStructure FeasibleAllocations PreferenceChoice Production       DemandCostKernel FirstWelfare ParetoOptimal FeasibleFirmPlans       ProfitOptimalSupply AggregateResourceBalance DemandWitness MarketClearing       DerivedPrice GeneralizedWalrasianEquilibrium ClassicalSpecializationGate       ArrowDebreuSpecialization
     do
-      grep -Fq ""$node"" "$graph" || { echo "graph node missing: $node"; exit 1; }
+      grep -Fq "\"$node\"" "$graph" || { echo "graph node missing: $node"; exit 1; }
     done
 
     grep -Fq 'FiniteCompetitiveProductionClosure' "$theorem" || { echo "production seam missing"; exit 1; }
@@ -55,27 +57,64 @@ let script = merge {
     grep -Fq 'derivedPriceToGeneralizedEquilibrium' "$theorem" || { echo "generalized-equilibrium edge missing"; exit 1; }
     grep -Fq 'generalizedEquilibriumToClassicalSpecialization' "$theorem" || { echo "Arrow-Debreu gate missing"; exit 1; }
 
-    grep -Fq 'Production frontier' "$graph" || true
-    grep -Fq 'Clearing frontier' "$graph" || true
-    grep -Fq 'Price frontier' "$graph" || true
+    law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
+    [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
 
     mkdir -p .ci/discovery
+    records_file=.ci/discovery/economic-monolith-records.tsv
+    declarations_file=.ci/discovery/economic-monolith-declarations.tsv
+    awk '
+      /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ {
+        line=NR; name=$2; sub(/[:(].*$/,"",name); print line "\t" name
+      }
+    ' "$theorem" > "$records_file"
+    awk '
+      /^[A-Za-z][A-Za-z0-9_.-]*[[:space:]]*:/ {
+        name=$1; sub(/:$/,"",name); print NR "\t" name
+      }
+    ' "$theorem" > "$declarations_file"
+
+    record_count=$(wc -l < "$records_file" | tr -d ' ')
+    declaration_count=$(wc -l < "$declarations_file" | tr -d ' ')
+    economic_record_count=$(grep -Eic 'Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition' "$records_file" || true)
+    economic_declaration_count=$(grep -Eic 'Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition' "$declarations_file" || true)
+    counterexample_count=$(grep -Eic 'Boundary|Counterexample|Impossibility' "$records_file" || true)
+    composition_count=$(grep -Eic 'Composition|Conjugacy|Transport|Closure|Isomorphism' "$records_file" || true)
+
     {
       printf '%s\n' '{'
       printf '  "source_graph": "%s",\n' "$graph"
       printf '  "theorem_source": "%s",\n' "$theorem"
-      printf '  "proved_consumer_edge": true,\n'
-      printf '  "production_edge": "typed seam",\n'
-      printf '  "clearing_edge": "frontier",\n'
-      printf '  "derived_price_edge": "frontier",\n'
-      printf '  "generalized_equilibrium_edge": "frontier",\n'
-      printf '  "arrow_debreu_edge": "conditional frontier",\n'
-      printf '  "automation": "source-to-graph consistency gate"\n'
+      printf '  "semantic_law_count": %s,\n' "$law_count"
+      printf '  "record_count": %s,\n' "$record_count"
+      printf '  "top_level_declaration_count": %s,\n' "$declaration_count"
+      printf '  "economic_record_count": %s,\n' "$economic_record_count"
+      printf '  "economic_declaration_count": %s,\n' "$economic_declaration_count"
+      printf '  "counterexample_or_boundary_record_count": %s,\n' "$counterexample_count"
+      printf '  "composition_transport_record_count": %s,\n' "$composition_count"
+      printf '  "surface_authority": "TheoremsMonolith.agda",\n'
+      printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\n'
+      printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\n'
+      printf '  "frontier_edges": [\n'
+      printf '    "production primitives -> feasible firm plans -> profit-optimal supply",\n'
+      printf '    "supply + demand + resources -> aggregate resource balance -> market clearing",\n'
+      printf '    "convex/separation/fixed-point certificate -> derived price",\n'
+      printf '    "derived price + clearing -> generalized equilibrium",\n'
+      printf '    "generalized equilibrium -> classical specialization gate",\n'
+      printf '    "classical specialization assumptions -> ArrowDebreuSpecialization"\n'
+      printf '  ],\n'
+      printf '  "counterexample_policy": "boundary/counterexample declarations remain graph nodes and block promotion of unsupported implications",\n'
+      printf '  "automation": "monolith inventory + Mercury e-graph dependency evidence + canonical Mermaid consistency gate"\n'
       printf '%s\n' '}'
     } > .ci/discovery/economic-closure-graph.json
 
-    grep -Fq '"automation": "source-to-graph consistency gate"' .ci/discovery/economic-closure-graph.json
+    grep -Fq '"surface_authority": "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.json
+    grep -Fq '"frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.json
     echo "economic-closure-graph=pass"
+    echo "economic-record-count=$economic_record_count"
+    echo "economic-declaration-count=$economic_declaration_count"
+    echo "counterexample-boundary-record-count=$counterexample_count"
+    echo "composition-transport-record-count=$composition_count"
     '',
   EconlibCrossrepo = ''
     set -euo pipefail
