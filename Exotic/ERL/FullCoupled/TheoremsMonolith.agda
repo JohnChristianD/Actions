@@ -5512,19 +5512,6 @@ FiniteNonIIDPreference :
 FiniteNonIIDPreference utility i x y =
   utility i (x i) ≤ utility i (y i)
 
-FiniteNonIIDBudget :
-  ∀ {Agent Good : Set}
-  (agents : List Agent)
-  (goods : List Good)
-  (price : Good → Nat) →
-  Agent → (Good → Nat) → Set
-FiniteNonIIDBudget agents goods price i bundle =
-  BudgetFeasible
-    goods
-    price
-    (λ g → zero)
-    bundle
-
 record FiniteNonIIDGeneralizedEquilibrium
   (Agent Good : Set)
   (agents : List Agent)
