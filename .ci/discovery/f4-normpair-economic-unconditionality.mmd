@@ -1,0 +1,27 @@
+flowchart LR
+  A["Economic primitives"]
+  B["Demand + competitive supply"]
+  C["Aggregate balance + market clearing"]
+  D["Economic update operator"]
+  E["F4 coercivity premise"]
+  F["F4 boundedness premise"]
+  G["F4 / NormPair exact stability"]
+  H["NormPair factor transition"]
+  I["GRU-F4 economic injectivity"]
+  J["Convergence / fixed-point bridge"]
+  K["Generalized Walrasian existence"]
+  X["Unconditional existence impossibility"]
+
+  A --> B
+  B --> C
+  C --> D
+  E -. frontier premise .-> F
+  F --> G
+  G --> H
+  H --> I
+  D -. exact representation .-> I
+  I -. insufficient alone .-> J
+  J --> K
+  I -. cannot entail .-> X
+  E -. remains explicit premise .-> X
+  F -. remains explicit premise .-> X
