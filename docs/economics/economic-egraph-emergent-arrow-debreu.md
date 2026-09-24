@@ -158,6 +158,7 @@ Economic primitives
   -> demand + competitive supply
   -> aggregate balance + market clearing
   -> economic update operator
+  -. exact GRU/F4 representation .-> GRU-F4 economic injectivity
   -> convergence from economic assumptions
   -> TopologicalConvergenceWitness
   -> FixedPointExistenceFromConvergence
@@ -165,6 +166,9 @@ Economic primitives
   -> fixed-point -> equilibrium from economic primitives
   -> GeneralizedWalrasianExistence
 ```
+
+
+The GRU/F4 injectivity seam is now an actual Agda composition. `gruf4EconomicInjectivityFromGlobalSquare` combines the existing F4/NormPair/GRU global observation injectivity with `MegaWalrasianGlobalSquareConjugacy` injectivity. It is supporting evidence for the dynamics path, not a replacement for the convergence proof: injectivity alone does not establish convergence.
 
 The two edges marked `FRONTIER` are the only local mathematical gaps in this target route:
 
