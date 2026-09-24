@@ -329,7 +329,6 @@ JSON
     POMDPWalrasianBeliefEquilibriumClosure
     ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
     POMDPExactTransport
-    MarkovStationaryWalrasianCompositionTheorem
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
     ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
@@ -341,8 +340,6 @@ JSON
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
     bairdSevenStar
-    NonIIDMarkovWalrasianProblem
-    nonIIDMarkovStationaryWalrasian-lift
     majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
