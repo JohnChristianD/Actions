@@ -641,23 +641,23 @@ LCB ─┘                              ↓
 
 bridge. The LCB–Sparsemax policy is not a decorative downstream label: its policy equation is an Agda equality and the policy invariance/replacement theorems consume that semantics.
 
-However, this does not yet prove that the LCB–Sparsemax policy itself *solves* Maxwell exactness. The Hodge-Maxwell exactness theorem is currently connected to the learner through the explicit learner-to-solution inverse and step-conjugacy bridge. To make the policy the missing computational closure, an additional proof-relevant map is required from the policy/readout semantics into the Maxwell solution/update semantics, for example a theorem that the policy-induced update is exactly the represented Maxwell step and preserves the differential-form equations.
+The policy-to-Maxwell update seam is now explicit on the Agda surface. `policyHodgeMaxwellUpdateSeam` states the direct commuting square for a supplied policy-induced update, while `policyHodgeMaxwellCanonicalUpdateSeam` specializes it to the existing canonical learner step and Hodge-Maxwell step conjugacy. The latter proves the policy update is transported exactly to the Maxwell solution step once `policyStepCorrect` establishes that the policy-induced learner transition is extensionally `canonicalFullStep`.
 
-So the current status is:
+The resulting graph is:
 
 ```
 LCB + Watkins + Sparsemax
         ↓
 exact canonical policy readout
         ↓
-GRU/F4/Watkins connected learner
-        ↓
-learner ↔ Hodge-Maxwell solution
-        ↓
-exact Maxwell state/step representation
+policy-induced learner update
+        ↓  policyStepCorrect
+canonical learner step
+        ↓  exact Hodge-Maxwell conjugacy
+Hodge-Maxwell solution step
 ```
 
-The first, second, and fourth arrows are present on the Agda surface. The policy-to-Maxwell update arrow is the remaining substantive seam. The composition is therefore a credible route to an emergent solver architecture, but it should not yet be called a proved policy-driven Maxwell solver.
+This closes the previously missing graph edge, but it does not infer `policyStepCorrect` merely from the policy readout. A concrete policy/action semantics still has to supply that proof. Thus the repository now has a proved conditional policy-to-Maxwell update seam, rather than an unconditional claim that the policy alone is a Maxwell solver.
 
 ## Second Welfare theorem: completed boundary
 
