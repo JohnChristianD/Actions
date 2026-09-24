@@ -5709,11 +5709,13 @@ record POMDPWalrasianBeliefEquilibriumClosure
       State Action Observation Distribution Reward Price Allocation)
   (p : Price)
   (allocation : State → Allocation)
+  (belief : Observation → Distribution)
+  (policy : Distribution → Action)
   (beliefPolicy :
     POMDPBeliefPolicyFactorization
       State Action Observation Distribution Allocation
-      (POMDPWalrasianData.observationKernel D)
-      (λ _ → Action)
+      belief
+      policy
       allocation) : Set₁ where
   constructor pomdpWalrasianBeliefEquilibriumClosure
   field
@@ -5734,6 +5736,8 @@ pomdpWalrasianBeliefEquilibriumClosure-from-witness :
       State Action Observation Distribution Reward Price Allocation}
   {p : Price}
   {allocation : State → Allocation}
+  {belief : Observation → Distribution}
+  {policy : Distribution → Action}
   (equilibrium :
     POMDPWalrasianEquilibrium
       State Action Observation Distribution Reward Price Allocation
@@ -5741,12 +5745,12 @@ pomdpWalrasianBeliefEquilibriumClosure-from-witness :
   (beliefPolicy :
     POMDPBeliefPolicyFactorization
       State Action Observation Distribution Allocation
-      (POMDPWalrasianData.observationKernel D)
-      (λ _ → Action)
+      belief
+      policy
       allocation) →
   POMDPWalrasianBeliefEquilibriumClosure
     State Action Observation Distribution Reward Price Allocation
-    D p allocation beliefPolicy
+    D p allocation belief policy beliefPolicy
 pomdpWalrasianBeliefEquilibriumClosure-from-witness
   equilibrium beliefPolicy =
   pomdpWalrasianBeliefEquilibriumClosure
