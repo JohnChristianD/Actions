@@ -19,9 +19,11 @@ let script = merge {
   Mercury = ''
     set -euo pipefail
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
+    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     '',
   Discovery = ''
     set -euo pipefail
+    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
@@ -375,6 +377,7 @@ JSON
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
+    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
