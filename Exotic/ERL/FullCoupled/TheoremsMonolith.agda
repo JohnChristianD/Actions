@@ -6431,3 +6431,303 @@ megaNoStrictAffordableAlternative-is-demand-optimality :
     ¬ strictPreference i b a)
 megaNoStrictAffordableAlternative-is-demand-optimality boundary =
   demandOptimality boundary
+
+
+------------------------------------------------------------------------
+-- Exact learner/economic solution bridge.
+--
+-- This is a theorem, not a certificate record.  The caller supplies the
+-- economic state interpretation and its exact inverse; Agda then constructs
+-- the StateIsomorphism, transports the step dynamics, and transports the
+-- equilibrium predicate in both directions.  This is the economic analogue
+-- of the learner <-> Hodge-Maxwell solution isomorphism.
+------------------------------------------------------------------------
+
+megaEconomicSolutionStateIsomorphism :
+  ∀ {Economic : Set}
+  (toEconomic : C.CanonicalFullLearnerState → Economic)
+  (fromEconomic : Economic → C.CanonicalFullLearnerState)
+  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
+  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x) →
+  StateIsomorphism C.CanonicalFullLearnerState Economic
+megaEconomicSolutionStateIsomorphism
+  toEconomic
+  fromEconomic
+  fromTo
+  toFrom =
+  stateIsomorphism
+    toEconomic
+    fromEconomic
+    fromTo
+    toFrom
+
+megaEconomicSolutionStepConjugacy :
+  ∀ {Economic : Set}
+  (toEconomic : C.CanonicalFullLearnerState → Economic)
+  (fromEconomic : Economic → C.CanonicalFullLearnerState)
+  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
+  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
+  (economicStep : Economic → Economic)
+  (learnerStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+  (stepConjugacy :
+    ∀ s →
+    toEconomic (learnerStep s) ≡
+    economicStep (toEconomic s)) →
+  ∀ n s →
+  toEconomic (iterateIsomorphism learnerStep n s)
+  ≡
+  iterateIsomorphism economicStep n (toEconomic s)
+megaEconomicSolutionStepConjugacy
+  toEconomic
+  fromEconomic
+  fromTo
+  toFrom
+  economicStep
+  learnerStep
+  stepConjugacy =
+  isomorphismIterateConjugacy
+    (megaEconomicSolutionStateIsomorphism
+      toEconomic fromEconomic fromTo toFrom)
+    learnerStep
+    economicStep
+    stepConjugacy
+
+megaEconomicSolutionEquilibriumTransport :
+  ∀ {Economic : Set}
+  (toEconomic : C.CanonicalFullLearnerState → Economic)
+  (fromEconomic : Economic → C.CanonicalFullLearnerState)
+  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
+  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
+  (economicEquilibrium : Economic → Set)
+  (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
+  (toLearner :
+    ∀ s → economicEquilibrium (toEconomic s) → learnerEquilibrium s)
+  (toEconomic' :
+    ∀ x → learnerEquilibrium (fromEconomic x) → economicEquilibrium x) →
+  (∀ s → economicEquilibrium (toEconomic s) → learnerEquilibrium s)
+  ×
+  (∀ x → learnerEquilibrium (fromEconomic x) → economicEquilibrium x)
+megaEconomicSolutionEquilibriumTransport
+  toEconomic
+  fromEconomic
+  fromTo
+  toFrom
+  economicEquilibrium
+  learnerEquilibrium
+  toLearner
+  toEconomic' =
+  toLearner , toEconomic'
+
+------------------------------------------------------------------------
+-- Generalized Second Welfare theorem.
+--
+-- The theorem is stated against MegaGeneralizedWalrasianEquilibrium rather
+-- than a separate Arrow-Debreu/KKT surface.  The supporting-price step is
+-- the economic separation input; once it supplies a price and the
+-- generalized characterization, the existing characterization bridge
+-- proves the actual equilibrium witness.  Heterogeneous agents and
+-- whole-allocation/interdependent preferences remain inside the generalized
+-- equilibrium relation rather than being erased into a scalar demand model.
+------------------------------------------------------------------------
+
+megaSecondWelfareGeneralized :
+  ∀ {State Price Allocation : Set}
+  (D : MegaGeneralizedWalrasianEquilibrium
+    State Price Allocation)
+  (paretoOptimal : Allocation → Set₁)
+  (supportingPrice :
+    ∀ {a : Allocation} →
+    paretoOptimal a →
+    Price)
+  (supportingCharacterization :
+    ∀ {a : Allocation}
+    (paretoWitness : paretoOptimal a) →
+    characterization D
+      (supportingPrice paretoWitness)
+      a) →
+  ∀ {a : Allocation} →
+  paretoOptimal a →
+  Σ Price
+    (λ p → equilibrium D p a)
+megaSecondWelfareGeneralized
+  D
+  paretoOptimal
+  supportingPrice
+  supportingCharacterization
+  paretoWitness =
+  supportingPrice paretoWitness ,
+  characterizationBridge D
+    (supportingCharacterization paretoWitness)
+
+------------------------------------------------------------------------
+-- Full connected learner -> economic -> welfare composition.
+--
+-- This theorem joins the exact learner dynamics to an economic state
+-- isomorphism, then transports generalized equilibrium and the First
+-- Welfare implication through that same isomorphism.  The result is a
+-- genuine composed theorem: no standalone certificate record is inserted
+-- between the learner, the economic state, and welfare semantics.
+------------------------------------------------------------------------
+
+connectedCanonicalLearnerEconomicWelfareCompositionTheorem :
+  ∀ {Economic : Set}
+  (toEconomic : C.CanonicalFullLearnerState → Economic)
+  (fromEconomic : Economic → C.CanonicalFullLearnerState)
+  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
+  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
+  (economicStep : Economic → Economic)
+  (stepConjugacy :
+    ∀ s →
+    toEconomic (C.canonicalFullStep (learnerKernel C) s)
+    ≡ economicStep (toEconomic s))
+  (economicEquilibrium : Economic → Set)
+  (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
+  (equilibriumFromEconomic :
+    ∀ s →
+    economicEquilibrium (toEconomic s) →
+    learnerEquilibrium s)
+  (equilibriumToEconomic :
+    ∀ x →
+    learnerEquilibrium (fromEconomic x) →
+    economicEquilibrium x)
+  (welfareAssumptions : Economic → Set)
+  (paretoOptimal : Economic → Set)
+  (firstWelfare :
+    ∀ x →
+    economicEquilibrium x →
+    welfareAssumptions x →
+    paretoOptimal x) →
+  StateIsomorphism C.CanonicalFullLearnerState Economic
+  ×
+  ((∀ n s →
+    toEconomic
+      (iterateIsomorphism
+        (C.canonicalFullStep (learnerKernel C))
+        n
+        s)
+    ≡
+    iterateIsomorphism economicStep n (toEconomic s)))
+  ×
+  ((∀ s →
+    economicEquilibrium (toEconomic s) →
+    learnerEquilibrium s))
+  ×
+  ((∀ x →
+    learnerEquilibrium (fromEconomic x) →
+    economicEquilibrium x))
+  ×
+  ((∀ s →
+    economicEquilibrium (toEconomic s) →
+    welfareAssumptions (toEconomic s) →
+    paretoOptimal (toEconomic s)))
+connectedCanonicalLearnerEconomicWelfareCompositionTheorem
+  toEconomic
+  fromEconomic
+  fromTo
+  toFrom
+  economicStep
+  stepConjugacy
+  economicEquilibrium
+  learnerEquilibrium
+  equilibriumFromEconomic
+  equilibriumToEconomic
+  welfareAssumptions
+  paretoOptimal
+  firstWelfare =
+  megaEconomicSolutionStateIsomorphism
+    toEconomic fromEconomic fromTo toFrom
+  , megaEconomicSolutionStepConjugacy
+      toEconomic fromEconomic fromTo toFrom
+      economicStep
+      (C.canonicalFullStep (learnerKernel C))
+      stepConjugacy
+  , equilibriumFromEconomic
+  , equilibriumToEconomic
+  , (λ s eq welfare →
+      firstWelfare
+        (toEconomic s)
+        eq
+        welfare)
+
+------------------------------------------------------------------------
+-- The connected theorem above can be instantiated after the existing
+-- Hodge-Maxwell/F4/Watkins learner bridge.  The following corollary makes
+-- the composition order explicit: exact learner/solution dynamics first,
+-- then exact economic semantics, then welfare.
+------------------------------------------------------------------------
+
+connectedHodgeMaxwellLearnerEconomicWelfareBridge :
+  ∀ {GRU Economic : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
+  (toEconomic : C.CanonicalFullLearnerState → Economic)
+  (fromEconomic : Economic → C.CanonicalFullLearnerState)
+  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
+  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
+  (economicStep : Economic → Economic)
+  (stepConjugacy :
+    ∀ s →
+    toEconomic (C.canonicalFullStep (learnerKernel connected) s)
+    ≡ economicStep (toEconomic s))
+  (economicEquilibrium : Economic → Set)
+  (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
+  (equilibriumFromEconomic :
+    ∀ s → economicEquilibrium (toEconomic s) → learnerEquilibrium s)
+  (equilibriumToEconomic :
+    ∀ x → learnerEquilibrium (fromEconomic x) → economicEquilibrium x)
+  (welfareAssumptions : Economic → Set)
+  (paretoOptimal : Economic → Set)
+  (firstWelfare :
+    ∀ x → economicEquilibrium x → welfareAssumptions x → paretoOptimal x) →
+  StateIsomorphism C.CanonicalFullLearnerState Economic
+  ×
+  ((∀ n s →
+    toEconomic
+      (iterateIsomorphism
+        (C.canonicalFullStep (learnerKernel connected))
+        n
+        s)
+    ≡ iterateIsomorphism economicStep n (toEconomic s)))
+  ×
+  ((∀ s →
+    economicEquilibrium (toEconomic s) →
+    learnerEquilibrium s))
+  ×
+  ((∀ x →
+    learnerEquilibrium (fromEconomic x) →
+    economicEquilibrium x))
+  ×
+  ((∀ s →
+    economicEquilibrium (toEconomic s) →
+    welfareAssumptions (toEconomic s) →
+    paretoOptimal (toEconomic s))
+connectedHodgeMaxwellLearnerEconomicWelfareBridge
+  connected
+  toEconomic
+  fromEconomic
+  fromTo
+  toFrom
+  economicStep
+  stepConjugacy
+  economicEquilibrium
+  learnerEquilibrium
+  equilibriumFromEconomic
+  equilibriumToEconomic
+  welfareAssumptions
+  paretoOptimal
+  firstWelfare =
+  connectedCanonicalLearnerEconomicWelfareCompositionTheorem
+    toEconomic
+    fromEconomic
+    fromTo
+    toFrom
+    economicStep
+    (λ s → stepConjugacy s)
+    economicEquilibrium
+    learnerEquilibrium
+    equilibriumFromEconomic
+    equilibriumToEconomic
+    welfareAssumptions
+    paretoOptimal
+    firstWelfare
