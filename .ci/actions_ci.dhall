@@ -59,6 +59,19 @@ let script = merge {
     grep -Fq 'GeneralizedWalrasianFixedPointClosure' "$theorem" || { echo "economic fixed-point bridge missing"; exit 1; }
     grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point' "$theorem" || { echo "topological economic existence theorem missing"; exit 1; }
     grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point-transport' "$theorem" || { echo "transported topological economic existence theorem missing"; exit 1; }
+    graph="docs/economics/economic-egraph-emergent-arrow-debreu.mmd"
+    grep -Fq 'Unconditional single-pass target' "$graph" || { echo "unconditional target graph missing"; exit 1; }
+    grep -Fq 'Convergence from economic assumptions' "$graph" || { echo "unconditional convergence seam missing"; exit 1; }
+    grep -Fq 'Fixed-point -> equilibrium from economic primitives' "$graph" || { echo "unconditional equilibrium seam missing"; exit 1; }
+    grep -Fq 'FRONTIER' "$graph" || { echo "unconditional frontier status missing"; exit 1; }
+    if grep -Fq 'unconditional-closed' "$graph" &&        ! grep -Fq 'EconomicConvergenceFromPrimitiveAssumptions' "$theorem"; then
+      echo "unconditional closure claimed without convergence proof"
+      exit 1
+    fi
+    if grep -Fq 'unconditional-closed' "$graph" &&        ! grep -Fq 'FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions' "$theorem"; then
+      echo "unconditional closure claimed without fixed-point equilibrium proof"
+      exit 1
+    fi
     grep -Fq 'isomorphismIterateFixedPointTransport' "$theorem" || { echo "iterate fixed-point transport missing"; exit 1; }
 
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
