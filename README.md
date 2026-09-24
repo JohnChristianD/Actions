@@ -648,6 +648,27 @@ The exact learner/economic analogue of the Hodge-Maxwell solution bridge is now 
 
 The Second Welfare side is also generalized through `megaSecondWelfareGeneralized`. It takes `MegaGeneralizedWalrasianEquilibrium`, a Pareto-optimal allocation, a supporting-price map, and the generalized characterization witness, then derives the actual equilibrium witness through `characterizationBridge`. Thus the supporting price is the economic separation input, while equilibrium is proved from the generalized Walrasian characterization rather than merely supplied as another field.
 
+The exact Second Welfare dependency surface is:
+
+```
+Pareto optimal a
+      |
+      +--> supportingPrice --> p
+      |
+      +--> supportingCharacterization --> characterization D p a
+                                           |
+                                           | characterizationBridge
+                                           v
+                                      equilibrium D p a
+
+(p, equilibrium D p a)
+          |
+          v
+Sigma Price (lambda p -> equilibrium D p a)
+```
+
+A price is not itself an equilibrium proof. The graph therefore has no `supportingPrice -> equilibrium` edge, and Pareto optimality has no direct edge to the final Sigma witness. The heterogeneous-agent and whole-allocation/interdependent-preference nodes remain semantic inputs to the generalized equilibrium record, not direct dependencies of `megaSecondWelfareGeneralized`.
+
 The two graph surfaces are:
 
 - `.ci/discovery/learner-economic-welfare-bridge-graph.md`
