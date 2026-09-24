@@ -82,3 +82,11 @@ The repository contains a single unattended graph that is complete as a dependen
 - Updated the economic graph/docs to expose finite-rank stability as a conditional convergence bridge.
 - Knowledge delta paths: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`, `.ci/actions_ci.dhall`, `.ci/discovery/theorem_graph_search.m`, `docs/economics/economic-egraph-emergent-arrow-debreu.mmd`, `docs/economics/economic-egraph-emergent-arrow-debreu.md`, this plan.
 - Verification limitation: Agda is not installed locally; the new theorem requires CI typechecking before it can be treated as verified.
+
+
+## 2026-09-24 finite-rank bridge correction follow-up
+
+- Audited the new `topologicalConvergenceWitness-from-finite-rank-stability` bridge before treating it as verified.
+- Found and corrected the equality orientation in the eventual-equilibrium convergence application: the orbit witness and eventual fixation compose as `trans (orbitMatches n) orbitFixed`.
+- This is a proof-term correction only; the convergence relation and equality-transport premises remain explicit.
+- Verification limitation: Agda is not installed locally; the corrected head requires CI typechecking.
