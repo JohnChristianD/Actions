@@ -1436,26 +1436,6 @@ record ContinuousLeftInverseTheorem
 
 open ContinuousLeftInverseTheorem public
 
-continuousLeftInverse-exactReadout-transfer :
-  ∀ {State Feature Output : Set}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set} →
-  ContinuousLeftInverseTheorem
-    State Feature observe inverse Continuous →
-  (target : State → Output) →
-  ∀ s →
-  target s ≡ target (inverse (observe s))
-continuousLeftInverse-exactReadout-transfer
-  witness target s =
-  cong target (sym (leftInverse witness s))
-
-------------------------------------------------------------------------
--- Canonical Watkins exact AUP/UAP factorization through a continuous
--- left-invertible observation.  The result is exact equality, not a
--- metric approximation claim.
-------------------------------------------------------------------------
-
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
   field
