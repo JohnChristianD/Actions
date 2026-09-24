@@ -5442,44 +5442,34 @@ hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
 -- Vec/Fin specialization is built into the edge.
 ------------------------------------------------------------------------
 
-record MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+record MegaGeneralizedWalrasianEquilibrium
   (State Price Allocation : Set) : Set₁ where
-  constructor megaGeneralizedWalrasianKKTArrowDebreuEquilibrium
+  constructor megaGeneralizedWalrasianEquilibrium
   field
     aggregate : (State → Allocation) → Allocation
-    walrasian : Price → Allocation → Set
-    arrowDebreu : Price → Allocation → Set
-    kkt : Price → Allocation → Set
     equilibrium : Price → Allocation → Set
-    walrasianBridge :
+    characterization : Price → Allocation → Set
+    characterizationBridge :
       ∀ {p a} →
-      walrasian p a →
-      equilibrium p a
-    arrowDebreuBridge :
-      ∀ {p a} →
-      arrowDebreu p a →
-      equilibrium p a
-    kktBridge :
-      ∀ {p a} →
-      kkt p a →
+      characterization p a →
       equilibrium p a
 
-open MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium public
+open MegaGeneralizedWalrasianEquilibrium public
 
 ------------------------------------------------------------------------
--- Singular mega-generalized Walrasian / KKT / Arrow-Debreu equilibrium.
+-- Singular generalized Walrasian data.
 --
--- This is the only Walrasian dependency exposed to the connected
--- GRU/Hodge-Maxwell/Tsallis composition. The carrier is arbitrary Set:
--- there is no Fin n, Vec, finite-agent, finite-commodity, continuity,
--- differentiability, convexity, monotonicity, or free-disposal assumption
--- built into the edge. Concrete existence results are supplied through
--- the explicit hypothesis bundle and existence witness.
+-- One economic relation is exposed to the connected GRU/Hodge-Maxwell/
+-- Tsallis/POMDP composition. Walrasian, Arrow-Debreu, and KKT are not
+-- separate semantic nodes: any desired characterization is represented
+-- by the single generalized characterization predicate and its bridge.
+-- No finite-dimensional, continuity, differentiability, convexity,
+-- monotonicity, or free-disposal assumption is built into the carrier.
 ------------------------------------------------------------------------
 
-record MegaGeneralizedWalrasianKKTArrowDebreuData
+record GeneralizedWalrasianData
   (Agent Commodity Price Allocation : Set) : Set₁ where
-  constructor megaGeneralizedWalrasianKKTArrowDebreuData
+  constructor generalizedWalrasianData
   field
     consumption : Agent → Set
     preference : Agent → Allocation → Allocation → Set
@@ -5487,63 +5477,42 @@ record MegaGeneralizedWalrasianKKTArrowDebreuData
     feasible : Allocation → Set
     marketClearing : Price → Allocation → Set
     equilibrium : Price → Allocation → Set
-    walrasian : Price → Allocation → Set
-    arrowDebreu : Price → Allocation → Set
-    kkt : Price → Allocation → Set
-    walrasianFromEquilibrium :
+    characterization : Price → Allocation → Set
+    characterizationFromEquilibrium :
       ∀ {p a} →
       equilibrium p a →
-      walrasian p a
-    arrowDebreuFromEquilibrium :
-      ∀ {p a} →
-      equilibrium p a →
-      arrowDebreu p a
-    kktFromEquilibrium :
-      ∀ {p a} →
-      equilibrium p a →
-      kkt p a
+      characterization p a
 
-open MegaGeneralizedWalrasianKKTArrowDebreuData public
+open GeneralizedWalrasianData public
 
-record MegaGeneralizedWalrasianKKTArrowDebreuExistence
+record GeneralizedWalrasianExistence
   (Agent Commodity Price Allocation : Set)
-  (D :
-    MegaGeneralizedWalrasianKKTArrowDebreuData
-      Agent Commodity Price Allocation) : Set₁ where
-  constructor megaGeneralizedWalrasianKKTArrowDebreuExistence
+  (D : GeneralizedWalrasianData Agent Commodity Price Allocation) : Set₁ where
+  constructor generalizedWalrasianExistence
   field
     equilibriumPrice : Price
     equilibriumAllocation : Allocation
     equilibriumWitness :
       equilibrium D equilibriumPrice equilibriumAllocation
-    walrasianCorollary :
-      walrasian D equilibriumPrice equilibriumAllocation
-    arrowDebreuCorollary :
-      arrowDebreu D equilibriumPrice equilibriumAllocation
-    kktCorollary :
-      kkt D equilibriumPrice equilibriumAllocation
+    characterizationCorollary :
+      characterization D equilibriumPrice equilibriumAllocation
 
-open MegaGeneralizedWalrasianKKTArrowDebreuExistence public
+open GeneralizedWalrasianExistence public
 
-megaGeneralizedWalrasianKKTArrowDebreuExistence-from-witness :
+generalizedWalrasianExistence-from-witness :
   ∀ {Agent Commodity Price Allocation : Set}
-  {D :
-    MegaGeneralizedWalrasianKKTArrowDebreuData
-      Agent Commodity Price Allocation}
+  {D : GeneralizedWalrasianData Agent Commodity Price Allocation}
   (p : Price)
   (a : Allocation)
   (e : equilibrium D p a) →
-  MegaGeneralizedWalrasianKKTArrowDebreuExistence
-    Agent Commodity Price Allocation D
-megaGeneralizedWalrasianKKTArrowDebreuExistence-from-witness
+  GeneralizedWalrasianExistence Agent Commodity Price Allocation D
+generalizedWalrasianExistence-from-witness
   p a e =
-  megaGeneralizedWalrasianKKTArrowDebreuExistence
+  generalizedWalrasianExistence
     p
     a
     e
-    (walrasianFromEquilibrium D e)
-    (arrowDebreuFromEquilibrium D e)
-    (kktFromEquilibrium D e)
+    (characterizationFromEquilibrium D e)
 
 
 ------------------------------------------------------------------------
