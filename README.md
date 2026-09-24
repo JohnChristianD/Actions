@@ -231,7 +231,7 @@ ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 hodgeMaxwell-discontinuous-gru-refutes-connected-representation
 HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
 ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
-ConnectedGeneralizedWalrasianExistenceTheorem
+MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
 ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
 ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
 
@@ -304,11 +304,11 @@ These are formal structural correspondences. They are not claims of empirical la
 
 ## Generalized Walrasian benchmark boundary
 
-The repository treats Walrasian equilibrium as a family of composable contracts rather than a single canonical finite-dimensional theorem. The local `RegularityFreeWalrasianData` and `RegularityFreeWalrasianEquilibrium` surfaces make continuity and stationarity explicit rather than hiding them in the data type. The connected GRU/Hodge-Maxwell/Tsallis/POMDP theorem consumes that witness directly.
+The repository exposes one canonical mega-generalized equilibrium edge: `MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium`. It packages Walrasian, Arrow-Debreu, and KKT predicates over a shared carrier with explicit bridge witnesses. It deliberately does not hard-code finite-dimensional vectors, `Fin n`, `Vec`, continuity, differentiability, convexity, or any other narrower representation into the edge.
 
-The external benchmark is `danlyng/Econlib`. Its current equilibrium module is useful for checking classical Arrow-Debreu/Walrasian existence and stationary accounting structures, but it is not a proof oracle and is not expected to enumerate every edge admitted by the repository's e-graph/A* search. In particular, external generalizations include continuum or measure-space agents, infinite-dimensional commodity spaces, discontinuous or non-ordered preferences, interdependent and price-dependent preferences, and models without free disposal. Those variants require their own explicit Agda carriers, preference/constraint correspondences, aggregation laws, and existence witnesses before they can become proof edges.
+The external benchmark is `danlyng/Econlib`. Its equilibrium implementation is useful as a classical Arrow-Debreu/Walrasian benchmark, but it is not a proof oracle and is not the completeness boundary for this repository's e-graph/A* search. Broader equilibrium literature can supply search inputs, but those variants are not maintained as separate current graph candidates: the repository promotes them only by strengthening the single mega-generalized edge with explicit Agda semantics and witnesses.
 
-The graph therefore distinguishes three layers: external literature as a benchmark/search input, local generalized equilibrium contracts as Agda proof surfaces, and composed theorem edges only where an actual Agda consumer exists. No external existence result is silently converted into a local proof term.
+The graph therefore distinguishes three layers: external literature as benchmark/search input, the single mega-generalized Agda equilibrium contract, and composed theorem edges only where an actual Agda consumer exists. No external existence result is silently converted into a local proof term.
 
 ## Exactness policy
 
