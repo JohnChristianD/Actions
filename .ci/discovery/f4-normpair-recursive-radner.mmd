@@ -1,0 +1,33 @@
+flowchart LR
+  A["Economic primitives"] --> B["Economic update operator"]
+
+  B --> C["Exact F4 step law"]
+  C --> D["F4 / NormPair factor stability"]
+  D --> E["Policy factorization"]
+  D --> F["Transition + iterate compatibility"]
+  F --> G["GRU / economic injectivity"]
+
+  G --> H["Recursive Radner data"]
+  H --> I["Feasibility + individual optimality"]
+  H --> J["Commodity-market clearing"]
+  H --> K["Asset-market clearing"]
+  H --> L["Recursive pricing / allocation / portfolio laws"]
+  I --> M["Recursive Radner equilibrium witness"]
+  J --> M
+  K --> M
+  L --> M
+
+  M --> N["Singular generalized Walrasian instance"]
+  N --> O["Stationary / Walrasian bridge"]
+  O --> P["Existence theorem"]
+
+  C --> R["Unit-forcing F4 ray"]
+  R --> U["No unconditional exact-theta infinite-horizon upper bound"]
+  U -. boundedness requires a different factor/observable .-> D
+
+  T["Full learner clock: t -> t+1"] --> Q["No stationary full state"]
+  Q -. separate issue .-> S["Invariant-probability-law route"]
+  S --> O
+
+  G -. alone insufficient .-> X["Unconditional Walrasian existence impossibility"]
+  U -. coercivity cannot be inferred .-> X

@@ -1,0 +1,31 @@
+flowchart LR
+  L["Canonical learner / exact scan laws"]
+  C["Closed composition algebra"]
+  F4["Closed exact F4 optimizer stability"]
+  Q["Closed NormPair quotient / factor transition"]
+  U["Closed F4 × NormPair unconditional factor stability"]
+  G["Closed F4 unit-forcing growth ray"]
+  B["Closed: no unconditional infinite-horizon F4 upper bound"]
+  W["Closed generalized-Walrasian empty-equilibrium countermodel"]
+  N["Universal impossibility: generalized-Walrasian existence is not unconditional"]
+
+  R1["Required economic interpretation / state isomorphism"]
+  R2["Required policy-step correctness"]
+  R3["Required convergence / fixed-point / market-clearing bridge"]
+  R4["Required economic equilibrium / supporting-price assumptions"]
+
+  L --> C --> F4
+  C --> Q
+  F4 --> U
+  Q --> U
+  F4 --> G --> B
+  U -. representation only .-> R1
+  U -. does not supply .-> R2
+  U -. does not supply .-> R3
+  U -. does not supply .-> R4
+  R1 -. required for transport .-> R3
+  R2 -. required for policy-driven update transport .-> R3
+  R3 -. required for existence route .-> R4
+  W --> N
+  U -. cannot entail .-> N
+  B -. coercivity/boundedness cannot be inferred .-> N

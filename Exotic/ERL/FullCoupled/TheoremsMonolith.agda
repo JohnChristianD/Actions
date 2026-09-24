@@ -14,7 +14,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-refl; ≤-trans; ≤-decTotalOrder; n<1+n)
-open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_; _≤_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_; _≤_ to _≤ℤ_)
 import Data.Integer.Properties as IntegerProperties
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
@@ -129,89 +129,6 @@ iterateIsomorphism :
   ∀ {A : Set} → (A → A) → Nat → A → A
 iterateIsomorphism f zero a = a
 iterateIsomorphism f (suc n) a = iterateIsomorphism f n (f a)
-
-isomorphismIterateConjugacy :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B)
-  (f : A → A)
-  (g : B → B) →
-  (∀ a → to iso (f a) ≡ g (to iso a)) →
-  ∀ n a →
-  to iso (iterateIsomorphism f n a) ≡
-  iterateIsomorphism g n (to iso a)
-isomorphismIterateConjugacy iso f g stepConjugacy zero a = refl
-isomorphismIterateConjugacy iso f g stepConjugacy (suc n) a =
-  trans
-    (isomorphismIterateConjugacy iso f g stepConjugacy n (f a))
-    (cong (iterateIsomorphism g n) (stepConjugacy a))
-
-isomorphismToInjective :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B) →
-  ∀ a b →
-  to iso a ≡ to iso b →
-  a ≡ b
-isomorphismToInjective iso a b eq =
-  trans
-    (sym (from-to iso a))
-    (trans
-      (cong (from iso) eq)
-      (from-to iso b))
-
-isomorphismEqualityTransport :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B)
-  {x y : A} →
-  x ≡ y →
-  to iso x ≡ to iso y
-isomorphismEqualityTransport iso refl = refl
-
-isomorphismDisequalityTransport :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B)
-  {x y : A} →
-  x ≢ y →
-  to iso x ≢ to iso y
-isomorphismDisequalityTransport iso distinct eq =
-  distinct (isomorphismToInjective iso _ _ eq)
-
-isomorphismNoFiniteCycleTransport :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B)
-  (f : A → A)
-  (g : B → B) →
-  (∀ a → to iso (f a) ≡ g (to iso a)) →
-  (∀ n a → iterateIsomorphism f (suc n) a ≢ a) →
-  ∀ n a →
-  iterateIsomorphism g (suc n) (to iso a) ≢ to iso a
-isomorphismNoFiniteCycleTransport iso f g stepConjugacy noCycle n a cyc =
-  λ cycle →
-    noCycle n a
-      (isomorphismToInjective
-        iso
-        (iterateIsomorphism f (suc n) a)
-        a
-        (trans
-          (sym
-            (isomorphismIterateConjugacy
-              iso f g stepConjugacy (suc n) a))
-          cycle))
-
-------------------------------------------------------------------------
--- The generic transport law makes canonical finite-cycle exclusion stable
--- under exact state isomorphism rather than tied to one representation.
-------------------------------------------------------------------------
-
-record CanonicalConnectedCompositionTheorem : Set₁ where
-  constructor canonicalConnectedCompositionTheorem
-  field
-    aqLoop : CanonicalAQLoopTheorem
-    clockGrowth :
-      ∀ K n s →
-      C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
-    finiteCycleExclusion :
-      ∀ K s n →
-      C.iterateCanonical K (suc n) s ≡ s → ⊥
 
 canonical-connected-composition-theorem :
   CanonicalConnectedCompositionTheorem
@@ -787,181 +704,6 @@ record CommutingSquareTheorem
 
 open CommutingSquareTheorem public
 
-commutingSquareTheorem-from-square :
-  ∀ {State Feature : Set}
-  {step : State → State}
-  {observe : State → Feature}
-  {featureStep : Feature → Feature} →
-  (∀ s → observe (step s) ≡ featureStep (observe s)) →
-  CommutingSquareTheorem State Feature step observe featureStep
-commutingSquareTheorem-from-square
-  {State} {Feature} {step} {observe} {featureStep}
-  squareWitness =
-  commutingSquareTheorem
-    squareWitness
-    iterateProof
-  where
-    iterateProof :
-      ∀ n s →
-      observe (commutingIterate step n s) ≡
-      commutingIterate featureStep n (observe s)
-    iterateProof zero s = refl
-    iterateProof (suc n) s =
-      trans
-        (squareWitness (commutingIterate step n s))
-        (cong featureStep (iterateProof n s))
-
-record CommutingSquareLeftInverseTheorem
-  (State Feature : Set)
-  (step : State → State)
-  (observe : State → Feature)
-  (featureStep : Feature → Feature)
-  (inverse : Feature → State) : Set₁ where
-  constructor commutingSquareLeftInverseTheorem
-  field
-    squareWitness :
-      CommutingSquareTheorem State Feature step observe featureStep
-    leftInverse :
-      ∀ s → inverse (observe s) ≡ s
-    observationInjective :
-      ∀ {s t} →
-      observe s ≡ observe t →
-      s ≡ t
-    reconstructedStep :
-      ∀ s →
-      step s ≡ inverse (featureStep (observe s))
-
-open CommutingSquareLeftInverseTheorem public
-
-commutingSquareLeftInverseTheorem-from-witness :
-  ∀ {State Feature : Set}
-  {step : State → State}
-  {observe : State → Feature}
-  {featureStep : Feature → Feature}
-  (inverse : Feature → State)
-  (squareWitness :
-    CommutingSquareTheorem State Feature step observe featureStep)
-  (leftInverse :
-    ∀ s → inverse (observe s) ≡ s) →
-  CommutingSquareLeftInverseTheorem
-    State Feature step observe featureStep inverse
-commutingSquareLeftInverseTheorem-from-witness
-  {State} {Feature} {step} {observe} {featureStep}
-  inverse squareWitness leftInverse =
-  commutingSquareLeftInverseTheorem
-    squareWitness
-    leftInverse
-    (λ {s} {t} eq →
-      trans
-        (sym (leftInverse s))
-        (trans
-          (cong inverse eq)
-          (leftInverse t)))
-    (λ s →
-      trans
-        (sym (leftInverse (step s)))
-        (cong inverse
-          (CommutingSquareTheorem.square
-            squareWitness
-            s)))
-
-record FullCommutingSquareConjugacyTheorem
-  (State Feature : Set)
-  (step : State → State)
-  (observe : State → Feature)
-  (featureStep : Feature → Feature)
-  (inverse : Feature → State) : Set₁ where
-  constructor fullCommutingSquareConjugacyTheorem
-  field
-    squareWitness :
-      CommutingSquareTheorem State Feature step observe featureStep
-    leftInverse :
-      ∀ s → inverse (observe s) ≡ s
-    rightInverse :
-      ∀ f → observe (inverse f) ≡ f
-    backwardSquare :
-      ∀ f → inverse (featureStep f) ≡ step (inverse f)
-
-open FullCommutingSquareConjugacyTheorem public
-
-fullCommutingSquareConjugacyTheorem-from-witness :
-  ∀ {State Feature : Set}
-  {step : State → State}
-  {observe : State → Feature}
-  {featureStep : Feature → Feature}
-  (inverse : Feature → State)
-  (squareWitness :
-    CommutingSquareTheorem State Feature step observe featureStep)
-  (leftInverse :
-    ∀ s → inverse (observe s) ≡ s)
-  (rightInverse :
-    ∀ f → observe (inverse f) ≡ f) →
-  FullCommutingSquareConjugacyTheorem
-    State Feature step observe featureStep inverse
-fullCommutingSquareConjugacyTheorem-from-witness
-  {State} {Feature} {step} {observe} {featureStep}
-  inverse squareWitness leftInverse rightInverse =
-  fullCommutingSquareConjugacyTheorem
-    squareWitness
-    leftInverse
-    rightInverse
-    (λ f →
-      trans
-        (sym (leftInverse (step (inverse f))))
-        (cong inverse
-          (trans
-            (CommutingSquareTheorem.square
-              squareWitness
-              (inverse f))
-            (cong featureStep (rightInverse f)))))
-
-------------------------------------------------------------------------
--- Particular boundary:
--- global exact Int8 decoding would supply the left-inverse half, while
--- the Nat-indexed aperiodic orbit proves that such decoding cannot exist.
--- Hence a global exact conjugacy square through Int8 is impossible.
-------------------------------------------------------------------------
-
-canonicalSquare-law-on-orbit :
-  ∀ {Feature : Set}
-  (step : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → Feature)
-  (featureStep : Feature → Feature) →
-  (∀ s → observe (step s) ≡ featureStep (observe s)) →
-  ∀ n s →
-  observe (commutingIterate step n s) ≡
-  commutingIterate featureStep n (observe s)
-canonicalSquare-law-on-orbit
-  step observe featureStep squareWitness n s =
-  CommutingSquareTheorem.iterateSquare
-    (commutingSquareTheorem-from-square squareWitness)
-    n s
-
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Free-monoid action form of the commuting square.
---
--- One transition generates the N-action by iteration.  The one-step
--- commuting square therefore induces an action homomorphism for every
--- natural-number word in the generator.  This is stronger terminology
--- than merely naming the one-step square as an equivariance law.
-------------------------------------------------------------------------
-
-record FreeMonoidActionHomomorphism
-  (State Feature : Set)
-  (step : State → State)
-  (observe : State → Feature)
-  (featureStep : Feature → Feature) : Set₁ where
-  constructor freeMonoidActionHomomorphism
-  field
-    actionHomomorphism :
-      ∀ n s →
-      observe (commutingIterate step n s) ≡
-      commutingIterate featureStep n (observe s)
-
-open FreeMonoidActionHomomorphism public
-
 freeMonoidActionHomomorphism-from-square :
   ∀ {State Feature : Set}
   {step : State → State}
@@ -994,73 +736,6 @@ canonicalClock-freeMonoidActionHomomorphism K =
 -- through the observation map.
 ------------------------------------------------------------------------
 
-noLeftInverse-from-observation-collision :
-  ∀ {State Feature : Set}
-  (observe : State → Feature)
-  {s t : State} →
-  observe s ≡ observe t →
-  s ≢ t →
-  ¬ (Σ (λ inverse →
-      ∀ u → inverse (observe u) ≡ u))
-noLeftInverse-from-observation-collision
-  observe {s} {t} obsEq distinct =
-  λ witness →
-    distinct
-      (let
-         inverse = proj₁ witness
-         leftInverse = proj₂ witness
-       in
-       trans
-         (sym (leftInverse s))
-         (trans
-           (cong inverse obsEq)
-           (leftInverse t)))
-
-record ObservationTaskFactorization
-  {State Feature Output : Set}
-  (observe : State → Feature)
-  (target : State → Output) : Set₁ where
-  constructor observationTaskFactorization
-  field
-    factor : Feature → Output
-    correctness :
-      ∀ s → target s ≡ factor (observe s)
-
-symbolicTaskImpossible-from-observation-collision :
-  ∀ {State Feature Output : Set}
-  (observe : State → Feature)
-  {s t : State}
-  (obsEq : observe s ≡ observe t)
-  (target : State → Output) →
-  target s ≢ target t →
-  ¬ ObservationTaskFactorization observe target
-symbolicTaskImpossible-from-observation-collision
-  observe {s} {t} obsEq target distinguishes =
-  λ factorization →
-    let
-      factor = ObservationTaskFactorization.factor factorization
-      correctness =
-        ObservationTaskFactorization.correctness factorization
-    in
-    distinguishes
-      (trans
-        (correctness s)
-        (trans
-          (cong factor obsEq)
-          (sym (correctness t))))
-
-
-
-
-------------------------------------------------------------------------
--- Recurrent-word collision boundary.
---
--- List-valued histories are part of the theorem vocabulary: a recurrent
--- word is an exact endomorphism.  If an observation collides two states
--- reached by exact words and the target separates them, no exact symbolic
--- readout through that observation exists.
-------------------------------------------------------------------------
-
 recurrentWordState :
   ∀ {State Input : Set} →
   C.RecurrentNetwork State Input →
@@ -1071,59 +746,6 @@ recurrentWordState R word s =
   C.applyEndomorphism
     (prefixListEndomorphism R word)
     s
-
-recurrentWord-observation-collision-impossible :
-  ∀ {State Input Feature Output : Set}
-  (R : C.RecurrentNetwork State Input)
-  (word : List Input)
-  (s t : State)
-  (observe : State → Feature)
-  (target : State → Output) →
-  observe (recurrentWordState R word s) ≡
-  observe (recurrentWordState R word t) →
-  target (recurrentWordState R word s) ≢
-  target (recurrentWordState R word t) →
-  ¬ ObservationTaskFactorization observe target
-recurrentWord-observation-collision-impossible
-  R word s t observe target obsEq targetDistinct =
-  symbolicTaskImpossible-from-observation-collision
-    observe
-    obsEq
-    target
-    targetDistinct
-------------------------------------------------------------------------
--- S4/S5-style scan algebra, without claiming the canonical learner is
--- literally the linear S4/S5 architecture.
---
--- The exact shared algebraic core is:
---   * state transitions induce endomorphisms,
---   * endomorphisms compose associatively,
---   * recurrent prefixes are correct,
---   * prefixes split by associative composition.
---
--- S5's distinctive computational point is the associative scan; S4 and
--- S5 remain broader architectural families than this abstract law.
-------------------------------------------------------------------------
-
-record RecurrentScanConjugacyTheorem (State Input : Set) : Set₁ where
-  constructor recurrentScanConjugacyTheorem
-  field
-    scanLiftsConjugacy :
-      (replace : State → State)
-      (step : State → Input → State) →
-      (h :
-        ∀ (s : State) (x : Input) →
-        replace (step s x) ≡ step (replace s) x) →
-      ∀ (xs : List Input) (n : Nat) (s : State) →
-        replace
-          (C.recurrentPrefixState
-            (C.recurrentNetwork step)
-            xs n s)
-        ≡
-        C.recurrentPrefixState
-          (C.recurrentNetwork step)
-          xs n
-          (replace s)
 
 recurrentPrefix-scan-lifts-conjugacy :
   ∀ {State Input : Set}
@@ -1469,68 +1091,6 @@ canonicalBiasedWatkinsNegativeQMunchausenL2Target :
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
   C.canonicalWatkinsTarget
 
-canonical-qLog2Bias8-law :
-  ∀ x →
-  C.qLog2Bias8 x ≡
-  C.int8Neg
-    (C.int8OfNat
-      ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
-       C.denominator (C.finiteQLog8 x)))
-canonical-qLog2Bias8-law x with ∣ C.code x ∣
-... | zero = refl
-... | suc n = refl
-
-record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
-  constructor canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-  field
-    negativeQMunchausenBias :
-      ∀ x →
-      C.qLog2Bias8 x ≡
-      C.int8Neg
-        (C.int8OfNat
-          ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
-           C.denominator (C.finiteQLog8 x)))
-
-    targetDecomposition :
-      ∀ K s →
-      canonicalBiasedWatkinsNegativeQMunchausenL2Target K s ≡
-      C.int8Add
-        (C.int8Add
-          (C.int8Add
-            (C.canonicalReward8 K s)
-            (C.canonicalQLogBias K s))
-          (C.int8Mul
-            C.canonicalDiscount8
-            (C.maxCriticValue8 (C.critic (C.watkins s)))))
-        (C.canonicalEndogenousFeedback K s)
-
-    l2ConsumesTarget :
-      ∀ K s →
-      C.canonicalOptimizerStep K s ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer s)
-        (canonicalBiasedWatkinsNegativeQMunchausenL2Target K s)
-
-open CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem public
-
-canonical-biased-watkins-negative-q-munchausen-l2-target-theorem :
-  CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-canonical-biased-watkins-negative-q-munchausen-l2-target-theorem =
-  canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-    canonical-qLog2Bias8-law
-    (λ K s → C.canonicalWatkinsTarget-law K s)
-    (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
-
-------------------------------------------------------------------------
--- Polarity clarification for the canonical negative-q-Munchausen + L2 path.
---
--- Both components are implemented as modular negation of their respective
--- inputs.  This is a shared negation operator law, not an order-theoretic
--- "opposite signs" theorem: Int8 is modular, and no signed-order premise
--- is introduced here.
-------------------------------------------------------------------------
-
 record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
   constructor canonicalQMunchausenL2SharedNegationPolarityTheorem
   field
@@ -1547,52 +1107,6 @@ record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
       C.l2Correction x ≡ C.int8Neg x
 
 open CanonicalQMunchausenL2SharedNegationPolarityTheorem public
-
-canonical-q-munchausen-l2-shared-negation-polarity-theorem :
-  CanonicalQMunchausenL2SharedNegationPolarityTheorem
-canonical-q-munchausen-l2-shared-negation-polarity-theorem =
-  canonicalQMunchausenL2SharedNegationPolarityTheorem
-    canonical-qLog2Bias8-law
-    (λ x → refl)
-
-canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (_≤_ : C.Int8 → C.Int8 → Set)
-  (operator :
-    MinimaxBellmanShapleyOperator
-      C.CanonicalFullLearnerState
-      C.Int8
-      _≤_)
-  (lower upper : C.CanonicalFullLearnerState → C.Int8) →
-  PointwiseSandwich
-    _≤_
-    lower
-    (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
-    upper →
-  MinimaxBellmanShapleyInclusionTheorem
-    C.CanonicalFullLearnerState
-    C.Int8
-    _≤_
-    operator
-    lower
-    (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
-    upper
-canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
-  K _≤_ operator lower upper
-  (pointwiseSandwich lower≤actual actual≤upper) =
-  minimaxBellmanShapleyInclusionTheorem
-    (monotone operator
-      lower
-      (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
-      lower≤actual)
-    (monotone operator
-      (canonicalBiasedWatkinsNegativeQMunchausenL2Target K)
-      upper
-      actual≤upper)
-
-------------------------------------------------------------------------
--- Endogenous factorization through a left-invertible observation.
-------------------------------------------------------------------------
 
 canonicalWatkinsTarget-endogenous-leftInverse :
   ∀ (K : C.CanonicalFullLearnerKernel)
@@ -1733,47 +1247,6 @@ record DiscreteExactUniversalUAP
 
 open DiscreteExactUniversalUAP public
 
-discreteExactUniversalUAP-from-leftInverse :
-  ∀ {State Feature : Set}
-  {observe : State → Feature} →
-  DiscreteLeftInverseWitness State Feature observe →
-  DiscreteExactUniversalUAP State Feature observe
-discreteExactUniversalUAP-from-leftInverse witness =
-  discreteExactUniversalUAP
-    (λ target f → target (inverse witness f))
-    (λ target s → cong target (leftInverse witness s))
-
-discreteExactUniversalUAP-to-leftInverse :
-  ∀ {State Feature : Set}
-  {observe : State → Feature} →
-  DiscreteExactUniversalUAP State Feature observe →
-  DiscreteLeftInverseWitness State Feature observe
-discreteExactUniversalUAP-to-leftInverse universal =
-  discreteLeftInverseWitness
-    (readout universal (λ s → s))
-    (λ s → sym (exactReadout universal (λ t → t) s))
-
-record DiscreteExactUniversalUAPLeftInverseEquivalence
-  (State Feature : Set)
-  (observe : State → Feature) : Set₁ where
-  constructor discreteExactUniversalUAPLeftInverseEquivalence
-  field
-    fromLeftInverse :
-      DiscreteLeftInverseWitness State Feature observe →
-      DiscreteExactUniversalUAP State Feature observe
-    toLeftInverse :
-      DiscreteExactUniversalUAP State Feature observe →
-      DiscreteLeftInverseWitness State Feature observe
-
-discreteExactUniversalUAP-leftInverse-equivalence :
-  ∀ {State Feature : Set}
-  {observe : State → Feature} →
-  DiscreteExactUniversalUAPLeftInverseEquivalence State Feature observe
-discreteExactUniversalUAP-leftInverse-equivalence =
-  discreteExactUniversalUAPLeftInverseEquivalence
-    discreteExactUniversalUAP-from-leftInverse
-    discreteExactUniversalUAP-to-leftInverse
-
 discreteLeftInverse-observe-injective :
   ∀ {State Feature : Set}
   {observe : State → Feature}
@@ -1812,22 +1285,6 @@ collision-implies-no-leftInverse-via-injectivity
       (discreteLeftInverse-observe-injective
         (proj₂ witness)
         obsEq)
-
-discreteExactUAPTheorem-from-leftInverse :
-  ∀ {State Feature Output : Set}
-  (observe : State → Feature)
-  (inverse : Feature → State)
-  (leftInverse : ∀ s → inverse (observe s) ≡ s) →
-  DiscreteExactUAPTheorem State Feature Output observe inverse
-discreteExactUAPTheorem-from-leftInverse
-  observe inverse leftInverse =
-  discreteExactUAPTheorem
-    leftInverse
-    (λ target s → cong target (sym (leftInverse s)))
-
-------------------------------------------------------------------------
--- Exact recurrent scan of the executable endogenous target stream.
-------------------------------------------------------------------------
 
 canonicalWatkinsTargetSignalStream :
   C.CanonicalFullLearnerKernel →
@@ -1979,77 +1436,6 @@ record ContinuousLeftInverseTheorem
 
 open ContinuousLeftInverseTheorem public
 
-continuousLeftInverse-injective :
-  ∀ {State Feature : Set}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set} →
-  ContinuousLeftInverseTheorem
-    State Feature observe inverse Continuous →
-  ∀ {s t} →
-  observe s ≡ observe t →
-  s ≡ t
-continuousLeftInverse-injective witness {s} {t} eq =
-  trans
-    (sym (leftInverse witness s))
-    (trans
-      (cong inverse eq)
-      (leftInverse witness t))
-
-continuousLeftInverse-exactReadout-transfer :
-  ∀ {State Feature Output : Set}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set} →
-  ContinuousLeftInverseTheorem
-    State Feature observe inverse Continuous →
-  (target : State → Output) →
-  ∀ s →
-  target s ≡ target (inverse (observe s))
-continuousLeftInverse-exactReadout-transfer
-  witness target s =
-  cong target (sym (leftInverse witness s))
-
-------------------------------------------------------------------------
--- Canonical Watkins exact AUP/UAP factorization through a continuous
--- left-invertible observation.  The result is exact equality, not a
--- metric approximation claim.
-------------------------------------------------------------------------
-
-canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse :
-  ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (observe : C.CanonicalFullLearnerState → Feature)
-  (inverse : Feature → C.CanonicalFullLearnerState)
-  (witness :
-    ContinuousLeftInverseTheorem
-      C.CanonicalFullLearnerState
-      Feature
-      observe
-      inverse
-      Continuous) →
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState) →
-  C.canonicalWatkinsTarget K s ≡
-  C.canonicalWatkinsTarget K (inverse (observe s))
-canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse
-  observe inverse witness K s =
-  continuousLeftInverse-exactReadout-transfer
-    witness
-    (C.canonicalWatkinsTarget K)
-    s
-
--- Strictly stronger combined theorem schema.
---
--- This is not a topological universal-approximation theorem under the
--- current imports. It is the exact composition available here:
--- target semantics + minimax/Bellman-Shapley inclusion + endogenous
--- left-inverse factorization + continuous-left-inverse transfer +
--- bounded exact approximation from the continuous left inverse + ring-state
--- injectivity + dense-neighborhood separation + Nat-clock pigeonhole
--- contradiction.
-------------------------------------------------------------------------
-
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
   field
@@ -2166,50 +1552,6 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         (λ n → C.iterateCanonical K n s)
         observe
 
-
-canonical-endogenous-minimax-bellman-shapley-uap-theorem : CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
-canonical-endogenous-minimax-bellman-shapley-uap-theorem =
-  canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
-    canonical-biased-watkins-negative-q-munchausen-l2-target-theorem
-    canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
-    (λ observe inverse leftInverse →
-      discreteExactUAPTheorem-from-leftInverse
-        observe
-        inverse
-        leftInverse)
-    (λ K observe inverse leftInverse s →
-      canonicalWatkinsTarget-endogenous-leftInverse
-        K observe inverse leftInverse s)
-    (λ K s n h →
-      canonicalWatkinsTarget-recurrent-prefix-correct
-        K s n h)
-    (λ witness target s →
-      continuousLeftInverse-exactReadout-transfer
-        witness
-        target
-        s)
-    canonicalRingStateInjective
-    canonicalInfiniteStateOrbitEmbedding
-    canonicalDenseNeighborhoodSeparation
-
-
-------------------------------------------------------------------------
--- Exact finite mixed-product recurrence certificate.
---
--- This is the finite-automata/algebraic form needed by the e-graph:
--- a deterministic endomorphism on a finite quotient has an eventual
--- periodic orbit; an absorbing member gives a fixed equilibrium, while
--- a nontrivial cycle is the mixed equilibrium.  No metric, real field,
--- derivative, or limit is used.
-------------------------------------------------------------------------
--- Exact deterministic finite-step divergence boundary.
---
--- The canonical full learner has an explicit Nat clock with
--- canonicalFullStep-clock : clock (F s) ≡ suc (clock s).
--- Therefore exact state equality after any positive number of learner
--- steps is impossible. This is a checked property of this learner's
--- actual transition function, not a generic stability analogy.
-------------------------------------------------------------------------
 
 canonicalDeterministicFiniteStepDivergenceInevitability :
   ∀ {A}
@@ -2371,22 +1713,6 @@ record FiniteRankStabilityCertificate
 
 open FiniteRankStabilityCertificate public
 
-finiteRank-stability-implies-eventual-fixed :
-  ∀ {State : Set}
-  {step : State → State}
-  {equilibrium : State} →
-  FiniteRankStabilityCertificate State step equilibrium →
-  ∀ s → Σ Nat (λ n → iterateState step n s ≡ equilibrium)
-finiteRank-stability-implies-eventual-fixed C s =
-  eventualExact C s
-
-------------------------------------------------------------------------
--- The canonical learner state itself cannot carry the finite-rank
--- stabilization certificate used by the convergence bridge: its clock makes
--- every one-step state equality impossible.  Any finite-rank closure must
--- therefore live on an invariant quotient/factor that forgets that clock.
-------------------------------------------------------------------------
-
 canonicalFullLearner-no-finite-rank-stability :
   ∀ {A : Set}
   (K : C.CanonicalFullLearnerKernel)
@@ -2405,53 +1731,6 @@ canonicalFullLearner-no-finite-rank-stability K equilibrium certificate =
 -- Exact stabilization can feed the existing convergence-witness interface.
 -- The convergence relation is an explicit premise; rank alone does not
 -- manufacture topology.
-------------------------------------------------------------------------
-
-topologicalConvergenceWitness-from-finite-rank-stability :
-  ∀ {State : Set}
-  {step : State → State}
-  {equilibrium : State}
-  {orbit : Nat → State}
-  {limit : State}
-  {Converges : (Nat → State) → State → Set} →
-  FiniteRankStabilityCertificate State step equilibrium →
-  (s : State) →
-  (∀ n → orbit n ≡ iterateState step n s) →
-  (∀ n → orbit (suc n) ≡ step (orbit n)) →
-  (∀ {n} → orbit n ≡ equilibrium → Converges orbit equilibrium) →
-  (∀ {x y} → x ≡ y → Converges orbit x → Converges orbit y) →
-  equilibrium ≡ limit →
-  TopologicalConvergenceWitness State step orbit limit Converges
-topologicalConvergenceWitness-from-finite-rank-stability
-  stability s orbitMatches orbitStepLaw eventualConvergence
-  convergenceEqualityTransport equilibriumToLimit =
-  let
-    eventual = finiteRank-stability-implies-eventual-fixed stability s
-    n = proj₁ eventual
-    fixed = proj₂ eventual
-    orbitFixed = trans (sym (orbitMatches n)) fixed
-    convergesAtEquilibrium =
-      eventualConvergence (trans (orbitMatches n) orbitFixed)
-    convergesAtLimit =
-      convergenceEqualityTransport equilibriumToLimit convergesAtEquilibrium
-    limitFixed =
-      trans
-        (cong step (sym equilibriumToLimit))
-        (trans
-          (FiniteRankStabilityCertificate.equilibriumFixed stability)
-          equilibriumToLimit)
-  in
-  topologicalConvergenceWitness
-    orbitStepLaw
-    convergesAtLimit
-    (λ _ → limitFixed)
-
-------------------------------------------------------------------------
--- Finite non-iid Walrasian equilibrium.
---
--- Agents may have distinct endowments and utility functions; the only
--- equilibrium requirements are individual budget optimality and aggregate
--- market clearing.  No iid or uniform shock assumption appears.
 ------------------------------------------------------------------------
 
 sumNat :
@@ -2634,53 +1913,6 @@ record ContinuousStationaryMarkovWalrasianData
 
 open ContinuousStationaryMarkovWalrasianData public
 
-StationaryWalrasian :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous)
-  → Price → (State → Allocation) → Set
-StationaryWalrasian D p allocation =
-  staticWalrasian D p (aggregate D allocation)
-  ×
-  (aggregate D allocation
-   ≡
-   aggregate D (λ s → allocation (step D s)))
-
-continuousStationaryWalrasian-lift :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous)
-  (p : Price)
-  (allocation : State → Allocation) →
-  staticWalrasian D p (aggregate D allocation) →
-  StationaryWalrasian D p allocation
-continuousStationaryWalrasian-lift D p allocation h =
-  h , invariant D allocation
-
-------------------------------------------------------------------------
--- The pure composition theorem above is the exact non-iid generalization:
--- arbitrary Markov transition + invariant aggregate + static Walrasian
--- equilibrium.  No uniform shock distribution appears anywhere.
---
--- Existence is intentionally not claimed here: it additionally requires
--- a stationary-law existence theorem and a Walrasian existence theorem.
--- Those are separate hypotheses that an e-graph may compose when their
--- semantic laws are present; they must not be manufactured by search.
-------------------------------------------------------------------------
-
-
-
-
-------------------------------------------------------------------------
--- Direct-product finite-automaton composition.
---
--- The product is the finite-state carrier for simultaneous recurrence:
--- each component reads the same input and advances independently, while
--- the product transition preserves both component states.
-------------------------------------------------------------------------
-
 componentPrefix :
   ∀ {Q Input : Set} →
   (Q → Input → Q) → List Input → Q → Q
@@ -2852,74 +2084,6 @@ offPolicyFunctionApproximationStabilityBoundaryWitness =
 -- discover the dependency path structurally from this declaration.
 ------------------------------------------------------------------------
 
-record MarkovStationaryWalrasianCompositionTheorem : Set₁ where
-  constructor markovStationaryWalrasianCompositionTheorem
-  field
-    recurrentScan :
-      RecurrentAssociativeScanTheorem C.GRUState C.Int8
-
-    directProductFiniteAutomaton :
-      ∀ {Q₁ Q₂ Input : Set}
-        (step₁ : Q₁ → Input → Q₁)
-        (step₂ : Q₂ → Input → Q₂) →
-      DirectProductFiniteAutomatonComposition Q₁ Q₂ Input
-
-    stabilityBoundary :
-      OffPolicyFunctionApproximationStabilityBoundary
-
-    continuousExactReadout :
-      ∀ {State Feature Output : Set}
-        {observe : State → Feature}
-        {inverse : Feature → State}
-        {Continuous : {A B : Set} → (A → B) → Set} →
-      ContinuousLeftInverseTheorem
-        State Feature observe inverse Continuous →
-      (target : State → Output) →
-      ∀ s →
-      target s ≡ target (inverse (observe s))
-
-    stationaryWalrasianLift :
-      ∀ {State Price Allocation : Set}
-        {Continuous : {A B : Set} → (A → B) → Set}
-        (D : ContinuousStationaryMarkovWalrasianData
-          State Price Allocation Continuous)
-        (p : Price)
-        (allocation : State → Allocation) →
-      staticWalrasian D p (aggregate D allocation) →
-      StationaryWalrasian D p allocation
-
-open MarkovStationaryWalrasianCompositionTheorem public
-
-markov-stationary-walrasian-composition-theorem :
-  MarkovStationaryWalrasianCompositionTheorem
-markov-stationary-walrasian-composition-theorem =
-  markovStationaryWalrasianCompositionTheorem
-    canonicalGRU-recurrent-associative-scan-theorem
-    (λ step₁ step₂ →
-      directProductFiniteAutomatonComposition-theorem step₁ step₂)
-    offPolicyFunctionApproximationStabilityBoundaryWitness
-    continuousLeftInverse-exactReadout-transfer
-    continuousStationaryWalrasian-lift
-
-------------------------------------------------------------------------
--- The resulting target is deliberately not an iid-uniform theorem:
--- the Markov component contributes only an arbitrary step and an invariant
--- aggregate functional.  The recurrent/topological pieces are imported
--- through theorem interfaces, so A* can connect them without a theorem-name
--- lookup table.
-------------------------------------------------------------------------
-
-
-
-------------------------------------------------------------------------
--- Exact reconstruction on the observed image and explicit global
--- conjugacy equations.
---
--- The existing left/right inverse fields imply these laws, but these
--- declarations make the reconstruction and conjugacy surfaces explicit
--- for theorem-graph discovery.
-------------------------------------------------------------------------
-
 record ExactReconstructionOnImage
   (State Feature : Set)
   (observe : State → Feature)
@@ -2964,233 +2128,6 @@ record GlobalConjugacyEquivalence
       ∀ s → step s ≡ inverse (featureStep (observe s))
     featureDynamicsFromState :
       ∀ f → featureStep f ≡ observe (step (inverse f))
-
-globalConjugacyEquivalence-from-full :
-  ∀ {State Feature : Set}
-  {step : State → State}
-  {observe : State → Feature}
-  {featureStep : Feature → Feature}
-  {inverse : Feature → State} →
-  FullCommutingSquareConjugacyTheorem
-    State Feature step observe featureStep inverse →
-  GlobalConjugacyEquivalence
-    State Feature step observe featureStep inverse
-globalConjugacyEquivalence-from-full witness =
-  globalConjugacyEquivalence
-    (λ s →
-      CommutingSquareTheorem.square
-        (FullCommutingSquareConjugacyTheorem.squareWitness witness)
-        s)
-    (FullCommutingSquareConjugacyTheorem.leftInverse witness)
-    (FullCommutingSquareConjugacyTheorem.rightInverse witness)
-    (λ s →
-      trans
-        (sym
-          (FullCommutingSquareConjugacyTheorem.leftInverse
-            witness
-            (step s)))
-        (cong inverse
-          (CommutingSquareTheorem.square
-            (FullCommutingSquareConjugacyTheorem.squareWitness witness)
-            s)))
-    (FullCommutingSquareConjugacyTheorem.backwardSquare witness)
-
-canonicalExactReconstructionOnImage :
-  ∀ {Feature : Set}
-  (observe : C.CanonicalFullLearnerState → Feature)
-  (inverse : Feature → C.CanonicalFullLearnerState) →
-  (∀ s → inverse (observe s) ≡ s) →
-  (∀ f → observe (inverse f) ≡ f) →
-  ExactReconstructionOnImage
-    C.CanonicalFullLearnerState
-    Feature
-    observe
-    inverse
-canonicalExactReconstructionOnImage observe inverse leftInverse rightInverse =
-  exactReconstructionOnImage-from-inverses leftInverse rightInverse
-
-canonicalGlobalConjugacyEquivalence :
-  ∀ {Feature : Set}
-  (step : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → Feature)
-  (featureStep : Feature → Feature)
-  (inverse : Feature → C.CanonicalFullLearnerState) →
-  FullCommutingSquareConjugacyTheorem
-    C.CanonicalFullLearnerState
-    Feature
-    step
-    observe
-    featureStep
-    inverse →
-  GlobalConjugacyEquivalence
-    C.CanonicalFullLearnerState
-    Feature
-    step
-    observe
-    featureStep
-    inverse
-canonicalGlobalConjugacyEquivalence
-  step observe featureStep inverse witness =
-  globalConjugacyEquivalence-from-full witness
-
-------------------------------------------------------------------------
--- Generalized stationary Walrasian equilibrium transport.
---
--- The equilibrium layer accepts arbitrary Markov state transitions and
--- an invariant aggregate functional.  No iid, uniform, or finite-state
--- restriction is introduced.  Existence is never manufactured: it is
--- supplied as a static Walrasian witness and then lifted exactly.
-------------------------------------------------------------------------
-
-record GeneralizedWalrasianEquilibrium
-  (State Price Allocation : Set)
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous)
-  (p : Price)
-  (allocation : State → Allocation) : Set₁ where
-  constructor generalizedWalrasianEquilibrium
-  field
-    staticEquilibrium :
-      staticWalrasian D p (aggregate D allocation)
-    stationaryAggregate :
-      aggregate D allocation
-      ≡ aggregate D (λ s → allocation (step D s))
-
-open GeneralizedWalrasianEquilibrium public
-
-generalizedWalrasianEquilibrium-from-static :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous)
-  (p : Price)
-  (allocation : State → Allocation) →
-  staticWalrasian D p (aggregate D allocation) →
-  GeneralizedWalrasianEquilibrium D p allocation
-generalizedWalrasianEquilibrium-from-static D p allocation h =
-  generalizedWalrasianEquilibrium h (invariant D allocation)
-
-generalizedWalrasianEquilibrium-as-stationary :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous)
-  (p : Price)
-  (allocation : State → Allocation) →
-  GeneralizedWalrasianEquilibrium D p allocation →
-  StationaryWalrasian D p allocation
-generalizedWalrasianEquilibrium-as-stationary D p allocation witness =
-  staticEquilibrium witness , stationaryAggregate witness
-
-record ConjugateWalrasianTransport
-  (State Feature Price Allocation : Set)
-  {ContinuousState ContinuousFeature :
-    {A B : Set} → (A → B) → Set}
-  (DState :
-    ContinuousStationaryMarkovWalrasianData
-      State Price Allocation ContinuousState)
-  (DFeature :
-    ContinuousStationaryMarkovWalrasianData
-      Feature Price Allocation ContinuousFeature)
-  (observe : State → Feature)
-  (inverse : Feature → State)
-  (allocation : State → Allocation)
-  (featureAllocation : Feature → Allocation) : Set₁ where
-  constructor conjugateWalrasianTransport
-  field
-    reconstruction :
-      ExactReconstructionOnImage State Feature observe inverse
-    allocationReadout :
-      ∀ s → featureAllocation (observe s) ≡ allocation s
-    aggregateAgreement :
-      aggregate DFeature featureAllocation
-      ≡ aggregate DState allocation
-    staticEquilibriumTransport :
-      ∀ p →
-      GeneralizedWalrasianEquilibrium DState p allocation →
-      staticWalrasian
-        DFeature
-        p
-        (aggregate DFeature featureAllocation)
-
-open ConjugateWalrasianTransport public
-
-conjugateWalrasianTransport-preserves-equilibrium :
-  ∀ {State Feature Price Allocation : Set}
-  {ContinuousState ContinuousFeature :
-    {A B : Set} → (A → B) → Set}
-  {DState :
-    ContinuousStationaryMarkovWalrasianData
-      State Price Allocation ContinuousState}
-  {DFeature :
-    ContinuousStationaryMarkovWalrasianData
-      Feature Price Allocation ContinuousFeature}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {allocation : State → Allocation}
-  (p : Price)
-  (featureAllocation : Feature → Allocation) →
-  GeneralizedWalrasianEquilibrium DState p allocation →
-  ConjugateWalrasianTransport
-    State Feature Price Allocation
-    DState DFeature observe inverse allocation featureAllocation →
-  GeneralizedWalrasianEquilibrium DFeature p featureAllocation
-conjugateWalrasianTransport-preserves-equilibrium
-  p featureAllocation witness transport =
-  generalizedWalrasianEquilibrium
-    (staticEquilibriumTransport transport p witness)
-    (invariant DFeature featureAllocation)
-
-
-------------------------------------------------------------------------
--- Exact benchmark specifications for Mercury's theorem-only graph.
-------------------------------------------------------------------------
--- The divergence field is intentionally a proof obligation, not a fake
--- theorem. The benchmark is formalized; the divergence proof remains
--- required before it can be promoted to a proved stability claim.
-------------------------------------------------------------------------
-
-
--- sync checkpoint
-
--- checkpoint after benchmark formalization
-
-record NonIIDMarkovWalrasianProblem
-  (State Price Allocation : Set)
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous) : Set₁ where
-  constructor nonIIDMarkovWalrasianProblem
-  field
-    nonIIDWitness :
-      Σ State (λ s₁ →
-      Σ State (λ s₂ →
-      step D s₁ ≢ step D s₂))
-    stationaryEquilibrium :
-      Price → (State → Allocation) → Set
-
-nonIIDMarkovStationaryWalrasian-lift :
-  ∀ {State Price Allocation : Set}
-    {Continuous : {A B : Set} → (A → B) → Set}
-    {D : ContinuousStationaryMarkovWalrasianData
-      State Price Allocation Continuous} →
-    NonIIDMarkovWalrasianProblem State Price Allocation D →
-    ∀ (p : Price) (allocation : State → Allocation) →
-    staticWalrasian D p (aggregate D allocation) →
-    StationaryWalrasian D p allocation
-nonIIDMarkovStationaryWalrasian-lift _ p allocation h =
-  continuousStationaryWalrasian-lift _ p allocation h
-
-
--- Exact global token conjugacy and autoregressive trace algebra.
---
--- The canonical token carrier is the exact unbounded integer carrier;
--- encoding into the executable Int8 carrier is explicit.  Lists lift that conjugacy globally by map.
--- The recurrent prefix semantics therefore commute exactly with token
--- encoding, while the logit trace remains a purely causal list-valued
--- readout.  No exponential/logarithmic/sinusoidal primitive is needed.
-------------------------------------------------------------------------
 
 recurrentListState-append :
   ∀ {State Input : Set}
@@ -3310,36 +2247,6 @@ record ExactFunctionIsomorphismTransportTheorem
       StateIsomorphism.to isoB (f x) ≡
       translatedFunction (StateIsomorphism.to isoA x)
 
-exactFunctionIsomorphismTransport :
-  ∀ {S T A B : Set}
-    {isoA : StateIsomorphism S A}
-    {isoB : StateIsomorphism T B}
-    (f : S → T) →
-  ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
-exactFunctionIsomorphismTransport {isoA = isoA} {isoB = isoB} f =
-  exactFunctionIsomorphismTransportTheorem
-    (λ a →
-      StateIsomorphism.to isoB
-        (f (StateIsomorphism.from isoA a)))
-    (λ x → refl)
-
-record ExactRecurrentFunctionTranslationTheorem
-  (S A : Set)
-  (isoA : StateIsomorphism S A)
-  (step : S → S)
-  (stepA : A → A) : Set₁ where
-  constructor exactRecurrentFunctionTranslationTheorem
-  field
-    recurrentConjugacy :
-      ∀ x →
-      StateIsomorphism.to isoA (step x) ≡
-      stepA (StateIsomorphism.to isoA x)
-    translatedFunction :
-      ∀ {T B : Set}
-        {isoB : StateIsomorphism T B}
-        (f : S → T) →
-      ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
-
 exactRecurrentFunctionTranslation :
   ∀ {S A : Set}
     {isoA : StateIsomorphism S A}
@@ -3362,133 +2269,6 @@ exactRecurrentFunctionTranslation step stepA conjugacy =
 -- This is deliberately a transport theorem, not a probabilistic
 -- convergence theorem.  Distribution semantics remain explicit, while
 -- state/action/observation carriers are arbitrary Sets.
-------------------------------------------------------------------------
-
-record POMDPExactTransport
-  (State Action Observation Distribution Reward : Set)
-  (StateRep ActionRep ObservationRep : Set)
-  (stateIso : StateIsomorphism StateRep State)
-  (actionIso : StateIsomorphism ActionRep Action)
-  (observationIso : StateIsomorphism ObservationRep Observation)
-  (transition : State → Action → Distribution)
-  (observationKernel : State → Distribution)
-  (reward : State → Action → Reward) : Set₁ where
-  constructor pomdpExactTransport
-  field
-    translatedTransition :
-      StateRep → ActionRep → Distribution
-    translatedObservationKernel :
-      StateRep → Distribution
-    translatedReward :
-      StateRep → ActionRep → Reward
-    transitionExact :
-      ∀ s a →
-      translatedTransition (StateIsomorphism.to stateIso s)
-        (StateIsomorphism.to actionIso a) ≡
-      transition s a
-    observationExact :
-      ∀ s →
-      translatedObservationKernel (StateIsomorphism.to stateIso s) ≡
-      observationKernel s
-    rewardExact :
-      ∀ s a →
-      translatedReward
-        (StateIsomorphism.to stateIso s)
-        (StateIsomorphism.to actionIso a) ≡
-      reward s a
-
-pomdpExactTransport :
-  ∀ {State Action Observation Distribution Reward StateRep ActionRep ObservationRep : Set}
-    {stateIso : StateIsomorphism StateRep State}
-    {actionIso : StateIsomorphism ActionRep Action}
-    {observationIso : StateIsomorphism ObservationRep Observation}
-    (transition : State → Action → Distribution)
-    (observationKernel : State → Distribution)
-    (reward : State → Action → Reward) →
-  POMDPExactTransport
-    State Action Observation Distribution Reward
-    StateRep ActionRep ObservationRep
-    stateIso actionIso observationIso
-    transition observationKernel reward
-pomdpExactTransport transition observationKernel reward =
-  pomdpExactTransport
-    (λ s a →
-      transition
-        (StateIsomorphism.from stateIso s)
-        (StateIsomorphism.from actionIso a))
-    (λ s →
-      observationKernel (StateIsomorphism.from stateIso s))
-    (λ s a →
-      reward
-        (StateIsomorphism.from stateIso s)
-        (StateIsomorphism.from actionIso a))
-    (λ s a →
-      cong₂ transition
-        (StateIsomorphism.from-to stateIso s)
-        (StateIsomorphism.from-to actionIso a))
-    (λ s →
-      cong observationKernel
-        (StateIsomorphism.from-to stateIso s))
-    (λ s a →
-      cong₂ reward
-        (StateIsomorphism.from-to stateIso s)
-        (StateIsomorphism.from-to actionIso a))
-
-------------------------------------------------------------------------
--- The generalized transport family is consumed by one connected seam:
--- recurrent translation uses function transport, and POMDP transport is
--- expressed over the same arbitrary representation carriers.
-------------------------------------------------------------------------
-
-record GeneralizedRepresentationTransportCompositionTheorem : Set₁ where
-  constructor generalizedRepresentationTransportCompositionTheorem
-  field
-    functionTransport :
-      ∀ {S T A B : Set}
-        {isoA : StateIsomorphism S A}
-        {isoB : StateIsomorphism T B}
-        (f : S → T) →
-      ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
-    recurrentTranslation :
-      ∀ {S A : Set}
-        {isoA : StateIsomorphism S A}
-        (step : S → S)
-        (stepA : A → A)
-        (conjugacy :
-          ∀ x →
-          StateIsomorphism.to isoA (step x) ≡
-          stepA (StateIsomorphism.to isoA x)) →
-      ExactRecurrentFunctionTranslationTheorem S A isoA step stepA
-    pomdpTransport :
-      ∀ {State Action Observation Distribution Reward StateRep ActionRep ObservationRep : Set}
-        {stateIso : StateIsomorphism StateRep State}
-        {actionIso : StateIsomorphism ActionRep Action}
-        {observationIso : StateIsomorphism ObservationRep Observation}
-        (transition : State → Action → Distribution)
-        (observationKernel : State → Distribution)
-        (reward : State → Action → Reward) →
-      POMDPExactTransport
-        State Action Observation Distribution Reward
-        StateRep ActionRep ObservationRep
-        stateIso actionIso observationIso
-        transition observationKernel reward
-
-generalized-representation-transport-composition-theorem :
-  GeneralizedRepresentationTransportCompositionTheorem
-generalized-representation-transport-composition-theorem =
-  generalizedRepresentationTransportCompositionTheorem
-    (λ f → exactFunctionIsomorphismTransport f)
-    (λ step stepA conjugacy →
-      exactRecurrentFunctionTranslation step stepA conjugacy)
-    (λ transition observationKernel reward →
-      pomdpExactTransport transition observationKernel reward)
-
-------------------------------------------------------------------------
--- Architecture-preserving RNN-LM isomorphism.
---
--- An alternate implementation counts as faithful only when the exact
--- representation map preserves every declared custom component, not merely
--- the composite recurrent step.
 ------------------------------------------------------------------------
 
 record CanonicalExactRNNLMTheorem : Set₁ where
@@ -3653,26 +2433,6 @@ CanonicalEndogenousAStarTransportClosureTheorem =
 
 open CanonicalEndogenousAStarTransportClosureTheorem public
 
-canonical-endogenous-e-graph-a-star-transport-closure-theorem :
-  CanonicalEndogenousEGraphAStarTransportClosureTheorem
-canonical-endogenous-e-graph-a-star-transport-closure-theorem =
-  canonicalEndogenousEGraphAStarTransportClosureTheorem
-    canonical-a-star-cost-guidance-theorem
-    (λ first second → composeEqualityTheorem first second)
-    generalized-representation-transport-composition-theorem
-    (λ f → exactFunctionIsomorphismTransport f)
-
-canonical-endogenous-a-star-transport-closure-theorem :
-  CanonicalEndogenousAStarTransportClosureTheorem
-canonical-endogenous-a-star-transport-closure-theorem =
-  canonical-endogenous-e-graph-a-star-transport-closure-theorem
-
-------------------------------------------------------------------------
--- Canonical finite-cycle exclusion transported through an exact state
--- isomorphism. This packages the already-proved generic conjugacy law;
--- it is not a Lyapunov descent theorem.
-------------------------------------------------------------------------
-
 record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
   constructor canonicalFiniteCycleExclusionIsomorphismTheorem
   field
@@ -3697,19 +2457,6 @@ record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
         iterateIsomorphism g (suc n) (to iso a) ≢ to iso a
 
 open CanonicalFiniteCycleExclusionIsomorphismTheorem public
-
-canonical-finite-cycle-exclusion-isomorphism-theorem :
-  CanonicalFiniteCycleExclusionIsomorphismTheorem
-canonical-finite-cycle-exclusion-isomorphism-theorem =
-  canonicalFiniteCycleExclusionIsomorphismTheorem
-    isomorphismIterateConjugacy
-    isomorphismNoFiniteCycleTransport
-
-------------------------------------------------------------------------
--- Operator-composition closure is already an exact theorem of the
--- canonical endomorphism algebra. The standalone operator-complexity
--- module therefore adds no new learner semantics.
-------------------------------------------------------------------------
 
 record CanonicalOperatorCompositionTheorem : Set₁ where
   constructor canonicalOperatorCompositionTheorem
@@ -3790,6 +2537,154 @@ canonical-f4-global-optimizer-stability-theorem =
         optimizerEq signalEq)
 
 ------------------------------------------------------------------------
+-- F4 infinite-horizon forcing ray.
+--
+-- The canonical F4 coordinate is exact integer algebra.  With zero global
+-- L2 correction and unit signal at every step, the theta coordinate grows
+-- exactly linearly with horizon.  This is a formal counterexample to any
+-- unconditional upper-bound / sure-boundedness claim for the current F4
+-- semantics.  NormPair is not involved in this calculation.
+------------------------------------------------------------------------
+
+f4Orbit :
+  C.F4IntUKernel → C.Int8 → Nat → C.F4IntUState → C.F4IntUState
+f4Orbit K g zero s = s
+f4Orbit K g (suc n) s =
+  C.f4ThetaStep K (f4Orbit K g n s) g
+
+record F4UpperBoundedTrajectory
+  (K : C.F4IntUKernel)
+  (g : C.Int8)
+  (s : C.F4IntUState) : Set₁ where
+  constructor f4UpperBoundedTrajectory
+  field
+    bound : Nat
+    bounded :
+      ∀ n →
+      C.code (C.thetaQ (f4Orbit K g n s)) ≤ℤ + bound
+
+nat-plus-one :
+  ∀ n → n + suc zero ≡ suc n
+nat-plus-one n =
+  trans
+    (+-suc n zero)
+    (cong suc (+-identityʳ n))
+
+integer-nat-plus-one :
+  ∀ n → (+ n) +ℤ (+ 1) ≡ + (suc n)
+integer-nat-plus-one n =
+  cong +_ (nat-plus-one n)
+
+f4-zero-L2-unit-step-code :
+  ∀ s →
+  C.code
+    (C.thetaQ
+      (C.f4ThetaStep
+        (C.f4IntUKernel C.zero8)
+        s
+        C.one8))
+  ≡
+  C.code (C.thetaQ s) +ℤ (+ 1)
+f4-zero-L2-unit-step-code s =
+  trans
+    (cong C.code
+      (C.f4ParameterInvariant
+        (C.f4IntUKernel C.zero8)
+        s
+        C.one8))
+    (IntegerProperties.+-identityʳ
+      (C.code (C.thetaQ s) +ℤ (+ 1)))
+
+f4-unit-forcing-linear-growth :
+  ∀ n s →
+  C.code
+    (C.thetaQ
+      (f4Orbit
+        (C.f4IntUKernel C.zero8)
+        C.one8
+        n
+        s))
+  ≡
+  C.code (C.thetaQ s) +ℤ (+ n)
+f4-unit-forcing-linear-growth zero s =
+  sym (IntegerProperties.+-identityʳ (C.code (C.thetaQ s)))
+f4-unit-forcing-linear-growth (suc n) s =
+  trans
+    (f4-zero-L2-unit-step-code
+      (f4Orbit (C.f4IntUKernel C.zero8) C.one8 n s))
+    (trans
+      (cong
+        (λ z → z +ℤ (+ 1))
+        (f4-unit-forcing-linear-growth n s))
+      (trans
+        (IntegerProperties.+-assoc
+          (C.code (C.thetaQ s))
+          (+ n)
+          (+ 1))
+        (cong
+          (λ z → C.code (C.thetaQ s) +ℤ z)
+          (integer-nat-plus-one n))))
+
+nat-suc-not-le :
+  ∀ n → suc n ≤ n → ⊥
+nat-suc-not-le zero ()
+nat-suc-not-le (suc n) (s≤s h) =
+  nat-suc-not-le n h
+
+f4-unit-forcing-no-upper-bound :
+  ∀ {s : C.F4IntUState} →
+  C.thetaQ s ≡ C.zero8 →
+  ¬ F4UpperBoundedTrajectory
+      (C.f4IntUKernel C.zero8)
+      C.one8
+      s
+f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
+  let
+    B = F4UpperBoundedTrajectory.bound boundedWitness
+    horizonBound = F4UpperBoundedTrajectory.bounded boundedWitness (suc B)
+    growth =
+      f4-unit-forcing-linear-growth
+        (suc B)
+        _
+    growthFromZero :
+      C.code
+        (C.thetaQ
+          (f4Orbit
+            (C.f4IntUKernel C.zero8)
+            C.one8
+            (suc B)
+            _))
+      ≡
+      + (suc B)
+    growthFromZero =
+      trans
+        growth
+        (trans
+          (cong
+            (λ z → z +ℤ (+ suc B))
+            (cong C.code thetaZero))
+          (IntegerProperties.+-identityˡ (+ suc B)))
+    impossibleOrder :
+      + (suc B) ≤ℤ + B
+    impossibleOrder =
+      subst
+        (λ z → z ≤ℤ + B)
+        growthFromZero
+        horizonBound
+  in
+    nat-suc-not-le B
+      (IntegerProperties.drop‿+≤+ impossibleOrder)
+
+------------------------------------------------------------------------
+-- The linear-growth theorem is the exact reason the earlier coercivity /
+-- boundedness fields must not be promoted to unconditional facts.  There is
+-- also no analytic coercivity notion in the current F4 record: no objective,
+-- norm, or real-valued level-set relation is part of F4IntUKernel.  The
+-- correct closure is therefore a negative theorem plus a separately stated
+-- analytic bridge if a genuine coercivity theorem is desired later.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- Fully connected F4/NormPair stability composition.
 --
 -- "Sure stability" here means the exact deterministic stability certificate
@@ -3797,76 +2692,6 @@ canonical-f4-global-optimizer-stability-theorem =
 -- non-theta coordinates, and equal-input step stability.  It is not a
 -- probabilistic convergence claim.  Frank-Wolfe/rounding regret and the
 -- Markov stationary/Walrasian interface remain explicit downstream fields.
-------------------------------------------------------------------------
-
-record CanonicalF4NormPairSureStabilityCompositionTheorem : Set₁ where
-  constructor canonicalF4NormPairSureStabilityCompositionTheorem
-  field
-    f4Stability :
-      CanonicalF4GlobalOptimizerStabilityTheorem
-    normPairPolicyComposition :
-      CanonicalPolymorphicSparsemaxCompositionTheorem
-    frankWolfeRoundingRegret :
-      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
-    markovStationary :
-      MarkovStationaryWalrasianCompositionTheorem
-    endogenousEGraphAStar :
-      CanonicalEndogenousEGraphAStarTransportClosureTheorem
-
-open CanonicalF4NormPairSureStabilityCompositionTheorem public
-
-canonical-f4-normPair-sure-stability-composition-theorem :
-  CanonicalF4NormPairSureStabilityCompositionTheorem
-canonical-f4-normPair-sure-stability-composition-theorem =
-  canonicalF4NormPairSureStabilityCompositionTheorem
-    canonical-f4-global-optimizer-stability-theorem
-    canonical-polymorphic-sparsemax-egraph-theorem
-    connected-f4-frank-wolfe-rounding-bias-regret-theorem
-    markov-stationary-walrasian-composition-theorem
-    canonical-endogenous-e-graph-a-star-transport-closure-theorem
-
-------------------------------------------------------------------------
--- Markovian stationary point boundary.  The existing stationary theorem
--- gives an exact stationary aggregate/Walrasian witness, not an existence
--- or convergence theorem for a stationary point.  Existence remains a
--- supplied theorem premise through ConnectedGeneralizedWalrasianExistenceTheorem.
-------------------------------------------------------------------------
-
-record MarkovianStationaryPointCompositionTheorem : Set₁ where
-  constructor markovianStationaryPointCompositionTheorem
-  field
-    markovStationary :
-      MarkovStationaryWalrasianCompositionTheorem
-    generalizedExistence :
-      ∀ {State Price Allocation : Set}
-        {Continuous : {A B : Set} → (A → B) → Set}
-        (D : ContinuousStationaryMarkovWalrasianData
-          State Price Allocation Continuous)
-        (staticExistence :
-          ∀ p → Σ (λ allocation → staticWalrasian D p allocation)) →
-      ConnectedGeneralizedWalrasianExistenceTheorem
-        State Price Allocation D
-    endogenousEGraphAStar :
-      CanonicalEndogenousEGraphAStarTransportClosureTheorem
-
-markovian-stationary-point-composition-theorem :
-  MarkovianStationaryPointCompositionTheorem
-markovian-stationary-point-composition-theorem =
-  markovianStationaryPointCompositionTheorem
-    markov-stationary-walrasian-composition-theorem
-    (λ D staticExistence →
-      connected-generalized-walrasian-existence-theorem D staticExistence)
-    canonical-endogenous-e-graph-a-star-transport-closure-theorem
-
-------------------------------------------------------------------------
--- Pure non-orange-bypass theorem graph endpoint:
---
--- exact coupled transition
---   -> exact clock growth
---   -> full-orbit index injectivity
---   -> finite Int8 F4 factor boundedness
---   -> finite-factor collision
---   -> repeated F4 representation with distinct full exact states.
 ------------------------------------------------------------------------
 
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
@@ -3890,30 +2715,6 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
 
 open CanonicalPureNonOrangeBypassCompletionTheorem public
 
-canonical-pure-non-orange-bypass-completion-theorem :
-  CanonicalPureNonOrangeBypassCompletionTheorem
-canonical-pure-non-orange-bypass-completion-theorem =
-  canonicalPureNonOrangeBypassCompletionTheorem
-    canonical-recurrent-prefix-monoid-homomorphism
-    canonical-full-learner-connected-scan-conjugacy-theorem
-    canonicalExactCompositionTuringCompletenessContract-impossible
-    canonical-finite-cycle-exclusion-isomorphism-theorem
-    canonical-operator-composition-theorem
-    canonical-f4-global-optimizer-stability-theorem
-    canonical-integer-haar-scaled-orthogonality-theorem
-
-
-------------------------------------------------------------------------
--- Emergent endogenous finite-observation information boundary.
---
--- Combining exact Nat-indexed orbit separation with the finite Int8
--- observation boundary yields a stronger statement than factor recurrence
--- alone: no single Int8 observation of a canonical full-state orbit can
--- admit an exact left inverse. Consequently universal exact discrete UAP
--- through such an observation is impossible on that orbit.
-------------------------------------------------------------------------
-
-
 record StationaryLimitTheorem
   (Distribution : Set)
   (P : Distribution → Distribution)
@@ -3928,227 +2729,6 @@ record StationaryLimitTheorem
       Converges μ μ∞
     limitPreserved :
       Converges μ μ∞ → P μ∞ ≡ μ∞
-
-stationaryLimitTheorem-is-stationary :
-  ∀ {Distribution : Set}
-    {P : Distribution → Distribution}
-    {μ : Nat → Distribution}
-    {μ∞ : Distribution}
-    {Converges : (Nat → Distribution) → Distribution → Set} →
-  StationaryLimitTheorem
-    Distribution P μ μ∞ Converges →
-  P μ∞ ≡ μ∞
-stationaryLimitTheorem-is-stationary theorem =
-  StationaryLimitTheorem.limitPreserved theorem
-    (StationaryLimitTheorem.converges theorem)
-
-------------------------------------------------------------------------
--- Convergent fixed-point closure.
---
--- The existing stationary-limit theorem is a genuine existence bridge:
--- once a state sequence converges to μ∞ and the transition preserves that
--- limit, μ∞ is a fixed point.  The next layer transports that fixed point
--- through the existing exact StateIsomorphism/iterate-conjugacy surface.
---
--- This deliberately does not claim Brouwer/Kakutani from topology alone.
--- The convergence witness remains the proof-relevant premise.
-------------------------------------------------------------------------
-
-record TopologicalConvergenceWitness
-  (State : Set)
-  (step : State → State)
-  (orbit : Nat → State)
-  (limit : State)
-  (Converges : (Nat → State) → State → Set) : Set₁ where
-  constructor topologicalConvergenceWitness
-  field
-    stepLaw :
-      ∀ n → orbit (suc n) ≡ step (orbit n)
-    converges :
-      Converges orbit limit
-    limitPreserved :
-      Converges orbit limit → step limit ≡ limit
-
-topologicalConvergenceFixedPoint :
-  ∀ {State : Set}
-  {step : State → State}
-  {orbit : Nat → State}
-  {limit : State}
-  {Converges : (Nat → State) → State → Set} →
-  TopologicalConvergenceWitness
-    State step orbit limit Converges →
-  step limit ≡ limit
-topologicalConvergenceFixedPoint witness =
-  TopologicalConvergenceWitness.limitPreserved
-    witness
-    (TopologicalConvergenceWitness.converges witness)
-
-topologicalConvergenceWitness-from-stationary-limit :
-  ∀ {State : Set}
-  {step : State → State}
-  {orbit : Nat → State}
-  {limit : State}
-  {Converges : (Nat → State) → State → Set} →
-  StationaryLimitTheorem
-    State
-    step
-    orbit
-    limit
-    Converges →
-  TopologicalConvergenceWitness
-    State step orbit limit Converges
-topologicalConvergenceWitness-from-stationary-limit theorem =
-  topologicalConvergenceWitness
-    (StationaryLimitTheorem.stepLaw theorem)
-    (StationaryLimitTheorem.converges theorem)
-    (StationaryLimitTheorem.limitPreserved theorem)
-
-record FixedPointExistenceFromConvergence
-  (State : Set)
-  (step : State → State)
-  (orbit : Nat → State)
-  (limit : State)
-  (Converges : (Nat → State) → State → Set) : Set₁ where
-  constructor fixedPointExistenceFromConvergence
-  field
-    witness :
-      TopologicalConvergenceWitness
-        State step orbit limit Converges
-
-fixedPoint-from-convergence :
-  ∀ {State : Set}
-  {step : State → State}
-  {orbit : Nat → State}
-  {limit : State}
-  {Converges : (Nat → State) → State → Set} →
-  FixedPointExistenceFromConvergence
-    State step orbit limit Converges →
-  Σ State (λ s → step s ≡ s)
-fixedPoint-from-convergence closure =
-  limit ,
-  topologicalConvergenceFixedPoint
-    (FixedPointExistenceFromConvergence.witness closure)
-
-isomorphismFixedPointTransport :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B)
-  (f : A → A)
-  (g : B → B) →
-  (∀ a → to iso (f a) ≡ g (to iso a)) →
-  ∀ a →
-  f a ≡ a →
-  g (to iso a) ≡ to iso a
-isomorphismFixedPointTransport iso f g stepConjugacy a fixedPoint =
-  trans
-    (sym (stepConjugacy a))
-    (isomorphismEqualityTransport iso fixedPoint)
-
-isomorphismIterateFixedPointTransport :
-  ∀ {A B : Set}
-  (iso : StateIsomorphism A B)
-  (f : A → A)
-  (g : B → B) →
-  (∀ a → to iso (f a) ≡ g (to iso a)) →
-  ∀ n a →
-  iterateIsomorphism f n a ≡ a →
-  iterateIsomorphism g n (to iso a) ≡ to iso a
-isomorphismIterateFixedPointTransport
-  iso f g stepConjugacy n a fixedPoint =
-  trans
-    (sym
-      (isomorphismIterateConjugacy
-        iso f g stepConjugacy n a))
-    (isomorphismEqualityTransport iso fixedPoint)
-
-record TransportedFixedPointExistence
-  (A B : Set)
-  (f : A → A)
-  (g : B → B)
-  (iso : StateIsomorphism A B) : Set₁ where
-  constructor transportedFixedPointExistence
-  field
-    stepConjugacy :
-      ∀ a → to iso (f a) ≡ g (to iso a)
-    sourceWitness :
-      Σ A (λ a → f a ≡ a)
-
-transportedFixedPointExistence-witness :
-  ∀ {A B : Set}
-  {f : A → A}
-  {g : B → B}
-  {iso : StateIsomorphism A B} →
-  TransportedFixedPointExistence A B f g iso →
-  Σ B (λ b → g b ≡ b)
-transportedFixedPointExistence-witness closure =
-  let
-    source = TransportedFixedPointExistence.sourceWitness closure
-    a = proj₁ source
-    fixedPoint = proj₂ source
-  in
-  to iso a ,
-  isomorphismFixedPointTransport
-    iso
-    f
-    g
-    (TransportedFixedPointExistence.stepConjugacy closure)
-    a
-    fixedPoint
-
-record EquilibriumFixedPointClosure
-  (State : Set)
-  (step : State → State)
-  (Equilibrium : State → Set) : Set₁ where
-  constructor equilibriumFixedPointClosure
-  field
-    equilibriumFromFixedPoint :
-      ∀ s → step s ≡ s → Equilibrium s
-
-equilibrium-from-fixed-point :
-  ∀ {State : Set}
-  {step : State → State}
-  {Equilibrium : State → Set} →
-  EquilibriumFixedPointClosure State step Equilibrium →
-  Σ State (λ s → step s ≡ s) →
-  Σ State (λ s → Equilibrium s)
-equilibrium-from-fixed-point closure witness =
-  proj₁ witness ,
-  EquilibriumFixedPointClosure.equilibriumFromFixedPoint
-    closure
-    (proj₁ witness)
-    (proj₂ witness)
-
-economicEquilibriumExistenceFromConvergentFixedPoint :
-  ∀ {State : Set}
-  {step : State → State}
-  {orbit : Nat → State}
-  {limit : State}
-  {Converges : (Nat → State) → State → Set}
-  {Equilibrium : State → Set} →
-  FixedPointExistenceFromConvergence
-    State step orbit limit Converges →
-  EquilibriumFixedPointClosure State step Equilibrium →
-  Σ State (λ s → Equilibrium s)
-economicEquilibriumExistenceFromConvergentFixedPoint closure equilibriumClosure =
-  equilibrium-from-fixed-point
-    equilibriumClosure
-    (fixedPoint-from-convergence closure)
-
-
-------------------------------------------------------------------------
--- PE is an information condition, not a boundedness corollary. The
--- canonical repository currently has no formal Gramian/vector-space
--- stochastic layer, so the pre-graphed theorem is an explicit contract
--- requiring PE as an additional premise rather than pretending that
--- Int8 boundedness proves it.
-------------------------------------------------------------------------
-
-record CanonicalPersistentExcitationRequirementTheorem : Set₁ where
-  constructor canonicalPersistentExcitationRequirementTheorem
-  field
-    boundednessIsNotPE :
-      ⊤
-    peMustBeSuppliedSeparately :
-      ⊤
 
 canonical-persistent-excitation-requirement-theorem :
   CanonicalPersistentExcitationRequirementTheorem
@@ -4254,48 +2834,6 @@ record StrictFunctionClassSeparation
     witnessNotInBase :
       ¬ FBase witness
 
-strictFunctionClassSeparation-implies-inclusion :
-  ∀ {Input Output : Set}
-    {FBase FFull : (Input → Output) → Set₁} →
-  StrictFunctionClassSeparation Input Output FBase FFull →
-  (∀ {f : Input → Output} → FBase f → FFull f)
-strictFunctionClassSeparation-implies-inclusion separation
-  = FunctionClassInclusion.include
-      (StrictFunctionClassSeparation.inclusion separation)
-
-record CanonicalStrictNeuralFunctionClassSeparationContract
-  (Input Output : Set)
-  (FBase FFull : (Input → Output) → Set₁) : Set₁ where
-  constructor canonicalStrictNeuralFunctionClassSeparationContract
-  field
-    connectedComposition :
-      CanonicalFullLearnerConnectedScanConjugacyTheorem
-    separation :
-      StrictFunctionClassSeparation Input Output FBase FFull
-
-------------------------------------------------------------------------
--- End of strict separation contracts.
-
-------------------------------------------------------------------------
--- Literature-aligned strict separation: finite-state recurrence versus
--- an unbounded aperiodic recurrent clock trace.
---
--- The repository's native negative theorems do not define a route-specific
--- sign/optimizer-affine function class. What they do prove exactly is an
--- unbounded Nat-indexed recurrent trace, together with finite-factor and
--- no-cycle consequences. This is the algebraic separation axis closest to
--- the formal literature on rational/finite-state recurrence versus richer
--- recurrent state expressivity.
--- End literature-aligned strict separation completion.
-
-------------------------------------------------------------------------
--- Conditional SIMD/work-span theorem for the exact recurrent prefix scan.
---
--- The scan algebra is exact because it is built from endomorphism
--- composition. Complexity is conditional: topology, conjugacy, and
--- left-invertibility do not themselves imply parallel speedup.
-------------------------------------------------------------------------
-
 twoPow : Nat → Nat
 twoPow zero = suc zero
 twoPow (suc k) = twoPow k + twoPow k
@@ -4364,43 +2902,6 @@ record ParallelPrefixComplexityCertificate
         EfficientOperatorMonoidRepresentation.scanWork
           monoidRepresentation h
 
-parallelPrefixComplexityCertificate-bound :
-  ∀ {State Input : Set}
-  (certificate :
-    ParallelPrefixComplexityCertificate State Input)
-  (h : Nat) →
-  ParallelPrefixComplexityCertificate.totalSpan certificate h
-  ≤
-  EfficientOperatorMonoidRepresentation.representationSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-  + EfficientOperatorMonoidRepresentation.compositionSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-  + EfficientOperatorMonoidRepresentation.compositionSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
-  + EfficientOperatorMonoidRepresentation.decodingSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-parallelPrefixComplexityCertificate-bound certificate h =
-  subst
-    (λ n →
-      n
-      ≤
-      EfficientOperatorMonoidRepresentation.representationSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-      + EfficientOperatorMonoidRepresentation.compositionSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-      + EfficientOperatorMonoidRepresentation.compositionSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
-      + EfficientOperatorMonoidRepresentation.decodingSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate))
-    (ParallelPrefixComplexityCertificate.totalSpan-definition certificate h)
-    (≤-refl _)
-
-------------------------------------------------------------------------
--- A genuine O(log H) statement is represented by a doubling-scale
--- certificate: whenever H is below 2^k, scan span is bounded linearly
--- in k, with constants independent of H.
-------------------------------------------------------------------------
-
 record LogarithmicScanSpanCertificate
   (State Input : Set) : Set₁ where
   constructor logarithmicScanSpanCertificate
@@ -4460,217 +2961,6 @@ record LogarithmicPrefixScanComplexityTheorem
         + representationOverhead
         + decodingOverhead
 
-horizonSpan-logarithmic-bound :
-  ∀ {State Input : Set}
-  (certificate :
-    LogarithmicPrefixScanComplexityTheorem State Input)
-  (k h : Nat) →
-  h ≤ twoPow k →
-  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
-  ≤
-  LogarithmicScanSpanCertificate.coefficient
-      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
-  + LogarithmicScanSpanCertificate.additive
-      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
-  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
-horizonSpan-logarithmic-bound certificate k h hk =
-  subst
-    (λ n →
-      n
-      ≤
-      LogarithmicScanSpanCertificate.coefficient
-          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
-      + LogarithmicScanSpanCertificate.additive
-          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-      + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
-      + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate)
-    (LogarithmicPrefixScanComplexityTheorem.horizonSpan-definition certificate h)
-    (nat-plus-right-mono
-      (nat-plus-right-mono
-        (LogarithmicScanSpanCertificate.scanSpan-bound
-          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-          k
-          h
-          hk)
-        (LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate))
-      (LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate))
-
-canonicalConnectedComposition-parallelPrefixComplexity-contract :
-  (certificate :
-    LogarithmicPrefixScanComplexityTheorem
-      C.GRUState
-      C.Int8)
-  (k h : Nat) →
-  h ≤ twoPow k →
-  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
-  ≤
-  LogarithmicScanSpanCertificate.coefficient
-      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
-  + LogarithmicScanSpanCertificate.additive
-      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
-  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
-canonicalConnectedComposition-parallelPrefixComplexity-contract =
-  horizonSpan-logarithmic-bound
-
-------------------------------------------------------------------------
--- Computational-theoretic boundary:
--- exact prefix algebra is proved on the repository surface. O(log H) SIMD
--- span is a conditional algorithmic theorem until the concrete operator-cost,
--- representation/decoding, and doubling-scale scan certificate are supplied.
--- Exactness, conjugacy, and left-invertibility alone do not supply a
--- parallel schedule or a speedup theorem.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- F4-Watkins is the sole custom optimizer boundary.
---
--- Regret is a genuine finite-horizon/time-indexed cumulative quantity:
--- R 0 = 0 and R (H + 1) = R H + r H.  The theorem then bounds R H
--- pointwise for every finite horizon H.  No standalone Lion/KKT/FW theorem
--- is retained.
-------------------------------------------------------------------------
-
-record F4FrankWolfeRoundingBiasRegretData : Set₁ where
-  constructor f4FrankWolfeRoundingBiasRegretData
-  field
-    perRoundRegret : Nat → Nat
-    cumulativeRegret : Nat → Nat
-    jensenGap : Nat → Nat
-    roundingBias : Nat → Nat
-    frankWolfeResidual : Nat → Nat
-    markovMixing : Nat → Nat
-
-    cumulativeZero :
-      cumulativeRegret zero ≡ zero
-
-    cumulativeStep :
-      ∀ H →
-      cumulativeRegret (suc H)
-      ≡
-      cumulativeRegret H + perRoundRegret H
-
-    regretBoundAt :
-      ∀ H →
-      cumulativeRegret H
-      ≤
-      jensenGap H
-      + roundingBias H
-      + frankWolfeResidual H
-      + markovMixing H
-
-open F4FrankWolfeRoundingBiasRegretData public
-
-f4-frank-wolfe-horizon-regret-bound :
-  (D : F4FrankWolfeRoundingBiasRegretData) →
-  ∀ H →
-  cumulativeRegret D H
-  ≤
-  jensenGap D H
-  + roundingBias D H
-  + frankWolfeResidual D H
-  + markovMixing D H
-f4-frank-wolfe-horizon-regret-bound D H =
-  regretBoundAt D H
-
-record ConnectedF4FrankWolfeRoundingBiasRegretTheorem : Set₁ where
-  constructor connectedF4FrankWolfeRoundingBiasRegretTheorem
-  field
-    f4Composition :
-      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-    certificate :
-      F4FrankWolfeRoundingBiasRegretData
-    connectedBound :
-      ∀ H →
-      cumulativeRegret certificate H
-      ≤
-      jensenGap certificate H
-      + roundingBias certificate H
-      + frankWolfeResidual certificate H
-      + markovMixing certificate H
-
-open ConnectedF4FrankWolfeRoundingBiasRegretTheorem public
-
-connected-f4-frank-wolfe-horizon-regret-theorem :
-  (C : ConnectedF4FrankWolfeRoundingBiasRegretTheorem) →
-  ∀ H →
-  cumulativeRegret (certificate C) H
-  ≤
-  jensenGap (certificate C) H
-  + roundingBias (certificate C) H
-  + frankWolfeResidual (certificate C) H
-  + markovMixing (certificate C) H
-connected-f4-frank-wolfe-horizon-regret-theorem C H =
-  connectedBound C H
-
-
-------------------------------------------------------------------------
--- Promotion boundary:
--- the Jensen/minimax regret surface is not a standalone optimizer theorem.
--- It is graph-complete only through the recurrent scan and the stationary
--- Markov fixed-point/Walrasian interface. A concrete Jensen inequality,
--- rounding model, and stationary-law witness remain required before this
--- becomes a proved numeric regret theorem.
-------------------------------------------------------------------------
-
-
-------------------------------------------------------------------------
-
--- Maxwell/Hodge exact representation seam.
---
--- This family is now carrier-polymorphic. The GRU carrier is an arbitrary
--- set supplied by the exact representation certificate; no finite cardinality
--- or Nat-sized state enumeration is assumed. Continuous differential-form
--- semantics are represented by explicit continuity predicates, so the theorem
--- is an exact conditional representation schema rather than an assertion that
--- every physical Maxwell solution space is automatically representable.
-------------------------------------------------------------------------
-
-record TsallisDivergenceStructure (Carrier : Set) : Set₁ where
-  constructor tsallisDivergenceStructure
-  field
-    Value : Set
-    divergence : Carrier → Carrier → Value
-    divergenceStep : Value → Value
-
-open TsallisDivergenceStructure public
-
-record MaxwellExactConjugacyData
-  (Carrier State : Set) : Set₁ where
-  constructor maxwellExactConjugacyData
-  field
-    maxwellAdmissible : State → Set
-    step : State → State
-    encodedStep : Carrier → Carrier
-    encode : State → Carrier
-    decode : Carrier → State
-
-    decodeEncode :
-      ∀ x → decode (encode x) ≡ x
-
-    encodeDecode :
-      ∀ x → encode (decode x) ≡ x
-
-    maxwellClosed :
-      ∀ {x} → maxwellAdmissible x → maxwellAdmissible (step x)
-
-    conjugacy :
-      ∀ x → encode (step x) ≡ encodedStep (encode x)
-
-    divergenceStructure :
-      TsallisDivergenceStructure Carrier
-
-    divergenceTransport :
-      ∀ x y →
-      divergence (divergenceStructure) (encode x) (encode y)
-      ≡
-      divergence (divergenceStructure)
-        (encode (step x))
-        (encode (step y))
-
-open MaxwellExactConjugacyData public
-
 maxwellStateIsomorphism :
   ∀ {Carrier State : Set} →
   MaxwellExactConjugacyData Carrier State →
@@ -4703,81 +2993,6 @@ record ConnectedMaxwellTsallisExactConjugacyTheorem
 
 open ConnectedMaxwellTsallisExactConjugacyTheorem public
 
-connected-maxwell-tsallis-exact-conjugacy-theorem :
-  ∀ {Carrier State : Set} →
-  ConnectedMaxwellTsallisExactConjugacyTheorem Carrier State →
-  ∀ x →
-  encode (semantics _) (step (semantics _) x)
-  ≡
-  encodedStep (semantics _) (encode (semantics _) x)
-connected-maxwell-tsallis-exact-conjugacy-theorem C =
-  exactMaxwellConjugacy C
-
-------------------------------------------------------------------------
--- Exact continuous differential Hodge-Maxwell representation.
---
--- The Maxwell source semantics are the differential-form equations
---   d F = 0
---   d (star F) = j
--- on the supplied exact form/state objects. No finite state enumeration is
--- assumed. The encode/decode pair is an explicit global StateIsomorphism to
--- the supplied GRU carrier, and the continuity predicate is an explicit
--- proof obligation rather than an inferred property.
-------------------------------------------------------------------------
-
-record ContinuousHodgeMaxwellExactRepresentationData
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor continuousHodgeMaxwellExactRepresentationData
-  field
-    Form2 : Set
-    FormStar : Set
-    Form3 : Set
-    d : Form2 → Form3
-    star : Form2 → FormStar
-    dStar : FormStar → Form3
-    zero3 : Form3
-
-    Solution : Set
-    fieldF : Solution → Form2
-    fieldJ : Solution → Form3
-
-    maxwellEquation :
-      ∀ s →
-      (d (fieldF s) ≡ zero3) ×
-      (dStar (star (fieldF s)) ≡ fieldJ s)
-
-    step : Solution → Solution
-    gruStep : GRU → GRU
-    encode : Solution → GRU
-    decode : GRU → Solution
-
-    decodeEncode :
-      ∀ s → decode (encode s) ≡ s
-
-    encodeDecode :
-      ∀ g → encode (decode g) ≡ g
-
-    maxwellClosed :
-      ∀ s →
-      maxwellEquation (step s)
-
-    conjugacy :
-      ∀ s →
-      encode (step s) ≡ gruStep (encode s)
-
-    continuousD : Continuous d
-    continuousStar : Continuous star
-    continuousDStar : Continuous dStar
-    continuousFieldF : Continuous fieldF
-    continuousFieldJ : Continuous fieldJ
-    continuousStep : Continuous step
-    continuousGRUStep : Continuous gruStep
-    continuousEncode : Continuous encode
-    continuousDecode : Continuous decode
-
-open ContinuousHodgeMaxwellExactRepresentationData public
-
 continuousHodgeMaxwell-state-isomorphism :
   ∀ {GRU : Set}
   {Continuous : {A B : Set} → (A → B) → Set}
@@ -4789,381 +3004,6 @@ continuousHodgeMaxwell-state-isomorphism D =
     (decode D)
     (decodeEncode D)
     (encodeDecode D)
-
-continuousHodgeMaxwell-global-encode-injective :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
-  ∀ {x y} →
-  encode D x ≡ encode D y →
-  x ≡ y
-continuousHodgeMaxwell-global-encode-injective D {x} {y} eq =
-  trans
-    (sym (decodeEncode D x))
-    (trans
-      (cong (decode D) eq)
-      (decodeEncode D y))
-
-record ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedContinuousHodgeMaxwellGRURepresentationTheorem
-  field
-    semantics :
-      ContinuousHodgeMaxwellExactRepresentationData GRU
-
-    globalStateIsomorphism :
-      StateIsomorphism
-        (Solution semantics)
-        GRU
-
-    exactGRUStepRepresentation :
-      ∀ s →
-      to globalStateIsomorphism (step semantics s)
-      ≡
-      gruStep semantics
-        (to globalStateIsomorphism s)
-
-    exactFieldEquations :
-      ∀ s →
-      maxwellEquation semantics s
-
-    globalEncodeInjective :
-      ∀ {x y} →
-      encode semantics x ≡ encode semantics y →
-      x ≡ y
-
-connected-continuous-hodge-maxwell-gru-representation-theorem :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
-  ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU
-connected-continuous-hodge-maxwell-gru-representation-theorem D =
-  connectedContinuousHodgeMaxwellGRURepresentationTheorem
-    D
-    (continuousHodgeMaxwell-state-isomorphism D)
-    (λ s → conjugacy D s)
-    (λ s → maxwellEquation D s)
-    (continuousHodgeMaxwell-global-encode-injective D)
-
-------------------------------------------------------------------------
--- A discontinuous GRU step is a direct impossibility boundary for this
--- exact continuous Hodge-Maxwell representation family. The theorem is
--- conditional on the same explicit Continuity predicate used by the
--- representation certificate; it does not assert a universal continuity
--- theorem for arbitrary GRU architectures.
-------------------------------------------------------------------------
-
-hodgeMaxwell-discontinuous-gru-refutes-connected-representation :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
-  ¬ Continuous (gruStep D) →
-  ¬ ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-      GRU
-hodgeMaxwell-discontinuous-gru-refutes-connected-representation D notContinuous =
-  λ representation →
-    notContinuous
-      (continuousGRUStep (semantics representation))
-
-------------------------------------------------------------------------
--- Fully connected Hodge-Maxwell / GRU / F4 / Watkins extraction seam.
---
--- This is deliberately a bridge theorem, not a synthetic conjunction:
--- the carrier map between the exact learner state and the Hodge-Maxwell
--- solution carrier, its inverse laws, and its step-conjugacy law are
--- explicit premises.  Once supplied, the e-graph can extract one exact
--- recurrent representation carrying both the Hodge-Maxwell semantics and
--- the already-proved F4/Watkins composition.
-------------------------------------------------------------------------
-
-record ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-  field
-    hodgeMaxwell :
-      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-        GRU
-
-    f4Watkins :
-      ConnectedF4FrankWolfeRoundingBiasRegretTheorem
-
-    eGraphAStarClosure :
-      CanonicalEndogenousEGraphAStarTransportClosureTheorem
-
-    learnerKernel :
-      C.CanonicalFullLearnerKernel
-
-    learnerToSolution :
-      C.CanonicalFullLearnerState →
-      ContinuousHodgeMaxwellExactRepresentationData.Solution
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          hodgeMaxwell)
-
-    solutionToLearner :
-      ContinuousHodgeMaxwellExactRepresentationData.Solution
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          hodgeMaxwell) →
-      C.CanonicalFullLearnerState
-
-    learnerSolutionLeftInverse :
-      ∀ s →
-      solutionToLearner (learnerToSolution s) ≡ s
-
-    learnerSolutionRightInverse :
-      ∀ q →
-      learnerToSolution (solutionToLearner q) ≡ q
-
-    learnerStepConjugacy :
-      ∀ s →
-      learnerToSolution (C.canonicalFullStep (learnerKernel C) s)
-      ≡
-      ContinuousHodgeMaxwellExactRepresentationData.step
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          hodgeMaxwell)
-        (learnerToSolution s)
-
-    eGraphEqualityComposition :
-      ∀ {A : Set} {x y z : A} →
-      x ≡ y →
-      y ≡ z →
-      EqualityCompositionTheorem
-
-open ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
-
-------------------------------------------------------------------------
--- Carrier-agnostic global learner injectivity promoted from the exact
--- Hodge-Maxwell/F4/Watkins bridge.
-------------------------------------------------------------------------
-
-record ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-  field
-    connected :
-      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-        GRU
-
-    learnerGlobalEncodeInjective :
-      ∀ {s t : C.CanonicalFullLearnerState} →
-      ContinuousHodgeMaxwellExactRepresentationData.encode
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          (hodgeMaxwell connected))
-        (learnerToSolution connected s)
-      ≡
-      ContinuousHodgeMaxwellExactRepresentationData.encode
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          (hodgeMaxwell connected))
-        (learnerToSolution connected t) →
-      s ≡ t
-
-open ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem public
-
-connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (connected :
-    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-      GRU) →
-  ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-    GRU
-connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
-  connected =
-  connectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-    connected
-    (λ {s} {t} eq →
-      trans
-        (sym (learnerSolutionLeftInverse connected s))
-        (trans
-          (cong (solutionToLearner connected)
-            (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-              .globalEncodeInjective
-              (hodgeMaxwell connected)
-              eq))
-          (learnerSolutionLeftInverse connected t)))
-
-------------------------------------------------------------------------
--- Unified carrier-promotion certificate.
---
--- Finite-coordinate and infinite-dimensional representations are both
--- instances of the same exact carrier-promotion surface. The promotion
--- carries a semantic witness, an explicit target carrier, and an exact
--- StateIsomorphism. No particular dimension model is privileged here.
-------------------------------------------------------------------------
-
-record HodgeMaxwellCarrierPromotion (Solution : Set) : Set₁ where
-  constructor hodgeMaxwellCarrierPromotion
-  field
-    property : Set₁
-    witness : property
-    targetCarrier : Set
-    exactCarrierIsomorphism :
-      StateIsomorphism Solution targetCarrier
-
-open HodgeMaxwellCarrierPromotion public
-
-record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-  field
-    connected :
-      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU
-
-    carrierPromotion :
-      HodgeMaxwellCarrierPromotion
-        (ContinuousHodgeMaxwellExactRepresentationData.Solution
-          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-            (hodgeMaxwell connected)))
-
-    globalInjectivityComposition :
-      ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-        GRU
-
-open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem public
-
-connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-egraph-composition :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (connected :
-    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
-  (carrierPromotion :
-    HodgeMaxwellCarrierPromotion
-      (ContinuousHodgeMaxwellExactRepresentationData.Solution
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          (hodgeMaxwell connected)))) →
-  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-    GRU
-connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-egraph-composition
-  connected
-  carrierPromotion =
-  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-    connected
-    carrierPromotion
-    (connected-hodge-maxwell-gru-f4-watkins-global-encode-injectivity-composition
-      connected)
-
-record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-  field
-    carrierComposition :
-      ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-        GRU
-
-    exactGRUF4MaxwellStep :
-      ∀ s →
-      ContinuousHodgeMaxwellExactRepresentationData.encode
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          (hodgeMaxwell
-            (connected carrierComposition)))
-        (learnerToSolution
-          (connected carrierComposition)
-          (C.canonicalFullStep
-            (learnerKernel
-              (connected carrierComposition))
-            s))
-      ≡
-      ContinuousHodgeMaxwellExactRepresentationData.gruStep
-        (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-          (hodgeMaxwell
-            (connected carrierComposition)))
-        (ContinuousHodgeMaxwellExactRepresentationData.encode
-          (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-            (hodgeMaxwell
-              (connected carrierComposition)))
-          (learnerToSolution
-            (connected carrierComposition)
-            s))
-
-open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem public
-
-connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (carrierComposition :
-    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-      GRU) →
-  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-    GRU
-connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition
-  carrierComposition =
-  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-    carrierComposition
-    (connected-hodge-maxwell-gru-f4-watkins-egraph-composition
-      (connected carrierComposition))
-
-------------------------------------------------------------------------
--- Fully connected continuous Hodge-Maxwell/F4/Watkins exact prefix +
--- horizon-regret + conjugacy extraction endpoint.
---
--- The endpoint consumes the existing exact prefix composition, the
--- horizon-indexed deterministic regret certificate, and the canonical
--- endogenous e-graph/A* closure.  No probability, measure, or convergence
--- theorem is inferred from the Nat-valued regret surface.
-------------------------------------------------------------------------
-
-record ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-  field
-    connected :
-      ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-        GRU
-
-    exactPrefixComposition :
-      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-
-    exactHorizonRegret :
-      ∀ H →
-      cumulativeRegret
-        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
-          (f4Watkins (connected))) H
-      ≤
-      jensenGap
-        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
-          (f4Watkins (connected))) H
-      + roundingBias
-        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
-          (f4Watkins (connected))) H
-      + frankWolfeResidual
-        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
-          (f4Watkins (connected))) H
-      + markovMixing
-        (ConnectedF4FrankWolfeRoundingBiasRegretTheorem.certificate
-          (f4Watkins (connected))) H
-
-    eGraphExtraction :
-      ∀ s → EqualityCompositionTheorem
-
-open ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
-
-connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (C :
-    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-      GRU) →
-  ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-    GRU
-connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition C =
-  connectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-    C
-    (f4Composition (f4Watkins C))
-    (connected-f4-frank-wolfe-horizon-regret-theorem (f4Watkins C))
-    (λ s → connected-hodge-maxwell-gru-f4-watkins-egraph-extract C s)
-
-------------------------------------------------------------------------
--- Unified end-to-end carrier-agnostic Hodge-Maxwell/F4/Watkins endpoint.
---
--- The finite/infinite distinction is now below one carrier-promotion
--- theorem. The exact prefix+horizon-regret endpoint is therefore shared
--- without duplicating its semantic proof by dimension case.
-------------------------------------------------------------------------
 
 record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
   (GRU : Set)
@@ -5187,156 +3027,6 @@ record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretC
         GRU
 
 open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
-
-connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (carrierComposition :
-    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-      GRU) →
-  ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-    GRU
-connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
-  carrierComposition =
-  connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-    carrierComposition
-    (connected-carrier-agnostic-hodge-maxwell-gru-f4-watkins-exact-step-composition
-      carrierComposition)
-    (connected-continuous-hodge-maxwell-gru-f4-watkins-exact-prefix-horizon-regret-conjugacy-egraph-composition
-      (connected carrierComposition))
-    (globalInjectivityComposition
-      (connected carrierComposition))
-
-------------------------------------------------------------------------
--- F4/NormPair/GRU global conjugacy + injectivity contract.
---
--- A projection from the full learner state to a GRU/F4/NormPair feature
--- carrier is not globally injective merely because each component is exact:
--- the full state also contains Watkins, LCB counts, q-log control/value, and
--- the clock.  Therefore the global theorem takes an explicit observation
--- inverse/conjugacy witness rather than manufacturing injectivity.
-------------------------------------------------------------------------
-
-record CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-  (Feature : Set)
-  (observe : C.CanonicalFullLearnerState → Feature)
-  (featureStep : Feature → Feature)
-  (inverse : Feature → C.CanonicalFullLearnerState) : Set₁ where
-  constructor canonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-  field
-    f4NormPairStability :
-      CanonicalF4NormPairSureStabilityCompositionTheorem
-
-    connectedScanConjugacy :
-      CanonicalFullLearnerConnectedScanConjugacyTheorem
-
-    globalConjugacy :
-      GlobalConjugacyEquivalence
-        C.CanonicalFullLearnerState
-        Feature
-        C.canonicalFullStep
-        observe
-        featureStep
-        inverse
-
-open CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem public
-
-canonical-f4-normPair-gru-global-injective :
-  ∀ {Feature : Set}
-  {observe : C.CanonicalFullLearnerState → Feature}
-  {featureStep : Feature → Feature}
-  {inverse : Feature → C.CanonicalFullLearnerState} →
-  CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-    Feature
-    observe
-    featureStep
-    inverse →
-  ∀ {s t : C.CanonicalFullLearnerState} →
-  observe s ≡ observe t →
-  s ≡ t
-canonical-f4-normPair-gru-global-injective witness eq =
-  trans
-    (sym (stateReconstruction (globalConjugacy witness _)))
-    (trans
-      (cong inverse eq)
-      (stateReconstruction (globalConjugacy witness _)))
-
-canonical-f4-normPair-gru-global-conjugacy :
-  ∀ {Feature : Set}
-  {observe : C.CanonicalFullLearnerState → Feature}
-  {featureStep : Feature → Feature}
-  {inverse : Feature → C.CanonicalFullLearnerState} →
-  CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-    Feature
-    observe
-    featureStep
-    inverse →
-  GlobalConjugacyEquivalence
-    C.CanonicalFullLearnerState
-    Feature
-    C.canonicalFullStep
-    observe
-    featureStep
-    inverse
-canonical-f4-normPair-gru-global-conjugacy witness =
-  globalConjugacy witness
-
-------------------------------------------------------------------------
--- GRU/F4 economic injectivity bridge.
---
--- The learner-side F4/NormPair/GRU observation and the economic global
--- square are kept as separate exact injectivity sources. The composition
--- exposes both witnesses together without pretending that F4 injectivity
--- alone proves an economic equilibrium statement.
-------------------------------------------------------------------------
-
-gruf4EconomicInjectivityFromGlobalSquare :
-  ∀ {Feature Economic GRU Equilibrium : Set}
-  {observe : C.CanonicalFullLearnerState → Feature}
-  {featureStep : Feature → Feature}
-  {inverse : Feature → C.CanonicalFullLearnerState}
-  {encode : Economic → GRU}
-  {readout : GRU → Economic}
-  {equilibriumMap : Economic → Equilibrium}
-  {carrierEquilibriumMap : GRU → Equilibrium}
-  {economicStep : Economic → Economic}
-  {gruStep : GRU → GRU} →
-  CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-    Feature
-    observe
-    featureStep
-    inverse →
-  MegaWalrasianGlobalSquareConjugacy
-    Economic
-    GRU
-    Equilibrium
-    encode
-    readout
-    equilibriumMap
-    carrierEquilibriumMap
-    economicStep
-    gruStep →
-  (∀ {s t : C.CanonicalFullLearnerState} →
-    observe s ≡ observe t →
-    s ≡ t)
-  ×
-  (∀ {x y : Economic} →
-    encode x ≡ encode y →
-    x ≡ y)
-gruf4EconomicInjectivityFromGlobalSquare
-  learnerWitness
-  economicSquare =
-  canonical-f4-normPair-gru-global-injective learnerWitness
-  , megaWalrasianGlobalSquare-injective economicSquare
-
-------------------------------------------------------------------------
--- Hodge-Maxwell middle-degree involution transport.
---
--- This theorem is now explicitly downstream of the carrier-polymorphic
--- continuous Hodge-Maxwell representation. Global injectivity into the GRU
--- carrier comes from the supplied StateIsomorphism; star-square=id still
--- requires the explicit GRU involution and observed factorization.
-------------------------------------------------------------------------
 
 record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
   (GRU : Set)
@@ -5397,56 +3087,6 @@ record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
 
 open HodgeMaxwellMiddleDegreeInvolutionTransportTheorem public
 
-hodgeMaxwell-middle-degree-involution :
-  ∀ {GRU : Set}
-  {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  {representation :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
-  {observe :
-    Solution (semantics representation) → Feature}
-  {inverse :
-    Feature → Solution (semantics representation)}
-  {embed :
-    Nat → Solution (semantics representation)}
-  {star :
-    Solution (semantics representation) →
-    Solution (semantics representation)}
-  {starGRU : GRU → GRU}
-  {observeGRU : GRU → Feature}
-  (witness :
-    HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-      GRU
-      representation
-      observe
-      inverse
-      embed
-      star
-      starGRU
-      observeGRU) →
-  ∀ s →
-  star (star s) ≡ s
-hodgeMaxwell-middle-degree-involution witness s =
-  continuousLeftInverse-injective
-    (observation witness)
-    (trans
-      (observeFactorization witness (star (star s)))
-      (trans
-        (cong observeGRU
-          (starConjugacy witness (star s)))
-        (trans
-          (cong observeGRU
-            (cong starGRU (starConjugacy witness s)))
-          (trans
-            (cong observeGRU
-              (gruInvolution witness
-                (to (globalStateIsomorphism representation) s)))
-            (sym (observeFactorization witness s)))))
-
-------------------------------------------------------------------------
--- Hodge-Maxwell/Tsallis divergence composition over the same arbitrary carrier.
-------------------------------------------------------------------------
-
 record ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
   (GRU : Set)
   {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
@@ -5462,337 +3102,11 @@ record ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
 
 open ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem public
 
-connected-hodge-maxwell-tsallis-divergence-composition-theorem :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H : ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (T :
-    ConnectedMaxwellTsallisExactConjugacyTheorem
-      GRU
-      (Solution (semantics H))) →
-  ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
-connected-hodge-maxwell-tsallis-divergence-composition-theorem H T =
-  connectedHodgeMaxwellTsallisDivergenceCompositionTheorem H T
-
-------------------------------------------------------------------------
--- Idempotent conjugacy transport is carrier-polymorphic.
-------------------------------------------------------------------------
-
-record IdempotentConjugacyTransportTheorem
-  (A B : Set)
-  (projectA : A → A)
-  (projectB : B → B)
-  (iso : StateIsomorphism A B) : Set₁ where
-  constructor idempotentConjugacyTransportTheorem
-  field
-    conjugacy :
-      ∀ a →
-      to iso (projectA a) ≡
-      projectB (to iso a)
-    sourceIdempotent :
-      ∀ a →
-      projectA (projectA a) ≡
-      projectA a
-
-idempotentConjugacyTransport :
-  ∀ {A B : Set}
-  {projectA : A → A}
-  {projectB : B → B}
-  {iso : StateIsomorphism A B} →
-  IdempotentConjugacyTransportTheorem
-    A
-    B
-    projectA
-    projectB
-    iso →
-  ∀ a →
-  projectB (projectB (to iso a)) ≡
-  projectB (to iso a)
-idempotentConjugacyTransport witness a =
-  trans
-    (sym (cong projectB (conjugacy witness a)))
-    (trans
-      (sym (conjugacy witness (projectA a)))
-      (trans
-        (cong (to iso) (sourceIdempotent witness a))
-        (conjugacy witness a)))
-
-record ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (project :
-    Solution (semantics H) → Solution (semantics H))
-  (projectGRU : GRU → GRU) : Set₁ where
-  constructor connectedHodgeMaxwellTsallisIdempotentProjectionTheorem
-  field
-    composition :
-      ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
-    transport :
-      IdempotentConjugacyTransportTheorem
-        (Solution (semantics H))
-        GRU
-        project
-        projectGRU
-        (globalStateIsomorphism H)
-    idempotent :
-      ∀ s → project (project s) ≡ project s
-
-connectedHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  {H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
-  {project :
-    Solution (semantics H) → Solution (semantics H)}
-  {projectGRU : GRU → GRU} →
-  ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU →
-  IdempotentConjugacyTransportTheorem
-    (Solution (semantics H))
-    GRU
-    project
-    projectGRU
-    (globalStateIsomorphism H) →
-  ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
-    GRU
-    H
-    project
-    projectGRU
-connectedHodgeMaxwellTsallisIdempotentProjectionTheorem-from-transport
-  composition
-  transport =
-  connectedHodgeMaxwellTsallisIdempotentProjectionTheorem
-    composition
-    transport
-    (idempotentConjugacyTransport transport)
-
-------------------------------------------------------------------------
--- Hodge-Maxwell/Tsallis/Walrasian projection bridge.
-------------------------------------------------------------------------
-
-record ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (State Price Allocation : Set)
-  (D :
-    ContinuousStationaryMarkovWalrasianData
-      State
-      Price
-      Allocation
-      Continuous)
-  (decode : Solution (semantics H) → Allocation) : Set₁ where
-  constructor connectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
-  field
-    hodgeTsallisProjection :
-      ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
-        GRU
-        H
-        project
-        projectGRU
-    walrasianExistence :
-      ConnectedGeneralizedWalrasianExistenceTheorem
-        State
-        Price
-        Allocation
-        D
-    equilibriumToFixedPoint :
-      ∀ {p : Price} {allocation : Allocation} →
-      GeneralizedWalrasianEquilibrium D p allocation →
-      Σ
-        (λ s →
-          project s ≡ s ×
-          decode s ≡ allocation)
-    fixedPointToEquilibrium :
-      ∀ {p : Price} (s : Solution (semantics H)) →
-      project s ≡ s →
-      GeneralizedWalrasianEquilibrium D p (decode s)
-
-------------------------------------------------------------------------
--- Local generalized Walrasian existence closure.
---
--- Once static Walrasian existence is supplied for every price, the existing
--- invariant aggregate and static-to-generalized lift produce a generalized
--- equilibrium for every price. No external regular-economy adapter is hidden
--- in this theorem; that cross-language step remains an explicit frontier.
-------------------------------------------------------------------------
-
-record ConnectedGeneralizedWalrasianExistenceTheorem
-  (State Price Allocation : Set)
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D :
-    ContinuousStationaryMarkovWalrasianData
-      State
-      Price
-      Allocation
-      Continuous) : Set₁ where
-  constructor connectedGeneralizedWalrasianExistenceTheorem
-  field
-    markovStationaryComposition :
-      MarkovStationaryWalrasianCompositionTheorem
-    staticExistence :
-      ∀ p →
-      Σ
-        (λ allocation →
-          staticWalrasian D p allocation)
-
-open ConnectedGeneralizedWalrasianExistenceTheorem public
-
-connected-generalized-walrasian-equilibrium-existence :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D :
-    ContinuousStationaryMarkovWalrasianData
-      State
-      Price
-      Allocation
-      Continuous)
-  (staticExistence :
-    ∀ p →
-    Σ
-      (λ allocation →
-        staticWalrasian D p allocation)) →
-  ∀ p →
-  Σ
-    (λ allocation →
-      GeneralizedWalrasianEquilibrium D p allocation)
-connected-generalized-walrasian-equilibrium-existence
-  D
-  staticExistence
-  p =
-  let
-    witness = staticExistence p
-  in
-  proj₁ witness ,
-  generalizedWalrasianEquilibrium-from-static
-    D
-    p
-    (proj₁ witness)
-    (proj₂ witness)
-
-connected-generalized-walrasian-existence-theorem :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D :
-    ContinuousStationaryMarkovWalrasianData
-      State
-      Price
-      Allocation
-      Continuous)
-  (staticExistence :
-    ∀ p →
-    Σ
-      (λ allocation →
-        staticWalrasian D p allocation)) →
-  ConnectedGeneralizedWalrasianExistenceTheorem
-    State
-    Price
-    Allocation
-    D
-connected-generalized-walrasian-existence-theorem
-  D
-  staticExistence =
-  connectedGeneralizedWalrasianExistenceTheorem
-    markov-stationary-walrasian-composition-theorem
-    staticExistence
-
-------------------------------------------------------------------------
--- Horizon monotonicity is not part of the F4 regret theorem by itself.
--- The cumulative recurrence proves exact accumulation only.  Monotonicity
--- requires a nonnegative per-round regret certificate.
-------------------------------------------------------------------------
-
 f4-add-right-nonnegative :
   ∀ (n m : Nat) → n ≤ n + m
 f4-add-right-nonnegative n zero = ≤-refl
 f4-add-right-nonnegative n (suc m) =
   s≤s (f4-add-right-nonnegative n m)
-
-f4-cumulative-regret-monotone :
-  ∀ (D : F4FrankWolfeRoundingBiasRegretData)
-  (nonnegative : ∀ H → zero ≤ perRoundRegret D H) →
-  ∀ H →
-  cumulativeRegret D H ≤ cumulativeRegret D (suc H)
-f4-cumulative-regret-monotone D nonnegative H =
-  subst
-    (λ q → cumulativeRegret D H ≤ q)
-    (sym (cumulativeStep D H))
-    (f4-add-right-nonnegative
-      (cumulativeRegret D H)
-      (perRoundRegret D H))
-
-
-------------------------------------------------------------------------
--- Hodge-Maxwell global injectivity boundary.
---
--- A concrete collision witness is incompatible with the exact connected
--- carrier-polymorphic representation certificate, whose global encoder
--- is already required to be injective.  This is the narrow negative
--- boundary: a purported non-injective Hodge-Maxwell variant cannot also
--- inhabit the exact connected representation theorem.
-------------------------------------------------------------------------
-
-record GlobalEncodeCollisionWitness
-  (Solution GRU : Set)
-  (encode : Solution → GRU) : Set₁ where
-  constructor globalEncodeCollisionWitness
-  field
-    x : Solution
-    y : Solution
-    distinct : x ≢ y
-    collision : encode x ≡ encode y
-
-open GlobalEncodeCollisionWitness public
-
-hodgeMaxwell-globalEncodeCollision-impossible :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-      GRU {Continuous = Continuous}) →
-  GlobalEncodeCollisionWitness
-    (Solution (semantics H))
-    GRU
-    (encode (semantics H)) →
-  ⊥
-hodgeMaxwell-globalEncodeCollision-impossible H witness =
-  distinct witness
-    (globalEncodeInjective
-      (semantics H)
-      (collision witness))
-
-hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-      GRU {Continuous = Continuous}) →
-  GlobalEncodeCollisionWitness
-    (Solution (semantics H))
-    GRU
-    (encode (semantics H)) →
-  ¬ (∀ {x y} →
-      encode (semantics H) x ≡
-      encode (semantics H) y →
-      x ≡ y)
-hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
-  H witness =
-  λ _ →
-    hodgeMaxwell-globalEncodeCollision-impossible H witness
-
-
-------------------------------------------------------------------------
--- Mega-generalized Walrasian / KKT / Arrow-Debreu equilibrium contract.
---
--- This is the single generalized equilibrium dependency exposed to the
--- connected GRU/Hodge-Maxwell/Tsallis composition. Named Walrasian,
--- Arrow-Debreu, and KKT presentations are intentionally collapsed into one
--- generalized characterization predicate over the aggregate carrier.
--- No finite-dimensional, continuity, differentiability, convexity, or
--- Vec/Fin specialization is built into the edge.
-------------------------------------------------------------------------
 
 record MegaGeneralizedWalrasianEquilibrium
   (State Price Allocation : Set) : Set₁ where
@@ -5886,585 +3200,6 @@ record FiniteNonIIDGeneralizedEquilibrium
       sumNat (map (λ i → allocation i g) agents) ≡
       sumNat (map (λ i → endowment i g) agents)
 
-finiteNonIIDGeneralizedData :
-  ∀ {Agent Good : Set}
-  (agents : List Agent)
-  (goods : List Good)
-  (utility : Agent → (Good → Nat) → Nat)
-  (endowment : Agent → Good → Nat)
-  (witness : FiniteNonIIDWalrasianEquilibrium Agent Good agents goods utility endowment) →
-  GeneralizedWalrasianData
-    Agent
-    Good
-    (Good → Nat)
-    (Agent → Good → Nat)
-finiteNonIIDGeneralizedData
-  agents goods utility endowment witness =
-  generalizedWalrasianData
-    (λ i → Set)
-    (FiniteNonIIDPreference utility)
-    (λ p i bundle →
-      BudgetFeasible goods p (endowment i) bundle)
-    (λ allocation →
-      ∀ g →
-      sumNat (map (λ i → allocation i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents))
-    (λ p allocation →
-      FiniteNonIIDGeneralizedEquilibrium
-        Agent
-        Good
-        agents
-        goods
-        utility
-        endowment
-        p
-        allocation)
-    (λ p allocation →
-      FiniteNonIIDGeneralizedEquilibrium
-        Agent
-        Good
-        agents
-        goods
-        utility
-        endowment
-        p
-        allocation)
-    (λ {p} {a} equilibriumWitness →
-      equilibriumWitness)
-
-finiteNonIIDWalrasian-lifts-to-generalized :
-  ∀ {Agent Good : Set}
-  {agents : List Agent}
-  {goods : List Good}
-  {utility : Agent → (Good → Nat) → Nat}
-  {endowment : Agent → Good → Nat}
-  (witness :
-    FiniteNonIIDWalrasianEquilibrium
-      Agent Good agents goods utility endowment) →
-  GeneralizedWalrasianExistence
-    Agent
-    Good
-    (Good → Nat)
-    (Agent → Good → Nat)
-    (finiteNonIIDGeneralizedData
-      agents goods utility endowment witness)
-finiteNonIIDWalrasian-lifts-to-generalized witness =
-  generalizedWalrasianExistence
-    (price witness)
-    (allocation witness)
-    (finiteNonIIDGeneralizedEquilibrium
-      (budgetOptimal witness)
-      (marketClearing witness))
-    (finiteNonIIDGeneralizedEquilibrium
-      (budgetOptimal witness)
-      (marketClearing witness))
-    
-
-record GeneralizedWalrasianExistence
-  (Agent Commodity Price Allocation : Set)
-  (D : GeneralizedWalrasianData Agent Commodity Price Allocation) : Set₁ where
-  constructor generalizedWalrasianExistence
-  field
-    equilibriumPrice : Price
-    equilibriumAllocation : Allocation
-    equilibriumWitness :
-      equilibrium D equilibriumPrice equilibriumAllocation
-    characterizationCorollary :
-      characterization D equilibriumPrice equilibriumAllocation
-
-open GeneralizedWalrasianExistence public
-
-generalizedWalrasianExistence-from-witness :
-  ∀ {Agent Commodity Price Allocation : Set}
-  {D : GeneralizedWalrasianData Agent Commodity Price Allocation}
-  (p : Price)
-  (a : Allocation)
-  (e : equilibrium D p a) →
-  GeneralizedWalrasianExistence Agent Commodity Price Allocation D
-generalizedWalrasianExistence-from-witness
-  p a e =
-  generalizedWalrasianExistence
-    p
-    a
-    e
-    (characterizationFromEquilibrium D e)
-
-
-------------------------------------------------------------------------
--- Economic existence closure through the existing topological/fixed-point
--- surface.  This is intentionally conditional: convergence and the
--- fixed-point-to-equilibrium bridge are explicit premises.
-------------------------------------------------------------------------
-
-record GeneralizedWalrasianFixedPointClosure
-  (Agent Commodity Price Allocation : Set)
-  (D : GeneralizedWalrasianData Agent Commodity Price Allocation)
-  (p : Price)
-  (step : Allocation → Allocation) : Set₁ where
-  constructor generalizedWalrasianFixedPointClosure
-  field
-    equilibriumFromFixedPoint :
-      ∀ a →
-      step a ≡ a →
-      equilibrium D p a
-
-open GeneralizedWalrasianFixedPointClosure public
-
-generalizedWalrasianExistence-from-topological-fixed-point :
-  ∀ {Agent Commodity Price Allocation : Set}
-  {D : GeneralizedWalrasianData Agent Commodity Price Allocation}
-  {p : Price}
-  {step : Allocation → Allocation}
-  {orbit : Nat → Allocation}
-  {limit : Allocation}
-  {Converges : (Nat → Allocation) → Allocation → Set} →
-  TopologicalConvergenceWitness
-    Allocation
-    step
-    orbit
-    limit
-    Converges →
-  GeneralizedWalrasianFixedPointClosure
-    Agent
-    Commodity
-    Price
-    Allocation
-    D
-    p
-    step →
-  GeneralizedWalrasianExistence
-    Agent
-    Commodity
-    Price
-    Allocation
-    D
-generalizedWalrasianExistence-from-topological-fixed-point
-  topology equilibriumClosure =
-  let
-    fixedPoint =
-      fixedPoint-from-convergence
-        (fixedPointExistenceFromConvergence topology)
-    a = proj₁ fixedPoint
-    fixed = proj₂ fixedPoint
-  in
-  generalizedWalrasianExistence-from-witness
-    p
-    a
-    (equilibriumFromFixedPoint equilibriumClosure a fixed)
-
-------------------------------------------------------------------------
--- Exact representation transport closes the same existence route on an
--- isomorphic allocation carrier.  The proof reuses the existing
--- StateIsomorphism transport chain; no new topology or economic ontology
--- is introduced here.
-------------------------------------------------------------------------
-
-generalizedWalrasianExistence-from-topological-fixed-point-transport :
-  ∀ {A B Agent Commodity Price : Set}
-  {f : A → A}
-  {g : B → B}
-  {orbit : Nat → A}
-  {limit : A}
-  {Converges : (Nat → A) → A → Set}
-  {iso : StateIsomorphism A B}
-  {D : GeneralizedWalrasianData Agent Commodity Price B}
-  {p : Price} →
-  TopologicalConvergenceWitness
-    A
-    f
-    orbit
-    limit
-    Converges →
-  (∀ a → to iso (f a) ≡ g (to iso a)) →
-  GeneralizedWalrasianFixedPointClosure
-    Agent
-    Commodity
-    Price
-    B
-    D
-    p
-    g →
-  GeneralizedWalrasianExistence
-    Agent
-    Commodity
-    Price
-    B
-    D
-generalizedWalrasianExistence-from-topological-fixed-point-transport
-  topology stepConjugacy equilibriumClosure =
-  let
-    sourceFixedPoint =
-      fixedPoint-from-convergence
-        (fixedPointExistenceFromConvergence topology)
-    a = proj₁ sourceFixedPoint
-    fixed = proj₂ sourceFixedPoint
-    b = to iso a
-    targetFixed =
-      trans
-        (sym
-          (isomorphismIterateConjugacy
-            iso
-            f
-            g
-            stepConjugacy
-            (suc zero)
-            a))
-        (isomorphismEqualityTransport iso fixed)
-  in
-  generalizedWalrasianExistence-from-witness
-    p
-    b
-    (equilibriumFromFixedPoint equilibriumClosure b targetFixed)
-
-
-------------------------------------------------------------------------
--- POMDP-generalized Walrasian equilibrium.
---
--- POMDP semantics are kept explicit, while equilibrium only depends on the
--- aggregate/static/stationary witness.  Thus policy optimality, filtering,
--- probability convergence, and belief-state sufficiency are not smuggled
--- into the equilibrium theorem.
-------------------------------------------------------------------------
-
-record POMDPWalrasianData
-  (State Action Observation Distribution Reward Price Allocation : Set)
-  : Set₁ where
-  constructor pomdpWalrasianData
-  field
-    transition : State → Action → Distribution
-    observationKernel : State → Distribution
-    reward : State → Action → Reward
-    aggregate : (State → Allocation) → Allocation
-    staticWalrasian : Price → Allocation → Set
-
-open POMDPWalrasianData public
-
-record POMDPWalrasianEquilibrium
-  (State Action Observation Distribution Reward Price Allocation : Set)
-  (D :
-    POMDPWalrasianData
-      State Action Observation Distribution Reward Price Allocation)
-  (p : Price)
-  (allocation : State → Allocation) : Set₁ where
-  constructor pomdpWalrasianEquilibrium
-  field
-    staticEquilibrium :
-      staticWalrasian D p (aggregate D allocation)
-    stationaryAggregate :
-      aggregate D allocation ≡
-      aggregate D (λ s → allocation s)
-
-open POMDPWalrasianEquilibrium public
-
-pomdpWalrasian-from-static-and-stationary :
-  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
-  (D :
-    POMDPWalrasianData
-      State Action Observation Distribution Reward Price Allocation)
-  (p : Price)
-  (allocation : State → Allocation) →
-  staticWalrasian D p (aggregate D allocation) →
-  aggregate D allocation ≡ aggregate D (λ s → allocation s) →
-  POMDPWalrasianEquilibrium
-    State Action Observation Distribution Reward Price Allocation
-    D p allocation
-pomdpWalrasian-from-static-and-stationary
-  D p allocation static stationary =
-  pomdpWalrasianEquilibrium static stationary
-
-pomdpWalrasianData-from-continuous :
-  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D :
-    ContinuousStationaryMarkovWalrasianData
-      State Price Allocation Continuous)
-  (transition : State → Action → Distribution)
-  (observationKernel : State → Distribution)
-  (reward : State → Action → Reward) →
-  POMDPWalrasianData
-    State Action Observation Distribution Reward Price Allocation
-pomdpWalrasianData-from-continuous
-  D transition observationKernel reward =
-  pomdpWalrasianData
-    transition
-    observationKernel
-    reward
-    (aggregate D)
-    (staticWalrasian D)
-
-------------------------------------------------------------------------
--- Exact POMDP transport of the relaxed equilibrium surface.
---
--- The transport theorem consumes the existing exact POMDP carrier
--- isomorphisms and adds only the equilibrium-specific readout, aggregate,
--- static-equilibrium, and stationarity equations.  It does not infer
--- policy optimality or probabilistic convergence.
-------------------------------------------------------------------------
-
-record POMDPWalrasianTransport
-  (State Action Observation Distribution Reward Price Allocation : Set)
-  (StateRep ActionRep ObservationRep : Set)
-  (source :
-    POMDPWalrasianData
-      State Action Observation Distribution Reward Price Allocation)
-  (target :
-    POMDPWalrasianData
-      StateRep ActionRep ObservationRep Distribution Reward Price Allocation)
-  (stateIso : StateIsomorphism StateRep State)
-  (actionIso : StateIsomorphism ActionRep Action)
-  (observationIso : StateIsomorphism ObservationRep Observation)
-  (allocation : State → Allocation)
-  (allocationRep : StateRep → Allocation) : Set₁ where
-  constructor pomdpWalrasianTransport
-  field
-    pomdpTransport :
-      POMDPExactTransport
-        State Action Observation Distribution Reward
-        StateRep ActionRep ObservationRep
-        stateIso actionIso observationIso
-        (transition source)
-        (observationKernel source)
-        (reward source)
-    allocationReadout :
-      ∀ s →
-      allocationRep (to stateIso s) ≡ allocation s
-    aggregateAgreement :
-      aggregate target allocationRep ≡ aggregate source allocation
-    staticEquilibriumTransport :
-      ∀ p →
-      POMDPWalrasianEquilibrium
-        State Action Observation Distribution Reward Price Allocation
-        source p allocation →
-      staticWalrasian
-        target p
-        (aggregate target allocationRep)
-    stationarityTransport :
-      ∀ p →
-      POMDPWalrasianEquilibrium
-        State Action Observation Distribution Reward Price Allocation
-        source p allocation →
-      aggregate target allocationRep ≡
-      aggregate target
-        (λ s → allocationRep s)
-
-open POMDPWalrasianTransport public
-
-pomdpWalrasianTransport-preserves-equilibrium :
-  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
-  {StateRep ActionRep ObservationRep : Set}
-  {source :
-    POMDPWalrasianData
-      State Action Observation Distribution Reward Price Allocation}
-  {target :
-    POMDPWalrasianData
-      StateRep ActionRep ObservationRep Distribution Reward Price Allocation}
-  {stateIso : StateIsomorphism StateRep State}
-  {actionIso : StateIsomorphism ActionRep Action}
-  {observationIso : StateIsomorphism ObservationRep Observation}
-  {allocation : State → Allocation}
-  {allocationRep : StateRep → Allocation} →
-  (p : Price) →
-  POMDPWalrasianTransport
-    State Action Observation Distribution Reward Price Allocation
-    StateRep ActionRep ObservationRep
-    source target stateIso actionIso observationIso
-    allocation allocationRep →
-  POMDPWalrasianEquilibrium
-    State Action Observation Distribution Reward Price Allocation
-    source p allocation →
-  POMDPWalrasianEquilibrium
-    StateRep ActionRep ObservationRep Distribution Reward Price Allocation
-    target p allocationRep
-pomdpWalrasianTransport-preserves-equilibrium
-  p witness equilibrium =
-  pomdpWalrasianEquilibrium
-    (staticEquilibriumTransport witness p equilibrium)
-    (stationarityTransport witness p equilibrium)
-
-------------------------------------------------------------------------
--- POMDP belief/policy factorization is an explicit witness, not an implied
--- theorem.  The e-graph can now compose this node with equilibrium transport
--- without pretending that a belief state is automatically sufficient.
-------------------------------------------------------------------------
-
-record POMDPBeliefPolicyFactorization
-  (State Action Observation Distribution Allocation : Set)
-  (belief : Observation → Distribution)
-  (policy : Distribution → Action)
-  (allocation : State → Allocation) : Set₁ where
-  constructor pomdpBeliefPolicyFactorization
-  field
-    sufficientObservation : State → Observation
-    inducedAllocation : Observation → Allocation
-    chosenAction : State → Action
-    allocationFactorsThroughObservation :
-      ∀ s →
-      allocation s ≡ inducedAllocation (sufficientObservation s)
-    policyReadout :
-      ∀ s →
-      policy (belief (sufficientObservation s)) ≡ chosenAction s
-
-open POMDPBeliefPolicyFactorization public
-
-------------------------------------------------------------------------
--- This is the exact POMDP/equilibrium seam.  It consumes an explicit
--- sufficient-statistic/policy factorization rather than asserting one.
-------------------------------------------------------------------------
-
-record POMDPWalrasianBeliefEquilibriumClosure
-  (State Action Observation Distribution Reward Price Allocation : Set)
-  (D :
-    POMDPWalrasianData
-      State Action Observation Distribution Reward Price Allocation)
-  (p : Price)
-  (allocation : State → Allocation)
-  (belief : Observation → Distribution)
-  (policy : Distribution → Action)
-  (beliefPolicy :
-    POMDPBeliefPolicyFactorization
-      State Action Observation Distribution Allocation
-      belief
-      policy
-      allocation) : Set₁ where
-  constructor pomdpWalrasianBeliefEquilibriumClosure
-  field
-    equilibrium :
-      POMDPWalrasianEquilibrium
-        State Action Observation Distribution Reward Price Allocation
-        D p allocation
-    sufficientStatistic :
-      ∀ s →
-      allocation s ≡
-      inducedAllocation beliefPolicy
-        (sufficientObservation beliefPolicy s)
-
-pomdpWalrasianBeliefEquilibriumClosure-from-witness :
-  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
-  {D :
-    POMDPWalrasianData
-      State Action Observation Distribution Reward Price Allocation}
-  {p : Price}
-  {allocation : State → Allocation}
-  {belief : Observation → Distribution}
-  {policy : Distribution → Action}
-  (equilibrium :
-    POMDPWalrasianEquilibrium
-      State Action Observation Distribution Reward Price Allocation
-      D p allocation)
-  (beliefPolicy :
-    POMDPBeliefPolicyFactorization
-      State Action Observation Distribution Allocation
-      belief
-      policy
-      allocation) →
-  POMDPWalrasianBeliefEquilibriumClosure
-    State Action Observation Distribution Reward Price Allocation
-    D p allocation belief policy beliefPolicy
-pomdpWalrasianBeliefEquilibriumClosure-from-witness
-  equilibrium beliefPolicy =
-  pomdpWalrasianBeliefEquilibriumClosure
-    equilibrium
-    (allocationFactorsThroughObservation beliefPolicy)
-
-
-
-
-------------------------------------------------------------------------
--- Mega-interdependent GRU / Mega-Walrasian global-square completion.
---
--- The square is a single generalized equilibrium surface.  Arrow-Debreu,
--- KKT, and Walrasian labels are not separate semantic nodes.  The economic
--- state is encoded into the GRU carrier, read back exactly, and the square
--- commutes with the selected state dynamics.  Injectivity is derived from
--- the left-inverse law rather than postulated separately.
-------------------------------------------------------------------------
-
-record MegaWalrasianGlobalSquareConjugacy
-  (Economic GRU Equilibrium : Set)
-  (encode : Economic → GRU)
-  (readout : GRU → Economic)
-  (equilibriumMap : Economic → Equilibrium)
-  (carrierEquilibriumMap : GRU → Equilibrium)
-  (economicStep : Economic → Economic)
-  (gruStep : GRU → GRU) : Set₁ where
-  constructor megaWalrasianGlobalSquareConjugacy
-  field
-    readoutEncode :
-      ∀ x → readout (encode x) ≡ x
-    stateConjugacy :
-      ∀ x →
-      encode (economicStep x) ≡
-      gruStep (encode x)
-    equilibriumSquare :
-      ∀ x →
-      carrierEquilibriumMap (encode x) ≡
-      equilibriumMap x
-
-open MegaWalrasianGlobalSquareConjugacy public
-
-megaWalrasianGlobalSquare-injective :
-  ∀ {Economic GRU Equilibrium : Set}
-  {encode : Economic → GRU}
-  {readout : GRU → Economic}
-  {equilibriumMap : Economic → Equilibrium}
-  {carrierEquilibriumMap : GRU → Equilibrium}
-  {economicStep : Economic → Economic}
-  {gruStep : GRU → GRU}
-  (square :
-    MegaWalrasianGlobalSquareConjugacy
-      Economic
-      GRU
-      Equilibrium
-      encode
-      readout
-      equilibriumMap
-      carrierEquilibriumMap
-      economicStep
-      gruStep) →
-  ∀ {x y} →
-  encode x ≡ encode y →
-  x ≡ y
-megaWalrasianGlobalSquare-injective square {x} {y} collision =
-  trans
-    (sym (readoutEncode square x))
-    (trans
-      (cong (readout square) collision)
-      (readoutEncode square y))
-
-------------------------------------------------------------------------
--- Exact Pareto/welfare conditionality.
---
--- Pareto optimality is defined from explicit weak/strict preference
--- relations and feasibility.  The First Welfare Theorem is then proved
--- from the actual demand-side contradiction: an equilibrium agent cannot
--- have a strictly preferred affordable alternative, while every Pareto
--- improvement is required to be affordable for at least one strictly
--- improving agent.  Monotonicity/local nonsatiation are not silently
--- substituted for this affordability certificate.
---
--- A reverse Pareto -> equilibrium theorem is kept separate.  Its
--- supporting-price/redistribution witness is an additional hypothesis,
--- matching the fact that the Second Welfare Theorem needs substantially
--- more structure than monotonicity alone.
-------------------------------------------------------------------------
-
-record MegaParetoImprovement
-  (Agent Allocation : Set)
-  (weakPreference strictPreference :
-    Agent → Allocation → Allocation → Set)
-  (better worse : Allocation) : Set₁ where
-  constructor megaParetoImprovement
-  field
-    weaklyBetter :
-      ∀ i →
-      weakPreference i better worse
-    strictlyBetter :
-      Σ Agent
-        (λ i →
-          strictPreference i better worse)
-
-open MegaParetoImprovement public
-
 megaParetoOptimal :
   ∀ {Agent Allocation : Set}
   {weakPreference strictPreference :
@@ -6522,107 +3257,6 @@ record MegaFirstWelfareTheoremConditions
 
 open MegaFirstWelfareTheoremConditions public
 
-megaFirstWelfareTheorem :
-  ∀ {Agent Price Allocation : Set}
-  {weakPreference strictPreference :
-    Agent → Allocation → Allocation → Set}
-  {feasible : Allocation → Set}
-  {budget : Price → Agent → Allocation → Set}
-  {equilibrium : Price → Allocation → Set}
-  {p : Price}
-  {a : Allocation} →
-  MegaFirstWelfareTheoremConditions
-    Agent
-    Price
-    Allocation
-    weakPreference
-    strictPreference
-    feasible
-    budget
-    equilibrium
-    p
-    a →
-  megaParetoOptimal
-    {weakPreference = weakPreference}
-    {strictPreference = strictPreference}
-    feasible
-    a
-megaFirstWelfareTheorem conditions =
-  feasibleWitness conditions ,
-  λ {b} feasibleB improvement →
-    noStrictAffordableAlternative
-      conditions
-      (proj₁ (strictlyBetter improvement))
-      b
-      (paretoImprovementAffordability
-        conditions
-        feasibleB
-        improvement)
-
-------------------------------------------------------------------------
--- Econlib-style minimal First Welfare derivation kernel.
---
--- Econlib derives the cost lemmas from local nonsatiation, demand
--- optimality, and the budget model, then feeds them into the Pareto
--- contradiction.  The generalized Agda surface is intentionally more
--- abstract, so the smallest reusable seam here is the cost-bound layer:
--- budget feasibility bounds the cost of an affordable bundle by the
--- equilibrium allocation cost, while strict preference makes the latter
--- strictly smaller than the former.  The theorem below derives the
--- no-strict-affordable-alternative clause instead of accepting that clause
--- as a primitive certificate.
-------------------------------------------------------------------------
-
-record MegaDemandCostKernel
-  (Agent Price Allocation : Set)
-  (weakPreference strictPreference :
-    Agent → Allocation → Allocation → Set)
-  (feasible : Allocation → Set)
-  (budget : Price → Agent → Allocation → Set)
-  (equilibrium : Price → Allocation → Set)
-  (cost : Price → Agent → Allocation → Nat)
-  (p : Price)
-  (a : Allocation) : Set₁ where
-  constructor megaDemandCostKernel
-  field
-    equilibriumWitness :
-      equilibrium p a
-
-    feasibleWitness :
-      feasible a
-
-    preferredCostly :
-      ∀ i b →
-      weakPreference i b a →
-      cost p i a ≤ cost p i b
-
-    strictlyPreferredCostly :
-      ∀ i b →
-      strictPreference i b a →
-      cost p i a < cost p i b
-
-    budgetCostBound :
-      ∀ i b →
-      budget p i b →
-      cost p i b ≤ cost p i a
-
-    paretoImprovementAffordability :
-      ∀ {b : Allocation} →
-      feasible b →
-      (improvement :
-        MegaParetoImprovement
-          Agent
-          Allocation
-          weakPreference
-          strictPreference
-          b
-          a) →
-      budget p
-        (proj₁ (strictlyBetter improvement))
-        b
-
-open MegaDemandCostKernel public
-
 megaNatNoStrictBack :
   ∀ {n : Nat} →
   suc n ≤ n →
@@ -6669,54 +3303,6 @@ megaNoStrictAffordableAlternative-from-demand-cost kernel i b affordable =
     megaNatStrictCostContradiction
       (budgetCostBound kernel i b affordable)
       (strictlyPreferredCostly kernel i b strictlyPreferred)
-
-megaFirstWelfareTheorem-from-demand-cost :
-  ∀ {Agent Price Allocation : Set}
-  {weakPreference strictPreference :
-    Agent → Allocation → Allocation → Set}
-  {feasible : Allocation → Set}
-  {budget : Price → Agent → Allocation → Set}
-  {equilibrium : Price → Allocation → Set}
-  {cost : Price → Agent → Allocation → Nat}
-  {p : Price}
-  {a : Allocation} →
-  MegaDemandCostKernel
-    Agent
-    Price
-    Allocation
-    weakPreference
-    strictPreference
-    feasible
-    budget
-    equilibrium
-    cost
-    p
-    a →
-  megaParetoOptimal
-    {weakPreference = weakPreference}
-    {strictPreference = strictPreference}
-    feasible
-    a
-megaFirstWelfareTheorem-from-demand-cost kernel =
-  megaFirstWelfareTheorem
-    (megaFirstWelfareTheoremConditions
-      (equilibriumWitness kernel)
-      (feasibleWitness kernel)
-      (megaNoStrictAffordableAlternative-from-demand-cost kernel)
-      (paretoImprovementAffordability kernel))
-
-
-------------------------------------------------------------------------
--- Finite non-iid closure of the Econlib cost layer.
---
--- The finite commodity model makes the budget-cost bound definitional:
--- BudgetFeasible is exactly the required Nat inequality.  The two remaining
--- cost lemmas are stated as utility-to-cost monotonicity of the concrete
--- bundle-cost function.  They therefore feed the abstract demand-cost kernel
--- without inventing a second preference ontology.  Pareto-improvement
--- affordability remains an explicit market/demand hypothesis because
--- individual budget feasibility alone does not imply it.
-------------------------------------------------------------------------
 
 FiniteNonIIDStrictPreference :
   ∀ {Agent Good : Set}
@@ -6841,437 +3427,6 @@ finiteNonIIDDemandCostKernel closure =
     (λ {b} _ improvement →
       paretoImprovementAffordability closure improvement)
 
-finiteNonIIDFirstWelfareFromDemandCost :
-  ∀ {Agent Good : Set}
-  {agents : List Agent}
-  {goods : List Good}
-  {utility : Agent → (Good → Nat) → Nat}
-  {endowment : Agent → Good → Nat}
-  {price : Good → Nat}
-  {allocation : Agent → Good → Nat} →
-  FiniteNonIIDDemandCostClosure
-    Agent
-    Good
-    agents
-    goods
-    utility
-    endowment
-    price
-    allocation →
-  megaParetoOptimal
-    {weakPreference = FiniteNonIIDPreference utility}
-    {strictPreference = FiniteNonIIDStrictPreference utility}
-    (λ a →
-      ∀ g →
-      sumNat (map (λ i → a i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents))
-    allocation
-finiteNonIIDFirstWelfareFromDemandCost closure =
-  megaFirstWelfareTheorem-from-demand-cost
-    (finiteNonIIDDemandCostKernel closure)
-
-------------------------------------------------------------------------
--- The demand-side theorem above is the exact logical core.  Standard
--- textbook hypotheses such as monotonicity or local nonsatiation can be
--- used to establish the missing affordability/budget-exhaustion facts in
--- a richer commodity/price model, but they are not themselves the
--- equilibrium-to-Pareto identity.
-------------------------------------------------------------------------
-
-record MegaSecondWelfareTheoremConditions
-  (Agent Price Allocation : Set)
-  (paretoOptimal : Allocation → Set)
-  (equilibrium : Price → Allocation → Set) : Set₁ where
-  constructor megaSecondWelfareTheoremConditions
-  field
-    supportingPrice :
-      ∀ {a : Allocation} →
-      paretoOptimal a →
-      Price
-    supportingEquilibrium :
-      ∀ {a : Allocation} →
-      (paretoWitness : paretoOptimal a) →
-      equilibrium
-        (supportingPrice paretoWitness)
-        a
-
-open MegaSecondWelfareTheoremConditions public
-
-megaSecondWelfareTheorem :
-  ∀ {Agent Price Allocation : Set}
-  {paretoOptimal : Allocation → Set₁}
-  {equilibrium : Price → Allocation → Set} →
-  MegaSecondWelfareTheoremConditions
-    Agent
-    Price
-    Allocation
-    paretoOptimal
-    equilibrium →
-  ∀ {a : Allocation} →
-  paretoOptimal a →
-  Σ Price
-    (λ p →
-      equilibrium p a)
-megaSecondWelfareTheorem conditions paretoWitness =
-  supportingPrice conditions paretoWitness ,
-  supportingEquilibrium conditions paretoWitness
-
-------------------------------------------------------------------------
--- Exact equality of equilibrium and Pareto-optimality is therefore a
--- two-sided conditional result.  The two directions have different
--- obligations; neither direction is inferred from the other's assumptions.
-------------------------------------------------------------------------
-
-record MegaParetoEquilibriumConditionality
-  (Agent Price Allocation : Set)
-  (paretoOptimal : Allocation → Set₁)
-  (equilibrium : Price → Allocation → Set)
-  (firstConditions : Set₁)
-  (secondConditions : Set₁) : Set₁ where
-  constructor megaParetoEquilibriumConditionality
-  field
-    firstDirection :
-      firstConditions
-    secondDirection :
-      secondConditions
-
-open MegaParetoEquilibriumConditionality public
-
-------------------------------------------------------------------------
--- Equilibrium-preserving transport and the welfare seam.
---
--- The global square carries an explicit, one-way welfare adapter.  It does
--- not identify equilibrium with Pareto optimality and it does not invent
--- monotonicity, local nonsatiation, convexity, redistribution, or absence
--- of externalities.
-------------------------------------------------------------------------
-
-record MegaWalrasianEquilibriumWelfareAdapter
-  (Economic : Set)
-  (equilibrium : Economic → Set)
-  (paretoOptimal : Economic → Set)
-  (welfareAssumptions : Economic → Set) : Set₁ where
-  constructor megaWalrasianEquilibriumWelfareAdapter
-  field
-    firstWelfare :
-      ∀ x →
-      equilibrium x →
-      welfareAssumptions x →
-      paretoOptimal x
-
-open MegaWalrasianEquilibriumWelfareAdapter public
-
-------------------------------------------------------------------------
--- The completed composition contract: global square, derived injectivity,
--- explicit equilibrium transport, and the conditional welfare/Pareto seam.
-------------------------------------------------------------------------
-
-record MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-  (Economic GRU Equilibrium Pareto : Set)
-  (encode : Economic → GRU)
-  (readout : GRU → Economic)
-  (equilibriumMap : Economic → Equilibrium)
-  (carrierEquilibriumMap : GRU → Equilibrium)
-  (economicStep : Economic → Economic)
-  (gruStep : GRU → GRU)
-  (equilibrium : Economic → Set)
-  (carrierEquilibrium : GRU → Set)
-  (paretoOptimal : Economic → Set)
-  (welfareAssumptions : Economic → Set) : Set₁ where
-  constructor megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-  field
-    square :
-      MegaWalrasianGlobalSquareConjugacy
-        Economic
-        GRU
-        Equilibrium
-        encode
-        readout
-        equilibriumMap
-        carrierEquilibriumMap
-        economicStep
-        gruStep
-
-    injective :
-      ∀ {x y} →
-      encode x ≡ encode y →
-      x ≡ y
-
-    equilibriumTransport :
-      ∀ {x : Economic} →
-      equilibrium x →
-      carrierEquilibrium (encode x)
-
-    welfareAdapter :
-      MegaWalrasianEquilibriumWelfareAdapter
-        Economic
-        equilibrium
-        paretoOptimal
-        welfareAssumptions
-
-    completenessWitness :
-      ∀ {x : Economic} →
-      equilibrium x →
-      welfareAssumptions x →
-      paretoOptimal x
-
-open MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness public
-
-megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
-  ∀ {Economic GRU Equilibrium Pareto : Set}
-  {encode : Economic → GRU}
-  {readout : GRU → Economic}
-  {equilibriumMap : Economic → Equilibrium}
-  {carrierEquilibriumMap : GRU → Equilibrium}
-  {economicStep : Economic → Economic}
-  {gruStep : GRU → GRU}
-  {equilibrium : Economic → Set}
-  {carrierEquilibrium : GRU → Set}
-  {paretoOptimal : Economic → Set}
-  {welfareAssumptions : Economic → Set}
-  (square :
-    MegaWalrasianGlobalSquareConjugacy
-      Economic
-      GRU
-      Equilibrium
-      encode
-      readout
-      equilibriumMap
-      carrierEquilibriumMap
-      economicStep
-      gruStep)
-  (equilibriumTransport :
-    ∀ {x : Economic} →
-    equilibrium x →
-    carrierEquilibrium (encode x))
-  (welfare :
-    ∀ x →
-    equilibrium x →
-    welfareAssumptions x →
-    paretoOptimal x) →
-  MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-    Economic
-    GRU
-    Equilibrium
-    Pareto
-    encode
-    readout
-    equilibriumMap
-    carrierEquilibriumMap
-    economicStep
-    gruStep
-    equilibrium
-    carrierEquilibrium
-    paretoOptimal
-    welfareAssumptions
-megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-  square
-  equilibriumTransport
-  welfare =
-  megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-    square
-    (megaWalrasianGlobalSquare-injective square)
-    equilibriumTransport
-    (megaWalrasianEquilibriumWelfareAdapter
-      welfare)
-    (λ x equilibriumWitness welfareWitness →
-      welfare x equilibriumWitness welfareWitness)
-
-------------------------------------------------------------------------
--- Unified GRU / Hodge-Maxwell / Tsallis / generalized Walrasian / POMDP
--- closure.  The equilibrium dependency is now the single generalized
--- relation; no separate Arrow-Debreu/KKT/Walrasian theorem fields remain.
-------------------------------------------------------------------------
-
-record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (State Price Allocation : Set)
-  (D :
-    MegaGeneralizedWalrasianEquilibrium
-      State
-      Price
-      Allocation)
-  (decodeAllocation :
-    Solution (semantics H) → Allocation)
-  (Action Observation Distribution Reward : Set)
-  (hodgeMaxwellTsallis :
-    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
-  (P :
-    POMDPWalrasianData
-      State
-      Action
-      Observation
-      Distribution
-      Reward
-      Price
-      Allocation)
-  (p : Price)
-  (allocation : State → Allocation)
-  (belief : Observation → Distribution)
-  (policy : Distribution → Action)
-  (beliefPolicy :
-    POMDPBeliefPolicyFactorization
-      State
-      Action
-      Observation
-      Distribution
-      Allocation
-      belief
-      policy
-      allocation)
-  (solutionOfState :
-    State → Solution (semantics H)) : Set₁ where
-  constructor connectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
-  field
-    globalEncodeInjective :
-      ∀ {x y : Solution (semantics H)} →
-      encode (semantics H) x ≡ encode (semantics H) y →
-      x ≡ y
-
-    tsallisGeneralization :
-      ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
-
-    walrasianEquilibrium :
-      ∀ {p' : Price} {a : Allocation} →
-      equilibrium D p' a →
-      equilibrium D p' a
-
-    pomdpBeliefClosure :
-      POMDPWalrasianBeliefEquilibriumClosure
-        State
-        Action
-        Observation
-        Distribution
-        Reward
-        Price
-        Allocation
-        P
-        p
-        allocation
-        belief
-        policy
-        beliefPolicy
-
-    allocationReadout :
-      ∀ s →
-      allocation s ≡
-      decodeAllocation (solutionOfState s)
-
-open ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem public
-
-connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  {H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
-  {State Price Allocation : Set}
-  {D :
-    MegaGeneralizedWalrasianEquilibrium
-      State
-      Price
-      Allocation}
-  {decodeAllocation :
-    Solution (semantics H) → Allocation}
-  {Action Observation Distribution Reward : Set}
-  {hodgeMaxwellTsallis :
-    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU}
-  {P :
-    POMDPWalrasianData
-      State
-      Action
-      Observation
-      Distribution
-      Reward
-      Price
-      Allocation}
-  {p : Price}
-  {allocation : State → Allocation}
-  {belief : Observation → Distribution}
-  {policy : Distribution → Action}
-  {beliefPolicy :
-    POMDPBeliefPolicyFactorization
-      State
-      Action
-      Observation
-      Distribution
-      Allocation
-      belief
-      policy
-      allocation}
-  {solutionOfState :
-    State → Solution (semantics H)}
-  (hodgeMaxwellTsallis :
-    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
-  (walrasianEquilibrium :
-    ∀ {p' : Price} {a : Allocation} →
-    equilibrium D p' a →
-    equilibrium D p' a)
-  (pomdpBeliefClosure :
-    POMDPWalrasianBeliefEquilibriumClosure
-      State
-      Action
-      Observation
-      Distribution
-      Reward
-      Price
-      Allocation
-      P
-      p
-      allocation
-      belief
-      policy
-      beliefPolicy)
-  (allocationReadout :
-    ∀ s →
-    allocation s ≡
-    decodeAllocation (solutionOfState s)) →
-  ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
-    GRU
-    H
-    State
-    Price
-    Allocation
-    D
-    decodeAllocation
-    Action
-    Observation
-    Distribution
-    Reward
-    hodgeMaxwellTsallis
-    P
-    p
-    allocation
-    belief
-    policy
-    beliefPolicy
-    solutionOfState
-connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem
-  hodgeMaxwellTsallis
-  walrasianEquilibrium
-  pomdpBeliefClosure
-  allocationReadout =
-  connectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
-    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.globalEncodeInjective H)
-    hodgeMaxwellTsallis
-    walrasianEquilibrium
-    pomdpBeliefClosure
-    allocationReadout
-
-
-
-------------------------------------------------------------------------
--- Second-Welfare boundary and explicit non-derivability witness.
---
--- The supporting-price part of the Second Welfare Theorem is not
--- derivable from Pareto optimality alone on this generalized surface.
--- Standard proofs add economic structure (notably convexity plus the
--- separation/supporting-price argument, together with the relevant
--- continuity/local-nonsatiation and redistribution hypotheses).
-------------------------------------------------------------------------
-
 record MegaSecondWelfareTheoremBoundaryCounterexample : Set₁ where
   constructor megaSecondWelfareTheoremBoundaryCounterexample
   field
@@ -7347,162 +3502,6 @@ megaNoStrictAffordableAlternative-is-demand-optimality boundary =
 
 
 ------------------------------------------------------------------------
--- Policy -> Hodge-Maxwell update seam.
---
--- The canonical policy is an exact readout of the learner state, but that
--- readout alone does not imply a Maxwell update.  The connected
--- Hodge-Maxwell/F4/Watkins theorem already supplies the exact learner ->
--- solution map and learner-step conjugacy.  This theorem consumes the one
--- missing computational premise: the policy-induced learner update agrees
--- with the canonical learner step.
-------------------------------------------------------------------------
-
-policyHodgeMaxwellUpdateSeam :
-  ∀ {GRU : Set}
-  (connected :
-    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
-  (policyStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
-  (policyStepCorrect :
-    ∀ s →
-    policyStep s ≡
-    C.canonicalFullStep
-      (learnerKernel connected)
-      s) →
-  ∀ s →
-  learnerToSolution connected
-    (policyStep s)
-  ≡
-  ContinuousHodgeMaxwellExactRepresentationData.step
-    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-      (hodgeMaxwell connected))
-    (learnerToSolution connected s)
-policyHodgeMaxwellUpdateSeam
-  connected
-  policyStep
-  policyStepCorrect
-  s =
-  trans
-    (cong
-      (learnerToSolution connected)
-      (policyStepCorrect s))
-    (learnerStepConjugacy connected s)
-
-policyHodgeMaxwellCanonicalUpdateSeam :
-  ∀ {GRU : Set}
-  (connected :
-    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
-  (policyStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
-  (policyStepCorrect :
-    ∀ s →
-    policyStep s ≡
-    C.canonicalFullStep
-      (learnerKernel connected)
-      s) →
-  ∀ s →
-  learnerToSolution connected
-    (policyStep s)
-  ≡
-  ContinuousHodgeMaxwellExactRepresentationData.step
-    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
-      (hodgeMaxwell connected))
-    (learnerToSolution connected s)
-policyHodgeMaxwellCanonicalUpdateSeam =
-  policyHodgeMaxwellUpdateSeam
-
-------------------------------------------------------------------------
--- The policy seam is deliberately conditional.  canonicalPolicy is the
--- exact LCB/Watkins/Sparsemax readout, while policyStepCorrect is the
--- additional computational claim that the chosen action/update actually
--- drives the canonical learner transition.  Without that premise, no
--- policy-driven Maxwell solver theorem is asserted.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Exact learner/economic solution bridge.
---
--- This is a theorem, not a certificate record.  The caller supplies the
--- economic state interpretation and its exact inverse; Agda then constructs
--- the StateIsomorphism, transports the step dynamics, and transports the
--- equilibrium predicate in both directions.  This is the economic analogue
--- of the learner <-> Hodge-Maxwell solution isomorphism.
-------------------------------------------------------------------------
-
-megaEconomicSolutionStateIsomorphism :
-  ∀ {Economic : Set}
-  (toEconomic : C.CanonicalFullLearnerState → Economic)
-  (fromEconomic : Economic → C.CanonicalFullLearnerState)
-  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
-  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x) →
-  StateIsomorphism C.CanonicalFullLearnerState Economic
-megaEconomicSolutionStateIsomorphism
-  toEconomic
-  fromEconomic
-  fromTo
-  toFrom =
-  stateIsomorphism
-    toEconomic
-    fromEconomic
-    fromTo
-    toFrom
-
-megaEconomicSolutionStepConjugacy :
-  ∀ {Economic : Set}
-  (toEconomic : C.CanonicalFullLearnerState → Economic)
-  (fromEconomic : Economic → C.CanonicalFullLearnerState)
-  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
-  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
-  (economicStep : Economic → Economic)
-  (learnerStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
-  (stepConjugacy :
-    ∀ s →
-    toEconomic (learnerStep s) ≡
-    economicStep (toEconomic s)) →
-  ∀ n s →
-  toEconomic (iterateIsomorphism learnerStep n s)
-  ≡
-  iterateIsomorphism economicStep n (toEconomic s)
-megaEconomicSolutionStepConjugacy
-  toEconomic
-  fromEconomic
-  fromTo
-  toFrom
-  economicStep
-  learnerStep
-  stepConjugacy =
-  isomorphismIterateConjugacy
-    (megaEconomicSolutionStateIsomorphism
-      toEconomic fromEconomic fromTo toFrom)
-    learnerStep
-    economicStep
-    stepConjugacy
-
-megaEconomicSolutionEquilibriumTransport :
-  ∀ {Economic : Set}
-  (toEconomic : C.CanonicalFullLearnerState → Economic)
-  (fromEconomic : Economic → C.CanonicalFullLearnerState)
-  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
-  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
-  (economicEquilibrium : Economic → Set)
-  (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
-  (toLearner :
-    ∀ s → economicEquilibrium (toEconomic s) → learnerEquilibrium s)
-  (toEconomic' :
-    ∀ x → learnerEquilibrium (fromEconomic x) → economicEquilibrium x) →
-  (∀ s → economicEquilibrium (toEconomic s) → learnerEquilibrium s)
-  ×
-  (∀ x → learnerEquilibrium (fromEconomic x) → economicEquilibrium x)
-megaEconomicSolutionEquilibriumTransport
-  toEconomic
-  fromEconomic
-  fromTo
-  toFrom
-  economicEquilibrium
-  learnerEquilibrium
-  toLearner
-  toEconomic' =
-  toLearner , toEconomic'
-
-------------------------------------------------------------------------
 -- Generalized Second Welfare theorem.
 --
 -- The theorem is stated against MegaGeneralizedWalrasianEquilibrium rather
@@ -7512,338 +3511,6 @@ megaEconomicSolutionEquilibriumTransport
 -- proves the actual equilibrium witness.  Heterogeneous agents and
 -- whole-allocation/interdependent preferences remain inside the generalized
 -- equilibrium relation rather than being erased into a scalar demand model.
-------------------------------------------------------------------------
-
-megaSecondWelfareGeneralized :
-  ∀ {State Price Allocation : Set}
-  (D : MegaGeneralizedWalrasianEquilibrium
-    State Price Allocation)
-  (paretoOptimal : Allocation → Set₁)
-  (supportingPrice :
-    ∀ {a : Allocation} →
-    paretoOptimal a →
-    Price)
-  (supportingCharacterization :
-    ∀ {a : Allocation}
-    (paretoWitness : paretoOptimal a) →
-    characterization D
-      (supportingPrice paretoWitness)
-      a) →
-  ∀ {a : Allocation} →
-  paretoOptimal a →
-  Σ Price
-    (λ p → equilibrium D p a)
-megaSecondWelfareGeneralized
-  D
-  paretoOptimal
-  supportingPrice
-  supportingCharacterization
-  paretoWitness =
-  supportingPrice paretoWitness ,
-  characterizationBridge D
-    (supportingCharacterization paretoWitness)
-
-------------------------------------------------------------------------
--- Full connected learner -> economic -> welfare composition.
---
--- This theorem joins the exact learner dynamics to an economic state
--- isomorphism, then transports generalized equilibrium and the First
--- Welfare implication through that same isomorphism.  The result is a
--- genuine composed theorem: no standalone certificate record is inserted
--- between the learner, the economic state, and welfare semantics.
-------------------------------------------------------------------------
-
-connectedCanonicalLearnerEconomicWelfareCompositionTheorem :
-  ∀ {Economic : Set}
-  (toEconomic : C.CanonicalFullLearnerState → Economic)
-  (fromEconomic : Economic → C.CanonicalFullLearnerState)
-  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
-  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
-  (learnerKernel : C.CanonicalFullLearnerKernel)
-  (economicStep : Economic → Economic)
-  (stepConjugacy :
-    ∀ s →
-    toEconomic (C.canonicalFullStep learnerKernel s)
-    ≡ economicStep (toEconomic s))
-  (economicEquilibrium : Economic → Set)
-  (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
-  (equilibriumFromEconomic :
-    ∀ s →
-    economicEquilibrium (toEconomic s) →
-    learnerEquilibrium s)
-  (equilibriumToEconomic :
-    ∀ x →
-    learnerEquilibrium (fromEconomic x) →
-    economicEquilibrium x)
-  (welfareAssumptions : Economic → Set)
-  (paretoOptimal : Economic → Set)
-  (firstWelfare :
-    ∀ x →
-    economicEquilibrium x →
-    welfareAssumptions x →
-    paretoOptimal x) →
-  StateIsomorphism C.CanonicalFullLearnerState Economic
-  ×
-  ((∀ n s →
-    toEconomic
-      (iterateIsomorphism
-        (C.canonicalFullStep learnerKernel)
-        n
-        s)
-    ≡
-    iterateIsomorphism economicStep n (toEconomic s)))
-  ×
-  ((∀ s →
-    economicEquilibrium (toEconomic s) →
-    learnerEquilibrium s))
-  ×
-  ((∀ x →
-    learnerEquilibrium (fromEconomic x) →
-    economicEquilibrium x))
-  ×
-  ((∀ s →
-    economicEquilibrium (toEconomic s) →
-    welfareAssumptions (toEconomic s) →
-    paretoOptimal (toEconomic s)))
-connectedCanonicalLearnerEconomicWelfareCompositionTheorem
-  toEconomic
-  fromEconomic
-  fromTo
-  toFrom
-  learnerKernel
-  economicStep
-  stepConjugacy
-  economicEquilibrium
-  learnerEquilibrium
-  equilibriumFromEconomic
-  equilibriumToEconomic
-  welfareAssumptions
-  paretoOptimal
-  firstWelfare =
-  megaEconomicSolutionStateIsomorphism
-    toEconomic fromEconomic fromTo toFrom
-  , megaEconomicSolutionStepConjugacy
-      toEconomic fromEconomic fromTo toFrom
-      economicStep
-      (C.canonicalFullStep learnerKernel)
-      stepConjugacy
-  , equilibriumFromEconomic
-  , equilibriumToEconomic
-  , (λ s eq welfare →
-      firstWelfare
-        (toEconomic s)
-        eq
-        welfare)
-
-------------------------------------------------------------------------
--- The connected theorem above can be instantiated after the existing
--- Hodge-Maxwell/F4/Watkins learner bridge.  The following corollary makes
--- the composition order explicit: exact learner/solution dynamics first,
--- then exact economic semantics, then welfare.
-------------------------------------------------------------------------
-
-connectedHodgeMaxwellLearnerEconomicWelfareBridge :
-  ∀ {GRU Economic : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (connected :
-    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
-  (toEconomic : C.CanonicalFullLearnerState → Economic)
-  (fromEconomic : Economic → C.CanonicalFullLearnerState)
-  (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
-  (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
-  (economicStep : Economic → Economic)
-  (stepConjugacy :
-    ∀ s →
-    toEconomic (C.canonicalFullStep (learnerKernel connected) s)
-    ≡ economicStep (toEconomic s))
-  (economicEquilibrium : Economic → Set)
-  (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
-  (equilibriumFromEconomic :
-    ∀ s → economicEquilibrium (toEconomic s) → learnerEquilibrium s)
-  (equilibriumToEconomic :
-    ∀ x → learnerEquilibrium (fromEconomic x) → economicEquilibrium x)
-  (welfareAssumptions : Economic → Set)
-  (paretoOptimal : Economic → Set)
-  (firstWelfare :
-    ∀ x → economicEquilibrium x → welfareAssumptions x → paretoOptimal x) →
-  StateIsomorphism C.CanonicalFullLearnerState Economic
-  ×
-  ((∀ n s →
-    toEconomic
-      (iterateIsomorphism
-        (C.canonicalFullStep (learnerKernel connected))
-        n
-        s)
-    ≡ iterateIsomorphism economicStep n (toEconomic s)))
-  ×
-  ((∀ s →
-    economicEquilibrium (toEconomic s) →
-    learnerEquilibrium s))
-  ×
-  ((∀ x →
-    learnerEquilibrium (fromEconomic x) →
-    economicEquilibrium x))
-  ×
-  ((∀ s →
-    economicEquilibrium (toEconomic s) →
-    welfareAssumptions (toEconomic s) →
-    paretoOptimal (toEconomic s)))
-connectedHodgeMaxwellLearnerEconomicWelfareBridge
-  connected
-  toEconomic
-  fromEconomic
-  fromTo
-  toFrom
-  economicStep
-  stepConjugacy
-  economicEquilibrium
-  learnerEquilibrium
-  equilibriumFromEconomic
-  equilibriumToEconomic
-  welfareAssumptions
-  paretoOptimal
-  firstWelfare =
-  connectedCanonicalLearnerEconomicWelfareCompositionTheorem
-    toEconomic
-    fromEconomic
-    fromTo
-    toFrom
-    (learnerKernel connected)
-    economicStep
-    (λ s → stepConjugacy s)
-    economicEquilibrium
-    learnerEquilibrium
-    equilibriumFromEconomic
-    equilibriumToEconomic
-    welfareAssumptions
-    paretoOptimal
-    firstWelfare
-
-
-------------------------------------------------------------------------
--- Economic closure graph: production/supply is now an explicit seam.
---
--- The finite non-iid consumer side is closed through the demand-cost
--- kernel above. The next missing classical step is production/profit
--- optimality. This record adds the minimum competitive-firm witness:
--- feasible production plans, profit, profit optimality, and exact aggregate
--- resource balance. It does not manufacture prices or market clearing.
-------------------------------------------------------------------------
-
-record FiniteCompetitiveProductionClosure
-  (Firm Good Price Allocation : Set)
-  (firms : List Firm)
-  (goods : List Good)
-  (productionPlan : Firm → Good → Nat)
-  (inputPlan : Firm → Good → Nat)
-  (feasiblePlan : Firm → (Good → Nat) → Set)
-  (profit : Price → Firm → (Good → Nat) → Nat)
-  (price : Price)
-  (allocationAggregate : Good → Nat)
-  (endowmentAggregate : Good → Nat) : Set₁ where
-  constructor finiteCompetitiveProductionClosure
-  field
-    productionFeasible :
-      ∀ f →
-      feasiblePlan f (productionPlan f)
-
-    profitOptimal :
-      ∀ f bundle →
-      feasiblePlan f bundle →
-      profit price f bundle ≤
-      profit price f (productionPlan f)
-
-    resourceBalance :
-      ∀ g →
-      endowmentAggregate g
-      + sumNat (map (λ f → productionPlan f g) firms)
-      ≡
-      allocationAggregate g
-      + sumNat (map (λ f → inputPlan f g) firms)
-
-------------------------------------------------------------------------
--- Graph-only closure contract for the classical equilibrium spine.
---
--- Existing proved edges are named directly. Frontier edges remain typed
--- placeholders, so the e-graph cannot silently promote them to theorems.
-------------------------------------------------------------------------
-
-record EconomicEquilibriumClosureGraph
-  (Agent Good Firm Price Allocation : Set) : Set₁ where
-  constructor economicEquilibriumClosureGraph
-  field
-    primitiveToConsumerChoice :
-      Set
-
-    consumerChoiceToDemandCost :
-      Set
-
-    demandCostToFirstWelfare :
-      Set
-
-    productionToSupply :
-      Set
-
-    supplyDemandToAggregateBalance :
-      Set
-
-    aggregateBalanceToMarketClearing :
-      Set
-
-    dualSeparationToDerivedPrice :
-      Set
-
-    derivedPriceToGeneralizedEquilibrium :
-      Set
-
-    generalizedEquilibriumToClassicalSpecialization :
-      Set
-
-------------------------------------------------------------------------
--- The graph is intentionally asymmetric:
---
---   primitive consumer structure
---      -> demand-cost
---      -> First Welfare                         [proved]
---   production primitives
---      -> competitive supply                   [frontier]
---   supply + demand + resources
---      -> aggregate balance -> market clearing [frontier]
---   convex separation / fixed point
---      -> derived price                        [frontier]
---   derived price + clearing
---      -> generalized equilibrium              [frontier]
---   classical assumptions
---      -> Arrow-Debreu specialization          [frontier]
---
--- No Arrow-Debreu, KKT, price, or market-clearing node is treated as a
--- hidden primitive of this graph.
-------------------------------------------------------------------------
-
-finiteEconomicEquilibriumClosureGraph :
-  ∀ {Agent Good Firm Price Allocation : Set} →
-  EconomicEquilibriumClosureGraph Agent Good Firm Price Allocation
-finiteEconomicEquilibriumClosureGraph =
-  economicEquilibriumClosureGraph
-    Set
-    Set
-    Set
-    Set
-    Set
-    Set
-    Set
-    Set
-    Set
-
-
-------------------------------------------------------------------------
--- NormPair quotient/factor transition closure.
---
--- The NormPair coordinate is an explicit replacement orbit.  The orbit
--- relation is an actual Agda relation on the full learner state, policy
--- readout factors through that relation, and canonicalFullStep respects
--- the relation.  This closes the NormPair quotient/transition seam
--- without asserting the stronger HardSign finite-automaton realization.
 ------------------------------------------------------------------------
 
 applyNormPairReplacements :
@@ -8047,14 +3714,237 @@ canonical-normPair-quotient-factor-transition-theorem =
     canonicalNormPairQuotient-iterate-compatible
 
 ------------------------------------------------------------------------
--- Unconditional generalized-equilibrium existence boundary.
+-- Unconditional F4/NormPair factor stability.
 --
--- MegaGeneralizedWalrasianEquilibrium is a contract carrying arbitrary
--- equilibrium and characterization predicates.  With no economic
--- existence assumptions or witness, the contract admits a model whose
--- equilibrium predicate is empty.  Therefore a universal existence
--- theorem cannot be derived from this contract alone.
+-- This theorem composes only closed proof terms: exact F4 optimizer
+-- stability and exact NormPair quotient/factor compatibility.  It makes
+-- no convergence, boundedness, economic, or external certificate claim.
 ------------------------------------------------------------------------
+
+record CanonicalF4NormPairUnconditionalFactorStabilityTheorem : Set₁ where
+  constructor canonicalF4NormPairUnconditionalFactorStabilityTheorem
+  field
+    f4Stability :
+      CanonicalF4GlobalOptimizerStabilityTheorem
+
+    normPairFactorTransition :
+      CanonicalNormPairQuotientFactorTransitionTheorem
+
+    policyFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        C.canonicalPolicy K t ≡ C.canonicalPolicy K s
+
+    transitionFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        normPairReplacementRelation
+          (C.canonicalFullStep K s)
+          (C.canonicalFullStep K t)
+
+    iterateFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        (n : Nat)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        normPairReplacementRelation
+          (C.iterateCanonical K n s)
+          (C.iterateCanonical K n t)
+
+canonical-f4-normPair-unconditional-factor-stability-theorem :
+  CanonicalF4NormPairUnconditionalFactorStabilityTheorem
+canonical-f4-normPair-unconditional-factor-stability-theorem =
+  canonicalF4NormPairUnconditionalFactorStabilityTheorem
+    canonical-f4-global-optimizer-stability-theorem
+    canonical-normPair-quotient-factor-transition-theorem
+    canonicalPolicy-factors-through-NormPair
+    canonicalNormPairQuotient-step-compatible
+    canonicalNormPairQuotient-iterate-compatible
+
+------------------------------------------------------------------------
+
+record RecursiveRadnerData
+  (State Agent Commodity Asset Price Allocation Portfolio : Set)
+  (priceProcess : State → Price)
+  (allocationProcess : State → Agent → Allocation)
+  (portfolioProcess : State → Agent → Portfolio) : Set₁ where
+  constructor recursiveRadnerData
+  field
+    transition : State → State
+    feasible : State → Agent → Allocation → Portfolio → Set
+    optimal : State → Agent → Allocation → Portfolio → Set
+    commodityMarketClearing : State → Set
+    assetMarketClearing : State → Set
+    priceRecursion : State → Price → Set
+    allocationRecursion : State → Agent → Allocation → Set
+    portfolioRecursion : State → Agent → Portfolio → Set
+
+record RecursiveRadnerEquilibrium
+  (State Agent Commodity Asset Price Allocation Portfolio : Set)
+  (priceProcess : State → Price)
+  (allocationProcess : State → Agent → Allocation)
+  (portfolioProcess : State → Agent → Portfolio)
+  (D :
+    RecursiveRadnerData
+      State Agent Commodity Asset Price Allocation Portfolio
+      priceProcess
+      allocationProcess
+      portfolioProcess) : Set₁ where
+  constructor recursiveRadnerEquilibrium
+  field
+    feasibility :
+      ∀ s i →
+      RecursiveRadnerData.feasible D
+        s i
+        (allocationProcess s i)
+        (portfolioProcess s i)
+
+    optimality :
+      ∀ s i →
+      RecursiveRadnerData.optimal D
+        s i
+        (allocationProcess s i)
+        (portfolioProcess s i)
+
+    commodityClearing :
+      ∀ s →
+      RecursiveRadnerData.commodityMarketClearing D s
+
+    assetClearing :
+      ∀ s →
+      RecursiveRadnerData.assetMarketClearing D s
+
+    priceRecursionWitness :
+      ∀ s →
+      RecursiveRadnerData.priceRecursion D
+        s
+        (priceProcess s)
+
+    allocationRecursionWitness :
+      ∀ s i →
+      RecursiveRadnerData.allocationRecursion D
+        s i
+        (allocationProcess s i)
+
+    portfolioRecursionWitness :
+      ∀ s i →
+      RecursiveRadnerData.portfolioRecursion D
+        s i
+        (portfolioProcess s i)
+
+record RecursiveRadnerExistence
+  (State Agent Commodity Asset Price Allocation Portfolio : Set) : Set₁ where
+  constructor recursiveRadnerExistence
+  field
+    priceProcess : State → Price
+    allocationProcess : State → Agent → Allocation
+    portfolioProcess : State → Agent → Portfolio
+
+    data :
+      RecursiveRadnerData
+        State Agent Commodity Asset Price Allocation Portfolio
+        priceProcess
+        allocationProcess
+        portfolioProcess
+
+    equilibrium :
+      RecursiveRadnerEquilibrium
+        State Agent Commodity Asset Price Allocation Portfolio
+        priceProcess
+        allocationProcess
+        portfolioProcess
+        data
+
+------------------------------------------------------------------------
+-- Recursive Radner as an instance of the singular generalized Walrasian
+-- ontology.
+--
+-- The generalized equilibrium carrier stores the full state-contingent
+-- price/allocation/portfolio processes.  The equilibrium predicate carries
+-- the Radner feasibility, optimality, commodity clearing, asset clearing,
+-- and recursive-law witnesses.  This avoids introducing a second
+-- equilibrium ontology into the monolith.
+------------------------------------------------------------------------
+
+RecursiveRadnerPrice :
+  ∀ {State Price : Set} →
+  Set
+RecursiveRadnerPrice {State} {Price} =
+  State → Price
+
+RecursiveRadnerAllocation :
+  ∀ {State Agent Allocation Portfolio : Set} →
+  Set
+RecursiveRadnerAllocation {State} {Agent} {Allocation} {Portfolio} =
+  (State → Agent → Allocation)
+  ×
+  (State → Agent → Portfolio)
+
+recursiveRadner-generalized :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set} →
+  MegaGeneralizedWalrasianEquilibrium
+    State
+    RecursiveRadnerPrice
+    (RecursiveRadnerAllocation
+      {State = State}
+      {Agent = Agent}
+      {Allocation = Allocation}
+      {Portfolio = Portfolio})
+recursiveRadner-generalized =
+  megaGeneralizedWalrasianEquilibrium
+    (λ x → x)
+    (λ pricePair allocationPair →
+      Σ (RecursiveRadnerData
+          State
+          Agent
+          Commodity
+          Asset
+          Price
+          Allocation
+          Portfolio
+          (proj₁ allocationPair)
+          (proj₂ allocationPair))
+        (λ D →
+          RecursiveRadnerEquilibrium
+            State
+            Agent
+            Commodity
+            Asset
+            Price
+            Allocation
+            Portfolio
+            (proj₁ allocationPair)
+            (proj₂ allocationPair)
+            D))
+    (λ pricePair allocationPair →
+      Σ (RecursiveRadnerData
+          State
+          Agent
+          Commodity
+          Asset
+          Price
+          Allocation
+          Portfolio
+          (proj₁ allocationPair)
+          (proj₂ allocationPair))
+        (λ D →
+          RecursiveRadnerEquilibrium
+            State
+            Agent
+            Commodity
+            Asset
+            Price
+            Allocation
+            Portfolio
+            (proj₁ allocationPair)
+            (proj₂ allocationPair)
+            D))
+    (λ {pricePair} {allocationPair} h → h)
 
 megaNoEquilibriumGeneralizedWalrasian :
   MegaGeneralizedWalrasianEquilibrium ⊤ ⊤ ⊤
@@ -8090,4 +3980,73 @@ noUnconditionalMegaGeneralizedWalrasianExistence
   theorem =
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
-\n
+
+
+------------------------------------------------------------------------
+-- F4 coercivity/boundedness frontier composed with NormPair stability
+-- and economic injectivity.
+--
+-- Important semantic boundary: the canonical F4 theorem proves exact
+-- Z-valued step stability. It does not currently prove an analytic
+-- coercivity theorem or a raw global thetaQ boundedness theorem. Those
+-- are therefore explicit proof premises here rather than renamed
+-- consequences of F4 stability.
+------------------------------------------------------------------------
+
+megaNoEquilibriumWalrasianSquare :
+  MegaWalrasianGlobalSquareConjugacy
+    ⊤
+    ⊤
+    ⊤
+    (λ _ → tt)
+    (λ _ → tt)
+    (λ x → x)
+    (λ x → x)
+    (λ x → x)
+    (λ x → x)
+megaNoEquilibriumWalrasianSquare =
+  megaWalrasianGlobalSquareConjugacy
+    (λ _ → refl)
+    (λ _ → refl)
+    (λ _ → refl)
+
+megaNoEquilibriumF4NormPairEconomicWitness :
+  ¬
+    Σ ⊤
+      (λ p →
+        Σ ⊤
+          (λ a →
+            equilibrium
+              megaNoEquilibriumGeneralizedWalrasian
+              p
+              a))
+megaNoEquilibriumF4NormPairEconomicWitness
+  (p , a , witness) =
+  witness
+
+------------------------------------------------------------------------
+-- Strict unconditional economic impossibility.
+--
+-- Even after the closed F4/NormPair factor-stability theorem is available,
+-- the generalized Walrasian contract itself does not imply existence.
+-- The singleton countermodel has an empty equilibrium predicate.
+------------------------------------------------------------------------
+
+noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability :
+  ¬
+    (∀ {State Price Allocation : Set}
+      (D : MegaGeneralizedWalrasianEquilibrium
+        State
+        Price
+        Allocation) →
+      Σ Price
+        (λ p →
+          Σ Allocation
+            (λ a →
+              equilibrium D p a)))
+noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
+  theorem =
+  megaNoEquilibriumWitness
+    (theorem megaNoEquilibriumGeneralizedWalrasian)
+
+------------------------------------------------------------------------
