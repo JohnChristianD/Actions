@@ -6437,69 +6437,64 @@ megaNoStrictAffordableAlternative-is-demand-optimality boundary =
 -- Policy -> Hodge-Maxwell update seam.
 --
 -- The canonical policy is an exact readout of the learner state, but that
--- readout alone does not imply a Maxwell update.  This theorem makes the
--- missing seam explicit: a supplied policy-induced learner transition must
--- agree with the canonical learner step, and that step must be transported
--- by the existing Hodge-Maxwell encoder to the exact Maxwell solution step.
--- The result is a genuine policy-to-Maxwell commuting square rather than a
--- graph edge created from conceptual similarity.
+-- readout alone does not imply a Maxwell update.  The connected
+-- Hodge-Maxwell/F4/Watkins theorem already supplies the exact learner ->
+-- solution map and learner-step conjugacy.  This theorem consumes the one
+-- missing computational premise: the policy-induced learner update agrees
+-- with the canonical learner step.
 ------------------------------------------------------------------------
 
 policyHodgeMaxwellUpdateSeam :
   ∀ {GRU : Set}
-  (H : ContinuousHodgeMaxwellExactRepresentationData GRU)
-  (K : C.CanonicalFullLearnerKernel)
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
   (policyStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
   (policyStepCorrect :
     ∀ s →
-    policyStep s ≡ C.canonicalFullStep K s)
-  (policyMaxwellStep :
-    ∀ s →
-    ContinuousHodgeMaxwellExactRepresentationData.step
-      H
-      (ContinuousHodgeMaxwellExactRepresentationData.encode H s)
-    ≡
-    ContinuousHodgeMaxwellExactRepresentationData.encode H
-      (policyStep s)) →
+    policyStep s ≡
+    C.canonicalFullStep
+      (learnerKernel connected)
+      s) →
   ∀ s →
-  ContinuousHodgeMaxwellExactRepresentationData.encode H
+  learnerToSolution connected
     (policyStep s)
   ≡
   ContinuousHodgeMaxwellExactRepresentationData.step
-    H
-    (ContinuousHodgeMaxwellExactRepresentationData.encode H s)
+    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+      (hodgeMaxwell connected))
+    (learnerToSolution connected s)
 policyHodgeMaxwellUpdateSeam
-  H K policyStep policyStepCorrect policyMaxwellStep s =
-  sym (policyMaxwellStep s)
+  connected
+  policyStep
+  policyStepCorrect
+  s =
+  trans
+    (cong
+      (learnerToSolution connected)
+      (policyStepCorrect s))
+    (learnerStepConjugacy connected s)
 
 policyHodgeMaxwellCanonicalUpdateSeam :
   ∀ {GRU : Set}
-  (H : ContinuousHodgeMaxwellExactRepresentationData GRU)
-  (K : C.CanonicalFullLearnerKernel)
+  (connected :
+    ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem GRU)
   (policyStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
   (policyStepCorrect :
     ∀ s →
-    policyStep s ≡ C.canonicalFullStep K s)
-  (canonicalMaxwellConjugacy :
-    ∀ s →
-    ContinuousHodgeMaxwellExactRepresentationData.encode H
-      (C.canonicalFullStep K s)
-    ≡
-    ContinuousHodgeMaxwellExactRepresentationData.step H
-      (ContinuousHodgeMaxwellExactRepresentationData.encode H s)) →
+    policyStep s ≡
+    C.canonicalFullStep
+      (learnerKernel connected)
+      s) →
   ∀ s →
-  ContinuousHodgeMaxwellExactRepresentationData.encode H
+  learnerToSolution connected
     (policyStep s)
   ≡
-  ContinuousHodgeMaxwellExactRepresentationData.step H
-    (ContinuousHodgeMaxwellExactRepresentationData.encode H s)
-policyHodgeMaxwellCanonicalUpdateSeam
-  H K policyStep policyStepCorrect canonicalMaxwellConjugacy s =
-  trans
-    (cong
-      ContinuousHodgeMaxwellExactRepresentationData.encode
-      (policyStepCorrect s))
-    (canonicalMaxwellConjugacy s)
+  ContinuousHodgeMaxwellExactRepresentationData.step
+    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.semantics
+      (hodgeMaxwell connected))
+    (learnerToSolution connected s)
+policyHodgeMaxwellCanonicalUpdateSeam =
+  policyHodgeMaxwellUpdateSeam
 
 ------------------------------------------------------------------------
 -- The policy seam is deliberately conditional.  canonicalPolicy is the
@@ -6508,7 +6503,6 @@ policyHodgeMaxwellCanonicalUpdateSeam
 -- drives the canonical learner transition.  Without that premise, no
 -- policy-driven Maxwell solver theorem is asserted.
 ------------------------------------------------------------------------
-
 
 ------------------------------------------------------------------------
 -- Exact learner/economic solution bridge.
