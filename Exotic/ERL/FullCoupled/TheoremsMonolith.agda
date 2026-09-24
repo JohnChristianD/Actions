@@ -5947,7 +5947,7 @@ megaFirstWelfareTheorem :
     a
 megaFirstWelfareTheorem conditions =
   feasibleWitness conditions ,
-  λ feasibleB improvement →
+  λ {b} feasibleB improvement →
     noStrictAffordableAlternative
       conditions
       (proj₁ (strictlyBetter improvement))
