@@ -1,0 +1,28 @@
+flowchart TD
+  E["EconomicStructure"] --> F["FeasibleAllocations"]
+  E --> P["PreferenceChoice"]
+  E --> R["Production"]
+  P --> I["IndividualOptimality"]
+  F --> I
+  R --> S["Supply / ProfitOptimality"]
+  I --> D["DemandWitness"]
+  D --> A["AggregateDemand"]
+  S --> A
+  A --> B["AggregateResourceBalance"]
+  B --> C["MarketClearing"]
+  I --> Q["Dual / Separation / FixedPoint Certificate"]
+  Q --> V["DerivedPrice"]
+  V --> C
+  C --> G["GeneralizedWalrasianEquilibrium"]
+
+  G --> ADG["ClassicalSpecializationGate"]
+  ADG --> AD["ArrowDebreuSpecialization"]
+
+  X1["finite-dimensional commodities"] --> ADG
+  X2["own-bundle preferences"] --> ADG
+  X3["classical budget / ownership structure"] --> ADG
+  X4["required convexity / continuity"] --> ADG
+  X5["competitive production / profit maximization"] --> ADG
+  X6["classical feasibility / clearing"] --> ADG
+
+  Z["No free-standing ArrowDebreuEquilibrium"] -. forbidden .-> AD
