@@ -4140,19 +4140,25 @@ generalizedWalrasianExistence-from-topological-fixed-point-transport
     sourceFixedPoint =
       fixedPoint-from-convergence
         (fixedPointExistenceFromConvergence topology)
-    transported =
-      transportedFixedPointExistence
-        stepConjugacy
-        sourceFixedPoint
-    targetFixedPoint =
-      transportedFixedPointExistence-witness transported
-    b = proj₁ targetFixedPoint
-    fixed = proj₂ targetFixedPoint
+    a = proj₁ sourceFixedPoint
+    fixed = proj₂ sourceFixedPoint
+    b = to iso a
+    targetFixed =
+      trans
+        (sym
+          (isomorphismIterateConjugacy
+            iso
+            f
+            g
+            stepConjugacy
+            (suc zero)
+            a))
+        (isomorphismEqualityTransport iso fixed)
   in
   generalizedWalrasianExistence-from-witness
     p
     b
-    (equilibriumFromFixedPoint equilibriumClosure b fixed)
+    (equilibriumFromFixedPoint equilibriumClosure b targetFixed)
 
 
 ------------------------------------------------------------------------
