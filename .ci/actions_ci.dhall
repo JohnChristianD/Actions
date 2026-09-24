@@ -53,10 +53,10 @@ let script = merge {
     grep -Fq 'stationary Walrasian equilibrium' "$upstream_markov"
 
     grep -Fq 'staticWalrasian' "$local_theorem"
-    grep -Fq 'GeneralizedWalrasianEquilibrium' "$local_theorem"
-    grep -Fq 'generalizedWalrasianEquilibrium-from-static' "$local_theorem"
-    grep -Fq 'MarkovStationaryWalrasianCompositionTheorem' "$local_theorem"
-    grep -Fq 'markov-stationary-walrasian-composition-theorem' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuExistence' "$local_theorem"
+    grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
+    grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
 
     adapter_present=false
     if grep -Eiq 'Econlib|exists_equilibrium' "$local_theorem"; then
@@ -70,17 +70,17 @@ let script = merge {
       printf '  "econlib_commit": "%s",\n' "$econlib_rev"
       printf '  "upstream_static_existence": "Economy.exists_equilibrium",\n'
       printf '  "upstream_equilibrium_object": "Economy.WalrasianEquilibrium",\n'
-      printf '  "local_static_target": "staticWalrasian",\n'
-      printf '  "local_stationary_lift": "generalizedWalrasianEquilibrium-from-static",\n'
-      printf '  "local_markov_composition": "markov-stationary-walrasian-composition-theorem",\n'
+      printf '  "local_mega_equilibrium_target": "MegaGeneralizedWalrasianKKTArrowDebreuExistence",\n'
+      printf '  "local_composition_target": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",\n'
+      printf '  "local_mega_edge": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",\n'
       printf '  "adapter_present": %s,\n' "$adapter_present"
-      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "bridge::staticWalrasian", "Actions::generalizedWalrasianEquilibrium-from-static", "Actions::markov-stationary-walrasian-composition-theorem"],\n'
+      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
       printf '  "graph_status": "composition-ready; explicit cross-language adapter still required"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-crossrepo-sync.json
 
     grep -Fq '"upstream_static_existence": "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.json
-    grep -Fq '"local_stationary_lift": "generalizedWalrasianEquilibrium-from-static"' .ci/discovery/econlib-crossrepo-sync.json
+    grep -Fq '"local_composition_target": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.json
     echo "econlib-crossrepo-sync=pass"
     echo "econlib-commit=$econlib_rev"
     echo "adapter-present=$adapter_present"
@@ -120,10 +120,10 @@ let script = merge {
     grep -Fq 'BeliefSystem' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/BeliefSystem.lean"
     grep -Fq 'SequentialEquilibrium' "$root/Econlib/GameTheory/ExtensiveForm/Refinements/SequentialEquilibrium.lean"
 
-    grep -Fq 'ContinuousStationaryMarkovWalrasianData' "$local_theorem"
-    grep -Fq 'continuousStationaryWalrasian-lift' "$local_theorem"
-    grep -Fq 'GeneralizedWalrasianEquilibrium' "$local_theorem"
-    grep -Fq 'nonIIDMarkovStationaryWalrasian-lift' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuData' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuExistence' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium' "$local_theorem"
+    grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
 
     pomdp_named=false
     grep -Riq 'POMDP|partially observable' "$root/Econlib" && pomdp_named=true || true
@@ -133,19 +133,19 @@ let script = merge {
       printf '%s\n' '{'
       printf '  "econlib_repo": "danlyng/Econlib",\n'
       printf '  "econlib_commit": "%s",\n' "$econlib_rev"
-      printf '  "regularity_assumption": "RegularEconomy",\n'
-      printf '  "static_existence": "Economy.exists_equilibrium",\n'
+      printf '  "benchmark_regular_assumption": "Econlib::RegularEconomy",\n'
+      printf '  "benchmark_static_existence": "Econlib::Economy.exists_equilibrium",\n'
       printf '  "non_iid_transition": "arbitrary Markov/kernel transition",\n'
       printf '  "stationary_law_node": "FiniteMarkovChain.exists_stationary",\n'
       printf '  "stationary_law_convergence_node": "FiniteMarkovChain.geometric_convergence_to",\n'
       printf '  "stationary_law_convergence_condition": "strictly positive transition probabilities",\n'
       printf '  "stationary_equilibrium_node": "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
-      printf '  "local_non_iid_lift": "nonIIDMarkovStationaryWalrasian-lift",\n'
-      printf '  "local_generalized_lift": "generalizedWalrasianEquilibrium-from-static",\n'
+      printf '  "local_mega_edge": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",\n'
+      printf '  "local_composition": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",\n'
       printf '  "partial_observation_nodes": ["BehavioralStrategy", "BeliefSystem", "SequentialEquilibrium"],\n'
       printf '  "pomdp_named_in_econlib": %s,\n' "$pomdp_named"
-      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Econlib::Markov stationary law", "Econlib::StationaryWalrasianEquilibrium", "Actions::nonIIDMarkovStationaryWalrasian-lift", "Actions::GeneralizedWalrasianEquilibrium", "Econlib::BehavioralStrategy", "Econlib::BeliefSystem", "Econlib::SequentialEquilibrium"],\n'
-      printf '  "pomdp_bridge_status": "frontier: belief-state/sufficient-statistic adapter into stationary aggregate equilibrium is required"\n'
+      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
+      printf '  "pomdp_bridge_status": "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-equilibrium-graph.json
 
