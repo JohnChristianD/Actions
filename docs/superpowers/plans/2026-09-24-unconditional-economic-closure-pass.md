@@ -98,3 +98,13 @@ The repository contains a single unattended graph that is complete as a dependen
 - The corrected `topologicalConvergenceWitness-from-finite-rank-stability` proof term is therefore accepted by the repository's CI typechecking/composition gate.
 - The next closure seam was audited against the existing theorem surface. `CanonicalF4GlobalOptimizerStabilityTheorem` supplies exact F4 step-stability facts, but no existing theorem supplies the required `FiniteRankStabilityCertificate.eventualExact` field for the composed MARL/Hodge-Maxwell/GRU-F4/Watkins/Sparsemax economic update.
 - No artificial F4-to-eventual-fixation theorem was added. The remaining obligation is the actual finite-rank/eventual-absorption certificate for the composed update.
+
+
+## 2026-09-24 canonical learner finite-rank obstruction follow-up
+
+- Added `canonicalFullLearner-no-finite-rank-stability`, proving that the full canonical learner state cannot satisfy `FiniteRankStabilityCertificate` because `canonicalNoFixedPoint` contradicts its required `equilibriumFixed` field.
+- Updated CI discovery/gating so this obstruction remains an explicit checked boundary.
+- Updated the economic Mermaid graph and Markdown documentation: the finite-rank certificate must be sought on an invariant quotient/factor that removes the nonstationary clock coordinate.
+- This prevents the next proof attempt from incorrectly applying the finite-rank convergence bridge to the full learner state.
+- Knowledge delta paths: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`, `.ci/actions_ci.dhall`, `.ci/discovery/theorem_graph_search.m`, `docs/economics/economic-egraph-emergent-arrow-debreu.mmd`, `docs/economics/economic-egraph-emergent-arrow-debreu.md`, this plan.
+- Verification pending for the new obstruction theorem; CI should typecheck the new head before treating it as verified.
