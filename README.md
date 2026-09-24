@@ -743,7 +743,7 @@ GitHub Actions
 Git history records semantic change
 ```
 
-The distinctive workflow is not attributed to any particular person or language. It combines typed transformations, explicit invariants, theorem-prover checking, reproducible environments, executable discovery tooling, and disciplined version history.
+The distinctive workflow is methodological rather than a claim that ordinary GitHub workflows are inadequate. It combines typed transformations, explicit invariants, theorem-prover checking, reproducible environments, executable discovery tooling, and disciplined version history.
 
 The repository also makes a deliberate distinction:
 
@@ -773,7 +773,7 @@ discover -> prune -> formalize -> verify -> record
 
 ### ASCII-controlled README automation
 
-The slow Dhall-generated updater owns only its marked commit-totality block. That generated block is ASCII-controlled: commit subjects containing non-ASCII characters are rendered with ASCII backslash escapes rather than changing the underlying Git history. The updater also records the processed commit and exact unprocessed count.
+The slow Dhall-generated updater owns only its marked commit-totality block. That generated block is an ASCII-controlled interface: commit subjects containing non-ASCII characters are rendered with ASCII backslash escapes, and the updater fails closed if generated rows are not ASCII. It records the processed commit and exact unprocessed count without rewriting Git history.
 
 ```
 Git history
