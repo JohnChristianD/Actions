@@ -6667,11 +6667,10 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge :
   (fromEconomic : Economic → C.CanonicalFullLearnerState)
   (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
   (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
-  (learnerKernel : C.CanonicalFullLearnerKernel)
   (economicStep : Economic → Economic)
   (stepConjugacy :
     ∀ s →
-    toEconomic (C.canonicalFullStep learnerKernel s)
+    toEconomic (C.canonicalFullStep (learnerKernel connected) s)
     ≡ economicStep (toEconomic s))
   (economicEquilibrium : Economic → Set)
   (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
@@ -6688,7 +6687,7 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge :
   ((∀ n s →
     toEconomic
       (iterateIsomorphism
-        (C.canonicalFullStep learnerKernel)
+        (C.canonicalFullStep (learnerKernel connected))
         n
         s)
     ≡ iterateIsomorphism economicStep n (toEconomic s)))
