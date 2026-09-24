@@ -461,6 +461,7 @@ graph_required_theorems = [
     "TopologicalConvergenceWitness",
     "FixedPointExistenceFromConvergence",
     "isomorphismFixedPointTransport",
+    "isomorphismIterateFixedPointTransport",
     "economicEquilibriumExistenceFromConvergentFixedPoint"
 ].
 
