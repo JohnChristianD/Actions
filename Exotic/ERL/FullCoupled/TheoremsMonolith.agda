@@ -8350,6 +8350,136 @@ record RecursiveRadnerExistence
         data
 
 ------------------------------------------------------------------------
+-- Recursive Radner as an instance of the singular generalized Walrasian
+-- ontology.
+--
+-- The generalized equilibrium carrier stores the full state-contingent
+-- price/allocation/portfolio processes.  The equilibrium predicate carries
+-- the Radner feasibility, optimality, commodity clearing, asset clearing,
+-- and recursive-law witnesses.  This avoids introducing a second
+-- equilibrium ontology into the monolith.
+------------------------------------------------------------------------
+
+RecursiveRadnerPrice :
+  ∀ {State Price : Set} →
+  Set
+RecursiveRadnerPrice {State} {Price} =
+  State → Price
+
+RecursiveRadnerAllocation :
+  ∀ {State Agent Allocation Portfolio : Set} →
+  Set
+RecursiveRadnerAllocation {State} {Agent} {Allocation} {Portfolio} =
+  (State → Agent → Allocation)
+  ×
+  (State → Agent → Portfolio)
+
+recursiveRadner-generalized :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set} →
+  MegaGeneralizedWalrasianEquilibrium
+    State
+    RecursiveRadnerPrice
+    (RecursiveRadnerAllocation
+      {State = State}
+      {Agent = Agent}
+      {Allocation = Allocation}
+      {Portfolio = Portfolio})
+recursiveRadner-generalized =
+  megaGeneralizedWalrasianEquilibrium
+    (λ x → x)
+    (λ pricePair allocationPair →
+      Σ (RecursiveRadnerData
+          State
+          Agent
+          Commodity
+          Asset
+          Price
+          Allocation
+          Portfolio
+          (proj₁ allocationPair)
+          (proj₂ allocationPair))
+        (λ D →
+          RecursiveRadnerEquilibrium
+            State
+            Agent
+            Commodity
+            Asset
+            Price
+            Allocation
+            Portfolio
+            (proj₁ allocationPair)
+            (proj₂ allocationPair)
+            D))
+    (λ pricePair allocationPair →
+      Σ (RecursiveRadnerData
+          State
+          Agent
+          Commodity
+          Asset
+          Price
+          Allocation
+          Portfolio
+          (proj₁ allocationPair)
+          (proj₂ allocationPair))
+        (λ D →
+          RecursiveRadnerEquilibrium
+            State
+            Agent
+            Commodity
+            Asset
+            Price
+            Allocation
+            Portfolio
+            (proj₁ allocationPair)
+            (proj₂ allocationPair)
+            D))
+    (λ {pricePair} {allocationPair} h → h)
+
+recursiveRadner-equilibrium-embeds :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set}
+    {priceProcess : State → Price}
+    {allocationProcess : State → Agent → Allocation}
+    {portfolioProcess : State → Agent → Portfolio}
+    {D :
+      RecursiveRadnerData
+        State Agent Commodity Asset Price Allocation Portfolio
+        priceProcess
+        allocationProcess
+        portfolioProcess} →
+  RecursiveRadnerEquilibrium
+    State
+    Agent
+    Commodity
+    Asset
+    Price
+    Allocation
+    Portfolio
+    priceProcess
+    allocationProcess
+    portfolioProcess
+    D →
+  equilibrium
+    (recursiveRadner-generalized
+      {State = State}
+      {Agent = Agent}
+      {Commodity = Commodity}
+      {Asset = Asset}
+      {Price = Price}
+      {Allocation = Allocation}
+      {Portfolio = Portfolio})
+    priceProcess
+    (allocationProcess , portfolioProcess)
+recursiveRadner-equilibrium-embeds witness =
+  D , witness
+  where
+  D :
+    RecursiveRadnerData
+      _ _ _ _ _ _ _
+      priceProcess
+      allocationProcess
+      portfolioProcess
+  D = _
+------------------------------------------------------------------------
 -- Existence is a separate economic theorem interface.
 --
 -- This record does not assume that the learner's F4/NormPair stability
