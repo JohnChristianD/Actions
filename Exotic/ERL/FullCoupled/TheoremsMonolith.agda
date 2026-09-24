@@ -5685,18 +5685,21 @@ record POMDPBeliefPolicyFactorization
   (allocation : State → Allocation) : Set₁ where
   constructor pomdpBeliefPolicyFactorization
   field
+    sufficientObservation : State → Observation
     inducedAllocation : Observation → Allocation
+    chosenAction : State → Action
     allocationFactorsThroughObservation :
       ∀ s →
-      allocation s ≡ inducedAllocation (believedObservation s)
+      allocation s ≡ inducedAllocation (sufficientObservation s)
     policyReadout :
-      ∀ o →
-      policy (belief o) ≡ chosenAction o
+      ∀ s →
+      policy (belief (sufficientObservation s)) ≡ chosenAction s
+
+open POMDPBeliefPolicyFactorization public
 
 ------------------------------------------------------------------------
--- The exact factorization theorem is intentionally parameterized by the
--- actual sufficient-statistic and policy laws.  This is the seam where a
--- future probabilistic filtering/optimality theorem can be consumed.
+-- This is the exact POMDP/equilibrium seam.  It consumes an explicit
+-- sufficient-statistic/policy factorization rather than asserting one.
 ------------------------------------------------------------------------
 
 record POMDPWalrasianBeliefEquilibriumClosure
@@ -5705,19 +5708,48 @@ record POMDPWalrasianBeliefEquilibriumClosure
     POMDPWalrasianData
       State Action Observation Distribution Reward Price Allocation)
   (p : Price)
-  (allocation : State → Allocation) : Set₁ where
+  (allocation : State → Allocation)
+  (beliefPolicy :
+    POMDPBeliefPolicyFactorization
+      State Action Observation Distribution Allocation
+      (POMDPWalrasianData.observationKernel D)
+      (λ _ → Action)
+      allocation) : Set₁ where
   constructor pomdpWalrasianBeliefEquilibriumClosure
   field
     equilibrium :
       POMDPWalrasianEquilibrium
         State Action Observation Distribution Reward Price Allocation
         D p allocation
-    beliefPolicyFactorization :
-      Set
+    sufficientStatistic :
+      ∀ s →
+      allocation s ≡
+      inducedAllocation beliefPolicy
+        (sufficientObservation beliefPolicy s)
 
-------------------------------------------------------------------------
--- The previous record is a graph seam only: no inhabitant is fabricated
--- because a true belief-state sufficiency theorem is domain-specific.
--- Future search may replace the final Set with a concrete proof object when
--- the corresponding Agda semantics exist.
-------------------------------------------------------------------------
+pomdpWalrasianBeliefEquilibriumClosure-from-witness :
+  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
+  {D :
+    POMDPWalrasianData
+      State Action Observation Distribution Reward Price Allocation}
+  {p : Price}
+  {allocation : State → Allocation}
+  (equilibrium :
+    POMDPWalrasianEquilibrium
+      State Action Observation Distribution Reward Price Allocation
+      D p allocation)
+  (beliefPolicy :
+    POMDPBeliefPolicyFactorization
+      State Action Observation Distribution Allocation
+      (POMDPWalrasianData.observationKernel D)
+      (λ _ → Action)
+      allocation) →
+  POMDPWalrasianBeliefEquilibriumClosure
+    State Action Observation Distribution Reward Price Allocation
+    D p allocation beliefPolicy
+pomdpWalrasianBeliefEquilibriumClosure-from-witness
+  equilibrium beliefPolicy =
+  pomdpWalrasianBeliefEquilibriumClosure
+    equilibrium
+    (allocationFactorsThroughObservation beliefPolicy)
+
