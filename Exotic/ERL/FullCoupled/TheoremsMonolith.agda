@@ -5435,9 +5435,9 @@ hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
 -- Mega-generalized Walrasian / KKT / Arrow-Debreu equilibrium contract.
 --
 -- This is the single generalized equilibrium dependency exposed to the
--- connected GRU/Hodge-Maxwell/Tsallis composition. Walrasian, Arrow-Debreu,
--- and KKT characterizations are explicit predicates over the same aggregate
--- carrier; the contract does not identify them without bridge witnesses.
+-- connected GRU/Hodge-Maxwell/Tsallis composition. Named Walrasian,
+-- Arrow-Debreu, and KKT presentations are intentionally collapsed into one
+-- generalized characterization predicate over the aggregate carrier.
 -- No finite-dimensional, continuity, differentiability, convexity, or
 -- Vec/Fin specialization is built into the edge.
 ------------------------------------------------------------------------
