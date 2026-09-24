@@ -1,0 +1,580 @@
+flowchart TB
+  RULE["STRICT UNCONDITIONAL MONOLITH GRAPH<br/>Only closed proof terms / closed impossibilities<br/>No external certificate, condition, convergence, or existence record as a theorem input"]
+  subgraph G0["Core algebra"]
+    T001["canonical-aq-loop-theorem"]
+    T002["canonicalAperiodic-theorem"]
+    T004["canonical-connected-composition-theorem"]
+    T005["canonicalPolicy-learnerReplacement-composition"]
+    T006["canonical-learner-replacement-closure-theorem"]
+    T008["composeEqualityTheorem"]
+    T029["informationPreserving-symbolic-task-factorization"]
+    T031["informationPreserving-symbolic-task-boundary"]
+    T033["canonical-q-munchausen-l2-shared-negation-polarity-theorem"]
+    T042["canonicalIterateComposition"]
+    T044["canonicalFullLearner-no-finite-rank-stability"]
+    T050["offPolicyFunctionApproximationStabilityBoundaryWitness"]
+    T064["canonical-a-star-cost-guidance-theorem"]
+    T069["canonical-operator-composition-theorem"]
+    T077["canonical-pure-non-orange-bypass-completion-theorem"]
+    T078["canonical-persistent-excitation-requirement-theorem"]
+  end
+  subgraph G1["Boundaries"]
+    T003["canonicalNoNontrivialFiniteCycle-theorem"]
+    T036["discreteExactUniversalUAP-leftInverse-equivalence"]
+    T039["canonicalExactCompositionTuringCompletenessContract-impossible"]
+    T040["canonicalDeterministicFiniteStepDivergenceInevitability"]
+    T041["canonicalNoFiniteStepConvergenceToFixedPoint"]
+    T047["GloballyEventuallyFixed"]
+    T048["successor-never-globally-eventually-fixed-at-zero"]
+    T068["canonical-finite-cycle-exclusion-isomorphism-theorem"]
+    T076["markovian-stationary-point-composition-theorem"]
+    T079["exact-contract-computability-boundary-theorem"]
+    T080["canonical-stationary-subcomposition-theorem"]
+  end
+  subgraph G2["Learner/F4"]
+    T007["canonicalNormPair-afterFullStep-iterate"]
+    T009["canonicalGRU-recurrent-associative-scan-theorem"]
+    T011["canonicalF4RecurrentNetwork"]
+    T012["canonicalF4RecurrentNetwork-step-law"]
+    T013["canonicalF4-prefix-monoid-homomorphism"]
+    T014["canonicalNormPairRecurrentNetwork"]
+    T015["canonicalNormPairRecurrentNetwork-step-law"]
+    T016["canonicalNormPair-prefix-monoid-homomorphism"]
+    T017["canonicalGRUF4NormPrefixNetwork"]
+    T018["canonicalGRUF4NormPrefix-step-law"]
+    T019["canonicalGRUF4Norm-prefix-monoid-homomorphism"]
+    T020["canonicalFullStep-GRUF4Norm-prefix-bridge"]
+    T021["canonical-gruf4-norm-watkins-prefix-composition-theorem"]
+    T025["canonicalRecurrentInput-watkinsTarget-law"]
+    T032["canonical-biased-watkins-negative-q-munchausen-l2-target-theorem"]
+    T045["canonical-polymorphic-sparsemax-egraph-theorem"]
+    T070["canonical-f4-global-optimizer-stability-theorem"]
+    T071["f4Orbit"]
+    T072["f4-zero-L2-unit-step-code"]
+    T073["f4-unit-forcing-linear-growth"]
+    T074["f4-unit-forcing-no-upper-bound"]
+    T075["canonical-f4-normPair-sure-stability-composition-theorem"]
+    T081["f4-add-right-nonnegative"]
+    T087["applyNormPairReplacements"]
+    T088["normPairReplacementRelation"]
+    T089["applyNormPairReplacements-collapse"]
+    T090["normPairReplacementRelation-generated"]
+    T091["normPairReplacementRelation-refl"]
+    T092["normPairReplacementRelation-sym"]
+    T093["normPairReplacementRelation-trans"]
+    T094["canonicalPolicy-factors-through-NormPair"]
+    T095["canonicalNormPairQuotient-step-compatible"]
+    T096["canonical-normPair-quotient-factor-transition-theorem"]
+    T097["canonical-f4-normPair-factor-stability-theorem"]
+  end
+  subgraph G3["Recurrence"]
+    T010["canonical-recurrent-prefix-monoid-homomorphism"]
+    T022["canonicalClock-freeMonoidActionHomomorphism"]
+    T023["recurrentPrefix-scan-lifts-conjugacy"]
+    T024["canonical-recurrent-scan-conjugacy-theorem"]
+    T027["canonical-full-learner-connected-scan-conjugacy-theorem"]
+    T028["canonical-S4S5-recurrent-scan-theorem"]
+    T043["recurrentPrefixStepWork-law"]
+    T046["directProductFiniteAutomatonComposition-theorem"]
+    T053["canonicalTokenStep-conjugacy"]
+    T054["canonicalTokenListState-conjugacy"]
+    T055["canonicalToken-prefix-monoid-homomorphism"]
+    T056["canonical-global-token-encoding-conjugacy"]
+    T058["canonical-global-token-lm-composition-theorem"]
+  end
+  subgraph G4["Representation"]
+    T026["canonicalFullLearner-iterate-conjugacy"]
+    T030["informationPreserving-all-tasks-injective"]
+    T034["suc-injective"]
+    T035["canonicalOrbit-state-injective"]
+    T037["discreteLeftInverse-observe-injective"]
+    T038["collision-implies-no-leftInverse-via-injectivity"]
+    T049["exact-injective-continuous-leftInverse-does-not-imply-update-stability"]
+    T052["exactReconstructionOnImage-from-inverses"]
+    T057["generalized-representation-transport-composition-theorem"]
+    T062["canonicalAStarZeroCost"]
+    T063["canonicalAStarSuccessorCost"]
+    T065["CanonicalEndogenousAStarTransportClosureTheorem"]
+    T066["canonical-endogenous-e-graph-a-star-transport-closure-theorem"]
+    T067["canonical-endogenous-a-star-transport-closure-theorem"]
+  end
+  subgraph G5["Economic"]
+    T051["markov-stationary-walrasian-composition-theorem"]
+    T083["connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem"]
+    T084["megaSecondWelfareTheorem-boundary-counterexample"]
+    T085["megaEconomicSolutionStepConjugacy"]
+    T086["megaEconomicSolutionEquilibriumTransport"]
+    T098["RecursiveRadnerPrice"]
+    T099["RecursiveRadnerAllocation"]
+    T100["recursiveRadner-generalized"]
+    T101["megaNoEquilibriumGeneralizedWalrasian"]
+    T102["megaNoEquilibriumWitness"]
+    T103["noUnconditionalMegaGeneralizedWalrasianExistence"]
+    T104["megaNoEquilibriumF4NormPairEconomicWitness"]
+  end
+  subgraph G6["Maxwell"]
+    T059["canonicalIntegerHaarCross"]
+    T060["canonicalIntegerHaarEnergy"]
+    T061["canonical-integer-haar-scaled-orthogonality-theorem"]
+    T082["hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation"]
+  end
+  T002 --> T001
+  T003 --> T001
+  T001 --> T002
+  T003 --> T002
+  T004 --> T002
+  T001 --> T003
+  T004 --> T003
+  T001 --> T004
+  T003 --> T004
+  T005 --> T004
+  T006 --> T004
+  T007 --> T004
+  T006 --> T005
+  T007 --> T005
+  T008 --> T005
+  T005 --> T006
+  T007 --> T006
+  T008 --> T006
+  T009 --> T006
+  T008 --> T007
+  T009 --> T007
+  T009 --> T008
+  T011 --> T010
+  T012 --> T010
+  T013 --> T010
+  T014 --> T010
+  T015 --> T010
+  T016 --> T010
+  T017 --> T010
+  T012 --> T011
+  T013 --> T011
+  T014 --> T011
+  T015 --> T011
+  T016 --> T011
+  T017 --> T011
+  T018 --> T011
+  T019 --> T011
+  T020 --> T011
+  T011 --> T012
+  T013 --> T012
+  T014 --> T012
+  T015 --> T012
+  T016 --> T012
+  T017 --> T012
+  T018 --> T012
+  T019 --> T012
+  T020 --> T012
+  T021 --> T012
+  T010 --> T013
+  T014 --> T013
+  T015 --> T013
+  T016 --> T013
+  T017 --> T013
+  T018 --> T013
+  T019 --> T013
+  T020 --> T013
+  T021 --> T013
+  T010 --> T014
+  T015 --> T014
+  T016 --> T014
+  T017 --> T014
+  T018 --> T014
+  T019 --> T014
+  T020 --> T014
+  T021 --> T014
+  T010 --> T015
+  T014 --> T015
+  T016 --> T015
+  T017 --> T015
+  T018 --> T015
+  T019 --> T015
+  T020 --> T015
+  T021 --> T015
+  T010 --> T016
+  T017 --> T016
+  T018 --> T016
+  T019 --> T016
+  T020 --> T016
+  T021 --> T016
+  T010 --> T017
+  T018 --> T017
+  T019 --> T017
+  T020 --> T017
+  T021 --> T017
+  T010 --> T018
+  T017 --> T018
+  T019 --> T018
+  T020 --> T018
+  T021 --> T018
+  T010 --> T019
+  T017 --> T019
+  T020 --> T019
+  T021 --> T019
+  T010 --> T020
+  T017 --> T020
+  T021 --> T020
+  T010 --> T021
+  T020 --> T021
+  T017 --> T023
+  T020 --> T023
+  T024 --> T023
+  T025 --> T023
+  T026 --> T023
+  T027 --> T023
+  T009 --> T024
+  T017 --> T024
+  T020 --> T024
+  T023 --> T024
+  T025 --> T024
+  T026 --> T024
+  T027 --> T024
+  T028 --> T024
+  T009 --> T025
+  T017 --> T025
+  T020 --> T025
+  T026 --> T025
+  T027 --> T025
+  T028 --> T025
+  T009 --> T026
+  T020 --> T026
+  T025 --> T026
+  T027 --> T026
+  T028 --> T026
+  T029 --> T026
+  T030 --> T026
+  T009 --> T027
+  T020 --> T027
+  T025 --> T027
+  T026 --> T027
+  T028 --> T027
+  T029 --> T027
+  T030 --> T027
+  T009 --> T028
+  T029 --> T028
+  T030 --> T028
+  T008 --> T029
+  T030 --> T029
+  T031 --> T029
+  T008 --> T030
+  T029 --> T030
+  T031 --> T030
+  T008 --> T031
+  T029 --> T031
+  T032 --> T031
+  T033 --> T032
+  T034 --> T032
+  T034 --> T033
+  T035 --> T033
+  T035 --> T034
+  T036 --> T035
+  T037 --> T036
+  T038 --> T036
+  T038 --> T037
+  T008 --> T040
+  T041 --> T040
+  T042 --> T040
+  T043 --> T040
+  T008 --> T041
+  T042 --> T041
+  T043 --> T041
+  T008 --> T042
+  T043 --> T042
+  T008 --> T043
+  T010 --> T045
+  T028 --> T045
+  T029 --> T045
+  T047 --> T046
+  T048 --> T046
+  T049 --> T046
+  T050 --> T046
+  T048 --> T047
+  T049 --> T047
+  T050 --> T047
+  T047 --> T048
+  T049 --> T048
+  T050 --> T048
+  T051 --> T048
+  T009 --> T049
+  T046 --> T049
+  T047 --> T049
+  T048 --> T049
+  T050 --> T049
+  T051 --> T049
+  T009 --> T050
+  T046 --> T050
+  T049 --> T050
+  T051 --> T050
+  T052 --> T050
+  T009 --> T051
+  T046 --> T051
+  T050 --> T051
+  T052 --> T051
+  T054 --> T053
+  T055 --> T053
+  T056 --> T053
+  T053 --> T054
+  T055 --> T054
+  T056 --> T054
+  T053 --> T055
+  T054 --> T055
+  T056 --> T055
+  T053 --> T056
+  T054 --> T056
+  T055 --> T057
+  T056 --> T057
+  T058 --> T057
+  T059 --> T057
+  T060 --> T057
+  T061 --> T057
+  T062 --> T057
+  T063 --> T057
+  T008 --> T058
+  T055 --> T058
+  T056 --> T058
+  T057 --> T058
+  T059 --> T058
+  T060 --> T058
+  T061 --> T058
+  T062 --> T058
+  T063 --> T058
+  T064 --> T058
+  T065 --> T058
+  T066 --> T058
+  T008 --> T059
+  T057 --> T059
+  T060 --> T059
+  T061 --> T059
+  T062 --> T059
+  T063 --> T059
+  T064 --> T059
+  T065 --> T059
+  T066 --> T059
+  T067 --> T059
+  T008 --> T060
+  T057 --> T060
+  T059 --> T060
+  T061 --> T060
+  T062 --> T060
+  T063 --> T060
+  T064 --> T060
+  T065 --> T060
+  T066 --> T060
+  T067 --> T060
+  T008 --> T061
+  T057 --> T061
+  T059 --> T061
+  T060 --> T061
+  T062 --> T061
+  T063 --> T061
+  T064 --> T061
+  T065 --> T061
+  T066 --> T061
+  T067 --> T061
+  T008 --> T062
+  T057 --> T062
+  T063 --> T062
+  T064 --> T062
+  T065 --> T062
+  T066 --> T062
+  T067 --> T062
+  T068 --> T062
+  T008 --> T063
+  T057 --> T063
+  T062 --> T063
+  T064 --> T063
+  T065 --> T063
+  T066 --> T063
+  T067 --> T063
+  T068 --> T063
+  T008 --> T064
+  T057 --> T064
+  T062 --> T064
+  T063 --> T064
+  T065 --> T064
+  T066 --> T064
+  T067 --> T064
+  T068 --> T064
+  T008 --> T065
+  T057 --> T065
+  T064 --> T065
+  T066 --> T065
+  T067 --> T065
+  T068 --> T065
+  T069 --> T065
+  T008 --> T066
+  T057 --> T066
+  T064 --> T066
+  T065 --> T066
+  T067 --> T066
+  T068 --> T066
+  T069 --> T066
+  T066 --> T067
+  T068 --> T067
+  T069 --> T067
+  T070 --> T067
+  T069 --> T068
+  T070 --> T068
+  T071 --> T068
+  T070 --> T069
+  T071 --> T069
+  T072 --> T069
+  T073 --> T069
+  T071 --> T070
+  T072 --> T070
+  T073 --> T070
+  T074 --> T070
+  T072 --> T071
+  T073 --> T071
+  T074 --> T071
+  T071 --> T072
+  T073 --> T072
+  T074 --> T072
+  T045 --> T073
+  T051 --> T073
+  T066 --> T073
+  T070 --> T073
+  T071 --> T073
+  T072 --> T073
+  T074 --> T073
+  T075 --> T073
+  T045 --> T074
+  T051 --> T074
+  T066 --> T074
+  T070 --> T074
+  T071 --> T074
+  T073 --> T074
+  T075 --> T074
+  T076 --> T074
+  T010 --> T075
+  T027 --> T075
+  T039 --> T075
+  T045 --> T075
+  T051 --> T075
+  T061 --> T075
+  T066 --> T075
+  T068 --> T075
+  T069 --> T075
+  T070 --> T075
+  T076 --> T075
+  T077 --> T075
+  T010 --> T076
+  T027 --> T076
+  T039 --> T076
+  T051 --> T076
+  T061 --> T076
+  T066 --> T076
+  T068 --> T076
+  T069 --> T076
+  T070 --> T076
+  T077 --> T076
+  T010 --> T077
+  T027 --> T077
+  T039 --> T077
+  T061 --> T077
+  T068 --> T077
+  T069 --> T077
+  T070 --> T077
+  T039 --> T078
+  T079 --> T078
+  T080 --> T078
+  T039 --> T079
+  T080 --> T079
+  T082 --> T081
+  T084 --> T083
+  T086 --> T085
+  T085 --> T086
+  T088 --> T087
+  T089 --> T087
+  T090 --> T087
+  T091 --> T087
+  T092 --> T087
+  T093 --> T087
+  T094 --> T087
+  T095 --> T087
+  T087 --> T088
+  T089 --> T088
+  T090 --> T088
+  T091 --> T088
+  T092 --> T088
+  T093 --> T088
+  T094 --> T088
+  T095 --> T088
+  T087 --> T089
+  T088 --> T089
+  T090 --> T089
+  T091 --> T089
+  T092 --> T089
+  T093 --> T089
+  T094 --> T089
+  T095 --> T089
+  T087 --> T090
+  T088 --> T090
+  T091 --> T090
+  T092 --> T090
+  T093 --> T090
+  T094 --> T090
+  T095 --> T090
+  T087 --> T091
+  T088 --> T091
+  T092 --> T091
+  T093 --> T091
+  T094 --> T091
+  T095 --> T091
+  T087 --> T092
+  T088 --> T092
+  T093 --> T092
+  T094 --> T092
+  T095 --> T092
+  T087 --> T093
+  T088 --> T093
+  T090 --> T093
+  T091 --> T093
+  T092 --> T093
+  T094 --> T093
+  T095 --> T093
+  T096 --> T093
+  T087 --> T094
+  T088 --> T094
+  T090 --> T094
+  T091 --> T094
+  T092 --> T094
+  T093 --> T094
+  T095 --> T094
+  T096 --> T094
+  T087 --> T095
+  T088 --> T095
+  T090 --> T095
+  T091 --> T095
+  T092 --> T095
+  T093 --> T095
+  T094 --> T095
+  T096 --> T095
+  T075 --> T096
+  T088 --> T096
+  T090 --> T096
+  T091 --> T096
+  T092 --> T096
+  T093 --> T096
+  T094 --> T096
+  T095 --> T096
+  T097 --> T096
+  T075 --> T097
+  T094 --> T097
+  T095 --> T097
+  T096 --> T097
+  T099 --> T098
+  T100 --> T098
+  T098 --> T099
+  T100 --> T099
+  T097 --> T101
+  T102 --> T101
+  T103 --> T101
+  T097 --> T102
+  T101 --> T102
+  T103 --> T102
+  T097 --> T103
+  T101 --> T103
+  T104 --> T103
+  T101 --> T104
+  RULE --> T001
