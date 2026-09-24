@@ -54,6 +54,12 @@ let script = merge {
     grep -Fq 'dualSeparationToDerivedPrice' "$theorem" || { echo "price edge missing"; exit 1; }
     grep -Fq 'derivedPriceToGeneralizedEquilibrium' "$theorem" || { echo "generalized-equilibrium edge missing"; exit 1; }
     grep -Fq 'generalizedEquilibriumToClassicalSpecialization' "$theorem" || { echo "Arrow-Debreu gate missing"; exit 1; }
+    grep -Fq 'TopologicalConvergenceWitness' "$theorem" || { echo "topological convergence witness missing"; exit 1; }
+    grep -Fq 'FixedPointExistenceFromConvergence' "$theorem" || { echo "fixed-point existence closure missing"; exit 1; }
+    grep -Fq 'GeneralizedWalrasianFixedPointClosure' "$theorem" || { echo "economic fixed-point bridge missing"; exit 1; }
+    grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point' "$theorem" || { echo "topological economic existence theorem missing"; exit 1; }
+    grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point-transport' "$theorem" || { echo "transported topological economic existence theorem missing"; exit 1; }
+    grep -Fq 'isomorphismIterateFixedPointTransport' "$theorem" || { echo "iterate fixed-point transport missing"; exit 1; }
 
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
@@ -100,6 +106,11 @@ let script = merge {
       printf '    "derived price + clearing -> generalized equilibrium",\n'
       printf '    "generalized equilibrium -> classical specialization gate",\n'
       printf '    "classical specialization assumptions -> ArrowDebreuSpecialization"\n'
+      printf '  ],\n'
+      printf '  "conditional_compositions": [\n'
+      printf '    "TopologicalConvergenceWitness -> FixedPointExistenceFromConvergence -> GeneralizedWalrasianExistence",\n'
+      printf '    "StateIsomorphism + isomorphismIterateConjugacy -> transported fixed point",\n'
+      printf '    "transported fixed point + GeneralizedWalrasianFixedPointClosure -> GeneralizedWalrasianExistence"\n'
       printf '  ],\n'
       printf '  "counterexample_policy": "boundary/counterexample declarations remain graph nodes and block promotion of unsupported implications",\n'
       printf '  "automation": "one unattended Mercury discovery pass followed by deterministic economic projection; JSON is machine evidence and TSV/Mermaid are derived views"\n'
