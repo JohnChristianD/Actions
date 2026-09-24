@@ -302,6 +302,14 @@ The repository contains several deliberately separate readings:
 
 These are formal structural correspondences. They are not claims of empirical language-model performance, biological validity, physical realism, or a general equilibrium theorem.
 
+## Generalized Walrasian benchmark boundary
+
+The repository treats Walrasian equilibrium as a family of composable contracts rather than a single canonical finite-dimensional theorem. The local `RegularityFreeWalrasianData` and `RegularityFreeWalrasianEquilibrium` surfaces make continuity and stationarity explicit rather than hiding them in the data type. The connected GRU/Hodge-Maxwell/Tsallis/POMDP theorem consumes that witness directly.
+
+The external benchmark is `danlyng/Econlib`. Its current equilibrium module is useful for checking classical Arrow-Debreu/Walrasian existence and stationary accounting structures, but it is not a proof oracle and is not expected to enumerate every edge admitted by the repository's e-graph/A* search. In particular, external generalizations include continuum or measure-space agents, infinite-dimensional commodity spaces, discontinuous or non-ordered preferences, interdependent and price-dependent preferences, and models without free disposal. Those variants require their own explicit Agda carriers, preference/constraint correspondences, aggregation laws, and existence witnesses before they can become proof edges.
+
+The graph therefore distinguishes three layers: external literature as a benchmark/search input, local generalized equilibrium contracts as Agda proof surfaces, and composed theorem edges only where an actual Agda consumer exists. No external existence result is silently converted into a local proof term.
+
 ## Exactness policy
 
 An e-graph extraction is never treated as a proof.
@@ -525,7 +533,9 @@ The Maxwell and Hodge-Maxwell theorem family is now carrier-polymorphic: its exa
 
 `HodgeMaxwellMiddleDegreeInvolutionTransportTheorem` is now a genuine downstream consumer of that continuous representation. It transports an explicitly supplied GRU involution through the exact StateIsomorphism and observed factorization; continuous left-invertibility then proves `star (star s) ≡ s`. The involution premise remains explicit because injectivity and topology alone do not imply the Hodge-star square law.
 
-The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-polymorphic. The former finite-cardinality Maxwell branch, finite Hodge-Maxwell discretization branch, and finite-carrier Maxwell pigeonhole impossibility theorem are pruned because their strict dependencies were intrinsically tied to `Fin n`.
+The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-polymorphic. The connected GRU/Hodge-Maxwell/Tsallis/Walrasian/POMDP closure uses the general Tsallis divergence surface directly; it does not specialize to Tsallis-2, and it does not introduce `Fin n` or `Vec` carriers.
+
+Econlib is used as a benchmark/reference implementation, not as an oracle for the Agda graph. Its equilibrium layer provides a concrete Arrow-Debreu/Walrasian existence baseline and related stationary/Markov structures, while the repository's graph search remains responsible for discovering broader compositional surfaces and the Agda source remains the proof authority. Current external equilibrium literature also covers continuum-agent, measure-space, infinite-dimensional commodity, discontinuous/non-ordered, interdependent, price-dependent, and no-free-disposal variants; these are research inputs for candidate graph surfaces, not imported proofs. The former finite-cardinality Maxwell branch, finite Hodge-Maxwell discretization branch, and finite-carrier Maxwell pigeonhole impossibility theorem are pruned because their strict dependencies were intrinsically tied to `Fin n`.
 
 This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
 
