@@ -8091,3 +8091,198 @@ noUnconditionalMegaGeneralizedWalrasianExistence
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
 \n
+
+------------------------------------------------------------------------
+-- F4 coercivity/boundedness frontier composed with NormPair stability
+-- and economic injectivity.
+--
+-- Important semantic boundary: the canonical F4 theorem proves exact
+-- Z-valued step stability. It does not currently prove an analytic
+-- coercivity theorem or a raw global thetaQ boundedness theorem. Those
+-- are therefore explicit proof premises here rather than renamed
+-- consequences of F4 stability.
+------------------------------------------------------------------------
+
+record F4NormPairEconomicInjectivityCertificate
+  (Economic GRU Equilibrium : Set)
+  (encode : Economic → GRU)
+  (readout : GRU → Economic)
+  (equilibriumMap : Economic → Equilibrium)
+  (carrierEquilibriumMap : GRU → Equilibrium)
+  (economicStep : Economic → Economic)
+  (gruStep : GRU → GRU) : Set₁ where
+  constructor f4NormPairEconomicInjectivityCertificate
+  field
+    f4CoercivityType : Set₁
+    f4CoercivityWitness : f4CoercivityType
+    f4BoundednessType : Set₁
+    f4BoundednessWitness : f4BoundednessType
+    f4NormPairStability :
+      CanonicalF4NormPairSureStabilityCompositionTheorem
+    normPairQuotientTransition :
+      CanonicalNormPairQuotientFactorTransitionTheorem
+    economicSquare :
+      MegaWalrasianGlobalSquareConjugacy
+        Economic
+        GRU
+        Equilibrium
+        encode
+        readout
+        equilibriumMap
+        carrierEquilibriumMap
+        economicStep
+        gruStep
+    economicInjectivity :
+      ∀ {x y : Economic} →
+      encode x ≡ encode y →
+      x ≡ y
+
+open F4NormPairEconomicInjectivityCertificate public
+
+f4-normPair-economic-injectivity-certificate :
+  ∀ {Economic GRU Equilibrium : Set}
+  {encode : Economic → GRU}
+  {readout : GRU → Economic}
+  {equilibriumMap : Economic → Equilibrium}
+  {carrierEquilibriumMap : GRU → Equilibrium}
+  {economicStep : Economic → Economic}
+  {gruStep : GRU → GRU}
+  (f4CoercivityType : Set₁)
+  (f4CoercivityWitness : f4CoercivityType)
+  (f4BoundednessType : Set₁)
+  (f4BoundednessWitness : f4BoundednessType)
+  (economicSquare :
+    MegaWalrasianGlobalSquareConjugacy
+      Economic
+      GRU
+      Equilibrium
+      encode
+      readout
+      equilibriumMap
+      carrierEquilibriumMap
+      economicStep
+      gruStep) →
+  F4NormPairEconomicInjectivityCertificate
+    Economic
+    GRU
+    Equilibrium
+    encode
+    readout
+    equilibriumMap
+    carrierEquilibriumMap
+    economicStep
+    gruStep
+f4-normPair-economic-injectivity-certificate
+  f4CoercivityType
+  f4CoercivityWitness
+  f4BoundednessType
+  f4BoundednessWitness
+  economicSquare =
+  f4NormPairEconomicInjectivityCertificate
+    f4CoercivityType
+    f4CoercivityWitness
+    f4BoundednessType
+    f4BoundednessWitness
+    canonical-f4-normPair-sure-stability-composition-theorem
+    canonical-normPair-quotient-factor-transition-theorem
+    economicSquare
+    (megaWalrasianGlobalSquare-injective economicSquare)
+
+------------------------------------------------------------------------
+-- Graph boundary: no unconditional generalized Walrasian existence
+-- theorem follows even after adjoining F4 coercivity/boundedness
+-- premises, exact NormPair quotient-transition closure, and economic
+-- global-square injectivity.
+--
+-- The countermodel uses singleton economic/carrier spaces, so every
+-- coercivity/boundedness premise can be inhabited while the generalized
+-- equilibrium predicate is empty. Hence the missing bridge is genuinely
+-- economic: a convergence/fixed-point/market-clearing/existence theorem,
+-- not injectivity alone.
+------------------------------------------------------------------------
+
+megaNoEquilibriumF4NormPairEconomicCertificate :
+  F4NormPairEconomicInjectivityCertificate
+    ⊤
+    ⊤
+    ⊤
+    (λ _ → tt)
+    (λ _ → tt)
+    (λ x → x)
+    (λ x → x)
+megaNoEquilibriumF4NormPairEconomicCertificate =
+  f4-normPair-economic-injectivity-certificate
+    ⊤
+    tt
+    ⊤
+    tt
+    megaNoEquilibriumWalrasianSquare
+
+megaNoEquilibriumWalrasianSquare :
+  MegaWalrasianGlobalSquareConjugacy
+    ⊤
+    ⊤
+    ⊤
+    (λ _ → tt)
+    (λ _ → tt)
+    (λ x → x)
+    (λ x → x)
+    (λ x → x)
+    (λ x → x)
+megaNoEquilibriumWalrasianSquare =
+  megaWalrasianGlobalSquareConjugacy
+    (λ _ → refl)
+    (λ _ → refl)
+    (λ _ → refl)
+
+noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity :
+  ¬
+    (∀ {State Price Allocation : Set}
+      (D : MegaGeneralizedWalrasianEquilibrium
+        State
+        Price
+        Allocation)
+      {Economic GRU Equilibrium : Set}
+      {encode : Economic → GRU}
+      {readout : GRU → Economic}
+      {equilibriumMap : Economic → Equilibrium}
+      {carrierEquilibriumMap : GRU → Equilibrium}
+      {economicStep : Economic → Economic}
+      {gruStep : GRU → GRU}
+      (certificate :
+        F4NormPairEconomicInjectivityCertificate
+          Economic
+          GRU
+          Equilibrium
+          encode
+          readout
+          equilibriumMap
+          carrierEquilibriumMap
+          economicStep
+          gruStep) →
+      Σ Price
+        (λ p →
+          Σ Allocation
+            (λ a →
+              equilibrium D p a)))
+noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity
+  theorem =
+  megaNoEquilibriumF4NormPairEconomicWitness
+    (theorem
+      megaNoEquilibriumGeneralizedWalrasian)
+    megaNoEquilibriumF4NormPairEconomicCertificate
+
+megaNoEquilibriumF4NormPairEconomicWitness :
+  ¬
+    Σ ⊤
+      (λ p →
+        Σ ⊤
+          (λ a →
+            equilibrium
+              megaNoEquilibriumGeneralizedWalrasian
+              p
+              a))
+megaNoEquilibriumF4NormPairEconomicWitness
+  (p , a , witness) =
+  witness
+
