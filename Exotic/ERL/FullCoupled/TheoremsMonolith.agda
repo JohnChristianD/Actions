@@ -6347,3 +6347,87 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem
     pomdpBeliefClosure
     allocationReadout
 
+
+
+------------------------------------------------------------------------
+-- Second-Welfare boundary and explicit non-derivability witness.
+--
+-- The supporting-price part of the Second Welfare Theorem is not
+-- derivable from Pareto optimality alone on this generalized surface.
+-- Standard proofs add economic structure (notably convexity plus the
+-- separation/supporting-price argument, together with the relevant
+-- continuity/local-nonsatiation and redistribution hypotheses).
+------------------------------------------------------------------------
+
+record MegaSecondWelfareTheoremBoundaryCounterexample : Set₁ where
+  constructor megaSecondWelfareTheoremBoundaryCounterexample
+  field
+    Price : Set
+    Allocation : Set
+    paretoOptimal : Allocation → Set₁
+    equilibrium : Price → Allocation → Set
+    allocationWitness : Allocation
+    paretoWitness :
+      paretoOptimal allocationWitness
+    noSupportingPrice :
+      ¬ Σ Price (λ p → equilibrium p allocationWitness)
+
+open MegaSecondWelfareTheoremBoundaryCounterexample public
+
+megaSecondWelfareTheorem-boundary-counterexample :
+  MegaSecondWelfareTheoremBoundaryCounterexample
+megaSecondWelfareTheorem-boundary-counterexample =
+  megaSecondWelfareTheoremBoundaryCounterexample
+    ⊥
+    ⊤
+    (λ _ → ⊤)
+    (λ _ _ → ⊥)
+    tt
+    tt
+    (λ { (_ , e) → e })
+
+------------------------------------------------------------------------
+-- Logical boundary for the first-welfare demand condition.
+--
+-- noStrictAffordableAlternative is a revealed demand-optimality
+-- condition. It is neither monotonicity nor local nonsatiation, and
+-- monotonicity + local nonsatiation do not imply it without the
+-- equilibrium/demand-maximization and budget structure that connect
+-- preferences to affordability.
+--
+-- Whole-allocation preferences are a separate generalization of the
+-- preference domain: they allow an agent's ranking to depend on the
+-- entire allocation. Heterogeneity means different agents may carry
+-- different preference relations. Heterogeneity therefore enlarges
+-- the profile space, while whole-allocation dependence enlarges the
+-- argument domain; neither is an algebraic strengthening of
+-- monotonicity/LNS.
+------------------------------------------------------------------------
+
+record MegaNoStrictAffordableAlternativeBoundary
+  (Agent Price Allocation : Set)
+  (strictPreference :
+    Agent → Allocation → Allocation → Set)
+  (budget : Price → Agent → Allocation → Set)
+  (p : Price)
+  (a : Allocation) : Set₁ where
+  constructor megaNoStrictAffordableAlternativeBoundary
+  field
+    demandOptimality :
+      ∀ i b →
+      budget p i b →
+      ¬ strictPreference i b a
+
+megaNoStrictAffordableAlternative-is-demand-optimality :
+  ∀ {Agent Price Allocation : Set}
+  {strictPreference :
+    Agent → Allocation → Allocation → Set}
+  {budget : Price → Agent → Allocation → Set}
+  {p : Price} {a : Allocation} →
+  MegaNoStrictAffordableAlternativeBoundary
+    Agent Price Allocation strictPreference budget p a →
+  (∀ i b →
+    budget p i b →
+    ¬ strictPreference i b a)
+megaNoStrictAffordableAlternative-is-demand-optimality boundary =
+  demandOptimality boundary
