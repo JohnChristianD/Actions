@@ -108,3 +108,13 @@ The repository contains a single unattended graph that is complete as a dependen
 - This prevents the next proof attempt from incorrectly applying the finite-rank convergence bridge to the full learner state.
 - Knowledge delta paths: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`, `.ci/actions_ci.dhall`, `.ci/discovery/theorem_graph_search.m`, `docs/economics/economic-egraph-emergent-arrow-debreu.mmd`, `docs/economics/economic-egraph-emergent-arrow-debreu.md`, this plan.
 - Verification pending for the new obstruction theorem; CI should typecheck the new head before treating it as verified.
+
+
+## 2026-09-24 neighborhood stationary-law follow-up
+
+- Audited the existing stationary theorem surface for the composed MARL/Hodge-Maxwell/GRU-F4/Norm-Pair route.
+- `StationaryLimitTheorem` supplies a conditional distribution-valued convergence-to-stationarity interface; `MarkovStationaryWalrasianCompositionTheorem` supplies the downstream stationary Walrasian lift from a static Walrasian aggregate.
+- No existing theorem supplies the missing neighborhood stationary-law witness for the composed economic update, and the repository explicitly treats probability/distribution semantics and measure-theoretic convergence as separate premises.
+- Updated the economic graph/docs to expose this as an alternative frontier alongside the quotient finite-rank route.
+- Knowledge delta paths: `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` (audited only), `docs/economics/economic-egraph-emergent-arrow-debreu.mmd`, `docs/economics/economic-egraph-emergent-arrow-debreu.md`, this plan.
+- Verification: documentation-only follow-up; prior CI verification of head `980ac90672fcfe2ec078a6282f93ce06e17ebe77` remains successful. New documentation commits do not alter Agda proof terms.
