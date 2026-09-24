@@ -204,36 +204,6 @@
       "existing Tsallis exact-conjugacy theorem supplies the divergence/transition algebraic side"
     ],
     [
-      "MarkovStationaryWalrasianCompositionTheorem",
-      "ConnectedGeneralizedWalrasianExistenceTheorem",
-      "existing Markov/stationary composition is consumed by the local generalized existence closure"
-    ],
-    [
-      "ConnectedGeneralizedWalrasianExistenceTheorem",
-      "F_full_connected",
-      "generalized Walrasian existence is promoted through an actual composed theorem"
-    ],
-    [
-      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-      "the Walrasian bridge consumes the already-connected hard-sign-style Hodge-Maxwell/Tsallis projection"
-    ],
-    [
-      "ConnectedGeneralizedWalrasianExistenceTheorem",
-      "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-      "the Walrasian bridge consumes the existing generalized stationary existence closure"
-    ],
-    [
-      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "the hard-sign-style idempotent transport consumes the already-connected carrier-polymorphic Maxwell/Tsallis composition"
-    ],
-    [
-      "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
-      "F_full_connected",
-      "the idempotent projection bridge is a connected conditional theorem rather than an isolated HardSign claim"
-    ],
-    [
       "CanonicalF4GlobalOptimizerStabilityTheorem",
       "CanonicalPureNonOrangeBypassCompletionTheorem",
       "the exact Z-valued F4 optimizer stability theorem is now consumed by the connected non-orange completion"
@@ -288,26 +258,6 @@
       "F_full_connected",
       "the negative representation boundary is graphable only as a connected impossibility consumer, not as a standalone class-separation claim"
     ],
-    {
-      "from": "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-      "to": "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-      "kind": "promotes existing exact bridge into prefix+horizon-regret extraction endpoint"
-    },
-    {
-      "from": "CanonicalF4NormPairSureStabilityCompositionTheorem",
-      "to": "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
-      "kind": "consumed stability dependency"
-    },
-    {
-      "from": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "to": "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
-      "kind": "consumed conjugacy dependency"
-    },
-    {
-      "from": "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-      "to": "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
-      "kind": "extracts through canonical endogenous e-graph/A* closure"
-    },
     [
       "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
       "ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem",
@@ -362,6 +312,16 @@
       "POMDPWalrasianBeliefEquilibriumClosure",
       "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
       "explicit POMDP belief-policy equilibrium seam is consumed without inferring filtering or optimality"
+    ],
+    [
+      "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+      "singular mega-generalized equilibrium dependency; Walrasian, Arrow-Debreu, and KKT share one carrier-polymorphic witness contract"
+    ],
+    [
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+      "F_full_connected",
+      "the singular mega-generalized equilibrium edge enters the fully connected composition only through its actual Agda consumer"
     ]
   ],
   "separation_obligation": [
@@ -1346,12 +1306,14 @@
     "neighborhood_role": "DenseNeighborhoodSeparation is retained as the orbit-separation context in the connected theorem; it is not falsely used as a substitute for the square-law premise."
   },
   "walrasian_status": {
-    "local_transport": "PROVED_CONDITIONAL",
-    "canonical_dependency": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
+    "status": "SINGULAR_MEGA_GENERALIZED_EDGE",
+    "canonical_edge": "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
+    "composition_consumer": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+    "scope": "carrier-polymorphic Walrasian/KKT/Arrow-Debreu witness contract; no Fin n or Vec specialization",
     "benchmark": "danlyng/Econlib",
-    "benchmark_role": "reference implementation for classical equilibrium baselines, not proof oracle or graph-completeness oracle",
-    "graph_policy": "one mega-generalized Walrasian/KKT/Arrow-Debreu edge dependency; broader variants are search inputs, not separate current graph candidates",
-    "local_authority": "Agda theorem terms and actual consuming graph edges"
+    "benchmark_role": "reference baseline only; not graph-completeness oracle",
+    "literature_anchor": "Podczeck-Yannelis 2024, DOI 10.1007/s00199-024-01553-0",
+    "pruning": "specific finite, Markov-stationary, non-iid, regularity-free, and idempotent-projection Walrasian graph edges are pruned from the canonical dependency graph"
   },
   "tcl_lua_status": {
     "repository_current": "Neither Tcl nor Lua is a runtime dependency of the current toolchain.",
@@ -1595,7 +1557,7 @@
   "current_head_audit_2026_09_24": {
     "status": "PENDING_FRESH_CI",
     "head": "mega-generalized-walrasian-edge",
-    "note": "Walrasian generalization candidates pruned to one mega-generalized Walrasian/KKT/Arrow-Debreu contract; Tsallis remains fully carrier-polymorphic. Kernel verification remains pending."
+    "note": "Singular mega-generalized Walrasian/KKT/Arrow-Debreu dependency implemented; specific Walrasian graph edges pruned. Tsallis remains fully generalized. Kernel verification remains pending."
   },
   "metadata_pruning_policy_v11": {
     "status": "ACTIVE_REGISTRY_AUTOPRUNE_WITH_KERNEL_GATE",
