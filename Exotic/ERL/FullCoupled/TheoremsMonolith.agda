@@ -8472,6 +8472,46 @@ recursiveRadner-equilibrium-embeds :
 recursiveRadner-equilibrium-embeds witness =
   D , witness
 ------------------------------------------------------------------------
+-- An actual Recursive Radner existence witness therefore becomes a
+-- generalized Walrasian existence witness in the singular ontology.
+------------------------------------------------------------------------
+
+recursiveRadner-existence-embeds :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set} →
+  RecursiveRadnerExistence
+    State Agent Commodity Asset Price Allocation Portfolio →
+  Σ (State → Price)
+    (λ p →
+      Σ
+        ((State → Agent → Allocation)
+         ×
+         (State → Agent → Portfolio))
+        (λ a →
+          equilibrium
+            (recursiveRadner-generalized
+              {State = State}
+              {Agent = Agent}
+              {Commodity = Commodity}
+              {Asset = Asset}
+              {Price = Price}
+              {Allocation = Allocation}
+              {Portfolio = Portfolio})
+            p
+            a))
+recursiveRadner-existence-embeds witness =
+  RecursiveRadnerExistence.priceProcess witness
+  ,
+  ( RecursiveRadnerExistence.allocationProcess witness
+    ,
+    RecursiveRadnerExistence.portfolioProcess witness )
+  ,
+  RecursiveRadnerExistence.data witness
+  ,
+  RecursiveRadnerExistence.equilibrium witness
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- Existence is a separate economic theorem interface.
 --
 -- This record does not assume that the learner's F4/NormPair stability
