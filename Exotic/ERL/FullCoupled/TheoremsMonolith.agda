@@ -1456,40 +1456,6 @@ continuousLeftInverse-exactReadout-transfer
 -- metric approximation claim.
 ------------------------------------------------------------------------
 
-canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse :
-  ∀ {Feature : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (observe : C.CanonicalFullLearnerState → Feature)
-  (inverse : Feature → C.CanonicalFullLearnerState)
-  (witness :
-    ContinuousLeftInverseTheorem
-      C.CanonicalFullLearnerState
-      Feature
-      observe
-      inverse
-      Continuous) →
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState) →
-  C.canonicalWatkinsTarget K s ≡
-  C.canonicalWatkinsTarget K (inverse (observe s))
-canonicalWatkinsTarget-exactReadout-through-continuousLeftInverse
-  observe inverse witness K s =
-  continuousLeftInverse-exactReadout-transfer
-    witness
-    (C.canonicalWatkinsTarget K)
-    s
-
--- Strictly stronger combined theorem schema.
---
--- This is not a topological universal-approximation theorem under the
--- current imports. It is the exact composition available here:
--- target semantics + minimax/Bellman-Shapley inclusion + endogenous
--- left-inverse factorization + continuous-left-inverse transfer +
--- bounded exact approximation from the continuous left inverse + ring-state
--- injectivity + dense-neighborhood separation + Nat-clock pigeonhole
--- contradiction.
-------------------------------------------------------------------------
-
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
   field
@@ -2956,43 +2922,6 @@ record ParallelPrefixComplexityCertificate
         EfficientOperatorMonoidRepresentation.scanWork
           monoidRepresentation h
 
-parallelPrefixComplexityCertificate-bound :
-  ∀ {State Input : Set}
-  (certificate :
-    ParallelPrefixComplexityCertificate State Input)
-  (h : Nat) →
-  ParallelPrefixComplexityCertificate.totalSpan certificate h
-  ≤
-  EfficientOperatorMonoidRepresentation.representationSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-  + EfficientOperatorMonoidRepresentation.compositionSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-  + EfficientOperatorMonoidRepresentation.compositionSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
-  + EfficientOperatorMonoidRepresentation.decodingSpan
-      (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-parallelPrefixComplexityCertificate-bound certificate h =
-  subst
-    (λ n →
-      n
-      ≤
-      EfficientOperatorMonoidRepresentation.representationSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-      + EfficientOperatorMonoidRepresentation.compositionSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate)
-      + EfficientOperatorMonoidRepresentation.compositionSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate) * h
-      + EfficientOperatorMonoidRepresentation.decodingSpan
-          (ParallelPrefixComplexityCertificate.monoidRepresentation certificate))
-    (ParallelPrefixComplexityCertificate.totalSpan-definition certificate h)
-    (≤-refl _)
-
-------------------------------------------------------------------------
--- A genuine O(log H) statement is represented by a doubling-scale
--- certificate: whenever H is below 2^k, scan span is bounded linearly
--- in k, with constants independent of H.
-------------------------------------------------------------------------
-
 record LogarithmicScanSpanCertificate
   (State Input : Set) : Set₁ where
   constructor logarithmicScanSpanCertificate
@@ -3051,42 +2980,6 @@ record LogarithmicPrefixScanComplexityTheorem
         + LogarithmicScanSpanCertificate.additive logarithmicSpan
         + representationOverhead
         + decodingOverhead
-
-horizonSpan-logarithmic-bound :
-  ∀ {State Input : Set}
-  (certificate :
-    LogarithmicPrefixScanComplexityTheorem State Input)
-  (k h : Nat) →
-  h ≤ twoPow k →
-  LogarithmicPrefixScanComplexityTheorem.horizonSpan certificate h
-  ≤
-  LogarithmicScanSpanCertificate.coefficient
-      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
-  + LogarithmicScanSpanCertificate.additive
-      (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-  + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
-  + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate
-horizonSpan-logarithmic-bound certificate k h hk =
-  subst
-    (λ n →
-      n
-      ≤
-      LogarithmicScanSpanCertificate.coefficient
-          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate) * k
-      + LogarithmicScanSpanCertificate.additive
-          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-      + LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate
-      + LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate)
-    (LogarithmicPrefixScanComplexityTheorem.horizonSpan-definition certificate h)
-    (nat-plus-right-mono
-      (nat-plus-right-mono
-        (LogarithmicScanSpanCertificate.scanSpan-bound
-          (LogarithmicPrefixScanComplexityTheorem.logarithmicSpan certificate)
-          k
-          h
-          hk)
-        (LogarithmicPrefixScanComplexityTheorem.representationOverhead certificate))
-      (LogarithmicPrefixScanComplexityTheorem.decodingOverhead certificate))
 
 maxwellStateIsomorphism :
   ∀ {Carrier State : Set} →
@@ -3327,52 +3220,6 @@ record FiniteNonIIDGeneralizedEquilibrium
       sumNat (map (λ i → allocation i g) agents) ≡
       sumNat (map (λ i → endowment i g) agents)
 
-finiteNonIIDGeneralizedData :
-  ∀ {Agent Good : Set}
-  (agents : List Agent)
-  (goods : List Good)
-  (utility : Agent → (Good → Nat) → Nat)
-  (endowment : Agent → Good → Nat)
-  (witness : FiniteNonIIDWalrasianEquilibrium Agent Good agents goods utility endowment) →
-  GeneralizedWalrasianData
-    Agent
-    Good
-    (Good → Nat)
-    (Agent → Good → Nat)
-finiteNonIIDGeneralizedData
-  agents goods utility endowment witness =
-  generalizedWalrasianData
-    (λ i → Set)
-    (FiniteNonIIDPreference utility)
-    (λ p i bundle →
-      BudgetFeasible goods p (endowment i) bundle)
-    (λ allocation →
-      ∀ g →
-      sumNat (map (λ i → allocation i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents))
-    (λ p allocation →
-      FiniteNonIIDGeneralizedEquilibrium
-        Agent
-        Good
-        agents
-        goods
-        utility
-        endowment
-        p
-        allocation)
-    (λ p allocation →
-      FiniteNonIIDGeneralizedEquilibrium
-        Agent
-        Good
-        agents
-        goods
-        utility
-        endowment
-        p
-        allocation)
-    (λ {p} {a} equilibriumWitness →
-      equilibriumWitness)
-
 megaParetoOptimal :
   ∀ {Agent Allocation : Set}
   {weakPreference strictPreference :
@@ -3599,116 +3446,6 @@ finiteNonIIDDemandCostKernel closure =
       finiteNonIIDBudgetCostBound affordable)
     (λ {b} _ improvement →
       paretoImprovementAffordability closure improvement)
-
-connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
-  ∀ {GRU : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  {H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU}
-  {State Price Allocation : Set}
-  {D :
-    MegaGeneralizedWalrasianEquilibrium
-      State
-      Price
-      Allocation}
-  {decodeAllocation :
-    Solution (semantics H) → Allocation}
-  {Action Observation Distribution Reward : Set}
-  {hodgeMaxwellTsallis :
-    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU}
-  {P :
-    POMDPWalrasianData
-      State
-      Action
-      Observation
-      Distribution
-      Reward
-      Price
-      Allocation}
-  {p : Price}
-  {allocation : State → Allocation}
-  {belief : Observation → Distribution}
-  {policy : Distribution → Action}
-  {beliefPolicy :
-    POMDPBeliefPolicyFactorization
-      State
-      Action
-      Observation
-      Distribution
-      Allocation
-      belief
-      policy
-      allocation}
-  {solutionOfState :
-    State → Solution (semantics H)}
-  (hodgeMaxwellTsallis :
-    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
-  (walrasianEquilibrium :
-    ∀ {p' : Price} {a : Allocation} →
-    equilibrium D p' a →
-    equilibrium D p' a)
-  (pomdpBeliefClosure :
-    POMDPWalrasianBeliefEquilibriumClosure
-      State
-      Action
-      Observation
-      Distribution
-      Reward
-      Price
-      Allocation
-      P
-      p
-      allocation
-      belief
-      policy
-      beliefPolicy)
-  (allocationReadout :
-    ∀ s →
-    allocation s ≡
-    decodeAllocation (solutionOfState s)) →
-  ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
-    GRU
-    H
-    State
-    Price
-    Allocation
-    D
-    decodeAllocation
-    Action
-    Observation
-    Distribution
-    Reward
-    hodgeMaxwellTsallis
-    P
-    p
-    allocation
-    belief
-    policy
-    beliefPolicy
-    solutionOfState
-connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem
-  hodgeMaxwellTsallis
-  walrasianEquilibrium
-  pomdpBeliefClosure
-  allocationReadout =
-  connectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
-    (ConnectedContinuousHodgeMaxwellGRURepresentationTheorem.globalEncodeInjective H)
-    hodgeMaxwellTsallis
-    walrasianEquilibrium
-    pomdpBeliefClosure
-    allocationReadout
-
-
-
-------------------------------------------------------------------------
--- Second-Welfare boundary and explicit non-derivability witness.
---
--- The supporting-price part of the Second Welfare Theorem is not
--- derivable from Pareto optimality alone on this generalized surface.
--- Standard proofs add economic structure (notably convexity plus the
--- separation/supporting-price argument, together with the relevant
--- continuity/local-nonsatiation and redistribution hypotheses).
-------------------------------------------------------------------------
 
 record MegaSecondWelfareTheoremBoundaryCounterexample : Set₁ where
   constructor megaSecondWelfareTheoremBoundaryCounterexample
