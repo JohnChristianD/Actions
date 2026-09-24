@@ -111,6 +111,26 @@
     {
       "node": "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
       "role": "single end-to-end carrier-agnostic GRU/F4/Maxwell prefix+horizon-regret endpoint; no finite/infinite case split is present in the promoted theorem"
+    },
+    {
+      "node": "RegularityFreeWalrasianEquilibrium",
+      "role": "assumption-relaxed equilibrium surface: continuity is absent and stationarity is an explicit witness"
+    },
+    {
+      "node": "POMDPWalrasianEquilibrium",
+      "role": "POMDP-generalized Walrasian equilibrium over arbitrary state/action/observation/distribution/reward carriers with explicit stationarity"
+    },
+    {
+      "node": "POMDPWalrasianTransport",
+      "role": "exact POMDP carrier transport composed with equilibrium readout, aggregate agreement, static equilibrium, and stationarity witnesses"
+    },
+    {
+      "node": "POMDPBeliefPolicyFactorization",
+      "role": "explicit sufficient-observation/belief/policy factorization witness; no automatic filtering or optimality claim"
+    },
+    {
+      "node": "POMDPWalrasianBeliefEquilibriumClosure",
+      "role": "connected equilibrium-plus-belief/policy closure consuming an explicit factorization witness"
     }
   ],
   "edges": [
@@ -1446,6 +1466,46 @@
         ]
       ],
       "reason_not_promoted": "cross-language semantic equivalence is still an unproved adapter obligation"
+    },
+    {
+      "node": "POMDPWalrasianBeliefOptimalityCandidate",
+      "status": "CANDIDATE_NOT_PROVED",
+      "premises_needed": [
+        "explicit belief update/filtering semantics",
+        "policy optimality or sequential-equilibrium law",
+        "probability/measure semantics if expectations or almost-sure claims are used",
+        "connected POMDPWalrasianBeliefEquilibriumClosure consumer"
+      ],
+      "dependency_edges": [
+        [
+          "POMDPWalrasianBeliefEquilibriumClosure",
+          "POMDPWalrasianBeliefOptimalityCandidate"
+        ],
+        [
+          "POMDPExactTransport",
+          "POMDPWalrasianBeliefOptimalityCandidate"
+        ]
+      ],
+      "reason_not_promoted": "the current exact surfaces provide transport and explicit factorization only; they do not prove belief sufficiency, filtering convergence, or optimality"
+    },
+    {
+      "node": "WalrasianRegularityRemovalCandidate",
+      "status": "TRANSPORTABLE",
+      "premises_needed": [
+        "explicit stationary aggregate equality",
+        "static Walrasian witness"
+      ],
+      "dependency_edges": [
+        [
+          "RegularityFreeWalrasianData",
+          "WalrasianRegularityRemovalCandidate"
+        ],
+        [
+          "RegularityFreeWalrasianEquilibrium",
+          "WalrasianRegularityRemovalCandidate"
+        ]
+      ],
+      "reason_not_promoted_as_unconditional": "removing continuity changes the theorem contract; the relaxed result is admitted only with explicit static and stationarity witnesses"
     }
   ],
   "algebraic_carrier_upgrade": {
@@ -1496,7 +1556,7 @@
     "probability_boundary": "The current Frank-Wolfe certificate is deterministic and Nat-valued. Probability-space/distribution objects, sigma-algebra or measurable-space semantics, integration/expectation, almost-sure statements, and measure-theoretic convergence must be explicit Agda premises before any probability theorem is admitted.",
     "topology_boundary": "ContinuousLeftInverseTheorem transports exact readout/injectivity; it does not prove optimizer convergence, compactness, weak convergence, or a Frank-Wolfe limit theorem.",
     "stationary_boundary": "MarkovStationaryWalrasianCompositionTheorem supplies invariant-aggregate stationarity; stationary-point existence/convergence remains conditional on an explicit existence or convergence witness.",
-    "pomdp_boundary": "POMDPExactTransport is exact carrier/transition/observation/reward transport only; it does not supply a policy-optimality, belief-state, filtering, or probabilistic convergence theorem.",
+    "pomdp_boundary": "POMDPExactTransport remains exact carrier/transition/observation/reward transport. POMDPWalrasianEquilibrium adds explicit aggregate/static/stationary semantics; POMDPWalrasianTransport composes those with exact POMDP transport; POMDPBeliefPolicyFactorization is an explicit sufficient-statistic witness. No policy-optimality, filtering theorem, or probabilistic convergence is inferred.",
     "tsallis_boundary": "Tsallis divergence/exact conjugacy is carrier-polymorphic, but a q-exponential generalization requires an explicit q-parameterized exponential/logarithm, normalization, domain, and transport law on the Agda surface.",
     "heavy_tail_boundary": "Gaussian and heavy-tail models require explicit probability distributions and tail/moment assumptions. A Gaussian is light-tailed; it cannot by itself witness heavy-tail behavior. Any combined Gaussian/heavy-tail theorem must state the mixture, scale-mixture, generalized distribution, or asymptotic tail object explicitly.",
     "no_synthetic_edge": "Future physics theorems must enter through an actually consuming Agda parent. Infinite-dimensional promotion is a semantic wrapper around supplied dimension evidence, not a synthetic PDE-to-GRU existence edge.",
@@ -1504,7 +1564,8 @@
     "carrier_semantics": "Set parameters are semantic carriers for arbitrary state/function spaces. Nat-indexed streams/horizons and List prefixes encode discrete time, finite words/prefix data, and recursive algebra; neither is a claim that the physical Maxwell carrier is Nat- or List-valued.",
     "infinite_dimensional_boundary": "Infinite-dimensional Maxwell results may enter through the carrier-polymorphic connected surface when an explicit dimension predicate/witness is supplied. The graph must not infer vector-space dimension, separability, basis existence, or PDE solvability from Set alone.",
     "case_collapse_rule": "No finite/infinite Maxwell compatibility theorem is admitted as a graph node. Carrier-specific evidence may be supplied directly to the single carrier-agnostic composition surface.",
-    "ci_policy": "Do not remove or cancel existing CI theorem registrations while collapsing graph promotion surfaces; add the unified theorem names and retain source-compatible adapters."
+    "ci_policy": "Do not remove or cancel existing CI theorem registrations while collapsing graph promotion surfaces; add the unified theorem names and retain source-compatible adapters.",
+    "assumption_relaxation_boundary": "RegularityFreeWalrasianData removes continuity from the data contract, while RegularityFreeWalrasianEquilibrium makes stationarity an explicit witness. Search may propose weaker-premise compositions, but Agda admits them only when the replacement premise is present."
   },
   "pruning_policy_v10": {
     "removed_from_canonical_path": [
