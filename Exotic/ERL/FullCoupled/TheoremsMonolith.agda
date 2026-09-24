@@ -5800,6 +5800,9 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
   (projectGRU : GRU → GRU)
   (decodeAllocation :
     Solution (semantics H) → Allocation)
+  (Action Observation Distribution Reward : Set)
+  (hodgeMaxwellTsallis :
+    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
   (qDivergence :
     Nat →
     GRU →
@@ -5809,7 +5812,6 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
         (semantics
           (tsallis
             hodgeMaxwellTsallis))))
-  (Action Observation Distribution Reward : Set)
   (P :
     POMDPWalrasianData
       State
@@ -5834,9 +5836,7 @@ record ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
       policy
       allocation)
   (solutionOfState :
-    State → Solution (semantics H))
-  (hodgeMaxwellTsallis :
-    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU) : Set₁ where
+    State → Solution (semantics H)) : Set₁ where
   constructor connectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
   field
     globalEncodeInjective :
@@ -5908,6 +5908,9 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
   {projectGRU : GRU → GRU}
   {decodeAllocation :
     Solution (semantics H) → Allocation}
+  {Action Observation Distribution Reward : Set}
+  {hodgeMaxwellTsallis :
+    ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU}
   {qDivergence :
     Nat →
     GRU →
@@ -5917,7 +5920,6 @@ connected-gru-hodge-maxwell-tsallis2-walrasian-pomdp-composition-theorem :
         (semantics
           (tsallis
             hodgeMaxwellTsallis)))}
-  {Action Observation Distribution Reward : Set}
   {P :
     POMDPWalrasianData
       State
