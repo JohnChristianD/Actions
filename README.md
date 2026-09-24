@@ -197,7 +197,6 @@ The following graph is derived from the actual record declarations and their dir
     +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem
     +-- depends on: CanonicalExactRNNLMTheorem, ExactContractComputabilityBoundaryTheorem
     +-- depends on:
-
 Current canonical tail after the historical index:
 
 FunctionClassInclusion
@@ -397,8 +396,7 @@ The repository now has a slow, deterministic README refresher. The Dhall surface
 last-processed-commit: 091ee6eca250e9a6505f6793b0c3fdfb7f45f1d6
 unprocessed-commit-count: 0
 
-The next scheduled run will account for every commit after this bootstrap point.
-<!-- END RECENT COMMIT TOTALITY -->
+The next scheduled run will account for every commit after this bootstrap point.<!-- END RECENT COMMIT TOTALITY -->
 
 ## Strict neural-function-class separation
 
@@ -597,8 +595,7 @@ LCB + Watkins + Sparsemax
         ↓
 exact canonical policy readout
         ↓
-policy-induced learner update
-        ↓  policyStepCorrect
+policy-induced learner update        ↓  policyStepCorrect
 canonical learner step
         ↓  exact Hodge-Maxwell conjugacy
 Hodge-Maxwell solution step
@@ -660,9 +657,7 @@ The remaining economic existence question is deliberately precise: a supporting-
 
 ## Connected composition deviations and workflow
 
-The separate RNN, optimizer, and Hodge-Maxwell theories are not being claimed as new merely because they are formalized here. The meaningful deviation is the exact relationship imposed between their state transitions.
-
-The connected learner currently exposes this structure:
+The separate RNN, optimizer, and Hodge-Maxwell theories are not claimed as new merely because they are formalized here. The meaningful deviation is the exact relationship imposed between their state transitions.
 
 ```
 GRU state
@@ -714,11 +709,11 @@ Hodge-Maxwell solution semantics
 economic semantics where an explicit interpretation is supplied
 ```
 
-The important boundary remains conditional. A policy readout does not automatically become a Maxwell update, and an exact encoder/decoder does not establish generic existence of a GRU representation for arbitrary Maxwell problems. The current policy seam explicitly requires policyStepCorrect before the policy-induced update can be transported to the Maxwell step.
+The boundary remains conditional. A policy readout does not automatically become a Maxwell update, and an exact encoder/decoder does not establish generic existence of a GRU representation for arbitrary Maxwell problems. The policy-to-Maxwell seam still requires `policyStepCorrect` before the policy-induced update can be transported to the Maxwell step.
 
 ### Workflow deviation from conventional GitHub programming
 
-A conventional repository usually treats source code, tests, review, merge history, and CI as the main development loop. This repository adds a proof-and-graph layer between source changes and ordinary CI:
+The repository adds a proof-and-graph layer between semantic source changes and ordinary CI:
 
 ```
 semantic source
@@ -748,9 +743,9 @@ GitHub Actions
 Git history records semantic change
 ```
 
-The distinctive workflow is therefore not a claim about any particular programmer or language. It combines several established practices: small typed transformations, explicit invariants, theorem-prover checking, reproducible environments, executable discovery tooling, and disciplined version history.
+The distinctive workflow is not attributed to any particular person or language. It combines typed transformations, explicit invariants, theorem-prover checking, reproducible environments, executable discovery tooling, and disciplined version history.
 
-The useful difference for the current project is that discovery and proof are deliberately separated:
+The repository also makes a deliberate distinction:
 
 ```
 search broadly
@@ -770,15 +765,31 @@ commit code
 prove the theorem
 ```
 
-This makes Git history useful as a record of semantic boundary crossings, while the Agda checker remains the authority for mathematical claims. The graph can suggest a new connection; only a real Agda dependency can promote that connection to the proof surface.
-
-This also explains why pruning matters now. When a candidate is only conceptual, it should remain marked as a candidate or be removed. When a boundary has a real inverse, commuting square, transport theorem, or composed consumer, that exact dependency should be recorded. The workflow thus follows:
+The operational loop is:
 
 ```
 discover -> prune -> formalize -> verify -> record
 ```
 
-That is the main methodological deviation from a general-purpose GitHub application workflow relevant to this repository.
+### ASCII-controlled README automation
+
+The slow Dhall-generated updater owns only its marked commit-totality block. That generated block is ASCII-controlled: commit subjects containing non-ASCII characters are rendered with ASCII backslash escapes rather than changing the underlying Git history. The updater also records the processed commit and exact unprocessed count.
+
+```
+Git history
+    |
+    v
+Dhall-rendered updater
+    |
+    +-- exact commit range
+    |
+    +-- ASCII-safe subject rendering
+    |
+    v
+README marked block
+```
+
+This keeps generated README text deterministic and portable while leaving the mathematical prose and source semantics untouched.
 
 ## Current pruning rule
 
