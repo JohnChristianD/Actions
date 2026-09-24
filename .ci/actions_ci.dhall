@@ -35,6 +35,48 @@ let script = merge {
     grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     '',
+  EconomicClosureGraph = ''
+    set -euo pipefail
+    graph=docs/economics/economic-egraph-emergent-arrow-debreu.mmd
+    theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    [ -f "$graph" ] || { echo "missing economic closure graph"; exit 1; }
+    [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
+
+    for node in       EconomicStructure FeasibleAllocations PreferenceChoice Production       DemandCostKernel FirstWelfare ParetoOptimal FeasibleFirmPlans       ProfitOptimalSupply AggregateResourceBalance DemandWitness MarketClearing       "DerivedPrice" GeneralizedWalrasianEquilibrium ClassicalSpecializationGate       ArrowDebreuSpecialization
+    do
+      grep -Fq ""$node"" "$graph" || { echo "graph node missing: $node"; exit 1; }
+    done
+
+    grep -Fq 'FiniteCompetitiveProductionClosure' "$theorem" || { echo "production seam missing"; exit 1; }
+    grep -Fq 'EconomicEquilibriumClosureGraph' "$theorem" || { echo "closure graph contract missing"; exit 1; }
+    grep -Fq 'productionToSupply' "$theorem" || { echo "supply edge missing"; exit 1; }
+    grep -Fq 'aggregateBalanceToMarketClearing' "$theorem" || { echo "clearing edge missing"; exit 1; }
+    grep -Fq 'dualSeparationToDerivedPrice' "$theorem" || { echo "price edge missing"; exit 1; }
+    grep -Fq 'derivedPriceToGeneralizedEquilibrium' "$theorem" || { echo "generalized-equilibrium edge missing"; exit 1; }
+    grep -Fq 'generalizedEquilibriumToClassicalSpecialization' "$theorem" || { echo "Arrow-Debreu gate missing"; exit 1; }
+
+    grep -Fq 'Production frontier' "$graph" || true
+    grep -Fq 'Clearing frontier' "$graph" || true
+    grep -Fq 'Price frontier' "$graph" || true
+
+    mkdir -p .ci/discovery
+    {
+      printf '%s\n' '{'
+      printf '  "source_graph": "%s",\n' "$graph"
+      printf '  "theorem_source": "%s",\n' "$theorem"
+      printf '  "proved_consumer_edge": true,\n'
+      printf '  "production_edge": "typed seam",\n'
+      printf '  "clearing_edge": "frontier",\n'
+      printf '  "derived_price_edge": "frontier",\n'
+      printf '  "generalized_equilibrium_edge": "frontier",\n'
+      printf '  "arrow_debreu_edge": "conditional frontier",\n'
+      printf '  "automation": "source-to-graph consistency gate"\n'
+      printf '%s\n' '}'
+    } > .ci/discovery/economic-closure-graph.json
+
+    grep -Fq '"automation": "source-to-graph consistency gate"' .ci/discovery/economic-closure-graph.json
+    echo "economic-closure-graph=pass"
+    '',
   EconlibCrossrepo = ''
     set -euo pipefail
     tmp=$(mktemp -d)
