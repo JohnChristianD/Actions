@@ -14,7 +14,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-refl; ≤-trans; ≤-decTotalOrder; n<1+n)
-open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_; _≤_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_; _≤_ to _≤ℤ_)
 import Data.Integer.Properties as IntegerProperties
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
@@ -3788,6 +3788,154 @@ canonical-f4-global-optimizer-stability-theorem =
         (λ optimizer signal →
           C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
         optimizerEq signalEq)
+
+------------------------------------------------------------------------
+-- F4 infinite-horizon forcing ray.
+--
+-- The canonical F4 coordinate is exact integer algebra.  With zero global
+-- L2 correction and unit signal at every step, the theta coordinate grows
+-- exactly linearly with horizon.  This is a formal counterexample to any
+-- unconditional upper-bound / sure-boundedness claim for the current F4
+-- semantics.  NormPair is not involved in this calculation.
+------------------------------------------------------------------------
+
+f4Orbit :
+  C.F4IntUKernel → C.Int8 → Nat → C.F4IntUState → C.F4IntUState
+f4Orbit K g zero s = s
+f4Orbit K g (suc n) s =
+  C.f4ThetaStep K (f4Orbit K g n s) g
+
+record F4UpperBoundedTrajectory
+  (K : C.F4IntUKernel)
+  (g : C.Int8)
+  (s : C.F4IntUState) : Set₁ where
+  constructor f4UpperBoundedTrajectory
+  field
+    bound : Nat
+    bounded :
+      ∀ n →
+      C.code (C.thetaQ (f4Orbit K g n s)) ≤ℤ + bound
+
+nat-plus-one :
+  ∀ n → n + suc zero ≡ suc n
+nat-plus-one n =
+  trans
+    (+-suc n zero)
+    (cong suc (+-identityʳ n))
+
+integer-nat-plus-one :
+  ∀ n → (+ n) +ℤ (+ 1) ≡ + (suc n)
+integer-nat-plus-one n =
+  cong +_ (nat-plus-one n)
+
+f4-zero-L2-unit-step-code :
+  ∀ s →
+  C.code
+    (C.thetaQ
+      (C.f4ThetaStep
+        (C.f4IntUKernel C.zero8)
+        s
+        C.one8))
+  ≡
+  C.code (C.thetaQ s) +ℤ (+ 1)
+f4-zero-L2-unit-step-code s =
+  trans
+    (cong C.code
+      (C.f4ParameterInvariant
+        (C.f4IntUKernel C.zero8)
+        s
+        C.one8))
+    (IntegerProperties.+-identityʳ
+      (C.code (C.thetaQ s) +ℤ (+ 1)))
+
+f4-unit-forcing-linear-growth :
+  ∀ n s →
+  C.code
+    (C.thetaQ
+      (f4Orbit
+        (C.f4IntUKernel C.zero8)
+        C.one8
+        n
+        s))
+  ≡
+  C.code (C.thetaQ s) +ℤ (+ n)
+f4-unit-forcing-linear-growth zero s =
+  sym (IntegerProperties.+-identityʳ (C.code (C.thetaQ s)))
+f4-unit-forcing-linear-growth (suc n) s =
+  trans
+    (f4-zero-L2-unit-step-code
+      (f4Orbit (C.f4IntUKernel C.zero8) C.one8 n s))
+    (trans
+      (cong
+        (λ z → z +ℤ (+ 1))
+        (f4-unit-forcing-linear-growth n s))
+      (trans
+        (IntegerProperties.+-assoc
+          (C.code (C.thetaQ s))
+          (+ n)
+          (+ 1))
+        (cong
+          (λ z → C.code (C.thetaQ s) +ℤ z)
+          (integer-nat-plus-one n))))
+
+nat-suc-not-le :
+  ∀ n → suc n ≤ n → ⊥
+nat-suc-not-le zero ()
+nat-suc-not-le (suc n) (s≤s h) =
+  nat-suc-not-le n h
+
+f4-unit-forcing-no-upper-bound :
+  ∀ {s : C.F4IntUState} →
+  C.thetaQ s ≡ C.zero8 →
+  ¬ F4UpperBoundedTrajectory
+      (C.f4IntUKernel C.zero8)
+      C.one8
+      s
+f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
+  let
+    B = F4UpperBoundedTrajectory.bound boundedWitness
+    horizonBound = F4UpperBoundedTrajectory.bounded boundedWitness (suc B)
+    growth =
+      f4-unit-forcing-linear-growth
+        (suc B)
+        _
+    growthFromZero :
+      C.code
+        (C.thetaQ
+          (f4Orbit
+            (C.f4IntUKernel C.zero8)
+            C.one8
+            (suc B)
+            _))
+      ≡
+      + (suc B)
+    growthFromZero =
+      trans
+        growth
+        (trans
+          (cong
+            (λ z → z +ℤ (+ suc B))
+            (cong C.code thetaZero))
+          (IntegerProperties.+-identityˡ (+ suc B)))
+    impossibleOrder :
+      + (suc B) ≤ℤ + B
+    impossibleOrder =
+      subst
+        (λ z → z ≤ℤ + B)
+        growthFromZero
+        horizonBound
+  in
+    nat-suc-not-le B
+      (IntegerProperties.drop‿+≤+ impossibleOrder)
+
+------------------------------------------------------------------------
+-- The linear-growth theorem is the exact reason the earlier coercivity /
+-- boundedness fields must not be promoted to unconditional facts.  There is
+-- also no analytic coercivity notion in the current F4 record: no objective,
+-- norm, or real-valued level-set relation is part of F4IntUKernel.  The
+-- correct closure is therefore a negative theorem plus a separately stated
+-- analytic bridge if a genuine coercivity theorem is desired later.
+------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Fully connected F4/NormPair stability composition.
@@ -8113,10 +8261,6 @@ record F4NormPairEconomicInjectivityCertificate
   (gruStep : GRU → GRU) : Set₁ where
   constructor f4NormPairEconomicInjectivityCertificate
   field
-    f4CoercivityType : Set
-    f4CoercivityWitness : f4CoercivityType
-    f4BoundednessType : Set
-    f4BoundednessWitness : f4BoundednessType
     f4NormPairStability :
       CanonicalF4NormPairSureStabilityCompositionTheorem
     normPairQuotientTransition :
@@ -8147,10 +8291,6 @@ f4-normPair-economic-injectivity-certificate :
   {carrierEquilibriumMap : GRU → Equilibrium}
   {economicStep : Economic → Economic}
   {gruStep : GRU → GRU}
-  (f4CoercivityType : Set)
-  (f4CoercivityWitness : f4CoercivityType)
-  (f4BoundednessType : Set)
-  (f4BoundednessWitness : f4BoundednessType)
   (economicSquare :
     MegaWalrasianGlobalSquareConjugacy
       Economic
@@ -8173,16 +8313,8 @@ f4-normPair-economic-injectivity-certificate :
     economicStep
     gruStep
 f4-normPair-economic-injectivity-certificate
-  f4CoercivityType
-  f4CoercivityWitness
-  f4BoundednessType
-  f4BoundednessWitness
   economicSquare =
   f4NormPairEconomicInjectivityCertificate
-    f4CoercivityType
-    f4CoercivityWitness
-    f4BoundednessType
-    f4BoundednessWitness
     canonical-f4-normPair-sure-stability-composition-theorem
     canonical-normPair-quotient-factor-transition-theorem
     economicSquare
@@ -8221,10 +8353,6 @@ megaNoEquilibriumF4NormPairEconomicCertificate :
     (λ x → x)
 megaNoEquilibriumF4NormPairEconomicCertificate =
   f4-normPair-economic-injectivity-certificate
-    ⊤
-    tt
-    ⊤
-    tt
     megaNoEquilibriumWalrasianSquare
 
 megaNoEquilibriumF4NormPairEconomicWitness :
@@ -8243,15 +8371,15 @@ megaNoEquilibriumF4NormPairEconomicWitness
 
 ------------------------------------------------------------------------
 -- Graph boundary: no unconditional generalized Walrasian existence
--- theorem follows even after adjoining F4 coercivity/boundedness
--- premises, exact NormPair quotient-transition closure, and economic
--- global-square injectivity.
+-- theorem follows even after exact F4/NormPair stability, NormPair factor
+-- transition closure, and economic global-square injectivity.  The result
+-- is stronger than the earlier conditional statement because the
+-- coercivity/boundedness premises are not needed at all.
 --
--- The countermodel uses singleton economic/carrier spaces, so every
--- coercivity/boundedness premise is inhabited while the generalized
--- equilibrium predicate is empty. Hence the missing bridge is genuinely
--- economic: a convergence/fixed-point/market-clearing/existence theorem,
--- not injectivity alone.
+-- Separately, the unit-forcing theorem above proves that those premises
+-- cannot be discharged from the current F4 semantics: a concrete
+-- zero-L2/unit-signal trajectory is not upper-bounded on infinite horizon.
+------------------------------------------------------------------------
 ------------------------------------------------------------------------
 
 noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity :
