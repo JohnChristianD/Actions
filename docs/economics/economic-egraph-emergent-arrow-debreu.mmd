@@ -36,3 +36,33 @@ flowchart TD
   AD -. conditional only .-> V5["Arrow-Debreu frontier"]
 
   Z["No free-standing ArrowDebreuEquilibrium"] -. forbidden .-> AD
+
+  subgraph M["Existing TheoremsMonolith surface"]
+    GW["GeneralizedWalrasianEquilibrium"]
+    GWD["GeneralizedWalrasianData"]
+    GWE["GeneralizedWalrasianExistence"]
+    FNGE["FiniteNonIIDGeneralizedEquilibrium"]
+    POMDP["POMDPWalrasianEquilibrium"]
+    BEL["POMDPBeliefPolicyFactorization"]
+    WGI["MegaWalrasianGlobalSquareConjugacy"]
+    FWC["MegaFirstWelfareTheoremConditions"]
+    DCK["MegaDemandCostKernel"]
+    FNC["FiniteNonIIDDemandCostClosure"]
+    SWC["MegaSecondWelfareTheoremConditions"]
+    SEC["MegaSecondWelfareTheoremBoundaryCounterexample"]
+    NAB["MegaNoStrictAffordableAlternativeBoundary"]
+    LWE["connectedCanonicalLearnerEconomicWelfareCompositionTheorem"]
+    HMW["connectedHodgeMaxwellLearnerEconomicWelfareBridge"]
+  end
+
+  DCK --> FWC
+  FNC --> FW
+  GW --> GWE
+  FNGE --> GW
+  POMDP --> GW
+  WGI --> GW
+  LWE --> GW
+  HMW --> LWE
+  SWC -. conditional .-> GE
+  SEC -. blocks unsupported supporting-price promotion .-> SWC
+  NAB -. boundary .-> DCK
