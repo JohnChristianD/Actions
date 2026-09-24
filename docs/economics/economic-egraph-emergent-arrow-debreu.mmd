@@ -24,6 +24,20 @@ flowchart TD
   ISOFP["isomorphismIterateFixedPointTransport"] -. exact transport .-> GWE
   ECFP["GeneralizedWalrasianFixedPointClosure"] -. explicit equilibrium bridge .-> GWE
 
+  subgraph UC["Unconditional single-pass target"]
+    UPR["Economic primitives"] --> UD["Demand + competitive supply"]
+    UD --> UBA["Aggregate balance + market clearing"]
+    UBA --> UOP["Economic update operator"]
+    UOP --> UCV["Convergence from economic assumptions"]
+    UCV -. FRONTIER .-> TOPO
+    TOPO --> FPX
+    FPX --> UFP["Fixed-point witness"]
+    UFP --> UEB["Fixed-point -> equilibrium from economic primitives"]
+    UEB -. FRONTIER .-> ECFP
+    ECFP --> GWE
+    GWE --> UEX["Unconditional existence target"]
+  end
+
   GE --> ADG["ClassicalSpecializationGate"]
   ADG --> AD["ArrowDebreuSpecialization"]
 
