@@ -76,3 +76,43 @@ mathrm{Equilibrium}iffmathrm{ParetoOptimal}
 ]
 
 unless a separate reverse theorem and its assumptions are formally supplied.
+
+
+## Formal Agda contract
+
+The canonical theorem surface now contains these exact nodes:
+
+- `MegaWalrasianGlobalSquareConjugacy`: one global encode/readout square, one state-step conjugacy law, and one equilibrium-square law.
+- `megaWalrasianGlobalSquare-injective`: injectivity derived from the readout-left-inverse law.
+- `MegaWalrasianEquilibriumWelfareAdapter`: welfare is an explicit implication layer, not an identity with equilibrium.
+- `MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness`: packages square commutation, injectivity, equilibrium transport, welfare transport, and the final Pareto witness.
+- `ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem`: consumes the single `MegaGeneralizedWalrasianEquilibrium` relation; it does not reintroduce separate Arrow–Debreu/KKT/Walrasian predicates.
+
+The square is therefore:
+
+```text
+Economic X --encode--> GRU H
+    |                    |
+    | equilibriumMap     | carrierEquilibriumMap
+    v                    v
+Equilibrium E =========== E
+    ^                    ^
+    |                    |
+ readout            equilibriumSquare
+    |                    |
+    +-------- X <--------+
+
+encode ∘ economicStep = gruStep ∘ encode
+readout ∘ encode = id
+=> encode is injective
+```
+
+The completeness contract is intentionally conditional: the Agda object records the exact witnesses supplied by the caller. It does not manufacture existence, welfare assumptions, Bayesian filtering, policy optimality, or Pareto optimality from the graph topology alone.
+
+For welfare, the encoded direction is:
+
+```text
+Equilibrium + WelfareAssumptions -> ParetoOptimal
+```
+
+not an automatic equivalence. Demand-side monotonicity/local nonsatiation may be among the supplied welfare assumptions, but monotonicity alone does not create the reverse implication.
