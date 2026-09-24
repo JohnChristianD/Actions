@@ -102,7 +102,7 @@ let script = merge {
       printf '    "classical specialization assumptions -> ArrowDebreuSpecialization"\n'
       printf '  ],\n'
       printf '  "counterexample_policy": "boundary/counterexample declarations remain graph nodes and block promotion of unsupported implications",\n'
-      printf '  "automation": "monolith inventory + Mercury e-graph dependency evidence + canonical Mermaid consistency gate"\n'
+      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic economic projection; JSON is machine evidence and TSV/Mermaid are derived views"\n'
       printf '%s\n' '}'
     } > .ci/discovery/economic-closure-graph.json
 
