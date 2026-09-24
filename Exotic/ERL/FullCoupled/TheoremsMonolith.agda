@@ -5496,6 +5496,133 @@ record GeneralizedWalrasianData
 
 open GeneralizedWalrasianData public
 
+------------------------------------------------------------------------
+-- Concrete economic closure on the canonical generalized surface.
+--
+-- The finite non-iid witness above is not a second equilibrium ontology.
+-- It is interpreted directly as GeneralizedWalrasianData, with its
+-- individual budget-optimality and aggregate resource-balance witnesses
+-- supplying the generalized equilibrium predicate.
+------------------------------------------------------------------------
+
+FiniteNonIIDPreference :
+  ∀ {Agent Good : Set}
+  (utility : Agent → (Good → Nat) → Nat) →
+  Agent → (Agent → Good → Nat) → (Agent → Good → Nat) → Set
+FiniteNonIIDPreference utility i x y =
+  utility i (x i) ≤ utility i (y i)
+
+FiniteNonIIDBudget :
+  ∀ {Agent Good : Set}
+  (agents : List Agent)
+  (goods : List Good)
+  (price : Good → Nat) →
+  Agent → (Good → Nat) → Set
+FiniteNonIIDBudget agents goods price i bundle =
+  BudgetFeasible
+    goods
+    price
+    (λ g → zero)
+    bundle
+
+record FiniteNonIIDGeneralizedEquilibrium
+  (Agent Good : Set)
+  (agents : List Agent)
+  (goods : List Good)
+  (utility : Agent → (Good → Nat) → Nat)
+  (endowment : Agent → Good → Nat)
+  (price : Good → Nat)
+  (allocation : Agent → Good → Nat) : Set₁ where
+  constructor finiteNonIIDGeneralizedEquilibrium
+  field
+    budgetOptimal :
+      ∀ i bundle →
+      BudgetFeasible
+        goods
+        price
+        (endowment i)
+        bundle →
+      utility i bundle ≤
+      utility i (allocation i)
+    marketClearing :
+      ∀ g →
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents)
+
+finiteNonIIDGeneralizedData :
+  ∀ {Agent Good : Set}
+  (agents : List Agent)
+  (goods : List Good)
+  (utility : Agent → (Good → Nat) → Nat)
+  (endowment : Agent → Good → Nat)
+  (witness : FiniteNonIIDWalrasianEquilibrium Agent Good agents goods utility endowment) →
+  GeneralizedWalrasianData
+    Agent
+    Good
+    (Good → Nat)
+    (Agent → Good → Nat)
+finiteNonIIDGeneralizedData
+  agents goods utility endowment witness =
+  generalizedWalrasianData
+    (λ i → Set)
+    (FiniteNonIIDPreference utility)
+    (λ p i bundle →
+      BudgetFeasible goods p (endowment i) bundle)
+    (λ allocation →
+      ∀ g →
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents))
+    (λ p allocation →
+      FiniteNonIIDGeneralizedEquilibrium
+        Agent
+        Good
+        agents
+        goods
+        utility
+        endowment
+        p
+        allocation)
+    (λ p allocation →
+      FiniteNonIIDGeneralizedEquilibrium
+        Agent
+        Good
+        agents
+        goods
+        utility
+        endowment
+        p
+        allocation)
+    (λ {p} {a} equilibriumWitness →
+      equilibriumWitness)
+
+finiteNonIIDWalrasian-lifts-to-generalized :
+  ∀ {Agent Good : Set}
+  {agents : List Agent}
+  {goods : List Good}
+  {utility : Agent → (Good → Nat) → Nat}
+  {endowment : Agent → Good → Nat}
+  (witness :
+    FiniteNonIIDWalrasianEquilibrium
+      Agent Good agents goods utility endowment) →
+  GeneralizedWalrasianExistence
+    Agent
+    Good
+    (Good → Nat)
+    (Agent → Good → Nat)
+    (finiteNonIIDGeneralizedData
+      agents goods utility endowment witness)
+finiteNonIIDWalrasian-lifts-to-generalized witness =
+  generalizedWalrasianExistence
+    (price witness)
+    (allocation witness)
+    (finiteNonIIDGeneralizedEquilibrium
+      (budgetOptimal witness)
+      (marketClearing witness))
+    (finiteNonIIDGeneralizedEquilibrium
+      (budgetOptimal witness)
+      (marketClearing witness))
+    
+
 record GeneralizedWalrasianExistence
   (Agent Commodity Price Allocation : Set)
   (D : GeneralizedWalrasianData Agent Commodity Price Allocation) : Set₁ where
