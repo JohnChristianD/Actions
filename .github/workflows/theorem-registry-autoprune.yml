@@ -1,0 +1,69 @@
+name: Auto-prune theorem registry metadata
+
+on:
+  schedule:
+    - cron: '47 3 * * 1'
+      timezone: "Asia/Manila"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prune-and-verify:
+    name: Reconcile theorem registries against Agda
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+
+      - name: Install Agda
+        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+
+      - name: Prune stale theorem registries
+        run: nix run .#prune-theorem-registries
+
+      - name: Kernel-check canonical Agda proof surfaces
+        env:
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+        run: |
+          set -euo pipefail
+          "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+          "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+
+      - name: Re-check registry freshness and graph extraction
+        run: |
+          set -euo pipefail
+          nix develop .#default -c bash -e -c '
+            cd .ci/discovery
+            mmc --make theorem_registry_reconcile
+            ./theorem_registry_reconcile --check
+            mmc --make theorem_monolith_egraph_sync
+            ./theorem_monolith_egraph_sync
+          '
+
+      - name: Commit registry reconciliation
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m; then
+            echo "Theorem registries are already synchronized with the Agda proof surface."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m
+          git commit -m "ci: prune stale theorem registry metadata"
+          git push origin HEAD:main
