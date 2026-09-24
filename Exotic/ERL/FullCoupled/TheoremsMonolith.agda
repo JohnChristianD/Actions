@@ -4105,7 +4105,7 @@ noUnconditionalMegaGeneralizedWalrasianExistence
   theorem =
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
-\n
+
 
 ------------------------------------------------------------------------
 -- F4 coercivity/boundedness frontier composed with NormPair stability
