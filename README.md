@@ -710,3 +710,63 @@ The two graph surfaces are:
 - `.ci/discovery/second-welfare-generalization-graph.md`
 
 The remaining economic existence question is deliberately precise: a supporting-price/separation theorem still has to be instantiated from the relevant convexity, continuity/local-nonsatiation, feasibility, and redistribution structure of a concrete economic model. The new theorem does not silently promote Pareto optimality alone into a supporting price.
+
+## What is structurally nonstandard because the systems are connected
+
+The individual ingredients should not be described as novel merely because they are implemented here. The meaningful deviations arise at the composition boundaries.
+
+For the recurrent learner, the nonstandard part is that the recurrent state, F4/Frank–Wolfe optimizer state, norm state, Watkins target, LCB counts, and Sparsemax policy are not treated as loosely coupled modules. The canonical AQ-loop theorem gives the shared signal and exact couplings, while the GRU/F4/norm/Watkins prefix-composition theorem identifies the whole transition with one prefix-network action. The resulting object is therefore an exact commuting/composition surface between recurrent dynamics, optimizer update, off-policy target construction, and policy readout. Standard RNN theory by itself does not imply this joint conjugacy; standard optimizer theory by itself does not imply it either.
+
+For the optimizer, the unusual feature is similarly relational. The F4/Frank–Wolfe residual and finite-horizon regret terms sit inside the same connected learner graph as the recurrent scan and Watkins target. The repository therefore asks whether optimizer iteration is the same semantic transition seen through the recurrent/prefix representation, rather than proving an optimizer bound in isolation. This is a compositional exactness claim, not a claim that the underlying F4 or Frank–Wolfe mathematics is independently new.
+
+For Hodge–Maxwell, the major departure is not the differential-form equations themselves. The continuous exact-representation data requires the Maxwell equations, continuity, a global encode/decode isomorphism, closed solution evolution, and recurrent-step conjugacy. The connected Hodge–Maxwell/F4/Watkins theorem then places that exact solution evolution on the same learner carrier as the recurrent/optimizer/Watkins composition. Consequently the physics representation is tied to the optimizer-driven recurrent transition by an explicit isomorphism and step conjugacy. Ordinary Maxwell theory does not assert such a GRU/F4/Watkins representation, and ordinary RNN theory does not provide Maxwell semantics.
+
+The strongest combined effect is therefore the commuting network of representations:
+
+```
+GRU state
+  ↕ exact learner dynamics
+F4 + Watkins + LCB/Sparsemax learner
+  ↕ exact solution map
+Hodge–Maxwell solution
+  ↕ exact economic interpretation where supplied
+Economic solution / Walrasian state
+```
+
+An individual arrow can be supplied as a theorem premise, but the composition gives a stronger architectural statement: the same state transition can be interpreted simultaneously through recurrent, optimization/control, policy, physical, and economic semantics. That cross-domain identification is the deviation caused by composition. It should not be described as a replacement for the separate theories.
+
+The remaining caveat is important: exact representation is not generic existence. The Maxwell side still requires concrete differential-form/function-space/domain/source/boundary semantics and an exact encoder/decoder. The economic side requires an actual economic interpretation, inverse, equilibrium transport, and supporting-price assumptions. The connected theorem makes these seams explicit rather than filling them with informal analogy.
+
+## Coding and Git workflow: what is structurally different
+
+The repository also differs from a conventional GitHub application workflow by treating source code, theorem declarations, dependency graphs, and verification state as separate semantic layers.
+
+The normal programming pattern is roughly implementation → tests → review → merge. Here the central loop is instead:
+
+```
+canonical semantic source
+        ↓
+Agda proposition/proof
+        ↓
+typed extraction and theorem graph
+        ↓
+candidate graph composition
+        ↓
+Agda promotion
+        ↓
+reproducible CI/environment checks
+        ↓
+Git history as the record of semantic change
+```
+
+This resembles proof-oriented functional programming and theorem-prover workflows in its emphasis on algebraic laws, total/typed transformations, small compositional definitions, and machine-checked invariants. It also resembles systems-oriented development in keeping interfaces explicit, dependencies visible, and repository history meaningful. The distinctive part here is the deliberate combination: graph discovery may search broadly, but graph edges do not become mathematical facts until an actual Agda dependency exists.
+
+That separation is useful for the work being done now. It lets a large cross-domain composition expand without pretending that conceptual similarity is a proof. It also makes pruning meaningful: when a theorem or branch is removed, the graph and README can be reduced to the actual proof surface rather than preserving a historical label as though it were still part of the live theory.
+
+The workflow therefore helps most at the current stage because the project is crossing several semantic boundaries at once. The right unit of progress is not “another component was added”; it is “a previously separate boundary now has an explicit commuting square, inverse, transport theorem, or composed consumer.” Git commits then record those semantic boundary crossings, while the graph makes their dependency direction inspectable.
+
+This does not claim that any particular programmer, mathematician, or theorem-prover practitioner invented or would endorse this exact repository architecture. The useful comparison is methodological: typed algebraic decomposition, explicit invariants, small verified transformations, executable tooling, and disciplined source history all contribute pieces; the repository combines them into a proof-carrying discovery workflow tailored to the current cross-domain composition.
+
+## Current pruning rule
+
+Keep only descriptions that correspond to a live Agda theorem/data declaration, a real graph dependency, a concrete verification mechanism, or a clearly marked unresolved boundary. Remove historical “pruned/retired” prose when the corresponding material is no longer part of the active surface. Do not retain speculative component-by-component claims merely because they resemble a known theory. The live question is always: what exact relationship does the connected graph prove that the separate components do not?
