@@ -389,59 +389,6 @@ CI execution
 The proof, discovery, policy, environment, and execution layers remain separate by design.
 
 
-## Workflow profile: why the repository is unusual
-
-The coding workflow is intentionally closer to a **proof-carrying research pipeline** than to a conventional single-language software project.
-
-A conventional performance-first systems workflow tends to put the executable program, tests, profiler, and version-control history at the center. A numerical array workflow tends to put executable transformations, automatic differentiation, compilation, and benchmarks at the center. A proof-first functional workflow tends to put the theorem prover and its elaborated proof terms at the center, often with a small scripting layer around it. This repository deliberately combines pieces of all three without making any one of them the sole authority.
-
-The distinctive loop is:
-
-```
-canonical semantic source
-    |
-    v
-machine-checked Agda theorem surface
-    |
-    +--> typed/declarative extraction
-    |
-    +--> e-graph + A* candidate discovery
-    |
-    v
-candidate promotion
-    |
-    v
-Agda proof obligation
-    |
-    v
-Dhall/Nix reproducible verification
-    |
-    v
-Git history records the semantic change
-```
-
-That workflow is useful **right now** because your problem is not merely “write a faster program.” You are trying to discover and then certify long chains such as recurrent scan -> optimizer -> Hodge-Maxwell representation -> global conjugacy/injectivity -> economic/POMDP seams. A normal test suite can show that an implementation behaves on examples; it cannot by itself establish that an extracted graph path is mathematically valid. Conversely, a proof-only workflow would make graph exploration and large dependency search cumbersome. The split lets search be aggressive while proof promotion remains conservative.
-
-There are also real costs. The workflow has more moving parts than a normal application repository, and a graph candidate can outrun the compiler if source names, contracts, or CI surfaces drift. That is why the current policy treats e-graph extraction as non-authoritative, keeps speculative nodes explicitly marked, prunes stale graph vocabulary, and requires the actual Agda surface to carry the theorem.
-
-The practical rule for this project is therefore:
-
-```
-discover broadly
-    !=
-prove automatically
-
-compose aggressively
-    !=
-weaken semantics
-
-record every semantic change
-    !=
-treat commit history as proof
-```
-
-For the work being done now, this is most useful as a **search -> prune -> formalize -> verify** loop. It gives you room to explore unconventional cross-domain connections while preserving a hard boundary between an interesting composition and a theorem that actually exists.
-
 ## Scheduled commit-totality README refresh
 
 The repository now has a slow, deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it weekly against the default branch. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window. Dhall is used as the declarative text-generation layer, while Nix supplies the reproducible runtime.
@@ -711,61 +658,127 @@ The two graph surfaces are:
 
 The remaining economic existence question is deliberately precise: a supporting-price/separation theorem still has to be instantiated from the relevant convexity, continuity/local-nonsatiation, feasibility, and redistribution structure of a concrete economic model. The new theorem does not silently promote Pareto optimality alone into a supporting price.
 
-## What is structurally nonstandard because the systems are connected
+## Connected composition deviations and workflow
 
-The individual ingredients should not be described as novel merely because they are implemented here. The meaningful deviations arise at the composition boundaries.
+The separate RNN, optimizer, and Hodge-Maxwell theories are not being claimed as new merely because they are formalized here. The meaningful deviation is the exact relationship imposed between their state transitions.
 
-For the recurrent learner, the nonstandard part is that the recurrent state, F4/Frank–Wolfe optimizer state, norm state, Watkins target, LCB counts, and Sparsemax policy are not treated as loosely coupled modules. The canonical AQ-loop theorem gives the shared signal and exact couplings, while the GRU/F4/norm/Watkins prefix-composition theorem identifies the whole transition with one prefix-network action. The resulting object is therefore an exact commuting/composition surface between recurrent dynamics, optimizer update, off-policy target construction, and policy readout. Standard RNN theory by itself does not imply this joint conjugacy; standard optimizer theory by itself does not imply it either.
-
-For the optimizer, the unusual feature is similarly relational. The F4/Frank–Wolfe residual and finite-horizon regret terms sit inside the same connected learner graph as the recurrent scan and Watkins target. The repository therefore asks whether optimizer iteration is the same semantic transition seen through the recurrent/prefix representation, rather than proving an optimizer bound in isolation. This is a compositional exactness claim, not a claim that the underlying F4 or Frank–Wolfe mathematics is independently new.
-
-For Hodge–Maxwell, the major departure is not the differential-form equations themselves. The continuous exact-representation data requires the Maxwell equations, continuity, a global encode/decode isomorphism, closed solution evolution, and recurrent-step conjugacy. The connected Hodge–Maxwell/F4/Watkins theorem then places that exact solution evolution on the same learner carrier as the recurrent/optimizer/Watkins composition. Consequently the physics representation is tied to the optimizer-driven recurrent transition by an explicit isomorphism and step conjugacy. Ordinary Maxwell theory does not assert such a GRU/F4/Watkins representation, and ordinary RNN theory does not provide Maxwell semantics.
-
-The strongest combined effect is therefore the commuting network of representations:
+The connected learner currently exposes this structure:
 
 ```
 GRU state
-  ↕ exact learner dynamics
-F4 + Watkins + LCB/Sparsemax learner
-  ↕ exact solution map
-Hodge–Maxwell solution
-  ↕ exact economic interpretation where supplied
-Economic solution / Walrasian state
+  |
+  +-- recurrent scan
+  |
+  +-- F4 / Frank-Wolfe update
+  |
+  +-- Watkins target
+  |
+  +-- LCB counts
+  |
+  +-- Sparsemax policy
+  |
+  v
+canonical learner transition
+  |
+  | exact learner-to-solution map
+  v
+Hodge-Maxwell solution
+  |
+  +-- differential-form equations
+  +-- continuity obligations
+  +-- encode/decode inverse laws
+  +-- step conjugacy
+  |
+  v
+Maxwell solution transition
 ```
 
-An individual arrow can be supplied as a theorem premise, but the composition gives a stronger architectural statement: the same state transition can be interpreted simultaneously through recurrent, optimization/control, policy, physical, and economic semantics. That cross-domain identification is the deviation caused by composition. It should not be described as a replacement for the separate theories.
+For RNN theory, the extra claim is not recurrence itself. It is that the recurrent transition is the same typed transition used by the optimizer, target construction, policy readout, and physical representation. Standard RNN results do not imply this cross-semantic commuting structure.
 
-The remaining caveat is important: exact representation is not generic existence. The Maxwell side still requires concrete differential-form/function-space/domain/source/boundary semantics and an exact encoder/decoder. The economic side requires an actual economic interpretation, inverse, equilibrium transport, and supporting-price assumptions. The connected theorem makes these seams explicit rather than filling them with informal analogy.
+For optimizer theory, the extra claim is not the existence of an update, regret quantity, or residual. It is that the optimizer update is attached to the same recurrent state transition and is transported through the same exact solution representation. Standard optimizer analysis does not by itself provide that physical-state conjugacy.
 
-## Coding and Git workflow: what is structurally different
+For Hodge-Maxwell theory, the extra claim is not the Maxwell equations, Hodge operators, or continuity assumptions. It is that a supplied Hodge-Maxwell solution space is globally isomorphic to the connected learner carrier and that its solution step commutes with the learner step. Standard Hodge-Maxwell theory does not by itself provide an RNN/optimizer representation.
 
-The repository also differs from a conventional GitHub application workflow by treating source code, theorem declarations, dependency graphs, and verification state as separate semantic layers.
-
-The normal programming pattern is roughly implementation → tests → review → merge. Here the central loop is instead:
+The combined effect is therefore:
 
 ```
-canonical semantic source
-        ↓
-Agda proposition/proof
-        ↓
-typed extraction and theorem graph
-        ↓
-candidate graph composition
-        ↓
+recurrent semantics
+      |
+      v
+optimizer / target / policy semantics
+      |
+      v
+Hodge-Maxwell solution semantics
+      |
+      v
+economic semantics where an explicit interpretation is supplied
+```
+
+The important boundary remains conditional. A policy readout does not automatically become a Maxwell update, and an exact encoder/decoder does not establish generic existence of a GRU representation for arbitrary Maxwell problems. The current policy seam explicitly requires policyStepCorrect before the policy-induced update can be transported to the Maxwell step.
+
+### Workflow deviation from conventional GitHub programming
+
+A conventional repository usually treats source code, tests, review, merge history, and CI as the main development loop. This repository adds a proof-and-graph layer between source changes and ordinary CI:
+
+```
+semantic source
+     |
+     v
+Agda proposition / proof
+     |
+     v
+typed semantic extraction
+     |
+     v
+dependency graph / e-graph search
+     |
+     v
+candidate composition
+     |
+     v
 Agda promotion
-        ↓
-reproducible CI/environment checks
-        ↓
-Git history as the record of semantic change
+     |
+     v
+Dhall + Nix verification
+     |
+     v
+GitHub Actions
+     |
+     v
+Git history records semantic change
 ```
 
-This resembles proof-oriented functional programming and theorem-prover workflows in its emphasis on algebraic laws, total/typed transformations, small compositional definitions, and machine-checked invariants. It also resembles systems-oriented development in keeping interfaces explicit, dependencies visible, and repository history meaningful. The distinctive part here is the deliberate combination: graph discovery may search broadly, but graph edges do not become mathematical facts until an actual Agda dependency exists.
+The distinctive workflow is therefore not a claim about any particular programmer or language. It combines several established practices: small typed transformations, explicit invariants, theorem-prover checking, reproducible environments, executable discovery tooling, and disciplined version history.
 
-That separation is useful for the work being done now. It lets a large cross-domain composition expand without pretending that conceptual similarity is a proof. It also makes pruning meaningful: when a theorem or branch is removed, the graph and README can be reduced to the actual proof surface rather than preserving a historical label as though it were still part of the live theory.
+The useful difference for the current project is that discovery and proof are deliberately separated:
 
-The workflow therefore helps most at the current stage because the project is crossing several semantic boundaries at once. The right unit of progress is not “another component was added”; it is “a previously separate boundary now has an explicit commuting square, inverse, transport theorem, or composed consumer.” Git commits then record those semantic boundary crossings, while the graph makes their dependency direction inspectable.
+```
+search broadly
+    !=
+prove automatically
 
-This does not claim that any particular programmer, mathematician, or theorem-prover practitioner invented or would endorse this exact repository architecture. The useful comparison is methodological: typed algebraic decomposition, explicit invariants, small verified transformations, executable tooling, and disciplined source history all contribute pieces; the repository combines them into a proof-carrying discovery workflow tailored to the current cross-domain composition.
+compose candidates
+    !=
+weaken theorem statements
+
+change graph
+    !=
+change mathematical meaning
+
+commit code
+    !=
+prove the theorem
+```
+
+This makes Git history useful as a record of semantic boundary crossings, while the Agda checker remains the authority for mathematical claims. The graph can suggest a new connection; only a real Agda dependency can promote that connection to the proof surface.
+
+This also explains why pruning matters now. When a candidate is only conceptual, it should remain marked as a candidate or be removed. When a boundary has a real inverse, commuting square, transport theorem, or composed consumer, that exact dependency should be recorded. The workflow thus follows:
+
+```
+discover -> prune -> formalize -> verify -> record
+```
+
+That is the main methodological deviation from a general-purpose GitHub application workflow relevant to this repository.
 
 ## Current pruning rule
 
