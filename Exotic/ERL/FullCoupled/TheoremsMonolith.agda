@@ -6009,6 +6009,152 @@ megaParetoOptimal
      a →
    ⊥)
 
+------------------------------------------------------------------------
+-- Econlib-style minimal First Welfare derivation kernel.
+--
+-- Econlib derives the cost lemmas from local nonsatiation, demand
+-- optimality, and the budget model, then feeds them into the Pareto
+-- contradiction.  The generalized Agda surface is intentionally more
+-- abstract, so the smallest reusable seam here is the cost-bound layer:
+-- budget feasibility bounds the cost of an affordable bundle by the
+-- equilibrium allocation cost, while strict preference makes the latter
+-- strictly smaller than the former.  The theorem below derives the
+-- no-strict-affordable-alternative clause instead of accepting that clause
+-- as a primitive certificate.
+------------------------------------------------------------------------
+
+record MegaDemandCostKernel
+  (Agent Price Allocation : Set)
+  (weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set)
+  (feasible : Allocation → Set)
+  (budget : Price → Agent → Allocation → Set)
+  (equilibrium : Price → Allocation → Set)
+  (cost : Price → Agent → Allocation → Nat)
+  (p : Price)
+  (a : Allocation) : Set₁ where
+  constructor megaDemandCostKernel
+  field
+    equilibriumWitness :
+      equilibrium p a
+
+    feasibleWitness :
+      feasible a
+
+    preferredCostly :
+      ∀ i b →
+      weakPreference i b a →
+      cost p i a ≤ cost p i b
+
+    strictlyPreferredCostly :
+      ∀ i b →
+      strictPreference i b a →
+      cost p i a < cost p i b
+
+    budgetCostBound :
+      ∀ i b →
+      budget p i b →
+      cost p i b ≤ cost p i a
+
+    paretoImprovementAffordability :
+      ∀ {b : Allocation} →
+      feasible b →
+      (improvement :
+        MegaParetoImprovement
+          Agent
+          Allocation
+          weakPreference
+          strictPreference
+          b
+          a) →
+      budget p
+        (proj₁ (strictlyBetter improvement))
+        b
+
+open MegaDemandCostKernel public
+
+megaNatNoStrictBack :
+  ∀ {m n : Nat} →
+  suc n ≤ n →
+  ⊥
+megaNatNoStrictBack {zero} ()
+megaNatNoStrictBack {suc n} (s≤s h) =
+  megaNatNoStrictBack h
+
+megaNatStrictCostContradiction :
+  ∀ {m n : Nat} →
+  n ≤ m →
+  m < n →
+  ⊥
+megaNatStrictCostContradiction hle hlt =
+  megaNatNoStrictBack (≤-trans hlt hle)
+
+megaNoStrictAffordableAlternative-from-demand-cost :
+  ∀ {Agent Price Allocation : Set}
+  {weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set}
+  {feasible : Allocation → Set}
+  {budget : Price → Agent → Allocation → Set}
+  {equilibrium : Price → Allocation → Set}
+  {cost : Price → Agent → Allocation → Nat}
+  {p : Price}
+  {a : Allocation} →
+  MegaDemandCostKernel
+    Agent
+    Price
+    Allocation
+    weakPreference
+    strictPreference
+    feasible
+    budget
+    equilibrium
+    cost
+    p
+    a →
+  ∀ i b →
+  budget p i b →
+  ¬ strictPreference i b a
+megaNoStrictAffordableAlternative-from-demand-cost kernel i b affordable =
+  λ strictlyPreferred →
+    megaNatStrictCostContradiction
+      (budgetCostBound kernel i b affordable)
+      (strictlyPreferredCostly kernel i b strictlyPreferred)
+
+megaFirstWelfareTheorem-from-demand-cost :
+  ∀ {Agent Price Allocation : Set}
+  {weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set}
+  {feasible : Allocation → Set}
+  {budget : Price → Agent → Allocation → Set}
+  {equilibrium : Price → Allocation → Set}
+  {cost : Price → Agent → Allocation → Nat}
+  {p : Price}
+  {a : Allocation} →
+  MegaDemandCostKernel
+    Agent
+    Price
+    Allocation
+    weakPreference
+    strictPreference
+    feasible
+    budget
+    equilibrium
+    cost
+    p
+    a →
+  megaParetoOptimal
+    {weakPreference = weakPreference}
+    {strictPreference = strictPreference}
+    feasible
+    a
+megaFirstWelfareTheorem-from-demand-cost kernel =
+  megaFirstWelfareTheorem
+    (megaFirstWelfareTheoremConditions
+      (equilibriumWitness kernel)
+      (feasibleWitness kernel)
+      (megaNoStrictAffordableAlternative-from-demand-cost kernel)
+      (paretoImprovementAffordability kernel))
+
 record MegaFirstWelfareTheoremConditions
   (Agent Price Allocation : Set)
   (weakPreference strictPreference :
