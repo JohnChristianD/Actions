@@ -3805,6 +3805,34 @@ canonical-pure-non-orange-bypass-completion-theorem =
 ------------------------------------------------------------------------
 
 
+record StationaryLimitTheorem
+  (Distribution : Set)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  constructor stationaryLimitTheorem
+  field
+    transitionLaw :
+      ∀ n → μ (suc n) ≡ P (μ n)
+    converges :
+      Converges μ μ∞
+    limitPreserved :
+      Converges μ μ∞ → P μ∞ ≡ μ∞
+
+stationaryLimitTheorem-is-stationary :
+  ∀ {Distribution : Set}
+    {P : Distribution → Distribution}
+    {μ : Nat → Distribution}
+    {μ∞ : Distribution}
+    {Converges : (Nat → Distribution) → Distribution → Set} →
+  StationaryLimitTheorem
+    Distribution P μ μ∞ Converges →
+  P μ∞ ≡ μ∞
+stationaryLimitTheorem-is-stationary theorem =
+  StationaryLimitTheorem.limitPreserved theorem
+    (StationaryLimitTheorem.converges theorem)
+
 ------------------------------------------------------------------------
 -- Convergent fixed-point closure.
 --
@@ -3917,8 +3945,6 @@ record TransportedFixedPointExistence
       ∀ a → to iso (f a) ≡ g (to iso a)
     sourceWitness :
       Σ A (λ a → f a ≡ a)
-    transportIso :
-      StateIsomorphism A B
 
 transportedFixedPointExistence-witness :
   ∀ {A B : Set}
@@ -3933,10 +3959,11 @@ transportedFixedPointExistence-witness closure =
     a = proj₁ source
     fixedPoint = proj₂ source
   in
-  to (TransportedFixedPointExistence.transportIso closure) a ,
+  to iso a ,
   isomorphismFixedPointTransport
-    (TransportedFixedPointExistence.transportIso closure)
-    _ _
+    iso
+    f
+    g
     (TransportedFixedPointExistence.stepConjugacy closure)
     a
     fixedPoint
@@ -3980,34 +4007,6 @@ economicEquilibriumExistenceFromConvergentFixedPoint closure equilibriumClosure 
     equilibriumClosure
     (fixedPoint-from-convergence closure)
 
-
-record StationaryLimitTheorem
-  (Distribution : Set)
-  (P : Distribution → Distribution)
-  (μ : Nat → Distribution)
-  (μ∞ : Distribution)
-  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
-  constructor stationaryLimitTheorem
-  field
-    transitionLaw :
-      ∀ n → μ (suc n) ≡ P (μ n)
-    converges :
-      Converges μ μ∞
-    limitPreserved :
-      Converges μ μ∞ → P μ∞ ≡ μ∞
-
-stationaryLimitTheorem-is-stationary :
-  ∀ {Distribution : Set}
-    {P : Distribution → Distribution}
-    {μ : Nat → Distribution}
-    {μ∞ : Distribution}
-    {Converges : (Nat → Distribution) → Distribution → Set} →
-  StationaryLimitTheorem
-    Distribution P μ μ∞ Converges →
-  P μ∞ ≡ μ∞
-stationaryLimitTheorem-is-stationary theorem =
-  StationaryLimitTheorem.limitPreserved theorem
-    (StationaryLimitTheorem.converges theorem)
 
 ------------------------------------------------------------------------
 -- PE is an information condition, not a boundedness corollary. The
