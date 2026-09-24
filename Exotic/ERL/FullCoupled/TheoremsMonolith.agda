@@ -4035,133 +4035,6 @@ economicEquilibriumExistenceFromConvergentFixedPoint closure equilibriumClosure 
 
 
 ------------------------------------------------------------------------
--- Economic existence closure through the existing topological/fixed-point
--- surface.  This is intentionally conditional: convergence and the
--- fixed-point-to-equilibrium bridge are explicit premises.
-------------------------------------------------------------------------
-
-record GeneralizedWalrasianFixedPointClosure
-  (Agent Commodity Price Allocation : Set)
-  (D : GeneralizedWalrasianData Agent Commodity Price Allocation)
-  (p : Price)
-  (step : Allocation → Allocation) : Set₁ where
-  constructor generalizedWalrasianFixedPointClosure
-  field
-    equilibriumFromFixedPoint :
-      ∀ a →
-      step a ≡ a →
-      equilibrium D p a
-
-open GeneralizedWalrasianFixedPointClosure public
-
-generalizedWalrasianExistence-from-topological-fixed-point :
-  ∀ {Agent Commodity Price Allocation : Set}
-  {D : GeneralizedWalrasianData Agent Commodity Price Allocation}
-  {p : Price}
-  {step : Allocation → Allocation}
-  {orbit : Nat → Allocation}
-  {limit : Allocation}
-  {Converges : (Nat → Allocation) → Allocation → Set} →
-  TopologicalConvergenceWitness
-    Allocation
-    step
-    orbit
-    limit
-    Converges →
-  GeneralizedWalrasianFixedPointClosure
-    Agent
-    Commodity
-    Price
-    Allocation
-    D
-    p
-    step →
-  GeneralizedWalrasianExistence
-    Agent
-    Commodity
-    Price
-    Allocation
-    D
-generalizedWalrasianExistence-from-topological-fixed-point
-  topology equilibriumClosure =
-  let
-    fixedPoint =
-      fixedPoint-from-convergence
-        (fixedPointExistenceFromConvergence topology)
-    a = proj₁ fixedPoint
-    fixed = proj₂ fixedPoint
-  in
-  generalizedWalrasianExistence-from-witness
-    p
-    a
-    (equilibriumFromFixedPoint equilibriumClosure a fixed)
-
-------------------------------------------------------------------------
--- Exact representation transport closes the same existence route on an
--- isomorphic allocation carrier.  The proof reuses the existing
--- StateIsomorphism transport chain; no new topology or economic ontology
--- is introduced here.
-------------------------------------------------------------------------
-
-generalizedWalrasianExistence-from-topological-fixed-point-transport :
-  ∀ {A B Agent Commodity Price : Set}
-  {f : A → A}
-  {g : B → B}
-  {orbit : Nat → A}
-  {limit : A}
-  {Converges : (Nat → A) → A → Set}
-  {iso : StateIsomorphism A B}
-  {D : GeneralizedWalrasianData Agent Commodity Price B}
-  {p : Price} →
-  TopologicalConvergenceWitness
-    A
-    f
-    orbit
-    limit
-    Converges →
-  (∀ a → to iso (f a) ≡ g (to iso a)) →
-  GeneralizedWalrasianFixedPointClosure
-    Agent
-    Commodity
-    Price
-    B
-    D
-    p
-    g →
-  GeneralizedWalrasianExistence
-    Agent
-    Commodity
-    Price
-    B
-    D
-generalizedWalrasianExistence-from-topological-fixed-point-transport
-  topology stepConjugacy equilibriumClosure =
-  let
-    sourceFixedPoint =
-      fixedPoint-from-convergence
-        (fixedPointExistenceFromConvergence topology)
-    a = proj₁ sourceFixedPoint
-    fixed = proj₂ sourceFixedPoint
-    b = to iso a
-    targetFixed =
-      trans
-        (sym
-          (isomorphismIterateConjugacy
-            iso
-            f
-            g
-            stepConjugacy
-            (suc zero)
-            a))
-        (isomorphismEqualityTransport iso fixed)
-  in
-  generalizedWalrasianExistence-from-witness
-    p
-    b
-    (equilibriumFromFixedPoint equilibriumClosure b targetFixed)
-
-
-------------------------------------------------------------------------
 -- PE is an information condition, not a boundedness corollary. The
 -- canonical repository currently has no formal Gramian/vector-space
 -- stochastic layer, so the pre-graphed theorem is an explicit contract
@@ -5967,6 +5840,133 @@ generalizedWalrasianExistence-from-witness
     a
     e
     (characterizationFromEquilibrium D e)
+
+
+------------------------------------------------------------------------
+-- Economic existence closure through the existing topological/fixed-point
+-- surface.  This is intentionally conditional: convergence and the
+-- fixed-point-to-equilibrium bridge are explicit premises.
+------------------------------------------------------------------------
+
+record GeneralizedWalrasianFixedPointClosure
+  (Agent Commodity Price Allocation : Set)
+  (D : GeneralizedWalrasianData Agent Commodity Price Allocation)
+  (p : Price)
+  (step : Allocation → Allocation) : Set₁ where
+  constructor generalizedWalrasianFixedPointClosure
+  field
+    equilibriumFromFixedPoint :
+      ∀ a →
+      step a ≡ a →
+      equilibrium D p a
+
+open GeneralizedWalrasianFixedPointClosure public
+
+generalizedWalrasianExistence-from-topological-fixed-point :
+  ∀ {Agent Commodity Price Allocation : Set}
+  {D : GeneralizedWalrasianData Agent Commodity Price Allocation}
+  {p : Price}
+  {step : Allocation → Allocation}
+  {orbit : Nat → Allocation}
+  {limit : Allocation}
+  {Converges : (Nat → Allocation) → Allocation → Set} →
+  TopologicalConvergenceWitness
+    Allocation
+    step
+    orbit
+    limit
+    Converges →
+  GeneralizedWalrasianFixedPointClosure
+    Agent
+    Commodity
+    Price
+    Allocation
+    D
+    p
+    step →
+  GeneralizedWalrasianExistence
+    Agent
+    Commodity
+    Price
+    Allocation
+    D
+generalizedWalrasianExistence-from-topological-fixed-point
+  topology equilibriumClosure =
+  let
+    fixedPoint =
+      fixedPoint-from-convergence
+        (fixedPointExistenceFromConvergence topology)
+    a = proj₁ fixedPoint
+    fixed = proj₂ fixedPoint
+  in
+  generalizedWalrasianExistence-from-witness
+    p
+    a
+    (equilibriumFromFixedPoint equilibriumClosure a fixed)
+
+------------------------------------------------------------------------
+-- Exact representation transport closes the same existence route on an
+-- isomorphic allocation carrier.  The proof reuses the existing
+-- StateIsomorphism transport chain; no new topology or economic ontology
+-- is introduced here.
+------------------------------------------------------------------------
+
+generalizedWalrasianExistence-from-topological-fixed-point-transport :
+  ∀ {A B Agent Commodity Price : Set}
+  {f : A → A}
+  {g : B → B}
+  {orbit : Nat → A}
+  {limit : A}
+  {Converges : (Nat → A) → A → Set}
+  {iso : StateIsomorphism A B}
+  {D : GeneralizedWalrasianData Agent Commodity Price B}
+  {p : Price} →
+  TopologicalConvergenceWitness
+    A
+    f
+    orbit
+    limit
+    Converges →
+  (∀ a → to iso (f a) ≡ g (to iso a)) →
+  GeneralizedWalrasianFixedPointClosure
+    Agent
+    Commodity
+    Price
+    B
+    D
+    p
+    g →
+  GeneralizedWalrasianExistence
+    Agent
+    Commodity
+    Price
+    B
+    D
+generalizedWalrasianExistence-from-topological-fixed-point-transport
+  topology stepConjugacy equilibriumClosure =
+  let
+    sourceFixedPoint =
+      fixedPoint-from-convergence
+        (fixedPointExistenceFromConvergence topology)
+    a = proj₁ sourceFixedPoint
+    fixed = proj₂ sourceFixedPoint
+    b = to iso a
+    targetFixed =
+      trans
+        (sym
+          (isomorphismIterateConjugacy
+            iso
+            f
+            g
+            stepConjugacy
+            (suc zero)
+            a))
+        (isomorphismEqualityTransport iso fixed)
+  in
+  generalizedWalrasianExistence-from-witness
+    p
+    b
+    (equilibriumFromFixedPoint equilibriumClosure b targetFixed)
 
 
 ------------------------------------------------------------------------
