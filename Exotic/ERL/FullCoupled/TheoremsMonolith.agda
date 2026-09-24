@@ -5939,7 +5939,11 @@ megaFirstWelfareTheorem :
     equilibrium
     p
     a →
-  megaParetoOptimal feasible a
+  megaParetoOptimal
+    {weakPreference = weakPreference}
+    {strictPreference = strictPreference}
+    feasible
+    a
 megaFirstWelfareTheorem conditions =
   feasibleWitness conditions ,
   λ feasibleB improvement →
