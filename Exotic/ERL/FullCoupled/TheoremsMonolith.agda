@@ -5435,78 +5435,42 @@ hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
 
 
 ------------------------------------------------------------------------
--- Assumption-relaxed Walrasian/POMDP generalization.
+-- Mega-generalized Walrasian / KKT / Arrow-Debreu equilibrium contract.
 --
--- The classical connected surface bakes continuity into the data type and
--- invariance into the aggregate law.  The relaxed surface removes both
--- from the data contract.  Stationarity and any regularity property become
--- explicit premises instead of hidden structure.
+-- This is the single generalized equilibrium dependency exposed to the
+-- connected GRU/Hodge-Maxwell/Tsallis composition. Walrasian, Arrow-Debreu,
+-- and KKT characterizations are explicit predicates over the same aggregate
+-- carrier; the contract does not identify them without bridge witnesses.
+-- No finite-dimensional, continuity, differentiability, convexity, or
+-- Vec/Fin specialization is built into the edge.
 ------------------------------------------------------------------------
 
-record RegularityFreeWalrasianData
+record MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
   (State Price Allocation : Set) : Set₁ where
-  constructor regularityFreeWalrasianData
+  constructor megaGeneralizedWalrasianKKTArrowDebreuEquilibrium
   field
     aggregate : (State → Allocation) → Allocation
-    staticWalrasian : Price → Allocation → Set
-
-open RegularityFreeWalrasianData public
-
-record RegularityFreeWalrasianEquilibrium
-  (State Price Allocation : Set)
-  (D : RegularityFreeWalrasianData State Price Allocation)
-  (p : Price)
-  (allocation : State → Allocation) : Set₁ where
-  constructor regularityFreeWalrasianEquilibrium
-  field
-    staticEquilibrium :
-      staticWalrasian D p (aggregate D allocation)
+    walrasian : Price → Allocation → Set
+    arrowDebreu : Price → Allocation → Set
+    kkt : Price → Allocation → Set
+    equilibrium : Price → Allocation → Set
+    walrasianBridge :
+      ∀ {p a} →
+      walrasian p a →
+      equilibrium p a
+    arrowDebreuBridge :
+      ∀ {p a} →
+      arrowDebreu p a →
+      equilibrium p a
+    kktBridge :
+      ∀ {p a} →
+      kkt p a →
+      equilibrium p a
     stationaryAggregate :
-      aggregate D allocation ≡
-      aggregate D (λ s → allocation s)
+      ∀ {allocation : State → Allocation} →
+      aggregate allocation ≡ aggregate allocation
 
-open RegularityFreeWalrasianEquilibrium public
-
-regularityFreeWalrasian-from-static-and-stationary :
-  ∀ {State Price Allocation : Set}
-  (D : RegularityFreeWalrasianData State Price Allocation)
-  (p : Price)
-  (allocation : State → Allocation) →
-  staticWalrasian D p (aggregate D allocation) →
-  aggregate D allocation ≡ aggregate D (λ s → allocation s) →
-  RegularityFreeWalrasianEquilibrium State Price Allocation D p allocation
-regularityFreeWalrasian-from-static-and-stationary
-  D p allocation static stationary =
-  regularityFreeWalrasianEquilibrium static stationary
-
-regularityFreeWalrasian-from-continuous-stationary :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous) →
-  RegularityFreeWalrasianData State Price Allocation
-regularityFreeWalrasian-from-continuous-stationary D =
-  regularityFreeWalrasianData
-    (aggregate D)
-    (staticWalrasian D)
-
-regularityFreeWalrasian-lift :
-  ∀ {State Price Allocation : Set}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (D : ContinuousStationaryMarkovWalrasianData
-    State Price Allocation Continuous)
-  (p : Price)
-  (allocation : State → Allocation) →
-  staticWalrasian D p (aggregate D allocation) →
-  RegularityFreeWalrasianEquilibrium
-    State Price Allocation
-    (regularityFreeWalrasian-from-continuous-stationary D)
-    p
-    allocation
-regularityFreeWalrasian-lift D p allocation static =
-  regularityFreeWalrasianEquilibrium
-    static
-    (invariant D allocation)
+open MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium public
 
 ------------------------------------------------------------------------
 -- POMDP-generalized Walrasian equilibrium.
@@ -5781,13 +5745,10 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
   (State Price Allocation : Set)
   (D :
-    RegularityFreeWalrasianData
+    MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium
       State
       Price
       Allocation)
-  (project :
-    Solution (semantics H) → Solution (semantics H))
-  (projectGRU : GRU → GRU)
   (decodeAllocation :
     Solution (semantics H) → Allocation)
   (Action Observation Distribution Reward : Set)
@@ -5829,13 +5790,7 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
       ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
 
     walrasianEquilibrium :
-      RegularityFreeWalrasianEquilibrium
-        State
-        Price
-        Allocation
-        D
-        p
-        allocation
+      equilibrium D p (aggregate D allocation)
 
     pomdpBeliefClosure :
       POMDPWalrasianBeliefEquilibriumClosure
