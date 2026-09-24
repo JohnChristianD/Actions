@@ -8189,17 +8189,26 @@ f4-normPair-economic-injectivity-certificate
     (megaWalrasianGlobalSquare-injective economicSquare)
 
 ------------------------------------------------------------------------
--- Graph boundary: no unconditional generalized Walrasian existence
--- theorem follows even after adjoining F4 coercivity/boundedness
--- premises, exact NormPair quotient-transition closure, and economic
--- global-square injectivity.
---
--- The countermodel uses singleton economic/carrier spaces, so every
--- coercivity/boundedness premise can be inhabited while the generalized
--- equilibrium predicate is empty. Hence the missing bridge is genuinely
--- economic: a convergence/fixed-point/market-clearing/existence theorem,
--- not injectivity alone.
+-- Countermodel square: singleton economic/carrier spaces give exact
+-- economic injectivity while the equilibrium relation remains empty.
 ------------------------------------------------------------------------
+
+megaNoEquilibriumWalrasianSquare :
+  MegaWalrasianGlobalSquareConjugacy
+    ⊤
+    ⊤
+    ⊤
+    (λ _ → tt)
+    (λ _ → tt)
+    (λ x → x)
+    (λ x → x)
+    (λ x → x)
+    (λ x → x)
+megaNoEquilibriumWalrasianSquare =
+  megaWalrasianGlobalSquareConjugacy
+    (λ _ → refl)
+    (λ _ → refl)
+    (λ _ → refl)
 
 megaNoEquilibriumF4NormPairEconomicCertificate :
   F4NormPairEconomicInjectivityCertificate
@@ -8218,22 +8227,32 @@ megaNoEquilibriumF4NormPairEconomicCertificate =
     tt
     megaNoEquilibriumWalrasianSquare
 
-megaNoEquilibriumWalrasianSquare :
-  MegaWalrasianGlobalSquareConjugacy
-    ⊤
-    ⊤
-    ⊤
-    (λ _ → tt)
-    (λ _ → tt)
-    (λ x → x)
-    (λ x → x)
-    (λ x → x)
-    (λ x → x)
-megaNoEquilibriumWalrasianSquare =
-  megaWalrasianGlobalSquareConjugacy
-    (λ _ → refl)
-    (λ _ → refl)
-    (λ _ → refl)
+megaNoEquilibriumF4NormPairEconomicWitness :
+  ¬
+    Σ ⊤
+      (λ p →
+        Σ ⊤
+          (λ a →
+            equilibrium
+              megaNoEquilibriumGeneralizedWalrasian
+              p
+              a))
+megaNoEquilibriumF4NormPairEconomicWitness
+  (p , a , witness) =
+  witness
+
+------------------------------------------------------------------------
+-- Graph boundary: no unconditional generalized Walrasian existence
+-- theorem follows even after adjoining F4 coercivity/boundedness
+-- premises, exact NormPair quotient-transition closure, and economic
+-- global-square injectivity.
+--
+-- The countermodel uses singleton economic/carrier spaces, so every
+-- coercivity/boundedness premise is inhabited while the generalized
+-- equilibrium predicate is empty. Hence the missing bridge is genuinely
+-- economic: a convergence/fixed-point/market-clearing/existence theorem,
+-- not injectivity alone.
+------------------------------------------------------------------------
 
 noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity :
   ¬
@@ -8268,21 +8287,5 @@ noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity :
 noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity
   theorem =
   megaNoEquilibriumF4NormPairEconomicWitness
-    (theorem
-      megaNoEquilibriumGeneralizedWalrasian)
-    megaNoEquilibriumF4NormPairEconomicCertificate
-
-megaNoEquilibriumF4NormPairEconomicWitness :
-  ¬
-    Σ ⊤
-      (λ p →
-        Σ ⊤
-          (λ a →
-            equilibrium
-              megaNoEquilibriumGeneralizedWalrasian
-              p
-              a))
-megaNoEquilibriumF4NormPairEconomicWitness
-  (p , a , witness) =
-  witness
+    (theorem megaNoEquilibriumGeneralizedWalrasian)
 
