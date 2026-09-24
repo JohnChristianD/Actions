@@ -8251,145 +8251,130 @@ canonical-f4-normPair-factor-stability-theorem =
 ------------------------------------------------------------------------
 -- Recursive Radner equilibrium surface.
 --
--- Recursive Radner equilibrium is represented as a state-contingent
--- competitive equilibrium with spot prices, allocations, portfolios,
--- individual feasibility/optimality, and both commodity and asset-market
--- clearing. The record is semantic data: it does not assert existence.
--- Existence requires an external economic theorem/adapter.
+-- A Recursive Radner equilibrium is state-contingent competitive equilibrium
+-- data with a price process, allocation process, portfolio process, agent
+-- feasibility/optimality, commodity-market clearing, asset-market clearing,
+-- and explicit recursive-law witnesses.
 ------------------------------------------------------------------------
+
+record RecursiveRadnerData
+  (State Agent Commodity Asset Price Allocation Portfolio : Set)
+  (priceProcess : State → Price)
+  (allocationProcess : State → Agent → Allocation)
+  (portfolioProcess : State → Agent → Portfolio) : Set₁ where
+  constructor recursiveRadnerData
+  field
+    transition : State → State
+    feasible : State → Agent → Allocation → Portfolio → Set
+    optimal : State → Agent → Allocation → Portfolio → Set
+    commodityMarketClearing : State → Set
+    assetMarketClearing : State → Set
+    priceRecursion : State → Price → Set
+    allocationRecursion : State → Agent → Allocation → Set
+    portfolioRecursion : State → Agent → Portfolio → Set
 
 record RecursiveRadnerEquilibrium
   (State Agent Commodity Asset Price Allocation Portfolio : Set)
-  (transition : State → State)
-  (spotPrice : State → Price)
-  (allocation : State → Agent → Allocation)
-  (portfolio : State → Agent → Portfolio) : Set₁ where
+  (priceProcess : State → Price)
+  (allocationProcess : State → Agent → Allocation)
+  (portfolioProcess : State → Agent → Portfolio)
+  (D :
+    RecursiveRadnerData
+      State Agent Commodity Asset Price Allocation Portfolio
+      priceProcess
+      allocationProcess
+      portfolioProcess) : Set₁ where
   constructor recursiveRadnerEquilibrium
   field
-    recursiveFeasibility :
-      ∀ s i → Set
+    feasibility :
+      ∀ s i →
+      RecursiveRadnerData.feasible D
+        s i
+        (allocationProcess s i)
+        (portfolioProcess s i)
 
-    individualOptimality :
-      ∀ s i → Set
+    optimality :
+      ∀ s i →
+      RecursiveRadnerData.optimal D
+        s i
+        (allocationProcess s i)
+        (portfolioProcess s i)
 
-    commodityMarketClearing :
-      ∀ s → Set
-
-    assetMarketClearing :
-      ∀ s → Set
-
-    recursivePricingLaw :
+    commodityClearing :
       ∀ s →
-      spotPrice (transition s) ≡ spotPrice (transition s)
+      RecursiveRadnerData.commodityMarketClearing D s
 
-    recursiveAllocationLaw :
+    assetClearing :
+      ∀ s →
+      RecursiveRadnerData.assetMarketClearing D s
+
+    priceRecursionWitness :
+      ∀ s →
+      RecursiveRadnerData.priceRecursion D
+        s
+        (priceProcess s)
+
+    allocationRecursionWitness :
       ∀ s i →
-      allocation (transition s) i ≡ allocation (transition s) i
+      RecursiveRadnerData.allocationRecursion D
+        s i
+        (allocationProcess s i)
 
-    recursivePortfolioLaw :
+    portfolioRecursionWitness :
       ∀ s i →
-      portfolio (transition s) i ≡ portfolio (transition s) i
+      RecursiveRadnerData.portfolioRecursion D
+        s i
+        (portfolioProcess s i)
 
-------------------------------------------------------------------------
--- Recursive Radner as a generalized equilibrium predicate.
---
--- The generalized Walrasian layer can therefore host RRE witnesses without
--- conflating the recursive financial semantics with static Walrasian
--- existence.
-------------------------------------------------------------------------
-
-recursiveRadnerPredicate :
-  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set}
-  {transition : State → State}
-  {spotPrice : State → Price}
-  {allocation : State → Agent → Allocation}
-  {portfolio : State → Agent → Portfolio} →
-  Price → Allocation → Set
-recursiveRadnerPredicate p a =
-  Σ State
-    (λ s →
-      Σ Agent
-        (λ i →
-          RecursiveRadnerEquilibrium
-            State
-            Agent
-            Commodity
-            Asset
-            Price
-            Allocation
-            Portfolio
-            transition
-            spotPrice
-            allocation
-            portfolio))
-
-record RecursiveRadnerWalrasianCompositionTheorem
-  (State Agent Commodity Asset Price Allocation Portfolio : Set)
-  (transition : State → State)
-  (spotPrice : State → Price)
-  (allocation : State → Agent → Allocation)
-  (portfolio : State → Agent → Portfolio) : Set₁ where
-  constructor recursiveRadnerWalrasianCompositionTheorem
+record RecursiveRadnerExistence
+  (State Agent Commodity Asset Price Allocation Portfolio : Set) : Set₁ where
+  constructor recursiveRadnerExistence
   field
+    priceProcess : State → Price
+    allocationProcess : State → Agent → Allocation
+    portfolioProcess : State → Agent → Portfolio
+
+    data :
+      RecursiveRadnerData
+        State Agent Commodity Asset Price Allocation Portfolio
+        priceProcess
+        allocationProcess
+        portfolioProcess
+
     equilibrium :
       RecursiveRadnerEquilibrium
         State Agent Commodity Asset Price Allocation Portfolio
-        transition
-        spotPrice
-        allocation
-        portfolio
-
-    generalizedEmbedding :
-      ∀ p a →
-      recursiveRadnerPredicate
-        {State = State}
-        {Agent = Agent}
-        {Commodity = Commodity}
-        {Asset = Asset}
-        {Price = Price}
-        {Allocation = Allocation}
-        {Portfolio = Portfolio}
-        {transition = transition}
-        {spotPrice = spotPrice}
-        {allocation = allocation}
-        {portfolio = portfolio}
-        p a →
-      Set
-
-recursiveRadner-as-generalized-equilibrium :
-  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set}
-  {transition : State → State}
-  {spotPrice : State → Price}
-  {allocation : State → Agent → Allocation}
-  {portfolio : State → Agent → Portfolio}
-  →
-  RecursiveRadnerWalrasianCompositionTheorem
-    State Agent Commodity Asset Price Allocation Portfolio
-    transition
-    spotPrice
-    allocation
-    portfolio →
-  Σ Price
-    (λ p →
-      Σ Allocation
-        (λ a →
-          recursiveRadnerPredicate
-            {State = State}
-            {Agent = Agent}
-            {Commodity = Commodity}
-            {Asset = Asset}
-            {Price = Price}
-            {Allocation = Allocation}
-            {Portfolio = Portfolio}
-            {transition = transition}
-            {spotPrice = spotPrice}
-            {allocation = allocation}
-            {portfolio = portfolio}
-            p a))
-recursiveRadner-as-generalized-equilibrium witness =
-  tt , tt , tt
+        priceProcess
+        allocationProcess
+        portfolioProcess
+        data
 
 ------------------------------------------------------------------------
+-- Existence is a separate economic theorem interface.
+--
+-- This record does not assume that the learner's F4/NormPair stability
+-- produces a Recursive Radner equilibrium. A caller must supply the
+-- economic equilibrium witness or a theorem deriving it.
+------------------------------------------------------------------------
+
+recursiveRadner-existence-witness :
+  ∀ {State Agent Commodity Asset Price Allocation Portfolio : Set} →
+  RecursiveRadnerExistence
+    State Agent Commodity Asset Price Allocation Portfolio →
+  Σ (State → Price)
+    (λ p →
+      Σ (State → Agent → Allocation)
+        (λ a →
+          State → Agent → Portfolio))
+recursiveRadner-existence-witness witness =
+  RecursiveRadnerExistence.priceProcess witness
+  ,
+  RecursiveRadnerExistence.allocationProcess witness
+  ,
+  RecursiveRadnerExistence.portfolioProcess witness
+
+------------------------------------------------------------------------
+
 ------------------------------------------------------------------------
 -- Unconditional generalized-equilibrium existence boundary.
 --
