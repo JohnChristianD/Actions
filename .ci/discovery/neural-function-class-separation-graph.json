@@ -33,16 +33,8 @@
       "role": "composes the carrier-polymorphic continuous Hodge-Maxwell representation with the carrier-polymorphic Tsallis/divergence exact-conjugacy surface on the same GRU carrier"
     },
     {
-      "node": "ConnectedGeneralizedWalrasianExistenceTheorem",
-      "role": "local exact existence closure from per-price static Walrasian existence through invariant aggregate and generalized stationary lift"
-    },
-    {
       "node": "ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem",
       "role": "fully connected hard-sign-style idempotent transport over the carrier-polymorphic Hodge-Maxwell/Tsallis surface; requires an explicit GRU-side projection conjugacy"
-    },
-    {
-      "node": "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-      "role": "fully connected conditional bridge from the carrier-polymorphic Hodge-Maxwell/Tsallis idempotent projection to generalized Walrasian equilibrium; requires explicit equilibrium/fixed-point compatibility"
     },
     {
       "node": "CanonicalGlobalTokenEncodingConjugacyTheorem",
@@ -389,19 +381,6 @@
       "promotion_gate": "Promote only after an Agda witness proves sign/optimizer-affine preservation, finite-automaton realization, transition compatibility, exact GRU conjugacy, same-witness neighborhood separation, topology compatibility, inclusion, and baseline nonrepresentability."
     },
     {
-      "name": "ConnectedJensenMinimaxRegretRoundingKKTMarkovTheorem",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-      "path": [
-        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
-        "RecurrentAssociativeScanTheorem",
-        "MarkovStationaryWalrasianCompositionTheorem"
-      ],
-      "distinction": "Connected optimizer-regret boundary combining Jensen/minimax regret, explicit rounding bias, KKT absorbing-class stationarity, and Markov fixed-point/Walrasian transport.",
-      "quantitative_contract": "R ≤ J + B + K + M",
-      "promotion_gate": "Promote only after concrete Jensen/convex-concave hypotheses, minimax duality witness, rounding-bias bound, KKT constraint qualification/stationarity witness, and stationary Markov-law fixed-point witness are all supplied and kernel-checked."
-    },
-    {
       "name": "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
       "status": "PROVED_CONDITIONAL_ON_EXACT_REPRESENTATION_SEMANTICS",
       "parent": "CanonicalFullLearnerConnectedScanConjugacyTheorem",
@@ -412,26 +391,6 @@
       "distinction": "Exact theorem for every explicitly supplied family of exact differential-form Hodge-Maxwell solutions, with an arbitrary GRU carrier, exact encode/decode StateIsomorphism, continuity witnesses, Maxwell-equation preservation, and recurrent transition conjugacy. It does not assert existence of such a certificate for every physical or infinite-dimensional Maxwell solution space.",
       "quantitative_contract": "dF = 0 and d(star F) = j are carried exactly through the supplied global state isomorphism and recurrent transition conjugacy.",
       "promotion_gate": "The differential-form semantics, continuity predicates, exact encoder/decoder, state isomorphism, closure, and conjugacy are explicit Agda fields; universal existence of those witnesses remains outside the theorem."
-    },
-    {
-      "name": "RegularWalrasianExistenceAdapterCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "GeneralizedWalrasianEquilibrium",
-      "path": [
-        "Econlib::RegularEconomy",
-        "Econlib::Economy.exists_equilibrium",
-        "Actions::staticWalrasian",
-        "Actions::GeneralizedWalrasianEquilibrium",
-        "Actions::MarkovStationaryWalrasianCompositionTheorem"
-      ],
-      "candidate_statement": "Complete regular finite Walrasian existence by constructing an explicit cross-language adapter from the external regular-economy existence witness into local staticWalrasian, then compose the existing static-to-generalized stationary lift.",
-      "required_certificates": [
-        "external theorem object adapter",
-        "equivalence between upstream WalrasianEquilibrium and local staticWalrasian",
-        "local stationary invariant law",
-        "explicit generalized equilibrium witness"
-      ],
-      "no_synthetic_edge": true
     }
   ],
   "no_invention_policy": "Promote only actual Agda propositions with real consuming fields. External regular-economy equivalence and a generic theorem that all infinite-dimensional Maxwell spaces contain a Nat-indexed family remain explicit premises/candidates rather than synthetic edges.",
@@ -1051,27 +1010,6 @@
       ],
       "impossibility_boundary": "The carrier-polymorphic theorem proves representation consequences once these witnesses exist; it does not prove that every continuous Maxwell solution space admits such a representation.",
       "no_synthetic_edge": true
-    },
-    {
-      "name": "RegularWalrasianExistenceAdapterCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "parent": "GeneralizedWalrasianEquilibrium",
-      "path": [
-        "Econlib::RegularEconomy",
-        "Econlib::Economy.exists_equilibrium",
-        "Actions::staticWalrasian",
-        "Actions::GeneralizedWalrasianEquilibrium",
-        "Actions::MarkovStationaryWalrasianCompositionTheorem"
-      ],
-      "literature_basis": "upstream regular-economy existence plus local generalized/stationary Walrasian transport",
-      "candidate_statement": "Complete regular finite Walrasian existence by constructing an explicit cross-language adapter from the external regular-economy existence witness into local staticWalrasian, then compose the existing static-to-generalized stationary lift.",
-      "required_certificates": [
-        "external theorem object adapter",
-        "equivalence between upstream WalrasianEquilibrium and local staticWalrasian",
-        "local stationary invariant law",
-        "explicit generalized equilibrium witness"
-      ],
-      "no_synthetic_edge": true
     }
   ],
   "transformative_recent_commits_since_graph_contract": [
@@ -1368,27 +1306,6 @@
   ],
   "novel_pregraphed_candidates_2026_09_23": [
     {
-      "node": "FiniteHardSignSubgradientBoundaryCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "premises_needed": [
-        "explicit finite HardSign carrier and sign convention",
-        "piecewise or generalized-derivative notion at the zero boundary",
-        "convexity certificate for the selected loss/regularizer",
-        "connected GRU conjugacy consumer"
-      ],
-      "dependency_edges": [
-        [
-          "ConjugateWalrasianTransport",
-          "FiniteHardSignSubgradientBoundaryCandidate"
-        ],
-        [
-          "ContinuousLeftInverseTheorem",
-          "FiniteHardSignSubgradientBoundaryCandidate"
-        ]
-      ],
-      "reason_not_promoted": "finite limits and topology alone do not supply differentiability, convexity, or a valid derivative for a discontinuous sign map"
-    },
-    {
       "node": "FiniteTsallisQLogDifferentiabilityConvexityCandidate",
       "status": "CANDIDATE_NOT_PROVED",
       "premises_needed": [
@@ -1409,45 +1326,6 @@
         ]
       ],
       "reason_not_promoted": "the existing Tsallis layer is algebraic transport; it does not formalize q-log differentiation or a convexity theorem"
-    },
-    {
-      "node": "HodgeMaxwellConvexDualityBridgeCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "premises_needed": [
-        "explicit finite-dimensional function space or finite carrier",
-        "convex functional and dual pairing",
-        "Hodge-star compatibility law",
-        "exact Maxwell constraint preservation",
-        "connected equilibrium consumer"
-      ],
-      "dependency_edges": [
-        [
-          "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-          "HodgeMaxwellConvexDualityBridgeCandidate"
-        ],
-        [
-          "ConnectedGeneralizedWalrasianExistenceTheorem",
-          "HodgeMaxwellConvexDualityBridgeCandidate"
-        ]
-      ],
-      "reason_not_promoted": "Hodge-Maxwell equations and equilibrium existence are not made convex-dual by topology alone; the bridge requires explicit convex-analytic data"
-    },
-    {
-      "node": "RegularWalrasianStaticExistenceAdapterCandidate",
-      "status": "CANDIDATE_NOT_PROVED",
-      "premises_needed": [
-        "external WalrasianEquilibrium object adapter",
-        "equivalence to local staticWalrasian",
-        "regular-economy assumptions mapped into local data",
-        "explicit stationary/generalized equilibrium witness"
-      ],
-      "dependency_edges": [
-        [
-          "ConnectedGeneralizedWalrasianExistenceTheorem",
-          "RegularWalrasianStaticExistenceAdapterCandidate"
-        ]
-      ],
-      "reason_not_promoted": "cross-language semantic equivalence is still an unproved adapter obligation"
     },
     {
       "node": "POMDPWalrasianBeliefOptimalityCandidate",
