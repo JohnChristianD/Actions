@@ -672,3 +672,41 @@ A classical Second Welfare proof adds economic structure that creates a separati
 The First Welfare condition `noStrictAffordableAlternative` should also be read precisely. It is a demand-optimality condition: no affordable allocation is strictly preferred to the equilibrium allocation. It is not itself monotonicity or local nonsatiation, and monotonicity plus local nonsatiation do not imply demand optimality without the equilibrium/budget link. In the present theorem, the condition is deliberately explicit so the contradiction proof does not smuggle in an unstated consumer-choice axiom.
 
 Finally, whole-allocation/interdependent preferences and heterogeneous choices are two different generalizations. Whole-allocation preferences enlarge the argument domain from an agent's own bundle to the full allocation; heterogeneity allows different agents to have different preference relations. Heterogeneity enlarges the preference-profile space, while interdependence enlarges what each preference relation can depend on. They are therefore not a simple algebraic chain in which one is a stronger form of monotonicity/LNS.
+
+
+## Exact learner–economic solution bridge and generalized Second Welfare theorem
+
+The economic side is no longer represented only as a certificate boundary. The canonical theorem surface now contains an actual learner-to-economic state isomorphism and step-transport theorem:
+
+- `megaEconomicSolutionStateIsomorphism`
+- `megaEconomicSolutionStepConjugacy`
+- `megaEconomicSolutionEquilibriumTransport`
+- `connectedCanonicalLearnerEconomicWelfareCompositionTheorem`
+- `connectedHodgeMaxwellLearnerEconomicWelfareBridge`
+
+The composition is:
+
+```
+Connected Hodge-Maxwell/F4/Watkins learner
+        ↓
+CanonicalFullLearnerState
+        ↕ exact inverse maps
+Economic solution state
+        ↓ exact step conjugacy
+Economic dynamics
+        ↓ equilibrium transport
+Generalized equilibrium
+        ↓ welfare assumptions
+Pareto optimality
+```
+
+The exact learner/economic analogue of the Hodge-Maxwell solution bridge is now a theorem returning a genuine `StateIsomorphism`, exact finite-horizon step conjugacy, two-way equilibrium transport, and the equilibrium-to-Pareto implication. The theorem remains conditional on an actual economic interpretation and its inverse; it does not manufacture an economy from the learner graph.
+
+The Second Welfare side is also generalized through `megaSecondWelfareGeneralized`. It takes `MegaGeneralizedWalrasianEquilibrium`, a Pareto-optimal allocation, a supporting-price map, and the generalized characterization witness, then derives the actual equilibrium witness through `characterizationBridge`. Thus the supporting price is the economic separation input, while equilibrium is proved from the generalized Walrasian characterization rather than merely supplied as another field.
+
+The two graph surfaces are:
+
+- `.ci/discovery/learner-economic-welfare-bridge-graph.md`
+- `.ci/discovery/second-welfare-generalization-graph.md`
+
+The remaining economic existence question is deliberately precise: a supporting-price/separation theorem still has to be instantiated from the relevant convexity, continuity/local-nonsatiation, feasibility, and redistribution structure of a concrete economic model. The new theorem does not silently promote Pareto optimality alone into a supporting price.
