@@ -327,7 +327,7 @@ JSON
     POMDPWalrasianTransport
     POMDPBeliefPolicyFactorization
     POMDPWalrasianBeliefEquilibriumClosure
-    ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem
+    ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
     POMDPExactTransport
     MarkovStationaryWalrasianCompositionTheorem
     CanonicalGlobalTokenEncodingConjugacyTheorem
