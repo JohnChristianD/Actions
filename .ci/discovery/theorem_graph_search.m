@@ -421,7 +421,6 @@ graph_required_theorems = [
     "ExactRecurrentFunctionTranslationTheorem",
     "POMDPExactTransport",
     "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
-    "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
     "POMDPWalrasianData",
     "POMDPWalrasianEquilibrium",
     "POMDPWalrasianTransport",
