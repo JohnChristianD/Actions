@@ -56,6 +56,19 @@
         ".ci/discovery/second-welfare-generalization-graph.md"
       ],
       "note": "Exact learner/economic state isomorphism, step conjugacy, two-way equilibrium transport, and generalized welfare transport are now theorem functions rather than new certificate records."
+    },
+    "policy_hodge_maxwell_update_seam": {
+      "name": "policyHodgeMaxwellCanonicalUpdateSeam",
+      "status": "PROVED_ON_AGDA_SURFACE_PENDING_FRESH_CI",
+      "dependencies": [
+        "canonicalPolicy",
+        "C.canonicalFullStep",
+        "ContinuousHodgeMaxwellExactRepresentationData",
+        "policyHodgeMaxwellUpdateSeam",
+        "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"
+      ],
+      "graph": ".ci/discovery/learner-economic-welfare-bridge-graph.md",
+      "note": "The policy-induced learner update is required to be extensionally the canonical learner step; existing Hodge-Maxwell step conjugacy then transports it exactly to the Maxwell solution step. This closes the policy-to-Maxwell update edge without inferring it from readout semantics alone."
     }
   },
   "analytic_boundary": {
