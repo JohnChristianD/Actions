@@ -3804,6 +3804,182 @@ canonical-pure-non-orange-bypass-completion-theorem =
 -- through such an observation is impossible on that orbit.
 ------------------------------------------------------------------------
 
+
+------------------------------------------------------------------------
+-- Convergent fixed-point closure.
+--
+-- The existing stationary-limit theorem is a genuine existence bridge:
+-- once a state sequence converges to μ∞ and the transition preserves that
+-- limit, μ∞ is a fixed point.  The next layer transports that fixed point
+-- through the existing exact StateIsomorphism/iterate-conjugacy surface.
+--
+-- This deliberately does not claim Brouwer/Kakutani from topology alone.
+-- The convergence witness remains the proof-relevant premise.
+------------------------------------------------------------------------
+
+record TopologicalConvergenceWitness
+  (State : Set)
+  (step : State → State)
+  (orbit : Nat → State)
+  (limit : State)
+  (Converges : (Nat → State) → State → Set) : Set₁ where
+  constructor topologicalConvergenceWitness
+  field
+    stepLaw :
+      ∀ n → orbit (suc n) ≡ step (orbit n)
+    converges :
+      Converges orbit limit
+    limitPreserved :
+      Converges orbit limit → step limit ≡ limit
+
+topologicalConvergenceFixedPoint :
+  ∀ {State : Set}
+  {step : State → State}
+  {orbit : Nat → State}
+  {limit : State}
+  {Converges : (Nat → State) → State → Set} →
+  TopologicalConvergenceWitness
+    State step orbit limit Converges →
+  step limit ≡ limit
+topologicalConvergenceFixedPoint witness =
+  TopologicalConvergenceWitness.limitPreserved
+    witness
+    (TopologicalConvergenceWitness.converges witness)
+
+topologicalConvergenceWitness-from-stationary-limit :
+  ∀ {State : Set}
+  {step : State → State}
+  {orbit : Nat → State}
+  {limit : State}
+  {Converges : (Nat → State) → State → Set} →
+  StationaryLimitTheorem
+    State
+    step
+    orbit
+    limit
+    Converges →
+  TopologicalConvergenceWitness
+    State step orbit limit Converges
+topologicalConvergenceWitness-from-stationary-limit theorem =
+  topologicalConvergenceWitness
+    (StationaryLimitTheorem.stepLaw theorem)
+    (StationaryLimitTheorem.converges theorem)
+    (StationaryLimitTheorem.limitPreserved theorem)
+
+record FixedPointExistenceFromConvergence
+  (State : Set)
+  (step : State → State)
+  (orbit : Nat → State)
+  (limit : State)
+  (Converges : (Nat → State) → State → Set) : Set₁ where
+  constructor fixedPointExistenceFromConvergence
+  field
+    witness :
+      TopologicalConvergenceWitness
+        State step orbit limit Converges
+
+fixedPoint-from-convergence :
+  ∀ {State : Set}
+  {step : State → State}
+  {orbit : Nat → State}
+  {limit : State}
+  {Converges : (Nat → State) → State → Set} →
+  FixedPointExistenceFromConvergence
+    State step orbit limit Converges →
+  Σ State (λ s → step s ≡ s)
+fixedPoint-from-convergence closure =
+  limit ,
+  topologicalConvergenceFixedPoint
+    (FixedPointExistenceFromConvergence.witness closure)
+
+isomorphismFixedPointTransport :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B)
+  (f : A → A)
+  (g : B → B) →
+  (∀ a → to iso (f a) ≡ g (to iso a)) →
+  ∀ a →
+  f a ≡ a →
+  g (to iso a) ≡ to iso a
+isomorphismFixedPointTransport iso f g stepConjugacy a fixedPoint =
+  trans
+    (sym (stepConjugacy a))
+    (isomorphismEqualityTransport iso fixedPoint)
+
+record TransportedFixedPointExistence
+  (A B : Set)
+  (f : A → A)
+  (g : B → B)
+  (iso : StateIsomorphism A B) : Set₁ where
+  constructor transportedFixedPointExistence
+  field
+    stepConjugacy :
+      ∀ a → to iso (f a) ≡ g (to iso a)
+    sourceWitness :
+      Σ A (λ a → f a ≡ a)
+
+transportedFixedPointExistence-witness :
+  ∀ {A B : Set}
+  {f : A → A}
+  {g : B → B}
+  {iso : StateIsomorphism A B} →
+  TransportedFixedPointExistence A B f g iso →
+  Σ B (λ b → g b ≡ b)
+transportedFixedPointExistence-witness closure =
+  let
+    source = TransportedFixedPointExistence.sourceWitness closure
+    a = proj₁ source
+    fixedPoint = proj₂ source
+  in
+  to (TransportedFixedPointExistence.iso closure) a ,
+  isomorphismFixedPointTransport
+    (TransportedFixedPointExistence.iso closure)
+    (TransportedFixedPointExistence.f closure)
+    (TransportedFixedPointExistence.g closure)
+    (TransportedFixedPointExistence.stepConjugacy closure)
+    a
+    fixedPoint
+
+record EquilibriumFixedPointClosure
+  (State : Set)
+  (step : State → State)
+  (Equilibrium : State → Set) : Set₁ where
+  constructor equilibriumFixedPointClosure
+  field
+    equilibriumFromFixedPoint :
+      ∀ s → step s ≡ s → Equilibrium s
+
+equilibrium-from-fixed-point :
+  ∀ {State : Set}
+  {step : State → State}
+  {Equilibrium : State → Set} →
+  EquilibriumFixedPointClosure State step Equilibrium →
+  Σ State (λ s → Equilibrium s) →
+  Σ State (λ s → Equilibrium s)
+equilibrium-from-fixed-point closure witness =
+  proj₁ witness ,
+  EquilibriumFixedPointClosure.equilibriumFromFixedPoint
+    closure
+    (proj₁ witness)
+    (proj₂ witness)
+
+economicEquilibriumExistenceFromConvergentFixedPoint :
+  ∀ {State : Set}
+  {step : State → State}
+  {orbit : Nat → State}
+  {limit : State}
+  {Converges : (Nat → State) → State → Set}
+  {Equilibrium : State → Set} →
+  FixedPointExistenceFromConvergence
+    State step orbit limit Converges →
+  EquilibriumFixedPointClosure State step Equilibrium →
+  Σ State (λ s → Equilibrium s)
+economicEquilibriumExistenceFromConvergentFixedPoint closure equilibriumClosure =
+  equilibrium-from-fixed-point
+    equilibriumClosure
+    (fixedPoint-from-convergence closure)
+
+
 record StationaryLimitTheorem
   (Distribution : Set)
   (P : Distribution → Distribution)
