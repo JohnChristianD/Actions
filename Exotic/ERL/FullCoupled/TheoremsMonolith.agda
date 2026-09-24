@@ -265,6 +265,19 @@ canonicalPolicy-learnerReplacement-composition K s (r ∷ rs) =
       K (applyLearnerReplacement r s) rs)
     (canonicalPolicy-learnerReplacement-invariant K s r)
 
+-- NormPair is not only policy-invariant: it is dynamically inert under the
+-- canonical transition. Replacing the norm before a step is definitionally
+-- the same as taking the step first and replacing the preserved norm after it.
+canonicalFullStep-replaceNorm :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (s : C.FullLearnerState A)
+  (n : C.NormPair) →
+  C.canonicalFullStep K (C.replaceNorm s n)
+  ≡
+  C.replaceNorm (C.canonicalFullStep K s) n
+canonicalFullStep-replaceNorm K s n = refl
+
 record CanonicalLearnerReplacementClosureTheorem : Set₁ where
   constructor canonicalLearnerReplacementClosureTheorem
   field
