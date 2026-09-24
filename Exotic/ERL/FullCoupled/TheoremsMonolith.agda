@@ -5951,7 +5951,7 @@ megaFirstWelfareTheorem conditions =
     noStrictAffordableAlternative
       conditions
       (proj₁ (strictlyBetter improvement))
-      _
+      b
       (paretoImprovementAffordability
         conditions
         feasibleB
