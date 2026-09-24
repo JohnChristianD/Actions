@@ -620,3 +620,17 @@ The current repository runtime boundary is unchanged: Tcl and Lua remain absent.
 - ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
 - ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
 - ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+
+## Second Welfare theorem: completed boundary
+
+The canonical source now distinguishes the standard Second Welfare proof from what the generalized record alone can establish.
+
+The existing `megaSecondWelfareTheorem` is a valid conditional extraction: given a Pareto-optimal allocation plus an explicit supporting-price/redistribution witness, it returns a price and equilibrium witness. It does not derive that supporting price.
+
+The source now also contains `MegaSecondWelfareTheoremBoundaryCounterexample` and `megaSecondWelfareTheorem-boundary-counterexample`. The countermodel takes an empty price space, a singleton allocation space, a proposition-valued Pareto predicate that holds at the allocation, and an empty equilibrium predicate. Thus Pareto optimality alone cannot imply the existence of a supporting price/equilibrium witness on the current generalized semantic surface. This is an algebraic non-derivability witness, not a claim that the classical Second Welfare Theorem is false.
+
+A classical Second Welfare proof adds economic structure that creates a separating/supporting hyperplane. In a standard presentation, convexity of preferences/upper contour sets and convexity of the feasible/production sets are central to the separation step; local nonsatiation and the appropriate budget/redistribution structure are also used in the implementation argument. The supporting price is therefore a theorem output of those additional assumptions, not a consequence of the name ParetoOptimal.
+
+The First Welfare condition `noStrictAffordableAlternative` should also be read precisely. It is a demand-optimality condition: no affordable allocation is strictly preferred to the equilibrium allocation. It is not itself monotonicity or local nonsatiation, and monotonicity plus local nonsatiation do not imply demand optimality without the equilibrium/budget link. In the present theorem, the condition is deliberately explicit so the contradiction proof does not smuggle in an unstated consumer-choice axiom.
+
+Finally, whole-allocation/interdependent preferences and heterogeneous choices are two different generalizations. Whole-allocation preferences enlarge the argument domain from an agent's own bundle to the full allocation; heterogeneity allows different agents to have different preference relations. Heterogeneity enlarges the preference-profile space, while interdependence enlarges what each preference relation can depend on. They are therefore not a simple algebraic chain in which one is a stronger form of monotonicity/LNS.
