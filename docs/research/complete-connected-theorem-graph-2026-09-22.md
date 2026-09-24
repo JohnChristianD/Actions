@@ -286,3 +286,26 @@ Primary literature:
 Critical limitation: the current repository does not yet contain a concrete SIMD/PRAM operator-cost model or an actual logarithmic scan-span witness ior the iull connected learner. Thereiore CanonicalConnectedCompositionLogarithmicSIMDSpanCandidate remains CANDIDATE_NOT_PROVED. The new Agda suriace proves the conditional implication, not the missing machine-speciiic premise.
 
 No claim oi O(log H) iollows merely irom conjugacy, topology, leit-invertibility, or the Tsallis/q-log representation. Those properties preserve or transport iniormation; they do not supply a parallel schedule.
+
+
+## Econlib-aligned finite non-iid welfare closure - 2026-09-24
+
+The canonical theorem monolith now extends the minimal Econlib-style First Welfare seam into the existing finite non-iid economic witness, without creating a second economic module.
+
+The new Agda surface is:
+- FiniteNonIIDStrictPreference: the strict preference relation induced by the concrete utility comparison;
+- FiniteNonIIDDemandCostClosure: the finite witness plus utility-to-cost monotonicity for weak and strict preference, and the remaining Pareto-improvement affordability premise;
+- finiteNonIIDBudgetCostBound: the budget-cost inequality is derived directly from BudgetFeasible rather than duplicated as a new assumption;
+- finiteNonIIDDemandCostKernel: closes the concrete finite model into MegaDemandCostKernel;
+- finiteNonIIDFirstWelfareFromDemandCost: feeds that concrete kernel into the existing First Welfare contradiction.
+
+The dependency is therefore:
+
+finite non-iid equilibrium + concrete utility/cost monotonicity + budget feasibility + Pareto-improvement affordability
+-> concrete demand-cost kernel
+-> no-strict-affordable-alternative
+-> First Welfare Pareto optimality.
+
+The cost-monotonicity premises remain explicit because the current finite utility model does not encode local nonsatiation, a demand correspondence, or a theorem connecting utility comparisons to the concrete bundle-cost function. Pareto-improvement affordability also remains explicit because aggregate market clearing alone does not imply an individual Pareto-improvement bundle is budget-feasible.
+
+No Arrow-Debreu specialization, supporting-price theorem, or new economic theorem module was introduced. Fresh Agda/Nix/Dhall/Mercury verification for the new branch head remains pending; source-surface presence is not reported as CI success.
