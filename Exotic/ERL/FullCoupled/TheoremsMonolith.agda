@@ -5486,10 +5486,22 @@ record MegaGeneralizedWalrasianKKTArrowDebreuData
     budget : Price → Agent → Allocation → Set
     feasible : Allocation → Set
     marketClearing : Price → Allocation → Set
+    equilibrium : Price → Allocation → Set
     walrasian : Price → Allocation → Set
     arrowDebreu : Price → Allocation → Set
     kkt : Price → Allocation → Set
-    equilibrium : Price → Allocation → Set
+    walrasianFromEquilibrium :
+      ∀ {p a} →
+      equilibrium p a →
+      walrasian p a
+    arrowDebreuFromEquilibrium :
+      ∀ {p a} →
+      equilibrium p a →
+      arrowDebreu p a
+    kktFromEquilibrium :
+      ∀ {p a} →
+      equilibrium p a →
+      kkt p a
 
 open MegaGeneralizedWalrasianKKTArrowDebreuData public
 
@@ -5502,14 +5514,14 @@ record MegaGeneralizedWalrasianKKTArrowDebreuExistence
   field
     equilibriumPrice : Price
     equilibriumAllocation : Allocation
-    walrasianWitness :
-      walrasian D equilibriumPrice equilibriumAllocation
-    arrowDebreuWitness :
-      arrowDebreu D equilibriumPrice equilibriumAllocation
-    kktWitness :
-      kkt D equilibriumPrice equilibriumAllocation
     equilibriumWitness :
       equilibrium D equilibriumPrice equilibriumAllocation
+    walrasianCorollary :
+      walrasian D equilibriumPrice equilibriumAllocation
+    arrowDebreuCorollary :
+      arrowDebreu D equilibriumPrice equilibriumAllocation
+    kktCorollary :
+      kkt D equilibriumPrice equilibriumAllocation
 
 open MegaGeneralizedWalrasianKKTArrowDebreuExistence public
 
@@ -5520,16 +5532,19 @@ megaGeneralizedWalrasianKKTArrowDebreuExistence-from-witness :
       Agent Commodity Price Allocation}
   (p : Price)
   (a : Allocation)
-  (w : walrasian D p a)
-  (ad : arrowDebreu D p a)
-  (k : kkt D p a)
   (e : equilibrium D p a) →
   MegaGeneralizedWalrasianKKTArrowDebreuExistence
     Agent Commodity Price Allocation D
 megaGeneralizedWalrasianKKTArrowDebreuExistence-from-witness
-  p a w ad k e =
+  p a e =
   megaGeneralizedWalrasianKKTArrowDebreuExistence
-    p a w ad k e
+    p
+    a
+    e
+    (walrasianFromEquilibrium D e)
+    (arrowDebreuFromEquilibrium D e)
+    (kktFromEquilibrium D e)
+
 
 ------------------------------------------------------------------------
 -- POMDP-generalized Walrasian equilibrium.
