@@ -66,3 +66,26 @@ flowchart TD
   SWC -. conditional .-> GE
   SEC -. blocks unsupported supporting-price promotion .-> SWC
   NAB -. boundary .-> DCK
+
+  subgraph U["Unattended single-pass automation"]
+    SRC["TheoremsMonolith.agda"] --> A["Agda --safe"]
+    SRC --> M["Mercury semantic laws + A* e-graph"]
+    A --> E["Proof authority"]
+    M --> J["theorem-monolith-egraph-sync.json"]
+    J --> G["economic-closure-graph.json"]
+    SRC --> T["economic-monolith-records.tsv"]
+    SRC --> D["economic-monolith-declarations.tsv"]
+    G --> ART["CI artifact"]
+    T --> ART
+    D --> ART
+    ART --> NEXT["Next hourly run repeats from current source"]
+    NEXT --> SRC
+  end
+
+  subgraph V["One canonical pass, derived views only"]
+    J -. machine evidence .-> JSONV["JSON"]
+    T -. flat inventory view .-> TSVV["TSV"]
+    MMDV["Mermaid graph"] -. human topology .-> JSONV
+    SQLITE["SQLite"] -. optional future index, not a runtime dependency .-> JSONV
+    NOSQL["NoSQL"] -. unnecessary for this local deterministic graph .-> JSONV
+  end
