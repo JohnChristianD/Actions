@@ -52,7 +52,7 @@ let script = merge {
     grep -Fq 'Nonempty E.WalrasianEquilibrium' "$upstream_existence"
     grep -Fq 'stationary Walrasian equilibrium' "$upstream_markov"
 
-    grep -Fq 'staticWalrasian' "$local_theorem"
+    grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuData' "$local_theorem"
     grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium' "$local_theorem"
     grep -Fq 'MegaGeneralizedWalrasianKKTArrowDebreuExistence' "$local_theorem"
     grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
