@@ -462,7 +462,10 @@ graph_required_theorems = [
     "FixedPointExistenceFromConvergence",
     "isomorphismFixedPointTransport",
     "isomorphismIterateFixedPointTransport",
-    "economicEquilibriumExistenceFromConvergentFixedPoint"
+    "economicEquilibriumExistenceFromConvergentFixedPoint",
+    "GeneralizedWalrasianFixedPointClosure",
+    "generalizedWalrasianExistence-from-topological-fixed-point",
+    "generalizedWalrasianExistence-from-topological-fixed-point-transport"
 ].
 
 :- func graph_required_subcompositions = list(string).
