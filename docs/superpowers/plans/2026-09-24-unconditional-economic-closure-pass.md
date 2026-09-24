@@ -63,3 +63,12 @@
 ### Definition of Done
 
 The repository contains a single unattended graph that is complete as a dependency graph, explicitly marks the exact missing proof seams, and cannot report the unconditional route as closed until those proof artifacts exist.
+
+## 2026-09-24 GRU-F4 economic injectivity follow-up
+
+- Added the first concrete injectivity composition seam after auditing the existing GRU/F4 global observation theorem and Mega Walrasian global square.
+- Added gruf4EconomicInjectivityFromGlobalSquare to the canonical Agda monolith. It returns the existing learner-side F4/NormPair/GRU injectivity witness together with the economic encode injectivity derived from the exact global square.
+- Added CI discovery/gate coverage for that theorem symbol.
+- Updated the economic graph and narrative to show injectivity as supporting evidence, while retaining convergence and fixed-point-to-equilibrium as explicit frontier obligations.
+- Knowledge delta paths: TheoremsMonolith.agda, .ci/actions_ci.dhall, .ci/discovery/theorem_graph_search.m, docs/economics/economic-egraph-emergent-arrow-debreu.mmd, docs/economics/economic-egraph-emergent-arrow-debreu.md, this plan.
+- Verification limitation: no Agda compiler is installed in the execution environment; repository CI has not yet been observed running for the new head.
