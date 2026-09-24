@@ -63,3 +63,30 @@ The repository currently states that Walrasian, Arrow–Debreu, and KKT are not 
 11. Keep Arrow–Debreu absent otherwise.
 
 The objective is not to make the theory less general. It is to prevent a classical label from becoming a hidden primitive.
+
+
+## 2026-09-24 closure graph update
+
+The finite consumer side now has an explicit chain:
+
+Finite non-IID equilibrium witness -> concrete budget-cost bound -> demand-cost kernel -> no-strict-affordable-alternative -> First Welfare Pareto optimality.
+
+The next missing steps are now typed rather than implied:
+
+Production primitives -> feasible firm plans -> profit-optimal supply -> aggregate resource balance -> market clearing.
+
+In parallel, the price side remains:
+
+Convex/separation/fixed-point certificate -> derived price -> generalized equilibrium.
+
+The repository does not yet prove those frontier edges. The new FiniteCompetitiveProductionClosure record captures the minimum production/profit/resource-balance witness without importing a new library or creating a separate economic theorem module. EconomicEquilibriumClosureGraph records the remaining dependency edges explicitly so the e-graph cannot collapse them into Arrow-Debreu, KKT, price, or market-clearing identities.
+
+Current closure status:
+
+- Proven: finite demand-cost -> First Welfare.
+- Witnessed: finite non-IID equilibrium -> generalized equilibrium.
+- Added seam: production/profit/resource balance.
+- Frontier: supply+demand -> market clearing.
+- Frontier: separation/fixed point -> derived price.
+- Frontier: derived price+clearing -> generalized equilibrium existence.
+- Frontier: classical assumptions -> Arrow-Debreu specialization.
