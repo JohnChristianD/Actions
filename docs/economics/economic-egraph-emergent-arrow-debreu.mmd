@@ -30,6 +30,7 @@ flowchart TD
     UBA --> UOP["Economic update operator"]
     UOP -. exact GRU/F4 representation .-> UGI["GRU-F4 economic injectivity"]
     UGI -. does not imply convergence alone .-> UCV["Convergence from economic assumptions"]
+    FRS["Finite-rank stability certificate"] -. conditional bridge .-> UCV
     UCV -. FRONTIER .-> TOPO
     TOPO --> FPX
     FPX --> UFP["Fixed-point witness"]
