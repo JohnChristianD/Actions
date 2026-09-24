@@ -6703,7 +6703,7 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge :
   ((∀ s →
     economicEquilibrium (toEconomic s) →
     welfareAssumptions (toEconomic s) →
-    paretoOptimal (toEconomic s))
+    paretoOptimal (toEconomic s)))
 connectedHodgeMaxwellLearnerEconomicWelfareBridge
   connected
   toEconomic
@@ -6724,6 +6724,7 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge
     fromEconomic
     fromTo
     toFrom
+    (learnerKernel connected)
     economicStep
     (λ s → stepConjugacy s)
     economicEquilibrium
