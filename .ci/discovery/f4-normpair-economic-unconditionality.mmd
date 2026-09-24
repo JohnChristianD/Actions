@@ -1,41 +1,32 @@
-flowchart LR
-  L["Closed canonical learner laws"]
-  R["Exact recurrent / prefix algebra"]
-  F4["Exact F4 optimizer stability"]
-  Q["Exact NormPair quotient / factor transition"]
-  C["Closed F4 × NormPair factor-stability theorem"]
-  G["F4 unit-forcing ray"]
-  U["No unconditional infinite-horizon F4 upper bound"]
+flowchart TD
+  A["Closed learner algebra<br/>canonical policy + exact recurrent/prefix laws"]
+  B["Exact F4 optimizer stability<br/>CanonicalF4GlobalOptimizerStabilityTheorem"]
+  C["Exact NormPair quotient/factor transition<br/>CanonicalNormPairQuotientFactorTransitionTheorem"]
+  D["Closed F4 × NormPair factor stability<br/>canonical-f4-normPair-unconditional-factor-stability-theorem"]
+  E["F4 unit-forcing ray<br/>exact theta growth"]
+  F["Unconditional F4 upper-bound impossibility<br/>f4-unit-forcing-no-upper-bound"]
+  G["Economic representation seam<br/>state/price/allocation semantics"]
+  H["Required economic existence bridge<br/>compactness / continuity / feasibility / clearing / equilibrium theorem"]
+  I["Generalized Walrasian existence<br/>only after an explicit bridge"]
+  J["Closed singleton countermodel<br/>megaNoEquilibriumGeneralizedWalrasian"]
+  K["Unconditional non-existence boundary<br/>noUnconditionalMegaGeneralizedWalrasianExistence"]
+  L["Post-factor-stability non-existence boundary<br/>noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability"]
+  M["Stationary-law route<br/>probability + invariant-measure semantics"]
+  N["Not implied by deterministic learner stability"]
 
-  E["Economic interpretation"]
-  B["Required economic bridge:
-existence / compactness / continuity /
-market-clearing / equilibrium assumptions"]
-  W["Generalized Walrasian existence
-(theorem requires an explicit bridge)"]
-  X["Closed unconditional impossibility:
-stability/factorization alone does not imply existence"]
-
-  S["Deterministic clock / no fixed state"]
-  M["Stationary distribution route"]
-  P["Required probability / invariant-measure semantics"]
-
-  L --> R
-  R --> F4
-  R --> Q
-  F4 --> C
-  Q --> C
-  F4 --> G
-  G --> U
-
-  C --> E
-  E --> B
-  B --> W
-  C -. "does not entail" .-> W
-  C --> X
-  U --> X
-
-  L --> S
-  S -. "state-level only" .-> M
-  M --> P
-  P -. "separate proof obligation" .-> W
+  A --> B
+  A --> C
+  B --> D
+  C --> D
+  D --> G
+  G --> H
+  H --> I
+  D -. "does not supply" .-> H
+  D -. "does not imply" .-> I
+  D --> L
+  J --> K
+  D --> L
+  E --> F
+  F -. "separate impossibility boundary" .-> L
+  A --> M
+  M --> N
