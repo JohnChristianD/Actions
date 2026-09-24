@@ -6230,6 +6230,170 @@ megaFirstWelfareTheorem-from-demand-cost kernel =
 
 
 ------------------------------------------------------------------------
+-- Finite non-iid closure of the Econlib cost layer.
+--
+-- The finite commodity model makes the budget-cost bound definitional:
+-- BudgetFeasible is exactly the required Nat inequality.  The two remaining
+-- cost lemmas are stated as utility-to-cost monotonicity of the concrete
+-- bundle-cost function.  They therefore feed the abstract demand-cost kernel
+-- without inventing a second preference ontology.  Pareto-improvement
+-- affordability remains an explicit market/demand hypothesis because
+-- individual budget feasibility alone does not imply it.
+------------------------------------------------------------------------
+
+FiniteNonIIDStrictPreference :
+  ∀ {Agent Good : Set}
+  (utility : Agent → (Good → Nat) → Nat) →
+  Agent → (Agent → Good → Nat) → (Agent → Good → Nat) → Set
+FiniteNonIIDStrictPreference utility i x y =
+  utility i (y i) < utility i (x i)
+
+record FiniteNonIIDDemandCostClosure
+  (Agent Good : Set)
+  (agents : List Agent)
+  (goods : List Good)
+  (utility : Agent → (Good → Nat) → Nat)
+  (endowment : Agent → Good → Nat)
+  (price : Good → Nat)
+  (allocation : Agent → Good → Nat) : Set₁ where
+  constructor finiteNonIIDDemandCostClosure
+  field
+    equilibriumWitness :
+      FiniteNonIIDGeneralizedEquilibrium
+        Agent
+        Good
+        agents
+        goods
+        utility
+        endowment
+        price
+        allocation
+
+    preferredCostly :
+      ∀ i x y →
+      utility i (x i) ≤ utility i (y i) →
+      bundleCost goods price (y i) ≤
+      bundleCost goods price (x i)
+
+    strictlyPreferredCostly :
+      ∀ i x y →
+      utility i (y i) < utility i (x i) →
+      bundleCost goods price (y i) <
+      bundleCost goods price (x i)
+
+    paretoImprovementAffordability :
+      ∀ {b : Agent → Good → Nat} →
+      (improvement :
+        MegaParetoImprovement
+          Agent
+          (Agent → Good → Nat)
+          (FiniteNonIIDPreference utility)
+          (FiniteNonIIDStrictPreference utility)
+          b
+          allocation) →
+      BudgetFeasible
+        goods
+        price
+        (endowment
+          (proj₁ (strictlyBetter improvement)))
+        (proj₂ (strictlyBetter improvement))
+
+finiteNonIIDBudgetCostBound :
+  ∀ {Agent Good : Set}
+  {goods : List Good}
+  {price : Good → Nat}
+  {endowment : Agent → Good → Nat}
+  {i : Agent}
+  {bundle : Good → Nat} →
+  BudgetFeasible goods price (endowment i) bundle →
+  bundleCost goods price bundle ≤
+  bundleCost goods price (endowment i)
+finiteNonIIDBudgetCostBound affordable = affordable
+
+finiteNonIIDDemandCostKernel :
+  ∀ {Agent Good : Set}
+  {agents : List Agent}
+  {goods : List Good}
+  {utility : Agent → (Good → Nat) → Nat}
+  {endowment : Agent → Good → Nat}
+  {price : Good → Nat}
+  {allocation : Agent → Good → Nat} →
+  FiniteNonIIDDemandCostClosure
+    Agent
+    Good
+    agents
+    goods
+    utility
+    endowment
+    price
+    allocation →
+  MegaDemandCostKernel
+    Agent
+    (Good → Nat)
+    (Agent → Good → Nat)
+    (FiniteNonIIDPreference utility)
+    (FiniteNonIIDStrictPreference utility)
+    (λ a →
+      ∀ g →
+      sumNat (map (λ i → a i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents))
+    (λ p i bundle → BudgetFeasible goods p (endowment i) bundle)
+    (λ p a →
+      FiniteNonIIDGeneralizedEquilibrium
+        Agent
+        Good
+        agents
+        goods
+        utility
+        endowment
+        p
+        a)
+    (λ p i bundle → bundleCost goods p (bundle i))
+    price
+    allocation
+finiteNonIIDDemandCostKernel closure =
+  megaDemandCostKernel
+    (equilibriumWitness closure)
+    (marketClearing (equilibriumWitness closure))
+    (λ i b preferred →
+      preferredCostly closure i b allocation preferred)
+    (λ i b strictlyPreferred →
+      strictlyPreferredCostly closure i b allocation strictlyPreferred)
+    (λ i b affordable →
+      finiteNonIIDBudgetCostBound affordable)
+    (λ {b} feasibleB improvement →
+      paretoImprovementAffordability closure improvement)
+
+finiteNonIIDFirstWelfareFromDemandCost :
+  ∀ {Agent Good : Set}
+  {agents : List Agent}
+  {goods : List Good}
+  {utility : Agent → (Good → Nat) → Nat}
+  {endowment : Agent → Good → Nat}
+  {price : Good → Nat}
+  {allocation : Agent → Good → Nat} →
+  FiniteNonIIDDemandCostClosure
+    Agent
+    Good
+    agents
+    goods
+    utility
+    endowment
+    price
+    allocation →
+  megaParetoOptimal
+    {weakPreference = FiniteNonIIDPreference utility}
+    {strictPreference = FiniteNonIIDStrictPreference utility}
+    (λ a →
+      ∀ g →
+      sumNat (map (λ i → a i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents))
+    allocation
+finiteNonIIDFirstWelfareFromDemandCost closure =
+  megaFirstWelfareTheorem-from-demand-cost
+    (finiteNonIIDDemandCostKernel closure)
+
+------------------------------------------------------------------------
 -- The demand-side theorem above is the exact logical core.  Standard
 -- textbook hypotheses such as monotonicity or local nonsatiation can be
 -- used to establish the missing affordability/budget-exhaustion facts in
