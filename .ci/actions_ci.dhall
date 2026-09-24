@@ -398,6 +398,7 @@ JSON
     FixedPointExistenceFromConvergence
     fixedPoint-from-convergence
     isomorphismFixedPointTransport
+    isomorphismIterateFixedPointTransport
     TransportedFixedPointExistence
     transportedFixedPointExistence-witness
     EquilibriumFixedPointClosure
