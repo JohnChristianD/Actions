@@ -204,3 +204,6 @@ The closure audit now distinguishes two replacement facts. Both `NormPair` and F
 This makes the `NormPair` coordinate a genuine quotient candidate: policy observation and canonical transition both respect norm replacement. F4 optimizer replacement remains policy-invariant at a fixed state, but optimizer state enters `canonicalEndogenousFeedback` and `canonicalOptimizerStep`, so optimizer replacement is not yet a valid dynamic quotient merely from policy invariance.
 
 The stationary-law route should therefore quotient out `NormPair` first, while treating optimizer state as a policy-hidden but dynamically active coordinate. No convergence or stationary-law existence claim is added by this refinement.
+
+
+The quotient seam is now iterated, not only one-step: canonicalFullStep-replaceNorm-iterate proves by induction that replacing NormPair before any finite canonical orbit is equal to replacing the preserved norm after the orbit. This is the reusable dynamic compatibility law needed before defining a quotient/factor transition. It still says nothing about convergence or stationary-law existence, and it does not extend to optimizer replacement because optimizer state remains dynamically active.
