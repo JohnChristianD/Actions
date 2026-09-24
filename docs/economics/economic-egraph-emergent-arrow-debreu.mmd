@@ -34,6 +34,9 @@ flowchart TD
     QF -. candidate input .-> FRS["Finite-rank stability certificate"]
     FRS -. conditional bridge .-> UCV
     UCV -. FRONTIER .-> TOPO
+    UCV -. alternative frontier .-> USTAT["Neighborhood stationary-law witness"]
+    USTAT -. conditional .-> SWL["StationaryWalrasian lift"]
+    SWL -. requires static Walrasian aggregate .-> GWE
     TOPO --> FPX
     FPX --> UFP["Fixed-point witness"]
     UFP --> UEB["Fixed-point -> equilibrium from economic primitives"]
