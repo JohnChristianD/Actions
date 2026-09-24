@@ -133,8 +133,8 @@
       "role": "connected equilibrium-plus-belief/policy closure consuming an explicit factorization witness"
     },
     {
-      "node": "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
-      "role": "connected carrier-polymorphic closure consuming generalized GRU global injectivity, Hodge-Maxwell/Tsallis conjugacy, an explicit Tsallis-2 specialization, generalized Walrasian projection closure, and explicit POMDP belief-policy equilibrium closure"
+      "node": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+      "role": "connected carrier-polymorphic closure consuming generalized GRU global injectivity, the general Hodge-Maxwell/Tsallis divergence composition, a regularity-free Walrasian equilibrium witness, and explicit POMDP belief-policy equilibrium closure"
     }
   ],
   "edges": [
@@ -340,28 +340,33 @@
     ],
     [
       "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
-      "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
       "global GRU injectivity is a reusable exact information-preservation premise for the connected closure"
     ],
     [
       "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
-      "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
       "Hodge-Maxwell and Tsallis divergence transport are consumed as the common carrier layer"
     ],
     [
-      "ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem",
-      "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
-      "the generalized Walrasian projection closure is consumed as the equilibrium layer"
-    ],
-    [
       "POMDPWalrasianBeliefEquilibriumClosure",
-      "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
       "the explicit POMDP belief-policy equilibrium seam is consumed without inferring filtering or optimality"
     ],
     [
-      "ConnectedGRUHodgeMaxwellTsallis2WalrasianPOMDPCompositionTheorem",
+      "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+      "general carrier-polymorphic Hodge-Maxwell/Tsallis divergence transport is consumed directly; no q=2 specialization is introduced"
+    ],
+    [
+      "RegularityFreeWalrasianEquilibrium",
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+      "regularity-free equilibrium witness is consumed directly as the Walrasian layer"
+    ],
+    [
       "POMDPWalrasianBeliefEquilibriumClosure",
-      "the connected theorem packages the POMDP closure as an explicit downstream equilibrium component"
+      "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
+      "explicit POMDP belief-policy equilibrium seam is consumed without inferring filtering or optimality"
     ]
   ],
   "separation_obligation": [
@@ -1360,7 +1365,39 @@
       "premise": "∀ p → Σ allocation . staticWalrasian D p allocation",
       "result": "∀ p → Σ allocation . GeneralizedWalrasianEquilibrium D p allocation",
       "proof_shape": "static existence + invariant aggregate + generalizedWalrasianEquilibrium-from-static"
-    }
+    },
+    "external_benchmark": {
+      "repo": "danlyng/Econlib",
+      "role": "benchmark/reference implementation, not proof oracle",
+      "scope": "classical Arrow-Debreu/Walrasian existence and related stationary/Markov accounting structures",
+      "local_authority": "Agda theorem terms and actual consuming graph edges"
+    },
+    "generalization_search": [
+      {
+        "family": "continuum-or-measure-space-agents",
+        "status": "external research candidate; no local proof edge yet"
+      },
+      {
+        "family": "infinite-dimensional-commodity-space",
+        "status": "external research candidate; no local proof edge yet"
+      },
+      {
+        "family": "discontinuous-non-ordered-preferences",
+        "status": "external research candidate; no local proof edge yet"
+      },
+      {
+        "family": "interdependent-or-price-dependent-preferences",
+        "status": "external research candidate; no local proof edge yet"
+      },
+      {
+        "family": "no-free-disposal",
+        "status": "external research candidate; no local proof edge yet"
+      },
+      {
+        "family": "Bayesian-asymmetric-information-equilibrium",
+        "status": "external research candidate; requires explicit local information/probability semantics"
+      }
+    ]
   },
   "tcl_lua_status": {
     "repository_current": "Neither Tcl nor Lua is a runtime dependency of the current toolchain.",
@@ -1622,8 +1659,8 @@
   },
   "current_head_audit_2026_09_24": {
     "status": "PENDING_FRESH_CI",
-    "head": "7c0dbf8fc3e169b7f03a3a7150fdc4f692e33c02",
-    "note": "Unified GRU/Hodge-Maxwell/Tsallis-2/Walrasian/POMDP composition is registered; kernel verification remains pending."
+    "head": "generalize-tsallis-walrasian-composition",
+    "note": "Tsallis-2 specialization removed; connected closure now consumes the general carrier-polymorphic Tsallis surface and a regularity-free Walrasian equilibrium witness. Kernel verification remains pending."
   },
   "metadata_pruning_policy_v11": {
     "status": "ACTIVE_REGISTRY_AUTOPRUNE_WITH_KERNEL_GATE",
