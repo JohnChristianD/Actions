@@ -6296,7 +6296,7 @@ record FiniteNonIIDDemandCostClosure
         price
         (endowment
           (proj₁ (strictlyBetter improvement)))
-        (proj₂ (strictlyBetter improvement))
+        b
 
 finiteNonIIDBudgetCostBound :
   ∀ {Agent Good : Set}
@@ -6361,7 +6361,7 @@ finiteNonIIDDemandCostKernel closure =
       strictlyPreferredCostly closure i b allocation strictlyPreferred)
     (λ i b affordable →
       finiteNonIIDBudgetCostBound affordable)
-    (λ {b} feasibleB improvement →
+    (λ {b} _ improvement →
       paretoImprovementAffordability closure improvement)
 
 finiteNonIIDFirstWelfareFromDemandCost :
