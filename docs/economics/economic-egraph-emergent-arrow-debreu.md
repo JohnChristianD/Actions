@@ -97,3 +97,30 @@ Current closure status:
 The closure graph is now checked in CI through the existing Dhall/Nix orchestration. The gate verifies that the canonical Mermaid graph contains the required economic nodes and that the theorem monolith exposes the corresponding production, clearing, derived-price, generalized-equilibrium, and classical-specialization seams.
 
 The gate emits `.ci/discovery/economic-closure-graph.json` as an observed status artifact. It checks graph/source consistency; it does not promote a frontier edge to a proved theorem.
+
+
+### Monolith-wide automated frontier
+
+The economic frontier is not limited to the production, clearing, and price seams. The canonical source is a 7,000+ line TheoremsMonolith containing a large existing surface of equilibrium, welfare, transport, conjugacy, POMDP, learner-economic composition, boundary, and existence declarations.
+
+The automated graph therefore treats the monolith itself as the semantic inventory. CI now records:
+
+- total record declarations and top-level theorem/data declarations;
+- the subset matching economic, equilibrium, welfare, production, demand, supply, market, price, POMDP, closure, transport, conjugacy, and composition concepts;
+- boundary/counterexample records;
+- composition/transport/isomorphism records;
+- the semantic-law count and dependency evidence produced by the existing Mercury theorem e-graph;
+- the explicit economic frontier edges.
+
+The resulting artifact is .ci/discovery/economic-closure-graph.json, while the detailed declaration inventories are emitted as CI discovery artifacts. The graph does not infer that a declaration is a proof merely because its name contains a theorem word. The Agda-safe monolith remains the proof authority, and the Mercury e-graph remains dependency evidence.
+
+The frontier status vocabulary is now explicit:
+
+- PROVED: an actual Agda derivation exists and is consumed by the graph.
+- CONDITIONAL: the conclusion follows after explicit supplied hypotheses.
+- FRONTIER: the dependency is identified but the required derivation is not yet present.
+- BLOCKED-BY-COUNTEREXAMPLE: an existing boundary/counterexample prevents promotion without additional hypotheses.
+
+This keeps existing counterexamples and boundary records inside the automated graph rather than treating them as irrelevant failures. It also means the next closure pass can search the whole existing theorem surface for compositions before adding another seam.
+
+The architecture remains unchanged: economic proofs stay in TheoremsMonolith.agda; CanonicalLearnerMonolith.agda remains the intentionally separated learner source.
