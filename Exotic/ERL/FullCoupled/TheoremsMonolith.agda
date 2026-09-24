@@ -278,6 +278,27 @@ canonicalFullStep-replaceNorm :
   C.replaceNorm (C.canonicalFullStep K s) n
 canonicalFullStep-replaceNorm K s n = refl
 
+canonicalFullStep-replaceNorm-iterate :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (n : Nat)
+  (s : C.FullLearnerState A)
+  (normValue : C.NormPair) →
+  C.iterateCanonical K n (C.replaceNorm s normValue)
+  ≡
+  C.replaceNorm (C.iterateCanonical K n s) normValue
+canonicalFullStep-replaceNorm-iterate K zero s normValue = refl
+canonicalFullStep-replaceNorm-iterate K (suc n) s normValue =
+  trans
+    (cong
+      (C.iterateCanonical K n)
+      (canonicalFullStep-replaceNorm K s normValue))
+    (canonicalFullStep-replaceNorm-iterate
+      K
+      n
+      (C.canonicalFullStep K s)
+      normValue)
+
 record CanonicalLearnerReplacementClosureTheorem : Set₁ where
   constructor canonicalLearnerReplacementClosureTheorem
   field
