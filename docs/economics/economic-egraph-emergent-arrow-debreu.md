@@ -123,4 +123,27 @@ The frontier status vocabulary is now explicit:
 
 This keeps existing counterexamples and boundary records inside the automated graph rather than treating them as irrelevant failures. It also means the next closure pass can search the whole existing theorem surface for compositions before adding another seam.
 
+### Topological fixed-point existence route
+
+The monolith now closes a concrete conditional existence path using declarations that already exist on the exact import surface:
+
+```
+TopologicalConvergenceWitness
+  -> FixedPointExistenceFromConvergence
+  -> fixed-point witness
+  -> GeneralizedWalrasianFixedPointClosure
+  -> GeneralizedWalrasianExistence
+```
+
+The transport variant reuses the existing `StateIsomorphism`, `isomorphismIterateConjugacy`, and fixed-point transport machinery before applying the same economic bridge:
+
+```
+topological fixed point
+  -> exact state transport
+  -> transported fixed point
+  -> generalized Walrasian existence
+```
+
+This is a real Agda derivation, but it is deliberately conditional. It does not claim Brouwer or Kakutani from the learner's discrete topology. The convergence witness and the fixed-point-to-equilibrium bridge remain explicit proof inputs. The unattended graph can therefore promote this route as a proved conditional composition while keeping classical convex/separation existence as a separate frontier.
+
 The architecture remains unchanged: economic proofs stay in TheoremsMonolith.agda; CanonicalLearnerMonolith.agda remains the intentionally separated learner source.
