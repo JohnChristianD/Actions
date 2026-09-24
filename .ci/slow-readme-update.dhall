@@ -3,6 +3,7 @@ set -euo pipefail
 
 README=README.md
 BEGIN='<!-- BEGIN RECENT COMMIT TOTALITY -->'
+ASCII_POLICY='generated commit subjects are ASCII-safe'
 END='<!-- END RECENT COMMIT TOTALITY -->'
 HEAD_SHA=$(git rev-parse HEAD)
 
@@ -20,7 +21,20 @@ if [ "$count" -eq 0 ]; then
   exit 0
 fi
 
-body=$(printf '%s\n' "$commits" | awk -F '\t' '{ print "- `" substr($1,1,12) "` " $2 }')
+body=$(python3 - "$commits" <<'PY'
+import sys
+
+commits = sys.argv[1]
+rows = []
+for line in commits.splitlines():
+    if not line:
+        continue
+    sha, subject = line.split("\t", 1)
+    safe_subject = subject.encode("ascii", "backslashreplace").decode("ascii")
+    rows.append(f"- `{sha[:12]}` {safe_subject}")
+print("\n".join(rows))
+PY
+)
 
 python3 - "$README" "$BEGIN" "$END" "$HEAD_SHA" "$count" "$body" <<'PY'
 from pathlib import Path
@@ -37,6 +51,7 @@ section = "\n".join([
     f"unprocessed-commit-count: {count}",
     "",
     "The scheduled updater accounts for every commit since the previous processed commit.",
+    "ascii-safe-commit-subjects: true",
     "",
     body,
     end,
