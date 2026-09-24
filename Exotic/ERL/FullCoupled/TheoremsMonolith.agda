@@ -4122,12 +4122,58 @@ canonical-normPair-quotient-factor-transition-theorem =
     canonicalNormPairQuotient-iterate-compatible
 
 ------------------------------------------------------------------------
--- Explicit modular F4/NormPair factor stability composition.
+-- Unconditional F4/NormPair factor stability.
 --
--- This is the intended stability seam: exact F4 dynamics are composed
--- with the NormPair quotient/factor theorem before any economic transport.
--- It proves factorization/compatibility, not infinite-horizon boundedness
--- or convergence.
+-- This theorem composes only closed proof terms: exact F4 optimizer
+-- stability and exact NormPair quotient/factor compatibility.  It makes
+-- no convergence, boundedness, economic, or external certificate claim.
+------------------------------------------------------------------------
+
+record CanonicalF4NormPairUnconditionalFactorStabilityTheorem : Set₁ where
+  constructor canonicalF4NormPairUnconditionalFactorStabilityTheorem
+  field
+    f4Stability :
+      CanonicalF4GlobalOptimizerStabilityTheorem
+
+    normPairFactorTransition :
+      CanonicalNormPairQuotientFactorTransitionTheorem
+
+    policyFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        C.canonicalPolicy K t ≡ C.canonicalPolicy K s
+
+    transitionFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        normPairReplacementRelation
+          (C.canonicalFullStep K s)
+          (C.canonicalFullStep K t)
+
+    iterateFactorization :
+      ∀ {A : Set}
+        (K : C.FullLearnerKernel A)
+        (n : Nat)
+        {s t : C.FullLearnerState A} →
+        normPairReplacementRelation s t →
+        normPairReplacementRelation
+          (C.iterateCanonical K n s)
+          (C.iterateCanonical K n t)
+
+canonical-f4-normPair-unconditional-factor-stability-theorem :
+  CanonicalF4NormPairUnconditionalFactorStabilityTheorem
+canonical-f4-normPair-unconditional-factor-stability-theorem =
+  canonicalF4NormPairUnconditionalFactorStabilityTheorem
+    canonical-f4-global-optimizer-stability-theorem
+    canonical-normPair-quotient-factor-transition-theorem
+    canonicalPolicy-factors-through-NormPair
+    canonicalNormPairQuotient-step-compatible
+    canonicalNormPairQuotient-iterate-compatible
+
 ------------------------------------------------------------------------
 
 record RecursiveRadnerData
@@ -4387,14 +4433,28 @@ megaNoEquilibriumF4NormPairEconomicWitness
   witness
 
 ------------------------------------------------------------------------
--- Graph boundary: no unconditional generalized Walrasian existence
--- theorem follows even after exact F4/NormPair stability, NormPair factor
--- transition closure, and economic global-square injectivity.  The result
--- is stronger than the earlier conditional statement because the
--- coercivity/boundedness premises are not needed at all.
+-- Strict unconditional economic impossibility.
 --
--- Separately, the unit-forcing theorem above proves that those premises
--- cannot be discharged from the current F4 semantics: a concrete
--- zero-L2/unit-signal trajectory is not upper-bounded on infinite horizon.
+-- Even after the closed F4/NormPair factor-stability theorem is available,
+-- the generalized Walrasian contract itself does not imply existence.
+-- The singleton countermodel has an empty equilibrium predicate.
 ------------------------------------------------------------------------
+
+noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability :
+  ¬
+    (∀ {State Price Allocation : Set}
+      (D : MegaGeneralizedWalrasianEquilibrium
+        State
+        Price
+        Allocation) →
+      Σ Price
+        (λ p →
+          Σ Allocation
+            (λ a →
+              equilibrium D p a)))
+noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
+  theorem =
+  megaNoEquilibriumWitness
+    (theorem megaNoEquilibriumGeneralizedWalrasian)
+
 ------------------------------------------------------------------------
