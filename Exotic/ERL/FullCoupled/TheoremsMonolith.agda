@@ -5839,10 +5839,10 @@ megaWalrasianGlobalSquare-injective square {x} {y} collision =
 ------------------------------------------------------------------------
 
 record MegaWalrasianEquilibriumWelfareAdapter
-  (Economic Equilibrium Pareto WelfareAssumptions : Set)
-  (equilibrium : Economic → Equilibrium)
-  (paretoOptimal : Economic → Pareto)
-  (welfareAssumptions : Economic → WelfareAssumptions) : Set₁ where
+  (Economic Pareto : Set)
+  (equilibrium : Economic → Set)
+  (paretoOptimal : Economic → Pareto) 
+  (welfareAssumptions : Economic → Set) : Set₁ where
   constructor megaWalrasianEquilibriumWelfareAdapter
   field
     firstWelfare :
@@ -5859,14 +5859,15 @@ open MegaWalrasianEquilibriumWelfareAdapter public
 ------------------------------------------------------------------------
 
 record MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-  (Economic GRU Equilibrium Pareto WelfareAssumptions : Set)
+  (Economic GRU Equilibrium Pareto : Set)
   (encode : Economic → GRU)
   (readout : GRU → Economic)
   (equilibriumMap : Economic → Equilibrium)
   (carrierEquilibriumMap : GRU → Equilibrium)
   (economicStep : Economic → Economic)
   (gruStep : GRU → GRU)
-  (equilibrium : Economic → Equilibrium → Set)
+  (equilibrium : Economic → Set)
+  (carrierEquilibrium : GRU → Set)
   (paretoOptimal : Economic → Set)
   (welfareAssumptions : Economic → Set) : Set₁ where
   constructor megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
@@ -5889,35 +5890,34 @@ record MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
       x ≡ y
 
     equilibriumTransport :
-      ∀ {x : Economic} {e : Equilibrium} →
-      equilibrium x e →
-      equilibrium
-        (readout (encode x))
-        (carrierEquilibriumMap (encode x))
+      ∀ {x : Economic} →
+      equilibrium x →
+      carrierEquilibrium (encode x)
 
     welfareAdapter :
       ∀ {x : Economic} →
-      equilibriumMap x →
+      equilibrium x →
       welfareAssumptions x →
       paretoOptimal x
 
     completenessWitness :
-      ∀ {x : Economic} {e : Equilibrium} →
-      equilibrium x e →
+      ∀ {x : Economic} →
+      equilibrium x →
       welfareAssumptions x →
       paretoOptimal x
 
 open MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness public
 
 megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
-  ∀ {Economic GRU Equilibrium Pareto WelfareAssumptions : Set}
+  ∀ {Economic GRU Equilibrium Pareto : Set}
   {encode : Economic → GRU}
   {readout : GRU → Economic}
   {equilibriumMap : Economic → Equilibrium}
   {carrierEquilibriumMap : GRU → Equilibrium}
   {economicStep : Economic → Economic}
   {gruStep : GRU → GRU}
-  {equilibrium : Economic → Equilibrium → Set}
+  {equilibrium : Economic → Set}
+  {carrierEquilibrium : GRU → Set}
   {paretoOptimal : Economic → Set}
   {welfareAssumptions : Economic → Set}
   (square :
@@ -5933,7 +5933,7 @@ megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
       gruStep)
   (welfare :
     ∀ {x : Economic} →
-    equilibriumMap x →
+    equilibrium x →
     welfareAssumptions x →
     paretoOptimal x) →
   MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
@@ -5941,7 +5941,6 @@ megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
     GRU
     Equilibrium
     Pareto
-    WelfareAssumptions
     encode
     readout
     equilibriumMap
@@ -5949,6 +5948,7 @@ megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
     economicStep
     gruStep
     equilibrium
+    carrierEquilibrium
     paretoOptimal
     welfareAssumptions
 megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
@@ -5957,13 +5957,16 @@ megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
   megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
     square
     (megaWalrasianGlobalSquare-injective square)
-    (λ {x} {e} witness →
+    (λ {x} witness →
       subst
-        (λ q → equilibrium q (carrierEquilibriumMap (encode x)))
-        (readoutEncode square x)
-        witness)
+        (λ q → carrierEquilibrium q)
+        (sym (readoutEncode square x))
+        (subst
+          (λ q → equilibrium q)
+          (readoutEncode square x)
+          witness))
     welfare
-    (λ {x} {e} equilibriumWitness welfareWitness →
+    (λ equilibriumWitness welfareWitness →
       welfare equilibriumWitness welfareWitness)
 
 ------------------------------------------------------------------------
