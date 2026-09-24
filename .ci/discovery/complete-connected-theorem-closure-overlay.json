@@ -40,6 +40,22 @@
       "parameter": "n : Nat",
       "carrier": "Fin n",
       "note": "Generic finite-state pigeonhole remains valid for any explicit finite n; the former fixed finite-token carrier is retired."
+    },
+    "learner_economic_welfare_bridge": {
+      "name": "connectedHodgeMaxwellLearnerEconomicWelfareBridge",
+      "status": "PROVED_ON_AGDA_SURFACE_PENDING_FRESH_CI",
+      "dependencies": [
+        "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
+        "megaEconomicSolutionStateIsomorphism",
+        "megaEconomicSolutionStepConjugacy",
+        "megaEconomicSolutionEquilibriumTransport",
+        "megaSecondWelfareGeneralized"
+      ],
+      "graphs": [
+        ".ci/discovery/learner-economic-welfare-bridge-graph.md",
+        ".ci/discovery/second-welfare-generalization-graph.md"
+      ],
+      "note": "Exact learner/economic state isomorphism, step conjugacy, two-way equilibrium transport, and generalized welfare transport are now theorem functions rather than new certificate records."
     }
   },
   "analytic_boundary": {
