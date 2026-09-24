@@ -320,6 +320,10 @@ JSON
     exact-contract-computability-boundary-theorem
     ExactFunctionIsomorphismTransportTheorem
     ExactRecurrentFunctionTranslationTheorem
+    MegaWalrasianGlobalSquareConjugacy
+    megaWalrasianGlobalSquare-injective
+    MegaWalrasianEquilibriumWelfareAdapter
+    MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
     MegaGeneralizedWalrasianEquilibrium
     MegaGeneralizedWalrasianEquilibrium
     POMDPWalrasianData
