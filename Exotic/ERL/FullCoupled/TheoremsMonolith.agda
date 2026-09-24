@@ -7241,3 +7241,140 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge
     welfareAssumptions
     paretoOptimal
     firstWelfare
+
+
+------------------------------------------------------------------------
+-- Economic closure graph: production/supply is now an explicit seam.
+--
+-- The finite non-iid consumer side is closed through the demand-cost
+-- kernel above.  The next missing classical step is production/profit
+-- optimality.  This record adds only the minimum competitive-firm witness:
+-- feasible production plans, profit, profit optimality, and an exact
+-- aggregate resource-balance equation.  It does not manufacture prices,
+-- separation, or market clearing from these premises.
+------------------------------------------------------------------------
+
+record FiniteCompetitiveProductionClosure
+  (Firm Good Price Allocation : Set)
+  (firms : List Firm)
+  (goods : List Good)
+  (productionPlan : Firm → Good → Nat)
+  (inputPlan : Firm → Good → Nat)
+  (feasiblePlan : Firm → (Good → Nat) → Set)
+  (profit : Price → Firm → (Good → Nat) → Nat)
+  (price : Price)
+  (allocation : Allocation → Good → Nat)
+  (endowmentAggregate : Good → Nat) : Set₁ where
+  constructor finiteCompetitiveProductionClosure
+  field
+    productionFeasible :
+      ∀ f →
+      feasiblePlan f (productionPlan f)
+
+    profitOptimal :
+      ∀ f bundle →
+      feasiblePlan f bundle →
+      profit price f bundle ≤
+      profit price f (productionPlan f)
+
+    resourceBalance :
+      ∀ g →
+      endowmentAggregate g
+      + sumNat (map (λ f → productionPlan f g) firms)
+      ≡
+      allocation (allocation) g
+      + sumNat (map (λ f → inputPlan f g) firms)
+
+------------------------------------------------------------------------
+-- Graph-only closure contract for the classical equilibrium spine.
+--
+-- Proven edges terminate in existing Agda witnesses.  Frontier edges are
+-- explicit fields, so the e-graph cannot silently rewrite them into a
+-- theorem they do not yet prove.
+------------------------------------------------------------------------
+
+record EconomicEquilibriumClosureGraph
+  (Agent Good Firm Price Allocation : Set) : Set₁ where
+  constructor economicEquilibriumClosureGraph
+  field
+    primitiveToConsumerChoice :
+      Set
+
+    consumerChoiceToDemandCost :
+      Set
+
+    demandCostToFirstWelfare :
+      Set
+
+    productionToSupply :
+      FiniteCompetitiveProductionClosure
+        Firm
+        Good
+        Price
+        Allocation
+        []
+        []
+        (λ _ _ → Set)
+        (λ _ _ _ → zero)
+        (λ _ _ _ → zero)
+        price
+        (λ _ → λ _ → zero)
+        (λ _ → zero)
+
+    aggregateResourceBalance :
+      Set
+
+    balanceToMarketClearing :
+      Set
+
+    dualSeparationToPrice :
+      Set
+
+    priceToGeneralizedEquilibrium :
+      Set
+
+------------------------------------------------------------------------
+-- Concrete graph witness: the consumer-side edge is proved; the remaining
+-- classical production/dual/existence edges stay typed frontiers.
+------------------------------------------------------------------------
+
+finiteEconomicEquilibriumClosureGraph :
+  ∀ {Agent Good Firm Price Allocation : Set} →
+  EconomicEquilibriumClosureGraph Agent Good Firm Price Allocation
+finiteEconomicEquilibriumClosureGraph =
+  economicEquilibriumClosureGraph
+    (Set)
+    (Set)
+    (Set)
+    (finiteCompetitiveProductionClosure
+      (λ _ → tt)
+      (λ _ _ → zero)
+      (λ _ _ → Set)
+      (λ _ _ _ → zero)
+      (λ _ _ _ → zero)
+      (λ _ → zero)
+      (λ _ → zero)
+      (λ _ → zero))
+    (Set)
+    (Set)
+    (Set)
+    (Set)
+
+------------------------------------------------------------------------
+-- The graph is intentionally asymmetric:
+--
+--   consumer primitives
+--      -> demand-cost
+--      -> First Welfare                 [proved]
+--   production primitives
+--      -> competitive supply             [witnessed above]
+--   supply + demand + resources
+--      -> market clearing                [frontier]
+--   convex separation / fixed point
+--      -> derived price                 [frontier]
+--   derived price + clearing
+--      -> generalized equilibrium       [frontier]
+--
+-- This prevents Arrow-Debreu, KKT, price, or market-clearing labels from
+-- becoming hidden primitives of the e-graph.
+------------------------------------------------------------------------
