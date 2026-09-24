@@ -6434,6 +6434,83 @@ megaNoStrictAffordableAlternative-is-demand-optimality boundary =
 
 
 ------------------------------------------------------------------------
+-- Policy -> Hodge-Maxwell update seam.
+--
+-- The canonical policy is an exact readout of the learner state, but that
+-- readout alone does not imply a Maxwell update.  This theorem makes the
+-- missing seam explicit: a supplied policy-induced learner transition must
+-- agree with the canonical learner step, and that step must be transported
+-- by the existing Hodge-Maxwell encoder to the exact Maxwell solution step.
+-- The result is a genuine policy-to-Maxwell commuting square rather than a
+-- graph edge created from conceptual similarity.
+------------------------------------------------------------------------
+
+policyHodgeMaxwellUpdateSeam :
+  ∀ {GRU : Set}
+  (H : ContinuousHodgeMaxwellExactRepresentationData GRU)
+  (K : C.CanonicalFullLearnerKernel)
+  (policyStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+  (policyStepCorrect :
+    ∀ s →
+    policyStep s ≡ C.canonicalFullStep K s)
+  (policyMaxwellStep :
+    ∀ s →
+    ContinuousHodgeMaxwellExactRepresentationData.step
+      H
+      (ContinuousHodgeMaxwellExactRepresentationData.encode H s)
+    ≡
+    ContinuousHodgeMaxwellExactRepresentationData.encode H
+      (policyStep s)) →
+  ∀ s →
+  ContinuousHodgeMaxwellExactRepresentationData.encode H
+    (policyStep s)
+  ≡
+  ContinuousHodgeMaxwellExactRepresentationData.step
+    H
+    (ContinuousHodgeMaxwellExactRepresentationData.encode H s)
+policyHodgeMaxwellUpdateSeam
+  H K policyStep policyStepCorrect policyMaxwellStep s =
+  sym (policyMaxwellStep s)
+
+policyHodgeMaxwellCanonicalUpdateSeam :
+  ∀ {GRU : Set}
+  (H : ContinuousHodgeMaxwellExactRepresentationData GRU)
+  (K : C.CanonicalFullLearnerKernel)
+  (policyStep : C.CanonicalFullLearnerState → C.CanonicalFullLearnerState)
+  (policyStepCorrect :
+    ∀ s →
+    policyStep s ≡ C.canonicalFullStep K s)
+  (canonicalMaxwellConjugacy :
+    ∀ s →
+    ContinuousHodgeMaxwellExactRepresentationData.encode H
+      (C.canonicalFullStep K s)
+    ≡
+    ContinuousHodgeMaxwellExactRepresentationData.step H
+      (ContinuousHodgeMaxwellExactRepresentationData.encode H s)) →
+  ∀ s →
+  ContinuousHodgeMaxwellExactRepresentationData.encode H
+    (policyStep s)
+  ≡
+  ContinuousHodgeMaxwellExactRepresentationData.step H
+    (ContinuousHodgeMaxwellExactRepresentationData.encode H s)
+policyHodgeMaxwellCanonicalUpdateSeam
+  H K policyStep policyStepCorrect canonicalMaxwellConjugacy s =
+  trans
+    (cong
+      ContinuousHodgeMaxwellExactRepresentationData.encode
+      (policyStepCorrect s))
+    (canonicalMaxwellConjugacy s)
+
+------------------------------------------------------------------------
+-- The policy seam is deliberately conditional.  canonicalPolicy is the
+-- exact LCB/Watkins/Sparsemax readout, while policyStepCorrect is the
+-- additional computational claim that the chosen action/update actually
+-- drives the canonical learner transition.  Without that premise, no
+-- policy-driven Maxwell solver theorem is asserted.
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
 -- Exact learner/economic solution bridge.
 --
 -- This is a theorem, not a certificate record.  The caller supplies the
