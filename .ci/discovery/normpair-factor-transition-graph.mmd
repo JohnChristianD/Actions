@@ -1,0 +1,22 @@
+flowchart LR
+  N["NormPair replacement"]
+  R["normPairReplacementRelation"]
+  G["applyNormPairReplacements"]
+  P["canonicalPolicy-norm-invariant"]
+  S["canonicalFullStep-replaceNorm"]
+  I["canonicalFullStep-replaceNorm-iterate"]
+  Q["CanonicalNormPairQuotientFactorTransitionTheorem"]
+  C1["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem"]
+  C2["CanonicalFullLearnerConnectedScanConjugacyTheorem"]
+  H["CanonicalEndogenousHardSignFactorAutomatonClosureCandidate"]
+  F["remaining finite-factor frontier"]
+
+  G --> R
+  N --> R
+  P --> Q
+  S --> Q
+  I --> Q
+  R --> Q
+  C1 --> C2
+  Q --> H
+  H --> F
