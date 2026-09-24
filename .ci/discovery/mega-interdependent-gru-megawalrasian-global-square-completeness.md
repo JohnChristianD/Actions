@@ -160,3 +160,28 @@ Only when BOTH witnesses are supplied:
 In particular, monotonicity/local nonsatiation is not encoded as sufficient for equality. Standard welfare-theorem presentations use local nonsatiation (with market/budget structure) for the first direction, while reverse implementation additionally requires conditions such as continuity, convexity/separation, and an appropriate redistribution/endowment mechanism.
 
 The global-square composition therefore carries `welfareAdapter` as an explicit implication and `completenessWitness` as its instantiated Pareto result. It does not manufacture either welfare direction from the GRU conjugacy or equilibrium square.
+
+
+## Second-Welfare algebraic boundary
+
+The reverse welfare edge is now explicitly split into a conditional theorem and a non-derivability witness:
+
+```text
+ParetoOptimal(a)
+  + supporting-price / redistribution witness
+        -> Price
+        -> Equilibrium
+
+ParetoOptimal(a) alone
+        -/-> supporting price
+```
+
+The source record `MegaSecondWelfareTheoremBoundaryCounterexample` instantiates the negative edge with:
+- Price = empty type
+- Allocation = unit type
+- ParetoOptimal = inhabited at the chosen allocation
+- Equilibrium = empty relation
+
+Hence no term can be constructed for a supporting price at that Pareto-optimal allocation. This establishes only the boundary of the repository's generalized contract; it does not refute the classical theorem, whose missing proof ingredients are economic structure and a separation/supporting-price argument.
+
+The First-Welfare demand clause is likewise classified as demand optimality, not as monotonicity/LNS. The current Agda proof uses it directly because that is the exact proposition needed for the contradiction. Whole-allocation interdependence and heterogeneous preference profiles remain orthogonal generalizations of the preference domain/profile space.
