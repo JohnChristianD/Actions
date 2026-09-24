@@ -43,12 +43,12 @@ flowchart LR
   R --> PS["policy-induced update"]
   S --> LS["canonicalFullStep"]
   PS -->|policyStepCorrect| LS
-  LS -->|Hodge-Maxwell encode| M["Hodge-Maxwell solution"]
-  M -->|exact step| M2["next Maxwell solution"]
-  PS -->|policy-to-Maxwell commuting square| M2
-  LS -->|canonical Maxwell conjugacy| M2
+  PS -->|learnerToSolution| M["Hodge-Maxwell solution"]
+  LS -->|existing learner-step conjugacy| M2["next Maxwell solution"]
+  M -->|policy-to-Maxwell commuting square| M2
+  LS -->|learnerToSolution| M2
 ```
 
-The new Agda seam is `policyHodgeMaxwellUpdateSeam`, with the canonical specialization `policyHodgeMaxwellCanonicalUpdateSeam`. The specialization proves that if the supplied policy-induced update is extensionally the canonical learner step, then the existing Maxwell step conjugacy transports that update exactly to the Hodge-Maxwell solution step.
+The Agda seam is `policyHodgeMaxwellUpdateSeam`, with the named canonical specialization `policyHodgeMaxwellCanonicalUpdateSeam`. It consumes the existing connected Hodge-Maxwell/F4/Watkins learner-to-solution map and learner-step conjugacy. If the supplied policy-induced update is extensionally the canonical learner step, the policy update is transported exactly to the Hodge-Maxwell solution step.
 
 This closes the graph edge that was previously only described as a missing boundary. It is still conditional: the graph does not infer that every LCB/Watkins/Sparsemax readout induces the learner transition. `policyStepCorrect` is the explicit proof obligation for that computational interpretation.
