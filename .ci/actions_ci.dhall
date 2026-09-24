@@ -61,6 +61,7 @@ let script = merge {
     grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point-transport' "$theorem" || { echo "transported topological economic existence theorem missing"; exit 1; }
     grep -Fq 'gruf4EconomicInjectivityFromGlobalSquare' "$theorem" || { echo "GRU-F4 economic injectivity bridge missing"; exit 1; }
     grep -Fq 'topologicalConvergenceWitness-from-finite-rank-stability' "$theorem" || { echo "finite-rank to convergence bridge missing"; exit 1; }
+    grep -Fq 'canonicalFullLearner-no-finite-rank-stability' "$theorem" || { echo "canonical learner finite-rank obstruction missing"; exit 1; }
     graph="docs/economics/economic-egraph-emergent-arrow-debreu.mmd"
     grep -Fq 'Unconditional single-pass target' "$graph" || { echo "unconditional target graph missing"; exit 1; }
     grep -Fq 'Convergence from economic assumptions' "$graph" || { echo "unconditional convergence seam missing"; exit 1; }
