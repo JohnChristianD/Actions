@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | EconomicClosureGraph | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -34,8 +34,6 @@ let script = merge {
     grep -Fq '"astar_score_ordered": true' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
-    '',
-  EconomicClosureGraph = ''
     set -euo pipefail
     graph=docs/economics/economic-egraph-emergent-arrow-debreu.mmd
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
@@ -115,6 +113,7 @@ let script = merge {
     echo "economic-declaration-count=$economic_declaration_count"
     echo "counterexample-boundary-record-count=$counterexample_count"
     echo "composition-transport-record-count=$composition_count"
+    '',
     '',
   EconlibCrossrepo = ''
     set -euo pipefail
