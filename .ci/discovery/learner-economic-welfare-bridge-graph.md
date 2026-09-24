@@ -34,3 +34,21 @@ Canonical Agda nodes:
 - `connectedHodgeMaxwellLearnerEconomicWelfareBridge`
 
 The composition is conditional on the supplied economic interpretation, inverse laws, step conjugacy, equilibrium transport, and welfare implication; it does not identify arbitrary learners with economies.
+
+## Policy–Hodge-Maxwell update seam
+
+```mermaid
+flowchart LR
+  S["CanonicalFullLearnerState"] --> R["canonicalPolicy<br/>LCB + Watkins + Sparsemax"]
+  R --> PS["policy-induced update"]
+  S --> LS["canonicalFullStep"]
+  PS -->|policyStepCorrect| LS
+  LS -->|Hodge-Maxwell encode| M["Hodge-Maxwell solution"]
+  M -->|exact step| M2["next Maxwell solution"]
+  PS -->|policy-to-Maxwell commuting square| M2
+  LS -->|canonical Maxwell conjugacy| M2
+```
+
+The new Agda seam is `policyHodgeMaxwellUpdateSeam`, with the canonical specialization `policyHodgeMaxwellCanonicalUpdateSeam`. The specialization proves that if the supplied policy-induced update is extensionally the canonical learner step, then the existing Maxwell step conjugacy transports that update exactly to the Hodge-Maxwell solution step.
+
+This closes the graph edge that was previously only described as a missing boundary. It is still conditional: the graph does not infer that every LCB/Watkins/Sparsemax readout induces the learner transition. `policyStepCorrect` is the explicit proof obligation for that computational interpretation.
