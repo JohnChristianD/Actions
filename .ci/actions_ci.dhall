@@ -320,6 +320,13 @@ JSON
     exact-contract-computability-boundary-theorem
     ExactFunctionIsomorphismTransportTheorem
     ExactRecurrentFunctionTranslationTheorem
+    RegularityFreeWalrasianData
+    RegularityFreeWalrasianEquilibrium
+    POMDPWalrasianData
+    POMDPWalrasianEquilibrium
+    POMDPWalrasianTransport
+    POMDPBeliefPolicyFactorization
+    POMDPWalrasianBeliefEquilibriumClosure
     POMDPExactTransport
     MarkovStationaryWalrasianCompositionTheorem
     CanonicalGlobalTokenEncodingConjugacyTheorem
