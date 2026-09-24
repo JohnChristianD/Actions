@@ -6575,10 +6575,11 @@ connectedCanonicalLearnerEconomicWelfareCompositionTheorem :
   (fromEconomic : Economic → C.CanonicalFullLearnerState)
   (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
   (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
+  (learnerKernel : C.CanonicalFullLearnerKernel)
   (economicStep : Economic → Economic)
   (stepConjugacy :
     ∀ s →
-    toEconomic (C.canonicalFullStep (learnerKernel C) s)
+    toEconomic (C.canonicalFullStep learnerKernel s)
     ≡ economicStep (toEconomic s))
   (economicEquilibrium : Economic → Set)
   (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
@@ -6602,7 +6603,7 @@ connectedCanonicalLearnerEconomicWelfareCompositionTheorem :
   ((∀ n s →
     toEconomic
       (iterateIsomorphism
-        (C.canonicalFullStep (learnerKernel C))
+        (C.canonicalFullStep learnerKernel)
         n
         s)
     ≡
@@ -6625,6 +6626,7 @@ connectedCanonicalLearnerEconomicWelfareCompositionTheorem
   fromEconomic
   fromTo
   toFrom
+  learnerKernel
   economicStep
   stepConjugacy
   economicEquilibrium
@@ -6639,7 +6641,7 @@ connectedCanonicalLearnerEconomicWelfareCompositionTheorem
   , megaEconomicSolutionStepConjugacy
       toEconomic fromEconomic fromTo toFrom
       economicStep
-      (C.canonicalFullStep (learnerKernel C))
+      (C.canonicalFullStep learnerKernel)
       stepConjugacy
   , equilibriumFromEconomic
   , equilibriumToEconomic
@@ -6665,10 +6667,11 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge :
   (fromEconomic : Economic → C.CanonicalFullLearnerState)
   (fromTo : ∀ s → fromEconomic (toEconomic s) ≡ s)
   (toFrom : ∀ x → toEconomic (fromEconomic x) ≡ x)
+  (learnerKernel : C.CanonicalFullLearnerKernel)
   (economicStep : Economic → Economic)
   (stepConjugacy :
     ∀ s →
-    toEconomic (C.canonicalFullStep (learnerKernel connected) s)
+    toEconomic (C.canonicalFullStep learnerKernel s)
     ≡ economicStep (toEconomic s))
   (economicEquilibrium : Economic → Set)
   (learnerEquilibrium : C.CanonicalFullLearnerState → Set)
@@ -6685,7 +6688,7 @@ connectedHodgeMaxwellLearnerEconomicWelfareBridge :
   ((∀ n s →
     toEconomic
       (iterateIsomorphism
-        (C.canonicalFullStep (learnerKernel connected))
+        (C.canonicalFullStep learnerKernel)
         n
         s)
     ≡ iterateIsomorphism economicStep n (toEconomic s)))
