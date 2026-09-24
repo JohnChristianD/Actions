@@ -3,9 +3,11 @@
 module Exotic.ERL.FullCoupled.TheoremsMonolith where
 
 ------------------------------------------------------------------------
--- Single active theorem source for the canonical learner.
--- Discovery/CI should target this file. Legacy theorem modules are not
--- part of the canonical proof surface.
+-- Single active theorem source for the architecture and all emergence proofs.
+-- The learner is the only intentionally separated Agda module and is
+-- imported below. Economic, Arrow-Debreu, KKT, welfare, and other proof
+-- surfaces belong in this monolith rather than in parallel theorem modules.
+-- Discovery/CI should target this file.
 ------------------------------------------------------------------------
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong; cong₂; trans; sym; subst)
@@ -5455,6 +5457,15 @@ record MegaGeneralizedWalrasianEquilibrium
       equilibrium p a
 
 open MegaGeneralizedWalrasianEquilibrium public
+
+------------------------------------------------------------------------
+-- Architecture/emergence boundary.
+--
+-- This monolith owns the economic architecture and every theorem that
+-- establishes an emergent consequence. CanonicalLearnerMonolith is the
+-- only separated learner implementation and is imported at the top of this
+-- file. Do not create parallel economic proof modules for e-graph nodes.
+------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Singular generalized Walrasian data.
