@@ -97,6 +97,18 @@ jobs:
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
+      - name: Publish live theorem/economic graph artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: theorem-economic-closure-graph
+          if-no-files-found: ignore
+          path: |
+            .ci/discovery/theorem-monolith-egraph-sync.json
+            .ci/discovery/economic-closure-graph.json
+            .ci/discovery/economic-monolith-records.tsv
+            .ci/discovery/economic-monolith-declarations.tsv
+
       - name: Cross-repo Econlib graph
         timeout-minutes: 15
         env:
