@@ -60,6 +60,23 @@
             type = "app";
             program = "${script}/bin/slow-readme-update";
           };
+          prune-theorem-registries = let
+            script = pkgs.writeShellApplication {
+              name = "prune-theorem-registries";
+              runtimeInputs = [
+                pkgs.mercury
+              ];
+              text = ''
+                set -euo pipefail
+                cd .ci/discovery
+                mmc --make theorem_registry_reconcile
+                ./theorem_registry_reconcile --prune
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/prune-theorem-registries";
+          };
           default = {
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
