@@ -372,10 +372,32 @@ main(!IO) :-
     read_semantic_laws(Live, !IO),
     reconcile_actions(Live, Mode, !IO, ActionsResult),
     reconcile_graph(Live, Mode, !IO, GraphResult),
-    print_result("actions_ci.dhall", ActionsResult, !IO),
-    print_result("theorem_graph_search.m", GraphResult, !IO),
     (
-        mode_requires_no_stale(Mode, ActionsResult, GraphResult)
+        Mode = prune
+    ->
+        read_semantic_laws(LiveAfter, !IO),
+        reconcile_actions(LiveAfter, check, !IO, ActionsCheck),
+        reconcile_graph(LiveAfter, check, !IO, GraphCheck),
+        print_result("actions_ci.dhall", ActionsResult, !IO),
+        print_result("theorem_graph_search.m", GraphResult, !IO),
+        print_result("actions_ci.dhall[post-prune-check]", ActionsCheck, !IO),
+        print_result("theorem_graph_search.m[post-prune-check]", GraphCheck, !IO),
+        require_clean(ActionsCheck, GraphCheck, !IO)
+    ;
+        print_result("actions_ci.dhall", ActionsResult, !IO),
+        print_result("theorem_graph_search.m", GraphResult, !IO),
+        require_clean(ActionsResult, GraphResult, !IO)
+    ).
+
+:- pred require_clean(
+    registry_result::in,
+    registry_result::in,
+    io::di, io::uo) is det.
+
+require_clean(Actions, Graph, !IO) :-
+    (
+        list.length(registry_result.stale(Actions)) = 0,
+        list.length(registry_result.stale(Graph)) = 0
     ->
         true
     ;
@@ -383,20 +405,4 @@ main(!IO) :-
             "ERROR: stale machine-owned theorem registry metadata remains\n",
             !IO),
         io.set_exit_status(1, !IO)
-    ).
-
-:- pred mode_requires_no_stale(
-    mode::in,
-    registry_result::in,
-    registry_result::in) is semidet.
-
-mode_requires_no_stale(Mode, Actions, Graph) :-
-    (
-        Mode = prune
-    ->
-        list.length(registry_result.stale(Actions)) = 0,
-        list.length(registry_result.stale(Graph)) = 0
-    ;
-        list.length(registry_result.stale(Actions)) = 0,
-        list.length(registry_result.stale(Graph)) = 0
     ).
