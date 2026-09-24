@@ -1622,7 +1622,7 @@
   },
   "current_head_audit_2026_09_24": {
     "status": "PENDING_FRESH_CI",
-    "head": "2abdb0cfc51078bd6b16092dccd8be200dd30e23",
+    "head": "7c0dbf8fc3e169b7f03a3a7150fdc4f692e33c02",
     "note": "Unified GRU/Hodge-Maxwell/Tsallis-2/Walrasian/POMDP composition is registered; kernel verification remains pending."
   },
   "metadata_pruning_policy_v11": {
