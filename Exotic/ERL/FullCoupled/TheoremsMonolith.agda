@@ -5914,7 +5914,7 @@ record MegaFirstWelfareTheoremConditions
         b
         a →
       budget p
-        (proj₁ (strictlyBetter _))
+        (proj₁ (strictlyBetter improvement))
         b
 
 open MegaFirstWelfareTheoremConditions public
