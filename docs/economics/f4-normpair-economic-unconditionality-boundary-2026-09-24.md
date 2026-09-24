@@ -1,62 +1,58 @@
 # F4 / NormPair / economic unconditionality boundary
 
-## Closed theorem core
+## Composition
 
-The active monolith now composes only closed proof terms on the exact learner/F4/NormPair path:
+The active theorem graph separates closed proof composition from conditions that must be supplied by an economic theorem.
 
-`closed canonical learner laws → exact recurrent/prefix algebra → exact F4 optimizer stability`
+Closed path:
+
+`closed learner algebra → exact F4 stability`
 
 and
 
-`exact NormPair quotient/factor transition`
+`closed learner algebra → exact NormPair quotient/factor transition`
 
-into the closed theorem:
+compose into:
 
 `canonical-f4-normPair-unconditional-factor-stability-theorem`.
 
-That composition establishes exact factorization/stability properties. It does **not** establish convergence, boundedness, coercivity, market clearing, equilibrium existence, or a stationary probability law.
+That theorem is closed: it takes no external coercivity, boundedness, convergence, equilibrium, probability, or economic certificate.
+
+## Required-condition seam
+
+The graph inserts the missing economic bridge explicitly:
+
+`F4/NormPair factor stability → economic representation seam → required existence bridge → generalized Walrasian existence`.
+
+The bridge is a proof obligation, not a theorem consequence. Typical ingredients belong there only when actually established for the chosen economic model: feasible-set structure, compactness or boundedness where required, continuity, preference/technology assumptions, market clearing, and an independent equilibrium-existence theorem.
+
+Thus the active monolith does not silently turn representation stability into equilibrium existence.
 
 ## F4 boundedness boundary
 
-The canonical F4 coordinate is Z-valued through `Int8.code : ℤ`. The closed unit-forcing construction gives a trajectory with
+The current F4 carrier is Z-valued. The closed unit-forcing ray gives linear exact-theta growth, so `f4-unit-forcing-no-upper-bound` rules out an unconditional horizon-independent upper bound in the current semantics.
 
-`code(theta_n) = code(theta_0) + n`.
+Therefore exact F4 stability is not relabeled as analytic coercivity, compactness, or boundedness.
 
-Therefore `f4-unit-forcing-no-upper-bound` rules out an unconditional constant upper bound over all horizons for the current F4 semantics. F4 step stability must not be relabeled as an analytic coercivity or compactness theorem.
+## Economic impossibility boundary
 
-## Economic bridge boundary
+The singleton generalized-Walrasian countermodel has an empty equilibrium predicate. Hence:
 
-The graph deliberately inserts an explicit required-condition node between the closed F4/NormPair representation theorem and generalized Walrasian existence.
+- `noUnconditionalMegaGeneralizedWalrasianExistence` is closed.
+- `noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability` records the same impossibility boundary after the closed F4/NormPair factor theorem.
 
-That bridge is where assumptions such as existence/compactness/continuity, feasible-set structure, market-clearing conditions, or an independently proved equilibrium theorem belong. The active monolith no longer presents those as supplied theorem premises or silently derives them from F4/NormPair stability.
-
-The unconditional statement retained on the economic side is instead the closed singleton countermodel:
-
-`noUnconditionalMegaGeneralizedWalrasianExistence`
-
-and its post-factor-stability form:
-
-`noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability`.
-
-These prove only the logical boundary: a generalized Walrasian contract, even alongside the closed F4/NormPair factor-stability theorem, does not by itself imply that an equilibrium witness exists.
+These are universal impossibility statements, not supplied premises.
 
 ## Stationarity boundary
 
-The deterministic learner has a strict clock successor and therefore no fixed full learner state. This is a state-level obstruction only. It is not a theorem that no invariant probability measure exists.
+Deterministic no-fixed-state behavior does not by itself prove nonexistence of an invariant probability measure. A stationary-distribution theorem needs explicit probability/distribution semantics and an invariant-measure argument. The graph therefore marks this as a separate proof obligation.
 
-A genuine stationary-distribution result requires explicit probability/distribution semantics and an invariant-measure proof. Accordingly, the graph marks this as a separate proof obligation rather than a consequence of deterministic no-fixed-state behavior.
+## Cleanliness rule
 
-## Graph
+Active theorem claims should be either:
 
-The authoritative discovery graph is:
+1. closed proof terms;
+2. universal impossibility theorems/countermodels; or
+3. semantic records/contracts that define a theorem surface but do not claim existence.
 
-- closed learner laws
-- exact recurrent/prefix algebra
-- exact F4 stability
-- exact NormPair quotient/factor transition
-- closed F4 × NormPair factor stability
-- F4 unit-forcing linear-growth impossibility
-- explicit economic existence bridge
-- closed unconditional generalized-Walrasian non-existence countermodel
-
-No conditional certificate, witness, convergence premise, coercivity premise, or stationary-law witness is treated as a theorem consequence in the active core.
+Premise-bearing existence/transport/certificate claims are not promoted to unconditional consequences.
