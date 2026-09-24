@@ -5432,3 +5432,292 @@ hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
   H witness =
   λ _ →
     hodgeMaxwell-globalEncodeCollision-impossible H witness
+
+
+------------------------------------------------------------------------
+-- Assumption-relaxed Walrasian/POMDP generalization.
+--
+-- The classical connected surface bakes continuity into the data type and
+-- invariance into the aggregate law.  The relaxed surface removes both
+-- from the data contract.  Stationarity and any regularity property become
+-- explicit premises instead of hidden structure.
+------------------------------------------------------------------------
+
+record RegularityFreeWalrasianData
+  (State Price Allocation : Set) : Set₁ where
+  constructor regularityFreeWalrasianData
+  field
+    aggregate : (State → Allocation) → Allocation
+    staticWalrasian : Price → Allocation → Set
+
+open RegularityFreeWalrasianData public
+
+record RegularityFreeWalrasianEquilibrium
+  (State Price Allocation : Set)
+  (D : RegularityFreeWalrasianData State Price Allocation)
+  (p : Price)
+  (allocation : State → Allocation) : Set₁ where
+  constructor regularityFreeWalrasianEquilibrium
+  field
+    staticEquilibrium :
+      staticWalrasian D p (aggregate D allocation)
+    stationaryAggregate :
+      aggregate D allocation ≡
+      aggregate D (λ s → allocation s)
+
+open RegularityFreeWalrasianEquilibrium public
+
+regularityFreeWalrasian-from-static-and-stationary :
+  ∀ {State Price Allocation : Set}
+  (D : RegularityFreeWalrasianData State Price Allocation)
+  (p : Price)
+  (allocation : State → Allocation) →
+  staticWalrasian D p (aggregate D allocation) →
+  aggregate D allocation ≡ aggregate D (λ s → allocation s) →
+  RegularityFreeWalrasianEquilibrium State Price Allocation D p allocation
+regularityFreeWalrasian-from-static-and-stationary
+  D p allocation static stationary =
+  regularityFreeWalrasianEquilibrium static stationary
+
+regularityFreeWalrasian-from-continuous-stationary :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous) →
+  RegularityFreeWalrasianData State Price Allocation
+regularityFreeWalrasian-from-continuous-stationary D =
+  regularityFreeWalrasianData
+    (aggregate D)
+    (staticWalrasian D)
+
+regularityFreeWalrasian-lift :
+  ∀ {State Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousStationaryMarkovWalrasianData
+    State Price Allocation Continuous)
+  (p : Price)
+  (allocation : State → Allocation) →
+  staticWalrasian D p (aggregate D allocation) →
+  RegularityFreeWalrasianEquilibrium
+    State Price Allocation
+    (regularityFreeWalrasian-from-continuous-stationary D)
+    p
+    allocation
+regularityFreeWalrasian-lift D p allocation static =
+  regularityFreeWalrasianEquilibrium
+    static
+    (invariant D allocation)
+
+------------------------------------------------------------------------
+-- POMDP-generalized Walrasian equilibrium.
+--
+-- POMDP semantics are kept explicit, while equilibrium only depends on the
+-- aggregate/static/stationary witness.  Thus policy optimality, filtering,
+-- probability convergence, and belief-state sufficiency are not smuggled
+-- into the equilibrium theorem.
+------------------------------------------------------------------------
+
+record POMDPWalrasianData
+  (State Action Observation Distribution Reward Price Allocation : Set)
+  : Set₁ where
+  constructor pomdpWalrasianData
+  field
+    transition : State → Action → Distribution
+    observationKernel : State → Distribution
+    reward : State → Action → Reward
+    aggregate : (State → Allocation) → Allocation
+    staticWalrasian : Price → Allocation → Set
+
+open POMDPWalrasianData public
+
+record POMDPWalrasianEquilibrium
+  (State Action Observation Distribution Reward Price Allocation : Set)
+  (D :
+    POMDPWalrasianData
+      State Action Observation Distribution Reward Price Allocation)
+  (p : Price)
+  (allocation : State → Allocation) : Set₁ where
+  constructor pomdpWalrasianEquilibrium
+  field
+    staticEquilibrium :
+      staticWalrasian D p (aggregate D allocation)
+    stationaryAggregate :
+      aggregate D allocation ≡
+      aggregate D (λ s → allocation s)
+
+open POMDPWalrasianEquilibrium public
+
+pomdpWalrasian-from-static-and-stationary :
+  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
+  (D :
+    POMDPWalrasianData
+      State Action Observation Distribution Reward Price Allocation)
+  (p : Price)
+  (allocation : State → Allocation) →
+  staticWalrasian D p (aggregate D allocation) →
+  aggregate D allocation ≡ aggregate D (λ s → allocation s) →
+  POMDPWalrasianEquilibrium
+    State Action Observation Distribution Reward Price Allocation
+    D p allocation
+pomdpWalrasian-from-static-and-stationary
+  D p allocation static stationary =
+  pomdpWalrasianEquilibrium static stationary
+
+pomdpWalrasianData-from-continuous :
+  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousStationaryMarkovWalrasianData
+      State Price Allocation Continuous)
+  (transition : State → Action → Distribution)
+  (observationKernel : State → Distribution)
+  (reward : State → Action → Reward) →
+  POMDPWalrasianData
+    State Action Observation Distribution Reward Price Allocation
+pomdpWalrasianData-from-continuous
+  D transition observationKernel reward =
+  pomdpWalrasianData
+    transition
+    observationKernel
+    reward
+    (aggregate D)
+    (staticWalrasian D)
+
+------------------------------------------------------------------------
+-- Exact POMDP transport of the relaxed equilibrium surface.
+--
+-- The transport theorem consumes the existing exact POMDP carrier
+-- isomorphisms and adds only the equilibrium-specific readout, aggregate,
+-- static-equilibrium, and stationarity equations.  It does not infer
+-- policy optimality or probabilistic convergence.
+------------------------------------------------------------------------
+
+record POMDPWalrasianTransport
+  (State Action Observation Distribution Reward Price Allocation : Set)
+  (StateRep ActionRep ObservationRep : Set)
+  (source :
+    POMDPWalrasianData
+      State Action Observation Distribution Reward Price Allocation)
+  (target :
+    POMDPWalrasianData
+      StateRep ActionRep ObservationRep Distribution Reward Price Allocation)
+  (stateIso : StateIsomorphism StateRep State)
+  (actionIso : StateIsomorphism ActionRep Action)
+  (observationIso : StateIsomorphism ObservationRep Observation)
+  (allocation : State → Allocation)
+  (allocationRep : StateRep → Allocation) : Set₁ where
+  constructor pomdpWalrasianTransport
+  field
+    pomdpTransport :
+      POMDPExactTransport
+        State Action Observation Distribution Reward
+        StateRep ActionRep ObservationRep
+        stateIso actionIso observationIso
+        (transition source)
+        (observationKernel source)
+        (reward source)
+    allocationReadout :
+      ∀ s →
+      allocationRep (to stateIso s) ≡ allocation s
+    aggregateAgreement :
+      aggregate target allocationRep ≡ aggregate source allocation
+    staticEquilibriumTransport :
+      ∀ p →
+      POMDPWalrasianEquilibrium
+        State Action Observation Distribution Reward Price Allocation
+        source p allocation →
+      staticWalrasian
+        target p
+        (aggregate target allocationRep)
+    stationarityTransport :
+      ∀ p →
+      POMDPWalrasianEquilibrium
+        State Action Observation Distribution Reward Price Allocation
+        source p allocation →
+      aggregate target allocationRep ≡
+      aggregate target
+        (λ s → allocationRep s)
+
+open POMDPWalrasianTransport public
+
+pomdpWalrasianTransport-preserves-equilibrium :
+  ∀ {State Action Observation Distribution Reward Price Allocation : Set}
+  {StateRep ActionRep ObservationRep : Set}
+  {source :
+    POMDPWalrasianData
+      State Action Observation Distribution Reward Price Allocation}
+  {target :
+    POMDPWalrasianData
+      StateRep ActionRep ObservationRep Distribution Reward Price Allocation}
+  {stateIso : StateIsomorphism StateRep State}
+  {actionIso : StateIsomorphism ActionRep Action}
+  {observationIso : StateIsomorphism ObservationRep Observation}
+  {allocation : State → Allocation}
+  {allocationRep : StateRep → Allocation} →
+  (p : Price) →
+  POMDPWalrasianTransport
+    State Action Observation Distribution Reward Price Allocation
+    StateRep ActionRep ObservationRep
+    source target stateIso actionIso observationIso
+    allocation allocationRep →
+  POMDPWalrasianEquilibrium
+    State Action Observation Distribution Reward Price Allocation
+    source p allocation →
+  POMDPWalrasianEquilibrium
+    StateRep ActionRep ObservationRep Distribution Reward Price Allocation
+    target p allocationRep
+pomdpWalrasianTransport-preserves-equilibrium
+  p witness equilibrium =
+  pomdpWalrasianEquilibrium
+    (staticEquilibriumTransport witness p equilibrium)
+    (stationarityTransport witness p equilibrium)
+
+------------------------------------------------------------------------
+-- POMDP belief/policy factorization is an explicit witness, not an implied
+-- theorem.  The e-graph can now compose this node with equilibrium transport
+-- without pretending that a belief state is automatically sufficient.
+------------------------------------------------------------------------
+
+record POMDPBeliefPolicyFactorization
+  (State Action Observation Distribution Allocation : Set)
+  (belief : Observation → Distribution)
+  (policy : Distribution → Action)
+  (allocation : State → Allocation) : Set₁ where
+  constructor pomdpBeliefPolicyFactorization
+  field
+    inducedAllocation : Observation → Allocation
+    allocationFactorsThroughObservation :
+      ∀ s →
+      allocation s ≡ inducedAllocation (believedObservation s)
+    policyReadout :
+      ∀ o →
+      policy (belief o) ≡ chosenAction o
+
+------------------------------------------------------------------------
+-- The exact factorization theorem is intentionally parameterized by the
+-- actual sufficient-statistic and policy laws.  This is the seam where a
+-- future probabilistic filtering/optimality theorem can be consumed.
+------------------------------------------------------------------------
+
+record POMDPWalrasianBeliefEquilibriumClosure
+  (State Action Observation Distribution Reward Price Allocation : Set)
+  (D :
+    POMDPWalrasianData
+      State Action Observation Distribution Reward Price Allocation)
+  (p : Price)
+  (allocation : State → Allocation) : Set₁ where
+  constructor pomdpWalrasianBeliefEquilibriumClosure
+  field
+    equilibrium :
+      POMDPWalrasianEquilibrium
+        State Action Observation Distribution Reward Price Allocation
+        D p allocation
+    beliefPolicyFactorization :
+      Set
+
+------------------------------------------------------------------------
+-- The previous record is a graph seam only: no inhabitant is fabricated
+-- because a true belief-state sufficiency theorem is domain-specific.
+-- Future search may replace the final Set with a concrete proof object when
+-- the corresponding Agda semantics exist.
+------------------------------------------------------------------------
