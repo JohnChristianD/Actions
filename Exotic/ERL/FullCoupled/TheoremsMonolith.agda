@@ -2376,7 +2376,7 @@ topologicalConvergenceWitness-from-finite-rank-stability
     fixed = proj₂ eventual
     orbitFixed = trans (sym (orbitMatches n)) fixed
     convergesAtEquilibrium =
-      eventualConvergence (trans (orbitMatches n) (sym orbitFixed))
+      eventualConvergence (trans (orbitMatches n) orbitFixed)
     convergesAtLimit =
       convergenceEqualityTransport equilibriumToLimit convergesAtEquilibrium
     limitFixed =
