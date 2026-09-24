@@ -5830,18 +5830,208 @@ megaWalrasianGlobalSquare-injective square {x} {y} collision =
       (readoutEncode square y))
 
 ------------------------------------------------------------------------
+-- Exact Pareto/welfare conditionality.
+--
+-- Pareto optimality is defined from explicit weak/strict preference
+-- relations and feasibility.  The First Welfare Theorem is then proved
+-- from the actual demand-side contradiction: an equilibrium agent cannot
+-- have a strictly preferred affordable alternative, while every Pareto
+-- improvement is required to be affordable for at least one strictly
+-- improving agent.  Monotonicity/local nonsatiation are not silently
+-- substituted for this affordability certificate.
+--
+-- A reverse Pareto -> equilibrium theorem is kept separate.  Its
+-- supporting-price/redistribution witness is an additional hypothesis,
+-- matching the fact that the Second Welfare Theorem needs substantially
+-- more structure than monotonicity alone.
+------------------------------------------------------------------------
+
+record MegaParetoImprovement
+  (Agent Allocation : Set)
+  (weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set)
+  (better worse : Allocation) : Set₁ where
+  constructor megaParetoImprovement
+  field
+    weaklyBetter :
+      ∀ i →
+      weakPreference i better worse
+    strictlyBetter :
+      Σ Agent
+        (λ i →
+          strictPreference i better worse)
+
+open MegaParetoImprovement public
+
+megaParetoOptimal :
+  ∀ {Agent Allocation : Set}
+  {weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set}
+  (feasible : Allocation → Set) →
+  Allocation → Set₁
+megaParetoOptimal
+  feasible
+  a =
+  feasible a ×
+  (∀ {b : Allocation} →
+   feasible b →
+   MegaParetoImprovement
+     Agent
+     Allocation
+     weakPreference
+     strictPreference
+     b
+     a →
+   ⊥)
+
+record MegaFirstWelfareTheoremConditions
+  (Agent Price Allocation : Set)
+  (weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set)
+  (feasible : Allocation → Set)
+  (budget : Price → Agent → Allocation → Set)
+  (equilibrium : Price → Allocation → Set)
+  (p : Price)
+  (a : Allocation) : Set₁ where
+  constructor megaFirstWelfareTheoremConditions
+  field
+    equilibriumWitness :
+      equilibrium p a
+    feasibleWitness :
+      feasible a
+    noStrictAffordableAlternative :
+      ∀ i b →
+      budget p i b →
+      ¬ strictPreference i b a
+    paretoImprovementAffordability :
+      ∀ {b : Allocation} →
+      feasible b →
+      MegaParetoImprovement
+        Agent
+        Allocation
+        weakPreference
+        strictPreference
+        b
+        a →
+      budget p
+        (proj₁ (strictlyBetter _))
+        b
+
+open MegaFirstWelfareTheoremConditions public
+
+megaFirstWelfareTheorem :
+  ∀ {Agent Price Allocation : Set}
+  {weakPreference strictPreference :
+    Agent → Allocation → Allocation → Set}
+  {feasible : Allocation → Set}
+  {budget : Price → Agent → Allocation → Set}
+  {equilibrium : Price → Allocation → Set}
+  {p : Price}
+  {a : Allocation} →
+  MegaFirstWelfareTheoremConditions
+    Agent
+    Price
+    Allocation
+    weakPreference
+    strictPreference
+    feasible
+    budget
+    equilibrium
+    p
+    a →
+  megaParetoOptimal feasible a
+megaFirstWelfareTheorem conditions =
+  feasibleWitness conditions ,
+  λ feasibleB improvement →
+    noStrictAffordableAlternative
+      conditions
+      (proj₁ (strictlyBetter improvement))
+      _
+      (paretoImprovementAffordability
+        conditions
+        feasibleB
+        improvement)
+
+------------------------------------------------------------------------
+-- The demand-side theorem above is the exact logical core.  Standard
+-- textbook hypotheses such as monotonicity or local nonsatiation can be
+-- used to establish the missing affordability/budget-exhaustion facts in
+-- a richer commodity/price model, but they are not themselves the
+-- equilibrium-to-Pareto identity.
+------------------------------------------------------------------------
+
+record MegaSecondWelfareTheoremConditions
+  (Agent Price Allocation : Set)
+  (paretoOptimal : Allocation → Set₁)
+  (equilibrium : Price → Allocation → Set) : Set₁ where
+  constructor megaSecondWelfareTheoremConditions
+  field
+    supportingPrice :
+      ∀ {a : Allocation} →
+      paretoOptimal a →
+      Price
+    supportingEquilibrium :
+      ∀ {a : Allocation} →
+      (paretoWitness : paretoOptimal a) →
+      equilibrium
+        (supportingPrice paretoWitness)
+        a
+
+open MegaSecondWelfareTheoremConditions public
+
+megaSecondWelfareTheorem :
+  ∀ {Agent Price Allocation : Set}
+  {paretoOptimal : Allocation → Set₁}
+  {equilibrium : Price → Allocation → Set} →
+  MegaSecondWelfareTheoremConditions
+    Agent
+    Price
+    Allocation
+    paretoOptimal
+    equilibrium →
+  ∀ {a : Allocation} →
+  paretoOptimal a →
+  Σ Price
+    (λ p →
+      equilibrium p a)
+megaSecondWelfareTheorem conditions paretoWitness =
+  supportingPrice conditions paretoWitness ,
+  supportingEquilibrium conditions paretoWitness
+
+------------------------------------------------------------------------
+-- Exact equality of equilibrium and Pareto-optimality is therefore a
+-- two-sided conditional result.  The two directions have different
+-- obligations; neither direction is inferred from the other's assumptions.
+------------------------------------------------------------------------
+
+record MegaParetoEquilibriumConditionality
+  (Agent Price Allocation : Set)
+  (paretoOptimal : Allocation → Set₁)
+  (equilibrium : Price → Allocation → Set)
+  (firstConditions : Set₁)
+  (secondConditions : Set₁) : Set₁ where
+  constructor megaParetoEquilibriumConditionality
+  field
+    firstDirection :
+      firstConditions
+    secondDirection :
+      secondConditions
+
+open MegaParetoEquilibriumConditionality public
+
+------------------------------------------------------------------------
 -- Equilibrium-preserving transport and the welfare seam.
 --
--- Welfare is intentionally a separate implication layer.  The generalized
--- equilibrium carrier does not assert monotonicity, local nonsatiation,
--- convexity, differentiability, or free disposal.  A Pareto conclusion is
--- therefore accepted only through an explicit welfare-assumption witness.
+-- The global square carries an explicit, one-way welfare adapter.  It does
+-- not identify equilibrium with Pareto optimality and it does not invent
+-- monotonicity, local nonsatiation, convexity, redistribution, or absence
+-- of externalities.
 ------------------------------------------------------------------------
 
 record MegaWalrasianEquilibriumWelfareAdapter
-  (Economic Pareto : Set)
+  (Economic : Set)
   (equilibrium : Economic → Set)
-  (paretoOptimal : Economic → Pareto) 
+  (paretoOptimal : Economic → Set)
   (welfareAssumptions : Economic → Set) : Set₁ where
   constructor megaWalrasianEquilibriumWelfareAdapter
   field
@@ -5854,8 +6044,8 @@ record MegaWalrasianEquilibriumWelfareAdapter
 open MegaWalrasianEquilibriumWelfareAdapter public
 
 ------------------------------------------------------------------------
--- The completed composition contract: global square, injectivity,
--- generalized equilibrium preservation, and the one-way welfare implication.
+-- The completed composition contract: global square, derived injectivity,
+-- explicit equilibrium transport, and the conditional welfare/Pareto seam.
 ------------------------------------------------------------------------
 
 record MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
@@ -5895,10 +6085,11 @@ record MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
       carrierEquilibrium (encode x)
 
     welfareAdapter :
-      ∀ {x : Economic} →
-      equilibrium x →
-      welfareAssumptions x →
-      paretoOptimal x
+      MegaWalrasianEquilibriumWelfareAdapter
+        Economic
+        equilibrium
+        paretoOptimal
+        welfareAssumptions
 
     completenessWitness :
       ∀ {x : Economic} →
@@ -5931,8 +6122,12 @@ megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
       carrierEquilibriumMap
       economicStep
       gruStep)
-  (welfare :
+  (equilibriumTransport :
     ∀ {x : Economic} →
+    equilibrium x →
+    carrierEquilibrium (encode x))
+  (welfare :
+    ∀ x →
     equilibrium x →
     welfareAssumptions x →
     paretoOptimal x) →
@@ -5953,21 +6148,16 @@ megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
     welfareAssumptions
 megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
   square
+  equilibriumTransport
   welfare =
   megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
     square
     (megaWalrasianGlobalSquare-injective square)
-    (λ {x} witness →
-      subst
-        (λ q → carrierEquilibrium q)
-        (sym (readoutEncode square x))
-        (subst
-          (λ q → equilibrium q)
-          (readoutEncode square x)
-          witness))
-    welfare
-    (λ equilibriumWitness welfareWitness →
-      welfare equilibriumWitness welfareWitness)
+    equilibriumTransport
+    (megaWalrasianEquilibriumWelfareAdapter
+      welfare)
+    (λ x equilibriumWitness welfareWitness →
+      welfare x equilibriumWitness welfareWitness)
 
 ------------------------------------------------------------------------
 -- Unified GRU / Hodge-Maxwell / Tsallis / generalized Walrasian / POMDP
