@@ -189,3 +189,6 @@ TopologicalConvergenceWitness
 Therefore this branch deliberately does not relabel the unconditional target as proved. The unattended graph is complete, while CI must keep the target blocked until both frontier proofs are present.
 
 The cross-repository Econlib existence theorem is also an evidence source, not a local proof. The CI cross-repository check confirms that `Economy.exists_equilibrium` exists upstream, but the local generalized/interdependent allocation semantics still require an explicit adapter before that result can be promoted into the local Agda proof authority.
+
+
+The finite-rank convergence seam has a concrete boundary on the canonical learner state. The theorem `canonicalFullLearner-no-finite-rank-stability` proves that the full canonical learner state cannot itself carry a `FiniteRankStabilityCertificate`: its exact clock increment prevents any one-step fixed point. Therefore the eventual-absorption certificate needed by the convergence bridge must be formulated on an invariant quotient or factor that intentionally removes the nonstationary clock coordinate. This is a concrete obstruction and design requirement, not a convergence proof.
