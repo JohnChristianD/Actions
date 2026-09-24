@@ -116,3 +116,47 @@ Equilibrium + WelfareAssumptions -> ParetoOptimal
 ```
 
 not an automatic equivalence. Demand-side monotonicity/local nonsatiation may be among the supplied welfare assumptions, but monotonicity alone does not create the reverse implication.
+
+
+## Pareto-optimality conditionality contract
+
+The canonical theorem layer now separates the exact logical core of the First Welfare Theorem from the stronger economic assumptions used to discharge it.
+
+```text
+ParetoImprovement(b,a)
+  = feasible(b)
+  + weaklyBetter(i,b,a) for every i
+  + strictlyBetter(i,b,a) for some i
+
+First-Welfare conditions
+  equilibrium(p,a)
+  feasible(a)
+  no strictly preferred affordable alternative
+  every Pareto improvement is affordable for a strictly improving agent
+             |
+             v
+       ParetoOptimal(a)
+```
+
+The resulting `megaFirstWelfareTheorem` is a genuine contradiction proof: the strictly improving agent's affordable bundle is prohibited by equilibrium demand optimality. This avoids treating monotonicity or local nonsatiation as a magical algebraic identity.
+
+The reverse direction is separately represented by `MegaSecondWelfareTheoremConditions`: a Pareto-optimal allocation must come with an explicit supporting-price/redistribution witness that makes it an equilibrium. The resulting `megaSecondWelfareTheorem` produces that supporting price and equilibrium witness.
+
+Thus the equality claim is conditional on two independent directions:
+
+```text
+First direction:
+  FirstWelfareConditions
+    -> Equilibrium -> ParetoOptimal
+
+Second direction:
+  SupportingPrice/RedistributionConditions
+    -> ParetoOptimal -> Equilibrium
+
+Only when BOTH witnesses are supplied:
+  Equilibrium <-> ParetoOptimal
+```
+
+In particular, monotonicity/local nonsatiation is not encoded as sufficient for equality. Standard welfare-theorem presentations use local nonsatiation (with market/budget structure) for the first direction, while reverse implementation additionally requires conditions such as continuity, convexity/separation, and an appropriate redistribution/endowment mechanism.
+
+The global-square composition therefore carries `welfareAdapter` as an explicit implication and `completenessWitness` as its instantiated Pareto result. It does not manufacture either welfare direction from the GRU conjugacy or equilibrium square.
