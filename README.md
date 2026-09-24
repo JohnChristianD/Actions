@@ -142,25 +142,14 @@ The following graph is derived from the actual record declarations and their dir
 38. AbsorbingFiniteEquilibriumTheorem
 39. HardSparseAbsorbingPrefixTheorem
 42. FiniteRankStabilityCertificate
-43. FiniteNonIIDWalrasianEquilibrium
-44. FiniteTUShapleyAllocationEquilibrium
 45. CanonicalPolymorphicSparsemaxCompositionTheorem
     +-- depends on: RecurrentPrefixMonoidHomomorphism, S4PlusS5RecurrentScanTheorem
-46. ContinuousStationaryMarkovWalrasianData
 47. DirectProductFiniteAutomatonComposition
 48. OffPolicyFunctionApproximationStabilityBoundary
     +-- depends on: ContinuousLeftInverseTheorem
-49. MarkovStationaryWalrasianCompositionTheorem
-    +-- depends on: RecurrentAssociativeScanTheorem, ContinuousLeftInverseTheorem, ContinuousStationaryMarkovWalrasianData, DirectProductFiniteAutomatonComposition, OffPolicyFunctionApproximationStabilityBoundary
 50. ExactReconstructionOnImage
 51. GlobalConjugacyEquivalence
-52. GeneralizedWalrasianEquilibrium
-    +-- depends on: ContinuousStationaryMarkovWalrasianData
-53. ConjugateWalrasianTransport
-    +-- depends on: ContinuousStationaryMarkovWalrasianData, ExactReconstructionOnImage, GeneralizedWalrasianEquilibrium
 54. BairdSevenStarProblem
-55. NonIIDMarkovWalrasianProblem
-    +-- depends on: ContinuousStationaryMarkovWalrasianData
 56. Majority3ShapleyEquilibrium
 57. CanonicalGlobalTokenConjugacyTheorem
 58. ExactFunctionIsomorphismTransportTheorem
@@ -304,11 +293,14 @@ These are formal structural correspondences. They are not claims of empirical la
 
 ## Generalized Walrasian benchmark boundary
 
-The repository exposes one canonical mega-generalized equilibrium edge: `MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium`. It packages Walrasian, Arrow-Debreu, and KKT predicates over a shared carrier with explicit bridge witnesses. It deliberately does not hard-code finite-dimensional vectors, `Fin n`, `Vec`, continuity, differentiability, convexity, or any other narrower representation into the edge.
+The repository exposes one canonical mega-generalized equilibrium edge: `MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium`. It is an explicit Agda proof surface, not an implicit graph label. Its arbitrary carriers cover agent, commodity, price, and allocation spaces; one general equilibrium witness yields explicit Walrasian, Arrow-Debreu, and KKT corollaries through supplied bridge laws. No `Fin n`, `Vec`, finite-agent, finite-commodity, continuity, differentiability, convexity, monotonicity, or free-disposal restriction is baked into the edge.
 
-The external benchmark is `danlyng/Econlib`. Its equilibrium implementation is useful as a classical Arrow-Debreu/Walrasian benchmark, but it is not a proof oracle and is not the completeness boundary for this repository's e-graph/A* search. Broader equilibrium literature can supply search inputs, but those variants are not maintained as separate current graph candidates: the repository promotes them only by strengthening the single mega-generalized edge with explicit Agda semantics and witnesses.
+Specific finite, Markov-stationary, non-iid, regularity-free, and Hodge-Maxwell/Tsallis projection Walrasian edges are pruned from the canonical dependency graph. They are not parallel current theorem dependencies. Future equilibrium breadth is promoted by strengthening this single mega edge with explicit Agda semantics and witnesses, then consumed by the connected GRU/Hodge-Maxwell/Tsallis composition.
 
-The graph therefore distinguishes three layers: external literature as benchmark/search input, the single mega-generalized Agda equilibrium contract, and composed theorem edges only where an actual Agda consumer exists. No external existence result is silently converted into a local proof term.
+The Podczeck–Yannelis 2024 result is a useful breadth benchmark: it proves Walrasian existence for an infinite-dimensional commodity space while allowing discontinuous, non-ordered, interdependent preferences and no free disposal, under explicit assumptions. It therefore supports the direction of the generalized contract, but it is not itself an Agda proof term or a license to remove the assumptions from a local theorem. citeturn1view0
+
+Econlib remains a benchmark/reference implementation rather than a completeness oracle for the repository's e-graph/A* search. External equilibrium results are search inputs; the Agda term and its actual consuming edge remain authoritative.
+
 
 ## Exactness policy
 
