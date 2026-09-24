@@ -7834,3 +7834,260 @@ finiteEconomicEquilibriumClosureGraph =
     Set
     Set
     Set
+
+
+------------------------------------------------------------------------
+-- NormPair quotient/factor transition closure.
+--
+-- The NormPair coordinate is an explicit replacement orbit.  The orbit
+-- relation is an actual Agda relation on the full learner state, policy
+-- readout factors through that relation, and canonicalFullStep respects
+-- the relation.  This closes the NormPair quotient/transition seam
+-- without asserting the stronger HardSign finite-automaton realization.
+------------------------------------------------------------------------
+
+applyNormPairReplacements :
+  ∀ {A : Set} →
+  List C.NormPair →
+  C.FullLearnerState A →
+  C.FullLearnerState A
+applyNormPairReplacements [] s = s
+applyNormPairReplacements (n ∷ ns) s =
+  applyNormPairReplacements ns (C.replaceNorm s n)
+
+normPairReplacementRelation :
+  ∀ {A : Set} →
+  C.FullLearnerState A →
+  C.FullLearnerState A →
+  Set
+normPairReplacementRelation s t =
+  Σ C.NormPair (λ n → C.replaceNorm s n ≡ t)
+
+applyNormPairReplacements-collapse :
+  ∀ {A : Set}
+  (s : C.FullLearnerState A)
+  (ns : List C.NormPair) →
+  Σ C.NormPair
+    (λ n → C.replaceNorm s n
+      ≡ applyNormPairReplacements ns s)
+applyNormPairReplacements-collapse s [] =
+  C.norm s , refl
+applyNormPairReplacements-collapse s (n ∷ ns)
+  with applyNormPairReplacements-collapse
+    (C.replaceNorm s n)
+    ns
+... | m , eq = m , eq
+
+normPairReplacementRelation-generated :
+  ∀ {A : Set}
+  (s t : C.FullLearnerState A) →
+  (Σ (List C.NormPair)
+    (λ ns →
+      applyNormPairReplacements ns s ≡ t)) →
+  normPairReplacementRelation s t
+normPairReplacementRelation-generated s t (ns , eq)
+  with applyNormPairReplacements-collapse s ns
+... | n , collapse =
+  n , trans collapse eq
+
+normPairReplacementRelation-refl :
+  ∀ {A : Set}
+  (s : C.FullLearnerState A) →
+  normPairReplacementRelation s s
+normPairReplacementRelation-refl s =
+  C.norm s , refl
+
+normPairReplacementRelation-sym :
+  ∀ {A : Set}
+  {s t : C.FullLearnerState A} →
+  normPairReplacementRelation s t →
+  normPairReplacementRelation t s
+normPairReplacementRelation-sym (n , eq) =
+  C.norm _ ,
+  trans
+    (sym
+      (cong
+        (λ x → C.replaceNorm x (C.norm _))
+        eq))
+    refl
+
+normPairReplacementRelation-trans :
+  ∀ {A : Set}
+  {s t u : C.FullLearnerState A} →
+  normPairReplacementRelation s t →
+  normPairReplacementRelation t u →
+  normPairReplacementRelation s u
+normPairReplacementRelation-trans
+  (n , st)
+  (m , tu) =
+  m ,
+  trans
+    (cong
+      (λ x → C.replaceNorm x m)
+      st)
+    tu
+
+canonicalPolicy-factors-through-NormPair :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  {s t : C.FullLearnerState A} →
+  normPairReplacementRelation s t →
+  C.canonicalPolicy K t ≡ C.canonicalPolicy K s
+canonicalPolicy-factors-through-NormPair
+  K
+  (n , eq) =
+  trans
+    (sym (cong (C.canonicalPolicy K) eq))
+    (C.canonicalPolicy-norm-invariant _ _ n)
+
+canonicalNormPairQuotient-step-compatible :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  {s t : C.FullLearnerState A} →
+  normPairReplacementRelation s t →
+  normPairReplacementRelation
+    (C.canonicalFullStep K s)
+    (C.canonicalFullStep K t)
+canonicalNormPairQuotient-step-compatible
+  K
+  (n , eq) =
+  n ,
+  trans
+    (sym (canonicalFullStep-replaceNorm K _ n))
+    (cong (C.canonicalFullStep K) eq)
+
+canonicalNormPairQuotient-iterate-compatible :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (n : Nat)
+  {s t : C.FullLearnerState A} →
+  normPairReplacementRelation s t →
+  normPairReplacementRelation
+    (C.iterateCanonical K n s)
+    (C.iterateCanonical K n t)
+canonicalNormPairQuotient-iterate-compatible
+  K
+  zero
+  relation =
+  relation
+canonicalNormPairQuotient-iterate-compatible
+  K
+  (suc n)
+  relation =
+  canonicalNormPairQuotient-iterate-compatible
+    K
+    n
+    (canonicalNormPairQuotient-step-compatible K relation)
+
+record CanonicalNormPairQuotientFactorTransitionTheorem : Set₁ where
+  constructor canonicalNormPairQuotientFactorTransitionTheorem
+  field
+    generatedOrbit :
+      ∀ {A : Set}
+      (s t : C.FullLearnerState A) →
+      (Σ (List C.NormPair)
+        (λ ns →
+          applyNormPairReplacements ns s ≡ t)) →
+      normPairReplacementRelation s t
+
+    quotientReflexive :
+      ∀ {A : Set}
+      (s : C.FullLearnerState A) →
+      normPairReplacementRelation s s
+
+    quotientSymmetric :
+      ∀ {A : Set}
+      {s t : C.FullLearnerState A} →
+      normPairReplacementRelation s t →
+      normPairReplacementRelation t s
+
+    quotientTransitive :
+      ∀ {A : Set}
+      {s t u : C.FullLearnerState A} →
+      normPairReplacementRelation s t →
+      normPairReplacementRelation t u →
+      normPairReplacementRelation s u
+
+    policyFactors :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      {s t : C.FullLearnerState A} →
+      normPairReplacementRelation s t →
+      C.canonicalPolicy K t ≡ C.canonicalPolicy K s
+
+    transitionCompatible :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      {s t : C.FullLearnerState A} →
+      normPairReplacementRelation s t →
+      normPairReplacementRelation
+        (C.canonicalFullStep K s)
+        (C.canonicalFullStep K t)
+
+    iterateCompatible :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      (n : Nat)
+      {s t : C.FullLearnerState A} →
+      normPairReplacementRelation s t →
+      normPairReplacementRelation
+        (C.iterateCanonical K n s)
+        (C.iterateCanonical K n t)
+
+canonical-normPair-quotient-factor-transition-theorem :
+  CanonicalNormPairQuotientFactorTransitionTheorem
+canonical-normPair-quotient-factor-transition-theorem =
+  canonicalNormPairQuotientFactorTransitionTheorem
+    normPairReplacementRelation-generated
+    normPairReplacementRelation-refl
+    normPairReplacementRelation-sym
+    normPairReplacementRelation-trans
+    canonicalPolicy-factors-through-NormPair
+    canonicalNormPairQuotient-step-compatible
+    canonicalNormPairQuotient-iterate-compatible
+
+------------------------------------------------------------------------
+-- Unconditional generalized-equilibrium existence boundary.
+--
+-- MegaGeneralizedWalrasianEquilibrium is a contract carrying arbitrary
+-- equilibrium and characterization predicates.  With no economic
+-- existence assumptions or witness, the contract admits a model whose
+-- equilibrium predicate is empty.  Therefore a universal existence
+-- theorem cannot be derived from this contract alone.
+------------------------------------------------------------------------
+
+megaNoEquilibriumGeneralizedWalrasian :
+  MegaGeneralizedWalrasianEquilibrium ⊤ ⊤ ⊤
+megaNoEquilibriumGeneralizedWalrasian =
+  megaGeneralizedWalrasianEquilibrium
+    (λ _ → tt)
+    (λ _ _ → ⊥)
+    (λ _ _ → ⊥)
+    (λ ())
+
+megaNoEquilibriumWitness :
+  ¬ Σ ⊤
+    (λ p → Σ ⊤
+      (λ a →
+        equilibrium
+          megaNoEquilibriumGeneralizedWalrasian
+          p
+          a))
+megaNoEquilibriumWitness
+  (p , a , witness) =
+  witness
+
+noUnconditionalMegaGeneralizedWalrasianExistence :
+  ¬
+    (∀ {State Price Allocation : Set}
+      (D : MegaGeneralizedWalrasianEquilibrium
+        State Price Allocation) →
+      Σ Price
+        (λ p →
+          Σ Allocation
+            (λ a → equilibrium D p a)))
+noUnconditionalMegaGeneralizedWalrasianExistence
+  theorem =
+  megaNoEquilibriumWitness
+    (theorem megaNoEquilibriumGeneralizedWalrasian)
+\n
