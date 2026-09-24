@@ -147,3 +147,39 @@ topological fixed point
 This is a real Agda derivation, but it is deliberately conditional. It does not claim Brouwer or Kakutani from the learner's discrete topology. The convergence witness and the fixed-point-to-equilibrium bridge remain explicit proof inputs. The unattended graph can therefore promote this route as a proved conditional composition while keeping classical convex/separation existence as a separate frontier.
 
 The architecture remains unchanged: economic proofs stay in TheoremsMonolith.agda; CanonicalLearnerMonolith.agda remains the intentionally separated learner source.
+
+
+### End-to-end single-pass unattended unconditional target
+
+The complete target graph is now explicit:
+
+```
+Economic primitives
+  -> demand + competitive supply
+  -> aggregate balance + market clearing
+  -> economic update operator
+  -> convergence from economic assumptions
+  -> TopologicalConvergenceWitness
+  -> FixedPointExistenceFromConvergence
+  -> fixed-point witness
+  -> fixed-point -> equilibrium from economic primitives
+  -> GeneralizedWalrasianExistence
+```
+
+The two edges marked `FRONTIER` are the only local mathematical gaps in this target route:
+
+1. `economic update operator -> TopologicalConvergenceWitness`: the repository currently has convergence/fixed-point witness types, but no theorem deriving convergence from the economic primitives.
+2. `fixed-point witness -> GeneralizedWalrasianFixedPointClosure`: the current bridge is a supplied record, not a theorem deriving equilibrium from primitive economic assumptions.
+
+The existing conditional route remains closed:
+
+```
+TopologicalConvergenceWitness
+  -> FixedPointExistenceFromConvergence
+  -> GeneralizedWalrasianFixedPointClosure
+  -> GeneralizedWalrasianExistence
+```
+
+Therefore this branch deliberately does not relabel the unconditional target as proved. The unattended graph is complete, while CI must keep the target blocked until both frontier proofs are present.
+
+The cross-repository Econlib existence theorem is also an evidence source, not a local proof. The CI cross-repository check confirms that `Economy.exists_equilibrium` exists upstream, but the local generalized/interdependent allocation semantics still require an explicit adapter before that result can be promoted into the local Agda proof authority.
