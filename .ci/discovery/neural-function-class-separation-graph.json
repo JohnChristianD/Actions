@@ -1507,25 +1507,6 @@
         ]
       ],
       "reason_not_promoted": "the current exact surfaces provide transport and explicit factorization only; they do not prove belief sufficiency, filtering convergence, or optimality"
-    },
-    {
-      "node": "WalrasianRegularityRemovalCandidate",
-      "status": "TRANSPORTABLE",
-      "premises_needed": [
-        "explicit stationary aggregate equality",
-        "static Walrasian witness"
-      ],
-      "dependency_edges": [
-        [
-          "RegularityFreeWalrasianData",
-          "WalrasianRegularityRemovalCandidate"
-        ],
-        [
-          "RegularityFreeWalrasianEquilibrium",
-          "WalrasianRegularityRemovalCandidate"
-        ]
-      ],
-      "reason_not_promoted_as_unconditional": "removing continuity changes the theorem contract; the relaxed result is admitted only with explicit static and stationarity witnesses"
     }
   ],
   "algebraic_carrier_upgrade": {
@@ -1585,7 +1566,7 @@
     "infinite_dimensional_boundary": "Infinite-dimensional Maxwell results may enter through the carrier-polymorphic connected surface when an explicit dimension predicate/witness is supplied. The graph must not infer vector-space dimension, separability, basis existence, or PDE solvability from Set alone.",
     "case_collapse_rule": "No finite/infinite Maxwell compatibility theorem is admitted as a graph node. Carrier-specific evidence may be supplied directly to the single carrier-agnostic composition surface.",
     "ci_policy": "Do not remove or cancel existing CI theorem registrations while collapsing graph promotion surfaces; add the unified theorem names and retain source-compatible adapters.",
-    "assumption_relaxation_boundary": "RegularityFreeWalrasianData removes continuity from the data contract, while RegularityFreeWalrasianEquilibrium makes stationarity an explicit witness. Search may propose weaker-premise compositions, but Agda admits them only when the replacement premise is present."
+    "assumption_relaxation_boundary": "Walrasian/KKT/Arrow-Debreu generalization is represented by the single MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium contract. Search may use external variants as research input, but no separate weaker-premise Walrasian candidate is promoted without an actual Agda consumer."
   },
   "pruning_policy_v10": {
     "removed_from_canonical_path": [
