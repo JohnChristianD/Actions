@@ -465,7 +465,9 @@ graph_required_theorems = [
     "economicEquilibriumExistenceFromConvergentFixedPoint",
     "GeneralizedWalrasianFixedPointClosure",
     "generalizedWalrasianExistence-from-topological-fixed-point",
-    "generalizedWalrasianExistence-from-topological-fixed-point-transport"
+    "generalizedWalrasianExistence-from-topological-fixed-point-transport",
+    "EconomicConvergenceFromPrimitiveAssumptions",
+    "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions"
 ].
 
 :- func graph_required_subcompositions = list(string).
@@ -557,3 +559,15 @@ graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_exact_prefix_horiz
         Laws,
         Plan).
 
+
+
+:- func graph_unconditional_target_edges = list(string).
+graph_unconditional_target_edges = [
+    "EconomicStructure -> demand + competitive supply",
+    "demand + competitive supply -> aggregate balance + market clearing",
+    "aggregate balance + market clearing -> economic update operator",
+    "economic update operator -> TopologicalConvergenceWitness [FRONTIER]",
+    "TopologicalConvergenceWitness -> FixedPointExistenceFromConvergence",
+    "fixed-point witness -> GeneralizedWalrasianFixedPointClosure [FRONTIER]",
+    "GeneralizedWalrasianExistence -> unconditional existence target"
+].
