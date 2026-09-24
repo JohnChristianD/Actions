@@ -5768,17 +5768,208 @@ pomdpWalrasianBeliefEquilibriumClosure-from-witness
 
 
 ------------------------------------------------------------------------
--- Unified GRU / Hodge-Maxwell / Tsallis / Walrasian / POMDP closure.
+-- Mega-interdependent GRU / Mega-Walrasian global-square completion.
 --
--- Tsallis remains fully generalized: the composition consumes the existing
--- carrier-polymorphic Hodge-Maxwell/Tsallis divergence composition directly.
--- There is no q=2 specialization, finite-cardinality carrier, or Vec-based
--- representation in this closure.
+-- The square is a single generalized equilibrium surface.  Arrow-Debreu,
+-- KKT, and Walrasian labels are not separate semantic nodes.  The economic
+-- state is encoded into the GRU carrier, read back exactly, and the square
+-- commutes with the selected state dynamics.  Injectivity is derived from
+-- the left-inverse law rather than postulated separately.
+------------------------------------------------------------------------
+
+record MegaWalrasianGlobalSquareConjugacy
+  (Economic GRU Equilibrium : Set)
+  (encode : Economic → GRU)
+  (readout : GRU → Economic)
+  (equilibriumMap : Economic → Equilibrium)
+  (carrierEquilibriumMap : GRU → Equilibrium)
+  (economicStep : Economic → Economic)
+  (gruStep : GRU → GRU) : Set₁ where
+  constructor megaWalrasianGlobalSquareConjugacy
+  field
+    readoutEncode :
+      ∀ x → readout (encode x) ≡ x
+    stateConjugacy :
+      ∀ x →
+      encode (economicStep x) ≡
+      gruStep (encode x)
+    equilibriumSquare :
+      ∀ x →
+      carrierEquilibriumMap (encode x) ≡
+      equilibriumMap x
+
+open MegaWalrasianGlobalSquareConjugacy public
+
+megaWalrasianGlobalSquare-injective :
+  ∀ {Economic GRU Equilibrium : Set}
+  {encode : Economic → GRU}
+  {readout : GRU → Economic}
+  {equilibriumMap : Economic → Equilibrium}
+  {carrierEquilibriumMap : GRU → Equilibrium}
+  {economicStep : Economic → Economic}
+  {gruStep : GRU → GRU}
+  (square :
+    MegaWalrasianGlobalSquareConjugacy
+      Economic
+      GRU
+      Equilibrium
+      encode
+      readout
+      equilibriumMap
+      carrierEquilibriumMap
+      economicStep
+      gruStep) →
+  ∀ {x y} →
+  encode x ≡ encode y →
+  x ≡ y
+megaWalrasianGlobalSquare-injective square {x} {y} collision =
+  trans
+    (sym (readoutEncode square x))
+    (trans
+      (cong (readout square) collision)
+      (readoutEncode square y))
+
+------------------------------------------------------------------------
+-- Equilibrium-preserving transport and the welfare seam.
 --
--- The Walrasian seam is likewise witness-driven.  The composition consumes
--- a regularity-free equilibrium contract rather than treating Econlib's
--- finite/regular Arrow-Debreu implementation as an oracle for the Agda
--- theorem surface.
+-- Welfare is intentionally a separate implication layer.  The generalized
+-- equilibrium carrier does not assert monotonicity, local nonsatiation,
+-- convexity, differentiability, or free disposal.  A Pareto conclusion is
+-- therefore accepted only through an explicit welfare-assumption witness.
+------------------------------------------------------------------------
+
+record MegaWalrasianEquilibriumWelfareAdapter
+  (Economic Equilibrium Pareto WelfareAssumptions : Set)
+  (equilibrium : Economic → Equilibrium)
+  (paretoOptimal : Economic → Pareto)
+  (welfareAssumptions : Economic → WelfareAssumptions) : Set₁ where
+  constructor megaWalrasianEquilibriumWelfareAdapter
+  field
+    firstWelfare :
+      ∀ x →
+      equilibrium x →
+      welfareAssumptions x →
+      paretoOptimal x
+
+open MegaWalrasianEquilibriumWelfareAdapter public
+
+------------------------------------------------------------------------
+-- The completed composition contract: global square, injectivity,
+-- generalized equilibrium preservation, and the one-way welfare implication.
+------------------------------------------------------------------------
+
+record MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
+  (Economic GRU Equilibrium Pareto WelfareAssumptions : Set)
+  (encode : Economic → GRU)
+  (readout : GRU → Economic)
+  (equilibriumMap : Economic → Equilibrium)
+  (carrierEquilibriumMap : GRU → Equilibrium)
+  (economicStep : Economic → Economic)
+  (gruStep : GRU → GRU)
+  (equilibrium : Economic → Equilibrium → Set)
+  (paretoOptimal : Economic → Set)
+  (welfareAssumptions : Economic → Set) : Set₁ where
+  constructor megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
+  field
+    square :
+      MegaWalrasianGlobalSquareConjugacy
+        Economic
+        GRU
+        Equilibrium
+        encode
+        readout
+        equilibriumMap
+        carrierEquilibriumMap
+        economicStep
+        gruStep
+
+    injective :
+      ∀ {x y} →
+      encode x ≡ encode y →
+      x ≡ y
+
+    equilibriumTransport :
+      ∀ {x : Economic} {e : Equilibrium} →
+      equilibrium x e →
+      equilibrium
+        (readout (encode x))
+        (carrierEquilibriumMap (encode x))
+
+    welfareAdapter :
+      ∀ {x : Economic} →
+      equilibriumMap x →
+      welfareAssumptions x →
+      paretoOptimal x
+
+    completenessWitness :
+      ∀ {x : Economic} {e : Equilibrium} →
+      equilibrium x e →
+      welfareAssumptions x →
+      paretoOptimal x
+
+open MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness public
+
+megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness :
+  ∀ {Economic GRU Equilibrium Pareto WelfareAssumptions : Set}
+  {encode : Economic → GRU}
+  {readout : GRU → Economic}
+  {equilibriumMap : Economic → Equilibrium}
+  {carrierEquilibriumMap : GRU → Equilibrium}
+  {economicStep : Economic → Economic}
+  {gruStep : GRU → GRU}
+  {equilibrium : Economic → Equilibrium → Set}
+  {paretoOptimal : Economic → Set}
+  {welfareAssumptions : Economic → Set}
+  (square :
+    MegaWalrasianGlobalSquareConjugacy
+      Economic
+      GRU
+      Equilibrium
+      encode
+      readout
+      equilibriumMap
+      carrierEquilibriumMap
+      economicStep
+      gruStep)
+  (welfare :
+    ∀ {x : Economic} →
+    equilibriumMap x →
+    welfareAssumptions x →
+    paretoOptimal x) →
+  MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
+    Economic
+    GRU
+    Equilibrium
+    Pareto
+    WelfareAssumptions
+    encode
+    readout
+    equilibriumMap
+    carrierEquilibriumMap
+    economicStep
+    gruStep
+    equilibrium
+    paretoOptimal
+    welfareAssumptions
+megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
+  square
+  welfare =
+  megaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
+    square
+    (megaWalrasianGlobalSquare-injective square)
+    (λ {x} {e} witness →
+      subst
+        (λ q → equilibrium q (carrierEquilibriumMap (encode x)))
+        (readoutEncode square x)
+        witness)
+    welfare
+    (λ {x} {e} equilibriumWitness welfareWitness →
+      welfare equilibriumWitness welfareWitness)
+
+------------------------------------------------------------------------
+-- Unified GRU / Hodge-Maxwell / Tsallis / generalized Walrasian / POMDP
+-- closure.  The equilibrium dependency is now the single generalized
+-- relation; no separate Arrow-Debreu/KKT/Walrasian theorem fields remain.
 ------------------------------------------------------------------------
 
 record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
@@ -5788,7 +5979,7 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
     ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
   (State Price Allocation : Set)
   (D :
-    GeneralizedWalrasianExistence
+    MegaGeneralizedWalrasianEquilibrium
       State
       Price
       Allocation)
@@ -5833,7 +6024,9 @@ record ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
       ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU
 
     walrasianEquilibrium :
-      equilibriumWitness D
+      ∀ {p' : Price} {a : Allocation} →
+      equilibrium D p' a →
+      equilibrium D p' a
 
     pomdpBeliefClosure :
       POMDPWalrasianBeliefEquilibriumClosure
@@ -5902,7 +6095,9 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem :
   (hodgeMaxwellTsallis :
     ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem GRU)
   (walrasianEquilibrium :
-    equilibriumWitness D)
+    ∀ {p' : Price} {a : Allocation} →
+    equilibrium D p' a →
+    equilibrium D p' a)
   (pomdpBeliefClosure :
     POMDPWalrasianBeliefEquilibriumClosure
       State
@@ -5953,3 +6148,4 @@ connected-gru-hodge-maxwell-tsallis-walrasian-pomdp-composition-theorem
     walrasianEquilibrium
     pomdpBeliefClosure
     allocationReadout
+
