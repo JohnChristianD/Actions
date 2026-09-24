@@ -3934,6 +3934,23 @@ isomorphismFixedPointTransport iso f g stepConjugacy a fixedPoint =
     (sym (stepConjugacy a))
     (isomorphismEqualityTransport iso fixedPoint)
 
+isomorphismIterateFixedPointTransport :
+  ∀ {A B : Set}
+  (iso : StateIsomorphism A B)
+  (f : A → A)
+  (g : B → B) →
+  (∀ a → to iso (f a) ≡ g (to iso a)) →
+  ∀ n a →
+  iterateIsomorphism f n a ≡ a →
+  iterateIsomorphism g n (to iso a) ≡ to iso a
+isomorphismIterateFixedPointTransport
+  iso f g stepConjugacy n a fixedPoint =
+  trans
+    (sym
+      (isomorphismIterateConjugacy
+        iso f g stepConjugacy n a))
+    (isomorphismEqualityTransport iso fixedPoint)
+
 record TransportedFixedPointExistence
   (A B : Set)
   (f : A → A)
