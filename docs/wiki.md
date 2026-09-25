@@ -57,6 +57,16 @@ The full learner connects those laws through the endogenous Watkins target and `
 
 The exact F4 forcing ray is separate: persistent specified forcing yields linear growth in the selected integer-valued optimizer coordinate. Linear drift is a generic property of persistent nonzero increments, so the mechanism is not unique to F4; what is specific is this F4/L2 update and its machine-checked discrete forcing theorem.
 
+## Why Mermaid, and what it is not
+
+Mermaid is a diagram-description DSL, not a pure typed functional programming language. A flowchart source names nodes, edges, labels, subgraphs, and presentation/layout directives; the Mermaid parser and renderer turn that declarative description into a diagram. The official syntax is organized around diagram types such as flowcharts, sequence diagrams, class diagrams, state diagrams, and ER diagrams. It has no role as proof authority and does not replace Agda's type system. Mermaid fits this repository because the topology is a human-readable graph projection that fits Markdown/GitHub documentation. Tcl or Lua could generate a graph, but that would make the repository own an unnecessary general-purpose program and runtime semantics instead of keeping the topology as a directly readable graph declaration. The choice is therefore about representation fit, not language-theoretic superiority.
+
+## What the F4 ray actually says
+
+The F4 ray theorem is an exact statement about the implemented discrete update under a specified persistent forcing pattern: the selected integer-valued optimizer coordinate advances by a fixed nonzero increment, hence grows linearly with the horizon. It is not a theorem that “F4 is an optimizer that diverges,” and it is not a convergence result in the opposite direction. The important boundary is persistent forcing plus the exact update rule.
+
+That mechanism is not unique in the broad sense. Adam uses adaptive first- and second-moment estimates; Lion uses signed momentum; IDBD adapts per-feature learning rates; and Zap-Q uses stochastic-approximation / matrix-gain machinery. These are materially different update mechanisms. Persistent nonzero increments or other sustained forcing can produce unbounded drift in many algorithms. What is specific to this repository is that the F4/L2 recurrence, its integer carrier, and the linear-growth consequence are all stated and checked exactly on the canonical learner. The optimizer comparison is about update mechanics, not a claim that these algorithms have identical dynamics or convergence behavior.
+
 ## Production-side topology
 
 The production-side contract uses standard economic vocabulary:
