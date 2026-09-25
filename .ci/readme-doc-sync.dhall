@@ -35,14 +35,7 @@ for raw in tracked:
     if not path.is_file():
         continue
 
-    text = path.read_text(encoding="utf-8", errors="replace")
-    title = None
-    for line in text.splitlines():
-        match = re.match(r"^#{1,6}\s+(.+?)\s*#*\s*$", line)
-        if match:
-            title = match.group(1).strip()
-            break
-    title = title or path.stem.replace("-", " ").replace("_", " ").title()
+    title = path.stem.replace("-", " ").replace("_", " ").title()
     title = title.replace("[", "\\[").replace("]", "\\]")
     docs.append((path.as_posix(), title))
 
