@@ -23,7 +23,7 @@ import sys
 readme, begin, end, mode = sys.argv[1:]
 root = Path(".")
 tracked = subprocess.check_output(
-    ["git", "ls-files", "*.md", "*.markdown"],
+    ["git", "ls-files", "docs/*.md", "docs/economics/*.md", "docs/research/*.md", "docs/*.markdown", "docs/economics/*.markdown", "docs/research/*.markdown"],
     text=True,
 ).splitlines()
 
@@ -58,7 +58,7 @@ lines = [
     begin,
     "",
     f"Generated from the tracked Markdown surface: {len(docs)} files.",
-    "The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents.",
+    "The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.",
     "",
 ]
 for group in sorted(groups):
