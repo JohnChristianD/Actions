@@ -3293,6 +3293,109 @@ nLabMaxwellIterateConjugacyClosed B =
     n
     s
 
+------------------------------------------------------------------------
+-- Single-file algebraic consistency package.
+--
+-- The statistical Law-IV representation and the nLab-guided four-law
+-- witness are already proved independently.  This package composes those
+-- existing proofs in this monolith: GRU injectivity, the closed four-law
+-- witness, one-step physics/learner transport, and exact iterate transport.
+-- It adds no physical inhabitant and no new axiom; an instance still requires
+-- the explicit semantic closure B above.
+------------------------------------------------------------------------
+
+record NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem
+  {Continuous : {A B : Set} → (A → B) → Set}
+  {W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous}}
+  {Current Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set}
+  (B :
+    NLabMaxwellFourLawSemanticallyClosed
+      W
+      Current
+      Variation
+      Action
+      Admissible
+      Stationary) : Set₁ where
+  constructor nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem
+  field
+    statisticalRepresentation :
+      CanonicalGRUStatisticalInjectivityTheorem
+    statisticalInjective :
+      ∀ {s t : C.GRUState} →
+      canonicalGRUStatisticalEncode s ≡
+      canonicalGRUStatisticalEncode t →
+      s ≡ t
+    statisticalStep :
+      ∀ (s : C.GRUState) (x : C.Int8) →
+      canonicalGRUStatisticalEncode (C.gruStep s x)
+      ≡
+      (C.gruStep s x ,
+       (λ _ → C.hiddenState (C.gruStep s x)))
+    fourLaw :
+      FourLawOneStepWitnessContract
+        C.CanonicalFullLearnerState
+        (MaxwellSolution
+          (semantics (hodgeRepresentation W)))
+        Current
+        Variation
+        Action
+        Admissible
+        Stationary
+        (C.canonicalFullStep (kernel B))
+        (step (semantics (hodgeRepresentation W)))
+    learnerSemantics :
+      CanonicalMARLLawCompositionTheorem
+    representation :
+      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+        C.CanonicalFullLearnerState
+    iterateTransport :
+      ∀ n s →
+      learnerToSolution W
+        (iterateStep
+          (C.canonicalFullStep (kernel B))
+          n
+          s)
+      ≡
+      iterateStep
+        (step (semantics (hodgeRepresentation W)))
+        n
+        (learnerToSolution W s)
+
+nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem-from-closed :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  {W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous}}
+  {Current Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set}
+  (B :
+    NLabMaxwellFourLawSemanticallyClosed
+      W
+      Current
+      Variation
+      Action
+      Admissible
+      Stationary) →
+  NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem B
+nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem-from-closed B =
+  nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem
+    canonical-gru-statistical-injectivity-theorem
+    canonicalGRUStatisticalEncodeInjective
+    canonicalGRUStatisticalStepConsequence
+    (nLabMaxwellFourLawOneStepClosed B)
+    (learnerSemantics W)
+    (hodgeRepresentation W)
+    (nLabMaxwellIterateConjugacyClosed B)
+
 
 ------------------------------------------------------------------------
 -- Repository-wide semantic e-graph/A* closure.
