@@ -166,3 +166,37 @@ This is the strongest closure justified by the primary sources and the present t
 ## Knowledge-surface pruning — 2026-09-25
 
 The obsolete branch-local wiki, the superseded nLab candidate note, and the unfinished Maxwell implementation plan are pruned from the maintained documentation surface. Their durable conclusions are retained here and in README.md: the typed Maxwell semantic boundary is proved as an adapter layer, while concrete Law-I current preservation and Law-III variational inhabitance remain separate physical obligations.
+
+## 2026-09-25 expanded source pass
+
+The expanded pass checked current authoritative pages across nLab, the Stanford Encyclopedia of Philosophy, Wikipedia, and tsallis.com.
+
+### nLab
+
+- Noether's theorem: continuous/variational symmetries yield conserved currents on the dynamical shell.
+- Conserved current: a current is horizontally closed on the Euler-Lagrange shell; charges arise by integration over codimension-one slices.
+- Maxwell's equations: the electromagnetic field/current equations are presented directly, including differential-form formulations.
+- Hodge-Maxwell theorem: under its stated compact/oriented/Riemannian and exact-current hypotheses, a closed representative satisfying the inhomogeneous Maxwell equation exists uniquely in each cohomology class.
+- Action functional / Euler-Lagrange equation: action critical loci encode physically realized configurations; Maxwell's equations are listed as an Euler-Lagrange example.
+
+These sources support the semantic shape of the repository adapters. They do not supply the repository-specific discrete current-preservation equality, learner/solution inverse, or learner/physical step-conjugacy witnesses.
+
+### Stanford Encyclopedia of Philosophy
+
+The current Gauge Theories in Physics entry gives Maxwell's modern variables and equations, explicitly including conserved current, and explains the classical Lagrangian/Noether relation: Lagrangian symmetries yield conserved currents on solutions; the QED Euler-Lagrange equation produces the inhomogeneous Maxwell equation. This is an independent conceptual cross-check for the Noether and variational adapters.
+
+### Wikipedia
+
+The Maxwell equations entry records charge conservation as a consequence of Maxwell's equations. The electromagnetic tensor entry gives the field Euler-Lagrange route to the inhomogeneous Maxwell equation. The Euler-Lagrange and Noether entries provide the general variational/conservation background. These are cross-checks, not Agda proof sources.
+
+### Tsallis / statistical-information boundary
+
+tsallis.com describes Tsallis entropy as a one-parameter generalization of Boltzmann-Gibbs-Shannon entropy and emphasizes its nonadditive composition. Wikipedia's Tsallis entropy/statistics pages provide the q-logarithm/q-exponential and nonadditivity background. The repository's TsallisStatisticalRepresentation.agda remains deliberately carrier-polymorphic and arithmetic-free: it proves injectivity from an explicit decode-after-encode law rather than importing statistical literature as an axiom.
+
+### Semantic conclusion
+
+The expanded literature pass strengthens the semantic adapters but does not close the repository-specific physical existence boundary. The correct unconditional closure is:
+
+supplied sound Agda semantic family → sound e-graph path → exact endpoint equality
+
+with A* costs/heuristics used only for traversal. Physical Law-I/Law-III inhabitance remains an explicit typed input to NLabMaxwellSemanticClosure.
