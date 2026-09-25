@@ -7,11 +7,11 @@
 -- and spectral convention are explicit inputs.  The module does not
 -- manufacture a physical ZPF inhabitant.
 --
--- The omega^3 law is represented by an explicit spectral-density carrier:
--- a concrete instantiation decides the frequency measure and normalization
--- (for example, per unit angular frequency).  This keeps the formal
--- statement honest about convention without introducing a new arithmetic
--- dependency into the repository.
+-- The omega^3 law is represented by an explicit frequency multiplication
+-- operation, a proof that omegaCubed is the triple product, and a
+-- spectral-density normalization carrier.  A concrete instantiation decides
+-- the frequency measure and normalization (for example, per unit angular
+-- frequency) without introducing a new arithmetic dependency here.
 --
 -- Once a ZPF -> canonical-GRU statistical representation supplies
 -- decode (encode z) == z, global injectivity follows from the existing
