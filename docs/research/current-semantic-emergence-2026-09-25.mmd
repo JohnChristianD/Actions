@@ -124,6 +124,16 @@ flowchart TD
   HI -. "cannot discharge" .-> W
   GI -. "cannot discharge" .-> W
 
+  subgraph AGDA_EGRAPH["Complete surviving Agda semantic e-graph / A* closure"]
+    AF["RepositoryAgdaModule: all surviving FullCoupled Agda files"] --> ASF["Supplied sound semantic family"]
+    ASF --> EGP["Sound e-graph semantic path"]
+    EGP --> AST["A*-guided traversal
+(cost/heuristic metadata only)"]
+    AST --> EEQ["Exact semantic endpoint equality [UNCONDITIONAL]"]
+  end
+  NBP --> ASF
+  IMP -. "physical witness semantics remain typed inputs" .-> ASF
+
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
     B0["nLab semantic packaging = PROVED Agda adapters; it does not itself supply physical witness inhabitants"]
     B1["Law I = exact representation property, conditional on inverse witness + current/trajectory compatibility"]
