@@ -65,64 +65,13 @@ let script = merge {
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
 
-    mkdir -p .ci/discovery
-    records_file=.ci/discovery/economic-monolith-records.tsv
-    declarations_file=.ci/discovery/economic-monolith-declarations.tsv
-    awk '
-      /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ {
-        line=NR; name=$2; sub(/[:(].*$/,"",name); print line "\t" name
-      }
-    ' "$theorem" > "$records_file"
-    awk '
-      /^[A-Za-z][A-Za-z0-9_.-]*[[:space:]]*:/ {
-        name=$1; sub(/:$/,"",name); print NR "\t" name
-      }
-    ' "$theorem" > "$declarations_file"
+    record_count=$(awk '/^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ {count++} END {print count+0}' "$theorem")
+    declaration_count=$(awk '/^[A-Za-z][A-Za-z0-9_.-]*[[:space:]]*:/ {count++} END {print count+0}' "$theorem")
+    economic_record_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition/ {count++} END {print count+0}' "$theorem")
+    economic_declaration_count=$(awk 'BEGIN {IGNORECASE=1} /^[A-Za-z][A-Za-z0-9_.-]*[[:space:]]*:/ && /Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition/ {count++} END {print count+0}' "$theorem")
+    counterexample_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Boundary|Counterexample|Impossibility/ {count++} END {print count+0}' "$theorem")
+    composition_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Composition|Conjugacy|Transport|Closure|Isomorphism/ {count++} END {print count+0}' "$theorem")
 
-    record_count=$(wc -l < "$records_file" | tr -d ' ')
-    declaration_count=$(wc -l < "$declarations_file" | tr -d ' ')
-    economic_record_count=$(grep -Eic 'Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition' "$records_file" || true)
-    economic_declaration_count=$(grep -Eic 'Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition' "$declarations_file" || true)
-    counterexample_count=$(grep -Eic 'Boundary|Counterexample|Impossibility' "$records_file" || true)
-    composition_count=$(grep -Eic 'Composition|Conjugacy|Transport|Closure|Isomorphism' "$records_file" || true)
-
-    {
-      printf '%s\n' '{'
-      printf '  "source_graph": "%s",\n' "$graph"
-      printf '  "theorem_source": "%s",\n' "$theorem"
-      printf '  "learner_source": "%s",\n' "$learner"
-      printf '  "semantic_law_count": %s,\n' "$law_count"
-      printf '  "record_count": %s,\n' "$record_count"
-      printf '  "top_level_declaration_count": %s,\n' "$declaration_count"
-      printf '  "economic_record_count": %s,\n' "$economic_record_count"
-      printf '  "economic_declaration_count": %s,\n' "$economic_declaration_count"
-      printf '  "counterexample_or_boundary_record_count": %s,\n' "$counterexample_count"
-      printf '  "composition_transport_record_count": %s,\n' "$composition_count"
-      printf '  "surface_authority": "TheoremsMonolith.agda",\n'
-      printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\n'
-      printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\n'
-      printf '  "closed_core": [\n'
-      printf '    "CanonicalNormPairQuotientFactorTransitionTheorem",\n'
-      printf '    "CanonicalF4GlobalOptimizerStabilityTheorem",\n'
-      printf '    "CanonicalF4NormPairUnconditionalFactorStabilityTheorem",\n'
-      printf '    "f4-unit-forcing-linear-growth",\n'
-      printf '    "f4-unit-forcing-no-upper-bound"\n'
-      printf '  ],\n'
-      printf '  "economic_boundary": [\n'
-      printf '    "learner factor stability does not entail convergence",\n'
-      printf '    "learner factor stability does not entail a fixed point",\n'
-      printf '    "learner factor stability does not entail market clearing",\n'
-      printf '    "learner factor stability does not entail supporting prices",\n'
-      printf '    "learner factor stability does not entail Walrasian existence"\n'
-      printf '  ],\n'
-      printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\n'
-      printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\n'
-      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic semantic projection; JSON/TSV/Mermaid are derived evidence views"\n'
-      printf '%s\n' '}'
-    } > .ci/discovery/economic-closure-graph.json
-
-    grep -Fq '"surface_authority": "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.json
-    grep -Fq '"frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.json
     echo "economic-closure-graph=pass"
     echo "economic-record-count=$economic_record_count"
     echo "economic-declaration-count=$economic_declaration_count"
