@@ -253,3 +253,14 @@ The plan separates five proof seams: freeze the concrete carrier mapping; prove 
 No Agda witness is claimed by this planning change. The graph remains `FRONTIER` until the concrete current-preservation equality and variational stationarity fields are actually inhabited and verified under `--safe`.
 
 Stale when: the concrete Maxwell carrier mapping, witness contracts, or the implementation plan path changes.
+
+
+## Concrete Maxwell witness boundary — 2026-09-25
+
+The first implementation slice freezes the specialized semantic boundary before adding production Agda witness code. The existing Hodge-Maxwell `Solution` carrier is the only justified candidate for the four-law `PhysicalState`; `Form3) is the candidate current carrier via `fieldJ`. The Law-I obligation is therefore a concrete theorem of the form `fieldJ (trajectory p) ≡ fieldJ p`, not merely the differential-form conservation statement `d j = 0`.
+
+For Law III, the candidate remains a genuine Maxwell action/Lagrangian with a nontrivial field variation, explicit admissibility conditions, and a proved Euler–Lagrange/stationarity predicate on the same solution carrier. The implementation deliberately does not introduce a constant variation or an unconstrained stationarity predicate just to inhabit the record.
+
+The existing `canonical-physics-to-learner-transition-witness` remains the intended learner bridge and is reused conditionally rather than duplicated. A new design note records the carrier mapping and exact blockers in `docs/research/four-law-maxwell-witness-design-2026-09-25.md`.
+
+Knowledge delta for this batch: the concrete carrier boundary is now explicit; no semantic witness or closure claim has been added. The machine graph remains `FRONTIER_CONTRACT_ONLY` until both the current-preservation theorem and genuine variational stationarity semantics are inhabited and verified under `--safe`.
