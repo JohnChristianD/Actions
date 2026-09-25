@@ -130,9 +130,19 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLe
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
+Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
+
+The graph evidence stack is intentionally minimal: JSON is the machine-readable evidence/interchange layer; Mermaid is the human topology projection. TSV and CSV are not canonical topology formats. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do.
 
 The orchestration arrows are not mathematical implication arrows.
+
+## MARL, Hodge-Maxwell, and optimizer semantics
+
+The repository groups three existing exact learner laws as a useful MARL-facing explanation: recurrent-prefix scan composition, the F4 optimizer step law, and NormPair step invariance. They compose through the endogenous Watkins target and the GRU × F4 × NormPair prefix theorem; this is an exact semantic composition of the implemented learner, not a claim that MARL literature has a canonical “three laws” theorem with these names.
+
+The Hodge-Maxwell branch is a representation/conjugacy layer over that same transition. The continuous Hodge-Maxwell/GRU representation and `ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem` make the bridge explicit through inverse/representation and step-conjugacy data. The broader GRU/Hodge-Maxwell/Tsallis/Walrasian/POMDP composition remains bounded by its explicit economic relations and witnesses.
+
+The exact `f4-unit-forcing-linear-growth` theorem is a persistent-forcing result: a specified unit forcing produces linear growth in the selected integer-valued F4 coordinate. This is not unique to F4 as a mathematical mechanism—constant nonzero increments produce linear drift for many update rules—but the exact discrete F4/L2 forcing ray is a property of this implementation and is what the Agda proof establishes.
 
 ## Graph discipline
 
