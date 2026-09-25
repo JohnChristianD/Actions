@@ -27,4 +27,44 @@ canonicalGRUStatisticalDistinguishability : ∀ {s t : C.GRUState} → s ≢ t �
 canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonicalGRUStatisticalEncodeInjective collision)
 canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
 canonicalGRUStatisticalStepConsequence s x = refl
-\n------------------------------------------------------------------------\n-- Carrier-polymorphic Law-IV instance. The concrete canonical observation\n-- remains available above, while the injectivity mechanism is now supplied\n-- by the arithmetic-free representation kernel.\n------------------------------------------------------------------------\n\ncanonicalGRUTsallisCompatibleRepresentation :\n  TsallisCompatibleStatisticalRepresentation\n    C.GRUState\n    CanonicalGRUStatisticalObservation\ncanonicalGRUTsallisCompatibleRepresentation =\n  tsallisCompatibleStatisticalRepresentation\n    (carrierPolymorphicStatisticalRepresentation\n      canonicalGRUStatisticalEncode\n      canonicalGRUStatisticalDecode\n      canonicalGRUStatisticalDecodeEncode)\n\ncanonicalGRUTsallisCompatibleInjective :\n  ∀ {s t : C.GRUState} →\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) s\n  ≡\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) t →\n  s ≡ t\ncanonicalGRUTsallisCompatibleInjective =\n  tsallisCompatibleEncodeInjective\n    canonicalGRUTsallisCompatibleRepresentation\n\ncanonicalGRUTsallisCompatibleDistinguishability :\n  ∀ {s t : C.GRUState} →\n  s ≢ t →\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) s\n  ≢\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) t\ncanonicalGRUTsallisCompatibleDistinguishability =\n  tsallisCompatibleEncodeDistinguishes\n    canonicalGRUTsallisCompatibleRepresentation\n
+
+------------------------------------------------------------------------
+-- Carrier-polymorphic Law-IV instance. The concrete canonical observation
+-- remains available above, while the injectivity mechanism is now supplied
+-- by the arithmetic-free representation kernel.
+------------------------------------------------------------------------
+
+canonicalGRUTsallisCompatibleRepresentation :
+  TsallisCompatibleStatisticalRepresentation
+    C.GRUState
+    CanonicalGRUStatisticalObservation
+canonicalGRUTsallisCompatibleRepresentation =
+  tsallisCompatibleStatisticalRepresentation
+    (carrierPolymorphicStatisticalRepresentation
+      canonicalGRUStatisticalEncode
+      canonicalGRUStatisticalDecode
+      canonicalGRUStatisticalDecodeEncode)
+
+canonicalGRUTsallisCompatibleInjective :
+  ∀ {s t : C.GRUState} →
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) s
+  ≡
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) t →
+  s ≡ t
+canonicalGRUTsallisCompatibleInjective =
+  tsallisCompatibleEncodeInjective
+    canonicalGRUTsallisCompatibleRepresentation
+
+canonicalGRUTsallisCompatibleDistinguishability :
+  ∀ {s t : C.GRUState} →
+  s ≢ t →
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) s
+  ≢
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) t
+canonicalGRUTsallisCompatibleDistinguishability =
+  tsallisCompatibleEncodeDistinguishes
+    canonicalGRUTsallisCompatibleRepresentation
