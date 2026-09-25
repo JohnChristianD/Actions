@@ -9,15 +9,28 @@ let script = merge {
     '',
   AgdaTheorem = ''
     set -euo pipefail
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
     '',
   Mercury = ''
     set -euo pipefail
@@ -64,6 +77,7 @@ let script = merge {
     grep -Fq 'Repository-wide semantic e-graph closure' "$readme" || { echo "README stale or missing e-graph closure"; exit 1; }
     grep -Fq 'AStarSemanticClosure' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "A* semantic closure kernel missing"; exit 1; }
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
+    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
 
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
@@ -487,7 +501,14 @@ JSON
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
