@@ -16,12 +16,10 @@ esac
 
 python3 - "$README" "$BEGIN" "$END" "$MODE" <<'PY'
 from pathlib import Path
-import re
 import subprocess
 import sys
 
 readme, begin, end, mode = sys.argv[1:]
-root = Path(".")
 tracked = subprocess.check_output(
     ["git", "ls-files", "docs/*.md", "docs/economics/*.md", "docs/research/*.md", "docs/*.markdown", "docs/economics/*.markdown", "docs/research/*.markdown"],
     text=True,
@@ -35,7 +33,9 @@ for raw in tracked:
     if not path.is_file():
         continue
 
-    title = path.stem.replace("-", " ").replace("_", " ").title()
+    lines = path.read_text(encoding="utf-8").splitlines()
+    heading = next((line[2:].strip() for line in lines if line.startswith("# ") and line[2:].strip()), None)
+    title = heading or path.stem.replace("-", " ").replace("_", " ").title()
     title = title.replace("[", "\\[").replace("]", "\\]")
     docs.append((path.as_posix(), title))
 
