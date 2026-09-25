@@ -17,9 +17,9 @@ The Agda monoliths are intentionally kept as the proof source. Graphs are explan
 
 ## Repository-wide semantic e-graph closure
 
-Every Agda source file in `Exotic/ERL/FullCoupled/` is now covered by the same proof-only semantic transport boundary: e-graph related expressions compose by reflexivity, symmetry, transitivity, contextual transport, rewrite transport, and explicit path closure. `EGraphSemanticTransport.agda` also carries a typed A*-style cost/heuristic model. The cost guides discovery; it never becomes a proof of equality. The exact A* learner-side cost and trace laws remain in `TheoremsMonolith.agda` as `CanonicalAStarCostGuidanceTheorem` and `CanonicalEndogenousEGraphAStarTransportClosureTheorem`.
+All surviving Agda modules are covered by the same proof-only semantic transport boundary through `RepositorySemanticEGraphClosure.agda`: an indexed semantic family supplies one sound interpretation per module, and every sound e-graph path closes to exact endpoint equality. `EGraphSemanticTransport.agda` supplies reflexive, symmetric, transitive, contextual, rewrite, and explicit path transport plus a typed A* cost/heuristic model. The A* cost guides traversal; it never becomes evidence for equality. The learner-side A* seam remains in `TheoremsMonolith.agda` as `CanonicalAStarCostGuidanceTheorem` and `CanonicalEndogenousEGraphAStarTransportClosureTheorem`.
 
-The unconditional claim is deliberately at the graph-semantic layer: once a sound interpretation is supplied, every sound e-graph path has equal endpoints, independent of the chosen A* costs. This closure does not manufacture Maxwell Law-I/Law-III witnesses, equilibrium witnesses, or other domain-specific semantic inhabitants.
+This is the repository's **full unconditional semantic e-graphed closure**: unconditional over every supplied indexed Agda semantic family, every module in that family, and every sound path. It is not an unconditional claim that every physical or economic theorem is inhabited. In particular, it does not manufacture Maxwell Law-I/Law-III witnesses, equilibrium witnesses, or other domain-specific semantic inhabitants.
 
 The current Agda inventory is:
 - `CanonicalLearnerMonolith.agda` — canonical learner definitions.
@@ -29,9 +29,19 @@ The current Agda inventory is:
 - `FourLawClosureImpossibility.agda` — generic non-derivability boundary for those contracts.
 - `GRUStatisticalInjectivity.agda` — canonical statistical/injectivity adapter.
 - `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
-- `CanonicalGamePorts.agda`, `CanonicalClosedLoopBench.agda`, `CanonicalFaithfulGameVariants.agda`, and `AdditionalBenchmarkPorts.agda` — benchmark/environment support surfaces.
+- `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
 
 The monoliths remain the proof authority. Auxiliary Agda files are not independent theorem authorities; their semantics enter the common transport layer through explicit typed terms.
+
+## Source-grounded Maxwell semantic boundary
+
+The Maxwell semantic adapters are aligned with the external mathematical semantics rather than treating search artifacts as proofs. nLab's Noether treatment connects variational symmetries with on-shell conserved currents; its conserved-current entry defines horizontal closure on the dynamical shell. nLab's Maxwell and Hodge-Maxwell entries provide the differential-form equations and the Hodge-theoretic existence/uniqueness statement under its stated hypotheses. nLab's action-functional and Euler-Lagrange entries connect action critical loci with equations of motion, including Maxwell's equations.
+
+The Stanford Encyclopedia of Philosophy's gauge-theory entry independently records the modern Maxwell variables, current conservation, the Lagrangian/Euler-Lagrange route to Maxwell's equations, and the Noether correspondence between classical Lagrangian symmetries and conserved currents. Wikipedia supplies accessible cross-checks for Maxwell charge conservation, Euler-Lagrange field equations, and the electromagnetic tensor/Lagrangian formulation. The Tsallis source surface describes Tsallis entropy as a one-parameter generalization of Boltzmann-Gibbs-Shannon entropy and emphasizes nonadditivity; Wikipedia documents the q-statistical construction and its q-logarithm/q-exponential relations.
+
+These sources justify the semantic shape of the adapters. They do not provide the repository-specific discrete current-preservation equality, learner↔Maxwell inverse, or learner-step conjugacy. Those remain explicit typed obligations in NLabMaxwellSemanticClosure; no external source is imported as an Agda axiom.
+
+The maintained primary-source audit is docs/research/four-law-primary-source-closure-audit-2026-09-25.md.
 
 ## Current semantic emergence
 
