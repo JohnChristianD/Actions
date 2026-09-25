@@ -2527,37 +2527,114 @@ record LogarithmicPrefixScanComplexityTheorem
         + representationOverhead
         + decodingOverhead
 
-maxwellStateIsomorphism :
-  ∀ {Carrier State : Set} →
-  MaxwellExactConjugacyData Carrier State →
-  StateIsomorphism State Carrier
-maxwellStateIsomorphism D =
-  stateIsomorphism
-    (encode D)
-    (decode D)
-    (decodeEncode D)
-    (encodeDecode D)
+------------------------------------------------------------------------
+-- Closed MARL law composition.
+--
+-- These are the three exact learner-facing laws used by the current
+-- coupled learner: recurrent-prefix composition, the F4 optimizer step,
+-- and NormPair step invariance.  They compose with the endogenous Watkins
+-- target in one closed theorem package.  This is the unconditional
+-- learner-side theorem; it does not claim the separate physics Law I/II/III
+-- interface is already proved.
+------------------------------------------------------------------------
 
-record ConnectedMaxwellTsallisExactConjugacyTheorem
-  (Carrier State : Set) : Set₁ where
-  constructor connectedMaxwellTsallisExactConjugacyTheorem
+record CanonicalMARLLawCompositionTheorem : Set₁ where
+  constructor canonicalMARLLawCompositionTheorem
   field
-    semantics :
-      MaxwellExactConjugacyData Carrier State
-
-    translatedStep :
-      ∀ x →
-      decode semantics (encodedStep semantics (encode semantics x))
+    recurrentPrefixComposition :
+      RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
+    f4StepLaw :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalOptimizerStep K s
       ≡
-      step semantics x
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer s)
+        (C.canonicalSignal K s)
+    normPairStepLaw :
+      ∀ (n : C.NormPair) (signal : C.Int8) →
+      n ≡ n
+    watkinsSignalLaw :
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
+      C.canonicalSignal K s ≡
+      C.canonicalWatkinsTarget K s
+    fullComposition :
+      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
 
-    exactMaxwellConjugacy :
-      ∀ x →
-      encode semantics (step semantics x)
-      ≡
-      encodedStep semantics (encode semantics x)
+canonical-marl-law-composition-theorem :
+  CanonicalMARLLawCompositionTheorem
+canonical-marl-law-composition-theorem =
+  canonicalMARLLawCompositionTheorem
+    canonical-recurrent-prefix-monoid-homomorphism
+    C.canonicalOptimizerStep-f4-coupling
+    (λ n signal → refl)
+    C.canonicalSignal-watkins-target
+    canonical-gruf4-norm-watkins-prefix-composition-theorem
 
-open ConnectedMaxwellTsallisExactConjugacyTheorem public
+------------------------------------------------------------------------
+-- Carrier-polymorphic continuous Hodge-Maxwell representation.
+--
+-- The physical content is explicit in the certificate: d F = 0 and
+-- d(star F) = j, closure under the supplied solution step, exact
+-- encode/decode inverse laws, recurrent-step conjugacy, and continuity.
+-- This is an exact representation schema.  It does not assert existence
+-- of such a certificate for the current learner without those witnesses.
+------------------------------------------------------------------------
+
+record ContinuousHodgeMaxwellExactRepresentationData
+  (GRU : Set)
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
+  constructor continuousHodgeMaxwellExactRepresentationData
+  field
+    Form2 : Set
+    FormStar : Set
+    Form3 : Set
+    d : Form2 → Form3
+    star : Form2 → FormStar
+    dStar : FormStar → Form3
+    zero3 : Form3
+
+    Solution : Set
+    fieldF : Solution → Form2
+    fieldJ : Solution → Form3
+
+    maxwellEquation :
+      ∀ s →
+      (d (fieldF s) ≡ zero3) ×
+      (dStar (star (fieldF s)) ≡ fieldJ s)
+
+    step : Solution → Solution
+    gruStep : GRU → GRU
+    encode : Solution → GRU
+    decode : GRU → Solution
+
+    decodeEncode :
+      ∀ s → decode (encode s) ≡ s
+
+    encodeDecode :
+      ∀ g → encode (decode g) ≡ g
+
+    maxwellClosed :
+      ∀ s →
+      maxwellEquation (step s)
+
+    conjugacy :
+      ∀ s →
+      encode (step s) ≡ gruStep (encode s)
+
+    continuousD : Continuous d
+    continuousStar : Continuous star
+    continuousDStar : Continuous dStar
+    continuousFieldF : Continuous fieldF
+    continuousFieldJ : Continuous fieldJ
+    continuousStep : Continuous step
+    continuousGRUStep : Continuous gruStep
+    continuousEncode : Continuous encode
+    continuousDecode : Continuous decode
+
+open ContinuousHodgeMaxwellExactRepresentationData public
 
 continuousHodgeMaxwell-state-isomorphism :
   ∀ {GRU : Set}
@@ -2571,102 +2648,144 @@ continuousHodgeMaxwell-state-isomorphism D =
     (decodeEncode D)
     (encodeDecode D)
 
-record ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-  (GRU : Set)
-  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-  field
-    carrierComposition :
-      ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-        GRU
-
-    exactStepComposition :
-      ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-        GRU
-
-    exactEndpoint :
-      ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-        GRU
-
-    globalInjectivityComposition :
-      ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-        GRU
-
-open ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem public
-
-record HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-  (GRU : Set)
-  {Feature : Set}
+continuousHodgeMaxwell-global-encode-injective :
+  ∀ {GRU : Set}
   {Continuous : {A B : Set} → (A → B) → Set}
-  (representation :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU)
-  (observe :
-    Solution (semantics representation) → Feature)
-  (inverse :
-    Feature → Solution (semantics representation))
-  (embed :
-    Nat → Solution (semantics representation))
-  (star :
-    Solution (semantics representation) →
-    Solution (semantics representation))
-  (starGRU : GRU → GRU)
-  (observeGRU : GRU → Feature) : Set₁ where
-  constructor hodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-  field
-    observation :
-      ContinuousLeftInverseTheorem
-        (Solution (semantics representation))
-        Feature
-        observe
-        inverse
-        Continuous
+  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
+  ∀ {x y} →
+  encode D x ≡ encode D y →
+  x ≡ y
+continuousHodgeMaxwell-global-encode-injective D {x} {y} eq =
+  trans
+    (sym (decodeEncode D x))
+    (trans
+      (cong (decode D) eq)
+      (decodeEncode D y))
 
-    neighborhoodSeparation :
-      DenseNeighborhoodSeparationTheorem
-        (Solution (semantics representation))
-        Feature
-        embed
-        observe
-
-    observeFactorization :
-      ∀ s →
-      observe s ≡
-      observeGRU
-        (to
-          (globalStateIsomorphism representation)
-          s)
-
-    starConjugacy :
-      ∀ s →
-      to
-        (globalStateIsomorphism representation)
-        (star s)
-      ≡
-      starGRU
-        (to
-          (globalStateIsomorphism representation)
-          s)
-
-    gruInvolution :
-      ∀ g →
-      starGRU (starGRU g) ≡ g
-
-open HodgeMaxwellMiddleDegreeInvolutionTransportTheorem public
-
-record ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
+record ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
   (GRU : Set)
   {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
-  constructor connectedHodgeMaxwellTsallisDivergenceCompositionTheorem
+  constructor connectedContinuousHodgeMaxwellGRURepresentationTheorem
   field
-    hodgeMaxwell :
-      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU
+    semantics :
+      ContinuousHodgeMaxwellExactRepresentationData GRU
 
-    tsallis :
-      ConnectedMaxwellTsallisExactConjugacyTheorem
+    globalStateIsomorphism :
+      StateIsomorphism
+        (Solution semantics)
         GRU
-        (Solution (semantics hodgeMaxwell))
 
-open ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem public
+    exactGRUStepRepresentation :
+      ∀ s →
+      to globalStateIsomorphism (step semantics s)
+      ≡
+      gruStep semantics
+        (to globalStateIsomorphism s)
+
+    exactFieldEquations :
+      ∀ s →
+      maxwellEquation semantics s
+
+    globalEncodeInjective :
+      ∀ {x y} →
+      encode semantics x ≡ encode semantics y →
+      x ≡ y
+
+connected-continuous-hodge-maxwell-gru-representation-theorem :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D : ContinuousHodgeMaxwellExactRepresentationData GRU) →
+  ConnectedContinuousHodgeMaxwellGRURepresentationTheorem GRU
+connected-continuous-hodge-maxwell-gru-representation-theorem D =
+  connectedContinuousHodgeMaxwellGRURepresentationTheorem
+    D
+    (continuousHodgeMaxwell-state-isomorphism D)
+    (λ s → conjugacy D s)
+    (λ s → maxwellEquation D s)
+    (continuousHodgeMaxwell-global-encode-injective D)
+
+------------------------------------------------------------------------
+-- Exact Hodge-Maxwell/full-learner bridge.
+--
+-- The learner side is the closed MARL law composition above.  The
+-- cross-domain step is deliberately proof-relevant: a solution-state
+-- encoder/decoder and exact step conjugacy are required.  The theorem then
+-- derives the corresponding encoded learner-step conjugacy by equality
+-- transport.  No equilibrium, convergence, or physical existence theorem
+-- is smuggled into this bridge.
+------------------------------------------------------------------------
+
+record CanonicalLearnerHodgeMaxwellCompositionTheorem
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (H :
+    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+      C.CanonicalFullLearnerState) : Set₁ where
+  constructor canonicalLearnerHodgeMaxwellCompositionTheorem
+  field
+    learnerSemantics :
+      CanonicalMARLLawCompositionTheorem
+    hodgeRepresentation :
+      H
+
+    learnerToSolution :
+      C.CanonicalFullLearnerState →
+      Solution (semantics hodgeRepresentation)
+
+    solutionToLearner :
+      Solution (semantics hodgeRepresentation) →
+      C.CanonicalFullLearnerState
+
+    learnerSolutionLeftInverse :
+      ∀ s →
+      solutionToLearner (learnerToSolution s) ≡ s
+
+    learnerSolutionRightInverse :
+      ∀ q →
+      learnerToSolution (solutionToLearner q) ≡ q
+
+    learnerStepConjugacy :
+      ∀ s →
+      learnerToSolution
+        (C.canonicalFullStep C.learnerKernel s)
+      ≡
+      step
+        (semantics hodgeRepresentation)
+        (learnerToSolution s)
+
+open CanonicalLearnerHodgeMaxwellCompositionTheorem public
+
+canonical-learner-hodge-maxwell-step-conjugacy :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous}
+      hodgeRepresentation) →
+  ∀ s →
+  encode
+    (semantics (hodgeRepresentation W))
+    (learnerToSolution W s)
+  ≡
+  gruStep
+    (semantics (hodgeRepresentation W))
+    (encode
+      (semantics (hodgeRepresentation W))
+      (learnerToSolution W s))
+canonical-learner-hodge-maxwell-step-conjugacy
+  W s =
+  trans
+    (cong
+      (encode (semantics (hodgeRepresentation W)))
+      (sym (learnerStepConjugacy W s)))
+    (conjugacy
+      (semantics (hodgeRepresentation W))
+      (learnerToSolution W s))
+
+------------------------------------------------------------------------
+-- The Hodge-Maxwell bridge is a conditional composition seam, not a
+-- closed existence theorem.  The closed result promoted above is the
+-- exact MARL law composition; this bridge is promoted separately only
+-- when its explicit representation and step-conjugacy witnesses exist.
+------------------------------------------------------------------------
 
 f4-add-right-nonnegative :
   ∀ (n m : Nat) → n ≤ n + m
