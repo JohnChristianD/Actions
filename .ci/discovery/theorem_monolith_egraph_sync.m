@@ -6,6 +6,7 @@
 
 :- implementation.
 
+:- import_module bool.
 :- import_module int.
 
 :- import_module interpolated_theorem_egraph.
@@ -60,7 +61,6 @@ plan_terminal_ids([Plan | Plans], Acc0, Ids) :-
 closure_round(
     Laws,
     SeedIds,
-    PreviousPlans,
     E0,
     E,
     RoundPlans,
@@ -75,13 +75,6 @@ closure_round(
     saturate_until_stable(
         semantic_rewrite_rules, E1, E, Saturation),
     AfterEnodes = enode_count(E),
-    (
-        PreviousPlans = RoundPlans
-    ->
-        true
-    ;
-        true
-    ).
 
 :- pred astar_egraph_fixed_point(
     list(semantic_law)::in,
@@ -99,7 +92,7 @@ astar_egraph_fixed_point(
     SeedIds0 = [],
     plan_terminal_ids(InitialPlans, SeedIds0, SeedIds),
     closure_round(
-        Laws, SeedIds, InitialPlans, E0, E1, RoundPlans1,
+        Laws, SeedIds, E0, E1, RoundPlans1,
         Saturation1, BeforeEnodes1, AfterEnodes1),
     (
         AfterEnodes1 = BeforeEnodes1,
@@ -115,7 +108,7 @@ astar_egraph_fixed_point(
         SeedIds1 = [],
         plan_terminal_ids(RoundPlans1, SeedIds1, SeedIdsNext),
         closure_round(
-            Laws, SeedIdsNext, RoundPlans1, E1, E2, RoundPlans2,
+            Laws, SeedIdsNext, E1, E2, RoundPlans2,
             Saturation2, BeforeEnodes2, AfterEnodes2),
         (
             RoundPlans2 = RoundPlans1,
@@ -178,9 +171,13 @@ extract_all_laws([Law | Laws], E, Depth, Cost) :-
     saturation_report::in,
     int::in,
     list(list(string))::in,
+    int::in,
+    int::in,
+    bool::in,
     io::di, io::uo) is det.
 write_report(All, QuotientCount, Saturation, ExtractionCost,
-    Plans, !IO) :-
+    Plans, ClosureRounds, ClosureBeforeEnodes, ClosureAfterEnodes,
+    ClosureStable, !IO) :-
     NonReflexive = list.length(
         list.filter(
             (pred(L::in) is semidet :- not is_reflexive(L)),
@@ -212,6 +209,24 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"egraph_extraction_cost\": ", !IO),
         io.write_string(Stream, string.int_to_string(ExtractionCost), !IO),
+        io.write_string(Stream, ",\n", !IO),
+        io.write_string(Stream, "  \"closure_rounds\": ", !IO),
+        io.write_string(Stream, string.int_to_string(ClosureRounds), !IO),
+        io.write_string(Stream, ",\n", !IO),
+        io.write_string(Stream, "  \"closure_before_enodes\": ", !IO),
+        io.write_string(Stream, string.int_to_string(ClosureBeforeEnodes), !IO),
+        io.write_string(Stream, ",\n", !IO),
+        io.write_string(Stream, "  \"closure_after_enodes\": ", !IO),
+        io.write_string(Stream, string.int_to_string(ClosureAfterEnodes), !IO),
+        io.write_string(Stream, ",\n", !IO),
+        io.write_string(Stream, "  \"astar_egraph_fixed_point\": ", !IO),
+        (
+            ClosureStable = yes
+        ->
+            io.write_string(Stream, "true", !IO)
+        ;
+            io.write_string(Stream, "false", !IO)
+        ),
         io.write_string(Stream, ",\n", !IO),
         io.write_string(Stream, "  \"emergent_composition_count\": ", !IO),
         io.write_string(Stream, string.int_to_string(list.length(Plans)), !IO),
@@ -286,6 +301,8 @@ main(!IO) :-
     search_emergent_compositions(All, Plans),
     search_all_composite_law_plans(All, AutomaticCompositePlans),
     search_endogenous_composite_plans(All, EndogenousCompositePlans),
+    AllGeneratedPlans =
+        Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans,
     resolve_graph_requirements(
         All,
         AutomaticCompositePlans,
@@ -306,7 +323,7 @@ main(!IO) :-
         EGraphGraph0),
     astar_egraph_fixed_point(
         All,
-        Plans,
+        AllGeneratedPlans,
         EGraphGraph0,
         EGraph,
         ClosedPlans,
@@ -352,6 +369,10 @@ main(!IO) :-
                 Saturation,
                 ExtractionCost,
                 ClosedPlans,
+                ClosureRounds,
+                ClosureBeforeEnodes,
+                ClosureAfterEnodes,
+                ClosureStable,
                 !IO),
             io.write_string(
                 "mercury-theorem-monolith-egraph-sync=pass\n", !IO),
