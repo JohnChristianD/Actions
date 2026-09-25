@@ -1,0 +1,33 @@
+flowchart TD
+  A["Canonical learner definitions"] --> B["Exact recurrent scan / composition"]
+  B --> C["NormPair preservation"]
+  C --> D["NormPair quotient / factor transition"]
+  B --> E["Exact F4 optimizer stability"]
+  E --> F["F4 unit-forcing growth ray"]
+  F --> G["No unconditional infinite-horizon F4 upper bound"]
+  D --> H["Canonical F4 × NormPair unconditional factor stability"]
+  E --> H
+
+  H --> I["Representation / factor structure"]
+  H -. "does not entail" .-> J["Convergence"]
+  H -. "does not entail" .-> K["Fixed point"]
+  H -. "does not entail" .-> L["Market clearing"]
+  H -. "does not entail" .-> M["Supporting / derived price"]
+  H -. "does not entail" .-> N["Walrasian existence"]
+
+  O["Competitive production economy"] --> P["Feasible firm production plans"]
+  P --> Q["Profit-maximizing production"]
+  O --> R["Consumer optimality / demand"]
+  Q --> S["Aggregate resource balance"]
+  R --> S
+  S --> L
+  L --> M
+  M --> N
+
+  N -. "requires independent economic hypotheses" .-> T["Fixed-point / compactness / continuity / preference / production / separation assumptions"]
+
+  U["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> V["Universal non-existence of unconditional generalized-Walrasian existence"]
+  H -. "cannot discharge" .-> V
+
+  W["First Welfare: condition-gated"] --> X["Competitive equilibrium + demand assumptions"]
+  Y["Second Welfare: separate supportability route"] --> M
