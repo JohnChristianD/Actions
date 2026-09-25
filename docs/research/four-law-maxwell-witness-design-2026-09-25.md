@@ -102,13 +102,13 @@ The broader nLab search does identify a connected semantic chain, but it also cl
 
 ### Closure chain A — variational dynamics → shell → current
 
-nLab's variational bicomplex connects a local Lagrangian to its Euler–Lagrange/source form; the zero locus is the covariant phase space. It then defines conserved currents as horizontally closed on that on-shell space, with charges invariant across homologous hypersurfaces. Noether's theorem supplies such currents from variational symmetries. citeturn0search0turn0search2turn1search0
+nLab's variational bicomplex connects a local Lagrangian to its Euler–Lagrange/source form; the zero locus is the covariant phase space. It then defines conserved currents as horizontally closed on that on-shell space, with charges invariant across homologous hypersurfaces. Noether's theorem supplies such currents from variational symmetries.
 
 For the Maxwell specialization, nLab identifies the electromagnetic current by
 
 `d ⋆ F = j`
 
-and derives `d j = 0`; it also describes electric charge as the integral of that current over a spacelike hyperslice. citeturn1search2turn0search11
+and derives `d j = 0`; it also describes electric charge as the integral of that current over a spacelike hyperslice.
 
 This is the semantic closure we were missing at the vocabulary level:
 
@@ -118,11 +118,11 @@ However, it still does **not** imply the repository's discrete proposition
 
 `fieldJ (trajectory p) ≡ fieldJ p`.
 
-The missing bridge is therefore now sharply localized: the Agda model needs a trajectory/evolution operation whose induced transport preserves the selected current observable, or a concrete theorem that the chosen physical evolution has that property. nLab's phase-space treatment says covariant phase space is the space of on-shell histories and that time evolution of suitable initial data is an isomorphism to the covariant picture; this supports introducing genuine evolution semantics, but it is not itself the required Agda equality. citeturn1search8
+The missing bridge is therefore now sharply localized: the Agda model needs a trajectory/evolution operation whose induced transport preserves the selected current observable, or a concrete theorem that the chosen physical evolution has that property. nLab's phase-space treatment says covariant phase space is the space of on-shell histories and that time evolution of suitable initial data is an isomorphism to the covariant picture; this supports introducing genuine evolution semantics, but it is not itself the required Agda equality.
 
 ### Closure chain B — Maxwell action → Euler–Lagrange equations
 
-nLab's Maxwell/Einstein-Maxwell material explicitly places the electromagnetic sector inside a local Lagrangian/action formalism. The Maxwell action is expressed through the electromagnetic field strength and Hodge star, while the general variational formalism identifies Euler–Lagrange equations with the critical locus of the action. citeturn1search4turn1search12turn0search1
+nLab's Maxwell/Einstein-Maxwell material explicitly places the electromagnetic sector inside a local Lagrangian/action formalism. The Maxwell action is expressed through the electromagnetic field strength and Hodge star, while the general variational formalism identifies Euler–Lagrange equations with the critical locus of the action.
 
 This gives the concrete Law-III population path:
 
@@ -132,7 +132,7 @@ The repository still needs to choose a representable finite Agda carrier for the
 
 ### Closure chain C — evolution must be attached to the shell
 
-The phase-space material gives the missing conceptual connection between “solution” and “trajectory”: covariant phase space is the space of on-shell field histories, and time evolution of initial data is represented by an isomorphism when the relevant canonical phase-space construction exists. citeturn1search8
+The phase-space material gives the missing conceptual connection between “solution” and “trajectory”: covariant phase space is the space of on-shell field histories, and time evolution of initial data is represented by an isomorphism when the relevant canonical phase-space construction exists.
 
 For this repository, that suggests the next semantic object should not be an arbitrary endofunction on `Solution`. It should be a concrete evolution structure carrying enough data to relate:
 - a solution/history;
