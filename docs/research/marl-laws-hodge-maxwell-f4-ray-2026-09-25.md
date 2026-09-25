@@ -81,3 +81,18 @@ The intended induction is the standard commuting-step lift:
        ≡ iterate LearnerStep n (encode s)
 
 and, for recurrent input prefixes, the corresponding concatenation/prefix transport law. This remains a representation/conjugacy result; it does not imply convergence, fixed-point existence, market clearing, supporting prices, or Walrasian existence without independent economic hypotheses.
+
+
+### Current frontier decomposition
+
+The one-step square is now decomposed into three explicit proof obligations:
+
+1. **Law I inverse representation witness** — enough encode/decode structure to establish the exact Law-I representation boundary.
+2. **Law III inverse representation witness** — enough encode/decode structure for the variational/virtual-work layer.
+3. **Physics → learner transition witness** — an extensional commuting law connecting the physical transition to the canonical learner step.
+
+Only after all three are present does the graph promote:
+
+  one-step square → iterate conjugacy → exact prefix/horizon conjugacy.
+
+This decomposition is intentionally stronger than merely connecting the four law labels: each edge must eventually correspond to proof-relevant data on the Agda surface.
