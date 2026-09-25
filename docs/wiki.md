@@ -55,6 +55,8 @@ The closed learner-side composition is `CanonicalMARLLawCompositionTheorem`. It 
 
 The physics-facing Law I/II/III vocabulary remains a separate semantic layer: agent dynamics, local Maxwell field equations, and variational/virtual-work constraint. The theorem surface does not infer a physical learner interface merely from those names; an explicit representation and transition-conjugacy witness is required.
 
+Law IV is now explicit in the **graph only** as an additional ZPF background-field / spectral hypothesis. It is deliberately not labeled as an Agda theorem: the current Agda monoliths contain no corresponding Law-IV or ZPF declaration/proof. The graph therefore records the hypothesis and its boundary without silently promoting it into proof authority.
+
 The carrier-polymorphic Hodge-Maxwell representation is exposed by `ContinuousHodgeMaxwellExactRepresentationData` and `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem`. The latter carries exact differential-form field equations, encode/decode inversion, step conjugacy, continuity obligations, a global StateIsomorphism, and encoder injectivity.
 
 The full-learner bridge is `CanonicalLearnerHodgeMaxwellCompositionTheorem`. It consumes the closed MARL composition together with an explicit learner↔solution inverse pair and exact learner-step/Hodge-step conjugacy. Its derived `canonical-learner-hodge-maxwell-step-conjugacy` theorem transports the canonical learner transition into the Hodge-Maxwell representation.
