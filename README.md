@@ -28,6 +28,7 @@ The current Agda inventory is:
 - `FourLawClosureWitnesses.agda` — explicit physical witness contracts.
 - `FourLawClosureImpossibility.agda` — generic non-derivability boundary for those contracts.
 - `GRUStatisticalInjectivity.agda` — canonical statistical/injectivity adapter.
+- `ZPFStatisticalRepresentation.agda` — typed ZPF/ω³ Maxwell-statistical boundary and conditional global ZPF→GRU injectivity adapter.
 - `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
 - `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
 
@@ -41,7 +42,7 @@ The Stanford Encyclopedia of Philosophy's gauge-theory entry independently recor
 
 These sources justify the semantic shape of the adapters. They do not provide the repository-specific discrete current-preservation equality, learner↔Maxwell inverse, or learner-step conjugacy. Those remain explicit typed obligations in NLabMaxwellSemanticClosure; no external source is imported as an Agda axiom.
 
-The maintained primary-source audit is docs/research/four-law-primary-source-closure-audit-2026-09-25.md.
+The maintained primary-source audit is docs/research/four-law-primary-source-closure-audit-2026-09-25.md. The focused ZPF/ω³ implementation note is docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md.
 
 ## Current semantic emergence
 
@@ -172,6 +173,8 @@ The physics-level Law I/II/III grouping is kept distinct from that closed learne
 The exact Hodge-Maxwell representation surface is carrier-polymorphic: `ContinuousHodgeMaxwellExactRepresentationData` supplies the differential-form equations, solution carrier, encode/decode inverse laws, transition closure, recurrent conjugacy, and continuity obligations. `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem` packages the resulting StateIsomorphism, field equations, and global encoder injectivity.
 
 `CanonicalLearnerHodgeMaxwellCompositionTheorem` is the chosen full-learner bridge. It composes the closed MARL theorem with an explicit Hodge-Maxwell representation and explicit learner↔solution inverse/step-conjugacy witnesses. Its derived `canonical-learner-hodge-maxwell-step-conjugacy` theorem transports the exact learner step into the Hodge-Maxwell representation. This bridge is deliberately proof-relevant rather than an unconditional existence claim.
+
+The ZPF layer is now formalized separately in `ZPFStatisticalRepresentation.agda`: it records homogeneous, isotropic, stochastic Maxwell-field semantics, an explicit ω³ spectral-density law contract, and a ZPF→canonical-GRU statistical representation. Its global injectivity theorem is derived from the existing decode-after-encode kernel; no concrete physical ZPF realization or numerical spectral normalization is asserted by the Agda file.
 
 The exact `f4-unit-forcing-linear-growth` theorem is a persistent-forcing result: a specified unit forcing produces linear growth in the selected integer-valued F4 coordinate. This is not unique to F4 as a mathematical mechanism—constant nonzero increments produce linear drift for many update rules—but the exact discrete F4/L2 forcing ray is a property of this implementation and is what the Agda proof establishes.
 
