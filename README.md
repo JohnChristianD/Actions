@@ -138,9 +138,13 @@ The orchestration arrows are not mathematical implication arrows.
 
 ## MARL, Hodge-Maxwell, and optimizer semantics
 
-The repository groups three existing exact learner laws as a useful MARL-facing explanation: recurrent-prefix scan composition, the F4 optimizer step law, and NormPair step invariance. They compose through the endogenous Watkins target and the GRU × F4 × NormPair prefix theorem; this is an exact semantic composition of the implemented learner, not a claim that MARL literature has a canonical “three laws” theorem with these names.
+The repository now promotes one closed MARL-facing composition: `CanonicalMARLLawCompositionTheorem`. It packages the recurrent-prefix law, the exact F4 step law, NormPair step invariance, the endogenous Watkins target law, and the already-closed `CanonicalGRUF4NormWatkinsPrefixCompositionTheorem`.
 
-The Hodge-Maxwell branch is a representation/conjugacy layer over that same transition. The continuous Hodge-Maxwell/GRU representation and `ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem` make the bridge explicit through inverse/representation and step-conjugacy data. The broader GRU/Hodge-Maxwell/Tsallis/Walrasian/POMDP composition remains bounded by its explicit economic relations and witnesses.
+The physics-level Law I/II/III grouping is kept distinct from that closed learner theorem. Law I describes agent dynamics, Law II the local Maxwell field equations, and Law III the variational/virtual-work constraint. Their composition with the learner therefore requires an explicit physics→learner representation/transition witness; those physical equations are not silently inferred from the learner algebra.
+
+The exact Hodge-Maxwell representation surface is carrier-polymorphic: `ContinuousHodgeMaxwellExactRepresentationData` supplies the differential-form equations, solution carrier, encode/decode inverse laws, transition closure, recurrent conjugacy, and continuity obligations. `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem` packages the resulting StateIsomorphism, field equations, and global encoder injectivity.
+
+`CanonicalLearnerHodgeMaxwellCompositionTheorem` is the chosen full-learner bridge. It composes the closed MARL theorem with an explicit Hodge-Maxwell representation and explicit learner↔solution inverse/step-conjugacy witnesses. Its derived `canonical-learner-hodge-maxwell-step-conjugacy` theorem transports the exact learner step into the Hodge-Maxwell representation. This bridge is deliberately proof-relevant rather than an unconditional existence claim.
 
 The exact `f4-unit-forcing-linear-growth` theorem is a persistent-forcing result: a specified unit forcing produces linear growth in the selected integer-valued F4 coordinate. This is not unique to F4 as a mathematical mechanism—constant nonzero increments produce linear drift for many update rules—but the exact discrete F4/L2 forcing ray is a property of this implementation and is what the Agda proof establishes.
 
