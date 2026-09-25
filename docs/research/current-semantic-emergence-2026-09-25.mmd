@@ -1,18 +1,38 @@
 flowchart TD
-  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws"]
+  A["Canonical learner definitions"] --> B["Three exact MARL-facing learner laws"]
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
 
-  P1["Law I: agent/particle dynamics"]
+  P1["Law I: agent/particle dynamics (ALD / trajectory evolution)"]
   P2["Law II: local Maxwell field dynamics"]
-  P3["Law III: variational / virtual-work constraint"]
-  P1 --> PI["Explicit physics → learner interface witness"]
-  P2 --> PI
-  P3 --> PI
+  P3["Law III: variational / virtual-work admissibility"]
+  P4["Law IV: ZPF background-field / spectral hypothesis"]
+
+  P1 --> J["Particle trajectories / four-current J"]
+  J --> P2
+  P2 --> FM["Sourced Maxwell field F_particle"]
+
+  P4 --> Z["Homogeneous Maxwell background F_ZPF
+source-free + isotropic/statistical + ω³ spectrum"]
+  FM --> FT["Total field F_total = F_particle + F_ZPF"]
+  Z --> FT
+
+  FT --> Force["Field force / effective external field"]
+  Force --> P1
+  Force --> P3
+  P3 --> PI["Explicit physics → learner interface witness"]
+
+  P1 -. "coupled dynamics" .-> PI
+  P2 -. "field constraint" .-> PI
+  P4 -. "additional field-state hypothesis" .-> PI
   PI -. "not entailed by learner algebra alone" .-> D
 
-  H0["ContinuousHodgeMaxwellExactRepresentationData"]
+  H0["ContinuousHodgeMaxwellExactRepresentationData
+dF = 0; d⋆F = source"]
+  P2 --> H0
+  P4 -. "spectral/background hypothesis
+not supplied by Hodge-Maxwell alone" .-> H0
   H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
   H0 --> H1
   H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
@@ -28,7 +48,7 @@ flowchart TD
   E --> H
 
   H --> I["Representation / factor structure"]
-  H -. "does not entail" .-> J["Convergence"]
+  H -. "does not entail" .-> J1["Convergence"]
   H -. "does not entail" .-> K["Fixed point"]
   H -. "does not entail" .-> L["Market clearing"]
   H -. "does not entail" .-> M["Supporting / derived price"]
