@@ -123,7 +123,7 @@ The production-side contract uses standard economic vocabulary.
 
 The repository now has an explicit typed contract for the remaining cross-law witness seam in `Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda`.
 
-`LawIPhysicsWitness` requires a learner-to-physical representation with a left inverse plus explicit trajectory/current data. `LawIIIVariationalWitness` requires an inverse representation plus explicit admissibility and stationarity predicates. `PhysicsToLearnerTransitionWitness` requires an inverse representation and one-step transition conjugacy.
+`LawIPhysicsWitness` requires a learner-to-physical representation with a left inverse plus explicit trajectory/current data. `LawIIIVariationalWitness` requires an inverse representation plus explicit admissibility and stationarity predicates. `PhysicsToLearnerTransitionWitness` requires an inverse representation and one-step transition conjugacy. The theorem monolith now derives `canonical-physics-to-learner-transition-witness` directly from `CanonicalLearnerHodgeMaxwellCompositionTheorem`, so this transition seam is an explicit adapter rather than a second independently invented witness.
 
 These records are deliberately uninhabited on the current branch. They make the missing proof obligations machine-readable without turning semantic contracts into axioms. The graph therefore records `FourLawOneStepWitnessContract` as a frontier contract, not as a closed theorem.
 
