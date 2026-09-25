@@ -1,4 +1,28 @@
 {-# OPTIONS --safe #-}
+
+------------------------------------------------------------------------
+-- Canonical learner semantics.
+--
+-- This module is the executable/type-level source of the coupled learner:
+-- recurrent GRU state, Watkins state, F4/L2 optimizer state, LCB counts,
+-- sparse policy readout, q-log state, the preserved NormPair, and the
+-- endogenous feedback signal. The definitions below determine what the
+-- learner actually does; theorem modules consume these definitions.
+--
+-- The main emergent facts are structural: the Nat clock advances exactly
+-- by one per canonical step, NormPair is preserved, the policy is
+-- invariant under NormPair and optimizer replacement, and the recurrent
+-- components are exposed as composable state transitions. The integer
+-- token layer and linear Haar layer are exact formal substrates, not
+-- empirical language-model or physical-realism claims.
+--
+-- This file intentionally contains definitions and local definitional laws,
+-- not economic existence conclusions. Convergence, fixed points, market
+-- clearing, supporting prices, and Walrasian existence require independent
+-- hypotheses and belong to the theorem/economic boundary documented outside
+-- this module.
+------------------------------------------------------------------------
+
 module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
@@ -19,10 +43,6 @@ open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
-------------------------------------------------------------------------
--- Minimal topology foundation. Continuity is a concrete property over
--- explicit topologies. Algebraic structure remains topology-independent.
-------------------------------------------------------------------------
 
 record Topology (A : Set) : Set₁ where
   field
@@ -44,13 +64,6 @@ Continuous A B τA τB f =
   isOpen τB V →
   isOpen τA (λ x → V (f x))
 
-------------------------------------------------------------------------
--- Explicit discrete topology boundary.
---
--- Every predicate is open, so continuity is automatic.  In this finite
--- algebra, therefore, continuity cannot repair a missing global inverse.
-------------------------------------------------------------------------
-
 discreteTopology : ∀ (A : Set) → Topology A
 discreteTopology A =
   record
@@ -65,8 +78,6 @@ continuous-under-discrete-topology :
   ∀ {A B : Set} (f : A → B) →
   Continuous A B (discreteTopology A) (discreteTopology B) f
 continuous-under-discrete-topology {A} {B} f {V} _ = tt
-
-
 
 record Int8 : Set where
   constructor int8
@@ -397,7 +408,6 @@ canonicalQLogControl =
 qLogSignal : SignedQLogControl → Int8 → Int8
 qLogSignal c x = int8Add x (coefficient c)
 
--- Action cardinality is supplied by the adaptive candidate list in ActionSpace.
 data HardSign : Set where
   negative zeroSign positive : HardSign
 
@@ -893,13 +903,6 @@ canonicalReward8 K s = canonicalPolicyWeightCode K s
 canonicalDiscount8 : Int8
 canonicalDiscount8 = one8
 
-------------------------------------------------------------------------
--- Closed-loop endogenous feedback.
---
--- The Watkins target, GRU state, F4/L2 state, q-log control/value,
--- and count/policy channels form the canonical feedback loop.
-------------------------------------------------------------------------
-
 canonicalGRUFeedback : ∀ {A} → FullLearnerState A → Int8
 canonicalGRUFeedback s = hiddenState (gru s)
 
@@ -1090,15 +1093,6 @@ pessimisticCritic-law i = refl
 canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
 canonicalPersistent = canonicalPersistentGRUPreservation
 
-------------------------------------------------------------------------
--- Exact token-level recurrent language-model substrate.
---
--- Token inputs are now the exact unbounded integer carrier.  No finite
--- alphabet is imposed at the canonical learner boundary.  The recurrent
--- semantics remain the existing Int8 GRU and token sequences remain
--- ordinary Lists so prefix composition is exact and structural.
-------------------------------------------------------------------------
-
 CanonicalToken : Set
 CanonicalToken = ℤ
 
@@ -1156,16 +1150,6 @@ canonicalTokenLogitTrace K (t ∷ ts) s =
   logits K s ∷
   canonicalTokenLogitTrace K ts (canonicalTokenStep s t)
 
-
-------------------------------------------------------------------------
--- Strictly linear integer Haar mixing plus fixed unnormalized sparsemax
--- attention.  The Haar layer contains only additions/subtractions; there
--- is no normalization, gate, activation, or learned nonlinear mixing.
--- The sparsemax head reuses the existing canonical sparsemax machinery:
--- its attention coefficient is the fixed-support numerator, so no second
--- normalization is introduced.
-------------------------------------------------------------------------
-
 CanonicalHaarPair : Set
 CanonicalHaarPair = Int8 × Int8
 
@@ -1193,5 +1177,3 @@ canonicalHaarOrthogonalCross :
     (int8Mul one8 (int8Neg one8))
   ≡ zero8
 canonicalHaarOrthogonalCross = refl
-
-
