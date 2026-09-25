@@ -49,73 +49,31 @@ None of the learner-side results alone proves:
 
 This is a semantic boundary, not a missing “final theorem.” The absence is intentional and is supported by the closed countermodel and by the exact non-fixed-point clock law.
 
-## MARL-facing laws and Hodge-Maxwell composition
+## MARL-facing laws and injectivity
 
-The closed learner-side composition is `CanonicalMARLLawCompositionTheorem`. It groups the exact recurrent-prefix law, F4 step law, NormPair step invariance, and the endogenous Watkins target into the existing full GRU × F4 × NormPair × Watkins composition.
+The repository now graphs four law layers explicitly:
 
-The physics-facing Law I/II/III vocabulary remains a separate semantic layer: agent dynamics, local Maxwell field equations, and variational/virtual-work constraint. The theorem surface does not infer a physical learner interface merely from those names; an explicit representation and transition-conjugacy witness is required.
+- Law I: agent/particle dynamics and particle trajectories/current;
+- Law II: Maxwell field dynamics, represented through the carrier-polymorphic Hodge-Maxwell surface;
+- Law III: variational/virtual-work admissibility;
+- Law IV: canonical GRU statistical representation.
 
-Law IV is now explicit in the **graph only** as an additional ZPF background-field / spectral hypothesis. It is deliberately not labeled as an Agda theorem: the current Agda monoliths contain no corresponding Law-IV or ZPF declaration/proof. The graph therefore records the hypothesis and its boundary without silently promoting it into proof authority.
+Law I and Law III have graph-level exact representation/injectivity surfaces that are explicitly conditional on inverse representation witnesses. They are not claimed as unconditional physics injectivity theorems.
 
-The carrier-polymorphic Hodge-Maxwell representation is exposed by `ContinuousHodgeMaxwellExactRepresentationData` and `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem`. The latter carries exact differential-form field equations, encode/decode inversion, step conjugacy, continuity obligations, a global StateIsomorphism, and encoder injectivity.
+Law II has an actual Agda injectivity consequence through `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem`: its encode/decode inverse laws yield encoder injectivity. Law IV has an actual closed Agda theorem, `CanonicalGRUStatisticalInjectivityTheorem`, with decode∘encode and a derived injectivity proof.
 
-The full-learner bridge is `CanonicalLearnerHodgeMaxwellCompositionTheorem`. It consumes the closed MARL composition together with an explicit learner↔solution inverse pair and exact learner-step/Hodge-step conjugacy. Its derived `canonical-learner-hodge-maxwell-step-conjugacy` theorem transports the canonical learner transition into the Hodge-Maxwell representation.
+The four injectivity surfaces therefore remain faithful to the proof boundary: graph edges do not create missing physical representation witnesses.
 
-The bridge is intentionally not classified as an unconditional existence theorem. The unconditional promotion is the closed MARL composition and the learner-side F4/NormPair results; Hodge-Maxwell composition becomes an exact theorem once its explicit representation witness is supplied.
+Law IV's statistical representation is distinct from the additional ZPF hypothesis. The ZPF layer may state a homogeneous/isotropic stochastic field and an `ω³` spectral law, but that spectral hypothesis is not derived from Maxwell equations or from injectivity.
 
 ## Why Mermaid, and what it is not
 
-Mermaid is a diagram-description DSL, not a pure typed functional programming language. A flowchart source names nodes, edges, labels, subgraphs, and presentation/layout directives; the Mermaid parser and renderer turn that declarative description into a diagram. The official syntax is organized around diagram types such as flowcharts, sequence diagrams, class diagrams, state diagrams, and ER diagrams. It has no role as proof authority and does not replace Agda's type system. Mermaid fits this repository because the topology is a human-readable graph projection that fits Markdown/GitHub documentation. Tcl or Lua could generate a graph, but that would make the repository own an unnecessary general-purpose program and runtime semantics instead of keeping the topology as a directly readable graph declaration. The choice is therefore about representation fit, not language-theoretic superiority.
+Mermaid is a diagram-description DSL, not a pure typed functional programming language. A flowchart source names nodes, edges, labels, subgraphs, and presentation/layout directives; the Mermaid parser and renderer turn that declarative description into a diagram. It has no role as proof authority and does not replace Agda's type system. Mermaid fits this repository because the topology is a human-readable graph projection that fits Markdown/GitHub documentation.
 
 ## What the F4 ray actually says
 
-The F4 ray theorem is an exact statement about the implemented discrete update under a specified persistent forcing pattern: the selected integer-valued optimizer coordinate advances by a fixed nonzero increment, hence grows linearly with the horizon. It is not a theorem that “F4 is an optimizer that diverges,” and it is not a convergence result in the opposite direction. The important boundary is persistent forcing plus the exact update rule.
-
-That mechanism is not unique in the broad sense. Adam uses adaptive first- and second-moment estimates; Lion uses signed momentum; IDBD adapts per-feature learning rates; and Zap-Q uses stochastic-approximation / matrix-gain machinery. These are materially different update mechanisms. Persistent nonzero increments or other sustained forcing can produce unbounded drift in many algorithms. What is specific to this repository is that the F4/L2 recurrence, its integer carrier, and the linear-growth consequence are all stated and checked exactly on the canonical learner. The optimizer comparison is about update mechanics, not a claim that these algorithms have identical dynamics or convergence behavior.
+The F4 ray theorem is an exact statement about the implemented discrete update under a specified persistent forcing pattern: the selected integer-valued optimizer coordinate advances by a fixed nonzero increment, hence grows linearly with the horizon. It is not a theorem that “F4 is an optimizer that diverges,” and it is not a convergence result in the opposite direction.
 
 ## Production-side topology
 
-The production-side contract uses standard economic vocabulary:
-
-```
-CompetitiveProductionEconomy
-  -> feasible production plans
-  -> profit-maximizing production
-  -> consumer optimality
-  -> aggregate resource balance
-  -> market clearing
-  -> derived/supporting price
-  -> generalized Walrasian equilibrium
-```
-
-The contract records the data and conditions of a competitive equilibrium. It is not an unconditional existence theorem.
-
-## Welfare boundary
-
-Competitive equilibrium can support a First Welfare direction only under the usual demand/preference assumptions encoded by the relevant theorem surface.
-
-A Second Welfare direction is a separate supporting-price/redistribution statement. Pareto optimality alone does not manufacture the required supporting-price certificate.
-
-## Contribution boundary
-
-The contribution is not “formalization is novel,” “Agda is novel,” or “Walrasian equilibrium was newly proved.”
-
-The research contribution is the mechanically auditable dependency topology showing, for this coupled learner, which conclusions are exact consequences and where independent economic assumptions must enter.
-
-## Evidence-format policy
-
-JSON is the machine-readable evidence/interchange layer and Mermaid is the human-readable topology projection. TSV and CSV are not canonical graph stores. SQLite is unnecessary for the current repository-local deterministic workload, and NoSQL is even less justified because there is no distributed, schema-flexible, high-write query problem to solve. Dhall remains the verification contract and is executed inside Nix where that existing unattended path needs it.
-
-A CSV used by an unrelated replication archive is a separate artifact and is not part of the topology format policy.
-
-## Source hierarchy
-
-1. Agda definitions and proofs.
-2. Dhall verification contract.
-3. Current graph artifacts.
-4. This wiki and README.
-5. Historical notes only as provenance; they are not current semantics.
-
-## Maintenance rule
-
-Any theorem deletion, proof-boundary change, or new economic bridge must update the Agda source, graph, Dhall gate, README, and this wiki in the same change. Stale historical claims are pruned rather than preserved as if they were current results.
+The production-side contract uses standard economic vocabulary.
