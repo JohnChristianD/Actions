@@ -25,13 +25,17 @@ Candidate mapping:
 - `PhysicalState = Solution`;
 - `Current = Form3`;
 - `current = fieldJ`;
-- `trajectory) must be a concrete physical evolution on `Solution`, preferably the existing `step` when its semantics match the intended trajectory;
+- `trajectory` must be a concrete physical evolution on `Solution`, preferably the existing `step` when its semantics match the intended trajectory;
 - required proof obligation:
   `∀ p → fieldJ (trajectory p) ≡ fieldJ p`.
 
-The important point is that Maxwell current conservation is not automatically the same proposition. Primary-source material describes a conserved current as horizontally closed on the solution/covariant phase space, and Maxwell theory gives the familiar differential-form current equation. That supports the semantic vocabulary, but the repository contract asks for current preservation across its chosen trajectory. A theorem connecting the existing `step` to current preservation must therefore be proved explicitly.
+The important point is that Maxwell current conservation is not automatically the same proposition. nLab's conserved-current formalism defines conservation as horizontal closure on the covariant phase space, while its Maxwell material uses differential-form Maxwell equations and an electromagnetic current. These support the semantic vocabulary, but the repository contract asks for current preservation across its chosen trajectory. A theorem connecting the existing `step` to current preservation must therefore be proved explicitly.
 
 If the existing `step` does not preserve `fieldJ`, the correct outcome is to introduce a separately justified trajectory map and prove its current compatibility, not to assert an equality merely because `d j = 0` holds.
+
+Primary sources:
+- https://ncatlab.org/nlab/show/conserved%2Bcurrent
+- https://ncatlab.org/nlab/show/Maxwell%27s%2Bequations
 
 ## Law-III candidate boundary
 
@@ -45,21 +49,20 @@ Candidate mapping:
 - required proof obligation for every selected physical state:
   `Stationary p`.
 
-The classical electromagnetic route is the free Maxwell action with a potential 1-form (A), field strength (F = dA), and the Euler–Lagrange equation corresponding to the Maxwell equation for (d ⋆ F). The repository currently does not expose enough action/variation/Euler–Lagrange primitives to claim that this mapping is already an Agda inhabitant.
+The classical electromagnetic route is the free Maxwell action with a potential 1-form A, field strength F = dA, and the Euler–Lagrange equation corresponding to the Maxwell equation for d star F. The repository currently does not expose enough action/variation/Euler–Lagrange primitives to claim that this mapping is already an Agda inhabitant.
 
 Therefore the implementation must first identify or add the smallest genuine variational data structure compatible with the existing `Solution` carrier. A trivial variation or an unconstrained `⊤)-valued stationarity predicate is explicitly out of scope because it would satisfy the type while losing the Law-III semantics.
+
+Primary sources:
+- https://ncatlab.org/nlab/show/action%2Bfunctional
+- https://ncatlab.org/nlab/show/variational%2Bbicomplex
+- https://ncatlab.org/nlab/show/geometry%2Bof%2Bphysics%2B--%2Bperturbative%2Bquantum%2Bfield%2Btheory
 
 ## Learner bridge
 
 The existing theorem `canonical-physics-to-learner-transition-witness` is the intended bridge. It is conditional on `CanonicalLearnerHodgeMaxwellCompositionTheorem` and supplies a learner-to-solution encode/decode pair plus one-step conjugacy.
 
 This means the specialized Maxwell witness should reuse that adapter rather than duplicate learner/solution inverse proofs. The remaining alignment question is whether the concrete `Solution` chosen above is definitionally the same solution carrier used by the theorem instance at the point where the final witness is constructed.
-
-## Primary-source semantic evidence
-
-nLab's conserved-current formalism defines conservation as horizontal closure on the covariant phase space and relates conserved currents to charges on homologous hypersurfaces. nLab's Maxwell material uses differential-form Maxwell equations and identifies the electromagnetic current in that formalism. These sources support the Law-I semantic model but do not prove the repository-specific trajectory/current equality. citeturn0search0turn0search3
-
-nLab's action-functional and variational-bicomplex material describes local actions from Lagrangian densities, Euler–Lagrange equations from variation, and the solution/critical locus. Its electromagnetism examples explicitly treat Maxwell equations as Euler–Lagrange equations of a Maxwell action. This supports the proposed Law-III model, but it is external semantic evidence rather than Agda proof authority. citeturn0search1turn0search2turn0search8
 
 ## Exact blocker after boundary freeze
 
@@ -74,5 +77,5 @@ Until both exist, the graph must remain `FRONTIER_CONTRACT_ONLY`, and iterate/pr
 
 - Repository authority: `Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda` and `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`.
 - Plan: `docs/superpowers/plans/2026-09-25-four-law-maxwell-witnesses.md`.
-- External semantic sources: nLab conserved current, Maxwell's equations, action functional, variational bicomplex, and electromagnetic Euler–Lagrange material.
+- External semantic sources: the nLab pages listed above.
 - Knowledge delta: this file freezes the carrier mapping and records the exact unresolved proof obligations before production witness code.
