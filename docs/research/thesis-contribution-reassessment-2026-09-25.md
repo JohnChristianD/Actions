@@ -1,97 +1,142 @@
 # Thesis contribution reassessment against the dedicated literature — 2026-09-25
 
-## Scope
+## Bottom line
 
-This note deliberately removes two claims from the thesis contribution story: machine-checked formalization is not itself novel, and choosing Agda rather than Lean is a methodological choice rather than a research contribution.
+The thesis should not claim novelty from machine checking, Agda, or re-formalizing Walrasian equilibrium. Econlib already provides a substantial Lean formalization of general equilibrium, including Walrasian existence, welfare, Walras' law, and an Arrow–Debreu production layer. Its glossary explicitly exposes ProductionEconomy, RegularProductionEconomy, Technology, Technology.profit, Technology.supply, production-side welfare theorems, and ProductionEconomy.exists_equilibrium_prod.
 
-The contribution claim must instead be about the specific mathematical object, dependency boundary, and cross-domain formalization produced here.
+The defensible research question is instead: which economic conclusions are actually entailed by the exact learner dynamics, which are independent economic obligations, and can that boundary be represented as a mechanically auditable dependency topology?
 
-## Econlib as the production-side reference
+## Dedicated literature comparison
 
-The production-side vocabulary is now benchmarked against Econlib's dedicated production-economy surface rather than against a loose generic Walrasian label.
+### 1. Formal general equilibrium
 
-Relevant Econlib objects include ProductionEconomy, RegularProductionEconomy, Technology, RegularTechnology, Technology.profit, Technology.supply, WalrasianEquilibriumWithProduction, and exists_equilibrium_prod, together with production-side First Welfare and Second Welfare results.
+Econlib is the direct benchmark for the production-side vocabulary and formalization baseline. It contains a standard production economy with technology/profit/supply, Walrasian equilibrium with production, production-side welfare results, and an existence theorem built from explicit structural hypotheses.
 
-Econlib's production existence theorem is explicitly assumption-bearing. Its existence route supplies regularity, irreducibility, ownership/value conditions, and the associated production/consumer optimization structure. Therefore the local Agda semantic contract should not be presented as an unconditional existence theorem.
+Implication for this thesis: the local Agda production surface is not a new Walrasian existence theorem. It is valuable only insofar as it preserves the distinction between an abstract equilibrium contract and the additional assumptions required for existence.
 
-The local CompetitiveProductionEconomy / CompetitiveWalrasianEquilibriumWithProduction layer should be described as an interface contract whose fields mirror the economic ingredients: feasible production, profit maximization, consumer optimality, feasibility/resource balance, and market clearing. It is not the contribution to claim as a new production existence theorem.
+Reference: https://github.com/danlyng/Econlib
 
-## What is not the thesis contribution
+### 2. Learning and equilibrium
 
-Do not claim machine-checked economics, formalized Walrasian equilibrium, Agda formalization, a new production-side Walrasian existence theorem, a new First Welfare or Second Welfare theorem, or factor stability as a newly invented mathematical notion.
+The economics literature already studies learning processes precisely in relation to equilibrium and emphasizes that convergence depends on the learning rule and game class. Fudenberg and Levine's survey frames learning as a nonequilibrium process whose long-run behavior can or cannot correspond to equilibrium. Viossat and Zapechelnyuk connect no-regret dynamics with fictitious play and establish convergence results only for specified classes of games. Recent work continues to organize regret, learning, and equilibrium around explicit dynamical assumptions.
 
-Each either already exists in the formalization ecosystem or is a standard mathematical pattern.
+Implication for this thesis: the learner-to-equilibrium boundary is not novel merely because learning and equilibrium are connected. The candidate contribution is the formal, model-specific statement of which bridges are absent from this particular learner and therefore cannot be silently inferred.
 
-## Candidate substantive contribution 1: an explicit non-implication boundary
+References:
+- https://www.annualreviews.org/content/journals/10.1146/annurev.economics.050708.142930
+- https://doi.org/10.1016/j.jet.2012.07.003
+- https://arxiv.org/abs/2608.09389
 
-The strongest defensible contribution is the explicit formal separation of two theorem families that are easy to conflate:
+### 3. State abstraction and quotient dynamics
 
-exact learner identities / factor invariance -> representation-independent learner dynamics
+State equivalence, abstraction, and quotienting are established subjects in AI and dynamical decision systems. Givan, Dean, and Greig give a bisimulation-based equivalence for MDP state aggregation under which an optimal policy on the reduced model induces a corresponding policy on the original model. Abel's state-abstraction program likewise studies when abstractions preserve useful behavior.
 
-does NOT imply convergence -> fixed point -> market clearing -> supporting price -> Walrasian equilibrium existence.
+Implication for this thesis: calling the NormPair result a new abstraction theory would be incorrect. The narrower contribution is the exact quotient/factor characterization of this learner's NormPair coordinate: policy equality, one-step preservation, and arbitrary finite-iterate preservation are all proved for the concrete learner.
 
-The monolith contains closed countermodels and impossibility statements that prevent those arrows from being silently promoted. The contribution is therefore an auditable dependency boundary for this particular learner/economic composition, not a new general-equilibrium theorem.
+References:
+- https://doi.org/10.1016/S0004-3702(02)00376-4
+- https://ojs.aaai.org/index.php/AAAI/article/view/5075
 
-This becomes thesis-worthy if the dedicated literature review establishes that prior coupled learner/economic formalisms in the target literature leave these bridges implicit, untyped, or assumption-laden. That comparative claim still needs named prior systems as evidence.
+## What survives as a serious contribution candidate
 
-## Candidate substantive contribution 2: a concrete quotient/factor result
+### A. A formal non-implication result across domains
 
-The NormPair result is more specific than the generic statement that an equivalence relation is preserved. For this canonical learner, NormPair-related states have the same policy, the canonical transition preserves the relation, and arbitrary finite iterates preserve it.
+The strongest candidate is not a positive equilibrium theorem. It is the explicit proof boundary:
 
-This gives a quotient/factor interpretation of the learner dynamics. The mathematical pattern is standard; the candidate contribution is the exact characterization and proof for the chosen learner state and its consequences for downstream composition.
+exact learner laws -> factor/representation invariance
 
-Use the phrase machine-checked quotient/factor characterization of the canonical learner's NormPair coordinate, not a new theory of factor stability.
+does not entail
 
-## Candidate substantive contribution 3: a typed topology of missing economic obligations
+convergence -> fixed point -> market clearing -> supporting price -> Walrasian existence.
 
-The theorem/e-graph topology makes the missing bridges explicit and typed:
+The theorem monolith contains both closed positive learner/factor results and closed countermodels/impossibility statements that prevent these economic conclusions from being promoted without their own hypotheses.
+
+This is stronger than merely saying in prose that assumptions are needed. The formal artifact makes the missing obligations part of the theorem topology.
+
+Novelty status: CANDIDATE ONLY. The dedicated literature review must determine whether an equivalent mechanically auditable cross-domain dependency boundary already exists.
+
+### B. A concrete quotient/factor characterization of the canonical learner
+
+For the canonical learner, NormPair-related states have the same policy, the canonical transition preserves the relation, and arbitrary finite iterates preserve it. This yields a quotient/factor interpretation of the learner dynamics.
+
+The mathematical pattern is established in abstraction and bisimulation literature. The possible contribution is the exact characterization and proof for this learner, not the invention of quotient stability itself.
+
+Novelty status: CANDIDATE ONLY.
+
+### C. A typed dependency topology connecting learning to production/equilibrium theory
+
+The graph distinguishes:
 
 production primitives -> feasible firm plans -> profit-optimal supply;
-supply + demand + resources -> aggregate balance -> market clearing;
-separation/fixed-point structure -> supporting/derived price;
-price + clearing + optimization -> generalized equilibrium;
-generalized equilibrium + classical structural assumptions -> Arrow-Debreu specialization;
+supply + demand + resources -> aggregate resource balance -> market clearing;
+separation/fixed-point machinery -> derived/supporting price;
+price + clearing + optimization -> generalized Walrasian equilibrium;
+classical structural assumptions -> Arrow–Debreu existence;
 equilibrium + local nonsatiation/demand conditions -> Pareto optimality;
-Pareto optimality -> supporting-price/redistribution result only with the separate Second Welfare assumptions.
+Pareto optimality + separate supportability assumptions -> Second Welfare route.
 
-This is not itself a new economic theorem. Its possible contribution is methodological: the formalization makes theorem dependencies and blocked implications machine-visible rather than leaving them as prose-level assumptions.
+This is not a new economic theorem. The potential contribution is the explicit typed topology that prevents one theorem family from being mistaken for another.
 
-## Candidate substantive contribution 4: a generalized equilibrium interface
+Novelty status: CANDIDATE ONLY.
 
-The generalized carrier is useful if it prevents classical specialization from being smuggled in as a primitive. The current design keeps generalized equilibrium, production structure, welfare, Arrow-Debreu specialization, and existence as distinct interfaces and edges.
+## Production-side strict-unconditional boundary
 
-The architectural contribution can therefore be stated as: a coupled learner/economic formalization can expose a generalized equilibrium interface while retaining explicit, typed obligations for production, market clearing, price support, convergence, and classical specialization.
+For the strict unconditional production surface, use the following formulation:
 
-## Production-side interpretation
+The Agda development provides a closed semantic contract for competitive production-equilibrium ingredients and a closed countermodel showing that the generalized carrier alone does not entail an equilibrium witness.
 
-For the pure unconditional production surface, the right thesis language is:
+That is deliberately weaker than Econlib's exists_equilibrium_prod. Econlib's production existence route supplies substantive regularity, irreducibility, ownership/value, optimization, and market-clearing machinery. The Agda boundary should therefore be presented as an explicit separation between the carrier and the classical existence route—not as a competing existence theorem.
 
-The formalization provides a closed semantic contract for competitive production equilibrium ingredients and a closed impossibility result showing that such a generalized contract does not, by itself, entail an equilibrium witness.
+## What should be removed from the thesis novelty section
 
-The singleton empty-equilibrium countermodel is a local non-derivability witness. It is not a refutation of Arrow-Debreu or Econlib. Classical existence theorems add the structural hypotheses that the local generalized carrier intentionally leaves open.
+Remove:
 
-## The real research question
+- machine-checked economics as the primary novelty;
+- Agda as a novelty claim;
+- formalization of Walrasian equilibrium as a novelty claim;
+- a new production-side Walrasian existence theorem;
+- a new First Welfare or Second Welfare theorem;
+- factor stability as a newly invented mathematical concept.
 
-The thesis should move away from: Can Agda machine-check a learner/economic model?
+These are either already represented in existing formal/economic literature or are standard mathematical constructions.
 
-Toward: Which economic conclusions are actually entailed by the exact learner dynamics and which require independent economic assumptions, and can that boundary be represented as a mechanically auditable dependency topology?
+## What the thesis can plausibly claim
 
-That question is where the existing F4/NormPair proofs, production interface, countermodels, and economic graph fit together.
+The thesis can plausibly claim a contribution at the intersection of four layers:
 
-## Current import/CI synchronization
+1. A specific exact learner whose invariance and factor structure are characterized rather than assumed.
+2. A formal boundary theorem showing that those learner-side results do not supply independent economic convergence/equilibrium premises.
+3. A production/equilibrium interface whose terminology and obligations are aligned with established general-equilibrium formalization.
+4. A theorem/e-graph topology that makes positive implications, missing premises, and counterexamples simultaneously inspectable.
 
-No Agda import declarations are changed by this reassessment.
-
-The existing Dhall orchestration already compiles both monoliths with the same Agda environment: --safe, standard-library, and the repository root include path. The theorem monolith imports the learner monolith as C; the learner does not import the theorem monolith. This is the correct dependency direction and remains unchanged.
-
-The synchronization requirement is therefore satisfied by the current import surface rather than by adding or rewriting imports. Future changes should preserve this one-way dependency.
+The key phrase is therefore **formal characterization of the dependency boundary**, not **formalization itself**.
 
 ## Adviser-facing contribution statement
 
-The thesis does not claim novelty from formal verification, Agda, or from re-proving classical Walrasian results. Its substantive contribution is a mechanically auditable dependency topology for a specific coupled learner/economic system. The formalization identifies and proves the learner-side invariance and quotient structure that actually follow from the model, while explicitly blocking convergence, fixed-point, market-clearing, supporting-price, and equilibrium-existence conclusions unless their independent economic hypotheses are supplied. On the production side, it aligns the semantic interface with the standard competitive-production/Walrasian vocabulary and records the corresponding optimization and market-clearing obligations without silently importing an existence theorem. The resulting contribution is the explicit characterization of what the coupled model entails, what it does not entail, and where classical economic assumptions enter.
+The thesis does not claim novelty from formal verification, Agda, or re-proving classical Walrasian results. Its substantive contribution is a mechanically auditable dependency topology for a specific coupled learner/economic system. The formalization characterizes the learner-side invariance and quotient structure that actually follow from the model, while explicitly blocking convergence, fixed-point, market-clearing, supporting-price, and equilibrium-existence conclusions unless their independent economic hypotheses are supplied. On the production side, the interface is aligned with standard competitive-production/Walrasian vocabulary while remaining a semantic contract rather than an unconditional existence theorem. The resulting research contribution is the explicit characterization of what the coupled model entails, what it cannot entail, and where classical economic assumptions enter.
 
-## Novelty standard
+## Required final novelty test
 
-Before final thesis wording, compare this exact dependency-boundary claim against formalized general-equilibrium libraries such as Econlib; formalized welfare/existence developments; computational economics and learning-in-markets literature that couples learning dynamics to equilibrium concepts; quotient, bisimulation, and congruence results for dynamical systems and reinforcement-learning state abstractions; and formal dependency, e-graph, or proof-graph approaches in adjacent formal-methods work.
+Before the thesis states that this boundary is novel, compare it directly against:
 
-The final novelty claim should be limited to the intersection that the prior literature does not already cover.
+- formal general-equilibrium libraries, especially Econlib and earlier theorem-prover developments;
+- learning-in-games literature connecting adaptive dynamics to equilibrium and convergence;
+- state abstraction, bisimulation, quotient, and congruence literature for dynamical decision systems;
+- formal proof-graph, dependency-graph, e-graph, and theorem-discovery work;
+- prior work combining learning dynamics with general-equilibrium or production-economy structure.
+
+If prior work already contains the same boundary, downgrade the claim to an integration/application contribution. If it does not, identify precisely which cross-domain construction is absent and make that the thesis novelty claim.
+
+## Import and Dhall synchronization
+
+No Agda imports are changed. The existing Dhall CI surface compiles both monoliths under the same Agda environment:
+
+`--safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
+
+`--safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
+
+The learner remains the canonical component source and the theorem monolith remains the economic/composition source. The dependency direction is learner -> theorem monolith, not the reverse.
+
+## Verification
+
+The PR head was subsequently verified by GitHub Actions run 1245 (Nix connected composition verification) with conclusion success.
