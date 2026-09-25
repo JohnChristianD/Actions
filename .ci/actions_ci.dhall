@@ -72,6 +72,32 @@ let script = merge {
     counterexample_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Boundary|Counterexample|Impossibility/ {count++} END {print count+0}' "$theorem")
     composition_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Composition|Conjugacy|Transport|Closure|Isomorphism/ {count++} END {print count+0}' "$theorem")
 
+    mkdir -p .ci/discovery
+    {
+      printf '%s\\n' '{'
+      printf '  "source_graph": "%s",\\n' "$graph"
+      printf '  "theorem_source": "%s",\\n' "$theorem"
+      printf '  "learner_source": "%s",\\n' "$learner"
+      printf '  "semantic_law_count": %s,\\n' "$law_count"
+      printf '  "record_count": %s,\\n' "$record_count"
+      printf '  "top_level_declaration_count": %s,\\n' "$declaration_count"
+      printf '  "economic_record_count": %s,\\n' "$economic_record_count"
+      printf '  "economic_declaration_count": %s,\\n' "$economic_declaration_count"
+      printf '  "counterexample_or_boundary_record_count": %s,\\n' "$counterexample_count"
+      printf '  "composition_transport_record_count": %s,\\n' "$composition_count"
+      printf '  "surface_authority": "TheoremsMonolith.agda",\\n'
+      printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\\n'
+      printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\\n'
+      printf '  "closed_core": ["CanonicalNormPairQuotientFactorTransitionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "CanonicalF4NormPairUnconditionalFactorStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
+      printf '  "economic_boundary": ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
+      printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
+      printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
+      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic semantic projection; JSON is machine evidence and Mermaid is the human topology view"\\n'
+      printf '%s\\n' '}'
+    } > .ci/discovery/economic-closure-graph.json
+
+    grep -Fq '"surface_authority": "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.json
+    grep -Fq '"frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.json
     echo "economic-closure-graph=pass"
     echo "economic-record-count=$economic_record_count"
     echo "economic-declaration-count=$economic_declaration_count"
