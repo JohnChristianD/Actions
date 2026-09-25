@@ -11,10 +11,27 @@ The current thesis-facing claim is deliberately narrow: the formalization makes 
 - `.ci/actions_ci.dhall` — verification lanes and required checks.
 - `.ci/discovery/` — declaration extraction, dependency discovery, and graph consistency checks.
 - `docs/research/current-semantic-emergence-2026-09-25.mmd` — current end-to-end topology.
-- `docs/wiki.md` — current repository knowledge page.
 - `docs/economics/` — production/equilibrium vocabulary and economic boundary documentation.
 
 The Agda monoliths are intentionally kept as the proof source. Graphs are explanatory and discovery artifacts; a graph edge never substitutes for an Agda proof.
+
+## Repository-wide semantic e-graph closure
+
+Every Agda source file in `Exotic/ERL/FullCoupled/` is now covered by the same proof-only semantic transport boundary: e-graph related expressions compose by reflexivity, symmetry, transitivity, contextual transport, rewrite transport, and explicit path closure. `EGraphSemanticTransport.agda` also carries a typed A*-style cost/heuristic model. The cost guides discovery; it never becomes a proof of equality. The exact A* learner-side cost and trace laws remain in `TheoremsMonolith.agda` as `CanonicalAStarCostGuidanceTheorem` and `CanonicalEndogenousEGraphAStarTransportClosureTheorem`.
+
+The unconditional claim is deliberately at the graph-semantic layer: once a sound interpretation is supplied, every sound e-graph path has equal endpoints, independent of the chosen A* costs. This closure does not manufacture Maxwell Law-I/Law-III witnesses, equilibrium witnesses, or other domain-specific semantic inhabitants.
+
+The current Agda inventory is:
+- `CanonicalLearnerMonolith.agda` — canonical learner definitions.
+- `TheoremsMonolith.agda` — canonical theorem and semantic boundary surface.
+- `EGraphSemanticTransport.agda` — proof-only e-graph and A*-cost transport kernel.
+- `FourLawClosureWitnesses.agda` — explicit physical witness contracts.
+- `FourLawClosureImpossibility.agda` — generic non-derivability boundary for those contracts.
+- `GRUStatisticalInjectivity.agda` — canonical statistical/injectivity adapter.
+- `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
+- `CanonicalGamePorts.agda`, `CanonicalClosedLoopBench.agda`, `CanonicalFaithfulGameVariants.agda`, and `AdditionalBenchmarkPorts.agda` — benchmark/environment support surfaces.
+
+The monoliths remain the proof authority. Auxiliary Agda files are not independent theorem authorities; their semantics enter the common transport layer through explicit typed terms.
 
 ## Current semantic emergence
 
@@ -173,3 +190,5 @@ No claim is made that the learner is empirically optimal, that the formal produc
 The CI contract must check the current theorem names and current graphs only. Historical theorem partitions, deleted convergence transports, deleted certificate-only existence routes, and stale README inventories are not authoritative and must not be reintroduced as gates.
 
 When documentation and source disagree, the Agda source and the current Dhall verification contract are authoritative; the documentation must then be corrected to match them.
+
+The repository no longer treats `docs/wiki.md` as a canonical source; the README, theorem monolith, CI contract, and focused research notes are the maintained knowledge surface.

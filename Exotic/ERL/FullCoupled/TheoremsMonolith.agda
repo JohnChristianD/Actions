@@ -51,6 +51,7 @@ open import Relation.Nullary using (¬_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity public
 open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
+open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
 
 replaceClock :
   C.CanonicalFullLearnerState → Nat → C.CanonicalFullLearnerState
@@ -2086,6 +2087,12 @@ record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
         {isoB : StateIsomorphism T B}
         (f : S → T) →
       ExactFunctionIsomorphismTransportTheorem S T A B isoA isoB f
+    semanticEGraphAStarClosure :
+      ∀ {Expression State : Set} →
+      (A : AStarSemanticClosure Expression State) →
+      ∀ {e f : Expression} →
+      EGraphSemanticPath (semantics A) e f →
+      interpret (semantics A) e ≡ interpret (semantics A) f
 
 CanonicalEndogenousAStarTransportClosureTheorem :
   Set₁
@@ -2831,10 +2838,460 @@ canonical-physics-to-learner-transition-witness W K =
     (learnerStepConjugacy W K)
 
 ------------------------------------------------------------------------
--- The Hodge-Maxwell bridge is a conditional composition seam, not a
--- closed existence theorem.  The closed result promoted above is the
--- exact MARL law composition; this bridge is promoted separately only
--- when its explicit representation and step-conjugacy witnesses exist.
+-- nLab-guided semantic closure for the Maxwell four-law seam.
+--
+-- Sources:
+--   Noether theorem / conserved current:
+--     https://ncatlab.org/nlab/show/Noether%27s%2Btheorem
+--     https://ncatlab.org/nlab/show/conserved%2Bcurrent
+--   Maxwell differential-form equations / Hodge-Maxwell theorem:
+--     https://ncatlab.org/nlab/show/Maxwell%27s%2Bequations
+--     https://ncatlab.org/nlab/show/Hodge-Maxwell%2Btheorem
+--   Action / Euler-Lagrange critical locus:
+--     https://ncatlab.org/nlab/show/action%2Bfunctional
+--     https://ncatlab.org/nlab/show/Euler-Lagrange%2Bequation
+--
+-- The repository does not expose a differential-form calculus or a
+-- variational bicomplex. Therefore the external theorems are represented
+-- by theorem-output interfaces rather than fabricated Agda axioms:
+--
+--   Noether output:
+--     an on-shell conserved current for the physical step;
+--   Euler-Lagrange output:
+--     a variational/action semantics whose Euler-Lagrange shell contains
+--     the Maxwell shell and whose critical-locus predicate is stationary.
+--
+-- The concrete Hodge-Maxwell representation still supplies the learner ↔
+-- solution inverse and one-step conjugacy. The only semantic frontier
+-- entering the four-law contract is therefore this single typed closure
+-- record.
+------------------------------------------------------------------------
+
+record NLabNoetherConservationTheorem
+  (PhysicalState Current : Set)
+  (PhysicalStep : PhysicalState → PhysicalState)
+  (MaxwellShell : PhysicalState → Set) : Set₁ where
+  constructor nLabNoetherConservationTheorem
+  field
+    current :
+      PhysicalState → Current
+    conservedOnShell :
+      ∀ p →
+      MaxwellShell p →
+      current (PhysicalStep p) ≡ current p
+
+open NLabNoetherConservationTheorem public
+
+record NLabEulerLagrangeMaxwellTheorem
+  (PhysicalState Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary : PhysicalState → Set)
+  (MaxwellShell : PhysicalState → Set) : Set₁ where
+  constructor nLabEulerLagrangeMaxwellTheorem
+  field
+    variation :
+      PhysicalState → Variation
+    action :
+      PhysicalState → Action
+    admissibleVariation :
+      ∀ p →
+      Admissible (variation p)
+    eulerLagrangeShell :
+      PhysicalState → Set
+    maxwellImpliesEulerLagrange :
+      ∀ p →
+      MaxwellShell p →
+      eulerLagrangeShell p
+    eulerLagrangeImpliesMaxwell :
+      ∀ p →
+      eulerLagrangeShell p →
+      MaxwellShell p
+    eulerLagrangeImpliesStationary :
+      ∀ p →
+      eulerLagrangeShell p →
+      Stationary p
+
+open NLabEulerLagrangeMaxwellTheorem public
+
+nLabMaxwellEulerLagrangeShell-equivalence :
+  ∀ {PhysicalState Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary : PhysicalState → Set}
+  {MaxwellShell : PhysicalState → Set}
+  (S :
+    NLabEulerLagrangeMaxwellTheorem
+      PhysicalState
+      Variation
+      Action
+      Admissible
+      Stationary
+      MaxwellShell)
+  (p : PhysicalState) →
+  (MaxwellShell p → eulerLagrangeShell S p)
+  ×
+  (eulerLagrangeShell S p → MaxwellShell p)
+nLabMaxwellEulerLagrangeShell-equivalence S p =
+  ( maxwellImpliesEulerLagrange S p
+  , eulerLagrangeImpliesMaxwell S p )
+
+MaxwellSolution :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousHodgeMaxwellExactRepresentationData
+      GRU) →
+  Set
+MaxwellSolution D = Solution D
+
+MaxwellShell :
+  ∀ {GRU : Set}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (D :
+    ContinuousHodgeMaxwellExactRepresentationData
+      GRU) →
+  MaxwellSolution D → Set
+MaxwellShell D p = maxwellEquation D p
+
+lawIFromNLabNoether :
+  ∀ {LearnerState PhysicalState Current : Set}
+  {PhysicalStep : PhysicalState → PhysicalState}
+  {MaxwellShell : PhysicalState → Set}
+  (S :
+    NLabNoetherConservationTheorem
+      PhysicalState
+      Current
+      PhysicalStep
+      MaxwellShell)
+  (shell : ∀ p → MaxwellShell p)
+  (encodeD : LearnerState → PhysicalState)
+  (decodeD : PhysicalState → LearnerState)
+  (decodeEncodeD :
+    ∀ s → decodeD (encodeD s) ≡ s) →
+  LawIPhysicsWitness
+    LearnerState
+    PhysicalState
+    Current
+lawIFromNLabNoether
+  S
+  shell
+  encodeD
+  decodeD
+  decodeEncodeD =
+  lawIPhysicsWitness
+    encodeD
+    decodeD
+    decodeEncodeD
+    (λ p → PhysicalStep p)
+    (current S)
+    (λ p → conservedOnShell S p (shell p))
+
+lawIIIFromNLabEulerLagrange :
+  ∀ {LearnerState PhysicalState Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary : PhysicalState → Set}
+  {MaxwellShell : PhysicalState → Set}
+  (S :
+    NLabEulerLagrangeMaxwellTheorem
+      PhysicalState
+      Variation
+      Action
+      Admissible
+      Stationary
+      MaxwellShell)
+  (shell : ∀ p → MaxwellShell p)
+  (encodeD : LearnerState → PhysicalState)
+  (decodeD : PhysicalState → LearnerState)
+  (decodeEncodeD :
+    ∀ s → decodeD (encodeD s) ≡ s) →
+  LawIIIVariationalWitness
+    LearnerState
+    PhysicalState
+    Variation
+    Action
+    Admissible
+    Stationary
+lawIIIFromNLabEulerLagrange
+  S
+  shell
+  encodeD
+  decodeD
+  decodeEncodeD =
+  lawIIIVariationalWitness
+    encodeD
+    decodeD
+    decodeEncodeD
+    (variation S)
+    (action S)
+    (admissibleVariation S)
+    (λ p →
+      eulerLagrangeImpliesStationary
+        S
+        p
+        (maxwellImpliesEulerLagrange S p (shell p)))
+
+record NLabMaxwellSemanticClosure
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous})
+  (Current Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set) : Set₁ where
+  constructor nLabMaxwellSemanticClosure
+  field
+    noether :
+      NLabNoetherConservationTheorem
+        (MaxwellSolution
+          (semantics (hodgeRepresentation W)))
+        Current
+        (step (semantics (hodgeRepresentation W)))
+        (MaxwellShell
+          (semantics (hodgeRepresentation W)))
+
+    variational :
+      NLabEulerLagrangeMaxwellTheorem
+        (MaxwellSolution
+          (semantics (hodgeRepresentation W)))
+        Variation
+        Action
+        Admissible
+        Stationary
+        (MaxwellShell
+          (semantics (hodgeRepresentation W)))
+
+open NLabMaxwellSemanticClosure public
+
+nLabMaxwellFourLawOneStep :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous})
+  (K : C.CanonicalFullLearnerKernel)
+  {Current Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set} →
+  NLabMaxwellSemanticClosure
+    W
+    Current
+    Variation
+    Action
+    Admissible
+    Stationary →
+  FourLawOneStepWitnessContract
+    C.CanonicalFullLearnerState
+    (MaxwellSolution
+      (semantics (hodgeRepresentation W)))
+    Current
+    Variation
+    Action
+    Admissible
+    Stationary
+    (C.canonicalFullStep K)
+    (step (semantics (hodgeRepresentation W)))
+nLabMaxwellFourLawOneStep
+  W
+  K
+  S =
+  fourLawOneStepWitnessContract
+    (lawIFromNLabNoether
+      (noether S)
+      (λ p →
+        maxwellEquation
+          (semantics (hodgeRepresentation W))
+          p)
+      (learnerToSolution W)
+      (solutionToLearner W)
+      (learnerSolutionLeftInverse W))
+    (lawIIIFromNLabEulerLagrange
+      (variational S)
+      (λ p →
+        maxwellEquation
+          (semantics (hodgeRepresentation W))
+          p)
+      (learnerToSolution W)
+      (solutionToLearner W)
+      (learnerSolutionLeftInverse W))
+    (canonical-physics-to-learner-transition-witness W K)
+
+------------------------------------------------------------------------
+-- A semantically closed four-law model is the single proof-relevant
+-- downstream boundary.  Once this package is inhabited, callers do not
+-- repeat the Noether, variational, shell, inverse, or transition premises.
+--
+-- This does not manufacture an inhabitant: the repository's generic
+-- impossibility boundary rules out a constructor that could populate these
+-- fields for arbitrary predicates.  The package therefore concentrates the
+-- unavoidable physical semantics into one explicit object while keeping all
+-- later transport theorems premise-free.
+------------------------------------------------------------------------
+
+record NLabMaxwellFourLawSemanticallyClosed
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous})
+  (Current Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set) : Set₁ where
+  constructor nLabMaxwellFourLawSemanticallyClosed
+  field
+    kernel : C.CanonicalFullLearnerKernel
+    semanticClosure :
+      NLabMaxwellSemanticClosure
+        W
+        Current
+        Variation
+        Action
+        Admissible
+        Stationary
+
+nLabMaxwellFourLawSemanticallyClosed-from-semantic :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous})
+  (K : C.CanonicalFullLearnerKernel)
+  {Current Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set}
+  (S :
+    NLabMaxwellSemanticClosure
+      W
+      Current
+      Variation
+      Action
+      Admissible
+      Stationary) →
+  NLabMaxwellFourLawSemanticallyClosed
+    W
+    Current
+    Variation
+    Action
+    Admissible
+    Stationary
+nLabMaxwellFourLawSemanticallyClosed-from-semantic
+  W
+  K
+  S =
+  nLabMaxwellFourLawSemanticallyClosed
+    K
+    S
+
+open NLabMaxwellFourLawSemanticallyClosed public
+
+nLabMaxwellFourLawOneStepClosed :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  {W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous}}
+  {Current Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set}
+  (B :
+    NLabMaxwellFourLawSemanticallyClosed
+      W
+      Current
+      Variation
+      Action
+      Admissible
+      Stationary) →
+  FourLawOneStepWitnessContract
+    C.CanonicalFullLearnerState
+    (MaxwellSolution
+      (semantics (hodgeRepresentation W)))
+    Current
+    Variation
+    Action
+    Admissible
+    Stationary
+    (C.canonicalFullStep (kernel B))
+    (step (semantics (hodgeRepresentation W)))
+nLabMaxwellFourLawOneStepClosed B =
+  nLabMaxwellFourLawOneStep
+    W
+    (kernel B)
+    (semanticClosure B)
+
+------------------------------------------------------------------------
+-- Once the nLab semantic square is inhabited, autonomous-time transport
+-- is already closed by the existing one-step conjugacy kernel.
+------------------------------------------------------------------------
+
+nLabMaxwellIterateConjugacy :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous})
+  (K : C.CanonicalFullLearnerKernel) →
+  ∀ n s →
+  learnerToSolution W
+    (iterateStep
+      (C.canonicalFullStep K)
+      n
+      s)
+  ≡
+  iterateStep
+    (step (semantics (hodgeRepresentation W)))
+    n
+    (learnerToSolution W s)
+nLabMaxwellIterateConjugacy
+  W
+  K
+  n
+  s =
+  iterateConjugacy
+    (learnerToSolution W)
+    (λ s →
+      learnerStepConjugacy W K s)
+    n
+    s
+
+nLabMaxwellIterateConjugacyClosed :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  {W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous}}
+  {Current Variation Action : Set}
+  {Admissible : Variation → Set}
+  {Stationary :
+    MaxwellSolution
+      (semantics (hodgeRepresentation W)) → Set}
+  (B :
+    NLabMaxwellFourLawSemanticallyClosed
+      W
+      Current
+      Variation
+      Action
+      Admissible
+      Stationary) →
+  ∀ n s →
+  learnerToSolution W
+    (iterateStep
+      (C.canonicalFullStep (kernel B))
+      n
+      s)
+  ≡
+  iterateStep
+    (step (semantics (hodgeRepresentation W)))
+    n
+    (learnerToSolution W s)
+nLabMaxwellIterateConjugacyClosed B =
+  nLabMaxwellIterateConjugacy
+    W
+    (kernel B)
+    n
+    s
+
 ------------------------------------------------------------------------
 
 f4-add-right-nonnegative :

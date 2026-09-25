@@ -109,6 +109,60 @@ The existing `CanonicalLearnerHodgeMaxwellCompositionTheorem` now has a direct A
 ## References to repository proof authority
 
 - Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-- docs/wiki.md
+- README.md
 - docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md
 - .ci/discovery/current-semantic-emergence-2026-09-25.mmd
+
+## Semantic-premise pruning update — 2026-09-25
+
+The theorem monolith now distinguishes two levels that must not be conflated:
+
+1. `NLabMaxwellSemanticClosure` is the physical semantic input. It contains the repository-facing Noether/current output and the variational/action output for the existing Hodge-Maxwell solution carrier.
+2. `NLabMaxwellFourLawSemanticallyClosed` is a downstream proof-relevant package that also stores the learner kernel. Its consumers no longer restate the individual semantic premises.
+
+The resulting closed-signature adapters are `nLabMaxwellFourLawOneStepClosed` and `nLabMaxwellIterateConjugacyClosed`. This is a genuine pruning of repeated conditionality at the theorem-consumer surface.
+
+The pruning does not alter the existence boundary. The package still has to be inhabited by concrete current/trajectory compatibility and action/variation/stationarity semantics. The generic non-derivability result in `FourLawClosureImpossibility.agda` prevents a universal constructor from removing those mathematical obligations.
+
+The Euler-Lagrange interface was also strengthened with the reverse implication from Euler-Lagrange shell to Maxwell shell, making the shell correspondence explicitly two-way rather than merely a one-way implication into stationarity.
+
+## Literature resolution — 2026-09-25
+
+The requested source expansion was checked against the exact Agda obligations rather than only the vocabulary.
+
+### Maxwell / Noether
+
+Wikipedia's Maxwell equations page records charge conservation as a corollary of the Maxwell system, while its differential-form presentation gives dF=0 and d⋆F=μ0J. The conserved-current page identifies the continuity equation as the local conservation statement. nLab's gauge-symmetry and geometry-of-physics material gives the corresponding Euler-Lagrange form for vacuum electromagnetism and the Noether identity obtained from commuting derivatives.
+
+This supports the chain: Maxwell field equation + d² = 0 / commuting derivatives → local current conservation / Noether identity. But the repository Law-I contract asks for a stronger discrete trajectory equality. A continuum divergence-free current is not definitionally the same proposition as current(step p) ≡ current p.
+
+Primary sources checked:
+- https://ncatlab.org/nlab/show/A%2Bfirst%2Bidea%2Bof%2Bquantum%2Bfield%2B--%2BGauge%2Bsymmetries
+- https://ncatlab.org/nlab/show/geometry%2Bof%2Bphysics%2B--%2Bperturbative%2Bquantum%2Bfield%2Btheory
+- https://en.wikipedia.org/wiki/Maxwell%27s_equations
+- https://en.wikipedia.org/wiki/Conserved_current
+
+Itin's Noether currents and charges for Maxwell-like Lagrangians (arXiv:math-ph/0307003) reinforces the variational/current semantics but still does not define this repository's learner state or discrete step.
+
+### Watanabe and Tsallis
+
+The source chain does not provide the missing representation bridge. Tsallis's statistical-mechanics work treats entropy, probability distributions, and constrained variational/statistical principles; the Tsallis literature cites S. Watanabe's Knowing and Guessing in the information-theoretic background. Those results are relevant to Law IV's statistical semantics, not to the Law-I trajectory/current inverse or Law-III Maxwell action carrier in this repository.
+
+Therefore no searched source supplies the missing concrete Agda inhabitant. Manufacturing one from a top-valued predicate, constant current, trivial action, or postulate would be semantic substitution rather than derivation.
+
+### E-graph closure
+
+The repository already contains the exact unconditional proof-only e-graph kernel in Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda. Given an EGraphSemanticInterpretation with a sound interpretation, it proves reflexive, symmetric, and transitive semantic equality plus contextual and rewrite transport.
+
+Thus the e-graph layer is no longer the physical bottleneck. The remaining physical frontier is exactly the inhabitance of NLabMaxwellSemanticClosure.
+
+### Decision
+
+1. Unconditional e-graph semantic closure: proved by the existing Agda transport kernel once semantic soundness is supplied.
+2. Unconditional four-law physical closure: not derivable from the searched sources or current repository definitions without a concrete Law-I discrete current/trajectory compatibility theorem and concrete Law-III action/variation/stationarity data.
+
+This is the strongest closure justified by the primary sources and the present type system.
+
+## Knowledge-surface pruning — 2026-09-25
+
+The obsolete branch-local wiki, the superseded nLab candidate note, and the unfinished Maxwell implementation plan are pruned from the maintained documentation surface. Their durable conclusions are retained here and in README.md: the typed Maxwell semantic boundary is proved as an adapter layer, while concrete Law-I current preservation and Law-III variational inhabitance remain separate physical obligations.

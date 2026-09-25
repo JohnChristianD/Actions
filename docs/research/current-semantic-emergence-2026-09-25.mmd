@@ -81,12 +81,15 @@ flowchart TD
   TRANS --> SQ
   H1 --> SQ
   GS --> SQ
+  NB["NLab semantic boundary package\nNLabMaxwellSemanticClosure"] --> NBP["Downstream premise-pruned package\nNLabMaxwellFourLawSemanticallyClosed"]
+  NBP -. "requires concrete Law-I / Law-III semantic inhabitant" .-> SQ
   SQ --> FL1
   GCI["GlobalConjugacyEquivalence exact iterate transport [AGDA THEOREM]"] --> IT["n-step iterate conjugacy [FRONTIER]"]
   FL1 --> GCI
   IT --> PX["prefix concatenation transport [FRONTIER]"]
   PX --> FL2
   FL0 --> FL1["Four-Law iterate conjugacy [FRONTIER]"]
+  NBP --> FL0
   FL1 --> FL2["Four-Law exact prefix / horizon conjugacy [FRONTIER]"]
   FL2 --> FL3["Four-Law end-to-end representation closure [FRONTIER]"]
 
@@ -122,6 +125,7 @@ flowchart TD
   GI -. "cannot discharge" .-> W
 
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
+    B0["nLab semantic packaging = PROVED Agda adapters; it does not itself supply physical witness inhabitants"]
     B1["Law I = exact representation property, conditional on inverse witness + current/trajectory compatibility"]
     B2["Law II = exact Hodge-Maxwell representation property, proved from decode∘encode"]
     B3["Law III = exact representation property, conditional on inverse witness + variational semantics"]

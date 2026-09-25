@@ -127,3 +127,70 @@ eGraph-rewrite-context R step h =
 -- graph-level equality transport, while the concrete Law I/Law III and
 -- physics-to-learner witness records remain separate obligations.
 ------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Cost-guided e-graph paths.
+--
+-- A* is a search strategy, not a proof rule.  The semantic proof is the
+-- path of sound e-graph edges; the Nat cost is carried separately so an
+-- A*-style selector can optimize traversal without changing the proof.
+------------------------------------------------------------------------
+
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+
+record AStarCostModel (Expression : Set) : Set₁ where
+  constructor aStarCostModel
+  field
+    edgeCost : Expression → Expression → Nat
+    heuristic : Expression → Nat
+
+open AStarCostModel public
+
+data EGraphSemanticPath
+  {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State) :
+  Expression → Expression → Set where
+  path-refl :
+    ∀ e →
+    EGraphSemanticPath R e e
+  path-step :
+    ∀ {e f g} →
+    related (congruence R) e f →
+    EGraphSemanticPath R f g →
+    EGraphSemanticPath R e g
+
+eGraph-path-sound :
+  ∀ {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State) →
+  ∀ {e f} →
+  EGraphSemanticPath R e f →
+  interpret R e ≡ interpret R f
+eGraph-path-sound R (path-refl e) = refl
+eGraph-path-sound R (path-step h rest) =
+  trans (sound R h) (eGraph-path-sound R rest)
+
+record AStarSemanticClosure
+  (Expression State : Set) : Set₁ where
+  constructor aStarSemanticClosure
+  field
+    semantics : EGraphSemanticInterpretation Expression State
+    costs : AStarCostModel Expression
+
+open AStarSemanticClosure public
+
+aStar-guided-semantic-closure :
+  ∀ {Expression State : Set}
+  (A : AStarSemanticClosure Expression State) →
+  ∀ {e f : Expression} →
+  EGraphSemanticPath (semantics A) e f →
+  interpret (semantics A) e ≡ interpret (semantics A) f
+aStar-guided-semantic-closure A =
+  eGraph-path-sound (semantics A)
+
+------------------------------------------------------------------------
+-- The cost/heuristic fields are intentionally not used in the equality
+-- proof.  This prevents A* from becoming an unsound source of semantic
+-- equality while still giving the discovery layer a typed cost-guidance
+-- object that can be attached to a sound e-graph interpretation.
+------------------------------------------------------------------------
