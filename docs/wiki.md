@@ -115,3 +115,30 @@ The F4 ray theorem is an exact statement about the implemented discrete update u
 ## Production-side topology
 
 The production-side contract uses standard economic vocabulary.
+
+
+## Four-law closure frontier
+
+The repository now has an explicit typed contract for the remaining cross-law witness seam in `Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda`.
+
+`LawIPhysicsWitness` requires a learner-to-physical representation with a left inverse plus explicit trajectory/current data. `LawIIIVariationalWitness` requires an inverse representation plus explicit admissibility and stationarity predicates. `PhysicsToLearnerTransitionWitness` requires an inverse representation and one-step transition conjugacy.
+
+These records are deliberately uninhabited on the current branch. They make the missing proof obligations machine-readable without turning semantic contracts into axioms. The graph therefore records `FourLawOneStepWitnessContract` as a frontier contract, not as a closed theorem.
+
+The remaining promotion path is:
+
+```text
+Law-I witness + Law-III witness + physics→learner conjugacy
+        ↓
+existing Law-II Hodge-Maxwell representation
+        +
+existing Law-IV GRU statistical representation
+        ↓
+four-law one-step square
+        ↓
+iterate / prefix / horizon transport
+        ↓
+strict connected closure
+```
+
+No unconditional four-law closure is claimed until that contract has an actual Agda inhabitant and the composed theorem passes the repository's proof and CI gates.
