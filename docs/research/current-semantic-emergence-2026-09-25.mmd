@@ -1,15 +1,30 @@
 flowchart TD
-  A["Canonical learner definitions"] --> B["Exact recurrent scan / composition"]
-  B --> C["NormPair preservation"]
-  B --> ML["Three MARL-facing exact laws: recurrent scan, F4 step, NormPair step"]
-  ML --> CP["GRU × F4 × NormPair × Watkins prefix composition"]
-  CP --> HM["Hodge-Maxwell / GRU-F4-Watkins exact representation and step conjugacy"]
-  C --> D["NormPair quotient / factor transition"]
-  B --> E["Exact F4 optimizer stability"]
-  E --> F["F4 unit-forcing growth ray"]
-  HM --> E
-  F --> G["No unconditional infinite-horizon F4 upper bound"]
-  D --> H["Canonical F4 × NormPair unconditional factor stability"]
+  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws"]
+  B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
+  C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
+  D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
+
+  P1["Law I: agent/particle dynamics"]
+  P2["Law II: local Maxwell field dynamics"]
+  P3["Law III: variational / virtual-work constraint"]
+  P1 --> PI["Explicit physics → learner interface witness"]
+  P2 --> PI
+  P3 --> PI
+  PI -. "not entailed by learner algebra alone" .-> D
+
+  H0["ContinuousHodgeMaxwellExactRepresentationData"]
+  H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
+  H0 --> H1
+  H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
+  D --> HB
+
+  HB --> HC["Encoded learner-step conjugacy"]
+  H1 --> HI["Global StateIsomorphism / encode injectivity"]
+
+  E --> F["Exact F4 optimizer stability"]
+  F --> G["F4 unit-forcing linear-growth ray"]
+  G --> GNB["No unconditional infinite-horizon F4 upper bound"]
+  F --> H["Canonical F4 × NormPair unconditional factor stability"]
   E --> H
 
   H --> I["Representation / factor structure"]
@@ -19,22 +34,17 @@ flowchart TD
   H -. "does not entail" .-> M["Supporting / derived price"]
   H -. "does not entail" .-> N["Walrasian existence"]
 
-  O["Competitive production economy"] --> P["Feasible firm production plans"]
-  P --> Q["Profit-maximizing production"]
-  O --> R["Consumer optimality / demand"]
-  Q --> S["Aggregate resource balance"]
-  R --> S
-  S --> L
+  O["Competitive production economy"] --> Q["Feasible firm production plans"]
+  Q --> R["Profit-maximizing production"]
+  O --> S["Consumer optimality / demand"]
+  R --> T["Aggregate resource balance"]
+  S --> T
+  T --> L
   L --> M
   M --> N
+  N -. "requires independent economic hypotheses" .-> U["Fixed-point / compactness / continuity / preference / production / separation assumptions"]
 
-  N -. "requires independent economic hypotheses" .-> T["Fixed-point / compactness / continuity / preference / production / separation assumptions"]
+  V["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> W["Universal non-existence of unconditional generalized-Walrasian existence"]
+  H -. "cannot discharge" .-> W
 
-  U["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> V["Universal non-existence of unconditional generalized-Walrasian existence"]
-  H -. "cannot discharge" .-> V
-
-  W["First Welfare: condition-gated"] --> X["Competitive equilibrium + demand assumptions"]
-  Y["Second Welfare: separate supportability route"] --> M
-
-  F --> LR["Linear optimizer-state ray: exact forcing response, not convergence or boundedness"]
-  LR -. "not unique in principle" .-> LU["Many optimizers can show linear drift under persistent nonzero forcing"]
+  X["F4 linear forcing is not an optimizer-unique mechanism"] -.-> Y["Persistent nonzero increments can drift in many optimizers"]
