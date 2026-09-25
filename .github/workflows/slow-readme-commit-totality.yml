@@ -25,10 +25,13 @@ jobs:
       - name: Update README from commit totality
         run: nix run .#slow-readme-update
 
+      - name: Synchronize GitHub-facing documentation index
+        run: nix run .#readme-doc-sync -- --write
+
       - name: Commit README update
         run: |
           if git diff --quiet -- README.md; then
-            echo "README already accounts for all commits since the previous update."
+            echo "README is already synchronized."
             exit 0
           fi
           git config user.name "github-actions[bot]"
