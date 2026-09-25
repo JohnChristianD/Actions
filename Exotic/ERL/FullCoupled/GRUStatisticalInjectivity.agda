@@ -3,6 +3,7 @@ module Exotic.ERL.FullCoupled.GRUStatisticalInjectivity where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong)
 open import Data.Product using (_×_; _,_; proj₁)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
+open import Exotic.ERL.FullCoupled.TsallisStatisticalRepresentation public
 CanonicalGRUStatisticalObservation : Set
 CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
@@ -26,3 +27,4 @@ canonicalGRUStatisticalDistinguishability : ∀ {s t : C.GRUState} → s ≢ t �
 canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonicalGRUStatisticalEncodeInjective collision)
 canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
 canonicalGRUStatisticalStepConsequence s x = refl
+\n------------------------------------------------------------------------\n-- Carrier-polymorphic Law-IV instance. The concrete canonical observation\n-- remains available above, while the injectivity mechanism is now supplied\n-- by the arithmetic-free representation kernel.\n------------------------------------------------------------------------\n\ncanonicalGRUTsallisCompatibleRepresentation :\n  TsallisCompatibleStatisticalRepresentation\n    C.GRUState\n    CanonicalGRUStatisticalObservation\ncanonicalGRUTsallisCompatibleRepresentation =\n  tsallisCompatibleStatisticalRepresentation\n    (carrierPolymorphicStatisticalRepresentation\n      canonicalGRUStatisticalEncode\n      canonicalGRUStatisticalDecode\n      canonicalGRUStatisticalDecodeEncode)\n\ncanonicalGRUTsallisCompatibleInjective :\n  ∀ {s t : C.GRUState} →\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) s\n  ≡\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) t →\n  s ≡ t\ncanonicalGRUTsallisCompatibleInjective =\n  tsallisCompatibleEncodeInjective\n    canonicalGRUTsallisCompatibleRepresentation\n\ncanonicalGRUTsallisCompatibleDistinguishability :\n  ∀ {s t : C.GRUState} →\n  s ≢ t →\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) s\n  ≢\n  encode\n    (representation canonicalGRUTsallisCompatibleRepresentation) t\ncanonicalGRUTsallisCompatibleDistinguishability =\n  tsallisCompatibleEncodeDistinguishes\n    canonicalGRUTsallisCompatibleRepresentation\n
