@@ -242,3 +242,14 @@ For Law I, nLab's conserved-current formalism defines conservation as horizontal
 For Law III, nLab's action-functional and variational-bicomplex formalisms provide the matching vocabulary: a local action is built from a Lagrangian density, variations produce the Euler-Lagrange form, and the critical/solution locus is where that form vanishes. Admissible boundary behavior is part of the derivation of stationarity and Euler-Lagrange equations. Maxwell theory is explicitly treated as an Euler-Lagrange theory in nLab, making it a promising concrete bridge to the repository's existing Hodge-Maxwell representation.
 
 The detailed primary-source research is recorded in `docs/research/nlab-four-law-semantic-candidates-2026-09-25.md`. The result is a candidate semantic model, not an inhabited Law-I or Law-III witness. In particular, conservation vocabulary must not be substituted for the repository's trajectory/current equality, and a trivial variation must not be introduced merely to populate the Law-III contract.
+
+
+## Concrete Maxwell witness plan — 2026-09-25
+
+Following the nLab semantic audit, the next implementation target is a specialized classical-electromagnetic/Hodge-Maxwell witness adapter. The plan is recorded at `docs/superpowers/plans/2026-09-25-four-law-maxwell-witnesses.md`.
+
+The plan separates five proof seams: freeze the concrete carrier mapping; prove Law-I trajectory/current compatibility; prove Law-III nontrivial action/variation/stationarity semantics; compose the existing conditional physics→learner adapter into `FourLawOneStepWitnessContract`; then instantiate the existing iterate/prefix/e-graph transport kernels.
+
+No Agda witness is claimed by this planning change. The graph remains `FRONTIER` until the concrete current-preservation equality and variational stationarity fields are actually inhabited and verified under `--safe`.
+
+Stale when: the concrete Maxwell carrier mapping, witness contracts, or the implementation plan path changes.
