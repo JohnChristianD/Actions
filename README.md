@@ -34,7 +34,21 @@ The current Agda inventory is:
 
 The monoliths remain the proof authority. Auxiliary Agda files are not independent theorem authorities; their semantics enter the common transport layer through explicit typed terms.
 
-### Complete surviving-Agda closure index\n\nThe repository-wide semantic closure is now indexed by an explicit finite `RepositoryAgdaModule` enumeration containing every surviving `Exotic/ERL/FullCoupled/*.agda` file on this branch. The closure theorem quantifies over that complete index and an externally supplied sound semantic family. This makes the scope claim auditable: no surviving Agda file is outside the semantic e-graph/A* boundary.\n\nThe exact chain is:\n\n    all surviving Agda files\n      -> supplied sound module interpretation\n      -> sound e-graph path\n      -> A*-guided traversal\n      -> exact semantic endpoint equality\n\nThe word **unconditional** applies to this graph-semantic theorem after its typed soundness input is supplied. It does not assert unconditional physical Maxwell existence. The nLab/Noether and Euler-Lagrange interfaces close the semantic obligations as explicit inputs; the repository still refuses to invent a Law-I trajectory/current equality, a Law-III action/variation/stationarity inhabitant, or the learner↔Maxwell inverse/step witness.\n\n## Source-grounded Maxwell semantic boundary
+### Complete surviving-Agda closure index
+
+The repository-wide semantic closure is indexed by an explicit finite `RepositoryAgdaModule` enumeration containing every surviving `Exotic/ERL/FullCoupled/*.agda` file. The closure theorem quantifies over that complete index and an externally supplied sound semantic family. This makes the scope claim auditable: no surviving Agda file is outside the semantic e-graph/A* boundary.
+
+The exact chain is:
+
+    all surviving Agda files
+      -> supplied sound module interpretation
+      -> sound e-graph path
+      -> A*-guided traversal
+      -> exact semantic endpoint equality
+
+The word **unconditional** applies to this graph-semantic theorem after its typed soundness input is supplied. It does not assert unconditional physical Maxwell existence. The nLab/Noether and Euler-Lagrange interfaces close the semantic obligations as explicit inputs; the repository still refuses to invent a Law-I trajectory/current equality, a Law-III action/variation/stationarity inhabitant, or the learner↔Maxwell inverse/step witness.
+
+## Source-grounded Maxwell semantic boundary
 
 The Maxwell semantic adapters are aligned with the external mathematical semantics rather than treating search artifacts as proofs. nLab's Noether treatment connects variational symmetries with on-shell conserved currents; its conserved-current entry defines horizontal closure on the dynamical shell. nLab's Maxwell and Hodge-Maxwell entries provide the differential-form equations and the Hodge-theoretic existence/uniqueness statement under its stated hypotheses. nLab's action-functional and Euler-Lagrange entries connect action critical loci with equations of motion, including Maxwell's equations.
 
@@ -43,6 +57,9 @@ The Stanford Encyclopedia of Philosophy's gauge-theory entry independently recor
 These sources justify the semantic shape of the adapters. They do not provide the repository-specific discrete current-preservation equality, learner↔Maxwell inverse, or learner-step conjugacy. Those remain explicit typed obligations in NLabMaxwellSemanticClosure; no external source is imported as an Agda axiom.
 
 The maintained primary-source audit is docs/research/four-law-primary-source-closure-audit-2026-09-25.md. The focused ZPF/ω³ implementation note is docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md.
+
+<!-- BEGIN GENERATED DOCUMENTATION INDEX -->
+<!-- END GENERATED DOCUMENTATION INDEX -->
 
 ## Current semantic emergence
 
