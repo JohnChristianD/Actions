@@ -264,3 +264,10 @@ For Law III, the candidate remains a genuine Maxwell action/Lagrangian with a no
 The existing `canonical-physics-to-learner-transition-witness` remains the intended learner bridge and is reused conditionally rather than duplicated. A new design note records the carrier mapping and exact blockers in `docs/research/four-law-maxwell-witness-design-2026-09-25.md`.
 
 Knowledge delta for this batch: the concrete carrier boundary is now explicit; no semantic witness or closure claim has been added. The machine graph remains `FRONTIER_CONTRACT_ONLY` until both the current-preservation theorem and genuine variational stationarity semantics are inhabited and verified under `--safe`.
+
+
+### Task 2 audit: Law-I current preservation remains unproved
+
+The existing Hodge-Maxwell theorem surface exposes `Solution → Solution` physical evolution and `fieldJ : Solution → Form3`, but no theorem proves `fieldJ (step p) ≡ fieldJ p`. Maxwell closure of the stepped solution is weaker than the exact Law-I contract obligation. The identity map is not accepted as a substitute physical trajectory, and `dj = 0` is not accepted as a substitute for trajectory/current equality. The four-law graph therefore remains at `FRONTIER_CONTRACT_ONLY` until a genuine current-preserving trajectory theorem is supplied.
+
+Knowledge delta: the exact Task 2 blocker is now recorded here and in `docs/research/four-law-maxwell-witness-design-2026-09-25.md`.
