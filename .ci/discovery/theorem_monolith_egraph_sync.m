@@ -73,7 +73,7 @@ closure_round(
     add_graph_plans(RoundPlans, E0, E1),
     saturate_until_stable(
         semantic_rewrite_rules, E1, E, Saturation),
-    AfterEnodes = enode_count(E),
+    AfterEnodes = enode_count(E).
 
 :- pred astar_egraph_fixed_point(
     list(semantic_law)::in,
@@ -108,7 +108,7 @@ astar_egraph_fixed_point(
         plan_terminal_ids(RoundPlans1, SeedIds1, SeedIdsNext),
         closure_round(
             Laws, SeedIdsNext, E1, E2, RoundPlans2,
-            Saturation2, BeforeEnodes2, AfterEnodes2),
+            _, BeforeEnodes2, AfterEnodes2),
         (
             RoundPlans2 = RoundPlans1,
             AfterEnodes2 = BeforeEnodes2
