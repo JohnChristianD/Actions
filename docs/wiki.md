@@ -144,3 +144,12 @@ strict connected closure
 ```
 
 No unconditional four-law closure is claimed until that contract has an actual Agda inhabitant and the composed theorem passes the repository's proof and CI gates.
+
+
+## Relative impossibility boundary
+
+The repository now contains `Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda`. It proves a constructive relative non-derivability result: there is no polymorphic constructor from arbitrary carriers, admissibility predicates, stationarity predicates, and one-step functions to `FourLawOneStepWitnessContract`.
+
+The proof specializes `Stationary` to the empty type. Any universal constructor would therefore have to populate the `LawIIIVariationalWitness.stationary` field for an inhabited physical carrier, yielding an inhabitant of `⊥`. This is an impossibility of the generic interface, not an impossibility theorem about concrete physics or about every possible four-law model.
+
+Consequently the iterate/prefix transport kernels cannot close the frontier by themselves: they transport an inhabited semantic square. A concrete closure theorem still requires genuine Law-I and Law-III semantic data, or explicit additional assumptions from which those data are derived.
