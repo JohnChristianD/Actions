@@ -119,3 +119,15 @@ The refined dependency chain is:
 This is materially stronger than the previous one-step-only frontier because the induction kernel and the prefix-monoid transport stage are now explicit. The existing iterateCanonical definition and recurrent-prefix append lemmas provide the corresponding learner-side induction shape, while CanonicalLearnerHodgeMaxwellCompositionTheorem already supplies an explicit learner-to-solution inverse pair and one-step conjugacy seam.
 
 No new Agda theorem is claimed by this graph update; the frontier remains conditional until the missing physics witnesses are instantiated and typechecked.
+
+
+### First proof-kernel promotion
+
+The generic GlobalConjugacyEquivalence surface has now been extended on the Agda theorem surface with globalConjugacyEquivalence-iterate. It proves, by induction on the horizon index, the exact transport law
+
+  observe (iterateState step n s)
+    ≡ iterateState featureStep n (observe s).
+
+This is an actual reusable theorem, not a physics placeholder. Consequently the four-law graph now has a proved induction kernel between its one-step commuting square and its n-step iterate-conjugacy frontier.
+
+The physics-facing frontier remains conditional: the theorem does not manufacture Law-I, Law-III, or physics→learner witnesses. It consumes a GlobalConjugacyEquivalence once those witnesses are supplied.
