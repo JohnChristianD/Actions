@@ -79,3 +79,18 @@ Until both exist, the graph must remain `FRONTIER_CONTRACT_ONLY`, and iterate/pr
 - Plan: `docs/superpowers/plans/2026-09-25-four-law-maxwell-witnesses.md`.
 - External semantic sources: the nLab pages listed above.
 - Knowledge delta: this file freezes the carrier mapping and records the exact unresolved proof obligations before production witness code.
+
+
+## Task 2 audit — exact Law-I blocker
+
+A direct audit of the current theorem surface shows that the existing Hodge-Maxwell record provides a physical `step : Solution → Solution` and the observable `fieldJ : Solution → Form3`, but no theorem establishing
+
+`∀ p → fieldJ (step p) ≡ fieldJ p`.
+
+The existing Maxwell closure field only establishes that the stepped solution satisfies the Maxwell equation again; it does not imply preservation of the chosen current observable. Therefore the Law-I witness cannot honestly be constructed by taking the existing `step` as trajectory.
+
+The tempting alternatives are not acceptable: identity trajectory would satisfy the equality definitionally but would not be the intended physical evolution, and replacing the equality with a differential conservation statement would weaken the repository contract.
+
+Consequently Task 2 remains blocked on one concrete mathematical theorem: **current preservation for the selected physical trajectory**. No Agda witness module was added merely to encode this missing premise.
+
+This is a deliberate red boundary, not a failed implementation: the implementation plan explicitly requires the exact equality and forbids synthetic witnesses.
