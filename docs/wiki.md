@@ -153,3 +153,40 @@ The repository now contains `Exotic/ERL/FullCoupled/FourLawClosureImpossibility.
 The proof specializes `Stationary` to the empty type. Any universal constructor would therefore have to populate the `LawIIIVariationalWitness.stationary` field for an inhabited physical carrier, yielding an inhabitant of `⊥`. This is an impossibility of the generic interface, not an impossibility theorem about concrete physics or about every possible four-law model.
 
 Consequently the iterate/prefix transport kernels cannot close the frontier by themselves: they transport an inhabited semantic square. A concrete closure theorem still requires genuine Law-I and Law-III semantic data, or explicit additional assumptions from which those data are derived.
+
+## Four-law semantic closure graph — current frontier
+
+The graph below is the canonical human-readable projection of the typed proof boundary. Labels mean: **PROVED** = an Agda theorem/adapter exists; **CONDITIONAL** = follows from explicitly supplied representation semantics; **MISSING** = the repository has a contract but no concrete semantic witness.
+
+```mermaid
+flowchart TD
+  HM["Law II — Hodge-Maxwell\ndF = 0; d⋆F = J"] --> TRANS["physics → learner transition\nPROVED CONDITIONAL"]
+  HM --> LI_PRE["trajectory + current\ncurrent-preservation theorem"]
+  LI_PRE --> LI["Law I witness\nMISSING"]
+  VAR["action / Lagrangian\nvariations / admissibility\nstationarity"] --> LIII["Law III witness\nMISSING"]
+
+  TRANS --> ONE["FourLawOneStepWitnessContract"]
+  LI --> ONE
+  LIII --> ONE
+
+  ONE --> ITER["iterate conjugacy\nPROVED GENERIC"]
+  ITER --> PREFIX["prefix-scan transport\nPROVED GENERIC"]
+  PREFIX --> EGRAPH["e-graph semantic transport\nPROVED PROOF-ONLY"]
+  EGRAPH --> END["exact prefix / horizon\nFOUR-LAW CLOSURE"]
+
+  subgraph Existing["Existing learner/physics infrastructure"]
+    HM
+    TRANS
+    GRU["Law IV — GRU statistical representation"]
+    ITER
+    PREFIX
+    EGRAPH
+  end
+
+  GRU --> ONE
+  HM --> ONE
+```
+
+The semantic bottleneck is therefore not GRU expressivity. It is the construction of concrete Law-I and Law-III witnesses that preserve the intended meanings of those laws. Adding arbitrary axioms would make the endpoint conditional on those axioms; changing the law definitions to fit the GRU would change the theorem being proved.
+
+nLab's Maxwell and variational formalisms provide the mathematical vocabulary for these missing branches, but external references are not proof authority. The repository must still supply the actual Agda witnesses and their connection to the canonical learner.
