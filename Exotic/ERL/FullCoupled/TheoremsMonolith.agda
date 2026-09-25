@@ -3528,48 +3528,52 @@ generalizedWalrasianEquilibrium =
   megaGeneralizedWalrasianEquilibrium
 
 ProductionSet : Set → Set
-ProductionSet Commodity = Commodity → Set
+ProductionSet ProductionPlan = ProductionPlan → Set
 
 record CompetitiveProductionEconomy
-  (Agent Firm Commodity Price Consumption : Set) : Set₁ where
+  (Agent Firm Commodity Price Consumption ProductionPlan : Set) : Set₁ where
   constructor competitiveProductionEconomy
   field
     endowment : Agent → Consumption
     preference : Agent → Consumption → Consumption → Set
     consumptionFeasible : Agent → Consumption → Set
-    productionSet : Firm → ProductionSet Commodity
+    productionSet : Firm → ProductionPlan → Set
     ownershipShare : Agent → Firm → Set
-    profitMaximization : Firm → Price → Commodity → Set
-    resourceBalance : Commodity → Set
+    profitMaximization :
+      Firm → Price → ProductionPlan → Set
+    resourceBalance :
+      Commodity → Set
 
 record CompetitiveWalrasianEquilibriumWithProduction
-  (Agent Firm Commodity Price Consumption : Set)
+  (Agent Firm Commodity Price Consumption ProductionPlan : Set)
   (E : CompetitiveProductionEconomy
-    Agent Firm Commodity Price Consumption) : Set₁ where
+    Agent Firm Commodity Price Consumption ProductionPlan) : Set₁ where
   constructor competitiveWalrasianEquilibriumWithProduction
   field
     price : Price
     consumption : Agent → Consumption
-    production : Firm → Commodity
+    production : Firm → ProductionPlan
     consumerOptimality :
       ∀ i →
       CompetitiveProductionEconomy.preference E i
         (consumption i)
         (consumption i)
+    productionFeasibility :
+      ∀ j →
+      CompetitiveProductionEconomy.productionSet E
+        j
+        (production j)
     productionOptimality :
       ∀ j →
       CompetitiveProductionEconomy.profitMaximization E
-        j price
+        j
+        price
         (production j)
-    feasibility :
+    consumptionFeasibility :
       ∀ i →
       CompetitiveProductionEconomy.consumptionFeasible E
         i
         (consumption i)
-    productionFeasibility :
-      ∀ j → ∀ c →
-      CompetitiveProductionEconomy.feasibleProduction E
-        j c
     marketClearing :
       ∀ c →
       CompetitiveProductionEconomy.resourceBalance E c
