@@ -66,6 +66,44 @@ The four injectivity surfaces therefore remain faithful to the proof boundary: g
 
 Law IV's statistical representation is distinct from the additional ZPF hypothesis. The ZPF layer may state a homogeneous/isotropic stochastic field and an `ω³` spectral law, but that spectral hypothesis is not derived from Maxwell equations or from injectivity.
 
+## Primary-source closure audit
+
+External references sharpen the missing-witness boundary rather than removing it.
+
+The nLab treatment of Noether's theorem makes the Law-III requirements explicit: stationary action, admissible boundary behavior for variations, Euler-Lagrange equations, and variational symmetries/conserved currents. Wikipedia's virtual-work and Lagrangian-mechanics material similarly depends on admissible virtual displacements and constraints. These formalisms therefore identify the data a concrete Law-III witness must carry; they do not provide a universal learner-to-variational-state inverse.
+
+For Law I, nLab's Maxwell and electric-charge pages formulate the source as a conserved current and use differential-form equations such as `d F = 0` and `d * F = j`. That validates the current/Maxwell interface but does not construct a unique particle trajectory from an arbitrary learner state.
+
+The Tsallis source establishes the q-entropy and q-distribution formalism under explicit statistical constraints. It supports the repository's statistical layer, but it does not supply a physical-state encode/decode inverse or the physics-to-learner transition conjugacy.
+
+Accordingly the exact continuation remains:
+
+```text
+Law-I trajectory/current witness
+        +
+Law-III admissible-variation / virtual-work witness
+        +
+physics -> learner transition conjugacy
+        +
+Law-II Hodge-Maxwell representation
+        +
+Law-IV GRU statistical representation
+        |
+        v
+four-law one-step commuting square
+        |
+        v
+n-step iterate conjugacy
+        |
+        v
+prefix concatenation transport
+        |
+        v
+exact prefix/horizon end-to-end closure
+```
+
+No external source is promoted to Agda proof authority. The detailed source audit is recorded in `docs/research/four-law-primary-source-closure-audit-2026-09-25.md`.
+
 ## Why Mermaid, and what it is not
 
 Mermaid is a diagram-description DSL, not a pure typed functional programming language. A flowchart source names nodes, edges, labels, subgraphs, and presentation/layout directives; the Mermaid parser and renderer turn that declarative description into a diagram. It has no role as proof authority and does not replace Agda's type system. Mermaid fits this repository because the topology is a human-readable graph projection that fits Markdown/GitHub documentation.
