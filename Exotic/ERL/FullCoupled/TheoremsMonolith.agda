@@ -1808,6 +1808,32 @@ record GlobalConjugacyEquivalence
     featureDynamicsFromState :
       ∀ f → featureStep f ≡ observe (step (inverse f))
 
+globalConjugacyEquivalence-iterate :
+  ∀ {State Feature : Set}
+    {step : State → State}
+    {observe : State → Feature}
+    {featureStep : Feature → Feature}
+    {inverse : Feature → State}
+    (G : GlobalConjugacyEquivalence
+      State
+      Feature
+      step
+      observe
+      featureStep
+      inverse)
+    (n : Nat)
+    (s : State) →
+  observe (iterateState step n s)
+  ≡
+  iterateState featureStep n (observe s)
+globalConjugacyEquivalence-iterate G zero s = refl
+globalConjugacyEquivalence-iterate G (suc n) s =
+  trans
+    (field G .forward (iterateState step n s))
+    (cong
+      featureStep
+      (globalConjugacyEquivalence-iterate G n s))
+
 recurrentListState-append :
   ∀ {State Input : Set}
   (R : C.RecurrentNetwork State Input)
