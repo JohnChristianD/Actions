@@ -33,6 +33,8 @@ data RepositoryAgdaModule : Set where
     RepositoryAgdaModule
   gruStatisticalInjectivity :
     RepositoryAgdaModule
+  zpfStatisticalRepresentation :
+    RepositoryAgdaModule
   tsallisStatisticalRepresentation :
     RepositoryAgdaModule
   repositorySemanticEGraphClosure :
