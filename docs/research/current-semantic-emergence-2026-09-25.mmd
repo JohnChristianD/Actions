@@ -65,6 +65,12 @@ flowchart TD
   PI --> FL0
   GS --> FL0
 
+  FL0 --> L1W["Law I inverse representation witness [REQUIRED]"]
+  FL0 --> L3W["Law III inverse representation witness [REQUIRED]"]
+  FL0 --> PIW["Physics → learner transition witness [REQUIRED]"]
+  L1W --> FL1
+  L3W --> FL1
+  PIW --> FL1
   FL0 --> FL1["Four-Law iterate conjugacy [FRONTIER]"]
   FL1 --> FL2["Four-Law exact prefix / horizon conjugacy [FRONTIER]"]
   FL2 --> FL3["Four-Law end-to-end representation closure [FRONTIER]"]
