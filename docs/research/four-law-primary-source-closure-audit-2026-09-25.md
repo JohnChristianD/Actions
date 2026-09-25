@@ -200,3 +200,29 @@ The expanded literature pass strengthens the semantic adapters but does not clos
 supplied sound Agda semantic family → sound e-graph path → exact endpoint equality
 
 with A* costs/heuristics used only for traversal. Physical Law-I/Law-III inhabitance remains an explicit typed input to NLabMaxwellSemanticClosure.
+
+
+## 2026-09-25 semantic closure/index pass
+
+The surviving Agda surface was read as a complete set rather than as a theorem-monolith sample:
+
+- CanonicalLearnerMonolith.agda
+- TheoremsMonolith.agda
+- EGraphSemanticTransport.agda
+- FourLawClosureWitnesses.agda
+- FourLawClosureImpossibility.agda
+- GRUStatisticalInjectivity.agda
+- TsallisStatisticalRepresentation.agda
+- RepositorySemanticEGraphClosure.agda
+
+The repository semantic index now enumerates exactly these eight files. Its theorem is unconditional over the enumerated file, a supplied sound semantic interpretation, and a supplied sound e-graph path. A* contributes only cost/heuristic traversal metadata. Therefore the final semantic closure is an equality theorem over supplied semantics, not an existence theorem for every domain model.
+
+The Maxwell semantic seam is also fully composed at the implication level: a supplied nLab-style conserved-current theorem plus a supplied Maxwell-shell proof yields the Law-I contract; a supplied Euler-Lagrange/Maxwell shell equivalence plus stationarity output yields the Law-III contract; the existing learner/solution inverse and step-conjugacy witness yields the physics-to-learner transition contract; these compose into the one-step four-law contract and arbitrary-horizon iterate conjugacy. The missing physical inhabitants themselves are not fabricated.
+
+## Source-depth conclusion
+
+The expanded source pass supports these distinctions. nLab explicitly defines conserved currents as horizontally closed on the dynamical shell and derives them from variational symmetries; its Maxwell and Hodge-Maxwell pages state the differential-form equations and the stated Hodge existence/uniqueness result. Its action-functional and Euler-Lagrange pages connect critical loci to equations of motion and list Maxwell's equations as an example.
+
+SEP's gauge-theory discussion independently connects Maxwell/current conservation, classical Lagrangians, Noether's theorem, and Euler-Lagrange equations. Wikipedia cross-checks Maxwell charge conservation, the electromagnetic-tensor field equation, Noether conservation, and the Euler-Lagrange variational route. tsallis.com gives the current Tsallis entropy definition, nonadditivity, q-Gaussian construction, and current bibliography/news; Wikipedia's Tsallis pages add q-logarithm/q-exponential relations. None of those external sources defines this repository's discrete learner state, exact current/trajectory equality, or learner/Maxwell inverse. External sources therefore remain semantic evidence, never Agda proof inputs.
+
+The placeholder citation marker above is intentionally not part of the repository's proof authority; the maintained source URLs and source-by-source findings remain in this audit's earlier sections.
