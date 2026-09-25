@@ -2545,16 +2545,21 @@ record CanonicalMARLLawCompositionTheorem : Set₁ where
       RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
     f4StepLaw :
       ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) →
-      C.canonicalOptimizerStep K s
+      (o : C.F4IntUState)
+      (signal : C.Int8) →
+      C.runNetwork
+        (canonicalF4RecurrentNetwork K)
+        o
+        signal
       ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer s)
-        (C.canonicalSignal K s)
+      C.f4ThetaStep (C.optimizerKernel K) o signal
     normPairStepLaw :
       ∀ (n : C.NormPair) (signal : C.Int8) →
-      n ≡ n
+      C.runNetwork
+        canonicalNormPairRecurrentNetwork
+        n
+        signal
+      ≡ n
     watkinsSignalLaw :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
@@ -2568,8 +2573,8 @@ canonical-marl-law-composition-theorem :
 canonical-marl-law-composition-theorem =
   canonicalMARLLawCompositionTheorem
     canonical-recurrent-prefix-monoid-homomorphism
-    C.canonicalOptimizerStep-f4-coupling
-    (λ n signal → refl)
+    canonicalF4RecurrentNetwork-step-law
+    canonicalNormPairRecurrentNetwork-step-law
     C.canonicalSignal-watkins-target
     canonical-gruf4-norm-watkins-prefix-composition-theorem
 
@@ -2716,16 +2721,14 @@ connected-continuous-hodge-maxwell-gru-representation-theorem D =
 ------------------------------------------------------------------------
 
 record CanonicalLearnerHodgeMaxwellCompositionTheorem
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (H :
-    ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-      C.CanonicalFullLearnerState) : Set₁ where
+  {Continuous : {A B : Set} → (A → B) → Set} : Set₁ where
   constructor canonicalLearnerHodgeMaxwellCompositionTheorem
   field
     learnerSemantics :
       CanonicalMARLLawCompositionTheorem
     hodgeRepresentation :
-      H
+      ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
+        C.CanonicalFullLearnerState
 
     learnerToSolution :
       C.CanonicalFullLearnerState →
@@ -2758,8 +2761,7 @@ canonical-learner-hodge-maxwell-step-conjugacy :
   ∀ {Continuous : {A B : Set} → (A → B) → Set}
   (W :
     CanonicalLearnerHodgeMaxwellCompositionTheorem
-      {Continuous = Continuous}
-      hodgeRepresentation) →
+      {Continuous = Continuous}) →
   ∀ s →
   encode
     (semantics (hodgeRepresentation W))
