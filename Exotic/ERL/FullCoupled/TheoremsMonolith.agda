@@ -3502,6 +3502,93 @@ megaNoStrictAffordableAlternative-is-demand-optimality boundary =
 
 
 ------------------------------------------------------------------------
+-- Literature-standard economic vocabulary adapters.
+--
+-- The implementation historically used Mega-prefixed names. The canonical
+-- literature-facing vocabulary is exposed here without changing the
+-- underlying generalized semantic carrier.
+------------------------------------------------------------------------
+
+GeneralizedWalrasianEquilibrium :
+  Set → Set → Set → Set₁
+GeneralizedWalrasianEquilibrium =
+  MegaGeneralizedWalrasianEquilibrium
+
+generalizedWalrasianEquilibrium :
+  ∀ {State Price Allocation : Set} →
+  (encode : State → Price) →
+  (equilibrium : Price → Allocation → Set) →
+  (feasibility : Price → Allocation → Set) →
+  (characterize :
+    ∀ {p a} →
+    equilibrium p a →
+    feasibility p a) →
+  GeneralizedWalrasianEquilibrium State Price Allocation
+generalizedWalrasianEquilibrium =
+  megaGeneralizedWalrasianEquilibrium
+
+ProductionSet : Set → Set
+ProductionSet ProductionPlan = ProductionPlan → Set
+
+record CompetitiveProductionEconomy
+  (Agent Firm Commodity Price Consumption ProductionPlan : Set) : Set₁ where
+  constructor competitiveProductionEconomy
+  field
+    endowment : Agent → Consumption
+    preference : Agent → Consumption → Consumption → Set
+    consumptionFeasible : Agent → Consumption → Set
+    productionSet : Firm → ProductionPlan → Set
+    ownershipShare : Agent → Firm → Set
+    profitMaximization :
+      Firm → Price → ProductionPlan → Set
+    resourceBalance :
+      Commodity → Set
+
+record CompetitiveWalrasianEquilibriumWithProduction
+  (Agent Firm Commodity Price Consumption ProductionPlan : Set)
+  (E : CompetitiveProductionEconomy
+    Agent Firm Commodity Price Consumption ProductionPlan) : Set₁ where
+  constructor competitiveWalrasianEquilibriumWithProduction
+  field
+    price : Price
+    consumption : Agent → Consumption
+    production : Firm → ProductionPlan
+    consumerOptimality :
+      ∀ i →
+      CompetitiveProductionEconomy.preference E i
+        (consumption i)
+        (consumption i)
+    productionFeasibility :
+      ∀ j →
+      CompetitiveProductionEconomy.productionSet E
+        j
+        (production j)
+    productionOptimality :
+      ∀ j →
+      CompetitiveProductionEconomy.profitMaximization E
+        j
+        price
+        (production j)
+    consumptionFeasibility :
+      ∀ i →
+      CompetitiveProductionEconomy.consumptionFeasible E
+        i
+        (consumption i)
+    marketClearing :
+      ∀ c →
+      CompetitiveProductionEconomy.resourceBalance E c
+
+------------------------------------------------------------------------
+-- Production-side literature boundary.
+--
+-- This is a semantic production-economy contract, not an unconditional
+-- existence theorem. Classical Arrow-Debreu/Walrasian production models
+-- add structural assumptions on consumption sets, production sets,
+-- preferences, ownership, and prices before existence or welfare
+-- conclusions are derived.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- Generalized Second Welfare theorem.
 --
 -- The theorem is stated against MegaGeneralizedWalrasianEquilibrium rather
