@@ -59,6 +59,11 @@ let script = merge {
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
     [ -f "$readme" ] || { echo "missing README"; exit 1; }
+    [ -f .ci/readme-doc-sync.dhall ] || { echo "missing Dhall README documentation sync"; exit 1; }
+    generated_readme_sync=$(mktemp)
+    trap 'rm -f "$generated_readme_sync"' EXIT
+    dhall text --file .ci/readme-doc-sync.dhall > "$generated_readme_sync"
+    bash "$generated_readme_sync" --check || { echo "README GitHub-facing documentation index is stale"; exit 1; }
 
     for node in       "Canonical learner definitions"       "Four exact MARL-facing laws"       "CanonicalMARLLawCompositionTheorem (closed)"       "Exact recurrent scan / composition"       "NormPair quotient / factor transition"       "Exact F4 optimizer stability"       "F4 unit-forcing growth ray"       "No unconditional infinite-horizon F4 upper bound"       "Canonical F4 × NormPair unconditional factor stability"       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"       "ContinuousHodgeMaxwellExactRepresentationData"       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"       "CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"       "Competitive production economy"       "Feasible firm production plans"       "Profit-maximizing production"       "Aggregate resource balance"       "Market clearing"       "Walrasian existence"
     do
