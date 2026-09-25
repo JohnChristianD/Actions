@@ -1,8 +1,12 @@
 flowchart TD
-  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws + explicit graph-level Law IV hypothesis"]
+  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws"]
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
+
+  B4["Law IV: canonical GRU statistical representation"] --> GI["Unconditional GRU statistical injectivity"]
+  GI --> GD["Algebraic consequence: distinct GRU states remain statistically distinguishable"]
+  GD --> GS["Step closure: gruStep preserves the exact injective representation"]
 
   P1["Law I: agent/particle dynamics"] --> J["Particle trajectories"]
   J --> CUR["Particle four-current J"]
@@ -11,33 +15,26 @@ flowchart TD
   HM["dF = 0; d⋆F = source current"]
   HM --> FP["Sourced Maxwell field F_particles"]
 
-  P4["Law IV: ZPF background-field / spectral hypothesis (graph-only; not an Agda theorem)"]
-  Z["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
-  ZS["ω³ spectral law"]
-  P4 --> Z --> ZS
-  Z --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
-  FP --> FT["Total field F_total = F_particle + F_ZPF"]
-  Z --> FT
+  Z["Additional ZPF hypothesis"]
+  Z0["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
+  Z1["ω³ spectral law"]
+  Z --> Z0 --> Z1
+  Z0 --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
+  FP --> FT["Total field F_total = F_particles + F_ZPF"]
+  Z0 --> FT
   HF --> FT
-
-  A4["Agda status: no Law IV / ZPF declaration or proof is present in the current Agda monoliths"]
-  P4 -. "status boundary" .-> A4
-
   FT --> FORCE["Field force / effective particle interaction"]
   FORCE --> P1
-  FORCE --> P3
+
   P3["Law III: variational / virtual-work admissibility"] --> PI["Explicit physics → learner interface witness"]
-  P1 -. "coupled dynamics" .-> PI
-  P2 -. "field constraint" .-> PI
-  P4 -. "additional field-state hypothesis" .-> PI
+  FORCE --> PI
   P3 --> PI
   PI -. "not entailed by learner algebra alone" .-> D
 
-  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData
-dF = 0; d⋆F = source"]
-  Z -. "additional graph-level spectral/background hypothesis" .-> H0
-  H0 -. "does not make Law IV an Agda theorem" .-> A4
+  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData"]
+  Z --> H0
   H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
+  GI --> H1
   H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
   D --> HB
 
@@ -52,10 +49,13 @@ dF = 0; d⋆F = source"]
 
   H --> I["Representation / factor structure"]
   HI -. "preserves state distinguishability" .-> I
+  GI -. "preserves canonical GRU-state distinguishability" .-> I
   HI -. "does not entail" .-> J2["Convergence"]
   HI -. "does not entail" .-> K["Fixed point"]
   H -. "does not entail" .-> J2
   H -. "does not entail" .-> K
+  GI -. "does not entail" .-> J2
+  GI -. "does not entail" .-> K
   H -. "does not entail" .-> L["Market clearing"]
   H -. "does not entail" .-> M["Supporting / derived price"]
   H -. "does not entail" .-> N["Walrasian existence"]
@@ -73,17 +73,18 @@ dF = 0; d⋆F = source"]
   V["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> W["Universal non-existence of unconditional generalized-Walrasian existence"]
   H -. "cannot discharge" .-> W
   HI -. "cannot discharge" .-> W
+  GI -. "cannot discharge" .-> W
 
   X["F4 linear forcing is not an optimizer-unique mechanism"] -.-> Y["Persistent nonzero increments can drift in many optimizers"]
 
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
     B1["Law II = differential-form Maxwell content"]
-    B2["Law IV / ZPF = additional spectral / stochastic hypothesis, represented here only in the graph"]
+    B2["ZPF = additional spectral / stochastic hypothesis"]
     B3["Global injectivity = exact representation property"]
-    B4["No claim that Maxwell alone proves ω³ ZPF"]
-    B5["Law IV is not currently part of Agda proof authority"]
+    B4b["No claim that Maxwell alone proves ω³ ZPF"]
+    B5["Law IV injectivity = exact GRU representation theorem, not a convergence or probability-existence theorem"]
     B1 --> B2
     B2 --> B3
-    B3 --> B4
-    B4 --> B5
+    B3 --> B4b
+    B4b --> B5
   end
