@@ -50,6 +50,7 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity public
+open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
 
 replaceClock :
   C.CanonicalFullLearnerState → Nat → C.CanonicalFullLearnerState
