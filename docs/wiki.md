@@ -64,6 +64,8 @@ Law II has an actual Agda injectivity consequence through `ConnectedContinuousHo
 
 The four injectivity surfaces therefore remain faithful to the proof boundary: graph edges do not create missing physical representation witnesses.
 
+Law IV now also has an arithmetic-free carrier-polymorphic representation kernel in `Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda`. The generic injectivity result requires only an encoder, decoder, and `decode ∘ encode ≡ id`; it does not import `Real`, `Rational`, `Vec`, or `Fin n`. The canonical GRU observation is instantiated through `TsallisCompatibleStatisticalRepresentation`. This generalizes the proof surface without rewriting the concrete learner's existing `FiniteRational` q-log state. The name `TsallisCompatible` is a structural interface, not a claim that the Tsallis website itself is an Agda proof dependency.
+
 Law IV's statistical representation is distinct from the additional ZPF hypothesis. The ZPF layer may state a homogeneous/isotropic stochastic field and an `ω³` spectral law, but that spectral hypothesis is not derived from Maxwell equations or from injectivity.
 
 ## Primary-source closure audit
