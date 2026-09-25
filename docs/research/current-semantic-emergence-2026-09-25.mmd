@@ -23,7 +23,11 @@ flowchart TD
   Z["Additional ZPF hypothesis"]
   Z0["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
   Z1["ω³ spectral law"]
-  Z --> Z0 --> Z1
+  Z2["ZPF ω³ typed spectral-law contract [AGDA]"]
+  Z3["ZPF → canonical GRU statistical representation [CONDITIONAL]"]
+  Z4["ZPF global GRU-state injectivity from decode∘encode [PROVED-CONDITIONAL]"]
+  Z --> Z0 --> Z1 --> Z2 --> Z3 --> Z4
+  Z4 --> GI
   Z0 --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
   FP --> FT["Total field F_total = F_particles + F_ZPF"]
   Z0 --> FT
@@ -140,7 +144,7 @@ flowchart TD
     B2["Law II = exact Hodge-Maxwell representation property, proved from decode∘encode"]
     B3["Law III = exact representation property, conditional on inverse witness + variational semantics"]
     B4b["Law IV = closed GRU statistical representation theorem"]
-    B5["ZPF ω³ spectrum = additional stochastic/spectral hypothesis, not derived by injectivity"]
+    B5["ZPF ω³ spectrum = typed Agda spectral-law contract; concrete physical realization remains an explicit semantic input"]
     B1 --> B2
     B2 --> B3
     B3 --> B4b
