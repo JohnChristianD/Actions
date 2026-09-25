@@ -1,817 +1,161 @@
-# Actions - Exact Recurrent Learner and Theorem-Graph Monograph
+# Actions — canonical learner, theorem, and economic dependency topology
 
-This repository formalizes a bounded recurrent learner, exact sequence-model semantics, finite-observation information boundaries, optimizer composition, probability semantics, POMDP transport, and theorem discovery.
+This repository is a mechanically checked study of one coupled recurrent learner and the exact consequences that follow from its definitions. The authoritative mathematical surface is Agda; the discovery and CI layers are subordinate tooling.
 
-The canonical proof surface is Agda. Mercury extracts the declarations that Agda exposes, searches dependency paths, and builds e-graph candidates. Dhall declares the verification contract. Nix composes the reproducible build environment. GitHub Actions executes the configured checks.
+The current thesis-facing claim is deliberately narrow: the formalization makes the dependency boundary explicit. Exact learner dynamics yield exact representation, quotient, factorization, and stability facts. They do not, by themselves, yield convergence, a fixed point, market clearing, supporting prices, or Walrasian equilibrium existence.
 
-A discovered graph path is not a proof. A candidate becomes authoritative only when the corresponding proposition is present on the Agda proof surface and accepted by the Agda checker.
+## Authoritative sources
 
-## Language roles and why these choices fit
+- `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` — canonical learner definitions and definitional laws.
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` — theorem consumer and semantic/economic boundary.
+- `.ci/actions_ci.dhall` — verification lanes and required checks.
+- `.ci/discovery/` — declaration extraction, dependency discovery, and graph consistency checks.
+- `docs/research/current-semantic-emergence-2026-09-25.mmd` — current end-to-end topology.
+- `docs/wiki.md` — current repository knowledge page.
+- `docs/economics/` — production/equilibrium vocabulary and economic boundary documentation.
 
-### Agda: proof and semantic authority
+The Agda monoliths are intentionally kept as the proof source. Graphs are explanatory and discovery artifacts; a graph edge never substitutes for an Agda proof.
 
-Agda is used for the canonical learner definitions and theorem surface:
+## Current semantic emergence
 
-```
-Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-```
-
-This is the strongest role match in this stack for proof authority because dependent types represent propositions as types and proofs as ordinary type-correct terms. The repository runs the theorem surface with `--safe`. Safe Agda disables mechanisms such as postulates, unfinished metas, skipped termination checks, and several other consistency escape hatches. Agda also mechanically checks termination for accepted recursive definitions.
-
-Agda is kept out of graph search and CI orchestration. The language that establishes proof correctness is therefore not also the language that invents the candidate dependency path.
-
-This is a role-specific claim, not a universal claim that Agda is the safest language for every autonomous-agent task. It is the best fit here because the critical asset is a machine-checked proof object.
-
-### Mercury: semantic extraction and graph search
-
-Mercury implements the discovery layer under `.ci/discovery/`.
-
-Its type, mode, determinism, purity, and declarative-semantics machinery make it a strong fit for a search engine whose own behavior should have explicit contracts. The Mercury compiler checks type, mode, and determinism declarations, and Mercury defines a declarative semantics for legal programs.
-
-Modes constrain data flow, determinism constrains solution counts, and purity constrains ordinary computations to explicit effects. This is a stronger static contract for the graph engine than an ordinary dynamically typed scripting layer would provide.
-
-Mercury remains subordinate to Agda. It discovers, classifies, ranks, and extracts candidates; it does not certify the mathematical proposition.
-
-### Dhall: CI policy
-
-Dhall is used for `.ci/actions_ci.dhall`.
-
-A CI declaration is a typed, declarative specification of the verification lanes, commands, and gates that CI is required to execute. Dhall is a strong fit for this boundary because it is a total functional configuration language rather than a Turing-complete scripting environment. Its type system and finite evaluation model constrain configuration failures before the configuration is consumed.
-
-Dhall can require Agda, Mercury, graph checks, and other tests to pass. It cannot itself prove an Agda theorem.
-
-### Nix: reproducible environment
-
-Nix defines the toolchain and build environment.
-
-The Nix language is pure, functional, declarative, and lazy. Nix derivations describe build inputs and outputs, while the Nix store gives dependency results stable identities based on their dependency graph. This makes Nix a strong fit for reproducible environment construction without making it part of theorem semantics.
-
-Nix is not a proof authority or semantic checker. Its safety value here comes from keeping environment construction separate and reproducible.
-
-### GitHub Actions: execution substrate
-
-GitHub Actions is the outer execution layer. It schedules workflows and runs the commands declared by the repository policy.
-
-It is intentionally not treated as a semantic authority. A successful workflow means the configured commands completed successfully under the configured environment; it does not independently prove an Agda proposition.
-
-## Why the stack is split
+The current closed learner-side path is:
 
 ```
-Agda
-  |
-  | proves and type-checks
-  v
-Mercury
-  |
-  | extracts, searches, saturates, ranks
-  v
-Dhall
-  |
-  | declares required checks
-  v
-Nix
-  |
-  | supplies the reproducible environment
-  v
-GitHub Actions
-  |
-  | executes the declared checks
-  v
-verification result
+canonical learner definitions
+        |
+        v
+exact recurrent scan / composition
+        |
+        +--> NormPair preservation and quotient factorization
+        |
+        +--> F4 optimizer stability
+        |          |
+        |          +--> exact unit-forcing growth ray
+        |          +--> no unconditional infinite-horizon F4 upper bound
+        |
+        v
+F4 × NormPair unconditional factor-stability theorem
+        |
+        +--> representation/factor information
+        |
+        +--> does NOT imply convergence
+        +--> does NOT imply a fixed point
+        +--> does NOT imply market clearing
+        +--> does NOT imply supporting prices
+        +--> does NOT imply Walrasian existence
 ```
 
-The arrows describe orchestration, not mathematical implication. In particular, a Mercury e-graph result cannot become a theorem merely because a path was found.
-
-## Complete Agda record relationship graph
-
-Both canonical Agda monoliths are the authoritative theorem/data source; the current branch contains 123 top-level record declarations across them. The numbered graph below is a legacy snapshot; the canonical declaration set is the Agda monolith plus the synchronized JSON graph.
-
-The following graph is derived from the actual record declarations and their direct record-to-record references. Every record is listed exactly once. This includes foundational data records, theorem contracts, transport structures, problem specifications, and composition records. Non-record definitions are not disguised as theorem records.
+The economic side is a separate assumption boundary:
 
 ```
-01. CanonicalAQLoopTheorem
-02. StateIsomorphism
-03. CanonicalConnectedCompositionTheorem
-    +-- depends on: CanonicalAQLoopTheorem
-04. CanonicalLearnerReplacementClosureTheorem
-05. EqualityCompositionTheorem
-06. RecurrentAssociativeScanTheorem
-07. RecurrentPrefixMonoidHomomorphism
-08. CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism
-09. CommutingSquareTheorem
-10. CommutingSquareLeftInverseTheorem
-    +-- depends on: CommutingSquareTheorem
-11. FullCommutingSquareConjugacyTheorem
-    +-- depends on: CommutingSquareTheorem
-12. FreeMonoidActionHomomorphism
-13. ObservationTaskFactorization
-14. RecurrentScanConjugacyTheorem
-15. CanonicalFullLearnerConnectedScanConjugacyTheorem
-16. S4PlusS5RecurrentScanTheorem
-    +-- depends on: RecurrentAssociativeScanTheorem
-17. PointwiseSandwich
-18. MinimaxBellmanShapleyOperator
-19. MinimaxBellmanShapleyInclusionTheorem
-    +-- depends on: PointwiseSandwich, MinimaxBellmanShapleyOperator
-20. CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-21. CanonicalQMunchausenL2SharedNegationPolarityTheorem
-22. DiscreteExactUAPTheorem
-23. DiscreteLeftInverseWitness
-24. DiscreteExactUniversalUAP
-25. DiscreteExactUniversalUAPLeftInverseEquivalence
-    +-- depends on: DiscreteLeftInverseWitness, DiscreteExactUniversalUAP
-26. ExactNatObservationSimulation
-27. ExactTuringCounterObservation
-28. ExactTwoCounterConfiguration
-29. ExactTwoCounterMachine
-    +-- depends on: ExactTwoCounterConfiguration
-30. CanonicalExactCompositionTuringCompletenessContract
-    +-- depends on: ExactTwoCounterConfiguration, ExactTwoCounterMachine
-31. ContinuousLeftInverseTheorem
-32. BoundedContinuousLeftInverseExactApproximationTheorem
-    +-- depends on: ContinuousLeftInverseTheorem
-33. RingStateInjectivityTheorem
-34. DenseNeighborhoodSeparationTheorem
-35. CanonicalRecurrentBoundedExactUniversalApproximationTheorem
-    +-- depends on: RecurrentAssociativeScanTheorem, ContinuousLeftInverseTheorem, DenseNeighborhoodSeparationTheorem
-36. CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem
-    +-- depends on: PointwiseSandwich, MinimaxBellmanShapleyOperator, MinimaxBellmanShapleyInclusionTheorem, CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem, DiscreteExactUAPTheorem, ContinuousLeftInverseTheorem, BoundedContinuousLeftInverseExactApproximationTheorem, RingStateInjectivityTheorem, DenseNeighborhoodSeparationTheorem, CanonicalRecurrentBoundedExactUniversalApproximationTheorem
-37. FiniteMixedProductRecurrenceTheorem
-38. AbsorbingFiniteEquilibriumTheorem
-39. HardSparseAbsorbingPrefixTheorem
-42. FiniteRankStabilityCertificate
-45. CanonicalPolymorphicSparsemaxCompositionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism, S4PlusS5RecurrentScanTheorem
-47. DirectProductFiniteAutomatonComposition
-48. OffPolicyFunctionApproximationStabilityBoundary
-    +-- depends on: ContinuousLeftInverseTheorem
-50. ExactReconstructionOnImage
-51. GlobalConjugacyEquivalence
-54. BairdSevenStarProblem
-56. Majority3ShapleyEquilibrium
-57. CanonicalGlobalTokenConjugacyTheorem
-58. ExactFunctionIsomorphismTransportTheorem
-    +-- depends on: StateIsomorphism
-59. ExactRecurrentFunctionTranslationTheorem
-    +-- depends on: StateIsomorphism, ExactFunctionIsomorphismTransportTheorem
-60. POMDPExactTransport
-    +-- depends on: StateIsomorphism
-60a. GeneralizedRepresentationTransportCompositionTheorem
-    +-- depends on: ExactFunctionIsomorphismTransportTheorem, ExactRecurrentFunctionTranslationTheorem, POMDPExactTransport
-61. ArchitecturePreservingCanonicalRNNLMIsomorphism
-    +-- depends on: StateIsomorphism
-62. CanonicalExactRNNLMTheorem
-    +-- depends on: CanonicalGlobalTokenConjugacyTheorem
-63. CanonicalGlobalTokenLMCompositionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalGlobalTokenConjugacyTheorem
-64. CanonicalIntegerHaarScaledOrthogonalityTheorem
-65. CanonicalAStarCostGuidanceTheorem
-66. CanonicalEndogenousEGraphAStarTransportClosureTheorem
-    +-- depends on: CanonicalAStarCostGuidanceTheorem, EqualityCompositionTheorem, GeneralizedRepresentationTransportCompositionTheorem, ExactFunctionIsomorphismTransportTheorem
-69. CanonicalFiniteCycleExclusionIsomorphismTheorem
-    +-- depends on: StateIsomorphism
-70. CanonicalOperatorCompositionTheorem
-    +-- depends on: CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalFiniteCycleExclusionIsomorphismTheorem
-75. CanonicalPureNonOrangeBypassCompletionTheorem
-    +-- depends on: RecurrentPrefixMonoidHomomorphism, CanonicalFullLearnerConnectedScanConjugacyTheorem, CanonicalExactCompositionTuringCompletenessContract, CanonicalFiniteCycleExclusionIsomorphismTheorem, CanonicalOperatorCompositionTheorem
-    +-- depends on: DiscreteExactUniversalUAP
-    +-- depends on: CanonicalExactCompositionTuringCompletenessContract
-80. CanonicalPersistentExcitationRequirementTheorem
-81. ExactContractComputabilityBoundaryTheorem
-    +-- depends on: CanonicalExactCompositionTuringCompletenessContract
-    +-- depends on: StationaryLimitTheorem
-
-    +-- depends on:, CanonicalPersistentExcitationRequirementTheorem
-85. FiniteProbabilityMass
-86. FiniteProbabilityMassSemanticsTheorem
-    +-- depends on: StateIsomorphism, FiniteProbabilityMass
-87. FinitePOMDPProbabilitySemantics
-    +-- depends on: FiniteProbabilityMass
-88. FinitePOMDPProbabilitySemanticsTheorem
-    +-- depends on: StateIsomorphism, FinitePOMDPProbabilitySemantics
-89. FiniteBeliefUpdateExactTransportTheorem
-    +-- depends on: StateIsomorphism
-    +-- depends on:, FinitePOMDPProbabilitySemanticsTheorem, FiniteBeliefUpdateExactTransportTheorem
-    +-- depends on: ArchitecturePreservingCanonicalRNNLMIsomorphism, CanonicalExactRNNLMTheorem, CanonicalGlobalTokenLMCompositionTheorem
-    +-- depends on: CanonicalExactRNNLMTheorem, ExactContractComputabilityBoundaryTheorem
-    +-- depends on:
-Current canonical tail after the historical index:
-
-FunctionClassInclusion
-StrictFunctionClassSeparation
-CanonicalStrictNeuralFunctionClassSeparationContract
-CanonicalRecurrentFunctionRealization
-EfficientOperatorMonoidRepresentation
-ParallelPrefixComplexityCertificate
-LogarithmicScanSpanCertificate
-LogarithmicPrefixScanComplexityTheorem
-TsallisDivergenceStructure
-MaxwellExactConjugacyData
-ConnectedMaxwellTsallisExactConjugacyTheorem
-F4FrankWolfeRoundingBiasRegretData
-ConnectedF4FrankWolfeRoundingBiasRegretTheorem
-ContinuousHodgeMaxwellExactRepresentationData
-ConnectedContinuousHodgeMaxwellGRURepresentationTheorem
-ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-hodgeMaxwell-discontinuous-gru-refutes-connected-representation
-HodgeMaxwellMiddleDegreeInvolutionTransportTheorem
-ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem
-MegaGeneralizedWalrasianEquilibrium
-ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem
-ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem
-
-Note: the machine-counted declaration total is 120. The historical numbered list omits a pre-existing declaration in the middle, so exact ordinals are intentionally not synthesized here; the canonical source and graph JSON are authoritative.
+competitive production economy
+        -> feasible firm production plans
+        -> profit-maximizing production
+        -> consumer optimality / demand
+        -> aggregate resource balance
+        -> market clearing
+        -> derived/supporting price
+        -> generalized Walrasian equilibrium
 ```
 
-The direction is:
+That chain is a semantic contract/topology, not an unconditional existence proof. Classical Arrow–Debreu/Walrasian existence requires the economic hypotheses that make the relevant fixed-point, compactness, convexity, continuity, preference, production, and separation arguments available.
+
+## Exact learner facts
+
+The canonical learner state contains the recurrent learner channels, optimizer state, counts, q-log state, and `NormPair`.
+
+The current closed facts include:
+
+- the canonical step increments the Nat clock exactly once;
+- every positive iterate changes the clock, hence there is no nontrivial finite cycle of the full canonical state;
+- `NormPair` is preserved by the canonical transition;
+- the policy is invariant under `NormPair` replacement and optimizer replacement;
+- the `NormPair` replacement relation is an equivalence relation;
+- policy, one-step transition, and iterated transition factor through the `NormPair` quotient;
+- `CanonicalNormPairQuotientFactorTransitionTheorem` packages that factor transition;
+- `CanonicalF4GlobalOptimizerStabilityTheorem` is closed;
+- `CanonicalF4NormPairUnconditionalFactorStabilityTheorem` packages F4 stability with NormPair factorization;
+- the exact F4 unit-forcing ray gives linear growth and therefore rules out an unconditional infinite-horizon upper bound for that F4 quantity;
+- the generalized Walrasian countermodel is closed, including a singleton semantic model with no equilibrium witness and the corresponding universal non-existence result.
+
+These are exact consequences of the current definitions. They are not empirical claims.
+
+## Economic boundary
+
+The theorem monolith exposes standard literature-facing names for:
+
+- generalized Walrasian equilibrium;
+- competitive production economies;
+- production sets and feasible firm plans;
+- profit-maximizing production;
+- consumer optimality and feasibility;
+- aggregate resource balance;
+- market clearing;
+- supporting/derived prices;
+- welfare interfaces.
+
+The production side is intentionally contract-level. It records what a competitive production equilibrium would contain; it does not manufacture an equilibrium witness.
+
+The same boundary is enforced on the negative side: the empty-equilibrium countermodel demonstrates that the learner-side factor-stability result cannot be used as an unconditional generalized-Walrasian existence theorem.
+
+## Contribution framing
+
+The thesis does **not** claim novelty from:
+
+- using machine-checked mathematics;
+- using Agda rather than Lean;
+- restating classical Walrasian or welfare theorems;
+- calling a quotient/factor construction a new general abstraction theory.
+
+The intended contribution is the explicit, mechanically auditable dependency boundary for this coupled model:
 
 ```
-record A
-  |
-  +-- depends on --> record B
+exact learner laws
+  -> representation / factor structure
+  -/-> convergence
+  -/-> fixed point
+  -/-> market clearing
+  -/-> supporting price
+  -/-> equilibrium existence
 ```
 
-A composite record therefore points toward the record surfaces it packages or assumes.
+The production-side vocabulary is aligned with established formal-economics terminology, while the learner/economic interface records exactly where independent economic assumptions enter.
 
-## Current connected closure
+## Toolchain roles
 
-The important distinction is that the repository's strongest claims are about **relationships between components**, not about independently renaming each component as a theorem.
+Agda is the proof authority. The monoliths are checked with:
 
-The current connected semantic seam is:
-
-```
-RNN / recurrent scan
-      |
-      +--> exact prefix/monoid composition
-      |
-      +--> F4 / optimizer dynamics
-      |        |
-      |        +--> horizon-regret certificate
-      |
-      +--> Watkins learner coupling
-      |
-      v
-Hodge-Maxwell exact representation
-      |
-      +--> encode/decode isomorphism
-      +--> recurrent-step conjugacy
-      +--> differential-form equations
-      +--> continuity obligations
-      |
-      v
-connected GRU/F4/Watkins/Hodge-Maxwell bridge
-      |
-      +--> global encode injectivity
-      +--> e-graph/A* transport
-      |
-      v
-downstream Tsallis / generalized Walrasian / POMDP seams
+```sh
+$AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+$AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-This composition deviates from standard isolated RNN, optimizer, and Hodge-Maxwell presentations in one specific way: the interfaces are themselves theorem objects. The recurrent state is not merely an implementation detail; optimizer evolution is attached to the same recurrent scan; the Hodge-Maxwell representation is required to commute with the same state transition; and injectivity is transported through the exact left/right inverse structure.
+Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-That does **not** prove that ordinary RNNs are Maxwell solvers, that an optimizer is a physical law, or that a Hodge-Maxwell solution space is automatically representable by a GRU. The representation is conditional: the caller supplies the exact solution carrier, field equations, continuity predicates, encoder/decoder, and step conjugacy.
+The orchestration arrows are not mathematical implication arrows.
 
-The main combined-theory deviations are therefore:
-- standard RNN theory usually studies recurrence, expressivity, stability, or sequence processing without an external differential-form semantics;
-- standard optimizer theory usually studies an update map, objective, convergence, regret, or stability without requiring exact conjugacy to a physical/state-space representation;
-- standard Hodge-Maxwell theory studies differential forms, operators, boundary/domain structure, and physical equations without treating a recurrent learner as the exact state representation;
-- this repository composes these through explicit isomorphisms and commuting diagrams, so the novelty is in the **contract between the theories**, not merely the union of their separate features.
+## Graph discipline
 
-The carrier-polymorphic Maxwell/Hodge-Maxwell branch has no `Fin n` requirement. Finite discretization and pigeonhole branches are pruned rather than silently generalized, and no synthetic continuous-PDE-to-GRU existence edge is introduced.
+The current graph separates:
 
-## Exact integer token carrier
+1. definitions;
+2. exact algebraic/recurrent emergence;
+3. quotient/factor structure;
+4. F4 stability and growth boundary;
+5. economic interpretation gates;
+6. production-side equilibrium topology;
+7. welfare implications.
 
-The canonical token carrier is now:
+A graph node is not promoted to a theorem merely because it is useful for search. Candidate edges must be backed by the actual Agda surface.
 
-```
-CanonicalToken = ℤ
-```
+## Scope boundaries
 
-The recurrent token-step and list-state conjugacy are exact over this unbounded integer carrier. The executable Int8 components remain an implementation-side bounded representation; no fixed finite vocabulary is silently identified with the canonical token semantics.
+The repository contains additional exact formal substrates, including integer-token recurrent processing, finite probability/POMDP structures, and linear Haar/sparsemax components. These are kept separate from the economic existence boundary.
 
-The correct distinction is:
+No claim is made that the learner is empirically optimal, that the formal production economy exists for arbitrary inputs, or that deterministic non-fixed-point dynamics exclude stationary distributions of a separately defined stochastic process.
 
-```
-unbounded semantic carrier  ->  ℤ
-explicit finite-state bound  ->  Fin n   (n : Nat)
+## Verification policy
 
-```
+The CI contract must check the current theorem names and current graphs only. Historical theorem partitions, deleted convergence transports, deleted certificate-only existence routes, and stale README inventories are not authoritative and must not be reintroduced as gates.
 
-Sequences remain ordinary finite lists, so prefix concatenation and recurrent scan composition are exact structural operations. No theorem about convexity, smoothness, or universal continuous Maxwell representation follows merely from the ordered-ring structure of `ℤ`.
-
-## Formal scope
-
-The repository contains several deliberately separate readings:
-
-- Recurrent learning: explicit learner state, policy readout, optimizer state, and observation maps.
-- Informatics: recurrent prefixes and their composition.
-- Dynamical systems: exact clock growth, cycle exclusion, conjugacy, finite-factor recurrence, and observation boundaries.
-- Stochastic semantics: finite probability masses, finite POMDP kernels, and exact belief-update transport.
-- Theoretical computer science: explicit finite-carrier boundaries where a theorem actually supplies `Fin n`, together with the stated exact-computability boundary.
-- RNN-LM semantics: integer-token recurrent processing, logit traces, token-LM composition, and architecture-preserving transport.
-
-These are formal structural correspondences. They are not claims of empirical language-model performance, biological validity, physical realism, or a general equilibrium theorem.
-
-## Generalized Walrasian benchmark boundary
-
-The repository now exposes one canonical generalized equilibrium surface: `MegaGeneralizedWalrasianEquilibrium`. It is deliberately smaller than the former multi-label contract. Walrasian, Arrow-Debreu, and KKT are not separate semantic nodes here; the canonical equilibrium relation is generalized, and any characterization bridge must be supplied explicitly.
-
-The current `GeneralizedWalrasianData` separates preference, budget, feasibility, market clearing, equilibrium, and characterization data. Its preference relation can depend on the whole allocation, so interdependence is representable, but genuine interdependence still requires an explicit witness rather than following from the type alone. The current welfare layer similarly distinguishes a conditional First Welfare direction from a separate supporting-price reverse direction.
-
-The Podczeck–Yannelis literature is a breadth benchmark for discontinuous, non-ordered, interdependent preferences, including infinite-dimensional commodity spaces and settings without free disposal. It motivates the generality of the contract but does not discharge the repository's Agda obligations. External economics libraries and papers remain reference inputs; the Agda proof term and its actual consuming edge remain authoritative.
-
-
-## Exactness policy
-
-An e-graph extraction is never treated as a proof.
-
-For the connected RNN/optimizer/Hodge-Maxwell surface, composition is also not treated as proof by proximity. A theorem about each component separately does not imply the theorem about their composition. The missing bridge must expose the actual carrier maps, inverse laws, step-conjugacy, continuity, objective/regret certificate, or other semantic interface needed by the composed claim.
-
-The repository does not obtain a green gate by weakening a theorem, replacing a missing proof with a trivial proposition, changing a carrier to make a theorem fit, or silently changing the semantic target.
-
-The finite probability and POMDP layers are exact finite semantics, not full measure-theoretic probability.
-
-The RNN-LM layers are exact formal capability and transport statements, not empirical language-model performance claims.
-
-## Repository surfaces
-
-Canonical proof surface:
-
-```
-Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-```
-
-Discovery surface:
-
-```
-.ci/discovery/learner_semantic_extractor.m
-.ci/discovery/theorem_graph_search.m
-.ci/discovery/theorem_monolith_egraph_sync.m
-```
-
-Automation surface:
-
-```
-.ci/actions_ci.dhall
-Nix configuration and build definitions
-GitHub Actions workflows
-```
-
-The intended lifecycle is:
-
-```
-exact definition
-    |
-    v
-Agda law and theorem
-    |
-    v
-semantic extraction
-    |
-    v
-dependency graph search
-    |
-    v
-e-graph and A* candidate extraction
-    |
-    v
-Agda promotion and checking
-    |
-    v
-CI execution
-```
-
-The proof, discovery, policy, environment, and execution layers remain separate by design.
-
-
-## Scheduled commit-totality README refresh
-
-The repository now has a slow, deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it weekly against the default branch. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window. Dhall is used as the declarative text-generation layer, while Nix supplies the reproducible runtime.
-
-<!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 091ee6eca250e9a6505f6793b0c3fdfb7f45f1d6
-unprocessed-commit-count: 0
-
-The next scheduled run will account for every commit after this bootstrap point.<!-- END RECENT COMMIT TOTALITY -->
-
-## Strict neural-function-class separation
-
-The strict separation graph is intentionally a graph of one object only: the full connected composition. It does not treat attention, Haar orthogonality, recurrence, factor recurrence, optimizer coupling, or observation topology as separate function-class wins.
-
-The canonical path is:
-
-```
-F_base
-  -> CanonicalFullLearnerConnectedScanConjugacyTheorem
-  ->
-  ->
-  ->
-  ->
-  ->
-  ->
-  ->
-  ->
-  -> F_full_connected
-```
-
-The component theorems remain valid Agda surfaces, but the separation graph promotes them into composed surfaces rather than giving them independent separation status. S4PlusS5RecurrentScanTheorem is present on the theorem surface and is absorbed into the connected learner/scan composition; the full learner theorem also exposes the exact Watkins target flow through the recurrent and F4/L2 optimizer steps.
-
-A strict result still requires all three semantic obligations: the baseline must embed into the full connected class, a concrete function must be constructed through the entire path, and a canonical Agda theorem must prove that witness is not representable by the baseline. The repository currently has the connected composition and the factor-recurrence mechanism, but it does not yet have that nonrepresentability witness. Therefore the graph remains NOT_ESTABLISHED.
-
-### Internal Nix/Dhall verification authority
-
-The repository's internal verification authority is the Nix environment invoking the Dhall-rendered `.ci/actions_ci.dhall` lanes. The configured lanes include Agda safe checking, Mercury discovery, e-graph synchronization, semantic-contract checks, surface checks, and version checks. Repository configuration is observable here, but an internal Nix/Dhall execution result is not observable through the repository connector alone, so the graph must remain UNVERIFIED rather than substituting a GitHub status.
-
-Orange/pending internal verification is a wait state, not a bypass condition. Repairs are made only when an actual defect is observed.
-
-### Pre-graphed exotic promotion
-
-The existing `hardSignGate-idempotent`, `DirectProductFiniteAutomatonComposition`, ``, and `CanonicalPolymorphicSparsemaxCompositionTheorem` surfaces are now explicitly treated as composed inputs rather than disconnected function-class claims. The proposed emergent HardSign/F4/NormPair finite-automaton factor-geometry theorem remains a candidate: it needs an explicit affine automaton realization, finite invariant-factor certificate, full-connected witness, and baseline nonrepresentability proof.
-
-## Finite-factor automaton closure and tropical quotient candidate
-
-The strict graph now records a connected finite-factor automaton closure candidate rather than treating HardSign, automata, F4, NormPair, or tropical geometry as isolated separation claims. The concrete dependency seam is `CanonicalGRUF4NormWatkinsPrefixCompositionTheorem` -> `CanonicalFullLearnerConnectedScanConjugacyTheorem`: the latter's `connectedStep` is instantiated by the exact `canonicalFullStep-GRUF4Norm-prefix-bridge`. The proposed closure then passes through the existing HardSign idempotence, finite-automaton product composition, bounded-factor lift, factor-recurrence/non-state-recurrence theorem, and finite-cycle exclusion.
-
-The current candidate is `CanonicalEndogenousHardSignFactorAutomatonClosureCandidate`: an explicit HardSign-preserving finite invariant factor of the recurrent affine learner could realize arbitrary finite automata while the exact state remains nonrecurrent. It remains `CANDIDATE_NOT_PROVED` until the affine realization, quotient-preservation, finite-invariant-factor, and exact-state compatibility certificates exist on the Agda surface.
-
-A second candidate, `CanonicalTropicalQuotientOptimizerAffineGRUExpressivityCandidate`, records a possible max-plus/tropical or polyhedral quotient of the optimizer-affine GRU/F4/NormPair transition. This is deliberately a candidate only: no tropical/max-plus optimizer theorem is currently on the canonical Agda proof surface, and literature motivation cannot substitute for an Agda proposition. Strict separation still requires the existing inclusion, connected witness, and baseline nonrepresentability obligations.
-
-The graph now records a stronger combined candidate, `CanonicalEndogenousTropicalHardSignFiniteAutomatonQuotientCandidate`: a finite HardSign-preserving invariant quotient of the connected recurrent affine learner whose transition regions admit a max-plus/polyhedral description. This is the natural endogenous seam between the existing finite-factor automaton closure and tropical geometry. It remains `CANDIDATE_NOT_PROVED`; the missing pieces are an Agda quotient definition, transition preservation, polyhedral/tropical region characterization, affine realization for arbitrary finite automata, and the prefix conjugacy. The exact-state finite-cycle exclusion remains a separate compatibility obligation.
-
-The literature supports the *shape* of this candidate, not its repository proof: tropical geometry gives a polyhedral/max-plus description of piecewise-linear neural computation, while max-plus algebra is also used in finite-automaton and weighted-automaton settings. That does not establish the repository's recurrent HardSign/F4/NormPair construction. The Agda surface remains the proof authority.
-
-The zero-dependency pruning policy is now explicit in `.ci/discovery/neural-function-class-separation-graph.json`: theorem-like records with no direct record dependencies are either promoted into an existing composed theorem when an actual Agda dependency exists, or retained as foundational contracts/data/problems without synthetic edges. Thus graph completeness means every admitted theorem is classified and discoverable, not that disconnected semantics are fabricated into a connected path.
-
-## Strict full-connected neural-function-class separation
-
-The strict separation graph has one function-class object only: the full connected composition. Individual HardSign, Haar, attention, recurrence, optimizer, factor, and observation surfaces are not treated as independent separation claims. They are promoted into the smallest existing composed theorem that consumes their semantics, or remain ordinary Agda/CI prerequisites until such a composition exists.
-
-A future strict separation result must discharge three explicit proof obligations on the Agda surface: (1) an input/output-semantics-preserving inclusion `F_base ⊆ F_full_connected`; (2) a concrete witness `f ∈ F_full_connected` that traverses the entire connected path; and (3) a canonical nonrepresentability proof `f ∉ F_base`. A graph path alone never establishes separation.
-
-The existing `hardSignGate-idempotent` result is exact but is not itself a function-class separation theorem. Likewise, F4 plus NormPair provides an existing optimizer/normalization seam, but the repository does not yet prove that strong regularization forces factor recurrence or strict class expansion. A tropical/max-plus optimizer-geometry theorem, or a recurrent affine/HardSign finite-automaton expressivity theorem, is admitted only after an actual Agda proposition exists and the theorem is consumed by the full connected composition.
-
-The S4/S5 seam is connected formally through `S4PlusS5RecurrentScanTheorem` and `CanonicalFullLearnerConnectedScanConjugacyTheorem`. This does not yet prove `F_S4 ⊆ F_full_connected ⊆ F_S5` or strict intermediate status; those class inclusions and the required witness/nonrepresentability theorem remain explicit future obligations.
-
-### Factor recurrence, Nat algebra, regularization, and generalization
-
-A useful mathematical schema is:
-
-```
-(Nat,+,·)
-    -> regularized parameter dynamics
-    -> bounded/stable factor image q(S)
-    -> finite-factor recurrence
-    -> optional generalization/stability bound
-```
-
-The important point is that Nat being an unbounded semiring does not itself imply recurrence. The recurrence theorem needs a separate boundedness, invariant-set, contraction, quotient-finiteness, or equivalent certificate on the observed factor. A regularizer can be a candidate source of that certificate, but only after its actual objective is connected to a trajectory bound or stability inequality.
-
-For example, if a regularized update can be proved to satisfy a factor contraction such as
-
-```
-d_F(q(T_theta(s)), q(T_theta(s'))) <= rho d_F(q(s), q(s'))
-with rho < 1,
-```
-
-then a finite/invariant factor space can yield eventual recurrence. A separate stability or complexity argument can then address generalization; recurrence alone is not a generalization guarantee. Empirical/theoretical literature supports the broader separation between recurrent stability, regularization, and overfitting/generalization rather than identifying them as the same theorem.
-
-This relationship is recorded as a candidate in .ci/discovery/neural-function-class-separation-graph.json; it is not promoted to an Agda theorem until the repository has an explicit regularizer, factor map, and quantitative certificate.
-
-
-### Unified tropical / HardSign topology-neighborhood-conjugacy candidate
-
-The graph now records `CanonicalEndogenousTropicalHardSignAffineGRUExpressivityTopologyConjugacyCandidate` as a single composed candidate rather than four disconnected claims. Its intended chain is the existing GRU/F4/NormPair/Watkins connected learner, HardSign finite-factor automaton quotient, the bounded recurrent UAP surface with `DenseNeighborhoodSeparationTheorem`, the endogenous observation-topology closure, and the architecture-preserving RNN-LM conjugacy surface. The exact RNN-LM observation topology theorem and the endogenous RNN-LM/POMDP topology theorem are used only through their documented dependencies.
-
-This is still `CANDIDATE_NOT_PROVED`. The repository needs an actual Agda tropical/polyhedral quotient, HardSign transition preservation, affine realization of arbitrary finite-automaton transitions, prefix conjugacy, conjugacy transport, a neighborhood-separation witness for the same connected construction, and the existing strict inclusion/nonrepresentability obligations. No standalone tropical, topology, neighborhood, or conjugacy separation node is created.
-
-The external literature supports the geometric motivation: tropical/max-plus methods describe piecewise-linear neural-network regions and also have established connections to finite-state/weighted-automaton computation. That motivation does not prove this repository's recurrent HardSign/F4/NormPair theorem; Agda remains the proof authority.
-
-
-### Sign-optimizer-affine unified connected candidate
-
-The graph now refines the unified tropical/HardSign result as `CanonicalEndogenousSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate`. It explicitly carries the F4 optimizer and NormPair learner-replacement seams through the existing GRU/F4/Norm/Watkins connected conjugacy, finite HardSign-factor automaton closure, bounded recurrent UAP and `DenseNeighborhoodSeparationTheorem`, architecture-preserving conjugacy, and endogenous observation-topology closure. This remains `CANDIDATE_NOT_PROVED`; the required certificates are an actual sign-optimizer-affine quotient, transition preservation, arbitrary finite-automaton affine realization, prefix conjugacy, same-witness neighborhood separation, topology compatibility, inclusion, and baseline nonrepresentability.
-
-The graph contract now treats sign/HardSign geometry, optimizer-affine dynamics, expressivity, topology, neighborhood separation, and conjugacy as one connected promotion surface. No standalone separation node is created merely from conceptual relatedness. A future theorem must be consumed by an existing composed parent or remain foundational outside strict separation.
-
-
-### Non-tropical sign-optimizer-affine connected candidate
-
-The graph also records `CanonicalEndogenousNonTropicalSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate`. This is deliberately a non-tropical refinement: it starts from the exact GRU/F4/NormPair/Watkins connected learner and HardSign/finite-automaton/factor-recurrence surfaces, then transports one prospective witness through the existing bounded recurrent approximation, `DenseNeighborhoodSeparationTheorem`, architecture-preserving RNN-LM isomorphism, and endogenous observation-topology closures. Tropical or max-plus geometry is optional rather than a proof prerequisite.
-
-It remains `CANDIDATE_NOT_PROVED`. The missing certificates are an actual Agda sign-optimizer-affine quotient, HardSign transition preservation, affine realization of arbitrary finite automata, prefix conjugacy, state/architecture transport, a same-witness neighborhood-separation proof, observation-topology compatibility, and the strict inclusion/nonrepresentability obligations. This keeps the strict graph fully connected while allowing future non-tropical theorems to enter through an existing composed parent.
-
-
-### Non-tropical non-automata sign-optimizer-affine connected candidate
-
-The strict graph now also records `CanonicalEndogenousNonTropicalNonAutomataSignOptimizerAffineGRUExpressivityTopologyNeighborhoodConjugacyCandidate`. This refinement is explicitly non-automata as well as non-tropical: it does not require `DirectProductFiniteAutomatonComposition`, finite-state realization, or a tropical/max-plus quotient. Its intended route is the exact GRU/F4/NormPair/Watkins connected transition, HardSign projection, Haar/sparsemax closure, bounded recurrent representation, DenseNeighborhoodSeparation, state/architecture conjugacy, and endogenous observation-topology closure.
-
-The candidate is not a proved theorem. Admission requires an actual Agda direct state-space/function witness, HardSign/sign preservation without automaton encoding, exact recurrent conjugacy, same-witness neighborhood separation, topology compatibility, and the existing inclusion/nonrepresentability obligations. Future non-automata results therefore remain fully connected without manufacturing an automaton edge.
-
-
-### Endogenous learner-replacement quotient candidate
-
-The graph now records `CanonicalEndogenousSignOptimizerAffineReplacementQuotientGRUExpressivityTopologyNeighborhoodConjugacyCandidate`. This is a distinct non-tropical, non-automata route: the canonical policy is already invariant under arbitrary finite sequences of `NormPair` and F4 optimizer replacements, while the GRU/F4/NormPair transition is tied exactly into the connected Watkins scan. The candidate asks whether those replacement orbits admit an explicit Agda quotient whose output semantics and transition can then be transported through the existing bounded recurrent, neighborhood-separation, architecture-conjugacy, and endogenous observation-topology surfaces.
-
-It remains `CANDIDATE_NOT_PROVED`. The missing artifact is an actual quotient relation, policy factorization, transition compatibility, nontrivial quotient witness, and the existing inclusion/nonrepresentability obligations. `CanonicalLearnerReplacementClosureTheorem` is therefore treated as an absorbed semantic dependency rather than an independent separation claim.
-
-
-### Strict separation proof contract
-
-The canonical theorem surface now makes the three strict neural-function-class obligations explicit through `FunctionClassInclusion`, `StrictFunctionClassSeparation`, and `CanonicalStrictNeuralFunctionClassSeparationContract`: same input/output semantics, a connected-class witness, and canonical baseline nonrepresentability. These are proof contracts, not a fabricated concrete separation result. The sign/optimizer-affine candidates remain `CANDIDATE_NOT_PROVED` until a model-specific term inhabits the contract and Agda `--safe` verifies it.
-
-
-
-### Literature-aligned strict neural separation completion
-
-The missing strict proof is now completed at the algebraic level supported by the repository's exact-clock, finite-factor, and no-cycle theorems. The completed theorem is `canonicalFiniteStateVsConnectedRecurrentStrictSeparation`: a finite-state recurrent baseline recurrent baseline embeds into a connected recurrent extension, while the canonical learner's unbounded clock trace `clock(s) + n` is not representable by that finite-state baseline.
-
-This matches the formal literature axis of rational/finite-state recurrence versus richer recurrent state expressivity used by Merrill et al. (ACL 2020) and the finite-state characterization/strict-subset results of Svete & Cotterell (EMNLP 2023):
-- https://aclanthology.org/2020.acl-main.43/
-- https://aclanthology.org/2023.emnlp-main.502/
-
-The four existing exotic labels now reuse this completed strict separation surface:
-`canonicalAutomataSignOptimizerAffineGRUStrictSeparationTheorem`,
-`canonicalNonTropicalSignOptimizerAffineGRUStrictSeparationTheorem`,
-`canonicalNonTropicalNonAutomataSignOptimizerAffineGRUStrictSeparationTheorem`,
-and `canonicalSignOptimizerAffineReplacementQuotientGRUStrictSeparationTheorem`.
-
-Their route-specific claims remain explicitly unproved: the shared strict theorem is the finite-state/rational-recurrence separation implied by the existing Agda invariants, not a fabricated sign/optimizer-affine GRU theorem.
-
-
-### 2026-09-23 carrier-polymorphic continuous Maxwell/Hodge-Maxwell boundary
-
-The Maxwell and Hodge-Maxwell theorem family is now carrier-polymorphic: its exact GRU carrier is an arbitrary `Set`, not `Fin n`. The continuous representation certificate carries the exact differential-form equations, explicit continuity predicates, a global encode/decode StateIsomorphism, recurrent-step conjugacy, and an explicit global encode-injectivity proof.
-
-`HodgeMaxwellMiddleDegreeInvolutionTransportTheorem` is now a genuine downstream consumer of that continuous representation. It transports an explicitly supplied GRU involution through the exact StateIsomorphism and observed factorization; continuous left-invertibility then proves `star (star s) ≡ s`. The involution premise remains explicit because injectivity and topology alone do not imply the Hodge-star square law.
-
-The Maxwell/Tsallis and idempotent/Walrasian compositions are likewise carrier-polymorphic. The connected GRU/Hodge-Maxwell/Tsallis/Walrasian/POMDP closure uses the general Tsallis divergence surface directly and does not introduce `Fin n` or `Vec` carriers.
-
-Econlib is used as a benchmark/reference implementation, not as an oracle for the Agda graph. Its equilibrium layer provides a concrete Arrow-Debreu/Walrasian existence baseline and related stationary/Markov structures, while the repository's graph search remains responsible for discovering broader compositional surfaces and the Agda source remains the proof authority. External equilibrium literature may supply research inputs, but the graph keeps only the single mega-generalized Walrasian/KKT/Arrow-Debreu dependency rather than maintaining a list of speculative variants. This does not assert that every infinite-dimensional continuous Maxwell solution space has a GRU representation. The exact continuous theorem is a conditional representation schema: the differential-form/function-space/domain/metric/source/boundary semantics, continuity witnesses, exact encoder/decoder, and transition conjugacy must be supplied by the caller. No synthetic continuous-PDE-to-GRU existence edge is introduced.
-
-Finite-coordinate Hodge-Maxwell transport is now proved conditionally through an exact-length list coordinate isomorphism. A literal vector-space/module dimension theorem and universal existence result remain explicit boundaries rather than inferred from the carrier type. `ℤ` is retained for exact learner algebra; it is not a replacement for an arbitrary Maxwell function-space carrier.
-
-The current repository runtime boundary is unchanged: Tcl and Lua remain absent. Dhall's official documentation states that well-typed programs normalize successfully in finite time and describes Dhall as a total functional configuration language; its integration model explicitly renders or hands configuration to external programs. That safety property does not make an arbitrary future Tcl/Lua runtime semantically redundant. Keep those packages absent unless a concrete future executable or library demonstrates a runtime dependency.
-
-- ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-- CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-- ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-- ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-- ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-- ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
-
-## LCB–Sparsemax policy bridge and Maxwell boundary
-
-The canonical policy is already an exact readout of the learner state:
-
-```
-canonicalPolicy K s
-  ≡ sparsemaxPolicy
-      (actionSpaceK K)
-      (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s)))
-      (valuesCount (lcbCounts s))
-```
-
-This policy surface is consumed by `CanonicalAQLoopTheorem`, alongside the exact GRU-signal, F4 optimizer-step, and endogenous Watkins-target couplings. Thus the repository has a real
-
-```
-GRU ─┐
-F4  ─┼─> canonical full learner ─> Watkins critic/target
-LCB ─┘                              ↓
-                               Sparsemax policy
-```
-
-bridge. The LCB–Sparsemax policy is not a decorative downstream label: its policy equation is an Agda equality and the policy invariance/replacement theorems consume that semantics.
-
-The policy-to-Maxwell update seam is now explicit on the Agda surface. `policyHodgeMaxwellUpdateSeam` states the direct commuting square for a supplied policy-induced update, while `policyHodgeMaxwellCanonicalUpdateSeam` specializes it to the existing canonical learner step and Hodge-Maxwell step conjugacy. The latter proves the policy update is transported exactly to the Maxwell solution step once `policyStepCorrect` establishes that the policy-induced learner transition is extensionally `canonicalFullStep`.
-
-The resulting graph is:
-
-```
-LCB + Watkins + Sparsemax
-        ↓
-exact canonical policy readout
-        ↓
-policy-induced learner update        ↓  policyStepCorrect
-canonical learner step
-        ↓  exact Hodge-Maxwell conjugacy
-Hodge-Maxwell solution step
-```
-
-This closes the previously missing graph edge, but it does not infer `policyStepCorrect` merely from the policy readout. A concrete policy/action semantics still has to supply that proof. Thus the repository now has a proved conditional policy-to-Maxwell update seam, rather than an unconditional claim that the policy alone is a Maxwell solver.
-
-## Second Welfare theorem: completed boundary
-
-The canonical source now distinguishes the standard Second Welfare proof from what the generalized record alone can establish.
-
-The existing `megaSecondWelfareTheorem` is a valid conditional extraction: given a Pareto-optimal allocation plus an explicit supporting-price/redistribution witness, it returns a price and equilibrium witness. It does not derive that supporting price.
-
-The source now also contains `MegaSecondWelfareTheoremBoundaryCounterexample` and `megaSecondWelfareTheorem-boundary-counterexample`. The countermodel takes an empty price space, a singleton allocation space, a proposition-valued Pareto predicate that holds at the allocation, and an empty equilibrium predicate. Thus Pareto optimality alone cannot imply the existence of a supporting price/equilibrium witness on the current generalized semantic surface. This is an algebraic non-derivability witness, not a claim that the classical Second Welfare Theorem is false.
-
-A classical Second Welfare proof adds economic structure that creates a separating/supporting hyperplane. In a standard presentation, convexity of preferences/upper contour sets and convexity of the feasible/production sets are central to the separation step; local nonsatiation and the appropriate budget/redistribution structure are also used in the implementation argument. The supporting price is therefore a theorem output of those additional assumptions, not a consequence of the name ParetoOptimal.
-
-The First Welfare condition `noStrictAffordableAlternative` should also be read precisely. It is a demand-optimality condition: no affordable allocation is strictly preferred to the equilibrium allocation. It is not itself monotonicity or local nonsatiation, and monotonicity plus local nonsatiation do not imply demand optimality without the equilibrium/budget link. In the present theorem, the condition is deliberately explicit so the contradiction proof does not smuggle in an unstated consumer-choice axiom.
-
-Finally, whole-allocation/interdependent preferences and heterogeneous choices are two different generalizations. Whole-allocation preferences enlarge the argument domain from an agent's own bundle to the full allocation; heterogeneity allows different agents to have different preference relations. Heterogeneity enlarges the preference-profile space, while interdependence enlarges what each preference relation can depend on. They are therefore not a simple algebraic chain in which one is a stronger form of monotonicity/LNS.
-
-
-## Exact learner–economic solution bridge and generalized Second Welfare theorem
-
-The economic side is no longer represented only as a representation boundary. The canonical theorem surface now contains an actual learner-to-economic state isomorphism and step-transport theorem:
-
-- `megaEconomicSolutionStateIsomorphism`
-- `megaEconomicSolutionStepConjugacy`
-- `megaEconomicSolutionEquilibriumTransport`
-- `connectedCanonicalLearnerEconomicWelfareCompositionTheorem`
-- `connectedHodgeMaxwellLearnerEconomicWelfareBridge`
-
-The composition is:
-
-```
-Connected Hodge-Maxwell/F4/Watkins learner
-        ↓
-CanonicalFullLearnerState
-        ↕ exact inverse maps
-Economic solution state
-        ↓ exact step conjugacy
-Economic dynamics
-        ↓ equilibrium transport
-Generalized equilibrium
-        ↓ welfare assumptions
-Pareto optimality
-```
-
-The exact learner/economic analogue of the Hodge-Maxwell solution bridge is now a theorem returning a genuine `StateIsomorphism`, exact finite-horizon step conjugacy, two-way equilibrium transport, and the equilibrium-to-Pareto implication. The theorem remains conditional on an actual economic interpretation and its inverse; it does not manufacture an economy from the learner graph.
-
-The Second Welfare side is also generalized through `megaSecondWelfareGeneralized`. It takes `MegaGeneralizedWalrasianEquilibrium`, a Pareto-optimal allocation, a supporting-price map, and the generalized characterization witness, then derives the actual equilibrium witness through `characterizationBridge`. Thus the supporting price is the economic separation input, while equilibrium is proved from the generalized Walrasian characterization rather than merely supplied as another field.
-
-The exact Second Welfare dependency surface is:
-
-```
-Pareto optimal a
-      |
-      +--> supportingPrice --> p
-      |
-      +--> supportingCharacterization --> characterization D p a
-                                           |
-                                           | characterizationBridge
-                                           v
-                                      equilibrium D p a
-
-(p, equilibrium D p a)
-          |
-          v
-Sigma Price (lambda p -> equilibrium D p a)
-```
-
-A price is not itself an equilibrium proof. The graph therefore has no `supportingPrice -> equilibrium` edge, and Pareto optimality has no direct edge to the final Sigma witness. The heterogeneous-agent and whole-allocation/interdependent-preference nodes remain semantic inputs to the generalized equilibrium record, not direct dependencies of `megaSecondWelfareGeneralized`.
-
-The two graph surfaces are:
-
-- `.ci/discovery/learner-economic-welfare-bridge-graph.md`
-- `.ci/discovery/second-welfare-generalization-graph.md`
-
-The remaining economic existence question is deliberately precise: a supporting-price/separation theorem still has to be instantiated from the relevant convexity, continuity/local-nonsatiation, feasibility, and redistribution structure of a concrete economic model. The new theorem does not silently promote Pareto optimality alone into a supporting price.
-
-## Connected composition deviations and workflow
-
-The separate RNN, optimizer, and Hodge-Maxwell theories are not claimed as new merely because they are formalized here. The meaningful deviation is the exact relationship imposed between their state transitions.
-
-```
-GRU state
-  |
-  +-- recurrent scan
-  |
-  +-- F4 / Frank-Wolfe update
-  |
-  +-- Watkins target
-  |
-  +-- LCB counts
-  |
-  +-- Sparsemax policy
-  |
-  v
-canonical learner transition
-  |
-  | exact learner-to-solution map
-  v
-Hodge-Maxwell solution
-  |
-  +-- differential-form equations
-  +-- continuity obligations
-  +-- encode/decode inverse laws
-  +-- step conjugacy
-  |
-  v
-Maxwell solution transition
-```
-
-For RNN theory, the extra claim is not recurrence itself. It is that the recurrent transition is the same typed transition used by the optimizer, target construction, policy readout, and physical representation. Standard RNN results do not imply this cross-semantic commuting structure.
-
-For optimizer theory, the extra claim is not the existence of an update, regret quantity, or residual. It is that the optimizer update is attached to the same recurrent state transition and is transported through the same exact solution representation. Standard optimizer analysis does not by itself provide that physical-state conjugacy.
-
-For Hodge-Maxwell theory, the extra claim is not the Maxwell equations, Hodge operators, or continuity assumptions. It is that a supplied Hodge-Maxwell solution space is globally isomorphic to the connected learner carrier and that its solution step commutes with the learner step. Standard Hodge-Maxwell theory does not by itself provide an RNN/optimizer representation.
-
-The combined effect is therefore:
-
-```
-recurrent semantics
-      |
-      v
-optimizer / target / policy semantics
-      |
-      v
-Hodge-Maxwell solution semantics
-      |
-      v
-economic semantics where an explicit interpretation is supplied
-```
-
-The boundary remains conditional. A policy readout does not automatically become a Maxwell update, and an exact encoder/decoder does not establish generic existence of a GRU representation for arbitrary Maxwell problems. The policy-to-Maxwell seam still requires `policyStepCorrect` before the policy-induced update can be transported to the Maxwell step.
-
-### Workflow deviation from conventional GitHub programming
-
-The repository adds a proof-and-graph layer between semantic source changes and ordinary CI:
-
-```
-semantic source
-     |
-     v
-Agda proposition / proof
-     |
-     v
-typed semantic extraction
-     |
-     v
-dependency graph / e-graph search
-     |
-     v
-candidate composition
-     |
-     v
-Agda promotion
-     |
-     v
-Dhall + Nix verification
-     |
-     v
-GitHub Actions
-     |
-     v
-Git history records semantic change
-```
-
-The distinctive workflow is methodological rather than a claim that ordinary GitHub workflows are inadequate. It combines typed transformations, explicit invariants, theorem-prover checking, reproducible environments, executable discovery tooling, and disciplined version history.
-
-The repository also makes a deliberate distinction:
-
-```
-search broadly
-    !=
-prove automatically
-
-compose candidates
-    !=
-weaken theorem statements
-
-change graph
-    !=
-change mathematical meaning
-
-commit code
-    !=
-prove the theorem
-```
-
-The operational loop is:
-
-```
-discover -> prune -> formalize -> verify -> record
-```
-
-### ASCII-controlled README automation
-
-The slow Dhall-generated updater owns only its marked commit-totality block. That generated block is an ASCII-controlled interface: commit subjects containing non-ASCII characters are rendered with ASCII backslash escapes, and the updater fails closed if generated rows are not ASCII. It records the processed commit and exact unprocessed count without rewriting Git history.
-
-```
-Git history
-    |
-    v
-Dhall-rendered updater
-    |
-    +-- exact commit range
-    |
-    +-- ASCII-safe subject rendering
-    |
-    v
-README marked block
-```
-
-This keeps generated README text deterministic and portable while leaving the mathematical prose and source semantics untouched.
-
-## Current pruning rule
-
-Keep only descriptions that correspond to a live Agda theorem/data declaration, a real graph dependency, a concrete verification mechanism, or a clearly marked unresolved boundary. Remove historical “pruned/retired” prose when the corresponding material is no longer part of the active surface. Do not retain speculative component-by-component claims merely because they resemble a known theory. The live question is always: what exact relationship does the connected graph prove that the separate components do not?
+When documentation and source disagree, the Agda source and the current Dhall verification contract are authoritative; the documentation must then be corrected to match them.
