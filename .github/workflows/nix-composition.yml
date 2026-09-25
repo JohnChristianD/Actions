@@ -98,8 +98,6 @@ jobs:
           path: |
             .ci/discovery/theorem-monolith-egraph-sync.json
             .ci/discovery/economic-closure-graph.json
-            .ci/discovery/economic-monolith-records.tsv
-            .ci/discovery/economic-monolith-declarations.tsv
 
       - name: Cross-repo Econlib graph
         timeout-minutes: 15
