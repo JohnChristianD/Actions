@@ -35,7 +35,9 @@ Source: https://journals.aps.org/pr/abstract/10.1103/PhysRev.182.1374
 `ZPFOmegaCubedSpectralLaw` records:
 
 - a spectral density for every ZPF state and frequency;
-- an explicit `omegaCubedDensity` carrier;
+- an explicit frequency multiplication operation;
+- a proof that the named `omegaCubed` carrier equals the triple product of the frequency;
+- an explicit spectral-density normalization carrier;
 - an equality witnessing that the state-dependent density follows that omega-cubed law.
 
 `ZPFMaxwellSemanticData` records the additional semantic predicates for:
