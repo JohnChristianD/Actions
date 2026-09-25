@@ -51,11 +51,15 @@ This is a semantic boundary, not a missing “final theorem.” The absence is i
 
 ## MARL-facing laws and Hodge-Maxwell composition
 
-For explanation, the current learner can be grouped around three exact laws already present in the theorem surface: recurrent-prefix scan composition; `canonicalF4RecurrentNetwork-step-law`; and `canonicalNormPairRecurrentNetwork-step-law`. These are not a newly invented MARL axiom set. They are a compact description of how the implemented recurrent learner composes.
+The closed learner-side composition is `CanonicalMARLLawCompositionTheorem`. It groups the exact recurrent-prefix law, F4 step law, NormPair step invariance, and the endogenous Watkins target into the existing full GRU × F4 × NormPair × Watkins composition.
 
-The full learner connects those laws through the endogenous Watkins target and `canonical-gruf4-norm-watkins-prefix-composition-theorem`. The Hodge-Maxwell representation then joins the same transition through `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem` and `ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem`, which expose the required representation and step-conjugacy interfaces.
+The physics-facing Law I/II/III vocabulary remains a separate semantic layer: agent dynamics, local Maxwell field equations, and variational/virtual-work constraint. The theorem surface does not infer a physical learner interface merely from those names; an explicit representation and transition-conjugacy witness is required.
 
-The exact F4 forcing ray is separate: persistent specified forcing yields linear growth in the selected integer-valued optimizer coordinate. Linear drift is a generic property of persistent nonzero increments, so the mechanism is not unique to F4; what is specific is this F4/L2 update and its machine-checked discrete forcing theorem.
+The carrier-polymorphic Hodge-Maxwell representation is exposed by `ContinuousHodgeMaxwellExactRepresentationData` and `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem`. The latter carries exact differential-form field equations, encode/decode inversion, step conjugacy, continuity obligations, a global StateIsomorphism, and encoder injectivity.
+
+The full-learner bridge is `CanonicalLearnerHodgeMaxwellCompositionTheorem`. It consumes the closed MARL composition together with an explicit learner↔solution inverse pair and exact learner-step/Hodge-step conjugacy. Its derived `canonical-learner-hodge-maxwell-step-conjugacy` theorem transports the canonical learner transition into the Hodge-Maxwell representation.
+
+The bridge is intentionally not classified as an unconditional existence theorem. The unconditional promotion is the closed MARL composition and the learner-side F4/NormPair results; Hodge-Maxwell composition becomes an exact theorem once its explicit representation witness is supplied.
 
 ## Why Mermaid, and what it is not
 
