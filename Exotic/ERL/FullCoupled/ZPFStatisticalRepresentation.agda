@@ -73,6 +73,7 @@ open ZPFMaxwellSemanticData public
 
 record ZPFGRUStatisticalRepresentation
   (ZPFState Frequency SpectralDensity MaxwellField : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency)
   (Homogeneous Isotropic Maxwell : MaxwellField → Set)
   (Stochastic : ZPFState → Set) : Set₁ where
   constructor zpfGRUStatisticalRepresentation
@@ -97,6 +98,7 @@ open ZPFGRUStatisticalRepresentation public
 
 zpfGRUStatisticalEncodeInjective :
   ∀ {ZPFState Frequency SpectralDensity MaxwellField : Set}
+  {frequencyMultiply : Frequency → Frequency → Frequency}
   {Homogeneous Isotropic Maxwell : MaxwellField → Set}
   {Stochastic : ZPFState → Set}
   (R :
@@ -105,6 +107,7 @@ zpfGRUStatisticalEncodeInjective :
       Frequency
       SpectralDensity
       MaxwellField
+      frequencyMultiply
       Homogeneous
       Isotropic
       Maxwell
@@ -118,6 +121,7 @@ zpfGRUStatisticalEncodeInjective R =
 
 zpfGRUStatisticalDistinguishes :
   ∀ {ZPFState Frequency SpectralDensity MaxwellField : Set}
+  {frequencyMultiply : Frequency → Frequency → Frequency}
   {Homogeneous Isotropic Maxwell : MaxwellField → Set}
   {Stochastic : ZPFState → Set}
   (R :
@@ -126,6 +130,7 @@ zpfGRUStatisticalDistinguishes :
       Frequency
       SpectralDensity
       MaxwellField
+      frequencyMultiply
       Homogeneous
       Isotropic
       Maxwell
@@ -139,6 +144,7 @@ zpfGRUStatisticalDistinguishes R =
 
 record ZPFGRUGlobalInjectivityTheorem
   (ZPFState Frequency SpectralDensity MaxwellField : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency)
   (Homogeneous Isotropic Maxwell : MaxwellField → Set)
   (Stochastic : ZPFState → Set) : Set₁ where
   constructor zpfGRUGlobalInjectivityTheoremWitness
@@ -161,6 +167,7 @@ record ZPFGRUGlobalInjectivityTheorem
 
 zpfGRUGlobalInjectivityTheorem :
   ∀ {ZPFState Frequency SpectralDensity MaxwellField : Set}
+  {frequencyMultiply : Frequency → Frequency → Frequency}
   {Homogeneous Isotropic Maxwell : MaxwellField → Set}
   {Stochastic : ZPFState → Set} →
   ZPFGRUStatisticalRepresentation
@@ -168,6 +175,7 @@ zpfGRUGlobalInjectivityTheorem :
     Frequency
     SpectralDensity
     MaxwellField
+    frequencyMultiply
     Homogeneous
     Isotropic
     Maxwell
@@ -177,6 +185,7 @@ zpfGRUGlobalInjectivityTheorem :
     Frequency
     SpectralDensity
     MaxwellField
+    frequencyMultiply
     Homogeneous
     Isotropic
     Maxwell
