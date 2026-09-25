@@ -74,7 +74,8 @@ flowchart TD
   H1 --> SQ
   GS --> SQ
   SQ --> FL1
-  FL1 --> IT["n-step iterate conjugacy [FRONTIER]"]
+  GCI["GlobalConjugacyEquivalence exact iterate transport [AGDA THEOREM]"] --> IT["n-step iterate conjugacy [FRONTIER]"]
+  FL1 --> GCI
   IT --> PX["prefix concatenation transport [FRONTIER]"]
   PX --> FL2
   FL0 --> L1W["Law I inverse representation witness [REQUIRED]"]
