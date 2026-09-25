@@ -8,6 +8,11 @@
 -- A module contributes a sound interpretation; e-graph paths then compose
 -- exact semantic equality, and A* supplies traversal cost/heuristic data
 -- without entering the equality proof.
+--
+-- The repository index below is deliberately finite and explicit.  It names
+-- every surviving Agda file in Exotic/ERL/FullCoupled on this branch.  The
+-- closure theorem is still parametric in the semantic interpretation for
+-- each file: enumeration does not manufacture semantic soundness.
 ------------------------------------------------------------------------
 
 module Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure where
@@ -15,13 +20,31 @@ module Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure where
 open import Relation.Binary.PropositionalEquality using (_≡_)
 open import Exotic.ERL.FullCoupled.EGraphSemanticTransport
 
-record AgdaSemanticModuleFamily (Module : Set) : Set₁ where
+data RepositoryAgdaModule : Set where
+  canonicalLearnerMonolith :
+    RepositoryAgdaModule
+  theoremsMonolith :
+    RepositoryAgdaModule
+  eGraphSemanticTransport :
+    RepositoryAgdaModule
+  fourLawClosureWitnesses :
+    RepositoryAgdaModule
+  fourLawClosureImpossibility :
+    RepositoryAgdaModule
+  gruStatisticalInjectivity :
+    RepositoryAgdaModule
+  tsallisStatisticalRepresentation :
+    RepositoryAgdaModule
+  repositorySemanticEGraphClosure :
+    RepositoryAgdaModule
+
+record AgdaSemanticModuleFamily : Set₁ where
   constructor agdaSemanticModuleFamily
   field
-    Expression : Module → Set
-    State : Module → Set
+    Expression : RepositoryAgdaModule → Set
+    State : RepositoryAgdaModule → Set
     closure :
-      ∀ m →
+      (m : RepositoryAgdaModule) →
       AStarSemanticClosure
         (Expression m)
         (State m)
@@ -29,9 +52,8 @@ record AgdaSemanticModuleFamily (Module : Set) : Set₁ where
 open AgdaSemanticModuleFamily public
 
 repositoryAgdaAStarSemanticClosure :
-  ∀ {Module : Set}
-  (F : AgdaSemanticModuleFamily Module)
-  (m : Module)
+  (F : AgdaSemanticModuleFamily)
+  (m : RepositoryAgdaModule)
   {e f : Expression F m} →
   EGraphSemanticPath
     (semantics (closure F m))
@@ -47,9 +69,8 @@ record UnconditionalAgdaEGraphAStarClosure : Set₁ where
   constructor unconditionalAgdaEGraphAStarClosure
   field
     closeAll :
-      ∀ {Module : Set}
-      (F : AgdaSemanticModuleFamily Module)
-      (m : Module)
+      (F : AgdaSemanticModuleFamily)
+      (m : RepositoryAgdaModule)
       {e f : Expression F m} →
       EGraphSemanticPath
         (semantics (closure F m))
@@ -66,7 +87,15 @@ unconditional-agda-egraph-astar-closure =
     repositoryAgdaAStarSemanticClosure
 
 ------------------------------------------------------------------------
--- The theorem is unconditional over the supplied semantic family:
--- sound interpretation + finite sound path imply exact equality.
--- It does not assert that every physical Maxwell witness exists.
+-- The theorem is unconditional over the complete surviving Agda-file
+-- index and any supplied semantic family:
+--
+--   enumerated file
+--     -> supplied sound interpretation
+--     -> sound e-graph path
+--     -> exact endpoint equality
+--
+-- A* costs/heuristics guide discovery but are not equality evidence.
+-- This does not assert that every physical Maxwell witness, economic
+-- equilibrium witness, or other domain-specific inhabitant exists.
 ------------------------------------------------------------------------
