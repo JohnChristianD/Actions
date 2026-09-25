@@ -49,6 +49,14 @@ None of the learner-side results alone proves:
 
 This is a semantic boundary, not a missing “final theorem.” The absence is intentional and is supported by the closed countermodel and by the exact non-fixed-point clock law.
 
+## MARL-facing laws and Hodge-Maxwell composition
+
+For explanation, the current learner can be grouped around three exact laws already present in the theorem surface: recurrent-prefix scan composition; `canonicalF4RecurrentNetwork-step-law`; and `canonicalNormPairRecurrentNetwork-step-law`. These are not a newly invented MARL axiom set. They are a compact description of how the implemented recurrent learner composes.
+
+The full learner connects those laws through the endogenous Watkins target and `canonical-gruf4-norm-watkins-prefix-composition-theorem`. The Hodge-Maxwell representation then joins the same transition through `ConnectedContinuousHodgeMaxwellGRURepresentationTheorem` and `ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem`, which expose the required representation and step-conjugacy interfaces.
+
+The exact F4 forcing ray is separate: persistent specified forcing yields linear growth in the selected integer-valued optimizer coordinate. Linear drift is a generic property of persistent nonzero increments, so the mechanism is not unique to F4; what is specific is this F4/L2 update and its machine-checked discrete forcing theorem.
+
 ## Production-side topology
 
 The production-side contract uses standard economic vocabulary:
@@ -77,6 +85,12 @@ A Second Welfare direction is a separate supporting-price/redistribution stateme
 The contribution is not “formalization is novel,” “Agda is novel,” or “Walrasian equilibrium was newly proved.”
 
 The research contribution is the mechanically auditable dependency topology showing, for this coupled learner, which conclusions are exact consequences and where independent economic assumptions must enter.
+
+## Evidence-format policy
+
+JSON is the machine-readable evidence/interchange layer and Mermaid is the human-readable topology projection. TSV and CSV are not canonical graph stores. SQLite is unnecessary for the current repository-local deterministic workload, and NoSQL is even less justified because there is no distributed, schema-flexible, high-write query problem to solve. Dhall remains the verification contract and is executed inside Nix where that existing unattended path needs it.
+
+A CSV used by an unrelated replication archive is a separate artifact and is not part of the topology format policy.
 
 ## Source hierarchy
 
