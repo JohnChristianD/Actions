@@ -1,9 +1,13 @@
 flowchart TD
   A["Canonical learner definitions"] --> B["Exact recurrent scan / composition"]
   B --> C["NormPair preservation"]
+  B --> ML["Three MARL-facing exact laws: recurrent scan, F4 step, NormPair step"]
+  ML --> CP["GRU × F4 × NormPair × Watkins prefix composition"]
+  CP --> HM["Hodge-Maxwell / GRU-F4-Watkins exact representation and step conjugacy"]
   C --> D["NormPair quotient / factor transition"]
   B --> E["Exact F4 optimizer stability"]
   E --> F["F4 unit-forcing growth ray"]
+  HM --> E
   F --> G["No unconditional infinite-horizon F4 upper bound"]
   D --> H["Canonical F4 × NormPair unconditional factor stability"]
   E --> H
@@ -31,3 +35,6 @@ flowchart TD
 
   W["First Welfare: condition-gated"] --> X["Competitive equilibrium + demand assumptions"]
   Y["Second Welfare: separate supportability route"] --> M
+
+  F --> LR["Linear optimizer-state ray: exact forcing response, not convergence or boundedness"]
+  LR -. "not unique in principle" .-> LU["Many optimizers can show linear drift under persistent nonzero forcing"]
