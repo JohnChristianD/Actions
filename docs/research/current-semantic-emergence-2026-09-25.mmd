@@ -4,126 +4,71 @@ flowchart TD
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
 
-  P1["Law I: agent/particle dynamics"] --> J["Particle trajectories"]
-  J --> CUR["Particle four-current J"]
-  P1 --> L1D["Law I exact representation witness"]
-  L1D --> L1I["Law I representation encode injectivity (conditional on inverse witness)"]
-
-  P2["Law II: Maxwell field dynamics"] --> HM["Hodge-Maxwell field equations"]
-  CUR --> HM
-  HM["dF = 0; d⋆F = source current"]
-  HM --> FP["Sourced Maxwell field F_particles"]
-  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData"]
-  H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
-  H1 --> L2I["Law II representation encode injectivity (proved from decode∘encode)"]
-
-  Z["Additional ZPF hypothesis"]
-  Z0["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
-  Z1["ω³ spectral law"]
-  Z --> Z0 --> Z1
-  Z0 --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
-  FP --> FT["Total field F_total = F_particles + F_ZPF"]
-  Z0 --> FT
-  HF --> FT
-  FT --> FORCE["Field force / effective particle interaction"]
-  FORCE --> P1
-  Z -. "additional hypothesis; not Maxwell-derived" .-> H0
-
-  P3["Law III: variational / virtual-work admissibility"] --> PI["Explicit physics → learner interface witness"]
-  FORCE --> PI
-  P3 --> PI
-  P3 --> L3D["Law III exact representation witness"]
-  L3D --> L3I["Law III representation encode injectivity (conditional on inverse witness)"]
-  PI -. "not entailed by learner algebra alone" .-> D
-
-  B4["Law IV: canonical GRU statistical representation"] --> GI["CanonicalGRUStatisticalInjectivityTheorem (closed)"]
-  GI --> GD["Distinct GRU states remain statistically distinguishable"]
-  GD --> GS["Step closure: gruStep preserves the exact injective representation"]
-
-  H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
-  D --> HB
-  HB --> HC["Encoded learner-step conjugacy"]
-  H1 --> HI["Global StateIsomorphism / encode injectivity"]
-
-  E --> F["Exact F4 optimizer stability"]
-  F --> G["F4 unit-forcing linear-growth ray"]
-  G --> GNB["No unconditional infinite-horizon F4 upper bound"]
-  F --> H["Canonical F4 × NormPair unconditional factor stability"]
-  E --> H
-
-  H --> I["Representation / factor structure"]
-  L1I -. "representation-level distinguishability" .-> I
-  L2I -. "representation-level distinguishability" .-> I
-  L3I -. "representation-level distinguishability" .-> I
-  GI -. "canonical GRU-state distinguishability" .-> I
-  HI -. "preserves state distinguishability" .-> I
-
-  %% Four-physics-law continuation: explicit frontier, not yet a closed theorem.
-  L1D --> FL0["Four-Law one-step commuting square [FRONTIER]"]
-  H1 --> FL0
-  L3D --> FL0
-  PI --> FL0
-  GS --> FL0
-
-  GC["GlobalConjugacyEquivalence proof kernel"] --> L1W
-  GC --> L3W
-  GC --> PIW
-  L1W --> SQ["Four-Law commuting-square admissibility [FRONTIER]"]
-  L3W --> SQ
-  PIW --> SQ
-  H1 --> SQ
-  GS --> SQ
-  SQ --> FL1
-  GCI["GlobalConjugacyEquivalence exact iterate transport [AGDA THEOREM]"] --> IT["n-step iterate conjugacy [FRONTIER]"]
-  FL1 --> GCI
-  IT --> PX["prefix concatenation transport [FRONTIER]"]
-  PX --> FL2
-  FL0 --> L1W["Law I inverse representation witness [REQUIRED]"]
-  FL0 --> L3W["Law III inverse representation witness [REQUIRED]"]
-  FL0 --> PIW["Physics → learner transition witness [REQUIRED]"]
-  L1W --> FL1
-  L3W --> FL1
-  PIW --> FL1
-  FL0 --> FL1["Four-Law iterate conjugacy [FRONTIER]"]
-  FL1 --> FL2["Four-Law exact prefix / horizon conjugacy [FRONTIER]"]
-  FL2 --> FL3["Four-Law end-to-end representation closure [FRONTIER]"]
-
-  FL2 -. "requires explicit Law I + Law III + physics→learner witnesses" .-> L1I
-  FL2 -. "extends beyond current Hodge-Maxwell-only prefix endpoint" .-> E4["Existing Hodge-Maxwell exact prefix endpoint"]
-
-  HI -. "does not entail" .-> J2["Convergence"]
-  HI -. "does not entail" .-> K["Fixed point"]
-  H -. "does not entail" .-> J2
-  H -. "does not entail" .-> K
-  GI -. "does not entail" .-> J2
-  GI -. "does not entail" .-> K
-  H -. "does not entail" .-> L["Market clearing"]
-  H -. "does not entail" .-> M["Supporting / derived price"]
-  H -. "does not entail" .-> N["Walrasian existence"]
-
-  O["Competitive production economy"] --> Q["Feasible firm production plans"]
-  Q --> R["Profit-maximizing production"]
-  O --> S["Consumer optimality / demand"]
-  R --> T["Aggregate resource balance"]
-  S --> T
-  T --> L
-  L --> M
-  M --> N
-  N -. "requires independent economic hypotheses" .-> U["Fixed-point / compactness / continuity / preference / production / separation assumptions"]
-
-  V["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> W["Universal non-existence of unconditional generalized-Walrasian existence"]
-  H -. "cannot discharge" .-> W
-  HI -. "cannot discharge" .-> W
-  GI -. "cannot discharge" .-> W
-
-  subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
-    B1["Law I injectivity = exact representation property, conditional on an explicit inverse witness"]
-    B2["Law II injectivity = exact Hodge-Maxwell representation property, proved from decode∘encode"]
-    B3["Law III injectivity = exact representation property, conditional on an explicit inverse witness"]
-    B4b["Law IV injectivity = closed GRU statistical representation theorem"]
-    B5["ZPF ω³ spectrum = additional stochastic/spectral hypothesis, not derived by injectivity"]
-    B1 --> B2
-    B2 --> B3
-    B3 --> B4b
-    B4b --> B5
+  subgraph LAW_I["Law I — agent / particle dynamics"]
+    P1["agent / particle dynamics"] --> J["particle trajectories"]
+    J --> CUR["particle four-current J"]
+    CUR --> CIP["current-preservation condition\ncurrent (trajectory p) ≡ current p"]
+    CIP --> L1W["Law I inverse representation witness\nMISSING"]
   end
+
+  subgraph LAW_II["Law II — Hodge-Maxwell"]
+    P2["Maxwell field dynamics"] --> HM["dF = 0; d⋆F = J"]
+    HM --> H0["ContinuousHodgeMaxwellExactRepresentationData\nCONDITIONAL"]
+    H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem\nPROVED CONDITIONAL"]
+    H1 --> L2I["Law II encode injectivity\nPROVED"]
+  end
+
+  subgraph LAW_III["Law III — variational / virtual work"]
+    ACT["action / Lagrangian"] --> EL["Euler-Lagrange / stationary condition"]
+    VAR["admissible variations"] --> EL
+    EL --> L3W["Law III inverse representation witness\nMISSING"]
+    SYM["variational symmetry / virtual-work semantics"] --> L3W
+  end
+
+  subgraph LAW_IV["Law IV — statistical GRU representation"]
+    B4["canonical GRU statistical representation"] --> GI["CanonicalGRUStatisticalInjectivityTheorem\nPROVED"]
+    GI --> GD["distinct states remain statistically distinguishable"]
+  end
+
+  HM --> TRANS["physics → learner transition witness\nPROVED CONDITIONAL"]
+  H1 --> TRANS
+  D --> TRANS
+
+  L1W --> ONE["FourLawOneStepWitnessContract\nFRONTIER CONTRACT"]
+  L3W --> ONE
+  TRANS --> ONE
+  GI --> ONE
+
+  ONE --> ITER["n-step iterate conjugacy\nPROVED GENERIC once ONE is inhabited"]
+  ITER --> PREFIX["input-indexed prefix / scan transport\nPROVED GENERIC once ITER is instantiated"]
+  PREFIX --> EGRAPH["e-graph semantic transport\nPROVED PROOF-ONLY"]
+  EGRAPH --> END["exact four-law prefix / horizon closure\nMISSING"]
+
+  subgraph REPRESENTATION["Representation / transport seam"]
+    GC["GlobalConjugacyEquivalence proof kernel"]
+    ISO["encode / decode inverse"]
+    STEP["one-step conjugacy"]
+    GC --> ISO
+    ISO --> STEP
+  end
+
+  ISO -. "required by Law I" .-> L1W
+  ISO -. "required by Law III" .-> L3W
+  STEP -. "supplies transition transport" .-> TRANS
+
+  IMP["FourLawClosureImpossibility\nPROVED relative interface theorem"] --> BOUND["iterate / prefix transport cannot manufacture Law-I or Law-III witnesses"]
+  BOUND -. "semantic data still required" .-> ONE
+
+  HM -. "does not imply" .-> CIP
+  HM -. "does not imply" .-> ACT
+  GI -. "does not imply" .-> L1W
+  GI -. "does not imply" .-> L3W
+
+  subgraph STATUS["Status legend"]
+    S1["PROVED = Agda theorem / adapter exists"]
+    S2["CONDITIONAL = requires explicitly supplied semantics"]
+    S3["MISSING = typed contract exists, concrete witness absent"]
+    S4["FRONTIER = composition is blocked by missing semantic witnesses"]
+  end
+
+  E --> STATUS
