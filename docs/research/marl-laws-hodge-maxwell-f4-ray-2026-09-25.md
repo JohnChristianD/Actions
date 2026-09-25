@@ -96,3 +96,26 @@ Only after all three are present does the graph promote:
   one-step square → iterate conjugacy → exact prefix/horizon conjugacy.
 
 This decomposition is intentionally stronger than merely connecting the four law labels: each edge must eventually correspond to proof-relevant data on the Agda surface.
+
+
+### Conjugacy-kernel continuation
+
+The repository already contains a generic proof-relevant GlobalConjugacyEquivalence record with both state/feature reconstruction and forward/backward dynamics equations. The four-law frontier therefore does not need a new abstract notion of conjugacy: the remaining work is to instantiate this existing kernel with the Law-I/Law-III physics witnesses and the physics-to-learner interface.
+
+The refined dependency chain is:
+
+  GlobalConjugacyEquivalence
+      + Law-I inverse witness
+      + Law-III inverse witness
+      + physics-to-learner witness
+      + Law-II Hodge-Maxwell conjugacy
+      + Law-IV GRU step closure
+      -> four-law commuting square
+      -> n-step iterate conjugacy
+      -> prefix concatenation transport
+      -> exact prefix/horizon conjugacy
+      -> end-to-end representation closure.
+
+This is materially stronger than the previous one-step-only frontier because the induction kernel and the prefix-monoid transport stage are now explicit. The existing iterateCanonical definition and recurrent-prefix append lemmas provide the corresponding learner-side induction shape, while CanonicalLearnerHodgeMaxwellCompositionTheorem already supplies an explicit learner-to-solution inverse pair and one-step conjugacy seam.
+
+No new Agda theorem is claimed by this graph update; the frontier remains conditional until the missing physics witnesses are instantiated and typechecked.
