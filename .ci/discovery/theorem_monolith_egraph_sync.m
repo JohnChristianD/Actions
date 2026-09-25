@@ -24,6 +24,119 @@ add_graph_plans([Plan | Plans], E0, E) :-
     add_expr(graph_plan_expr(Plan), E0, _, E1),
     add_graph_plans(Plans, E1, E).
 
+:- pred plan_terminal_ids(
+    list(list(string))::in,
+    list(string)::in,
+    list(string)::out) is det.
+plan_terminal_ids([], Acc, Ids) :-
+    list.reverse(Acc, Ids).
+plan_terminal_ids([Plan | Plans], Acc0, Ids) :-
+    (
+        Plan = [Terminal | _],
+        list.member(Terminal, Acc0)
+    ->
+        Acc1 = Acc0
+    ;
+        (
+            Plan = [Terminal | _]
+        ->
+            Acc1 = [Terminal | Acc0]
+        ;
+            Acc1 = Acc0
+        )
+    ),
+    plan_terminal_ids(Plans, Acc1, Ids).
+
+:- pred closure_round(
+    list(semantic_law)::in,
+    list(string)::in,
+    list(list(string))::in,
+    symbolic_egraph.egraph::in,
+    symbolic_egraph.egraph::out,
+    list(list(string))::out,
+    saturation_report::out,
+    int::out,
+    int::out) is det.
+closure_round(
+    Laws,
+    SeedIds,
+    PreviousPlans,
+    E0,
+    E,
+    RoundPlans,
+    Saturation,
+    BeforeEnodes,
+    AfterEnodes) :-
+    BeforeEnodes = enode_count(E0),
+    search_emergent_compositions_from_seed_ids(
+        Laws, SeedIds, RoundPlans0),
+    RoundPlans = RoundPlans0,
+    add_graph_plans(RoundPlans, E0, E1),
+    saturate_until_stable(
+        semantic_rewrite_rules, E1, E, Saturation),
+    AfterEnodes = enode_count(E),
+    (
+        PreviousPlans = RoundPlans
+    ->
+        true
+    ;
+        true
+    ).
+
+:- pred astar_egraph_fixed_point(
+    list(semantic_law)::in,
+    list(list(string))::in,
+    symbolic_egraph.egraph::in,
+    symbolic_egraph.egraph::out,
+    list(list(string))::out,
+    int::out,
+    int::out,
+    int::out,
+    bool::out) is det.
+astar_egraph_fixed_point(
+    Laws, InitialPlans, E0, E, Plans, Rounds, BeforeEnodes,
+    AfterEnodes, Stable) :-
+    SeedIds0 = [],
+    plan_terminal_ids(InitialPlans, SeedIds0, SeedIds),
+    closure_round(
+        Laws, SeedIds, InitialPlans, E0, E1, RoundPlans1,
+        Saturation1, BeforeEnodes1, AfterEnodes1),
+    (
+        AfterEnodes1 = BeforeEnodes1,
+        RoundPlans1 = InitialPlans
+    ->
+        E = E1,
+        Plans = InitialPlans,
+        Rounds = 1,
+        BeforeEnodes = BeforeEnodes1,
+        AfterEnodes = AfterEnodes1,
+        Stable = yes
+    ;
+        SeedIds1 = [],
+        plan_terminal_ids(RoundPlans1, SeedIds1, SeedIdsNext),
+        closure_round(
+            Laws, SeedIdsNext, RoundPlans1, E1, E2, RoundPlans2,
+            Saturation2, BeforeEnodes2, AfterEnodes2),
+        (
+            RoundPlans2 = RoundPlans1,
+            AfterEnodes2 = BeforeEnodes2
+        ->
+            E = E2,
+            Plans = RoundPlans2,
+            Rounds = Saturation1 ^ saturation_iterations + Saturation2 ^ saturation_iterations,
+            BeforeEnodes = BeforeEnodes1,
+            AfterEnodes = AfterEnodes2,
+            Stable = yes
+        ;
+            E = E2,
+            Plans = RoundPlans2,
+            Rounds = 2,
+            BeforeEnodes = BeforeEnodes1,
+            AfterEnodes = AfterEnodes2,
+            Stable = no
+        )
+    ).
+
 :- pred write_plan_items(
     io.text_output_stream::in, list(list(string))::in,
     io::di, io::uo) is det.
@@ -190,15 +303,31 @@ main(!IO) :-
     add_graph_plans(
         Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans,
         EGraph0,
-        EGraphGraph),
-    saturate_until_stable(semantic_rewrite_rules, EGraphGraph, EGraph, Saturation),
-    analyze(EGraph, Analyses),
-    ExtractionDepth = enode_count(EGraph) + 1,
-    extract_all_laws(All, EGraph, ExtractionDepth, ExtractionCost),
+        EGraphGraph0),
+    astar_egraph_fixed_point(
+        All,
+        Plans,
+        EGraphGraph0,
+        EGraph,
+        ClosedPlans,
+        ClosureRounds,
+        ClosureBeforeEnodes,
+        ClosureAfterEnodes,
+        ClosureStable),
+    saturate_until_stable(
+        semantic_rewrite_rules, EGraph, EGraphStable, Saturation),
+    analyze(EGraphStable, Analyses),
+
+    ExtractionDepth = enode_count(EGraphStable) + 1,
+    extract_all_laws(All, EGraphStable, ExtractionDepth, ExtractionCost),
     (
         if
             list.length(All) > 0,
             list.length(Plans) > 0,
+            list.length(ClosedPlans) > 0,
+            ClosureStable = yes,
+            ClosureRounds > 0,
+            ClosureAfterEnodes >= ClosureBeforeEnodes,
             list.length(AutomaticCompositePlans) > 0,
             list.length(EndogenousCompositePlans) > 0,
             list.length(RequiredPlans) = list.length(graph_required_theorems),
@@ -222,7 +351,7 @@ main(!IO) :-
                 QuotientCount,
                 Saturation,
                 ExtractionCost,
-                Plans,
+                ClosedPlans,
                 !IO),
             io.write_string(
                 "mercury-theorem-monolith-egraph-sync=pass\n", !IO),
