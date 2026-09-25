@@ -65,6 +65,18 @@ flowchart TD
   PI --> FL0
   GS --> FL0
 
+  GC["GlobalConjugacyEquivalence proof kernel"] --> L1W
+  GC --> L3W
+  GC --> PIW
+  L1W --> SQ["Four-Law commuting-square admissibility [FRONTIER]"]
+  L3W --> SQ
+  PIW --> SQ
+  H1 --> SQ
+  GS --> SQ
+  SQ --> FL1
+  FL1 --> IT["n-step iterate conjugacy [FRONTIER]"]
+  IT --> PX["prefix concatenation transport [FRONTIER]"]
+  PX --> FL2
   FL0 --> L1W["Law I inverse representation witness [REQUIRED]"]
   FL0 --> L3W["Law III inverse representation witness [REQUIRED]"]
   FL0 --> PIW["Physics → learner transition witness [REQUIRED]"]
