@@ -2812,6 +2812,24 @@ canonical-learner-hodge-maxwell-step-conjugacy
       (semantics (hodgeRepresentation W))
       (learnerToSolution W s))
 
+canonical-physics-to-learner-transition-witness :
+  ∀ {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+      {Continuous = Continuous})
+  (K : C.CanonicalFullLearnerKernel) →
+  PhysicsToLearnerTransitionWitness
+    C.CanonicalFullLearnerState
+    (Solution (semantics (hodgeRepresentation W)))
+    (C.canonicalFullStep K)
+    (step (semantics (hodgeRepresentation W)))
+canonical-physics-to-learner-transition-witness W K =
+  physicsToLearnerTransitionWitness
+    (learnerToSolution W)
+    (solutionToLearner W)
+    (learnerSolutionLeftInverse W)
+    (learnerStepConjugacy W K)
+
 ------------------------------------------------------------------------
 -- The Hodge-Maxwell bridge is a conditional composition seam, not a
 -- closed existence theorem.  The closed result promoted above is the
