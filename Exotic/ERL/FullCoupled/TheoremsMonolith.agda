@@ -1,14 +1,33 @@
 {-# OPTIONS --safe #-}
 
-module Exotic.ERL.FullCoupled.TheoremsMonolith where
+------------------------------------------------------------------------
+-- Canonical theorem semantics and emergence layer.
+--
+-- This module is the single theorem consumer of the canonical learner.
+-- Its propositions are derived from the actual learner definitions and
+-- from explicit hypotheses supplied at each abstraction boundary.
+--
+-- The proof topology is intentionally directional:
+--   learner definitions
+--     -> exact scan / composition laws
+--     -> observation, quotient, and factor structure
+--     -> F4 stability and exact growth boundary
+--     -> coupled factor-stability closure
+--     -> explicit economic interpretation gates.
+--
+-- A discovered graph edge is not itself a proof. A theorem is authoritative
+-- only when its proposition is present here and its proof is accepted by
+-- safe Agda. Likewise, a semantic contract is not an existence theorem:
+-- the generalized Walrasian and production-side interfaces record the
+-- conditions of an equilibrium, while existence, convergence, market
+-- clearing, or supporting-price conclusions require their own assumptions.
+--
+-- The comments in this file therefore describe semantic intention and
+-- emergence from the current definitions, not historical theorem partitions,
+-- search candidates, or superseded contract surfaces.
+------------------------------------------------------------------------
 
-------------------------------------------------------------------------
--- Single active theorem source for the architecture and all emergence proofs.
--- The learner is the only intentionally separated Agda module and is
--- imported below. Economic, Arrow-Debreu, KKT, welfare, and other proof
--- surfaces belong in this monolith rather than in parallel theorem modules.
--- Discovery/CI should target this file.
-------------------------------------------------------------------------
+module Exotic.ERL.FullCoupled.TheoremsMonolith where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
@@ -109,12 +128,6 @@ canonicalNoNontrivialFiniteCycle-theorem :
   C.iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
 
-------------------------------------------------------------------------
--- Isomorphism/conjugacy laws for deterministic state evolution.
--- A state isomorphism preserves iteration traces and transports finite-cycle
--- exclusion to the isomorphic state representation.
-------------------------------------------------------------------------
-
 record StateIsomorphism (A B : Set) : Set where
   constructor stateIsomorphism
   field
@@ -137,17 +150,6 @@ canonical-connected-composition-theorem =
     canonical-aq-loop-theorem
     canonicalClockAfter
     canonicalNoNontrivialFiniteCycle-theorem
-
-
-
-------------------------------------------------------------------------
--- Learner-local symbolic composition algebra.
---
--- This is the semantic target for automated program/theorem search:
--- the search program composes actual learner transformations and asks
--- the canonical Agda surface to prove the resulting observation law.
--- The search metric is deliberately absent from this semantic layer.
-------------------------------------------------------------------------
 
 data LearnerReplacement : Set where
   normReplacement : NormPair → LearnerReplacement
@@ -182,9 +184,6 @@ canonicalPolicy-learnerReplacement-composition K s (r ∷ rs) =
       K (applyLearnerReplacement r s) rs)
     (canonicalPolicy-learnerReplacement-invariant K s r)
 
--- NormPair is not only policy-invariant: it is dynamically inert under the
--- canonical transition. Replacing the norm before a step is definitionally
--- the same as taking the step first and replacing the preserved norm after it.
 canonicalFullStep-replaceNorm :
   ∀ {A : Set}
   (K : C.FullLearnerKernel A)
@@ -260,13 +259,6 @@ canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
     (canonicalPersistentGRU-afterFullStep-iterate
       K n (canonicalFullStep K s))
     (canonicalPersistentGRUPreservation K s)
-------------------------------------------------------------------------
--- Generic equality composition primitive.
---
--- This is theorem algebra, not a learner-specific discovery registry.
--- Automated discovery derives its semantic vocabulary from source
--- declarations; no fixed candidate basis is encoded here.
-------------------------------------------------------------------------
 
 record EqualityCompositionTheorem
   {A : Set}
@@ -287,16 +279,6 @@ composeEqualityTheorem first second =
     first
     second
     (trans first second)
-
-------------------------------------------------------------------------
--- Exact recurrent scan class.
-
---
--- No finite horizon is baked into this theorem. The input is a Nat-indexed
--- stream, and the prefix/split laws quantify over arbitrary natural
--- horizons. The associativity is over endomorphism composition, so the
--- recurrent state transition itself is not approximated or relaxed.
-------------------------------------------------------------------------
 
 record RecurrentAssociativeScanTheorem
   (State Input : Set) : Set₁ where
@@ -347,19 +329,6 @@ canonicalGRU-recurrent-associative-scan-theorem =
     C.endomorphismAssociative
     C.recurrentPrefix-correct
     C.recurrentPrefix-split
-
-------------------------------------------------------------------------
--- Stronger free-monoid formulation of the recurrent prefix scan.
---
--- The Nat-indexed split law is equivalent to a word/prefix action.  With
--- the convention that a sequence is executed left-to-right, the resulting
--- map is a monoid homomorphism into the opposite endomorphism monoid:
---
---   Prefix (xs ++ ys) = Prefix xs ⊙ Prefix ys
---
--- where f ⊙ g means g ∘ f.  This is stronger than merely recording one
--- associativity equation for three endomorphisms.
-------------------------------------------------------------------------
 
 prefixOp :
   ∀ {State : Set} →
@@ -475,16 +444,6 @@ canonical-recurrent-prefix-monoid-homomorphism =
     (λ R s → prefixListEndomorphism-unit R s)
     (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
 
-
-------------------------------------------------------------------------
--- Pointwise product lifting of recurrent homomorphisms.
---
--- If two transition algebras read the same word, their product transition
--- algebra is obtained elementwise.  The product therefore preserves the
--- same monoid law componentwise; this is closure, not a stronger algebraic
--- law than homomorphism itself.
-------------------------------------------------------------------------
-
 productEndomorphism :
   ∀ {StateA StateB : Set} →
   C.Endomorphism StateA →
@@ -514,17 +473,6 @@ productEndomorphism-compose :
       (productEndomorphism f₂ g₂))
     (s , t)
 productEndomorphism-compose f₁ f₂ g₁ g₂ s t = refl
-
-
-------------------------------------------------------------------------
--- Componentwise prefix homomorphisms from the canonical learner.
---
--- F4 is a genuine per-feature recurrent component: its transition is
--- f4ThetaStep on one Int8 feature/signal.  NormPair is policy-invariant
--- and its canonical transition is the identity.  Each is therefore lifted
--- into the same prefix-endomorphism monoid, and their direct product with
--- the canonical GRU is a single componentwise prefix action.
-------------------------------------------------------------------------
 
 canonicalF4RecurrentNetwork :
   C.CanonicalFullLearnerKernel →
@@ -632,15 +580,6 @@ canonicalFullStep-GRUF4Norm-prefix-bridge :
     , C.norm (C.canonicalFullStep K s)))
 canonicalFullStep-GRUF4Norm-prefix-bridge K s = refl
 
-
-------------------------------------------------------------------------
--- Componentwise learner prefix homomorphisms.
---
--- Each transition is sourced directly from CanonicalLearnerMonolith.
--- The prefix action supplies the monoid law; no external component
--- semantics or theorem registry is introduced here.
-------------------------------------------------------------------------
-
 record CanonicalGRUF4NormWatkinsPrefixCompositionTheorem : Set₁ where
   constructor canonicalGRUF4NormWatkinsPrefixCompositionTheorem
   field
@@ -668,18 +607,6 @@ canonical-gruf4-norm-watkins-prefix-composition-theorem =
     canonical-recurrent-prefix-monoid-homomorphism
     C.canonicalSignal-watkins-target
     canonicalFullStep-GRUF4Norm-prefix-bridge
-
-
-------------------------------------------------------------------------
--- Full commuting-square / naturality completion.
---
--- The literature's equivariance/naturality law is the commuting square
---   observe ∘ step ≡ featureStep ∘ observe.
--- Here it is proved for arbitrary deterministic recurrent transitions.
--- Iteration follows by induction. A left inverse upgrades the square from
--- a factorization law to exact reconstruction on the observation image.
--- A right inverse closes the square globally and yields exact conjugacy.
-------------------------------------------------------------------------
 
 commutingIterate :
   ∀ {S : Set} →
@@ -727,14 +654,6 @@ canonicalClock-freeMonoidActionHomomorphism K =
   freeMonoidActionHomomorphism-from-square
     (commutingSquareTheorem-from-square
       (λ s → C.canonicalFullStep-clock K s))
-
-------------------------------------------------------------------------
--- Generic symbolic impossibility at the observation boundary.
---
--- A collision in observation prohibits a left inverse.  More generally,
--- any task that distinguishes the collided states cannot factor exactly
--- through the observation map.
-------------------------------------------------------------------------
 
 recurrentWordState :
   ∀ {State Input : Set} →
@@ -788,7 +707,6 @@ canonical-recurrent-scan-conjugacy-theorem =
   recurrentScanConjugacyTheorem
     (λ replace step h → replace)
     (λ replace step h xs n s → recurrentPrefix-scan-lifts-conjugacy replace step h xs n s)
-
 
 canonicalRecurrentInput-watkinsTarget-law :
   ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
@@ -897,13 +815,6 @@ canonical-S4S5-recurrent-scan-theorem =
     canonicalGRU-recurrent-associative-scan-theorem
     (λ s → refl)
 
-
-------------------------------------------------------------------------
--- Exact synchronous direct-product closure for recurrent finite-state
--- machines.  No new learner semantics are introduced: this is a generic
--- theorem over the recurrent interface already used by the learner.
-------------------------------------------------------------------------
-
 productRecurrentNetwork :
   ∀ {StateA StateB Input : Set} →
   C.RecurrentNetwork StateA Input →
@@ -938,14 +849,6 @@ productRecurrentPrefix-correct RA RB xs (suc n) s t =
        C.runNetwork RB b (xs n)))
     (cong proj₁ (productRecurrentPrefix-correct RA RB xs n s t))
     (cong proj₂ (productRecurrentPrefix-correct RA RB xs n s t))
-
-------------------------------------------------------------------------
--- Information-preserving symbolic task composition.
---
--- A left inverse makes observation a split monomorphism. Therefore every
--- exact symbolic task on the hidden state can be factorized through the
--- observation and reconstructed before applying the task.
-------------------------------------------------------------------------
 
 informationPreserving-symbolic-task-factorization :
   ∀ {State Feature Output : Set}
@@ -1011,13 +914,6 @@ productObservation-leftInverse observeA inverseA observeB inverseB
   leftInverseA leftInverseB s t =
   cong₂ _,_ (leftInverseA s) (leftInverseB t)
 
-
-------------------------------------------------------------------------
--- The exact task boundary is therefore the observation equivalence:
--- with a left inverse, every state task survives observation; without
--- injectivity, not every state task can survive.
-------------------------------------------------------------------------
-
 informationPreserving-symbolic-task-boundary :
   ∀ {State Feature : Set}
   (observe : State → Feature)
@@ -1027,24 +923,6 @@ informationPreserving-symbolic-task-boundary :
   target s ≡ target (inverse (observe s))
 informationPreserving-symbolic-task-boundary =
   informationPreserving-symbolic-task-factorization
-
-------------------------------------------------------------------------
--- Explicit equality-composition theorem.
---
--- The e-graph proof-plan combinator is dependency composition.  Actual
--- equality composition is represented separately by composeEqualityTheorem,
--- whose proof term uses trans.  A reflexive identity is never used as the
--- composition theorem itself.
-------------------------------------------------------------------------
--- Canonical minimax/Bellman-Shapley inclusion class for the executable
--- biased Watkins + negative-q-Munchausen + L2 target.
---
--- The learner has a concrete Int8 carrier. No ordered ring, interval,
--- metric, or topology is imported here. The inclusion theorem therefore
--- takes the comparison relation and monotone minimax/Bellman-Shapley
--- operator as explicit hypotheses, while the target itself is the exact
--- executable canonicalWatkinsTarget.
-------------------------------------------------------------------------
 
 record PointwiseSandwich
   {Input Value : Set}
@@ -1144,10 +1022,6 @@ canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
           (C.canonicalEndogenousFeedback K t))
       (leftInverse s))
 
-------------------------------------------------------------------------
--- Infinite-state orbit injectivity and Nat-clock pigeonhole contradiction.
-------------------------------------------------------------------------
-
 suc-injective :
   ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
 suc-injective refl = refl
@@ -1171,8 +1045,6 @@ canonicalOrbit-state-injective K s {m} {n} eq =
         (cong (λ t → C.clock t) eq)
         (C.clockAfter K n s)))
 
--- The canonical Nat-indexed orbit is an explicit infinite-state embedding:
--- equality of orbit states forces equality of the Nat indices.
 canonicalInfiniteStateOrbitEmbedding :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState) →
@@ -1181,17 +1053,6 @@ canonicalInfiniteStateOrbitEmbedding :
   m ≡ n
 canonicalInfiniteStateOrbitEmbedding K s =
   canonicalOrbit-state-injective K s
-
-
-
-------------------------------------------------------------------------
--- Full discrete exact-UAP factorization.
---
--- This is the genuine universal statement available without topology:
--- every target on the discrete state factors exactly through an observation
--- that has a left inverse. No limits, density arguments, or real-valued
--- approximation metric are involved.
-------------------------------------------------------------------------
 
 record DiscreteExactUAPTheorem
   (State Feature Output : Set)
@@ -1207,16 +1068,6 @@ record DiscreteExactUAPTheorem
       target s ≡ target (inverse (observe s))
 
 open DiscreteExactUAPTheorem public
-
-------------------------------------------------------------------------
--- Full universal exact-discrete UAP, not merely one chosen target.
---
--- Universal exact readout means every target State → Output factors
--- exactly through the observation.  Constructively, this is equivalent
--- to existence of a left inverse.  The identity target supplies the
--- converse, so this result is independent of topology or approximation
--- metrics.
-------------------------------------------------------------------------
 
 record DiscreteLeftInverseWitness
   (State Feature : Set)
@@ -1261,14 +1112,6 @@ discreteLeftInverse-observe-injective leftInverse {s} {t} eq =
     (trans
       (cong inverse eq)
       (leftInverse t))
-
-
-------------------------------------------------------------------------
--- Collision and injectivity are two views of the same obstruction.
---
--- This is a genuine composition theorem: the proof consumes the
--- non-reflexive left-inverse ⇒ injectivity law.
-------------------------------------------------------------------------
 
 collision-implies-no-leftInverse-via-injectivity :
   ∀ {State Feature : Set}
@@ -1319,18 +1162,6 @@ canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
     n
     h
 
-
-------------------------------------------------------------------------
--- Exact Turing-completeness contract for the canonical composition.
---
--- This is tied to the actual CanonicalFullLearnerState,
--- CanonicalFullLearnerKernel, canonicalFullStep, and exact Int8 semantics.
--- It does not quantify over a substitute RNN or an arbitrary-precision
--- surrogate.  An inhabitant requires a genuine universal two-counter
--- simulation with exact state equality and a halting/output correspondence.
--- The declaration itself does not assert that such an inhabitant exists.
-------------------------------------------------------------------------
-
 record ExactTwoCounterConfiguration : Set where
   constructor exactTwoCounterConfiguration
   field
@@ -1375,17 +1206,6 @@ record CanonicalExactCompositionTuringCompletenessContract : Set₁ where
       ∀ M c →
       output (encode M c) ≡ ExactTwoCounterMachine.halting M c
 
-------------------------------------------------------------------------
--- Exact obstruction for the proposed universal contract.
---
--- The exact canonical full transition has no fixed points because its
--- Nat clock increments on every step. Therefore the contract above cannot
--- hold for the self-looping two-counter machine: exact state equality would
--- force a fixed point of canonicalFullStep. This is tied to the actual
--- CanonicalFullLearnerState and exact Int8-based component semantics; it
--- does not replace them with a different-precision or input-augmented model.
-------------------------------------------------------------------------
-
 exactSelfLoopMachine : ExactTwoCounterMachine
 exactSelfLoopMachine =
   exactTwoCounterMachine
@@ -1414,13 +1234,6 @@ canonicalExactCompositionTuringCompletenessContract-impossible witness =
         c
   in
   C.canonicalNoFixedPoint K s (sym exactStep)
-
-------------------------------------------------------------------------
--- Continuous left-inverse transfer.
---
--- The strict import boundary does not contain topology. Continuity is
--- therefore an explicit predicate supplied by the theorem caller.
-------------------------------------------------------------------------
 
 record ContinuousLeftInverseTheorem
   (State Feature : Set)
@@ -1552,7 +1365,6 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
         (λ n → C.iterateCanonical K n s)
         observe
 
-
 canonicalDeterministicFiniteStepDivergenceInevitability :
   ∀ {A}
   (K : C.CanonicalFullLearnerKernel)
@@ -1571,20 +1383,6 @@ canonicalNoFiniteStepConvergenceToFixedPoint :
 canonicalNoFiniteStepConvergenceToFixedPoint K s equilibrium fixedPoint reached =
   C.canonicalNoFixedPoint K equilibrium fixedPoint
 
-------------------------------------------------------------------------
--- Consequence for the UAP + biased Bellman/KKT composition:
---
--- Exact UAP/continuous-left-inverse and the executable biased
--- Watkins + negative-q-Munchausen + L2/KKT target semantics are
--- representational/target-level facts. They do not make the canonical
--- full learner transition itself have a fixed state. The exact learner
--- theorem above proves that no such canonicalFullStep fixed state exists.
--- Any finite-step convergence theorem must therefore be about a separately
--- specified invariant quotient/operator, not inferred from UAP or target
--- optimality alone.
-------------------------------------------------------------------------
-
--- Recovered from legacy theorem partition Part1a.agda
 canonicalIterateComposition :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (m n : Nat)
@@ -1598,17 +1396,14 @@ canonicalIterateComposition K m (suc n) s
   cong (C.canonicalFullStep K)
     (canonicalIterateComposition K m n s)
 
--- Recovered Part2 theorem
 recurrentPrefixStepWork : Nat → Nat
 recurrentPrefixStepWork zero = zero
 recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
 
--- Recovered Part2 theorem
 recurrentPrefixStepWork-law :
   ∀ n → recurrentPrefixStepWork n ≡ n
 recurrentPrefixStepWork-law n = refl
 
--- Recovered Part2 theorem
 recurrentPrefixStepWork-split :
   ∀ m n →
   recurrentPrefixStepWork (m + n) ≡
@@ -1619,28 +1414,6 @@ recurrentPrefixStepWork-split m (suc n)
   rewrite +-suc m n =
   cong suc (recurrentPrefixStepWork-split m n)
 
-
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Explicit equality-composition theorem.
---
--- The e-graph proof-plan combinator is dependency composition.  Actual
--- equality composition is represented separately by composeEqualityTheorem,
--- whose proof term uses trans.  A reflexive identity is never used as the
--- composition theorem itself.
-------------------------------------------------------------------------
--- Canonical minimax/Bellman-Shapley inclusion class for the executable
--- biased Watkins + negative-q-Munchausen + L2 target.
---
--- The learner has a concrete Int8 carrier. No ordered ring, interval,
--- metric, or topology is imported here. The inclusion theorem therefore
--- takes the comparison relation and monotone minimax/Bellman-Shapley
--- operator as explicit hypotheses, while the target itself is the exact
--- executable canonicalWatkinsTarget.
-------------------------------------------------------------------------
-
--- Recovered Part2 theorem
 canonicalNatIndexedExactUniversalReadout :
   ∀ {Feature Output : Set}
   (K : C.CanonicalFullLearnerKernel)
@@ -1658,14 +1431,6 @@ canonicalNatIndexedExactUniversalReadout
     target
     (sym (leftInverse (C.iterateCanonical K n s)))
 
-------------------------------------------------------------------------
--- Finite topological hard-sign results.
---
--- The exact finite sign projection is idempotent and automatically
--- continuous under the already-defined discrete topology.  No derivative,
--- metric, convexity, or real-analytic assumption is used.
-------------------------------------------------------------------------
-
 hardSignGate-idempotent :
   ∀ x → C.hardSignGate (C.hardSignGate x) ≡ C.hardSignGate x
 hardSignGate-idempotent x with C.hardSign x
@@ -1682,17 +1447,6 @@ hardSignGate-continuous-discrete :
     C.hardSignGate
 hardSignGate-continuous-discrete =
   continuous-under-discrete-topology C.hardSignGate
-
-------------------------------------------------------------------------
--- Exact finite rank certificate for the missing anti-divergence condition.
---
--- KKT uniqueness, hard sparsity, and product closure do not by themselves
--- prove convergence of an off-policy update.  This certificate makes the
--- additional algorithmic requirement explicit: a well-founded Nat rank,
--- a fixed equilibrium, strict rank descent away from it, and the supplied
--- eventual-equality proof.  Baird-style divergence cannot be excluded from
--- the generic facts without such a certificate.
-------------------------------------------------------------------------
 
 record FiniteRankStabilityCertificate
   (State : Set)
@@ -1726,12 +1480,6 @@ canonicalFullLearner-no-finite-rank-stability K equilibrium certificate =
     K
     equilibrium
     (FiniteRankStabilityCertificate.equilibriumFixed certificate)
-
-------------------------------------------------------------------------
--- Exact stabilization can feed the existing convergence-witness interface.
--- The convergence relation is an explicit premise; rank alone does not
--- manufacture topology.
-------------------------------------------------------------------------
 
 sumNat :
   List Nat → Nat
@@ -1784,15 +1532,6 @@ record FiniteNonIIDWalrasianEquilibrium
 
 open FiniteNonIIDWalrasianEquilibrium public
 
-------------------------------------------------------------------------
--- Finite TU Shapley allocation equilibrium.
---
--- "Shapley equilibrium" is not used here as an assertion of a standard
--- market-theory term.  This record precisely means that the payoff is a
--- supplied exact scaled-Shapley witness for a finite TU worth function,
--- together with scaled efficiency.
-------------------------------------------------------------------------
-
 record FiniteTUShapleyAllocationEquilibrium
   (Player : Set)
   (players : List Player) : Set₁ where
@@ -1811,20 +1550,6 @@ record FiniteTUShapleyAllocationEquilibrium
       scaledValue * coalitionWorth players
 
 open FiniteTUShapleyAllocationEquilibrium public
-
-------------------------------------------------------------------------
--- Explicit non-iid stationary Walrasian lift and finite Shapley witness
--- are now ordinary theorem objects that Mercury may compose from their
--- dependency edges; no theorem-name lookup is required.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Canonical polymorphic sparsemax e-graph composition.
---
--- The policy carrier is a generic learner action carrier, not a distinguished binary pair.
--- quotienting laws remain exact because norm and optimizer replacement
--- are outside the policy projection.
-------------------------------------------------------------------------
 
 record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
   constructor canonicalPolymorphicSparsemaxCompositionTheorem
@@ -1876,25 +1601,6 @@ canonical-polymorphic-sparsemax-egraph-theorem =
     canonical-S4S5-recurrent-scan-theorem
     informationPreserving-symbolic-task-factorization
 
-
-
-------------------------------------------------------------------------
--- The finite automaton product was a separate finite-carrier branch and is
--- deliberately not part of the canonical sparsemax composition.  The
--- surviving composition is carrier-polymorphic: NormPair/F4 replacement
--- invariance, exact recurrent scan, and exact readout transport.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- General stationary Markov/Walrasian composition, beyond iid uniform.
---
--- The iid-uniform example is only one witness of a stationary functional.
--- Here the transition is arbitrary and stationarity is expressed solely by
--- invariance of the aggregate functional.  Continuity is carried as an
--- explicit topological hypothesis through the existing Continuous seam;
--- it is not silently replaced by an iid or uniform assumption.
-------------------------------------------------------------------------
-
 record ContinuousStationaryMarkovWalrasianData
   (State Price Allocation : Set)
   (Continuous : {A B : Set} → (A → B) → Set) : Set₁ where
@@ -1945,7 +1651,6 @@ productPrefix-componentPrefix step₁ step₂ (x ∷ xs) q₁ q₂ =
   productPrefix-componentPrefix
     step₁ step₂ xs (step₁ q₁ x) (step₂ q₂ x)
 
-
 record DirectProductFiniteAutomatonComposition
   (Q₁ Q₂ Input : Set) : Set₁ where
   constructor directProductFiniteAutomatonComposition
@@ -1978,15 +1683,6 @@ directProductFiniteAutomatonComposition-theorem step₁ step₂ =
     (λ { (q₁ , q₂) x → step₁ q₁ x , step₂ q₂ x })
     (λ _ _ _ → refl)
     (λ xs q₁ q₂ → productPrefix-componentPrefix step₁ step₂ xs q₁ q₂)
-
-
-
-------------------------------------------------------------------------
--- Baird is retained as a negative algorithmic-stability boundary.
--- It is NOT a theorem that this learner diverges: Baird's result concerns
--- off-policy bootstrapping with function approximation.  Our exact
--- representation theorems and this stability boundary are separate layers.
-------------------------------------------------------------------------
 
 data TrivialContinuity : Set where
   trivialContinuity : TrivialContinuity
@@ -2045,15 +1741,6 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
         (λ _ → trivialContinuity)
         (λ _ → refl)))
 
-------------------------------------------------------------------------
--- Baird is retained as a negative algorithmic-stability boundary.
--- The theorem above is the formal separation: exact injective continuous
--- representation is a representational property and does not entail
--- convergence of an arbitrary update rule.  It therefore cannot be
--- promoted into a Baird-stability theorem without adding algorithmic
--- hypotheses such as an appropriate contraction/convergence condition.
-------------------------------------------------------------------------
-
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
   constructor offPolicyFunctionApproximationStabilityBoundary
   field
@@ -2074,15 +1761,6 @@ offPolicyFunctionApproximationStabilityBoundaryWitness :
 offPolicyFunctionApproximationStabilityBoundaryWitness =
   offPolicyFunctionApproximationStabilityBoundary
     exact-injective-continuous-leftInverse-does-not-imply-update-stability
-
-
-------------------------------------------------------------------------
--- Endogenous cross-domain composition target for Mercury A*.
---
--- This record deliberately names theorem-level interfaces, not learner
--- implementation symbols.  Its proof is an Agda witness; Mercury may
--- discover the dependency path structurally from this declaration.
-------------------------------------------------------------------------
 
 record ExactReconstructionOnImage
   (State Feature : Set)
@@ -2226,14 +1904,6 @@ canonical-global-token-encoding-conjugacy =
     canonicalTokenStep-conjugacy
     canonicalTokenListState-conjugacy
 
-
-------------------------------------------------------------------------
--- Exact transport through arbitrary representation isomorphisms.
---
--- The transport law is carrier-polymorphic.  Finite carriers are merely
--- one possible specialization and no longer define the canonical theorem.
-------------------------------------------------------------------------
-
 record ExactFunctionIsomorphismTransportTheorem
   (S T A B : Set)
   (isoA : StateIsomorphism S A)
@@ -2263,14 +1933,6 @@ exactRecurrentFunctionTranslation step stepA conjugacy =
     (λ {T} {B} {isoB} f →
       exactFunctionIsomorphismTransport f)
 
-------------------------------------------------------------------------
--- Exact POMDP-model transport seam.
---
--- This is deliberately a transport theorem, not a probabilistic
--- convergence theorem.  Distribution semantics remain explicit, while
--- state/action/observation carriers are arbitrary Sets.
-------------------------------------------------------------------------
-
 record CanonicalExactRNNLMTheorem : Set₁ where
   constructor canonicalExactRNNLMTheorem
   field
@@ -2293,11 +1955,6 @@ canonical-exact-rnn-lm-theorem =
   canonicalExactRNNLMTheorem
     canonical-global-token-encoding-conjugacy
     canonicalTokenLogitTrace-append
-
-------------------------------------------------------------------------
--- Global positive conjugacy is finite and exact; the corresponding
--- unbounded Nat-to-Int8 exact injective boundary is impossible.
-------------------------------------------------------------------------
 
 record CanonicalGlobalTokenLMCompositionTheorem : Set₁ where
   constructor canonicalGlobalTokenLMCompositionTheorem
@@ -2328,15 +1985,6 @@ canonical-global-token-lm-composition-theorem =
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
 
-------------------------------------------------------------------------
--- Exact integer Haar kernel and A* cost algebra surfaces.
---
--- The 2-point Haar kernel is represented in the canonical Int8 ring.
--- Its two defining scalar identities are kept exact at the proof seam;
--- the normalized real-valued Haar matrix would require 1/sqrt(2), so
--- this theorem intentionally certifies the integer, scaled kernel.
-------------------------------------------------------------------------
-
 canonicalIntegerHaarCross :
   C.int8Add C.one8 (C.int8Neg C.one8) ≡ C.zero8
 canonicalIntegerHaarCross = refl
@@ -2361,11 +2009,6 @@ canonical-integer-haar-scaled-orthogonality-theorem =
   canonicalIntegerHaarScaledOrthogonalityTheorem
     canonicalIntegerHaarCross
     canonicalIntegerHaarEnergy
-
-------------------------------------------------------------------------
--- A* cost algebra seam. Mercury owns the cost-guided graph search;
--- Agda certifies the exact Nat cost identities used by that search.
-------------------------------------------------------------------------
 
 canonicalAStarZeroCost :
   (zero + zero) ≡ zero
@@ -2401,16 +2044,6 @@ canonical-a-star-cost-guidance-theorem =
     canonicalAStarZeroCost
     canonicalAStarSuccessorCost
     canonicalTokenLogitTrace-append
-
-
-------------------------------------------------------------------------
--- Emergent endogenous A* transport closure.
---
--- The A* cost algebra is kernel-checked by Agda.  The exact token trace
--- makes the cost-guided path endogenous to the canonical recurrent learner.
--- Representation transport is carrier-polymorphic and uses no finite carrier.
--- dependency.
-------------------------------------------------------------------------
 
 record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
   constructor canonicalEndogenousEGraphAStarTransportClosureTheorem
@@ -2495,10 +2128,6 @@ canonical-operator-composition-theorem =
     (λ f g s → refl)
     C.endomorphismAssociative
 
-------------------------------------------------------------------------
--- Exact global optimizer stability on the unbounded integer carrier.
-------------------------------------------------------------------------
-
 record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
   constructor canonicalF4GlobalOptimizerStabilityTheorem
   field
@@ -2535,16 +2164,6 @@ canonical-f4-global-optimizer-stability-theorem =
         (λ optimizer signal →
           C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
         optimizerEq signalEq)
-
-------------------------------------------------------------------------
--- F4 infinite-horizon forcing ray.
---
--- The canonical F4 coordinate is exact integer algebra.  With zero global
--- L2 correction and unit signal at every step, the theta coordinate grows
--- exactly linearly with horizon.  This is a formal counterexample to any
--- unconditional upper-bound / sure-boundedness claim for the current F4
--- semantics.  NormPair is not involved in this calculation.
-------------------------------------------------------------------------
 
 f4Orbit :
   C.F4IntUKernel → C.Int8 → Nat → C.F4IntUState → C.F4IntUState
@@ -2675,25 +2294,6 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
     nat-suc-not-le B
       (IntegerProperties.drop‿+≤+ impossibleOrder)
 
-------------------------------------------------------------------------
--- The linear-growth theorem is the exact reason the earlier coercivity /
--- boundedness fields must not be promoted to unconditional facts.  There is
--- also no analytic coercivity notion in the current F4 record: no objective,
--- norm, or real-valued level-set relation is part of F4IntUKernel.  The
--- correct closure is therefore a negative theorem plus a separately stated
--- analytic bridge if a genuine coercivity theorem is desired later.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Fully connected F4/NormPair stability composition.
---
--- "Sure stability" here means the exact deterministic stability certificate
--- already proved by the F4 theorem: theta translation, preservation of the
--- non-theta coordinates, and equal-input step stability.  It is not a
--- probabilistic convergence claim.  Frank-Wolfe/rounding regret and the
--- Markov stationary/Walrasian interface remain explicit downstream fields.
-------------------------------------------------------------------------
-
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
   constructor canonicalPureNonOrangeBypassCompletionTheorem
   field
@@ -2711,7 +2311,6 @@ record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
       CanonicalF4GlobalOptimizerStabilityTheorem
     integerHaarOrthogonality :
       CanonicalIntegerHaarScaledOrthogonalityTheorem
-
 
 open CanonicalPureNonOrangeBypassCompletionTheorem public
 
@@ -2737,12 +2336,6 @@ canonical-persistent-excitation-requirement-theorem =
     tt
     tt
 
-------------------------------------------------------------------------
--- The exact Turing boundary is contract-specific. It does not state
--- that every function class is non-universal; it states that the exact
--- contract named by this repository is impossible.
-------------------------------------------------------------------------
-
 record ExactContractComputabilityBoundaryTheorem : Set₁ where
   constructor exactContractComputabilityBoundaryTheorem
   field
@@ -2757,19 +2350,6 @@ exact-contract-computability-boundary-theorem =
   exactContractComputabilityBoundaryTheorem
     canonicalExactCompositionTuringCompletenessContract-impossible
     tt
-
-
-------------------------------------------------------------------------
--- Stationary convergence without a Lyapunov premise.
---
--- For a finite observed Markov chain, the stationary/convergence seam is
--- carried by the transition kernel plus recurrence/aperiodicity assumptions.
--- This is deliberately independent of the monotone-energy contract above.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- 2026-09-22 graph-search requirement/subcomposition completion.
-------------------------------------------------------------------------
 
 record CanonicalStationarySubcompositionTheorem : Set₁ where
   constructor canonicalStationarySubcompositionTheorem
@@ -2795,20 +2375,6 @@ canonical-stationary-subcomposition-theorem =
         transitionLaw
         convergence
         limitPreserved)
-
-
-------------------------------------------------------------------------
--- Minimal exact finite probability semantics.
---
--- No analytic probability import is required here. A finite distribution
--- is represented by non-negative Nat weights with a positive denominator
--- and an exact normalization certificate. Each coordinate therefore denotes
--- the rational mass weight/denominator without introducing a second
--- arithmetic tower into the canonical theorem surface.
-------------------------------------------------------------------------
--- New endogenous composition: probabilistic POMDP semantics plus exact
--- belief-state transport preserve the endogenous observation boundary.
-------------------------------------------------------------------------
 
 record FunctionClassInclusion
   (Input Output : Set)
@@ -3122,26 +2688,6 @@ record MegaGeneralizedWalrasianEquilibrium
 
 open MegaGeneralizedWalrasianEquilibrium public
 
-------------------------------------------------------------------------
--- Architecture/emergence boundary.
---
--- This monolith owns the economic architecture and every theorem that
--- establishes an emergent consequence. CanonicalLearnerMonolith is the
--- only separated learner implementation and is imported at the top of this
--- file. Do not create parallel economic proof modules for e-graph nodes.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Singular generalized Walrasian data.
---
--- One economic relation is exposed to the connected GRU/Hodge-Maxwell/
--- Tsallis/POMDP composition. Walrasian, Arrow-Debreu, and KKT are not
--- separate semantic nodes: any desired characterization is represented
--- by the single generalized characterization predicate and its bridge.
--- No finite-dimensional, continuity, differentiability, convexity,
--- monotonicity, or free-disposal assumption is built into the carrier.
-------------------------------------------------------------------------
-
 record GeneralizedWalrasianData
   (Agent Commodity Price Allocation : Set) : Set₁ where
   constructor generalizedWalrasianData
@@ -3159,15 +2705,6 @@ record GeneralizedWalrasianData
       characterization p a
 
 open GeneralizedWalrasianData public
-
-------------------------------------------------------------------------
--- Concrete economic closure on the canonical generalized surface.
---
--- The finite non-iid witness above is not a second equilibrium ontology.
--- It is interpreted directly as GeneralizedWalrasianData, with its
--- individual budget-optimality and aggregate resource-balance witnesses
--- supplying the generalized equilibrium predicate.
-------------------------------------------------------------------------
 
 FiniteNonIIDPreference :
   ∀ {Agent Good : Set}
@@ -3454,24 +2991,6 @@ megaSecondWelfareTheorem-boundary-counterexample =
     tt
     (λ { (_ , e) → e })
 
-------------------------------------------------------------------------
--- Logical boundary for the first-welfare demand condition.
---
--- noStrictAffordableAlternative is a revealed demand-optimality
--- condition. It is neither monotonicity nor local nonsatiation, and
--- monotonicity + local nonsatiation do not imply it without the
--- equilibrium/demand-maximization and budget structure that connect
--- preferences to affordability.
---
--- Whole-allocation preferences are a separate generalization of the
--- preference domain: they allow an agent's ranking to depend on the
--- entire allocation. Heterogeneity means different agents may carry
--- different preference relations. Heterogeneity therefore enlarges
--- the profile space, while whole-allocation dependence enlarges the
--- argument domain; neither is an algebraic strengthening of
--- monotonicity/LNS.
-------------------------------------------------------------------------
-
 record MegaNoStrictAffordableAlternativeBoundary
   (Agent Price Allocation : Set)
   (strictPreference :
@@ -3499,15 +3018,6 @@ megaNoStrictAffordableAlternative-is-demand-optimality :
     ¬ strictPreference i b a)
 megaNoStrictAffordableAlternative-is-demand-optimality boundary =
   demandOptimality boundary
-
-
-------------------------------------------------------------------------
--- Literature-standard economic vocabulary adapters.
---
--- The implementation historically used Mega-prefixed names. The canonical
--- literature-facing vocabulary is exposed here without changing the
--- underlying generalized semantic carrier.
-------------------------------------------------------------------------
 
 GeneralizedWalrasianEquilibrium :
   Set → Set → Set → Set₁
@@ -3577,28 +3087,6 @@ record CompetitiveWalrasianEquilibriumWithProduction
     marketClearing :
       ∀ c →
       CompetitiveProductionEconomy.resourceBalance E c
-
-------------------------------------------------------------------------
--- Production-side literature boundary.
---
--- This is a semantic production-economy contract, not an unconditional
--- existence theorem. Classical Arrow-Debreu/Walrasian production models
--- add structural assumptions on consumption sets, production sets,
--- preferences, ownership, and prices before existence or welfare
--- conclusions are derived.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Generalized Second Welfare theorem.
---
--- The theorem is stated against MegaGeneralizedWalrasianEquilibrium rather
--- than a separate Arrow-Debreu/KKT surface.  The supporting-price step is
--- the economic separation input; once it supplies a price and the
--- generalized characterization, the existing characterization bridge
--- proves the actual equilibrium witness.  Heterogeneous agents and
--- whole-allocation/interdependent preferences remain inside the generalized
--- equilibrium relation rather than being erased into a scalar demand model.
-------------------------------------------------------------------------
 
 applyNormPairReplacements :
   ∀ {A : Set} →
@@ -3800,14 +3288,6 @@ canonical-normPair-quotient-factor-transition-theorem =
     canonicalNormPairQuotient-step-compatible
     canonicalNormPairQuotient-iterate-compatible
 
-------------------------------------------------------------------------
--- Unconditional F4/NormPair factor stability.
---
--- This theorem composes only closed proof terms: exact F4 optimizer
--- stability and exact NormPair quotient/factor compatibility.  It makes
--- no convergence, boundedness, economic, or external certificate claim.
-------------------------------------------------------------------------
-
 record CanonicalF4NormPairUnconditionalFactorStabilityTheorem : Set₁ where
   constructor canonicalF4NormPairUnconditionalFactorStabilityTheorem
   field
@@ -3852,8 +3332,6 @@ canonical-f4-normPair-unconditional-factor-stability-theorem =
     canonicalPolicy-factors-through-NormPair
     canonicalNormPairQuotient-step-compatible
     canonicalNormPairQuotient-iterate-compatible
-
-------------------------------------------------------------------------
 
 record RecursiveRadnerData
   (State Agent Commodity Asset Price Allocation Portfolio : Set)
@@ -3946,17 +3424,6 @@ record RecursiveRadnerExistence
         allocationProcess
         portfolioProcess
         data
-
-------------------------------------------------------------------------
--- Recursive Radner as an instance of the singular generalized Walrasian
--- ontology.
---
--- The generalized equilibrium carrier stores the full state-contingent
--- price/allocation/portfolio processes.  The equilibrium predicate carries
--- the Radner feasibility, optimality, commodity clearing, asset clearing,
--- and recursive-law witnesses.  This avoids introducing a second
--- equilibrium ontology into the monolith.
-------------------------------------------------------------------------
 
 RecursiveRadnerPrice :
   ∀ {State Price : Set} →
@@ -4068,18 +3535,6 @@ noUnconditionalMegaGeneralizedWalrasianExistence
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
 
-
-------------------------------------------------------------------------
--- F4 coercivity/boundedness frontier composed with NormPair stability
--- and economic injectivity.
---
--- Important semantic boundary: the canonical F4 theorem proves exact
--- Z-valued step stability. It does not currently prove an analytic
--- coercivity theorem or a raw global thetaQ boundedness theorem. Those
--- are therefore explicit proof premises here rather than renamed
--- consequences of F4 stability.
-------------------------------------------------------------------------
-
 megaNoEquilibriumWalrasianSquare :
   MegaWalrasianGlobalSquareConjugacy
     ⊤
@@ -4111,14 +3566,6 @@ megaNoEquilibriumF4NormPairEconomicWitness
   (p , a , witness) =
   witness
 
-------------------------------------------------------------------------
--- Strict unconditional economic impossibility.
---
--- Even after the closed F4/NormPair factor-stability theorem is available,
--- the generalized Walrasian contract itself does not imply existence.
--- The singleton countermodel has an empty equilibrium predicate.
-------------------------------------------------------------------------
-
 noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability :
   ¬
     (∀ {State Price Allocation : Set}
@@ -4135,5 +3582,3 @@ noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
   theorem =
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
-
-------------------------------------------------------------------------
