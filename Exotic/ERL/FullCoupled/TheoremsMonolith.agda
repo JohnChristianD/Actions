@@ -2747,9 +2747,10 @@ record CanonicalLearnerHodgeMaxwellCompositionTheorem
       learnerToSolution (solutionToLearner q) ≡ q
 
     learnerStepConjugacy :
-      ∀ s →
+      ∀ (K : C.CanonicalFullLearnerKernel)
+      (s : C.CanonicalFullLearnerState) →
       learnerToSolution
-        (C.canonicalFullStep C.learnerKernel s)
+        (C.canonicalFullStep K s)
       ≡
       step
         (semantics hodgeRepresentation)
@@ -2762,7 +2763,8 @@ canonical-learner-hodge-maxwell-step-conjugacy :
   (W :
     CanonicalLearnerHodgeMaxwellCompositionTheorem
       {Continuous = Continuous}) →
-  ∀ s →
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
   encode
     (semantics (hodgeRepresentation W))
     (learnerToSolution W s)
@@ -2773,11 +2775,11 @@ canonical-learner-hodge-maxwell-step-conjugacy :
       (semantics (hodgeRepresentation W))
       (learnerToSolution W s))
 canonical-learner-hodge-maxwell-step-conjugacy
-  W s =
+  W K s =
   trans
     (cong
       (encode (semantics (hodgeRepresentation W)))
-      (sym (learnerStepConjugacy W s)))
+      (sym (learnerStepConjugacy W K s)))
     (conjugacy
       (semantics (hodgeRepresentation W))
       (learnerToSolution W s))
