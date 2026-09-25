@@ -153,3 +153,14 @@ flowchart TD
   EG --> ASTAR
   ASTAR --> OUT["Exact semantic path equality [PROVED]"]
   PHYS["Concrete Maxwell Law-I/Law-III witnesses [FRONTIER]"] -. "not manufactured by graph transport" .-> OUT
+
+
+%% Repository-wide semantic e-graph closure
+EGALL["Repository-wide Agda semantic family [PROVED]"]
+EGPATH["Sound e-graph path equality [PROVED]"]
+EGA["A* cost-guided traversal [PROVED]"]
+EOUT["Exact semantic endpoint equality [PROVED]"]
+EGALL --> EGPATH
+EGA --> EGPATH
+EGPATH --> EOUT
+PHYS -->|"not manufactured by graph transport"| EOUT
