@@ -16,6 +16,8 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
     '',
   Mercury = ''
     set -euo pipefail
@@ -485,6 +487,7 @@ JSON
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
