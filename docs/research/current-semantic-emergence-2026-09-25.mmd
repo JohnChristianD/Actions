@@ -144,3 +144,12 @@ flowchart TD
     S4["FRONTIER = downstream closure blocked"]
   end
   E --> STATUS
+
+
+%% Repository-wide proof transport closure
+%% All surviving Agda semantic surfaces enter the same sound e-graph path kernel.
+  EG["Repository-wide e-graph semantic closure [PROVED]"]
+  ASTAR["A* cost-guided traversal [PROVED]"]
+  EG --> ASTAR
+  ASTAR --> OUT["Exact semantic path equality [PROVED]"]
+  PHYS["Concrete Maxwell Law-I/Law-III witnesses [FRONTIER]"] -. "not manufactured by graph transport" .-> OUT
