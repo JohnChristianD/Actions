@@ -94,12 +94,17 @@ Do **not** add a theorem claiming unconditional four-law closure merely because 
 
 The correct next implementation seam is a minimal typed witness package whose fields correspond to the concrete definitions actually present in the repository. If those definitions do not exist, the honest next artifact is the interface record plus a blocked constructor—not an inhabited theorem.
 
+## Transition-adapter update — 2026-09-25
+
+The existing `CanonicalLearnerHodgeMaxwellCompositionTheorem` now has a direct Agda adapter, `canonical-physics-to-learner-transition-witness`, which packages its learner-to-solution inverse laws and `learnerStepConjugacy` into the repository's `PhysicsToLearnerTransitionWitness` contract. This removes duplication at the transition seam, but it does not manufacture the Law-I trajectory/current or Law-III admissibility/stationarity witnesses.
+
 ## Verification status
 
 - External semantic audit completed against nLab, Watanabe, Tsallis, and Wikipedia.
-- Repository search found no concrete virtualWork, Lagrangian, particle-trajectory, four-current, or physics-to-learner witness implementation on current main.
-- No new Agda theorem was invented.
-- No CI success is claimed by this note.
+- Repository search found no concrete virtualWork, Lagrangian, particle-trajectory, four-current, or Law-I/Law-III witness implementation on the current canonical branch.
+- A proof-relevant physics-to-learner adapter was added from the existing Hodge-Maxwell/full-learner bridge.
+- No unconditional four-law closure is claimed by this change.
+- CI verification of the new Agda declaration is pending for the new branch.
 
 ## References to repository proof authority
 
