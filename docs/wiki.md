@@ -275,14 +275,14 @@ Knowledge delta: the exact Task 2 blocker is now recorded here and in `docs/rese
 
 ### nLab closure-chain refinement: dynamics, variation, and current
 
-The latest primary-source search connects the missing semantics more tightly than the earlier vocabulary audit. nLab's variational bicomplex links Lagrangian data to Euler–Lagrange/source forms and the on-shell covariant phase space; its conserved-current treatment then places currents on that shell and relates them to conserved charges, with Noether's theorem supplying currents from variational symmetries. citeturn0search0turn0search2turn1search0
+The latest primary-source search connects the missing semantics more tightly than the earlier vocabulary audit. nLab's variational bicomplex links Lagrangian data to Euler–Lagrange/source forms and the on-shell covariant phase space; its conserved-current treatment then places currents on that shell and relates them to conserved charges, with Noether's theorem supplying currents from variational symmetries.
 
-For electromagnetism, nLab gives the concrete Maxwell current relation `d ⋆ F = j` and the resulting closed-current equation `d j = 0`, while its Hodge-Maxwell treatment identifies `F` and `j` as the electromagnetic field and current. citeturn1search2turn0search11
+For electromagnetism, nLab gives the concrete Maxwell current relation `d ⋆ F = j` and the resulting closed-current equation `d j = 0`, while its Hodge-Maxwell treatment identifies `F` and `j` as the electromagnetic field and current.
 
 The resulting semantic chain is:
 
 `Maxwell Lagrangian → Euler–Lagrange shell → genuine field solutions → conserved current/charge → evolution on the solution space`.
 
-nLab's phase-space treatment supports the interpretation of covariant phase space as on-shell histories and connects it with time evolution of initial data. citeturn1search8 This gives a concrete design direction for the repository's Law-I gap: define genuine evolution semantics on the selected Maxwell `Solution` carrier and prove that the selected current observable is preserved by that evolution.
+nLab's phase-space treatment supports the interpretation of covariant phase space as on-shell histories and connects it with time evolution of initial data. This gives a concrete design direction for the repository's Law-I gap: define genuine evolution semantics on the selected Maxwell `Solution` carrier and prove that the selected current observable is preserved by that evolution.
 
 Crucially, this remains stronger than the nLab differential conservation equation: the repository contract still requires `current (trajectory p) ≡ current p`. Therefore the graph stays `FRONTIER_CONTRACT_ONLY` until that exact Agda theorem and the genuine Law-III variational witness exist. The search refines the missing semantics; it does not manufacture them.
