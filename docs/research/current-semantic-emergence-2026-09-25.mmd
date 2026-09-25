@@ -58,6 +58,20 @@ flowchart TD
   GI -. "canonical GRU-state distinguishability" .-> I
   HI -. "preserves state distinguishability" .-> I
 
+  %% Four-physics-law continuation: explicit frontier, not yet a closed theorem.
+  L1D --> FL0["Four-Law one-step commuting square [FRONTIER]"]
+  H1 --> FL0
+  L3D --> FL0
+  PI --> FL0
+  GS --> FL0
+
+  FL0 --> FL1["Four-Law iterate conjugacy [FRONTIER]"]
+  FL1 --> FL2["Four-Law exact prefix / horizon conjugacy [FRONTIER]"]
+  FL2 --> FL3["Four-Law end-to-end representation closure [FRONTIER]"]
+
+  FL2 -. "requires explicit Law I + Law III + physics→learner witnesses" .-> L1I
+  FL2 -. "extends beyond current Hodge-Maxwell-only prefix endpoint" .-> E4["Existing Hodge-Maxwell exact prefix endpoint"]
+
   HI -. "does not entail" .-> J2["Convergence"]
   HI -. "does not entail" .-> K["Fixed point"]
   H -. "does not entail" .-> J2
