@@ -92,7 +92,7 @@ astar_egraph_fixed_point(
     plan_terminal_ids(InitialPlans, SeedIds0, SeedIds),
     closure_round(
         Laws, SeedIds, E0, E1, RoundPlans1,
-        Saturation1, BeforeEnodes1, AfterEnodes1),
+        _, BeforeEnodes1, AfterEnodes1),
     (
         AfterEnodes1 = BeforeEnodes1,
         RoundPlans1 = InitialPlans
