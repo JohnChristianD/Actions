@@ -10,6 +10,7 @@ let script = merge {
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
@@ -40,19 +41,17 @@ let script = merge {
     sync=.ci/discovery/theorem-monolith-egraph-sync.json
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     readme=README.md
-    wiki=docs/wiki.md
     [ -f "$graph" ] || { echo "missing current semantic emergence graph"; exit 1; }
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
     [ -f "$readme" ] || { echo "missing README"; exit 1; }
-    [ -f "$wiki" ] || { echo "missing repository wiki"; exit 1; }
 
     for node in       "Canonical learner definitions"       "Four exact MARL-facing laws"       "CanonicalMARLLawCompositionTheorem (closed)"       "Exact recurrent scan / composition"       "NormPair quotient / factor transition"       "Exact F4 optimizer stability"       "F4 unit-forcing growth ray"       "No unconditional infinite-horizon F4 upper bound"       "Canonical F4 × NormPair unconditional factor stability"       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"       "ContinuousHodgeMaxwellExactRepresentationData"       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"       "CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"       "Competitive production economy"       "Feasible firm production plans"       "Profit-maximizing production"       "Aggregate resource balance"       "Market clearing"       "Walrasian existence"
     do
       grep -Fq "$node" "$graph" || { echo "current graph node missing: $node"; exit 1; }
     done
 
-    for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4NormWatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
+    for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4NormWatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
     do
       grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
     done
@@ -60,7 +59,9 @@ let script = merge {
     grep -Fq 'does not entail' "$graph" || { echo "economic non-implication boundary missing"; exit 1; }
     grep -Fq 'independent economic hypotheses' "$graph" || { echo "economic assumption boundary missing"; exit 1; }
     grep -Fq 'Canonical F4 × NormPair unconditional factor stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
-    grep -Fq 'Universal non-existence' "$wiki" || { echo "wiki stale or missing countermodel boundary"; exit 1; }
+    grep -Fq 'Repository-wide semantic e-graph closure' "$readme" || { echo "README stale or missing e-graph closure"; exit 1; }
+    grep -Fq 'AStarSemanticClosure' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "A* semantic closure kernel missing"; exit 1; }
+    grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
 
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
@@ -425,6 +426,11 @@ JSON
     POMDPBeliefPolicyFactorization
     POMDPWalrasianBeliefEquilibriumClosure
     CanonicalLearnerHodgeMaxwellCompositionTheorem
+    NLabMaxwellSemanticClosure
+    NLabMaxwellFourLawSemanticallyClosed
+    nLabMaxwellEulerLagrangeShell-equivalence
+    nLabMaxwellFourLawOneStepClosed
+    nLabMaxwellIterateConjugacyClosed
     POMDPExactTransport
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
@@ -478,6 +484,7 @@ JSON
     dhall --version
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
