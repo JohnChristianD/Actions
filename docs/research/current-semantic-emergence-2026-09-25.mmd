@@ -4,17 +4,32 @@ flowchart TD
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
 
-  P1["Law I: agent/particle dynamics"]
-  P2["Law II: local Maxwell field dynamics"]
-  P3["Law III: variational / virtual-work constraint"]
-  P1 --> PI["Explicit physics → learner interface witness"]
-  P2 --> PI
+  P1["Law I: agent/particle dynamics"] --> J["Particle trajectories"]
+  J --> CUR["Particle four-current J"]
+  P2["Law II: Maxwell field dynamics"] --> HM["Hodge-Maxwell field equations"]
+  CUR --> HM
+  HM["dF = 0; d⋆F = source current"]
+  HM --> FP["Sourced Maxwell field F_particles"]
+
+  Z["Additional ZPF hypothesis"]
+  Z0["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
+  Z1["ω³ spectral law"]
+  Z --> Z0 --> Z1
+  Z0 --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
+  FP --> FT["Total field F_total = F_particles + F_ZPF"]
+  Z0 --> FT
+  HF --> FT
+  FT --> FORCE["Field force / effective particle interaction"]
+  FORCE --> P1
+
+  P3["Law III: variational / virtual-work admissibility"] --> PI["Explicit physics → learner interface witness"]
+  FORCE --> PI
   P3 --> PI
   PI -. "not entailed by learner algebra alone" .-> D
 
-  H0["ContinuousHodgeMaxwellExactRepresentationData"]
-  H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
-  H0 --> H1
+  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData"]
+  Z --> H0
+  H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
   H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
   D --> HB
 
@@ -28,8 +43,11 @@ flowchart TD
   E --> H
 
   H --> I["Representation / factor structure"]
-  H -. "does not entail" .-> J["Convergence"]
-  H -. "does not entail" .-> K["Fixed point"]
+  HI -. "preserves state distinguishability" .-> I
+  HI -. "does not entail" .-> J2["Convergence"]
+  HI -. "does not entail" .-> K["Fixed point"]
+  H -. "does not entail" .-> J2
+  H -. "does not entail" .-> K
   H -. "does not entail" .-> L["Market clearing"]
   H -. "does not entail" .-> M["Supporting / derived price"]
   H -. "does not entail" .-> N["Walrasian existence"]
@@ -46,5 +64,16 @@ flowchart TD
 
   V["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> W["Universal non-existence of unconditional generalized-Walrasian existence"]
   H -. "cannot discharge" .-> W
+  HI -. "cannot discharge" .-> W
 
   X["F4 linear forcing is not an optimizer-unique mechanism"] -.-> Y["Persistent nonzero increments can drift in many optimizers"]
+
+  subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
+    B1["Law II = differential-form Maxwell content"]
+    B2["ZPF = additional spectral / stochastic hypothesis"]
+    B3["Global injectivity = exact representation property"]
+    B4["No claim that Maxwell alone proves ω³ ZPF"]
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+  end
