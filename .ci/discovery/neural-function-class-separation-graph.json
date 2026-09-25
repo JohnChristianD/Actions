@@ -1533,5 +1533,25 @@
       "authority": "Agda --safe",
       "freshCi": "pending"
     }
+  },
+  "four_law_closure": {
+    "status": "FRONTIER_CONTRACT_ONLY",
+    "contract": "FourLawOneStepWitnessContract",
+    "source": "Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda",
+    "lawI": "LawIPhysicsWitness",
+    "lawIII": "LawIIIVariationalWitness",
+    "physicsToLearner": "PhysicsToLearnerTransitionWitness",
+    "required_before_closure": [
+      "inhabited Law-I trajectory/current representation witness",
+      "inhabited Law-III admissible-variation/stationarity witness",
+      "inhabited physics-to-learner step conjugacy",
+      "composition with the existing Law-II Hodge-Maxwell representation",
+      "composition with the existing Law-IV GRU statistical representation",
+      "one-step commuting square",
+      "n-step iterate conjugacy",
+      "prefix concatenation transport",
+      "exact prefix/horizon end-to-end closure"
+    ],
+    "proof_boundary": "The contract is not an existence theorem. No inhabitant is supplied, and no unconditional four-law closure is promoted from the contract alone."
   }
 }
