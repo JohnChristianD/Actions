@@ -1,117 +1,47 @@
 flowchart TD
-  E["EconomicStructure"] --> F["FeasibleAllocations"]
-  E --> P["PreferenceChoice"]
-  E --> R["Production"]
+  L["Canonical learner"] --> S["Exact recurrent scan / composition"]
+  S --> Q["NormPair quotient / factor"]
+  S --> HM["Hodge-Maxwell / GRU-F4-Watkins exact representation"]
+  HM --> F4["Exact F4 optimizer stability"]
+  Q --> F4
+  F4 --> G["F4 unit-forcing linear-growth ray"]
+  G --> B["No unconditional infinite-horizon F4 upper bound"]
+  F4 --> U["F4 × NormPair unconditional factor stability"]
 
-  P --> DC["DemandCostKernel"]
-  F --> DC
-  DC --> FW["FirstWelfare"]
-  FW --> PO["ParetoOptimal"]
+  U -. "does not entail" .-> C["Convergence"]
+  C -. "does not entail" .-> FP["Fixed point"]
+  FP -. "does not entail" .-> MC["Market clearing"]
+  MC -. "does not entail" .-> SP["Supporting / derived price"]
+  SP -. "does not entail" .-> WE["Walrasian existence"]
 
-  R --> PF["FeasibleFirmPlans"]
-  PF --> S["ProfitOptimalSupply"]
-  S --> RB["AggregateResourceBalance"]
-  DC --> DD["DemandWitness"]
-  DD --> RB
-  RB --> MC["MarketClearing"]
+  E["Competitive production economy"] --> P["Feasible firm production plans"]
+  P --> PO["Profit-maximizing production"]
+  E --> D["Consumer optimality / demand"]
+  PO --> RB["Aggregate resource balance"]
+  D --> RB
+  RB --> MC
+  MC --> SP
+  SP --> WE
+  WE -. "requires independent hypotheses" .-> H["fixed-point / compactness / continuity / preference / production / separation assumptions"]
 
-  SEP["Convex / Separation / FixedPoint Certificate"] --> DP["DerivedPrice"]
-  DP --> GE["GeneralizedWalrasianEquilibrium"]
-  MC --> GE
+  CE["Singleton generalized-Walrasian empty-equilibrium countermodel"] --> NI["Universal impossibility of unconditional generalized-Walrasian existence"]
+  U -. "cannot discharge" .-> NI
 
-  TOPO["TopologicalConvergenceWitness"] --> FPX["FixedPointExistenceFromConvergence"]
-  FPX -. conditional proved closure .-> GWE
-  ISOFP["isomorphismIterateFixedPointTransport"] -. exact transport .-> GWE
-  ECFP["GeneralizedWalrasianFixedPointClosure"] -. explicit equilibrium bridge .-> GWE
+  FW["First Welfare: condition-gated"] --> E
+  SW["Second Welfare: separate supportability / separation route"] --> SP
 
-  subgraph UC["Unconditional single-pass target"]
-    UPR["Economic primitives"] --> UD["Demand + competitive supply"]
-    UD --> UBA["Aggregate balance + market clearing"]
-    UBA --> UOP["Economic update operator"]
-    UOP -. exact GRU/F4 representation .-> UGI["GRU-F4 economic injectivity"]
-    UGI -. does not imply convergence alone .-> UCV["Convergence from economic assumptions"]
-    CFL["Canonical full learner state"] -. no finite-rank certificate: clock prevents fixed points .-> QF["Invariant quotient / factor required"]
-    QF -. candidate input .-> FRS["Finite-rank stability certificate"]
-    FRS -. conditional bridge .-> UCV
-    UCV -. FRONTIER .-> TOPO
-    UCV -. alternative frontier .-> USTAT["Neighborhood stationary-law witness"]
-    USTAT -. conditional .-> SWL["StationaryWalrasian lift"]
-    SWL -. requires static Walrasian aggregate .-> GWE
-    TOPO --> FPX
-    FPX --> UFP["Fixed-point witness"]
-    UFP --> UEB["Fixed-point -> equilibrium from economic primitives"]
-    UEB -. FRONTIER .-> ECFP
-    ECFP --> GWE
-    GWE --> UEX["Unconditional existence target"]
+  subgraph A["Unattended stack"]
+    AG["Agda proofs"] --> J["theorem-monolith-egraph-sync.json"]
+    J --> EJ["economic-closure-graph.json"]
+    J --> M["Mermaid projection"]
+    N["Nix environment"] --> DHC["Dhall verification script"]
+    DHC --> AG
+    DHC --> J
+    EJ --> ART["CI artifact"]
   end
 
-  GE --> ADG["ClassicalSpecializationGate"]
-  ADG --> AD["ArrowDebreuSpecialization"]
-
-  X1["finite-dimensional commodities"] --> ADG
-  X2["own-bundle preferences"] --> ADG
-  X3["classical budget / ownership structure"] --> ADG
-  X4["required convexity / continuity"] --> ADG
-  X5["competitive production / profit maximization"] --> ADG
-  X6["classical feasibility / clearing"] --> ADG
-
-  FW -. proved .-> V1["Consumer-side closure"]
-  PF -. added seam .-> V2["Production frontier"]
-  MC -. frontier .-> V3["Clearing frontier"]
-  DP -. frontier .-> V4["Price frontier"]
-  AD -. conditional only .-> V5["Arrow-Debreu frontier"]
-
-  Z["No free-standing ArrowDebreuEquilibrium"] -. forbidden .-> AD
-
-  subgraph M["Existing TheoremsMonolith surface"]
-    GW["GeneralizedWalrasianEquilibrium"]
-    GWD["GeneralizedWalrasianData"]
-    GWE["GeneralizedWalrasianExistence"]
-    FNGE["FiniteNonIIDGeneralizedEquilibrium"]
-    POMDP["POMDPWalrasianEquilibrium"]
-    BEL["POMDPBeliefPolicyFactorization"]
-    WGI["MegaWalrasianGlobalSquareConjugacy"]
-    FWC["MegaFirstWelfareTheoremConditions"]
-    DCK["MegaDemandCostKernel"]
-    FNC["FiniteNonIIDDemandCostClosure"]
-    SWC["MegaSecondWelfareTheoremConditions"]
-    SEC["MegaSecondWelfareTheoremBoundaryCounterexample"]
-    NAB["MegaNoStrictAffordableAlternativeBoundary"]
-    LWE["connectedCanonicalLearnerEconomicWelfareCompositionTheorem"]
-    HMW["connectedHodgeMaxwellLearnerEconomicWelfareBridge"]
-  end
-
-  DCK --> FWC
-  FNC --> FW
-  GW --> GWE
-  FNGE --> GW
-  POMDP --> GW
-  WGI --> GW
-  LWE --> GW
-  HMW --> LWE
-  SWC -. conditional .-> GE
-  SEC -. blocks unsupported supporting-price promotion .-> SWC
-  NAB -. boundary .-> DCK
-
-  subgraph U["Unattended single-pass automation"]
-    SRC["TheoremsMonolith.agda"] --> A["Agda --safe"]
-    SRC --> M["Mercury semantic laws + A* e-graph"]
-    A --> E["Proof authority"]
-    M --> J["theorem-monolith-egraph-sync.json"]
-    J --> G["economic-closure-graph.json"]
-    SRC --> T["economic-monolith-records.tsv"]
-    SRC --> D["economic-monolith-declarations.tsv"]
-    G --> ART["CI artifact"]
-    T --> ART
-    D --> ART
-    ART --> NEXT["Next hourly run repeats from current source"]
-    NEXT --> SRC
-  end
-
-  subgraph V["One canonical pass, derived views only"]
-    J -. machine evidence .-> JSONV["JSON"]
-    T -. flat inventory view .-> TSVV["TSV"]
-    MMDV["Mermaid graph"] -. human topology .-> JSONV
-    SQLITE["SQLite"] -. optional future index, not a runtime dependency .-> JSONV
-    NOSQL["NoSQL"] -. unnecessary for this local deterministic graph .-> JSONV
+  subgraph V["Format policy"]
+    JSON["JSON: machine evidence / interchange"]
+    MERM["Mermaid: human topology view"]
+    JSON --> MERM
   end
