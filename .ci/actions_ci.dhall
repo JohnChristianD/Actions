@@ -76,6 +76,16 @@ let script = merge {
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
 
+    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
+    for module in canonicalLearnerMonolith theoremsMonolith eGraphSemanticTransport fourLawClosureWitnesses fourLawClosureImpossibility gruStatisticalInjectivity tsallisStatisticalRepresentation repositorySemanticEGraphClosure
+    do
+      grep -Fq "$module" Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "Agda semantic index missing: $module"; exit 1; }
+    done
+    for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
+    do
+      [ -f "Exotic/ERL/FullCoupled/$file" ] || { echo "surviving Agda file missing from repository surface: $file"; exit 1; }
+    done
+    grep -Fq 'Complete surviving-Agda closure index' "$readme" || { echo "README missing complete Agda closure index"; exit 1; }
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
 
