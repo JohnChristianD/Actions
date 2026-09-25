@@ -94,3 +94,63 @@ The tempting alternatives are not acceptable: identity trajectory would satisfy 
 Consequently Task 2 remains blocked on one concrete mathematical theorem: **current preservation for the selected physical trajectory**. No Agda witness module was added merely to encode this missing premise.
 
 This is a deliberate red boundary, not a failed implementation: the implementation plan explicitly requires the exact equality and forbids synthetic witnesses.
+
+
+## nLab closure-chain audit — 2026-09-25
+
+The broader nLab search does identify a connected semantic chain, but it also clarifies exactly where the repository has to add structure rather than merely rename existing fields.
+
+### Closure chain A — variational dynamics → shell → current
+
+nLab's variational bicomplex connects a local Lagrangian to its Euler–Lagrange/source form; the zero locus is the covariant phase space. It then defines conserved currents as horizontally closed on that on-shell space, with charges invariant across homologous hypersurfaces. Noether's theorem supplies such currents from variational symmetries. citeturn0search0turn0search2turn1search0
+
+For the Maxwell specialization, nLab identifies the electromagnetic current by
+
+`d ⋆ F = j`
+
+and derives `d j = 0`; it also describes electric charge as the integral of that current over a spacelike hyperslice. citeturn1search2turn0search11
+
+This is the semantic closure we were missing at the vocabulary level:
+
+`Lagrangian → Euler–Lagrange shell → conserved current → charge`.
+
+However, it still does **not** imply the repository's discrete proposition
+
+`fieldJ (trajectory p) ≡ fieldJ p`.
+
+The missing bridge is therefore now sharply localized: the Agda model needs a trajectory/evolution operation whose induced transport preserves the selected current observable, or a concrete theorem that the chosen physical evolution has that property. nLab's phase-space treatment says covariant phase space is the space of on-shell histories and that time evolution of suitable initial data is an isomorphism to the covariant picture; this supports introducing genuine evolution semantics, but it is not itself the required Agda equality. citeturn1search8
+
+### Closure chain B — Maxwell action → Euler–Lagrange equations
+
+nLab's Maxwell/Einstein-Maxwell material explicitly places the electromagnetic sector inside a local Lagrangian/action formalism. The Maxwell action is expressed through the electromagnetic field strength and Hodge star, while the general variational formalism identifies Euler–Lagrange equations with the critical locus of the action. citeturn1search4turn1search12turn0search1
+
+This gives the concrete Law-III population path:
+
+`Maxwell field/configuration → Lagrangian/action → genuine variation → Euler–Lagrange form → stationary/solution shell`.
+
+The repository still needs to choose a representable finite Agda carrier for the relevant variation/action data and prove that every selected `Solution` satisfies its stationarity predicate. The external closure is therefore a design source, not an automatic proof inhabitant.
+
+### Closure chain C — evolution must be attached to the shell
+
+The phase-space material gives the missing conceptual connection between “solution” and “trajectory”: covariant phase space is the space of on-shell field histories, and time evolution of initial data is represented by an isomorphism when the relevant canonical phase-space construction exists. citeturn1search8
+
+For this repository, that suggests the next semantic object should not be an arbitrary endofunction on `Solution`. It should be a concrete evolution structure carrying enough data to relate:
+- a solution/history;
+- an evolution step or flow;
+- the conserved-current observable;
+- the theorem that evolution preserves the chosen observable.
+
+That is the smallest nLab-backed route toward inhabiting Law I without weakening its contract.
+
+### What this search changes
+
+The search does **not** justify claiming closure now. It does justify refining the implementation target from “find a current-preservation theorem somewhere” to:
+
+1. populate a genuine Maxwell variational layer;
+2. expose the corresponding on-shell/solution semantics;
+3. attach a concrete evolution/trajectory semantics to that same shell;
+4. derive or prove current preservation for that evolution;
+5. reuse the existing learner↔solution adapter;
+6. only then compose `FourLawOneStepWitnessContract`.
+
+No identity trajectory, vacuous stationarity predicate, or substitution of `d j = 0` for the exact repository equality is permitted by this design.
