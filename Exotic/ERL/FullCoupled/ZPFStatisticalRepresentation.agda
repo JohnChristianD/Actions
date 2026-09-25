@@ -155,6 +155,7 @@ record ZPFGRUGlobalInjectivityTheorem
         Frequency
         SpectralDensity
         MaxwellField
+        frequencyMultiply
         Homogeneous
         Isotropic
         Maxwell
