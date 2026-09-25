@@ -25,21 +25,29 @@ open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity as G
 open import Exotic.ERL.FullCoupled.TsallisStatisticalRepresentation public
 
 record ZPFOmegaCubedSpectralLaw
-  (ZPFState Frequency SpectralDensity : Set) : Set₁ where
+  (ZPFState Frequency SpectralDensity : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency) : Set₁ where
   constructor zpfOmegaCubedSpectralLaw
   field
     density :
       ZPFState → Frequency → SpectralDensity
-    omegaCubedDensity :
+    spectralDensityOfOmegaCubed :
       Frequency → SpectralDensity
+    omegaCubed :
+      Frequency → Frequency
+    omegaCubedDefinition :
+      ∀ (ω : Frequency) →
+      omegaCubed ω ≡
+      frequencyMultiply (frequencyMultiply ω ω) ω
     omegaCubedLaw :
       ∀ (z : ZPFState) (ω : Frequency) →
-      density z ω ≡ omegaCubedDensity ω
+      density z ω ≡ spectralDensityOfOmegaCubed (omegaCubed ω)
 
 open ZPFOmegaCubedSpectralLaw public
 
 record ZPFMaxwellSemanticData
   (ZPFState MaxwellField Frequency SpectralDensity : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency)
   (Homogeneous Isotropic Maxwell : MaxwellField → Set)
   (Stochastic : ZPFState → Set) : Set₁ where
   constructor zpfMaxwellSemanticData
@@ -59,6 +67,7 @@ record ZPFMaxwellSemanticData
         ZPFState
         Frequency
         SpectralDensity
+        frequencyMultiply
 
 open ZPFMaxwellSemanticData public
 
@@ -74,6 +83,7 @@ record ZPFGRUStatisticalRepresentation
         MaxwellField
         Frequency
         SpectralDensity
+        frequencyMultiply
         Homogeneous
         Isotropic
         Maxwell
@@ -131,7 +141,7 @@ record ZPFGRUGlobalInjectivityTheorem
   (ZPFState Frequency SpectralDensity MaxwellField : Set)
   (Homogeneous Isotropic Maxwell : MaxwellField → Set)
   (Stochastic : ZPFState → Set) : Set₁ where
-  constructor zpfGRUGlobalInjectivityTheorem
+  constructor zpfGRUGlobalInjectivityTheoremWitness
   field
     representation :
       ZPFGRUStatisticalRepresentation
@@ -172,6 +182,6 @@ zpfGRUGlobalInjectivityTheorem :
     Maxwell
     Stochastic
 zpfGRUGlobalInjectivityTheorem R =
-  zpfGRUGlobalInjectivityTheorem
+  zpfGRUGlobalInjectivityTheoremWitness
     R
     (zpfGRUStatisticalEncodeInjective R)
