@@ -77,6 +77,9 @@ flowchart TD
 
   X["F4 linear forcing is not an optimizer-unique mechanism"] -.-> Y["Persistent nonzero increments can drift in many optimizers"]
 
+  A4 -. "cannot be created by graphing alone" .-> G4["Actual Agda Law IV theorem requires an Agda declaration and proof term"]
+  G4 -. "not supplied by graph-only completion" .-> A4
+
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
     B1["Law II = differential-form Maxwell content"]
     B2["ZPF = additional spectral / stochastic hypothesis"]
