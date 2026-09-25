@@ -38,6 +38,27 @@
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
           };
+          readme-doc-sync = let
+            script = pkgs.writeShellApplication {
+              name = "readme-doc-sync";
+              runtimeInputs = [
+                pkgs.coreutils
+                pkgs.git
+                pkgs.python3
+                pkgs.haskellPackages.dhall
+              ];
+              text = ''
+                set -euo pipefail
+                generated=$(mktemp)
+                trap 'rm -f "$generated"' EXIT
+                dhall text --file .ci/readme-doc-sync.dhall > "$generated"
+                bash "$generated" "$@"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/readme-doc-sync";
+          };
           slow-readme-update = let
             script = pkgs.writeShellApplication {
               name = "slow-readme-update";
@@ -93,6 +114,7 @@
               pkgs.mercury
               pkgs.haskellPackages.dhall
               pkgs.gh
+              pkgs.python3
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
