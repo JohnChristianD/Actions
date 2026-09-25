@@ -47,12 +47,12 @@ let script = merge {
     [ -f "$readme" ] || { echo "missing README"; exit 1; }
     [ -f "$wiki" ] || { echo "missing repository wiki"; exit 1; }
 
-    for node in       "Canonical learner definitions"       "Exact recurrent scan / composition"       "NormPair quotient / factor transition"       "Exact F4 optimizer stability"       "F4 unit-forcing growth ray"       "No unconditional infinite-horizon F4 upper bound"       "Canonical F4 × NormPair unconditional factor stability"       "Competitive production economy"       "Feasible firm production plans"       "Profit-maximizing production"       "Aggregate resource balance"       "Market clearing"       "Walrasian existence"
+    for node in       "Canonical learner definitions"       "Three exact MARL-facing laws"       "CanonicalMARLLawCompositionTheorem (closed)"       "Exact recurrent scan / composition"       "NormPair quotient / factor transition"       "Exact F4 optimizer stability"       "F4 unit-forcing growth ray"       "No unconditional infinite-horizon F4 upper bound"       "Canonical F4 × NormPair unconditional factor stability"       "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"       "ContinuousHodgeMaxwellExactRepresentationData"       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"       "CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"       "Competitive production economy"       "Feasible firm production plans"       "Profit-maximizing production"       "Aggregate resource balance"       "Market clearing"       "Walrasian existence"
     do
       grep -Fq "$node" "$graph" || { echo "current graph node missing: $node"; exit 1; }
     done
 
-    for symbol in       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
+    for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4NormWatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
     do
       grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
     done
@@ -88,7 +88,8 @@ let script = merge {
       printf '  "surface_authority": "TheoremsMonolith.agda",\\n'
       printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\\n'
       printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\\n'
-      printf '  "closed_core": ["CanonicalNormPairQuotientFactorTransitionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "CanonicalF4NormPairUnconditionalFactorStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
+      printf '  "closed_core": ["CanonicalMARLLawCompositionTheorem", "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem", "CanonicalNormPairQuotientFactorTransitionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "CanonicalF4NormPairUnconditionalFactorStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
+      printf '  "composition_frontier": ["CanonicalLearnerHodgeMaxwellCompositionTheorem requires explicit Hodge representation and learner-step conjugacy witnesses"],
       printf '  "economic_boundary": ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
       printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
       printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
@@ -125,8 +126,8 @@ let script = merge {
     grep -Fq 'GeneralizedWalrasianData' "$local_theorem"
     grep -Fq 'MegaGeneralizedWalrasianEquilibrium' "$local_theorem"
     grep -Fq 'GeneralizedWalrasianExistence' "$local_theorem"
-    grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
-    grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
+    grep -Fq 'CanonicalLearnerHodgeMaxwellCompositionTheorem' "$local_theorem"
+    grep -Fq 'CanonicalLearnerHodgeMaxwellCompositionTheorem' "$local_theorem"
 
     adapter_present=false
     if grep -Eiq 'Econlib|exists_equilibrium' "$local_theorem"; then
@@ -141,16 +142,16 @@ let script = merge {
       printf '  "upstream_static_existence": "Economy.exists_equilibrium",\n'
       printf '  "upstream_equilibrium_object": "Economy.WalrasianEquilibrium",\n'
       printf '  "local_mega_equilibrium_target": "GeneralizedWalrasianExistence",\n'
-      printf '  "local_composition_target": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",\n'
+      printf '  "local_composition_target": "CanonicalLearnerHodgeMaxwellCompositionTheorem",\n'
       printf '  "local_mega_edge": "MegaGeneralizedWalrasianEquilibrium",\n'
       printf '  "adapter_present": %s,\n' "$adapter_present"
-      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
+      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
       printf '  "graph_status": "composition-ready; explicit cross-language adapter still required"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-crossrepo-sync.json
 
     grep -Fq '"upstream_static_existence": "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.json
-    grep -Fq '"local_composition_target": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.json
+    grep -Fq '"local_composition_target": "CanonicalLearnerHodgeMaxwellCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.json
     echo "econlib-crossrepo-sync=pass"
     echo "econlib-commit=$econlib_rev"
     echo "adapter-present=$adapter_present"
@@ -193,7 +194,7 @@ let script = merge {
     grep -Fq 'GeneralizedWalrasianData' "$local_theorem"
     grep -Fq 'GeneralizedWalrasianExistence' "$local_theorem"
     grep -Fq 'MegaGeneralizedWalrasianEquilibrium' "$local_theorem"
-    grep -Fq 'ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem' "$local_theorem"
+    grep -Fq 'CanonicalLearnerHodgeMaxwellCompositionTheorem' "$local_theorem"
 
     pomdp_named=false
     grep -Riq 'POMDP|partially observable' "$root/Econlib" && pomdp_named=true || true
@@ -211,10 +212,10 @@ let script = merge {
       printf '  "stationary_law_convergence_condition": "strictly positive transition probabilities",\n'
       printf '  "stationary_equilibrium_node": "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
       printf '  "local_mega_edge": "MegaGeneralizedWalrasianEquilibrium",\n'
-      printf '  "local_composition": "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",\n'
+      printf '  "local_composition": "CanonicalLearnerHodgeMaxwellCompositionTheorem",\n'
       printf '  "partial_observation_nodes": ["BehavioralStrategy", "BeliefSystem", "SequentialEquilibrium"],\n'
       printf '  "pomdp_named_in_econlib": %s,\n' "$pomdp_named"
-      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"],\n'
+      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
       printf '  "pomdp_bridge_status": "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-equilibrium-graph.json
@@ -423,16 +424,16 @@ JSON
     POMDPWalrasianTransport
     POMDPBeliefPolicyFactorization
     POMDPWalrasianBeliefEquilibriumClosure
-    ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
     POMDPExactTransport
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
-    ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
     CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
-    ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem
-    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem
-    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem
-    ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
+    CanonicalLearnerHodgeMaxwellCompositionTheorem
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
     bairdSevenStar
