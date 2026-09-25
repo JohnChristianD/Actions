@@ -89,7 +89,7 @@ let script = merge {
       printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\\n'
       printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\\n'
       printf '  "closed_core": ["CanonicalMARLLawCompositionTheorem", "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem", "CanonicalNormPairQuotientFactorTransitionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "CanonicalF4NormPairUnconditionalFactorStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
-      printf '  "composition_frontier": ["CanonicalLearnerHodgeMaxwellCompositionTheorem requires explicit Hodge representation and learner-step conjugacy witnesses"],
+      printf '  "composition_frontier": ["CanonicalLearnerHodgeMaxwellCompositionTheorem requires explicit Hodge representation and learner-step conjugacy witnesses"],\\n'
       printf '  "economic_boundary": ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
       printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
       printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
