@@ -314,6 +314,36 @@
       "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
       "F_full_connected",
       "the singular mega-generalized equilibrium edge enters the fully connected composition only through its actual Agda consumer"
+    ],
+    [
+      "canonical-physics-to-learner-transition-witness",
+      "FourLawOneStepWitnessContract",
+      "PR #92 supplies the transition witness required by the contract, conditional on the canonical Hodge-Maxwell/learner composition theorem"
+    ],
+    [
+      "Law-I trajectory/current semantic witness",
+      "FourLawOneStepWitnessContract",
+      "MISSING: requires trajectory, current, and current-preservation compatibility"
+    ],
+    [
+      "Law-III variational semantic witness",
+      "FourLawOneStepWitnessContract",
+      "MISSING: requires variation, action, admissibility, and stationarity"
+    ],
+    [
+      "FourLawOneStepWitnessContract",
+      "iterateStep",
+      "generic iterate transport consumes the one-step contract but cannot manufacture semantic witnesses"
+    ],
+    [
+      "FourLawOneStepWitnessContract",
+      "prefixScan",
+      "generic prefix transport consumes the one-step/step-conjugacy seam but cannot manufacture Law-I or Law-III semantics"
+    ],
+    [
+      "EGraphSemanticInterpretation",
+      "FourLawOneStepWitnessContract",
+      "proof-only e-graph semantic transport preserves supplied equality; it does not create missing physical or variational witnesses"
     ]
   ],
   "separation_obligation": [
@@ -1541,10 +1571,14 @@
     "lawI": "LawIPhysicsWitness",
     "lawIII": "LawIIIVariationalWitness",
     "physicsToLearner": "PhysicsToLearnerTransitionWitness",
+    "semantic_status": {
+      "lawI": "MISSING_CONCRETE_WITNESS",
+      "lawIII": "MISSING_CONCRETE_WITNESS",
+      "physicsToLearner": "PROVED_CONDITIONAL_ADAPTER"
+    },
     "required_before_closure": [
       "inhabited Law-I trajectory/current representation witness",
       "inhabited Law-III admissible-variation/stationarity witness",
-      "inhabited physics-to-learner step conjugacy",
       "composition with the existing Law-II Hodge-Maxwell representation",
       "composition with the existing Law-IV GRU statistical representation",
       "one-step commuting square",
@@ -1552,6 +1586,17 @@
       "prefix concatenation transport",
       "exact prefix/horizon end-to-end closure"
     ],
-    "proof_boundary": "The contract is not an existence theorem. No inhabitant is supplied, and no unconditional four-law closure is promoted from the contract alone."
+    "proof_boundary": "The contract is not an existence theorem. Law-I and Law-III remain semantic obligations. The physics-to-learner transition is now derivable conditionally from CanonicalLearnerHodgeMaxwellCompositionTheorem; it does not by itself manufacture Law-I or Law-III witnesses.",
+    "graphical_route": [
+      "Law-II Hodge-Maxwell semantics",
+      "current/trajectory preservation theorem -> Law-I witness",
+      "action/variation/admissibility/stationarity semantics -> Law-III witness",
+      "conditional physics-to-learner transition adapter",
+      "FourLawOneStepWitnessContract",
+      "iterate transport",
+      "prefix transport",
+      "e-graph semantic transport",
+      "exact prefix/horizon closure"
+    ]
   }
 }
