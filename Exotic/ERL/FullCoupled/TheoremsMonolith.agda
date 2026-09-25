@@ -52,6 +52,7 @@ open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity public
 open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
 open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
+open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
 
 replaceClock :
   C.CanonicalFullLearnerState → Nat → C.CanonicalFullLearnerState
@@ -3291,6 +3292,37 @@ nLabMaxwellIterateConjugacyClosed B =
     (kernel B)
     n
     s
+
+
+------------------------------------------------------------------------
+-- Repository-wide semantic e-graph/A* closure.
+--
+-- Every surviving Agda module can be placed in an indexed semantic family.
+-- The closure is unconditional at that semantic layer: any supplied sound
+-- interpretation and any sound e-graph path produce exact equality.
+-- A* costs remain search metadata, never proof evidence.
+------------------------------------------------------------------------
+
+canonical-repository-wide-agda-egraph-astar-closure :
+  ∀ {Module : Set}
+  (F : AgdaSemanticModuleFamily Module)
+  (m : Module)
+  {e f : Expression F m} →
+  EGraphSemanticPath
+    (semantics (closure F m))
+    e
+    f →
+  interpret (semantics (closure F m)) e
+  ≡
+  interpret (semantics (closure F m)) f
+canonical-repository-wide-agda-egraph-astar-closure =
+  repositoryAgdaAStarSemanticClosure
+
+canonical-unconditional-agda-egraph-astar-closure :
+  UnconditionalAgdaEGraphAStarClosure
+canonical-unconditional-agda-egraph-astar-closure =
+  unconditional-agda-egraph-astar-closure
+
 
 ------------------------------------------------------------------------
 
