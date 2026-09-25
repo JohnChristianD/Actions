@@ -1,5 +1,5 @@
 flowchart TD
-  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws"]
+  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws + explicit ZPF hypothesis"]
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
@@ -11,24 +11,28 @@ flowchart TD
   HM["dF = 0; d⋆F = source current"]
   HM --> FP["Sourced Maxwell field F_particles"]
 
-  Z["Additional ZPF hypothesis"]
-  Z0["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
-  Z1["ω³ spectral law"]
-  Z --> Z0 --> Z1
-  Z0 --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
-  FP --> FT["Total field F_total = F_particles + F_ZPF"]
-  Z0 --> FT
+  P4["Law IV: ZPF background-field / spectral hypothesis"]
+  Z["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
+  ZS["ω³ spectral law"]
+  P4 --> Z --> ZS
+  Z --> HF["dF_ZPF = 0; d⋆F_ZPF = 0"]
+  FP --> FT["Total field F_total = F_particle + F_ZPF"]
+  Z --> FT
   HF --> FT
+
   FT --> FORCE["Field force / effective particle interaction"]
   FORCE --> P1
-
+  FORCE --> P3
   P3["Law III: variational / virtual-work admissibility"] --> PI["Explicit physics → learner interface witness"]
-  FORCE --> PI
+  P1 -. "coupled dynamics" .-> PI
+  P2 -. "field constraint" .-> PI
+  P4 -. "additional field-state hypothesis" .-> PI
   P3 --> PI
   PI -. "not entailed by learner algebra alone" .-> D
 
-  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData"]
-  Z --> H0
+  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData
+dF = 0; d⋆F = source"]
+  Z -. "additional spectral/background hypothesis" .-> H0
   H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
   H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
   D --> HB
@@ -70,7 +74,7 @@ flowchart TD
 
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
     B1["Law II = differential-form Maxwell content"]
-    B2["ZPF = additional spectral / stochastic hypothesis"]
+    B2["Law IV / ZPF = additional spectral / stochastic hypothesis"]
     B3["Global injectivity = exact representation property"]
     B4["No claim that Maxwell alone proves ω³ ZPF"]
     B1 --> B2
