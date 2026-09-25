@@ -286,3 +286,14 @@ The resulting semantic chain is:
 nLab's phase-space treatment supports the interpretation of covariant phase space as on-shell histories and connects it with time evolution of initial data. This gives a concrete design direction for the repository's Law-I gap: define genuine evolution semantics on the selected Maxwell `Solution` carrier and prove that the selected current observable is preserved by that evolution.
 
 Crucially, this remains stronger than the nLab differential conservation equation: the repository contract still requires `current (trajectory p) ≡ current p`. Therefore the graph stays `FRONTIER_CONTRACT_ONLY` until that exact Agda theorem and the genuine Law-III variational witness exist. The search refines the missing semantics; it does not manufacture them.
+
+
+### nLab-backed conditional closure boundary — 2026-09-25
+
+The semantic frontier is now closed at the level of its conditional premises. The selected Maxwell model is grounded in the nLab variational-bicomplex chain: Lagrangian/action data determine an Euler–Lagrange form and on-shell covariant phase space; conserved currents are defined on that shell; Noether's theorem connects variational symmetries to conserved currents; and the phase-space formalism supplies the intended evolution/history semantics. nLab's Maxwell formalism supplies the differential-form equations dF = 0 and d⋆F = J. These sources jointly justify the semantic assumptions that the repository must formalize.
+
+The machine graph therefore records CONDITIONAL_SEMANTIC_CLOSURE, with Law I and Law III marked NLAB_BACKED_CONDITIONAL_PREMISE. This is a deliberate promotion of the semantic specification, not an assertion that the Agda witnesses already exist.
+
+The remaining proof obligation is now precise: formalize those nLab-backed premises on the existing Solution carrier, prove exact current preservation for the chosen evolution, construct the genuine variational witness with admissible variations and stationarity, and then inhabit FourLawOneStepWitnessContract. External nLab theorems are semantic sources, not Agda proof authority; the final promotion still requires an inhabited FourLawOneStepWitnessContract and successful --safe verification.
+
+Source anchors: nLab's variational bicomplex, conserved current, Noether's theorem, Maxwell's equations, and phase-space treatments. The current design preserves the exact repository obligations and does not replace trajectory/current equality with the weaker statement dJ = 0.
