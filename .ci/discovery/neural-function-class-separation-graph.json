@@ -1565,15 +1565,15 @@
     }
   },
   "four_law_closure": {
-    "status": "FRONTIER_CONTRACT_ONLY",
+    "status": "CONDITIONAL_SEMANTIC_CLOSURE",
     "contract": "FourLawOneStepWitnessContract",
     "source": "Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda",
     "lawI": "LawIPhysicsWitness",
     "lawIII": "LawIIIVariationalWitness",
     "physicsToLearner": "PhysicsToLearnerTransitionWitness",
     "semantic_status": {
-      "lawI": "MISSING_CONCRETE_WITNESS",
-      "lawIII": "MISSING_CONCRETE_WITNESS",
+      "lawI": "NLAB_BACKED_CONDITIONAL_PREMISE",
+      "lawIII": "NLAB_BACKED_CONDITIONAL_PREMISE",
       "physicsToLearner": "PROVED_CONDITIONAL_ADAPTER"
     },
     "required_before_closure": [
@@ -1586,17 +1586,29 @@
       "prefix concatenation transport",
       "exact prefix/horizon end-to-end closure"
     ],
-    "proof_boundary": "The contract is not an existence theorem. Law-I and Law-III remain semantic obligations. The physics-to-learner transition is now derivable conditionally from CanonicalLearnerHodgeMaxwellCompositionTheorem; it does not by itself manufacture Law-I or Law-III witnesses.",
+    "proof_boundary": "nLab closes the semantic premise specification, not the Agda proof gap: its variational-bicomplex, Maxwell, conserved-current, Noether, and covariant-phase-space theorems justify the selected semantic assumptions. They are external sources, not Agda proof authority. Actual closure still requires inhabited repository witnesses and --safe verification.",
     "graphical_route": [
-      "Law-II Hodge-Maxwell semantics",
-      "current/trajectory preservation theorem -> Law-I witness",
-      "action/variation/admissibility/stationarity semantics -> Law-III witness",
+      "nLab variational bicomplex: Lagrangian -> Euler-Lagrange shell",
+      "nLab Maxwell: dF = 0 and d⋆F = J",
+      "nLab conserved current / Noether: on-shell current conservation and charge invariance",
+      "nLab phase space: on-shell histories and evolution semantics",
+      "formalized Maxwell evolution/current-preservation premise -> Law-I witness",
+      "formalized Maxwell action/variation/stationarity premise -> Law-III witness",
       "conditional physics-to-learner transition adapter",
       "FourLawOneStepWitnessContract",
       "iterate transport",
       "prefix transport",
       "e-graph semantic transport",
       "exact prefix/horizon closure"
+    ],
+    "required_before_proof": [
+      "formalize the nLab-backed Maxwell variational/action semantics on the repository Solution carrier",
+      "formalize a genuine evolution/trajectory and prove exact current-preservation on that carrier",
+      "construct inhabited Law-I and Law-III witnesses from those formalized premises",
+      "compose with the existing Law-II Hodge-Maxwell and Law-IV GRU representations",
+      "prove the one-step commuting square",
+      "prove n-step iterate and prefix concatenation transport",
+      "prove exact prefix/horizon end-to-end closure"
     ]
   }
 }
