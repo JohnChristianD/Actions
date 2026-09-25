@@ -51,7 +51,6 @@ plan_terminal_ids([Plan | Plans], Acc0, Ids) :-
 :- pred closure_round(
     list(semantic_law)::in,
     list(string)::in,
-    list(list(string))::in,
     symbolic_egraph.egraph::in,
     symbolic_egraph.egraph::out,
     list(list(string))::out,
@@ -116,7 +115,7 @@ astar_egraph_fixed_point(
         ->
             E = E2,
             Plans = RoundPlans2,
-            Rounds = Saturation1 ^ saturation_iterations + Saturation2 ^ saturation_iterations,
+            Rounds = 2,
             BeforeEnodes = BeforeEnodes1,
             AfterEnodes = AfterEnodes2,
             Stable = yes
@@ -171,6 +170,7 @@ extract_all_laws([Law | Laws], E, Depth, Cost) :-
     saturation_report::in,
     int::in,
     list(list(string))::in,
+    int::in,
     int::in,
     int::in,
     bool::in,
