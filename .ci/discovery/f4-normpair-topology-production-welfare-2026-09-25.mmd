@@ -1,0 +1,83 @@
+flowchart LR
+  subgraph LEARNER["Canonical learner monolith"]
+    T["Canonical exact scan laws"]
+    E["Endomorphism / recurrent-input action"]
+    P["Recurrent prefix state"]
+    PE["Recurrent prefix endomorphism"]
+    PC["Prefix correctness"]
+    T --> E --> PE
+    T --> P
+    PE --> PC
+  end
+
+  subgraph FACTOR["Factor / quotient topology"]
+    NR["NormPair replacement"]
+    R["NormPair replacement relation"]
+    PR["Policy factorization"]
+    SC["One-step transition compatibility"]
+    IC["Iterate compatibility"]
+    Q["Quotient / factor transition theorem"]
+    NR --> R
+    R --> PR
+    R --> SC --> IC --> Q
+  end
+
+  subgraph F4["F4 stability"]
+    FS["Exact F4 optimizer stability"]
+    FU["F4 unit-forcing growth ray"]
+    NB["No unconditional infinite-horizon F4 upper bound"]
+    FS --> FU --> NB
+  end
+
+  subgraph PRODUCT["Closed composition"]
+    C["F4 × NormPair unconditional factor stability"]
+  end
+
+  PC --> C
+  Q --> C
+  FS --> C
+
+  subgraph ECON["Economic topology boundary"]
+    GI["Economic interpretation / state isomorphism"]
+    PS["Policy-step correctness"]
+    CV["Convergence / fixed-point bridge"]
+    WE["Walrasian equilibrium existence assumptions"]
+    GI --> CV
+    PS --> CV
+    CV --> WE
+  end
+
+  C -. representation/factor structure only .-> GI
+  C -. does not prove .-> CV
+  C -. does not prove .-> WE
+  NB -. does not imply .-> WE
+
+  subgraph PROD["Production-side Walrasian specialization"]
+    PECO["Competitive production economy"]
+    FP["Feasible firm production plans"]
+    PM["Profit-maximizing production"]
+    CO["Consumer budget/optimality"]
+    RB["Aggregate resource balance"]
+    MC["Market clearing"]
+    GW["Generalized Walrasian equilibrium"]
+    PECO --> FP --> PM
+    PECO --> CO
+    PM --> RB
+    CO --> RB
+    RB --> MC --> GW
+  end
+
+  GW -. classical existence requires structural assumptions .-> WE
+
+  subgraph WELFARE["Welfare"]
+    EQ["Competitive/Walrasian equilibrium"]
+    LNS["Local nonsatiation / demand conditions"]
+    PARETO["Pareto optimal allocation"]
+    SUP["Supporting-price / redistribution conditions"]
+    SWT["Second-welfare supportability"]
+    EQ --> LNS --> PARETO
+    PARETO --> SUP --> SWT
+  end
+
+  WE --> EQ
+  PARETO -. does not alone produce .-> SUP
