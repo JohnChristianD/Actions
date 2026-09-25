@@ -61,40 +61,40 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
 Generated from the tracked GitHub-facing Markdown surface: 24 files.
-Detailed evidence remains in the linked source documents; internal CI/discovery notes and historical agent plans are intentionally excluded.
+Titles are read from each document's leading Markdown H1; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Repository documentation
 
-- [Econlib Stationary Markov Graph](docs/econlib-stationary-markov-graph.md)
-- [Stationary Cycle Impossibility Graph](docs/stationary-cycle-impossibility-graph.md)
+- [Econlib stationary-Markov equilibrium graph](docs/econlib-stationary-markov-graph.md)
+- [Stationary-distribution / finite-cycle obstruction graph](docs/stationary-cycle-impossibility-graph.md)
 
 ### Economics
 
-- [Economic Egraph Emergent Arrow Debreu](docs/economics/economic-egraph-emergent-arrow-debreu.md)
-- [Economic Egraph No Primitive Price](docs/economics/economic-egraph-no-primitive-price.md)
-- [F4 Normpair Economic Unconditionality Boundary 2026 09 24](docs/economics/f4-normpair-economic-unconditionality-boundary-2026-09-24.md)
+- [Economic e-graph: emergent-only Arrow–Debreu](docs/economics/economic-egraph-emergent-arrow-debreu.md)
+- [Economic A*-E-Graph Target: No Primitive Economic Price](docs/economics/economic-egraph-no-primitive-price.md)
+- [F4 / NormPair / economic unconditionality boundary](docs/economics/f4-normpair-economic-unconditionality-boundary-2026-09-24.md)
 
 ### Research
 
-- [Adaptive Sparsemax Action Domain 2026 09 23](docs/research/adaptive-sparsemax-action-domain-2026-09-23.md)
-- [Complete Connected Theorem Graph 2026 09 22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
-- [Endogenous Astar Kernel Closure 2026 09 23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
-- [Finite Carrier Transport Promotion 2026 09 23](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
-- [Four Law Primary Source Closure Audit 2026 09 25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
-- [Graph Closure Audit 2026 09 23](docs/research/graph-closure-audit-2026-09-23.md)
-- [Gru Automata Signoptimizer Graph](docs/research/gru-automata-signoptimizer-graph.md)
-- [Int8 Unbounded Z Ring 2026 09 23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
-- [Int8 Vocabulary Recurrent Closure 2026 09 22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
-- [Jensen Minimax Rounding Kkt Markov Bound](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
-- [Law Iv Tsallis Carrier Polymorphic 2026 09 25](docs/research/law-iv-tsallis-carrier-polymorphic-2026-09-25.md)
-- [Learner Equivalence Class](docs/research/learner-equivalence-class.md)
-- [Marl Laws Hodge Maxwell F4 Ray 2026 09 25](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
-- [Nonlinear Sequence Storage Generation Algebra](docs/research/nonlinear-sequence-storage-generation-algebra.md)
-- [Normpair Factor Transition Closure 2026 09 24](docs/research/normpair-factor-transition-closure-2026-09-24.md)
-- [Strict Unconditional Theorem Graph 2026 09 25](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
-- [Thesis Contribution Reassessment 2026 09 25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
-- [Thesis Literature Topology Production Welfare 2026 09 25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
-- [Zpf Omega3 Gru Statistical Law 2026 09 25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
+- [Adaptive sparsemax action-domain redesign — 2026-09-23](docs/research/adaptive-sparsemax-action-domain-2026-09-23.md)
+- [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
+- [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
+- [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
+- [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
+- [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
+- [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
+- [Unbounded Int8 integer-ring upgrade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
+- [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
+- [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
+- [Law IV carrier-polymorphic Tsallis audit — 2026-09-25](docs/research/law-iv-tsallis-carrier-polymorphic-2026-09-25.md)
+- [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
+- [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
+- [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
+- [NormPair quotient/factor transition closure](docs/research/normpair-factor-transition-closure-2026-09-24.md)
+- [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
+- [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
+- [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
+- [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
 
