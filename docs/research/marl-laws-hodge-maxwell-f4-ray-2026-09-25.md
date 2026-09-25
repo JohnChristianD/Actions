@@ -53,3 +53,31 @@ The negative edges are part of the result: the exact learner-side structure is c
 Agda is the proof authority. The Mercury JSON output is machine evidence for extracted laws and dependency discovery. Mermaid is the human-readable topology projection. TSV/CSV are not canonical graph representations, and SQLite/NoSQL are not warranted for the current deterministic, repository-local dependency workload.
 
 A CSV file used for an unrelated replication archive is not part of this graph-format decision and should not be removed merely because CSV is unnecessary for topology.
+
+
+## Four-physics-law continuation graph
+
+The four physics-facing laws are now graphed as a separate frontier from the already-closed learner composition:
+
+  Law I exact representation witness
+      + Law II Hodge-Maxwell representation
+      + Law III exact representation / variational interface
+      + Law IV canonical GRU statistical representation
+      + explicit physics → learner interface witness
+      -> Four-Law one-step commuting square
+      -> Four-Law iterate conjugacy
+      -> Four-Law exact prefix / horizon conjugacy
+      -> Four-Law end-to-end representation closure
+
+The arrows in this continuation are deliberately marked [FRONTIER]. The graph records the dependency shape, not a proof claim. In particular, Law I and Law III still require their explicit inverse representation witnesses, and the physics → learner transition witness must be supplied before the one-step square can be promoted to an Agda theorem.
+
+The existing ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem is a distinct, already-present Hodge-Maxwell/learner endpoint. The new four-law frontier is stricter: it asks for the Law I + Law II + Law III + Law IV interface to be assembled into one prefix/horizon transport theorem.
+
+The intended induction is the standard commuting-step lift:
+
+  encode (PhysicsStep s) ≡ LearnerStep (encode s)
+
+  ⇒ encode (iterate PhysicsStep n s)
+       ≡ iterate LearnerStep n (encode s)
+
+and, for recurrent input prefixes, the corresponding concatenation/prefix transport law. This remains a representation/conjugacy result; it does not imply convergence, fixed-point existence, market clearing, supporting prices, or Walrasian existence without independent economic hypotheses.
