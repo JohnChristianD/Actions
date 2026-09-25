@@ -332,13 +332,13 @@
     ],
     [
       "FourLawOneStepWitnessContract",
-      "iterateStep",
-      "generic iterate transport consumes the one-step contract but cannot manufacture semantic witnesses"
+      "canonicalFullLearner-iterate-conjugacy",
+      "existing iterate theorem consumes a supplied one-step conjugacy; it does not manufacture semantic witnesses"
     ],
     [
       "FourLawOneStepWitnessContract",
-      "prefixScan",
-      "generic prefix transport consumes the one-step/step-conjugacy seam but cannot manufacture Law-I or Law-III semantics"
+      "recurrentPrefix-scan-lifts-conjugacy",
+      "existing generic prefix theorem consumes a commuting step map; it does not manufacture Law-I or Law-III semantics"
     ],
     [
       "EGraphSemanticInterpretation",
