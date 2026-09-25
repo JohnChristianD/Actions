@@ -72,36 +72,48 @@ Law IV's statistical representation is distinct from the additional ZPF hypothes
 
 External references sharpen the missing-witness boundary rather than removing it.
 
-The nLab treatment of Noether's theorem makes the Law-III requirements explicit: stationary action, admissible boundary behavior for variations, Euler-Lagrange equations, and variational symmetries/conserved currents. Wikipedia's virtual-work and Lagrangian-mechanics material similarly depends on admissible virtual displacements and constraints. These formalisms therefore identify the data a concrete Law-III witness must carry; they do not provide a universal learner-to-variational-state inverse.
+The nLab treatment of Noether's theorem makes the Law-III requirements explicit: stationary action, admissible boundary behavior for variations, Euler-Lagrange equations, and variational symmetries/conserved currents. These formalisms therefore identify the data a concrete Law-III witness must carry; they do not provide a universal learner-to-variational-state inverse.
 
-For Law I, nLab's Maxwell and electric-charge pages formulate the source as a conserved current and use differential-form equations such as `d F = 0` and `d * F = j`. That validates the current/Maxwell interface but does not construct a unique particle trajectory from an arbitrary learner state.
+For Law I, nLab's Maxwell treatment formulates the source as a current and uses differential-form equations such as `d F = 0` and `d * F = j`. That validates the current/Maxwell interface but does not by itself construct the repository's required trajectory/current-preservation witness.
 
 The Tsallis source establishes the q-entropy and q-distribution formalism under explicit statistical constraints. It supports the repository's statistical layer, but it does not supply a physical-state encode/decode inverse or the physics-to-learner transition conjugacy.
 
 Accordingly the exact continuation remains:
 
 ```text
-Law-I trajectory/current witness
-        +
-Law-III admissible-variation / virtual-work witness
-        +
-physics -> learner transition conjugacy
-        +
+Law-I trajectory/current
+        |
+        +--> current-preservation theorem
+        |        |
+        |        v
+        |   Law-I witness [MISSING]
+        |
+Law-III action/Lagrangian + admissible variations
+        |
+        +--> Euler-Lagrange / stationarity
+        +--> variational symmetry / virtual-work semantics
+                 |
+                 v
+            Law-III witness [MISSING]
+
 Law-II Hodge-Maxwell representation
-        +
-Law-IV GRU statistical representation
+        |
+        +--> physics → learner transition [PROVED CONDITIONAL]
         |
         v
-four-law one-step commuting square
+FourLawOneStepWitnessContract [FRONTIER]
         |
         v
-n-step iterate conjugacy
+n-step iterate transport [PROVED GENERIC]
         |
         v
-prefix concatenation transport
+prefix / horizon transport [PROVED GENERIC]
         |
         v
-exact prefix/horizon end-to-end closure
+e-graph semantic transport [PROVED PROOF-ONLY]
+        |
+        v
+four-law exact prefix / horizon closure [MISSING]
 ```
 
 No external source is promoted to Agda proof authority. The detailed source audit is recorded in `docs/research/four-law-primary-source-closure-audit-2026-09-25.md`.
@@ -118,12 +130,11 @@ The F4 ray theorem is an exact statement about the implemented discrete update u
 
 The production-side contract uses standard economic vocabulary.
 
-
 ## Four-law closure frontier
 
 The repository now has an explicit typed contract for the remaining cross-law witness seam in `Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda`.
 
-`LawIPhysicsWitness` requires a learner-to-physical representation with a left inverse plus explicit trajectory/current data. `LawIIIVariationalWitness` requires an inverse representation plus explicit admissibility and stationarity predicates. `PhysicsToLearnerTransitionWitness` requires an inverse representation and one-step transition conjugacy. The theorem monolith now derives `canonical-physics-to-learner-transition-witness` directly from `CanonicalLearnerHodgeMaxwellCompositionTheorem`, so this transition seam is an explicit adapter rather than a second independently invented witness.
+`LawIPhysicsWitness` requires a learner-to-physical representation with a left inverse plus explicit trajectory/current data. `LawIIIVariationalWitness` requires an inverse representation plus explicit admissibility and stationarity predicates. `PhysicsToLearnerTransitionWitness` requires an inverse representation and one-step transition conjugacy. The theorem monolith derives `canonical-physics-to-learner-transition-witness` directly from `CanonicalLearnerHodgeMaxwellCompositionTheorem`, so this transition seam is an explicit adapter rather than a second independently invented witness.
 
 These records are deliberately uninhabited on the current branch. They make the missing proof obligations machine-readable without turning semantic contracts into axioms. The graph therefore records `FourLawOneStepWitnessContract` as a frontier contract, not as a closed theorem.
 
@@ -145,7 +156,6 @@ strict connected closure
 
 No unconditional four-law closure is claimed until that contract has an actual Agda inhabitant and the composed theorem passes the repository's proof and CI gates.
 
-
 ## Relative impossibility boundary
 
 The repository now contains `Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda`. It proves a constructive relative non-derivability result: there is no polymorphic constructor from arbitrary carriers, admissibility predicates, stationarity predicates, and one-step functions to `FourLawOneStepWitnessContract`.
@@ -156,35 +166,66 @@ Consequently the iterate/prefix transport kernels cannot close the frontier by t
 
 ## Four-law semantic closure graph — current frontier
 
-The graph below is the canonical human-readable projection of the typed proof boundary. Labels mean: **PROVED** = an Agda theorem/adapter exists; **CONDITIONAL** = follows from explicitly supplied representation semantics; **MISSING** = the repository has a contract but no concrete semantic witness.
+The graph below is the canonical human-readable projection of the typed proof boundary. Labels mean: **PROVED** = an Agda theorem/adapter exists; **CONDITIONAL** = follows from explicitly supplied representation semantics; **MISSING** = the repository has a contract but no concrete semantic witness; **FRONTIER** = the composition is blocked at that seam.
+
+The graphical decomposition now makes the two missing semantic branches explicit:
+
+1. **Law I:** trajectory/current data must be connected to a theorem such as `current (trajectory p) ≡ current p` (or an equivalent concrete conservation/compatibility statement) before `LawIPhysicsWitness` can be inhabited.
+2. **Law III:** an actual action/Lagrangian, admissible variations, and stationarity/Euler–Lagrange or equivalent virtual-work semantics must be supplied before `LawIIIVariationalWitness` can be inhabited.
+3. **Physics → learner:** this edge is no longer a missing generic contract: `canonical-physics-to-learner-transition-witness` is an existing conditional adapter derived from the canonical Hodge-Maxwell/learner composition.
+4. **Transport:** iterate, prefix-scan, and e-graph kernels transport an already-inhabited semantic square; they do not synthesize Law-I or Law-III semantics.
 
 ```mermaid
 flowchart TD
-  HM["Law II — Hodge-Maxwell\ndF = 0; d⋆F = J"] --> TRANS["physics → learner transition\nPROVED CONDITIONAL"]
-  HM --> LI_PRE["trajectory + current\ncurrent-preservation theorem"]
-  LI_PRE --> LI["Law I witness\nMISSING"]
-  VAR["action / Lagrangian\nvariations / admissibility\nstationarity"] --> LIII["Law III witness\nMISSING"]
-
-  TRANS --> ONE["FourLawOneStepWitnessContract"]
-  LI --> ONE
-  LIII --> ONE
-
-  ONE --> ITER["iterate conjugacy\nPROVED GENERIC"]
-  ITER --> PREFIX["prefix-scan transport\nPROVED GENERIC"]
-  PREFIX --> EGRAPH["e-graph semantic transport\nPROVED PROOF-ONLY"]
-  EGRAPH --> END["exact prefix / horizon\nFOUR-LAW CLOSURE"]
-
-  subgraph Existing["Existing learner/physics infrastructure"]
-    HM
-    TRANS
-    GRU["Law IV — GRU statistical representation"]
-    ITER
-    PREFIX
-    EGRAPH
+  subgraph I["Law I — missing semantic branch"]
+    I0["agent / particle dynamics"]
+    I1["trajectory"]
+    I2["current J"]
+    I3["current-preservation / compatibility theorem"]
+    I4["LawIPhysicsWitness"]
+    I0 --> I1 --> I2 --> I3 --> I4
   end
 
-  GRU --> ONE
-  HM --> ONE
+  subgraph II["Law II — existing conditional branch"]
+    II0["Hodge-Maxwell\ndF = 0; d⋆F = J"]
+    II1["exact representation data"]
+    II2["learner ↔ solution inverse"]
+    II3["one-step conjugacy"]
+    II4["physics → learner adapter"]
+    II0 --> II1 --> II2 --> II3 --> II4
+  end
+
+  subgraph III["Law III — missing semantic branch"]
+    III0["action / Lagrangian"]
+    III1["admissible variations"]
+    III2["Euler-Lagrange / stationarity"]
+    III3["variational symmetry / virtual-work semantics"]
+    III4["LawIIIVariationalWitness"]
+    III0 --> III2
+    III1 --> III2
+    III2 --> III4
+    III3 --> III4
+  end
+
+  subgraph IV["Law IV — existing closed branch"]
+    IV0["GRU statistical representation"]
+    IV1["decode ∘ encode ≡ id"]
+    IV2["statistical encode injectivity"]
+    IV0 --> IV1 --> IV2
+  end
+
+  I4 --> SQ["FourLawOneStepWitnessContract\nFRONTIER"]
+  II4 --> SQ
+  III4 --> SQ
+  IV2 --> SQ
+
+  SQ --> IT["iterate conjugacy\nPROVED GENERIC"]
+  IT --> PX["input-indexed prefix / scan transport\nPROVED GENERIC"]
+  PX --> EG["e-graph semantic transport\nPROVED PROOF-ONLY"]
+  EG --> CL["four-law exact prefix / horizon closure\nMISSING"]
+
+  IMP["FourLawClosureImpossibility\nPROVED: relative interface non-derivability"]
+  IMP -. "cannot synthesize missing witnesses" .-> SQ
 ```
 
 The semantic bottleneck is therefore not GRU expressivity. It is the construction of concrete Law-I and Law-III witnesses that preserve the intended meanings of those laws. Adding arbitrary axioms would make the endpoint conditional on those axioms; changing the law definitions to fit the GRU would change the theorem being proved.
