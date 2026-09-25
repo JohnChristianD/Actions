@@ -231,3 +231,14 @@ flowchart TD
 The semantic bottleneck is therefore not GRU expressivity. It is the construction of concrete Law-I and Law-III witnesses that preserve the intended meanings of those laws. Adding arbitrary axioms would make the endpoint conditional on those axioms; changing the law definitions to fit the GRU would change the theorem being proved.
 
 nLab's Maxwell and variational formalisms provide the mathematical vocabulary for these missing branches, but external references are not proof authority. The repository must still supply the actual Agda witnesses and their connection to the canonical learner.
+
+
+## nLab semantic candidates — 2026-09-25
+
+A focused nLab search now gives a concrete semantic direction for the two missing branches without claiming that the witnesses already exist.
+
+For Law I, nLab's conserved-current formalism defines conservation as horizontal closure on the covariant phase space, with equal charges on homologous hypersurfaces; the electromagnetic current satisfies this structure through the Maxwell equation d star F = j. This is appropriate source semantics for a concrete trajectory/current model, but the repository still needs an Agda-level theorem matching its actual witness obligation, namely current (trajectory p) = current p (or a precisely equivalent compatibility statement).
+
+For Law III, nLab's action-functional and variational-bicomplex formalisms provide the matching vocabulary: a local action is built from a Lagrangian density, variations produce the Euler-Lagrange form, and the critical/solution locus is where that form vanishes. Admissible boundary behavior is part of the derivation of stationarity and Euler-Lagrange equations. Maxwell theory is explicitly treated as an Euler-Lagrange theory in nLab, making it a promising concrete bridge to the repository's existing Hodge-Maxwell representation.
+
+The detailed primary-source research is recorded in `docs/research/nlab-four-law-semantic-candidates-2026-09-25.md`. The result is a candidate semantic model, not an inhabited Law-I or Law-III witness. In particular, conservation vocabulary must not be substituted for the repository's trajectory/current equality, and a trivial variation must not be introduced merely to populate the Law-III contract.
