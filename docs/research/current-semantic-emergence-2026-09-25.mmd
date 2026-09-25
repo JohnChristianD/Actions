@@ -1,19 +1,21 @@
 flowchart TD
-  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws"]
+  A["Canonical learner definitions"] --> B["Four exact MARL-facing laws / representation layers"]
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
 
-  B4["Law IV: canonical GRU statistical representation"] --> GI["Unconditional GRU statistical injectivity"]
-  GI --> GD["Algebraic consequence: distinct GRU states remain statistically distinguishable"]
-  GD --> GS["Step closure: gruStep preserves the exact injective representation"]
-
   P1["Law I: agent/particle dynamics"] --> J["Particle trajectories"]
   J --> CUR["Particle four-current J"]
+  P1 --> L1D["Law I exact representation witness"]
+  L1D --> L1I["Law I representation encode injectivity (conditional on inverse witness)"]
+
   P2["Law II: Maxwell field dynamics"] --> HM["Hodge-Maxwell field equations"]
   CUR --> HM
   HM["dF = 0; d⋆F = source current"]
   HM --> FP["Sourced Maxwell field F_particles"]
+  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData"]
+  H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
+  H1 --> L2I["Law II representation encode injectivity (proved from decode∘encode)"]
 
   Z["Additional ZPF hypothesis"]
   Z0["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
@@ -25,19 +27,21 @@ flowchart TD
   HF --> FT
   FT --> FORCE["Field force / effective particle interaction"]
   FORCE --> P1
+  Z -. "additional hypothesis; not Maxwell-derived" .-> H0
 
   P3["Law III: variational / virtual-work admissibility"] --> PI["Explicit physics → learner interface witness"]
   FORCE --> PI
   P3 --> PI
+  P3 --> L3D["Law III exact representation witness"]
+  L3D --> L3I["Law III representation encode injectivity (conditional on inverse witness)"]
   PI -. "not entailed by learner algebra alone" .-> D
 
-  HM --> H0["ContinuousHodgeMaxwellExactRepresentationData"]
-  Z --> H0
-  H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
-  GI --> H1
+  B4["Law IV: canonical GRU statistical representation"] --> GI["CanonicalGRUStatisticalInjectivityTheorem (closed)"]
+  GI --> GD["Distinct GRU states remain statistically distinguishable"]
+  GD --> GS["Step closure: gruStep preserves the exact injective representation"]
+
   H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
   D --> HB
-
   HB --> HC["Encoded learner-step conjugacy"]
   H1 --> HI["Global StateIsomorphism / encode injectivity"]
 
@@ -48,8 +52,12 @@ flowchart TD
   E --> H
 
   H --> I["Representation / factor structure"]
+  L1I -. "representation-level distinguishability" .-> I
+  L2I -. "representation-level distinguishability" .-> I
+  L3I -. "representation-level distinguishability" .-> I
+  GI -. "canonical GRU-state distinguishability" .-> I
   HI -. "preserves state distinguishability" .-> I
-  GI -. "preserves canonical GRU-state distinguishability" .-> I
+
   HI -. "does not entail" .-> J2["Convergence"]
   HI -. "does not entail" .-> K["Fixed point"]
   H -. "does not entail" .-> J2
@@ -75,17 +83,12 @@ flowchart TD
   HI -. "cannot discharge" .-> W
   GI -. "cannot discharge" .-> W
 
-  X["F4 linear forcing is not an optimizer-unique mechanism"] -.-> Y["Persistent nonzero increments can drift in many optimizers"]
-
-  A4 -. "cannot be created by graphing alone" .-> G4["Actual Agda Law IV theorem requires an Agda declaration and proof term"]
-  G4 -. "not supplied by graph-only completion" .-> A4
-
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
-    B1["Law II = differential-form Maxwell content"]
-    B2["ZPF = additional spectral / stochastic hypothesis"]
-    B3["Global injectivity = exact representation property"]
-    B4b["No claim that Maxwell alone proves ω³ ZPF"]
-    B5["Law IV injectivity = exact GRU representation theorem, not a convergence or probability-existence theorem"]
+    B1["Law I injectivity = exact representation property, conditional on an explicit inverse witness"]
+    B2["Law II injectivity = exact Hodge-Maxwell representation property, proved from decode∘encode"]
+    B3["Law III injectivity = exact representation property, conditional on an explicit inverse witness"]
+    B4b["Law IV injectivity = closed GRU statistical representation theorem"]
+    B5["ZPF ω³ spectrum = additional stochastic/spectral hypothesis, not derived by injectivity"]
     B1 --> B2
     B2 --> B3
     B3 --> B4b
