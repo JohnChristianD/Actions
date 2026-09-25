@@ -35,47 +35,31 @@ let script = merge {
     grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     set -euo pipefail
-    graph=docs/economics/economic-egraph-emergent-arrow-debreu.mmd
+    graph=docs/research/current-semantic-emergence-2026-09-25.mmd
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    sync=.ci/discovery/theorem-monolith-egraph-sync.json
-    [ -f "$graph" ] || { echo "missing economic closure graph"; exit 1; }
+    learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+    readme=README.md
+    wiki=docs/wiki.md
+    [ -f "$graph" ] || { echo "missing current semantic emergence graph"; exit 1; }
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
-    [ -f "$sync" ] || { echo "missing theorem/e-graph sync report"; exit 1; }
+    [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
+    [ -f "$readme" ] || { echo "missing README"; exit 1; }
+    [ -f "$wiki" ] || { echo "missing repository wiki"; exit 1; }
 
-    for node in       EconomicStructure FeasibleAllocations PreferenceChoice Production       DemandCostKernel FirstWelfare ParetoOptimal FeasibleFirmPlans       ProfitOptimalSupply AggregateResourceBalance DemandWitness MarketClearing       DerivedPrice GeneralizedWalrasianEquilibrium ClassicalSpecializationGate       ArrowDebreuSpecialization
+    for node in       "Canonical learner definitions"       "Exact recurrent scan / composition"       "NormPair quotient / factor transition"       "Exact F4 optimizer stability"       "F4 unit-forcing growth ray"       "No unconditional infinite-horizon F4 upper bound"       "Canonical F4 × NormPair unconditional factor stability"       "Competitive production economy"       "Feasible firm production plans"       "Profit-maximizing production"       "Aggregate resource balance"       "Market clearing"       "Walrasian existence"
     do
-      grep -Fq "\"$node\"" "$graph" || { echo "graph node missing: $node"; exit 1; }
+      grep -Fq "$node" "$graph" || { echo "current graph node missing: $node"; exit 1; }
     done
 
-    grep -Fq 'FiniteCompetitiveProductionClosure' "$theorem" || { echo "production seam missing"; exit 1; }
-    grep -Fq 'EconomicEquilibriumClosureGraph' "$theorem" || { echo "closure graph contract missing"; exit 1; }
-    grep -Fq 'productionToSupply' "$theorem" || { echo "supply edge missing"; exit 1; }
-    grep -Fq 'aggregateBalanceToMarketClearing' "$theorem" || { echo "clearing edge missing"; exit 1; }
-    grep -Fq 'dualSeparationToDerivedPrice' "$theorem" || { echo "price edge missing"; exit 1; }
-    grep -Fq 'derivedPriceToGeneralizedEquilibrium' "$theorem" || { echo "generalized-equilibrium edge missing"; exit 1; }
-    grep -Fq 'generalizedEquilibriumToClassicalSpecialization' "$theorem" || { echo "Arrow-Debreu gate missing"; exit 1; }
-    grep -Fq 'TopologicalConvergenceWitness' "$theorem" || { echo "topological convergence witness missing"; exit 1; }
-    grep -Fq 'FixedPointExistenceFromConvergence' "$theorem" || { echo "fixed-point existence closure missing"; exit 1; }
-    grep -Fq 'GeneralizedWalrasianFixedPointClosure' "$theorem" || { echo "economic fixed-point bridge missing"; exit 1; }
-    grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point' "$theorem" || { echo "topological economic existence theorem missing"; exit 1; }
-    grep -Fq 'generalizedWalrasianExistence-from-topological-fixed-point-transport' "$theorem" || { echo "transported topological economic existence theorem missing"; exit 1; }
-    grep -Fq 'gruf4EconomicInjectivityFromGlobalSquare' "$theorem" || { echo "GRU-F4 economic injectivity bridge missing"; exit 1; }
-    grep -Fq 'topologicalConvergenceWitness-from-finite-rank-stability' "$theorem" || { echo "finite-rank to convergence bridge missing"; exit 1; }
-    grep -Fq 'canonicalFullLearner-no-finite-rank-stability' "$theorem" || { echo "canonical learner finite-rank obstruction missing"; exit 1; }
-    graph="docs/economics/economic-egraph-emergent-arrow-debreu.mmd"
-    grep -Fq 'Unconditional single-pass target' "$graph" || { echo "unconditional target graph missing"; exit 1; }
-    grep -Fq 'Convergence from economic assumptions' "$graph" || { echo "unconditional convergence seam missing"; exit 1; }
-    grep -Fq 'Fixed-point -> equilibrium from economic primitives' "$graph" || { echo "unconditional equilibrium seam missing"; exit 1; }
-    grep -Fq 'FRONTIER' "$graph" || { echo "unconditional frontier status missing"; exit 1; }
-    if grep -Fq 'unconditional-closed' "$graph" &&        ! grep -Fq 'EconomicConvergenceFromPrimitiveAssumptions' "$theorem"; then
-      echo "unconditional closure claimed without convergence proof"
-      exit 1
-    fi
-    if grep -Fq 'unconditional-closed' "$graph" &&        ! grep -Fq 'FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions' "$theorem"; then
-      echo "unconditional closure claimed without fixed-point equilibrium proof"
-      exit 1
-    fi
-    grep -Fq 'isomorphismIterateFixedPointTransport' "$theorem" || { echo "iterate fixed-point transport missing"; exit 1; }
+    for symbol in       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
+    do
+      grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
+    done
+
+    grep -Fq 'does not entail' "$graph" || { echo "economic non-implication boundary missing"; exit 1; }
+    grep -Fq 'independent economic hypotheses' "$graph" || { echo "economic assumption boundary missing"; exit 1; }
+    grep -Fq 'Canonical F4 × NormPair unconditional factor stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
+    grep -Fq 'Universal non-existence' "$wiki" || { echo "wiki stale or missing countermodel boundary"; exit 1; }
 
     law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
