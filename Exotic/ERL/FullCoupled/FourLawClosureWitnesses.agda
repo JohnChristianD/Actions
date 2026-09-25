@@ -12,7 +12,6 @@
 module Exotic.ERL.FullCoupled.FourLawClosureWitnesses where
 
 open import Relation.Binary.PropositionalEquality using (_≡_)
-open import Data.Product using (_×_)
 
 record LawIPhysicsWitness
   (LearnerState PhysicalState Current : Set) : Set₁ where
@@ -30,7 +29,9 @@ record LawIPhysicsWitness
       ∀ p → current (trajectory p) ≡ current p
 
 record LawIIIVariationalWitness
-  (LearnerState PhysicalState Variation Action : Set) : Set₁ where
+  (LearnerState PhysicalState Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary : PhysicalState → Set) : Set₁ where
   constructor lawIIIVariationalWitness
   field
     encode : LearnerState → PhysicalState
@@ -40,9 +41,9 @@ record LawIIIVariationalWitness
     variation : PhysicalState → Variation
     action : PhysicalState → Action
     admissibleVariation :
-      ∀ p → variation p ≡ variation p
+      ∀ p → Admissible (variation p)
     stationary :
-      ∀ p → action p ≡ action p
+      ∀ p → Stationary p
 
 record PhysicsToLearnerTransitionWitness
   (LearnerState PhysicalState : Set)
@@ -62,6 +63,8 @@ record PhysicsToLearnerTransitionWitness
 
 record FourLawOneStepWitnessContract
   (LearnerState PhysicalState Current Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary : PhysicalState → Set)
   (learnerStep : LearnerState → LearnerState)
   (physicalStep : PhysicalState → PhysicalState) : Set₁ where
   constructor fourLawOneStepWitnessContract
@@ -77,6 +80,8 @@ record FourLawOneStepWitnessContract
         PhysicalState
         Variation
         Action
+        Admissible
+        Stationary
     physicsToLearner :
       PhysicsToLearnerTransitionWitness
         LearnerState
@@ -85,8 +90,7 @@ record FourLawOneStepWitnessContract
         physicalStep
 
 ------------------------------------------------------------------------
--- No inhabitant is supplied here. In particular, reflexive placeholder
--- fields above are contract checks only; they do not assert that a real
--- physical trajectory, current, admissible variation, action, or
--- physics-to-learner map exists for the canonical learner.
+-- No inhabitant is supplied here. The admissibility and stationarity
+-- predicates are explicit semantic obligations; this contract does not
+-- manufacture them from learner algebra.
 ------------------------------------------------------------------------
