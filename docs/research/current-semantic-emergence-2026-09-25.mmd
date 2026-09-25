@@ -1,5 +1,5 @@
 flowchart TD
-  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws + explicit ZPF hypothesis"]
+  A["Canonical learner definitions"] --> B["Three exact MARL-facing laws + explicit graph-level Law IV hypothesis"]
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
   C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
   D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
@@ -11,7 +11,7 @@ flowchart TD
   HM["dF = 0; d⋆F = source current"]
   HM --> FP["Sourced Maxwell field F_particles"]
 
-  P4["Law IV: ZPF background-field / spectral hypothesis"]
+  P4["Law IV: ZPF background-field / spectral hypothesis (graph-only; not an Agda theorem)"]
   Z["F_ZPF: homogeneous isotropic stochastic Maxwell field"]
   ZS["ω³ spectral law"]
   P4 --> Z --> ZS
@@ -19,6 +19,9 @@ flowchart TD
   FP --> FT["Total field F_total = F_particle + F_ZPF"]
   Z --> FT
   HF --> FT
+
+  A4["Agda status: no Law IV / ZPF declaration or proof is present in the current Agda monoliths"]
+  P4 -. "status boundary" .-> A4
 
   FT --> FORCE["Field force / effective particle interaction"]
   FORCE --> P1
@@ -32,7 +35,8 @@ flowchart TD
 
   HM --> H0["ContinuousHodgeMaxwellExactRepresentationData
 dF = 0; d⋆F = source"]
-  Z -. "additional spectral/background hypothesis" .-> H0
+  Z -. "additional graph-level spectral/background hypothesis" .-> H0
+  H0 -. "does not make Law IV an Agda theorem" .-> A4
   H0 --> H1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]
   H1 --> HB["CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"]
   D --> HB
@@ -74,10 +78,12 @@ dF = 0; d⋆F = source"]
 
   subgraph SEMANTIC_BOUNDARY["Strict semantic boundary"]
     B1["Law II = differential-form Maxwell content"]
-    B2["Law IV / ZPF = additional spectral / stochastic hypothesis"]
+    B2["Law IV / ZPF = additional spectral / stochastic hypothesis, represented here only in the graph"]
     B3["Global injectivity = exact representation property"]
     B4["No claim that Maxwell alone proves ω³ ZPF"]
+    B5["Law IV is not currently part of Agda proof authority"]
     B1 --> B2
     B2 --> B3
     B3 --> B4
+    B4 --> B5
   end
