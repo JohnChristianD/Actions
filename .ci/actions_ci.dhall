@@ -37,6 +37,7 @@ let script = merge {
     set -euo pipefail
     graph=docs/research/current-semantic-emergence-2026-09-25.mmd
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    sync=.ci/discovery/theorem-monolith-egraph-sync.json
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     readme=README.md
     wiki=docs/wiki.md
@@ -89,6 +90,7 @@ let script = merge {
       printf '%s\n' '{'
       printf '  "source_graph": "%s",\n' "$graph"
       printf '  "theorem_source": "%s",\n' "$theorem"
+      printf '  "learner_source": "%s",\n' "$learner"
       printf '  "semantic_law_count": %s,\n' "$law_count"
       printf '  "record_count": %s,\n' "$record_count"
       printf '  "top_level_declaration_count": %s,\n' "$declaration_count"
@@ -99,21 +101,23 @@ let script = merge {
       printf '  "surface_authority": "TheoremsMonolith.agda",\n'
       printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\n'
       printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\n'
-      printf '  "frontier_edges": [\n'
-      printf '    "production primitives -> feasible firm plans -> profit-optimal supply",\n'
-      printf '    "supply + demand + resources -> aggregate resource balance -> market clearing",\n'
-      printf '    "convex/separation/fixed-point certificate -> derived price",\n'
-      printf '    "derived price + clearing -> generalized equilibrium",\n'
-      printf '    "generalized equilibrium -> classical specialization gate",\n'
-      printf '    "classical specialization assumptions -> ArrowDebreuSpecialization"\n'
+      printf '  "closed_core": [\n'
+      printf '    "CanonicalNormPairQuotientFactorTransitionTheorem",\n'
+      printf '    "CanonicalF4GlobalOptimizerStabilityTheorem",\n'
+      printf '    "CanonicalF4NormPairUnconditionalFactorStabilityTheorem",\n'
+      printf '    "f4-unit-forcing-linear-growth",\n'
+      printf '    "f4-unit-forcing-no-upper-bound"\n'
       printf '  ],\n'
-      printf '  "conditional_compositions": [\n'
-      printf '    "TopologicalConvergenceWitness -> FixedPointExistenceFromConvergence -> GeneralizedWalrasianExistence",\n'
-      printf '    "StateIsomorphism + isomorphismIterateConjugacy -> transported fixed point",\n'
-      printf '    "transported fixed point + GeneralizedWalrasianFixedPointClosure -> GeneralizedWalrasianExistence"\n'
+      printf '  "economic_boundary": [\n'
+      printf '    "learner factor stability does not entail convergence",\n'
+      printf '    "learner factor stability does not entail a fixed point",\n'
+      printf '    "learner factor stability does not entail market clearing",\n'
+      printf '    "learner factor stability does not entail supporting prices",\n'
+      printf '    "learner factor stability does not entail Walrasian existence"\n'
       printf '  ],\n'
-      printf '  "counterexample_policy": "boundary/counterexample declarations remain graph nodes and block promotion of unsupported implications",\n'
-      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic economic projection; JSON is machine evidence and TSV/Mermaid are derived views"\n'
+      printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\n'
+      printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\n'
+      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic semantic projection; JSON/TSV/Mermaid are derived evidence views"\n'
       printf '%s\n' '}'
     } > .ci/discovery/economic-closure-graph.json
 
