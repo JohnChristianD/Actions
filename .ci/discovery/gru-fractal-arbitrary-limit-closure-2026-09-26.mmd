@@ -8,7 +8,9 @@ flowchart TD
   COMPAT["Transport / encoding compatibility"] --> COMP
   COMP --> APP["Compatible approximation sequence"]
   APP --> LIM["Limit representation exists"]
-  LIM --> LINV["Limit-surviving left inverse"]
+  LIM --> PROJ["Limit projections to finite observations"]
+  PROJ --> COH["Coherent finite decoders"]
+  COH --> LINV["Limit-surviving left inverse"]
   LINV --> SEP["Limit separation (derived)"]
   SEP --> ALI["Arbitrary-limit GRU-injective closure"]
   APP -. "not sufficient alone" .-> BAD["Limit may collapse distinct states"]
