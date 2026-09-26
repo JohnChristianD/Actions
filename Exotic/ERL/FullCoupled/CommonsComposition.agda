@@ -17,7 +17,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
 open import Data.Product using (_,_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Unit using (⊤; tt)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans)
 open import Relation.Nullary using (¬_)
 
 open import Exotic.ERL.FullCoupled.TheoremsMonolith public
