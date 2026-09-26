@@ -28,6 +28,7 @@ The current Agda inventory is:
 - `EGraphSemanticTransport.agda` — proof-only e-graph and A*-cost transport kernel.
 - `FourLawClosureWitnesses.agda` — explicit physical witness contracts.
 - `FourLawClosureImpossibility.agda` — generic non-derivability boundary for those contracts.
+- `CommonsComposition.agda` — nested/self-similar commons preservation boundary and counterexample.
 - `GRUStatisticalInjectivity.agda` — canonical statistical/injectivity adapter.
 - `GRUFractalInjectiveComposition.agda` — generic level/refinement/transport kernel for GRU-injective fractal composition.
 - `GRUFractalInjectiveCompositionCanonical.agda` — canonical Nat-indexed scale-invariant GRU instantiation.
@@ -63,7 +64,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 30 files.
+Generated from the tracked Markdown surface: 31 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -81,6 +82,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
 - [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
+- [Unconditional tragedy-of-the-commons non-derivability — 2026-09-26](docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md)
 - [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
 - [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
