@@ -366,7 +366,7 @@ JSON
     canonical-gruf4-norm-watkins-prefix-composition-theorem
     FreeMonoidActionHomomorphism
     freeMonoidActionHomomorphism-from-square
-    canonicalClock-freeMonoidActionHomomorphism
+    canonicalCount-freeMonoidActionHomomorphism
     ExactNatObservationSimulation
     ContinuousLeftInverseTheorem
     canonicalRingStateInjective
