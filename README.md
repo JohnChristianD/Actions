@@ -36,6 +36,7 @@ The current Agda inventory is:
 - `GRUFractalLimitClosure.agda` — arbitrary-limit approximation/separation closure boundary.
 - `GRUFractalEGraphAStarLimitComposition.agda` — derives limit separation/injectivity from a surviving left inverse and reuses the proof-only e-graph/A* soundness kernel.
 - `GRUFractalLimitDecoderSurvival.agda` — derives a limit left inverse from coherent finite decoder projections.
+- `TheoremsMonolith.agda` — also exposes the canonical Integer-GRU token encoding global left inverse, injectivity, discrete-topology continuity, and recurrent conjugacy as one typed composition.
 - `ZPFStatisticalRepresentation.agda` — typed ZPF/ω³ Maxwell-statistical boundary and conditional global ZPF→GRU injectivity adapter.
 - `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
 - `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
@@ -90,6 +91,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
 - [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
 - [GRU fractal arbitrary-limit closure — 2026-09-26](docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md)
+- [Canonical Integer-GRU global left-inverse and conjugacy closure — 2026-09-26](docs/research/canonical-integer-gru-global-left-inverse-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
 - [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
 - [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
