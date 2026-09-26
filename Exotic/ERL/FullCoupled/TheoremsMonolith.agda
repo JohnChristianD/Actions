@@ -54,7 +54,6 @@ open import Exotic.ERL.FullCoupled.ZPFStatisticalRepresentation
 open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
 open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
 open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
-open import Exotic.ERL.FullCoupled.CarrierPolymorphicFrontier public
 
 record CanonicalAQLoopTheorem : Set₁ where
   constructor canonicalAQLoopTheorem
@@ -4702,6 +4701,119 @@ noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
   theorem =
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
+
+
+------------------------------------------------------------------------
+-- Generic strict-progress core.
+--
+-- Kept here, rather than in a companion Agda module, so the theorem
+-- monolith remains the single authoritative theorem consumer. The relation
+-- only needs transitivity and irreflexivity; no bounded Fin n carrier and no
+-- clock coordinate are required.
+------------------------------------------------------------------------
+
+iterateStep :
+  ∀ {State : Set} →
+  (State → State) →
+  Nat →
+  State →
+  State
+iterateStep step zero s = s
+iterateStep step (suc n) s = step (iterateStep step n s)
+
+record StrictProgressWitness
+  (State Measure : Set)
+  (step : State → State)
+  (_<_ : Measure → Measure → Set) : Set₁ where
+  constructor strictProgressWitness
+  field
+    measure : State → Measure
+    stepProgress :
+      ∀ s →
+      measure s < measure (step s)
+    transitive :
+      ∀ {a b c} →
+      a < b →
+      b < c →
+      a < c
+    irreflexive :
+      ∀ a →
+      ¬ (a < a)
+
+open StrictProgressWitness public
+
+strictProgressAfterIterate :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_)
+  (n : Nat)
+  (s : State) →
+  measure W s <
+  measure W (iterateStep step (suc n) s)
+strictProgressAfterIterate W zero s =
+  stepProgress W s
+strictProgressAfterIterate W (suc n) s =
+  transitive W
+    (stepProgress W s)
+    (strictProgressAfterIterate W n (step W s))
+
+noPositiveFiniteCycleFromStrictProgress :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_)
+  (n : Nat)
+  (s : State) →
+  iterateStep step (suc n) s ≡ s →
+  ⊥
+noPositiveFiniteCycleFromStrictProgress W n s eq =
+  irreflexive W
+    (measure W s)
+    (subst
+      (λ t → measure W s < measure W t)
+      eq
+      (strictProgressAfterIterate W n s))
+
+canonicalTotalCountStepProgress :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (s : C.FullLearnerState A) →
+  C.totalCount (C.lcbCounts s) <
+  C.totalCount (C.lcbCounts (C.canonicalFullStep K s))
+canonicalTotalCountStepProgress K s =
+  subst
+    (λ t → C.totalCount (C.lcbCounts s) < t)
+    (C.canonicalTotalCountStep K s)
+    (natSucProgress (C.totalCount (C.lcbCounts s)))
+
+canonicalTotalCountStrictProgress :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A) →
+  StrictProgressWitness
+    (C.FullLearnerState A)
+    Nat
+    (C.canonicalFullStep K)
+    _<_
+canonicalTotalCountStrictProgress K =
+  strictProgressWitness
+    (λ s → C.totalCount (C.lcbCounts s))
+    (λ s → canonicalTotalCountStepProgress K s)
+    <-trans
+    <-irrefl
+
+canonicalNoPositiveCycleFromTotalCount :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (n : Nat)
+  (s : C.FullLearnerState A) →
+  iterateStep (C.canonicalFullStep K) (suc n) s ≡ s →
+  ⊥
+canonicalNoPositiveCycleFromTotalCount K n s =
+  noPositiveFiniteCycleFromStrictProgress
+    (canonicalTotalCountStrictProgress K)
+    n
+    s
 
 
 ------------------------------------------------------------------------
