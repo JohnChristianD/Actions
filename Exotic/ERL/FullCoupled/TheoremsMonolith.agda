@@ -2006,6 +2006,41 @@ canonical-global-token-lm-composition-theorem =
     canonicalToken-prefix-monoid-homomorphism
     canonicalTokenLogitTrace-append
 
+record CanonicalTokenArbitraryLengthGenerationTheorem : Set₁ where
+  constructor canonicalTokenArbitraryLengthGenerationTheorem
+  field
+    stateConjugacy :
+      ∀ (xs : C.CanonicalTokenSequence) (s : C.GRUState) →
+      C.canonicalTokenListState xs s
+      ≡
+      C.recurrentListState
+        C.canonicalGRURecurrentNetwork
+        (C.canonicalTokenEncodeList xs)
+        s
+
+    traceAppend :
+      ∀ (K : C.CanonicalTokenLanguageModelKernel)
+      (xs ys : C.CanonicalTokenSequence)
+      (s : C.GRUState) →
+      C.canonicalTokenLogitTrace K (xs ++ ys) s
+      ≡
+      C.canonicalTokenLogitTrace K xs s ++
+      C.canonicalTokenLogitTrace K ys
+        (C.canonicalTokenListState xs s)
+
+    prefixMonoid :
+      RecurrentPrefixMonoidHomomorphism
+        C.GRUState
+        C.CanonicalToken
+
+canonical-token-arbitrary-length-generation-theorem :
+  CanonicalTokenArbitraryLengthGenerationTheorem
+canonical-token-arbitrary-length-generation-theorem =
+  canonicalTokenArbitraryLengthGenerationTheorem
+    canonicalTokenListState-conjugacy
+    canonicalTokenLogitTrace-append
+    canonicalToken-prefix-monoid-homomorphism
+
 canonicalIntegerHaarCross :
   C.int8Add C.one8 (C.int8Neg C.one8) ≡ C.zero8
 canonicalIntegerHaarCross = refl
