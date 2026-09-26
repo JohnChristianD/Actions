@@ -4,12 +4,14 @@
 
 The theorem monolith now contains an explicit interface-level impossibility boundary between individual local optimality and aggregate preservation of a shared resource.
 
-The formal countermodel is deliberately non-vacuous:
+The formal countermodel is deliberately non-vacuous and now carries the depletion quantities explicitly:
 
-- two agents share a one-unit resource stock;
-- each agent's individually optimal action is one unit of extraction;
-- aggregate extraction is therefore two units;
-- preservation is the capacity condition extraction ≤ stock, which fails.
+- two agents share a resource whose capacity is one unit;
+- each agent's individually optimal action extracts one unit;
+- the aggregate extraction field is explicitly two units;
+- the preservation predicate is the capacity condition `2 ≤ 1`, which is refuted constructively by `twoNotLeOne`.
+
+The theorem interface also exposes `resourceCapacity`, `extraction`, and `aggregateExtraction`, so the concrete witness is no longer just an arbitrary false preservation predicate.
 
 Core result:
 
@@ -19,7 +21,7 @@ with the concrete witness:
 
     twoAgentCommonsCounterexample
 
-The concrete witness therefore models the mechanism rather than making preserves an arbitrary empty predicate.
+The concrete witness therefore models the mechanism rather than making `preserves` an arbitrary empty predicate.
 
 ## Interpretation
 
