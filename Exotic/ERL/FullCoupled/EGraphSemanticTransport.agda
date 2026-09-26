@@ -174,17 +174,15 @@ eGraph-path-sound R (path-step h rest) =
   trans (sound R h) (eGraph-path-sound R rest)
 
 data SemanticEdgeStatus : Set where
-  semanticProved
-  semanticConditional
-  semanticFrontier
-  semanticBlockedByCounterexample :
-  SemanticEdgeStatus
+  semanticProved : SemanticEdgeStatus
+  semanticConditional : SemanticEdgeStatus
+  semanticFrontier : SemanticEdgeStatus
+  semanticBlockedByCounterexample : SemanticEdgeStatus
 
 data SemanticEdgeEvidence : Set where
-  kernelProof
-  discoveryArtifact
-  externalLiterature :
-  SemanticEdgeEvidence
+  kernelProof : SemanticEdgeEvidence
+  discoveryArtifact : SemanticEdgeEvidence
+  externalLiterature : SemanticEdgeEvidence
 
 record SemanticEdgeMetadata : Set₁ where
   constructor semanticEdgeMetadata
