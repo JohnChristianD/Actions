@@ -206,6 +206,8 @@ record CertifiedEGraphEdge
     metadata : SemanticEdgeMetadata
     path : EGraphSemanticPath R lhs rhs
 
+open CertifiedEGraphEdge public
+
 eGraph-certified-edge-sound :
   ∀ {Expression State : Set}
   {R : EGraphSemanticInterpretation Expression State}
