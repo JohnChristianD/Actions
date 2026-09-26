@@ -48,6 +48,31 @@ open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; cong)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong)
+open import Data.Product using (_×_; _,_; proj₁)
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; sym; trans)
+open import Agda.Builtin.Bool using (Bool; true; false)
+open import Agda.Builtin.String using (String)
+open import Data.List using (List)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
+open import Relation.Binary.PropositionalEquality using (_≡_)
+open import Relation.Binary.PropositionalEquality using (_≡_; cong; trans)
+open import Data.List using (List; []; _∷_)
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
+open import Relation.Binary.PropositionalEquality using (_≡_; cong; trans; sym)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _≤_; z≤n)
+open import Relation.Binary.PropositionalEquality using (refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; cong; sym; trans)
+open import Data.Nat using (Nat; zero)
+open import Agda.Builtin.Bool using (Bool; false; true)
+open import Agda.Builtin.Unit using (⊤; tt)
+open import Data.Product using (_,_)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans)
+open import Relation.Nullary using (¬_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity public
 open import Exotic.ERL.FullCoupled.ZPFStatisticalRepresentation
@@ -658,26 +683,6 @@ data RepositoryAgdaModule : Set where
   canonicalLearnerMonolith :
     RepositoryAgdaModule
   theoremsMonolith :
-    RepositoryAgdaModule
-  eGraphSemanticTransport :
-    RepositoryAgdaModule
-  fourLawClosureWitnesses :
-    RepositoryAgdaModule
-  fourLawClosureImpossibility :
-    RepositoryAgdaModule
-  gruStatisticalInjectivity :
-    RepositoryAgdaModule
-  commonsComposition :
-    RepositoryAgdaModule
-  gruFractalInjectiveComposition :
-    RepositoryAgdaModule
-  gruFractalInjectiveCompositionCanonical :
-    RepositoryAgdaModule
-  zpfStatisticalRepresentation :
-    RepositoryAgdaModule
-  tsallisStatisticalRepresentation :
-    RepositoryAgdaModule
-  repositorySemanticEGraphClosure :
     RepositoryAgdaModule
 
 record AgdaSemanticModuleFamily : Set₁ where
