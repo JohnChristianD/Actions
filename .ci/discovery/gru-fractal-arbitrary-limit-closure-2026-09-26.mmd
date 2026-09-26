@@ -1,22 +1,44 @@
 flowchart TD
   GI["GRU decode-after-encode"] --> LI["Local GRU injectivity"]
-  LI --> IDX["Level-indexed injectivity"]
+  LI --> GGI["Global GRU injectivity from left inverse"]
+  GGI --> IDX["Level-indexed injectivity"]
   REF["Explicit level refinement"] --> TR["Injective inter-level transport"]
   IDX --> COMP["Finite/indexed GRU-injective fractal composition"]
   TR --> COMP
   COMPAT["Transport / encoding compatibility"] --> COMP
   COMP --> APP["Compatible approximation sequence"]
   APP --> LIM["Limit representation exists"]
-  LIM --> SEP["Limit separation / surviving left inverse"]
+  LIM --> LINV["Limit-surviving left inverse"]
+  LINV --> SEP["Limit separation (derived)"]
   SEP --> ALI["Arbitrary-limit GRU-injective closure"]
   APP -. "not sufficient alone" .-> BAD["Limit may collapse distinct states"]
   LIM -. "not sufficient alone" .-> BAD
   BAD -. "boundary" .-> ALI
+
+  subgraph SEARCH["Proof-authoritative e-graph + A*"]
+    EG["EGraphSemanticInterpretation"] --> PATH["EGraphSemanticPath"]
+    COST["AStarCostModel<br/>cost + heuristic"] --> ASTAR["A*-guided traversal"]
+    PATH --> ASTAR
+    ASTAR --> SOUND["eGraph-path-sound"]
+  end
+
+  GGI --> SEARCH
+  COMP --> SEARCH
+  LINV --> SEARCH
+  SOUND -. "discovery only; equality remains Agda proof" .-> ALI
+
   NS["AI-formalized Navier–Stokes forced blow-up"] --> CONT["Global smooth continuation can fail"]
   CONT -. "boundary reference" .-> LIM
   NS -. "not a GRU/fractal inhabitant" .-> ALI
-  subgraph NEED["Needed for a positive limit theorem"]
-    SEP --> UB["Uniform separation / injective limit operator"]
-    SEP --> INV["Limit-surviving left inverse"]
-    SEP --> OBS["Domain-specific observability"]
+
+  subgraph PHYS["Four-physics-law fractal interpretation"]
+    L1["Law-I trajectory/current witness"] --> PGRU["Physics→GRU transition"]
+    L3["Law-III variational witness"] --> PGRU
+    PGRU --> COMP
+    NS -. "continuation boundary" .-> PGRU
+  end
+
+  subgraph ECON["Economic boundary"]
+    COMP --> EREP["Economic representation adapter"]
+    EREP -. "does not manufacture" .-> EQ["Market clearing / price / equilibrium"]
   end
