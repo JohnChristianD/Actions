@@ -76,9 +76,9 @@ let script = merge {
     grep -Fq 'suc (suc zero) ≤ suc zero' "$theorem" || { echo "commons capacity violation missing"; exit 1; }
     grep -Fq 'Canonical F4 × NormPair unconditional factor stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
     grep -Fq 'Repository-wide semantic e-graph closure' "$readme" || { echo "README stale or missing e-graph closure"; exit 1; }
-    grep -Fq 'AStarSemanticClosure' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "A* semantic closure kernel missing"; exit 1; }
+    grep -Fq 'AStarSemanticClosure' "$theorem" || { echo "A* semantic closure kernel missing"; exit 1; }
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
-    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
+    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
     grep -Fq 'StrictProgressRelation' "$theorem" || { echo "strict progress relation kernel missing"; exit 1; }
     [ ! -f Exotic/ERL/FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
@@ -90,14 +90,14 @@ let script = merge {
     grep -Fq 'FiniteCandidateDecision' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "finite candidate decision kernel missing"; exit 1; }
     grep -Fq 'finiteCandidatePriceSearch' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "finite candidate price search kernel missing"; exit 1; }
     [ -f docs/research/unconditional-finite-price-kernel-2026-09-26.md ] || { echo "finite candidate price research note missing"; exit 1; }
-    grep -Fq 'CertifiedEGraphEdge' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "e-graph certificate surface missing"; exit 1; }
-    grep -Fq "naive-limit-injectivity-impossible" Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceImpossibility.agda || { echo "limit impossibility theorem missing"; exit 1; }
+    grep -Fq 'CertifiedEGraphEdge' "$theorem" || { echo "e-graph certificate surface missing"; exit 1; }
+    grep -Fq "naive-limit-injectivity-impossible" "$theorem" || { echo "limit impossibility theorem missing"; exit 1; }
     [ -f .ci/discovery/real-semantic-egraph-2026-09-26.mmd ] || { echo "real semantic e-graph graph missing"; exit 1; }
     [ -f docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md ] || { echo "real semantic e-graph research note missing"; exit 1; }
     [ -f docs/research/theorem-improvement-completion-2026-09-26.md ] || { echo "theorem improvement research note missing"; exit 1; }
     [ -f .ci/discovery/theorem-improvement-completion-2026-09-26.mmd ] || { echo "theorem improvement graph missing"; exit 1; }
 
-    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
+    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
     for module in canonicalLearnerMonolith theoremsMonolith
     do
       grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
