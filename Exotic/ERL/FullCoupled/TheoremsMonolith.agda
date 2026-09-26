@@ -5290,14 +5290,14 @@ record CommonsPreservationDerivation
   (action : World → Agent → Action)
   (extraction : Action → Nat)
   (aggregateExtraction : World → Nat)
-  (localOptimal : World → Agent → Action → Set)
-  (preserves : World → Set) : Set₁ where
+  (localOptimal : World → Agent → Action → Set) : Set₁ where
   constructor commonsPreservationDerivation
   field
     derive :
       ∀ w →
       (∀ a → localOptimal w a (action w a)) →
-      preserves w
+      aggregateExtraction w ≤
+      resourceCapacity (sharedResource w)
 
 open CommonsPreservationDerivation public
 
@@ -5314,7 +5314,6 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
     extraction : Action → Nat
     aggregateExtraction : World → Nat
     localOptimal : World → Agent → Action → Set
-    preserves : World → Set
     commonsWorld : World
     commonResource :
       sharedResource commonsWorld
@@ -5334,8 +5333,6 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
     capacityIsOne :
       resourceCapacity (sharedResource commonsWorld) ≡
       suc zero
-    notPreserved :
-      ¬ preserves commonsWorld
 
 open CommonsNonDerivabilityCounterexample public
 
@@ -5352,12 +5349,17 @@ noUnconditionalCommonsPreservation :
       (extraction C)
       (aggregateExtraction C)
       (localOptimal C)
-      (preserves C)
 noUnconditionalCommonsPreservation C D =
-  notPreserved C
-    (derive D
-      (commonsWorld C)
-      (allLocallyOptimal C))
+  twoNotLeOne
+    (subst
+      (λ n → n ≤ suc zero)
+      (sym (capacityIsOne C))
+      (subst
+        (λ n → suc (suc zero) ≤ n)
+        (sym (aggregateExtractionIsTwo C))
+        (derive D
+          (commonsWorld C)
+          (allLocallyOptimal C))))
 
 twoNotLeOne :
   ¬ suc (suc zero) ≤ suc zero
@@ -5377,14 +5379,11 @@ twoAgentCommonsCounterexample =
     (λ _ → suc zero)
     (λ _ → suc (suc zero))
     (λ _ _ a → a ≡ inj₂ tt)
-    (λ _ →
-      suc (suc zero) ≤ suc zero)
     tt
     refl
     (λ _ → refl)
     (λ _ → refl)
     (λ _ → refl)
-    twoNotLeOne
 
 noUnconditionalCommonsPreservation-twoAgent :
   ¬ CommonsPreservationDerivation
@@ -5398,7 +5397,6 @@ noUnconditionalCommonsPreservation-twoAgent :
       (extraction twoAgentCommonsCounterexample)
       (aggregateExtraction twoAgentCommonsCounterexample)
       (localOptimal twoAgentCommonsCounterexample)
-      (preserves twoAgentCommonsCounterexample)
 noUnconditionalCommonsPreservation-twoAgent =
   noUnconditionalCommonsPreservation
     twoAgentCommonsCounterexample
