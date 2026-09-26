@@ -4,13 +4,12 @@
 
 The theorem monolith now contains an explicit interface-level impossibility boundary between individual local optimality and aggregate preservation of a shared resource.
 
-The new theorem says that, for a countermodel carrying:
+The formal countermodel is deliberately non-vacuous:
 
-- a shared resource;
-- locally optimal actions for every agent; and
-- failure of the aggregate preservation predicate;
-
-there is no unconditional derivation from universal local optimality to preservation.
+- two agents share a one-unit resource stock;
+- each agent's individually optimal action is one unit of extraction;
+- aggregate extraction is therefore two units;
+- preservation is the capacity condition extraction ≤ stock, which fails.
 
 Core result:
 
@@ -20,23 +19,25 @@ with the concrete witness:
 
     twoAgentCommonsCounterexample
 
+The concrete witness therefore models the mechanism rather than making preserves an arbitrary empty predicate.
+
 ## Interpretation
 
-This is intentionally stronger as a composition boundary than a claim about a particular empirical commons. It says that the semantic interface does not contain enough information to manufacture an aggregate sustainability conclusion from local optimality alone.
+This is a theorem about derivability from an interface, not a claim that every empirical commons collapses. It establishes that local optimality plus a shared-resource carrier does not, by itself, entail aggregate preservation.
 
-Therefore the graph must not contain an unconditional edge:
+Hence there must not be an unconditional graph edge:
 
     individual optimality -> commons preservation
 
-nor the stronger shortcut:
+Nor does market clearing alone supply the missing conservation mechanism:
 
-    individual optimality + market clearing -> commons preservation
+    individual optimality + market clearing -X-> commons preservation
 
-unless the missing coupling assumptions are made explicit.
+A positive theorem must expose additional coupling information.
 
 ## Positive routes
 
-A positive preservation theorem can instead expose one or more mechanisms such as:
+A preservation theorem can add, for example:
 
 - an aggregate resource constraint;
 - an internalized externality;
@@ -45,15 +46,24 @@ A positive preservation theorem can instead expose one or more mechanisms such a
 - a conservation invariant;
 - an explicit coordination condition.
 
-Those are conditional bridges, not consequences of local optimality by themselves.
+These are assumptions or mechanisms that connect individual actions to aggregate resource state. They are not consequences of local optimality alone.
 
 ## Relation to the existing economic graph
 
-The repository's economic topology already separates supply/demand from aggregate resource balance and market clearing. This new theorem adds a separate negative edge: market clearing or local optimization cannot silently be promoted into a commons-preservation theorem.
+The repository's economic topology already separates supply/demand from aggregate resource balance and market clearing. The commons boundary adds a distinct negative edge below the price/equilibrium layer.
 
-The resulting conceptual graph is:
+The conceptual composition is:
 
     local optimality
+         |
+         v
+    individual extraction
+         |
+         v
+    shared resource
+         |
+         v
+    aggregate extraction
          |
          X
          v
@@ -64,7 +74,13 @@ while a conditional route is:
     local optimality
          +
     explicit common-resource coupling
-         -> aggregate conservation
-         -> sustainable allocation
+         ->
+    aggregate conservation
+         ->
+    sustainable allocation
 
-This keeps the tragedy-of-the-commons boundary distinct from the canonical-price non-identifiability boundary: the former is about aggregate resource governance; the latter is about recovering a price from insufficient observations.
+This keeps the commons non-derivability boundary distinct from canonical-price non-identifiability: the former concerns local-to-global resource preservation; the latter concerns recovering a price from insufficient observations.
+
+## Literature boundary
+
+The formal result should not be read as the universal empirical claim that all common-pool resources are doomed. Elinor Ostrom's Nobel lecture explicitly discusses both overharvesting social dilemmas and cases where users self-organize to manage common-pool resources. The formal contribution here is narrower and compositional: without an explicit coupling mechanism in the theorem interface, preservation is not derivable from local optimality alone.
