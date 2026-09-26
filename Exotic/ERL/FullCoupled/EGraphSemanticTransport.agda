@@ -68,48 +68,6 @@ record EGraphSemanticInterpretation
 
 open EGraphSemanticInterpretation public
 
-data SemanticEdgeStatus : Set where
-  semanticProved
-  semanticConditional
-  semanticFrontier
-  semanticBlockedByCounterexample :
-  SemanticEdgeStatus
-
-data SemanticEdgeEvidence : Set where
-  kernelProof
-  discoveryArtifact
-  externalLiterature :
-  SemanticEdgeEvidence
-
-record SemanticEdgeMetadata : Set₁ where
-  constructor semanticEdgeMetadata
-  field
-    source : String
-    target : String
-    proofIdentifier : String
-    assumptions : List String
-    status : SemanticEdgeStatus
-    evidence : SemanticEdgeEvidence
-    unconditional : Bool
-
-record CertifiedEGraphEdge
-  {Expression State : Set}
-  (R : EGraphSemanticInterpretation Expression State)
-  (lhs rhs : Expression) : Set₁ where
-  constructor certifiedEGraphEdge
-  field
-    metadata : SemanticEdgeMetadata
-    path : EGraphSemanticPath R lhs rhs
-
-eGraph-certified-edge-sound :
-  ∀ {Expression State : Set}
-  {R : EGraphSemanticInterpretation Expression State}
-  {lhs rhs : Expression} →
-  CertifiedEGraphEdge R lhs rhs →
-  interpret R lhs ≡ interpret R rhs
-eGraph-certified-edge-sound edge =
-  eGraph-path-sound _ (path edge)
-
 ------------------------------------------------------------------------
 -- Basic semantic closure of graph equivalence.
 ------------------------------------------------------------------------
@@ -214,6 +172,49 @@ eGraph-path-sound :
 eGraph-path-sound R (path-refl e) = refl
 eGraph-path-sound R (path-step h rest) =
   trans (sound R h) (eGraph-path-sound R rest)
+
+data SemanticEdgeStatus : Set where
+  semanticProved
+  semanticConditional
+  semanticFrontier
+  semanticBlockedByCounterexample :
+  SemanticEdgeStatus
+
+data SemanticEdgeEvidence : Set where
+  kernelProof
+  discoveryArtifact
+  externalLiterature :
+  SemanticEdgeEvidence
+
+record SemanticEdgeMetadata : Set₁ where
+  constructor semanticEdgeMetadata
+  field
+    source : String
+    target : String
+    proofIdentifier : String
+    assumptions : List String
+    status : SemanticEdgeStatus
+    evidence : SemanticEdgeEvidence
+    unconditional : Bool
+
+record CertifiedEGraphEdge
+  {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State)
+  (lhs rhs : Expression) : Set₁ where
+  constructor certifiedEGraphEdge
+  field
+    metadata : SemanticEdgeMetadata
+    path : EGraphSemanticPath R lhs rhs
+
+eGraph-certified-edge-sound :
+  ∀ {Expression State : Set}
+  {R : EGraphSemanticInterpretation Expression State}
+  {lhs rhs : Expression} →
+  CertifiedEGraphEdge R lhs rhs →
+  interpret R lhs ≡ interpret R rhs
+eGraph-certified-edge-sound edge =
+  eGraph-path-sound _ (path edge)
+
 
 record AStarSemanticClosure
   (Expression State : Set) : Set₁ where
