@@ -47,3 +47,8 @@ A theorem name appearing only in a historical graph, stale registry, or narrativ
 ## Unattended ownership
 
 Dhall owns CI composition, Nix owns the reproducible execution environment, Mercury owns semantic extraction/freshness/e-graph saturation, and Agda remains the proof authority. The frontier-target list is only the set of names whose freshness is being queried; it is not the source of truth for theorem existence.
+
+
+## Preserved canonical limit-composition seam
+
+The current mainline retains `CanonicalIntegerGRUFractalLimitCompositionTheorem` as a live composition target. It combines the proved global Integer-GRU representation with an explicitly supplied `GRUFractalLimitCompositionKernel` and derives limit injectivity from the surviving left inverse. This preserves the mathematical contribution of the superseded PR #120 without reviving its historical graph snapshot or old branch plumbing. The concrete analytic limit carrier, convergence-to-decoder bridge, and decoder survival remain explicit frontier obligations.
