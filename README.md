@@ -72,6 +72,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 ### Research
 
 - [Adaptive sparsemax action-domain redesign — 2026-09-23](docs/research/adaptive-sparsemax-action-domain-2026-09-23.md)
+- [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
@@ -89,7 +90,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
-- [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)\n- [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
+- [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
 
 ### Repository documentation
 
@@ -280,12 +281,20 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: d72e1061d4eef4072eaf3b361e1b9ad8dc9db067
-unprocessed-commit-count: 2
+last-processed-commit: e381a6a1b970b0fd4d50fe206e08149f3ccff7f6
+unprocessed-commit-count: 10
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `d72e1061d4ee` Delete docs/superpowers/plans directory
-- `ba94be2e1fa7` docs: refresh README from commit totality
+- `e381a6a1b970` docs: enumerate frontier theorem identifiers
+- `85c0ee762d6a` fix: synchronize generated README frontier index
+- `378bc1d65942` fix: make strict-progress proof Agda-correct
+- `2840fef2909f` docs: sync carrier policy and frontier boundaries
+- `ef64ee57b378` feat: connect carrier-polymorphic frontier proofs
+- `c4ef82ca4875` feat: expose exact behavior-policy readout
+- `79b21ae46ada` docs: add complete frontier topology
+- `a1918ec11397` docs: record carrier policy and frontier closure
+- `aeabaf80d64f` feat: add carrier-polymorphic cycle frontier
+- `6ab42e2bd687` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
