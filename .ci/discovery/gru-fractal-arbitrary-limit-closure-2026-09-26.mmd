@@ -5,6 +5,10 @@ flowchart TD
   GI["GRU decode-after-encode"] --> LI["Local GRU injectivity"]
   LI --> GGI["Global GRU injectivity from left inverse"]
   GGI --> IDX["Level-indexed injectivity"]
+  GGI --> IGL["CanonicalIntegerGRUFractalLimitCompositionTheorem"]
+  IGL --> LIMK["Supplied limit left-inverse kernel"]
+  LIMK --> LII["Limit injectivity (derived)"]
+  IGL -. "does not manufacture a concrete limit carrier" .-> FRONT["Concrete limit decoder / projection frontier"]
   REF["Explicit level refinement"] --> TR["Injective inter-level transport"]
   IDX --> COMP["Finite/indexed GRU-injective fractal composition"]
   TR --> COMP
