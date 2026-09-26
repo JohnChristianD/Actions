@@ -63,3 +63,13 @@ The behavior-policy surface is included explicitly: canonicalBehaviorPolicy is a
 The source mutations are consolidated on branch theorem-monolith-prune-frontier-2026-09-26. The repository does not expose a local Agda executable in this execution environment, so authoritative kernel verification is delegated to the repository Nix/GitHub Actions gate after the final branch is opened as a draft pull request.
 
 No theorem is considered verified merely because the text parses or the graph is internally consistent.
+
+## 7. Unconditional finite-candidate price classification is closed, but not price derivation
+
+The canonical theorem monolith now also exposes `FiniteCandidateDecision`, `FiniteCandidatePriceResult`, `finiteCandidatePriceSearch`, and `finiteCandidatePriceSearch-complete`.
+
+This is an unconditional total classifier over a supplied finite candidate-price list together with an explicit decision procedure for the supporting relation at a fixed allocation. It returns either a concrete supporting-price witness from the supplied list or rejection certificates for every supplied candidate.
+
+The boundary is important: the decision procedure is an input, so this does not derive a supporting price from primitive economic structure, separation, KKT conditions, or fixed-point assumptions. It also does not assert that a supporting price exists outside the supplied finite candidate set, and it does not promote generalized Walrasian existence.
+
+Accordingly, the strict unconditional graph does not promote this kernel as an existence theorem. The economic frontier graph records it as a constructive conditional/classification seam.
