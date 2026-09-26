@@ -32,6 +32,7 @@ The current Agda inventory is:
 - `GRUStatisticalInjectivity.agda` — canonical statistical/injectivity adapter.
 - `GRUFractalInjectiveComposition.agda` — generic level/refinement/transport kernel for GRU-injective fractal composition.
 - `GRUFractalInjectiveCompositionCanonical.agda` — canonical Nat-indexed scale-invariant GRU instantiation.
+- `GRUFractalDomainAdapters.agda` — Physics/Economics proof-relevant adapter contracts.
 - `ZPFStatisticalRepresentation.agda` — typed ZPF/ω³ Maxwell-statistical boundary and conditional global ZPF→GRU injectivity adapter.
 - `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
 - `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
@@ -64,7 +65,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 31 files.
+Generated from the tracked Markdown surface: 32 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -97,6 +98,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
 - [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
 - [Unconditional tragedy-of-the-commons non-derivability — 2026-09-26](docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md)
+- [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
 - [Unconditional finite-candidate price kernel — 2026-09-26](docs/research/unconditional-finite-price-kernel-2026-09-26.md)

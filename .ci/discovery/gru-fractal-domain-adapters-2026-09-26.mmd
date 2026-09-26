@@ -1,0 +1,27 @@
+flowchart TD
+  K["GRU-injective fractal composition kernel"] --> P["PhysicsGRUFractalAdapter"]
+  K --> E["EconomicsGRUFractalAdapter"]
+  subgraph PHYS["Physics"]
+    P --> FL["FourLawOneStepWitnessContract"]
+    FL --> LI["Law I witness"]
+    FL --> LIII["Law III witness"]
+    FL --> PT["Physics→learner transition witness"]
+    PT --> K
+    LI -. "currently missing" .-> PX["Concrete physics fractal inhabitant"]
+    LIII -. "currently missing" .-> PX
+  end
+  subgraph ECON["Economics"]
+    E --> ISO["Learner↔economic inverse laws"]
+    E --> SC["Learner/economic step conjugacy"]
+    E --> ER["Economic level/refinement relation"]
+    ER --> ET["Explicit economic inter-level transport"]
+    ET --> EI["Transport injectivity"]
+    ET --> EC["Representation compatibility"]
+    EC --> K
+    ER -. "must be instantiated" .-> EX["Concrete economic fractal inhabitant"]
+    ET -. "must be instantiated" .-> EX
+  end
+  K --> GI["GRU-injective fractal conclusion"]
+  PX -. "not manufactured" .-> GI
+  EX -. "not manufactured" .-> GI
+  GI --> B["Preserves existing boundaries:<br/>no automatic convergence, market clearing,<br/>price, equilibrium, or commons preservation"]
