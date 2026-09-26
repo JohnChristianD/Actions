@@ -9,7 +9,7 @@
 -- endogenous feedback signal. The definitions below determine what the
 -- learner actually does; theorem modules consume these definitions.
 --
--- The main emergent facts are structural: the Nat clock advances exactly
+-- The main emergent facts are structural: LCB totalCount advances exactly
 -- by one per canonical step, NormPair is preserved, the policy is
 -- invariant under NormPair and optimizer replacement, and the recurrent
 -- components are exposed as composable state transitions. The integer
@@ -176,16 +176,16 @@ record ActionSpace (A : Set) : Set where
     witness : Nat
 open ActionSpace public
 
-QVec : ∀ {A : Set} → Set
-QVec {A} = Nat → Int8
+QFunction : ∀ {A : Set} → Set
+QFunction {A} = Nat → Int8
 
-CountVec : ∀ {A : Set} → Set
-CountVec {A} = Nat → Nat
+CountFunction : ∀ {A : Set} → Set
+CountFunction {A} = Nat → Nat
 
-zeroQ : ∀ {A : Set} → QVec {A}
+zeroQ : ∀ {A : Set} → QFunction {A}
 zeroQ _ = zero8
 
-zeroCounts : ∀ {A : Set} → CountVec {A}
+zeroCounts : ∀ {A : Set} → CountFunction {A}
 zeroCounts _ = zero
 
 natEq : Nat → Nat → BoolLike
@@ -210,19 +210,19 @@ maxNat zero n = n
 maxNat (suc m) zero = suc m
 maxNat (suc m) (suc n) = suc (maxNat m n)
 
-updateAt : ∀ {A : Set} → QVec {A} → Nat → Int8 → QVec {A}
+updateAt : ∀ {A : Set} → QFunction {A} → Nat → Int8 → QFunction {A}
 updateAt q a r i with natEq i a
 ... | enabled = int8Add (q i) r
 ... | disabled = q i
 
-incAt : ∀ {A : Set} → CountVec {A} → Nat → CountVec {A}
+incAt : ∀ {A : Set} → CountFunction {A} → Nat → CountFunction {A}
 incAt c a i with natEq i a
 ... | enabled = suc (c i)
 ... | disabled = c i
 
 record CriticState (A : Set) : Set where
   constructor criticState
-  field values : QVec {A}
+  field values : QFunction {A}
 open CriticState public
 
 record WatkinsKernel (A : Set) : Set₁ where
@@ -248,7 +248,7 @@ watkinsStep K s = watkinsState
 
 record LCBCountState (A : Set) : Set where
   constructor lcbCountState
-  field valuesCount : CountVec {A}
+  field valuesCount : CountFunction {A}
         totalCount : Nat
 open LCBCountState public
 
@@ -270,10 +270,10 @@ finiteLCBBonus8 _ = zero8
 lcbNegate : Int8 → Int8
 lcbNegate x = int8 (- code x)
 
-scoreA : ∀ {A : Set} → QVec {A} → CountVec {A} → Nat → Int8
+scoreA : ∀ {A : Set} → QFunction {A} → CountFunction {A} → Nat → Int8
 scoreA q c a = int8Add (q a) (lcbNegate (finiteLCBBonus8 (c a)))
 
-lcbScore : ∀ {A : Set} → LCBCountKernel → LCBCountState A → CriticState A → QVec {A}
+lcbScore : ∀ {A : Set} → LCBCountKernel → LCBCountState A → CriticState A → QFunction {A}
 lcbScore L c q a = int8Add (values q a) (lcbNegate (bonus L (valuesCount c a)))
 
 sparsemaxTemperature : Nat
@@ -288,7 +288,7 @@ int8Order = On.decTotalOrder IntegerProperties.≤-decTotalOrder code
 scoreEntryOrder : DecTotalOrder 0ℓ 0ℓ 0ℓ
 scoreEntryOrder = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order ≤-decTotalOrder)
 
-scoreList : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → List ScoreEntry
+scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
 scoreList K q c = map (λ a → (scoreA q c a , a)) (candidates K)
 
 sortScores : List ScoreEntry → List ScoreEntry
@@ -323,7 +323,7 @@ searchSupport xs temperature (suc n) current best with supportValid xs temperatu
 ... | enabled = searchSupport xs temperature n (suc current) (maxNat best current)
 ... | disabled = searchSupport xs temperature n (suc current) best
 
-supportSize : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat
+supportSize : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat
 supportSize K q c = searchSupport (sortScores (scoreList K q c)) sparsemaxTemperature (length (candidates K)) (suc zero) (suc zero)
 
 record SparseWeight : Set where
@@ -331,7 +331,7 @@ record SparseWeight : Set where
   field numerator denominator : Nat
 open SparseWeight public
 
-sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat → SparseWeight
+sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat → SparseWeight
 sparsemaxWeight K q c a = sparseWeight ((k * int8Magnitude (scoreA q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
   where
     xs = sortScores (scoreList K q c)
@@ -343,13 +343,13 @@ weightPositive (sparseWeight n d) with natEq n zero
 ... | enabled = disabled
 ... | disabled = enabled
 
-selectPositive : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → List ScoreEntry → Nat
+selectPositive : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry → Nat
 selectPositive K q c [] = witness K
 selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c a)
 ... | enabled = a
 ... | disabled = selectPositive K q c xs
 
-sparsemaxPolicy : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat
+sparsemaxPolicy : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat
 sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 
 ------------------------------------------------------------------------
@@ -810,7 +810,6 @@ normPairWeightPlusOne n = int8Add one8 (normPairWeight n)
 record FullLearnerState (A : Set) : Set₁ where
   constructor fullLearnerState
   field
-    clock : Nat
     watkins : WatkinsState A
     gru : GRUState
     optimizer : F4IntUState
@@ -888,12 +887,12 @@ softSparse-zero-to-hardSparse K s h {a} distinct =
   ≤-antisym (h distinct) z≤n
 
 replaceNorm : ∀ {A} → FullLearnerState A → NormPair → FullLearnerState A
-replaceNorm s n = fullLearnerState (clock s) (watkins s) (gru s) (optimizer s)
+replaceNorm s n = fullLearnerState (watkins s) (gru s) (optimizer s)
   n (lcbCounts s) (qLogControl s) (qLogValue s)
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
-replaceOptimizer s o = fullLearnerState (clock s) (watkins s) (gru s) o
-  (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
+replaceOptimizer s o = fullLearnerState (watkins s) (gru s) (optimizer s)
+  o (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
 
 canonicalPolicy-norm-invariant :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : NormPair) →
@@ -1036,17 +1035,13 @@ canonicalQLogStep K s = negativeFiniteQLog8 (canonicalPolicyWeightCode K s)
 
 canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FullLearnerState A
 canonicalFullStep K s =
-  fullLearnerState (suc (clock s))
-  (canonicalWatkinsStep K s)
+  fullLearnerState (canonicalWatkinsStep K s)
   (canonicalGRUStep K s)
   (canonicalOptimizerStep K s)
   (norm s)
   (canonicalCountStep K s)
   (canonicalQLogControlStep K s)
   (canonicalQLogStep K s)
-
-canonicalFullStep-clock : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → clock (canonicalFullStep K s) ≡ suc (clock s)
-canonicalFullStep-clock K s = refl
 
 canonicalFullStep-watkins : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
@@ -1073,33 +1068,41 @@ canonicalNormPairWeightPlusOne-preservation : ∀ {A} (K : FullLearnerKernel A) 
   normPairWeightPlusOne (norm (canonicalFullStep K s)) ≡ normPairWeightPlusOne (norm s)
 canonicalNormPairWeightPlusOne-preservation K s = refl
 
-canonicalStep-not-fixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → canonicalFullStep K s ≢ s
-canonicalStep-not-fixed K s eq =
-  plus-suc-not-self (clock s) zero
-    (trans (plus-suc (clock s) zero)
-      (trans (cong suc (plus-zero (clock s)))
-        (trans (sym (canonicalFullStep-clock K s))
-          (cong (λ t → clock t) eq))))
-
 canonicalTotalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
 canonicalTotalCountStep K s = refl
 
 canonicalNoFixedPoint :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalFullStep K s ≢ s
-canonicalNoFixedPoint K s = canonicalStep-not-fixed K s
+canonicalNoFixedPoint K s eq =
+  plus-suc-not-self (totalCount (lcbCounts s)) zero
+    (trans (plus-suc (totalCount (lcbCounts s)) zero)
+      (trans (cong suc (plus-zero (totalCount (lcbCounts s))))
+        (trans (sym (canonicalTotalCountStep K s))
+          (cong (λ t → totalCount (lcbCounts t)) eq))))
 
 iterateCanonical : ∀ {A} → FullLearnerKernel A → Nat → FullLearnerState A → FullLearnerState A
 iterateCanonical K zero s = s
 iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
 
-clockAfter : ∀ {A} (K : FullLearnerKernel A) (n : Nat) (s : FullLearnerState A) → clock (iterateCanonical K n s) ≡ clock s + n
-clockAfter K zero s = sym (plus-zero (clock s))
-clockAfter K (suc n) s = trans (cong suc (clockAfter K n s)) (sym (plus-suc (clock s) n))
+canonicalTotalCountAfter :
+  ∀ {A} (K : FullLearnerKernel A) (n : Nat) (s : FullLearnerState A) →
+  totalCount (lcbCounts (iterateCanonical K n s)) ≡
+  totalCount (lcbCounts s) + n
+canonicalTotalCountAfter K zero s = sym (plus-zero (totalCount (lcbCounts s)))
+canonicalTotalCountAfter K (suc n) s =
+  trans
+    (canonicalTotalCountStep K (iterateCanonical K n s))
+    (trans
+      (cong suc (canonicalTotalCountAfter K n s))
+      (sym (plus-suc (totalCount (lcbCounts s)) n)))
 
 canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≢ s
-canonicalAperiodic K s n cyc = plus-suc-not-self (clock s) n
-  (trans (sym (clockAfter K (suc n) s)) (cong clock cyc))
+canonicalAperiodic K s n cyc = plus-suc-not-self (totalCount (lcbCounts s)) n
+  (trans (plus-suc (totalCount (lcbCounts s)) n)
+    (trans (cong suc (canonicalTotalCountAfter K n s))
+      (trans (sym (canonicalTotalCountAfter K (suc n) s))
+        (cong (λ t → totalCount (lcbCounts t)) cyc))))
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
