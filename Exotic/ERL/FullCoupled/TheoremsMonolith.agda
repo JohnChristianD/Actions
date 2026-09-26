@@ -2539,6 +2539,8 @@ record DistributionalStationaryAggregateTransport
       aggregate (P d) ≡
       economicStep (aggregate d)
 
+open DistributionalStationaryAggregateTransport public
+
 distributionalStationaryAggregate-stationary :
   ∀ {Distribution Economic : Set}
   {P : Distribution → Distribution}
@@ -2562,8 +2564,8 @@ distributionalStationaryAggregate-stationary W =
   trans
     (sym (aggregateStepCommutes W _))
     (cong
-      (aggregate W)
-      (limitPreserved
+      aggregate
+      (StationaryLimitTheorem.limitPreserved
         (stationaryLimit W)
         (StationaryLimitTheorem.converges (stationaryLimit W))))
 
@@ -4218,6 +4220,8 @@ record FactorTransitionWitness
       ∀ s →
       observe (step s) ≡
       factorStep (observe s)
+
+open FactorTransitionWitness public
 
 factorTransitionAfterIterate :
   ∀ {State Factor : Set}
