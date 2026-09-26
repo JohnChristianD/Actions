@@ -4775,6 +4775,10 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
       eq
       (strictProgressAfterIterate W n s))
 
+natSucProgress : ∀ n → n < suc n
+natSucProgress zero = s≤s z≤n
+natSucProgress (suc n) = s≤s (natSucProgress n)
+
 canonicalTotalCountStepProgress :
   ∀ {A : Set}
   (K : C.FullLearnerKernel A)
