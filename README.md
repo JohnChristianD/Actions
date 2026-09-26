@@ -282,21 +282,14 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 142ecf53cb0918aacc189eae0d70d232a5aa428d
-unprocessed-commit-count: 11
+last-processed-commit: 3ca5e5d7e1d7c2522f493b052557d1ea13d542f1
+unprocessed-commit-count: 4
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `142ecf53cb09` ci: register totalCount orbit witness
-- `88c0debca50e` docs: connect totalCount to generic orbit injection
-- `a0dab97ebfa0` theorem: instantiate generic orbit injectivity
-- `307b47e0a2aa` docs: record theorem composition improvements
-- `7d2da9b99711` docs: project theorem composition closure graph
-- `4726c98fb0ea` ci: register theorem composition closure symbols
-- `8ac339408246` fix: make successor-measure orbit proof Agda-valid
-- `54afad635d11` theorem: generalize successor-measure orbit injectivity
-- `f0a832f855ed` theorem: package iterate factor stability
-- `6fed5d913fe4` theorem: close arbitrary-length token generation
-- `9697d5fcc358` docs: refresh README from commit totality
+- `3ca5e5d7e1d7` docs: record nLab homomorphism/action semantic distinction
+- `cab33ced4df0` graph: expose exact growth and scan complexity boundary
+- `ad2ea93597f5` docs: record theorem improvement search closure
+- `11109e2160af` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
