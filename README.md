@@ -69,7 +69,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 35 files.
+Generated from the tracked Markdown surface: 36 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -92,6 +92,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Arbitrary-limit GRU fractal closure and e-graph/A* composition — 2026-09-26](docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md)
 - [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
 - [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
+- [GRU fractal limit convergence adapter — 2026-09-26](docs/research/gru-fractal-limit-convergence-adapter-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
 - [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
 - [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
@@ -302,41 +303,15 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: e9c786d32bb13097170f9bc9d51f789e638f5488
-unprocessed-commit-count: 31
+last-processed-commit: 31d03471f2e86c5752e2472f4efca6576bcdeb9b
+unprocessed-commit-count: 5
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `e9c786d32bb1` docs: normalize README newline
-- `2fe74eafe348` graph: normalize Integer-GRU closure edge
-- `cd69b76de25d` ci: restore theorem monolith safe verification
-- `7e5f0ef45cab` fix: preserve monolith formatting while adding Integer-GRU seam
-- `f760ed1f68ca` research: add canonical Integer-GRU left-inverse note
-- `2184a364c4ef` ci: keep existing monolith verification lanes without duplication
-- `65a6ffbda448` graph: add A* target for Integer-GRU global conjugacy
-- `376d2d383dfd` ci: remove duplicate theorem monolith check
-- `36ee85865c82` research: document concrete Integer-GRU left-inverse seam
-- `9d2158550b6d` graph: connect Integer-GRU left inverse to fractal closure
-- `be2083d9c853` docs: index canonical Integer-GRU global left inverse
-- `c11e1e96dadf` ci: register canonical Integer-GRU left-inverse seam
-- `1e315f337bb2` theorem: expose canonical Integer-GRU global left inverse
-- `ca694b2da96c` ci: verify limit decoder survival module
-- `bee492a8b9ff` docs: index limit decoder survival module
-- `ca653db266c6` docs: record coherent limit decoder seam
-- `75503f8abea8` graph: expose coherent decoder survival seam
-- `50bda2cad61a` theorem: formalize coherent decoder survival at fractal limit
-- `ff8ddab1d9d2` ci: remove duplicate fractal limit verification
-- `84c640fc9cf7` ci: verify GRU fractal e-graph limit module
-- `54491b5af805` docs: index GRU fractal e-graph limit composition
-- `1cd8b6d57fa7` docs: record e-graph A* limit composition and left-inverse derivation
-- `d560b3a7a52f` graph: connect surviving left inverse to limit closure
-- `98cdf354d604` theorem: derive fractal limit separation from surviving left inverse
-- `9fbe356380cc` Verify arbitrary-limit fractal closure
-- `0a133ccf5f61` Index arbitrary-limit fractal closure
-- `3cc301e0cfd3` Add arbitrary-limit fractal discovery graph
-- `dde49ec5088c` Document arbitrary-limit fractal closure boundary
-- `12999a64dd35` Add arbitrary-limit fractal closure contract
-- `12ed0eb4df77` Remove redundant draft gate from auto-merge workflow
-- `1b5d75726a5b` docs: refresh README from commit totality
+- `31d03471f2e8` graph: expose GRU fractal convergence adapter search target
+- `5f13b82ed23f` graph: add GRU fractal convergence adapter seam
+- `9f03c24f05a1` docs: record GRU fractal convergence adapter boundary
+- `6cdd0adba969` theorem: add supplied convergence adapter for GRU fractal limits
+- `71ada9545073` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
