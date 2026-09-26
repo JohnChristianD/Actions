@@ -74,12 +74,6 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans)
 open import Relation.Nullary using (¬_)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
-open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity public
-open import Exotic.ERL.FullCoupled.ZPFStatisticalRepresentation
-open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
-open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
-open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
-open import Exotic.ERL.FullCoupled.GRUFractalEGraphAStarLimitComposition public
 
 
 ------------------------------------------------------------------------
