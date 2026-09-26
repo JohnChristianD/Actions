@@ -69,7 +69,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 36 files.
+Generated from the tracked Markdown surface: 37 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -101,6 +101,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
 - [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
 - [NormPair quotient/factor transition closure](docs/research/normpair-factor-transition-closure-2026-09-24.md)
+- [Real semantic e-graph and staleness policy — 2026-09-26](docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md)
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
 - [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
@@ -303,15 +304,21 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 31d03471f2e86c5752e2472f4efca6576bcdeb9b
-unprocessed-commit-count: 5
+last-processed-commit: 6c50d078037895197b8eb31c6df572ce20e9aaac
+unprocessed-commit-count: 11
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `31d03471f2e8` graph: expose GRU fractal convergence adapter search target
-- `5f13b82ed23f` graph: add GRU fractal convergence adapter seam
-- `9f03c24f05a1` docs: record GRU fractal convergence adapter boundary
-- `6cdd0adba969` theorem: add supplied convergence adapter for GRU fractal limits
-- `71ada9545073` docs: refresh README from commit totality
+- `6c50d0780378` docs: record multi-module freshness ownership
+- `726111349409` graph: distinguish frontier targets from live semantic inventory
+- `284315217e7f` graph: preserve source identity during semantic extraction
+- `83ccf6945c77` graph: include live GRU limit modules in semantic inventory
+- `d0fbaa51bd33` ci: gate live semantic egraph and impossibility boundary
+- `e394a984eda2` graph: replace dependency-only view with semantic e-graph topology
+- `cfb0c3a6b276` docs: define live semantic e-graph and staleness policy
+- `8fcb7e620819` ci: verify semantic egraph and limit impossibility theorem
+- `4d8aad244a07` graph: add freshness-pruned semantic e-graph runner
+- `5d26624c6427` theorem: formalize naive arbitrary-limit injectivity impossibility boundary
+- `ea2df065523a` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
