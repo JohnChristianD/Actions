@@ -998,6 +998,7 @@ record PointwiseSandwich
   field
     lower≤actual : ∀ x → lower x ≤ actual x
     actual≤upper : ∀ x → actual x ≤ upper x
+
 record MinimaxBellmanShapleyOperator
   (State Value : Set)
   (_≤_ : Value → Value → Set) : Set₁ where
@@ -1996,7 +1997,8 @@ record CanonicalGlobalTokenEncodingConjugacyTheorem : Set₁ where
 
 open CanonicalGlobalTokenEncodingConjugacyTheorem public
 
-canonical-global-token-encoding-conjugacy :  CanonicalGlobalTokenEncodingConjugacyTheorem
+canonical-global-token-encoding-conjugacy :
+  CanonicalGlobalTokenEncodingConjugacyTheorem
 canonical-global-token-encoding-conjugacy =
   canonicalGlobalTokenEncodingConjugacyTheorem
     canonicalTokenStep-conjugacy
@@ -2995,7 +2997,8 @@ canonical-physics-to-learner-transition-witness W K =
 
 ------------------------------------------------------------------------
 -- nLab-guided semantic closure for the Maxwell four-law seam.
----- Sources:
+--
+-- Sources:
 --   Noether theorem / conserved current:
 --     https://ncatlab.org/nlab/show/Noether%27s%2Btheorem
 --     https://ncatlab.org/nlab/show/conserved%2Bcurrent
@@ -3994,7 +3997,8 @@ record CompetitiveWalrasianEquilibriumWithProduction
         j
         price
         (production j)
-    consumptionFeasibility :      ∀ i →
+    consumptionFeasibility :
+      ∀ i →
       CompetitiveProductionEconomy.consumptionFeasible E
         i
         (consumption i)
@@ -4993,7 +4997,8 @@ monolithFactorTransition-to-relationWitness :
   RelationFactorTransitionWitness
     State
     Factor
-    step    related
+    step
+    related
     observe
 monolithFactorTransition-to-relationWitness W =
   relationFactorTransitionWitness
