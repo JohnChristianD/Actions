@@ -82,6 +82,16 @@ let script = merge {
     grep -Fq 'AStarSemanticClosure' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "A* semantic closure kernel missing"; exit 1; }
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
+    grep -Fq 'StrictProgressRelation' Exotic/ERL/FullCoupled/CarrierPolymorphicFrontier.agda || { echo "strict progress relation kernel missing"; exit 1; }
+    grep -Fq 'FactorTransitionWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
+    grep -Fq 'canonicalPolicyFactorTransition' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "canonical factor transition adapter missing"; exit 1; }
+    grep -Fq 'StepConjugacyWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "step conjugacy kernel missing"; exit 1; }
+    grep -Fq 'DistributionalStationaryAggregateTransport' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "stationary aggregate bridge missing"; exit 1; }
+    grep -Fq 'ProductionFeasibilityWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "production witness surface missing"; exit 1; }
+    grep -Fq 'SupportingPriceWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "supporting price witness surface missing"; exit 1; }
+    grep -Fq 'CertifiedEGraphEdge' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "e-graph certificate surface missing"; exit 1; }
+    [ -f docs/research/theorem-improvement-completion-2026-09-26.md ] || { echo "theorem improvement research note missing"; exit 1; }
+    [ -f .ci/discovery/theorem-improvement-completion-2026-09-26.mmd ] || { echo "theorem improvement graph missing"; exit 1; }
 
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
     for module in canonicalLearnerMonolith theoremsMonolith eGraphSemanticTransport fourLawClosureWitnesses fourLawClosureImpossibility gruStatisticalInjectivity zpfStatisticalRepresentation tsallisStatisticalRepresentation repositorySemanticEGraphClosure
