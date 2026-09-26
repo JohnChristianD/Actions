@@ -98,6 +98,21 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
 
+### Current frontier synchronization — 2026-09-26
+
+The current carrier/policy/frontier surface is documented in:
+- [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
+- [.ci/discovery/carrier-polymorphic-frontier-2026-09-26.mmd](.ci/discovery/carrier-polymorphic-frontier-2026-09-26.mmd)
+
+The canonical learner's `Int8` representation is an unbounded `ℤ` wrapper, not a `Fin n` carrier. Generic cross-domain representation laws are `Set`-polymorphic; genuinely finite theorem surfaces may still use `Fin n` where finiteness is part of the proposition.
+
+The behavior-policy topology distinguishes the exact sparsemax weight readout (`BehaviorPolicy : Nat → SparseWeight`) from the selected-action `canonicalPolicy`. No probability-normalization or full information-set behavioral-strategy theorem is inferred without an explicit adapter.
+
+Finite-cycle exclusion is factored through the generic `StrictProgressWitness`: the clock is sufficient but not conceptually necessary. The canonical learner has a clock-free instantiation through strictly increasing `totalCount`.
+
+The four-law closure remains witness-gated: Law-I, Law-III, and physics→learner transition inhabitants are prerequisites, not consequences of the learner algebra. The economics frontier remains separately gated by convergence, fixed-point, market-clearing, price-support, and equilibrium witnesses.
+
+
 ## Current semantic emergence
 
 The current closed learner-side path is:
@@ -144,7 +159,7 @@ That chain is a semantic contract/topology, not an unconditional existence proof
 
 ## Exact learner facts
 
-The canonical learner state contains the recurrent learner channels, optimizer state, counts, q-log state, and `NormPair`.
+The canonical learner state contains the recurrent learner channels, optimizer state, counts, q-log state, and `NormPair`. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier.
 
 The current closed facts include:
 
@@ -201,7 +216,7 @@ exact learner laws
   -/-> equilibrium existence
 ```
 
-The production-side vocabulary is aligned with established formal-economics terminology, while the learner/economic interface records exactly where independent economic assumptions enter.
+The production-side vocabulary is aligned with established formal-economics terminology, while the learner/economic interface records exactly where independent economic assumptions enter.\n\nThe exact policy topology now separates `canonicalBehaviorPolicy : Nat → SparseWeight` from the selected-action `canonicalPolicy`. The cross-domain representation layer remains `Set`-polymorphic, while genuinely finite theorem surfaces may retain `Fin n` where finiteness is part of the proposition.
 
 ## Toolchain roles
 
