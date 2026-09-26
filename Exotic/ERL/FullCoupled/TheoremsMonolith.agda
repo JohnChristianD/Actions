@@ -134,6 +134,7 @@ open StateIsomorphism public
 
 iterateIsomorphism :
   ∀ {A : Set} → (A → A) → Nat → A → A
+iterateIsomorphism f zero a = a
 iterateIsomorphism f (suc n) a = iterateIsomorphism f n (f a)
 
 record StepConjugacyWitness
