@@ -352,6 +352,44 @@ selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c
 sparsemaxPolicy : ∀ {A : Set} → ActionSpace A → QVec {A} → CountVec {A} → Nat
 sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 
+------------------------------------------------------------------------
+-- Exact sparsemax behavior-policy readout.
+-- The weight map is kept separate from the selected-action policy.
+-- No probability normalization is claimed by this definition.
+------------------------------------------------------------------------
+
+BehaviorPolicy : Set
+BehaviorPolicy = Nat → SparseWeight
+
+canonicalBehaviorPolicy :
+  ∀ {A : Set} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  BehaviorPolicy
+canonicalBehaviorPolicy K s a =
+  sparsemaxWeight
+    (actionSpaceK K)
+    (lcbScore
+      (lcbKernel K)
+      (lcbCounts s)
+      (critic (watkins s)))
+    (valuesCount (lcbCounts s))
+    a
+
+canonicalBehaviorAction :
+  ∀ {A : Set} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  Nat
+canonicalBehaviorAction K s = canonicalPolicy K s
+
+canonicalBehaviorAction-law :
+  ∀ {A : Set}
+  (K : FullLearnerKernel A)
+  (s : FullLearnerState A) →
+  canonicalBehaviorAction K s ≡ canonicalPolicy K s
+canonicalBehaviorAction-law K s = refl
+
 updateLCBCount : ∀ {A : Set} → Nat → LCBCountState A → LCBCountState A
 updateLCBCount a (lcbCountState counts total) =
   lcbCountState (incAt counts a) (suc total)
