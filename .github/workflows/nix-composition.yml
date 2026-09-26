@@ -154,7 +154,7 @@ jobs:
 
   auto-merge:
     name: Enable auto-merge after full verification
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    if: github.event_name == 'pull_request'
     needs: [agda, mercury]
     runs-on: ubuntu-22.04
     permissions:
