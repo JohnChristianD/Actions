@@ -6,7 +6,7 @@ Classify the canonical learner by its proved mathematical properties rather than
 
 ## Verified facts
 
-The canonical full transition is a deterministic endomorphism on CanonicalFullLearnerState. Its state contains an unbounded Nat clock; finite Int8 GRU/Watkins/F4/L2/control components; a finite action space of 64 actions; Nat LCB counts whose total increases by exactly one per full step; and a finite-rational q-log value.
+The canonical full transition is a deterministic endomorphism on CanonicalFullLearnerState. Its state contains finite local GRU/Watkins/F4/L2/control components, a Nat-indexed action domain, Nat LCB counts whose total increases by exactly one per full step, and a finite-rational q-log value. No dedicated clock coordinate is part of the state.
 
 The formal consequences include exact iterate growth, aperiodicity, and exclusion of every nontrivial finite cycle. These are semantic transition properties, not merely definitional identities.
 
