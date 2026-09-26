@@ -5286,7 +5286,10 @@ finiteCandidatePriceSearch-complete =
 record CommonsPreservationDerivation
   (World Agent Action Resource : Set)
   (sharedResource : World → Resource)
+  (resourceCapacity : Resource → Nat)
   (action : World → Agent → Action)
+  (extraction : Action → Nat)
+  (aggregateExtraction : World → Nat)
   (localOptimal : World → Agent → Action → Set)
   (preserves : World → Set) : Set₁ where
   constructor commonsPreservationDerivation
@@ -5306,7 +5309,10 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
     Action : Set
     Resource : Set
     sharedResource : World → Resource
+    resourceCapacity : Resource → Nat
     action : World → Agent → Action
+    extraction : Action → Nat
+    aggregateExtraction : World → Nat
     localOptimal : World → Agent → Action → Set
     preserves : World → Set
     commonsWorld : World
@@ -5318,6 +5324,16 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
         commonsWorld
         a
         (action commonsWorld a)
+    aggregateExtractionIsTwo :
+      aggregateExtraction commonsWorld ≡
+      suc (suc zero)
+    extractionIsOne :
+      ∀ a →
+      extraction (action commonsWorld a) ≡
+      suc zero
+    capacityIsOne :
+      resourceCapacity (sharedResource commonsWorld) ≡
+      suc zero
     notPreserved :
       ¬ preserves commonsWorld
 
@@ -5331,7 +5347,10 @@ noUnconditionalCommonsPreservation :
       (Action C)
       (Resource C)
       (sharedResource C)
+      (resourceCapacity C)
       (action C)
+      (extraction C)
+      (aggregateExtraction C)
       (localOptimal C)
       (preserves C)
 noUnconditionalCommonsPreservation C D =
@@ -5353,12 +5372,17 @@ twoAgentCommonsCounterexample =
     (⊤ ⊎ ⊤)
     Nat
     (λ _ → suc zero)
+    (λ _ → suc zero)
     (λ _ _ → inj₂ tt)
+    (λ _ → suc zero)
+    (λ _ → suc (suc zero))
     (λ _ _ a → a ≡ inj₂ tt)
     (λ _ →
       suc (suc zero) ≤ suc zero)
     tt
     refl
+    (λ _ → refl)
+    (λ _ → refl)
     (λ _ → refl)
     twoNotLeOne
 
@@ -5369,7 +5393,10 @@ noUnconditionalCommonsPreservation-twoAgent :
       (Action twoAgentCommonsCounterexample)
       (Resource twoAgentCommonsCounterexample)
       (sharedResource twoAgentCommonsCounterexample)
+      (resourceCapacity twoAgentCommonsCounterexample)
       (action twoAgentCommonsCounterexample)
+      (extraction twoAgentCommonsCounterexample)
+      (aggregateExtraction twoAgentCommonsCounterexample)
       (localOptimal twoAgentCommonsCounterexample)
       (preserves twoAgentCommonsCounterexample)
 noUnconditionalCommonsPreservation-twoAgent =
