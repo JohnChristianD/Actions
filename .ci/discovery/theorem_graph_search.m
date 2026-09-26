@@ -68,12 +68,23 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_canonical_integer_gru_fractal_limit_composition_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- implementation.
 
 
 graph_gru_fractal_limit_convergence_adapter_plan(Laws, Plan) :-
     search_named_required_plan(
         "GRUFractalLimitConvergenceWitness",
+        Laws,
+        Plan).
+
+
+graph_canonical_integer_gru_fractal_limit_composition_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalIntegerGRUFractalLimitCompositionTheorem",
         Laws,
         Plan).
 
