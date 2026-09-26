@@ -12,7 +12,7 @@ module Exotic.ERL.FullCoupled.CarrierPolymorphicFrontier where
 open import Relation.Binary.PropositionalEquality using (_≡_; subst)
 open import Data.Empty using (⊥)
 open import Data.Nat using (Nat; zero; suc; _<_; z≤n; s≤s)
-open import Data.Nat.Properties using (<-trans; <-irrefl)
+open import Data.Nat.Properties using (<-trans; <-irrefl; +-identityʳ; +-suc)
 import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 iterateStep :
@@ -90,6 +90,16 @@ record NatSuccessorProgressWitness
 
 open NatSuccessorProgressWitness public
 
+sucInjective :
+  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+sucInjective refl = refl
+
+natPlusLeftCancel :
+  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+natPlusLeftCancel zero m n eq = eq
+natPlusLeftCancel (suc k) m n eq =
+  natPlusLeftCancel k m n (sucInjective eq)
+
 successorMeasureAfterIterate :
   ∀ {State : Set}
   {step : State → State}
@@ -99,18 +109,13 @@ successorMeasureAfterIterate :
   (s : State) →
   measure (iterateStep step n s) ≡ measure s + n
 successorMeasureAfterIterate W zero s =
-  sym (Data.Nat.Properties.+-identityʳ (measure W s))
+  sym (+-identityʳ (measure W s))
 successorMeasureAfterIterate W (suc n) s =
   trans
     (successor W (iterateStep (step W) n s))
-    (cong
-      suc
-      (successorMeasureAfterIterate W n s))
-    |>
-    sym
-      (Data.Nat.Properties.+-suc
-        (measure W s)
-        n)
+    (trans
+      (cong suc (successorMeasureAfterIterate W n s))
+      (sym (+-suc (measure W s) n)))
 
 successorMeasureOrbitInjective :
   ∀ {State : Set}
@@ -131,16 +136,6 @@ successorMeasureOrbitInjective W s {m} {n} eq =
       (trans
         (cong (measure W) eq)
         (successorMeasureAfterIterate W n s)))
-
-natPlusLeftCancel :
-  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
-natPlusLeftCancel zero m n eq = eq
-natPlusLeftCancel (suc k) m n eq =
-  natPlusLeftCancel k m n (sucInjective eq)
-
-sucInjective :
-  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
-sucInjective refl = refl
 
 natSucProgress : ∀ n → n < suc n
 natSucProgress zero = s≤s z≤n
