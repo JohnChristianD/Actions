@@ -1,4 +1,4 @@
-in ''#!/usr/bin/env bash
+''#!/usr/bin/env bash
 set -euo pipefail
 
 README=README.md
