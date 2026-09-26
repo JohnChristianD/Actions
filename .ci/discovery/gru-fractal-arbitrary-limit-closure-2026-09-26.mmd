@@ -1,5 +1,9 @@
 flowchart TD
+  CIGRU["Canonical Integer-GRU global left inverse"] --> CIGI["Global token-encoding injectivity"]
+  CIGI --> GGI["Global GRU injectivity from left inverse"]
+  CIGRU --> CONTD["Discrete-topology continuity"]
   GI["GRU decode-after-encode"] --> LI["Local GRU injectivity"]
+  LI --> GGI
   LI --> GGI["Global GRU injectivity from left inverse"]
   GGI --> IDX["Level-indexed injectivity"]
   REF["Explicit level refinement"] --> TR["Injective inter-level transport"]
