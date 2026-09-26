@@ -4704,12 +4704,8 @@ noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
 
 
 ------------------------------------------------------------------------
--- Generic strict-progress core.
---
--- Kept here, rather than in a companion Agda module, so the theorem
--- monolith remains the single authoritative theorem consumer. The relation
--- only needs transitivity and irreflexivity; no bounded Fin n carrier and no
--- clock coordinate are required.
+-- Generic strict-progress and carrier-polymorphic frontier core.
+-- Kept in this monolith so there is one authoritative theorem source.
 ------------------------------------------------------------------------
 
 iterateStep :
@@ -4737,8 +4733,47 @@ record StrictProgressWitness
       b < c →
       a < c
     irreflexive :
-      ∀ a →
-      ¬ (a < a)
+      ∀ a → ¬ (a < a)
+
+record StrictProgressRelation
+  (Measure : Set)
+  (_<_ : Measure → Measure → Set) : Set₁ where
+  constructor strictProgressRelation
+  field
+    isTransitive :
+      ∀ {a b c} →
+      a < b →
+      b < c →
+      a < c
+    isIrreflexive :
+      ∀ a → ¬ (a < a)
+
+strictProgressRelation-from-witness :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_) →
+  StrictProgressRelation Measure _<_
+strictProgressRelation-from-witness W =
+  strictProgressRelation
+    (transitive W)
+    (irreflexive W)
+
+strictProgressWitness-from-relation :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (R : StrictProgressRelation Measure _<_)
+  (measure : State → Measure)
+  (stepProgress :
+    ∀ s → measure s < measure (step s)) →
+  StrictProgressWitness State Measure step _<_
+strictProgressWitness-from-relation R measure stepProgress =
+  strictProgressWitness
+    measure
+    stepProgress
+    (StrictProgressRelation.isTransitive R)
+    (StrictProgressRelation.isIrreflexive R)
 
 open StrictProgressWitness public
 
@@ -4756,7 +4791,7 @@ strictProgressAfterIterate W zero s =
 strictProgressAfterIterate W (suc n) s =
   transitive W
     (stepProgress W s)
-    (strictProgressAfterIterate W n (step W s))
+    (strictProgressAfterIterate W n (step s))
 
 noPositiveFiniteCycleFromStrictProgress :
   ∀ {State Measure : Set}
@@ -4774,6 +4809,66 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
       (λ t → measure W s < measure W t)
       eq
       (strictProgressAfterIterate W n s))
+
+
+record NatSuccessorProgressWitness
+  (State : Set)
+  (step : State → State)
+  (measure : State → Nat) : Set₁ where
+  constructor natSuccessorProgressWitness
+  field
+    successor :
+      ∀ s →
+      measure (step s) ≡ suc (measure s)
+
+open NatSuccessorProgressWitness public
+
+sucInjective :
+  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+sucInjective refl = refl
+
+natPlusLeftCancel :
+  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+natPlusLeftCancel zero m n eq = eq
+natPlusLeftCancel (suc k) m n eq =
+  natPlusLeftCancel k m n (sucInjective eq)
+
+successorMeasureAfterIterate :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (n : Nat)
+  (s : State) →
+  measure (iterateStep step n s) ≡ measure s + n
+successorMeasureAfterIterate W zero s =
+  sym (+-identityʳ (measure W s))
+successorMeasureAfterIterate W (suc n) s =
+  trans
+    (successor W (iterateStep (step W) n s))
+    (trans
+      (cong suc (successorMeasureAfterIterate W n s))
+      (sym (+-suc (measure W s) n)))
+
+successorMeasureOrbitInjective :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (s : State)
+  {m n : Nat} →
+  iterateStep step m s ≡ iterateStep step n s →
+  m ≡ n
+successorMeasureOrbitInjective W s {m} {n} eq =
+  natPlusLeftCancel
+    (measure W s)
+    m
+    n
+    (trans
+      (sym (successorMeasureAfterIterate W m s))
+      (trans
+        (cong (measure W) eq)
+        (successorMeasureAfterIterate W n s)))
 
 natSucProgress : ∀ n → n < suc n
 natSucProgress zero = s≤s z≤n
