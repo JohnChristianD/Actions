@@ -64,6 +64,10 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_canonical_integer_gru_fractal_limit_composition_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- implementation.
 
 graph_stationary_limit_plan(Laws, Plan) :-
@@ -474,7 +478,9 @@ graph_required_theorems = [
     "topologicalConvergenceWitness-from-finite-rank-stability",
     "canonicalFullLearner-no-finite-rank-stability",
     "EconomicConvergenceFromPrimitiveAssumptions",
-    "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions"
+    "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions",
+    "CanonicalIntegerGRUGlobalConjugateTheorem",
+    "CanonicalIntegerGRUFractalLimitCompositionTheorem"
 ].
 
 :- func graph_required_subcompositions = list(string).
@@ -585,5 +591,11 @@ graph_unconditional_target_edges = [
 graph_canonical_integer_gru_global_conjugate_plan(Laws, Plan) :-
     search_named_required_plan(
         "canonical-integer-gru-global-conjugate-theorem",
+        Laws,
+        Plan).
+
+graph_canonical_integer_gru_fractal_limit_composition_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalIntegerGRUFractalLimitCompositionTheorem",
         Laws,
         Plan).
