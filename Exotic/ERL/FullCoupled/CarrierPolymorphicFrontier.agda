@@ -1,0 +1,106 @@
+{-# OPTIONS --safe #-}
+
+------------------------------------------------------------------------
+-- Carrier-polymorphic frontier semantics.
+--
+-- This module adds an exact generic strict-progress theorem excluding
+-- positive finite cycles without requiring a clock coordinate.
+------------------------------------------------------------------------
+
+module Exotic.ERL.FullCoupled.CarrierPolymorphicFrontier where
+
+open import Relation.Binary.PropositionalEquality using (_≡_; subst)
+open import Data.Empty using (⊥)
+open import Data.Nat using (Nat; zero; suc; _<_)
+open import Data.Nat.Properties using (<-trans; <-irrefl)
+import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
+
+iterateStep :
+  ∀ {State : Set} →
+  (State → State) →
+  Nat →
+  State →
+  State
+iterateStep step zero s = s
+iterateStep step (suc n) s = step (iterateStep step n s)
+
+record StrictProgressWitness
+  (State Measure : Set)
+  (step : State → State)
+  (_<_ : Measure → Measure → Set) : Set₁ where
+  constructor strictProgressWitness
+  field
+    measure : State → Measure
+    stepProgress :
+      ∀ s →
+      measure s < measure (step s)
+    transitive :
+      ∀ {a b c} →
+      a < b →
+      b < c →
+      a < c
+    irreflexive :
+      ∀ a → ¬ (a < a)
+
+open StrictProgressWitness public
+
+strictProgressAfterIterate :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_)
+  (n : Nat)
+  (s : State) →
+  measure W s <
+  measure W (iterateStep step (suc n) s)
+strictProgressAfterIterate W zero s =
+  stepProgress W s
+strictProgressAfterIterate W (suc n) s =
+  transitive W
+    (stepProgress W s)
+    (strictProgressAfterIterate W n (step s))
+
+noPositiveFiniteCycleFromStrictProgress :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_)
+  (n : Nat)
+  (s : State) →
+  iterateStep step (suc n) s ≡ s →
+  ⊥
+noPositiveFiniteCycleFromStrictProgress W n s eq =
+  irreflexive W
+    (measure W s)
+    (subst
+      (lambda t → measure W s < measure W t)
+      eq
+      (strictProgressAfterIterate W n s))
+
+canonicalTotalCountStrictProgress :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A) →
+  StrictProgressWitness
+    (C.FullLearnerState A)
+    Nat
+    (C.canonicalFullStep K)
+    _<_
+canonicalTotalCountStrictProgress K =
+  strictProgressWitness
+    (lambda s → C.totalCount (C.lcbCounts s))
+    (lambda s → C.canonicalTotalCountStep K s)
+    <-trans
+    <-irrefl
+
+canonicalNoPositiveCycleFromTotalCount :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (n : Nat)
+  (s : C.FullLearnerState A) →
+  iterateStep (C.canonicalFullStep K) (suc n) s ≡ s →
+  ⊥
+canonicalNoPositiveCycleFromTotalCount K n s =
+  noPositiveFiniteCycleFromStrictProgress
+    (canonicalTotalCountStrictProgress K)
+    n
+    s
