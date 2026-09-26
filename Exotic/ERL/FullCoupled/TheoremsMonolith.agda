@@ -5214,3 +5214,61 @@ monolithEGraphClosureCertificate-from-proof W =
   monolithEGraphClosureCertificate
     W
     (λ e → proofWitness W e)
+
+
+------------------------------------------------------------------------
+-- Unconditional finite-candidate price kernel.
+--
+-- This is deliberately weaker than a Walrasian existence theorem:
+-- for any finite candidate-price list and an explicit decision procedure
+-- for the supporting relation at the chosen allocation, the kernel
+-- unconditionally returns either a supporting-price witness or a complete
+-- rejection certificate for the supplied candidate list.
+--
+-- No new imports are required. The result does not claim that a supporting
+-- price exists outside the supplied finite candidate set.
+------------------------------------------------------------------------
+
+data FiniteCandidateDecision (P : Set) : Set where
+  acceptCandidate : P → FiniteCandidateDecision P
+  rejectCandidate : (P → ⊥) → FiniteCandidateDecision P
+
+FiniteCandidatePriceResult :
+  (Price Allocation : Set) →
+  (supports : Price → Allocation → Set) →
+  Allocation →
+  Set₁
+FiniteCandidatePriceResult Price Allocation supports allocation =
+  (Σ Price (λ p → supports p allocation))
+  ⊎
+  List (Σ Price (λ p → supports p allocation → ⊥))
+
+finiteCandidatePriceSearch :
+  ∀ {Price Allocation : Set}
+  (supports : Price → Allocation → Set)
+  (allocation : Allocation)
+  (decide : ∀ p → FiniteCandidateDecision (supports p allocation))
+  (candidates : List Price) →
+  FiniteCandidatePriceResult Price Allocation supports allocation
+finiteCandidatePriceSearch supports allocation decide [] =
+  inj₂ []
+finiteCandidatePriceSearch supports allocation decide (p ∷ ps) with decide p
+... | acceptCandidate witness =
+  inj₁ (p , witness)
+... | rejectCandidate refute with
+  finiteCandidatePriceSearch supports allocation decide ps
+...   | inj₁ witness =
+  inj₁ witness
+...   | inj₂ rejected =
+  inj₂ ((p , refute) ∷ rejected)
+
+finiteCandidatePriceSearch-complete :
+  ∀ {Price Allocation : Set}
+  (supports : Price → Allocation → Set)
+  (allocation : Allocation)
+  (decide : ∀ p → FiniteCandidateDecision (supports p allocation))
+  (candidates : List Price) →
+  FiniteCandidatePriceResult Price Allocation supports allocation
+finiteCandidatePriceSearch-complete =
+  finiteCandidatePriceSearch
+
