@@ -1,0 +1,71 @@
+flowchart LR
+  CL["Canonical learner definitions"]:::current --> BP["canonicalBehaviorPolicy / exact sparsemax weight readout"]:::current
+  BP --> CF["factor / observation frontier"]:::next
+
+  subgraph IMP["Six theorem improvements"]
+    SR["StrictProgressRelation / reusable strict relation"]:::proved
+    SP["StrictProgressWitness / cycle exclusion"]:::proved
+    SR --> SP
+    FT["FactorTransitionWitness / factor step + commuting square"]:::proved
+    RF["RelationFactorTransitionWitness / relation-respecting factor"]:::proved
+    FT --> RF
+    CP["canonicalPolicyFactorTransition / explicit factorStep witness"]:::conditional
+    RF --> CP
+    SC["StepConjugacyWitness / inverse + one-step square"]:::proved
+    SI["stepConjugacy-iterate"]:::proved
+    PT["stepConjugacy-property-transport"]:::proved
+    SC --> SI
+    SC --> PT
+    EA["Explicit production assumptions"]:::proved
+    PF["ProductionFeasibilityWitness"]:::proved
+    FO["FirmProfitOptimalityWitness"]:::proved
+    CO["ConsumerOptimalityWitness"]:::proved
+    CF2["ConsumptionFeasibilityWitness"]:::proved
+    AF["AggregateFeasibilityWitness"]:::proved
+    MC["MarketClearingWitness"]:::proved
+    PR["SupportingPriceWitness"]:::proved
+    EA --> PF --> FO --> CO --> CF2 --> AF --> MC --> PR
+    DS["DistributionalStationaryAggregateTransport"]:::proved
+    DS2["distributionalStationaryAggregate-stationary"]:::proved
+    DS --> DS2
+    EG["SemanticEdgeMetadata"]:::proved
+    CE["CertifiedEGraphEdge"]:::proved
+    ES["eGraph-certified-edge-sound"]:::proved
+    EG --> CE --> ES
+  end
+
+  subgraph EXIST["Existing closed / conditional seams"]
+    NQ["CanonicalNormPairQuotientFactorTransitionTheorem"]:::proved
+    F4["CanonicalF4GlobalOptimizerStabilityTheorem"]:::proved
+    H["CanonicalF4NormPairUnconditionalFactorStabilityTheorem"]:::proved
+    HM["CanonicalLearnerHodgeMaxwellCompositionTheorem"]:::conditional
+    SL["StationaryLimitTheorem"]:::conditional
+  end
+  NQ --> RF
+  NQ --> CP
+  SL --> DS
+  SC --> HM
+  SI --> HM
+  SI --> PT
+
+  subgraph ECON["Economic boundary"]
+    PROD["CompetitiveProductionEconomy"]:::conditional
+    EQ["CompetitiveWalrasianEquilibriumWithProduction"]:::conditional
+    PROD --> EQ
+    PR -. "does not itself prove equilibrium" .-> EQ
+  end
+
+  subgraph EGRAPH["Proof-authoritative graph boundary"]
+    SEARCH["E-graph / A* discovery"]:::current
+    META["metadata: status + assumptions + evidence + proof id"]:::proved
+    PATH["typed EGraphSemanticPath"]:::proved
+    SOUND["eGraph-certified-edge-sound"]:::proved
+    SEARCH --> META
+    META --> PATH
+    PATH --> SOUND
+  end
+
+  classDef current fill:#e1ecff,stroke:#3f6aa3,color:#1d3150;
+  classDef proved fill:#d9f7df,stroke:#2b7a3a,color:#16351e;
+  classDef conditional fill:#fff3cd,stroke:#9a7b00,color:#4d3e00;
+  classDef next fill:#f4e9ff,stroke:#7a4fa3,color:#3a2550;
