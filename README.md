@@ -82,7 +82,6 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
 - [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
-- [Unconditional tragedy-of-the-commons non-derivability — 2026-09-26](docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md)
 - [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
 - [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
@@ -97,6 +96,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
 - [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
 - [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
+- [Unconditional tragedy-of-the-commons non-derivability — 2026-09-26](docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
 - [Unconditional finite-candidate price kernel — 2026-09-26](docs/research/unconditional-finite-price-kernel-2026-09-26.md)
@@ -293,27 +293,39 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 0a64d832d99bf3e4dcbd732526c8708d14c670cb
-unprocessed-commit-count: 17
+last-processed-commit: 1b5ee4c598886b0fadc6203963a9d009e0e72a44
+unprocessed-commit-count: 29
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `0a64d832d99b` docs: refresh strict graph source reference
-- `d37e8a528c4c` docs: add finite candidate classification boundary
-- `c3e502b6f85f` docs: connect finite candidate price boundary
-- `56ab3a39725a` docs: graph finite candidate price classification
-- `2d220d9d6965` docs: connect finite price classification boundary
-- `e00ac6ff0d0d` docs: graph finite-candidate price classification
-- `9d1e38f4115d` docs: index finite-candidate price kernel
-- `0cc84be71cb5` ci: gate finite-candidate price classification surface
-- `11e5fc537129` docs: record finite-candidate price classification boundary
-- `60aa52cb04ff` docs: record finite-candidate price classification boundary
-- `466bf8b3c7ef` docs: record finite-candidate price classification boundary
-- `ac8d6af4e4ae` docs: record finite-candidate price classification boundary
-- `0f01de82bcfa` docs: record finite-candidate price classification boundary
-- `1094bc558a27` docs: record finite-candidate price classification boundary
-- `68edb6d82aee` Document unconditional finite-candidate price kernel
-- `7c77389d614c` Add unconditional finite-candidate price kernel
-- `afb34837e6fa` docs: refresh README from commit totality
+- `1b5ee4c59888` Use scale compatibility in fractal injectivity proof
+- `eed75a8986fb` Synchronize composition module and research indexes
+- `33d1bbc02a10` Verify and index all new composition modules
+- `2e0ad7cc0cc2` Fix commons composition equality transport import
+- `3e884cc9de15` Index new composition modules in semantic closure
+- `634c38a7e4d7` Gate GRU fractal composition surface
+- `5768f183e5b0` Index GRU fractal injective composition
+- `87f3eee88b11` Add GRU fractal injectivity discovery graph
+- `44eb9b1203ce` Document GRU-injective fractal composition boundary
+- `b5e2bc6060c4` Fix canonical fractal injectivity imports
+- `2f362dde49a7` Compile fractal GRU injectivity modules in CI
+- `85f3714a0faf` Instantiate fractal injective composition for canonical GRU
+- `8f7f05dbee77` Add generic fractal injective composition kernel
+- `12068367b85f` Complete nested commons graph
+- `9770607f52e3` Formalize nested commons non-derivability
+- `c93ae272b916` Clarify capacity-defined commons preservation
+- `066030bfeed7` Correct commons capacity transport orientation
+- `3b5059e1efb3` Tie commons preservation directly to capacity
+- `4c872a4ceb49` Document explicit commons depletion quantities
+- `941646138d4a` Make commons depletion mechanism explicit
+- `56277934c0f9` Gate explicit commons depletion theorem surface
+- `7ee88931e33b` Graph explicit commons depletion path
+- `facaf012adfc` Document explicit commons depletion countermodel
+- `b304ae424f5b` Strengthen commons countermodel with explicit depletion mechanism
+- `8a5504e7bc11` Require commons non-derivability theorem in CI
+- `40125547f617` Add tragedy-of-the-commons non-derivability graph
+- `52867656395a` Document unconditional commons non-derivability boundary
+- `77f003d317ba` Add unconditional commons preservation non-derivability theorem
+- `0d1a0f4e8bd0` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
