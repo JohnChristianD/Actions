@@ -1,0 +1,111 @@
+flowchart TD
+  classDef proved fill:#d9f7df,stroke:#2b7a3d,color:#16351e;
+  classDef conditional fill:#fff3cd,stroke:#9a7b00,color:#4d3e00;
+  classDef frontier fill:#fde2e2,stroke:#a33a3a,color:#5a1e1e;
+  classDef blocked fill:#eadcf8,stroke:#6b3fa0,color:#392050;
+  classDef literature fill:#e1ecff,stroke:#3f6aa3,color:#1d3150;
+
+  K["Canonical learner definitions"]:::proved
+  BP["canonicalBehaviorPolicy<br/>BehaviorPolicy = Nat → SparseWeight"]:::proved
+  BA["canonicalBehaviorAction = canonicalPolicy"]:::proved
+  K --> BP --> BA
+
+  SPW["StrictProgressWitness<br/>arbitrary Set state/measure"]:::proved
+  SPI["strictProgressAfterIterate"]:::proved
+  NFC["noPositiveFiniteCycleFromStrictProgress"]:::proved
+  SPW --> SPI --> NFC
+
+  TC["canonicalTotalCountStrictProgress"]:::proved
+  TCC["canonicalNoPositiveCycleFromTotalCount"]:::proved
+  K --> TC --> TCC
+  TC --> NFC
+
+  CLK["canonicalNoNontrivialFiniteCycle-theorem<br/>clock-based proof"]:::proved
+  TCC -. "clock-free alternative" .-> CLK
+
+  REP["Set-polymorphic representation carrier"]:::proved
+  L1["LawIPhysicsWitness"]:::conditional
+  L3["LawIIIVariationalWitness"]:::conditional
+  PTL["PhysicsToLearnerTransitionWitness"]:::conditional
+  FOUR["FourLawOneStepWitnessContract"]:::conditional
+  ITER["iterateConjugacy"]:::proved
+  PREF["prefixScanConjugacy"]:::proved
+  REP --> L1
+  REP --> L3
+  REP --> PTL
+  L1 --> FOUR
+  L3 --> FOUR
+  PTL --> FOUR
+  FOUR --> ITER
+  FOUR --> PREF
+
+  MISS["Missing Law-I / Law-III / physics→learner inhabitant"]:::frontier
+  MISS -. "blocks contract instantiation" .-> FOUR
+
+  STAT["Tsallis / statistical carrier"]:::conditional
+  HX["Hodge-Maxwell representation"]:::conditional
+  CHT["GRU ↔ Hodge-Maxwell transport"]:::frontier
+  STAT --> HX --> CHT
+
+  LEARN["Exact learner factor stability"]:::proved
+  CONV["Convergence witness"]:::frontier
+  FIX["Fixed-point witness"]:::frontier
+  MC["Market clearing"]:::frontier
+  PRICE["Supporting / derived price"]:::frontier
+  WEX["Walrasian existence"]:::frontier
+  LEARN -. "does not entail" .-> CONV
+  CONV -. "required input" .-> FIX
+  FIX -. "required bridge" .-> MC
+  MC -. "required economic construction" .-> PRICE
+  PRICE -. "required equilibrium witness" .-> WEX
+
+  PROD["Competitive production economy"]:::conditional
+  PLAN["Feasible production plans"]:::conditional
+  PROF["Profit-maximizing production"]:::conditional
+  DEM["Consumer optimality / demand"]:::conditional
+  BAL["Aggregate resource balance"]:::conditional
+  PROD --> PLAN --> PROF --> BAL
+  PROD --> DEM --> BAL
+  BAL --> MC
+  MC --> WEX
+
+  FWE["First-welfare route"]:::conditional
+  SWE["Second-welfare supportability"]:::conditional
+  SWB["Second-welfare boundary countermodel"]:::blocked
+  WEX --> FWE
+  WEX --> SWE
+  SWE --> PRICE
+  SWB -. "blocks unconditional supportability" .-> SWE
+
+  EMPTY["Generalized-Walrasian empty-equilibrium countermodel"]:::blocked
+  EMPTY -. "blocks unconditional existence" .-> WEX
+
+  POMDP["POMDP belief / policy / stationarity bridge"]:::frontier
+  STATLAW["Stationary-law witness"]:::frontier
+  POMDP --> STATLAW
+
+  RGL["Radner semantic embedding"]:::proved
+  REX["Radner existence transport"]:::conditional
+  RGL --> REX
+
+  GSQ["MegaWalrasian global square"]:::conditional
+  GSI["Global-square injectivity"]:::conditional
+  EQT["Equilibrium transport"]:::conditional
+  WLT["Welfare transport"]:::conditional
+  GSQ --> GSI --> EQT --> WLT
+
+  EGRAPH["Proof-authoritative semantic e-graph"]:::proved
+  MERC["Mercury discovery / equality saturation"]:::proved
+  MERM["Mermaid topology projection"]:::proved
+  EGRAPH --> MERC --> MERM
+  MERM --> FOUR
+  MERM --> WEX
+  MERM --> NFC
+
+  LIT["Econlib: Walrasian existence + welfare + Walras' law + production layer"]:::literature
+  LIT --> PROD
+  LIT --> FWE
+  LIT --> SWE
+
+  NB["Boundary rule:<br/>graph membership is not an Agda proof"]:::proved
+  MERM --> NB
