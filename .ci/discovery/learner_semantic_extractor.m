@@ -275,7 +275,7 @@ read_all_sources([File | Files], Acc, Result, !IO) :-
     (
         ReadResult = ok(Lines),
         parse_lines(
-            "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+            File,
             Lines,
             Decls),
         read_all_sources(Files, Decls ++ Acc, Result, !IO)
