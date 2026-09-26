@@ -15,8 +15,8 @@
 :- import_module string.
 :- import_module interpolated_theorem_egraph.
 
-:- func current_targets = list(string).
-current_targets = [
+ :- func frontier_targets = list(string).
+frontier_targets = [
     "CanonicalIntegerGRUGlobalConjugateTheorem",
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "GRUFractalLimitConvergenceWitness",
@@ -64,7 +64,7 @@ add_target_exprs([Name | Names], E0, E) :-
 
 main(!IO) :-
     read_semantic_laws(Laws, !IO),
-    current_targets(Targets),
+    frontier_targets(Targets),
     partition_targets(Targets, Laws, Fresh, Stale),
     discovery_egraph_from_laws(Laws, E0, QuotientCount),
     add_target_exprs(Fresh, E0, E1),
