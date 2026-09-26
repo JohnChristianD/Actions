@@ -1,0 +1,13 @@
+flowchart TD
+  G["Canonical Integer-GRU global left inverse"] --> F["Finite/indexed fractal composition"]
+  F --> A["Compatible approximation sequence"]
+  A --> CW["Supplied Converges witness"]
+  CW --> W["GRUFractalLimitConvergenceWitness"]
+  D["Coherent finite/limit decoder"] --> W
+  LI["Finite decoder left inverse"] --> W
+  W --> L["Limit-surviving left inverse"]
+  L --> S["Limit separation"]
+  S --> I["Arbitrary-limit GRU injectivity"]
+  CW -. "does not prove convergence itself" .-> B["Analytic convergence remains a supplied obligation"]
+  A -. "does not manufacture a limit carrier" .-> B
+  F -. "finite injectivity alone is insufficient" .-> B
