@@ -1,13 +1,14 @@
 flowchart TD
-  LO["Individual/local optimality"] -->|all agents locally optimal| CO["Common-resource state"]
-  CO --> X["X Unconditional commons preservation"]
-  X -. "countermodel" .-> TC["Tragedy-of-the-commons boundary"]
-  TC --> DEPL["Aggregate preservation can fail"]
+  LO["Individual/local optimality"] --> EXT["Private extraction"]
+  EXT --> CO["One-unit shared resource"]
+  CO --> AGG["Two-unit aggregate extraction"]
+  AGG -. "capacity violated" .-> X["X Unconditional commons preservation"]
+  X -. "countermodel" .-> TC["Tragedy-of-the-commons non-derivability"]
   LO --> MC["Market clearing"]
-  MC --> X2["X Preservation is not implied"]
+  MC -. "not sufficient" .-> X
   CO --> COUP["Explicit coupling"]
   COUP --> CONS["Aggregate conservation"]
   CONS --> SUST["Sustainable allocation"]
   MC --> PRICE["Supporting / derived price"]
   PRICE --> WE["Walrasian equilibrium"]
-  PRICE -. "not a commons-preservation theorem" .-> X2
+  PRICE -. "not a commons-preservation theorem" .-> X
