@@ -5353,10 +5353,10 @@ noUnconditionalCommonsPreservation C D =
   twoNotLeOne
     (subst
       (λ n → n ≤ suc zero)
-      (sym (capacityIsOne C))
+      (capacityIsOne C)
       (subst
         (λ n → suc (suc zero) ≤ n)
-        (sym (aggregateExtractionIsTwo C))
+        (aggregateExtractionIsTwo C)
         (derive D
           (commonsWorld C)
           (allLocallyOptimal C))))
