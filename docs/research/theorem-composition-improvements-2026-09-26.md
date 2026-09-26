@@ -122,3 +122,21 @@ External references checked 2026-09-26:
 - Agda Data.Nat.Properties: +-cancelˡ-≡.
 - Svete & Cotterell, Recurrent Neural Language Models as Probabilistic Finite-state Automata, EMNLP 2023.
 - Blelloch, Prefix Sums and Their Applications, CMU-CS-90-190.
+### 10. nLab homomorphism/action distinction
+
+The supplied nLab definitions sharpen the reason the two repository abstractions should remain separate.
+
+A monoid homomorphism preserves the monoid multiplication and identity. In the action viewpoint, a monoid action is a functor from the delooping `BM` into the target category, equivalently a map `M × X → X` satisfying unit and composition laws. An action homomorphism is correspondingly an equivariant map between actions. urlnLab: homomorphismhttps://ncatlab.org/nlab/show/homomorphism urlnLab: actionhttps://ncatlab.org/nlab/show/action
+
+That distinction maps directly onto the repository search:
+
+- `RecurrentPrefixMonoidHomomorphism` is the algebraic prefix-composition surface: it packages preservation of the prefix monoid structure by recurrent endomorphisms.
+- `FreeMonoidActionHomomorphism` is the action/transport surface: it packages the commuting-square relationship between source feature transitions, target transitions, and observations.
+- `freeMonoidActionHomomorphism-from-square` explicitly constructs the latter from a commuting-square witness, so it is not merely a second spelling of the former.
+- `canonicalCount-freeMonoidActionHomomorphism` is a canonical learner instance of the action-transport surface.
+
+Therefore the nLab distinction is evidence against the proposed Ponytail deletion: these are different semantic contracts even when both expose concatenation-compatible behavior. The minimal future improvement is an explicit adapter only if the codebase needs to transport a proved monoid-homomorphism package into an equivariant action-homomorphism package (or conversely). Until such a use exists, adding an adapter would be speculative abstraction.
+
+This also explains why the arbitrary-length token theorem can legitimately consume `canonicalToken-prefix-monoid-homomorphism` while the commuting-square machinery separately consumes `FreeMonoidActionHomomorphism`: the former is preservation of an algebraic composition law; the latter is compatibility of actions across a square.
+
+External primary source checked 2026-09-26: nLab homomorphism and action definitions.
