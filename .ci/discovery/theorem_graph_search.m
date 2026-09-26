@@ -496,7 +496,8 @@ graph_required_theorems = [
     "topologicalConvergenceWitness-from-finite-rank-stability",
     "canonicalFullLearner-no-finite-rank-stability",
     "EconomicConvergenceFromPrimitiveAssumptions",
-    "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions"
+    "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions",
+    "CanonicalIntegerGRUFractalLimitCompositionTheorem"
 ].
 
 :- func graph_required_subcompositions = list(string).
