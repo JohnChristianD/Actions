@@ -259,3 +259,14 @@ The CI contract must check the current theorem names and current graphs only. Hi
 When documentation and source disagree, the Agda source and the current Dhall verification contract are authoritative; the documentation must then be corrected to match them.
 
 The repository no longer treats `docs/wiki.md` as a canonical source; the README, theorem monolith, CI contract, and focused research notes are the maintained knowledge surface.
+
+## Scheduled commit-totality README refresh
+
+The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
+
+<!-- BEGIN RECENT COMMIT TOTALITY -->
+last-processed-commit: 091ee6eca250e9a6505f6793b0c3fdfb7f45f1d6
+unprocessed-commit-count: 0
+
+The next scheduled run will account for every commit after this bootstrap point.
+<!-- END RECENT COMMIT TOTALITY -->
