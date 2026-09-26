@@ -6,7 +6,7 @@
 -- This module is deliberately arithmetic-free: the abstract Law-IV
 -- representation needs only Set, functions, and propositional equality.
 -- A Tsallis/q-statistical interpretation may instantiate the observation
--- carrier, but no Real, Rational, Vec, or Fin n carrier is required here.
+-- carrier, but no Real or Rational specialization is required here; the observation carrier is an arbitrary Set.
 --
 -- The representation theorem is structural. External statistical
 -- literature motivates possible instantiations; it is not imported as an
