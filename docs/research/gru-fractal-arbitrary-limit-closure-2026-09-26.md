@@ -78,3 +78,22 @@ Integer token left inverse → token-encoding injectivity → discrete-topology 
 This is stronger than treating limitSeparation as a primitive assumption for the existing global representation. It still does not instantiate a genuine analytic fractal-limit carrier: a future limit representation must supply its own limit decoder/projection/coherence or another surviving left-inverse construction. The discrete continuity theorem is deliberately not a claim of analytic continuity.
 
 The e-graph/A* interpretation therefore has a concrete source node for the global-left-inverse edge. A* may discover the path, but Agda remains the authority for every equality.
+
+
+## A* target closure update
+
+The canonical theorem monolith now exposes a generic composition target named
+`CanonicalIntegerGRUFractalLimitCompositionTheorem`. Its inputs are explicit:
+a genuine limit-encoding kernel must be supplied. The theorem combines the already
+proved global Integer-GRU conjugacy with the supplied surviving limit left inverse
+and derives limit injectivity via `gruFractalLimitComposition-limitInjective`.
+
+This deliberately closes the **search/composition seam**, not the analytic-limit
+frontier. No concrete `limitEncode`, convergence theorem, projection family, or
+limit decoder is manufactured by this target. The Mercury discovery graph now
+registers the target for A*-style traversal; Agda remains authoritative.
+
+The resulting status is therefore:
+`global Integer-GRU left inverse/conjugacy` = proved;
+`generic limit-left-inverse ⇒ limit-injectivity composition` = proved;
+`concrete fractal limit carrier + surviving decoder` = explicit frontier.
