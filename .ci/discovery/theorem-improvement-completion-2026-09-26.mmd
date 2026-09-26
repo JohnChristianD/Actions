@@ -26,6 +26,7 @@ flowchart LR
     PR["SupportingPriceWitness"]:::proved
     FCS["finiteCandidatePriceSearch<br/>finite candidate classification"]:::conditional
     EA --> PF --> FO --> CO --> CF2 --> AF --> MC --> PR
+    FCS -. "explicit decision procedure required" .-> PR
     DS["DistributionalStationaryAggregateTransport"]:::proved
     DS2["distributionalStationaryAggregate-stationary"]:::proved
     DS --> DS2
