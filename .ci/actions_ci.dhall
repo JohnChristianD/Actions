@@ -15,6 +15,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
@@ -29,6 +30,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
@@ -75,11 +77,14 @@ let script = merge {
     done
 
     for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4NormWatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       CanonicalF4NormPairIterateFactorStabilityTheorem       canonicalTotalCountSuccessorWitness       canonical-token-arbitrary-length-generation-theorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability       FiniteCandidateDecision       FiniteCandidatePriceResult       finiteCandidatePriceSearch       finiteCandidatePriceSearch-complete       CommonsPreservationDerivation       CommonsNonDerivabilityCounterexample       noUnconditionalCommonsPreservation       twoNotLeOne       twoAgentCommonsCounterexample       noUnconditionalCommonsPreservation-twoAgent
-       FractalInjectiveComposition
-       fractalLevelInjective
-       fractalTransportedEncodeInjective
     do
       grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
+    done
+    for symbol in FractalInjectiveComposition fractalLevelInjective fractalTransportedEncodeInjective; do
+      grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda || { echo "fractal kernel symbol missing: $symbol"; exit 1; }
+    done
+    for symbol in canonicalGRUFractal canonicalGRUFractalLevelInjective canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleInjective; do
+      grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda || { echo "canonical fractal symbol missing: $symbol"; exit 1; }
     done
 
     grep -Fq 'does not entail' "$graph" || { echo "economic non-implication boundary missing"; exit 1; }
@@ -115,7 +120,7 @@ let script = merge {
     do
       grep -Fq "$module" Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "Agda semantic index missing: $module"; exit 1; }
     done
-    for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda GRUFractalInjectiveComposition.agda GRUFractalInjectiveCompositionCanonical.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
+    for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda CommonsComposition.agda GRUFractalInjectiveComposition.agda GRUFractalInjectiveCompositionCanonical.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
     do
       [ -f "Exotic/ERL/FullCoupled/$file" ] || { echo "surviving Agda file missing from repository surface: $file"; exit 1; }
     done
@@ -548,6 +553,7 @@ JSON
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
