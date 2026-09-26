@@ -26,7 +26,7 @@ Agda::canonicalNoFiniteStepConvergenceToFixedPoint
   contradiction
 ```
 
-The obstruction is conditional on an exact finite-state deterministic projection of the canonical orbit. The full canonical learner carries an unbounded Nat clock, so Econlib's finite-state stationary theorem cannot be applied directly to the full state without that projection.
+The obstruction is conditional on an exact finite-state deterministic projection of the canonical orbit. The full canonical learner is not represented as a finite-state Markov chain merely because its cycle-exclusion invariant is Nat-valued; Econlib's finite-state stationary theorem therefore still requires an explicit finite-state projection.
 
 The graph therefore strengthens the finite-cycle exclusion theorem without claiming a nonexistent unconditional stationary-distribution theorem for the full learner.
 
