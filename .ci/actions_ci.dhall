@@ -123,6 +123,9 @@ let script = merge {
     grep -Fq 'finiteCandidatePriceSearch' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "finite candidate price search kernel missing"; exit 1; }
     [ -f docs/research/unconditional-finite-price-kernel-2026-09-26.md ] || { echo "finite candidate price research note missing"; exit 1; }
     grep -Fq 'CertifiedEGraphEdge' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "e-graph certificate surface missing"; exit 1; }
+    grep -Fq "naive-limit-injectivity-impossible" Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceImpossibility.agda || { echo "limit impossibility theorem missing"; exit 1; }
+    [ -f .ci/discovery/real-semantic-egraph-2026-09-26.mmd ] || { echo "real semantic e-graph graph missing"; exit 1; }
+    [ -f docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md ] || { echo "real semantic e-graph research note missing"; exit 1; }
     [ -f docs/research/theorem-improvement-completion-2026-09-26.md ] || { echo "theorem improvement research note missing"; exit 1; }
     [ -f .ci/discovery/theorem-improvement-completion-2026-09-26.mmd ] || { echo "theorem improvement graph missing"; exit 1; }
 
