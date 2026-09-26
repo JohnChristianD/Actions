@@ -4702,3 +4702,304 @@ noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
   theorem =
   megaNoEquilibriumWitness
     (theorem megaNoEquilibriumGeneralizedWalrasian)
+
+
+------------------------------------------------------------------------
+-- 2026-09-26 theorem-improvement closure layer.
+--
+-- These interfaces deliberately remain in the theorem monolith and use
+-- only the imports already present above. Each bridge is proof-relevant:
+-- no graph edge, semantic label, convergence claim, or economic claim is
+-- promoted without an explicit inhabitant.
+------------------------------------------------------------------------
+
+record MonolithStrictProgressClosure
+  (State Measure : Set)
+  (step : State → State)
+  (_<_ : Measure → Measure → Set) : Set₁ where
+  constructor monolithStrictProgressClosure
+  field
+    witness :
+      StrictProgressWitness State Measure step _<_
+    noPositiveCycle :
+      ∀ n s →
+      iterateStep step (suc n) s ≡ s →
+      ⊥
+
+open MonolithStrictProgressClosure public
+
+monolithStrictProgressClosure-from-witness :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_) →
+  MonolithStrictProgressClosure State Measure step _<_
+monolithStrictProgressClosure-from-witness W =
+  monolithStrictProgressClosure
+    W
+    (λ n s →
+      noPositiveFiniteCycleFromStrictProgress W n s)
+
+canonicalTotalCountStrictProgress-closure :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A) →
+  MonolithStrictProgressClosure
+    (C.FullLearnerState A)
+    Nat
+    (C.canonicalFullStep K)
+    _<_
+canonicalTotalCountStrictProgress-closure K =
+  monolithStrictProgressClosure-from-witness
+    (canonicalTotalCountStrictProgress K)
+
+record MonolithFactorTransitionClosure
+  (State Factor : Set)
+  (step : State → State)
+  (related : State → State → Set)
+  (observe : State → Factor) : Set₁ where
+  constructor monolithFactorTransitionClosure
+  field
+    factorStep : Factor → Factor
+    factorStepCommutes :
+      ∀ s →
+      observe (step s) ≡ factorStep (observe s)
+    observeRespects :
+      ∀ {s t} →
+      related s t →
+      observe s ≡ observe t
+    relationStepPreserved :
+      ∀ {s t} →
+      related s t →
+      related (step s) (step t)
+
+monolithFactorTransition-to-relationWitness :
+  ∀ {State Factor : Set}
+  {step : State → State}
+  {related : State → State → Set}
+  {observe : State → Factor}
+  (W : MonolithFactorTransitionClosure
+    State
+    Factor
+    step
+    related
+    observe) →
+  RelationFactorTransitionWitness
+    State
+    Factor
+    step
+    related
+    observe
+monolithFactorTransition-to-relationWitness W =
+  relationFactorTransitionWitness
+    (factorTransitionWitness
+      (factorStep W)
+      (factorStepCommutes W))
+    (observeRespects W)
+    (relationStepPreserved W)
+
+canonicalNormPairFactorTransitionClosure :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (factorStep : Nat → Nat)
+  (factorStepCommutes :
+    ∀ s →
+    C.canonicalPolicy K (C.canonicalFullStep K s) ≡
+    factorStep (C.canonicalPolicy K s)) →
+  MonolithFactorTransitionClosure
+    (C.FullLearnerState A)
+    Nat
+    (C.canonicalFullStep K)
+    normPairReplacementRelation
+    (C.canonicalPolicy K)
+canonicalNormPairFactorTransitionClosure
+  K
+  factorStep
+  factorStepCommutes =
+  monolithFactorTransitionClosure
+    factorStep
+    factorStepCommutes
+    (canonicalPolicy-factors-through-NormPair K)
+    (canonicalNormPairQuotient-step-compatible K)
+
+record MonolithCommutingSquareTransport
+  (A B : Set)
+  (sourceStep : A → A)
+  (targetStep : B → B) : Set₁ where
+  constructor monolithCommutingSquareTransport
+  field
+    square :
+      StepConjugacyWitness A B sourceStep targetStep
+
+monolithCommutingSquare-iterate :
+  ∀ {A B : Set}
+  {sourceStep : A → A}
+  {targetStep : B → B}
+  (W : MonolithCommutingSquareTransport
+    A B
+    sourceStep
+    targetStep)
+  (n : Nat)
+  (a : A) →
+  to (isomorphism (square W))
+    (iterateIsomorphism sourceStep n a)
+  ≡
+  iterateIsomorphism targetStep n
+    (to (isomorphism (square W)) a)
+monolithCommutingSquare-iterate W =
+  stepConjugacy-iterate (square W)
+
+monolithCommutingSquare-property :
+  ∀ {A B : Set}
+  {sourceStep : A → A}
+  {targetStep : B → B}
+  (W : MonolithCommutingSquareTransport
+    A B
+    sourceStep
+    targetStep)
+  (P : A → Set)
+  (Q : B → Set)
+  (bridge :
+    ∀ a →
+    P a →
+    Q (to (isomorphism (square W)) a))
+  (preserved :
+    ∀ b →
+    Q b →
+    Q (targetStep b)) →
+  ∀ n a →
+  P a →
+  Q
+    (iterateIsomorphism targetStep n
+      (to (isomorphism (square W)) a))
+monolithCommutingSquare-property W P Q bridge preserved =
+  stepConjugacy-property-transport
+    (square W)
+    P
+    Q
+    bridge
+    preserved
+
+record MonolithProductionSideAssumptionBundle
+  (Agent Firm Price Consumption ProductionPlan Allocation : Set)
+  (consumer : Agent → Consumption)
+  (production : Firm → ProductionPlan)
+  (price : Price)
+  (allocation : Allocation)
+  (consumerOptimal : Agent → Consumption → Set)
+  (productionFeasible : Firm → ProductionPlan → Set)
+  (firmOptimal : Firm → Price → ProductionPlan → Set)
+  (consumptionFeasible : Agent → Consumption → Set)
+  (aggregateFeasible : Allocation → Set)
+  (marketClearing : Price → Allocation → Set)
+  (supportingPrice : Price → Allocation → Set) : Set₁ where
+  constructor monolithProductionSideAssumptionBundle
+  field
+    consumerOptimality :
+      ∀ i →
+      consumerOptimal i (consumer i)
+    productionFeasibility :
+      ∀ j →
+      productionFeasible j (production j)
+    firmProfitOptimality :
+      ∀ j →
+      firmOptimal j price (production j)
+    consumptionFeasibility :
+      ∀ i →
+      consumptionFeasible i (consumer i)
+    aggregateFeasibility :
+      aggregateFeasible allocation
+    marketClearingWitness :
+      marketClearing price allocation
+    supportingPriceWitness :
+      supportingPrice price allocation
+
+open MonolithProductionSideAssumptionBundle public
+
+record MonolithStationaryLawBridge
+  (Distribution Economic : Set)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set)
+  (aggregate : Distribution → Economic)
+  (economicStep : Economic → Economic) : Set₁ where
+  constructor monolithStationaryLawBridge
+  field
+    distributionalLimit :
+      StationaryLimitTheorem
+        Distribution
+        P
+        μ
+        μ∞
+        Converges
+    aggregateCommutes :
+      ∀ d →
+      aggregate (P d) ≡ economicStep (aggregate d)
+
+monolithStationaryLawBridge-stationary :
+  ∀ {Distribution Economic : Set}
+  {P : Distribution → Distribution}
+  {μ : Nat → Distribution}
+  {μ∞ : Distribution}
+  {Converges : (Nat → Distribution) → Distribution → Set}
+  {aggregate : Distribution → Economic}
+  {economicStep : Economic → Economic}
+  (W :
+    MonolithStationaryLawBridge
+      Distribution
+      Economic
+      P
+      μ
+      μ∞
+      Converges
+      aggregate
+      economicStep) →
+  economicStep (aggregate μ∞) ≡ aggregate μ∞
+monolithStationaryLawBridge-stationary W =
+  distributionalStationaryAggregate-stationary
+    (distributionalStationaryAggregateTransport
+      (distributionalLimit W)
+      (aggregateCommutes W))
+
+record MonolithEGraphProofCertificate
+  (Node Edge Assumption : Set) : Set₁ where
+  constructor monolithEGraphProofCertificate
+  field
+    source : Edge → Node
+    target : Edge → Node
+    semanticAssumption : Edge → Assumption
+    proofWitness : Edge → Set
+    proofSound :
+      ∀ e →
+      proofWitness e
+    assumptionToProof :
+      ∀ e →
+      semanticAssumption e → proofWitness e
+
+record MonolithEGraphClosureCertificate
+  (Node Edge Assumption : Set) : Set₁ where
+  constructor monolithEGraphClosureCertificate
+  field
+    certificate :
+      MonolithEGraphProofCertificate
+        Node
+        Edge
+        Assumption
+    closedEdge :
+      Edge → Set
+
+monolithEGraphClosureCertificate-from-proof :
+  ∀ {Node Edge Assumption : Set}
+  (W :
+    MonolithEGraphProofCertificate
+      Node
+      Edge
+      Assumption) →
+  MonolithEGraphClosureCertificate
+    Node
+    Edge
+    Assumption
+monolithEGraphClosureCertificate-from-proof W =
+  monolithEGraphClosureCertificate
+    W
+    (λ e → proofWitness W e)
