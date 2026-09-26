@@ -1,56 +1,66 @@
-# Arbitrary-limit closure for GRU-injective fractal composition — 2026-09-26
+# Arbitrary-limit GRU fractal closure and e-graph/A* composition — 2026-09-26
 
-## Summary
+## Core correction
 
-The finite/indexed fractal kernel does not by itself justify an arbitrary-depth or limit-level injectivity theorem. This change makes that boundary explicit.
+The canonical Integer/GRU representation already has the important global mechanism: when an encoder has a global decoder with a left-inverse law, global injectivity is derived. A separate global “separation” axiom is unnecessary for that encoder.
 
-The new FractalLimitClosure contract separates three facts: each indexed representation is an approximation to a limit representation; the approximation relation is witnessed for every level; and the limit representation is separating/injective on the state carrier.
+The new limit boundary is different. For a new limit encoder `limitEncode`, injectivity is immediate once a decoder survives the limit with
 
-The resulting fractalLimitInjective theorem is therefore conditional on an explicit limit-separation witness. Convergence or completeness alone is not promoted to injectivity.
+`limitDecode (limitEncode s) ≡ s`.
 
-## Exact graph closure
+Therefore the repository now derives limit separation from a typed `LimitLeftInverse` record instead of treating separation as an unrelated mathematical principle. The distinction is:
 
-GRU decode-after-encode
-→ local injectivity
-→ level-indexed injectivity
-→ injective inter-level transport
-→ transport/encoding compatibility
-→ finite/indexed GRU-injective fractal composition
-→ compatible approximation sequence
-→ existence of a limit representation
-→ limit separation / uniqueness
-→ arbitrary-limit GRU-injective closure
+`global left inverse → global injectivity`
 
-The last implication is deliberately split. A limit may exist while distinct states become indistinguishable at the limit. Thus finite-level injectivity plus convergence does not imply limit injectivity.
+and, for the limit representation,
 
-A positive limit theorem needs an additional separation mechanism, for example a uniform lower bound, an injective limit operator, a left inverse that survives the limit, or another domain-specific observability theorem.
+`limit-surviving left inverse → limit separation → limit injectivity`.
 
-## Navier–Stokes relevance audit
+The approximation/limit record remains intentionally conservative: convergence or completeness alone does not prove separation.
 
-The current September 2026 Navier–Stokes AI result is useful as a boundary example, not as a missing premise for the fractal theorem.
+## E-graph + A* closure
 
-OpenAI's public Lean repository formalizes finite-time blow-up results for smooth forced 3D incompressible Navier–Stokes on both Euclidean space and the periodic torus. Its formalization metadata reports zero sorry counts for the listed main results and records the Lean axioms used by those theorem declarations. The repository also provides Comparator challenge material for independent checking.
+The repository already contains the proof-only e-graph kernel in `EGraphSemanticTransport.agda` and the repository-wide indexed closure in `RepositorySemanticEGraphClosure.agda`. The discovery side uses Mercury's `semantic_law` graph and A*-style cost-guided traversal; Agda `--safe` remains the proof authority.
 
-This is algebraically compatible with the repository's methodology in one important sense: the external result is exposed as typed Lean propositions rather than being treated as an informal AI claim. However, it is not a direct algebraic inhabitant of FractalInjectiveComposition or FractalLimitClosure.
+The completed composition path for this boundary is:
 
-The useful transferable pattern is PDE dynamics → finite-time singularity / failure of global smooth continuation → explicit obstruction to an assumed global limit or continuation theorem.
+`GRU decode-after-encode`
+→ `global GRU injectivity`
+→ `level-indexed injectivity`
+→ `injective inter-level transport`
+→ `finite/indexed fractal composition`
+→ `compatible approximation`
+→ `limit representation`
+→ `limit-surviving left inverse`
+→ `derived limit separation`
+→ `arbitrary-limit injectivity`.
 
-It does not establish a limit of the repository's GRU encodings, convergence of the learner trajectory, uniqueness of a representation limit, injectivity of a limit representation, a global fixed point, market clearing, or equilibrium.
+A* may choose a low-cost discovery path, but its cost or heuristic is never semantic evidence. A typed e-graph path is sound only through the existing Agda semantic interpretation.
 
-## Algebraic-consistency assessment
+## Physics four-law interpretation
 
-The public Lean formalization is structurally consistent with the typed-proof approach: its top-level Navier–Stokes file imports the formalized result modules, and the repository states that the build uses Lean 4.34.0-rc2, Mathlib, and Lake. The main result declarations are explicit existential/non-existence propositions rather than prose claims.
+The September 2026 Navier–Stokes formalization is useful here as a continuation boundary. It does not prove the four physics MARL laws and it is not an inhabitant of the GRU fractal kernel. Its relevant role is to block the invalid inference
 
-That is strong evidence of machine-checkable consistency of the published Lean artifacts, but it is not an independent mathematical audit of every analytic argument. The repository itself reports the proof-assistant axioms propext, Classical.choice, and Quot.sound for the main results.
+`finite/local dynamical structure → arbitrary global smooth continuation`.
 
-For this repository, the result is therefore best used as a limit/continuation boundary reference, not imported as an Agda theorem or used as evidence that fractal limits preserve injectivity.
+For the four-law interpretation, the positive route remains explicit:
 
-## Formal boundary
+`Law-I witness + Law-III witness + physics→learner transition`
+→ `finite-step conjugate dynamics`
+→ `fractal composition`.
 
-GRUFractalLimitClosure.agda intentionally does not manufacture a convergence theorem. It makes the missing mathematical obligation visible as limitSeparation.
+The Navier–Stokes result is a negative/guard edge around arbitrary continuation, not a positive proof edge into the four laws.
 
-The next genuinely stronger step would be to instantiate a metric/topological limit carrier and prove a non-collapse/separation theorem for the specific GRU representation. That should only be promoted to an unconditional theorem after its hypotheses are formalized and checked.
+## Economic boundary
 
-## Verification intent
+The same graph discipline is retained downstream. Exact representation/injectivity does not manufacture convergence, fixed points, market clearing, supporting prices, or Walrasian equilibrium existence. Economic adapters require their own representation and witness contracts.
 
-The module is --safe and belongs beside the existing generic fractal composition kernel. The discovery graph is explanatory; the Agda contract is authoritative for the formal boundary.
+## Formal files
+
+- `GRUFractalLimitClosure.agda`: explicit approximation/limit-separation contract.
+- `GRUFractalEGraphAStarLimitComposition.agda`: derives limit separation/injectivity from a surviving left inverse and reuses the proof-only e-graph path soundness kernel.
+- `.ci/discovery/gru-fractal-arbitrary-limit-closure-2026-09-26.mmd`: end-to-end composition/search projection.
+- `EGraphSemanticTransport.agda`: proof-only e-graph/A* transport kernel.
+- `RepositorySemanticEGraphClosure.agda`: repository-wide semantic-family closure.
+
+The new module is `--safe`. No unconditional convergence or limit-existence theorem is introduced.
