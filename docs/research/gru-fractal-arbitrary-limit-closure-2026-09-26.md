@@ -59,6 +59,7 @@ The same graph discipline is retained downstream. Exact representation/injectivi
 
 - `GRUFractalLimitClosure.agda`: explicit approximation/limit-separation contract.
 - `GRUFractalEGraphAStarLimitComposition.agda`: derives limit separation/injectivity from a surviving left inverse and reuses the proof-only e-graph path soundness kernel.
+- `GRUFractalLimitDecoderSurvival.agda`: derives the limit left-inverse law from coherent finite decoder projections; it does not assert limit existence or decoder coherence without witnesses.
 - `.ci/discovery/gru-fractal-arbitrary-limit-closure-2026-09-26.mmd`: end-to-end composition/search projection.
 - `EGraphSemanticTransport.agda`: proof-only e-graph/A* transport kernel.
 - `RepositorySemanticEGraphClosure.agda`: repository-wide semantic-family closure.
