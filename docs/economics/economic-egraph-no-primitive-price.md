@@ -267,3 +267,18 @@ The terminal objective is NOT "remove every mathematical primitive." Logical and
 The target is designed around the repository's generalized Walrasian surface. It deliberately keeps Arrow-Debreu, KKT, and classical Walrasian formulations as specialization/characterization paths rather than adding separate equilibrium semantics.
 
 This is a graph specification, not a claim that all derivation edges are already implemented or proved in Agda.
+
+## Finite candidate-price classification kernel
+
+The theorem monolith now has a constructive finite/discrete kernel, `finiteCandidatePriceSearch`, for classifying a supplied finite candidate-price list. Its result is proof-relevant: either a supplied candidate comes with a supporting proof, or every supplied candidate comes with a rejection proof.
+
+This does not violate the no-primitive-price design. The candidate list and the supporting-relation decision procedure are explicit inputs; the kernel does not manufacture a price from primitive preferences, feasibility, production, separation, KKT, or fixed-point structure. It also does not establish that a supporting price exists outside the supplied candidate set.
+
+Thus the semantic distinction remains:
+
+```
+finite candidate list + explicit decision procedure
+    -> candidate classification
+    -/-> supporting-price derivation from primitives
+    -/-> unconditional equilibrium existence
+```
