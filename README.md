@@ -281,20 +281,21 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: e381a6a1b970b0fd4d50fe206e08149f3ccff7f6
-unprocessed-commit-count: 10
+last-processed-commit: dab37374c22f73476e9d577412ef9091ca29fc1b
+unprocessed-commit-count: 11
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `e381a6a1b970` docs: enumerate frontier theorem identifiers
-- `85c0ee762d6a` fix: synchronize generated README frontier index
-- `378bc1d65942` fix: make strict-progress proof Agda-correct
-- `2840fef2909f` docs: sync carrier policy and frontier boundaries
-- `ef64ee57b378` feat: connect carrier-polymorphic frontier proofs
-- `c4ef82ca4875` feat: expose exact behavior-policy readout
-- `79b21ae46ada` docs: add complete frontier topology
-- `a1918ec11397` docs: record carrier policy and frontier closure
-- `aeabaf80d64f` feat: add carrier-polymorphic cycle frontier
-- `6ab42e2bd687` docs: refresh README from commit totality
+- `dab37374c22f` docs: remove dedicated clock semantics
+- `ca2b72e2ac52` docs: remove dedicated clock semantics
+- `01a0b621546f` docs: remove dedicated clock semantics
+- `182aeab69f80` docs: remove dedicated clock semantics
+- `408b7af06aca` docs: remove dedicated clock semantics
+- `eae0e4a7f5ca` docs: remove dedicated clock semantics
+- `1657b13922d4` docs: remove obsolete finite/vector carrier wording
+- `a97d28d25833` ci: replace clock proof with count proof
+- `e52f5ae76cbe` refactor: replace clock semantics with total-count orbit law
+- `af5c4e7b678e` refactor: remove clock and vector naming
+- `0a340179135d` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
