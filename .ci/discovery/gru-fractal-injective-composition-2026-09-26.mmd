@@ -1,0 +1,28 @@
+flowchart TD
+  GI["Canonical GRU statistical injectivity<br/>decode-after-encode left inverse"] --> LI["Local injectivity"]
+  LI --> IDX["Level-indexed injectivity"]
+
+  REF["Explicit level refinement relation"] --> TR["Injective inter-level transport"]
+  IDX --> COMP["GRU-injective fractal composition"]
+  TR --> COMP
+  COMPAT["Transport / encoding compatibility"] --> COMP
+
+  IDX -. "not sufficient alone" .-> X["X Fractal ⇒ GRU-injective"]
+  REF -. "not sufficient alone" .-> X
+  X -. "counter-boundary" .-> COMP
+
+  subgraph CANON["Canonical scale-invariant instance"]
+    N["Nat levels"] --> LE["m ≤ n refinement"]
+    LE --> ID["Identity transport"]
+    ID --> CG["Canonical GRU fractal injectivity"]
+  end
+
+  COMP --> CG
+
+  CG --> PH["Physics fractal adapters"]
+  CG --> EC["Economics fractal adapters"]
+  CG --> CO["Commons/nested adapters"]
+
+  PH -. "requires explicit representation bridge" .-> CG
+  EC -. "requires explicit representation bridge" .-> CG
+  CO -. "requires explicit representation bridge" .-> CG
