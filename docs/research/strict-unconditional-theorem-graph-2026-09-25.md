@@ -52,3 +52,9 @@ Machine-readable inventory: `.ci/discovery/strict-unconditional-theorems-monolit
 Mermaid graph: `.ci/discovery/strict-unconditional-theorems-monolith.mmd`.
 
 At this snapshot, the strict graph contains 77 theorem/impossibility nodes and 229 source-derived proof-term edges. Another 85 theorem-like declarations are excluded because they require external proof/data records or are not theorem/impossibility declarations under the strict rule.
+
+## Finite-candidate price classification boundary
+
+The new `finiteCandidatePriceSearch` kernel is intentionally absent from the strict unconditional theorem graph. Although its recursion is total, its theorem interface consumes an explicit `FiniteCandidateDecision` procedure. Under the strict graph admission rule, that makes it a supplied-certificate/classification interface rather than a closed unconditional economic theorem.
+
+The kernel is therefore tracked in the broader economic frontier as a constructive finite/discrete candidate-classification result. It does not alter the closed impossibility `noUnconditionalMegaGeneralizedWalrasianExistence`.
