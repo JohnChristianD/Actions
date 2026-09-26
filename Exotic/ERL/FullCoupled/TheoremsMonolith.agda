@@ -5276,23 +5276,24 @@ finiteCandidatePriceSearch-complete =
 ------------------------------------------------------------------------
 -- Unconditional tragedy-of-the-commons non-derivability.
 --
--- This is an interface-level impossibility boundary. It deliberately
--- separates local optimality from the aggregate preservation predicate
--- for a shared resource. The counterexample shows that local optimality
--- plus a common-resource carrier does not unconditionally derive
--- preservation of that resource.
+-- This boundary is deliberately more primitive than price or equilibrium.
+-- It separates individual local optimality from preservation of a shared
+-- resource, and the concrete countermodel makes the depletion mechanism
+-- explicit: two agents each choose the individually optimal one-unit
+-- extraction while the common stock has capacity one.
 ------------------------------------------------------------------------
 
 record CommonsPreservationDerivation
-  (World Agent Resource : Set)
+  (World Agent Action Resource : Set)
   (sharedResource : World → Resource)
-  (localOptimal : World → Agent → Set)
+  (action : World → Agent → Action)
+  (localOptimal : World → Agent → Action → Set)
   (preserves : World → Set) : Set₁ where
   constructor commonsPreservationDerivation
   field
     derive :
       ∀ w →
-      (∀ a → localOptimal w a) →
+      (∀ a → localOptimal w a (action w a)) →
       preserves w
 
 open CommonsPreservationDerivation public
@@ -5302,15 +5303,21 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
   field
     World : Set
     Agent : Set
+    Action : Set
     Resource : Set
     sharedResource : World → Resource
-    localOptimal : World → Agent → Set
+    action : World → Agent → Action
+    localOptimal : World → Agent → Action → Set
     preserves : World → Set
     commonsWorld : World
     commonResource :
       sharedResource commonsWorld
     allLocallyOptimal :
-      ∀ a → localOptimal commonsWorld a
+      ∀ a →
+      localOptimal
+        commonsWorld
+        a
+        (action commonsWorld a)
     notPreserved :
       ¬ preserves commonsWorld
 
@@ -5321,8 +5328,10 @@ noUnconditionalCommonsPreservation :
   ¬ CommonsPreservationDerivation
       (World C)
       (Agent C)
+      (Action C)
       (Resource C)
       (sharedResource C)
+      (action C)
       (localOptimal C)
       (preserves C)
 noUnconditionalCommonsPreservation C D =
@@ -5331,6 +5340,10 @@ noUnconditionalCommonsPreservation C D =
       (commonsWorld C)
       (allLocallyOptimal C))
 
+twoNotLeOne :
+  ¬ suc (suc zero) ≤ suc zero
+twoNotLeOne ()
+
 twoAgentCommonsCounterexample :
   CommonsNonDerivabilityCounterexample
 twoAgentCommonsCounterexample =
@@ -5338,20 +5351,25 @@ twoAgentCommonsCounterexample =
     (⊤)
     (⊤ ⊎ ⊤)
     (⊤ ⊎ ⊤)
-    (λ _ → inj₁ tt)
-    (λ _ _ → ⊤)
-    (λ _ → ⊥)
+    Nat
+    (λ _ → suc zero)
+    (λ _ _ → inj₂ tt)
+    (λ _ _ a → a ≡ inj₂ tt)
+    (λ _ →
+      suc (suc zero) ≤ suc zero)
     tt
-    tt
-    (λ _ → tt)
-    (λ ())
+    refl
+    (λ _ → refl)
+    twoNotLeOne
 
 noUnconditionalCommonsPreservation-twoAgent :
   ¬ CommonsPreservationDerivation
       (World twoAgentCommonsCounterexample)
       (Agent twoAgentCommonsCounterexample)
+      (Action twoAgentCommonsCounterexample)
       (Resource twoAgentCommonsCounterexample)
       (sharedResource twoAgentCommonsCounterexample)
+      (action twoAgentCommonsCounterexample)
       (localOptimal twoAgentCommonsCounterexample)
       (preserves twoAgentCommonsCounterexample)
 noUnconditionalCommonsPreservation-twoAgent =
@@ -5359,10 +5377,18 @@ noUnconditionalCommonsPreservation-twoAgent =
     twoAgentCommonsCounterexample
 
 ------------------------------------------------------------------------
--- Stronger semantic reading of the boundary:
+-- The concrete model has the intended tragedy mechanism:
 --
--- market clearing is not itself a commons-preservation theorem.
--- Any positive bridge must expose an aggregate resource constraint,
--- internalized externality, quota/property-right mechanism, dynamic
--- regeneration law, or another explicit coupling assumption.
+--   two agents
+--      + one-unit shared stock
+--      + one-unit private extraction is individually optimal
+--      -> two units aggregate extraction
+--      -> preservation predicate (extraction <= stock) fails.
+--
+-- This is not a theorem that every commons collapses. It is an
+-- impossibility theorem against the unconditional implication from
+-- local optimality alone to aggregate preservation. A positive bridge
+-- must add coupling information such as quotas/property rights,
+-- internalized externalities, coordination, or a regeneration/conservation
+-- invariant.
 ------------------------------------------------------------------------
