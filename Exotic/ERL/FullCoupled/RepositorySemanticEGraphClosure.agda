@@ -33,6 +33,12 @@ data RepositoryAgdaModule : Set where
     RepositoryAgdaModule
   gruStatisticalInjectivity :
     RepositoryAgdaModule
+  commonsComposition :
+    RepositoryAgdaModule
+  gruFractalInjectiveComposition :
+    RepositoryAgdaModule
+  gruFractalInjectiveCompositionCanonical :
+    RepositoryAgdaModule
   zpfStatisticalRepresentation :
     RepositoryAgdaModule
   tsallisStatisticalRepresentation :
