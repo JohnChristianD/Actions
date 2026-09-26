@@ -287,27 +287,18 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 7f775c32efa2cea3bc30449e47eea3846246c161
-unprocessed-commit-count: 17
+last-processed-commit: 025178a3e4f34207556da8b0d552d068437532fb
+unprocessed-commit-count: 8
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `7f775c32efa2` docs: index theorem improvement frontier
-- `9ac653eff459` docs: graph theorem improvement frontier
-- `ac3f949749c9` docs: map theorem improvement frontier
-- `2febd3300645` fix: make e-graph status constructors explicit
-- `49335c3a56df` fix: restore generic iterator zero case
-- `fa6cb74fe578` fix: correct factor and stationary projection scopes
-- `be5cbe017805` fix: expose certified e-graph edge projections
-- `6942da8f9a8f` fix: qualify new theorem transport projections
-- `122716b0d58b` ci: gate completed theorem improvement surfaces
-- `32f1cc6eaeaf` docs: index theorem improvement completion
-- `49f0d6cebcaa` graph: record completed theorem improvements
-- `c3d146ac8573` docs: record theorem improvement completion
-- `88cf72c9c829` feat: add reusable theorem transport and boundary witnesses
-- `b5eb862a5ce9` fix: place e-graph certificate after semantic path
-- `5d8f6f4006bb` feat: add proof-carrying e-graph edge metadata
-- `00b8c27aeb33` feat: factor strict progress relation kernel
-- `6286a0c8e755` docs: refresh README from commit totality
+- `025178a3e4f3` docs: record theorem monolith as sole frontier Agda home
+- `d2676f5eeb28` ci: enforce monolith-only theorem frontier
+- `52f508b45058` refactor: consolidate frontier theorems into monolith
+- `1cfa16a54007` refactor: delete redundant frontier module
+- `3f487f050710` fix: retain Nat strict-progress witness in monolith
+- `898d08524360` refactor: keep theorem improvement core in monolith
+- `78d6bd82e259` feat: close theorem improvement interfaces in monolith
+- `8d07880fc8a6` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
