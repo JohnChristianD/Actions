@@ -1,0 +1,37 @@
+flowchart LR
+  SP["StrictProgressWitness"] --> WF["generic strict-progress exclusion"]
+  WF --> FC["clock-free finite-cycle exclusion"]
+  NR["NormPair replacement relation"] --> FI["factor observation q"]
+  FI --> FT["induced factor transition"]
+  FT --> QP["policy/readout factorization"]
+  QP --> FS["factor stationarity/convergence frontier"]
+  SQ["one-step commuting square"] --> ID["encode/decode inverse interface"]
+  ID --> IT["generic iterate transport"]
+  IT --> PT["property/invariant transport"]
+  FC --> FS
+  IT --> PT
+  FS --> SL["distribution-valued stationary-law route"]
+  SL --> EA["economic aggregate"]
+  EA --> PF["production feasibility"]
+  EA --> FO["firm optimality"]
+  EA --> CO["consumer optimality"]
+  PF --> MC["market clearing witness"]
+  FO --> MC
+  CO --> MC
+  MC --> PR["supporting/derived price"]
+  PR --> WE["generalized Walrasian existence/transport"]
+  EG["e-graph discovery"] --> EC["context + assumptions + certificate metadata"]
+  EC --> AUTH["Agda proof authority"]
+  AUTH --> IT
+  AUTH --> FT
+  AUTH --> WE
+  B1["Arrow-Debreu production/existence literature"] --> PF
+  B2["certified equality-saturation literature"] --> EC
+  classDef next fill:#fff3cd,stroke:#9a7b00,color:#4d3e00;
+  classDef current fill:#d9f7df,stroke:#2b7a3a,color:#16351e;
+  classDef frontier fill:#fde2e2,stroke:#a33a3a,color:#5a1e1e;
+  classDef external fill:#e1ecff,stroke:#3f6aa3,color:#1d3150;
+  class SP,NR,SQ,EG current;
+  class WF,FI,FT,QP,ID,EC next;
+  class FC,IT,PT,FS,SL,EA,PF,FO,CO,MC,PR,WE frontier;
+  class B1,B2 external;
