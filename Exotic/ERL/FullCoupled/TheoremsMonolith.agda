@@ -5272,3 +5272,97 @@ finiteCandidatePriceSearch-complete :
 finiteCandidatePriceSearch-complete =
   finiteCandidatePriceSearch
 
+
+------------------------------------------------------------------------
+-- Unconditional tragedy-of-the-commons non-derivability.
+--
+-- This is an interface-level impossibility boundary. It deliberately
+-- separates local optimality from the aggregate preservation predicate
+-- for a shared resource. The counterexample shows that local optimality
+-- plus a common-resource carrier does not unconditionally derive
+-- preservation of that resource.
+------------------------------------------------------------------------
+
+record CommonsPreservationDerivation
+  (World Agent Resource : Set)
+  (sharedResource : World → Resource)
+  (localOptimal : World → Agent → Set)
+  (preserves : World → Set) : Set₁ where
+  constructor commonsPreservationDerivation
+  field
+    derive :
+      ∀ w →
+      (∀ a → localOptimal w a) →
+      preserves w
+
+open CommonsPreservationDerivation public
+
+record CommonsNonDerivabilityCounterexample : Set₁ where
+  constructor commonsNonDerivabilityCounterexample
+  field
+    World : Set
+    Agent : Set
+    Resource : Set
+    sharedResource : World → Resource
+    localOptimal : World → Agent → Set
+    preserves : World → Set
+    commonsWorld : World
+    commonResource :
+      sharedResource commonsWorld
+    allLocallyOptimal :
+      ∀ a → localOptimal commonsWorld a
+    notPreserved :
+      ¬ preserves commonsWorld
+
+open CommonsNonDerivabilityCounterexample public
+
+noUnconditionalCommonsPreservation :
+  ∀ (C : CommonsNonDerivabilityCounterexample) →
+  ¬ CommonsPreservationDerivation
+      (World C)
+      (Agent C)
+      (Resource C)
+      (sharedResource C)
+      (localOptimal C)
+      (preserves C)
+noUnconditionalCommonsPreservation C D =
+  notPreserved C
+    (derive D
+      (commonsWorld C)
+      (allLocallyOptimal C))
+
+twoAgentCommonsCounterexample :
+  CommonsNonDerivabilityCounterexample
+twoAgentCommonsCounterexample =
+  commonsNonDerivabilityCounterexample
+    (⊤)
+    (⊤ ⊎ ⊤)
+    (⊤ ⊎ ⊤)
+    (λ _ → inj₁ tt)
+    (λ _ _ → ⊤)
+    (λ _ → ⊥)
+    tt
+    tt
+    (λ _ → tt)
+    (λ ())
+
+noUnconditionalCommonsPreservation-twoAgent :
+  ¬ CommonsPreservationDerivation
+      (World twoAgentCommonsCounterexample)
+      (Agent twoAgentCommonsCounterexample)
+      (Resource twoAgentCommonsCounterexample)
+      (sharedResource twoAgentCommonsCounterexample)
+      (localOptimal twoAgentCommonsCounterexample)
+      (preserves twoAgentCommonsCounterexample)
+noUnconditionalCommonsPreservation-twoAgent =
+  noUnconditionalCommonsPreservation
+    twoAgentCommonsCounterexample
+
+------------------------------------------------------------------------
+-- Stronger semantic reading of the boundary:
+--
+-- market clearing is not itself a commons-preservation theorem.
+-- Any positive bridge must expose an aggregate resource constraint,
+-- internalized externality, quota/property-right mechanism, dynamic
+-- regeneration law, or another explicit coupling assumption.
+------------------------------------------------------------------------
