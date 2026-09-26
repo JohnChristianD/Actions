@@ -57,7 +57,11 @@ concat_strings(Parts) = string.join_list("", Parts).
 
 :- func source_files = list(string).
 source_files = [
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    "../../Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceAdapter.agda",
+    "../../Exotic/ERL/FullCoupled/GRUFractalLimitClosure.agda",
+    "../../Exotic/ERL/FullCoupled/GRUFractalLimitDecoderSurvival.agda",
+    "../../Exotic/ERL/FullCoupled/GRUFractalEGraphAStarLimitComposition.agda"
 ].
 
 :- func syntax_heads = list(string).
