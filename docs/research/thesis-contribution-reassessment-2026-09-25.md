@@ -140,3 +140,9 @@ The learner remains the canonical component source and the theorem monolith rema
 ## Verification
 
 The PR head was subsequently verified by GitHub Actions run 1245 (Nix connected composition verification) with conclusion success.
+
+## Finite-candidate price kernel: contribution boundary
+
+The finite-candidate price kernel should be framed as an engineering/formal-methods closure rather than as a new economic existence theorem. It demonstrates that a finite candidate set plus an explicit proof-relevant decision procedure can be exhaustively classified into a supporting candidate or complete rejection certificates.
+
+The result is useful for the thesis only insofar as it makes the dependency boundary executable and proof-relevant. It must not be presented as a replacement for classical supporting-price derivation or Walrasian existence.
