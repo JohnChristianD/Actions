@@ -65,7 +65,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 32 files.
+Generated from the tracked Markdown surface: 33 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -84,6 +84,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
 - [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
 - [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
+- [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
 - [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
 - [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
@@ -97,8 +98,8 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
 - [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
 - [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
+- [Unconditional canonical-price non-derivability — 2026-09-26](docs/research/theorem-no-unconditional-canonical-price-derivation-2026-09-26.md)
 - [Unconditional tragedy-of-the-commons non-derivability — 2026-09-26](docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md)
-- [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
 - [Unconditional finite-candidate price kernel — 2026-09-26](docs/research/unconditional-finite-price-kernel-2026-09-26.md)
@@ -295,39 +296,13 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 1b5ee4c598886b0fadc6203963a9d009e0e72a44
-unprocessed-commit-count: 29
+last-processed-commit: eedf6149a7ba9ee43e76e86fbd0716449d570efd
+unprocessed-commit-count: 3
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `1b5ee4c59888` Use scale compatibility in fractal injectivity proof
-- `eed75a8986fb` Synchronize composition module and research indexes
-- `33d1bbc02a10` Verify and index all new composition modules
-- `2e0ad7cc0cc2` Fix commons composition equality transport import
-- `3e884cc9de15` Index new composition modules in semantic closure
-- `634c38a7e4d7` Gate GRU fractal composition surface
-- `5768f183e5b0` Index GRU fractal injective composition
-- `87f3eee88b11` Add GRU fractal injectivity discovery graph
-- `44eb9b1203ce` Document GRU-injective fractal composition boundary
-- `b5e2bc6060c4` Fix canonical fractal injectivity imports
-- `2f362dde49a7` Compile fractal GRU injectivity modules in CI
-- `85f3714a0faf` Instantiate fractal injective composition for canonical GRU
-- `8f7f05dbee77` Add generic fractal injective composition kernel
-- `12068367b85f` Complete nested commons graph
-- `9770607f52e3` Formalize nested commons non-derivability
-- `c93ae272b916` Clarify capacity-defined commons preservation
-- `066030bfeed7` Correct commons capacity transport orientation
-- `3b5059e1efb3` Tie commons preservation directly to capacity
-- `4c872a4ceb49` Document explicit commons depletion quantities
-- `941646138d4a` Make commons depletion mechanism explicit
-- `56277934c0f9` Gate explicit commons depletion theorem surface
-- `7ee88931e33b` Graph explicit commons depletion path
-- `facaf012adfc` Document explicit commons depletion countermodel
-- `b304ae424f5b` Strengthen commons countermodel with explicit depletion mechanism
-- `8a5504e7bc11` Require commons non-derivability theorem in CI
-- `40125547f617` Add tragedy-of-the-commons non-derivability graph
-- `52867656395a` Document unconditional commons non-derivability boundary
-- `77f003d317ba` Add unconditional commons preservation non-derivability theorem
-- `0d1a0f4e8bd0` docs: refresh README from commit totality
+- `eedf6149a7ba` rebase: GRU fractal domain adapters onto main
+- `09ce4e0a0abb` rebase: canonical price non-derivability onto main
+- `9c1d6059677d` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
