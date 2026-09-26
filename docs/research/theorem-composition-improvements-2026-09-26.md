@@ -140,3 +140,11 @@ Therefore the nLab distinction is evidence against the proposed Ponytail deletio
 This also explains why the arbitrary-length token theorem can legitimately consume `canonicalToken-prefix-monoid-homomorphism` while the commuting-square machinery separately consumes `FreeMonoidActionHomomorphism`: the former is preservation of an algebraic composition law; the latter is compatibility of actions across a square.
 
 External primary source checked 2026-09-26: nLab homomorphism and action definitions.
+
+## 11. Finite-candidate supporting-price classification
+
+The finite-candidate price kernel closes a small constructive seam without pretending to close the economic existence frontier. `finiteCandidatePriceSearch` recursively classifies a finite candidate list using an explicit two-way supporting-relation decision procedure.
+
+Its positive branch returns a proof-relevant supporting-price witness; its negative branch returns candidate-specific refutations for the complete supplied list. This gives a reusable finite/discrete search result while preserving the distinction between candidate classification and derivation of a price from economic primitives.
+
+No separation theorem, KKT multiplier construction, fixed-point theorem, or unconditional Walrasian existence claim is introduced.
