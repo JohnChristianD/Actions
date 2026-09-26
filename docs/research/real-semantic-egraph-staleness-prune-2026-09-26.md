@@ -10,7 +10,7 @@ For this repository, an edge is proof-authoritative only when its semantic inter
 
 ## Freshness pruning
 
-The current discovery runner checks named frontier targets against the current canonical semantic-law inventory before inserting target nodes. Missing names are reported as stale targets and excluded from the fresh target set rather than silently treated as current theorems.
+The current discovery runner checks named frontier targets against the current multi-module semantic-law inventory before inserting target nodes. The inventory includes the theorem monolith plus the live GRU limit-composition modules, so a theorem declared outside the monolith is not stale merely because it has a different source file. Missing names are reported as stale targets and excluded from the fresh target set rather than silently treated as current theorems.
 
 Historical research graphs remain historical snapshots. The current semantic graph is the live projection.
 
@@ -44,3 +44,6 @@ The missing concrete convergence/limit inhabitant remains a frontier, not an e-g
 ## Staleness rule
 
 A theorem name appearing only in a historical graph, stale registry, or narrative note does not become an e-class merely by being mentioned. Live graph nodes must be recoverable from the current semantic inventory or explicitly marked as external evidence or frontier data.
+## Unattended ownership
+
+Dhall owns CI composition, Nix owns the reproducible execution environment, Mercury owns semantic extraction/freshness/e-graph saturation, and Agda remains the proof authority. The frontier-target list is only the set of names whose freshness is being queried; it is not the source of truth for theorem existence.
