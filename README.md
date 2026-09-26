@@ -74,6 +74,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 
 - [Adaptive sparsemax action-domain redesign — 2026-09-23](docs/research/adaptive-sparsemax-action-domain-2026-09-23.md)
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
+- [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
