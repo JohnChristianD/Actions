@@ -1,0 +1,40 @@
+flowchart LR
+  subgraph ECLASS["Semantic e-graph: equality classes"]
+    GI["GRU left-inverse representation"]
+    GJ["Global injectivity"]
+    GC["Global conjugacy"]
+    GI <--> GJ
+    GC --> GI
+  end
+  subgraph SAT["Equality saturation / certified rewrites"]
+    R1["Associativity rewrite"]
+    R2["Identity rewrite"]
+    R1 --> ECLS["Equivalent theorem-composition expressions"]
+    R2 --> ECLS
+  end
+  subgraph ASTAR["A* discovery"]
+    PLAN["Candidate proof plan"] --> COST["cost + heuristic"]
+    COST --> EXTRACT["best representative"]
+  end
+  GCLASS["Finite/indexed fractal composition"] --> APP["Approximation sequence"]
+  APP --> CW["Supplied convergence witness"]
+  CW --> LIM["Concrete limit carrier"]
+  LIM --> DEC["Coherent limit decoder"]
+  DEC --> LINV["Surviving left inverse"]
+  LINV --> SEP["Limit separation"]
+  SEP --> ALI["Arbitrary-limit injectivity"]
+  APP -. "does not imply" .-> BLOCK["BLOCKED: convergence/approximation alone ↛ limit injectivity"]
+  BLOCK -. "formal countermodel" .-> IMP["Bool → Unit constant-limit impossibility"]
+  STALE["Stale theorem-name / historical-only node"] -. "pruned from live target set" .-> PRUNE["Freshness filter"]
+  PRUNE --> LIVE["Live semantic target set"]
+  GI --> GCLASS
+  GCLASS --> ASTAR
+  ASTAR -. "discovery only" .-> ALI
+  classDef proof fill:#e8f0ff,stroke:#356ac3,stroke-width:2px;
+  classDef frontier fill:#fff4d6,stroke:#b8860b,stroke-width:2px;
+  classDef blocked fill:#ffe8e8,stroke:#b33,stroke-width:2px;
+  classDef stale fill:#eeeeee,stroke:#777,stroke-dasharray: 5 5;
+  class GI,GJ,GC,LINV,SEP proof;
+  class CW,LIM,DEC,ALI frontier;
+  class BLOCK,IMP blocked;
+  class STALE stale;
