@@ -207,3 +207,9 @@ The stationary-law route should therefore quotient out `NormPair` first, while t
 
 
 The quotient seam is now iterated, not only one-step: canonicalFullStep-replaceNorm-iterate proves by induction that replacing NormPair before any finite canonical orbit is equal to replacing the preserved norm after the orbit. This is the reusable dynamic compatibility law needed before defining a quotient/factor transition. It still says nothing about convergence or stationary-law existence, and it does not extend to optimizer replacement because optimizer state remains dynamically active.
+
+## Finite/discrete candidate-price closure
+
+A new constructive kernel, `finiteCandidatePriceSearch`, can classify a finite supplied price-candidate list at a fixed allocation when an explicit decision procedure for the supporting relation is provided. This is a finite search/classification result, not an Arrow–Debreu or Walrasian existence result.
+
+The derivation graph therefore keeps the kernel below the supporting-price frontier: it can consume an already decidable supporting relation, but it does not derive that relation from separation, KKT, fixed-point, or classical convexity hypotheses.
