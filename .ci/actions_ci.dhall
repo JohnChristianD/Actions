@@ -75,6 +75,9 @@ let script = merge {
     done
 
     for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4NormWatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalNormPairQuotientFactorTransitionTheorem       CanonicalF4GlobalOptimizerStabilityTheorem       CanonicalF4NormPairUnconditionalFactorStabilityTheorem       CanonicalF4NormPairIterateFactorStabilityTheorem       canonicalTotalCountSuccessorWitness       canonical-token-arbitrary-length-generation-theorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability       FiniteCandidateDecision       FiniteCandidatePriceResult       finiteCandidatePriceSearch       finiteCandidatePriceSearch-complete       CommonsPreservationDerivation       CommonsNonDerivabilityCounterexample       noUnconditionalCommonsPreservation       twoNotLeOne       twoAgentCommonsCounterexample       noUnconditionalCommonsPreservation-twoAgent
+       FractalInjectiveComposition
+       fractalLevelInjective
+       fractalTransportedEncodeInjective
     do
       grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
     done
@@ -83,6 +86,8 @@ let script = merge {
     grep -Fq 'independent economic hypotheses' "$graph" || { echo "economic assumption boundary missing"; exit 1; }
     [ -f docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md ] || { echo "commons research note missing"; exit 1; }
     [ -f .ci/discovery/commons-nonderivability-2026-09-26.mmd ] || { echo "commons discovery graph missing"; exit 1; }
+    [ -f .ci/discovery/gru-fractal-injective-composition-2026-09-26.mmd ] || { echo "GRU fractal injective composition graph missing"; exit 1; }
+    grep -Fq "GRU-injective fractal composition" .ci/discovery/gru-fractal-injective-composition-2026-09-26.mmd || { echo "GRU fractal composition graph missing injective node"; exit 1; }
     grep -Fq 'Two-unit aggregate extraction' .ci/discovery/commons-nonderivability-2026-09-26.mmd || { echo "commons depletion graph missing aggregate extraction"; exit 1; }
     grep -Fq 'suc (suc zero) ≤ suc zero' "$theorem" || { echo "commons capacity violation missing"; exit 1; }
     grep -Fq 'Canonical F4 × NormPair unconditional factor stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
@@ -110,7 +115,7 @@ let script = merge {
     do
       grep -Fq "$module" Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "Agda semantic index missing: $module"; exit 1; }
     done
-    for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
+    for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda GRUFractalInjectiveComposition.agda GRUFractalInjectiveCompositionCanonical.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
     do
       [ -f "Exotic/ERL/FullCoupled/$file" ] || { echo "surviving Agda file missing from repository surface: $file"; exit 1; }
     done
