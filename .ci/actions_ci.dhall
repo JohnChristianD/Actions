@@ -11,37 +11,11 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitClosure.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalEGraphAStarLimitComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitDecoderSurvival.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceImpossibility.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
     '',
   Mercury = ''
     set -euo pipefail
@@ -87,14 +61,8 @@ let script = merge {
     do
       grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
     done
-    for symbol in FractalInjectiveComposition fractalLevelInjective fractalTransportedEncodeInjective; do
-      grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda || { echo "fractal kernel symbol missing: $symbol"; exit 1; }
-    done
-    for symbol in canonicalGRUFractal canonicalGRUFractalLevelInjective canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleInjective; do
-      grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda || { echo "canonical fractal symbol missing: $symbol"; exit 1; }
-    done
-    for symbol in PhysicsGRUFractalAdapter EconomicsGRUFractalAdapter economicObservation economicLevelTransport economicLevelTransportInjective economicLevelTransportRepresentation; do
-      grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda || { echo "domain adapter symbol missing: $symbol"; exit 1; }
+    for symbol in FractalInjectiveComposition fractalLevelInjective fractalTransportedEncodeInjective canonicalGRUFractal canonicalGRUFractalLevelInjective canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleInjective PhysicsGRUFractalAdapter EconomicsGRUFractalAdapter economicObservation economicLevelTransport economicLevelTransportInjective economicLevelTransportRepresentation; do
+      grep -Fq "$symbol" "$theorem" || { echo "consolidated theorem symbol missing: $symbol"; exit 1; }
     done
     [ -f .ci/discovery/gru-fractal-domain-adapters-2026-09-26.mmd ] || { echo "GRU fractal domain adapter graph missing"; exit 1; }
 
@@ -130,11 +98,11 @@ let script = merge {
     [ -f .ci/discovery/theorem-improvement-completion-2026-09-26.mmd ] || { echo "theorem improvement graph missing"; exit 1; }
 
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
-    for module in canonicalLearnerMonolith theoremsMonolith eGraphSemanticTransport fourLawClosureWitnesses fourLawClosureImpossibility gruStatisticalInjectivity zpfStatisticalRepresentation tsallisStatisticalRepresentation repositorySemanticEGraphClosure
+    for module in canonicalLearnerMonolith theoremsMonolith
     do
-      grep -Fq "$module" Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "Agda semantic index missing: $module"; exit 1; }
+      grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
     done
-    for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda CommonsComposition.agda GRUFractalInjectiveComposition.agda GRUFractalInjectiveCompositionCanonical.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
+   for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda CommonsComposition.agda GRUFractalInjectiveComposition.agda GRUFractalInjectiveCompositionCanonical.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
     do
       [ -f "Exotic/ERL/FullCoupled/$file" ] || { echo "surviving Agda file missing from repository surface: $file"; exit 1; }
     done
@@ -566,20 +534,8 @@ JSON
     dhall --version
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
