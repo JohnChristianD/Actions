@@ -11,7 +11,7 @@ module Exotic.ERL.FullCoupled.CarrierPolymorphicFrontier where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; subst)
 open import Data.Empty using (⊥)
-open import Data.Nat using (Nat; zero; suc; _<_)
+open import Data.Nat using (Nat; zero; suc; _<_; z≤n; s≤s)
 open import Data.Nat.Properties using (<-trans; <-irrefl)
 import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
@@ -73,9 +73,26 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
   irreflexive W
     (measure W s)
     (subst
-      (lambda t → measure W s < measure W t)
+      (λ t → measure W s < measure W t)
       eq
       (strictProgressAfterIterate W n s))
+
+
+natSucProgress : ∀ n → n < suc n
+natSucProgress zero = s≤s z≤n
+natSucProgress (suc n) = s≤s (natSucProgress n)
+
+canonicalTotalCountStepProgress :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (s : C.FullLearnerState A) →
+  C.totalCount (C.lcbCounts s) <
+  C.totalCount (C.lcbCounts (C.canonicalFullStep K s))
+canonicalTotalCountStepProgress K s =
+  subst
+    (λ t → C.totalCount (C.lcbCounts s) < t)
+    (C.canonicalTotalCountStep K s)
+    (natSucProgress (C.totalCount (C.lcbCounts s)))
 
 canonicalTotalCountStrictProgress :
   ∀ {A : Set}
@@ -87,8 +104,8 @@ canonicalTotalCountStrictProgress :
     _<_
 canonicalTotalCountStrictProgress K =
   strictProgressWitness
-    (lambda s → C.totalCount (C.lcbCounts s))
-    (lambda s → C.canonicalTotalCountStep K s)
+    (λ s → C.totalCount (C.lcbCounts s))
+    (λ s → canonicalTotalCountStepProgress K s)
     <-trans
     <-irrefl
 
