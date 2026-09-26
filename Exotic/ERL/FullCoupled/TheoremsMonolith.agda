@@ -56,6 +56,1582 @@ open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
 open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
 open import Exotic.ERL.FullCoupled.GRUFractalEGraphAStarLimitComposition public
 
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Carrier-polymorphic statistical representation.
+--
+-- This module is deliberately arithmetic-free: the abstract Law-IV
+-- representation needs only Set, functions, and propositional equality.
+-- A Tsallis/q-statistical interpretation may instantiate the observation
+-- carrier, but no Real or Rational specialization is required here; the observation carrier is an arbitrary Set.
+--
+-- The representation theorem is structural. External statistical
+-- literature motivates possible instantiations; it is not imported as an
+-- Agda proof source.
+------------------------------------------------------------------------
+
+
+record CarrierPolymorphicStatisticalRepresentation
+  (State Observation : Set) : Set₁ where
+  constructor carrierPolymorphicStatisticalRepresentation
+  field
+    encode : State → Observation
+    decode : Observation → State
+    decodeEncode : ∀ s → decode (encode s) ≡ s
+
+open CarrierPolymorphicStatisticalRepresentation public
+
+statisticalEncodeInjective :
+  ∀ {State Observation : Set}
+  (R : CarrierPolymorphicStatisticalRepresentation State Observation)
+  {s t : State} →
+  encode R s ≡ encode R t →
+  s ≡ t
+statisticalEncodeInjective R eq = cong (decode R) eq
+
+statisticalEncodeDistinguishes :
+  ∀ {State Observation : Set}
+  (R : CarrierPolymorphicStatisticalRepresentation State Observation)
+  {s t : State} →
+  s ≢ t →
+  encode R s ≢ encode R t
+statisticalEncodeDistinguishes R distinct collision =
+  distinct (statisticalEncodeInjective R collision)
+
+record TsallisCompatibleStatisticalRepresentation
+  (State Observation : Set) : Set₁ where
+  constructor tsallisCompatibleStatisticalRepresentation
+  field
+    representation :
+      CarrierPolymorphicStatisticalRepresentation State Observation
+
+open TsallisCompatibleStatisticalRepresentation public
+
+tsallisCompatibleEncodeInjective :
+  ∀ {State Observation : Set}
+  (R : TsallisCompatibleStatisticalRepresentation State Observation)
+  {s t : State} →
+  encode (representation R) s ≡ encode (representation R) t →
+  s ≡ t
+tsallisCompatibleEncodeInjective R =
+  statisticalEncodeInjective (representation R)
+
+tsallisCompatibleEncodeDistinguishes :
+  ∀ {State Observation : Set}
+  (R : TsallisCompatibleStatisticalRepresentation State Observation)
+  {s t : State} →
+  s ≢ t →
+  encode (representation R) s ≢ encode (representation R) t
+tsallisCompatibleEncodeDistinguishes R =
+  statisticalEncodeDistinguishes (representation R)
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+module Exotic.ERL.FullCoupled.GRUStatisticalInjectivity where
+CanonicalGRUStatisticalObservation : Set
+CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
+canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
+canonicalGRUStatisticalEncode s = s , (λ _ → C.hiddenState s)
+canonicalGRUStatisticalDecode : CanonicalGRUStatisticalObservation → C.GRUState
+canonicalGRUStatisticalDecode observation = proj₁ observation
+canonicalGRUStatisticalDecodeEncode : ∀ s → canonicalGRUStatisticalDecode (canonicalGRUStatisticalEncode s) ≡ s
+canonicalGRUStatisticalDecodeEncode s = refl
+canonicalGRUStatisticalEncodeInjective : ∀ {s t : C.GRUState} → canonicalGRUStatisticalEncode s ≡ canonicalGRUStatisticalEncode t → s ≡ t
+canonicalGRUStatisticalEncodeInjective eq = cong canonicalGRUStatisticalDecode eq
+record CanonicalGRUStatisticalInjectivityTheorem : Set₁ where
+  constructor canonicalGRUStatisticalInjectivityTheorem
+  field
+    encode : C.GRUState → CanonicalGRUStatisticalObservation
+    decode : CanonicalGRUStatisticalObservation → C.GRUState
+    decodeEncode : ∀ s → decode (encode s) ≡ s
+    injective : ∀ {s t : C.GRUState} → encode s ≡ encode t → s ≡ t
+canonical-gru-statistical-injectivity-theorem : CanonicalGRUStatisticalInjectivityTheorem
+canonical-gru-statistical-injectivity-theorem = canonicalGRUStatisticalInjectivityTheorem canonicalGRUStatisticalEncode canonicalGRUStatisticalDecode canonicalGRUStatisticalDecodeEncode canonicalGRUStatisticalEncodeInjective
+canonicalGRUStatisticalDistinguishability : ∀ {s t : C.GRUState} → s ≢ t → canonicalGRUStatisticalEncode s ≢ canonicalGRUStatisticalEncode t
+canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonicalGRUStatisticalEncodeInjective collision)
+canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
+canonicalGRUStatisticalStepConsequence s x = refl
+
+------------------------------------------------------------------------
+-- Carrier-polymorphic Law-IV instance. The concrete canonical observation
+-- remains available above, while the injectivity mechanism is now supplied
+-- by the arithmetic-free representation kernel.
+------------------------------------------------------------------------
+
+canonicalGRUTsallisCompatibleRepresentation :
+  TsallisCompatibleStatisticalRepresentation
+    C.GRUState
+    CanonicalGRUStatisticalObservation
+canonicalGRUTsallisCompatibleRepresentation =
+  tsallisCompatibleStatisticalRepresentation
+    (carrierPolymorphicStatisticalRepresentation
+      canonicalGRUStatisticalEncode
+      canonicalGRUStatisticalDecode
+      canonicalGRUStatisticalDecodeEncode)
+
+canonicalGRUTsallisCompatibleInjective :
+  ∀ {s t : C.GRUState} →
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) s
+  ≡
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) t →
+  s ≡ t
+canonicalGRUTsallisCompatibleInjective =
+  tsallisCompatibleEncodeInjective
+    canonicalGRUTsallisCompatibleRepresentation
+
+canonicalGRUTsallisCompatibleDistinguishability :
+  ∀ {s t : C.GRUState} →
+  s ≢ t →
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) s
+  ≢
+  encode
+    (representation canonicalGRUTsallisCompatibleRepresentation) t
+canonicalGRUTsallisCompatibleDistinguishability =
+  tsallisCompatibleEncodeDistinguishes
+    canonicalGRUTsallisCompatibleRepresentation
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Typed ZPF / omega^3 semantic boundary for the canonical GRU layer.
+--
+-- The physical ZPF carrier, Maxwell constraints, stochastic semantics,
+-- and spectral convention are explicit inputs.  The module does not
+-- manufacture a physical ZPF inhabitant.
+--
+-- The omega^3 law is represented by an explicit frequency multiplication
+-- operation, a proof that omegaCubed is the triple product, and a
+-- spectral-density normalization carrier.  A concrete instantiation decides
+-- the frequency measure and normalization (for example, per unit angular
+-- frequency) without introducing a new arithmetic dependency here.
+--
+-- Once a ZPF -> canonical-GRU statistical representation supplies
+-- decode (encode z) == z, global injectivity follows from the existing
+-- carrier-polymorphic statistical representation theorem.
+------------------------------------------------------------------------
+
+
+record ZPFOmegaCubedSpectralLaw
+  (ZPFState Frequency SpectralDensity : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency) : Set₁ where
+  constructor zpfOmegaCubedSpectralLaw
+  field
+    density :
+      ZPFState → Frequency → SpectralDensity
+    spectralDensityOfOmegaCubed :
+      Frequency → SpectralDensity
+    omegaCubed :
+      Frequency → Frequency
+    omegaCubedDefinition :
+      ∀ (ω : Frequency) →
+      omegaCubed ω ≡
+      frequencyMultiply (frequencyMultiply ω ω) ω
+    omegaCubedLaw :
+      ∀ (z : ZPFState) (ω : Frequency) →
+      density z ω ≡ spectralDensityOfOmegaCubed (omegaCubed ω)
+
+open ZPFOmegaCubedSpectralLaw public
+
+record ZPFMaxwellSemanticData
+  (ZPFState MaxwellField Frequency SpectralDensity : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency)
+  (Homogeneous Isotropic Maxwell : MaxwellField → Set)
+  (Stochastic : ZPFState → Set) : Set₁ where
+  constructor zpfMaxwellSemanticData
+  field
+    fieldZPF :
+      ZPFState → MaxwellField
+    homogeneous :
+      ∀ z → Homogeneous (fieldZPF z)
+    isotropic :
+      ∀ z → Isotropic (fieldZPF z)
+    stochastic :
+      ∀ z → Stochastic z
+    maxwell :
+      ∀ z → Maxwell (fieldZPF z)
+    spectralLaw :
+      ZPFOmegaCubedSpectralLaw
+        ZPFState
+        Frequency
+        SpectralDensity
+        frequencyMultiply
+
+open ZPFMaxwellSemanticData public
+
+record ZPFGRUStatisticalRepresentation
+  (ZPFState Frequency SpectralDensity MaxwellField : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency)
+  (Homogeneous Isotropic Maxwell : MaxwellField → Set)
+  (Stochastic : ZPFState → Set) : Set₁ where
+  constructor zpfGRUStatisticalRepresentation
+  field
+    zpfSemantics :
+      ZPFMaxwellSemanticData
+        ZPFState
+        MaxwellField
+        Frequency
+        SpectralDensity
+        frequencyMultiply
+        Homogeneous
+        Isotropic
+        Maxwell
+        Stochastic
+    statisticalRepresentation :
+      CarrierPolymorphicStatisticalRepresentation
+        ZPFState
+        G.CanonicalGRUStatisticalObservation
+
+open ZPFGRUStatisticalRepresentation public
+
+zpfGRUStatisticalEncodeInjective :
+  ∀ {ZPFState Frequency SpectralDensity MaxwellField : Set}
+  {frequencyMultiply : Frequency → Frequency → Frequency}
+  {Homogeneous Isotropic Maxwell : MaxwellField → Set}
+  {Stochastic : ZPFState → Set}
+  (R :
+    ZPFGRUStatisticalRepresentation
+      ZPFState
+      Frequency
+      SpectralDensity
+      MaxwellField
+      frequencyMultiply
+      Homogeneous
+      Isotropic
+      Maxwell
+      Stochastic)
+  {z₁ z₂ : ZPFState} →
+  encode (statisticalRepresentation R) z₁ ≡
+  encode (statisticalRepresentation R) z₂ →
+  z₁ ≡ z₂
+zpfGRUStatisticalEncodeInjective R =
+  statisticalEncodeInjective (statisticalRepresentation R)
+
+zpfGRUStatisticalDistinguishes :
+  ∀ {ZPFState Frequency SpectralDensity MaxwellField : Set}
+  {frequencyMultiply : Frequency → Frequency → Frequency}
+  {Homogeneous Isotropic Maxwell : MaxwellField → Set}
+  {Stochastic : ZPFState → Set}
+  (R :
+    ZPFGRUStatisticalRepresentation
+      ZPFState
+      Frequency
+      SpectralDensity
+      MaxwellField
+      frequencyMultiply
+      Homogeneous
+      Isotropic
+      Maxwell
+      Stochastic)
+  {z₁ z₂ : ZPFState} →
+  z₁ ≢ z₂ →
+  encode (statisticalRepresentation R) z₁ ≢
+  encode (statisticalRepresentation R) z₂
+zpfGRUStatisticalDistinguishes R =
+  statisticalEncodeDistinguishes (statisticalRepresentation R)
+
+record ZPFGRUGlobalInjectivityTheorem
+  (ZPFState Frequency SpectralDensity MaxwellField : Set)
+  (frequencyMultiply : Frequency → Frequency → Frequency)
+  (Homogeneous Isotropic Maxwell : MaxwellField → Set)
+  (Stochastic : ZPFState → Set) : Set₁ where
+  constructor zpfGRUGlobalInjectivityTheoremWitness
+  field
+    representation :
+      ZPFGRUStatisticalRepresentation
+        ZPFState
+        Frequency
+        SpectralDensity
+        MaxwellField
+        frequencyMultiply
+        Homogeneous
+        Isotropic
+        Maxwell
+        Stochastic
+    globalInjective :
+      ∀ {z₁ z₂ : ZPFState} →
+      encode (statisticalRepresentation representation) z₁ ≡
+      encode (statisticalRepresentation representation) z₂ →
+      z₁ ≡ z₂
+
+zpfGRUGlobalInjectivityTheorem :
+  ∀ {ZPFState Frequency SpectralDensity MaxwellField : Set}
+  {frequencyMultiply : Frequency → Frequency → Frequency}
+  {Homogeneous Isotropic Maxwell : MaxwellField → Set}
+  {Stochastic : ZPFState → Set} →
+  ZPFGRUStatisticalRepresentation
+    ZPFState
+    Frequency
+    SpectralDensity
+    MaxwellField
+    frequencyMultiply
+    Homogeneous
+    Isotropic
+    Maxwell
+    Stochastic →
+  ZPFGRUGlobalInjectivityTheorem
+    ZPFState
+    Frequency
+    SpectralDensity
+    MaxwellField
+    frequencyMultiply
+    Homogeneous
+    Isotropic
+    Maxwell
+    Stochastic
+zpfGRUGlobalInjectivityTheorem R =
+  zpfGRUGlobalInjectivityTheoremWitness
+    R
+    (zpfGRUStatisticalEncodeInjective R)
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+{-
+  Proof-only e-graph semantic transport.
+
+  This module does not implement an e-graph data structure and does not
+  manufacture any physical witness. It gives the existing commuting-square
+  architecture a small semantic interface: an e-graph congruence is sound
+  when its related expressions have equal interpretations. Once that
+  semantic equality is available, ordinary Agda congruence transports it
+  through the existing learner/physical maps.
+
+  The intended use is to connect symbolic equality-saturation artifacts to
+  the canonical theorem layer without treating graph membership as a proof
+  of a physical law.
+-}
+
+{-# OPTIONS --safe #-}
+
+
+------------------------------------------------------------------------
+-- Abstract e-graph congruence.
+------------------------------------------------------------------------
+
+record EGraphCongruence (Expression : Set) : Set₁ where
+  constructor eGraphCongruence
+  field
+    related : Expression → Expression → Set
+
+    related-refl :
+      ∀ e →
+      related e e
+
+    related-sym :
+      ∀ {e f} →
+      related e f →
+      related f e
+
+    related-trans :
+      ∀ {e f g} →
+      related e f →
+      related f g →
+      related e g
+
+open EGraphCongruence public
+
+------------------------------------------------------------------------
+-- Semantic interpretation of an e-graph congruence.
+--
+-- Soundness is the only bridge required here: graph equivalence is not
+-- silently identified with definitional equality.
+------------------------------------------------------------------------
+
+record EGraphSemanticInterpretation
+  (Expression State : Set) : Set₁ where
+  constructor eGraphSemanticInterpretation
+  field
+    congruence : EGraphCongruence Expression
+    interpret : Expression → State
+    sound :
+      ∀ {e f} →
+      related congruence e f →
+      interpret e ≡ interpret f
+
+open EGraphSemanticInterpretation public
+
+------------------------------------------------------------------------
+-- Basic semantic closure of graph equivalence.
+------------------------------------------------------------------------
+
+eGraph-sound-refl :
+  ∀ {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State) →
+  ∀ e →
+  interpret R e ≡ interpret R e
+eGraph-sound-refl R e = refl
+
+eGraph-sound-sym :
+  ∀ {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State)
+  {e f : Expression} →
+  related (congruence R) e f →
+  interpret R f ≡ interpret R e
+eGraph-sound-sym R h = sym (sound R h)
+
+eGraph-sound-trans :
+  ∀ {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State)
+  {e f g : Expression} →
+  related (congruence R) e f →
+  related (congruence R) f g →
+  interpret R e ≡ interpret R g
+eGraph-sound-trans R h₁ h₂ =
+  trans (sound R h₁) (sound R h₂)
+
+------------------------------------------------------------------------
+-- Contextual transport.
+--
+-- If a state transformation is a semantic context, e-graph equality can
+-- be pushed through it by ordinary equality congruence. This is the
+-- semantic kernel consumed by commuting-square and iterate/prefix proofs.
+------------------------------------------------------------------------
+
+eGraph-context :
+  ∀ {Expression State Context : Set}
+  (R : EGraphSemanticInterpretation Expression State)
+  (context : State → Context) →
+  ∀ {e f : Expression} →
+  related (congruence R) e f →
+  context (interpret R e) ≡ context (interpret R f)
+eGraph-context R context h =
+  cong context (sound R h)
+
+eGraph-rewrite-context :
+  ∀ {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State)
+  (step : State → State) →
+  ∀ {e f : Expression} →
+  related (congruence R) e f →
+  step (interpret R e) ≡ step (interpret R f)
+eGraph-rewrite-context R step h =
+  cong step (sound R h)
+
+------------------------------------------------------------------------
+-- The semantic e-graph contract is deliberately proof-only. It closes
+-- graph-level equality transport, while the concrete Law I/Law III and
+-- physics-to-learner witness records remain separate obligations.
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Cost-guided e-graph paths.
+--
+-- A* is a search strategy, not a proof rule.  The semantic proof is the
+-- path of sound e-graph edges; the Nat cost is carried separately so an
+-- A*-style selector can optimize traversal without changing the proof.
+------------------------------------------------------------------------
+
+
+record AStarCostModel (Expression : Set) : Set₁ where
+  constructor aStarCostModel
+  field
+    edgeCost : Expression → Expression → Nat
+    heuristic : Expression → Nat
+
+open AStarCostModel public
+
+data EGraphSemanticPath
+  {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State) :
+  Expression → Expression → Set where
+  path-refl :
+    ∀ e →
+    EGraphSemanticPath R e e
+  path-step :
+    ∀ {e f g} →
+    related (congruence R) e f →
+    EGraphSemanticPath R f g →
+    EGraphSemanticPath R e g
+
+eGraph-path-sound :
+  ∀ {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State) →
+  ∀ {e f} →
+  EGraphSemanticPath R e f →
+  interpret R e ≡ interpret R f
+eGraph-path-sound R (path-refl e) = refl
+eGraph-path-sound R (path-step h rest) =
+  trans (sound R h) (eGraph-path-sound R rest)
+
+data SemanticEdgeStatus : Set where
+  semanticProved : SemanticEdgeStatus
+  semanticConditional : SemanticEdgeStatus
+  semanticFrontier : SemanticEdgeStatus
+  semanticBlockedByCounterexample : SemanticEdgeStatus
+
+data SemanticEdgeEvidence : Set where
+  kernelProof : SemanticEdgeEvidence
+  discoveryArtifact : SemanticEdgeEvidence
+  externalLiterature : SemanticEdgeEvidence
+
+record SemanticEdgeMetadata : Set₁ where
+  constructor semanticEdgeMetadata
+  field
+    source : String
+    target : String
+    proofIdentifier : String
+    assumptions : List String
+    status : SemanticEdgeStatus
+    evidence : SemanticEdgeEvidence
+    unconditional : Bool
+
+record CertifiedEGraphEdge
+  {Expression State : Set}
+  (R : EGraphSemanticInterpretation Expression State)
+  (lhs rhs : Expression) : Set₁ where
+  constructor certifiedEGraphEdge
+  field
+    metadata : SemanticEdgeMetadata
+    path : EGraphSemanticPath R lhs rhs
+
+open CertifiedEGraphEdge public
+
+eGraph-certified-edge-sound :
+  ∀ {Expression State : Set}
+  {R : EGraphSemanticInterpretation Expression State}
+  {lhs rhs : Expression} →
+  CertifiedEGraphEdge R lhs rhs →
+  interpret R lhs ≡ interpret R rhs
+eGraph-certified-edge-sound edge =
+  eGraph-path-sound _ (path edge)
+
+
+record AStarSemanticClosure
+  (Expression State : Set) : Set₁ where
+  constructor aStarSemanticClosure
+  field
+    semantics : EGraphSemanticInterpretation Expression State
+    costs : AStarCostModel Expression
+
+open AStarSemanticClosure public
+
+aStar-guided-semantic-closure :
+  ∀ {Expression State : Set}
+  (A : AStarSemanticClosure Expression State) →
+  ∀ {e f : Expression} →
+  EGraphSemanticPath (semantics A) e f →
+  interpret (semantics A) e ≡ interpret (semantics A) f
+aStar-guided-semantic-closure A =
+  eGraph-path-sound (semantics A)
+
+------------------------------------------------------------------------
+-- The cost/heuristic fields are intentionally not used in the equality
+-- proof.  This prevents A* from becoming an unsound source of semantic
+-- equality while still giving the discovery layer a typed cost-guidance
+-- object that can be attached to a sound e-graph interpretation.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Repository-wide semantic e-graph closure.
+--
+-- This module closes the semantic layer for every indexed Agda module
+-- without pretending that module names or search costs are physical laws.
+-- A module contributes a sound interpretation; e-graph paths then compose
+-- exact semantic equality, and A* supplies traversal cost/heuristic data
+-- without entering the equality proof.
+--
+-- The repository index below is deliberately finite and explicit.  It names
+-- every surviving Agda file in Exotic/ERL/FullCoupled on this branch.  The
+-- closure theorem is still parametric in the semantic interpretation for
+-- each file: enumeration does not manufacture semantic soundness.
+------------------------------------------------------------------------
+
+
+data RepositoryAgdaModule : Set where
+  canonicalLearnerMonolith :
+    RepositoryAgdaModule
+  theoremsMonolith :
+    RepositoryAgdaModule
+  eGraphSemanticTransport :
+    RepositoryAgdaModule
+  fourLawClosureWitnesses :
+    RepositoryAgdaModule
+  fourLawClosureImpossibility :
+    RepositoryAgdaModule
+  gruStatisticalInjectivity :
+    RepositoryAgdaModule
+  commonsComposition :
+    RepositoryAgdaModule
+  gruFractalInjectiveComposition :
+    RepositoryAgdaModule
+  gruFractalInjectiveCompositionCanonical :
+    RepositoryAgdaModule
+  zpfStatisticalRepresentation :
+    RepositoryAgdaModule
+  tsallisStatisticalRepresentation :
+    RepositoryAgdaModule
+  repositorySemanticEGraphClosure :
+    RepositoryAgdaModule
+
+record AgdaSemanticModuleFamily : Set₁ where
+  constructor agdaSemanticModuleFamily
+  field
+    Expression : RepositoryAgdaModule → Set
+    State : RepositoryAgdaModule → Set
+    closure :
+      (m : RepositoryAgdaModule) →
+      AStarSemanticClosure
+        (Expression m)
+        (State m)
+
+open AgdaSemanticModuleFamily public
+
+repositoryAgdaAStarSemanticClosure :
+  (F : AgdaSemanticModuleFamily)
+  (m : RepositoryAgdaModule)
+  {e f : Expression F m} →
+  EGraphSemanticPath
+    (semantics (closure F m))
+    e
+    f →
+  interpret (semantics (closure F m)) e
+  ≡
+  interpret (semantics (closure F m)) f
+repositoryAgdaAStarSemanticClosure F m =
+  aStar-guided-semantic-closure (closure F m)
+
+record UnconditionalAgdaEGraphAStarClosure : Set₁ where
+  constructor unconditionalAgdaEGraphAStarClosure
+  field
+    closeAll :
+      (F : AgdaSemanticModuleFamily)
+      (m : RepositoryAgdaModule)
+      {e f : Expression F m} →
+      EGraphSemanticPath
+        (semantics (closure F m))
+        e
+        f →
+      interpret (semantics (closure F m)) e
+      ≡
+      interpret (semantics (closure F m)) f
+
+unconditional-agda-egraph-astar-closure :
+  UnconditionalAgdaEGraphAStarClosure
+unconditional-agda-egraph-astar-closure =
+  unconditionalAgdaEGraphAStarClosure
+    repositoryAgdaAStarSemanticClosure
+
+------------------------------------------------------------------------
+-- The theorem is unconditional over the complete surviving Agda-file
+-- index and any supplied semantic family:
+--
+--   enumerated file
+--     -> supplied sound interpretation
+--     -> sound e-graph path
+--     -> exact endpoint equality
+--
+-- A* costs/heuristics guide discovery but are not equality evidence.
+-- This does not assert that every physical Maxwell witness, economic
+-- equilibrium witness, or other domain-specific inhabitant exists.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Minimal typed contract for the missing four-law closure witnesses.
+--
+-- This module is intentionally a contract, not an existence theorem.
+-- It records exactly the semantic data that must be inhabited before
+-- Law I + Law III + physics-to-learner transport can be promoted into
+-- the existing Law II/Law IV composition.
+------------------------------------------------------------------------
+
+
+record LawIPhysicsWitness
+  (LearnerState PhysicalState Current : Set) : Set₁ where
+  constructor lawIPhysicsWitness
+  field
+    encode : LearnerState → PhysicalState
+    decode : PhysicalState → LearnerState
+    decodeEncode :
+      ∀ s → decode (encode s) ≡ s
+    trajectory :
+      PhysicalState → PhysicalState
+    current :
+      PhysicalState → Current
+    trajectoryCurrentCompatibility :
+      ∀ p → current (trajectory p) ≡ current p
+
+record LawIIIVariationalWitness
+  (LearnerState PhysicalState Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary : PhysicalState → Set) : Set₁ where
+  constructor lawIIIVariationalWitness
+  field
+    encode : LearnerState → PhysicalState
+    decode : PhysicalState → LearnerState
+    decodeEncode :
+      ∀ s → decode (encode s) ≡ s
+    variation : PhysicalState → Variation
+    action : PhysicalState → Action
+    admissibleVariation :
+      ∀ p → Admissible (variation p)
+    stationary :
+      ∀ p → Stationary p
+
+record PhysicsToLearnerTransitionWitness
+  (LearnerState PhysicalState : Set)
+  (learnerStep : LearnerState → LearnerState)
+  (physicalStep : PhysicalState → PhysicalState) : Set₁ where
+  constructor physicsToLearnerTransitionWitness
+  field
+    encode : LearnerState → PhysicalState
+    decode : PhysicalState → LearnerState
+    decodeEncode :
+      ∀ s → decode (encode s) ≡ s
+    stepConjugacy :
+      ∀ s →
+      encode (learnerStep s)
+      ≡
+      physicalStep (encode s)
+
+record FourLawOneStepWitnessContract
+  (LearnerState PhysicalState Current Variation Action : Set)
+  (Admissible : Variation → Set)
+  (Stationary : PhysicalState → Set)
+  (learnerStep : LearnerState → LearnerState)
+  (physicalStep : PhysicalState → PhysicalState) : Set₁ where
+  constructor fourLawOneStepWitnessContract
+  field
+    lawI :
+      LawIPhysicsWitness
+        LearnerState
+        PhysicalState
+        Current
+    lawIII :
+      LawIIIVariationalWitness
+        LearnerState
+        PhysicalState
+        Variation
+        Action
+        Admissible
+        Stationary
+    physicsToLearner :
+      PhysicsToLearnerTransitionWitness
+        LearnerState
+        PhysicalState
+        learnerStep
+        physicalStep
+
+------------------------------------------------------------------------
+-- Generic autonomous-time lifting of the physics-to-learner square.
+-- This is proof infrastructure only; it does not create a missing
+-- physics witness.
+------------------------------------------------------------------------
+
+iterateStep :
+  ∀ {State : Set} →
+  (State → State) →
+  Nat →
+  State →
+  State
+iterateStep step zero s = s
+iterateStep step (suc n) s = iterateStep step n (step s)
+
+iterateConjugacy :
+  ∀ {LearnerState PhysicalState : Set}
+  {learnerStep : LearnerState → LearnerState}
+  {physicalStep : PhysicalState → PhysicalState}
+  (encode : LearnerState → PhysicalState)
+  (stepConjugacy :
+    ∀ s →
+    encode (learnerStep s) ≡
+    physicalStep (encode s)) →
+  ∀ n s →
+  encode (iterateStep learnerStep n s)
+  ≡
+  iterateStep physicalStep n (encode s)
+iterateConjugacy encode stepConjugacy zero s = refl
+iterateConjugacy encode stepConjugacy (suc n) s =
+  trans
+    (iterateConjugacy
+      encode
+      stepConjugacy
+      n
+      (learnerStep s))
+    (cong
+      (iterateStep physicalStep n)
+      (stepConjugacy s))
+
+------------------------------------------------------------------------
+-- Input-indexed square contract for prefix scans. This is deliberately
+-- separate from the autonomous iterate witness: a prefix consumes an
+-- input at every step, so the commuting law must quantify over input.
+------------------------------------------------------------------------
+
+record InputIndexedConjugacy
+  (LearnerState PhysicalState Input : Set) : Set₁ where
+  constructor inputIndexedConjugacy
+  field
+    encode : LearnerState → PhysicalState
+    learnerStep : LearnerState → Input → LearnerState
+    physicalStep : PhysicalState → Input → PhysicalState
+    stepConjugacy :
+      ∀ s x →
+      encode (learnerStep s x)
+      ≡
+      physicalStep (encode s) x
+
+open InputIndexedConjugacy public
+
+prefixScan :
+  ∀ {State Input : Set} →
+  (State → Input → State) →
+  List Input →
+  State →
+  State
+prefixScan step [] s = s
+prefixScan step (x ∷ xs) s =
+  prefixScan step xs (step s x)
+
+prefixScanConjugacy :
+  ∀ {LearnerState PhysicalState Input : Set}
+  (R : InputIndexedConjugacy LearnerState PhysicalState Input) →
+  ∀ xs s →
+  encode R (prefixScan (learnerStep R) xs s)
+  ≡
+  prefixScan (physicalStep R) xs (encode R s)
+prefixScanConjugacy R [] s = refl
+prefixScanConjugacy R (x ∷ xs) s =
+  trans
+    (prefixScanConjugacy
+      R
+      xs
+      (learnerStep R s x))
+    (cong
+      (prefixScan (physicalStep R) xs)
+      (stepConjugacy R s x))
+
+------------------------------------------------------------------------
+-- No inhabitant is supplied here. The admissibility and stationarity
+-- predicates are explicit semantic obligations; these contracts do not
+-- manufacture them from learner algebra.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+GenericFourLawClosureConstructor :
+  Set₁
+GenericFourLawClosureConstructor =
+  ∀ {LearnerState PhysicalState Current Variation Action : Set}
+    (Admissible : Variation → Set)
+    (Stationary : PhysicalState → Set)
+    (learnerStep : LearnerState → LearnerState)
+    (physicalStep : PhysicalState → PhysicalState) →
+    FourLawOneStepWitnessContract
+      LearnerState
+      PhysicalState
+      Current
+      Variation
+      Action
+      Admissible
+      Stationary
+      learnerStep
+      physicalStep
+
+no-generic-four-law-closure-constructor :
+  GenericFourLawClosureConstructor → ⊥
+no-generic-four-law-closure-constructor make =
+  LawIIIVariationalWitness.stationary
+    (FourLawOneStepWitnessContract.lawIII
+      (make
+        {LearnerState = ⊤}
+        {PhysicalState = ⊤}
+        {Current = ⊤}
+        {Variation = ⊤}
+        {Action = ⊤}
+        (λ _ → ⊤)
+        (λ _ → ⊥)
+        (λ _ → tt)
+        (λ _ → tt)))
+    tt
+
+NoGenericFourLawClosure : Set₁
+NoGenericFourLawClosure = GenericFourLawClosureConstructor → ⊥
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Generic self-similar/fractal injective-composition kernel.
+--
+-- "Fractal" is used here only with an explicit level relation and an
+-- inter-level transport law. Mere indexing by Level is not treated as
+-- fractality.
+------------------------------------------------------------------------
+
+
+record FractalInjectiveComposition
+  (Level State Observation : Set)
+  (Refines : Level → Level → Set) : Set₁ where
+  constructor fractalInjectiveComposition
+  field
+    encode : Level → State → Observation
+    decode : Level → Observation → State
+    decodeEncode : ∀ level state → decode level (encode level state) ≡ state
+
+    transport :
+      ∀ {lower upper} →
+      Refines lower upper →
+      Observation →
+      Observation
+
+    transportInjective :
+      ∀ {lower upper} {r : Refines lower upper} {x y : Observation} →
+      transport r x ≡ transport r y →
+      x ≡ y
+
+    transportEncode :
+      ∀ {lower upper} (r : Refines lower upper) state →
+      transport r (encode lower state) ≡
+      encode upper state
+
+open FractalInjectiveComposition public
+
+fractalLevelInjective :
+  ∀ {Level State Observation : Set}
+  {Refines : Level → Level → Set}
+  (F : FractalInjectiveComposition Level State Observation Refines) →
+  ∀ level {s t : State} →
+  encode F level s ≡ encode F level t →
+  s ≡ t
+fractalLevelInjective F level eq =
+  trans
+    (decodeEncode F level _)
+    (cong (decode F level) eq)
+
+fractalTransportedEncodeInjective :
+  ∀ {Level State Observation : Set}
+  {Refines : Level → Level → Set}
+  (F : FractalInjectiveComposition Level State Observation Refines) →
+  ∀ {lower upper} (r : Refines lower upper) {s t : State} →
+  transport F r (encode F lower s) ≡
+  transport F r (encode F lower t) →
+  s ≡ t
+fractalTransportedEncodeInjective F r eq =
+  fractalLevelInjective F upper
+    (trans
+      (transportEncode F r _)
+      (trans
+        (transportInjective F eq)
+        (sym (transportEncode F r _))))
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Canonical GRU instantiation of the fractal injective-composition kernel.
+--
+-- Nat indexes scale. The relation m ≤ n records refinement from a lower
+-- level to an upper level. The canonical statistical observation is reused
+-- unchanged at every scale, and the inter-level transport is the identity.
+-- This is therefore an explicit scale-invariant self-similar instance,
+-- not an assertion that every possible fractal representation is GRU
+-- injective.
+------------------------------------------------------------------------
+
+  using
+  ( CanonicalGRUStatisticalObservation
+  ; canonicalGRUStatisticalEncode
+  ; canonicalGRUStatisticalDecode
+  ; canonicalGRUStatisticalDecodeEncode
+  )
+
+GRUFractalLevel : Set
+GRUFractalLevel = Nat
+
+GRUFractalRefines : GRUFractalLevel → GRUFractalLevel → Set
+GRUFractalRefines lower upper = lower ≤ upper
+
+canonicalGRUFractal : FractalInjectiveComposition
+  GRUFractalLevel
+  C.GRUState
+  CanonicalGRUStatisticalObservation
+  GRUFractalRefines
+canonicalGRUFractal =
+  fractalInjectiveComposition
+    (λ _ → canonicalGRUStatisticalEncode)
+    (λ _ → canonicalGRUStatisticalDecode)
+    (λ level state → canonicalGRUStatisticalDecodeEncode state)
+    (λ _ observation → observation)
+    (λ eq → eq)
+    (λ _ state → refl)
+
+canonicalGRUFractalLevelInjective :
+  ∀ level {s t : C.GRUState} →
+  encode canonicalGRUFractal level s ≡
+  encode canonicalGRUFractal level t →
+  s ≡ t
+canonicalGRUFractalLevelInjective =
+  fractalLevelInjective canonicalGRUFractal
+
+canonicalGRUFractalTransportedInjective :
+  ∀ {lower upper : GRUFractalLevel}
+  (r : GRUFractalRefines lower upper)
+  {s t : C.GRUState} →
+  transport canonicalGRUFractal r
+    (encode canonicalGRUFractal lower s) ≡
+  transport canonicalGRUFractal r
+    (encode canonicalGRUFractal lower t) →
+  s ≡ t
+canonicalGRUFractalTransportedInjective =
+  fractalTransportedEncodeInjective canonicalGRUFractal
+
+canonicalGRUTwoScaleRefinement :
+  GRUFractalRefines zero (suc zero)
+canonicalGRUTwoScaleRefinement = z≤n
+
+canonicalGRUTwoScaleInjective :
+  ∀ {s t : C.GRUState} →
+  transport canonicalGRUFractal canonicalGRUTwoScaleRefinement
+    (encode canonicalGRUFractal zero s) ≡
+  transport canonicalGRUFractal canonicalGRUTwoScaleRefinement
+    (encode canonicalGRUFractal zero t) →
+  s ≡ t
+canonicalGRUTwoScaleInjective =
+  canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleRefinement
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Domain adapters for the GRU-injective fractal composition seam.
+--
+-- These are proof-relevant contracts, not fabricated inhabitants.
+-- Physics remains blocked by the concrete Law-I/Law-III witnesses.
+-- Economics additionally requires a genuine inter-level transport on
+-- the economic carrier, not merely a level index.
+------------------------------------------------------------------------
+
+  using
+  ( FourLawOneStepWitnessContract
+  )
+  using
+  ( FractalInjectiveComposition
+  )
+
+record PhysicsGRUFractalAdapter
+  (Level LearnerState PhysicalState Observation Current Variation Action : Set)
+  (Refines : Level → Level → Set)
+  (Admissible : Variation → Set)
+  (Stationary : PhysicalState → Set)
+  (learnerStep : LearnerState → LearnerState)
+  (physicalStep : PhysicalState → PhysicalState) : Set₁ where
+  constructor physicsGRUFractalAdapter
+  field
+    fourLawWitness :
+      FourLawOneStepWitnessContract
+        LearnerState
+        PhysicalState
+        Current
+        Variation
+        Action
+        Admissible
+        Stationary
+        learnerStep
+        physicalStep
+
+    injectiveFractalRepresentation :
+      FractalInjectiveComposition
+        Level
+        LearnerState
+        Observation
+        Refines
+
+record EconomicsGRUFractalAdapter
+  (Level LearnerState EconomicState Observation : Set)
+  (Refines : Level → Level → Set)
+  (learnerStep : LearnerState → LearnerState)
+  (economicStep : EconomicState → EconomicState) : Set₁ where
+  constructor economicsGRUFractalAdapter
+  field
+    learnerToEconomic :
+      LearnerState → EconomicState
+    economicToLearner :
+      EconomicState → LearnerState
+
+    learnerToEconomicInverse :
+      ∀ s →
+      economicToLearner (learnerToEconomic s) ≡ s
+
+    economicToLearnerInverse :
+      ∀ e →
+      learnerToEconomic (economicToLearner e) ≡ e
+
+    stepConjugacy :
+      ∀ s →
+      learnerToEconomic (learnerStep s) ≡
+      economicStep (learnerToEconomic s)
+
+    injectiveFractalRepresentation :
+      FractalInjectiveComposition
+        Level
+        LearnerState
+        Observation
+        Refines
+
+    economicObservation :
+      EconomicState → Observation
+
+    economicLevelTransport :
+      ∀ {lower upper} →
+      Refines lower upper →
+      EconomicState →
+      EconomicState
+
+    economicLevelTransportInjective :
+      ∀ {lower upper}
+      {r : Refines lower upper}
+      {x y : EconomicState} →
+      economicLevelTransport r x ≡
+      economicLevelTransport r y →
+      x ≡ y
+
+    economicLevelTransportRepresentation :
+      ∀ {lower upper}
+      (r : Refines lower upper)
+      (e : EconomicState) →
+      economicObservation
+        (economicLevelTransport r e)
+      ≡
+      FractalInjectiveComposition.transport
+        injectiveFractalRepresentation
+        r
+        (economicObservation e)
+
+open PhysicsGRUFractalAdapter public
+open EconomicsGRUFractalAdapter public
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitClosure.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Arbitrary-limit closure boundary for GRU-injective fractal composition.
+-- A limit object is not assumed to preserve injectivity merely because
+-- every finite/indexed approximation is injective.
+------------------------------------------------------------------------
+
+
+record FractalLimitClosure
+  (Level State Observation LimitObservation : Set)
+  (Refines : Level → Level → Set)
+  (encode : Level → State → Observation)
+  (limitEncode : State → LimitObservation)
+  : Set₁ where
+  constructor fractalLimitClosure
+  field
+    Approx : Observation → LimitObservation → Set
+    approximationWitness :
+      ∀ level state →
+      Approx (encode level state) (limitEncode state)
+    limitSeparation :
+      ∀ {s t : State} →
+      limitEncode s ≡ limitEncode t →
+      s ≡ t
+
+open FractalLimitClosure public
+
+fractalLimitInjective :
+  ∀ {Level State Observation LimitObservation : Set}
+  {Refines : Level → Level → Set}
+  {encode : Level → State → Observation}
+  {limitEncode : State → LimitObservation}
+  (F : FractalLimitClosure
+    Level State Observation LimitObservation
+    Refines encode limitEncode) →
+  ∀ {s t : State} →
+  limitEncode s ≡ limitEncode t →
+  s ≡ t
+fractalLimitInjective F = limitSeparation F
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitDecoderSurvival.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Decoder survival through a fractal limit.
+--
+-- This module isolates the exact missing seam after finite/indexed GRU
+-- injectivity: a compatible family of finite decoders must determine a
+-- single decoder on the limit carrier.
+--
+-- No topological limit or existence claim is manufactured here.
+------------------------------------------------------------------------
+
+
+record CoherentLimitDecoder
+  (Level State Observation LimitObservation : Set)
+  (encode : Level → State → Observation)
+  (limitEncode : State → LimitObservation)
+  : Set₁ where
+  constructor coherentLimitDecoder
+  field
+    decode : Level → Observation → State
+    limitDecode : LimitObservation → State
+    projection : Level → LimitObservation → Observation
+    projectionEncode :
+      ∀ level state →
+      projection level (limitEncode state) ≡ encode level state
+    decoderCoherence :
+      ∀ level limitObservation →
+      decode level (projection level limitObservation) ≡
+      limitDecode limitObservation
+
+open CoherentLimitDecoder public
+
+coherentLimitDecoder-left-inverse :
+  ∀ {Level State Observation LimitObservation : Set}
+  {encode : Level → State → Observation}
+  {limitEncode : State → LimitObservation}
+  (C :
+    CoherentLimitDecoder
+      Level State Observation LimitObservation
+      encode limitEncode) →
+  ∀ level state →
+  decode C level (encode level state) ≡ state →
+  limitDecode C (limitEncode state) ≡ state
+coherentLimitDecoder-left-inverse C level state finiteLeftInverse =
+  trans
+    (sym (decoderCoherence C level (limitEncode state)))
+    (trans
+      (cong (decode C level) (projectionEncode C level state))
+      finiteLeftInverse)
+
+------------------------------------------------------------------------
+-- The graph edge represented by this module is:
+--
+--   finite decoder left inverse
+--     + limit projection
+--     + projection/encoding compatibility
+--     + decoder coherence
+--     -> limit-surviving left inverse
+--
+-- Once the resulting limit decoder is available, the existing
+-- GRUFractalEGraphAStarLimitComposition module derives limit injectivity.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalEGraphAStarLimitComposition.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- GRU fractal e-graph/A* limit composition.
+--
+-- The existing repository e-graph/A* layer is discovery/search
+-- infrastructure; Agda remains proof-authoritative. This module closes
+-- the specific missing implication at the fractal-limit boundary:
+--
+--   surviving global left inverse
+--     -> limit separation
+--     -> limit injectivity
+--
+-- Therefore limit separation is not a second primitive assumption when
+-- a decoder survives the limit with a left-inverse law.
+------------------------------------------------------------------------
+
+
+record LimitLeftInverse
+  (State LimitObservation : Set)
+  (limitEncode : State → LimitObservation)
+  : Set₁ where
+  constructor limitLeftInverse
+  field
+    limitDecode : LimitObservation → State
+    decodeEncode :
+      ∀ state →
+      limitDecode (limitEncode state) ≡ state
+
+open LimitLeftInverse public
+
+limitSeparation-from-left-inverse :
+  ∀ {State LimitObservation : Set}
+  {limitEncode : State → LimitObservation}
+  (L : LimitLeftInverse State LimitObservation limitEncode) →
+  ∀ {s t : State} →
+  limitEncode s ≡ limitEncode t →
+  s ≡ t
+limitSeparation-from-left-inverse L {s} {t} eq =
+  trans
+    (sym (decodeEncode L s))
+    (trans
+      (cong (limitDecode L) eq)
+      (decodeEncode L t))
+
+limitInjective-from-left-inverse :
+  ∀ {State LimitObservation : Set}
+  {limitEncode : State → LimitObservation}
+  (L : LimitLeftInverse State LimitObservation limitEncode) →
+  ∀ {s t : State} →
+  limitEncode s ≡ limitEncode t →
+  s ≡ t
+limitInjective-from-left-inverse =
+  limitSeparation-from-left-inverse
+
+fractalLimitClosure-from-left-inverse :
+  ∀ {Level State Observation LimitObservation : Set}
+  {Refines : Level → Level → Set}
+  {encode : Level → State → Observation}
+  {limitEncode : State → LimitObservation}
+  (Approx : Observation → LimitObservation → Set)
+  (approximationWitness :
+    ∀ level state →
+    Approx (encode level state) (limitEncode state))
+  (L : LimitLeftInverse State LimitObservation limitEncode) →
+  FractalLimitClosure
+    Level State Observation LimitObservation
+    Refines encode limitEncode
+fractalLimitClosure-from-left-inverse
+  Approx
+  approximationWitness
+  L =
+  fractalLimitClosure
+    Approx
+    approximationWitness
+    (limitSeparation-from-left-inverse L)
+
+------------------------------------------------------------------------
+-- E-graph/A* interpretation boundary.
+--
+-- The graph/search layer may discover this composition:
+--
+--   global-left-inverse
+--     -> global-injectivity
+--     -> finite/indexed fractal injectivity
+--     -> compatible limit
+--     -> surviving limit-left-inverse
+--     -> limit separation
+--     -> arbitrary-limit injectivity
+--
+-- The final equality is still an Agda proof term; A* cost/heuristic data
+-- never becomes semantic evidence.
+------------------------------------------------------------------------
+
+record GRUFractalLimitCompositionKernel
+  (State Observation LimitObservation : Set)
+  (limitEncode : State → LimitObservation)
+  : Set₁ where
+  constructor gruFractalLimitCompositionKernel
+  field
+    limitInverse : LimitLeftInverse State LimitObservation limitEncode
+
+open GRUFractalLimitCompositionKernel public
+
+gruFractalLimitComposition-limitInjective :
+  ∀ {State Observation LimitObservation : Set}
+  {limitEncode : State → LimitObservation}
+  (K :
+    GRUFractalLimitCompositionKernel
+      State Observation LimitObservation
+      limitEncode) →
+  ∀ {s t : State} →
+  limitEncode s ≡ limitEncode t →
+  s ≡ t
+gruFractalLimitComposition-limitInjective K =
+  limitInjective-from-left-inverse (limitInverse K)
+
+------------------------------------------------------------------------
+-- A typed e-graph path remains a semantic equality certificate.
+------------------------------------------------------------------------
+
+gruFractalLimitComposition-path-sound :
+  ∀ {Expression State : Set}
+  {R : EGraphSemanticInterpretation Expression State}
+  {e f : Expression} →
+  EGraphSemanticPath R e f →
+  interpret R e ≡ interpret R f
+gruFractalLimitComposition-path-sound =
+  eGraph-path-sound _
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceAdapter.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+record GRUFractalLimitConvergenceWitness
+  (Level State Observation LimitObservation : Set)
+  (Refines : Level → Level → Set)
+  (encode : Level → State → Observation)
+  (limitEncode : State → LimitObservation)
+  (rank : Nat → Level)
+  (Converges : (Nat → Observation) → LimitObservation → Set)
+  : Set₁ where
+  constructor gruFractalLimitConvergenceWitness
+  field
+    approximationSequence :
+      State → Nat → Observation
+    rankEncoding :
+      ∀ n state →
+      approximationSequence state n ≡
+      encode (rank n) state
+    converges :
+      ∀ state →
+      Converges
+        (approximationSequence state)
+        (limitEncode state)
+    Approx :
+      Observation → LimitObservation → Set
+    approximationWitness :
+      ∀ level state →
+      Approx
+        (encode level state)
+        (limitEncode state)
+    coherentDecoder :
+      CoherentLimitDecoder
+        Level State Observation LimitObservation
+        encode limitEncode
+    finiteLeftInverse :
+      ∀ level state →
+      CoherentLimitDecoder.decode
+        coherentDecoder
+        level
+        (encode level state) ≡
+      state
+
+open GRUFractalLimitConvergenceWitness public
+
+gruFractalLimitConvergence-limitLeftInverse :
+  ∀ {Level State Observation LimitObservation : Set}
+  {Refines : Level → Level → Set}
+  {encode : Level → State → Observation}
+  {limitEncode : State → LimitObservation}
+  {rank : Nat → Level}
+  {Converges : (Nat → Observation) → LimitObservation → Set}
+  (W :
+    GRUFractalLimitConvergenceWitness
+      Level State Observation LimitObservation
+      Refines encode limitEncode rank Converges) →
+  LimitLeftInverse State LimitObservation limitEncode
+gruFractalLimitConvergence-limitLeftInverse W =
+  limitLeftInverse
+    (λ state →
+      coherentLimitDecoder-left-inverse
+        (coherentDecoder W)
+        (rank zero)
+        state
+        (finiteLeftInverse W (rank zero) state))
+
+gruFractalLimitConvergence-fractalLimitClosure :
+  ∀ {Level State Observation LimitObservation : Set}
+  {Refines : Level → Level → Set}
+  {encode : Level → State → Observation}
+  {limitEncode : State → LimitObservation}
+  {rank : Nat → Level}
+  {Converges : (Nat → Observation) → LimitObservation → Set}
+  (W :
+    GRUFractalLimitConvergenceWitness
+      Level State Observation LimitObservation
+      Refines encode limitEncode rank Converges) →
+  FractalLimitClosure
+    Level State Observation LimitObservation
+    Refines encode limitEncode
+gruFractalLimitConvergence-fractalLimitClosure W =
+  fractalLimitClosure
+    (Approx W)
+    (approximationWitness W)
+    (limitSeparation-from-left-inverse
+      (gruFractalLimitConvergence-limitLeftInverse W))
+
+gruFractalLimitConvergence-limitInjective :
+  ∀ {Level State Observation LimitObservation : Set}
+  {Refines : Level → Level → Set}
+  {encode : Level → State → Observation}
+  {limitEncode : State → LimitObservation}
+  {rank : Nat → Level}
+  {Converges : (Nat → Observation) → LimitObservation → Set}
+  (W :
+    GRUFractalLimitConvergenceWitness
+      Level State Observation LimitObservation
+      Refines encode limitEncode rank Converges) →
+  ∀ {s t : State} →
+  limitEncode s ≡ limitEncode t →
+  s ≡ t
+gruFractalLimitConvergence-limitInjective W =
+  fractalLimitInjective
+    (gruFractalLimitConvergence-fractalLimitClosure W)
+
+------------------------------------------------------------------------
+-- Convergence remains a supplied witness. It is not promoted into a
+-- separation theorem without the explicit coherent decoder/left inverse.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceImpossibility.agda; TheoremsMonolith is the sole theorem authority.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Impossibility boundary for naive arbitrary-limit closure.
+--
+-- A convergence/approximation interface without a surviving separating
+-- decoder cannot, by itself, imply injectivity of the limit representation.
+-- The countermodel below is deliberately finite: Bool is collapsed to Unit.
+------------------------------------------------------------------------
+
+
+false-not-true : ¬ (false ≡ true)
+false-not-true ()
+
+constant-limit : Bool → ⊤
+constant-limit _ = tt
+
+trivial-convergence :
+  ∀ state →
+  ⊤
+trivial-convergence _ = tt
+
+------------------------------------------------------------------------
+-- There cannot be a generic theorem that turns an arbitrary supplied
+-- "convergence witness" into limit injectivity.  The premises below are
+-- intentionally no stronger than a total witness for every state.
+------------------------------------------------------------------------
+
+naive-limit-injectivity-impossible :
+  ¬
+  (∀ {State LimitObservation : Set}
+    (limitEncode : State → LimitObservation) →
+    (∀ state → ⊤) →
+    ∀ {s t : State} →
+    limitEncode s ≡ limitEncode t →
+    s ≡ t)
+naive-limit-injectivity-impossible derive =
+  false-not-true
+    (derive constant-limit trivial-convergence
+      {s = false} {t = true} refl)
+
+------------------------------------------------------------------------
+-- Interpretation:
+--
+--   approximation/convergence witness alone
+--              ↛
+--        limit injectivity
+--
+-- A separate separation mechanism is necessary.  The repository's
+-- limit-left-inverse kernel supplies exactly that missing mechanism.
+------------------------------------------------------------------------
+
 record CanonicalAQLoopTheorem : Set₁ where
   constructor canonicalAQLoopTheorem
   field
@@ -5702,3 +7278,164 @@ canonical-integer-gru-fractal-limit-composition K =
     canonical-integer-gru-global-conjugate-theorem
     K
     (gruFractalLimitComposition-limitInjective K)
+
+
+------------------------------------------------------------------------
+-- Inlined nested commons composition boundary; the one-level commons
+-- theorem already lives in this monolith above.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Nested / self-similar commons composition boundary.
+--
+-- The construction is deliberately proposition-valued: no Bool is needed.
+-- Each level repeats the same local-optimality -> aggregate-preservation
+-- obligation. A global derivation must therefore solve the obligation at
+-- every inhabited level. The existing two-agent countermodel refutes that
+-- unconditional implication already at one level, and hence also refutes
+-- the nested version.
+------------------------------------------------------------------------
+
+
+  using
+  ( CommonsNonDerivabilityCounterexample
+  ; twoAgentCommonsCounterexample
+  ; twoNotLeOne
+  ; commonsWorld
+  ; sharedResource
+  ; resourceCapacity
+  ; action
+  ; extraction
+  ; aggregateExtraction
+  ; localOptimal
+  ; allLocallyOptimal
+  ; aggregateExtractionIsTwo
+  ; extractionIsOne
+  ; capacityIsOne
+  )
+
+------------------------------------------------------------------------
+-- A single commons law repeated across an arbitrary collection of levels.
+-- "Nested" here is a precise recursive/self-similar interface claim:
+-- the same preservation obligation is required independently at every
+-- level.
+------------------------------------------------------------------------
+
+record NestedCommonsPreservationDerivation
+  (Level : Set)
+  (C : CommonsNonDerivabilityCounterexample) : Set₁ where
+  constructor nestedCommonsPreservationDerivation
+  field
+    derive :
+      ∀ level →
+      ∀ w →
+      (∀ a →
+        localOptimal C
+          w
+          a
+          (action C w a)) →
+      aggregateExtraction C w ≤
+      resourceCapacity C (sharedResource C w)
+
+open NestedCommonsPreservationDerivation public
+
+------------------------------------------------------------------------
+-- Aggregate consistency for the concrete two-agent model.
+-- This makes "two-unit aggregate extraction" mathematically tied to the
+-- two individual one-unit extractions rather than merely co-present fields.
+------------------------------------------------------------------------
+
+twoAgentAggregateExtractionIsSum :
+  aggregateExtraction twoAgentCommonsCounterexample
+    (commonsWorld twoAgentCommonsCounterexample)
+  ≡
+  extraction twoAgentCommonsCounterexample
+    (action twoAgentCommonsCounterexample
+      (inj₁ tt))
+  +
+  extraction twoAgentCommonsCounterexample
+    (action twoAgentCommonsCounterexample
+      (inj₂ tt))
+twoAgentAggregateExtractionIsSum =
+  trans
+    (aggregateExtractionIsTwo twoAgentCommonsCounterexample)
+    refl
+
+------------------------------------------------------------------------
+-- One bad level destroys an unconditional all-level derivation.
+------------------------------------------------------------------------
+
+noUnconditionalNestedCommonsPreservation :
+  ∀ {Level : Set} →
+  Level →
+  (C : CommonsNonDerivabilityCounterexample) →
+  ¬ NestedCommonsPreservationDerivation Level C
+noUnconditionalNestedCommonsPreservation level C D =
+  twoNotLeOne
+    (subst
+      (λ n → n ≤ suc zero)
+      (capacityIsOne C)
+      (subst
+        (λ n → suc (suc zero) ≤ n)
+        (aggregateExtractionIsTwo C)
+        (derive D
+          level
+          (commonsWorld C)
+          (allLocallyOptimal C))))
+
+------------------------------------------------------------------------
+-- Concrete two-scale instance: two nested levels are enough to witness
+-- the impossibility. The same local/global law is demanded at each level.
+------------------------------------------------------------------------
+
+TwoScaleCommonsLevel : Set
+TwoScaleCommonsLevel = ⊤ ⊎ ⊤
+
+noUnconditionalNestedCommonsPreservation-twoScale :
+  ¬ NestedCommonsPreservationDerivation
+      TwoScaleCommonsLevel
+      twoAgentCommonsCounterexample
+noUnconditionalNestedCommonsPreservation-twoScale =
+  noUnconditionalNestedCommonsPreservation
+    (inj₁ tt)
+    twoAgentCommonsCounterexample
+
+------------------------------------------------------------------------
+-- Scale composition rule.
+--
+-- A nested preservation proof is strictly stronger than a one-level proof:
+-- restricting it to any inhabited level yields the corresponding local
+-- preservation derivation. Thus adding more levels cannot manufacture the
+-- missing local-to-global conservation invariant.
+------------------------------------------------------------------------
+
+nestedLevelRestriction :
+  ∀ {Level : Set}
+  {C : CommonsNonDerivabilityCounterexample} →
+  (D : NestedCommonsPreservationDerivation Level C) →
+  ∀ level →
+  ∀ w →
+  (∀ a →
+    localOptimal C w a (action C w a)) →
+  aggregateExtraction C w ≤
+  resourceCapacity C (sharedResource C w)
+nestedLevelRestriction D level =
+  derive D level
+
+------------------------------------------------------------------------
+-- The unconditional graph is therefore closed at the negative boundary:
+--
+-- local optimality
+--   -> individual extraction
+--   -> aggregate extraction
+--   -X-> preservation
+--
+-- and recursively:
+--
+-- level 0 -> level 1 -> ... -> level n
+--   with preservation required at every inhabited level.
+--
+-- No Boolean encoding is involved. The propositions themselves live in Set;
+-- Nat supplies the resource quantities; equality and subst transport the
+-- concrete countermodel into the preservation obligation.
+------------------------------------------------------------------------
