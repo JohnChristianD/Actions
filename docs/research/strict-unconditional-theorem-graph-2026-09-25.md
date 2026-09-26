@@ -43,7 +43,7 @@ Radner existence.
 
 ## Stationarity
 
-The strict graph keeps the proved full-state obstruction, including the exact successor-clock / no-fixed-point family. It does not claim an unconditional invariant-probability measure theorem. A stationary distribution requires an explicit probability space and invariant-measure semantics; those are not fabricated from deterministic factor stability.
+The strict graph keeps the proved full-state obstruction, now expressed through the exact successor total-count / no-fixed-point family. It does not claim an unconditional invariant-probability measure theorem. A stationary distribution requires an explicit probability space and invariant-measure semantics; those are not fabricated from deterministic factor stability.
 
 ## Inventory
 
