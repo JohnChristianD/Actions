@@ -18,6 +18,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
@@ -33,6 +34,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
@@ -86,6 +88,10 @@ let script = merge {
     for symbol in canonicalGRUFractal canonicalGRUFractalLevelInjective canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleInjective; do
       grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda || { echo "canonical fractal symbol missing: $symbol"; exit 1; }
     done
+    for symbol in PhysicsGRUFractalAdapter EconomicsGRUFractalAdapter economicObservation economicLevelTransport economicLevelTransportInjective economicLevelTransportRepresentation; do
+      grep -Fq "$symbol" Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda || { echo "domain adapter symbol missing: $symbol"; exit 1; }
+    done
+    [ -f .ci/discovery/gru-fractal-domain-adapters-2026-09-26.mmd ] || { echo "GRU fractal domain adapter graph missing"; exit 1; }
 
     grep -Fq 'does not entail' "$graph" || { echo "economic non-implication boundary missing"; exit 1; }
     grep -Fq 'independent economic hypotheses' "$graph" || { echo "economic assumption boundary missing"; exit 1; }
@@ -556,6 +562,7 @@ JSON
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CommonsComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
