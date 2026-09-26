@@ -35,6 +35,7 @@ The current Agda inventory is:
 - `GRUFractalDomainAdapters.agda` — Physics/Economics proof-relevant adapter contracts.
 - `GRUFractalLimitClosure.agda` — arbitrary-limit approximation/separation closure boundary.
 - `GRUFractalEGraphAStarLimitComposition.agda` — derives limit separation/injectivity from a surviving left inverse and reuses the proof-only e-graph/A* soundness kernel.
+- `GRUFractalLimitDecoderSurvival.agda` — derives a limit left inverse from coherent finite decoder projections.
 - `ZPFStatisticalRepresentation.agda` — typed ZPF/ω³ Maxwell-statistical boundary and conditional global ZPF→GRU injectivity adapter.
 - `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
 - `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
