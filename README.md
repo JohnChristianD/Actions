@@ -11,6 +11,7 @@ The current thesis-facing claim is deliberately narrow: the formalization makes 
 - `.ci/actions_ci.dhall` — verification lanes and required checks.
 - `.ci/discovery/` — declaration extraction, dependency discovery, and graph consistency checks.
 - `docs/research/current-semantic-emergence-2026-09-25.mmd` — current end-to-end topology.
+- `docs/research/theorem-improvement-completion-2026-09-26.md` — completed theorem-improvement search and proof-boundary note.
 - `docs/economics/` — production/equilibrium vocabulary and economic boundary documentation.
 
 The Agda monoliths are intentionally kept as the proof source. Graphs are explanatory and discovery artifacts; a graph edge never substitutes for an Agda proof.
@@ -60,7 +61,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 26 files.
+Generated from the tracked Markdown surface: 27 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -89,6 +90,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [NormPair quotient/factor transition closure](docs/research/normpair-factor-transition-closure-2026-09-24.md)
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
+- [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
 - [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
@@ -109,6 +111,8 @@ The current carrier/policy/frontier surface is documented in:
 The canonical learner's `Int8` representation is an unbounded `ℤ` wrapper, not a `Fin n` carrier. Generic cross-domain representation laws are `Set`-polymorphic; genuinely finite theorem surfaces may still use `Fin n` where finiteness is part of the proposition.
 
 The behavior-policy topology distinguishes the exact sparsemax weight readout (`BehaviorPolicy : Nat → SparseWeight`) from the selected-action `canonicalPolicy`. No probability-normalization or full information-set behavioral-strategy theorem is inferred without an explicit adapter.
+
+The theorem-improvement completion adds a reusable strict relation, factor-transition and step-conjugacy transport kernels, explicit production/equilibrium assumption witnesses, a distributional stationary-aggregate bridge, and proof-carrying e-graph edge metadata. The remaining factor and economic bridges stay explicitly witness-gated; no new unconditional convergence or equilibrium theorem is inferred.
 
 Finite-cycle exclusion is factored through the generic `StrictProgressWitness`: the clock is sufficient but not conceptually necessary. The canonical learner has a clock-free instantiation through strictly increasing `totalCount`.
 
