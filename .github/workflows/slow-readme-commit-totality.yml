@@ -6,6 +6,7 @@ on:
     paths:
       - "docs/**"
       - ".ci/readme-doc-sync.dhall"
+      - ".ci/slow-readme-update.dhall"
       - "flake.nix"
   schedule:
     - cron: '17 3 * * 1'
