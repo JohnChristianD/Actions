@@ -134,8 +134,79 @@ open StateIsomorphism public
 
 iterateIsomorphism :
   ∀ {A : Set} → (A → A) → Nat → A → A
-iterateIsomorphism f zero a = a
 iterateIsomorphism f (suc n) a = iterateIsomorphism f n (f a)
+
+record StepConjugacyWitness
+  (A B : Set)
+  (sourceStep : A → A)
+  (targetStep : B → B) : Set₁ where
+  constructor stepConjugacyWitness
+  field
+    isomorphism : StateIsomorphism A B
+    stepCommutes :
+      ∀ a →
+      to isomorphism (sourceStep a) ≡
+      targetStep (to isomorphism a)
+
+open StepConjugacyWitness public
+
+stepConjugacy-iterate :
+  ∀ {A B : Set}
+  {sourceStep : A → A}
+  {targetStep : B → B}
+  (W : StepConjugacyWitness A B sourceStep targetStep)
+  (n : Nat)
+  (a : A) →
+  to (isomorphism W) (iterateIsomorphism sourceStep n a) ≡
+  iterateIsomorphism targetStep n (to (isomorphism W) a)
+stepConjugacy-iterate W zero a =
+  refl
+stepConjugacy-iterate W (suc n) a =
+  trans
+    (stepConjugacy-iterate W n (sourceStep W a))
+    (cong
+      (iterateIsomorphism (targetStep W) n)
+      (stepCommutes W a))
+
+iteratePredicateTransport :
+  ∀ {B : Set}
+  (step : B → B)
+  (Property : B → Set) →
+  (∀ b → Property b → Property (step b)) →
+  ∀ n b →
+  Property b →
+  Property (iterateIsomorphism step n b)
+iteratePredicateTransport step Property preserved zero b proof =
+  proof
+iteratePredicateTransport step Property preserved (suc n) b proof =
+  iteratePredicateTransport
+    step
+    Property
+    preserved
+    n
+    (step b)
+    (preserved b proof)
+
+stepConjugacy-property-transport :
+  ∀ {A B : Set}
+  {sourceStep : A → A}
+  {targetStep : B → B}
+  (W : StepConjugacyWitness A B sourceStep targetStep)
+  (P : A → Set)
+  (Q : B → Set)
+  (bridge : ∀ a → P a → Q (to (isomorphism W) a))
+  (preserved : ∀ b → Q b → Q (targetStep b)) →
+  ∀ n a →
+  P a →
+  Q (iterateIsomorphism targetStep n (to (isomorphism W) a))
+stepConjugacy-property-transport W P Q bridge preserved n a proof =
+  iteratePredicateTransport
+    targetStep
+    Q
+    preserved
+    n
+    (to (isomorphism W) a)
+    (bridge a proof)
 
 canonical-connected-composition-theorem :
   CanonicalConnectedCompositionTheorem
@@ -2446,6 +2517,56 @@ canonical-stationary-subcomposition-theorem =
         convergence
         limitPreserved)
 
+record DistributionalStationaryAggregateTransport
+  (Distribution Economic : Set)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set)
+  (aggregate : Distribution → Economic)
+  (economicStep : Economic → Economic) : Set₁ where
+  constructor distributionalStationaryAggregateTransport
+  field
+    stationaryLimit :
+      StationaryLimitTheorem
+        Distribution
+        P
+        μ
+        μ∞
+        Converges
+    aggregateStepCommutes :
+      ∀ d →
+      aggregate (P d) ≡
+      economicStep (aggregate d)
+
+distributionalStationaryAggregate-stationary :
+  ∀ {Distribution Economic : Set}
+  {P : Distribution → Distribution}
+  {μ : Nat → Distribution}
+  {μ∞ : Distribution}
+  {Converges : (Nat → Distribution) → Distribution → Set}
+  {aggregate : Distribution → Economic}
+  {economicStep : Economic → Economic}
+  (W :
+    DistributionalStationaryAggregateTransport
+      Distribution
+      Economic
+      P
+      μ
+      μ∞
+      Converges
+      aggregate
+      economicStep) →
+  economicStep (aggregate μ∞) ≡ aggregate μ∞
+distributionalStationaryAggregate-stationary W =
+  trans
+    (sym (aggregateStepCommutes W _))
+    (cong
+      (aggregate W)
+      (limitPreserved
+        (stationaryLimit W)
+        (converges (stationaryLimit W))))
+
 record FunctionClassInclusion
   (Input Output : Set)
   (FBase FFull : (Input → Output) → Set₁) : Set₁ where
@@ -3883,6 +4004,76 @@ record CompetitiveWalrasianEquilibriumWithProduction
       ∀ c →
       CompetitiveProductionEconomy.resourceBalance E c
 
+record ProductionFeasibilityWitness
+  (Firm ProductionPlan : Set)
+  (feasible : Firm → ProductionPlan → Set)
+  (production : Firm → ProductionPlan) : Set₁ where
+  constructor productionFeasibilityWitness
+  field
+    witness :
+      ∀ j →
+      feasible j (production j)
+
+record FirmProfitOptimalityWitness
+  (Firm Price ProductionPlan : Set)
+  (optimal : Firm → Price → ProductionPlan → Set)
+  (price : Price)
+  (production : Firm → ProductionPlan) : Set₁ where
+  constructor firmProfitOptimalityWitness
+  field
+    witness :
+      ∀ j →
+      optimal j price (production j)
+
+record ConsumerOptimalityWitness
+  (Agent Consumption : Set)
+  (optimal : Agent → Consumption → Set)
+  (consumption : Agent → Consumption) : Set₁ where
+  constructor consumerOptimalityWitness
+  field
+    witness :
+      ∀ i →
+      optimal i (consumption i)
+
+record ConsumptionFeasibilityWitness
+  (Agent Consumption : Set)
+  (feasible : Agent → Consumption → Set)
+  (consumption : Agent → Consumption) : Set₁ where
+  constructor consumptionFeasibilityWitness
+  field
+    witness :
+      ∀ i →
+      feasible i (consumption i)
+
+record AggregateFeasibilityWitness
+  (Allocation : Set)
+  (feasible : Allocation → Set)
+  (allocation : Allocation) : Set₁ where
+  constructor aggregateFeasibilityWitness
+  field
+    witness :
+      feasible allocation
+
+record MarketClearingWitness
+  (Price Allocation : Set)
+  (marketClearing : Price → Allocation → Set)
+  (price : Price)
+  (allocation : Allocation) : Set₁ where
+  constructor marketClearingWitness
+  field
+    witness :
+      marketClearing price allocation
+
+record SupportingPriceWitness
+  (Price Allocation : Set)
+  (supports : Price → Allocation → Set)
+  (price : Price)
+  (allocation : Allocation) : Set₁ where
+  constructor supportingPriceWitness
+  field
+    witness :
+      supports price allocation
+
 applyNormPairReplacements :
   ∀ {A : Set} →
   List C.NormPair →
@@ -4015,6 +4206,90 @@ canonicalNormPairQuotient-iterate-compatible
     K
     n
     (canonicalNormPairQuotient-step-compatible K relation)
+
+record FactorTransitionWitness
+  (State Factor : Set)
+  (step : State → State)
+  (observe : State → Factor) : Set₁ where
+  constructor factorTransitionWitness
+  field
+    factorStep : Factor → Factor
+    observe-step :
+      ∀ s →
+      observe (step s) ≡
+      factorStep (observe s)
+
+factorTransitionAfterIterate :
+  ∀ {State Factor : Set}
+  {step : State → State}
+  {observe : State → Factor}
+  (W :
+    FactorTransitionWitness
+      State
+      Factor
+      step
+      observe)
+  (n : Nat)
+  (s : State) →
+  observe (iterateIsomorphism step n s) ≡
+  iterateIsomorphism (factorStep W) n (observe s)
+factorTransitionAfterIterate W zero s =
+  refl
+factorTransitionAfterIterate W (suc n) s =
+  trans
+    (factorTransitionAfterIterate W n (step s))
+    (cong
+      (iterateIsomorphism (factorStep W) n)
+      (observe-step W s))
+
+record RelationFactorTransitionWitness
+  (State Factor : Set)
+  (step : State → State)
+  (related : State → State → Set)
+  (observe : State → Factor) : Set₁ where
+  constructor relationFactorTransitionWitness
+  field
+    transition :
+      FactorTransitionWitness
+        State
+        Factor
+        step
+        observe
+    observeRespects :
+      ∀ {s t} →
+      related s t →
+      observe s ≡ observe t
+    relationStepPreserved :
+      ∀ {s t} →
+      related s t →
+      related
+        (step s)
+        (step t)
+
+canonicalPolicyFactorTransition :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (factorStep : Nat → Nat)
+  (factorStepCommutes :
+    ∀ s →
+    C.canonicalPolicy K (C.canonicalFullStep K s) ≡
+    factorStep (C.canonicalPolicy K s)) →
+  RelationFactorTransitionWitness
+    (C.FullLearnerState A)
+    Nat
+    (C.canonicalFullStep K)
+    normPairReplacementRelation
+    (C.canonicalPolicy K)
+canonicalPolicyFactorTransition
+  K
+  factorStep
+  factorStepCommutes =
+  relationFactorTransitionWitness
+    (factorTransitionWitness
+      factorStep
+      factorStepCommutes)
+    (canonicalPolicy-factors-through-NormPair K)
+    (canonicalNormPairQuotient-step-compatible K)
 
 record CanonicalNormPairQuotientFactorTransitionTheorem : Set₁ where
   constructor canonicalNormPairQuotientFactorTransitionTheorem
