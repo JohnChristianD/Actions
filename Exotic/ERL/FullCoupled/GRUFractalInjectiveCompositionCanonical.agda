@@ -14,6 +14,7 @@
 module Exotic.ERL.FullCoupled.GRUFractalInjectiveCompositionCanonical where
 
 open import Agda.Builtin.Nat using (Nat; zero; suc; _≤_; z≤n)
+open import Relation.Binary.PropositionalEquality using (refl)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open import Exotic.ERL.FullCoupled.GRUStatisticalInjectivity
   using
