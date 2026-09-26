@@ -63,3 +63,62 @@ Change: package the arbitrary-length token generation closure, factor the reusab
 
 Why: remove duplicated proof topology, close real composition seams, and keep conditional cross-domain claims witness-gated.
 
+
+
+## Search closure — 2026-09-26
+
+A fresh repository search reconciles the remaining improvement queue against the current main proof surface.
+
+### 4. Exact-growth spine
+
+canonicalTotalCountAfter already proves the stronger iterate equation: totalCount(lcbCounts(iterateCanonical K n s)) ≡ totalCount(lcbCounts s) + n.
+
+The generic frontier already derives NatSuccessorProgressWitness, successorMeasureAfterIterate, and successorMeasureOrbitInjective, while canonicalOrbit-state-injective exposes the canonical collision ⇒ equal-horizon theorem. No duplicate collision theorem is warranted. The graph is being sharpened so the exact-growth node is visibly upstream of strict progress and orbit injectivity.
+
+The Agda standard library independently exposes natural-number addition cancellation (+-cancelˡ-≡), confirming that the cancellation kernel is ordinary Nat algebra rather than a bespoke clock argument.
+
+### 5. Recurrent-prefix versus free-monoid action surfaces
+
+The search found two distinct abstractions, not one obvious duplicate:
+
+- RecurrentPrefixMonoidHomomorphism packages unit/append laws for recurrent prefix endomorphisms.
+- FreeMonoidActionHomomorphism is consumed by the commuting-square transport theorem.
+
+The current freeMonoidActionHomomorphism-from-square and canonicalCount-freeMonoidActionHomomorphism already provide a separate observation/action transport seam. Therefore Ponytail does not justify deleting either record yet. A future adapter should be added only if it proves an actual reusable conversion between the two semantics.
+
+### 6. Expressivity / finite-state boundary
+
+The repository now has the correct proof boundary for finite-state expressivity: the canonical orbit is injective in its horizon index, but a strict separation theorem still needs an explicit baseline class, inclusion, connected witness, and nonrepresentability proof. The search found no existing iterateCollision theorem because canonicalOrbit-state-injective already supplies that proposition.
+
+This remains consistent with recurrent-expressivity literature: Svete & Cotterell (EMNLP 2023) study precise representational classes and finite-state comparisons, but those external results do not supply the repository-specific Agda witness or inclusion/nonrepresentability terms.
+
+### 7. Hodge-Maxwell obstruction graph
+
+The negative surfaces already exist as first-class graph nodes:
+
+- hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation
+- hodgeMaxwell-discontinuous-gru-refutes-connected-representation
+
+They consume the same carrier-polymorphic representation boundary and prevent unconditional promotion when the explicit collision/continuity premise fails. No new theorem is required for this improvement; the remaining work is graph readability.
+
+### 8. Economics and convergence boundary
+
+The current frontier already keeps learner factor stability, convergence, fixed-point closure, market clearing, supporting prices, and equilibrium existence separate. No theorem was found that justifies collapsing these interfaces. The search therefore confirms the existing conditional graph rather than adding a spurious learner→equilibrium implication.
+
+### 9. Exact scan versus complexity
+
+The repository contains LogarithmicPrefixScanComplexityTheorem, whose fields explicitly require both an exact scan law and separate operator/span/work certificates. This is the right seam: exact associative prefix composition does not itself discharge a machine-level complexity certificate. Blelloch's classical scan work supplies the external algorithmic precedent for logarithmic parallel depth, but the repository still needs its own operator representation and span witness before promoting a complexity result.
+
+### Search disposition
+
+The queue is now classified as:
+
+- Already proved and exposed: exact iterate growth, generic strict progress, orbit-index injectivity, Hodge-Maxwell obstruction consumers, conditional economic frontier.
+- Graph refinement only: exact-growth → strict-progress/orbit-injectivity visibility; exact scan versus complexity separation.
+- Needs a genuine future semantic adapter: recurrent-prefix monoid surface ↔ free-monoid-action surface.
+- Still frontier-gated: finite-state function-class separation and any unconditional learner→economic-equilibrium bridge.
+
+External references checked 2026-09-26:
+- Agda Data.Nat.Properties: +-cancelˡ-≡.
+- Svete & Cotterell, Recurrent Neural Language Models as Probabilistic Finite-state Automata, EMNLP 2023.
+- Blelloch, Prefix Sums and Their Applications, CMU-CS-90-190.
