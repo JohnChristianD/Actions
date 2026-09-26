@@ -5,107 +5,172 @@ flowchart TD
   classDef blocked fill:#eadcf8,stroke:#6b3fa0,color:#392050;
   classDef literature fill:#e1ecff,stroke:#3f6aa3,color:#1d3150;
 
-  K["Canonical learner definitions"]:::proved
-  BP["canonicalBehaviorPolicy<br/>BehaviorPolicy = Nat → SparseWeight"]:::proved
-  BA["canonicalBehaviorAction = canonicalPolicy"]:::proved
-  K --> BP --> BA
+  subgraph CORE["Closed prerequisites"]
+    K["Canonical learner definitions"]:::proved
+    BP["canonicalBehaviorPolicy"]:::proved
+    BA["canonicalBehaviorAction"]:::proved
+    NQ["CanonicalNormPairQuotientFactorTransitionTheorem"]:::proved
+    F4["CanonicalF4GlobalOptimizerStabilityTheorem"]:::proved
+    FN["CanonicalF4NormPairUnconditionalFactorStabilityTheorem"]:::proved
+    MARL["CanonicalMARLLawCompositionTheorem"]:::proved
+    SCAN["CanonicalFullLearnerConnectedScanConjugacyTheorem"]:::proved
+    K --> BP --> BA
+    NQ --> FN
+    F4 --> FN
+    MARL --> SCAN
+  end
 
-  SPW["StrictProgressWitness<br/>arbitrary Set state/measure"]:::proved
-  SPI["strictProgressAfterIterate"]:::proved
-  NFC["noPositiveFiniteCycleFromStrictProgress"]:::proved
-  SPW --> SPI --> NFC
+  subgraph CYCLE["Clock-independent cycle exclusion"]
+    SPW["StrictProgressWitness"]:::proved
+    SPI["strictProgressAfterIterate"]:::proved
+    NFC["noPositiveFiniteCycleFromStrictProgress"]:::proved
+    TCP["canonicalTotalCountStepProgress"]:::proved
+    TCS["canonicalTotalCountStrictProgress"]:::proved
+    TCC["canonicalNoPositiveCycleFromTotalCount"]:::proved
+    OLD["canonicalNoNontrivialFiniteCycle-theorem"]:::proved
+    SPW --> SPI --> NFC
+    TCP --> TCS --> TCC
+    TCS --> NFC
+    TCC -. "independent clock-free proof" .-> OLD
+  end
+  K --> TCS
 
-  TC["canonicalTotalCountStrictProgress"]:::proved
-  TCC["canonicalNoPositiveCycleFromTotalCount"]:::proved
-  K --> TC --> TCC
-  TC --> NFC
+  subgraph REPRESENT["Carrier-polymorphic representation / Law-IV seam"]
+    SET["Set-polymorphic semantic carriers"]:::proved
+    L1["LawIPhysicsWitness"]:::conditional
+    L3["LawIIIVariationalWitness"]:::conditional
+    PT["PhysicsToLearnerTransitionWitness"]:::conditional
+    FOUR["FourLawOneStepWitnessContract"]:::conditional
+    ITER["iterateConjugacy"]:::proved
+    PREF["prefixScanConjugacy"]:::proved
+    SET --> L1
+    SET --> L3
+    SET --> PT
+    L1 --> FOUR
+    L3 --> FOUR
+    PT --> FOUR
+    FOUR --> ITER
+    FOUR --> PREF
+    MISS["missing Law-I / Law-III / physics→learner inhabitant"]:::frontier
+    MISS -. "blocks instantiation" .-> FOUR
+  end
 
-  CLK["canonicalNoNontrivialFiniteCycle-theorem<br/>clock-based proof"]:::proved
-  TCC -. "clock-free alternative" .-> CLK
+  subgraph MAXWELL["Hodge-Maxwell / Tsallis frontier"]
+    HM0["ContinuousHodgeMaxwellExactRepresentationData"]:::conditional
+    HM1["ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"]:::conditional
+    HM2["CanonicalLearnerHodgeMaxwellCompositionTheorem"]:::conditional
+    HM3["ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem"]:::conditional
+    HM4["ConnectedHodgeMaxwellGRUF4WatkinsGlobalEncodeInjectivityCompositionTheorem"]:::conditional
+    HM5["ConnectedMaxwellTsallisExactConjugacyTheorem"]:::conditional
+    HM6["HodgeMaxwellMiddleDegreeInvolutionTransportTheorem"]:::conditional
+    HM7["ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem"]:::conditional
+    HM8["ConnectedHodgeMaxwellTsallisIdempotentProjectionTheorem"]:::conditional
+    HM9["ConnectedHodgeMaxwellTsallisWalrasianProjectionClosureTheorem"]:::frontier
+    CA0["ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem"]:::conditional
+    CA1["ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem"]:::conditional
+    CA2["ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem"]:::conditional
+    NI["hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation"]:::blocked
+    DC["hodgeMaxwell-discontinuous-gru-refutes-connected-representation"]:::blocked
+    HM0 --> HM1 --> HM3 --> HM4
+    HM1 --> HM5 --> HM7
+    HM1 --> HM6
+    HM7 --> HM8 --> HM9
+    HM3 --> CA0 --> CA1 --> CA2
+    NI -. "refutes exact connected representation" .-> HM1
+    DC -. "blocks continuous representation" .-> HM1
+  end
 
-  REP["Set-polymorphic representation carrier"]:::proved
-  L1["LawIPhysicsWitness"]:::conditional
-  L3["LawIIIVariationalWitness"]:::conditional
-  PTL["PhysicsToLearnerTransitionWitness"]:::conditional
-  FOUR["FourLawOneStepWitnessContract"]:::conditional
-  ITER["iterateConjugacy"]:::proved
-  PREF["prefixScanConjugacy"]:::proved
-  REP --> L1
-  REP --> L3
-  REP --> PTL
-  L1 --> FOUR
-  L3 --> FOUR
-  PTL --> FOUR
-  FOUR --> ITER
-  FOUR --> PREF
+  subgraph ECON["Economic / equilibrium frontier"]
+    TCW["TopologicalConvergenceWitness"]:::conditional
+    FPC["FixedPointExistenceFromConvergence"]:::conditional
+    GFW["GeneralizedWalrasianFixedPointClosure"]:::conditional
+    GWE["GeneralizedWalrasianExistence"]:::conditional
+    MGK["MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium"]:::conditional
 
-  MISS["Missing Law-I / Law-III / physics→learner inhabitant"]:::frontier
-  MISS -. "blocks contract instantiation" .-> FOUR
+    PROD["CompetitiveProductionEconomy"]:::conditional
+    PLAN["ProductionSet / feasible firm production plans"]:::conditional
+    PROF["profit-maximizing production"]:::conditional
+    DEM["consumer optimality / demand"]:::conditional
+    BAL["aggregate resource balance"]:::conditional
+    MC["market clearing"]:::frontier
+    PRICE["supporting / derived price"]:::frontier
 
-  STAT["Tsallis / statistical carrier"]:::conditional
-  HX["Hodge-Maxwell representation"]:::conditional
-  CHT["GRU ↔ Hodge-Maxwell transport"]:::frontier
-  STAT --> HX --> CHT
+    TST["learner factor stability"]:::proved
+    TST -. "does not entail" .-> TCW
+    TCW --> FPC --> GFW --> GWE
+    PROD --> PLAN --> PROF --> BAL
+    PROD --> DEM --> BAL
+    BAL --> MC --> PRICE --> GWE
 
-  LEARN["Exact learner factor stability"]:::proved
-  CONV["Convergence witness"]:::frontier
-  FIX["Fixed-point witness"]:::frontier
-  MC["Market clearing"]:::frontier
-  PRICE["Supporting / derived price"]:::frontier
-  WEX["Walrasian existence"]:::frontier
-  LEARN -. "does not entail" .-> CONV
-  CONV -. "required input" .-> FIX
-  FIX -. "required bridge" .-> MC
-  MC -. "required economic construction" .-> PRICE
-  PRICE -. "required equilibrium witness" .-> WEX
+    EMPTY["noUnconditionalMegaGeneralizedWalrasianExistence"]:::blocked
+    EMPTY2["noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity"]:::blocked
+    EMPTY -. "blocks unconditional existence" .-> GWE
+    EMPTY2 -. "blocks stronger unconditional promotion" .-> GWE
 
-  PROD["Competitive production economy"]:::conditional
-  PLAN["Feasible production plans"]:::conditional
-  PROF["Profit-maximizing production"]:::conditional
-  DEM["Consumer optimality / demand"]:::conditional
-  BAL["Aggregate resource balance"]:::conditional
-  PROD --> PLAN --> PROF --> BAL
-  PROD --> DEM --> BAL
-  BAL --> MC
-  MC --> WEX
+    WF1["MegaFirstWelfareTheoremConditions"]:::conditional
+    WF2["megaFirstWelfareTheorem"]:::conditional
+    WS1["MegaSecondWelfareTheoremConditions"]:::conditional
+    WS2["megaSecondWelfareTheorem"]:::conditional
+    WSB["MegaSecondWelfareTheoremBoundaryCounterexample"]:::blocked
+    GWE --> WF1 --> WF2
+    GWE --> WS1 --> WS2
+    WSB -. "ParetoOptimal alone does not imply support" .-> WS2
 
-  FWE["First-welfare route"]:::conditional
-  SWE["Second-welfare supportability"]:::conditional
-  SWB["Second-welfare boundary countermodel"]:::blocked
-  WEX --> FWE
-  WEX --> SWE
-  SWE --> PRICE
-  SWB -. "blocks unconditional supportability" .-> SWE
+    SQ["MegaWalrasianGlobalSquareConjugacy"]:::conditional
+    SI["megaWalrasianGlobalSquare-injective"]:::conditional
+    WA["MegaWalrasianEquilibriumWelfareAdapter"]:::conditional
+    SQ --> SI --> WA
+    GCOMP["MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness"]:::frontier
+    G3["equilibriumTransport"]:::frontier
+    SI --> GCOMP
+    G3 -. "required semantic bridge" .-> GCOMP
 
-  EMPTY["Generalized-Walrasian empty-equilibrium countermodel"]:::blocked
-  EMPTY -. "blocks unconditional existence" .-> WEX
+    POMQ["POMDPWalrasianEquilibrium"]:::conditional
+    POMT["POMDPWalrasianTransport"]:::conditional
+    POMB["POMDPBeliefPolicyFactorization"]:::conditional
+    POMC["POMDPWalrasianBeliefEquilibriumClosure"]:::frontier
+    POMQ --> POMT
+    POMB --> POMC
+    POMT --> POMC
+  end
 
-  POMDP["POMDP belief / policy / stationarity bridge"]:::frontier
-  STATLAW["Stationary-law witness"]:::frontier
-  POMDP --> STATLAW
+  subgraph STATION["Stationarity / convergence frontier"]
+    SL["StationaryLimitTheorem"]:::conditional
+    MSW["MarkovStationaryWalrasianCompositionTheorem"]:::conditional
+    MSP["MarkovianStationaryPointCompositionTheorem"]:::conditional
+    FS["canonicalFullLearner-no-finite-rank-stability"]:::blocked
+    NCV["canonicalNoFiniteStepConvergenceToFixedPoint"]:::blocked
+    SL --> MSW
+    MSW --> MSP
+    FS -. "obstructs full-state finite-rank convergence certificate" .-> TCW
+    NCV -. "obstructs full-state fixed-point convergence" .-> TCW
+  end
 
-  RGL["Radner semantic embedding"]:::proved
-  REX["Radner existence transport"]:::conditional
-  RGL --> REX
+  subgraph FULL["End-to-end composition frontier"]
+    U["ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"]:::frontier
+    INJ["CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem"]:::conditional
+    UREQ["explicit equilibrium / belief / stationarity transport witnesses"]:::frontier
+    HM9 --> U
+    INJ --> U
+    UREQ -. "required by current boundary" .-> U
+    GCOMP --> U
+  end
 
-  GSQ["MegaWalrasian global square"]:::conditional
-  GSI["Global-square injectivity"]:::conditional
-  EQT["Equilibrium transport"]:::conditional
-  WLT["Welfare transport"]:::conditional
-  GSQ --> GSI --> EQT --> WLT
+  subgraph GRAPH["Proof-authoritative graph layer"]
+    EG["RepositorySemanticEGraphClosure"]:::proved
+    ME["Mercury discovery / equality saturation"]:::proved
+    MM["Mermaid topology projection"]:::proved
+    EG --> ME --> MM
+    MM --> NFC
+    MM --> FOUR
+    MM --> U
+  end
 
-  EGRAPH["Proof-authoritative semantic e-graph"]:::proved
-  MERC["Mercury discovery / equality saturation"]:::proved
-  MERM["Mermaid topology projection"]:::proved
-  EGRAPH --> MERC --> MERM
-  MERM --> FOUR
-  MERM --> WEX
-  MERM --> NFC
-
-  LIT["Econlib: Walrasian existence + welfare + Walras' law + production layer"]:::literature
+  LIT["Econlib Equilibrium: Walrasian existence, welfare, Walras' law, Arrow–Debreu production"]:::literature
   LIT --> PROD
-  LIT --> FWE
-  LIT --> SWE
+  LIT --> WF2
+  LIT --> WS2
 
-  NB["Boundary rule:<br/>graph membership is not an Agda proof"]:::proved
-  MERM --> NB
+  RULE["Graph status is not proof status"]:::proved
+  MM --> RULE
+  EG --> RULE
