@@ -1,0 +1,22 @@
+flowchart TD
+  GI["GRU decode-after-encode"] --> LI["Local GRU injectivity"]
+  LI --> IDX["Level-indexed injectivity"]
+  REF["Explicit level refinement"] --> TR["Injective inter-level transport"]
+  IDX --> COMP["Finite/indexed GRU-injective fractal composition"]
+  TR --> COMP
+  COMPAT["Transport / encoding compatibility"] --> COMP
+  COMP --> APP["Compatible approximation sequence"]
+  APP --> LIM["Limit representation exists"]
+  LIM --> SEP["Limit separation / surviving left inverse"]
+  SEP --> ALI["Arbitrary-limit GRU-injective closure"]
+  APP -. "not sufficient alone" .-> BAD["Limit may collapse distinct states"]
+  LIM -. "not sufficient alone" .-> BAD
+  BAD -. "boundary" .-> ALI
+  NS["AI-formalized Navier–Stokes forced blow-up"] --> CONT["Global smooth continuation can fail"]
+  CONT -. "boundary reference" .-> LIM
+  NS -. "not a GRU/fractal inhabitant" .-> ALI
+  subgraph NEED["Needed for a positive limit theorem"]
+    SEP --> UB["Uniform separation / injective limit operator"]
+    SEP --> INV["Limit-surviving left inverse"]
+    SEP --> OBS["Domain-specific observability"]
+  end
