@@ -82,7 +82,8 @@ let script = merge {
     grep -Fq 'AStarSemanticClosure' Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda || { echo "A* semantic closure kernel missing"; exit 1; }
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda || { echo "repository-wide e-graph closure missing"; exit 1; }
-    grep -Fq 'StrictProgressRelation' Exotic/ERL/FullCoupled/CarrierPolymorphicFrontier.agda || { echo "strict progress relation kernel missing"; exit 1; }
+    grep -Fq 'StrictProgressRelation' "$theorem" || { echo "strict progress relation kernel missing"; exit 1; }
+    [ ! -f Exotic/ERL/FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
     grep -Fq 'canonicalPolicyFactorTransition' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "canonical factor transition adapter missing"; exit 1; }
     grep -Fq 'StepConjugacyWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "step conjugacy kernel missing"; exit 1; }
