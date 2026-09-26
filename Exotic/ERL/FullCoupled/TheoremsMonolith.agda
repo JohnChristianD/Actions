@@ -4120,6 +4120,51 @@ canonical-f4-normPair-unconditional-factor-stability-theorem =
     canonicalNormPairQuotient-step-compatible
     canonicalNormPairQuotient-iterate-compatible
 
+record CanonicalF4NormPairIterateFactorStabilityTheorem : Set₁ where
+  constructor canonicalF4NormPairIterateFactorStabilityTheorem
+  field
+    oneStepStability :
+      CanonicalF4NormPairUnconditionalFactorStabilityTheorem
+
+    normPairWeightPlusOneIterate :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      (n : Nat)
+      (s : C.FullLearnerState A) →
+      C.normPairWeightPlusOne
+        (C.norm (C.iterateCanonical K n s))
+      ≡
+      C.normPairWeightPlusOne (C.norm s)
+
+    persistentGRUIterate :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      (n : Nat)
+      (s : C.FullLearnerState A) →
+      C.persistentGRU
+        (C.gru (C.iterateCanonical K n s))
+      ≡
+      C.persistentGRU (C.gru s)
+
+    quotientIterateFactorization :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      (n : Nat)
+      {s t : C.FullLearnerState A} →
+      normPairReplacementRelation s t →
+      normPairReplacementRelation
+        (C.iterateCanonical K n s)
+        (C.iterateCanonical K n t)
+
+canonical-f4-normPair-iterate-factor-stability-theorem :
+  CanonicalF4NormPairIterateFactorStabilityTheorem
+canonical-f4-normPair-iterate-factor-stability-theorem =
+  canonicalF4NormPairIterateFactorStabilityTheorem
+    canonical-f4-normPair-unconditional-factor-stability-theorem
+    canonicalNormPair-afterFullStep-iterate
+    canonicalPersistentGRU-afterFullStep-iterate
+    canonicalNormPairQuotient-iterate-compatible
+
 record RecursiveRadnerData
   (State Agent Commodity Asset Price Allocation Portfolio : Set)
   (priceProcess : State → Price)
