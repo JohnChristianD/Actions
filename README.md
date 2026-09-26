@@ -265,12 +265,12 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: a29c5d527f2a7f2d57c03bfffeb7c5fad7e596d2
+last-processed-commit: d72e1061d4eef4072eaf3b361e1b9ad8dc9db067
 unprocessed-commit-count: 2
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `a29c5d527f2a` fix: keep historical plans out of README sync
-- `ee5dec74ce67` docs: refresh README from commit totality
+- `d72e1061d4ee` Delete docs/superpowers/plans directory
+- `ba94be2e1fa7` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
