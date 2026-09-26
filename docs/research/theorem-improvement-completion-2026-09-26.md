@@ -4,11 +4,11 @@ This pass turns the six search-backed improvement targets into proof-relevant re
 
 ## 1. Strict progress is factored as a reusable relation
 
-CarrierPolymorphicFrontier.agda now exposes StrictProgressRelation, strictProgressRelation-from-witness, and strictProgressWitness-from-relation. The existing StrictProgressWitness theorem remains the cycle-exclusion kernel; the relation itself is now reusable across independent progress measures.
+TheoremsMonolith.agda is the sole Agda home for the strict-progress kernel: StrictProgressRelation, StrictProgressWitness, strictProgressRelation-from-witness, strictProgressWitness-from-relation, and the cycle-exclusion adapters. The former CarrierPolymorphicFrontier.agda surface is consolidated here, so the generic relation and its Nat instantiation remain available without a second theorem module.
 
 This is deliberately not a well-foundedness theorem: finite-cycle exclusion needs transitivity plus irreflexivity of the strict relation. Well-foundedness answers a different termination question.
 
-Agda standard library reference: https://agda.github.io/agda-stdlib/v2.4/Relation.Binary.Consequences.html
+Agda standard library reference: Relation.Binary.Consequences (the repository keeps the theorem implementation self-contained and import-compatible).
 
 ## 2. Factor transition is now an explicit witness interface
 
@@ -60,6 +60,6 @@ The behavior-policy surface is included explicitly: canonicalBehaviorPolicy is a
 
 ## Verification boundary
 
-The source mutations are on branch theorem-improvement-completion-2026-09-26. The repository does not expose a local Agda executable in this execution environment, so authoritative kernel verification is delegated to the repository Nix/GitHub Actions gate after the final branch is opened as a draft pull request.
+The source mutations are consolidated on branch theorem-monolith-prune-frontier-2026-09-26. The repository does not expose a local Agda executable in this execution environment, so authoritative kernel verification is delegated to the repository Nix/GitHub Actions gate after the final branch is opened as a draft pull request.
 
 No theorem is considered verified merely because the text parses or the graph is internally consistent.
