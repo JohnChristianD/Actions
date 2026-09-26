@@ -11,7 +11,7 @@ The formal countermodel is deliberately non-vacuous and now carries the depletio
 - the aggregate extraction field is explicitly two units;
 - the preservation predicate is the capacity condition `2 ≤ 1`, which is refuted constructively by `twoNotLeOne`.
 
-The theorem interface also exposes `resourceCapacity`, `extraction`, and `aggregateExtraction`, so the concrete witness is no longer just an arbitrary false preservation predicate.
+The theorem interface now makes preservation the capacity inequality itself: any proposed derivation must conclude `aggregateExtraction w ≤ resourceCapacity (sharedResource w)`. It also exposes `resourceCapacity`, `extraction`, and `aggregateExtraction`, so the countermodel is not merely an arbitrary false preservation predicate.
 
 Core result:
 
