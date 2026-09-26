@@ -18,44 +18,30 @@ The Agda monoliths are intentionally kept as the proof source. Graphs are explan
 
 ## Repository-wide semantic e-graph closure
 
-All surviving Agda modules are covered by the same proof-only semantic transport boundary through `RepositorySemanticEGraphClosure.agda`: an indexed semantic family supplies one sound interpretation per module, and every sound e-graph path closes to exact endpoint equality. `EGraphSemanticTransport.agda` supplies reflexive, symmetric, transitive, contextual, rewrite, and explicit path transport plus a typed A* cost/heuristic model. The A* cost guides traversal; it never becomes evidence for equality. The learner-side A* seam remains in `TheoremsMonolith.agda` as `CanonicalAStarCostGuidanceTheorem` and `CanonicalEndogenousEGraphAStarTransportClosureTheorem`.
+All surviving Agda modules are covered by the same proof-only semantic transport boundary inside `TheoremsMonolith.agda`: the theorem monolith contains the indexed semantic family, e-graph transport, certified rewrites, and typed A* cost/heuristic model. The A* cost guides traversal; it never becomes evidence for equality. The learner-side A* seam remains in `TheoremsMonolith.agda` as `CanonicalAStarCostGuidanceTheorem` and `CanonicalEndogenousEGraphAStarTransportClosureTheorem`.
 
 This is the repository's **full unconditional semantic e-graphed closure**: unconditional over every supplied indexed Agda semantic family, every module in that family, and every sound path. It is not an unconditional claim that every physical or economic theorem is inhabited. In particular, it does not manufacture Maxwell Law-I/Law-III witnesses, equilibrium witnesses, or other domain-specific semantic inhabitants.
 
-The current Agda inventory is:
-- `CanonicalLearnerMonolith.agda` — canonical learner definitions.
-- `TheoremsMonolith.agda` — canonical theorem and semantic boundary surface.
-- `EGraphSemanticTransport.agda` — proof-only e-graph and A*-cost transport kernel.
-- `FourLawClosureWitnesses.agda` — explicit physical witness contracts.
-- `FourLawClosureImpossibility.agda` — generic non-derivability boundary for those contracts.
-- `CommonsComposition.agda` — nested/self-similar commons preservation boundary and counterexample.
-- `GRUStatisticalInjectivity.agda` — canonical statistical/injectivity adapter.
-- `GRUFractalInjectiveComposition.agda` — generic level/refinement/transport kernel for GRU-injective fractal composition.
-- `GRUFractalInjectiveCompositionCanonical.agda` — canonical Nat-indexed scale-invariant GRU instantiation.
-- `GRUFractalDomainAdapters.agda` — Physics/Economics proof-relevant adapter contracts.
-- `GRUFractalLimitClosure.agda` — arbitrary-limit approximation/separation closure boundary.
-- `GRUFractalEGraphAStarLimitComposition.agda` — derives limit separation/injectivity from a surviving left inverse and reuses the proof-only e-graph/A* soundness kernel.
-- `GRUFractalLimitDecoderSurvival.agda` — derives a limit left inverse from coherent finite decoder projections.
-- `TheoremsMonolith.agda` — also exposes the canonical Integer-GRU token encoding global left inverse, injectivity, discrete-topology continuity, and recurrent conjugacy as one typed composition.
-- `ZPFStatisticalRepresentation.agda` — typed ZPF/ω³ Maxwell-statistical boundary and conditional global ZPF→GRU injectivity adapter.
-- `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
-- `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
+The current Agda inventory is intentionally minimal:
+- CanonicalLearnerMonolith.agda — canonical learner definitions and definitional laws.
+- TheoremsMonolith.agda — the sole theorem/semantic monolith, including the inlined statistical, physics, economics, fractal, limit, e-graph, A*, and counterexample contracts.
+
 
 The monoliths remain the proof authority. Auxiliary Agda files are not independent theorem authorities; their semantics enter the common transport layer through explicit typed terms.
 
 ### Complete surviving-Agda closure index
 
-The repository-wide semantic closure is indexed by an explicit finite `RepositoryAgdaModule` enumeration containing every surviving `Exotic/ERL/FullCoupled/*.agda` file. The closure theorem quantifies over that complete index and an externally supplied sound semantic family. This makes the scope claim auditable: no surviving Agda file is outside the semantic e-graph/A* boundary.
+The repository-wide semantic closure is indexed by exactly the two surviving Agda files in Exotic/ERL/FullCoupled: CanonicalLearnerMonolith.agda and TheoremsMonolith.agda. The theorem monolith's RepositoryAgdaModule enumeration is the live source of truth for that two-file proof surface.
 
 The exact chain is:
 
-    all surviving Agda files
-      -> supplied sound module interpretation
+    two surviving Agda monoliths
+      -> supplied sound interpretation
       -> sound e-graph path
       -> A*-guided traversal
       -> exact semantic endpoint equality
 
-The word **unconditional** applies to this graph-semantic theorem after its typed soundness input is supplied. It does not assert unconditional physical Maxwell existence. The nLab/Noether and Euler-Lagrange interfaces close the semantic obligations as explicit inputs; the repository still refuses to invent a Law-I trajectory/current equality, a Law-III action/variation/stationarity inhabitant, or the learner↔Maxwell inverse/step witness.
+TheoremsMonolith.agda remains the sole theorem authority; graphs, discovery output, and historical notes are subordinate artifacts.
 
 ## Source-grounded Maxwell semantic boundary
 
