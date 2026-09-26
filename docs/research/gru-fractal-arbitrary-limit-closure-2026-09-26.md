@@ -65,3 +65,16 @@ The same graph discipline is retained downstream. Exact representation/injectivi
 - `RepositorySemanticEGraphClosure.agda`: repository-wide semantic-family closure.
 
 The new module is `--safe`. No unconditional convergence or limit-existence theorem is introduced.
+## Concrete canonical Integer-GRU seam
+
+The previously abstract “global left inverse” node is now instantiated on the repository's actual unbounded integer token surface. CanonicalToken = ℤ, while Int8 is an exact ℤ wrapper, so canonicalTokenDecode = code gives the total identity law
+
+canonicalTokenDecode (canonicalTokenEncode t) ≡ t.
+
+From that law, Agda derives global token-encoding injectivity. The same composition packages the existing CanonicalGlobalTokenEncodingConjugacyTheorem, so the concrete chain is now:
+
+Integer token left inverse → token-encoding injectivity → discrete-topology continuity → exact recurrent conjugacy.
+
+This is stronger than treating limitSeparation as a primitive assumption for the existing global representation. It still does not instantiate a genuine analytic fractal-limit carrier: a future limit representation must supply its own limit decoder/projection/coherence or another surviving left-inverse construction. The discrete continuity theorem is deliberately not a claim of analytic continuity.
+
+The e-graph/A* interpretation therefore has a concrete source node for the global-left-inverse edge. A* may discover the path, but Agda remains the authority for every equality.
