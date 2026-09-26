@@ -31,7 +31,7 @@ Those gates are not closed consequences of the learner dynamics. In particular, 
 
 The monolith also contains a closed singleton generalized-Walrasian countermodel with an empty equilibrium predicate. That supplies the universal impossibility statement that no theorem of the form “every generalized Walrasian contract has an equilibrium witness” can be constructed without additional assumptions.
 
-Stationarity remains a separate mathematical layer. The deterministic full learner has a strict clock successor, so it has no fixed full state; that fact alone does not establish nonexistence of invariant probability measures. Any stationary-distribution theorem needs explicit probability semantics and an invariant-measure proof.
+Stationarity remains a separate mathematical layer. The deterministic full learner has a strictly increasing LCB total-count invariant, so it has no fixed full state; that fact alone does not establish nonexistence of invariant probability measures. Any stationary-distribution theorem needs explicit probability semantics and an invariant-measure proof.
 
 The graph therefore distinguishes three things rather than conflating them:
 
