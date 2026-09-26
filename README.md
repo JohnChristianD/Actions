@@ -164,8 +164,8 @@ The canonical learner state contains the recurrent learner channels, optimizer s
 
 The current closed facts include:
 
-- the canonical step increments the Nat clock exactly once;
-- every positive iterate changes the clock, hence there is no nontrivial finite cycle of the full canonical state;
+- the canonical LCB `totalCount` increments exactly once per canonical step;
+- every positive iterate strictly increases that count, hence there is no nontrivial finite cycle of the full canonical state;
 - `NormPair` is preserved by the canonical transition;
 - the policy is invariant under `NormPair` replacement and optimizer replacement;
 - the `NormPair` replacement relation is an equivalence relation;
