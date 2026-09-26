@@ -33,6 +33,7 @@ The current Agda inventory is:
 - `GRUFractalInjectiveComposition.agda` — generic level/refinement/transport kernel for GRU-injective fractal composition.
 - `GRUFractalInjectiveCompositionCanonical.agda` — canonical Nat-indexed scale-invariant GRU instantiation.
 - `GRUFractalDomainAdapters.agda` — Physics/Economics proof-relevant adapter contracts.
+- `GRUFractalLimitClosure.agda` — arbitrary-limit approximation/separation closure boundary.
 - `ZPFStatisticalRepresentation.agda` — typed ZPF/ω³ Maxwell-statistical boundary and conditional global ZPF→GRU injectivity adapter.
 - `TsallisStatisticalRepresentation.agda` — carrier-polymorphic statistical representation kernel.
 - `RepositorySemanticEGraphClosure.agda` — repository-wide indexed semantic-family closure over e-graph paths and A* guidance.
@@ -86,6 +87,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
 - [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
 - [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
+- [GRU fractal arbitrary-limit closure — 2026-09-26](docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
 - [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
 - [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
