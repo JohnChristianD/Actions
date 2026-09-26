@@ -24,6 +24,7 @@ flowchart LR
     AF["AggregateFeasibilityWitness"]:::proved
     MC["MarketClearingWitness"]:::proved
     PR["SupportingPriceWitness"]:::proved
+    FCS["finiteCandidatePriceSearch<br/>finite candidate classification"]:::conditional
     EA --> PF --> FO --> CO --> CF2 --> AF --> MC --> PR
     DS["DistributionalStationaryAggregateTransport"]:::proved
     DS2["distributionalStationaryAggregate-stationary"]:::proved
