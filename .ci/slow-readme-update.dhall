@@ -36,7 +36,12 @@ print("\n".join(rows))
 PY
 )
 
-# Fail closed if generated commit rows are not ASCII.\nif LC_ALL=C grep -nP '[^\\x00-\\x7F]' <<< "$body" >/dev/null 2>&1; then\n  echo "ERROR: generated commit-totality body is not ASCII" >&2\n  exit 1\nfi\n\npython3 - "$README" "$BEGIN" "$END" "$HEAD_SHA" "$count" "$body" <<'PY'
+if ! printf '%s' "$body" | python3 -c 'import sys; sys.exit(0 if sys.stdin.read().isascii() else 1)'; then
+  echo "ERROR: generated commit-totality body is not ASCII" >&2
+  exit 1
+fi
+
+python3 - "$README" "$BEGIN" "$END" "$HEAD_SHA" "$count" "$body" <<'PY'
 from pathlib import Path
 import sys
 
