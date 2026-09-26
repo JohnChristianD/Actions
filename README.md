@@ -91,10 +91,10 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
 - [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
-- [Unconditional finite-candidate price kernel — 2026-09-26](docs/research/unconditional-finite-price-kernel-2026-09-26.md)
 - [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
+- [Unconditional finite-candidate price kernel — 2026-09-26](docs/research/unconditional-finite-price-kernel-2026-09-26.md)
 - [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
 
 ### Repository documentation
@@ -288,18 +288,27 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 025178a3e4f34207556da8b0d552d068437532fb
-unprocessed-commit-count: 8
+last-processed-commit: 0a64d832d99bf3e4dcbd732526c8708d14c670cb
+unprocessed-commit-count: 17
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `025178a3e4f3` docs: record theorem monolith as sole frontier Agda home
-- `d2676f5eeb28` ci: enforce monolith-only theorem frontier
-- `52f508b45058` refactor: consolidate frontier theorems into monolith
-- `1cfa16a54007` refactor: delete redundant frontier module
-- `3f487f050710` fix: retain Nat strict-progress witness in monolith
-- `898d08524360` refactor: keep theorem improvement core in monolith
-- `78d6bd82e259` feat: close theorem improvement interfaces in monolith
-- `8d07880fc8a6` docs: refresh README from commit totality
+- `0a64d832d99b` docs: refresh strict graph source reference
+- `d37e8a528c4c` docs: add finite candidate classification boundary
+- `c3e502b6f85f` docs: connect finite candidate price boundary
+- `56ab3a39725a` docs: graph finite candidate price classification
+- `2d220d9d6965` docs: connect finite price classification boundary
+- `e00ac6ff0d0d` docs: graph finite-candidate price classification
+- `9d1e38f4115d` docs: index finite-candidate price kernel
+- `0cc84be71cb5` ci: gate finite-candidate price classification surface
+- `11e5fc537129` docs: record finite-candidate price classification boundary
+- `60aa52cb04ff` docs: record finite-candidate price classification boundary
+- `466bf8b3c7ef` docs: record finite-candidate price classification boundary
+- `ac8d6af4e4ae` docs: record finite-candidate price classification boundary
+- `0f01de82bcfa` docs: record finite-candidate price classification boundary
+- `1094bc558a27` docs: record finite-candidate price classification boundary
+- `68edb6d82aee` Document unconditional finite-candidate price kernel
+- `7c77389d614c` Add unconditional finite-candidate price kernel
+- `afb34837e6fa` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
