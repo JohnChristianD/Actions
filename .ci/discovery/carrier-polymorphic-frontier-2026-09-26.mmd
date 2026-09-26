@@ -27,13 +27,35 @@ flowchart TD
     TCP["canonicalTotalCountStepProgress"]:::proved
     TCS["canonicalTotalCountStrictProgress"]:::proved
     TCC["canonicalNoPositiveCycleFromTotalCount"]:::proved
+    OI["successorMeasureOrbitInjective"]:::proved
+    ATG["canonical-token-arbitrary-length-generation-theorem"]:::proved
+    IF["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
     OLD["canonicalNoNontrivialFiniteCycle-theorem"]:::proved
     SPW --> SPI --> NFC
     TCP --> TCS --> TCC
     TCS --> NFC
     TCC -. "independent clock-free proof" .-> OLD
+    TCS --> OI
   end
   K --> TCS
+
+  subgraph TOKEN["Arbitrary-length token generation closure"]
+    TS["canonicalTokenStep-conjugacy"]:::proved
+    TL["canonicalTokenListState-conjugacy"]:::proved
+    TM["canonicalToken-prefix-monoid-homomorphism"]:::proved
+    TT["canonicalTokenLogitTrace-append"]:::proved
+    ATG["canonical-token-arbitrary-length-generation-theorem"]:::proved
+    TS --> TL --> ATG
+    TM --> ATG
+    TT --> ATG
+    ATG --> GL["canonical-global-token-lm-composition-theorem"]:::proved
+  end
+
+  subgraph FACTOR["Iterated F4 / NormPair factor stability"]
+    F4I["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
+    FN --> F4I
+    F4I --> TCW
+  end
 
   subgraph REPRESENT["Carrier-polymorphic representation / Law-IV seam"]
     SET["Set-polymorphic semantic carriers"]:::proved
