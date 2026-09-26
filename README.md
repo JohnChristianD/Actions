@@ -304,21 +304,15 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 6c50d078037895197b8eb31c6df572ce20e9aaac
-unprocessed-commit-count: 11
+last-processed-commit: 5d0c9cd144197334db5415beaa1c80e262566a6e
+unprocessed-commit-count: 5
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `6c50d0780378` docs: record multi-module freshness ownership
-- `726111349409` graph: distinguish frontier targets from live semantic inventory
-- `284315217e7f` graph: preserve source identity during semantic extraction
-- `83ccf6945c77` graph: include live GRU limit modules in semantic inventory
-- `d0fbaa51bd33` ci: gate live semantic egraph and impossibility boundary
-- `e394a984eda2` graph: replace dependency-only view with semantic e-graph topology
-- `cfb0c3a6b276` docs: define live semantic e-graph and staleness policy
-- `8fcb7e620819` ci: verify semantic egraph and limit impossibility theorem
-- `4d8aad244a07` graph: add freshness-pruned semantic e-graph runner
-- `5d26624c6427` theorem: formalize naive arbitrary-limit injectivity impossibility boundary
-- `ea2df065523a` docs: refresh README from commit totality
+- `5d0c9cd14419` docs: preserve canonical GRU limit-composition seam in mainline
+- `323673d7db7d` graph: make canonical GRU limit composition a required live target
+- `9e2ff6721633` graph: register canonical GRU limit composition target
+- `ea5f74093141` theorem: preserve canonical Integer-GRU limit composition seam
+- `c4464d03b01c` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
