@@ -56,19 +56,6 @@ open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
 open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
 open import Exotic.ERL.FullCoupled.CarrierPolymorphicFrontier public
 
-replaceClock :
-  C.CanonicalFullLearnerState → Nat → C.CanonicalFullLearnerState
-replaceClock s n =
-  C.fullLearnerState
-    n
-    (C.watkins s)
-    (C.gru s)
-    (C.optimizer s)
-    (C.norm s)
-    (C.lcbCounts s)
-    (C.qLogControl s)
-    (C.qLogValue s)
-
 record CanonicalAQLoopTheorem : Set₁ where
   constructor canonicalAQLoopTheorem
   field
@@ -119,10 +106,11 @@ canonical-aq-loop-theorem =
     (λ K s → refl)
     (λ K s → refl)
 
-canonicalClockAfter :
+canonicalTotalCountAfter :
   ∀ K n s →
-  C.clock (C.iterateCanonical K n s) ≡ C.clock s + n
-canonicalClockAfter = C.clockAfter
+  C.totalCount (C.lcbCounts (C.iterateCanonical K n s)) ≡
+  C.totalCount (C.lcbCounts s) + n
+canonicalTotalCountAfter = C.canonicalTotalCountAfter
 
 canonicalAperiodic-theorem :
   ∀ K s n →
@@ -154,7 +142,7 @@ canonical-connected-composition-theorem :
 canonical-connected-composition-theorem =
   canonicalConnectedCompositionTheorem
     canonical-aq-loop-theorem
-    canonicalClockAfter
+    canonicalTotalCountAfter
     canonicalNoNontrivialFiniteCycle-theorem
 
 data LearnerReplacement : Set where
@@ -648,18 +636,19 @@ freeMonoidActionHomomorphism-from-square squareWitness =
   freeMonoidActionHomomorphism
     (CommutingSquareTheorem.iterateSquare squareWitness)
 
-canonicalClock-freeMonoidActionHomomorphism :
+canonicalCount-freeMonoidActionHomomorphism :
   ∀ (K : C.CanonicalFullLearnerKernel) →
   FreeMonoidActionHomomorphism
     C.CanonicalFullLearnerState
     Nat
     (C.canonicalFullStep K)
     suc
-    C.clock
-canonicalClock-freeMonoidActionHomomorphism K =
+    (λ s → C.totalCount (C.lcbCounts s))
+canonicalCount-freeMonoidActionHomomorphism K =
   freeMonoidActionHomomorphism-from-square
     (commutingSquareTheorem-from-square
-      (λ s → C.canonicalFullStep-clock K s))
+      (λ s →
+        C.canonicalTotalCountStep K s))
 
 recurrentWordState :
   ∀ {State Input : Set} →
@@ -1044,12 +1033,12 @@ canonicalOrbit-state-injective :
   m ≡ n
 canonicalOrbit-state-injective K s {m} {n} eq =
   natPlus-left-cancel
-    (C.clock s) m n
+    (C.totalCount (C.lcbCounts s)) m n
     (trans
-      (sym (C.clockAfter K m s))
+      (sym (C.canonicalTotalCountAfter K m s))
       (trans
-        (cong (λ t → C.clock t) eq)
-        (C.clockAfter K n s)))
+        (cong (λ t → C.totalCount (C.lcbCounts t)) eq)
+        (C.canonicalTotalCountAfter K n s)))
 
 canonicalInfiniteStateOrbitEmbedding :
   ∀ (K : C.CanonicalFullLearnerKernel)
