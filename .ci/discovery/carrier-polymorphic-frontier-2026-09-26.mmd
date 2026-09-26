@@ -133,6 +133,7 @@ flowchart TD
     PROD --> PLAN --> PROF --> BAL
     PROD --> DEM --> BAL
     BAL --> MC --> PRICE --> GWE
+    FCS -. "classifies supplied candidates; does not derive price" .-> PRICE
 
     EMPTY["noUnconditionalMegaGeneralizedWalrasianExistence"]:::blocked
     EMPTY2["noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity"]:::blocked
