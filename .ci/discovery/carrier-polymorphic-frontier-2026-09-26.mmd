@@ -28,6 +28,7 @@ flowchart TD
     TCS["canonicalTotalCountStrictProgress"]:::proved
     TCC["canonicalNoPositiveCycleFromTotalCount"]:::proved
     OI["successorMeasureOrbitInjective"]:::proved
+    OCI["canonicalTotalCountSuccessorWitness"]:::proved
     ATG["canonical-token-arbitrary-length-generation-theorem"]:::proved
     IF["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
     OLD["canonicalNoNontrivialFiniteCycle-theorem"]:::proved
@@ -35,7 +36,7 @@ flowchart TD
     TCP --> TCS --> TCC
     TCS --> NFC
     TCC -. "independent clock-free proof" .-> OLD
-    TCS --> OI
+    TCS --> OCI --> OI
   end
   K --> TCS
 
