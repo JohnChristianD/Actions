@@ -21,6 +21,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitClosure.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalEGraphAStarLimitComposition.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitDecoderSurvival.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
