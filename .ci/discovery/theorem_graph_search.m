@@ -60,6 +60,10 @@
     list(string)::in,
     list(list(string))::out) is det.
 
+:- pred graph_canonical_integer_gru_global_conjugate_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- implementation.
 
 graph_stationary_limit_plan(Laws, Plan) :-
@@ -574,3 +578,12 @@ graph_unconditional_target_edges = [
     "fixed-point witness -> GeneralizedWalrasianFixedPointClosure [FRONTIER]",
     "GeneralizedWalrasianExistence -> unconditional existence target"
 ].
+:- pred graph_canonical_integer_gru_global_conjugate_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+graph_canonical_integer_gru_global_conjugate_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "canonical-integer-gru-global-conjugate-theorem",
+        Laws,
+        Plan).
