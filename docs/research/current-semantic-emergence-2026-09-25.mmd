@@ -112,6 +112,8 @@ flowchart TD
   H -. "does not entail" .-> L["Market clearing"]
   H -. "does not entail" .-> M["Supporting / derived price"]
   H -. "does not entail" .-> N["Walrasian existence"]
+  FCS["finiteCandidatePriceSearch<br/>finite candidate classification"]
+  FCS -. "not price derivation" .-> M
 
   O["Competitive production economy"] --> Q["Feasible firm production plans"]
   Q --> R["Profit-maximizing production"]
