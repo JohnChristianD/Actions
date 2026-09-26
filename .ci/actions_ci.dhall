@@ -29,6 +29,7 @@ let script = merge {
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda
@@ -428,7 +429,6 @@ JSON
     canonicalIntegerGRUTokenEncoding-continuous-discrete
     CanonicalIntegerGRUGlobalConjugateTheorem
     canonical-integer-gru-global-conjugate-theorem
-    canonical-global-token-encoding-conjugacy
     CanonicalGlobalTokenLMCompositionTheorem
     canonical-global-token-lm-composition-theorem
     canonicalToken-prefix-monoid-homomorphism
