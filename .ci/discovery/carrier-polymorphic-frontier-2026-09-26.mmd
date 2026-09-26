@@ -24,19 +24,21 @@ flowchart TD
     SPW["StrictProgressWitness"]:::proved
     SPI["strictProgressAfterIterate"]:::proved
     NFC["noPositiveFiniteCycleFromStrictProgress"]:::proved
+    TCA["canonicalTotalCountAfter"]:::proved
     TCP["canonicalTotalCountStepProgress"]:::proved
     TCS["canonicalTotalCountStrictProgress"]:::proved
     TCC["canonicalNoPositiveCycleFromTotalCount"]:::proved
     OI["successorMeasureOrbitInjective"]:::proved
+    COI["canonicalOrbit-state-injective"]:::proved
     OCI["canonicalTotalCountSuccessorWitness"]:::proved
     ATG["canonical-token-arbitrary-length-generation-theorem"]:::proved
     IF["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
     OLD["canonicalNoNontrivialFiniteCycle-theorem"]:::proved
     SPW --> SPI --> NFC
-    TCP --> TCS --> TCC
+    TCA --> TCP --> TCS --> TCC
     TCS --> NFC
     TCC -. "independent clock-free proof" .-> OLD
-    TCS --> OCI --> OI
+    TCS --> OCI --> OI --> COI
   end
   K --> TCS
 
@@ -56,6 +58,12 @@ flowchart TD
     F4I["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
     FN --> F4I
     F4I --> TCW
+  end
+
+  subgraph SCAN["Exact scan versus complexity"]
+    EXACT["RecurrentPrefixMonoidHomomorphism / exact prefix composition"]:::proved
+    COMPLEX["LogarithmicPrefixScanComplexityTheorem<br/>requires separate operator/span/work certificates"]:::frontier
+    EXACT -. "exactness is an input, not the complexity proof" .-> COMPLEX
   end
 
   subgraph REPRESENT["Carrier-polymorphic representation / Law-IV seam"]
