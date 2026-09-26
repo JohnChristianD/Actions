@@ -54,6 +54,7 @@ open import Exotic.ERL.FullCoupled.ZPFStatisticalRepresentation
 open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
 open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
 open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
+open import Exotic.ERL.FullCoupled.CarrierPolymorphicFrontier public
 
 replaceClock :
   C.CanonicalFullLearnerState → Nat → C.CanonicalFullLearnerState
