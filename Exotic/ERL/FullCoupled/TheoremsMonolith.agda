@@ -5417,3 +5417,155 @@ noUnconditionalCommonsPreservation-twoAgent =
 -- internalized externalities, coordination, or a regeneration/conservation
 -- invariant.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Unconditional canonical-price non-derivability.
+--
+-- This stronger boundary preserves equilibrium existence and universal
+-- Pareto optimality of equilibria, while showing that a price cannot be
+-- unconditionally reconstructed from price-forgetting observations when
+-- observationally identical worlds require disjoint supporting prices.
+------------------------------------------------------------------------
+
+record CanonicalPriceDerivation
+  (World Obs Price Allocation : Set)
+  (observe : World → Obs)
+  (supports : World → Price → Allocation → Set)
+  (equilibrium : World → Price → Allocation → Set) : Set₁ where
+  constructor canonicalPriceDerivation
+  field
+    derive : Obs → Price
+    sound :
+      ∀ w p a →
+      equilibrium w p a →
+      supports w (derive (observe w)) a
+
+open CanonicalPriceDerivation public
+
+record CanonicalPriceNonIdentifiabilityCounterexample : Set₁ where
+  constructor canonicalPriceNonIdentifiabilityCounterexample
+  field
+    World : Set
+    Obs : Set
+    Price : Set
+    Allocation : Set
+    observe : World → Obs
+    supports : World → Price → Allocation → Set
+    equilibrium : World → Price → Allocation → Set
+    paretoOptimal : Allocation → Set
+    world₁ : World
+    world₂ : World
+    allocation₁ : Allocation
+    allocation₂ : Allocation
+    price₁ : Price
+    price₂ : Price
+    sameObservation :
+      observe world₁ ≡ observe world₂
+    equilibrium₁ :
+      equilibrium world₁ price₁ allocation₁
+    equilibrium₂ :
+      equilibrium world₂ price₂ allocation₂
+    allEquilibriaParetoOptimal :
+      ∀ {w p a} →
+      equilibrium w p a →
+      paretoOptimal a
+    noCommonSupportingPrice :
+      ¬ Σ Price
+        (λ p →
+          supports world₁ p allocation₁ ×
+          supports world₂ p allocation₂)
+    distinctPrices :
+      price₁ ≢ price₂
+
+open CanonicalPriceNonIdentifiabilityCounterexample public
+
+transportCanonicalPriceSupport :
+  ∀ {World Price Allocation : Set}
+  {supports : World → Price → Allocation → Set}
+  {w : World} {p q : Price} {a : Allocation} →
+  p ≡ q →
+  supports w p a →
+  supports w q a
+transportCanonicalPriceSupport refl proof =
+  proof
+
+noUnconditionalCanonicalPriceDerivation :
+  ∀ (C : CanonicalPriceNonIdentifiabilityCounterexample) →
+  ¬ CanonicalPriceDerivation
+      (World C)
+      (Obs C)
+      (Price C)
+      (Allocation C)
+      (observe C)
+      (supports C)
+      (equilibrium C)
+noUnconditionalCanonicalPriceDerivation C D =
+  noCommonSupportingPrice C
+    (derive D (observe C (world₁ C))
+     , sound D
+         (world₁ C)
+         (price₁ C)
+         (allocation₁ C)
+         (equilibrium₁ C)
+     , transportCanonicalPriceSupport
+         (sym
+           (cong
+             (derive D)
+             (sameObservation C)))
+         (sound D
+           (world₂ C)
+           (price₂ C)
+           (allocation₂ C)
+           (equilibrium₂ C)))
+
+twoPriceDistinct :
+  (inj₁ tt : ⊤ ⊎ ⊤) ≢ inj₂ tt
+twoPriceDistinct ()
+
+twoWorldsNoCommonSupportingPrice :
+  ¬ Σ (⊤ ⊎ ⊤)
+    (λ p →
+      (inj₁ tt ≡ p) ×
+      (inj₂ tt ≡ p))
+twoWorldsNoCommonSupportingPrice
+  (p , (support₁ , support₂)) =
+  twoPriceDistinct
+    (trans support₁ (sym support₂))
+
+twoWorldCanonicalPriceNonIdentifiabilityCounterexample :
+  CanonicalPriceNonIdentifiabilityCounterexample
+twoWorldCanonicalPriceNonIdentifiabilityCounterexample =
+  canonicalPriceNonIdentifiabilityCounterexample
+    (⊤ ⊎ ⊤)
+    ⊤
+    (⊤ ⊎ ⊤)
+    ⊤
+    (λ _ → tt)
+    (λ world price _ → world ≡ price)
+    (λ world price allocation → world ≡ price)
+    (λ _ → ⊤)
+    (inj₁ tt)
+    (inj₂ tt)
+    tt
+    tt
+    (inj₁ tt)
+    (inj₂ tt)
+    refl
+    refl
+    refl
+    (λ { refl → tt })
+    twoWorldsNoCommonSupportingPrice
+    twoPriceDistinct
+
+noUnconditionalCanonicalPriceDerivation-twoWorld :
+  ¬ CanonicalPriceDerivation
+      (World twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+      (Obs twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+      (Price twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+      (Allocation twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+      (observe twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+      (supports twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+      (equilibrium twoWorldCanonicalPriceNonIdentifiabilityCounterexample)
+noUnconditionalCanonicalPriceDerivation-twoWorld =
+  noUnconditionalCanonicalPriceDerivation
+    twoWorldCanonicalPriceNonIdentifiabilityCounterexample

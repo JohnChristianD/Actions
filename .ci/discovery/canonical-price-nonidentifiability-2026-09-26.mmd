@@ -1,0 +1,15 @@
+flowchart TD
+  EQ["Equilibrium exists"] --> PARETO["All equilibria are Pareto-optimal"]
+  EQ --> OBS["Price-free observation"]
+  PARETO --> OBS
+  OBS --> X["Unconditional canonical price derivation"]
+  X -. "blocked by observational non-identifiability" .-> C["Two observationally identical worlds"]
+  C --> S1["World 1: supporting price p₁"]
+  C --> S2["World 2: supporting price p₂"]
+  S1 --> D["No common supporting price"]
+  S2 --> D
+  D --> IMP["¬ CanonicalPriceDerivation"]
+
+  MC["Market clearing + explicit economic assumptions"] --> PR["Supporting / derived price"]
+  PR --> WE["Walrasian equilibrium"]
+  IMP -. "does not refute conditional economic price construction" .-> PR
