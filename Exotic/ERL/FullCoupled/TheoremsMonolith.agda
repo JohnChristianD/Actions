@@ -54,6 +54,7 @@ open import Exotic.ERL.FullCoupled.ZPFStatisticalRepresentation
 open import Exotic.ERL.FullCoupled.FourLawClosureWitnesses public
 open import Exotic.ERL.FullCoupled.EGraphSemanticTransport public
 open import Exotic.ERL.FullCoupled.RepositorySemanticEGraphClosure public
+open import Exotic.ERL.FullCoupled.GRUFractalEGraphAStarLimitComposition public
 
 record CanonicalAQLoopTheorem : Set₁ where
   constructor canonicalAQLoopTheorem
@@ -5653,4 +5654,55 @@ canonical-integer-gru-global-conjugate-theorem =
     canonicalIntegerGRUTokenEncodingInjective
     canonicalIntegerGRUTokenEncoding-continuous-discrete
     canonical-global-token-encoding-conjugacy
+
+
+------------------------------------------------------------------------
+-- Generic arbitrary-limit Integer-GRU composition boundary.
+--
+-- The canonical global Integer-GRU theorem supplies the finite/global
+-- representation side. A genuine limit carrier is still an explicit
+-- witness: the theorem below accepts a limit-encoding kernel rather than
+-- pretending that a limit representation already exists.
+--
+-- This is the e-graph/A* seam: discovery can target this composition,
+-- while the limit kernel remains the proof obligation. The resulting
+-- limit injectivity is derived from the surviving left inverse.
+------------------------------------------------------------------------
+
+record CanonicalIntegerGRUFractalLimitCompositionTheorem
+  (LimitObservation : Set)
+  (limitEncode : C.CanonicalToken → LimitObservation) : Set₁ where
+  constructor canonicalIntegerGRUFractalLimitCompositionTheorem
+  field
+    globalRepresentation :
+      CanonicalIntegerGRUGlobalConjugateTheorem
+    limitKernel :
+      GRUFractalLimitCompositionKernel
+        C.CanonicalToken
+        C.Int8
+        LimitObservation
+        limitEncode
+    limitInjective :
+      ∀ {s t : C.CanonicalToken} →
+      limitEncode s ≡ limitEncode t →
+      s ≡ t
+
+open CanonicalIntegerGRUFractalLimitCompositionTheorem public
+
+canonical-integer-gru-fractal-limit-composition :
+  ∀ {LimitObservation : Set}
+  {limitEncode : C.CanonicalToken → LimitObservation} →
+  GRUFractalLimitCompositionKernel
+    C.CanonicalToken
+    C.Int8
+    LimitObservation
+    limitEncode →
+  CanonicalIntegerGRUFractalLimitCompositionTheorem
+    LimitObservation
+    limitEncode
+canonical-integer-gru-fractal-limit-composition K =
+  canonicalIntegerGRUFractalLimitCompositionTheorem
+    canonical-integer-gru-global-conjugate-theorem
+    K
+    (gruFractalLimitComposition-limitInjective K)
 
