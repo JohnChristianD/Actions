@@ -163,9 +163,9 @@ stepConjugacy-iterate W zero a =
   refl
 stepConjugacy-iterate W (suc n) a =
   trans
-    (stepConjugacy-iterate W n (sourceStep W a))
+    (stepConjugacy-iterate W n (sourceStep a))
     (cong
-      (iterateIsomorphism (targetStep W) n)
+      (iterateIsomorphism targetStep n)
       (stepCommutes W a))
 
 iteratePredicateTransport :
@@ -2565,7 +2565,7 @@ distributionalStationaryAggregate-stationary W =
       (aggregate W)
       (limitPreserved
         (stationaryLimit W)
-        (converges (stationaryLimit W))))
+        (StationaryLimitTheorem.converges (stationaryLimit W))))
 
 record FunctionClassInclusion
   (Input Output : Set)
