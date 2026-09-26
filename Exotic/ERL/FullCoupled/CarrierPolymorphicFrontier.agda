@@ -42,6 +42,46 @@ record StrictProgressWitness
     irreflexive :
       ∀ a → ¬ (a < a)
 
+record StrictProgressRelation
+  (Measure : Set)
+  (_<_ : Measure → Measure → Set) : Set₁ where
+  constructor strictProgressRelation
+  field
+    isTransitive :
+      ∀ {a b c} →
+      a < b →
+      b < c →
+      a < c
+    isIrreflexive :
+      ∀ a → ¬ (a < a)
+
+strictProgressRelation-from-witness :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (W : StrictProgressWitness State Measure step _<_) →
+  StrictProgressRelation Measure _<_
+strictProgressRelation-from-witness W =
+  strictProgressRelation
+    (transitive W)
+    (irreflexive W)
+
+strictProgressWitness-from-relation :
+  ∀ {State Measure : Set}
+  {step : State → State}
+  {_<_ : Measure → Measure → Set}
+  (R : StrictProgressRelation Measure _<_)
+  (measure : State → Measure)
+  (stepProgress :
+    ∀ s → measure s < measure (step s)) →
+  StrictProgressWitness State Measure step _<_
+strictProgressWitness-from-relation R measure stepProgress =
+  strictProgressWitness
+    measure
+    stepProgress
+    (StrictProgressRelation.isTransitive R)
+    (StrictProgressRelation.isIrreflexive R)
+
 open StrictProgressWitness public
 
 strictProgressAfterIterate :
