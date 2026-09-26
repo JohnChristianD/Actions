@@ -22,6 +22,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitClosure.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalEGraphAStarLimitComposition.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/GRUFractalLimitDecoderSurvival.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda
@@ -422,6 +423,13 @@ JSON
     canonicalDeterministicFiniteStepDivergenceInevitability
     canonicalNoFiniteStepConvergenceToFixedPoint
     CanonicalGlobalTokenEncodingConjugacyTheorem
+    canonical-global-token-encoding-conjugacy
+    CanonicalIntegerGRUTokenEncodingLeftInverse
+    canonical-integer-gru-token-encoding-left-inverse
+    canonicalIntegerGRUTokenEncodingInjective
+    canonicalIntegerGRUTokenEncoding-continuous-discrete
+    CanonicalIntegerGRUGlobalConjugateTheorem
+    canonical-integer-gru-global-conjugate-theorem
     canonical-global-token-encoding-conjugacy
     CanonicalGlobalTokenLMCompositionTheorem
     canonical-global-token-lm-composition-theorem
