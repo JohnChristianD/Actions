@@ -10,7 +10,7 @@
 
 module Exotic.ERL.FullCoupled.GRUFractalInjectiveComposition where
 
-open import Relation.Binary.PropositionalEquality using (_≡_; cong; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; cong; trans; sym)
 
 record FractalInjectiveComposition
   (Level State Observation : Set)
@@ -60,5 +60,9 @@ fractalTransportedEncodeInjective :
   transport F r (encode F lower t) →
   s ≡ t
 fractalTransportedEncodeInjective F r eq =
-  fractalLevelInjective F lower
-    (transportInjective F eq)
+  fractalLevelInjective F upper
+    (trans
+      (transportEncode F r _)
+      (trans
+        (transportInjective F eq)
+        (sym (transportEncode F r _))))
