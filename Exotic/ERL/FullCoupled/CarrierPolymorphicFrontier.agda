@@ -78,6 +78,70 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
       (strictProgressAfterIterate W n s))
 
 
+record NatSuccessorProgressWitness
+  (State : Set)
+  (step : State → State)
+  (measure : State → Nat) : Set₁ where
+  constructor natSuccessorProgressWitness
+  field
+    successor :
+      ∀ s →
+      measure (step s) ≡ suc (measure s)
+
+open NatSuccessorProgressWitness public
+
+successorMeasureAfterIterate :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (n : Nat)
+  (s : State) →
+  measure (iterateStep step n s) ≡ measure s + n
+successorMeasureAfterIterate W zero s =
+  sym (Data.Nat.Properties.+-identityʳ (measure W s))
+successorMeasureAfterIterate W (suc n) s =
+  trans
+    (successor W (iterateStep (step W) n s))
+    (cong
+      suc
+      (successorMeasureAfterIterate W n s))
+    |>
+    sym
+      (Data.Nat.Properties.+-suc
+        (measure W s)
+        n)
+
+successorMeasureOrbitInjective :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (s : State)
+  {m n : Nat} →
+  iterateStep step m s ≡ iterateStep step n s →
+  m ≡ n
+successorMeasureOrbitInjective W s {m} {n} eq =
+  natPlusLeftCancel
+    (measure W s)
+    m
+    n
+    (trans
+      (sym (successorMeasureAfterIterate W m s))
+      (trans
+        (cong (measure W) eq)
+        (successorMeasureAfterIterate W n s)))
+
+natPlusLeftCancel :
+  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+natPlusLeftCancel zero m n eq = eq
+natPlusLeftCancel (suc k) m n eq =
+  natPlusLeftCancel k m n (sucInjective eq)
+
+sucInjective :
+  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+sucInjective refl = refl
+
 natSucProgress : ∀ n → n < suc n
 natSucProgress zero = s≤s z≤n
 natSucProgress (suc n) = s≤s (natSucProgress n)
