@@ -61,7 +61,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 27 files.
+Generated from the tracked Markdown surface: 28 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -74,7 +74,6 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 
 - [Adaptive sparsemax action-domain redesign — 2026-09-23](docs/research/adaptive-sparsemax-action-domain-2026-09-23.md)
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
-- [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
@@ -92,6 +91,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
 - [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
+- [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
 - [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
 - [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
 - [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
@@ -287,14 +287,27 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 3ca5e5d7e1d7c2522f493b052557d1ea13d542f1
-unprocessed-commit-count: 4
+last-processed-commit: 7f775c32efa2cea3bc30449e47eea3846246c161
+unprocessed-commit-count: 17
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `3ca5e5d7e1d7` docs: record nLab homomorphism/action semantic distinction
-- `cab33ced4df0` graph: expose exact growth and scan complexity boundary
-- `ad2ea93597f5` docs: record theorem improvement search closure
-- `11109e2160af` docs: refresh README from commit totality
+- `7f775c32efa2` docs: index theorem improvement frontier
+- `9ac653eff459` docs: graph theorem improvement frontier
+- `ac3f949749c9` docs: map theorem improvement frontier
+- `2febd3300645` fix: make e-graph status constructors explicit
+- `49335c3a56df` fix: restore generic iterator zero case
+- `fa6cb74fe578` fix: correct factor and stationary projection scopes
+- `be5cbe017805` fix: expose certified e-graph edge projections
+- `6942da8f9a8f` fix: qualify new theorem transport projections
+- `122716b0d58b` ci: gate completed theorem improvement surfaces
+- `32f1cc6eaeaf` docs: index theorem improvement completion
+- `49f0d6cebcaa` graph: record completed theorem improvements
+- `c3d146ac8573` docs: record theorem improvement completion
+- `88cf72c9c829` feat: add reusable theorem transport and boundary witnesses
+- `b5eb862a5ce9` fix: place e-graph certificate after semantic path
+- `5d8f6f4006bb` feat: add proof-carrying e-graph edge metadata
+- `00b8c27aeb33` feat: factor strict progress relation kernel
+- `6286a0c8e755` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
