@@ -5,7 +5,10 @@ set -euo pipefail
 README=README.md
 BEGIN='<!-- BEGIN GENERATED DOCUMENTATION INDEX -->'
 END='<!-- END GENERATED DOCUMENTATION INDEX -->'
-MODE=${1:-write}
+MODE=write
+if [ "$#" -gt 0 ]; then
+  MODE="$1"
+fi
 
 case "$MODE" in
   --check|--write) ;;
