@@ -25,16 +25,23 @@ import sys
 
 readme, begin, end, mode = sys.argv[1:]
 tracked = subprocess.check_output(
-    ["git", "ls-files", "docs/*.md", "docs/economics/*.md", "docs/research/*.md", "docs/*.markdown", "docs/economics/*.markdown", "docs/research/*.markdown"],
+    ["git", "ls-files", "docs"],
     text=True,
 ).splitlines()
 
 docs = []
 for raw in tracked:
     path = Path(raw)
+    parts = path.parts
     if path.as_posix() == readme:
         continue
-    if not path.is_file():
+    if not path.is_file() or path.suffix not in {".md", ".markdown"}:
+        continue
+    if len(parts) == 2 and parts[0] == "docs":
+        group = "root"
+    elif len(parts) >= 3 and parts[0] == "docs" and parts[1] in {"economics", "research"}:
+        group = parts[1]
+    else:
         continue
 
     lines = path.read_text(encoding="utf-8").splitlines()
@@ -48,7 +55,10 @@ docs.sort(key=lambda item: item[0].lower())
 groups = {}
 for path, title in docs:
     parts = path.split("/")
-    group = parts[0] if len(parts) > 1 else "root"
+    if len(parts) == 2:
+        group = "root"
+    else:
+        group = parts[1]
     groups.setdefault(group, []).append((path, title))
 
 lines = [
@@ -59,7 +69,7 @@ lines = [
     "",
 ]
 for group in sorted(groups):
-    label = "Repository root" if group == "root" else group
+    label = {"root": "Repository documentation", "economics": "Economics", "research": "Research"}.get(group, group)
     lines.append(f"### {label}")
     lines.append("")
     for path, title in groups[group]:
