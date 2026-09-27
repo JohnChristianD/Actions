@@ -384,7 +384,7 @@ DHALL
     DirectProductFiniteAutomatonComposition
     canonical-recurrent-prefix-monoid-homomorphism
     canonicalF4-prefix-monoid-homomorphism
-    canonicalNormPair-prefix-monoid-homomorphism
+    
     canonicalGRUF4Norm-prefix-monoid-homomorphism
     canonicalFullStep-GRUF4Norm-prefix-bridge
     canonical-gruf4-norm-watkins-prefix-composition-theorem
@@ -495,7 +495,7 @@ DHALL
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
     CanonicalLearnerHodgeMaxwellCompositionTheorem
-    CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem
+    
     CanonicalLearnerHodgeMaxwellCompositionTheorem
     CanonicalLearnerHodgeMaxwellCompositionTheorem
     CanonicalLearnerHodgeMaxwellCompositionTheorem
