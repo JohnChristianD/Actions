@@ -424,6 +424,7 @@ DHALL
     CanonicalEndogenousEGraphAStarTransportClosureTheorem
     EGraphAStarFiniteRankConvergenceWitness
     eGraphAStarConvergenceSemanticClosure
+    eGraphAStarEventualStableFromRank
     eGraphAStarStablePathPersists
     CanonicalIntegerLayerNormEGraphAStarTheorem
     integerLayerNorm-a-star-semantic-closure
