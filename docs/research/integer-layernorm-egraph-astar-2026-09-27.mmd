@@ -87,6 +87,8 @@ flowchart TD
     PM --> PA
     PM --> PL
     PM --> PR
+    AM["AStarHaskellMonadSurface\nState frontier + List candidates"]
+    PM --> AM
   end
 
   subgraph ASTAR["A* semantic transport"]
@@ -95,6 +97,7 @@ flowchart TD
     BEST["cost-guided representative"]
     SOUND["aStar-guided-semantic-closure"]
     EQ["interpret e ≡ interpret f"]
+    AM --> PLAN
     PLAN --> COST
     COST --> BEST
     BEST --> PATH
@@ -119,13 +122,16 @@ flowchart TD
     LNR["IntegerLayerNormEpsilonRayGrowthTheorem"]
     LNL["linear radicand ray\nR(ε) = V + ε·n²"]
     LNG["CanonicalIntegerLayerNormStabilityGrowthTheorem"]
+    F4LN["CanonicalF4IntegerLayerNormStabilityBoundaryTheorem\nF4 stability + LayerNorm stability boundary"]
     LNS --> LNG
     LNR --> LNL
     LNR --> LNG
+    LNG --> F4LN
   end
 
   A1 --> LNS
   A1 --> LNR
+  F4LN -. "separate typed families; no NormPair replacement" .-> F6
   EQ --> A1
   A1 --> A2
 
