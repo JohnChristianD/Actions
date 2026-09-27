@@ -422,6 +422,9 @@ DHALL
     canonical-integer-haar-scaled-orthogonality-theorem
     CanonicalAStarCostGuidanceTheorem
     CanonicalEndogenousEGraphAStarTransportClosureTheorem
+    EGraphAStarFiniteRankConvergenceWitness
+    eGraphAStarConvergenceSemanticClosure
+    eGraphAStarStablePathPersists
     CanonicalIntegerLayerNormEGraphAStarTheorem
     integerLayerNorm-a-star-semantic-closure
     canonical-a-star-cost-guidance-theorem
