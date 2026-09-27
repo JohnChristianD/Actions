@@ -30,6 +30,7 @@ let script = merge {
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
     report=.ci/discovery/theorem-monolith-egraph-sync.dhall
+    dhall text --file "$report" >/dev/null
     grep -Fq 'forcedSymbolicTarget = True' "$report" && { echo "forced symbolic target"; exit 1; } || true
     grep -Fq 'singleAgdaSource = False' "$report" && { echo "non-canonical Agda source"; exit 1; } || true
     grep -Fq 'graphSearch = "A* cost-guided dependency paths"' "$report" || { echo "missing A* graph label"; exit 1; }
@@ -142,8 +143,9 @@ let script = merge {
       printf '%s\\n' '}'
     } > .ci/discovery/economic-closure-graph.dhall
 
-    grep -Fq '"surface_authority": "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.dhall
-    grep -Fq '"frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.dhall
+    dhall text --file .ci/discovery/economic-closure-graph.dhall >/dev/null
+    grep -Fq 'surface_authority = "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.dhall
+    grep -Fq 'frontier_policy = "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.dhall
     echo "economic-closure-graph=pass"
     echo "economic-record-count=$economic_record_count"
     echo "economic-declaration-count=$economic_declaration_count"
@@ -197,8 +199,9 @@ let script = merge {
       printf '%s\n' '}'
     } > .ci/discovery/econlib-crossrepo-sync.dhall
 
-    grep -Fq '"upstream_static_existence": "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.dhall
-    grep -Fq '"local_composition_target": "CanonicalLearnerHodgeMaxwellCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.dhall
+    dhall text --file .ci/discovery/econlib-crossrepo-sync.dhall >/dev/null
+    grep -Fq 'upstream_static_existence = "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.dhall
+    grep -Fq 'local_composition_target = "CanonicalLearnerHodgeMaxwellCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.dhall
     echo "econlib-crossrepo-sync=pass"
     echo "econlib-commit=$econlib_rev"
     echo "adapter-present=$adapter_present"
@@ -268,9 +271,10 @@ let script = merge {
       printf '%s\n' '}'
     } > .ci/discovery/econlib-equilibrium-graph.dhall
 
-    grep -Fq '"regularity_assumption": "RegularEconomy"' .ci/discovery/econlib-equilibrium-graph.dhall
-    grep -Fq '"non_iid_transition": "arbitrary Markov/kernel transition"' .ci/discovery/econlib-equilibrium-graph.dhall
-    grep -Fq '"pomdp_bridge_status": "frontier:' .ci/discovery/econlib-equilibrium-graph.dhall
+    dhall text --file .ci/discovery/econlib-equilibrium-graph.dhall >/dev/null
+    grep -Fq 'benchmark_regular_assumption = "Econlib::RegularEconomy"' .ci/discovery/econlib-equilibrium-graph.dhall
+    grep -Fq 'non_iid_transition = "arbitrary Markov/kernel transition"' .ci/discovery/econlib-equilibrium-graph.dhall
+    grep -Fq 'pomdp_bridge_status = "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"' .ci/discovery/econlib-equilibrium-graph.dhall
     echo "econlib-equilibrium-search=pass"
     echo "econlib-commit=$econlib_rev"
     echo "pomdp-named-in-upstream=$pomdp_named"
@@ -279,6 +283,7 @@ let script = merge {
     set -euo pipefail
     (cd .ci/discovery && mmc --make strict_existence_impossibility_graph && ./strict_existence_impossibility_graph)
     report=.ci/discovery/strict-existence-impossibility-graph.dhall
+    dhall text --file "$report" >/dev/null
     grep -Fq 'rule = "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
     grep -Fq 'orangeStatusesAllowed = False' "$report" || { echo "orange status enabled"; exit 1; }
     grep -Fq 'terminalStatuses = ["EXISTENCE", "IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
@@ -360,6 +365,7 @@ DHALL
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
+    dhall text --file "$report" >/dev/null
     grep -Fq 'rule = "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
     grep -Fq 'orangeStatusesAllowed = False' "$report" || { echo "orange status enabled"; exit 1; }
     grep -Fq 'Agda::isomorphismEqualityTransport' "$report" || { echo "equality transport kernel missing"; exit 1; }
