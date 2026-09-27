@@ -12,7 +12,7 @@ Tcl is not adopted for this role. The repository has no demonstrated need for a 
 
 The migration covers committed structured discovery artifacts, runtime theorem/economic/equilibrium/stationarity/transport reports, CI artifact-upload paths, validation checks, and documentation references that treated JSON as the canonical machine-evidence format.
 
-Agda remains the proof authority. Mercury remains the dependency and discovery engine. Dhall carries machine-readable CI evidence and interchange artifacts. Mermaid remains the human-readable topology projection.
+Agda remains the proof authority. Mercury remains the dependency and discovery engine. Dhall carries machine-readable CI evidence and interchange artifacts.
 
 Where JSON previously permitted heterogeneous edge arrays, the Dhall representation uses homogeneous edge records with an optional textual reason field. This keeps the artifact structurally typed rather than relying on untyped array positions.
 
@@ -20,7 +20,7 @@ Where JSON previously permitted heterogeneous edge arrays, the Dhall representat
 
 Bazel is not added under Dhall. The current workload is repository-local and deterministic, while Nix already owns the reproducible environment and Dhall owns the CI lane declaration. A second build graph and cache layer would add overlap without a demonstrated monorepo build or remote-cache requirement.
 
-HTMX and Rails are not replacements for Mermaid. Mermaid provides graph notation and rendering; HTMX and Rails provide web-application and UI infrastructure. A future web interface could consume the Dhall-derived graph data, but that would complement the graph projection rather than replace the graph notation itself.
+HTMX and Rails provide web-application and UI infrastructure, while Dhall-derived graph data remains the machine-readable interchange surface.
 
 ## Verification policy
 
