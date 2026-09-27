@@ -47,7 +47,7 @@ The strict graph keeps the proved full-state obstruction, now expressed through 
 
 ## Inventory
 
-Machine-readable inventory: `.ci/discovery/strict-unconditional-theorems-monolith.json`.
+Machine-readable inventory: `.ci/discovery/strict-unconditional-theorems-monolith.dhall`.
 
 Mermaid graph: `.ci/discovery/strict-unconditional-theorems-monolith.mmd`.
 

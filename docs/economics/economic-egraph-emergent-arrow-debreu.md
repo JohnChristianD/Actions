@@ -96,7 +96,7 @@ Current closure status:
 
 The closure graph is now checked in CI through the existing Dhall/Nix orchestration. The gate verifies that the canonical Mermaid graph contains the required economic nodes and that the theorem monolith exposes the corresponding production, clearing, derived-price, generalized-equilibrium, and classical-specialization seams.
 
-The gate emits `.ci/discovery/economic-closure-graph.json` as an observed status artifact. It checks graph/source consistency; it does not promote a frontier edge to a proved theorem.
+The gate emits `.ci/discovery/economic-closure-graph.dhall` as an observed status artifact. It checks graph/source consistency; it does not promote a frontier edge to a proved theorem.
 
 
 ### Monolith-wide automated frontier
@@ -112,7 +112,7 @@ The automated graph therefore treats the monolith itself as the semantic invento
 - the semantic-law count and dependency evidence produced by the existing Mercury theorem e-graph;
 - the explicit economic frontier edges.
 
-The resulting artifact is .ci/discovery/economic-closure-graph.json, while the detailed declaration inventories are emitted as CI discovery artifacts. The graph does not infer that a declaration is a proof merely because its name contains a theorem word. The Agda-safe monolith remains the proof authority, and the Mercury e-graph remains dependency evidence.
+The resulting artifact is .ci/discovery/economic-closure-graph.dhall, while the detailed declaration inventories are emitted as CI discovery artifacts. The graph does not infer that a declaration is a proof merely because its name contains a theorem word. The Agda-safe monolith remains the proof authority, and the Mercury e-graph remains dependency evidence.
 
 The frontier status vocabulary is now explicit:
 
