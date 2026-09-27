@@ -1,12 +1,10 @@
 flowchart TD
   L["Canonical learner"] --> S["Exact recurrent scan / composition"]
-  S --> Q["NormPair quotient / factor"]
   S --> HM["Hodge-Maxwell / GRU-F4-Watkins exact representation"]
   HM --> F4["Exact F4 optimizer stability"]
   Q --> F4
   F4 --> G["F4 unit-forcing linear-growth ray"]
   G --> B["No unconditional infinite-horizon F4 upper bound"]
-  F4 --> U["F4 × NormPair unconditional factor stability"]
 
   U -. "does not entail" .-> C["Convergence"]
   C -. "does not entail" .-> FP["Fixed point"]
