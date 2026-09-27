@@ -303,6 +303,101 @@ sumList : List Nat → Nat
 sumList [] = zero
 sumList (x ∷ xs) = x + sumList xs
 
+------------------------------------------------------------------------
+-- Integer LayerNorm kernel.
+--
+-- Int8 is an exact ℤ wrapper.  The normalization arithmetic therefore
+-- remains integral and the normalized output is represented as an exact
+-- integer ratio.  A certificate supplies the non-zero square root of
+-- the integer radicand; no floating-point approximation enters the
+-- proof surface.
+------------------------------------------------------------------------
+
+integerCodeSum : List Int8 → ℤ
+integerCodeSum [] = + 0
+integerCodeSum (x ∷ xs) = code x +ℤ integerCodeSum xs
+
+integerCodeSumList : List ℤ → ℤ
+integerCodeSumList [] = + 0
+integerCodeSumList (x ∷ xs) = x +ℤ integerCodeSumList xs
+
+integerLayerNormCenteredNumerator :
+  List Int8 → Int8 → ℤ
+integerLayerNormCenteredNumerator xs x =
+  (+ (length xs)) *ℤ code x +ℤ (- integerCodeSum xs)
+
+integerLayerNormCenteredNumerators :
+  List Int8 → List ℤ
+integerLayerNormCenteredNumerators xs =
+  map
+    (λ x → integerLayerNormCenteredNumerator xs x)
+    xs
+
+integerLayerNormSquare : ℤ → ℤ
+integerLayerNormSquare z = z *ℤ z
+
+integerLayerNormVarianceNumerator :
+  List Int8 → ℤ
+integerLayerNormVarianceNumerator xs =
+  integerCodeSumList
+    (map
+      integerLayerNormSquare
+      (integerLayerNormCenteredNumerators xs))
+
+integerLayerNormEpsilonContribution :
+  List Int8 → Nat → ℤ
+integerLayerNormEpsilonContribution xs epsilon =
+  (+ (epsilon * (length xs) * (length xs)))
+
+integerLayerNormRadicand :
+  List Int8 → Nat → ℤ
+integerLayerNormRadicand xs epsilon =
+  integerLayerNormVarianceNumerator xs
+  +ℤ
+  integerLayerNormEpsilonContribution xs epsilon
+
+record IntegerLayerNormConfig : Set where
+  constructor integerLayerNormConfig
+  field fixedScale gamma beta : Int8
+open IntegerLayerNormConfig public
+
+record IntegerLayerNormCertificate
+  (xs : List Int8) : Set where
+  constructor integerLayerNormCertificate
+  field
+    epsilon : Nat
+    root : Nat
+    rootSquared :
+      (+ (root * root)) ≡
+      integerLayerNormRadicand xs epsilon
+    rootNonZero : root ≢ zero
+open IntegerLayerNormCertificate public
+
+record IntegerLayerNormValue : Set where
+  constructor integerLayerNormValue
+  field
+    numerator : ℤ
+    denominator : Nat
+    denominatorNonZero : denominator ≢ zero
+open IntegerLayerNormValue public
+
+integerLayerNormValue :
+  ∀ {xs : List Int8} →
+  IntegerLayerNormConfig →
+  IntegerLayerNormCertificate xs →
+  Int8 →
+  IntegerLayerNormValue
+integerLayerNormValue {xs} config certificate x =
+  integerLayerNormValue
+    (code (gamma config) *ℤ
+      (code (fixedScale config) *ℤ
+        integerLayerNormCenteredNumerator xs x)
+     +ℤ
+     (code (beta config) *ℤ (+ (root certificate))))
+    (root certificate)
+    (rootNonZero certificate)
+
+
 topCodes : Nat → List ScoreEntry → List Nat
 topCodes zero xs = []
 topCodes (suc k) [] = []
