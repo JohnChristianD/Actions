@@ -54,7 +54,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 38 files.
+Generated from the tracked Markdown surface: 39 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -73,6 +73,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
 - [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
+- [General-purpose workload and GUI boundary — 2026-09-27](docs/research/general-purpose-workload-gui-boundary-2026-09-27.md)
 - [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
 - [Arbitrary-limit GRU fractal closure and e-graph/A* composition — 2026-09-26](docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md)
 - [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
@@ -236,6 +237,26 @@ Mercury extracts declarations and searches dependency candidates. Dhall declares
 The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mercury supplies dependency discovery and semantic graph processing. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
 The orchestration arrows are not mathematical implication arrows.
+
+
+## General-purpose workload and GUI boundary — 2026-09-27
+
+The semantic boundary is now intentionally independent of the implementation language used by a future general-purpose workload.
+
+The repository layers are:
+- Agda with `--safe`: the only semantic and proof authority.
+- Mercury: declaration extraction, dependency discovery, and semantic graph processing.
+- Dhall: the typed verification/evidence contract.
+- Nix: the reproducible build/development environment and host composition.
+- Workload implementations: replaceable native or embedded languages; they consume explicit interfaces and never become a second semantic authority.
+
+A workload may therefore use Go, Nim, Lua, Tcl/Tk, Chibi Scheme, Roc, Swift, or another language when a concrete workload needs it. The CI surface must not reject a language merely because it was absent from an earlier phase. What remains prohibited is duplicated semantic authority: an implementation language must not introduce a parallel theorem model or an alternative canonical definition of the learner.
+
+For desktop Linux targets, Tk remains an optional native GUI adapter. WebAssembly is a separate presentation target, not the canonical desktop runtime. A browser/WASM build can expose the same workload contract through a browser host, while microOS/Aeon, NixOS, VanillaOS, and similar Linux systems can use a native GUI adapter without acquiring a browser dependency.
+
+Tk itself should therefore not be redefined as “Tk in WebAssembly”. The browser adapter should be treated as a separate host boundary. Existing browser-oriented Tk-compatible projects implement their widgets through JavaScript/HTML rather than becoming the Tk desktop implementation; a direct Tk/WASM path would require its own platform port. See [Tk](https://github.com/tcltk/tk), [Emscripten WebAssembly](https://emscripten.org/docs/compiling/WebAssembly.html), and [wTk](https://core.tcl-lang.org/wtk/home).
+
+Guix is not a repository requirement. Mermaid is not a graph or CI requirement. Neither is needed by the semantic core.
 
 ## MARL, Hodge-Maxwell, and optimizer semantics
 
