@@ -1,7 +1,6 @@
 flowchart LR
   SP["StrictProgressWitness"] --> WF["generic strict-progress exclusion"]
   WF --> FC["clock-free finite-cycle exclusion"]
-  NR["NormPair replacement relation"] --> FI["factor observation q"]
   FI --> FT["induced factor transition"]
   FT --> QP["policy/readout factorization"]
   QP --> FS["factor stationarity/convergence frontier"]
