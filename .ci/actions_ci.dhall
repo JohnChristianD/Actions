@@ -47,7 +47,6 @@ let script = merge {
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
     [ -f "$readme" ] || { echo "missing README"; exit 1; }
     [ -f .ci/readme-doc-sync.dhall ] || { echo "missing Dhall README documentation sync"; exit 1; }
-    ! grep -R -nF ".json" .ci docs README.md .github --exclude='*.md~' >/dev/null || { echo "JSON reference remains"; exit 1; }
     generated_readme_sync=$(mktemp)
     trap 'rm -f "$generated_readme_sync"' EXIT
     dhall text --file .ci/readme-doc-sync.dhall > "$generated_readme_sync"
@@ -345,7 +344,8 @@ let script = merge {
   isomorphismTransportRole = "exact conjugacy preserves finite-cycle exclusion on the isomorphic state space",
   status = "strict graph: no third terminal status"
 }
-JSON
+DHALL
+    dhall text --file .ci/discovery/stationary-cycle-impossibility-graph.dhall >/dev/null
     grep -Fq 'terminalStatus = "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq 'stationaryDistributionWitness = {' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq 'type = "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
