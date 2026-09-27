@@ -5,7 +5,6 @@
 The theorem topology is expanded along proof-bearing edges, and the economic interface is aligned with standard general-equilibrium vocabulary.
 
 The canonical graph is:
-canonical learner exact laws -> recurrent endomorphism/prefix correctness -> NormPair factor relation -> transition compatibility -> iterate compatibility -> F4 × NormPair factor stability.
 
 The economic boundary remains explicit:
 factor stability -> representation/factor structure only;
@@ -13,8 +12,6 @@ factor stability does not itself prove convergence, fixed-point existence, marke
 
 ## Factor-stability terminology
 
-The repository's NormPair relation is a dynamically preserved equivalence relation:
-- states related by NormPair replacement have the same canonical policy;
 - one canonical transition maps related states to related states;
 - arbitrary finite iterates preserve the relation.
 
@@ -37,7 +34,6 @@ These are semantic contracts, not existence theorems. That distinction matters: 
 
 The older Mega-prefixed names are implementation-era names, not standard economic terminology. The branch therefore exposes GeneralizedWalrasianEquilibrium and generalizedWalrasianEquilibrium as the literature-facing names while retaining the underlying carrier for compatibility.
 
-A blanket rename of every identifier in both monoliths is deliberately not performed. The learner monolith contains domain-specific implementation primitives (F4, NormPair, Watkins, GRU, exact scan, etc.) for which there is no one-to-one standard economics or topology literature name. Renaming those as if they were standard terms would make the thesis less, not more, accurate.
 
 The correct convention is:
 1. standard literature vocabulary at semantic/economic interfaces;
@@ -56,7 +52,6 @@ The Second Welfare route remains a separate supportability problem. Pareto optim
 The defensible contribution is therefore not a new claim that classical Walrasian theory is false or that learner factor stability implies equilibrium. It is a machine-checked dependency topology that:
 
 1. proves exact learner-side factor compatibility;
-2. composes F4 and NormPair into an unconditional factor-stability theorem;
 3. separates representation invariance from dynamical convergence;
 4. exposes the production, market-clearing, price-support, and welfare assumptions needed to cross into economic equilibrium theory;
 5. retains countermodels where a generalized contract is too weak to imply existence.
