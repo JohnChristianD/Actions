@@ -60,6 +60,14 @@
     list(string)::in,
     list(list(string))::out) is det.
 
+:- pred graph_astar_haskell_monad_surface_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_canonical_f4_integer_layernorm_stability_boundary_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred graph_astar_plan_monoid_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
@@ -577,6 +585,18 @@ search_emergent_compositions_from_seed_ids(Laws, SeedIds, Results) :-
             Results = []
     ).
 
+
+graph_astar_haskell_monad_surface_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "AStarHaskellMonadSurface",
+        Laws,
+        Plan).
+
+graph_canonical_f4_integer_layernorm_stability_boundary_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalF4IntegerLayerNormStabilityBoundaryTheorem",
+        Laws,
+        Plan).
 
 graph_astar_plan_monoid_plan(Laws, Plan) :-
     search_named_required_plan(
