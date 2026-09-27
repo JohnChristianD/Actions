@@ -239,7 +239,7 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMon
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-The graph evidence stack is intentionally minimal: JSON is the machine-readable evidence/interchange layer; Mermaid is the human topology projection. TSV and CSV are not canonical topology formats. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do.
+The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mermaid is the human topology projection. TSV and CSV are not canonical topology formats. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
 The orchestration arrows are not mathematical implication arrows.
 

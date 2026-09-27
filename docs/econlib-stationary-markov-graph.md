@@ -60,4 +60,4 @@ The cross-repository graph therefore has a complete node/edge inventory, but two
 
 The concrete upstream example `EconlibExamples/Equilibrium/MarkovStationary.lean` supplies an inhabited `StationaryWalrasianEquilibrium` for its specified economy. That example should be treated as a concrete witness, not as a general stationary equilibrium existence theorem.
 
-The Actions CI lane now checks these exact upstream nodes and emits `.ci/discovery/econlib-crossrepo-sync.json` and `.ci/discovery/econlib-equilibrium-graph.json` at runtime.
+The Actions CI lane now checks these exact upstream nodes and emits `.ci/discovery/econlib-crossrepo-sync.dhall` and `.ci/discovery/econlib-equilibrium-graph.dhall` at runtime.

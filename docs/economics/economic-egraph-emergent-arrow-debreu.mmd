@@ -31,8 +31,8 @@ flowchart TD
   SW["Second Welfare: separate supportability / separation route"] --> SP
 
   subgraph A["Unattended stack"]
-    AG["Agda proofs"] --> J["theorem-monolith-egraph-sync.json"]
-    J --> EJ["economic-closure-graph.json"]
+    AG["Agda proofs"] --> J["theorem-monolith-egraph-sync.dhall"]
+    J --> EJ["economic-closure-graph.dhall"]
     J --> M["Mermaid projection"]
     N["Nix environment"] --> DHC["Dhall verification script"]
     DHC --> AG
@@ -41,7 +41,7 @@ flowchart TD
   end
 
   subgraph V["Format policy"]
-    JSON["JSON: machine evidence / interchange"]
+    JSON["Dhall: machine evidence / interchange"]
     MERM["Mermaid: human topology view"]
     JSON --> MERM
   end
