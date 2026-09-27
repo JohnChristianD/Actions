@@ -2,7 +2,7 @@
 
 The repository now distinguishes three graph objects.
 
-1. Dependency DAG / Mermaid projection: a human-readable prerequisite and boundary view. It is not an equality proof.
+1. Dependency/discovery graph: a human-readable prerequisite and boundary view. It is not an equality proof.
 2. Semantic e-graph: an equality-saturation structure whose e-classes contain theorem-composition expressions identified as equivalent only through explicit rewrite rules. Rewrites add equal alternatives; rebuild restores congruence closure; extraction chooses a representative by cost.
 3. A* search frontier: a cost-guided traversal over candidate proof plans. A* changes discovery order, not semantic truth.
 
