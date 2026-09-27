@@ -5,13 +5,13 @@
 --
 -- This module is the executable/type-level source of the coupled learner:
 -- recurrent GRU state, Watkins state, F4/L2 optimizer state, LCB counts,
--- sparse policy readout, q-log state, the preserved NormPair, and the
+-- sparse policy readout, q-log state, the persistent learner channels, and the
 -- endogenous feedback signal. The definitions below determine what the
 -- learner actually does; theorem modules consume these definitions.
 --
 -- The main emergent facts are structural: LCB totalCount advances exactly
--- by one per canonical step, NormPair is preserved, the policy is
--- invariant under NormPair and optimizer replacement, and the recurrent
+-- by one per canonical step, the optimizer state is explicit, the policy is
+-- invariant under optimizer replacement, and the recurrent
 -- components are exposed as composable state transitions. The integer
 -- token layer and linear Haar layer are exact formal substrates, not
 -- empirical language-model or physical-realism claims.
@@ -796,24 +796,12 @@ f4ParameterInvariant : ∀ (K : F4IntUKernel) (s : F4IntUState) (g : Int8) →
   int8Add (int8Add (thetaQ s) g) (l2Correction (globalL2 K))
 f4ParameterInvariant K s g = refl
 
-record NormPair : Set where
-  constructor normPair
-  field l1 path : Int8
-open NormPair public
-
-normPairWeight : NormPair → Int8
-normPairWeight n = int8Add (l1 n) (path n)
-
-normPairWeightPlusOne : NormPair → Int8
-normPairWeightPlusOne n = int8Add one8 (normPairWeight n)
-
 record FullLearnerState (A : Set) : Set₁ where
   constructor fullLearnerState
   field
     watkins : WatkinsState A
     gru : GRUState
     optimizer : F4IntUState
-    norm : NormPair
     lcbCounts : LCBCountState A
     qLogControl : SignedQLogControl
     qLogValue : FiniteRational
@@ -886,41 +874,14 @@ softSparse-zero-to-hardSparse :
 softSparse-zero-to-hardSparse K s h {a} distinct =
   ≤-antisym (h distinct) z≤n
 
-replaceNorm : ∀ {A} → FullLearnerState A → NormPair → FullLearnerState A
-replaceNorm s n = fullLearnerState (watkins s) (gru s) (optimizer s)
-  n (lcbCounts s) (qLogControl s) (qLogValue s)
-
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
 replaceOptimizer s o = fullLearnerState (watkins s) (gru s) (optimizer s)
-  o (norm s) (lcbCounts s) (qLogControl s) (qLogValue s)
-
-canonicalPolicy-norm-invariant :
-  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : NormPair) →
-  canonicalPolicy K (replaceNorm s n) ≡ canonicalPolicy K s
-canonicalPolicy-norm-invariant K s n = refl
+  o (lcbCounts s) (qLogControl s) (qLogValue s)
 
 canonicalPolicy-optimizer-invariant :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (o : F4IntUState) →
   canonicalPolicy K (replaceOptimizer s o) ≡ canonicalPolicy K s
 canonicalPolicy-optimizer-invariant K s o = refl
-
-hardSparse-norm-optimizer-invariant :
-  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : NormPair) (o : F4IntUState) →
-  HardSparse K s →
-  HardSparse K (replaceOptimizer (replaceNorm s n) o)
-hardSparse-norm-optimizer-invariant K s n o h = h
-
-hardSparse-composition-invariant :
-  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : NormPair) (o : F4IntUState) →
-  HardSparse K s →
-  HardSparse K (replaceNorm (replaceOptimizer s o) n)
-hardSparse-composition-invariant K s n o h = hardSparse-norm-optimizer-invariant K s n o h
-
-hardSparse-composition-normPair-F4-L2 :
-  ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : NormPair) (o : F4IntUState) →
-  HardSparse K s →
-  HardSparse K (replaceNorm (replaceOptimizer s o) n)
-hardSparse-composition-normPair-F4-L2 = hardSparse-composition-invariant
 
 maxCriticValueList : List Int8 → Int8
 maxCriticValueList [] = zero8
@@ -1038,7 +999,6 @@ canonicalFullStep K s =
   fullLearnerState (canonicalWatkinsStep K s)
   (canonicalGRUStep K s)
   (canonicalOptimizerStep K s)
-  (norm s)
   (canonicalCountStep K s)
   (canonicalQLogControlStep K s)
   (canonicalQLogStep K s)
@@ -1052,9 +1012,6 @@ canonicalFullStep-gru K s = refl
 canonicalFullStep-optimizer : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → optimizer (canonicalFullStep K s) ≡ canonicalOptimizerStep K s
 canonicalFullStep-optimizer K s = refl
 
-canonicalFullStep-norm : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → norm (canonicalFullStep K s) ≡ norm s
-canonicalFullStep-norm K s = refl
-
 canonicalFullStep-counts : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → lcbCounts (canonicalFullStep K s) ≡ canonicalCountStep K s
 canonicalFullStep-counts K s = refl
 
@@ -1063,10 +1020,6 @@ canonicalFullStep-qLog K s = refl
 
 canonicalFullStep-qLogControl : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogControl (canonicalFullStep K s) ≡ canonicalQLogControlStep K s
 canonicalFullStep-qLogControl K s = refl
-
-canonicalNormPairWeightPlusOne-preservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  normPairWeightPlusOne (norm (canonicalFullStep K s)) ≡ normPairWeightPlusOne (norm s)
-canonicalNormPairWeightPlusOne-preservation K s = refl
 
 canonicalTotalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
 canonicalTotalCountStep K s = refl
