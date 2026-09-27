@@ -307,13 +307,11 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: cd7077309e4aab491f6aee1882fa9bf9119bf207
-unprocessed-commit-count: 3
+last-processed-commit: 88d604d7ffaf9bc48c137f330daa18e68ac66dc6
+unprocessed-commit-count: 1
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `cd7077309e4a` fix: tighten theorem learner import sync
-- `d5aa6e474d81` ci: sync theorem import with canonical learner
-- `9e64deaf4448` docs: refresh README from commit totality
+- `88d604d7ffaf` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
