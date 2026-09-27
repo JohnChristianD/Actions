@@ -234,7 +234,7 @@ write_targets(Stream, [Target | Targets], !IO) :-
     io.write_string(Stream, kind_text(Kind), !IO),
     io.write_string(Stream, "\", evidence = \"", !IO),
     io.write_string(Stream, Evidence, !IO),
-    io.write_string(Stream, "\"}", !IO),
+    io.write_string(Stream, "\" }", !IO),
     (
         Targets = []
     ->
@@ -282,7 +282,7 @@ write_inventory(_, [], !IO).
 write_inventory(Stream, [Law | Laws], !IO) :-
     conclusion_fragment(law_signature(Law), Conclusion),
     Kind = signature_kind_for(Conclusion),
-    io.write_string(Stream, "    {\"id\":\"", !IO),
+    io.write_string(Stream, "    { id = \"", !IO),
     io.write_string(Stream, law_id(Law), !IO),
     io.write_string(Stream, "\", kind = \"", !IO),
     io.write_string(Stream, kind_text(Kind), !IO),
