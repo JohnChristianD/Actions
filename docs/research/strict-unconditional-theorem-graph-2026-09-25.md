@@ -11,9 +11,6 @@ The graph therefore contains proved algebraic laws, exact compositions, exact im
 The unconditional chain now includes:
 
 `canonical-f4-global-optimizer-stability-theorem`
-→ `canonical-f4-normPair-sure-stability-composition-theorem`
-→ `canonical-normPair-quotient-factor-transition-theorem`
-→ `canonical-f4-normPair-factor-stability-theorem`.
 
 This is the unconditional stability/factorization result.
 
@@ -25,9 +22,7 @@ The strict graph includes the closed impossibility:
 
 `noUnconditionalMegaGeneralizedWalrasianExistence`
 
-and the stronger F4/NormPair/economic-injectivity impossibility:
 
-`noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity`.
 
 Thus no conditional equilibrium record is being silently promoted to an unconditional existence theorem.
 
