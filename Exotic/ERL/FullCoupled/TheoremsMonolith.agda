@@ -76,6 +76,10 @@ open import Relation.Nullary using (¬_)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 open import Data.Nat.Solver using (module +-*-Solver)
+open import Effect.Monad using (RawMonad)
+open import Effect.Monad.State using
+  (State; RawMonadState; StateMonad; StateMonadState)
+import Data.List.Effectful as ListEffectful
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open +-*-Solver using (solve; _:*_; _:+_; con)
 
@@ -695,6 +699,56 @@ aStar-plan-monoid-theorem Expression =
     aStar-plan-append-identity-left
     aStar-plan-append-identity-right
 
+------------------------------------------------------------------------
+-- Haskell-like monadic search surface.
+--
+-- State carries the A* frontier; List supplies candidate-plan
+-- nondeterminism. This is an operational adapter only. Semantic equality
+-- still comes from sound e-graph paths, and RawMonad does not itself carry
+-- monad-law proofs in the standard library.
+------------------------------------------------------------------------
+
+record AStarHaskellMonadSurface (Expression : Set) : Set₁ where
+  constructor aStarHaskellMonadSurface
+  field
+    frontierMonad :
+      RawMonad
+        (State (List (List Expression)))
+    frontierState :
+      RawMonadState
+        (List (List Expression))
+        (State (List (List Expression)))
+    candidatePlanMonad :
+      RawMonad List
+
+open AStarHaskellMonadSurface public
+
+aStar-frontier-monad :
+  ∀ {Expression : Set} →
+  RawMonad (State (List (List Expression)))
+aStar-frontier-monad = StateMonad _
+
+aStar-frontier-state :
+  ∀ {Expression : Set} →
+  RawMonadState
+    (List (List Expression))
+    (State (List (List Expression)))
+aStar-frontier-state = StateMonadState _
+
+aStar-candidate-plan-monad :
+  ∀ {Expression : Set} →
+  RawMonad List
+aStar-candidate-plan-monad = ListEffectful.monad
+
+aStar-haskell-monad-surface :
+  ∀ (Expression : Set) →
+  AStarHaskellMonadSurface Expression
+aStar-haskell-monad-surface Expression =
+  aStarHaskellMonadSurface
+    aStar-frontier-monad
+    aStar-frontier-state
+    aStar-candidate-plan-monad
+
 aStar-guided-semantic-closure :
   ∀ {Expression State : Set}
   (A : AStarSemanticClosure Expression State) →
@@ -1219,6 +1273,29 @@ canonical-integer-layernorm-stability-growth-theorem =
   canonicalIntegerLayerNormStabilityGrowthTheorem
     integer-layernorm-configuration-stability-theorem
     integer-layernorm-epsilon-ray-growth-theorem
+
+record CanonicalF4IntegerLayerNormStabilityBoundaryTheorem : Set₁ where
+  constructor canonicalF4IntegerLayerNormStabilityBoundaryTheorem
+  field
+    f4OptimizerStability :
+      CanonicalF4GlobalOptimizerStabilityTheorem
+    layerNormStabilityGrowth :
+      CanonicalIntegerLayerNormStabilityGrowthTheorem
+
+open CanonicalF4IntegerLayerNormStabilityBoundaryTheorem public
+
+canonical-f4-integer-layernorm-stability-boundary-theorem :
+  CanonicalF4IntegerLayerNormStabilityBoundaryTheorem
+canonical-f4-integer-layernorm-stability-boundary-theorem =
+  canonicalF4IntegerLayerNormStabilityBoundaryTheorem
+    canonical-f4-global-optimizer-stability-theorem
+    canonical-integer-layernorm-stability-growth-theorem
+
+------------------------------------------------------------------------
+-- The F4 and LayerNorm stability families share the theorem monolith but
+-- remain separate typed carriers. This boundary does not recreate a
+-- NormPair replacement operation or assert that F4 optimizer forcing
+-- changes LayerNorm statistics/configuration.
 
 ------------------------------------------------------------------------
 -- The theorem is unconditional over the complete surviving Agda-file
