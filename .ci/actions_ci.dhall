@@ -120,25 +120,25 @@ let script = merge {
     mkdir -p .ci/discovery
     {
       printf '%s\\n' '{'
-      printf '  "source_graph": "%s",\\n' "$graph"
-      printf '  "theorem_source": "%s",\\n' "$theorem"
-      printf '  "learner_source": "%s",\\n' "$learner"
-      printf '  "semanticLawCount": %s,\\n' "$law_count"
-      printf '  "record_count": %s,\\n' "$record_count"
-      printf '  "top_level_declaration_count": %s,\\n' "$declaration_count"
-      printf '  "economic_record_count": %s,\\n' "$economic_record_count"
-      printf '  "economic_declaration_count": %s,\\n' "$economic_declaration_count"
-      printf '  "counterexample_or_boundary_record_count": %s,\\n' "$counterexample_count"
-      printf '  "composition_transport_record_count": %s,\\n' "$composition_count"
-      printf '  "surface_authority": "TheoremsMonolith.agda",\\n'
-      printf '  "dependency_authority": "theorem-monolith-egraph-sync.json",\\n'
-      printf '  "frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\\n'
-      printf '  "closed_core": ["CanonicalMARLLawCompositionTheorem", "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem", "CanonicalNormPairQuotientFactorTransitionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "CanonicalF4NormPairUnconditionalFactorStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
-      printf '  "composition_frontier": ["CanonicalLearnerHodgeMaxwellCompositionTheorem requires explicit Hodge representation and learner-step conjugacy witnesses"],\\n'
-      printf '  "economic_boundary": ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
-      printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
-      printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
-      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic semantic projection; Dhall is machine evidence and Mermaid is the human topology view"\\n'
+      printf '  source_graph = "%s",\\n' "$graph"
+      printf '  theorem_source = "%s",\\n' "$theorem"
+      printf '  learner_source = "%s",\\n' "$learner"
+      printf '  semanticLawCount = %s,\\n' "$law_count"
+      printf '  record_count = %s,\\n' "$record_count"
+      printf '  top_level_declaration_count = %s,\\n' "$declaration_count"
+      printf '  economic_record_count = %s,\\n' "$economic_record_count"
+      printf '  economic_declaration_count = %s,\\n' "$economic_declaration_count"
+      printf '  counterexample_or_boundary_record_count = %s,\\n' "$counterexample_count"
+      printf '  composition_transport_record_count = %s,\\n' "$composition_count"
+      printf '  surface_authority = "TheoremsMonolith.agda",\\n'
+      printf '  dependency_authority = "theorem-monolith-egraph-sync.dhall",\\n'
+      printf '  frontier_policy = "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\\n'
+      printf '  closed_core = ["CanonicalMARLLawCompositionTheorem", "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem", "CanonicalNormPairQuotientFactorTransitionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "CanonicalF4NormPairUnconditionalFactorStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
+      printf '  composition_frontier = ["CanonicalLearnerHodgeMaxwellCompositionTheorem requires explicit Hodge representation and learner-step conjugacy witnesses"],\\n'
+      printf '  economic_boundary = ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
+      printf '  production_topology = "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
+      printf '  counterexample_policy = "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
+      printf '  automation = "one unattended Mercury discovery pass followed by deterministic semantic projection; Dhall is machine evidence and Mermaid is the human topology view"\\n'
       printf '%s\\n' '}'
     } > .ci/discovery/economic-closure-graph.dhall
 
@@ -175,23 +175,25 @@ let script = merge {
     grep -Fq 'CanonicalLearnerHodgeMaxwellCompositionTheorem' "$local_theorem"
 
     adapter_present=false
+    adapter_dhall=False
     if grep -Eiq 'Econlib|exists_equilibrium' "$local_theorem"; then
       adapter_present=true
+      adapter_dhall=True
     fi
 
     mkdir -p .ci/discovery
     {
       printf '%s\n' '{'
-      printf '  "econlib_repo": "danlyng/Econlib",\n'
-      printf '  "econlib_commit": "%s",\n' "$econlib_rev"
-      printf '  "upstream_static_existence": "Economy.exists_equilibrium",\n'
-      printf '  "upstream_equilibrium_object": "Economy.WalrasianEquilibrium",\n'
-      printf '  "local_mega_equilibrium_target": "GeneralizedWalrasianExistence",\n'
-      printf '  "local_composition_target": "CanonicalLearnerHodgeMaxwellCompositionTheorem",\n'
-      printf '  "local_mega_edge": "MegaGeneralizedWalrasianEquilibrium",\n'
-      printf '  "adapter_present": %s,\n' "$adapter_present"
-      printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
-      printf '  "graph_status": "composition-ready; explicit cross-language adapter still required"\n'
+      printf '  econlib_repo = "danlyng/Econlib",\n'
+      printf '  econlib_commit = "%s",\n' "$econlib_rev"
+      printf '  upstream_static_existence = "Economy.exists_equilibrium",\n'
+      printf '  upstream_equilibrium_object = "Economy.WalrasianEquilibrium",\n'
+      printf '  local_mega_equilibrium_target = "GeneralizedWalrasianExistence",\n'
+      printf '  local_composition_target = "CanonicalLearnerHodgeMaxwellCompositionTheorem",\n'
+      printf '  local_mega_edge = "MegaGeneralizedWalrasianEquilibrium",\n'
+      printf '  adapter_present = %s,\n' "$adapter_present"
+      printf '  composition_path = ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
+      printf '  graph_status = "composition-ready; explicit cross-language adapter still required"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-crossrepo-sync.dhall
 
@@ -242,26 +244,27 @@ let script = merge {
     grep -Fq 'CanonicalLearnerHodgeMaxwellCompositionTheorem' "$local_theorem"
 
     pomdp_named=false
-    grep -Riq 'POMDP|partially observable' "$root/Econlib" && pomdp_named=true || true
+    pomdp_named_dhall=False
+    grep -Riq 'POMDP|partially observable' "$root/Econlib" && pomdp_named=true && pomdp_named_dhall=True || true
 
     mkdir -p .ci/discovery
     {
       printf '%s\n' '{'
-      printf '  "econlib_repo": "danlyng/Econlib",\n'
-      printf '  "econlib_commit": "%s",\n' "$econlib_rev"
-      printf '  "benchmark_regular_assumption": "Econlib::RegularEconomy",\n'
-      printf '  "benchmark_static_existence": "Econlib::Economy.exists_equilibrium",\n'
-      printf '  "non_iid_transition": "arbitrary Markov/kernel transition",\n'
-      printf '  "stationary_law_node": "FiniteMarkovChain.exists_stationary",\n'
-      printf '  "stationary_law_convergence_node": "FiniteMarkovChain.geometric_convergence_to",\n'
-      printf '  "stationary_law_convergence_condition": "strictly positive transition probabilities",\n'
-      printf '  "stationary_equilibrium_node": "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
-      printf '  "local_mega_edge": "MegaGeneralizedWalrasianEquilibrium",\n'
-      printf '  "local_composition": "CanonicalLearnerHodgeMaxwellCompositionTheorem",\n'
-      printf '  "partial_observation_nodes": ["BehavioralStrategy", "BeliefSystem", "SequentialEquilibrium"],\n'
-      printf '  "pomdp_named_in_econlib": %s,\n' "$pomdp_named"
-      printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
-      printf '  "pomdp_bridge_status": "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"\n'
+      printf '  econlib_repo = "danlyng/Econlib",\n'
+      printf '  econlib_commit = "%s",\n' "$econlib_rev"
+      printf '  benchmark_regular_assumption = "Econlib::RegularEconomy",\n'
+      printf '  benchmark_static_existence = "Econlib::Economy.exists_equilibrium",\n'
+      printf '  non_iid_transition = "arbitrary Markov/kernel transition",\n'
+      printf '  stationary_law_node = "FiniteMarkovChain.exists_stationary",\n'
+      printf '  stationary_law_convergence_node = "FiniteMarkovChain.geometric_convergence_to",\n'
+      printf '  stationary_law_convergence_condition = "strictly positive transition probabilities",\n'
+      printf '  stationary_equilibrium_node = "MarkovExchangeEconomy.StationaryWalrasianEquilibrium",\n'
+      printf '  local_mega_edge = "MegaGeneralizedWalrasianEquilibrium",\n'
+      printf '  local_composition = "CanonicalLearnerHodgeMaxwellCompositionTheorem",\n'
+      printf '  partial_observation_nodes = ["BehavioralStrategy", "BeliefSystem", "SequentialEquilibrium"],\n'
+      printf '  pomdp_named_in_econlib = %s,\n' "$pomdp_named"
+      printf '  composition_path = ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
+      printf '  pomdp_bridge_status = "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"\n'
       printf '%s\n' '}'
     } > .ci/discovery/econlib-equilibrium-graph.dhall
 
@@ -305,7 +308,7 @@ let script = merge {
   "terminalStatus": "IMPOSSIBILITY",
   "requiresExactFiniteDeterministicProjection": true,
   "stationaryDistributionWitness": {
-    "type": "uniform_cycle_measure",
+    type = "uniform_cycle_measure",
     "statement": "For a deterministic cycle of length m>0, the uniform probability law on the cycle is stationary for the induced deterministic Markov kernel.",
     "use": "witness_only"
   },
@@ -339,15 +342,15 @@ let script = merge {
   "logicGuard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
   "isomorphism_transport_node": "Agda::isomorphismNoFiniteCycleTransport",
   "isomorphism_transport_role": "exact conjugacy preserves finite-cycle exclusion on the isomorphic state space",
-  "status": "strict graph: no third terminal status"
+  status = "strict graph: no third terminal status"
 }
 JSON
     grep -Fq '"terminalStatus": "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq '"stationaryDistributionWitness": {' .ci/discovery/stationary-cycle-impossibility-graph.dhall
-    grep -Fq '"type": "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq 'type = "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq '"logicGuard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq '"requiresExactFiniteDeterministicProjection": true' .ci/discovery/stationary-cycle-impossibility-graph.dhall
-    grep -Fq '"status": "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq 'status = "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     echo "stationary-cycle-impossibility-graph=pass"
     '',
@@ -509,6 +512,8 @@ JSON
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.roc' | grep -q . || { echo "Roc source remains"; exit 1; }
+    ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
+    ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
     forbidden='\.sh$|\.bash$|\.zsh$|\.fish$|\.cmd$|\.bat$|\.ps1$|\.command$|\.py$|\.java$|\.kt$|\.scala$|\.groovy$|\.clj$|\.cljs$|\.js$|\.mjs$|\.cjs$|\.ts$|\.tsx$|\.elm$|\.purs$|\.hs$|\.lhs$|\.cabal$|\.lua$|\.nim$|\.nims$|\.rocx$|\.ml$|\.mli$|\.sml$|\.c$|\.h$|\.cc$|\.cpp$|\.cxx$|\.hpp$|\.hxx$|\.cs$|\.fs$|\.fsx$|\.vb$|\.csproj$|\.fsproj$|\.vbproj$|\.sln$|\.html$|\.htm$|\.css$|\.tex$|\.ltx$|\.sty$|\.cls$|\.bib$|\.scm$|\.scheme$|\.ss$|\.rkt$'
     ! git ls-files | grep -E "$forbidden" || { echo "forbidden source suffix present"; exit 1; }
     retired='guix|guile|scheme|evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
