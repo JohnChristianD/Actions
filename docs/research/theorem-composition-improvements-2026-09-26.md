@@ -30,16 +30,10 @@ The generic frontier was strengthened instead with `NatSuccessorProgressWitness`
 
 The canonical `totalCount` witness remains the concrete instance. This is strictly stronger as an API boundary than repeating the learner-specific proof while preserving the existing theorem name and graph surface.
 
-### 3. Iterated F4 / NormPair factor stability
 
-Added `CanonicalF4NormPairIterateFactorStabilityTheorem` and
-`canonical-f4-normPair-iterate-factor-stability-theorem`.
 
-The package combines the already-closed F4/NormPair one-step factor theorem with:
 
-- iterated `normPairWeightPlusOne` invariance,
 - iterated persistent-GRU invariance,
-- iterated NormPair quotient compatibility.
 
 This makes the downstream iterate-stability interface explicit without claiming convergence, equilibrium, or an economic existence theorem.
 
@@ -59,7 +53,6 @@ The branch was created from current `main` and all source mutations were made th
 
 Before: existing component theorems and graph candidates.
 
-Change: package the arbitrary-length token generation closure, factor the reusable successor-measure orbit injection kernel, and package iterated F4/NormPair factor stability.
 
 Why: remove duplicated proof topology, close real composition seams, and keep conditional cross-domain claims witness-gated.
 
