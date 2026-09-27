@@ -55,7 +55,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 37 files.
+Generated from the tracked Markdown surface: 38 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -82,6 +82,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
 - [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
 - [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
+- [CI artifact format decision — JSON to Dhall — 2026-09-27](docs/research/json-to-dhall-ci-2026-09-27.md)
 - [Law IV carrier-polymorphic Tsallis audit — 2026-09-25](docs/research/law-iv-tsallis-carrier-polymorphic-2026-09-25.md)
 - [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
 - [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
@@ -290,15 +291,56 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 5d0c9cd144197334db5415beaa1c80e262566a6e
-unprocessed-commit-count: 5
+last-processed-commit: 198a556d41055312ca3247fb8a279185c3a216d2
+unprocessed-commit-count: 46
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `5d0c9cd14419` docs: preserve canonical GRU limit-composition seam in mainline
-- `323673d7db7d` graph: make canonical GRU limit composition a required live target
-- `9e2ff6721633` graph: register canonical GRU limit composition target
-- `ea5f74093141` theorem: preserve canonical Integer-GRU limit composition seam
-- `c4464d03b01c` docs: refresh README from commit totality
+- `198a556d4105` ci: fix Dhall report validation
+- `d3a779505089` ci: remove legacy JSON artifacts
+- `a60f9390d3be` docs: record JSON to Dhall CI decision
+- `fa54b1dadc65` docs: finish JSON to Dhall references
+- `2a8f8b101be1` docs: update discovery artifact references to Dhall
+- `44b021ce6a4c` docs: document Dhall as CI evidence format
+- `fd8d1f159016` ci: upload Dhall discovery artifacts
+- `fd9874c81467` ci: validate generated Dhall and remove self-referential JSON guard
+- `53ba883a056a` ci: fix Dhall signature inventory emission
+- `bd565bef8f99` ci: make Dhall discovery reports parseable
+- `bfdfaac90624` ci: normalize Dhall discovery fields and JSON-free surface
+- `bdae6403d014` ci: rename discovery reports to Dhall
+- `8226b8a1e42c` ci: emit theorem discovery reports as Dhall
+- `10a6524288f8` ci: emit isomorphism transport report as Dhall
+- `ec51a6e207d7` test: tree probe
+- `3c9e79b9f2c8` ci: replace isomorphism transport producer
+- `c18372672d67` ci: replace mega-interdependent-gru-megawalrasian-completeness.json with Dhall
+- `b3286d58a151` ci: replace complete-connected-theorem-closure-overlay.json with Dhall
+- `2e40600a2c02` ci: replace neural-function-class-separation-graph.json with Dhall
+- `e3a02391acd3` ci: replace strict-unconditional-theorems-monolith.json with Dhall
+- `ad9e56ec6b17` ci: replace change-record-2026-09-19-uap-agda-2.8.0.2.json with Dhall
+- `253e821353f4` ci: route consolidated theorem checks to monolith
+- `6baa2f932101` refactor: remove retired module imports from theorem monolith
+- `06adf08bef9f` ci: guard retired theorem modules against reintroduction
+- `1c3086ea4f2a` refactor: retire redundant theorem module ZPFStatisticalRepresentation.agda
+- `ef398df75086` refactor: retire redundant theorem module TsallisStatisticalRepresentation.agda
+- `d820482ae1bf` refactor: retire redundant theorem module RepositorySemanticEGraphClosure.agda
+- `3571b18fbd49` refactor: retire redundant theorem module GRUFractalLimitDecoderSurvival.agda
+- `a521abe6f27a` refactor: retire redundant theorem module GRUFractalLimitConvergenceImpossibility.agda
+- `912ec8a793b4` refactor: retire redundant theorem module GRUFractalLimitConvergenceAdapter.agda
+- `362f43032fb2` refactor: retire redundant theorem module GRUFractalEGraphAStarLimitComposition.agda
+- `a6650c925a8d` refactor: retire redundant theorem module GRUFractalLimitClosure.agda
+- `28e15561ccf1` refactor: retire redundant theorem module GRUFractalDomainAdapters.agda
+- `0fe87a07b59b` refactor: retire redundant theorem module GRUFractalInjectiveCompositionCanonical.agda
+- `aba83bbf72ff` refactor: retire redundant theorem module GRUFractalInjectiveComposition.agda
+- `9f96272f9558` refactor: retire redundant theorem module CommonsComposition.agda
+- `058e250eca05` refactor: retire redundant theorem module GRUStatisticalInjectivity.agda
+- `53d06929e798` refactor: retire redundant theorem module FourLawClosureImpossibility.agda
+- `8068d46660c0` refactor: retire redundant theorem module FourLawClosureWitnesses.agda
+- `b00ab286e786` refactor: retire redundant theorem module EGraphSemanticTransport.agda
+- `1058bdeef59f` docs: document two-file Agda monolith surface
+- `70857432d37a` ci: extract semantics from theorem monolith only
+- `3eb538e513b8` ci: enforce two-file Agda theorem surface
+- `3bf24f52264c` refactor: make theorem monolith self-contained
+- `cf216e7890e8` refactor: consolidate FullCoupled theorem modules
+- `3475d3bf0989` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
