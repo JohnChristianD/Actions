@@ -10,6 +10,8 @@ The generic e-graph/A* kernel now imports the Agda standard-library Monoid bundl
 
 The algebra is deliberately separate from semantic equality. A* chooses traversal representatives using costs/heuristics, while semantic endpoint equality still comes only from EGraphSemanticPath soundness.
 
+The A* seam also exposes a Haskell-like Agda monad surface: the standard-library State monad carries the frontier and the List monad supplies candidate-plan nondeterminism. These are search/effect adapters, not new semantic-equality proofs. The current CI pins Agda 2.8.0.2 with standard-library 2.4, whose Effect.Monad, Effect.Monad.State, and Data.List.Effectful modules provide the corresponding RawMonad interfaces.
+
 ## LayerNorm configuration stability
 
 IntegerLayerNormConfigurationStabilityTheorem packages two independent exact facts together with the existing LayerNorm E-Graph/A* theorem.
@@ -38,7 +40,7 @@ This is intentionally distinct from the existing F4 theorem f4-unit-forcing-line
 
 ## Combined theorem
 
-CanonicalIntegerLayerNormStabilityGrowthTheorem packages the configuration-stability and epsilon-ray families. Its parent E-Graph/A* theorem also carries the list-plan monoid package, making the proof/search seam explicit without turning A* cost data into equality evidence.
+CanonicalIntegerLayerNormStabilityGrowthTheorem packages the configuration-stability and epsilon-ray families. CanonicalF4IntegerLayerNormStabilityBoundaryTheorem then packages the existing F4 optimizer stability theorem beside the LayerNorm stability/growth theorem as two separate typed families. It deliberately does not state a direct F4-to-LayerNorm transition or revive the old NormPair replacement composition. Its parent E-Graph/A* theorem also carries the list-plan monoid package, making the proof/search seam explicit without turning A* cost data into equality evidence.
 
 ## Boundaries
 
