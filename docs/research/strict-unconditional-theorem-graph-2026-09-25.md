@@ -44,8 +44,6 @@ The strict graph keeps the proved full-state obstruction, now expressed through 
 
 Machine-readable inventory: `.ci/discovery/strict-unconditional-theorems-monolith.dhall`.
 
-Mermaid graph: `.ci/discovery/strict-unconditional-theorems-monolith.mmd`.
-
 At this snapshot, the strict graph contains 77 theorem/impossibility nodes and 229 source-derived proof-term edges. Another 85 theorem-like declarations are excluded because they require external proof/data records or are not theorem/impossibility declarations under the strict rule.
 
 ## Finite-candidate price classification boundary
