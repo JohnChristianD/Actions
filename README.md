@@ -250,13 +250,15 @@ The repository layers are:
 - Nix: the reproducible build/development environment and host composition.
 - Workload implementations: replaceable native or embedded languages; they consume explicit interfaces and never become a second semantic authority.
 
-A workload may therefore use Go, Nim, Lua, Tcl/Tk, Chibi Scheme, Roc, Swift, or another language when a concrete workload needs it. The CI surface must not reject a language merely because it was absent from an earlier phase. What remains prohibited is duplicated semantic authority: an implementation language must not introduce a parallel theorem model or an alternative canonical definition of the learner.
+A workload may therefore use Go, Nim, Lua, Chibi Scheme, Roc, Swift, Tcl/Tk, or another language when a concrete workload needs it; this prompt adds only Tcl/Tk as the concrete native GUI path. The candidate list is non-exhaustive and does not make every language a repository dependency. The CI surface must not reject a language merely because it was absent from an earlier phase. What remains prohibited is duplicated semantic authority: an implementation language must not introduce a parallel theorem model or an alternative canonical definition of the learner.
 
 For desktop Linux targets, Tk remains an optional native GUI adapter. WebAssembly is a separate presentation target, not the canonical desktop runtime. A browser/WASM build can expose the same workload contract through a browser host, while microOS/Aeon, NixOS, VanillaOS, and similar Linux systems can use a native GUI adapter without acquiring a browser dependency.
 
 Tk itself should therefore not be redefined as “Tk in WebAssembly”. The browser adapter should be treated as a separate host boundary. Existing browser-oriented Tk-compatible projects implement their widgets through JavaScript/HTML rather than becoming the Tk desktop implementation; a direct Tk/WASM path would require its own platform port. See [Tk](https://github.com/tcltk/tk), [Emscripten WebAssembly](https://emscripten.org/docs/compiling/WebAssembly.html), and [wTk](https://core.tcl-lang.org/wtk/home).
 
 Guix is not a repository requirement. Mermaid is not a graph or CI requirement. Neither is needed by the semantic core.
+
+For this prompt only, the concrete native GUI adapter is `workloads/tcltk/native_tk_adapter.tcl`. It is presentation-only: it accepts an external `ACTIONS_WORKLOAD_LABEL` value and renders it with Tk; it does not define learner semantics or CI evidence.
 
 ## MARL, Hodge-Maxwell, and optimizer semantics
 

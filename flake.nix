@@ -115,6 +115,8 @@
               pkgs.haskellPackages.dhall
               pkgs.gh
               pkgs.python3
+              pkgs.tcl
+              pkgs.tk
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"

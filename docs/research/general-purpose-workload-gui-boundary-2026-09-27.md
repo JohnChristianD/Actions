@@ -12,9 +12,13 @@ The authoritative layers are:
 4. **Nix** — reproducible environment and composition.
 5. **Workloads** — replaceable implementations that consume explicit contracts.
 
-A workload implementation may use Go, Nim, Lua, Tcl/Tk, Chibi Scheme, Roc, Swift, or another language when the workload has a demonstrated need. Adding such a language does not authorize a second semantic model. The canonical learner meaning remains in the Agda surface.
+A workload implementation may use Go, Nim, Lua, Chibi Scheme, Roc, Swift, Tcl/Tk, or another language when the workload has a demonstrated need. The candidate list is non-exhaustive; for this prompt only, Tcl/Tk is the one concrete implementation language exercised as the native GUI adapter. Adding such a language does not authorize a second semantic model. The canonical learner meaning remains in the Agda surface.
 
 The CI surface consequently checks the semantic boundary directly: exactly two tracked Agda sources remain the proof surface, while implementation-language suffixes are not treated as semantic violations.
+
+## Prompt-scoped native implementation
+
+The concrete implementation added by this prompt is a Tcl/Tk native GUI adapter at `workloads/tcltk/native_tk_adapter.tcl`. Its only input contract is the externally supplied `ACTIONS_WORKLOAD_LABEL` string; its responsibility is presentation, not interpretation of learner semantics. No additional language is added by this prompt.
 
 ## GUI boundary
 
