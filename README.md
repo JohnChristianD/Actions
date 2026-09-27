@@ -10,7 +10,6 @@ The current thesis-facing claim is deliberately narrow: the formalization makes 
 - `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` — theorem consumer and semantic/economic boundary.
 - `.ci/actions_ci.dhall` — verification lanes and required checks.
 - `.ci/discovery/` — declaration extraction, dependency discovery, and graph consistency checks.
-- `docs/research/current-semantic-emergence-2026-09-25.mmd` — current end-to-end topology.
 - `docs/research/theorem-improvement-completion-2026-09-26.md` — completed theorem-improvement search and proof-boundary note.
 - `docs/economics/` — production/equilibrium vocabulary and economic boundary documentation.
 
@@ -110,7 +109,6 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 
 The current carrier/policy/frontier surface is documented in:
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
-- [.ci/discovery/carrier-polymorphic-frontier-2026-09-26.mmd](.ci/discovery/carrier-polymorphic-frontier-2026-09-26.mmd)
 
 The canonical learner's `Int8` representation is an unbounded `ℤ` wrapper, not a `Fin n` carrier. Generic cross-domain representation laws are `Set`-polymorphic; genuinely finite theorem surfaces may still use `Fin n` where finiteness is part of the proposition.
 
@@ -234,7 +232,7 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMon
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mermaid is the human topology projection. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
+The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mercury supplies dependency discovery and semantic graph processing. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
 The orchestration arrows are not mathematical implication arrows.
 
