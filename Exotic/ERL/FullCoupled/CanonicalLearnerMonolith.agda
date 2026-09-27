@@ -374,7 +374,7 @@ record IntegerLayerNormCertificate
 open IntegerLayerNormCertificate public
 
 record IntegerLayerNormValue : Set where
-  constructor integerLayerNormValue
+  constructor mkIntegerLayerNormValue
   field
     numerator : ℤ
     denominator : Nat
