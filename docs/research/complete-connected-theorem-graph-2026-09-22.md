@@ -17,7 +17,7 @@ iinite sequences do not enlarge the vocabulary: a sequence oi length `n` has up 
 Relevant current proof surfaces:
 - `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`: `CanonicalToken = ℤ`.
 - `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: `CanonicalGlobalTokenEncodingConjugacyTheorem`, `CanonicalGlobalTokenLMCompositionTheorem`, and `CanonicalExactRNNLMTheorem`.
-- The strict graph JSON: finite-state comparisons are parameterized by `Fin n`, and retired finite-observation branches are no longer admissible.
+- The strict graph Dhall report: finite-state comparisons are parameterized by `Fin n`, and retired finite-observation branches are no longer admissible.
 
 ## Data.List conclusion
 
