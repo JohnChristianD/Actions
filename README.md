@@ -62,7 +62,6 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 
 - [Economic e-graph: emergent-only Arrow–Debreu](docs/economics/economic-egraph-emergent-arrow-debreu.md)
 - [Economic A*-E-Graph Target: No Primitive Economic Price](docs/economics/economic-egraph-no-primitive-price.md)
-- [F4 / NormPair / economic unconditionality boundary](docs/economics/f4-normpair-economic-unconditionality-boundary-2026-09-24.md)
 
 ### Research
 
@@ -87,7 +86,6 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
 - [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
 - [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
-- [NormPair quotient/factor transition closure](docs/research/normpair-factor-transition-closure-2026-09-24.md)
 - [Real semantic e-graph and staleness policy — 2026-09-26](docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md)
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
 - [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
@@ -134,7 +132,7 @@ canonical learner definitions
         v
 exact recurrent scan / composition
         |
-        +--> NormPair preservation and quotient factorization
+        +--> F4 optimizer stability and exact recurrent composition
         |
         +--> F4 optimizer stability
         |          |
@@ -142,7 +140,7 @@ exact recurrent scan / composition
         |          +--> no unconditional infinite-horizon F4 upper bound
         |
         v
-F4 × NormPair unconditional factor-stability theorem
+F4 optimizer stability theorem
         |
         +--> representation/factor information
         |
@@ -170,19 +168,14 @@ That chain is a semantic contract/topology, not an unconditional existence proof
 
 ## Exact learner facts
 
-The canonical learner state contains the recurrent learner channels, optimizer state, counts, q-log state, and `NormPair`. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier.
+The canonical learner state contains the recurrent learner channels, optimizer state, counts, and q-log state. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier.
 
 The current closed facts include:
 
 - the canonical LCB `totalCount` increments exactly once per canonical step;
 - every positive iterate strictly increases that count, hence there is no nontrivial finite cycle of the full canonical state;
-- `NormPair` is preserved by the canonical transition;
-- the policy is invariant under `NormPair` replacement and optimizer replacement;
-- the `NormPair` replacement relation is an equivalence relation;
-- policy, one-step transition, and iterated transition factor through the `NormPair` quotient;
-- `CanonicalNormPairQuotientFactorTransitionTheorem` packages that factor transition;
+- the policy is invariant under optimizer replacement;
 - `CanonicalF4GlobalOptimizerStabilityTheorem` is closed;
-- `CanonicalF4NormPairUnconditionalFactorStabilityTheorem` packages F4 stability with NormPair factorization;
 - the exact F4 unit-forcing ray gives linear growth and therefore rules out an unconditional infinite-horizon upper bound for that F4 quantity;
 - the generalized Walrasian countermodel is closed, including a singleton semantic model with no equilibrium witness and the corresponding universal non-existence result.
 
@@ -246,7 +239,7 @@ The orchestration arrows are not mathematical implication arrows.
 
 ## MARL, Hodge-Maxwell, and optimizer semantics
 
-The repository now promotes one closed MARL-facing composition: `CanonicalMARLLawCompositionTheorem`. It packages the recurrent-prefix law, the exact F4 step law, NormPair step invariance, the endogenous Watkins target law, and the already-closed `CanonicalGRUF4NormWatkinsPrefixCompositionTheorem`.
+The repository now promotes one closed MARL-facing composition: `CanonicalMARLLawCompositionTheorem`. It packages the recurrent-prefix law, the exact F4 step law, the endogenous Watkins target law, and the already-closed `CanonicalGRUF4WatkinsPrefixCompositionTheorem`.
 
 The physics-level Law I/II/III grouping is kept distinct from that closed learner theorem. Law I describes agent dynamics, Law II the local Maxwell field equations, and Law III the variational/virtual-work constraint. Their composition with the learner therefore requires an explicit physics→learner representation/transition witness; those physical equations are not silently inferred from the learner algebra.
 
