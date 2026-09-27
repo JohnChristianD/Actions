@@ -55,7 +55,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 36 files.
+Generated from the tracked Markdown surface: 37 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -86,6 +86,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
 - [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
 - [Detailed integer LayerNorm → E-Graph-A* semantic graph](docs/research/integer-layernorm-egraph-astar-2026-09-27.mmd)
+- [Integer LayerNorm stability and growth — 2026-09-27](docs/research/integer-layernorm-stability-growth-2026-09-27.md)
 - [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
 - [Real semantic e-graph and staleness policy — 2026-09-26](docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md)
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
@@ -169,7 +170,7 @@ That chain is a semantic contract/topology, not an unconditional existence proof
 
 ## Exact learner facts
 
-The canonical learner state contains the recurrent learner channels, optimizer state, counts, and q-log state. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier. Integer LayerNorm is represented by exact integer centering/radicand arithmetic plus an explicit non-zero square-root certificate; the normalized output is an exact integer ratio with integer scale, gamma, and beta.
+The canonical learner state contains the recurrent learner channels, optimizer state, counts, and q-log state. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier. Integer LayerNorm is represented by exact integer centering/radicand arithmetic plus an explicit non-zero square-root certificate; the normalized output is an exact integer ratio with integer scale, gamma, and beta. The LayerNorm branch now also has explicit configuration-stability and epsilon-radicand linear-ray theorem surfaces, separate from the F4 optimizer-state growth ray. The E-Graph/A* plan layer packages list concatenation as an Agda Monoid; that monoid describes candidate-plan composition, not semantic equality.
 
 The current closed facts include:
 
