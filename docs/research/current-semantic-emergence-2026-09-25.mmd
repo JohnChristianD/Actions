@@ -1,8 +1,8 @@
 flowchart TD
   A["Canonical learner definitions"] --> B["Four exact MARL-facing laws / representation layers"]
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
-  C --> D["GRU × F4 × NormPair × Watkins full learner composition"]
-  D --> E["CanonicalGRUF4NormWatkinsPrefixCompositionTheorem (closed)"]
+  C --> D["GRU × F4 × Watkins full learner composition"]
+  D --> E["CanonicalGRUF4WatkinsPrefixCompositionTheorem (closed)"]
 
   subgraph LAW_I["Law I — agent / particle dynamics"]
     P1["agent / particle dynamics"] --> J["particle trajectories"]
@@ -60,7 +60,7 @@ flowchart TD
   E --> F["Exact F4 optimizer stability"]
   F --> G["F4 unit-forcing linear-growth ray"]
   G --> GNB["No unconditional infinite-horizon F4 upper bound"]
-  F --> H["Canonical F4 × NormPair unconditional factor stability"]
+  F --> H["Canonical F4 optimizer stability"]
   E --> H
 
   H --> I["Representation / factor structure"]
