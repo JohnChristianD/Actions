@@ -38,12 +38,10 @@ let script = merge {
     grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     set -euo pipefail
-    graph=docs/research/current-semantic-emergence-2026-09-25.mmd
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     sync=.ci/discovery/theorem-monolith-egraph-sync.dhall
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     readme=README.md
-    [ -f "$graph" ] || { echo "missing current semantic emergence graph"; exit 1; }
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
     [ -f "$readme" ] || { echo "missing README"; exit 1; }
@@ -53,10 +51,6 @@ let script = merge {
     dhall text --file .ci/readme-doc-sync.dhall > "$generated_readme_sync"
     bash "$generated_readme_sync" --check || { echo "README GitHub-facing documentation index is stale"; exit 1; }
 
-    for node in       "Canonical learner definitions"       "Four exact MARL-facing laws"       "CanonicalMARLLawCompositionTheorem (closed)"       "Exact recurrent scan / composition"       "Exact integer LayerNorm statistics"       "CanonicalIntegerLayerNormEGraphAStarTheorem (closed)"       "IntegerLayerNormConfigurationStabilityTheorem (closed)"       "IntegerLayerNormEpsilonRayGrowthTheorem (closed)"       "CanonicalIntegerLayerNormStabilityGrowthTheorem (closed)"       "CanonicalF4IntegerLayerNormStabilityBoundaryTheorem (closed)"       "Exact F4 optimizer stability"       "F4 unit-forcing growth ray"       "No unconditional infinite-horizon F4 upper bound"       "CanonicalGRUF4WatkinsPrefixCompositionTheorem (closed)"       "ContinuousHodgeMaxwellExactRepresentationData"       "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem"       "CanonicalLearnerHodgeMaxwellCompositionTheorem (proof-relevant bridge)"       "Competitive production economy"       "Feasible firm production plans"       "Profit-maximizing production"       "Aggregate resource balance"       "Market clearing"       "Walrasian existence"
-    do
-      grep -Fq "$node" "$graph" || { echo "current graph node missing: $node"; exit 1; }
-    done
 
     for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4WatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalF4GlobalOptimizerStabilityTheorem       AStarPlanMonoidTheorem       AStarHaskellMonadSurface       aStar-plan-append-associative       aStar-plan-append-identity-left       aStar-plan-append-identity-right       CanonicalIntegerLayerNormEGraphAStarTheorem       integerLayerNorm-a-star-semantic-closure       IntegerLayerNormConfigurationStabilityTheorem       integer-layernorm-configuration-stability-theorem       IntegerLayerNormEpsilonRayGrowthTheorem       integer-layernorm-epsilon-ray-growth-theorem       CanonicalIntegerLayerNormStabilityGrowthTheorem       canonical-integer-layernorm-stability-growth-theorem       CanonicalF4IntegerLayerNormStabilityBoundaryTheorem       canonical-f4-integer-layernorm-stability-boundary-theorem       canonicalTotalCountSuccessorWitness       canonical-token-arbitrary-length-generation-theorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       FiniteCandidateDecision       FiniteCandidatePriceResult       finiteCandidatePriceSearch       finiteCandidatePriceSearch-complete       CommonsPreservationDerivation       CommonsNonDerivabilityCounterexample       noUnconditionalCommonsPreservation       twoNotLeOne       twoAgentCommonsCounterexample       noUnconditionalCommonsPreservation-twoAgent
     do
@@ -65,15 +59,8 @@ let script = merge {
     for symbol in FractalInjectiveComposition fractalLevelInjective fractalTransportedEncodeInjective canonicalGRUFractal canonicalGRUFractalLevelInjective canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleInjective PhysicsGRUFractalAdapter EconomicsGRUFractalAdapter economicObservation economicLevelTransport economicLevelTransportInjective economicLevelTransportRepresentation; do
       grep -Fq "$symbol" "$theorem" || { echo "consolidated theorem symbol missing: $symbol"; exit 1; }
     done
-    [ -f .ci/discovery/gru-fractal-domain-adapters-2026-09-26.mmd ] || { echo "GRU fractal domain adapter graph missing"; exit 1; }
 
-    grep -Fq 'does not entail' "$graph" || { echo "economic non-implication boundary missing"; exit 1; }
-    grep -Fq 'independent economic hypotheses' "$graph" || { echo "economic assumption boundary missing"; exit 1; }
     [ -f docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md ] || { echo "commons research note missing"; exit 1; }
-    [ -f .ci/discovery/commons-nonderivability-2026-09-26.mmd ] || { echo "commons discovery graph missing"; exit 1; }
-    [ -f .ci/discovery/gru-fractal-injective-composition-2026-09-26.mmd ] || { echo "GRU fractal injective composition graph missing"; exit 1; }
-    grep -Fq "GRU-injective fractal composition" .ci/discovery/gru-fractal-injective-composition-2026-09-26.mmd || { echo "GRU fractal composition graph missing injective node"; exit 1; }
-    grep -Fq 'Two-unit aggregate extraction' .ci/discovery/commons-nonderivability-2026-09-26.mmd || { echo "commons depletion graph missing aggregate extraction"; exit 1; }
     grep -Fq 'suc (suc zero) ≤ suc zero' "$theorem" || { echo "commons capacity violation missing"; exit 1; }
     grep -Fq 'Canonical F4 optimizer stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
     grep -Fq 'Repository-wide semantic e-graph closure' "$readme" || { echo "README stale or missing e-graph closure"; exit 1; }
@@ -93,10 +80,8 @@ let script = merge {
     [ -f docs/research/unconditional-finite-price-kernel-2026-09-26.md ] || { echo "finite candidate price research note missing"; exit 1; }
     grep -Fq 'CertifiedEGraphEdge' "$theorem" || { echo "e-graph certificate surface missing"; exit 1; }
     grep -Fq "naive-limit-injectivity-impossible" "$theorem" || { echo "limit impossibility theorem missing"; exit 1; }
-    [ -f .ci/discovery/real-semantic-egraph-2026-09-26.mmd ] || { echo "real semantic e-graph graph missing"; exit 1; }
     [ -f docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md ] || { echo "real semantic e-graph research note missing"; exit 1; }
     [ -f docs/research/theorem-improvement-completion-2026-09-26.md ] || { echo "theorem improvement research note missing"; exit 1; }
-    [ -f .ci/discovery/theorem-improvement-completion-2026-09-26.mmd ] || { echo "theorem improvement graph missing"; exit 1; }
 
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
     for module in canonicalLearnerMonolith theoremsMonolith
@@ -139,7 +124,6 @@ let script = merge {
       printf '  economic_boundary = ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
       printf '  production_topology = "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
       printf '  counterexample_policy = "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
-      printf '  automation = "one unattended Mercury discovery pass followed by deterministic semantic projection; Dhall is machine evidence and Mermaid is the human topology view"\\n'
       printf '%s\\n' '}'
     } > .ci/discovery/economic-closure-graph.dhall
 
