@@ -16,7 +16,6 @@ TheoremsMonolith.agda now exposes FactorTransitionWitness, factorTransitionAfter
 
 The generic interface separates the factor carrier, observation map, factor step, observation/step commuting square, relation-respecting observation, and relation preservation by the source step.
 
-The concrete NormPair adapter remains witness-gated at the scalar factor-step seam. canonicalPolicyFactorTransition packages the already-proved NormPair invariance and step compatibility, but still requires an explicit factorStep and its commuting proof. No deterministic factor dynamics are invented from observational invariance alone.
 
 ## 3. Encode/decode commuting squares are unified
 
