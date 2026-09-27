@@ -47,6 +47,7 @@ let script = merge {
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
     [ -f "$readme" ] || { echo "missing README"; exit 1; }
     [ -f .ci/readme-doc-sync.dhall ] || { echo "missing Dhall README documentation sync"; exit 1; }
+    ! grep -R -nF ".json" .ci docs README.md .github --exclude='*.md~' >/dev/null || { echo "JSON reference remains"; exit 1; }
     generated_readme_sync=$(mktemp)
     trap 'rm -f "$generated_readme_sync"' EXIT
     dhall text --file .ci/readme-doc-sync.dhall > "$generated_readme_sync"
@@ -279,9 +280,9 @@ let script = merge {
     set -euo pipefail
     (cd .ci/discovery && mmc --make strict_existence_impossibility_graph && ./strict_existence_impossibility_graph)
     report=.ci/discovery/strict-existence-impossibility-graph.dhall
-    grep -Fq '"rule": "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
-    grep -Fq '"orangeStatusesAllowed": false' "$report" || { echo "orange status enabled"; exit 1; }
-    grep -Fq '"terminalStatuses": ["EXISTENCE","IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
+    grep -Fq 'rule = "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
+    grep -Fq 'orangeStatusesAllowed = False' "$report" || { echo "orange status enabled"; exit 1; }
+    grep -Fq 'terminalStatuses = ["EXISTENCE", "IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
     ! grep -Eiq 'frontier|unknown|vague|adapter needed|unresolved|pending' "$report" || { echo "vague status present"; exit 1; }
     grep -Fq 'strict-existence-impossibility-graph=pass' "$report"
     '',
@@ -302,26 +303,26 @@ let script = merge {
     grep -Fq '0 < P.transition' "$ergodic"
 
     mkdir -p .ci/discovery
-    cat > .ci/discovery/stationary-cycle-impossibility-graph.dhall <<'JSON'
+    cat > .ci/discovery/stationary-cycle-impossibility-graph.dhall <<'DHALL'
 {
-  "rule": "FINITE_DETERMINISTIC_CYCLE_HAS_STATIONARY_WITNESS_BUT_IS_EXCLUDED",
-  "terminalStatus": "IMPOSSIBILITY",
-  "requiresExactFiniteDeterministicProjection": true,
-  "stationaryDistributionWitness": {
+  rule = "FINITE_DETERMINISTIC_CYCLE_HAS_STATIONARY_WITNESS_BUT_IS_EXCLUDED",
+  terminalStatus = "IMPOSSIBILITY",
+  requiresExactFiniteDeterministicProjection = True,
+  stationaryDistributionWitness = {
     type = "uniform_cycle_measure",
-    "statement": "For a deterministic cycle of length m>0, the uniform probability law on the cycle is stationary for the induced deterministic Markov kernel.",
-    "use": "witness_only"
+    statement = "For a deterministic cycle of length m>0, the uniform probability law on the cycle is stationary for the induced deterministic Markov kernel.",
+    use = "witness_only"
   },
-  "upstream_stationary_law": {
-    "theorem": "Econlib::FiniteMarkovChain.exists_stationary",
-    "role": "independent finite-state existence fact; it does not imply that a cycle exists"
+  upstreamStationaryLaw = {
+    theorem = "Econlib::FiniteMarkovChain.exists_stationary",
+    role = "independent finite-state existence fact; it does not imply that a cycle exists"
   },
-  "convergence_guard": {
-    "theorem": "Econlib::FiniteMarkovChain.geometric_convergence_to",
-    "condition": "strictly positive transition probabilities",
-    "role": "separate conditional convergence result; not used to claim convergence of an arbitrary deterministic cycle"
+  convergenceGuard = {
+    theorem = "Econlib::FiniteMarkovChain.geometric_convergence_to",
+    condition = "strictly positive transition probabilities",
+    role = "separate conditional convergence result; not used to claim convergence of an arbitrary deterministic cycle"
   },
-  "nodes": [
+  nodes = [
     "Agda::finiteOrbit-collision",
     "deterministic finite recurrent cycle",
     "uniform cycle stationary law",
@@ -330,26 +331,26 @@ let script = merge {
     "Agda::canonicalNoNontrivialFiniteCycle-theorem",
     "Agda::canonicalNoFiniteStepConvergenceToFixedPoint"
   ],
-  "edges": [
-    ["finiteOrbit-collision", "eventual periodic orbit"],
-    ["eventual periodic orbit", "deterministic finite recurrent cycle"],
-    ["deterministic finite recurrent cycle", "uniform cycle stationary law"],
-    ["Econlib::FiniteMarkovChain.exists_stationary", "stationary distribution", "independent existence witness"],
-    ["Econlib::FiniteMarkovChain.geometric_convergence_to", "quantitative convergence", "requires strict positivity"],
-    ["deterministic finite recurrent cycle", "canonicalNoNontrivialFiniteCycle-theorem", "contradiction"],
-    ["period-1 recurrent cycle", "canonicalNoFiniteStepConvergenceToFixedPoint", "contradiction"]
+  edges = [
+    { source = "finiteOrbit-collision", target = "eventual periodic orbit", reason = None Text },
+    { source = "eventual periodic orbit", target = "deterministic finite recurrent cycle", reason = None Text },
+    { source = "deterministic finite recurrent cycle", target = "uniform cycle stationary law", reason = None Text },
+    { source = "Econlib::FiniteMarkovChain.exists_stationary", target = "stationary distribution", reason = Some "independent existence witness" },
+    { source = "Econlib::FiniteMarkovChain.geometric_convergence_to", target = "quantitative convergence", reason = Some "requires strict positivity" },
+    { source = "deterministic finite recurrent cycle", target = "canonicalNoNontrivialFiniteCycle-theorem", reason = Some "contradiction" },
+    { source = "period-1 recurrent cycle", target = "canonicalNoFiniteStepConvergenceToFixedPoint", reason = Some "contradiction" }
   ],
-  "logicGuard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
-  "isomorphism_transport_node": "Agda::isomorphismNoFiniteCycleTransport",
-  "isomorphism_transport_role": "exact conjugacy preserves finite-cycle exclusion on the isomorphic state space",
+  logicGuard = "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
+  isomorphismTransportNode = "Agda::isomorphismNoFiniteCycleTransport",
+  isomorphismTransportRole = "exact conjugacy preserves finite-cycle exclusion on the isomorphic state space",
   status = "strict graph: no third terminal status"
 }
 JSON
-    grep -Fq '"terminalStatus": "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
-    grep -Fq '"stationaryDistributionWitness": {' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq 'terminalStatus = "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq 'stationaryDistributionWitness = {' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq 'type = "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
-    grep -Fq '"logicGuard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
-    grep -Fq '"requiresExactFiniteDeterministicProjection": true' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq 'logicGuard = "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq 'requiresExactFiniteDeterministicProjection = True' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     grep -Fq 'status = "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     echo "stationary-cycle-impossibility-graph=pass"
@@ -359,8 +360,8 @@ JSON
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
-    grep -Fq '"rule": "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
-    grep -Fq '"orangeStatusesAllowed": false' "$report" || { echo "orange status enabled"; exit 1; }
+    grep -Fq 'rule = "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
+    grep -Fq 'orangeStatusesAllowed = False' "$report" || { echo "orange status enabled"; exit 1; }
     grep -Fq 'Agda::isomorphismEqualityTransport' "$report" || { echo "equality transport kernel missing"; exit 1; }
     grep -Fq 'Agda::isomorphismDisequalityTransport' "$report" || { echo "disequality transport kernel missing"; exit 1; }
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' "$report" || { echo "vague transport status present"; exit 1; }
