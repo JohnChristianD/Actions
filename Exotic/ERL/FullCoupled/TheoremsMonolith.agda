@@ -73,7 +73,11 @@ open import Data.Product using (_,_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans)
 open import Relation.Nullary using (¬_)
+open import Algebra.Bundles using (Monoid)
+open import Data.List.Properties using (++-monoid)
+open import Data.Nat.Solver using (module +-*-Solver)
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
+open +-*-Solver using (solve; _:*_; _:+_; con)
 
 
 ------------------------------------------------------------------------
@@ -637,6 +641,60 @@ record AStarSemanticClosure
 
 open AStarSemanticClosure public
 
+------------------------------------------------------------------------
+-- Haskell-like algebraic structure for A* candidate plans.
+--
+-- The candidate-plan carrier is List Expression, with concatenation as
+-- the monoid operation. This algebra is separate from semantic equality:
+-- it describes composition of discovered plans, while e-graph soundness
+-- remains the source of endpoint equality.
+------------------------------------------------------------------------
+
+record AStarPlanMonoidTheorem (Expression : Set) : Set₁ where
+  constructor aStarPlanMonoidTheorem
+  field
+    appendAssociative :
+      ∀ (xs ys zs : List Expression) →
+      (xs ++ ys) ++ zs ≡ xs ++ (ys ++ zs)
+    appendIdentityLeft :
+      ∀ (xs : List Expression) →
+      [] ++ xs ≡ xs
+    appendIdentityRight :
+      ∀ (xs : List Expression) →
+      xs ++ [] ≡ xs
+
+open AStarPlanMonoidTheorem public
+
+aStar-plan-append-associative :
+  ∀ {Expression : Set} →
+  ∀ (xs ys zs : List Expression) →
+  (xs ++ ys) ++ zs ≡ xs ++ (ys ++ zs)
+aStar-plan-append-associative xs ys zs =
+  Monoid.assoc (++-monoid _)
+
+aStar-plan-append-identity-left :
+  ∀ {Expression : Set} →
+  ∀ (xs : List Expression) →
+  [] ++ xs ≡ xs
+aStar-plan-append-identity-left xs =
+  Monoid.identityˡ (++-monoid _)
+
+aStar-plan-append-identity-right :
+  ∀ {Expression : Set} →
+  ∀ (xs : List Expression) →
+  xs ++ [] ≡ xs
+aStar-plan-append-identity-right xs =
+  Monoid.identityʳ (++-monoid _)
+
+aStar-plan-monoid-theorem :
+  ∀ (Expression : Set) →
+  AStarPlanMonoidTheorem Expression
+aStar-plan-monoid-theorem Expression =
+  aStarPlanMonoidTheorem
+    aStar-plan-append-associative
+    aStar-plan-append-identity-left
+    aStar-plan-append-identity-right
+
 aStar-guided-semantic-closure :
   ∀ {Expression State : Set}
   (A : AStarSemanticClosure Expression State) →
@@ -910,6 +968,9 @@ record CanonicalIntegerLayerNormEGraphAStarTheorem : Set₁ where
       AStarSemanticClosure
         IntegerLayerNormExpression
         IntegerLayerNormSemanticState
+    planMonoid :
+      AStarPlanMonoidTheorem
+        IntegerLayerNormExpression
     rawCentered :
       ∀ (epsilon : Nat) (xs : List C.Int8) →
       CertifiedEGraphEdge
@@ -941,10 +1002,223 @@ canonical-integer-layernorm-egraph-astar-theorem :
 canonical-integer-layernorm-egraph-astar-theorem =
   canonicalIntegerLayerNormEGraphAStarTheorem
     integerLayerNormAStarClosure
+    aStar-plan-monoid-theorem IntegerLayerNormExpression
     integerLayerNorm-raw-centered-edge
     integerLayerNorm-centered-radicand-edge
     integerLayerNorm-raw-radicand-path
     integerLayerNorm-a-star-semantic-closure
+
+------------------------------------------------------------------------
+-- LayerNorm-specific stability and growth, deliberately separate from the
+-- retired NormPair replacement theory and from the F4 optimizer growth ray.
+--
+-- Stability here means that the normalization statistics / denominator
+-- interface is unaffected by output-affine configuration changes, while
+-- epsilon growth is a separate one-parameter arithmetic ray of the
+-- LayerNorm radicand. Neither theorem transports the old NormPair state
+-- replacement laws into the new LayerNorm surface.
+------------------------------------------------------------------------
+
+integerLayerNorm-epsilon-contribution-suc :
+  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  (suc epsilon * length xs * length xs)
+  ≡
+  (epsilon * length xs * length xs)
+  + (length xs * length xs)
+integerLayerNorm-epsilon-contribution-suc xs epsilon =
+  trans
+    (cong
+      (λ k → k * length xs * length xs)
+      (sym plus-one))
+    (solve
+      2
+      (λ e n →
+        (e :+ con 1) :* n :* n
+        := (e :* n :* n) :+ (n :* n))
+      refl)
+  where
+  plus-one :
+    epsilon + suc zero ≡ suc epsilon
+  plus-one =
+    trans
+      (+-suc epsilon zero)
+      (cong suc (+-identityʳ epsilon))
+
+integerLayerNorm-radicand-epsilon-zero :
+  ∀ (xs : List C.Int8) →
+  C.integerLayerNormRadicand xs zero
+  ≡
+  C.integerLayerNormVarianceNumerator xs
+integerLayerNorm-radicand-epsilon-zero xs = refl
+
+integerLayerNorm-radicand-epsilon-suc :
+  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  C.integerLayerNormRadicand xs (suc epsilon)
+  ≡
+  C.integerLayerNormRadicand xs epsilon
+  +ℤ
+  (+ (length xs * length xs))
+integerLayerNorm-radicand-epsilon-suc xs epsilon =
+  trans
+    (cong
+      (λ n →
+        C.integerLayerNormVarianceNumerator xs
+        +ℤ
+        (+ n))
+      (integerLayerNorm-epsilon-contribution-suc xs epsilon))
+    (sym
+      (IntegerProperties.+-assoc
+        (C.integerLayerNormVarianceNumerator xs)
+        (+ (epsilon * length xs * length xs))
+        (+ (length xs * length xs))))
+
+record IntegerLayerNormConfigurationStabilityTheorem : Set₁ where
+  constructor integerLayerNormConfigurationStabilityTheorem
+  field
+    eGraphAStar :
+      CanonicalIntegerLayerNormEGraphAStarTheorem
+    centeredStatisticsIndependentOfEpsilon :
+      ∀ (xs : List C.Int8) (epsilon delta : Nat) →
+      centered
+        (integerLayerNormSemanticInterpret
+          (rawIntegerLayerNorm epsilon xs))
+      ≡
+      centered
+        (integerLayerNormSemanticInterpret
+          (rawIntegerLayerNorm delta xs))
+    denominatorConfigurationStable :
+      ∀ (xs : List C.Int8)
+      (config₁ config₂ : C.IntegerLayerNormConfig)
+      (certificate : C.IntegerLayerNormCertificate xs)
+      (x : C.Int8) →
+      C.denominator
+        (C.integerLayerNormValue config₁ certificate x)
+      ≡
+      C.denominator
+        (C.integerLayerNormValue config₂ certificate x)
+
+open IntegerLayerNormConfigurationStabilityTheorem public
+
+integer-layernorm-centered-statistics-independent-of-epsilon :
+  ∀ (xs : List C.Int8) (epsilon delta : Nat) →
+  centered
+    (integerLayerNormSemanticInterpret
+      (rawIntegerLayerNorm epsilon xs))
+  ≡
+  centered
+    (integerLayerNormSemanticInterpret
+      (rawIntegerLayerNorm delta xs))
+integer-layernorm-centered-statistics-independent-of-epsilon _ _ _ = refl
+
+integer-layernorm-denominator-configuration-stable :
+  ∀ (xs : List C.Int8)
+  (config₁ config₂ : C.IntegerLayerNormConfig)
+  (certificate : C.IntegerLayerNormCertificate xs)
+  (x : C.Int8) →
+  C.denominator
+    (C.integerLayerNormValue config₁ certificate x)
+  ≡
+  C.denominator
+    (C.integerLayerNormValue config₂ certificate x)
+integer-layernorm-denominator-configuration-stable
+  _ _ _ certificate x = refl
+
+integer-layernorm-configuration-stability-theorem :
+  IntegerLayerNormConfigurationStabilityTheorem
+integer-layernorm-configuration-stability-theorem =
+  integerLayerNormConfigurationStabilityTheorem
+    canonical-integer-layernorm-egraph-astar-theorem
+    integer-layernorm-centered-statistics-independent-of-epsilon
+    integer-layernorm-denominator-configuration-stable
+
+integerLayerNorm-radicand-epsilon-linear :
+  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  C.integerLayerNormRadicand xs epsilon
+  ≡
+  C.integerLayerNormVarianceNumerator xs
+  +ℤ
+  (+ (epsilon * length xs * length xs))
+integerLayerNorm-radicand-epsilon-linear xs zero =
+  trans
+    (integerLayerNorm-radicand-epsilon-zero xs)
+    (sym
+      (IntegerProperties.+-identityʳ
+        (C.integerLayerNormVarianceNumerator xs)))
+integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
+  trans
+    (integerLayerNorm-radicand-epsilon-suc xs epsilon)
+    (trans
+      (cong₂ _+ℤ_
+        (integerLayerNorm-radicand-epsilon-linear xs epsilon)
+        refl)
+      (trans
+        (sym
+          (IntegerProperties.+-assoc
+            (C.integerLayerNormVarianceNumerator xs)
+            (+ (epsilon * length xs * length xs))
+            (+ (length xs * length xs))))
+        (cong
+          (λ n →
+            C.integerLayerNormVarianceNumerator xs
+            +ℤ
+            (+ n))
+          (sym
+            (integerLayerNorm-epsilon-contribution-suc
+              xs
+              epsilon)))))
+
+record IntegerLayerNormEpsilonRayGrowthTheorem : Set₁ where
+  constructor integerLayerNormEpsilonRayGrowthTheorem
+  field
+    eGraphAStar :
+      CanonicalIntegerLayerNormEGraphAStarTheorem
+    zeroRay :
+      ∀ (xs : List C.Int8) →
+      C.integerLayerNormRadicand xs zero
+      ≡
+      C.integerLayerNormVarianceNumerator xs
+    successorRay :
+      ∀ (xs : List C.Int8) (epsilon : Nat) →
+      C.integerLayerNormRadicand xs (suc epsilon)
+      ≡
+      C.integerLayerNormRadicand xs epsilon
+      +ℤ
+      (+ (length xs * length xs))
+    linearRay :
+      ∀ (xs : List C.Int8) (epsilon : Nat) →
+      C.integerLayerNormRadicand xs epsilon
+      ≡
+      C.integerLayerNormVarianceNumerator xs
+      +ℤ
+      (+ (epsilon * length xs * length xs))
+
+open IntegerLayerNormEpsilonRayGrowthTheorem public
+
+integer-layernorm-epsilon-ray-growth-theorem :
+  IntegerLayerNormEpsilonRayGrowthTheorem
+integer-layernorm-epsilon-ray-growth-theorem =
+  integerLayerNormEpsilonRayGrowthTheorem
+    canonical-integer-layernorm-egraph-astar-theorem
+    integerLayerNorm-radicand-epsilon-zero
+    integerLayerNorm-radicand-epsilon-suc
+    integerLayerNorm-radicand-epsilon-linear
+
+record CanonicalIntegerLayerNormStabilityGrowthTheorem : Set₁ where
+  constructor canonicalIntegerLayerNormStabilityGrowthTheorem
+  field
+    configurationStability :
+      IntegerLayerNormConfigurationStabilityTheorem
+    epsilonRayGrowth :
+      IntegerLayerNormEpsilonRayGrowthTheorem
+
+open CanonicalIntegerLayerNormStabilityGrowthTheorem public
+
+canonical-integer-layernorm-stability-growth-theorem :
+  CanonicalIntegerLayerNormStabilityGrowthTheorem
+canonical-integer-layernorm-stability-growth-theorem =
+  canonicalIntegerLayerNormStabilityGrowthTheorem
+    integer-layernorm-configuration-stability-theorem
+    integer-layernorm-epsilon-ray-growth-theorem
 
 ------------------------------------------------------------------------
 -- The theorem is unconditional over the complete surviving Agda-file

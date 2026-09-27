@@ -60,6 +60,26 @@
     list(string)::in,
     list(list(string))::out) is det.
 
+:- pred graph_astar_plan_monoid_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_integer_layernorm_egraph_astar_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_integer_layernorm_configuration_stability_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_integer_layernorm_epsilon_ray_growth_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_canonical_integer_layernorm_stability_growth_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred graph_canonical_integer_gru_global_conjugate_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
@@ -558,14 +578,39 @@ search_emergent_compositions_from_seed_ids(Laws, SeedIds, Results) :-
     ).
 
 
-graph_connected_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_plan(Laws, Plan) :-
+graph_astar_plan_monoid_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
+        "AStarPlanMonoidTheorem",
         Laws,
         Plan).
 
-graph_f4_normpair_gru_global_conjugacy_injectivity_plan(Laws, Plan) :-
+graph_integer_layernorm_egraph_astar_plan(Laws, Plan) :-
     search_named_required_plan(
+        "CanonicalIntegerLayerNormEGraphAStarTheorem",
+        Laws,
+        Plan).
+
+graph_integer_layernorm_configuration_stability_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "IntegerLayerNormConfigurationStabilityTheorem",
+        Laws,
+        Plan).
+
+graph_integer_layernorm_epsilon_ray_growth_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "IntegerLayerNormEpsilonRayGrowthTheorem",
+        Laws,
+        Plan).
+
+graph_canonical_integer_layernorm_stability_growth_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalIntegerLayerNormStabilityGrowthTheorem",
+        Laws,
+        Plan).
+
+graph_connected_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
         Laws,
         Plan).
 
