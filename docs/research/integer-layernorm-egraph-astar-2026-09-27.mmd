@@ -79,6 +79,16 @@ flowchart TD
   R --> RAD
   RAT -. "exact statistics retained in semantic state" .-> SEM
 
+  subgraph PLANALG["A* plan algebra"]
+    PM["AStarPlanMonoidTheorem\nList(Expression), ++-monoid"]
+    PA["append associative"]
+    PL["append identity left"]
+    PR["append identity right"]
+    PM --> PA
+    PM --> PL
+    PM --> PR
+  end
+
   subgraph ASTAR["A* semantic transport"]
     PLAN["candidate proof path"]
     COST["AStarCostModel\nedgeCost + heuristic"]
@@ -91,6 +101,7 @@ flowchart TD
     PATH --> SOUND
     SOUND --> EQ
     SEM --> COST
+    PM --> PLAN
   end
 
   subgraph REPO["Repository proof boundary"]
@@ -103,6 +114,18 @@ flowchart TD
     A2 --> DHC
   end
 
+  subgraph LNSTABILITY["LayerNorm-specific stability and growth"]
+    LNS["IntegerLayerNormConfigurationStabilityTheorem"]
+    LNR["IntegerLayerNormEpsilonRayGrowthTheorem"]
+    LNL["linear radicand ray\nR(ε) = V + ε·n²"]
+    LNG["CanonicalIntegerLayerNormStabilityGrowthTheorem"]
+    LNS --> LNG
+    LNR --> LNL
+    LNR --> LNG
+  end
+
+  A1 --> LNS
+  A1 --> LNR
   EQ --> A1
   A1 --> A2
 
@@ -112,6 +135,7 @@ flowchart TD
     F3["No injectivity claim for quantized LayerNorm"]
     F4["GRU → feature-vector projection is a separate typed seam"]
     F5["A* cost/heuristic ≠ equality evidence"]
+    F6["LayerNorm ε-ray ≠ F4 optimizer-state ray"]
   end
 
   C0 --> F1
@@ -119,6 +143,7 @@ flowchart TD
   RAT -. "does not entail" .-> F3
   F4 -. "future composition" .-> X
   COST --> F5
+  LNR -. "distinct arithmetic growth mechanism" .-> F6
 
   subgraph FUTURE["Future composition"]
     G0["explicit GRU feature projection"]
