@@ -751,8 +751,8 @@ record IntegerLayerNormSemanticState : Set where
   field
     epsilon : Nat
     input : List C.Int8
-    centered : List C.ℤ
-    radicand : C.ℤ
+    centered : List ℤ
+    radicand : ℤ
 open IntegerLayerNormSemanticState public
 
 integerLayerNormSemanticInterpret :
