@@ -54,7 +54,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 37 files.
+Generated from the tracked Markdown surface: 38 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -68,6 +68,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Canonical Integer-GRU global left-inverse and conjugacy closure — 2026-09-26](docs/research/canonical-integer-gru-global-left-inverse-2026-09-26.md)
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
+- [E-Graph / A* convergence closure — 2026-09-27](docs/research/egraph-astar-convergence-2026-09-27.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
@@ -283,22 +284,50 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 5b09f696411e80b507af92904ff17ad6546db4ac
-unprocessed-commit-count: 12
+last-processed-commit: 92d685dab165351913c7746b73fae9899c2d267e
+unprocessed-commit-count: 40
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `5b09f696411e` ci: complete LayerNorm boundary registry
-- `a99c704f76b1` docs: document monadic A* and F4-LayerNorm boundary
-- `78f3f4b396a5` docs: expand LayerNorm monadic A* topology
-- `96d0caa37464` docs: connect monadic A* and F4-LayerNorm boundary
-- `836699f56454` ci: require monadic A* and LayerNorm stability boundary
-- `a74fca0321c0` discover: register monadic A* and LayerNorm stability surfaces
-- `232adeacc93a` refactor: add monadic A* and LayerNorm stability boundary
-- `274ffe19b3a6` feat: add LayerNorm stability and A* plan algebra
-- `76917b6101a0` docs: expand LayerNorm stability graph
-- `1dff4ed7391b` docs: wire detailed LayerNorm graph into repository topology
-- `608657145582` docs: add detailed integer LayerNorm E-Graph-A* graph
-- `173c4fec928b` docs: refresh README from commit totality
+- `92d685dab165` Remove Mermaid projection reference
+- `6668930436bf` Remove Mermaid dependency from economic graph note
+- `be50dc9cf949` Prune Mermaid references from docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md
+- `bb7427e387df` Prune Mermaid references from docs/research/integer-layernorm-stability-growth-2026-09-27.md
+- `58649a83375b` Prune Mermaid references from docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md
+- `ca9da68abd62` Prune Mermaid references from docs/research/carrier-polymorphic-frontier-2026-09-26.md
+- `687006ab97cc` Prune Mermaid references from docs/research/json-to-dhall-ci-2026-09-27.md
+- `b42b59d971b1` Prune Mermaid references from docs/research/strict-unconditional-theorem-graph-2026-09-25.md
+- `dd44debb1e6c` Prune Mermaid references from docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md
+- `037ad8456d22` Prune Mermaid references from docs/research/four-law-primary-source-closure-audit-2026-09-25.md
+- `ae26572eb627` Remove Mermaid topology references from README
+- `1d231e1c3122` Remove Mermaid graph CI dependencies
+- `a2b32f1fb11c` Prune Mermaid discovery document .ci/discovery/mega-interdependent-gru-megawalrasian-global-square-completeness.md
+- `43cf0c54783c` Prune Mermaid discovery document .ci/discovery/mega-interdependent-gru-megawalrasian-completeness.md
+- `3a6b3f09c243` Prune Mermaid discovery document .ci/discovery/second-welfare-generalization-graph.md
+- `c5f3aab3077f` Prune Mermaid discovery document .ci/discovery/learner-economic-welfare-bridge-graph.md
+- `eee7b5cfa89f` Prune Mermaid discovery document .ci/discovery/welfare-first-completion-spine.md
+- `03b815321259` Prune Mermaid graph artifact docs/research/integer-layernorm-egraph-astar-2026-09-27.mmd
+- `439ed95c726c` Prune Mermaid graph artifact docs/research/current-semantic-emergence-2026-09-25.mmd
+- `4c2ae6df4227` Prune Mermaid graph artifact docs/economics/economic-egraph-emergent-arrow-debreu.mmd
+- `696e7aad071d` Prune Mermaid graph artifact .ci/discovery/theorem-improvement-frontier-2026-09-26.mmd
+- `e22c90600945` Prune Mermaid graph artifact .ci/discovery/theorem-improvement-completion-2026-09-26.mmd
+- `7077c2591011` Prune Mermaid graph artifact .ci/discovery/strict-unconditional-theorems-monolith.mmd
+- `51f4215653dd` Prune Mermaid graph artifact .ci/discovery/real-semantic-egraph-2026-09-26.mmd
+- `0f705a442021` Prune Mermaid graph artifact .ci/discovery/mega-interdependent-gru-megawalrasian-completeness.mmd
+- `b0c05049ccc9` Prune Mermaid graph artifact .ci/discovery/gru-fractal-limit-convergence-adapter-2026-09-26.mmd
+- `094ea9bffd81` Prune Mermaid graph artifact .ci/discovery/gru-fractal-injective-composition-2026-09-26.mmd
+- `4018b6fe93ec` Prune Mermaid graph artifact .ci/discovery/gru-fractal-domain-adapters-2026-09-26.mmd
+- `d906b6d3ba50` Prune Mermaid graph artifact .ci/discovery/gru-fractal-arbitrary-limit-closure-2026-09-26.mmd
+- `3bc41000a862` Prune Mermaid graph artifact .ci/discovery/commons-nonderivability-2026-09-26.mmd
+- `bdff0d0891e6` Prune Mermaid graph artifact .ci/discovery/carrier-polymorphic-frontier-2026-09-26.mmd
+- `51f9fd6ac4e4` Prune Mermaid graph artifact .ci/discovery/canonical-price-nonidentifiability-2026-09-26.mmd
+- `4150a1c9a534` Gate derived e-graph A* stability theorem
+- `95e36966e000` Derive e-graph A* eventual stability from rank descent
+- `ddaa7dd9d846` Keep research note repository-native
+- `32ff51dfe9ca` Document e-graph A* convergence proof boundary
+- `bd1409694996` Gate e-graph A* convergence closure symbols
+- `0d0ca13a26ca` Correct e-graph A* rank descent witness
+- `ff8b15066107` Add conditional e-graph A* convergence witness
+- `45e1cad37bfe` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
