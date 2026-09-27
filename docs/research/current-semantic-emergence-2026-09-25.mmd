@@ -6,10 +6,13 @@ flowchart TD
   D --> LN["Exact integer LayerNorm statistics"]
   LN --> LNE["CanonicalIntegerLayerNormEGraphAStarTheorem (closed)"]
   LNE --> AST
+  LNE --> AHM["AStarHaskellMonadSurface"]
   LNE --> LNS["IntegerLayerNormConfigurationStabilityTheorem (closed)"]
   LNE --> LNR["IntegerLayerNormEpsilonRayGrowthTheorem (closed)"]
   LNS --> LNG["CanonicalIntegerLayerNormStabilityGrowthTheorem (closed)"]
   LNR --> LNG
+  LNS --> F4LN["CanonicalF4IntegerLayerNormStabilityBoundaryTheorem (closed)"]
+  F4 --> F4LN
     LNE --> DLN["Detailed integer LayerNorm / E-Graph-A* graph\ndocs/research/integer-layernorm-egraph-astar-2026-09-27.mmd"]
 
   subgraph LAW_I["Law I — agent / particle dynamics"]
