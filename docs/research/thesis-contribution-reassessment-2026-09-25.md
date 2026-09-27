@@ -31,7 +31,6 @@ References:
 
 State equivalence, abstraction, and quotienting are established subjects in AI and dynamical decision systems. Givan, Dean, and Greig give a bisimulation-based equivalence for MDP state aggregation under which an optimal policy on the reduced model induces a corresponding policy on the original model. Abel's state-abstraction program likewise studies when abstractions preserve useful behavior.
 
-Implication for this thesis: calling the NormPair result a new abstraction theory would be incorrect. The narrower contribution is the exact quotient/factor characterization of this learner's NormPair coordinate: policy equality, one-step preservation, and arbitrary finite-iterate preservation are all proved for the concrete learner.
 
 References:
 - https://doi.org/10.1016/S0004-3702(02)00376-4
@@ -57,7 +56,6 @@ Novelty status: CANDIDATE ONLY. The dedicated literature review must determine w
 
 ### B. A concrete quotient/factor characterization of the canonical learner
 
-For the canonical learner, NormPair-related states have the same policy, the canonical transition preserves the relation, and arbitrary finite iterates preserve it. This yields a quotient/factor interpretation of the learner dynamics.
 
 The mathematical pattern is established in abstraction and bisimulation literature. The possible contribution is the exact characterization and proof for this learner, not the invention of quotient stability itself.
 
