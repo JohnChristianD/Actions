@@ -111,8 +111,7 @@ The existing `CanonicalLearnerHodgeMaxwellCompositionTheorem` now has a direct A
 - Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 - README.md
 - docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md
-- .ci/discovery/current-semantic-emergence-2026-09-25.mmd
-
+- 
 ## Semantic-premise pruning update — 2026-09-25
 
 The theorem monolith now distinguishes two levels that must not be conflated:
