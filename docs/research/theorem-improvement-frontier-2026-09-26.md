@@ -12,7 +12,6 @@ The 2026 Isabelle/AFP Equality Saturation Checker formalizes checking e-graph me
 Generalize StrictProgressWitness beyond the current Nat instantiation. Prove cycle exclusion once from a suitable strict/well-founded progress relation, then instantiate it with totalCount.
 
 ### B. Explicit factor transition
-The NormPair surface already proves policy invariance, one-step transition compatibility, and iterated compatibility. The next theorem should expose an observation q into a factor carrier, prove that q respects the replacement relation, construct the induced factor transition, and prove policy/readout factorization through q.
 
 ### C. Generic commuting-square transport
 Unify the existing encode/decode and one-step commuting-square patterns into one generic theorem: inverse laws plus one-step commutation imply iterate transport; a separate theorem transports invariants/properties. This becomes the common kernel for learner, Hodge-Maxwell, Tsallis, economics, and POMDP transport.
