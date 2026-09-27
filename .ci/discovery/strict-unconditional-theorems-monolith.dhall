@@ -53,7 +53,6 @@
     },
     {
       line = 647,
-      name = "canonicalNormPairRecurrentNetwork-step-law"
     },
     {
       line = 685,
@@ -249,7 +248,6 @@
     },
     {
       line = 3966,
-      name = "canonical-f4-normPair-sure-stability-composition-theorem"
     },
     {
       line = 4000,
@@ -293,15 +291,12 @@
     },
     {
       line = 8078,
-      name = "canonicalPolicy-factors-through-NormPair"
     },
     {
       line = 8185,
-      name = "canonical-normPair-quotient-factor-transition-theorem"
     },
     {
       line = 8241,
-      name = "canonical-f4-normPair-factor-stability-theorem"
     },
     {
       line = 8377,
@@ -321,7 +316,6 @@
     },
     {
       line = 8698,
-      name = "megaNoEquilibriumF4NormPairEconomicWitness"
     }
   ],
   excluded_premise_bearing = [
@@ -539,11 +533,9 @@
     },
     {
       line = 5392,
-      name = "canonical-f4-normPair-gru-global-injective"
     },
     {
       line = 5412,
-      name = "canonical-f4-normPair-gru-global-conjugacy"
     },
     {
       line = 5613,
@@ -663,7 +655,6 @@
     },
     {
       line = 8685,
-      name = "megaNoEquilibriumF4NormPairEconomicCertificate"
     }
   ]
 }
