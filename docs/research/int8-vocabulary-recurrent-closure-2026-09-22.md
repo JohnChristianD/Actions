@@ -83,7 +83,7 @@ Repository sources:
 - `Exotic/ERL/iullCoupled/TheoremsMonolith.agda`
 - `.ci/actions_ci.dhall`
 - `.ci/discovery/theorem_graph_search.m`
-- `.ci/discovery/neural-iunction-class-separation-graph.json`
+- `.ci/discovery/neural-function-class-separation-graph.dhall`
 
 Primary external source:
 - https://docs.dhall-lang.org/tutorials/Language-Tour.html
