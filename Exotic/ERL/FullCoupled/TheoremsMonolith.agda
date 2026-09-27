@@ -881,10 +881,8 @@ record EGraphAStarFiniteRankConvergenceWitness
     rankZero :
       ∀ s → rank s ≡ zero → stable s
     strictDescent :
-      ∀ s → stable s → ⊥
-      -- This field is intentionally not a descent theorem. The concrete
-      -- search policy supplies the domain-specific progress contradiction
-      -- separately; the Nat rank is retained as the bounded-measure carrier.
+      ∀ s → ¬ stable s →
+      rank (step s) < rank s
     stableNext :
       ∀ s → stable s → stable (step s)
     eventualStable :
