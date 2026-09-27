@@ -1793,12 +1793,10 @@ canonical-connected-composition-theorem =
     canonicalNoNontrivialFiniteCycle-theorem
 
 data LearnerReplacement : Set where
-  normReplacement : NormPair → LearnerReplacement
   optimizerReplacement : F4IntUState → LearnerReplacement
 
 applyLearnerReplacement :
   LearnerReplacement → FullLearnerState → FullLearnerState
-applyLearnerReplacement (normReplacement n) s = replaceNorm s n
 applyLearnerReplacement (optimizerReplacement o) s = replaceOptimizer s o
 
 applyLearnerReplacements :
@@ -1810,8 +1808,6 @@ applyLearnerReplacements (r ∷ rs) s =
 canonicalPolicy-learnerReplacement-invariant :
   ∀ K s r →
   canonicalPolicy K (applyLearnerReplacement r s) ≡ canonicalPolicy K s
-canonicalPolicy-learnerReplacement-invariant K s (normReplacement n) =
-  canonicalPolicy-norm-invariant K s n
 canonicalPolicy-learnerReplacement-invariant K s (optimizerReplacement o) =
   canonicalPolicy-optimizer-invariant K s o
 
@@ -1824,69 +1820,6 @@ canonicalPolicy-learnerReplacement-composition K s (r ∷ rs) =
     (canonicalPolicy-learnerReplacement-composition
       K (applyLearnerReplacement r s) rs)
     (canonicalPolicy-learnerReplacement-invariant K s r)
-
-canonicalFullStep-replaceNorm :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (s : C.FullLearnerState A)
-  (n : C.NormPair) →
-  C.canonicalFullStep K (C.replaceNorm s n)
-  ≡
-  C.replaceNorm (C.canonicalFullStep K s) n
-canonicalFullStep-replaceNorm K s n = refl
-
-canonicalFullStep-replaceNorm-iterate :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (n : Nat)
-  (s : C.FullLearnerState A)
-  (normValue : C.NormPair) →
-  C.iterateCanonical K n (C.replaceNorm s normValue)
-  ≡
-  C.replaceNorm (C.iterateCanonical K n s) normValue
-canonicalFullStep-replaceNorm-iterate K zero s normValue = refl
-canonicalFullStep-replaceNorm-iterate K (suc n) s normValue =
-  trans
-    (cong
-      (C.iterateCanonical K n)
-      (canonicalFullStep-replaceNorm K s normValue))
-    (canonicalFullStep-replaceNorm-iterate
-      K
-      n
-      (C.canonicalFullStep K s)
-      normValue)
-
-record CanonicalLearnerReplacementClosureTheorem : Set₁ where
-  constructor canonicalLearnerReplacementClosureTheorem
-  field
-    policyInvariant :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (rs : List LearnerReplacement) →
-      C.canonicalPolicy
-        K
-        (applyLearnerReplacements rs s)
-      ≡
-      C.canonicalPolicy K s
-
-canonical-learner-replacement-closure-theorem :
-  CanonicalLearnerReplacementClosureTheorem
-canonical-learner-replacement-closure-theorem =
-  canonicalLearnerReplacementClosureTheorem
-    canonicalPolicy-learnerReplacement-composition
-
-canonicalNormPair-afterFullStep-iterate :
-  ∀ K n s →
-  normPairWeightPlusOne
-    (norm (iterateCanonical K n s))
-  ≡
-  normPairWeightPlusOne (norm s)
-canonicalNormPair-afterFullStep-iterate K zero s = refl
-canonicalNormPair-afterFullStep-iterate K (suc n) s =
-  trans
-    (canonicalNormPair-afterFullStep-iterate
-      K n (canonicalFullStep K s))
-    (canonicalNormPairWeightPlusOne-preservation K s)
 
 canonicalPersistentGRU-afterFullStep-iterate :
   ∀ K n s →
@@ -2144,85 +2077,58 @@ canonicalF4-prefix-monoid-homomorphism =
     (λ R s → prefixListEndomorphism-unit R s)
     (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
 
-canonicalNormPairRecurrentNetwork :
-  C.RecurrentNetwork C.NormPair C.Int8
-canonicalNormPairRecurrentNetwork =
-  C.recurrentNetwork
-    (λ n _ → n)
+CanonicalGRUF4PrefixState : Set
+CanonicalGRUF4PrefixState =
+  C.GRUState × C.F4IntUState
 
-canonicalNormPairRecurrentNetwork-step-law :
-  ∀ (n : C.NormPair) (signal : C.Int8) →
-  C.runNetwork
-    canonicalNormPairRecurrentNetwork
-    n
-    signal
-  ≡ n
-canonicalNormPairRecurrentNetwork-step-law n signal = refl
-
-canonicalNormPair-prefix-monoid-homomorphism :
-  RecurrentPrefixMonoidHomomorphism
-    C.NormPair
-    C.Int8
-canonicalNormPair-prefix-monoid-homomorphism =
-  recurrentPrefixMonoidHomomorphism
-    (λ R s → prefixListEndomorphism-unit R s)
-    (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
-
-CanonicalGRUF4NormPrefixState : Set
-CanonicalGRUF4NormPrefixState =
-  C.GRUState × (C.F4IntUState × C.NormPair)
-
-CanonicalGRUF4NormPrefixInput : Set
-CanonicalGRUF4NormPrefixInput =
+CanonicalGRUF4PrefixInput : Set
+CanonicalGRUF4PrefixInput =
   C.Int8
 
-canonicalGRUF4NormPrefixNetwork :
+canonicalGRUF4PrefixNetwork :
   C.CanonicalFullLearnerKernel →
   C.RecurrentNetwork
-    CanonicalGRUF4NormPrefixState
-    CanonicalGRUF4NormPrefixInput
-canonicalGRUF4NormPrefixNetwork K =
+    CanonicalGRUF4PrefixState
+    CanonicalGRUF4PrefixInput
+canonicalGRUF4PrefixNetwork K =
   C.recurrentNetwork
-    (λ { (g , (o , n)) signal →
+    (λ { (g , o) signal →
       ( C.gruStep g signal
-      , ( C.f4ThetaStep (C.optimizerKernel K) o signal
-        , n)) })
+      , C.f4ThetaStep (C.optimizerKernel K) o signal ) })
 
-canonicalGRUF4NormPrefix-step-law :
+canonicalGRUF4Prefix-step-law :
   ∀ (K : C.CanonicalFullLearnerKernel)
-  (g : C.GRUState) (o : C.F4IntUState) (n : C.NormPair)
+  (g : C.GRUState) (o : C.F4IntUState)
   (signal : C.Int8) →
-  C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
-    (g , (o , n)) signal
+  C.runNetwork (canonicalGRUF4PrefixNetwork K)
+    (g , o) signal
   ≡
   ( C.gruStep g signal
-  , ( C.f4ThetaStep (C.optimizerKernel K) o signal
-    , n))
-canonicalGRUF4NormPrefix-step-law K g o n signal = refl
+  , C.f4ThetaStep (C.optimizerKernel K) o signal )
+canonicalGRUF4Prefix-step-law K g o signal = refl
 
-canonicalGRUF4Norm-prefix-monoid-homomorphism :
+canonicalGRUF4-prefix-monoid-homomorphism :
   RecurrentPrefixMonoidHomomorphism
-    CanonicalGRUF4NormPrefixState
-    CanonicalGRUF4NormPrefixInput
-canonicalGRUF4Norm-prefix-monoid-homomorphism =
+    CanonicalGRUF4PrefixState
+    CanonicalGRUF4PrefixInput
+canonicalGRUF4-prefix-monoid-homomorphism =
   recurrentPrefixMonoidHomomorphism
     (λ R s → prefixListEndomorphism-unit R s)
     (λ R xs ys s → prefixListEndomorphism-append R xs ys s)
 
-canonicalFullStep-GRUF4Norm-prefix-bridge :
+canonicalFullStep-GRUF4-prefix-bridge :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState) →
-  C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
-    (C.gru s , (C.optimizer s , C.norm s))
+  C.runNetwork (canonicalGRUF4PrefixNetwork K)
+    (C.gru s , C.optimizer s)
     (C.canonicalSignal K s)
   ≡
   ( C.gru (C.canonicalFullStep K s)
-  , ( C.optimizer (C.canonicalFullStep K s)
-    , C.norm (C.canonicalFullStep K s)))
-canonicalFullStep-GRUF4Norm-prefix-bridge K s = refl
+  , C.optimizer (C.canonicalFullStep K s))
+canonicalFullStep-GRUF4-prefix-bridge K s = refl
 
-record CanonicalGRUF4NormWatkinsPrefixCompositionTheorem : Set₁ where
-  constructor canonicalGRUF4NormWatkinsPrefixCompositionTheorem
+record CanonicalGRUF4WatkinsPrefixCompositionTheorem : Set₁ where
+  constructor canonicalGRUF4WatkinsPrefixCompositionTheorem
   field
     recurrentScan :
       RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
@@ -2230,24 +2136,23 @@ record CanonicalGRUF4NormWatkinsPrefixCompositionTheorem : Set₁ where
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
       C.canonicalSignal K s ≡ C.canonicalWatkinsTarget K s
-    gruf4NormCorrectness :
+    gruf4Correctness :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
-        (C.gru s , (C.optimizer s , C.norm s))
+      C.runNetwork (canonicalGRUF4PrefixNetwork K)
+        (C.gru s , C.optimizer s)
         (C.canonicalSignal K s)
       ≡
       ( C.gru (C.canonicalFullStep K s)
-      , ( C.optimizer (C.canonicalFullStep K s)
-        , C.norm (C.canonicalFullStep K s)))
+      , C.optimizer (C.canonicalFullStep K s))
 
-canonical-gruf4-norm-watkins-prefix-composition-theorem :
-  CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
-canonical-gruf4-norm-watkins-prefix-composition-theorem =
-  canonicalGRUF4NormWatkinsPrefixCompositionTheorem
+canonical-gruf4-watkins-prefix-composition-theorem :
+  CanonicalGRUF4WatkinsPrefixCompositionTheorem
+canonical-gruf4-watkins-prefix-composition-theorem =
+  canonicalGRUF4WatkinsPrefixCompositionTheorem
     canonical-recurrent-prefix-monoid-homomorphism
     C.canonicalSignal-watkins-target
-    canonicalFullStep-GRUF4Norm-prefix-bridge
+    canonicalFullStep-GRUF4-prefix-bridge
 
 commutingIterate :
   ∀ {S : Set} →
@@ -2376,7 +2281,7 @@ record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
     connectedStep :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      C.runNetwork (canonicalGRUF4NormPrefixNetwork K)
+      C.runNetwork (canonicalGRUF4PrefixNetwork K)
         (C.gru s , (C.optimizer s , C.norm s))
         (C.canonicalSignal K s)
       ≡
@@ -2433,7 +2338,7 @@ canonical-full-learner-connected-scan-conjugacy-theorem :
 canonical-full-learner-connected-scan-conjugacy-theorem =
   canonicalFullLearnerConnectedScanConjugacyTheorem
     (λ replace K h → canonicalFullLearner-iterate-conjugacy replace K h)
-    canonicalFullStep-GRUF4Norm-prefix-bridge
+    canonicalFullStep-GRUF4-prefix-bridge
     C.canonicalFullStep-watkins
     C.canonicalSignal-watkins-target
     canonicalRecurrentInput-watkinsTarget-law
@@ -3212,20 +3117,10 @@ record CanonicalPolymorphicSparsemaxCompositionTheorem : Set₁ where
         (C.lcbScore (C.lcbKernel K) (C.lcbCounts s)
           (C.critic (C.watkins s)))
         (C.valuesCount (C.lcbCounts s))
-    normProjectionInvariant :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState) (n : C.NormPair) →
-      C.canonicalPolicy K (C.replaceNorm s n) ≡ C.canonicalPolicy K s
     optimizerProjectionInvariant :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) (o : C.F4IntUState) →
       C.canonicalPolicy K (C.replaceOptimizer s o) ≡ C.canonicalPolicy K s
-    hardSparseComposition :
-      ∀ (K : C.CanonicalFullLearnerKernel)
-      (s : C.CanonicalFullLearnerState)
-      (n : C.NormPair) (o : C.F4IntUState) →
-      C.HardSparse K s →
-      C.HardSparse K (C.replaceNorm (C.replaceOptimizer s o) n)
     recurrentPrefixComposition :
       RecurrentPrefixMonoidHomomorphism C.GRUState C.Int8
     s4PlusS5RecurrentScan :
@@ -3244,9 +3139,7 @@ canonical-polymorphic-sparsemax-egraph-theorem :
 canonical-polymorphic-sparsemax-egraph-theorem =
   canonicalPolymorphicSparsemaxCompositionTheorem
     (λ K s → refl)
-    C.canonicalPolicy-norm-invariant
     C.canonicalPolicy-optimizer-invariant
-    C.hardSparse-composition-normPair-F4-L2
     canonical-recurrent-prefix-monoid-homomorphism
     canonical-S4S5-recurrent-scan-theorem
     informationPreserving-symbolic-task-factorization
@@ -4299,12 +4192,11 @@ record LogarithmicPrefixScanComplexityTheorem
 ------------------------------------------------------------------------
 -- Closed MARL law composition.
 --
--- These are the three exact learner-facing laws used by the current
--- coupled learner: recurrent-prefix composition, the F4 optimizer step,
--- and NormPair step invariance.  They compose with the endogenous Watkins
--- target in one closed theorem package.  This is the unconditional
--- learner-side theorem; it does not claim the separate physics Law I/II/III
--- interface is already proved.
+-- These are the exact learner-facing laws used by the current coupled
+-- learner: recurrent-prefix composition and the F4 optimizer step. They
+-- compose with the endogenous Watkins target in one closed theorem
+-- package. This is the unconditional learner-side theorem; it does not
+-- claim the separate physics Law I/II/III interface is already proved.
 ------------------------------------------------------------------------
 
 record CanonicalMARLLawCompositionTheorem : Set₁ where
@@ -4322,20 +4214,13 @@ record CanonicalMARLLawCompositionTheorem : Set₁ where
         signal
       ≡
       C.f4ThetaStep (C.optimizerKernel K) o signal
-    normPairStepLaw :
-      ∀ (n : C.NormPair) (signal : C.Int8) →
-      C.runNetwork
-        canonicalNormPairRecurrentNetwork
-        n
-        signal
-      ≡ n
     watkinsSignalLaw :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
       C.canonicalSignal K s ≡
       C.canonicalWatkinsTarget K s
     fullComposition :
-      CanonicalGRUF4NormWatkinsPrefixCompositionTheorem
+      CanonicalGRUF4WatkinsPrefixCompositionTheorem
 
 canonical-marl-law-composition-theorem :
   CanonicalMARLLawCompositionTheorem
@@ -4343,9 +4228,8 @@ canonical-marl-law-composition-theorem =
   canonicalMARLLawCompositionTheorem
     canonical-recurrent-prefix-monoid-homomorphism
     canonicalF4RecurrentNetwork-step-law
-    canonicalNormPairRecurrentNetwork-step-law
     C.canonicalSignal-watkins-target
-    canonical-gruf4-norm-watkins-prefix-composition-theorem
+    canonical-gruf4-watkins-prefix-composition-theorem
 
 ------------------------------------------------------------------------
 -- Carrier-polymorphic continuous Hodge-Maxwell representation.
@@ -5652,139 +5536,6 @@ record SupportingPriceWitness
     witness :
       supports price allocation
 
-applyNormPairReplacements :
-  ∀ {A : Set} →
-  List C.NormPair →
-  C.FullLearnerState A →
-  C.FullLearnerState A
-applyNormPairReplacements [] s = s
-applyNormPairReplacements (n ∷ ns) s =
-  applyNormPairReplacements ns (C.replaceNorm s n)
-
-normPairReplacementRelation :
-  ∀ {A : Set} →
-  C.FullLearnerState A →
-  C.FullLearnerState A →
-  Set
-normPairReplacementRelation s t =
-  Σ C.NormPair (λ n → C.replaceNorm s n ≡ t)
-
-applyNormPairReplacements-collapse :
-  ∀ {A : Set}
-  (s : C.FullLearnerState A)
-  (ns : List C.NormPair) →
-  Σ C.NormPair
-    (λ n → C.replaceNorm s n
-      ≡ applyNormPairReplacements ns s)
-applyNormPairReplacements-collapse s [] =
-  C.norm s , refl
-applyNormPairReplacements-collapse s (n ∷ ns)
-  with applyNormPairReplacements-collapse
-    (C.replaceNorm s n)
-    ns
-... | m , eq = m , eq
-
-normPairReplacementRelation-generated :
-  ∀ {A : Set}
-  (s t : C.FullLearnerState A) →
-  (Σ (List C.NormPair)
-    (λ ns →
-      applyNormPairReplacements ns s ≡ t)) →
-  normPairReplacementRelation s t
-normPairReplacementRelation-generated s t (ns , eq)
-  with applyNormPairReplacements-collapse s ns
-... | n , collapse =
-  n , trans collapse eq
-
-normPairReplacementRelation-refl :
-  ∀ {A : Set}
-  (s : C.FullLearnerState A) →
-  normPairReplacementRelation s s
-normPairReplacementRelation-refl s =
-  C.norm s , refl
-
-normPairReplacementRelation-sym :
-  ∀ {A : Set}
-  {s t : C.FullLearnerState A} →
-  normPairReplacementRelation s t →
-  normPairReplacementRelation t s
-normPairReplacementRelation-sym (n , eq) =
-  C.norm _ ,
-  trans
-    (sym
-      (cong
-        (λ x → C.replaceNorm x (C.norm _))
-        eq))
-    refl
-
-normPairReplacementRelation-trans :
-  ∀ {A : Set}
-  {s t u : C.FullLearnerState A} →
-  normPairReplacementRelation s t →
-  normPairReplacementRelation t u →
-  normPairReplacementRelation s u
-normPairReplacementRelation-trans
-  (n , st)
-  (m , tu) =
-  m ,
-  trans
-    (cong
-      (λ x → C.replaceNorm x m)
-      st)
-    tu
-
-canonicalPolicy-factors-through-NormPair :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  {s t : C.FullLearnerState A} →
-  normPairReplacementRelation s t →
-  C.canonicalPolicy K t ≡ C.canonicalPolicy K s
-canonicalPolicy-factors-through-NormPair
-  K
-  (n , eq) =
-  trans
-    (sym (cong (C.canonicalPolicy K) eq))
-    (C.canonicalPolicy-norm-invariant _ _ n)
-
-canonicalNormPairQuotient-step-compatible :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  {s t : C.FullLearnerState A} →
-  normPairReplacementRelation s t →
-  normPairReplacementRelation
-    (C.canonicalFullStep K s)
-    (C.canonicalFullStep K t)
-canonicalNormPairQuotient-step-compatible
-  K
-  (n , eq) =
-  n ,
-  trans
-    (sym (canonicalFullStep-replaceNorm K _ n))
-    (cong (C.canonicalFullStep K) eq)
-
-canonicalNormPairQuotient-iterate-compatible :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (n : Nat)
-  {s t : C.FullLearnerState A} →
-  normPairReplacementRelation s t →
-  normPairReplacementRelation
-    (C.iterateCanonical K n s)
-    (C.iterateCanonical K n t)
-canonicalNormPairQuotient-iterate-compatible
-  K
-  zero
-  relation =
-  relation
-canonicalNormPairQuotient-iterate-compatible
-  K
-  (suc n)
-  relation =
-  canonicalNormPairQuotient-iterate-compatible
-    K
-    n
-    (canonicalNormPairQuotient-step-compatible K relation)
-
 record FactorTransitionWitness
   (State Factor : Set)
   (step : State → State)
@@ -5845,188 +5596,6 @@ record RelationFactorTransitionWitness
       related
         (step s)
         (step t)
-
-canonicalPolicyFactorTransition :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (factorStep : Nat → Nat)
-  (factorStepCommutes :
-    ∀ s →
-    C.canonicalPolicy K (C.canonicalFullStep K s) ≡
-    factorStep (C.canonicalPolicy K s)) →
-  RelationFactorTransitionWitness
-    (C.FullLearnerState A)
-    Nat
-    (C.canonicalFullStep K)
-    normPairReplacementRelation
-    (C.canonicalPolicy K)
-canonicalPolicyFactorTransition
-  K
-  factorStep
-  factorStepCommutes =
-  relationFactorTransitionWitness
-    (factorTransitionWitness
-      factorStep
-      factorStepCommutes)
-    (canonicalPolicy-factors-through-NormPair K)
-    (canonicalNormPairQuotient-step-compatible K)
-
-record CanonicalNormPairQuotientFactorTransitionTheorem : Set₁ where
-  constructor canonicalNormPairQuotientFactorTransitionTheorem
-  field
-    generatedOrbit :
-      ∀ {A : Set}
-      (s t : C.FullLearnerState A) →
-      (Σ (List C.NormPair)
-        (λ ns →
-          applyNormPairReplacements ns s ≡ t)) →
-      normPairReplacementRelation s t
-
-    quotientReflexive :
-      ∀ {A : Set}
-      (s : C.FullLearnerState A) →
-      normPairReplacementRelation s s
-
-    quotientSymmetric :
-      ∀ {A : Set}
-      {s t : C.FullLearnerState A} →
-      normPairReplacementRelation s t →
-      normPairReplacementRelation t s
-
-    quotientTransitive :
-      ∀ {A : Set}
-      {s t u : C.FullLearnerState A} →
-      normPairReplacementRelation s t →
-      normPairReplacementRelation t u →
-      normPairReplacementRelation s u
-
-    policyFactors :
-      ∀ {A : Set}
-      (K : C.FullLearnerKernel A)
-      {s t : C.FullLearnerState A} →
-      normPairReplacementRelation s t →
-      C.canonicalPolicy K t ≡ C.canonicalPolicy K s
-
-    transitionCompatible :
-      ∀ {A : Set}
-      (K : C.FullLearnerKernel A)
-      {s t : C.FullLearnerState A} →
-      normPairReplacementRelation s t →
-      normPairReplacementRelation
-        (C.canonicalFullStep K s)
-        (C.canonicalFullStep K t)
-
-    iterateCompatible :
-      ∀ {A : Set}
-      (K : C.FullLearnerKernel A)
-      (n : Nat)
-      {s t : C.FullLearnerState A} →
-      normPairReplacementRelation s t →
-      normPairReplacementRelation
-        (C.iterateCanonical K n s)
-        (C.iterateCanonical K n t)
-
-canonical-normPair-quotient-factor-transition-theorem :
-  CanonicalNormPairQuotientFactorTransitionTheorem
-canonical-normPair-quotient-factor-transition-theorem =
-  canonicalNormPairQuotientFactorTransitionTheorem
-    normPairReplacementRelation-generated
-    normPairReplacementRelation-refl
-    normPairReplacementRelation-sym
-    normPairReplacementRelation-trans
-    canonicalPolicy-factors-through-NormPair
-    canonicalNormPairQuotient-step-compatible
-    canonicalNormPairQuotient-iterate-compatible
-
-record CanonicalF4NormPairUnconditionalFactorStabilityTheorem : Set₁ where
-  constructor canonicalF4NormPairUnconditionalFactorStabilityTheorem
-  field
-    f4Stability :
-      CanonicalF4GlobalOptimizerStabilityTheorem
-
-    normPairFactorTransition :
-      CanonicalNormPairQuotientFactorTransitionTheorem
-
-    policyFactorization :
-      ∀ {A : Set}
-        (K : C.FullLearnerKernel A)
-        {s t : C.FullLearnerState A} →
-        normPairReplacementRelation s t →
-        C.canonicalPolicy K t ≡ C.canonicalPolicy K s
-
-    transitionFactorization :
-      ∀ {A : Set}
-        (K : C.FullLearnerKernel A)
-        {s t : C.FullLearnerState A} →
-        normPairReplacementRelation s t →
-        normPairReplacementRelation
-          (C.canonicalFullStep K s)
-          (C.canonicalFullStep K t)
-
-    iterateFactorization :
-      ∀ {A : Set}
-        (K : C.FullLearnerKernel A)
-        (n : Nat)
-        {s t : C.FullLearnerState A} →
-        normPairReplacementRelation s t →
-        normPairReplacementRelation
-          (C.iterateCanonical K n s)
-          (C.iterateCanonical K n t)
-
-canonical-f4-normPair-unconditional-factor-stability-theorem :
-  CanonicalF4NormPairUnconditionalFactorStabilityTheorem
-canonical-f4-normPair-unconditional-factor-stability-theorem =
-  canonicalF4NormPairUnconditionalFactorStabilityTheorem
-    canonical-f4-global-optimizer-stability-theorem
-    canonical-normPair-quotient-factor-transition-theorem
-    canonicalPolicy-factors-through-NormPair
-    canonicalNormPairQuotient-step-compatible
-    canonicalNormPairQuotient-iterate-compatible
-
-record CanonicalF4NormPairIterateFactorStabilityTheorem : Set₁ where
-  constructor canonicalF4NormPairIterateFactorStabilityTheorem
-  field
-    oneStepStability :
-      CanonicalF4NormPairUnconditionalFactorStabilityTheorem
-
-    normPairWeightPlusOneIterate :
-      ∀ {A : Set}
-      (K : C.FullLearnerKernel A)
-      (n : Nat)
-      (s : C.FullLearnerState A) →
-      C.normPairWeightPlusOne
-        (C.norm (C.iterateCanonical K n s))
-      ≡
-      C.normPairWeightPlusOne (C.norm s)
-
-    persistentGRUIterate :
-      ∀ {A : Set}
-      (K : C.FullLearnerKernel A)
-      (n : Nat)
-      (s : C.FullLearnerState A) →
-      C.persistentGRU
-        (C.gru (C.iterateCanonical K n s))
-      ≡
-      C.persistentGRU (C.gru s)
-
-    quotientIterateFactorization :
-      ∀ {A : Set}
-      (K : C.FullLearnerKernel A)
-      (n : Nat)
-      {s t : C.FullLearnerState A} →
-      normPairReplacementRelation s t →
-      normPairReplacementRelation
-        (C.iterateCanonical K n s)
-        (C.iterateCanonical K n t)
-
-canonical-f4-normPair-iterate-factor-stability-theorem :
-  CanonicalF4NormPairIterateFactorStabilityTheorem
-canonical-f4-normPair-iterate-factor-stability-theorem =
-  canonicalF4NormPairIterateFactorStabilityTheorem
-    canonical-f4-normPair-unconditional-factor-stability-theorem
-    canonicalNormPair-afterFullStep-iterate
-    canonicalPersistentGRU-afterFullStep-iterate
-    canonicalNormPairQuotient-iterate-compatible
 
 record RecursiveRadnerData
   (State Agent Commodity Asset Price Allocation Portfolio : Set)
@@ -6246,38 +5815,6 @@ megaNoEquilibriumWalrasianSquare =
     (λ _ → refl)
     (λ _ → refl)
     (λ _ → refl)
-
-megaNoEquilibriumF4NormPairEconomicWitness :
-  ¬
-    Σ ⊤
-      (λ p →
-        Σ ⊤
-          (λ a →
-            equilibrium
-              megaNoEquilibriumGeneralizedWalrasian
-              p
-              a))
-megaNoEquilibriumF4NormPairEconomicWitness
-  (p , a , witness) =
-  witness
-
-noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability :
-  ¬
-    (∀ {State Price Allocation : Set}
-      (D : MegaGeneralizedWalrasianEquilibrium
-        State
-        Price
-        Allocation) →
-      Σ Price
-        (λ p →
-          Σ Allocation
-            (λ a →
-              equilibrium D p a)))
-noUnconditionalMegaWalrasianExistenceAfterF4NormPairFactorStability
-  theorem =
-  megaNoEquilibriumWitness
-    (theorem megaNoEquilibriumGeneralizedWalrasian)
-
 
 ------------------------------------------------------------------------
 -- Generic strict-progress and carrier-polymorphic frontier core.
@@ -6583,30 +6120,6 @@ monolithFactorTransition-to-relationWitness W =
       (factorStepCommutes W))
     (observeRespects W)
     (relationStepPreserved W)
-
-canonicalNormPairFactorTransitionClosure :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (factorStep : Nat → Nat)
-  (factorStepCommutes :
-    ∀ s →
-    C.canonicalPolicy K (C.canonicalFullStep K s) ≡
-    factorStep (C.canonicalPolicy K s)) →
-  MonolithFactorTransitionClosure
-    (C.FullLearnerState A)
-    Nat
-    (C.canonicalFullStep K)
-    normPairReplacementRelation
-    (C.canonicalPolicy K)
-canonicalNormPairFactorTransitionClosure
-  K
-  factorStep
-  factorStepCommutes =
-  monolithFactorTransitionClosure
-    factorStep
-    factorStepCommutes
-    (canonicalPolicy-factors-through-NormPair K)
-    (canonicalNormPairQuotient-step-compatible K)
 
 record MonolithCommutingSquareTransport
   (A B : Set)
