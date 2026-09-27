@@ -26,11 +26,6 @@ let script = merge {
     set -euo pipefail
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
-    import_sync=.ci/theorem-learner-import-sync.dhall
-    generated_import_sync=$(mktemp)
-    trap 'rm -f "$generated_import_sync"' EXIT
-    dhall text --file "$import_sync" > "$generated_import_sync"
-    bash "$generated_import_sync"
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
