@@ -57,4 +57,4 @@ This is terminology/semantic alignment, not a claim that the Agda production con
 
 ## Tool roles
 
-Agda remains proof authority. Mercury remains discovery/transport tooling. Mermaid remains the human topology projection. Graph membership is never promoted to proof merely because a path was discovered.
+Agda remains proof authority. Mercury remains discovery/transport tooling. Graph membership is never promoted to proof merely because a path was discovered.
