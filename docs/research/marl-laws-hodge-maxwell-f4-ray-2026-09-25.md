@@ -50,7 +50,7 @@ The negative edges are part of the result: the exact learner-side structure is c
 
 ## Evidence stack
 
-Agda is the proof authority. The Mercury JSON output is machine evidence for extracted laws and dependency discovery. Mermaid is the human-readable topology projection. TSV/CSV are not canonical graph representations, and SQLite/NoSQL are not warranted for the current deterministic, repository-local dependency workload.
+Agda is the proof authority. The Mercury Dhall output is machine evidence for extracted laws and dependency discovery. Mermaid is the human-readable topology projection. TSV/CSV are not canonical graph representations, and SQLite/NoSQL are not warranted for the current deterministic, repository-local dependency workload.
 
 A CSV file used for an unrelated replication archive is not part of this graph-format decision and should not be removed merely because CSV is unnecessary for topology.
 
