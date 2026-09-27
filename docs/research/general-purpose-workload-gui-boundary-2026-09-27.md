@@ -17,12 +17,12 @@ A workload implementation may use Go, Nim, Lua, Chibi Scheme, Roc, Swift, Tcl/Tk
 The CI surface consequently checks the semantic boundary directly: exactly two tracked Agda sources remain the proof surface, while implementation-language suffixes are not treated as semantic violations.
 
 ## Prompt-scoped native implementation
+
+The concrete implementation added by this prompt is a Tcl/Tk native GUI adapter at `workloads/tcltk/native_tk_adapter.tcl`. Its only input contract is the externally supplied `ACTIONS_WORKLOAD_LABEL` string; its responsibility is presentation, not interpretation of learner semantics. No additional language is added by this prompt.
+
 ## Theorem/learner import synchronization
 
 The theorem monolith imports the canonical learner monolith exactly once as alias `C`. The Dhall contract `.ci/theorem-learner-import-sync.dhall` derives that import from the canonical learner module path, verifies both Agda module declarations, and rejects any additional `Exotic.ERL.FullCoupled.*` semantic import. This keeps the theorem layer downstream of the learner definition without maintaining a second semantic authority.
-
-
-The concrete implementation added by this prompt is a Tcl/Tk native GUI adapter at `workloads/tcltk/native_tk_adapter.tcl`. Its only input contract is the externally supplied `ACTIONS_WORKLOAD_LABEL` string; its responsibility is presentation, not interpretation of learner semantics. No additional language is added by this prompt.
 
 ## GUI boundary
 

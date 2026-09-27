@@ -36,7 +36,7 @@ import_count=$(grep -Fxc "$expected_import" "$theorem")
   exit 1
 }
 
-canonical_imports=$(grep -E "^open import Exotic\\.ERL\\.FullCoupled\\." "$theorem" || true)
+canonical_imports=$(grep -E "^(open )?import Exotic\\.ERL\\.FullCoupled\\." "$theorem" || true)
 unexpected_imports=$(printf '%s\\n' "$canonical_imports" | grep -Fv "$expected_import" || true)
 [ -z "$unexpected_imports" ] || {
   echo "theorem monolith imports a non-canonical FullCoupled semantic module:"
