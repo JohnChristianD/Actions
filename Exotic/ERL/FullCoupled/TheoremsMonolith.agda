@@ -32,6 +32,7 @@ module Exotic.ERL.FullCoupled.TheoremsMonolith where
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
 open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-refl; ≤-trans; ≤-decTotalOrder; n<1+n)
 open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_; _≤_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_; _≤_ to _≤ℤ_)
 import Data.Integer.Properties as IntegerProperties
@@ -860,7 +861,7 @@ eGraphAStarIterate :
   State
 eGraphAStarIterate step zero s = s
 eGraphAStarIterate step (suc n) s =
-  step (eGraphAStarIterate step n s)
+  eGraphAStarIterate step n (step s)
 
 record EGraphAStarFiniteRankConvergenceWitness
   (Expression State : Set) : Set₁ where
@@ -928,6 +929,52 @@ eGraphAStarConvergenceSemanticClosure W s
   eGraph-path-sound
     (semantics (closure W))
     (stablePath W stableAtN)
+
+------------------------------------------------------------------------
+-- Rank + strict descent can now discharge eventual stability once the
+-- stable predicate is decidable. The Nat measure is consumed through
+-- the standard library's well-founded accessibility proof; no search
+-- cost or heuristic is used as semantic evidence.
+------------------------------------------------------------------------
+
+eGraphAStarEventualStableFromRank :
+  ∀ {Expression State : Set}
+  (W : EGraphAStarFiniteRankConvergenceWitness Expression State) →
+  (∀ s → stable W s ⊎ ¬ stable W s) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      stable W
+        (eGraphAStarIterate
+          (step W)
+          n
+          s))
+eGraphAStarEventualStableFromRank W stableOrNot s =
+  go s (rank W s) refl (<-wellFounded (rank W s))
+  where
+  go :
+    ∀ (s : State) (n : Nat) →
+    rank W s ≡ n →
+    Acc _<_ n →
+    Σ Nat
+      (λ k →
+        stable W
+          (eGraphAStarIterate
+            (step W)
+            k
+            s))
+  go s n rankEq (acc smaller) with stableOrNot s
+  ... | inj₁ stableS =
+    zero , stableS
+  ... | inj₂ notStable with strictDescent W s notStable
+  ... | descent with
+    go
+      (step W s)
+      (rank W (step W s))
+      refl
+      (smaller (subst (λ k → rank W (step W s) < k) rankEq descent))
+  ... | n′ , stableAtN′ =
+    suc n′ , stableAtN′
 
 eGraphAStarStablePathPersists :
   ∀ {Expression State : Set}
