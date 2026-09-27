@@ -75,7 +75,7 @@ let script = merge {
     grep -Fq "GRU-injective fractal composition" .ci/discovery/gru-fractal-injective-composition-2026-09-26.mmd || { echo "GRU fractal composition graph missing injective node"; exit 1; }
     grep -Fq 'Two-unit aggregate extraction' .ci/discovery/commons-nonderivability-2026-09-26.mmd || { echo "commons depletion graph missing aggregate extraction"; exit 1; }
     grep -Fq 'suc (suc zero) ≤ suc zero' "$theorem" || { echo "commons capacity violation missing"; exit 1; }
-    grep -Fq 'Canonical F4 × NormPair unconditional factor stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
+    grep -Fq 'Canonical F4 optimizer stability' "$readme" || { echo "README stale or missing current core"; exit 1; }
     grep -Fq 'Repository-wide semantic e-graph closure' "$readme" || { echo "README stale or missing e-graph closure"; exit 1; }
     grep -Fq 'AStarSemanticClosure' "$theorem" || { echo "A* semantic closure kernel missing"; exit 1; }
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
@@ -385,8 +385,8 @@ DHALL
     canonical-recurrent-prefix-monoid-homomorphism
     canonicalF4-prefix-monoid-homomorphism
     
-    canonicalGRUF4Norm-prefix-monoid-homomorphism
-    canonicalFullStep-GRUF4Norm-prefix-bridge
+    canonicalGRUF4-prefix-monoid-homomorphism
+    canonicalFullStep-GRUF4-prefix-bridge
     canonical-gruf4-norm-watkins-prefix-composition-theorem
     FreeMonoidActionHomomorphism
     freeMonoidActionHomomorphism-from-square
