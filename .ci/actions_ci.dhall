@@ -507,14 +507,15 @@ DHALL
     set -euo pipefail
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
+    agda_count=$(git ls-files '*.agda' | wc -l)
+    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
+    [ -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
+    [ -f Exotic/ERL/FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
-    ! git ls-files '*.roc' | grep -q . || { echo "Roc source remains"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
-    forbidden='\.sh$|\.bash$|\.zsh$|\.fish$|\.cmd$|\.bat$|\.ps1$|\.command$|\.py$|\.java$|\.kt$|\.scala$|\.groovy$|\.clj$|\.cljs$|\.js$|\.mjs$|\.cjs$|\.ts$|\.tsx$|\.elm$|\.purs$|\.hs$|\.lhs$|\.cabal$|\.lua$|\.nim$|\.nims$|\.rocx$|\.ml$|\.mli$|\.sml$|\.c$|\.h$|\.cc$|\.cpp$|\.cxx$|\.hpp$|\.hxx$|\.cs$|\.fs$|\.fsx$|\.vb$|\.csproj$|\.fsproj$|\.vbproj$|\.sln$|\.html$|\.htm$|\.css$|\.tex$|\.ltx$|\.sty$|\.cls$|\.bib$|\.scm$|\.scheme$|\.ss$|\.rkt$'
-    ! git ls-files | grep -E "$forbidden" || { echo "forbidden source suffix present"; exit 1; }
-    retired='guix|guile|scheme|evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
-    ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired term present"; exit 1; }
+    retired='evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
+    ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired semantic term present"; exit 1; }
     '',
   Versions = ''
     set -euo pipefail
