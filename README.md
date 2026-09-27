@@ -85,6 +85,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Law IV carrier-polymorphic Tsallis audit — 2026-09-25](docs/research/law-iv-tsallis-carrier-polymorphic-2026-09-25.md)
 - [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
 - [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
+- [Detailed integer LayerNorm → E-Graph-A* semantic graph](docs/research/integer-layernorm-egraph-astar-2026-09-27.mmd)
 - [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
 - [Real semantic e-graph and staleness policy — 2026-09-26](docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md)
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
