@@ -2,7 +2,7 @@
 
 ## Scope
 
-This pass closes the strongest proof-relevant composition seams identified in the canonical learner theorem graph. The source of proof authority remains `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`; Mermaid remains a projection.
+This pass closes the strongest proof-relevant composition seams identified in the canonical learner theorem graph. The source of proof authority remains `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`; Mercury remains a discovery/transport projection.
 
 ## Closed improvements
 
