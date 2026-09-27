@@ -17,6 +17,10 @@ A workload implementation may use Go, Nim, Lua, Chibi Scheme, Roc, Swift, Tcl/Tk
 The CI surface consequently checks the semantic boundary directly: exactly two tracked Agda sources remain the proof surface, while implementation-language suffixes are not treated as semantic violations.
 
 ## Prompt-scoped native implementation
+## Theorem/learner import synchronization
+
+The theorem monolith imports the canonical learner monolith exactly once as alias `C`. The Dhall contract `.ci/theorem-learner-import-sync.dhall` derives that import from the canonical learner module path, verifies both Agda module declarations, and rejects any additional `Exotic.ERL.FullCoupled.*` semantic import. This keeps the theorem layer downstream of the learner definition without maintaining a second semantic authority.
+
 
 The concrete implementation added by this prompt is a Tcl/Tk native GUI adapter at `workloads/tcltk/native_tk_adapter.tcl`. Its only input contract is the externally supplied `ACTIONS_WORKLOAD_LABEL` string; its responsibility is presentation, not interpretation of learner semantics. No additional language is added by this prompt.
 
@@ -62,6 +66,7 @@ Before: CI rejected several implementation-language suffixes, including Lua, Nim
 Change: remove language bans from the CI surface, retain exact two-file Agda authority, document the workload boundary, and define native Tk plus optional browser/WASM as separate presentation adapters.
 
 Now: semantic authority remains singular while future general-purpose workloads can choose their implementation language without changing the proof architecture.
+Import-sync now has an explicit Dhall gate: the theorem source must continue to import the canonical learner module under `C`, and no alternate FullCoupled semantic module may enter the theorem surface.
 
 Alternatives considered:
 - Make Tk/WASM the only GUI: rejected because it makes browser hosting a requirement for Linux desktop delivery and confuses a presentation adapter with the system contract.
