@@ -3,6 +3,9 @@ flowchart TD
   B --> C["CanonicalMARLLawCompositionTheorem (closed)"]
   C --> D["GRU × F4 × Watkins full learner composition"]
   D --> E["CanonicalGRUF4WatkinsPrefixCompositionTheorem (closed)"]
+  D --> LN["Exact integer LayerNorm statistics"]
+  LN --> LNE["CanonicalIntegerLayerNormEGraphAStarTheorem (closed)"]
+  LNE --> AST
 
   subgraph LAW_I["Law I — agent / particle dynamics"]
     P1["agent / particle dynamics"] --> J["particle trajectories"]
