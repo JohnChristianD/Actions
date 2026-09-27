@@ -80,13 +80,12 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [GRU fractal limit convergence adapter — 2026-09-26](docs/research/gru-fractal-limit-convergence-adapter-2026-09-26.md)
 - [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
 - [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
+- [Integer LayerNorm stability and growth — 2026-09-27](docs/research/integer-layernorm-stability-growth-2026-09-27.md)
 - [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
 - [CI artifact format decision — JSON to Dhall — 2026-09-27](docs/research/json-to-dhall-ci-2026-09-27.md)
 - [Law IV carrier-polymorphic Tsallis audit — 2026-09-25](docs/research/law-iv-tsallis-carrier-polymorphic-2026-09-25.md)
 - [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
 - [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
-- [Detailed integer LayerNorm → E-Graph-A* semantic graph](docs/research/integer-layernorm-egraph-astar-2026-09-27.mmd)
-- [Integer LayerNorm stability and growth — 2026-09-27](docs/research/integer-layernorm-stability-growth-2026-09-27.md)
 - [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
 - [Real semantic e-graph and staleness policy — 2026-09-26](docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md)
 - [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
@@ -286,55 +285,22 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 6e8beae9708544ec5b18f0e216cbaeef0067f258
-unprocessed-commit-count: 45
+last-processed-commit: 5b09f696411e80b507af92904ff17ad6546db4ac
+unprocessed-commit-count: 12
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `6e8beae97085` ci: require LayerNorm E-Graph-A* in semantic contract
-- `e8a900ac17d4` docs: document integer LayerNorm and E-Graph-A* closure
-- `a110741225c1` docs: add integer LayerNorm E-Graph-A* topology
-- `33376f89a322` ci: gate integer LayerNorm E-Graph-A* closure
-- `4111dfb08597` fix: use theorem monolith integer namespace
-- `6a63c53b72c3` feat: connect integer LayerNorm to E-Graph-A*
-- `af9dea867ac5` fix: disambiguate LayerNorm value constructor
-- `95a15381d9b3` feat: add exact integer LayerNorm kernel
-- `edc711a1e292` refactor: retire obsolete factor discovery graph
-- `7497ee2662d6` refactor: prune retired factor graph entries
-- `4cb43143ed41` refactor: prune retired factor registry entries
-- `3b77f69e2b93` docs: prune retired NormPair references
-- `89e664114378` docs: prune retired NormPair references
-- `0578f7bbd20b` docs: prune retired NormPair references
-- `6ab648589e47` docs: prune retired NormPair references
-- `1f5197583e81` docs: prune retired NormPair references
-- `67def630a9e3` docs: prune retired NormPair references
-- `bf8317f04d2b` docs: prune retired NormPair references
-- `87e99820146b` docs: prune retired NormPair references
-- `1f2de4219944` docs: prune retired NormPair references
-- `65321cf55e83` docs: prune retired NormPair references
-- `81adac706d2f` docs: prune retired NormPair references
-- `ec1732f97274` docs: prune retired NormPair references
-- `bb60347d67b9` docs: prune retired NormPair references
-- `8c7c10d69917` docs: prune retired NormPair references
-- `67e46dd9fe64` refactor: retire dedicated NormPair artifact
-- `10b7a2200f72` refactor: retire dedicated NormPair artifact
-- `4957b4ff86a7` refactor: retire dedicated NormPair artifact
-- `5d3a81b3e693` refactor: retire dedicated NormPair artifact
-- `ae8444575bad` refactor: retire dedicated NormPair artifact
-- `b7075d46a6fc` refactor: retire dedicated NormPair artifact
-- `e69dd59fc1a2` docs: retire NormPair from semantic emergence graph
-- `0a3d65397002` docs: remove retired NormPair references from README
-- `a85c2052efba` refactor: retire NormPair README and prefix checks
-- `17020929f97d` refactor: prune retired factor from closure core
-- `7bc2b5af7bf1` refactor: remove retired NormPair adapter checks
-- `1ca9c0f7dd61` refactor: remove retired factor stability CI symbols
-- `71e8d0cdd67d` refactor: remove retired quotient theorem CI symbol
-- `318ee1532269` refactor: rename retired NormPair GRU prefix contract
-- `c28b882f2b90` refactor: retire NormPair CI contract
-- `5e4646450198` refactor: retire NormPair CI contract
-- `6c6389a2ada8` refactor: prune retired factor CI node
-- `c875735c191a` refactor: retire NormPair theorem surface
-- `03d5f87771b6` refactor: retire NormPair state from canonical learner
-- `8c7f354d78ac` docs: refresh README from commit totality
+- `5b09f696411e` ci: complete LayerNorm boundary registry
+- `a99c704f76b1` docs: document monadic A* and F4-LayerNorm boundary
+- `78f3f4b396a5` docs: expand LayerNorm monadic A* topology
+- `96d0caa37464` docs: connect monadic A* and F4-LayerNorm boundary
+- `836699f56454` ci: require monadic A* and LayerNorm stability boundary
+- `a74fca0321c0` discover: register monadic A* and LayerNorm stability surfaces
+- `232adeacc93a` refactor: add monadic A* and LayerNorm stability boundary
+- `274ffe19b3a6` feat: add LayerNorm stability and A* plan algebra
+- `76917b6101a0` docs: expand LayerNorm stability graph
+- `1dff4ed7391b` docs: wire detailed LayerNorm graph into repository topology
+- `608657145582` docs: add detailed integer LayerNorm E-Graph-A* graph
+- `173c4fec928b` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
