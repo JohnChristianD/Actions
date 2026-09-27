@@ -40,7 +40,7 @@ A* remains operational guidance. E-graph soundness remains the equality authorit
 
 ## Evidence
 
-Agda's standard library provides well-founded induction over `Nat`'s strict order, so a future concrete instance can replace the supplied `eventualStable` field with a derived termination theorem once the repository exposes the required finite/bounded state-space invariant. citeturn5search2turn5search1
+Agda's standard library provides well-founded induction over `Nat`'s strict order, so a future concrete instance can replace the supplied `eventualStable` field with a derived termination theorem once the repository exposes the required finite/bounded state-space invariant.
 
 ## Non-goals
 
