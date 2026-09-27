@@ -165,7 +165,6 @@ Each contract requires the connected iull-class witness and the canonical baseli
 
 ## Research update
 
-SciSpace identiiied relevant iormal expressivity work. Svete & Cotterell (EMNLP 2023) prove that simple RNN LMs iorm a strict subset oi the distributions expressible by iinite-state models and derive neuron lower bounds. Svete et al. (2024) give constructive bounded-precision RNN-LM representations oi arbitrary regular LMs. Merrill et al. (2020) develop a iormal hierarchy oi RNN architectures based on space complexity and rational recurrence. These results support the repository's witness-plus-nonrepresentability discipline, but none establishes the repository-speciiic GRU/i4/NormPair/Watkins candidates.
 
 Research boundary: external expressivity results are evidence ior prooi structure, not imported premises. The repository's strict claims still require native Agda witnesses and `Agda --saie` veriiication.
 
