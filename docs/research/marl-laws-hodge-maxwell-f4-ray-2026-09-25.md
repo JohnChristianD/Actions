@@ -8,9 +8,7 @@ The first law is recurrent scan composition. The canonical GRU transition is exp
 
 The second law is the optimizer step law. `canonicalF4RecurrentNetwork-step-law` identifies the F4 recurrent component with the actual `f4ThetaStep` applied to the current optimizer state and signal. This is not a generic theorem about every optimizer; it is a definitional characterization of this F4/L2 update.
 
-The third law is NormPair inertness. `canonicalNormPairRecurrentNetwork-step-law` states that the NormPair component of the recurrent factor is unchanged by its step. Together with the full learner's `canonicalFullStep-norm` and policy invariance, this makes NormPair a dynamically inert factor for the current policy/transition semantics.
 
-These three laws compose with the learner's endogenous signal rather than sitting beside it. The full learner computes a Watkins target from reward, q-log bias, critic information, and endogenous feedback; the same signal drives the GRU and F4 update. `canonical-gruf4-norm-watkins-prefix-composition-theorem` packages the resulting GRU × F4 × NormPair × Watkins prefix composition.
 
 ## Hodge-Maxwell composition
 
@@ -38,7 +36,6 @@ The ray and the factor theorem should be read together:
 
   exact learner laws
     -> recurrent/optimizer/factor composition
-    -> F4 stability + NormPair factorization
     -> exact linear forcing ray
     -/-> convergence
     -/-> fixed point
