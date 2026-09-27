@@ -456,7 +456,6 @@ graph_required_theorems = [
     "CanonicalFiniteCycleExclusionIsomorphismTheorem",
     "CanonicalOperatorCompositionTheorem",
     "CanonicalF4GlobalOptimizerStabilityTheorem",
-    "CanonicalF4NormPairSureStabilityCompositionTheorem",
     "MarkovianStationaryPointCompositionTheorem",
     "CanonicalPureNonOrangeBypassCompletionTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
@@ -567,7 +566,6 @@ graph_connected_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjuga
 
 graph_f4_normpair_gru_global_conjugacy_injectivity_plan(Laws, Plan) :-
     search_named_required_plan(
-        "CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem",
         Laws,
         Plan).
 
