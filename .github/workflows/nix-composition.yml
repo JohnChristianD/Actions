@@ -96,8 +96,8 @@ jobs:
           name: theorem-economic-closure-graph
           if-no-files-found: ignore
           path: |
-            .ci/discovery/theorem-monolith-egraph-sync.json
-            .ci/discovery/economic-closure-graph.json
+            .ci/discovery/theorem-monolith-egraph-sync.dhall
+            .ci/discovery/economic-closure-graph.dhall
 
       - name: Cross-repo Econlib graph
         timeout-minutes: 15
