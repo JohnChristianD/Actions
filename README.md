@@ -55,7 +55,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 38 files.
+Generated from the tracked Markdown surface: 36 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -284,56 +284,55 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 198a556d41055312ca3247fb8a279185c3a216d2
-unprocessed-commit-count: 46
+last-processed-commit: 6e8beae9708544ec5b18f0e216cbaeef0067f258
+unprocessed-commit-count: 45
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `198a556d4105` ci: fix Dhall report validation
-- `d3a779505089` ci: remove legacy JSON artifacts
-- `a60f9390d3be` docs: record JSON to Dhall CI decision
-- `fa54b1dadc65` docs: finish JSON to Dhall references
-- `2a8f8b101be1` docs: update discovery artifact references to Dhall
-- `44b021ce6a4c` docs: document Dhall as CI evidence format
-- `fd8d1f159016` ci: upload Dhall discovery artifacts
-- `fd9874c81467` ci: validate generated Dhall and remove self-referential JSON guard
-- `53ba883a056a` ci: fix Dhall signature inventory emission
-- `bd565bef8f99` ci: make Dhall discovery reports parseable
-- `bfdfaac90624` ci: normalize Dhall discovery fields and JSON-free surface
-- `bdae6403d014` ci: rename discovery reports to Dhall
-- `8226b8a1e42c` ci: emit theorem discovery reports as Dhall
-- `10a6524288f8` ci: emit isomorphism transport report as Dhall
-- `ec51a6e207d7` test: tree probe
-- `3c9e79b9f2c8` ci: replace isomorphism transport producer
-- `c18372672d67` ci: replace mega-interdependent-gru-megawalrasian-completeness.json with Dhall
-- `b3286d58a151` ci: replace complete-connected-theorem-closure-overlay.json with Dhall
-- `2e40600a2c02` ci: replace neural-function-class-separation-graph.json with Dhall
-- `e3a02391acd3` ci: replace strict-unconditional-theorems-monolith.json with Dhall
-- `ad9e56ec6b17` ci: replace change-record-2026-09-19-uap-agda-2.8.0.2.json with Dhall
-- `253e821353f4` ci: route consolidated theorem checks to monolith
-- `6baa2f932101` refactor: remove retired module imports from theorem monolith
-- `06adf08bef9f` ci: guard retired theorem modules against reintroduction
-- `1c3086ea4f2a` refactor: retire redundant theorem module ZPFStatisticalRepresentation.agda
-- `ef398df75086` refactor: retire redundant theorem module TsallisStatisticalRepresentation.agda
-- `d820482ae1bf` refactor: retire redundant theorem module RepositorySemanticEGraphClosure.agda
-- `3571b18fbd49` refactor: retire redundant theorem module GRUFractalLimitDecoderSurvival.agda
-- `a521abe6f27a` refactor: retire redundant theorem module GRUFractalLimitConvergenceImpossibility.agda
-- `912ec8a793b4` refactor: retire redundant theorem module GRUFractalLimitConvergenceAdapter.agda
-- `362f43032fb2` refactor: retire redundant theorem module GRUFractalEGraphAStarLimitComposition.agda
-- `a6650c925a8d` refactor: retire redundant theorem module GRUFractalLimitClosure.agda
-- `28e15561ccf1` refactor: retire redundant theorem module GRUFractalDomainAdapters.agda
-- `0fe87a07b59b` refactor: retire redundant theorem module GRUFractalInjectiveCompositionCanonical.agda
-- `aba83bbf72ff` refactor: retire redundant theorem module GRUFractalInjectiveComposition.agda
-- `9f96272f9558` refactor: retire redundant theorem module CommonsComposition.agda
-- `058e250eca05` refactor: retire redundant theorem module GRUStatisticalInjectivity.agda
-- `53d06929e798` refactor: retire redundant theorem module FourLawClosureImpossibility.agda
-- `8068d46660c0` refactor: retire redundant theorem module FourLawClosureWitnesses.agda
-- `b00ab286e786` refactor: retire redundant theorem module EGraphSemanticTransport.agda
-- `1058bdeef59f` docs: document two-file Agda monolith surface
-- `70857432d37a` ci: extract semantics from theorem monolith only
-- `3eb538e513b8` ci: enforce two-file Agda theorem surface
-- `3bf24f52264c` refactor: make theorem monolith self-contained
-- `cf216e7890e8` refactor: consolidate FullCoupled theorem modules
-- `3475d3bf0989` docs: refresh README from commit totality
+- `6e8beae97085` ci: require LayerNorm E-Graph-A* in semantic contract
+- `e8a900ac17d4` docs: document integer LayerNorm and E-Graph-A* closure
+- `a110741225c1` docs: add integer LayerNorm E-Graph-A* topology
+- `33376f89a322` ci: gate integer LayerNorm E-Graph-A* closure
+- `4111dfb08597` fix: use theorem monolith integer namespace
+- `6a63c53b72c3` feat: connect integer LayerNorm to E-Graph-A*
+- `af9dea867ac5` fix: disambiguate LayerNorm value constructor
+- `95a15381d9b3` feat: add exact integer LayerNorm kernel
+- `edc711a1e292` refactor: retire obsolete factor discovery graph
+- `7497ee2662d6` refactor: prune retired factor graph entries
+- `4cb43143ed41` refactor: prune retired factor registry entries
+- `3b77f69e2b93` docs: prune retired NormPair references
+- `89e664114378` docs: prune retired NormPair references
+- `0578f7bbd20b` docs: prune retired NormPair references
+- `6ab648589e47` docs: prune retired NormPair references
+- `1f5197583e81` docs: prune retired NormPair references
+- `67def630a9e3` docs: prune retired NormPair references
+- `bf8317f04d2b` docs: prune retired NormPair references
+- `87e99820146b` docs: prune retired NormPair references
+- `1f2de4219944` docs: prune retired NormPair references
+- `65321cf55e83` docs: prune retired NormPair references
+- `81adac706d2f` docs: prune retired NormPair references
+- `ec1732f97274` docs: prune retired NormPair references
+- `bb60347d67b9` docs: prune retired NormPair references
+- `8c7c10d69917` docs: prune retired NormPair references
+- `67e46dd9fe64` refactor: retire dedicated NormPair artifact
+- `10b7a2200f72` refactor: retire dedicated NormPair artifact
+- `4957b4ff86a7` refactor: retire dedicated NormPair artifact
+- `5d3a81b3e693` refactor: retire dedicated NormPair artifact
+- `ae8444575bad` refactor: retire dedicated NormPair artifact
+- `b7075d46a6fc` refactor: retire dedicated NormPair artifact
+- `e69dd59fc1a2` docs: retire NormPair from semantic emergence graph
+- `0a3d65397002` docs: remove retired NormPair references from README
+- `a85c2052efba` refactor: retire NormPair README and prefix checks
+- `17020929f97d` refactor: prune retired factor from closure core
+- `7bc2b5af7bf1` refactor: remove retired NormPair adapter checks
+- `1ca9c0f7dd61` refactor: remove retired factor stability CI symbols
+- `71e8d0cdd67d` refactor: remove retired quotient theorem CI symbol
+- `318ee1532269` refactor: rename retired NormPair GRU prefix contract
+- `c28b882f2b90` refactor: retire NormPair CI contract
+- `5e4646450198` refactor: retire NormPair CI contract
+- `6c6389a2ada8` refactor: prune retired factor CI node
+- `c875735c191a` refactor: retire NormPair theorem surface
+- `03d5f87771b6` refactor: retire NormPair state from canonical learner
+- `8c7f354d78ac` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
