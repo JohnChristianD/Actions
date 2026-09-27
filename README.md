@@ -168,7 +168,7 @@ That chain is a semantic contract/topology, not an unconditional existence proof
 
 ## Exact learner facts
 
-The canonical learner state contains the recurrent learner channels, optimizer state, counts, and q-log state. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier.
+The canonical learner state contains the recurrent learner channels, optimizer state, counts, and q-log state. Its `Int8` name is an unbounded `ℤ` wrapper in the current definition; it is not a `Fin n` carrier. Integer LayerNorm is represented by exact integer centering/radicand arithmetic plus an explicit non-zero square-root certificate; the normalized output is an exact integer ratio with integer scale, gamma, and beta.
 
 The current closed facts include:
 
@@ -233,7 +233,7 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMon
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mermaid is the human topology projection. TSV and CSV are not canonical topology formats. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
+The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mermaid is the human topology projection. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
 The orchestration arrows are not mathematical implication arrows.
 
