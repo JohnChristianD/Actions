@@ -2,7 +2,7 @@
 
 ## Scope
 
-This pass extends the exact integer LayerNorm surface without reviving the retired NormPair theorem family. The proof authority remains Exotic/ERL/FullCoupled/TheoremsMonolith.agda; Mermaid and Mercury are discovery/topology projections.
+This pass extends the exact integer LayerNorm surface without reviving the retired NormPair theorem family. The proof authority remains Exotic/ERL/FullCoupled/TheoremsMonolith.agda; Mercury is the discovery/transport projection.
 
 ## A* plan algebra
 
