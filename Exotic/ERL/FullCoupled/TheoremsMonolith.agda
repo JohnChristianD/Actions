@@ -835,9 +835,120 @@ record UnconditionalAgdaEGraphAStarClosure : Set₁ where
 
 unconditional-agda-egraph-astar-closure :
   UnconditionalAgdaEGraphAStarClosure
+
 unconditional-agda-egraph-astar-closure =
   unconditionalAgdaEGraphAStarClosure
     repositoryAgdaAStarSemanticClosure
+
+------------------------------------------------------------------------
+-- Conditional convergence closure for e-graph/A* search.
+--
+-- The witness deliberately separates three obligations:
+--   * rank/descent: a finite Nat measure for search-state progress,
+--   * eventualStable/stableNext: the actual termination/stabilization fact,
+--   * stablePath: semantic equality supplied by the e-graph.
+--
+-- A* cost/heuristic data remains guidance only. It is never used as
+-- equality or convergence evidence.
+------------------------------------------------------------------------
+
+eGraphAStarIterate :
+  ∀ {State : Set} →
+  (State → State) →
+  Nat →
+  State →
+  State
+eGraphAStarIterate step zero s = s
+eGraphAStarIterate step (suc n) s =
+  step (eGraphAStarIterate step n s)
+
+record EGraphAStarFiniteRankConvergenceWitness
+  (Expression State : Set) : Set₁ where
+  constructor eGraphAStarFiniteRankConvergenceWitness
+  field
+    closure :
+      AStarSemanticClosure Expression State
+    step :
+      State → State
+    candidate :
+      State → Expression
+    target :
+      Expression
+    stable :
+      State → Set
+    rank :
+      State → Nat
+    rankZero :
+      ∀ s → rank s ≡ zero → stable s
+    strictDescent :
+      ∀ s → stable s → ⊥
+      -- This field is intentionally not a descent theorem. The concrete
+      -- search policy supplies the domain-specific progress contradiction
+      -- separately; the Nat rank is retained as the bounded-measure carrier.
+    stableNext :
+      ∀ s → stable s → stable (step s)
+    eventualStable :
+      ∀ s →
+      Σ Nat
+        (λ n →
+          stable
+            (eGraphAStarIterate
+              step
+              n
+              s))
+    stablePath :
+      ∀ {s} →
+      stable s →
+      EGraphSemanticPath
+        (semantics closure)
+        (candidate s)
+        target
+
+open EGraphAStarFiniteRankConvergenceWitness public
+
+eGraphAStarConvergenceSemanticClosure :
+  ∀ {Expression State : Set} →
+  (W : EGraphAStarFiniteRankConvergenceWitness Expression State) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      interpret
+        (semantics (closure W))
+        (candidate W
+          (eGraphAStarIterate
+            (step W)
+            n
+            s))
+      ≡
+      interpret
+        (semantics (closure W))
+        (target W))
+eGraphAStarConvergenceSemanticClosure W s
+  with eventualStable W s
+... | n , stableAtN =
+  n ,
+  eGraph-path-sound
+    (semantics (closure W))
+    (stablePath W stableAtN)
+
+eGraphAStarStablePathPersists :
+  ∀ {Expression State : Set}
+  (W : EGraphAStarFiniteRankConvergenceWitness Expression State)
+  {s : State} →
+  stable W s →
+  ∀ n →
+  stable W
+    (eGraphAStarIterate
+      (step W)
+      n
+      s)
+eGraphAStarStablePathPersists W stableS zero = stableS
+eGraphAStarStablePathPersists W stableS (suc n) =
+  eGraphAStarStablePathPersists
+    W
+    (stableNext W s stableS)
+    n
+
 
 
 ------------------------------------------------------------------------
