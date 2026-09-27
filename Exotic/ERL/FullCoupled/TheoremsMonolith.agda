@@ -727,6 +727,225 @@ unconditional-agda-egraph-astar-closure =
   unconditionalAgdaEGraphAStarClosure
     repositoryAgdaAStarSemanticClosure
 
+
+------------------------------------------------------------------------
+-- Concrete integer LayerNorm E-Graph / A* semantic closure.
+--
+-- The expression language exposes equivalent representations of the same
+-- exact integer statistics.  The semantic relation is interpretation
+-- equality, while A* contributes only traversal cost/heuristic data.
+-- Thus every A* path remains proof-relevant only through the sound
+-- e-graph path kernel above.
+------------------------------------------------------------------------
+
+data IntegerLayerNormExpression : Set where
+  rawIntegerLayerNorm :
+    Nat → List C.Int8 → IntegerLayerNormExpression
+  centeredIntegerLayerNorm :
+    Nat → List C.Int8 → IntegerLayerNormExpression
+  radicandIntegerLayerNorm :
+    Nat → List C.Int8 → IntegerLayerNormExpression
+
+record IntegerLayerNormSemanticState : Set where
+  constructor integerLayerNormSemanticState
+  field
+    epsilon : Nat
+    input : List C.Int8
+    centered : List C.ℤ
+    radicand : C.ℤ
+open IntegerLayerNormSemanticState public
+
+integerLayerNormSemanticInterpret :
+  IntegerLayerNormExpression →
+  IntegerLayerNormSemanticState
+integerLayerNormSemanticInterpret
+  (rawIntegerLayerNorm epsilon xs) =
+  integerLayerNormSemanticState
+    epsilon
+    xs
+    (C.integerLayerNormCenteredNumerators xs)
+    (C.integerLayerNormRadicand xs epsilon)
+integerLayerNormSemanticInterpret
+  (centeredIntegerLayerNorm epsilon xs) =
+  integerLayerNormSemanticState
+    epsilon
+    xs
+    (C.integerLayerNormCenteredNumerators xs)
+    (C.integerLayerNormRadicand xs epsilon)
+integerLayerNormSemanticInterpret
+  (radicandIntegerLayerNorm epsilon xs) =
+  integerLayerNormSemanticState
+    epsilon
+    xs
+    (C.integerLayerNormCenteredNumerators xs)
+    (C.integerLayerNormRadicand xs epsilon)
+
+integerLayerNormRelated :
+  IntegerLayerNormExpression →
+  IntegerLayerNormExpression →
+  Set
+integerLayerNormRelated e f =
+  integerLayerNormSemanticInterpret e ≡
+  integerLayerNormSemanticInterpret f
+
+integerLayerNormRelated-refl :
+  ∀ e → integerLayerNormRelated e e
+integerLayerNormRelated-refl e = refl
+
+integerLayerNormRelated-sym :
+  ∀ {e f} →
+  integerLayerNormRelated e f →
+  integerLayerNormRelated f e
+integerLayerNormRelated-sym = sym
+
+integerLayerNormRelated-trans :
+  ∀ {e f g} →
+  integerLayerNormRelated e f →
+  integerLayerNormRelated f g →
+  integerLayerNormRelated e g
+integerLayerNormRelated-trans = trans
+
+integerLayerNormEGraphCongruence :
+  EGraphCongruence IntegerLayerNormExpression
+integerLayerNormEGraphCongruence =
+  eGraphCongruence
+    integerLayerNormRelated
+    integerLayerNormRelated-refl
+    integerLayerNormRelated-sym
+    integerLayerNormRelated-trans
+
+integerLayerNormEGraphSemantics :
+  EGraphSemanticInterpretation
+    IntegerLayerNormExpression
+    IntegerLayerNormSemanticState
+integerLayerNormEGraphSemantics =
+  eGraphSemanticInterpretation
+    integerLayerNormEGraphCongruence
+    integerLayerNormSemanticInterpret
+    (λ eq → eq)
+
+integerLayerNormAStarCostModel :
+  AStarCostModel IntegerLayerNormExpression
+integerLayerNormAStarCostModel =
+  aStarCostModel
+    (λ _ _ → suc zero)
+    (λ _ → zero)
+
+integerLayerNormAStarClosure :
+  AStarSemanticClosure
+    IntegerLayerNormExpression
+    IntegerLayerNormSemanticState
+integerLayerNormAStarClosure =
+  aStarSemanticClosure
+    integerLayerNormEGraphSemantics
+    integerLayerNormAStarCostModel
+
+integerLayerNorm-raw-centered-edge :
+  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  CertifiedEGraphEdge
+    integerLayerNormEGraphSemantics
+    (rawIntegerLayerNorm epsilon xs)
+    (centeredIntegerLayerNorm epsilon xs)
+integerLayerNorm-raw-centered-edge epsilon xs =
+  certifiedEGraphEdge
+    (semanticEdgeMetadata
+      "integer-layernorm-raw"
+      "integer-layernorm-centered"
+      "integerLayerNorm-raw-centered-edge"
+      []
+      semanticProved
+      kernelProof
+      true)
+    (path-step refl (path-refl
+      (centeredIntegerLayerNorm epsilon xs)))
+
+integerLayerNorm-centered-radicand-edge :
+  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  CertifiedEGraphEdge
+    integerLayerNormEGraphSemantics
+    (centeredIntegerLayerNorm epsilon xs)
+    (radicandIntegerLayerNorm epsilon xs)
+integerLayerNorm-centered-radicand-edge epsilon xs =
+  certifiedEGraphEdge
+    (semanticEdgeMetadata
+      "integer-layernorm-centered"
+      "integer-layernorm-radicand"
+      "integerLayerNorm-centered-radicand-edge"
+      []
+      semanticProved
+      kernelProof
+      true)
+    (path-step refl (path-refl
+      (radicandIntegerLayerNorm epsilon xs)))
+
+integerLayerNorm-raw-radicand-path :
+  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  EGraphSemanticPath
+    (semantics integerLayerNormAStarClosure)
+    (rawIntegerLayerNorm epsilon xs)
+    (radicandIntegerLayerNorm epsilon xs)
+integerLayerNorm-raw-radicand-path epsilon xs =
+  path-step
+    refl
+    (path-step
+      refl
+      (path-refl (radicandIntegerLayerNorm epsilon xs)))
+
+integerLayerNorm-a-star-semantic-closure :
+  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  interpret (semantics integerLayerNormAStarClosure)
+    (rawIntegerLayerNorm epsilon xs)
+  ≡
+  interpret (semantics integerLayerNormAStarClosure)
+    (radicandIntegerLayerNorm epsilon xs)
+integerLayerNorm-a-star-semantic-closure epsilon xs =
+  aStar-guided-semantic-closure
+    integerLayerNormAStarClosure
+    (integerLayerNorm-raw-radicand-path epsilon xs)
+
+record CanonicalIntegerLayerNormEGraphAStarTheorem : Set₁ where
+  constructor canonicalIntegerLayerNormEGraphAStarTheorem
+  field
+    closure :
+      AStarSemanticClosure
+        IntegerLayerNormExpression
+        IntegerLayerNormSemanticState
+    rawCentered :
+      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      CertifiedEGraphEdge
+        integerLayerNormEGraphSemantics
+        (rawIntegerLayerNorm epsilon xs)
+        (centeredIntegerLayerNorm epsilon xs)
+    centeredRadicand :
+      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      CertifiedEGraphEdge
+        integerLayerNormEGraphSemantics
+        (centeredIntegerLayerNorm epsilon xs)
+        (radicandIntegerLayerNorm epsilon xs)
+    rawRadicand :
+      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      EGraphSemanticPath
+        (semantics integerLayerNormAStarClosure)
+        (rawIntegerLayerNorm epsilon xs)
+        (radicandIntegerLayerNorm epsilon xs)
+    soundPath :
+      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      interpret (semantics integerLayerNormAStarClosure)
+        (rawIntegerLayerNorm epsilon xs)
+      ≡
+      interpret (semantics integerLayerNormAStarClosure)
+        (radicandIntegerLayerNorm epsilon xs)
+
+canonical-integer-layernorm-egraph-astar-theorem :
+  CanonicalIntegerLayerNormEGraphAStarTheorem
+canonical-integer-layernorm-egraph-astar-theorem =
+  canonicalIntegerLayerNormEGraphAStarTheorem
+    integerLayerNormAStarClosure
+    integerLayerNorm-raw-centered-edge
+    integerLayerNorm-centered-radicand-edge
+    integerLayerNorm-raw-radicand-path
+    integerLayerNorm-a-star-semantic-closure
+
 ------------------------------------------------------------------------
 -- The theorem is unconditional over the complete surviving Agda-file
 -- index and any supplied semantic family:
