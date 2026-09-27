@@ -170,7 +170,6 @@ Economic primitives
 
 The finite-rank stability seam is also now an actual Agda bridge: `topologicalConvergenceWitness-from-finite-rank-stability` transports eventual exact fixation into the existing convergence-witness interface while keeping the convergence relation explicit.
 
-The GRU/F4 injectivity seam is now an actual Agda composition. `gruf4EconomicInjectivityFromGlobalSquare` combines the existing F4/NormPair/GRU global observation injectivity with `MegaWalrasianGlobalSquareConjugacy` injectivity. It is supporting evidence for the dynamics path, not a replacement for the convergence proof: injectivity alone does not establish convergence.
 
 The two edges marked `FRONTIER` are the only local mathematical gaps in this target route:
 
@@ -197,16 +196,11 @@ The finite-rank convergence seam has a concrete boundary on the canonical learne
 The stationary-law route is now explicit as an alternative frontier. `StationaryLimitTheorem` already provides a conditional pattern in which a distribution-valued orbit converges and the transition preserves its limit, yielding stationarity. `MarkovStationaryWalrasianCompositionTheorem` then supplies a `StationaryWalrasian` lift from a static Walrasian aggregate. What is still missing for the MARL/Hodge-Maxwell/GRU-F4/Norm-Pair composition is the actual neighborhood stationary-law witness, including explicit probability/distribution semantics and its connection to the economic aggregate. The repository's existing boundary is deliberate: deterministic F4/Norm-Pair stability does not itself manufacture a probability law or measure-theoretic convergence theorem.
 
 
-## Policy quotient refinement: NormPair is dynamically inert
-
-The closure audit now distinguishes two replacement facts. Both `NormPair` and F4 optimizer replacement preserve the instantaneous `canonicalPolicy`, but only `NormPair` is dynamically inert in the canonical learner transition. The new theorem `canonicalFullStep-replaceNorm` proves definitionally that replacing the norm before a step is equal to stepping first and replacing the preserved norm afterward.
-
-This makes the `NormPair` coordinate a genuine quotient candidate: policy observation and canonical transition both respect norm replacement. F4 optimizer replacement remains policy-invariant at a fixed state, but optimizer state enters `canonicalEndogenousFeedback` and `canonicalOptimizerStep`, so optimizer replacement is not yet a valid dynamic quotient merely from policy invariance.
-
-The stationary-law route should therefore quotient out `NormPair` first, while treating optimizer state as a policy-hidden but dynamically active coordinate. No convergence or stationary-law existence claim is added by this refinement.
 
 
-The quotient seam is now iterated, not only one-step: canonicalFullStep-replaceNorm-iterate proves by induction that replacing NormPair before any finite canonical orbit is equal to replacing the preserved norm after the orbit. This is the reusable dynamic compatibility law needed before defining a quotient/factor transition. It still says nothing about convergence or stationary-law existence, and it does not extend to optimizer replacement because optimizer state remains dynamically active.
+
+
+
 
 ## Finite/discrete candidate-price closure
 
