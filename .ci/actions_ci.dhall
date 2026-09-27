@@ -29,17 +29,17 @@ let script = merge {
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
-    report=.ci/discovery/theorem-monolith-egraph-sync.json
-    grep -Fq '"forced_symbolic_target": true' "$report" && { echo "forced symbolic target"; exit 1; } || true
-    grep -Fq '"single_agda_source": false' "$report" && { echo "non-canonical Agda source"; exit 1; } || true
-    grep -Fq '"graph_search": "A* cost-guided dependency paths"' "$report" || { echo "missing A* graph label"; exit 1; }
-    grep -Fq '"astar_score_ordered": true' "$report" || { echo "A* order gate failed"; exit 1; }
-    grep -Fq '"emergent_composition_count": 0' "$report" && { echo "no emergent composition"; exit 1; } || true
+    report=.ci/discovery/theorem-monolith-egraph-sync.dhall
+    grep -Fq 'forcedSymbolicTarget = True' "$report" && { echo "forced symbolic target"; exit 1; } || true
+    grep -Fq 'singleAgdaSource = False' "$report" && { echo "non-canonical Agda source"; exit 1; } || true
+    grep -Fq 'graphSearch = "A* cost-guided dependency paths"' "$report" || { echo "missing A* graph label"; exit 1; }
+    grep -Fq 'astarScoreOrdered = True' "$report" || { echo "A* order gate failed"; exit 1; }
+    grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     set -euo pipefail
     graph=docs/research/current-semantic-emergence-2026-09-25.mmd
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-    sync=.ci/discovery/theorem-monolith-egraph-sync.json
+    sync=.ci/discovery/theorem-monolith-egraph-sync.dhall
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     readme=README.md
     [ -f "$graph" ] || { echo "missing current semantic emergence graph"; exit 1; }
@@ -107,7 +107,7 @@ let script = merge {
       [ -f "Exotic/ERL/FullCoupled/$file" ] || { echo "surviving Agda file missing from repository surface: $file"; exit 1; }
     done
     grep -Fq 'Complete surviving-Agda closure index' "$readme" || { echo "README missing complete Agda closure index"; exit 1; }
-    law_count=$(awk -F': ' '/"semantic_law_count":/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
+    law_count=$(awk -F'= ' '/semanticLawCount =/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
 
     record_count=$(awk '/^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ {count++} END {print count+0}' "$theorem")
@@ -123,7 +123,7 @@ let script = merge {
       printf '  "source_graph": "%s",\\n' "$graph"
       printf '  "theorem_source": "%s",\\n' "$theorem"
       printf '  "learner_source": "%s",\\n' "$learner"
-      printf '  "semantic_law_count": %s,\\n' "$law_count"
+      printf '  "semanticLawCount": %s,\\n' "$law_count"
       printf '  "record_count": %s,\\n' "$record_count"
       printf '  "top_level_declaration_count": %s,\\n' "$declaration_count"
       printf '  "economic_record_count": %s,\\n' "$economic_record_count"
@@ -138,12 +138,12 @@ let script = merge {
       printf '  "economic_boundary": ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
       printf '  "production_topology": "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
       printf '  "counterexample_policy": "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
-      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic semantic projection; JSON is machine evidence and Mermaid is the human topology view"\\n'
+      printf '  "automation": "one unattended Mercury discovery pass followed by deterministic semantic projection; Dhall is machine evidence and Mermaid is the human topology view"\\n'
       printf '%s\\n' '}'
-    } > .ci/discovery/economic-closure-graph.json
+    } > .ci/discovery/economic-closure-graph.dhall
 
-    grep -Fq '"surface_authority": "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.json
-    grep -Fq '"frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.json
+    grep -Fq '"surface_authority": "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.dhall
+    grep -Fq '"frontier_policy": "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.dhall
     echo "economic-closure-graph=pass"
     echo "economic-record-count=$economic_record_count"
     echo "economic-declaration-count=$economic_declaration_count"
@@ -193,10 +193,10 @@ let script = merge {
       printf '  "composition_path": ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
       printf '  "graph_status": "composition-ready; explicit cross-language adapter still required"\n'
       printf '%s\n' '}'
-    } > .ci/discovery/econlib-crossrepo-sync.json
+    } > .ci/discovery/econlib-crossrepo-sync.dhall
 
-    grep -Fq '"upstream_static_existence": "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.json
-    grep -Fq '"local_composition_target": "CanonicalLearnerHodgeMaxwellCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.json
+    grep -Fq '"upstream_static_existence": "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.dhall
+    grep -Fq '"local_composition_target": "CanonicalLearnerHodgeMaxwellCompositionTheorem"' .ci/discovery/econlib-crossrepo-sync.dhall
     echo "econlib-crossrepo-sync=pass"
     echo "econlib-commit=$econlib_rev"
     echo "adapter-present=$adapter_present"
@@ -263,11 +263,11 @@ let script = merge {
       printf '  "composition_path": ["Econlib::RegularEconomy", "Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
       printf '  "pomdp_bridge_status": "local POMDP belief-policy closure remains explicit; no filtering or optimality is inferred"\n'
       printf '%s\n' '}'
-    } > .ci/discovery/econlib-equilibrium-graph.json
+    } > .ci/discovery/econlib-equilibrium-graph.dhall
 
-    grep -Fq '"regularity_assumption": "RegularEconomy"' .ci/discovery/econlib-equilibrium-graph.json
-    grep -Fq '"non_iid_transition": "arbitrary Markov/kernel transition"' .ci/discovery/econlib-equilibrium-graph.json
-    grep -Fq '"pomdp_bridge_status": "frontier:' .ci/discovery/econlib-equilibrium-graph.json
+    grep -Fq '"regularity_assumption": "RegularEconomy"' .ci/discovery/econlib-equilibrium-graph.dhall
+    grep -Fq '"non_iid_transition": "arbitrary Markov/kernel transition"' .ci/discovery/econlib-equilibrium-graph.dhall
+    grep -Fq '"pomdp_bridge_status": "frontier:' .ci/discovery/econlib-equilibrium-graph.dhall
     echo "econlib-equilibrium-search=pass"
     echo "econlib-commit=$econlib_rev"
     echo "pomdp-named-in-upstream=$pomdp_named"
@@ -275,10 +275,10 @@ let script = merge {
   StrictExistenceImpossibility = ''
     set -euo pipefail
     (cd .ci/discovery && mmc --make strict_existence_impossibility_graph && ./strict_existence_impossibility_graph)
-    report=.ci/discovery/strict-existence-impossibility-graph.json
+    report=.ci/discovery/strict-existence-impossibility-graph.dhall
     grep -Fq '"rule": "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
-    grep -Fq '"orange_statuses_allowed": false' "$report" || { echo "orange status enabled"; exit 1; }
-    grep -Fq '"terminal_statuses": ["EXISTENCE","IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
+    grep -Fq '"orangeStatusesAllowed": false' "$report" || { echo "orange status enabled"; exit 1; }
+    grep -Fq '"terminalStatuses": ["EXISTENCE","IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
     ! grep -Eiq 'frontier|unknown|vague|adapter needed|unresolved|pending' "$report" || { echo "vague status present"; exit 1; }
     grep -Fq 'strict-existence-impossibility-graph=pass' "$report"
     '',
@@ -299,12 +299,12 @@ let script = merge {
     grep -Fq '0 < P.transition' "$ergodic"
 
     mkdir -p .ci/discovery
-    cat > .ci/discovery/stationary-cycle-impossibility-graph.json <<'JSON'
+    cat > .ci/discovery/stationary-cycle-impossibility-graph.dhall <<'JSON'
 {
   "rule": "FINITE_DETERMINISTIC_CYCLE_HAS_STATIONARY_WITNESS_BUT_IS_EXCLUDED",
-  "terminal_status": "IMPOSSIBILITY",
-  "requires_exact_finite_deterministic_projection": true,
-  "stationary_distribution_witness": {
+  "terminalStatus": "IMPOSSIBILITY",
+  "requiresExactFiniteDeterministicProjection": true,
+  "stationaryDistributionWitness": {
     "type": "uniform_cycle_measure",
     "statement": "For a deterministic cycle of length m>0, the uniform probability law on the cycle is stationary for the induced deterministic Markov kernel.",
     "use": "witness_only"
@@ -336,28 +336,28 @@ let script = merge {
     ["deterministic finite recurrent cycle", "canonicalNoNontrivialFiniteCycle-theorem", "contradiction"],
     ["period-1 recurrent cycle", "canonicalNoFiniteStepConvergenceToFixedPoint", "contradiction"]
   ],
-  "logic_guard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
+  "logicGuard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem",
   "isomorphism_transport_node": "Agda::isomorphismNoFiniteCycleTransport",
   "isomorphism_transport_role": "exact conjugacy preserves finite-cycle exclusion on the isomorphic state space",
   "status": "strict graph: no third terminal status"
 }
 JSON
-    grep -Fq '"terminal_status": "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.json
-    grep -Fq '"stationary_distribution_witness": {' .ci/discovery/stationary-cycle-impossibility-graph.json
-    grep -Fq '"type": "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.json
-    grep -Fq '"logic_guard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem"' .ci/discovery/stationary-cycle-impossibility-graph.json
-    grep -Fq '"requires_exact_finite_deterministic_projection": true' .ci/discovery/stationary-cycle-impossibility-graph.json
-    grep -Fq '"status": "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.json
-    ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.json
+    grep -Fq '"terminalStatus": "IMPOSSIBILITY"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq '"stationaryDistributionWitness": {' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq '"type": "uniform_cycle_measure"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq '"logicGuard": "stationary-law existence is not itself an obstruction; the obstruction is the canonical no-cycle theorem"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq '"requiresExactFiniteDeterministicProjection": true' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    grep -Fq '"status": "strict graph: no third terminal status"' .ci/discovery/stationary-cycle-impossibility-graph.dhall
+    ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' .ci/discovery/stationary-cycle-impossibility-graph.dhall
     echo "stationary-cycle-impossibility-graph=pass"
     '',
   IsomorphismTransport = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
-    report=.ci/discovery/isomorphism-transport-graph.json
+    report=.ci/discovery/isomorphism-transport-graph.dhall
     grep -Fq '"rule": "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
-    grep -Fq '"orange_statuses_allowed": false' "$report" || { echo "orange status enabled"; exit 1; }
+    grep -Fq '"orangeStatusesAllowed": false' "$report" || { echo "orange status enabled"; exit 1; }
     grep -Fq 'Agda::isomorphismEqualityTransport' "$report" || { echo "equality transport kernel missing"; exit 1; }
     grep -Fq 'Agda::isomorphismDisequalityTransport' "$report" || { echo "disequality transport kernel missing"; exit 1; }
     ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' "$report" || { echo "vague transport status present"; exit 1; }
