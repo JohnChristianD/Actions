@@ -9,9 +9,7 @@ flowchart TD
     K["Canonical learner definitions"]:::proved
     BP["canonicalBehaviorPolicy"]:::proved
     BA["canonicalBehaviorAction"]:::proved
-    NQ["CanonicalNormPairQuotientFactorTransitionTheorem"]:::proved
     F4["CanonicalF4GlobalOptimizerStabilityTheorem"]:::proved
-    FN["CanonicalF4NormPairUnconditionalFactorStabilityTheorem"]:::proved
     MARL["CanonicalMARLLawCompositionTheorem"]:::proved
     SCAN["CanonicalFullLearnerConnectedScanConjugacyTheorem"]:::proved
     K --> BP --> BA
@@ -32,7 +30,6 @@ flowchart TD
     COI["canonicalOrbit-state-injective"]:::proved
     OCI["canonicalTotalCountSuccessorWitness"]:::proved
     ATG["canonical-token-arbitrary-length-generation-theorem"]:::proved
-    IF["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
     OLD["canonicalNoNontrivialFiniteCycle-theorem"]:::proved
     SPW --> SPI --> NFC
     TCA --> TCP --> TCS --> TCC
@@ -54,8 +51,6 @@ flowchart TD
     ATG --> GL["canonical-global-token-lm-composition-theorem"]:::proved
   end
 
-  subgraph FACTOR["Iterated F4 / NormPair factor stability"]
-    F4I["CanonicalF4NormPairIterateFactorStabilityTheorem"]:::proved
     FN --> F4I
     F4I --> TCW
   end
@@ -136,7 +131,6 @@ flowchart TD
     FCS -. "classifies supplied candidates; does not derive price" .-> PRICE
 
     EMPTY["noUnconditionalMegaGeneralizedWalrasianExistence"]:::blocked
-    EMPTY2["noUnconditionalMegaWalrasianExistenceEvenWithF4NormPairEconomicInjectivity"]:::blocked
     EMPTY -. "blocks unconditional existence" .-> GWE
     EMPTY2 -. "blocks stronger unconditional promotion" .-> GWE
 
@@ -181,7 +175,6 @@ flowchart TD
 
   subgraph FULL["End-to-end composition frontier"]
     U["ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem"]:::frontier
-    INJ["CanonicalF4NormPairGRUGlobalConjugacyInjectivityTheorem"]:::conditional
     UREQ["explicit equilibrium / belief / stationarity transport witnesses"]:::frontier
     HM9 --> U
     INJ --> U
