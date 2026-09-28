@@ -207,3 +207,10 @@ The stationary-law route is now explicit as an alternative frontier. `Stationary
 A new constructive kernel, `finiteCandidatePriceSearch`, can classify a finite supplied price-candidate list at a fixed allocation when an explicit decision procedure for the supporting relation is provided. This is a finite search/classification result, not an Arrow–Debreu or Walrasian existence result.
 
 The derivation graph therefore keeps the kernel below the supporting-price frontier: it can consume an already decidable supporting relation, but it does not derive that relation from separation, KKT, fixed-point, or classical convexity hypotheses.
+
+
+### Current price-law boundary
+
+The economic e-graph now has an unconditional stationarity seam in the authoritative theorem monolith. The canonical operator is the zero-step identity `p ↦ p`, and its stationarity is proved by reflexivity. This closes the logical input-operator problem without introducing a primitive economic adjustment law.
+
+A substantive excess-demand-driven price update remains a distinct derivation target. The graph must not rewrite `excessDemand` into a nontrivial `Price → Price` dynamic, or promote stationarity into generalized-Walrasian/Arrow–Debreu existence, without an explicit theorem supplying the required economic relation and hypotheses.
