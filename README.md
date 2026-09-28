@@ -327,3 +327,14 @@ ascii-safe-commit-subjects: true
 - `3546a848b5e3` feat: compose certified e-graph paths
 - `f82e84d74736` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
+
+
+## Current economic e-graph closure
+
+The generalized aggregate-excess-demand e-graph is now explicit in `TheoremsMonolith.agda`. Its typed chain covers individual demand, firm supply, aggregation, excess demand, regularity (continuity, degree-zero homogeneity, and Walras law), aggregate feasibility, market clearing, supporting prices, and equilibrium characterization.
+
+The unconditional stationary-price seam is also in the theorem monolith. `canonicalStationaryPriceUpdate` is the canonical zero-step operator `p ↦ p`, `canonicalStationaryPriceLaw` proves stationarity by `refl`, and `UnconditionalEGraphEconomicStationaryPriceComposition` transports that law alongside a certified semantic e-graph path. This removes an externally supplied `Price → Price` operator from the unconditional stationarity core while preserving the distinction between identity stationarity and a substantive excess-demand price-adjustment process.
+
+The repository does **not** infer a nontrivial price-adjustment law, an excess-demand root, supporting-price existence, Walrasian existence, uniqueness, stability, or convergence merely from these carriers. Those require corresponding mathematical witnesses or additional structure. The e-graph records those boundaries rather than treating them as proofs.
+
+The Agda proof authority remains exactly two files: `CanonicalLearnerMonolith.agda` and `TheoremsMonolith.agda`. Auxiliary documentation and discovery artifacts are subordinate to that authority.
