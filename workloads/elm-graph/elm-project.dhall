@@ -24,7 +24,8 @@ let project : Project =
       , virtualDomVersion = "1.0.3"
       }
 
-in ''{
+in ''
+{
   "type": ${Text/show project.type},
   "source-directories": [${Text/show project.sourceDirectory}],
   "elm-version": ${Text/show project.elmVersion},
