@@ -8949,11 +8949,11 @@ record EGraphEconomicFiniteCandidatePriceComposition
     semanticPath :
       EGraphSemanticPath R e f
     candidateClassification :
-      FiniteCandidatePriceResult
-        Price
-        Allocation
+      finiteCandidatePriceSearch
         supports
         allocation
+        decide
+        candidates
 
 open EGraphEconomicFiniteCandidatePriceComposition public
 
