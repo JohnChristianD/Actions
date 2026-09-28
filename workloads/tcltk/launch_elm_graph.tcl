@@ -14,7 +14,11 @@ if {![file exists $bundle]} {
     if {$nix eq ""} {
         error "Elm graph bundle is missing and Nix is unavailable: $bundle"
     }
-    if {[catch {exec {*}$nix run "${repo_root}#elm-graph-build"} build_error]} {
+    set previous_dir [pwd]
+    cd $repo_root
+    set build_status [catch {exec {*}$nix run "${repo_root}#elm-graph-build"} build_error]
+    cd $previous_dir
+    if {$build_status} {
         error "Elm graph build failed: $build_error"
     }
 }
