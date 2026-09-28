@@ -40,6 +40,14 @@ The theorem monolith adds:
 - `EGraphEconomicAggregateExcessDemandComposition`
 - `eGraphEconomicAggregateExcessDemand-closure`
 
+The new standalone module adds:
+
+- `canonicalStationaryPriceUpdate`
+- `canonicalStationaryPriceLaw`
+- `UnconditionalEGraphEconomicStationaryPriceComposition`
+- `unconditionalEGraphEconomicStationaryPriceClosure`
+- `unconditionalEGraphEconomicStationaryPriceComposition-from-path`
+
 ## Literature-facing requirements
 
 Arrow and Debreu's 1954 competitive-economy formulation integrates production, exchange, and consumption and treats supply, demand, and market equilibrium as distinct components. The aggregate-excess-demand literature then studies the reduced-form price-to-excess-demand object.
@@ -75,7 +83,41 @@ EconomicStructure
           +--> generalized equilibrium characterization
 ```
 
-The final four edges are direct implications from an explicit root. The kernel does not search for a root. A separate fixed-point edge records the exact price-update law needed to transport a root into stationarity.
+The final four edges are direct implications from an explicit root. The kernel does not search for a root.
+
+## Unconditional price-law closure
+
+The previous fixed-point seam accepted `priceUpdate : Price → Price` as an input. That is useful when formalizing a specific economic adjustment process, but it leaves the unconditional core dependent on an externally supplied operator.
+
+The new module removes that operator from the unconditional core by choosing the canonical zero-step operator:
+
+```
+canonicalStationaryPriceUpdate p = p
+```
+
+Its law is definitional:
+
+```
+canonicalStationaryPriceUpdate p ≡ p
+```
+
+and is proved by `refl`. Consequently, every certified e-graph path can be lifted to an unconditional stationary-price composition without supplying a price-update function.
+
+This closes the *input-operator problem* at the logical level, but it deliberately does not claim that the identity operator is a classical market-clearing or excess-demand adjustment dynamic. A non-identity economic price law still requires an explicit relation between excess demand and price motion.
+
+The distinction is:
+
+```
+unconditional stationarity
+  = canonical identity update
+  -> fixed point by reflexivity
+
+economic price adjustment
+  = non-identity update tied to excess demand
+  -> requires an explicit economic adapter
+```
+
+This is the maximal unconditional closure available without smuggling a price-adjustment assumption into a theorem.
 
 ## Representation boundary
 
@@ -130,14 +172,17 @@ TopologicalConvergenceWitness
   -> generalized Walrasian existence
 ```
 
-The expanded aggregate-excess-demand kernel now supplies the explicit price-update seam as `GeneralizedAggregateExcessDemandFixedPointWitness`. It does not manufacture the update law or prove convergence.
+The expanded aggregate-excess-demand kernel retains the explicit economic fixed-point seam as `GeneralizedAggregateExcessDemandFixedPointWitness`. The new unconditional module separately supplies the canonical stationary identity law.
 
 ```
 excessDemand p = zero
-  -> priceUpdate p = p  [when the explicit root-to-fixed-point law is supplied]
+  -> priceUpdate p = p  [when an explicit economic law is supplied]
+
+canonicalStationaryPriceUpdate p = p
+  -> canonicalStationaryPriceUpdate p ≡ p  [unconditionally]
 
 excessDemand p = zero
-  -/-> convergence of a price adjustment process
+  -/-> convergence of a nontrivial price adjustment process
 
 continuous + homogeneousZero + WalrasLaw
   -/-> uniqueness or stability
@@ -146,28 +191,37 @@ continuous + homogeneousZero + WalrasLaw
 ## Status
 
 PROVED at the formal interface level:
+
 - typed demand and supply witnesses;
 - typed aggregation adapter;
 - typed excess-demand definition;
 - explicit regularity witness;
 - explicit root-to-clearing/support/equilibrium closure;
-- explicit root-to-fixed-point transport;
+- explicit root-to-fixed-point transport when an economic price law is supplied;
+- unconditional canonical stationary price law;
+- unconditional e-graph stationary-price composition;
 - e-graph semantic-path composition;
 - e-graph fixed-point composition.
 
 CLOSED-INTERFACE:
+
 - every supplied excess-demand root produces the bundled economic consequences through direct implications;
-- every supplied excess-demand root is transported to a price fixed point when the explicit price-update law is supplied.
+- every supplied excess-demand root is transported to a price fixed point when the explicit economic price-update law is supplied;
+- every certified semantic path has a canonical stationary-price composition without a price-update input.
 
 OPEN-EDGE:
+
 - deriving demand/supply functions from optimization contracts;
 - deriving continuity, degree-zero homogeneity, and Walras' law from a concrete classical price/commodity model;
 - deriving a root from economic primitives;
 - deriving supporting prices from separation/KKT/fixed-point assumptions;
-- deriving dynamic convergence from an economic update operator.
+- deriving a nontrivial dynamic price law from economic primitives;
+- deriving convergence of that nontrivial price-adjustment operator.
 
 BOUNDARY:
-- generalized-Walrasian existence is not promoted here; the repository retains an explicit empty-equilibrium countermodel against the unrestricted target.
+
+- generalized-Walrasian existence is not promoted here; the repository retains an explicit empty-equilibrium countermodel against the unrestricted target;
+- the identity stationary law is not presented as a substitute for an economic adjustment dynamic.
 
 ## Primary literature
 
@@ -185,7 +239,8 @@ https://doi.org/10.1016/0022-0531(76)90073-9
 
 ## Knowledge delta
 
-- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: expanded aggregate-excess-demand witness and e-graph composition.
-- `.ci/actions_ci.dhall`: gates the new formal symbols.
-- this note: literature-facing semantics and remaining frontier.
-- README: indexes this note.
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: expanded aggregate-excess-demand witness and economic fixed-point composition.
+- `Exotic/ERL/FullCoupled/CanonicalAggregatePriceLaw.agda`: unconditional canonical stationary-price operator and e-graph composition.
+- `.ci/actions_ci.dhall`: existing theorem gate remains authoritative; the new module still requires CI compilation integration.
+- this note: records the input-operator closure and its semantic boundary.
+- README: existing index continues to expose this note.
