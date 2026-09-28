@@ -7951,3 +7951,288 @@ nestedLevelRestriction D level =
 -- Nat supplies the resource quantities; equality and subst transport the
 -- concrete countermodel into the preservation obligation.
 ------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+-- Economic e-graph composition kernel.
+--
+-- This is a proof-relevant packaging seam, not an unconditional economic
+-- convergence theorem.  Convergence, stationarity, equilibrium
+-- characterization, and representation reconstruction remain explicit
+-- inputs.  The composition theorem only transports and combines those
+-- already-typed witnesses with the semantic e-graph, plan-monoid, and
+-- monadic search surfaces.
+------------------------------------------------------------------------
+
+record EGraphEconomicConvergenceFixedPointWitness
+  (State : Set)
+  (update : State → State)
+  (fixed : State) : Set₁ where
+  constructor eGraphEconomicConvergenceFixedPointWitness
+  field
+    eventual :
+      ∀ s →
+      Σ Nat
+        (λ n →
+          iterateStep update n s ≡ fixed)
+    stationary :
+      update fixed ≡ fixed
+
+open EGraphEconomicConvergenceFixedPointWitness public
+
+eGraphEconomicFixedOrbit :
+  ∀ {State : Set}
+  {update : State → State}
+  {fixed : State}
+  (W :
+    EGraphEconomicConvergenceFixedPointWitness
+      State
+      update
+      fixed) →
+  ∀ n →
+  iterateStep update n fixed ≡ fixed
+eGraphEconomicFixedOrbit W zero = refl
+eGraphEconomicFixedOrbit W (suc n) =
+  trans
+    (cong update (eGraphEconomicFixedOrbit W n))
+    (stationary W)
+
+record EGraphEconomicRepresentationWitness
+  (State Feature : Set)
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (Continuous : {A B : Set} → (A → B) → Set) : Set₁ where
+  constructor eGraphEconomicRepresentationWitness
+  field
+    reconstruction :
+      ContinuousLeftInverseTheorem
+        State
+        Feature
+        observe
+        inverse
+        Continuous
+
+open EGraphEconomicRepresentationWitness public
+
+eGraphEconomicRepresentationInjective :
+  ∀ {State Feature : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    EGraphEconomicRepresentationWitness
+      State
+      Feature
+      observe
+      inverse
+      Continuous) →
+  ∀ {s t : State} →
+  observe s ≡ observe t →
+  s ≡ t
+eGraphEconomicRepresentationInjective W {s} {t} eq =
+  trans
+    (sym (ContinuousLeftInverseTheorem.leftInverse
+      (reconstruction W)
+      s))
+    (trans
+      (cong
+        (ContinuousLeftInverseTheorem.inverse
+          (reconstruction W))
+        eq)
+      (ContinuousLeftInverseTheorem.leftInverse
+        (reconstruction W)
+        t))
+
+record EGraphEconomicWalrasianWitness
+  (State Price Allocation : Set)
+  (D :
+    MegaGeneralizedWalrasianEquilibrium
+      State
+      Price
+      Allocation)
+  (priceOf : State → Price)
+  (allocationOf : State → Allocation)
+  (fixed : State) : Set₁ where
+  constructor eGraphEconomicWalrasianWitness
+  field
+    equilibriumAtFixed :
+      equilibrium
+        D
+        (priceOf fixed)
+        (allocationOf fixed)
+
+open EGraphEconomicWalrasianWitness public
+
+record EGraphEconomicComposition
+  (Expression State Feature Price Allocation : Set)
+  (R :
+    EGraphSemanticInterpretation
+      Expression
+      State)
+  (e f : Expression)
+  (update : State → State)
+  (fixed : State)
+  (D :
+    MegaGeneralizedWalrasianEquilibrium
+      State
+      Price
+      Allocation)
+  (priceOf : State → Price)
+  (allocationOf : State → Allocation)
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (Continuous : {A B : Set} → (A → B) → Set) : Set₁ where
+  constructor eGraphEconomicComposition
+  field
+    semanticPath :
+      EGraphSemanticPath R e f
+    convergenceFixedPoint :
+      EGraphEconomicConvergenceFixedPointWitness
+        State
+        update
+        fixed
+    walrasian :
+      EGraphEconomicWalrasianWitness
+        State
+        Price
+        Allocation
+        D
+        priceOf
+        allocationOf
+        fixed
+    representation :
+      EGraphEconomicRepresentationWitness
+        State
+        Feature
+        observe
+        inverse
+        Continuous
+    planMonoid :
+      AStarPlanMonoidTheorem Expression
+    monads :
+      AStarHaskellMonadSurface Expression
+
+open EGraphEconomicComposition public
+
+eGraphEconomicSemanticEquality :
+  ∀ {Expression State Feature Price Allocation : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  (W :
+    EGraphEconomicComposition
+      Expression
+      State
+      Feature
+      Price
+      Allocation
+      R
+      e
+      f
+      (λ s → s)
+      e
+      (megaGeneralizedWalrasianEquilibrium
+        (λ x → x)
+        (λ _ _ → ⊤)
+        (λ _ _ → ⊤)
+        (λ _ → tt))
+      (λ s → tt)
+      (λ s → tt)
+      (λ s → tt)
+      (λ x → x)
+      (λ _ → trivialContinuity)) →
+  interpret R e ≡ interpret R f
+eGraphEconomicSemanticEquality W =
+  eGraph-path-sound R (semanticPath W)
+
+eGraphEconomicFixedPoint :
+  ∀ {State : Set}
+  {update : State → State}
+  {fixed : State}
+  (W :
+    EGraphEconomicConvergenceFixedPointWitness
+      State
+      update
+      fixed) →
+  update fixed ≡ fixed
+eGraphEconomicFixedPoint W = stationary W
+
+eGraphEconomicWalrasianEquilibrium :
+  ∀ {State Price Allocation : Set}
+  {D :
+    MegaGeneralizedWalrasianEquilibrium
+      State
+      Price
+      Allocation}
+  {priceOf : State → Price}
+  {allocationOf : State → Allocation}
+  {fixed : State}
+  (W :
+    EGraphEconomicWalrasianWitness
+      State
+      Price
+      Allocation
+      D
+      priceOf
+      allocationOf
+      fixed) →
+  equilibrium
+    D
+    (priceOf fixed)
+    (allocationOf fixed)
+eGraphEconomicWalrasianEquilibrium W =
+  equilibriumAtFixed W
+
+------------------------------------------------------------------------
+-- The combined closure theorem exposes the independent proof products:
+-- semantic equality, eventual convergence to a stationary point,
+-- generalized-Walrasian equilibrium at the fixed state, and injective
+-- representation.  Monoid/monad fields are carried as search algebra and
+-- effect surfaces; they are not silently upgraded into semantic laws.
+------------------------------------------------------------------------
+
+eGraphEconomicComposition-injective :
+  ∀ {Expression State Feature Price Allocation : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  {update : State → State}
+  {fixed : State}
+  {D :
+    MegaGeneralizedWalrasianEquilibrium
+      State
+      Price
+      Allocation}
+  {priceOf : State → Price}
+  {allocationOf : State → Allocation}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {Continuous : {A B : Set} → (A → B) → Set}
+  (W :
+    EGraphEconomicComposition
+      Expression
+      State
+      Feature
+      Price
+      Allocation
+      R
+      e
+      f
+      update
+      fixed
+      D
+      priceOf
+      allocationOf
+      observe
+      inverse
+      Continuous) →
+  ∀ {s t : State} →
+  observe s ≡ observe t →
+  s ≡ t
+eGraphEconomicComposition-injective W =
+  eGraphEconomicRepresentationInjective
+    (representation W)
