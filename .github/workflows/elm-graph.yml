@@ -1,0 +1,56 @@
+name: Elm graph GUI verification
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  elm-graph:
+    name: Build Dhall-backed Elm graph GUI and validate Tcl launcher
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+
+      - name: Build Elm graph bundle
+        run: |
+          set -euo pipefail
+          nix run .#elm-graph-build
+          test -s workloads/elm-graph/dist/elm.js
+
+      - name: Validate Dhall source and no JSON source artifacts
+        run: |
+          set -euo pipefail
+          dhall --version || true
+          test -f workloads/elm-graph/graph.dhall
+          test -f workloads/elm-graph/elm-project.dhall
+          test ! -e workloads/elm-graph/elm.json
+          test ! -e workloads/elm-graph/demo-graph.json
+          ! git ls-files '*.json' | grep -q .
+
+      - name: Validate Tcl launchers are syntactically complete
+        run: |
+          set -euo pipefail
+          for file in workloads/tcltk/native_tk_adapter.tcl workloads/tcltk/launch_elm_graph.tcl; do
+            FILE="$file" tclsh <<'EOF'
+              set channel [open $::env(FILE) r]
+              set source [read $channel]
+              close $channel
+              if {![info complete $source]} {
+                puts stderr "incomplete Tcl source: $::env(FILE)"
+                exit 1
+              }
+            EOF
+          done
