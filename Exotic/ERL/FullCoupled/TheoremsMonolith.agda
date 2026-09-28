@@ -7215,6 +7215,400 @@ record MonolithProductionSideAssumptionBundle
 
 open MonolithProductionSideAssumptionBundle public
 
+------------------------------------------------------------------------
+-- Expanded generalized aggregate-excess-demand e-graph seam.
+--
+-- This layer separates individual demand/supply, aggregation, excess
+-- demand, regularity, market clearing, supporting prices, and equilibrium
+-- characterization. None of these edges is inferred from a label alone.
+-- Continuity, degree-zero homogeneity, and Walras' law are explicit
+-- requirements; they are not consequences of representation injectivity.
+------------------------------------------------------------------------
+
+record GeneralizedIndividualDemandWitness
+  (Agent Price Consumption : Set)
+  (demand : Price → Agent → Consumption)
+  (optimal : Price → Agent → Consumption → Set) : Set₁ where
+  constructor generalizedIndividualDemandWitness
+  field
+    demandOptimal :
+      ∀ p i →
+      optimal p i (demand p i)
+
+record GeneralizedFirmSupplyWitness
+  (Firm Price ProductionPlan : Set)
+  (supply : Price → Firm → ProductionPlan)
+  (optimal : Firm → Price → ProductionPlan → Set) : Set₁ where
+  constructor generalizedFirmSupplyWitness
+  field
+    supplyOptimal :
+      ∀ p j →
+      optimal j p (supply p j)
+
+record GeneralizedAggregateDemandSupplyWitness
+  (Agent Firm Price Consumption ProductionPlan Allocation : Set)
+  (demand : Price → Agent → Consumption)
+  (supply : Price → Firm → ProductionPlan)
+  (aggregateDemand : (Agent → Consumption) → Allocation)
+  (aggregateSupply : (Firm → ProductionPlan) → Allocation) : Set₁ where
+  constructor generalizedAggregateDemandSupplyWitness
+  field
+    aggregateDemandAt :
+      Price → Allocation
+    aggregateSupplyAt :
+      Price → Allocation
+    aggregateDemandDefinition :
+      ∀ p →
+      aggregateDemandAt p ≡
+      aggregateDemand (λ i → demand p i)
+    aggregateSupplyDefinition :
+      ∀ p →
+      aggregateSupplyAt p ≡
+      aggregateSupply (λ j → supply p j)
+
+record GeneralizedAggregateExcessDemandWitness
+  (Price Allocation ExcessDemand : Set)
+  (aggregateDemandAt aggregateSupplyAt : Price → Allocation)
+  (subtract : Allocation → Allocation → ExcessDemand)
+  (excessDemand : Price → ExcessDemand) : Set₁ where
+  constructor generalizedAggregateExcessDemandWitness
+  field
+    excessDefinition :
+      ∀ p →
+      excessDemand p ≡
+      subtract
+        (aggregateDemandAt p)
+        (aggregateSupplyAt p)
+
+record GeneralizedAggregateExcessDemandRegularityWitness
+  (Price ExcessDemand : Set)
+  (excessDemand : Price → ExcessDemand)
+  (continuous homogeneousZero walrasLaw :
+    (Price → ExcessDemand) → Set) : Set₁ where
+  constructor generalizedAggregateExcessDemandRegularityWitness
+  field
+    continuity :
+      continuous excessDemand
+    homogeneity :
+      homogeneousZero excessDemand
+    walras :
+      walrasLaw excessDemand
+
+record GeneralizedAggregateMarketClearingWitness
+  (Price ExcessDemand : Set)
+  (excessDemand : Price → ExcessDemand)
+  (zeroExcess : ExcessDemand)
+  (marketClearing : Price → Set) : Set₁ where
+  constructor generalizedAggregateMarketClearingWitness
+  field
+    clearingFromZero :
+      ∀ p →
+      excessDemand p ≡ zeroExcess →
+      marketClearing p
+
+record GeneralizedAggregateSupportingPriceWitness
+  (Price Allocation ExcessDemand : Set)
+  (aggregateAllocation : Price → Allocation)
+  (excessDemand : Price → ExcessDemand)
+  (zeroExcess : ExcessDemand)
+  (supports : Price → Allocation → Set) : Set₁ where
+  constructor generalizedAggregateSupportingPriceWitness
+  field
+    supportingFromZero :
+      ∀ p →
+      excessDemand p ≡ zeroExcess →
+      supports p (aggregateAllocation p)
+
+record ExpandedGeneralizedAggregateExcessDemandKernel
+  (Agent Firm Price Consumption ProductionPlan Allocation ExcessDemand : Set)
+  (demand : Price → Agent → Consumption)
+  (supply : Price → Firm → ProductionPlan)
+  (aggregateDemand : (Agent → Consumption) → Allocation)
+  (aggregateSupply : (Firm → ProductionPlan) → Allocation)
+  (aggregateDemandAt aggregateSupplyAt : Price → Allocation)
+  (subtract : Allocation → Allocation → ExcessDemand)
+  (excessDemand : Price → ExcessDemand)
+  (zeroExcess : ExcessDemand)
+  (optimalDemand : Price → Agent → Consumption → Set)
+  (optimalSupply : Firm → Price → ProductionPlan → Set)
+  (continuous homogeneousZero walrasLaw :
+    (Price → ExcessDemand) → Set)
+  (aggregateFeasible : Price → Allocation → Set)
+  (marketClearing : Price → Set)
+  (supports : Price → Allocation → Set)
+  (equilibrium : Price → Allocation → Set) : Set₁ where
+  constructor expandedGeneralizedAggregateExcessDemandKernel
+  field
+    demandWitness :
+      GeneralizedIndividualDemandWitness
+        Agent
+        Price
+        Consumption
+        demand
+        optimalDemand
+    supplyWitness :
+      GeneralizedFirmSupplyWitness
+        Firm
+        Price
+        ProductionPlan
+        supply
+        optimalSupply
+    aggregateDemandSupplyWitness :
+      GeneralizedAggregateDemandSupplyWitness
+        Agent
+        Firm
+        Price
+        Consumption
+        ProductionPlan
+        Allocation
+        demand
+        supply
+        aggregateDemand
+        aggregateSupply
+    aggregateDemandSupplyAt :
+      ∀ p →
+      aggregateDemandAt p ≡
+      GeneralizedAggregateDemandSupplyWitness.aggregateDemandAt
+        aggregateDemandSupplyWitness
+        p
+    aggregateSupplySupplyAt :
+      ∀ p →
+      aggregateSupplyAt p ≡
+      GeneralizedAggregateDemandSupplyWitness.aggregateSupplyAt
+        aggregateDemandSupplyWitness
+        p
+    aggregateFeasibilityWitness :
+      ∀ p →
+      aggregateFeasible p (aggregateDemandAt p)
+    excessWitness :
+      GeneralizedAggregateExcessDemandWitness
+        Price
+        Allocation
+        ExcessDemand
+        aggregateDemandAt
+        aggregateSupplyAt
+        subtract
+        excessDemand
+    regularityWitness :
+      GeneralizedAggregateExcessDemandRegularityWitness
+        Price
+        ExcessDemand
+        excessDemand
+        continuous
+        homogeneousZero
+        walrasLaw
+    marketClearingWitness :
+      GeneralizedAggregateMarketClearingWitness
+        Price
+        ExcessDemand
+        excessDemand
+        zeroExcess
+        marketClearing
+    supportingPriceWitness :
+      GeneralizedAggregateSupportingPriceWitness
+        Price
+        Allocation
+        ExcessDemand
+        aggregateDemandAt
+        excessDemand
+        zeroExcess
+        supports
+    equilibriumCharacterization :
+      ∀ p →
+      excessDemand p ≡ zeroExcess →
+      equilibrium p (aggregateDemandAt p)
+
+expandedGeneralizedAggregateExcessDemand-closure :
+  ∀ {Agent Firm Price Consumption ProductionPlan Allocation ExcessDemand : Set}
+  {demand : Price → Agent → Consumption}
+  {supply : Price → Firm → ProductionPlan}
+  {aggregateDemand : (Agent → Consumption) → Allocation}
+  {aggregateSupply : (Firm → ProductionPlan) → Allocation}
+  {aggregateDemandAt aggregateSupplyAt : Price → Allocation}
+  {subtract : Allocation → Allocation → ExcessDemand}
+  {excessDemand : Price → ExcessDemand}
+  {zeroExcess : ExcessDemand}
+  {optimalDemand : Price → Agent → Consumption → Set}
+  {optimalSupply : Firm → Price → ProductionPlan → Set}
+  {continuous homogeneousZero walrasLaw :
+    (Price → ExcessDemand) → Set}
+  {aggregateFeasible : Price → Allocation → Set}
+  {marketClearing : Price → Set}
+  {supports : Price → Allocation → Set}
+  {equilibrium : Price → Allocation → Set}
+  (W :
+    ExpandedGeneralizedAggregateExcessDemandKernel
+      Agent
+      Firm
+      Price
+      Consumption
+      ProductionPlan
+      Allocation
+      ExcessDemand
+      demand
+      supply
+      aggregateDemand
+      aggregateSupply
+      aggregateDemandAt
+      aggregateSupplyAt
+      subtract
+      excessDemand
+      zeroExcess
+      optimalDemand
+      optimalSupply
+      continuous
+      homogeneousZero
+      walrasLaw
+      aggregateFeasible
+      marketClearing
+      supports
+      equilibrium) →
+  ∀ p →
+  excessDemand p ≡ zeroExcess →
+  aggregateFeasible p (aggregateDemandAt p) ×
+  marketClearing p ×
+  supports p (aggregateDemandAt p) ×
+  equilibrium p (aggregateDemandAt p)
+expandedGeneralizedAggregateExcessDemand-closure W p root =
+  ( aggregateFeasibilityWitness W p
+  , clearingFromZero (marketClearingWitness W) p root
+  , supportingFromZero (supportingPriceWitness W) p root
+  , equilibriumCharacterization W p root )
+
+------------------------------------------------------------------------
+-- E-graph composition node: semantic path plus the entire economic
+-- demand -> supply -> aggregate -> excess -> root -> closure chain.
+-- Convergence remains a separate witness and is not manufactured here.
+------------------------------------------------------------------------
+
+record EGraphEconomicAggregateExcessDemandComposition
+  (Expression State Agent Firm Price Consumption ProductionPlan Allocation ExcessDemand : Set)
+  (R :
+    EGraphSemanticInterpretation
+      Expression
+      State)
+  (e f : Expression)
+  (demand : Price → Agent → Consumption)
+  (supply : Price → Firm → ProductionPlan)
+  (aggregateDemand : (Agent → Consumption) → Allocation)
+  (aggregateSupply : (Firm → ProductionPlan) → Allocation)
+  (aggregateDemandAt aggregateSupplyAt : Price → Allocation)
+  (subtract : Allocation → Allocation → ExcessDemand)
+  (excessDemand : Price → ExcessDemand)
+  (zeroExcess : ExcessDemand)
+  (optimalDemand : Price → Agent → Consumption → Set)
+  (optimalSupply : Firm → Price → ProductionPlan → Set)
+  (continuous homogeneousZero walrasLaw :
+    (Price → ExcessDemand) → Set)
+  (aggregateFeasible : Price → Allocation → Set)
+  (marketClearing : Price → Set)
+  (supports : Price → Allocation → Set)
+  (equilibrium : Price → Allocation → Set) : Set₁ where
+  constructor eGraphEconomicAggregateExcessDemandComposition
+  field
+    semanticPath :
+      EGraphSemanticPath R e f
+    economicKernel :
+      ExpandedGeneralizedAggregateExcessDemandKernel
+        Agent
+        Firm
+        Price
+        Consumption
+        ProductionPlan
+        Allocation
+        ExcessDemand
+        demand
+        supply
+        aggregateDemand
+        aggregateSupply
+        aggregateDemandAt
+        aggregateSupplyAt
+        subtract
+        excessDemand
+        zeroExcess
+        optimalDemand
+        optimalSupply
+        continuous
+        homogeneousZero
+        walrasLaw
+        aggregateFeasible
+        marketClearing
+        supports
+        equilibrium
+
+eGraphEconomicAggregateExcessDemand-closure :
+  ∀ {Expression State Agent Firm Price Consumption ProductionPlan Allocation ExcessDemand : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  {demand : Price → Agent → Consumption}
+  {supply : Price → Firm → ProductionPlan}
+  {aggregateDemand : (Agent → Consumption) → Allocation}
+  {aggregateSupply : (Firm → ProductionPlan) → Allocation}
+  {aggregateDemandAt aggregateSupplyAt : Price → Allocation}
+  {subtract : Allocation → Allocation → ExcessDemand}
+  {excessDemand : Price → ExcessDemand}
+  {zeroExcess : ExcessDemand}
+  {optimalDemand : Price → Agent → Consumption → Set}
+  {optimalSupply : Firm → Price → ProductionPlan → Set}
+  {continuous homogeneousZero walrasLaw :
+    (Price → ExcessDemand) → Set}
+  {aggregateFeasible : Price → Allocation → Set}
+  {marketClearing : Price → Set}
+  {supports : Price → Allocation → Set}
+  {equilibrium : Price → Allocation → Set}
+  (W :
+    EGraphEconomicAggregateExcessDemandComposition
+      Expression
+      State
+      Agent
+      Firm
+      Price
+      Consumption
+      ProductionPlan
+      Allocation
+      ExcessDemand
+      R
+      e
+      f
+      demand
+      supply
+      aggregateDemand
+      aggregateSupply
+      aggregateDemandAt
+      aggregateSupplyAt
+      subtract
+      excessDemand
+      zeroExcess
+      optimalDemand
+      optimalSupply
+      continuous
+      homogeneousZero
+      walrasLaw
+      aggregateFeasible
+      marketClearing
+      supports
+      equilibrium) →
+  EGraphSemanticPath R e f ×
+  (∀ p →
+    excessDemand p ≡ zeroExcess →
+    aggregateFeasible p (aggregateDemandAt p) ×
+    marketClearing p ×
+    supports p (aggregateDemandAt p) ×
+    equilibrium p (aggregateDemandAt p))
+eGraphEconomicAggregateExcessDemand-closure W =
+  semanticPath W
+  , expandedGeneralizedAggregateExcessDemand-closure
+      (economicKernel W)
+
+------------------------------------------------------------------------
+-- Research note: this node records the literature-facing requirements.
+-- It does not turn continuity/homogeneity/Walras law into an existence
+-- theorem, and it does not turn a root witness into convergence.
+------------------------------------------------------------------------
+
 record MonolithStationaryLawBridge
   (Distribution Economic : Set)
   (P : Distribution → Distribution)
