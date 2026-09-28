@@ -260,7 +260,7 @@ Tk itself should therefore not be redefined as “Tk in WebAssembly”. The brow
 
 Guix is not a repository requirement. Mermaid is not a graph or CI requirement. Neither is needed by the semantic core.
 
-For this prompt only, the concrete native GUI adapter is `workloads/tcltk/native_tk_adapter.tcl`. It is presentation-only: it accepts an external `ACTIONS_WORKLOAD_LABEL` value and renders it with Tk; it does not define learner semantics or CI evidence.
+For this prompt, the concrete workload adapter is `workloads/mirth/graph-adapter.mth`. It is presentation-neutral: it reports the generated graph artifact and does not define learner semantics or CI evidence.
 
 ## MARL, Hodge-Maxwell, and optimizer semantics
 
