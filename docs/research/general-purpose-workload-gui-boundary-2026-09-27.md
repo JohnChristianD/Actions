@@ -24,6 +24,14 @@ The concrete implementation added by this prompt is a Tcl/Tk native GUI adapter 
 
 The theorem monolith imports the canonical learner monolith exactly once as alias `C`. The Dhall contract `.ci/theorem-learner-import-sync.dhall` derives that import from the canonical learner module path, verifies both Agda module declarations, and rejects any additional `Exotic.ERL.FullCoupled.*` semantic import. This keeps the theorem layer downstream of the learner definition without maintaining a second semantic authority.
 
+## Hex/Mirth workload boundary — 2026-09-28
+
+The H3RALD hex source was inspected from upstream commit `add4081ef80f5f9b6ff89dcc3d847964a4fe00d6`. The source is a tiny concatenative C implementation with 32-bit hexadecimal integers, strings, quotations, global symbols, a REPL, and 64 native symbols.
+
+The requested Tcl/Tk-to-Mirth substitution has no source sites to transform: standalone `Tcl`, `Tk`, `tcl`, and `tk` matches in `src/hex.c` are zero. No semantic substitution is therefore implied.
+
+The repository records upstream provenance under `workloads/hex/README.md` rather than creating a second semantic implementation. Mirth is treated as a possible workload language, not as theorem authority.
+
 ## GUI boundary
 
 Tk should remain an adapter, not the semantic or systems core.
