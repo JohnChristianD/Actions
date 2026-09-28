@@ -52,3 +52,18 @@ Agda's standard library provides well-founded induction over `Nat`'s strict orde
 ## Verification target
 
 The focused proof is the safe Agda check for `TheoremsMonolith.agda`, followed by the repository's e-graph/A* CI gates. If those checks are unavailable, the change remains an explicit conditional interface rather than a claimed verified implementation.
+
+
+## Concrete LayerNorm instantiation
+
+The generic conditional closure is now instantiated for the canonical integer LayerNorm expression family by a three-phase finite-rank normalization state: `raw -> centered -> radicand`.
+
+The concrete witness is `integerLayerNorm-egraph-astar-finite-rank-witness`. Its rank is 2/1/0 across those phases, strict descent holds outside the radicand phase, and the radicand phase is stable under the step. The resulting `integerLayerNorm-egraph-astar-eventual-semantic-closure` supplies eventual semantic equality to the radicand target.
+
+The infinite-horizon statement is phrased as an eventual stable index followed by persistence:
+`Σ n, ∀ k, stable (iterate k (iterate n phase))`.
+This avoids conflating eventual stabilization with boundedness or a metric contraction property.
+
+The concrete proof uses the existing `integerLayerNormAStarClosure` and its e-graph semantic interpretation. A* remains a cost/heuristic carrier; the convergence proof uses the finite rank and e-graph semantic path, not A* optimality as a semantic axiom.
+
+This is a normalization-path theorem, not an unconditional convergence theorem for arbitrary e-graph rewrite systems or arbitrary A* searches.
