@@ -69,7 +69,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [E-Graph / A* convergence closure — 2026-09-27](docs/research/egraph-astar-convergence-2026-09-27.md)
-- [E-graph MARL/Walrasian convergence, fixed-point, representation, monad, and monoid composition — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
+- [E-graph frontier: MARL physics ↔ generalized Walrasian convergence and injectivity — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
@@ -308,15 +308,21 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 19f8f56a0dbe1cc4243b9c4e26a677b7d9d0df21
-unprocessed-commit-count: 5
+last-processed-commit: 727b033d9cc1e363e130629f764cafa716078707
+unprocessed-commit-count: 11
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `19f8f56a0dbe` docs: record concrete e-graph A* stability instantiation
-- `bbc093c59216` ci: gate concrete e-graph A* stability theorem
-- `cdb49b491956` fix: state infinite stable tail as eventual stable index
-- `7e18c8639669` feat: instantiate e-graph A* infinite-horizon stability
-- `85a066dbed60` docs: refresh README from commit totality
+- `727b033d9cc1` docs: index economic e-graph composition
+- `ac3524335f5c` docs: record economic e-graph composition seam
+- `6990eb4c6d60` ci: gate economic e-graph composition
+- `c1b8d368786d` fix: tighten economic e-graph composition theorem
+- `3d1d9829923c` feat: compose economic e-graph witness algebra
+- `5a89b4b9528f` docs: index MARL Walrasian e-graph frontier
+- `b302d796762a` docs: graph MARL Walrasian convergence injectivity frontier
+- `af05810f1994` ci: gate certified e-graph path composition
+- `e1b03fe0e8b9` docs: record certified e-graph path composition
+- `3546a848b5e3` feat: compose certified e-graph paths
+- `f82e84d74736` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
