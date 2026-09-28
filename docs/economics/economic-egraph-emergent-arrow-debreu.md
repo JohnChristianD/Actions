@@ -214,3 +214,9 @@ The derivation graph therefore keeps the kernel below the supporting-price front
 The economic e-graph now has an unconditional stationarity seam in the authoritative theorem monolith. The canonical operator is the zero-step identity `p ↦ p`, and its stationarity is proved by reflexivity. This closes the logical input-operator problem without introducing a primitive economic adjustment law.
 
 A substantive excess-demand-driven price update remains a distinct derivation target. The graph must not rewrite `excessDemand` into a nontrivial `Price → Price` dynamic, or promote stationarity into generalized-Walrasian/Arrow–Debreu existence, without an explicit theorem supplying the required economic relation and hypotheses.
+
+### Finite candidate classification as an explicit e-graph edge
+
+The economic e-graph now has a typed node for the constructive finite candidate-price classifier. `EGraphEconomicFiniteCandidatePriceComposition` binds the certified semantic path to `FiniteCandidatePriceResult`, preserving the distinction between graph transport and the economic witness supplied to the classifier.
+
+The resulting edge is proof-relevant but not existential: a supplied finite list is classified; the graph does not infer an unlisted supporting price or promote the classifier into an Arrow–Debreu/Walrasian existence theorem.
