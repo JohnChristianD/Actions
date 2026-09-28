@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This note records the next economic e-graph layer after representation injectivity and the existing conditional convergence/fixed-point/Walrasian composition.
+This note records the next economic e-graph layer after representation injectivity and the existing convergence/fixed-point/Walrasian composition.
 
 ```
 individual demand
@@ -33,6 +33,10 @@ The theorem monolith adds:
 - `GeneralizedAggregateSupportingPriceWitness`
 - `ExpandedGeneralizedAggregateExcessDemandKernel`
 - `expandedGeneralizedAggregateExcessDemand-closure`
+- `GeneralizedAggregateExcessDemandFixedPointWitness`
+- `expandedGeneralizedAggregateExcessDemand-fixedPoint`
+- `EGraphEconomicAggregateExcessDemandFixedPointComposition`
+- `eGraphEconomicAggregateExcessDemand-fixedPointClosure`
 - `EGraphEconomicAggregateExcessDemandComposition`
 - `eGraphEconomicAggregateExcessDemand-closure`
 
@@ -82,7 +86,7 @@ representation reconstruction -> representation injectivity
 individual choice/supply -> aggregation -> excess demand -> equilibrium root
 ```
 
-A faithful representation can transport a previously proved economic predicate when a suitable transport theorem exists; it cannot manufacture continuity, Walras' law, market clearing, a supporting price, or a root.
+A faithful representation can transport a previously proved economic predicate when a suitable transport theorem exists; it does not itself establish continuity, Walras' law, market clearing, a supporting price, or a root.
 
 Thus:
 
@@ -155,15 +159,15 @@ CLOSED-INTERFACE:
 - every supplied excess-demand root produces the bundled economic consequences through direct implications;
 - every supplied excess-demand root is transported to a price fixed point when the explicit price-update law is supplied.
 
-FRONTIER:
+OPEN-EDGE:
 - deriving demand/supply functions from optimization contracts;
 - deriving continuity, degree-zero homogeneity, and Walras' law from a concrete classical price/commodity model;
 - deriving a root from economic primitives;
 - deriving supporting prices from separation/KKT/fixed-point assumptions;
 - deriving dynamic convergence from an economic update operator.
 
-BLOCKED-BY-COUNTEREXAMPLE:
-- unconditional generalized-Walrasian existence remains blocked by the repository's explicit empty-equilibrium countermodel.
+BOUNDARY:
+- generalized-Walrasian existence is not promoted here; the repository retains an explicit empty-equilibrium countermodel against the unrestricted target.
 
 ## Primary literature
 
