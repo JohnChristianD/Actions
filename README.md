@@ -74,7 +74,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
-- [General-purpose workload and GUI boundary — 2026-09-27](docs/research/general-purpose-workload-gui-boundary-2026-09-27.md)
+- [General-purpose workload and semantic boundary — 2026-09-28](docs/research/general-purpose-workload-gui-boundary-2026-09-27.md)
 - [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
 - [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
 - [Arbitrary-limit GRU fractal closure and e-graph/A* composition — 2026-09-26](docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md)
@@ -309,15 +309,27 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 9f88b5ce100aca8ecd63de0278e25b03b2ae8be1
-unprocessed-commit-count: 3
+last-processed-commit: c3fafeeb47604051c08cf9387de6873ad5fb244d
+unprocessed-commit-count: 15
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `9f88b5ce100a` docs: record hex upstream provenance
-- `5433271ec3ed` docs: record hex and mirth workload boundary
-- `5b5c358f5fd0` docs: refresh README from commit totality
+- `c3fafeeb4760` ci: invoke pinned nixpkgs Mirth compiler
+- `ce7e31a552fb` docs: remove stale Tcl/Tk adapter reference
+- `ae97612f9d6f` refactor: remove obsolete Tcl/Tk workload code
+- `1d86476fa180` refactor: remove obsolete Tcl/Tk workload code
+- `5ef4c03996fa` docs: describe Mirth as current workload boundary
+- `06594b6ff76d` docs: state Mirth workload orthogonality boundary
+- `a6f9bf7f9983` ci: replace Tcl launcher check with Mirth compile
+- `0d2cc5b1ebf1` ci: validate Mirth workload surface
+- `92ce5a131781` build: use Mirth instead of Tcl/Tk
+- `2fde13d62718` docs: record vendored hex and Mirth boundary
+- `cbb07131feff` vendor: retain hex MIT license
+- `f866a79646b5` vendor: add upstream hex src/hex.c
+- `50d6798fec43` refactor: make Mirth the general-purpose workload adapter
+- `779407a65ef7` refactor: make Mirth the general-purpose workload adapter
+- `0bcb0eef1fba` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
