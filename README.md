@@ -309,31 +309,15 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: a8d1ffa75082fca7c0cbf3766d2f534486753254
-unprocessed-commit-count: 19
+last-processed-commit: 9f88b5ce100aca8ecd63de0278e25b03b2ae8be1
+unprocessed-commit-count: 3
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `a8d1ffa75082` ci: fix Dhall and Tcl validation harness
-- `11a472ca33a8` fix: use valid Elm SVG attributes
-- `ef9f8a0168cb` fix: declare Elm JSON runtime dependency in Dhall
-- `420c7dd47cc9` fix: normalize Dhall multiline project output
-- `c632512e6809` fix: render transient Elm metadata with Dhall text
-- `df4c912d41dc` fix: render Elm project metadata from typed Dhall
-- `3db8ee248a10` fix: quote hyphenated Dhall project fields
-- `2374384a5af6` feat: wire Elm graph into Tk control shell
-- `cdd1bb4a0354` fix: make Tcl Elm launcher cwd-safe
-- `4ecfb2c39d82` ci: verify Dhall-backed Elm graph GUI
-- `e2637e4234c3` ci: add Dhall-backed Elm graph lane
-- `07489747844e` build: add reproducible Elm graph build
-- `bd9cd862309c` feat: add Tcl launcher for Elm graph
-- `01b7de8e3591` feat: add Elm graph HTML shell
-- `57609121a2ee` feat: define Elm project in Dhall
-- `99ee85484e83` feat: make graph data Dhall-authoritative
-- `28ede6dad908` feat: add Elm graph viewer
-- `841afa5b12cd` feat: add Elm graph model
-- `257f1949739a` docs: refresh README from commit totality
+- `9f88b5ce100a` docs: record hex upstream provenance
+- `5433271ec3ed` docs: record hex and mirth workload boundary
+- `5b5c358f5fd0` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
