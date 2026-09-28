@@ -70,6 +70,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [E-Graph / A* convergence closure — 2026-09-27](docs/research/egraph-astar-convergence-2026-09-27.md)
 - [E-graph frontier: MARL physics ↔ generalized Walrasian convergence and injectivity — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
+- [Expanded generalized aggregate excess demand e-graph — 2026-09-28](docs/research/egraph-expanded-aggregate-excess-demand-2026-09-28.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
