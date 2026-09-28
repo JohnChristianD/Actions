@@ -1,81 +1,75 @@
-# General-purpose workload and GUI boundary — 2026-09-27
+# General-purpose workload and semantic boundary — 2026-09-28
 
 ## Decision
 
-The repository keeps one semantic authority and makes workload implementation language-neutral.
+The repository keeps one semantic authority and makes workload implementation language-agnostic.
 
-The authoritative layers are:
+1. Agda `--safe` owns canonical definitions, typed obligations, and proofs.
+2. Mercury owns declaration extraction, dependency discovery, and graph processing.
+3. Dhall owns typed verification/evidence contracts.
+4. Nix owns reproducible environment composition.
+5. Workloads are replaceable implementations consuming explicit contracts.
 
-1. **Agda `--safe`** — canonical definitions, typed obligations, and proofs.
-2. **Mercury** — declaration extraction, dependency discovery, and graph processing.
-3. **Dhall** — typed verification/evidence contract.
-4. **Nix** — reproducible environment and composition.
-5. **Workloads** — replaceable implementations that consume explicit contracts.
+The workload language is therefore orthogonal to theorem authority. A workload may be C, Haskell, Mirth, Lua, Factor, or another general-purpose language without changing the proof architecture, provided it does not introduce a second canonical semantic model.
 
-A workload implementation may use Go, Nim, Lua, Chibi Scheme, Roc, Swift, Tcl/Tk, or another language when the workload has a demonstrated need. The candidate list is non-exhaustive; for this prompt only, Tcl/Tk is the one concrete implementation language exercised as the native GUI adapter. Adding such a language does not authorize a second semantic model. The canonical learner meaning remains in the Agda surface.
+## Current workload
 
-The CI surface consequently checks the semantic boundary directly: exactly two tracked Agda sources remain the proof surface, while implementation-language suffixes are not treated as semantic violations.
+The current prompt-scoped adapter is Mirth at `workloads/mirth/graph-adapter.mth`. It is intentionally presentation-neutral. It reports the generated Elm graph artifact and makes no GUI toolkit part of the semantic interface.
 
-## Prompt-scoped native implementation
+Mirth is a practical fit for this boundary because its current compiler is a strongly typed concatenative language compiler and nixpkgs packages it as `mirthc`. The workload adapter remains replaceable; Agda and Mercury do not depend on Mirth syntax.
 
-The concrete implementation added by this prompt is a Tcl/Tk native GUI adapter at `workloads/tcltk/native_tk_adapter.tcl`. Its only input contract is the externally supplied `ACTIONS_WORKLOAD_LABEL` string; its responsibility is presentation, not interpretation of learner semantics. No additional language is added by this prompt.
+## E-graph and A* seam
 
-## Theorem/learner import synchronization
-
-The theorem monolith imports the canonical learner monolith exactly once as alias `C`. The Dhall contract `.ci/theorem-learner-import-sync.dhall` derives that import from the canonical learner module path, verifies both Agda module declarations, and rejects any additional `Exotic.ERL.FullCoupled.*` semantic import. This keeps the theorem layer downstream of the learner definition without maintaining a second semantic authority.
-
-## Hex/Mirth workload boundary — 2026-09-28
-
-The H3RALD hex source was inspected from upstream commit `add4081ef80f5f9b6ff89dcc3d847964a4fe00d6`. The source is a tiny concatenative C implementation with 32-bit hexadecimal integers, strings, quotations, global symbols, a REPL, and 64 native symbols.
-
-The requested Tcl/Tk-to-Mirth substitution has no source sites to transform: standalone `Tcl`, `Tk`, `tcl`, and `tk` matches in `src/hex.c` are zero. No semantic substitution is therefore implied.
-
-The repository records upstream provenance under `workloads/hex/README.md` rather than creating a second semantic implementation. Mirth is treated as a possible workload language, not as theorem authority.
-
-## GUI boundary
-
-Tk should remain an adapter, not the semantic or systems core.
-
-For Linux desktop targets such as microOS/Aeon, NixOS, VanillaOS, and similar systems, a native Tk adapter is a valid optional GUI implementation. It avoids making a browser runtime part of the desktop contract.
-
-A WebAssembly GUI is useful as a separate browser target when browser delivery is a real product requirement. It should expose the same workload contract through a browser host rather than redefining the desktop GUI contract.
-
-The key distinction is:
+The proof strategy remains:
 
 ```
-Agda semantic contract
-        |
-        +--> native workload --> native GUI adapter (optional Tk)
-        |
-        +--> WASM workload   --> browser GUI adapter (optional)
+Agda --safe theorem declarations
+          |
+          v
+Mercury declaration extraction
+          |
+          v
+A* / e-graph dependency search
+          |
+          v
+candidate path / equivalence certificate
+          |
+          v
+Agda proof term or explicit witness boundary
 ```
 
-Do not make “Tk in WebAssembly” the canonical GUI. The direct Tk project remains the desktop toolkit; browser-oriented Tk-compatible work such as wTk implements a Tcl-compatible/widget layer through browser technologies instead of becoming a universal Tk backend. A direct Tk/WASM build would therefore be a platform-porting project, not merely a packaging toggle.
+Graph reachability is not itself proof. Promotion requires a proposition in the Agda theorem surface and acceptance by safe Agda. This lets the same semantic core feed xmonad-, dwm-, st-, or other workload adapters without duplicating theorem definitions.
 
-## Non-requirements
+## Hex provenance
 
-- Guix is not required.
-- Mermaid is not required.
-- No GUI toolkit becomes semantic authority.
-- No implementation language may duplicate the Agda semantic model.
-- No browser dependency is required for native Linux workloads.
+The requested H3RALD `hex` source is now vendored at `workloads/hex/src/hex.c`, with its MIT license retained. The checked source is a small concatenative C implementation with 32-bit hexadecimal integers, strings, quotations, global symbols, a REPL, and native symbols.
+
+The source has no standalone Tcl/Tk sites, so there was no Tcl/Tk code inside `src/hex.c` to translate. Vendoring it preserves provenance and workload material; it does not create a second semantic authority.
+
+## Orthogonality requirement
+
+The language-independent rule is narrower than "every implementation is interchangeable in every operational detail."
+
+An implementation language must:
+- consume an explicit workload contract;
+- avoid becoming a second definition of canonical learner semantics;
+- remain outside the Agda proof source unless an explicit proof/refinement interface is added;
+- remain independently packageable on target systems.
+
+A runtime dependency is justified by a concrete workload. It is not justified merely by candidate-language enumeration.
+
+The old Tcl/Tk adapter was therefore a concrete workload choice, not an architectural requirement. Replacing it with Mirth changes the workload implementation and CI checks, not the Agda/Mercury semantic roles.
+
+## Platform boundary
+
+microOS/Aeon, NixOS, VanillaOS, Guix, and similar Linux systems do not alter this semantic rule. Desktop integration is an adapter concern. A future xmonad/dwm/st/lambdock workload can select its native host language while the theorem/e-graph core remains unchanged.
 
 ## Evidence
 
-- Tk source distribution: https://github.com/tcltk/tk
-- Emscripten WebAssembly build documentation: https://emscripten.org/docs/compiling/WebAssembly.html
-- wTk browser toolkit: https://core.tcl-lang.org/wtk/home
-- Tcl/Tk developer site: https://web.tcl-lang.org/
+- Agda `--safe` disables features that can introduce inconsistency, including postulates, incomplete proofs, non-strictly-positive datatypes, disabled termination checks, and universe inconsistencies. citeturn540323search7
+- Mercury documents itself as a general-purpose declarative language with strong types, modes, determinism, modules, higher-order programming, and a formal declarative semantics. citeturn540323search3turn540323search6turn540323search9
+- Mirth's current compiler repository describes Mirth as a strongly typed concatenative language; its nixpkgs package exposes `mirthc`. citeturn690307search1turn690307search0
 
 ## Provenance
 
-Before: CI rejected several implementation-language suffixes, including Lua, Nim, and Roc, even though the intended architecture was becoming language-agnostic.
-
-Change: remove language bans from the CI surface, retain exact two-file Agda authority, document the workload boundary, and define native Tk plus optional browser/WASM as separate presentation adapters.
-
-Now: semantic authority remains singular while future general-purpose workloads can choose their implementation language without changing the proof architecture.
-Import-sync now has an explicit Dhall gate: the theorem source must continue to import the canonical learner module under `C`, and no alternate FullCoupled semantic module may enter the theorem surface.
-
-Alternatives considered:
-- Make Tk/WASM the only GUI: rejected because it makes browser hosting a requirement for Linux desktop delivery and confuses a presentation adapter with the system contract.
-- Add every candidate language as a mandatory dependency: rejected because that recreates toolchain duplication without a demonstrated workload need.
+The latest Actions commit before this workload migration only refreshed README commit-totality metadata. The semantic workload boundary comes from the preceding Hex/Mirth provenance commits. This migration makes that boundary executable: Mirth is a real package/runtime dependency, Tcl/Tk are removed from the current workload surface, and Hex source is vendored for provenance.
