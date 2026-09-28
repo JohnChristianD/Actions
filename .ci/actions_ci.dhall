@@ -415,6 +415,7 @@ DHALL
     eGraphAStarConvergenceSemanticClosure
     eGraphAStarEventualStableFromRank
     eGraphAStarStablePathPersists
+    eGraph-path-trans
     CanonicalIntegerLayerNormEGraphAStarTheorem
     integerLayerNorm-a-star-semantic-closure
     canonical-a-star-cost-guidance-theorem
