@@ -1,10 +1,11 @@
-name: Elm graph GUI verification
+name: Elm graph workload verification
 
 on:
   push:
     branches:
       - main
       - "feat/**"
+      - "mirth-general-workload"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -14,7 +15,7 @@ permissions:
 
 jobs:
   elm-graph:
-    name: Build Dhall-backed Elm graph GUI and validate Tcl launcher
+    name: Build Dhall-backed Elm graph and validate Mirth workload
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
@@ -41,9 +42,7 @@ jobs:
           test ! -e workloads/elm-graph/demo-graph.json
           ! git ls-files '*.json' | grep -q .
 
-      - name: Validate Tcl launchers are syntactically complete
+      - name: Validate Mirth workload
         run: |
           set -euo pipefail
-          for file in workloads/tcltk/native_tk_adapter.tcl workloads/tcltk/launch_elm_graph.tcl; do
-            FILE="$file" tclsh -c 'set channel [open $::env(FILE) r]; set source [read $channel]; close $channel; if {![info complete $source]} { puts stderr "incomplete Tcl source: $::env(FILE)"; exit 1 }'
-          done
+          mirthc -c workloads/mirth/graph-adapter.mth
