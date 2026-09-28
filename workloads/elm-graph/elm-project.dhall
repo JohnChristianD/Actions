@@ -1,6 +1,6 @@
 { type = "application"
-, source-directories = [ "src" ]
-, elm-version = "0.19.2"
+, "source-directories" = [ "src" ]
+, "elm-version" = "0.19.2"
 , dependencies =
     { direct =
         { "elm/browser" = "1.0.2"
@@ -9,10 +9,12 @@
         , "elm/svg" = "1.0.1"
         }
     , indirect =
-        { "elm/virtual-dom" = "1.0.2"
+        { "elm/time" = "1.0.0"
+        , "elm/url" = "1.0.0"
+        , "elm/virtual-dom" = "1.0.3"
         }
     }
-, test-dependencies =
+, "test-dependencies" =
     { direct = {}
     , indirect = {}
     }
