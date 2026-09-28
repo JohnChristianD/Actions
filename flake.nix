@@ -45,7 +45,6 @@
                 pkgs.coreutils
                 pkgs.elmPackages.elm
                 pkgs.haskellPackages.dhall
-                pkgs.haskellPackages.dhall-json
               ];
               text = ''
                 set -euo pipefail
@@ -54,7 +53,7 @@
                 trap 'rm -rf "$tmp"' EXIT
                 mkdir -p "$tmp/src" "$repo_root/workloads/elm-graph/dist"
                 cp workloads/elm-graph/src/*.elm "$tmp/src/"
-                dhall-to-json --file workloads/elm-graph/elm-project.dhall > "$tmp/elm.json"
+                dhall text --file workloads/elm-graph/elm-project.dhall > "$tmp/elm.json"
                 dhall text --file workloads/elm-graph/graph.dhall > "$tmp/src/GeneratedGraph.elm"
                 (cd "$tmp" && elm make src/Main.elm                   --optimize                   --output "$repo_root/workloads/elm-graph/dist/elm.js")
                 test -s workloads/elm-graph/dist/elm.js
