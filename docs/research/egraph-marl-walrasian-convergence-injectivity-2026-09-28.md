@@ -46,37 +46,22 @@ The current repository already contains these proof surfaces:
 
 These edges are not being reinterpreted as stronger theorems. The Agda term remains the authority; the e-graph records typed dependency evidence.
 
-## What can be promoted next
+## Implemented composition seam
 
-The useful next seam is a proof-relevant economic e-graph composition record whose fields are exactly:
+The Agda monolith now contains a proof-relevant `EGraphEconomicComposition` record. Its fields are deliberately narrow:
 
-1. an explicit economic update operator;
-2. a convergence witness for that operator;
-3. the fixed-point transport produced by convergence;
-4. the generalized-Walrasian closure applied to that fixed point;
-5. a representation/injectivity witness for the economic state encoding.
+1. an `EGraphSemanticPath` for semantic equality;
+2. an explicit convergence-plus-stationarity witness for the economic update;
+3. an explicit generalized-Walrasian equilibrium witness at the fixed state;
+4. a continuous left-inverse representation witness;
+5. the existing A* plan `Monoid` laws;
+6. the existing Haskell-like `RawMonad` search surfaces.
 
-The resulting composition should expose two outputs rather than one:
+The derived `eGraphEconomicComposition-closure` theorem exposes the products independently: semantic equality, eventual convergence, stationarity, generalized-Walrasian equilibrium, and representation injectivity. `eGraphEconomicComposition-injective` is derived only from representation reconstruction.
 
-```text
-economic dynamics
-  -> convergence
-  -> fixed point
-  -> generalized Walrasian equilibrium witness
+This is a composition theorem, not a new unconditional equilibrium-existence theorem. The convergence witness and stationarity law are inputs, and the generalized-Walrasian equilibrium witness is also an input. The code therefore does not claim that arbitrary MARL dynamics converge, that a fixed point exists from representation injectivity alone, or that learner stability implies market clearing.
 
-economic representation
-  -> injectivity
-```
-
-The graph must not rewrite these as:
-
-```text
-injective representation -> convergence
-injective representation -> equilibrium
-learner stability -> Walrasian existence
-```
-
-Those implications are not justified by the current proof surface.
+The monad and monoid surfaces remain algebra/search infrastructure. The Agda standard library's `RawMonad` intentionally does not encode the monad laws, so the repository does not promote the raw monad surface into semantic equality or economic validity. citeturn1search0
 
 ## MARL physics boundary
 
@@ -126,6 +111,7 @@ For this frontier:
 - fixed point → generalized Walrasian existence: CONDITIONAL on the economic closure witness.
 - economic primitives → convergence: FRONTIER.
 - learner/physics representation → economic update operator: FRONTIER until an explicit economic adapter is inhabited.
+- explicit economic update + supplied convergence/stationarity + supplied equilibrium + supplied representation: PROVED as the new typed composition closure.
 
 ## E-graph design rule
 
@@ -141,6 +127,8 @@ A* may prioritize the route, but its cost or heuristic is never a proof of conve
 
 Knowledge delta:
 
-- `docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md`: records the new cross-domain graph, exact proof-bearing edges, frontier edges, and promotion rule.
-- `README.md`: indexes the new research frontier.
-- No semantic theorem is promoted merely by documentation; the next Agda change must consume existing proof-bearing interfaces and remain conditional where the graph says CONDITIONAL.
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: adds the typed economic e-graph convergence/fixed-point/Walrasian/representation composition kernel and derived closure/injectivity/equality theorems.
+- `.ci/actions_ci.dhall`: gates the new economic composition symbols in the theorem lane.
+- `docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md`: records the implemented seam, its explicit inputs, and the remaining frontier.
+- `README.md`: indexes the research frontier.
+- No semantic theorem is promoted merely by documentation; the new closure remains conditional on explicit economic witnesses.
