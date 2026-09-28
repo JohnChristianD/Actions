@@ -337,4 +337,6 @@ The unconditional stationary-price seam is also in the theorem monolith. `canoni
 
 The repository does **not** infer a nontrivial price-adjustment law, an excess-demand root, supporting-price existence, Walrasian existence, uniqueness, stability, or convergence merely from these carriers. Those require corresponding mathematical witnesses or additional structure. The e-graph records those boundaries rather than treating them as proofs.
 
+The finite candidate-price classifier is also now an explicit e-graph composition. `EGraphEconomicFiniteCandidatePriceComposition` carries the certified semantic path alongside `FiniteCandidatePriceResult`, and `eGraphEconomicFiniteCandidatePriceComposition-from-path` computes the classification from the supplied finite candidate list and decision procedure. This remains a constructive finite-search edge, not a price-existence theorem.
+
 The Agda proof authority remains exactly two files: `CanonicalLearnerMonolith.agda` and `TheoremsMonolith.agda`. Auxiliary documentation and discovery artifacts are subordinate to that authority.
