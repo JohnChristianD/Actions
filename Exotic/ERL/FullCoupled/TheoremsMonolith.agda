@@ -8923,3 +8923,103 @@ unconditionalEGraphEconomicStationaryPriceComposition-from-path path =
     path
     canonicalStationaryPriceLaw
 
+------------------------------------------------------------------------
+-- E-graph composition node for the finite/discrete candidate-price
+-- classifier.
+--
+-- This transports the certified semantic path together with the existing
+-- proof-relevant finite candidate search. The candidate list and its
+-- decision procedure remain explicit inputs: the node classifies supplied
+-- candidates and does not manufacture a price outside that list.
+------------------------------------------------------------------------
+
+record EGraphEconomicFiniteCandidatePriceComposition
+  (Expression State Price Allocation : Set)
+  (R :
+    EGraphSemanticInterpretation
+      Expression
+      State)
+  (e f : Expression)
+  (supports : Price → Allocation → Set)
+  (allocation : Allocation)
+  (decide : ∀ p → FiniteCandidateDecision (supports p allocation))
+  (candidates : List Price) : Set₁ where
+  constructor eGraphEconomicFiniteCandidatePriceComposition
+  field
+    semanticPath :
+      EGraphSemanticPath R e f
+    candidateClassification :
+      FiniteCandidatePriceResult
+        Price
+        Allocation
+        supports
+        allocation
+
+open EGraphEconomicFiniteCandidatePriceComposition public
+
+eGraphEconomicFiniteCandidatePriceClosure :
+  ∀ {Expression State Price Allocation : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  {supports : Price → Allocation → Set}
+  {allocation : Allocation}
+  {decide : ∀ p → FiniteCandidateDecision (supports p allocation)}
+  {candidates : List Price}
+  (W :
+    EGraphEconomicFiniteCandidatePriceComposition
+      Expression
+      State
+      Price
+      Allocation
+      R
+      e
+      f
+      supports
+      allocation
+      decide
+      candidates) →
+  EGraphSemanticPath R e f ×
+  FiniteCandidatePriceResult
+    Price
+    Allocation
+    supports
+    allocation
+eGraphEconomicFiniteCandidatePriceClosure W =
+  semanticPath W
+  , candidateClassification W
+
+eGraphEconomicFiniteCandidatePriceComposition-from-path :
+  ∀ {Expression State Price Allocation : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  {supports : Price → Allocation → Set}
+  {allocation : Allocation}
+  {decide : ∀ p → FiniteCandidateDecision (supports p allocation)}
+  {candidates : List Price}
+  (path : EGraphSemanticPath R e f) →
+  EGraphEconomicFiniteCandidatePriceComposition
+    Expression
+    State
+    Price
+    Allocation
+    R
+    e
+    f
+    supports
+    allocation
+    decide
+    candidates
+eGraphEconomicFiniteCandidatePriceComposition-from-path path =
+  eGraphEconomicFiniteCandidatePriceComposition
+    path
+    (finiteCandidatePriceSearch
+      supports
+      allocation
+      decide
+      candidates)
