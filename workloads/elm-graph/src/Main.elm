@@ -63,7 +63,6 @@ view model =
         , Svg.svg
             [ SvgAttr.width "100%"
             , SvgAttr.viewBox "0 0 1200 700"
-            , SvgAttr.attribute "role" "img"
             ]
             (List.map (viewEdge model.graph.nodes) model.graph.edges
                 ++ List.map (viewNode model.selected) model.graph.nodes
