@@ -244,3 +244,11 @@ https://doi.org/10.1016/0022-0531(76)90073-9
 - `.ci/actions_ci.dhall`: theorem gate now checks the canonical stationary-price symbols in the authoritative monolith.
 - this note: records the input-operator closure and its semantic boundary.
 - README: existing index continues to expose this note.
+
+## Continuing e-graph expansion: finite candidate-price classification
+
+The finite/discrete supporting-price classifier is now also an explicit e-graph composition node.
+
+`EGraphEconomicFiniteCandidatePriceComposition` carries a certified `EGraphSemanticPath` together with the proof-relevant `FiniteCandidatePriceResult`. `eGraphEconomicFiniteCandidatePriceClosure` exposes those two products independently, and `eGraphEconomicFiniteCandidatePriceComposition-from-path` constructs the node from a semantic path by running `finiteCandidatePriceSearch` over the supplied finite candidate list and explicit decision procedure.
+
+This is a graph-composition improvement rather than a new existence theorem. The candidate list, supporting relation, and decision procedure remain explicit inputs; a positive result is a supporting-price witness from that supplied list, while a negative result rejects every supplied candidate. No supporting price is inferred outside the supplied list, and no generalized-Walrasian existence, uniqueness, stability, or convergence theorem is promoted.
