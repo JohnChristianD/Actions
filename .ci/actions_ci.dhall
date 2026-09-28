@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | ElmGraph | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -512,6 +512,14 @@ DHALL
     grep -Eiq 'walsh|rope|target-network|target_network|target network|normalization|regularization' "$learner" && { echo "forbidden semantic term present"; exit 1; } || true
     grep -Fq 'open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C' "$theorem" || { echo "non-canonical theorem source"; exit 1; }
     '',
+  ElmGraph = ''
+    set -euo pipefail
+    nix run .#elm-graph-build
+    test -s workloads/elm-graph/dist/elm.js
+    [ -f workloads/elm-graph/graph.dhall ] || { echo "missing Dhall graph source"; exit 1; }
+    [ ! -f workloads/elm-graph/elm.json ] || { echo "tracked/generated elm.json remains"; exit 1; }
+    [ ! -f workloads/elm-graph/demo-graph.json ] || { echo "JSON graph fixture remains"; exit 1; }
+    '',
   Surface = ''
     set -euo pipefail
     count=$(git ls-files '*Monolith.agda' | wc -l)
@@ -521,6 +529,9 @@ DHALL
     [ -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
+    [ -f workloads/elm-graph/graph.dhall ] || { echo "missing Elm graph Dhall source"; exit 1; }
+    [ -f workloads/elm-graph/src/Main.elm ] || { echo "missing Elm graph view"; exit 1; }
+    [ -f workloads/tcltk/launch_elm_graph.tcl ] || { echo "missing Tcl-to-Elm graph launcher"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
     retired='evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
