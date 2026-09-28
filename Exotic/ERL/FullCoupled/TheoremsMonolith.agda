@@ -594,6 +594,17 @@ eGraph-path-sound R (path-refl e) = refl
 eGraph-path-sound R (path-step h rest) =
   trans (sound R h) (eGraph-path-sound R rest)
 
+eGraph-path-trans :
+  ∀ {Expression State : Set}
+  {R : EGraphSemanticInterpretation Expression State}
+  {e f g : Expression} →
+  EGraphSemanticPath R e f →
+  EGraphSemanticPath R f g →
+  EGraphSemanticPath R e g
+eGraph-path-trans (path-refl e) rest = rest
+eGraph-path-trans (path-step h rest) tail =
+  path-step h (eGraph-path-trans rest tail)
+
 data SemanticEdgeStatus : Set where
   semanticProved : SemanticEdgeStatus
   semanticConditional : SemanticEdgeStatus
@@ -1153,11 +1164,9 @@ integerLayerNorm-raw-radicand-path :
     (rawIntegerLayerNorm epsilon xs)
     (radicandIntegerLayerNorm epsilon xs)
 integerLayerNorm-raw-radicand-path epsilon xs =
-  path-step
-    refl
-    (path-step
-      refl
-      (path-refl (radicandIntegerLayerNorm epsilon xs)))
+  eGraph-path-trans
+    (path (integerLayerNorm-raw-centered-edge epsilon xs))
+    (path (integerLayerNorm-centered-radicand-edge epsilon xs))
 
 integerLayerNorm-a-star-semantic-closure :
   ∀ (epsilon : Nat) (xs : List C.Int8) →
