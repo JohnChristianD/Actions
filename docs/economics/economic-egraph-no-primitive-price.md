@@ -282,3 +282,10 @@ finite candidate list + explicit decision procedure
     -/-> supporting-price derivation from primitives
     -/-> unconditional equilibrium existence
 ```
+
+
+## Current stationary-price seam
+
+The theorem monolith now contains an unconditional stationary-price seam: `canonicalStationaryPriceUpdate` is the zero-step operator `p ↦ p`, with `canonicalStationaryPriceLaw` proved by reflexivity. `UnconditionalEGraphEconomicStationaryPriceComposition` carries that law beside a certified semantic e-graph path.
+
+This removes an unexplained external price-update function from the unconditional stationarity layer without pretending that identity dynamics are a substantive excess-demand adjustment process. A nontrivial price law still needs an explicit relation between excess demand and price motion. The e-graph therefore treats nontrivial adjustment, excess-demand roots, supporting-price existence, equilibrium existence, uniqueness, stability, and convergence as separate proof obligations.
