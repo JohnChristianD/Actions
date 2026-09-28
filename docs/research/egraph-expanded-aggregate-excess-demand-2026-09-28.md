@@ -40,7 +40,7 @@ The theorem monolith adds:
 - `EGraphEconomicAggregateExcessDemandComposition`
 - `eGraphEconomicAggregateExcessDemand-closure`
 
-The new standalone module adds:
+The theorem monolith now adds:
 
 - `canonicalStationaryPriceUpdate`
 - `canonicalStationaryPriceLaw`
@@ -89,7 +89,7 @@ The final four edges are direct implications from an explicit root. The kernel d
 
 The previous fixed-point seam accepted `priceUpdate : Price → Price` as an input. That is useful when formalizing a specific economic adjustment process, but it leaves the unconditional core dependent on an externally supplied operator.
 
-The new module removes that operator from the unconditional core by choosing the canonical zero-step operator:
+The new theorem surface removes that operator from the unconditional core by choosing the canonical zero-step operator:
 
 ```
 canonicalStationaryPriceUpdate p = p
@@ -240,7 +240,7 @@ https://doi.org/10.1016/0022-0531(76)90073-9
 ## Knowledge delta
 
 - `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: expanded aggregate-excess-demand witness and economic fixed-point composition.
-- `Exotic/ERL/FullCoupled/CanonicalAggregatePriceLaw.agda`: unconditional canonical stationary-price operator and e-graph composition.
-- `.ci/actions_ci.dhall`: existing theorem gate remains authoritative; the new module still requires CI compilation integration.
+- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`: unconditional canonical stationary-price operator and e-graph composition, kept inside the two-file Agda authority.
+- `.ci/actions_ci.dhall`: theorem gate now checks the canonical stationary-price symbols in the authoritative monolith.
 - this note: records the input-operator closure and its semantic boundary.
 - README: existing index continues to expose this note.
