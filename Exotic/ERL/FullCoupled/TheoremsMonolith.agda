@@ -8843,3 +8843,83 @@ eGraphEconomicComposition-closure W =
     (eGraphEconomicWalrasianEquilibrium W
     ,
      eGraphEconomicComposition-injective W)))
+------------------------------------------------------------------------
+-- Unconditional canonical stationary price-law e-graph seam.
+--
+-- The unconditional core chooses the zero-step price operator. This
+-- removes an external price-update input while making the semantic
+-- limitation explicit: identity stationarity is not a nontrivial
+-- excess-demand adjustment dynamic.
+------------------------------------------------------------------------
+
+canonicalStationaryPriceUpdate :
+  {Price : Set} →
+  Price →
+  Price
+canonicalStationaryPriceUpdate p = p
+
+canonicalStationaryPriceLaw :
+  {Price : Set} →
+  ∀ p →
+  canonicalStationaryPriceUpdate p ≡ p
+canonicalStationaryPriceLaw p = refl
+
+record UnconditionalEGraphEconomicStationaryPriceComposition
+  (Expression State Price : Set)
+  (R :
+    EGraphSemanticInterpretation
+      Expression
+      State)
+  (e f : Expression) : Set₁ where
+  constructor unconditionalEGraphEconomicStationaryPriceComposition
+  field
+    semanticPath :
+      EGraphSemanticPath R e f
+    stationaryPriceLaw :
+      ∀ p →
+      canonicalStationaryPriceUpdate p ≡ p
+
+open UnconditionalEGraphEconomicStationaryPriceComposition public
+
+unconditionalEGraphEconomicStationaryPriceClosure :
+  ∀ {Expression State Price : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  (W :
+    UnconditionalEGraphEconomicStationaryPriceComposition
+      Expression
+      State
+      Price
+      R
+      e
+      f) →
+  EGraphSemanticPath R e f ×
+  (∀ p →
+    canonicalStationaryPriceUpdate p ≡ p)
+unconditionalEGraphEconomicStationaryPriceClosure W =
+  semanticPath W
+  , stationaryPriceLaw W
+
+unconditionalEGraphEconomicStationaryPriceComposition-from-path :
+  ∀ {Expression State Price : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  (path : EGraphSemanticPath R e f) →
+  UnconditionalEGraphEconomicStationaryPriceComposition
+    Expression
+    State
+    Price
+    R
+    e
+    f
+unconditionalEGraphEconomicStationaryPriceComposition-from-path path =
+  unconditionalEGraphEconomicStationaryPriceComposition
+    path
+    canonicalStationaryPriceLaw
+
