@@ -997,8 +997,7 @@ eGraphAStarStablePathPersists :
     (eGraphAStarIterate
       (step W)
       n
-      s)eGraphAStarStablePathPersists W stableS zero = stableSeGraphAStarStablePathPersists W stableS (suc n) =
-  eGraphAStarStablePathPersists
+      s)eGraphAStarStablePathPersists W stableS zero = stableSeGraphAStarStablePathPersists W stableS (suc n) =  eGraphAStarStablePathPersists
     W
     (stableNext W s stableS)
     n
@@ -1997,7 +1996,6 @@ record FractalInjectiveComposition
 
     transportInjective :      ∀ {lower upper} {r : Refines lower upper} {x y : Observation} →
       transport r x ≡ transport r y →      x ≡ y
-
     transportEncode :
       ∀ {lower upper} (r : Refines lower upper) state →
       transport r (encode lower state) ≡
@@ -2997,8 +2995,7 @@ record RecurrentPrefixMonoidHomomorphism
         (xs ys : List Input)
         (s : State) →      C.applyEndomorphism
         (prefixListEndomorphism R (xs ++ ys))
-        s
-      ≡
+        s      ≡
       C.applyEndomorphism
         (prefixOp
           (prefixListEndomorphism R xs)
@@ -3997,8 +3994,7 @@ hardSignGate-continuous-discrete =
   continuous-under-discrete-topology C.hardSignGate
 record FiniteRankStabilityCertificate
   (State : Set)
-  (step : State → State)
-  (equilibrium : State) : Set₁ where
+  (step : State → State)  (equilibrium : State) : Set₁ where
   constructor finiteRankStabilityCertificate
   field
     rank : State → Nat
@@ -4997,7 +4993,6 @@ record DistributionalStationaryAggregateTransport
       ∀ d →
       aggregate (P d) ≡
       economicStep (aggregate d)
-
 open DistributionalStationaryAggregateTransport public
 
 distributionalStationaryAggregate-stationary :
@@ -5997,8 +5992,7 @@ nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem-from-closed B =  nLabMaxwellFou
     canonicalGRUStatisticalEncodeInjective
     canonicalGRUStatisticalStepConsequence
     (nLabMaxwellFourLawOneStepClosed B)
-    (learnerSemantics W)
-    (hodgeRepresentation W)
+    (learnerSemantics W)    (hodgeRepresentation W)
     (nLabMaxwellIterateConjugacyClosed B)
 
 
@@ -6997,8 +6991,7 @@ canonicalTotalCountStrictProgress K =
   strictProgressWitness
     (λ s → C.totalCount (C.lcbCounts s))
     (λ s → canonicalTotalCountStepProgress K s)
-    <-trans
-    <-irrefl
+    <-trans    <-irrefl
 
 canonicalNoPositiveCycleFromTotalCount :
   ∀ {A : Set}
@@ -7356,17 +7349,13 @@ record ExpandedGeneralizedAggregateExcessDemandKernel
       ∀ p →
       aggregateDemandAt p ≡
       GeneralizedAggregateDemandSupplyWitness.aggregateDemandAt
-        (aggregateDemandSupplyWitness
-          (expandedGeneralizedAggregateExcessDemandKernel
-            demandWitness
-            supplyWitness
-            aggregateDemandSupplyWitness
-            excessWitness
-            regularityWitness
-            aggregateFeasibilityWitness
-            marketClearingWitness
-            supportingPriceWitness
-            equilibriumCharacterization))
+        aggregateDemandSupplyWitness
+        p
+    aggregateSupplySupplyAt :
+      ∀ p →
+      aggregateSupplyAt p ≡
+      GeneralizedAggregateDemandSupplyWitness.aggregateSupplyAt
+        aggregateDemandSupplyWitness
         p
     aggregateFeasibilityWitness :
       ∀ p →
@@ -7997,8 +7986,7 @@ twoPriceDistinct :
 twoPriceDistinct ()
 
 twoWorldsNoCommonSupportingPrice :
-  ¬ Σ (⊤ ⊎ ⊤)
-    (λ p →
+  ¬ Σ (⊤ ⊎ ⊤)    (λ p →
       (inj₁ tt ≡ p) ×
       (inj₂ tt ≡ p))
 twoWorldsNoCommonSupportingPrice
