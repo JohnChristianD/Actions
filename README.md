@@ -54,7 +54,7 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 40 files.
+Generated from the tracked Markdown surface: 41 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Economics
@@ -69,8 +69,8 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [E-Graph / A* convergence closure — 2026-09-27](docs/research/egraph-astar-convergence-2026-09-27.md)
-- [E-graph frontier: MARL physics ↔ generalized Walrasian convergence and injectivity — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
 - [Expanded generalized aggregate excess demand e-graph — 2026-09-28](docs/research/egraph-expanded-aggregate-excess-demand-2026-09-28.md)
+- [E-graph frontier: MARL physics ↔ generalized Walrasian convergence and injectivity — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
@@ -309,23 +309,37 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 727b033d9cc1e363e130629f764cafa716078707
-unprocessed-commit-count: 11
+last-processed-commit: 881218d5e6c1a389aba8841230f1e836b2864b95
+unprocessed-commit-count: 25
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `727b033d9cc1` docs: index economic e-graph composition
-- `ac3524335f5c` docs: record economic e-graph composition seam
-- `6990eb4c6d60` ci: gate economic e-graph composition
-- `c1b8d368786d` fix: tighten economic e-graph composition theorem
-- `3d1d9829923c` feat: compose economic e-graph witness algebra
-- `5a89b4b9528f` docs: index MARL Walrasian e-graph frontier
-- `b302d796762a` docs: graph MARL Walrasian convergence injectivity frontier
-- `af05810f1994` ci: gate certified e-graph path composition
-- `e1b03fe0e8b9` docs: record certified e-graph path composition
-- `3546a848b5e3` feat: compose certified e-graph paths
-- `f82e84d74736` docs: refresh README from commit totality
+- `881218d5e6c1` fix: bind finite candidate e-graph to search inputs
+- `03bdd963fbbd` docs: index finite candidate price e-graph
+- `8395c939cf3a` docs: align Arrow-Debreu e-graph boundary
+- `eda42fd99447` docs: document finite candidate price e-graph seam
+- `69f3461e8380` docs: record finite candidate price e-graph seam
+- `d71c88f9fc5b` ci: gate finite candidate price e-graph
+- `a35e0393e1d4` feat: e-graph finite candidate price classification
+- `3efbc38707e5` docs: align economic e-graph price-law boundary
+- `1ef792b921a1` docs: align economic e-graph price-law boundary
+- `c2d1e240de3f` docs: index economic e-graph closure in README
+- `490bb1d1f239` docs: align price-law seam with monolith authority
+- `a536c09a20c6` refactor: keep canonical price law in theorem monolith
+- `410c3c95fea4` ci: gate canonical stationary price-law seam
+- `cbc5d2e9d09f` feat: inline unconditional stationary price law
+- `9a00ae21f373` docs: record unconditional stationary price-law seam
+- `843826871025` feat: close unconditional stationary price-law seam
+- `5497fc40b060` docs: prune conditional status wording
+- `a23a348b4b59` ci: gate aggregate excess demand fixed-point symbols
+- `bcca0cdd71cf` docs: record aggregate excess demand fixed-point edge
+- `ab1580ad3c9a` feat: close aggregate excess demand fixed-point edge
+- `36e963b77cde` docs: index aggregate excess demand e-graph
+- `6a9b69a8c7ad` docs: record expanded aggregate excess demand e-graph
+- `29007950c7bb` ci: gate expanded aggregate excess demand e-graph
+- `3cb85018e179` feat: expand aggregate excess demand e-graph
+- `ba0b425f7b4f` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
