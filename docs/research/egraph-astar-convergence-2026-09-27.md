@@ -67,3 +67,15 @@ This avoids conflating eventual stabilization with boundedness or a metric contr
 The concrete proof uses the existing `integerLayerNormAStarClosure` and its e-graph semantic interpretation. A* remains a cost/heuristic carrier; the convergence proof uses the finite rank and e-graph semantic path, not A* optimality as a semantic axiom.
 
 This is a normalization-path theorem, not an unconditional convergence theorem for arbitrary e-graph rewrite systems or arbitrary A* searches.
+
+
+## Certified path composition extension
+
+The next e-graph seam is now explicit: eGraph-path-trans composes two typed EGraphSemanticPath witnesses into one path. The LayerNorm raw-to-radicand path now consumes the existing certified raw-to-centered and centered-to-radicand edges through their typed path fields rather than reconstructing the two edges manually.
+
+This keeps the semantic seam narrow: certified edge metadata remains descriptive, EGraphSemanticPath remains the equality witness, and path composition is structural recursion over the proof object. A* still supplies cost/heuristic guidance rather than semantic truth.
+
+Knowledge delta:
+- Exotic/ERL/FullCoupled/TheoremsMonolith.agda: generic typed e-graph path composition and LayerNorm composition now share one proof mechanism.
+- docs/research/egraph-astar-convergence-2026-09-27.md: records the composition seam and its proof boundary.
+- .ci/actions_ci.dhall: CI gate will require the new path-composition theorem.
