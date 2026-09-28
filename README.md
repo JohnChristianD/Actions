@@ -307,11 +307,15 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 88d604d7ffaf9bc48c137f330daa18e68ac66dc6
-unprocessed-commit-count: 1
+last-processed-commit: 19f8f56a0dbe1cc4243b9c4e26a677b7d9d0df21
+unprocessed-commit-count: 5
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `88d604d7ffaf` docs: refresh README from commit totality
+- `19f8f56a0dbe` docs: record concrete e-graph A* stability instantiation
+- `bbc093c59216` ci: gate concrete e-graph A* stability theorem
+- `cdb49b491956` fix: state infinite stable tail as eventual stable index
+- `7e18c8639669` feat: instantiate e-graph A* infinite-horizon stability
+- `85a066dbed60` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
