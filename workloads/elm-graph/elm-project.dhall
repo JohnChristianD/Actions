@@ -6,6 +6,7 @@ let Project =
       , coreVersion : Text
       , htmlVersion : Text
       , svgVersion : Text
+      , jsonVersion : Text
       , timeVersion : Text
       , urlVersion : Text
       , virtualDomVersion : Text
@@ -19,6 +20,7 @@ let project : Project =
       , coreVersion = "1.0.5"
       , htmlVersion = "1.0.0"
       , svgVersion = "1.0.1"
+      , jsonVersion = "1.1.3"
       , timeVersion = "1.0.0"
       , urlVersion = "1.0.0"
       , virtualDomVersion = "1.0.3"
@@ -34,7 +36,8 @@ in ''
       "elm/browser": ${Text/show project.browserVersion},
       "elm/core": ${Text/show project.coreVersion},
       "elm/html": ${Text/show project.htmlVersion},
-      "elm/svg": ${Text/show project.svgVersion}
+      "elm/svg": ${Text/show project.svgVersion},
+      "elm/json": ${Text/show project.jsonVersion}
     },
     "indirect": {
       "elm/time": ${Text/show project.timeVersion},
