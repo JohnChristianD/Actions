@@ -1219,6 +1219,265 @@ canonical-integer-layernorm-egraph-astar-theorem =
     integerLayerNorm-a-star-semantic-closure
 
 ------------------------------------------------------------------------
+-- Concrete finite-rank A* normalization witness.
+--
+-- This is the first concrete instantiation of the generic
+-- EGraphAStarFiniteRankConvergenceWitness. The state is deliberately a
+-- three-phase normalization plan rather than the whole learner state:
+--
+--   raw -> centered -> radicand
+--
+-- The Nat rank counts the remaining normalization phases. A* remains the
+-- cost-guidance carrier; semantic equality still comes from the e-graph
+-- interpretation. The resulting stable phase is persistent for every
+-- horizon, giving an explicit infinite stable tail.
+------------------------------------------------------------------------
+
+data IntegerLayerNormAStarPhase : Set where
+  integerLayerNormRawPhase :
+    IntegerLayerNormAStarPhase
+  integerLayerNormCenteredPhase :
+    IntegerLayerNormAStarPhase
+  integerLayerNormRadicandPhase :
+    IntegerLayerNormAStarPhase
+
+integerLayerNormAStarStep :
+  IntegerLayerNormAStarPhase →
+  IntegerLayerNormAStarPhase
+integerLayerNormAStarStep integerLayerNormRawPhase =
+  integerLayerNormCenteredPhase
+integerLayerNormAStarStep integerLayerNormCenteredPhase =
+  integerLayerNormRadicandPhase
+integerLayerNormAStarStep integerLayerNormRadicandPhase =
+  integerLayerNormRadicandPhase
+
+integerLayerNormAStarCandidate :
+  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  IntegerLayerNormAStarPhase →
+  IntegerLayerNormExpression
+integerLayerNormAStarCandidate epsilon xs
+  integerLayerNormRawPhase =
+  rawIntegerLayerNorm epsilon xs
+integerLayerNormAStarCandidate epsilon xs
+  integerLayerNormCenteredPhase =
+  centeredIntegerLayerNorm epsilon xs
+integerLayerNormAStarCandidate epsilon xs
+  integerLayerNormRadicandPhase =
+  radicandIntegerLayerNorm epsilon xs
+
+integerLayerNormAStarRank :
+  IntegerLayerNormAStarPhase →
+  Nat
+integerLayerNormAStarRank integerLayerNormRawPhase =
+  suc (suc zero)
+integerLayerNormAStarRank integerLayerNormCenteredPhase =
+  suc zero
+integerLayerNormAStarRank integerLayerNormRadicandPhase =
+  zero
+
+integerLayerNormAStarStable :
+  IntegerLayerNormAStarPhase →
+  Set
+integerLayerNormAStarStable phase =
+  phase ≡ integerLayerNormRadicandPhase
+
+integerLayerNormAStarRankZero :
+  ∀ phase →
+  integerLayerNormAStarRank phase ≡ zero →
+  integerLayerNormAStarStable phase
+integerLayerNormAStarRankZero integerLayerNormRawPhase ()
+integerLayerNormAStarRankZero integerLayerNormCenteredPhase ()
+integerLayerNormAStarRankZero integerLayerNormRadicandPhase refl =
+  refl
+
+integerLayerNorm-absurd :
+  ∀ {A : Set} →
+  ⊥ →
+  A
+integerLayerNorm-absurd ()
+
+integerLayerNormAStarStrictDescent :
+  ∀ phase →
+  ¬ integerLayerNormAStarStable phase →
+  integerLayerNormAStarRank
+    (integerLayerNormAStarStep phase)
+  <
+  integerLayerNormAStarRank phase
+integerLayerNormAStarStrictDescent
+  integerLayerNormRawPhase
+  _ =
+  n<1+n
+integerLayerNormAStarStrictDescent
+  integerLayerNormCenteredPhase
+  _ =
+  n<1+n
+integerLayerNormAStarStrictDescent
+  integerLayerNormRadicandPhase
+  notStable =
+  integerLayerNorm-absurd
+    (notStable refl)
+
+integerLayerNormAStarStableNext :
+  ∀ phase →
+  integerLayerNormAStarStable phase →
+  integerLayerNormAStarStable
+    (integerLayerNormAStarStep phase)
+integerLayerNormAStarStableNext
+  integerLayerNormRawPhase
+  ()
+integerLayerNormAStarStableNext
+  integerLayerNormCenteredPhase
+  ()
+integerLayerNormAStarStableNext
+  integerLayerNormRadicandPhase
+  refl =
+  refl
+
+integerLayerNormAStarEventualStable :
+  ∀ phase →
+  Σ Nat
+    (λ n →
+      integerLayerNormAStarStable
+        (eGraphAStarIterate
+          integerLayerNormAStarStep
+          n
+          phase))
+integerLayerNormAStarEventualStable
+  integerLayerNormRawPhase =
+  suc (suc zero) , refl
+integerLayerNormAStarEventualStable
+  integerLayerNormCenteredPhase =
+  suc zero , refl
+integerLayerNormAStarEventualStable
+  integerLayerNormRadicandPhase =
+  zero , refl
+
+integerLayerNormAStarStablePath :
+  ∀ {epsilon : Nat} {xs : List C.Int8} {phase} →
+  integerLayerNormAStarStable phase →
+  EGraphSemanticPath
+    (semantics integerLayerNormAStarClosure)
+    (integerLayerNormAStarCandidate epsilon xs phase)
+    (radicandIntegerLayerNorm epsilon xs)
+integerLayerNormAStarStablePath
+  {phase = integerLayerNormRawPhase}
+  ()
+integerLayerNormAStarStablePath
+  {phase = integerLayerNormCenteredPhase}
+  ()
+integerLayerNormAStarStablePath
+  {phase = integerLayerNormRadicandPhase}
+  refl =
+  path-refl
+    (radicandIntegerLayerNorm _ _)
+
+integerLayerNorm-egraph-astar-finite-rank-witness :
+  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  EGraphAStarFiniteRankConvergenceWitness
+    IntegerLayerNormExpression
+    IntegerLayerNormAStarPhase
+integerLayerNorm-egraph-astar-finite-rank-witness epsilon xs =
+  eGraphAStarFiniteRankConvergenceWitness
+    integerLayerNormAStarClosure
+    integerLayerNormAStarStep
+    (integerLayerNormAStarCandidate epsilon xs)
+    (radicandIntegerLayerNorm epsilon xs)
+    integerLayerNormAStarStable
+    integerLayerNormAStarRank
+    integerLayerNormAStarRankZero
+    integerLayerNormAStarStrictDescent
+    integerLayerNormAStarStableNext
+    integerLayerNormAStarEventualStable
+    integerLayerNormAStarStablePath
+
+integerLayerNorm-egraph-astar-eventual-semantic-closure :
+  ∀ (epsilon : Nat) (xs : List C.Int8)
+  (phase : IntegerLayerNormAStarPhase) →
+  Σ Nat
+    (λ n →
+      interpret
+        (semantics integerLayerNormAStarClosure)
+        (integerLayerNormAStarCandidate epsilon xs
+          (eGraphAStarIterate
+            integerLayerNormAStarStep
+            n
+            phase))
+      ≡
+      interpret
+        (semantics integerLayerNormAStarClosure)
+        (radicandIntegerLayerNorm epsilon xs))
+integerLayerNorm-egraph-astar-eventual-semantic-closure
+  epsilon xs phase =
+  eGraphAStarConvergenceSemanticClosure
+    (integerLayerNorm-egraph-astar-finite-rank-witness epsilon xs)
+    phase
+
+integerLayerNorm-egraph-astar-infinite-stable-tail :
+  ∀ (epsilon : Nat) (xs : List C.Int8)
+  (phase : IntegerLayerNormAStarPhase) →
+  ∀ n →
+  integerLayerNormAStarStable
+    (eGraphAStarIterate
+      integerLayerNormAStarStep
+      n
+      (eGraphAStarIterate
+        integerLayerNormAStarStep
+        zero
+        phase))
+integerLayerNorm-egraph-astar-infinite-stable-tail
+  epsilon xs phase n =
+  eGraphAStarStablePathPersists
+    (integerLayerNorm-egraph-astar-finite-rank-witness epsilon xs)
+    (proj₂ (integerLayerNormAStarEventualStable phase))
+    n
+
+record CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem : Set₁ where
+  constructor canonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem
+  field
+    finiteRankWitness :
+      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      EGraphAStarFiniteRankConvergenceWitness
+        IntegerLayerNormExpression
+        IntegerLayerNormAStarPhase
+    eventualSemanticClosure :
+      ∀ (epsilon : Nat) (xs : List C.Int8)
+      (phase : IntegerLayerNormAStarPhase) →
+      Σ Nat
+        (λ n →
+          interpret
+            (semantics integerLayerNormAStarClosure)
+            (integerLayerNormAStarCandidate epsilon xs
+              (eGraphAStarIterate
+                integerLayerNormAStarStep
+                n
+                phase))
+          ≡
+          interpret
+            (semantics integerLayerNormAStarClosure)
+            (radicandIntegerLayerNorm epsilon xs))
+    infiniteStableTail :
+      ∀ (epsilon : Nat) (xs : List C.Int8)
+      (phase : IntegerLayerNormAStarPhase) →
+      ∀ n →
+      integerLayerNormAStarStable
+        (eGraphAStarIterate
+          integerLayerNormAStarStep
+          n
+          (eGraphAStarIterate
+            integerLayerNormAStarStep
+            zero
+            phase))
+
+canonical-integer-layernorm-egraph-astar-infinite-horizon-stability-theorem :
+  CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem
+canonical-integer-layernorm-egraph-astar-infinite-horizon-stability-theorem =
+  canonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem
+    integerLayerNorm-egraph-astar-finite-rank-witness
+    integerLayerNorm-egraph-astar-eventual-semantic-closure
+    integerLayerNorm-egraph-astar-infinite-stable-tail
+
+
+------------------------------------------------------------------------
 -- LayerNorm-specific stability and growth, deliberately separate from the
 -- retired NormPair replacement theory and from the F4 optimizer growth ray.
 --
