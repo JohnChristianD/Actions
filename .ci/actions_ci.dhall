@@ -531,7 +531,7 @@ DHALL
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     [ -f workloads/elm-graph/graph.dhall ] || { echo "missing Elm graph Dhall source"; exit 1; }
     [ -f workloads/elm-graph/src/Main.elm ] || { echo "missing Elm graph view"; exit 1; }
-    [ -f workloads/tcltk/launch_elm_graph.tcl ] || { echo "missing Tcl-to-Elm graph launcher"; exit 1; }
+    [ -f workloads/mirth/graph-adapter.mth ] || { echo "missing Mirth workload adapter"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
     retired='evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
