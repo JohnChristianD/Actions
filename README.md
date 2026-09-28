@@ -69,7 +69,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 - [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
 - [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
 - [E-Graph / A* convergence closure — 2026-09-27](docs/research/egraph-astar-convergence-2026-09-27.md)
-- [E-graph MARL/Walrasian convergence and injectivity frontier — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
+- [E-graph MARL/Walrasian convergence, fixed-point, representation, monad, and monoid composition — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
 - [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
 - [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
 - [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
