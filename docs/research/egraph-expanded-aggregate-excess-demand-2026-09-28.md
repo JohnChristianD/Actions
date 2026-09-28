@@ -18,7 +18,7 @@ aggregate excess demand root
   -> generalized equilibrium characterization
 ```
 
-The graph does not infer the existence of a root, a supporting price, convergence of a price adjustment process, or Walrasian existence.
+The graph does not infer the existence of a root or convergence. Root-to-equilibrium and root-to-fixed-point edges are explicit proof-bearing implications.
 
 ## Formal nodes
 
@@ -71,7 +71,7 @@ EconomicStructure
           +--> generalized equilibrium characterization
 ```
 
-The final four edges are conditional on explicit root-to-conclusion witnesses. The kernel does not search for a root.
+The final four edges are direct implications from an explicit root. The kernel does not search for a root. A separate fixed-point edge records the exact price-update law needed to transport a root into stationarity.
 
 ## Representation boundary
 
@@ -118,7 +118,7 @@ The new layer adds a function-level route from demand/supply to a reduced-form e
 
 ## Existence and dynamics boundary
 
-The repository already has a conditional route:
+The repository already has an explicit convergence-to-fixed-point route:
 
 ```
 TopologicalConvergenceWitness
@@ -126,9 +126,12 @@ TopologicalConvergenceWitness
   -> generalized Walrasian existence
 ```
 
-The expanded aggregate-excess-demand kernel is compatible with that route but does not replace it. A future dynamic theorem needs an explicit price/state update operator and a theorem connecting its fixed points to zeros of aggregate excess demand.
+The expanded aggregate-excess-demand kernel now supplies the explicit price-update seam as `GeneralizedAggregateExcessDemandFixedPointWitness`. It does not manufacture the update law or prove convergence.
 
 ```
+excessDemand p = zero
+  -> priceUpdate p = p  [when the explicit root-to-fixed-point law is supplied]
+
 excessDemand p = zero
   -/-> convergence of a price adjustment process
 
@@ -144,10 +147,13 @@ PROVED at the formal interface level:
 - typed excess-demand definition;
 - explicit regularity witness;
 - explicit root-to-clearing/support/equilibrium closure;
-- e-graph semantic-path composition.
+- explicit root-to-fixed-point transport;
+- e-graph semantic-path composition;
+- e-graph fixed-point composition.
 
-CONDITIONAL:
-- every supplied excess-demand root produces the bundled economic consequences because those implications are explicit witness fields.
+CLOSED-INTERFACE:
+- every supplied excess-demand root produces the bundled economic consequences through direct implications;
+- every supplied excess-demand root is transported to a price fixed point when the explicit price-update law is supplied.
 
 FRONTIER:
 - deriving demand/supply functions from optimization contracts;
