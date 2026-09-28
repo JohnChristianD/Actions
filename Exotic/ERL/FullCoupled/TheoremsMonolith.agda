@@ -1415,21 +1415,25 @@ integerLayerNorm-egraph-astar-eventual-semantic-closure
 integerLayerNorm-egraph-astar-infinite-stable-tail :
   ∀ (epsilon : Nat) (xs : List C.Int8)
   (phase : IntegerLayerNormAStarPhase) →
-  ∀ n →
-  integerLayerNormAStarStable
-    (eGraphAStarIterate
-      integerLayerNormAStarStep
-      n
-      (eGraphAStarIterate
-        integerLayerNormAStarStep
-        zero
-        phase))
+  Σ Nat
+    (λ n →
+      ∀ k →
+      integerLayerNormAStarStable
+        (eGraphAStarIterate
+          integerLayerNormAStarStep
+          k
+          (eGraphAStarIterate
+            integerLayerNormAStarStep
+            n
+            phase)))
 integerLayerNorm-egraph-astar-infinite-stable-tail
-  epsilon xs phase n =
+  epsilon xs phase
+  with integerLayerNormAStarEventualStable phase
+... | n , stableAtN =
+  n ,
   eGraphAStarStablePathPersists
     (integerLayerNorm-egraph-astar-finite-rank-witness epsilon xs)
-    (proj₂ (integerLayerNormAStarEventualStable phase))
-    n
+    stableAtN
 
 record CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem : Set₁ where
   constructor canonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem
@@ -1458,15 +1462,17 @@ record CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem : Set
     infiniteStableTail :
       ∀ (epsilon : Nat) (xs : List C.Int8)
       (phase : IntegerLayerNormAStarPhase) →
-      ∀ n →
-      integerLayerNormAStarStable
-        (eGraphAStarIterate
-          integerLayerNormAStarStep
-          n
-          (eGraphAStarIterate
-            integerLayerNormAStarStep
-            zero
-            phase))
+      Σ Nat
+        (λ n →
+          ∀ k →
+          integerLayerNormAStarStable
+            (eGraphAStarIterate
+              integerLayerNormAStarStep
+              k
+              (eGraphAStarIterate
+                integerLayerNormAStarStep
+                n
+                phase)))
 
 canonical-integer-layernorm-egraph-astar-infinite-horizon-stability-theorem :
   CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem
