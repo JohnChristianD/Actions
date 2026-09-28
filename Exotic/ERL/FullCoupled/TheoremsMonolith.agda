@@ -7609,6 +7609,101 @@ eGraphEconomicAggregateExcessDemand-closure W =
 -- theorem, and it does not turn a root witness into convergence.
 ------------------------------------------------------------------------
 
+------------------------------------------------------------------------
+-- Root-to-fixed-point transport is an explicit economic edge.
+--
+-- The update operator and its root-to-fixed-point law are supplied as
+-- mathematical structure. The resulting edge is a direct Agda
+-- implication from an excess-demand root to a fixed point.
+------------------------------------------------------------------------
+
+record GeneralizedAggregateExcessDemandFixedPointWitness
+  (Price ExcessDemand : Set)
+  (excessDemand : Price → ExcessDemand)
+  (zeroExcess : ExcessDemand)
+  (priceUpdate : Price → Price) : Set₁ where
+  constructor generalizedAggregateExcessDemandFixedPointWitness
+  field
+    fixedPointFromRoot :
+      ∀ p →
+      excessDemand p ≡ zeroExcess →
+      priceUpdate p ≡ p
+
+expandedGeneralizedAggregateExcessDemand-fixedPoint :
+  ∀ {Price ExcessDemand : Set}
+  {excessDemand : Price → ExcessDemand}
+  {zeroExcess : ExcessDemand}
+  {priceUpdate : Price → Price}
+  (W :
+    GeneralizedAggregateExcessDemandFixedPointWitness
+      Price
+      ExcessDemand
+      zeroExcess
+      priceUpdate) →
+  ∀ p →
+  excessDemand p ≡ zeroExcess →
+  priceUpdate p ≡ p
+expandedGeneralizedAggregateExcessDemand-fixedPoint W p root =
+  fixedPointFromRoot W p root
+
+record EGraphEconomicAggregateExcessDemandFixedPointComposition
+  (Expression State Price ExcessDemand : Set)
+  (R :
+    EGraphSemanticInterpretation
+      Expression
+      State)
+  (e f : Expression)
+  (excessDemand : Price → ExcessDemand)
+  (zeroExcess : ExcessDemand)
+  (priceUpdate : Price → Price) : Set₁ where
+  constructor eGraphEconomicAggregateExcessDemandFixedPointComposition
+  field
+    semanticPath :
+      EGraphSemanticPath R e f
+    fixedPointWitness :
+      GeneralizedAggregateExcessDemandFixedPointWitness
+        Price
+        ExcessDemand
+        excessDemand
+        zeroExcess
+        priceUpdate
+
+eGraphEconomicAggregateExcessDemand-fixedPointClosure :
+  ∀ {Expression State Price ExcessDemand : Set}
+  {R :
+    EGraphSemanticInterpretation
+      Expression
+      State}
+  {e f : Expression}
+  {excessDemand : Price → ExcessDemand}
+  {zeroExcess : ExcessDemand}
+  {priceUpdate : Price → Price}
+  (W :
+    EGraphEconomicAggregateExcessDemandFixedPointComposition
+      Expression
+      State
+      Price
+      ExcessDemand
+      R
+      e
+      f
+      excessDemand
+      zeroExcess
+      priceUpdate) →
+  EGraphSemanticPath R e f ×
+  (∀ p →
+    excessDemand p ≡ zeroExcess →
+    priceUpdate p ≡ p)
+eGraphEconomicAggregateExcessDemand-fixedPointClosure W =
+  semanticPath W
+  , expandedGeneralizedAggregateExcessDemand-fixedPoint
+      (fixedPointWitness W)
+
+------------------------------------------------------------------------
+-- The production/economic bridge now has an explicit fixed-point seam.
+-- No convergence theorem is inferred from a fixed point.
+------------------------------------------------------------------------
+
 record MonolithStationaryLawBridge
   (Distribution Economic : Set)
   (P : Distribution → Distribution)
