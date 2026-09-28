@@ -309,37 +309,31 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 881218d5e6c1a389aba8841230f1e836b2864b95
-unprocessed-commit-count: 25
+last-processed-commit: a8d1ffa75082fca7c0cbf3766d2f534486753254
+unprocessed-commit-count: 19
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `881218d5e6c1` fix: bind finite candidate e-graph to search inputs
-- `03bdd963fbbd` docs: index finite candidate price e-graph
-- `8395c939cf3a` docs: align Arrow-Debreu e-graph boundary
-- `eda42fd99447` docs: document finite candidate price e-graph seam
-- `69f3461e8380` docs: record finite candidate price e-graph seam
-- `d71c88f9fc5b` ci: gate finite candidate price e-graph
-- `a35e0393e1d4` feat: e-graph finite candidate price classification
-- `3efbc38707e5` docs: align economic e-graph price-law boundary
-- `1ef792b921a1` docs: align economic e-graph price-law boundary
-- `c2d1e240de3f` docs: index economic e-graph closure in README
-- `490bb1d1f239` docs: align price-law seam with monolith authority
-- `a536c09a20c6` refactor: keep canonical price law in theorem monolith
-- `410c3c95fea4` ci: gate canonical stationary price-law seam
-- `cbc5d2e9d09f` feat: inline unconditional stationary price law
-- `9a00ae21f373` docs: record unconditional stationary price-law seam
-- `843826871025` feat: close unconditional stationary price-law seam
-- `5497fc40b060` docs: prune conditional status wording
-- `a23a348b4b59` ci: gate aggregate excess demand fixed-point symbols
-- `bcca0cdd71cf` docs: record aggregate excess demand fixed-point edge
-- `ab1580ad3c9a` feat: close aggregate excess demand fixed-point edge
-- `36e963b77cde` docs: index aggregate excess demand e-graph
-- `6a9b69a8c7ad` docs: record expanded aggregate excess demand e-graph
-- `29007950c7bb` ci: gate expanded aggregate excess demand e-graph
-- `3cb85018e179` feat: expand aggregate excess demand e-graph
-- `ba0b425f7b4f` docs: refresh README from commit totality
+- `a8d1ffa75082` ci: fix Dhall and Tcl validation harness
+- `11a472ca33a8` fix: use valid Elm SVG attributes
+- `ef9f8a0168cb` fix: declare Elm JSON runtime dependency in Dhall
+- `420c7dd47cc9` fix: normalize Dhall multiline project output
+- `c632512e6809` fix: render transient Elm metadata with Dhall text
+- `df4c912d41dc` fix: render Elm project metadata from typed Dhall
+- `3db8ee248a10` fix: quote hyphenated Dhall project fields
+- `2374384a5af6` feat: wire Elm graph into Tk control shell
+- `cdd1bb4a0354` fix: make Tcl Elm launcher cwd-safe
+- `4ecfb2c39d82` ci: verify Dhall-backed Elm graph GUI
+- `e2637e4234c3` ci: add Dhall-backed Elm graph lane
+- `07489747844e` build: add reproducible Elm graph build
+- `bd9cd862309c` feat: add Tcl launcher for Elm graph
+- `01b7de8e3591` feat: add Elm graph HTML shell
+- `57609121a2ee` feat: define Elm project in Dhall
+- `99ee85484e83` feat: make graph data Dhall-authoritative
+- `28ede6dad908` feat: add Elm graph viewer
+- `841afa5b12cd` feat: add Elm graph model
+- `257f1949739a` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
