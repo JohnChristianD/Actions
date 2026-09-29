@@ -86,16 +86,10 @@ open +-*-Solver using (solve; _:*_; _:+_; con)
 
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/TsallisStatisticalRepresentation.agda; TheoremsMonolith is the sole theorem authority.
-------------------------------------------------------------------------
-
-------------------------------------------------------------------------
--- Carrier-polymorphic statistical representation.
+-- Carrier-polymorphic statistical representation kernel.
 --
--- This module is deliberately arithmetic-free: the abstract Law-IV
--- representation needs only Set, functions, and propositional equality.
--- A Tsallis/q-statistical interpretation may instantiate the observation
--- carrier, but no Real or Rational specialization is required here; the observation carrier is an arbitrary Set.
+-- This arithmetic-free kernel remains because later ZPF representation
+-- theorems depend on its left-inverse and injectivity facts.
 --
 -- The representation theorem is structural. External statistical
 -- literature motivates possible instantiations; it is not imported as an
@@ -130,33 +124,6 @@ statisticalEncodeDistinguishes :
 statisticalEncodeDistinguishes R distinct collision =
   distinct (statisticalEncodeInjective R collision)
 
-record TsallisCompatibleStatisticalRepresentation
-  (State Observation : Set) : Set₁ where
-  constructor tsallisCompatibleStatisticalRepresentation
-  field
-    representation :
-      CarrierPolymorphicStatisticalRepresentation State Observation
-
-open TsallisCompatibleStatisticalRepresentation public
-
-tsallisCompatibleEncodeInjective :
-  ∀ {State Observation : Set}
-  (R : TsallisCompatibleStatisticalRepresentation State Observation)
-  {s t : State} →
-  encode (representation R) s ≡ encode (representation R) t →
-  s ≡ t
-tsallisCompatibleEncodeInjective R =
-  statisticalEncodeInjective (representation R)
-
-tsallisCompatibleEncodeDistinguishes :
-  ∀ {State Observation : Set}
-  (R : TsallisCompatibleStatisticalRepresentation State Observation)
-  {s t : State} →
-  s ≢ t →
-  encode (representation R) s ≢ encode (representation R) t
-tsallisCompatibleEncodeDistinguishes R =
-  statisticalEncodeDistinguishes (representation R)
-
 ------------------------------------------------------------------------
 -- Inlined from Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda; TheoremsMonolith is the sole theorem authority.
 ------------------------------------------------------------------------
@@ -185,47 +152,6 @@ canonicalGRUStatisticalDistinguishability : ∀ {s t : C.GRUState} → s ≢ t �
 canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonicalGRUStatisticalEncodeInjective collision)
 canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
 canonicalGRUStatisticalStepConsequence s x = refl
-
-------------------------------------------------------------------------
--- Carrier-polymorphic Law-IV instance. The concrete canonical observation
--- remains available above, while the injectivity mechanism is now supplied
--- by the arithmetic-free representation kernel.
-------------------------------------------------------------------------
-
-canonicalGRUTsallisCompatibleRepresentation :
-  TsallisCompatibleStatisticalRepresentation
-    C.GRUState
-    CanonicalGRUStatisticalObservation
-canonicalGRUTsallisCompatibleRepresentation =
-  tsallisCompatibleStatisticalRepresentation
-    (carrierPolymorphicStatisticalRepresentation
-      canonicalGRUStatisticalEncode
-      canonicalGRUStatisticalDecode
-      canonicalGRUStatisticalDecodeEncode)
-
-canonicalGRUTsallisCompatibleInjective :
-  ∀ {s t : C.GRUState} →
-  encode
-    (representation canonicalGRUTsallisCompatibleRepresentation) s
-  ≡
-  encode
-    (representation canonicalGRUTsallisCompatibleRepresentation) t →
-  s ≡ t
-canonicalGRUTsallisCompatibleInjective =
-  tsallisCompatibleEncodeInjective
-    canonicalGRUTsallisCompatibleRepresentation
-
-canonicalGRUTsallisCompatibleDistinguishability :
-  ∀ {s t : C.GRUState} →
-  s ≢ t →
-  encode
-    (representation canonicalGRUTsallisCompatibleRepresentation) s
-  ≢
-  encode
-    (representation canonicalGRUTsallisCompatibleRepresentation) t
-canonicalGRUTsallisCompatibleDistinguishability =
-  tsallisCompatibleEncodeDistinguishes
-    canonicalGRUTsallisCompatibleRepresentation
 
 ------------------------------------------------------------------------
 -- Inlined from Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda; TheoremsMonolith is the sole theorem authority.
