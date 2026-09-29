@@ -1,0 +1,13 @@
+module workloads.mirth.graph_adapter
+
+import std.prelude
+import std.world
+
+def main {
+    "Actions Mirth workload adapter" print
+    "Semantic authority: Agda --safe" print
+    "Dependency graph: Mercury" print
+    "Dhall contract: typed evidence" print
+    "Nix environment: reproducible composition" print
+    "Elm graph bundle: workloads/elm-graph/dist/elm.js" print
+}
