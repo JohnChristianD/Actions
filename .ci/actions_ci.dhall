@@ -9,29 +9,32 @@ let script = merge {
     '',
   CanonicalExecutable = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --safe -l standard-library -i . Main.agda
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
+    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --compile -l standard-library -i . Main.agda
     ./Main
-    rm -f Main
-    rm -rf MAlonzo
     '',
   AgdaTheorem = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     '',
   Mercury = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     '',
   Discovery = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
@@ -46,6 +49,7 @@ let script = merge {
     grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     theorem=Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     sync=.ci/discovery/theorem-monolith-egraph-sync.dhall
     learner=Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
@@ -150,6 +154,7 @@ let script = merge {
     '',
   EconlibCrossrepo = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
@@ -203,6 +208,7 @@ let script = merge {
     '',
   EconlibEquilibriumSearch = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
@@ -276,6 +282,7 @@ let script = merge {
     '',
   StrictExistenceImpossibility = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     (cd .ci/discovery && mmc --make strict_existence_impossibility_graph && ./strict_existence_impossibility_graph)
     report=.ci/discovery/strict-existence-impossibility-graph.dhall
     dhall text --file "$report" >/dev/null
@@ -287,6 +294,7 @@ let script = merge {
     '',
   StationaryCycleImpossibility = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
@@ -357,6 +365,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
+    trap 'rm -f Main; rm -rf MAlonzo' EXIT
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
