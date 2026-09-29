@@ -13,7 +13,7 @@ let script = merge {
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --compile -l standard-library -i . Main.agda
     ./Main
-    ''
+    '',
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
