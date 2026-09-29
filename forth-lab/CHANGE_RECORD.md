@@ -1,48 +1,44 @@
 # Change record — 2026-09-29
 
-Scope: isolated Min / Gforth / gbForth / Factor lab under one top-level folder.
+Scope: isolated Min / Gforth / gbForth / Factor / Pony lab under one top-level folder.
 
-Request: add Factor to the existing isolated language lab and verify examples are runnable rather than merely present.
+Request: add Pony through Nixpkgs and provide runnable example code using the existing isolated language lab pattern.
 
 Before:
-- `forth-lab/` contained Min, Gforth, and gbForth examples.
-- The gbForth example defined an empty `main`; it produced a valid ROM but intentionally did nothing.
-- No Factor runtime or Factor example existed.
+- `forth-lab/` contained Min, Gforth, gbForth, and Factor examples.
+- No Pony compiler or Pony example existed.
 
 Now:
-- `forth-lab/flake.nix` adds Nixpkgs `factorPackages.factor-minimal` on `x86_64-linux`.
-- `forth-lab/examples/factor/hello.factor` is a runnable Factor script that prints a greeting.
-- `forth-lab/examples/min/squares.min` remains a runnable Min program.
-- `forth-lab/examples/gforth/hello.fs` remains a runnable Gforth program.
-- `forth-lab/examples/gbforth/hello.fs` now initializes the Game Boy text terminal and renders `Hello World!` from `main`.
-- `forth-lab/verify.sh` executes Min, Gforth, and Factor when supported and compiles gbForth, requiring a non-empty ROM.
-- No root flake, Agda source, theorem monolith, or existing CI lane is modified.
+- `forth-lab/flake.nix` adds `pkgs.ponyc` from the pinned Nixpkgs 26.05 input.
+- `forth-lab/examples/ponyc/hello/main.pony` is a runnable Pony program with `actor Main` and a `create` constructor that prints through `Env.out`.
+- `forth-lab/verify.sh` compiles the Pony package in an isolated temporary directory and runs the resulting `hello` binary.
+- `forth-lab/README.md` documents Pony setup and execution.
+- Existing root flake, Agda proof sources, theorem monoliths, and existing CI remain untouched.
 
 Why:
-Keep language experiments isolated while making each example traceable to a real executable entry path.
+Keep language experiments isolated while proving each sample has a real compiler entry point and runtime path.
 
 When not to use:
-Do not move these runtimes into the root Nix environment unless the repository explicitly adopts one of them as a dependency.
+Do not promote Pony into the root Nix environment unless the repository explicitly adopts Pony as a repository dependency.
 
 Technical reasoning:
-- Factor uses Nixpkgs' maintained Factor packaging instead of a second bootstrap path.
-- Nixpkgs currently exposes the Factor runtime through `factorPackages` and its Factor derivation targets `x86_64-linux`; the flake therefore conditionally installs Factor only on that host.
-- gbForth's official hello-world guide shows `main` calling `install-font`, `init-term`, and `.`" Hello World"` to produce visible ROM behavior.
+- Nixpkgs 26.05 provides `ponyc` version 0.64.0 and supports the four systems already declared by this lab: `x86_64-linux`, `x86_64-darwin`, `aarch64-linux`, and `aarch64-darwin`.
+- Pony documentation defines the `Main` actor constructor as the executable entry point and shows `ponyc` compiling a package directory into an executable with the package directory name.
+- Verification copies the example package into a temporary directory before compiling, so generated compiler artifacts never alter tracked source.
 
 Operational consequence:
-Entering `forth-lab` still bootstraps Min once through Nimble. Factor is available on `x86_64-linux`; other declared flake systems retain the existing Min/Gforth/gbForth shell without a non-buildable Factor package.
+Entering `forth-lab` still bootstraps Min once through Nimble. Pony is Nix-managed through the same pinned `nixpkgs` input as the other maintained tools.
 
 Verification evidence:
-`bash verify.sh` is the focused local gate for this folder. It checks process output for Min, Gforth, and Factor and checks that gbForth emits a non-empty ROM.
+`bash verify.sh` is the focused lab gate. It executes Min, Gforth, and Factor where supported, compiles gbForth to a non-empty ROM, and compiles/runs the Pony example.
 
 Future implications:
 _Unknown - ask the owner and record the answer._
 
 Stale when:
-Update this record if the folder becomes a repository-wide dependency, Factor gains supported Nixpkgs builds on additional systems, or example entry points change.
+Update this record if Nixpkgs changes Pony package availability/platforms, the Pony example entry point changes, or `forth-lab` becomes a repository-wide dependency.
 
 Upstream references:
-- Factor: https://www.factorcode.org/
-- Factor command-line scripts: https://docs.factorcode.org/content/article-command-line.html
-- gbForth hello world: https://gbforth.org/hello-world.html
-- Min: https://min-lang.org/
+- Pony hello world: https://tutorial.ponylang.io/getting-started/hello-world.html
+- Pony runtime/compiler: https://www.ponylang.io/
+- Nixpkgs Pony package: https://github.com/NixOS/nixpkgs/tree/nixos-26.05/pkgs/by-name/po/ponyc
