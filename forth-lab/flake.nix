@@ -1,5 +1,5 @@
 {
-  description = "Isolated Min, Gforth, and gbForth toolchain";
+  description = "Isolated Min, Gforth, gbForth, and Factor toolchain";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -39,7 +39,7 @@
               test -x "$installed"
               ln -sf "$installed" "$bin/min"
             fi
-          '';
+          ''';
         in
         {
           default = pkgs.mkShell {
@@ -49,6 +49,9 @@
               pkgs.nim
               pkgs.nimble
               minBootstrap
+            ]
+            ++ pkgs.lib.optionals (system == "x86_64-linux") [
+              pkgs.factorPackages.factor-minimal
             ];
 
             shellHook = ''
@@ -56,7 +59,10 @@
               ensure-min
               export PATH="$MIN_LAB_HOME/bin:$PATH"
               echo "Min + Gforth + gbForth environment ready."
-            '';
+              if [ "${system}" = "x86_64-linux" ]; then
+                echo "Factor environment ready."
+              fi
+            ''';
           };
         });
     };
