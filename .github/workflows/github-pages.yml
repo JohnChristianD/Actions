@@ -14,21 +14,25 @@ concurrency:
 
 jobs:
   build:
-    name: Build theorem-synchronized Elm Pages surface
+    name: Build Agda-synchronized Elm Pages surface
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
 
-      - name: Synchronize current Agda theorem surface
+      - name: Synchronize Elm directly from Agda modules
         run: |
           set -euo pipefail
           nix develop --command bash -euo pipefail -c '
-            sync="${RUNNER_TEMP}/presentation-sync.sh"
-            dhall text --file .ci/presentation-sync.dhall > "$sync"
-            bash "$sync"
-            test -s "${RUNNER_TEMP}/actions-presentation-sync/src/GeneratedTheoremSurface.elm"
+            tmp="${RUNNER_TEMP}/actions-agda-to-elm"
+            rm -rf "$tmp"
+            mkdir -p "$tmp"
+            mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm"
+            "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
+            test -s "$tmp/GeneratedTheoremSurface.elm"
+            dhall type --file .ci/presentation-contract.dhall >/dev/null
+            cp "$tmp/GeneratedTheoremSurface.elm" "${RUNNER_TEMP}/GeneratedTheoremSurface.elm"
           '
 
       - name: Build Elm application
@@ -39,7 +43,7 @@ jobs:
             rm -rf "$tmp"
             mkdir -p "$tmp/src"
             cp site/Main.elm "$tmp/src/Main.elm"
-            cp "${RUNNER_TEMP}/actions-presentation-sync/src/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
+            cp "${RUNNER_TEMP}/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
             cat > "$tmp/elm.json" <<'"'"'JSON'
           {
             "type": "application",
@@ -99,7 +103,7 @@ jobs:
           path: ${{ runner.temp }}/pages
 
   deploy:
-    name: Deploy theorem-synchronized Elm Pages surface
+    name: Deploy Agda-synchronized Elm Pages surface
     needs: build
     runs-on: ubuntu-22.04
     permissions:
