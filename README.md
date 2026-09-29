@@ -261,14 +261,28 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 055aaf0c9b609f379f849a66a039d568e0df81dc
-unprocessed-commit-count: 2
+last-processed-commit: bb3f125a6baea4ceadda342b6bb49aaee681179a
+unprocessed-commit-count: 16
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `055aaf0c9b60` Delete docs directory
-- `a73406b373ab` docs: refresh README from commit totality
+- `bb3f125a6bae` fix: pin Mirth standard library search path
+- `6acb2ce2e588` docs: publish Elm graph URL
+- `7a211e218c0c` feat: deploy Elm graph to GitHub Pages
+- `6951a7eb374d` fix: match Mirth package module syntax
+- `4cb7831117c1` fix: remove invalid Mirth module filename
+- `643c4f16f3bc` fix: make Mirth workload verification executable
+- `365995aeef80` fix: make Mirth workload verification executable
+- `dfc6fe98606e` fix: make Mirth workload verification executable
+- `fe39891ead28` fix: make Mirth workload verification executable
+- `ed1044ce5ede` fix: make Mirth workload executable in pinned Nix
+- `a46cc2dfd272` fix: use valid Mirth module identifier
+- `c7bb84fbcc91` Revert "Delete workloads/hex directory"
+- `955ad2431c50` Delete workloads/hex directory
+- `800b45ea10d5` Delete .ci/closure-trigger.txt
+- `0f6173e68d8b` Delete .ci/replication_prompt_Corsane2022_v147.csv
+- `9e8d4f54909c` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
