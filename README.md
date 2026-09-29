@@ -254,6 +254,10 @@ When documentation and source disagree, the Agda source and the current Dhall ve
 
 The repository no longer treats `docs/wiki.md` as a canonical source; the README, theorem monolith, CI contract, and focused research notes are the maintained knowledge surface.
 
+### Mirth Pages synchronization boundary
+
+The GitHub Pages build installs Nix before entering the pinned flake environment, then compiles `.ci/mirth/agda_to_elm.mth`. The Mirth program reads both Agda proof-authority files, rejects missing module markers, and emits source-derived byte counts alongside the module inventory. This keeps Mirth in the presentation/build layer: Agda remains semantic authority, while Mirth performs a typed, executable synchronization step. A Pages build that cannot execute Nix or Mirth is a failed synchronization, not a successful inert fallback.
+
 ## Scheduled commit-totality README refresh
 
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
