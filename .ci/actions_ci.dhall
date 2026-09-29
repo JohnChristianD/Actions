@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -14,7 +14,7 @@ let script = merge {
     ./Main
     rm -f Main
     rm -rf MAlonzo
-    ''
+    '',
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
