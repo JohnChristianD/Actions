@@ -259,28 +259,49 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: bb3f125a6baea4ceadda342b6bb49aaee681179a
-unprocessed-commit-count: 16
+last-processed-commit: 2dca86532b80135af3b03fb3484b752fd17c9cf3
+unprocessed-commit-count: 37
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `bb3f125a6bae` fix: pin Mirth standard library search path
-- `6acb2ce2e588` docs: publish Elm graph URL
-- `7a211e218c0c` feat: deploy Elm graph to GitHub Pages
-- `6951a7eb374d` fix: match Mirth package module syntax
-- `4cb7831117c1` fix: remove invalid Mirth module filename
-- `643c4f16f3bc` fix: make Mirth workload verification executable
-- `365995aeef80` fix: make Mirth workload verification executable
-- `dfc6fe98606e` fix: make Mirth workload verification executable
-- `fe39891ead28` fix: make Mirth workload verification executable
-- `ed1044ce5ede` fix: make Mirth workload executable in pinned Nix
-- `a46cc2dfd272` fix: use valid Mirth module identifier
-- `c7bb84fbcc91` Revert "Delete workloads/hex directory"
-- `955ad2431c50` Delete workloads/hex directory
-- `800b45ea10d5` Delete .ci/closure-trigger.txt
-- `0f6173e68d8b` Delete .ci/replication_prompt_Corsane2022_v147.csv
-- `9e8d4f54909c` docs: refresh README from commit totality
+- `2dca86532b80` fix: align Elm presentation with Agda module sync
+- `b438263d4a62` fix: keep Mirth in the development shell
+- `99bd2bc6c327` docs: record direct Agda Mirth Elm Pages topology
+- `41039f198c79` refactor: remove Mercury Pages synchronization path
+- `671e2c2b1edb` refactor: remove Mercury Pages synchronization path
+- `2b60550de7f8` refactor: make Elm surface consume Agda module sync
+- `6ec17c4e9448` refactor: sync Pages directly from Agda with Mirth
+- `de3ecb7244c8` feat: add Dhall contract for Agda presentation sync
+- `8954d12374a8` feat: add direct Agda source Mirth synchronizer
+- `b8e336129a0e` feat: add Mirth Pages sync app
+- `23c98a12eda6` feat: add Mirth to the reproducible sync environment
+- `e96c5b9f21ab` Synchronize Pages from current Agda theorem surface
+- `19f593e50c90` Render current Agda theorem surface in Elm Pages
+- `2fd9a153f92e` Probe Pages source update path
+- `b3a082df8756` Add Agda theorem surface sync pipeline
+- `05cf05b652aa` Add Agda theorem surface sync pipeline
+- `9224a13cddc0` refactor: keep Pages source pure Elm
+- `3c97accd1b96` docs: define Pages as pure Elm surface
+- `34e6a3ca8f39` fix: use valid Elm sandbox initializer
+- `48871017cca1` build: compile pure Elm Pages surface
+- `7c206aa3b757` feat: make Pages surface pure Elm
+- `08ed2a86d3fc` build: add Elm compiler for Pages source
+- `3ba10075d3d1` docs: remove retired Mirth workload reference
+- `e2c6e6c79c8a` refactor: prune redundant Elm Mirth presentation stack
+- `79658ecf1979` refactor: prune redundant Elm Mirth presentation stack
+- `334d50137117` refactor: prune redundant Elm Mirth presentation stack
+- `b94c04321112` refactor: prune redundant Elm Mirth presentation stack
+- `eca3548f9447` refactor: prune redundant Elm Mirth presentation stack
+- `ad0dbfefa8c2` refactor: prune redundant Elm Mirth presentation stack
+- `5b6eab787c56` refactor: prune redundant Elm Mirth presentation stack
+- `1649e9a58ba2` refactor: prune redundant Elm Mirth presentation stack
+- `5a0da40772db` docs: describe static Pages surface after workload prune
+- `8eecdae1f29a` refactor: remove redundant Elm workload lane
+- `8ca5aec1e312` refactor: remove redundant Elm and Mirth tooling
+- `deac0513f0f0` feat: deploy static GitHub Pages site
+- `d939c8c03176` feat: add static GitHub Pages presentation
+- `178ad11ebef5` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
