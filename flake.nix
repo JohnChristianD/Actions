@@ -63,6 +63,38 @@
             type = "app";
             program = "${script}/bin/elm-graph-build";
           };
+          mirth-workload-check = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-workload-check";
+              runtimeInputs = [
+                pkgs.mirth
+                pkgs.stdenv.cc
+              ];
+              text = ''
+                set -euo pipefail
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+
+                mirthc workloads/mirth/graph_adapter.mth -o "$tmp/graph_adapter.c"
+                cc "$tmp/graph_adapter.c" -o "$tmp/graph_adapter"
+
+                actual=$("$tmp/graph_adapter")
+                expected=$(cat <<'EOF'
+Actions Mirth workload adapter
+Semantic authority: Agda --safe
+Dependency graph: Mercury
+Dhall contract: typed evidence
+Nix environment: reproducible composition
+Elm graph bundle: workloads/elm-graph/dist/elm.js
+EOF
+)
+                test "$actual" = "$expected"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-workload-check";
+          };
           readme-doc-sync = let
             script = pkgs.writeShellApplication {
               name = "readme-doc-sync";
