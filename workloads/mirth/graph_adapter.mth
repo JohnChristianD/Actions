@@ -1,4 +1,4 @@
-module workloads.mirth.graph_adapter
+module workloads.graph_adapter
 
 import std.prelude
 import std.world
