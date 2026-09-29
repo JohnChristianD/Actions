@@ -18,6 +18,7 @@
   changes = [
     "Set concurrency queue = max so successive PR/rebase updates are queued instead of replacing the pending run.",
     "Move PR verification responsibility to the Nix composition workflow; Pages workflow is deployment-only for push/main and manual dispatch, removing the expected PR deploy skip.",
+    "Add a Pages lane to Nix CI and require it for auto-merge, so Mirth-to-Elm presentation failures are caught before main."
     "Add a MercuryPurity lane that scans every tracked .m file and rejects impure/semipure syntax, purity-cast pragmas, and foreign_proc declarations.",
     "Run the Mercury purity lane explicitly in the Mercury job."
   ],
