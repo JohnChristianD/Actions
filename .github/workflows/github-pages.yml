@@ -20,6 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31.10.6
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Synchronize Elm directly from Agda modules
         run: |
@@ -31,6 +35,7 @@ jobs:
             mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm"
             "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
             test -s "$tmp/GeneratedTheoremSurface.elm"
+            grep -Fq "agdaSourceBytes : List Int" "$tmp/GeneratedTheoremSurface.elm"
             dhall type --file .ci/presentation-contract.dhall >/dev/null
             cp "$tmp/GeneratedTheoremSurface.elm" "${RUNNER_TEMP}/GeneratedTheoremSurface.elm"
           '
@@ -44,7 +49,7 @@ jobs:
             mkdir -p "$tmp/src"
             cp site/Main.elm "$tmp/src/Main.elm"
             cp "${RUNNER_TEMP}/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
-            cat > "$tmp/elm.json" <<'"'"'JSON'
+            cat > "$tmp/elm.json" <<'JSON'
           {
             "type": "application",
             "source-directories": ["src"],
