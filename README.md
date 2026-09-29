@@ -186,7 +186,7 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMon
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-The Elm graph is presentation-only and is published from `main` to [GitHub Pages](https://johnchristiand.github.io/Actions/). It does not become semantic or proof authority.
+The static presentation surface is published from `main` to [GitHub Pages](https://johnchristiand.github.io/Actions/). It does not become semantic or proof authority.
 
 The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mercury supplies dependency discovery and semantic graph processing. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
@@ -204,15 +204,13 @@ The repository layers are:
 - Nix: the reproducible build/development environment and host composition.
 - Workload implementations: replaceable native or embedded languages; they consume explicit interfaces and never become a second semantic authority.
 
-A workload may therefore use Go, Nim, Lua, Chibi Scheme, Roc, Swift, Mirth, C, Haskell, or another language when a concrete workload needs it. The candidate list is non-exhaustive and does not make every language a repository dependency. The CI surface must not reject a language merely because it was absent from an earlier phase. What remains prohibited is duplicated semantic authority: an implementation language must not introduce a parallel theorem model or an alternative canonical definition of the learner.
+A future workload may use Go, Nim, Lua, Chibi Scheme, Roc, Swift, C, Haskell, or another language when a concrete workload needs it. The candidate list is non-exhaustive and does not make every language a repository dependency. The CI surface must not reject a language merely because it was absent from an earlier phase. What remains prohibited is duplicated semantic authority: an implementation language must not introduce a parallel theorem model or an alternative canonical definition of the learner.
 
-For desktop Linux targets, GUI/toolkit choice remains an adapter concern rather than a semantic requirement. A Mirth workload can remain headless or be wrapped by a native desktop host; microOS/Aeon, NixOS, VanillaOS, Guix, and similar Linux systems do not alter the Agda/Mercury boundary.
+For desktop Linux targets, GUI/toolkit choice remains an adapter concern rather than a semantic requirement; microOS/Aeon, NixOS, VanillaOS, Guix, and similar Linux systems do not alter the Agda/Mercury boundary.
 
 Tk itself should therefore not be redefined as “Tk in WebAssembly”. The browser adapter should be treated as a separate host boundary. Existing browser-oriented Tk-compatible projects implement their widgets through JavaScript/HTML rather than becoming the Tk desktop implementation; a direct Tk/WASM path would require its own platform port. See [Tk](https://github.com/tcltk/tk), [Emscripten WebAssembly](https://emscripten.org/docs/compiling/WebAssembly.html), and [wTk](https://core.tcl-lang.org/wtk/home).
 
 Guix is not a repository requirement. Mermaid is not a graph or CI requirement. Neither is needed by the semantic core.
-
-The current concrete workload adapter is `workloads/mirth/graph_adapter.mth`. CI compiles it with the pinned Nix Mirth package, links the generated C with the pinned C toolchain, and executes the resulting program. The adapter remains presentation-neutral: it reports the generated graph artifact and does not define learner semantics or CI evidence.
 
 ## MARL, Hodge-Maxwell, and optimizer semantics
 
