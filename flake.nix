@@ -100,7 +100,6 @@
               name = "prune-theorem-registries";
               runtimeInputs = [
                 pkgs.mercury
-              pkgs.mirth
               ];
               text = ''
                 set -euo pipefail
@@ -127,6 +126,7 @@
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
+              pkgs.mirth
               pkgs.haskellPackages.dhall
               pkgs.haskellPackages.dhall-json
               pkgs.gh
