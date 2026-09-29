@@ -26,7 +26,7 @@
           minBootstrap = pkgs.writeShellScriptBin "ensure-min" ''
             set -euo pipefail
 
-            root="${MIN_LAB_HOME:-$PWD/.min-runtime}"
+            root="''${MIN_LAB_HOME:-$PWD/.min-runtime}"
             home="$root/home"
             bin="$root/bin"
 
