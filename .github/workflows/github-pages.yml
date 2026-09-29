@@ -3,8 +3,7 @@ name: GitHub Pages
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  # Pull requests are verified by the Nix composition workflow; this workflow is deployment-only.
   workflow_dispatch:
 
 permissions:
@@ -110,7 +109,7 @@ jobs:
           path: ${{ runner.temp }}/pages
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     name: Deploy Agda-synchronized Elm Pages surface
     needs: build
     runs-on: ubuntu-22.04
