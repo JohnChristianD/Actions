@@ -7,6 +7,14 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     '',
+  CanonicalExecutable = ''
+    set -euo pipefail
+    "$AGDA_COMMAND" --safe -l standard-library -i . Main.agda
+    "$AGDA_COMMAND" --compile -l standard-library -i . Main.agda
+    ./Main
+    rm -f Main
+    rm -rf MAlonzo
+    ''
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
@@ -517,9 +525,10 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 3 ] || { echo "expected exactly three tracked Agda sources, found $agda_count"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
+    [ -f Main.agda ] || { echo "missing canonical learner executable entrypoint"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
