@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -46,6 +46,43 @@ let script = merge {
     set -euo pipefail
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
+    '',
+  Pages = ''
+    set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm"
+    "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
+    test -s "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "agdaSourceBytes : List Int" "$tmp/GeneratedTheoremSurface.elm"
+    dhall type --file .ci/presentation-contract.dhall >/dev/null
+    mkdir -p "$tmp/src"
+    cp site/Main.elm "$tmp/src/Main.elm"
+    cp "$tmp/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
+    cat > "$tmp/elm.json" <<'JSON'
+    {
+      "type": "application",
+      "source-directories": ["src"],
+      "elm-version": "0.19.1",
+      "dependencies": {
+        "direct": {
+          "elm/browser": "1.0.2",
+          "elm/core": "1.0.5",
+          "elm/html": "1.0.0"
+        },
+        "indirect": {
+          "elm/json": "1.1.3",
+          "elm/time": "1.0.0",
+          "elm/url": "1.0.0",
+          "elm/virtual-dom": "1.0.3"
+        }
+      }
+    }
+JSON
+    mkdir -p "$tmp/pages"
+    elm make "$tmp/src/Main.elm" --optimize --output "$tmp/pages/elm.js"
+    test -s "$tmp/pages/elm.js"
+    echo "pages-build=pass"
     '',
   Discovery = ''
     set -euo pipefail
