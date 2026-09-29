@@ -54,58 +54,8 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 41 files.
+Generated from the tracked Markdown surface: 0 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
-
-### Economics
-
-- [Economic e-graph: emergent-only Arrow–Debreu](docs/economics/economic-egraph-emergent-arrow-debreu.md)
-- [Economic A*-E-Graph Target: No Primitive Economic Price](docs/economics/economic-egraph-no-primitive-price.md)
-
-### Research
-
-- [Adaptive sparsemax action-domain redesign — 2026-09-23](docs/research/adaptive-sparsemax-action-domain-2026-09-23.md)
-- [Canonical Integer-GRU global left-inverse and conjugacy closure — 2026-09-26](docs/research/canonical-integer-gru-global-left-inverse-2026-09-26.md)
-- [Carrier-polymorphic frontier closure — 2026-09-26](docs/research/carrier-polymorphic-frontier-2026-09-26.md)
-- [Complete connected theorem graph closure — 2026-09-22](docs/research/complete-connected-theorem-graph-2026-09-22.md)
-- [E-Graph / A* convergence closure — 2026-09-27](docs/research/egraph-astar-convergence-2026-09-27.md)
-- [Expanded generalized aggregate excess demand e-graph — 2026-09-28](docs/research/egraph-expanded-aggregate-excess-demand-2026-09-28.md)
-- [E-graph frontier: MARL physics ↔ generalized Walrasian convergence and injectivity — 2026-09-28](docs/research/egraph-marl-walrasian-convergence-injectivity-2026-09-28.md)
-- [Endogenous A* kernel-checked closure — 2026-09-23](docs/research/endogenous-astar-kernel-closure-2026-09-23.md)
-- [2026-09-23 finite-carrier transport promotion](docs/research/finite-carrier-transport-promotion-2026-09-23.md)
-- [Four-law primary-source closure audit — 2026-09-25](docs/research/four-law-primary-source-closure-audit-2026-09-25.md)
-- [General-purpose workload and semantic boundary — 2026-09-28](docs/research/general-purpose-workload-gui-boundary-2026-09-27.md)
-- [Graph closure audit — 2026-09-23](docs/research/graph-closure-audit-2026-09-23.md)
-- [GRU automata/sign-optimizer graph research](docs/research/gru-automata-signoptimizer-graph.md)
-- [Arbitrary-limit GRU fractal closure and e-graph/A* composition — 2026-09-26](docs/research/gru-fractal-arbitrary-limit-closure-2026-09-26.md)
-- [GRU fractal domain adapters — 2026-09-26](docs/research/gru-fractal-domain-adapters-2026-09-26.md)
-- [GRU-injective fractal composition — 2026-09-26](docs/research/gru-fractal-injective-composition-2026-09-26.md)
-- [GRU fractal limit convergence adapter — 2026-09-26](docs/research/gru-fractal-limit-convergence-adapter-2026-09-26.md)
-- [Unbounded Int8 integee-eing upgeade — 2026-09-23](docs/research/int8-unbounded-z-ring-2026-09-23.md)
-- [Int8 vocabulary boundary and recurrent closure — 2026-09-22](docs/research/int8-vocabulary-recurrent-closure-2026-09-22.md)
-- [Integer LayerNorm stability and growth — 2026-09-27](docs/research/integer-layernorm-stability-growth-2026-09-27.md)
-- [F4 horizon-indexed rounding-bias residual regret boundary](docs/research/jensen-minimax-rounding-kkt-markov-bound.md)
-- [CI artifact format decision — JSON to Dhall — 2026-09-27](docs/research/json-to-dhall-ci-2026-09-27.md)
-- [Law IV carrier-polymorphic Tsallis audit — 2026-09-25](docs/research/law-iv-tsallis-carrier-polymorphic-2026-09-25.md)
-- [Learner equivalence class: algebraic and computational boundary](docs/research/learner-equivalence-class.md)
-- [MARL-facing laws, Hodge-Maxwell composition, and the F4 growth ray](docs/research/marl-laws-hodge-maxwell-f4-ray-2026-09-25.md)
-- [Algebraic proof: nonlinear sequence storage and generation](docs/research/nonlinear-sequence-storage-generation-algebra.md)
-- [Real semantic e-graph and staleness policy — 2026-09-26](docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md)
-- [Strict unconditional theorem graph for the full monolith](docs/research/strict-unconditional-theorem-graph-2026-09-25.md)
-- [Theorem composition improvements — 2026-09-26](docs/research/theorem-composition-improvements-2026-09-26.md)
-- [Theorem-improvement completion — 2026-09-26](docs/research/theorem-improvement-completion-2026-09-26.md)
-- [Theorem improvement frontier — 2026-09-26](docs/research/theorem-improvement-frontier-2026-09-26.md)
-- [Unconditional canonical-price non-derivability — 2026-09-26](docs/research/theorem-no-unconditional-canonical-price-derivation-2026-09-26.md)
-- [Unconditional tragedy-of-the-commons non-derivability — 2026-09-26](docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md)
-- [Thesis contribution reassessment against the dedicated literature — 2026-09-25](docs/research/thesis-contribution-reassessment-2026-09-25.md)
-- [Thesis nomenclature and topology review — 2026-09-25](docs/research/thesis-literature-topology-production-welfare-2026-09-25.md)
-- [Unconditional finite-candidate price kernel — 2026-09-26](docs/research/unconditional-finite-price-kernel-2026-09-26.md)
-- [ZPF ω³ / GRU statistical law boundary — 2026-09-25](docs/research/zpf-omega3-gru-statistical-law-2026-09-25.md)
-
-### Repository documentation
-
-- [Econlib stationary-Markov equilibrium graph](docs/econlib-stationary-markov-graph.md)
-- [Stationary-distribution / finite-cycle obstruction graph](docs/stationary-cycle-impossibility-graph.md)
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
 
@@ -309,27 +259,14 @@ The repository no longer treats `docs/wiki.md` as a canonical source; the README
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: c3fafeeb47604051c08cf9387de6873ad5fb244d
-unprocessed-commit-count: 15
+last-processed-commit: 055aaf0c9b609f379f849a66a039d568e0df81dc
+unprocessed-commit-count: 2
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `c3fafeeb4760` ci: invoke pinned nixpkgs Mirth compiler
-- `ce7e31a552fb` docs: remove stale Tcl/Tk adapter reference
-- `ae97612f9d6f` refactor: remove obsolete Tcl/Tk workload code
-- `1d86476fa180` refactor: remove obsolete Tcl/Tk workload code
-- `5ef4c03996fa` docs: describe Mirth as current workload boundary
-- `06594b6ff76d` docs: state Mirth workload orthogonality boundary
-- `a6f9bf7f9983` ci: replace Tcl launcher check with Mirth compile
-- `0d2cc5b1ebf1` ci: validate Mirth workload surface
-- `92ce5a131781` build: use Mirth instead of Tcl/Tk
-- `2fde13d62718` docs: record vendored hex and Mirth boundary
-- `cbb07131feff` vendor: retain hex MIT license
-- `f866a79646b5` vendor: add upstream hex src/hex.c
-- `50d6798fec43` refactor: make Mirth the general-purpose workload adapter
-- `779407a65ef7` refactor: make Mirth the general-purpose workload adapter
-- `0bcb0eef1fba` docs: refresh README from commit totality
+- `055aaf0c9b60` Delete docs directory
+- `a73406b373ab` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
