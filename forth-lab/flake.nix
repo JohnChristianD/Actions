@@ -1,5 +1,5 @@
 {
-  description = "Isolated Min, Gforth, gbForth, and Factor toolchain";
+  description = "Isolated Min, Gforth, gbForth, Factor, and Pony toolchain";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -48,6 +48,7 @@
               pkgs.gbforth
               pkgs.nim
               pkgs.nimble
+              pkgs.ponyc
               minBootstrap
             ]
             ++ pkgs.lib.optionals (system == "x86_64-linux") [
@@ -58,7 +59,7 @@
               export MIN_LAB_HOME="$PWD/.min-runtime"
               ensure-min
               export PATH="$MIN_LAB_HOME/bin:$PATH"
-              echo "Min + Gforth + gbForth environment ready."
+              echo "Min + Gforth + gbForth + Pony environment ready."
               if [ "${system}" = "x86_64-linux" ]; then
                 echo "Factor environment ready."
               fi
