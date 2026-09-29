@@ -1,0 +1,49 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-main
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build static GitHub Pages site
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare Pages artifact
+        run: |
+          set -euo pipefail
+          rm -rf "${RUNNER_TEMP}/pages"
+          mkdir -p "${RUNNER_TEMP}/pages"
+          cp site/index.html "${RUNNER_TEMP}/pages/index.html"
+          touch "${RUNNER_TEMP}/pages/.nojekyll"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/pages
+
+  deploy:
+    name: Deploy static GitHub Pages site
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
