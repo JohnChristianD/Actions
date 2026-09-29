@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Actions — proof and dependency topology</title>
+  <meta name="description" content="Static presentation surface for the Actions proof and dependency topology.">
+  <style>
+    :root { color-scheme: light dark; }
+    body { max-width: 960px; margin: 0 auto; padding: 2rem; font: 16px/1.6 system-ui, sans-serif; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    a { text-decoration-thickness: .08em; text-underline-offset: .15em; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    section { border: 1px solid currentColor; border-radius: .6rem; padding: 1rem; opacity: .9; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Actions</h1>
+    <p>Static presentation surface for the repository’s proof and dependency topology.</p>
+
+    <div class="grid">
+      <section>
+        <h2>Proof authority</h2>
+        <p>Agda <code>--safe</code> is the only semantic and proof authority.</p>
+        <p><a href="https://github.com/JohnChristianD/Actions/blob/main/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda">Canonical learner</a></p>
+        <p><a href="https://github.com/JohnChristianD/Actions/blob/main/Exotic/ERL/FullCoupled/TheoremsMonolith.agda">Theorem monolith</a></p>
+      </section>
+
+      <section>
+        <h2>Discovery</h2>
+        <p>Mercury performs declaration extraction, dependency discovery, and graph processing.</p>
+        <p><a href="https://github.com/JohnChristianD/Actions/tree/main/.ci/discovery">Discovery sources</a></p>
+      </section>
+
+      <section>
+        <h2>Reproducibility</h2>
+        <p>Nix supplies the pinned environment used by local and GitHub Actions verification.</p>
+        <p><a href="https://github.com/JohnChristianD/Actions/blob/main/flake.nix">flake.nix</a></p>
+      </section>
+
+      <section>
+        <h2>Repository</h2>
+        <p>This page is presentation-only. It does not define learner semantics or proof evidence.</p>
+        <p><a href="https://github.com/JohnChristianD/Actions">GitHub repository</a></p>
+      </section>
+    </div>
+
+    <h2>Boundary</h2>
+    <pre>Agda --safe
+   |
+   v
+proof authority
+   |
+   +--> Mercury discovery / dependency graph
+   |
+   +--> Nix reproducible execution
+   |
+   +--> GitHub Pages static presentation</pre>
+  </main>
+</body>
+</html>
