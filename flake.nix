@@ -38,64 +38,6 @@
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
           };
-          elm-graph-build = let
-            script = pkgs.writeShellApplication {
-              name = "elm-graph-build";
-              runtimeInputs = [
-                pkgs.coreutils
-                pkgs.elmPackages.elm
-                pkgs.haskellPackages.dhall
-              ];
-              text = ''
-                set -euo pipefail
-                repo_root=$(pwd)
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-                mkdir -p "$tmp/src" "$repo_root/workloads/elm-graph/dist"
-                cp workloads/elm-graph/src/*.elm "$tmp/src/"
-                dhall text --file workloads/elm-graph/elm-project.dhall > "$tmp/elm.json"
-                dhall text --file workloads/elm-graph/graph.dhall > "$tmp/src/GeneratedGraph.elm"
-                (cd "$tmp" && elm make src/Main.elm                   --optimize                   --output "$repo_root/workloads/elm-graph/dist/elm.js")
-                test -s workloads/elm-graph/dist/elm.js
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/elm-graph-build";
-          };
-          mirth-workload-check = let
-            script = pkgs.writeShellApplication {
-              name = "mirth-workload-check";
-              runtimeInputs = [
-                pkgs.mirth
-                pkgs.stdenv.cc
-              ];
-              text = ''
-                set -euo pipefail
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-
-                mirthc -P "${pkgs.mirth.lib}/lib/mirth" workloads/mirth/graph_adapter.mth -o "$tmp/graph_adapter.c"
-                test -f "${pkgs.mirth.lib}/lib/mirth/std/prelude.mth"
-                cc "$tmp/graph_adapter.c" -o "$tmp/graph_adapter"
-
-                actual=$("$tmp/graph_adapter")
-                expected=$(cat <<'EOF'
-Actions Mirth workload adapter
-Semantic authority: Agda --safe
-Dependency graph: Mercury
-Dhall contract: typed evidence
-Nix environment: reproducible composition
-Elm graph bundle: workloads/elm-graph/dist/elm.js
-EOF
-)
-                test "$actual" = "$expected"
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/mirth-workload-check";
-          };
           readme-doc-sync = let
             script = pkgs.writeShellApplication {
               name = "readme-doc-sync";
@@ -174,8 +116,6 @@ EOF
               pkgs.haskellPackages.dhall-json
               pkgs.gh
               pkgs.python3
-              pkgs.mirth
-              pkgs.elmPackages.elm
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
