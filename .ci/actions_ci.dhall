@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -23,6 +23,24 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    '',
+  MercuryPurity = ''
+    set -euo pipefail
+    files=$(git ls-files '*.m')
+    [ -n "$files" ] || { echo "no Mercury sources found"; exit 1; }
+    if grep -nHE '(^|[^A-Za-z])(impure|semipure)([^A-Za-z]|$)' $files; then
+      echo "Mercury purity violation: impure/semipure syntax is forbidden in repository .m sources"
+      exit 1
+    fi
+    if grep -nHE 'pragma[[:space:]]+promise_(impure|semipure)' $files; then
+      echo "Mercury purity violation: promise_impure/promise_semipure is forbidden"
+      exit 1
+    fi
+    if grep -nHE 'pragma[[:space:]]+foreign_proc' $files; then
+      echo "Mercury purity violation: foreign_proc is forbidden in repository .m sources"
+      exit 1
+    fi
+    echo "mercury-purity=pass"
     '',
   Mercury = ''
     set -euo pipefail
