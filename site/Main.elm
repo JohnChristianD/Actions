@@ -16,7 +16,7 @@ type Msg
 main : Program () Model Msg
 main =
     Browser.sandbox
-        { init = \_ -> {}
+        { init = {}
         , update = \_ model -> model
         , view = view
         }
