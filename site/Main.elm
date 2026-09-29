@@ -55,32 +55,26 @@ view _ =
                 ]
             , panel "Boundary"
                 [ p []
-                    [ text "Elm is presentation-only. It consumes generated theorem metadata and defines no learner semantics or proof evidence." ]
+                    [ text "Elm is presentation-only. It consumes Mirth-synchronized Agda module metadata and defines no learner semantics or proof evidence." ]
                 ]
             ]
-        , h2 [] [ text ("Current theorem surface (" ++ String.fromInt GeneratedTheoremSurface.semanticLawCount ++ ")") ]
-        , ul [] (List.map theoremItem GeneratedTheoremSurface.semanticLawNames)
+        , h2 [] [ text "Agda modules" ]
+        , ul [] (List.map moduleItem GeneratedTheoremSurface.agdaModules)
         , h2 [] [ text "Topology" ]
         , pre []
             [ text """Agda --safe
-   |
-   v
-Mercury semantic extraction
-   |
-   v
-Dhall typed presentation contract
-   |
-   v
-Generated Elm theorem metadata
-   |
-   v
-GitHub Pages / pure Elm presentation""" ]
+     |
+     +----> Mercury discovery / dependency graph
+     |
+     v
+  Mirth source synchronization
+     |
+     v
+  Dhall presentation contract
+     |
+     v
+  GitHub Pages / pure Elm presentation""" ]
         ]
-
-
-theoremItem : String -> Html Msg
-theoremItem name =
-    li [] [ code [] [ text name ] ]
 
 
 panel : String -> List (Html Msg) -> Html Msg
