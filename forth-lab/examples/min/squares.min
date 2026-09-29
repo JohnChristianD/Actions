@@ -1,0 +1,2 @@
+; Min example: map a quotation across a list.
+(1 2 3 4 5) (stack.dup *) map
