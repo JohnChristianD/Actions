@@ -45,4 +45,4 @@ jobs:
       - name: Validate Mirth workload
         run: |
           set -euo pipefail
-          nix run nixpkgs#mirth -- -c workloads/mirth/graph-adapter.mth
+          nix run .#mirth-workload-check
