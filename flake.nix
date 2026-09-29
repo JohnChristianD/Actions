@@ -116,6 +116,7 @@
               pkgs.haskellPackages.dhall-json
               pkgs.gh
               pkgs.python3
+              pkgs.elmPackages.elm
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
