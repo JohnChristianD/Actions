@@ -75,7 +75,8 @@
                 tmp=$(mktemp -d)
                 trap 'rm -rf "$tmp"' EXIT
 
-                mirthc workloads/mirth/graph_adapter.mth -o "$tmp/graph_adapter.c"
+                mirthc -P "${pkgs.mirth.lib}/lib/mirth" workloads/mirth/graph_adapter.mth -o "$tmp/graph_adapter.c"
+                test -f "${pkgs.mirth.lib}/lib/mirth/std/prelude.mth"
                 cc "$tmp/graph_adapter.c" -o "$tmp/graph_adapter"
 
                 actual=$("$tmp/graph_adapter")
