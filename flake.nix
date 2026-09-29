@@ -38,6 +38,20 @@
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
           };
+          mirth-pages-sync = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-pages-sync";
+              runtimeInputs = [ pkgs.mirth ];
+              text = ''
+                set -euo pipefail
+                test "$#" = 1
+                mirthc .ci/mirth/agda_to_elm.mth -o "$1"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-pages-sync";
+          };
           readme-doc-sync = let
             script = pkgs.writeShellApplication {
               name = "readme-doc-sync";
