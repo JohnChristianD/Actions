@@ -25,6 +25,7 @@ def main [ +World -- +World ] {
         "Canonical learner module marker missing" panic!
     )
     drop
+    num-bytes >Int >canonical-bytes
 
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda" >Path read-source
     dup "module Exotic.ERL.FullCoupled.TheoremsMonolith" require-marker
@@ -33,6 +34,17 @@ def main [ +World -- +World ] {
         "Theorem module marker missing" panic!
     )
     drop
+    num-bytes >Int >theorem-bytes
 
-    "module GeneratedTheoremSurface exposing (agdaModules)\n\nagdaModules : List String\nagdaModules =\n    [ \"Exotic.ERL.FullCoupled.CanonicalLearnerMonolith\"\n    , \"Exotic.ERL.FullCoupled.TheoremsMonolith\"\n    ]\n" print
+    +World.print {
+        "module GeneratedTheoremSurface exposing (agdaModules, agdaSourceBytes)\n\n" ;
+        "agdaModules : List String\n" ;
+        "agdaModules =\n" ;
+        "    [ \"Exotic.ERL.FullCoupled.CanonicalLearnerMonolith\"\n" ;
+        "    , \"Exotic.ERL.FullCoupled.TheoremsMonolith\"\n" ;
+        "    ]\n\n" ;
+        "agdaSourceBytes : List Int\n" ;
+        "agdaSourceBytes =\n    [ " ; @canonical-bytes repr; "\n    , " ;
+        @theorem-bytes repr; "\n    ]\n"
+    }
 }
