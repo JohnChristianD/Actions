@@ -86,6 +86,7 @@
               name = "prune-theorem-registries";
               runtimeInputs = [
                 pkgs.mercury
+              pkgs.mirth
               ];
               text = ''
                 set -euo pipefail
