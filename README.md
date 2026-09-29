@@ -8,6 +8,7 @@ The current thesis-facing claim is deliberately narrow: the formalization makes 
 
 - `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` — canonical learner definitions and definitional laws.
 - `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` — theorem consumer and semantic/economic boundary.
+- `Main.agda` — standalone executable entrypoint for one canonical learner step.
 - `.ci/actions_ci.dhall` — verification lanes and required checks.
 - `.ci/discovery/` — declaration extraction, dependency discovery, and graph consistency checks.
 - `docs/research/theorem-improvement-completion-2026-09-26.md` — completed theorem-improvement search and proof-boundary note.
@@ -22,15 +23,16 @@ All surviving Agda modules are covered by the same proof-only semantic transport
 This is the repository's **full unconditional semantic e-graphed closure**: unconditional over every supplied indexed Agda semantic family, every module in that family, and every sound path. It is not an unconditional claim that every physical or economic theorem is inhabited. In particular, it does not manufacture Maxwell Law-I/Law-III witnesses, equilibrium witnesses, or other domain-specific semantic inhabitants.
 
 The current Agda inventory is intentionally minimal:
-- CanonicalLearnerMonolith.agda — canonical learner definitions and definitional laws.
-- TheoremsMonolith.agda — the sole theorem/semantic monolith, including the inlined statistical, physics, economics, fractal, limit, e-graph, A*, and counterexample contracts.
+- `CanonicalLearnerMonolith.agda` — canonical learner definitions and definitional laws.
+- `TheoremsMonolith.agda` — the sole theorem/semantic monolith, including the inlined statistical, physics, economics, fractal, limit, e-graph, A*, and counterexample contracts.
+- `Main.agda` — executable entrypoint that constructs one concrete learner kernel/state and evaluates one `canonicalFullStep`.
 
 
-The monoliths remain the proof authority. Auxiliary Agda files are not independent theorem authorities; their semantics enter the common transport layer through explicit typed terms.
+The two monoliths remain the proof authority. `Main.agda` is an execution adapter, not a third theorem authority.
 
 ### Complete surviving-Agda closure index
 
-The repository-wide semantic closure is indexed by exactly the two surviving Agda files in Exotic/ERL/FullCoupled: CanonicalLearnerMonolith.agda and TheoremsMonolith.agda. The theorem monolith's RepositoryAgdaModule enumeration is the live source of truth for that two-file proof surface.
+The repository has two Agda proof monoliths plus one executable entrypoint. The theorem monolith's `RepositoryAgdaModule` enumeration remains the live source of truth for the proof-only surface; `Main.agda` is excluded from theorem-source extraction.
 
 The exact chain is:
 
@@ -177,12 +179,21 @@ The production-side vocabulary is aligned with established formal-economics term
 
 ## Toolchain roles
 
-Agda is the proof authority. The monoliths are checked with:
+Agda is the proof authority. The proof monoliths are checked with:
 
 ```sh
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
+
+`Main.agda` is the executable adapter. Compile and run it with:
+
+```sh
+$AGDA_COMMAND --safe --compile -l standard-library -i . Main.agda
+./Main
+```
+
+The executable constructs one concrete learner kernel/state, evaluates one `canonicalFullStep`, and reports the resulting count transition. It does not introduce a second semantic definition.
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
