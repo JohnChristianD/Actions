@@ -1,0 +1,38 @@
+module actions.agda-to-elm
+
+import std.prelude
+import std.world
+import std.file
+import std.str
+import std.path
+
+def read-source [ +World Path -- +World Str ] {
+    read-path! match(
+        { Ok -> }
+        { Err -> "Mirth could not read the Agda source module" panic! }
+    )
+}
+
+def require-marker [ Str Str -- Bool ] {
+    thaw find some?
+}
+
+def main [ +World -- +World ] {
+    "Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda" >Path read-source
+    dup "module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" require-marker
+    if(
+        id,
+        "Canonical learner module marker missing" panic!
+    )
+    drop
+
+    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda" >Path read-source
+    dup "module Exotic.ERL.FullCoupled.TheoremsMonolith" require-marker
+    if(
+        id,
+        "Theorem module marker missing" panic!
+    )
+    drop
+
+    "module GeneratedTheoremSurface exposing (agdaModules)\n\nagdaModules : List String\nagdaModules =\n    [ \"Exotic.ERL.FullCoupled.CanonicalLearnerMonolith\"\n    , \"Exotic.ERL.FullCoupled.TheoremsMonolith\"\n    ]\n" print
+}
