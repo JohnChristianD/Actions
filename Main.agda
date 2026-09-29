@@ -1,12 +1,9 @@
-{-# OPTIONS --safe #-}
-
 module Main where
 
 open import IO
 open import Agda.Builtin.String using (String)
-open import Agda.Builtin.Unit using (⊤)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Data.List.Base using (List; []; _∷_)
+open import Data.List.Base using (_∷_; [])
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 
 executableKernel : C.CanonicalFullLearnerKernel
