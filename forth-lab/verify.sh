@@ -23,4 +23,8 @@ fi
 gbforth examples/gbforth/hello.fs "$tmp/hello.gb"
 test -s "$tmp/hello.gb"
 
+cp -R examples/ponyc/hello "$tmp/hello"
+(cd "$tmp/hello" && ponyc)
+"$tmp/hello/hello" | grep -F "Hello from Pony"
+
 echo "All runnable lab checks passed."
