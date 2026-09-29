@@ -3,6 +3,8 @@ name: GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -108,6 +110,7 @@ jobs:
           path: ${{ runner.temp }}/pages
 
   deploy:
+    if: github.event_name != 'pull_request'
     name: Deploy Agda-synchronized Elm Pages surface
     needs: build
     runs-on: ubuntu-22.04
