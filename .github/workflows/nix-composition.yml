@@ -48,6 +48,14 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+      - name: Check executable canonical learner
+        timeout-minutes: 15
+        env:
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+          CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.CanonicalExecutable'
+        run: |
+          set -euo pipefail
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
