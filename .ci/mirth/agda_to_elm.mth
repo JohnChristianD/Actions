@@ -1,4 +1,4 @@
-module actions.agda-to-elm
+module agda_to_elm
 
 import std.prelude
 import std.world
