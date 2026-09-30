@@ -73,16 +73,28 @@ The repository-wide batch check remains authoritative after any interactive sear
 
 ## JAX execution mirror
 
-The JAX boundary is executable and finite rather than a claim about the entire JAX API. `tools/jax_reference.py` is aligned with the concrete algorithms in the learner/theorem surface:
+`tools/jax_reference.py` has a finite JAX execution mirror for every current JAX function. The theorem monolith gives each one a typed Agda counterpart collected by `JAXExecutionMirrorReproof`.
 
-- independent maps use `vmap`;
-- recurrence uses `lax.scan`;
-- associative prefix work uses `associative_scan`;
-- ordered score selection uses `lexsort`;
-- sparse-support discovery uses one sorted magnitude vector plus cumulative sums, with `top_k` as a fixed-`k` specialization;
-- integer LayerNorm and the scalar GRU update use exact JAX `int64`.
+| JAX function | Agda counterpart |
+| --- | --- |
+| `vmap_affine` | `jaxVmapAffine` |
+| `associative_prefix_sum` | `jaxAssociativePrefixSum` |
+| `recurrent_scan` | `jaxRecurrentScan` |
+| `lexicographic_score_order` | `jaxLexicographicScoreOrder` |
+| `sparse_support_size` | `jaxSparseSupportSize` |
+| `sparse_support_top_k` | `jaxSparseSupportTopK` |
+| `sparsemax_policy_index` | `jaxSparsemaxPolicyIndex` |
+| `integer_layernorm_centered_numerators` | `jaxIntegerLayerNormCenteredNumerators` |
+| `integer_layernorm_radicand` | `jaxIntegerLayerNormRadicand` |
+| `batched_integer_layernorm_radicand` | `jaxBatchedIntegerLayerNormRadicand` |
+| `signed_gate` | `jaxSignedGate` |
+| `gru_hidden_step` | `jaxGRUHiddenStep` |
+| `batched_gru_hidden_step` | `jaxBatchedGRUHiddenStep` |
+| `jitted_scan_sum` | `jaxJittedScanSum` |
 
-The validation workflow compiles these kernels with `jax.jit` and traces their shapes with `jax.eval_shape`. This is an execution check, not an Agda proof. The tracked theorem monolith remains the proof authority.
+The JAX algorithms are deliberately array-native where that is materially more efficient: `vmap` for independent maps, `lax.scan` for recurrence, `lax.associative_scan` for associative prefix work, `jnp.lexsort` for deterministic score ordering, one sorted prefix pass for sparse support, fixed-`k` `lax.top_k`, and exact `int64` arithmetic.
+
+The Agda counterpart proves the finite computational law/equivalence. It does not claim that Agda has proved JAX's Python runtime, compiler, `jit`, or shape tracer.
 
 ## Presentation synchronization
 
