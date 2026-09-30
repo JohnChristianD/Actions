@@ -41,7 +41,7 @@ jobs:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
         run: |
           set -euo pipefail
-          "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+          "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/FullCoupled/CanonicalLearnerMonolith.agda
           git clone --depth 1 --branch dev https://github.com/vehicle-lang/vehicle.git "$RUNNER_TEMP/vehicle"
           git clone --depth 1 --branch v1.0.1 https://github.com/wenkokke/schmitty.git "$RUNNER_TEMP/schmitty"
           git clone --depth 1 --branch v0.5.0 https://github.com/gallais/agdarsec.git "$RUNNER_TEMP/agdarsec"
@@ -55,7 +55,7 @@ jobs:
             -i "$VEHICLE_AGDA_SOURCE" \
             -i "$SCHMITTY_AGDA_SOURCE" \
             -i "$AGDARSEC_AGDA_SOURCE" \
-            Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+            Exotic/FullCoupled/TheoremsMonolith.agda
 
       - name: Re-check registry freshness and graph extraction
         run: |
