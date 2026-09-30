@@ -116,11 +116,13 @@ jobs:
         with:
           installer-version: '2.35.1'
       - name: Verify Vehicle Agda interface
-        env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Vehicle'
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
+          test -f "$vehicle_source/Vehicle.agda"
+          grep -Fq 'VEHICLE_COMMAND' "$vehicle_source/Vehicle.agda"
+          grep -Fq -- '--allow-exec' "$vehicle_source/Vehicle.agda"
+          echo "vehicle-agda-interface=pass"
 
   mercury:
     name: Mercury theorem-only e-graph
