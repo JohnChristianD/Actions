@@ -55,7 +55,7 @@ view _ =
                 ]
             , panel "Boundary"
                 [ p []
-                    [ text "Elm is presentation-only. ", text GeneratedTheoremSurface.syncAuthority, text ". Proof authority: ", code [] [ text GeneratedTheoremSurface.proofAuthority ] ]
+                    [ text "Elm is presentation-only. It consumes Mirth-synchronized Agda module metadata and defines no learner semantics or proof evidence." ]
                 ]
             ]
         , h2 [] [ text "Agda modules" ]

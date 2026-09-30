@@ -45,8 +45,6 @@ def main [ +World -- +World ] {
         "    ]\n\n" ;
         "agdaSourceBytes : List Int\n" ;
         "agdaSourceBytes =\n    [ " ; @canonical-bytes repr; "\n    , " ;
-        @theorem-bytes repr; "\n    ]\n\n" ;
-        "syncAuthority : String\nsyncAuthority = \"Mirth reads canonical Agda sources\"\n\n" ;
-        "proofAuthority : String\nproofAuthority = \"Agda --safe\"\n"
+        @theorem-bytes repr; "\n    ]\n"
     }
 }
