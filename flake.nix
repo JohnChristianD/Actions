@@ -7,9 +7,17 @@
       url = "github:vehicle-lang/vehicle/dev";
       flake = false;
     };
+    schmitty = {
+      url = "github:wenkokke/schmitty/v1.0.1";
+      flake = false;
+    };
+    agdarsec = {
+      url = "github:gallais/agdarsec/v0.5.0";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, vehicle }:
+  outputs = { self, nixpkgs, vehicle, schmitty, agdarsec }:
     let
       systems = [
         "x86_64-linux"
@@ -46,6 +54,19 @@
           ci = {
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
+          };
+          mirth-fast-dirty-source = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-fast-dirty-source";
+              runtimeInputs = [ pkgs.coreutils ];
+              text = ''
+                set -euo pipefail
+                cat .ci/mirth/agda_to_elm.mth
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-fast-dirty-source";
           };
           vehicle = {
             type = "app";
@@ -129,6 +150,7 @@
               pkgs.mercury
               pkgs.haskellPackages.dhall
               pkgs.haskellPackages.dhall-json
+              pkgs.mirth
               pkgs.gh
               pkgs.python3
               pkgs.stdenv.cc
