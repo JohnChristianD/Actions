@@ -8,13 +8,15 @@ This note defines the interoperability boundary for external SMT assistance and 
 
 Schmitty v1.0.1 supplies Agda SMT reflection and a Z3 backend. Its own integration examples use `{-# OPTIONS --allow-exec #-}` and `solveZ3`. That execution capability is deliberately isolated under `ProofAutomation/SchmittyAssisted.agda`.
 
-The CI lane therefore uses the Schmitty-compatible Agda 2.6.2.2 / standard-library 1.7.1 environment rather than changing the repository's canonical Agda 2.8.0.2 / standard-library 2.4 proof environment. Because this environment rejected --allow-exec when standard-library was loaded with the -l library flag, the lane pins the installed source directories with -i and keeps the SMT execution external to the safe theorem authority.
+The CI lane therefore uses the Schmitty-compatible Agda 2.6.2.2 / standard-library 1.7.1 environment rather than changing the repository's canonical Agda 2.8.0.2 / standard-library 2.4 proof environment. The lane pins the installed source directories with -i and runs Schmitty only with --allow-exec. It deliberately does not pre-build those dependencies with --safe, because Agda explicitly rejects --allow-exec under --safe and a dependency tree carrying that option can never serve as a safe Schmitty proof environment.
 
 The safe theorem surface does not import Schmitty. `TheoremsMonolith.agda` carries a `SchmittySafeSMTBoundaryTheorem` record whose witness is the existing safe `IntegerRingSolver` proof. The SMT run is evidence of an independent automation path, not a proof-authority substitution.
 
 ## Vehicle
 
 Vehicle is treated as a future interoperability source. Its current `vehicle-agda` library declares a dependency on standard-library 2.3, while this repository's proof CI uses standard-library 2.4. Because the version boundary is explicit, the current change does not add Vehicle modules to the canonical theorem imports or synthesize Vehicle claims into the theorem graph.
+
+No Haskell Vehicle package was found in the pinned nixpkgs search surface; the current nixpkgs match named vehicle is an unrelated Python package. The upstream Vehicle tool is Haskell and can export to Agda, but its current Agda backend targets standard-library 2.3 while this repository's proof CI uses standard-library 2.4. Therefore no Haskell Vehicle derivation or Vehicle theorem is added to the pinned proof environment in this batch.
 
 A future Vehicle bridge should be a separate compatibility package with:
 - a pinned Vehicle revision;
