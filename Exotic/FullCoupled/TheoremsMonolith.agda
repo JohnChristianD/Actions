@@ -46,15 +46,16 @@ import Vehicle
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
 ------------------------------------------------------------------------
 
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
-open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
-open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-refl; ≤-trans; ≤-decTotalOrder; n<1+n)
-open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_; _≤_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_; _≤_ to _≤ℤ_)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-decTotalOrder)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
 import Data.Integer.Properties as IntegerProperties
 open import Level using (0ℓ)
-open import Data.List.Base using (List; []; _∷_; _++_; map; length)
+open import Data.List.Base using (List; []; _∷_; map; length)
 open import Data.List.Sort as Sort
 open import Relation.Binary.Bundles using (DecTotalOrder)
 open import Relation.Binary.Construct.On as On
@@ -64,33 +65,17 @@ open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; cong)
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; cong)
-open import Data.Product using (_×_; _,_; proj₁)
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; sym; trans)
+-- END MIRTH-SYNC COMMON IMPORTS
+
+-- BEGIN THEOREM-SPECIFIC IMPORTS
+open open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
+open import Data.Integer using (_≤_) renaming (_≤_ to _≤ℤ_)
+open import Data.List.Base using (_++_)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.String using (String)
-open import Data.List using (List)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_)
-open import Relation.Binary.PropositionalEquality using (_≡_)
-open import Relation.Binary.PropositionalEquality using (_≡_; cong; trans)
-open import Data.List using (List; []; _∷_)
-open import Data.Empty using (⊥)
-open import Data.Unit using (⊤; tt)
-open import Relation.Binary.PropositionalEquality using (_≡_; cong; trans; sym)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _≤_; z≤n)
-open import Relation.Binary.PropositionalEquality using (refl)
-open import Relation.Binary.PropositionalEquality using (_≡_; cong; sym; trans)
-open import Data.Nat using (Nat; zero)
-open import Agda.Builtin.Bool using (Bool; false; true)
-open import Agda.Builtin.Unit using (⊤; tt)
-open import Data.Product using (_,_)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; trans)
-open import Relation.Nullary using (¬_)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 open import Data.Nat.Solver using (module +-*-Solver)
@@ -99,56 +84,12 @@ open import Effect.Monad.State using
   (State; RawMonadState; StateMonad; StateMonadState)
 import Data.List.Effectful as ListEffectful
 open import Exotic.FullCoupled.CanonicalLearnerMonolith as C
-open +-*-Solver using (solve; _:*_; _:+_; con)
 open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
 open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
 open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
-
-
-------------------------------------------------------------------------
--- Safe solver-backed normalization surfaces.
---
--- Solver modules are imported by algebraic structure, not mechanically by
--- every imported module.  Nat gets semiring/ring normalization, integers get
--- ring normalization, and lists get monoid normalization through ++-monoid.
--- Effect.Monad has no corresponding monad-law tactic in this stdlib surface;
--- monad laws remain explicit semantic inputs where required.
-------------------------------------------------------------------------
-
-nat-ring-solver-layernorm-step :
-  ∀ (epsilon scale : Nat) →
-  (epsilon + suc zero) * scale ≡
-  (epsilon * scale) + scale
-nat-ring-solver-layernorm-step = NatRingSolver.solve-∀
-
-integer-ring-solver-assoc :
-  ∀ (i j k : ℤ) →
-  i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
-integer-ring-solver-assoc = IntegerRingSolver.solve-∀
-
-list-monoid-solver-append-assoc :
-  ∀ (xs ys zs : List C.Int8) →
-  xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
-list-monoid-solver-append-assoc _ _ _ = MonoidSolver.solve ++-monoid
-
-generic-ring-solver-associativity :
-  ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
-  let open RingCore.AlmostCommutativeRing R in
-  ∀ x y z → x + (y + z) ≈ (x + y) + z
-generic-ring-solver-associativity R =
-  let open RingCore.AlmostCommutativeRing R in
-  RingSolver.solve-∀ R
-
-generic-ring-solver-distributivity :
-  ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
-  let open RingCore.AlmostCommutativeRing R in
-  ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
-generic-ring-solver-distributivity R =
-  let open RingCore.AlmostCommutativeRing R in
-  RingSolver.solve-∀ R
-
+-- END THEOREM-SPECIFIC IMPORTS
 record GenericRingSolverNormalizationTheorem {c ℓ}
   (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
   constructor genericRingSolverNormalizationTheorem
