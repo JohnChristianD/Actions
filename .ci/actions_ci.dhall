@@ -233,7 +233,6 @@ JSON
     echo "counterexample-boundary-record-count=$counterexample_count"
     echo "composition-transport-record-count=$composition_count"
     '',
-    '',
   EconlibCrossrepo = ''
     set -euo pipefail
     tmp=$(mktemp -d)
