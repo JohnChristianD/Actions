@@ -35,8 +35,6 @@
       packages = forAllSystems (system:
         let
           pkgs = pkgsFor system;
-          vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { vehicle-syntax = vehicleSyntax; };
         in
         {
           ci = pkgs.haskellPackages.dhall;
@@ -47,8 +45,6 @@
       apps = forAllSystems (system:
         let
           pkgs = pkgsFor system;
-          vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { vehicle-syntax = vehicleSyntax; };
         in
         {
           ci = {
@@ -159,8 +155,6 @@
       devShells = forAllSystems (system:
         let
           pkgs = pkgsFor system;
-          vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { vehicle-syntax = vehicleSyntax; };
         in
         {
           default = pkgs.mkShell {
@@ -173,9 +167,7 @@
               pkgs.python3
               pkgs.stdenv.cc
               pkgs.z3
-              vehicleSyntax
-              vehiclePackage
-              pkgs.elmPackages.elm
+                  pkgs.elmPackages.elm
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
