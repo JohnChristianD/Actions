@@ -2,7 +2,7 @@ name: Nix connected composition verification
 
 on:
   push:
-    branches: [main, nix-prune-mercury-ci]
+    branches: [main, nix-prune-mercury-ci, schmitty-vehicle-mirth-gru-injectivity]
   pull_request:
     branches: [main]
   schedule:
