@@ -121,12 +121,34 @@
                 trap 'rm -rf "$tmp"' EXIT
                 mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
                 cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
-                "$tmp/ascii-surface"
+                "$tmp/ascii-surface" | bash
               '';
             };
           in {
             type = "app";
             program = "${script}/bin/mirth-ascii-sync";
+          };
+
+          mirth-agda-graph = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-agda-graph";
+              runtimeInputs = [
+                pkgs.mirth
+                pkgs.stdenv.cc
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+                mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
+                cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
+                "$tmp/agda-graph" "$@"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-graph";
           };
 
           readme-doc-sync = let
