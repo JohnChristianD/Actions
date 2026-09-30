@@ -256,7 +256,7 @@ canonical-safe-tactic-normalization-theorem =
 -- Schmitty automation boundary.
 --
 -- Schmitty executes Z3 through Agda reflection and therefore cannot be
--- imported into an --safe proof-authority module.  The CI SMT lane proves
+-- kept inside the theorem monolith.  The CI SMT lane proves
 -- an isomorphic integer normalization fact in the dedicated
 -- ProofAutomation/SchmittyAssisted.agda module; this record packages only
 -- the safe mirror already discharged by IntegerRingSolver.
@@ -574,7 +574,6 @@ zpfGRUGlobalInjectivityTheorem R =
   of a physical law.
 -}
 
-{-# OPTIONS --safe #-}
 
 
 ------------------------------------------------------------------------
