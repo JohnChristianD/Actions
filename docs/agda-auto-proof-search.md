@@ -1,44 +1,83 @@
 # Agda proof search in this repository
 
-Agda provides two native interactive search tools that serve different roles: Auto and Search About. Neither is a compiler pragma or a replacement for the repository's batch `--safe` proof gate.
+## Proof authority
+
+The repository has exactly two tracked Agda authority files:
+
+- `FullCoupled/CanonicalLearnerMonolith.agda`
+- `FullCoupled/TheoremsMonolith.agda`
+
+Interactive proof search is a construction aid. An accepted Agda term is the authority. Mercury, Dhall, Mirth, Nix, Elm, SMT output, and graph search are supporting layers.
 
 ## Auto
 
-Agda Auto is its native general-purpose proof-search facility. In Agda 2.8.0 it is invoked with `C-c C-a` from an interactive goal. Auto searches for a type inhabitant, and any solution it proposes is checked by Agda before it is accepted.
+Agda Auto searches for inhabitants of an interactive goal. A proposed term is still type-checked by Agda before it can be accepted.
 
 Repository policy:
-- Keep theorem authority in `--safe` Agda source.
-- Use Auto interactively to discover small proof terms, helper lemmas, or proof decompositions.
-- Do not commit unresolved holes to the theorem monolith.
-- Prefer a named theorem declaration over opaque editor state when an Auto result becomes part of the proof surface.
-- Use the Mercury graph to search the resulting named theorem dependencies; Mercury does not replace Agda proof checking.
+
+- keep committed theorem source free of unresolved holes;
+- use Auto to discover small proof terms and decompositions;
+- promote an accepted result to a named lemma or theorem;
+- rerun the canonical batch check after promotion;
+- let Mercury inspect the resulting declaration and its real dependencies.
 
 ## Search About
 
-Search About is Agda's scope-aware definition search. Invoke it with `C-c C-z`. It accepts space-separated identifiers and string literals, then returns in-scope definitions whose types contain the requested identifiers and whose names match the supplied string-literal substrings.
+Search About is used when the primary problem is finding an existing declaration with the right type or name. It is particularly useful around equality, `List`, `Monoid`, injectivity, left-inverse, recurrence, and fixed-point vocabulary.
 
-Use Search About before Auto when the problem is primarily "which existing definition should I try?"; use Auto when the candidate definitions are known or discoverable and the remaining task is to assemble a term.
+Use Search About when the candidate declaration is unknown. Use Auto when the candidate declarations are known and the remaining task is assembling the proof term.
 
-Typical workflow:
-1. Start the pinned interactive session with `bash tools/agda-auto-session.sh Exotic/ERL/FullCoupled/TheoremsMonolith.agda`.
-2. Use Search About (`C-c C-z`) to locate definitions by domain/type vocabulary or name fragments.
-3. Place the cursor on the target hole and use Auto (`C-c C-a`) with explicit hints when needed.
-4. Copy the accepted term into the theorem source.
-5. Run the normal repository canonical-learner `--safe` check; the theorem monolith uses its explicit external-integration flags rather than a second Agda version.
+## Concrete GRU left inverse and injectivity
 
-Search About is an interactive discovery tool. This repository does not treat its output, or Auto's interactive output, as CI proof authority.
+The canonical statistical encoding includes the original `GRUState`. Its decoder is the first projection. The theorem monolith now makes the proof sequence explicit:
+
+`canonicalGRUStatisticalDecodeEncode`
+
+establishes the left inverse, then
+
+`leftInverse-implies-injective`
+
+derives injectivity, giving
+
+`canonicalGRUStatisticalEncodeInjective`.
+
+This proves injectivity of the observation encoding. It does not assert injectivity of the recurrent transition `gruStep`.
+
+## Tail stability and the generic convergence kernel
+
+The canonical learner already proves that the persistent GRU matrix/noise/control tail is unchanged over every iterate of the concrete learner. The reusable convergence theorem additionally requires an injective encoding, exact state/feature step conjugacy, and an eventually fixed feature tail.
+
+Persistent-tail preservation is therefore a concrete lemma to reuse, not a substitute for the other premises.
+
+## Canonical-learner Baird boundary
+
+The generic arbitrary-weight/arbitrary-update Baird records have been removed.
+
+The current declaration is `CanonicalLearnerBairdSevenStarBoundary K s`. It is indexed by the actual canonical learner and carries its already-proven persistent-GRU tail invariant. The numerical divergence result remains a supplied witness because the repository does not silently turn an empirical or literature claim into an Agda proof term.
+
+## PPAD boundary
+
+No PPAD-completeness theorem is promoted. A valid PPAD result would require a concrete search relation, totality, polynomial encoding bounds, membership, and an explicit hardness reduction. Fixed-point terminology alone is not sufficient.
+
+## JAX boundary
+
+No JAX module or dependency is tracked. There is consequently no whole-JAX API to prove by name. The repository proves the concrete functions that occur in the canonical learner instead of fabricating a universal JAX equivalence statement.
+
+## Interactive launcher
+
+The current interactive theorem path is:
+
+`bash tools/agda-auto-session.sh FullCoupled/TheoremsMonolith.agda`
+
+The repository-wide batch check remains authoritative after any interactive search session.
 
 ## Presentation synchronization
 
-The theorem proof surface remains exactly two monoliths. The theorem monolith contains the scripted Schmitty and Vehicle imports; Pages is a separate static presentation. Mirth remains a fast-dirty synchronization source rather than a proof or Pages compiler dependency.
+The Elm Pages surface is independent of proof search. Mirth synchronizes the current monolith inventory and shared Agda import block.
 
-## Pinned toolchain
+## Pinned versions
 
 - Agda 2.8.0
 - agda-stdlib 2.3
 
-The local launcher supplies the repository source path, standard library package, and interactive mode. It is intentionally small so the same session can be used for both Auto and Search About.
-
-## Staleness
-
-Recheck this document when the pinned Agda version, the interaction commands, the theorem-monolith proof workflow, or the static Elm presentation contract changes.
+Recheck this document when the proof-search commands, theorem paths, proof authority, or pinned versions change.
