@@ -22,46 +22,32 @@ if [ "$count" -eq 0 ]; then
   exit 0
 fi
 
-body=$(python3 - "$commits" <<'PY'
-import sys
-
-commits = sys.argv[1]
-rows = []
-for line in commits.splitlines():
-    if not line:
-        continue
-    sha, subject = line.split("\t", 1)
-    safe_subject = subject.encode("ascii", "backslashreplace").decode("ascii")
-    rows.append(f"- `{sha[:12]}` {safe_subject}")
-print("\n".join(rows))
-PY
-)
-
-if ! printf '%s' "$body" | python3 -c 'import sys; sys.exit(0 if sys.stdin.read().isascii() else 1)'; then
-  echo "ERROR: generated commit-totality body is not ASCII" >&2
+if printf '%s\n' "$commits" | LC_ALL=C grep -q '[^[:print:][:space:]]'; then
+  echo "ERROR: commit subjects are not ASCII-safe" >&2
   exit 1
 fi
 
-python3 - "$README" "$BEGIN" "$END" "$HEAD_SHA" "$count" "$body" <<'PY'
-from pathlib import Path
-import sys
+body=$(printf '%s\n' "$commits" | awk -F '\t' 'NF >= 2 { printf "- \`%s\` %s\n", substr($1,1,12), $2 }')
 
-path = Path(sys.argv[1])
-begin, end, head, count, body = sys.argv[2:]
-text = path.read_text()
-start = text.index(begin)
-finish = text.index(end, start) + len(end)
-section = "\n".join([
-    begin,
-    f"last-processed-commit: {head}",
-    f"unprocessed-commit-count: {count}",
-    "",
-    "The scheduled updater accounts for every commit since the previous processed commit.",
-    "ascii-safe-commit-subjects: true",
-    "",
-    body,
-    end,
-])
-path.write_text(text[:start] + section + text[finish:])
-PY
-''
+tmp=$(mktemp)
+trap 'rm -f "$tmp" "$README.tmp"' EXIT
+awk -v begin="$BEGIN" -v end="$END" -v head="$HEAD_SHA" -v count="$count" -v body="$body" '
+  $0 == begin && !replaced {
+    print begin
+    print "last-processed-commit: " head
+    print "unprocessed-commit-count: " count
+    print ""
+    print "The scheduled updater accounts for every commit since the previous processed commit."
+    print "ascii-safe-commit-subjects: true"
+    print ""
+    print body
+    print end
+    in_block = 1
+    replaced = 1
+    next
+  }
+  in_block && $0 == end { in_block = 0; next }
+  !in_block { print }
+' "$README" > "$README.tmp"
+mv "$README.tmp" "$README"
+'';
