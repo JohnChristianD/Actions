@@ -83,6 +83,30 @@
             type = "app";
             program = "${script}/bin/mirth-c99-sync";
           };
+          mirth-agda-import-sync = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-agda-import-sync";
+              runtimeInputs = [
+                pkgs.mirth
+                pkgs.stdenv.cc
+                pkgs.coreutils
+                pkgs.git
+                pkgs.python3
+              ];
+              text = ''
+                set -euo pipefail
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+                mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
+                cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
+                "$tmp/agda-import-sync" "$@"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-import-sync";
+          };
+
           mirth-ascii-sync = let
             script = pkgs.writeShellApplication {
               name = "mirth-ascii-sync";
