@@ -53,10 +53,10 @@ let script = merge {
     set -euo pipefail
     "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0"
     "$(command -v z3)" -version
-    schmitty_library=$(find "$HOME/.agda" -name 'schmitty.agda-lib' -print -quit 2>/dev/null || true)
-    test -n "$schmitty_library" || { echo "Schmitty Agda library was not installed"; exit 1; }
-    test -f "$schmitty_library"
-    echo "schmitty-installed-on-official-agda-2.8.0=pass"
+    test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda"
+    test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib"
+    "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       Exotic/FullCoupled/TheoremsMonolith.agda
+    echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
     set -euo pipefail
