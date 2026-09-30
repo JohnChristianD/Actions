@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -11,7 +11,7 @@ let script = merge {
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
@@ -23,6 +23,15 @@ let script = merge {
     command -v vehicle >/dev/null
     vehicle --version
     echo "vehicle-direct-executable=pass"
+    '',
+  MirthFastDirty = ''
+    set -euo pipefail
+    test -f .ci/mirth/agda_to_elm.mth
+    grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
+    grep -Fq 'Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
+    grep -Fq 'Exotic.ERL.FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
+    echo "mirth-fast-dirty-source=pass"
+    echo "mirth-compile-transpile-workflow=unsupported"
     '',
   Schmitty = ''
     set -euo pipefail
@@ -169,6 +178,12 @@ JSON
     grep -Fq 'eGraphEconomicRepresentationInjective' "$theorem" || { echo "economic representation injectivity theorem missing"; exit 1; }
     grep -Fq 'canonicalGRUStatisticalEncodeInjective' "$theorem" || { echo "GRU statistical injectivity theorem missing"; exit 1; }
     grep -Fq 'CanonicalGRUStatisticalInjectivityTheorem' "$theorem" || { echo "GRU statistical injectivity package missing"; exit 1; }
+    grep -Fq 'schmittyIntegerAssociativity' "$theorem" || { echo "Schmitty theorem-monolith witness missing"; exit 1; }
+    grep -Fq 'vehicleCommandName' "$theorem" || { echo "Vehicle theorem-monolith witness missing"; exit 1; }
+    grep -Fq 'import SMT.Theories.Ints as Ints' "$theorem" || { echo "Schmitty import block missing"; exit 1; }
+    grep -Fq 'open import SMT.Backend.Z3 Ints.theory' "$theorem" || { echo "Schmitty Z3 import missing"; exit 1; }
+    grep -Fq 'import Vehicle' "$theorem" || { echo "Vehicle import block missing"; exit 1; }
+    .ci/sync-agda-integrations.sh --check || { echo "scripted external Agda imports are stale"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
     [ ! -f Exotic/ERL/FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' Exotic/ERL/FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
