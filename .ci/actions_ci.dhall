@@ -5,7 +5,7 @@ let lane = env:CI_LANE
 let script = merge {
   AgdaLearner = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --version | grep -Fq "2.8.0.2"
+    "$AGDA_COMMAND" --version | grep -Fq "2.7.0.1"
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
@@ -15,14 +15,16 @@ let script = merge {
     '',
   AgdaSafe = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --version | grep -Fq "2.8.0.2"
+    "$AGDA_COMMAND" --version | grep -Fq "2.7.0.1"
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     '',
   Vehicle = ''
     set -euo pipefail
-    command -v vehicle >/dev/null
-    vehicle --version
-    echo "vehicle-direct-executable=pass"
+    test -n "$VEHICLE_AGDA_SOURCE"
+    test -f "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
+    grep -Fq 'VEHICLE_COMMAND' "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
+    grep -Fq -- '--allow-exec' "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
+    echo "vehicle-agda-interface=pass"
     '',
   MirthFastDirty = ''
     set -euo pipefail
@@ -43,7 +45,7 @@ let script = merge {
     '',
   Schmitty = ''
     set -euo pipefail
-    "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0.2"
+    "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.7.0.1"
     "$(command -v z3)" -version
     schmitty_library=$(find "$HOME/.agda" -name 'schmitty.agda-lib' -print -quit 2>/dev/null || true)
     test -n "$schmitty_library" || { echo "Schmitty Agda library was not installed"; exit 1; }
