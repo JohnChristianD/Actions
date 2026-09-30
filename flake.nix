@@ -24,7 +24,7 @@
         let
           pkgs = pkgsFor system;
           vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit vehicleSyntax; };
+          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { vehicle-syntax = vehicleSyntax; };
         in
         {
           ci = pkgs.haskellPackages.dhall;
@@ -36,7 +36,7 @@
         let
           pkgs = pkgsFor system;
           vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit vehicleSyntax; };
+          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { vehicle-syntax = vehicleSyntax; };
         in
         {
           ci = {
@@ -131,7 +131,7 @@
         let
           pkgs = pkgsFor system;
           vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit vehicleSyntax; };
+          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { vehicle-syntax = vehicleSyntax; };
         in
         {
           default = pkgs.mkShell {
