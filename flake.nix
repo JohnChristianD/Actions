@@ -161,6 +161,9 @@
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
+              export VEHICLE_AGDA_SOURCE="\${vehicle}/vehicle-agda/src"
+              export SCHMITTY_AGDA_SOURCE="\${schmitty}/src"
+              export AGDARSEC_AGDA_SOURCE="\${agdarsec}/src"
             '';
           };
         });
