@@ -109,6 +109,54 @@ def sparsemax_policy_index(
     return jnp.where(has_positive, action_ids[chosen], fallback_action)
 
 
+def l1_row(values: Array) -> Array:
+    """Exact L1 row reduction using a single fused absolute-value/sum pass."""
+    values = values.astype(jnp.int64)
+    return jnp.sum(jnp.abs(values), dtype=jnp.int64)
+
+
+def l1_matrix(matrix: Array) -> Array:
+    """Exact matrix L1 reduction across all weights without Python loops."""
+    matrix = matrix.astype(jnp.int64)
+    return jnp.sum(jnp.abs(matrix), dtype=jnp.int64)
+
+
+def one_path_norm(matrices: Array) -> Array:
+    """Exact 1-path norm using a reverse matrix scan from the all-ones vector."""
+    matrices = matrices.astype(jnp.int64)
+    width = matrices.shape[-1]
+    initial = jnp.ones((width,), dtype=jnp.int64)
+
+    def step(vector: Array, matrix: Array) -> tuple[Array, None]:
+        return jnp.abs(matrix) @ vector, None
+
+    vector, _ = lax.scan(step, initial, matrices[::-1])
+    return jnp.sum(vector, dtype=jnp.int64)
+
+
+def tsallis2_near_sparsity_fraction(weights: Array) -> tuple[Array, Array]:
+    """Exact rational Tsallis-2 near-sparsity numerator/denominator pair."""
+    weights = weights.astype(jnp.int64)
+    dimension = jnp.asarray(weights.shape[0], dtype=jnp.int64)
+    mass = jnp.sum(weights, dtype=jnp.int64)
+    square_mass = jnp.sum(weights * weights, dtype=jnp.int64)
+    denominator = dimension * square_mass
+    numerator = denominator - mass * mass
+    zero = square_mass == 0
+    return (
+        jnp.where(zero, jnp.array(1, dtype=jnp.int64), numerator),
+        jnp.where(zero, jnp.array(1, dtype=jnp.int64), denominator),
+    )
+
+
+def support_sparsity_fraction(weights: Array) -> tuple[Array, Array]:
+    """Exact support-deficit pair: inactive count over total dimension."""
+    weights = weights.astype(jnp.int64)
+    dimension = jnp.asarray(weights.shape[0], dtype=jnp.int64)
+    active = jnp.count_nonzero(weights)
+    return dimension - active, dimension
+
+
 def integer_layernorm_centered_numerators(xs: Array) -> Array:
     """Exact integer centered numerators: n*x - sum(x)."""
     xs = xs.astype(jnp.int64)
@@ -231,6 +279,42 @@ def main() -> None:
     )
 
     _check_equal(
+        l1_row(
+            jnp.array([1, -2, 0, 3], dtype=jnp.int64),
+        ),
+        jnp.array(6, dtype=jnp.int64),
+        "L1 row",
+    )
+
+    _check_equal(
+        l1_matrix(
+            jnp.array([[1, -2], [0, 3]], dtype=jnp.int64),
+        ),
+        jnp.array(6, dtype=jnp.int64),
+        "L1 matrix",
+    )
+
+    _check_equal(
+        one_path_norm(
+            jnp.array([[[1, -2], [0, 3]]], dtype=jnp.int64),
+        ),
+        jnp.array(6, dtype=jnp.int64),
+        "1-path norm",
+    )
+
+    tsallis_num, tsallis_den = tsallis2_near_sparsity_fraction(
+        jnp.array([1, 0], dtype=jnp.int64)
+    )
+    _check_equal(tsallis_num, jnp.array(1, dtype=jnp.int64), "Tsallis-2 numerator")
+    _check_equal(tsallis_den, jnp.array(2, dtype=jnp.int64), "Tsallis-2 denominator")
+
+    support_num, support_den = support_sparsity_fraction(
+        jnp.array([1, 0], dtype=jnp.int64)
+    )
+    _check_equal(support_num, jnp.array(1, dtype=jnp.int64), "support sparsity numerator")
+    _check_equal(support_den, jnp.array(2, dtype=jnp.int64), "support sparsity denominator")
+
+    _check_equal(
         integer_layernorm_radicand(
             jnp.array([1, 2, 3, 4], dtype=jnp.int64),
             1,
@@ -276,7 +360,7 @@ def main() -> None:
     print("jax-no-extra-ml-libraries=pass")
     print(
         "kernels=vmap,associative_scan,scan,lexsort,top_k,"
-        "sparse-support-prefix,integer-layernorm,gru"
+        "sparse-support-prefix,l1,one-path-norm,tsallis2,integer-layernorm,gru"
     )
 
 
