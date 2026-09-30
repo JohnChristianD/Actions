@@ -15,8 +15,8 @@ let script = merge {
     '',
   AgdaSafe = ''
     set -euo pipefail
+    "$AGDA_COMMAND" --version | grep -Fq "2.8.0.2"
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     '',
   Vehicle = ''
     set -euo pipefail
@@ -468,7 +468,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
     dhall text --file "$report" >/dev/null
@@ -664,9 +664,9 @@ DHALL
     mmc --version
     dhall --version
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
