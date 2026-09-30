@@ -25,10 +25,10 @@
     "Recorded the prior Mirth failures accurately; the latest Pages run is the authoritative verification receipt."
   ],
   verification = [
-    "GitHub Pages run 36669143030 failed during Mirth compilation because the previous source used unsupported find, Path, and Int conversion forms for the pinned compiler.",
-    "Nix connected-composition run 36669143067 for commit 8cc80d64d080f23ced42b2f728de1d58ca599a2e succeeded.",
-    "No local Mirth or Elm compiler receipt is available in the current environment.",
-    "This follow-up change intentionally does not claim a green Pages deployment until a new Pages run completes successfully."
+    "GitHub Pages run 36669916012 compiled the simplified Mirth source successfully, then failed because the emitted binary lacked the executable bit.",
+    "Nix connected-composition run 36669915957 reached the Pages presentation job on the same commit; its final receipt is pending at the time of this change.",
+    "The remediation adds an explicit chmod before invoking the Mirth-generated executable in both Pages lanes.",
+    "No green Pages deployment is claimed until the chmod fix completes successfully."
   ],
   caveat = "Generated presentation metadata is synchronization/build data, not proof evidence. Agda --safe remains the only proof authority.",
   stale_when = "Update this record when the Mirth compiler module rules, generated Elm fields, Markdown indexing policy, or Pages deployment architecture changes."

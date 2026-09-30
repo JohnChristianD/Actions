@@ -52,6 +52,7 @@ let script = merge {
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm"
+    chmod +x "$tmp/agda-to-elm"
     "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "agdaModules : List String" "$tmp/GeneratedTheoremSurface.elm"
