@@ -30,6 +30,7 @@ let script = merge {
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Exotic.ERL.FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
+    ! grep -R -n --exclude='*.md' --exclude-dir='.git' 'mirthc' .github/workflows flake.nix .ci/actions_ci.dhall >/dev/null 2>&1 || { echo "unsupported Mirth compiler workflow reintroduced"; exit 1; }
     echo "mirth-fast-dirty-source=pass"
     echo "mirth-compile-transpile-workflow=unsupported"
     '',
