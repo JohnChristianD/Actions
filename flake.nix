@@ -38,7 +38,6 @@
         in
         {
           ci = pkgs.haskellPackages.dhall;
-          vehicle = vehiclePackage;
           default = pkgs.haskellPackages.dhall;
         });
 
@@ -81,10 +80,6 @@
           in {
             type = "app";
             program = "${script}/bin/mirth-c99-sync";
-          };
-          vehicle = {
-            type = "app";
-            program = "${vehiclePackage}/bin/vehicle";
           };
           readme-doc-sync = let
             script = pkgs.writeShellApplication {
@@ -167,7 +162,7 @@
               pkgs.python3
               pkgs.stdenv.cc
               pkgs.z3
-                  pkgs.elmPackages.elm
+              pkgs.elmPackages.elm
             ];
             shellHook = ''
               export PATH="\${pkgs.mercury}/bin:$PATH"
