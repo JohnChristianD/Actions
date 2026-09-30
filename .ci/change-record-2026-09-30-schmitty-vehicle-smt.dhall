@@ -8,7 +8,8 @@
     "flake.nix",
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
     "README.md",
-    "docs/research/agda-smt-vehicle-boundary-2026-09-30.md"
+    "docs/research/agda-smt-vehicle-boundary-2026-09-30.md",
+    ".github/workflows/slow-readme-commit-totality.yml"
   ],
   knowledge_delta = [
     ".ci/change-record-2026-09-30-schmitty-vehicle-smt.dhall",
@@ -31,6 +32,7 @@
     "The tracked Agda surface is now strictly two monoliths; Main.agda and the standalone Schmitty probe are retired.",
     "Graph/proof verification remains independently authoritative; external SMT assistance is non-authoritative evidence only.",
     "Vehicle remains outside theorem authority because current vehicle-agda depends on standard-library 2.3 and no current nixpkgs Haskell Vehicle package was found.",
-    "Fresh CI receipt is required before this record is considered green."
+    "Fresh CI receipt is required before this record is considered green.",
+    "The README totality workflow now serializes main synchronization and rebases its generated README commit before push, preventing the previously observed fetch-first race."
   ],  caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
   stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."

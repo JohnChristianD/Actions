@@ -21,7 +21,7 @@ All surviving Agda modules are covered by the same proof-only semantic transport
 
 This is the repository's **full unconditional semantic e-graphed closure**: unconditional over every supplied indexed Agda semantic family, every module in that family, and every sound path. It is not an unconditional claim that every physical or economic theorem is inhabited. In particular, it does not manufacture Maxwell Law-I/Law-III witnesses, equilibrium witnesses, or other domain-specific semantic inhabitants.
 
-The current Agda inventory is intentionally minimal:
+The current Agda inventory is strictly two monoliths:
 - `CanonicalLearnerMonolith.agda` — canonical learner definitions and definitional laws.
 - `TheoremsMonolith.agda` — the sole theorem/semantic monolith, including the inlined statistical, physics, economics, fractal, limit, e-graph, A*, and counterexample contracts.
 
