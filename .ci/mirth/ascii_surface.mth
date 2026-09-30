@@ -4,21 +4,5 @@ import std.prelude
 import std.world
 
 def main {
-    "#!/usr/bin/env bash
-set -euo pipefail
-python3 - <<'PY'
-from pathlib import Path
-import subprocess
-
-files = subprocess.check_output(['git', 'ls-files', '*.md', '*.markdown', '*.elm'], text=True).splitlines()
-for raw in files:
-    path = Path(raw)
-    data = path.read_bytes()
-    bad = sorted({byte for byte in data if byte > 0x7f})
-    if bad:
-        rendered = ','.join(f'0x{byte:02x}' for byte in bad)
-        raise SystemExit(f'{path}: non-ASCII bytes: {rendered}')
-
-print(f'ASCII surface synchronized: {len(files)} tracked Markdown/Elm files')
-PY" print
+    "#!/usr/bin/env bash\nset -euo pipefail\npython3 - <<'PY'\nfrom pathlib import Path\nimport subprocess\nfiles = subprocess.check_output(['git', 'ls-files', '*.md', '*.markdown', '*.elm'], text=True).splitlines()\nfor raw in files:\n    path = Path(raw)\n    bad = sorted({byte for byte in path.read_bytes() if byte > 0x7f})\n    if bad:\n        rendered = ','.join(f'0x{byte:02x}' for byte in bad)\n        raise SystemExit(f'{path}: non-ASCII bytes: {rendered}')\nprint(f'ASCII surface synchronized: {len(files)} tracked Markdown/Elm files')\nPY\n" print
 }
