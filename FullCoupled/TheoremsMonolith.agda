@@ -4665,7 +4665,7 @@ layerNormPair W₁ W₂ =
 
 hiddenSynergy-one-layer-exact :
   ∀ {d} (W : HSSMatrix C.Int8 d d) →
-  onePathNorm (W hsCons hsNil) ≡ weightL1 W
+  onePathNorm (hsCons W hsNil) ≡ weightL1 W
 hiddenSynergy-one-layer-exact = onePathOneLayer
 
 ------------------------------------------------------------------------
