@@ -30,15 +30,15 @@ jobs:
         uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
         id: setup-agda
         with:
-          agda-version: 'latest'
-          agda-stdlib-version: 'latest'
+          agda-version: '2.8.0'
+          agda-stdlib-version: '2.3'
 
       - name: Prune stale theorem registries
         run: nix run .#prune-theorem-registries
 
       - name: Kernel-check canonical Agda proof surfaces
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
         run: |
           set -euo pipefail
           "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
