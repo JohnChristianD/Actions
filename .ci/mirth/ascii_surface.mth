@@ -1,0 +1,27 @@
+module actions.ascii_surface
+
+import std.prelude
+import std.world
+
+def main {
+    "#!/usr/bin/env bash
+set -euo pipefail
+files=$(git ls-files '*.md' '*.markdown' '*.elm')
+python3 - "$files" <<'PY'
+from pathlib import Path
+import sys
+
+for raw in sys.argv[1].splitlines():
+    if not raw:
+        continue
+    path = Path(raw)
+    data = path.read_bytes()
+    bad = sorted({byte for byte in data if byte > 0x7f})
+    if bad:
+        rendered = ','.join(f'0x{byte:02x}' for byte in bad)
+        raise SystemExit(f'{path}: non-ASCII bytes: {rendered}')
+
+print(f'ASCII surface synchronized: {len([x for x in sys.argv[1].splitlines() if x])} tracked Markdown/Elm files')
+PY
+" print
+}
