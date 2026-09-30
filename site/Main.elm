@@ -421,7 +421,6 @@ graphView model =
                     [ SA.viewBox ("0 0 1000 " ++ String.fromFloat height)
                     , SA.width "100%"
                     , SA.height (String.fromFloat height)
-                    , SA.role "img"
                     ]
                     (selectedSvg :: incomingSvg ++ outgoingSvg)
                 ]
