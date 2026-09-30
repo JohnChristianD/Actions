@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-theorem="Exotic/FullCoupled/TheoremsMonolith.agda"
+theorem="FullCoupled/TheoremsMonolith.agda"
 
 expected='
 ------------------------------------------------------------------------
