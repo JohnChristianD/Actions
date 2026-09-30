@@ -18,86 +18,63 @@ case "$MODE" in
     ;;
 esac
 
-python3 - "$README" "$BEGIN" "$END" "$MODE" <<'PY'
-from pathlib import Path
-import subprocess
-import sys
+tmp=$(mktemp)
+trap 'rm -f "$tmp" "$README.tmp"' EXIT
 
-readme, begin, end, mode = sys.argv[1:]
-tracked = subprocess.check_output(
-    ["git", "ls-files", "*.md", "*.markdown"],
-    text=True,
-).splitlines()
+git ls-files '*.md' '*.markdown' |
+  while IFS= read -r path; do
+    [ "$path" = "$README" ] && continue
+    case "$path" in
+      .ci/*) continue ;;
+    esac
+    [ -f "$path" ] || continue
+    heading=$(sed -n 's/^# \(.*\)$/\1/p' "$path" | head -n 1)
+    [ -n "$heading" ] || heading=$(basename "$path" | sed 's/\.[^.]*$//' | tr '-' ' ')
+    printf '%s\t%s\n' "$path" "$heading"
+  done | sort > "$tmp.docs"
 
-docs = []
-for raw in tracked:
-    path = Path(raw)
-    parts = path.parts
-    if path.as_posix() == readme:
-        continue
-    if not path.is_file() or path.suffix not in {".md", ".markdown"}:
-        continue
-    if parts and parts[0] == ".ci":
-        continue
-    if len(parts) == 1:
-        group = "root"
-    elif parts[0] == "docs":
-        group = parts[1] if len(parts) > 1 else "docs"
-    else:
-        group = parts[0]
+count=$(wc -l < "$tmp.docs" | tr -d ' ')
+{
+  printf '%s\n\n' "$BEGIN"
+  printf 'Generated from the tracked Markdown surface: %s files.\n' "$count"
+  printf '%s\n\n' 'The root README is the GitHub-facing entry point; detailed evidence remains in the tracked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.'
+  printf '%s\n\n' '### Repository documentation'
+  while IFS="$(printf '\t')" read -r path title; do
+    [ -n "$path" ] || continue
+    printf '%s\n' "- \`$path\` — $title"
+  done < "$tmp.docs"
+  printf '\n%s\n' "$END"
+} > "$tmp.generated"
 
-    lines = path.read_text(encoding="utf-8").splitlines()
-    heading = next((line[2:].strip() for line in lines if line.startswith("# ") and line[2:].strip()), None)
-    title = heading or path.stem.replace("-", " ").replace("_", " ").title()
-    title = title.replace("[", "\\[").replace("]", "\\]")
-    docs.append((path.as_posix(), title))
+start=$(grep -n -F -- "$BEGIN" "$README" | head -n 1 | cut -d: -f1)
+finish=$(grep -n -F -- "$END" "$README" | head -n 1 | cut -d: -f1)
+[ -n "$start" ] && [ -n "$finish" ] && [ "$start" -lt "$finish" ] || {
+  echo "README generated documentation markers are missing" >&2
+  exit 1
+}
 
-docs.sort(key=lambda item: item[0].lower())
+awk -v start="$start" -v finish="$finish" -v replacement="$tmp.generated" '
+  NR == start {
+    while ((getline line < replacement) > 0) print line
+    in_block = 1
+    next
+  }
+  in_block && NR == finish {
+    in_block = 0
+    next
+  }
+  !in_block { print }
+' "$README" > "$README.tmp"
+mv "$README.tmp" "$README"
 
-groups = {}
-for path, title in docs:
-    parts = path.split("/")
-    if len(parts) == 2:
-        group = "root"
-    else:
-        group = parts[1]
-    groups.setdefault(group, []).append((path, title))
-
-lines = [
-    begin,
-    "",
-    f"Generated from the tracked Markdown surface: {len(docs)} files.",
-    "The root README is the GitHub-facing entry point; detailed evidence remains in the tracked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.",
-    "",
-]
-for group in sorted(groups):
-    label = {
-        "root": "Repository documentation",
-        "economics": "Economics",
-        "research": "Research",
-        "forth-lab": "Forth lab",
-    }.get(group, group)
-    lines.append(f"### {label}")
-    lines.append("")
-    for path, title in groups[group]:
-        lines.append(f"- `{path}` — {title}")
-    lines.append("")
-lines.append(end)
-generated = "\n".join(lines)
-
-text = Path(readme).read_text(encoding="utf-8")
-if begin not in text or end not in text:
-    raise SystemExit("README generated documentation markers are missing")
-start = text.index(begin)
-finish = text.index(end, start) + len(end)
-updated = text[:start] + generated + text[finish:]
-
-if mode == "--check":
-    if updated != text:
-        raise SystemExit("README documentation index is stale; run nix run .#readme-doc-sync -- --write")
-    print(f"README documentation index is synchronized ({len(docs)} tracked Markdown files).")
-else:
-    Path(readme).write_text(updated, encoding="utf-8")
-    print(f"README documentation index updated ({len(docs)} tracked Markdown files).")
+if [ "$MODE" = "--check" ]; then
+  git diff --exit-code -- "$README" >/dev/null || {
+    echo "README documentation index is stale; run readme-doc-sync -- --write" >&2
+    exit 1
+  }
+  echo "README documentation index synchronized."
+else
+  echo "README documentation index updated."
+fi
 PY
 ''
