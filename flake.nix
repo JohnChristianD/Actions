@@ -99,7 +99,7 @@
                 trap 'rm -rf "$tmp"' EXIT
                 mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
                 cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-                "$tmp/agda-import-sync" "$@"
+                "$tmp/agda-import-sync" | bash -s -- "$@"
               '';
             };
           in {
@@ -122,7 +122,7 @@
                 tmp=$(mktemp -d)
                 trap 'rm -rf "$tmp"' EXIT
                 mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
-                cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
+                cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface" | bash
                 "$tmp/ascii-surface"
               '';
             };
