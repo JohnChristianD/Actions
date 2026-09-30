@@ -6,8 +6,8 @@ import std.world
 def main {
     "#!/usr/bin/env bash
 set -euo pipefail
-files=$(git ls-files '*.md' '*.markdown' '*.elm')
-python3 - "$files" <<'PY'
+files=\$(git ls-files '*.md' '*.markdown' '*.elm')
+python3 - \"\$files\" <<'PY'
 from pathlib import Path
 import sys
 
