@@ -650,6 +650,21 @@ DHALL
     canonicalGRUStatisticalEncodeLeftInverse
     leftInverse-implies-injective
     canonicalGRUStatisticalEncodeInjective
+    JAXExecutionMirrorReproof
+    jaxVmapAffine
+    jaxAssociativePrefixSum
+    jaxRecurrentScan
+    jaxLexicographicScoreOrder
+    jaxSparseSupportSize
+    jaxSparseSupportTopK
+    jaxSparsemaxPolicyIndex
+    jaxIntegerLayerNormCenteredNumerators
+    jaxIntegerLayerNormRadicand
+    jaxBatchedIntegerLayerNormRadicand
+    jaxSignedGate
+    jaxGRUHiddenStep
+    jaxBatchedGRUHiddenStep
+    jaxJittedScanSum
     majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
@@ -681,6 +696,8 @@ DHALL
     done < <(git ls-files '*.md' '*.markdown')
     [ "$md_link_found" -eq 0 ] || { echo "Markdown links are forbidden outside Elm sites"; exit 1; }
     ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired semantic term present"; exit 1; }
+    ! grep -nE '(^|[[:space:]])pkgs\.python3([[:space:]]|$)|python3[[:space:]]+[-]' flake.nix .ci/*.sh .ci/*.dhall .ci/mirth/*.mth 2>/dev/null || { echo "non-JAX Python toolchain reference present"; exit 1; }
+    ! grep -nE 'Exotic/ERL/FullCoupled|Exotic/FullCoupled' FullCoupled/*.agda README.md site/Main.elm docs/*.md 2>/dev/null || { echo "stale Exotic source path present"; exit 1; }
     '',
   Versions = ''
     set -euo pipefail
