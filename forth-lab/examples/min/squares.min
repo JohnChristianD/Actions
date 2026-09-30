@@ -1,3 +1,0 @@
-; Min example: map a quotation across a list and print the result.
-"Squares:" puts
-(1 2 3 4 5) (stack.dup *) map puts
