@@ -7,102 +7,153 @@ The repository has exactly two tracked Agda authority files:
 - `FullCoupled/CanonicalLearnerMonolith.agda`
 - `FullCoupled/TheoremsMonolith.agda`
 
-Interactive proof search is a construction aid. An accepted Agda term is the authority. Mercury, Dhall, Mirth, Nix, Elm, SMT output, and graph search are supporting layers.
+Interactive proof search is a construction aid. An accepted Agda term is the authority. Mercury, Dhall, Mirth, Nix, Elm, SMT output, Vehicle output, and JAX execution are supporting layers.
 
-## Auto
+## Left inverse and injectivity
 
-Agda Auto searches for inhabitants of an interactive goal. A proposed term is still type-checked by Agda before it can be accepted.
+The canonical GRU statistical observation contains the original `GRUState`, and its decoder returns that state by first projection.
 
-Repository policy:
+The explicit proof chain is:
 
-- keep committed theorem source free of unresolved holes;
-- use Auto to discover small proof terms and decompositions;
-- promote an accepted result to a named lemma or theorem;
-- rerun the canonical batch check after promotion;
-- let Mercury inspect the resulting declaration and its real dependencies.
+`canonicalGRUStatisticalDecodeEncode` → `canonicalGRUStatisticalEncodeLeftInverse` → `leftInverse-implies-injective` → `canonicalGRUStatisticalEncodeInjective`.
 
-## Search About
+The packaged theorem is `CanonicalGRUStatisticalInjectivityTheorem`.
 
-Search About is used when the primary problem is finding an existing declaration with the right type or name. It is particularly useful around equality, `List`, `Monoid`, injectivity, left-inverse, recurrence, and fixed-point vocabulary.
+This establishes injectivity of the observation encoding. It does not establish injectivity of `gruStep`.
 
-Use Search About when the candidate declaration is unknown. Use Auto when the candidate declarations are known and the remaining task is assembling the proof term.
+## Tail stability and the convergence kernel
 
-## Concrete GRU left inverse and injectivity
+The canonical learner proves persistence of its matrix/noise/control GRU tail under one step and carries the fact through full-learner iteration.
 
-The canonical statistical encoding includes the original `GRUState`. Its decoder is the first projection. The theorem monolith now makes the proof sequence explicit:
+`GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem` is a generic composition kernel. It explicitly requires:
 
-`canonicalGRUStatisticalDecodeEncode`
+- injective encoding;
+- exact state/feature step conjugacy;
+- an eventually fixed feature tail.
 
-establishes the left inverse, then
+It derives a tail-fixed source state, eventual stationarity, and identifiability from those premises. The theorem does not manufacture domain-specific physics, economics, or Baird witnesses.
 
-`leftInverse-implies-injective`
+## Canonical Baird boundary
 
-derives injectivity, giving
+Generic arbitrary Baird records are not part of the active surface.
 
-`canonicalGRUStatisticalEncodeInjective`.
+The concrete declaration is `CanonicalLearnerBairdSevenStarBoundary K s`, indexed by the actual canonical learner. It fixes the seven-state/eight-feature setup, behavior probabilities, solid target, zero reward, discount factor, feature equations, and the already-proven persistent-GRU iterate tail.
 
-This proves injectivity of the observation encoding. It does not assert injectivity of the recurrent transition `gruStep`.
+The divergence statement remains an explicit witness at that boundary. This is a canonical-learner Baird construction, not a universal Baird theorem.
 
-## Tail stability and the generic convergence kernel
+## Hidden-Synergy L1 and 1-path norm
 
-The canonical learner already proves that the persistent GRU matrix/noise/control tail is unchanged over every iterate of the concrete learner. The reusable convergence theorem additionally requires an injective encoding, exact state/feature step conjugacy, and an eventually fixed feature tail.
+The active theorem surface retains a finite formal layer for the hidden-synergy regularization structure:
 
-Persistent-tail preservation is therefore a concrete lemma to reuse, not a substitute for the other premises.
+`rowL1`, `weightL1`, `onePathVector`, `onePathNorm`, `rowL1OnesAbs`, `onePathOneLayer`, `HiddenSynergyNormPair`, and `layerNormPair`.
 
-## Canonical-learner Baird boundary
+The exact one-layer theorem is `hiddenSynergy-one-layer-exact`.
 
-The generic arbitrary-weight/arbitrary-update Baird records have been removed.
+The paper-faithful near-sparsity discussion is kept conceptually separate from Tsallis-2: the original paper uses Shannon-entropy near-sparsity while this repository also records an exact finite Tsallis-2 extension. citeturn219666academia0
 
-The current declaration is `CanonicalLearnerBairdSevenStarBoundary K s`. It is indexed by the actual canonical learner and carries its already-proven persistent-GRU tail invariant. The numerical divergence result remains a supplied witness because the repository does not silently turn an empirical or literature claim into an Agda proof term.
+## Degenerate hard sparsity and Tsallis-2
+
+The canonical learner still supplies the exact zero-threshold sparse equivalence:
+
+`HardSparse K s` ↔ `SoftSparseBounded K s zero`.
+
+The theorem monolith packages this as `CanonicalHardSparsityDegeneracyTheorem`.
+
+The generalized finite Tsallis-2 layer contains:
+
+`ActionWeights`, `actionSupportCount`, `actionWeightSum`, `actionWeightSquareSum`, `generalTsallis2Denominator`, `generalTsallis2Numerator`, `generalTsallis2NearSparsity`, `generalTsallis2NearSparsity-zero`, `generalTsallis2NearSparsity-definition`, `generalSupportSparsity`, and `UniformSupportTsallisBoundary`.
+
+The finite quantity is represented exactly as a rational numerator/denominator pair, with an explicit zero-vector convention. The support boundary is kept as its own theorem record.
+
+Continuous Shannon, Lipschitz, differentiability, or convexity conclusions are not inferred from those finite equalities.
 
 ## PPAD boundary
 
-No PPAD-completeness theorem is promoted. A valid PPAD result would require a concrete search relation, totality, polynomial encoding bounds, membership, and an explicit hardness reduction. Fixed-point terminology alone is not sufficient.
+There is no PPAD-completeness theorem.
 
-## JAX boundary
+A valid PPAD result needs a concrete polynomial-size total search relation, membership, size bounds, and a hardness reduction. Fixed-point or equilibrium vocabulary alone does not discharge those proof obligations.
 
-No JAX module or dependency is tracked. There is consequently no whole-JAX API to prove by name. The repository proves the concrete functions that occur in the canonical learner instead of fabricating a universal JAX equivalence statement.
+## JAX reproof surface
+
+The dedicated JAX program currently contains:
+
+- `vmap_affine`
+- `associative_prefix_sum`
+- `recurrent_scan`
+- `lexicographic_score_order`
+- `sparse_support_size`
+- `sparse_support_top_k`
+- `sparsemax_policy_index`
+- `l1_row`
+- `l1_matrix`
+- `one_path_norm`
+- `tsallis2_near_sparsity_fraction`
+- `support_sparsity_fraction`
+- `integer_layernorm_centered_numerators`
+- `integer_layernorm_radicand`
+- `batched_integer_layernorm_radicand`
+- `signed_gate`
+- `gru_hidden_step`
+- `batched_gru_hidden_step`
+- `jitted_scan_sum`
+
+The theorem monolith has a named Agda counterpart for each of them, all collected in `JAXExecutionMirrorReproof`.
+
+The additional sparsity mirrors are:
+
+- `jaxL1Row`
+- `jaxL1Matrix`
+- `jaxOnePathVector`
+- `jaxOnePathNorm`
+- `jaxTsallis2NearSparsityFraction`
+- `jaxSupportSparsityFraction`
+
+The JAX implementations use native array operations: `vmap`, `lax.scan`, `lax.associative_scan`, `jnp.lexsort`, ordered sparse-support prefix work, fixed-k `lax.top_k`, fused L1 reductions, and exact int64 arithmetic.
+
+The Agda proof is for the finite computational law and its relation to the canonical definitions. It does not claim to prove the Python runtime or JAX compiler.
+
+## Mirth proof-search synchronization
+
+The import synchronizer treats the learner common-import block as canonical and checks exact byte equality with the theorem block.
+
+Its independent predicates are:
+
+- common-block marker counts;
+- exact common-block equality;
+- cross-monolith import direction;
+- external SMT/Z3/Vehicle import counts.
+
+These checks run concurrently. Write mode is protected by an atomic directory lock and bounded retry so concurrent writers cannot interleave the theorem rewrite.
+
+The Mirth declaration graph generator separately reads both Agda monoliths and emits a deterministic Elm declaration graph.
+
+## Dynamic declaration graph
+
+The graph generator is intentionally distinct from the Mercury A* semantic frontier.
+
+The generated graph contains:
+
+- one node for every extracted top-level declaration;
+- source tags for learner/theorem provenance;
+- directed declaration-reference edges from declaration bodies;
+- deterministic ordering;
+- duplicate-edge elimination.
+
+It is a source-derived relation graph, not a substitute for Agda elaboration.
+
+The Pages application consumes this generated graph and exposes search, source filtering, incoming relations, outgoing relations, and a pure-Elm SVG neighborhood view.
 
 ## Interactive launcher
 
-The current interactive theorem path is:
+The interactive theorem path remains:
 
 `bash tools/agda-auto-session.sh FullCoupled/TheoremsMonolith.agda`
 
-The repository-wide batch check remains authoritative after any interactive search session.
+The canonical batch Agda check remains authoritative after interactive proof search.
 
-## JAX execution mirror
+## Toolchain boundary
 
-`tools/jax_reference.py` has a finite JAX execution mirror for every current JAX function. The theorem monolith gives each one a typed Agda counterpart collected by `JAXExecutionMirrorReproof`.
+The non-JAX CI and development tooling does not carry a Python runtime. Python is isolated to the dedicated JAX workflow because JAX itself is a Python package.
 
-| JAX function | Agda counterpart |
-| --- | --- |
-| `vmap_affine` | `jaxVmapAffine` |
-| `associative_prefix_sum` | `jaxAssociativePrefixSum` |
-| `recurrent_scan` | `jaxRecurrentScan` |
-| `lexicographic_score_order` | `jaxLexicographicScoreOrder` |
-| `sparse_support_size` | `jaxSparseSupportSize` |
-| `sparse_support_top_k` | `jaxSparseSupportTopK` |
-| `sparsemax_policy_index` | `jaxSparsemaxPolicyIndex` |
-| `integer_layernorm_centered_numerators` | `jaxIntegerLayerNormCenteredNumerators` |
-| `integer_layernorm_radicand` | `jaxIntegerLayerNormRadicand` |
-| `batched_integer_layernorm_radicand` | `jaxBatchedIntegerLayerNormRadicand` |
-| `signed_gate` | `jaxSignedGate` |
-| `gru_hidden_step` | `jaxGRUHiddenStep` |
-| `batched_gru_hidden_step` | `jaxBatchedGRUHiddenStep` |
-| `jitted_scan_sum` | `jaxJittedScanSum` |
+Agda remains pinned at 2.8.0 and agda-stdlib at 2.3.
 
-The JAX algorithms are deliberately array-native where that is materially more efficient: `vmap` for independent maps, `lax.scan` for recurrence, `lax.associative_scan` for associative prefix work, `jnp.lexsort` for deterministic score ordering, one sorted prefix pass for sparse support, fixed-`k` `lax.top_k`, and exact `int64` arithmetic.
-
-The Agda counterpart proves the finite computational law/equivalence. It does not claim that Agda has proved JAX's Python runtime, compiler, `jit`, or shape tracer.
-
-## Presentation synchronization
-
-The Elm Pages surface is independent of proof search. Mirth synchronizes the current monolith inventory and shared Agda import block.
-
-## Pinned versions
-
-- Agda 2.8.0
-- agda-stdlib 2.3
-
-Recheck this document when the proof-search commands, theorem paths, proof authority, or pinned versions change.
