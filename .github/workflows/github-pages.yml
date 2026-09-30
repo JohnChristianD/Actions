@@ -41,8 +41,8 @@ jobs:
             grep -Fq "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
             grep -Fq "Exotic.ERL.FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
             grep -Fq "module actions.agda_to_elm" .ci/mirth/agda_to_elm.mth
-            grep -Fq 'module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-            grep -Fq 'module Exotic.ERL.FullCoupled.TheoremsMonolith' Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+            grep -Fq "module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+            grep -Fq "module Exotic.ERL.FullCoupled.TheoremsMonolith" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
             dhall type --file .ci/presentation-contract.dhall >/dev/null
             cp "$tmp/GeneratedTheoremSurface.elm" "${RUNNER_TEMP}/GeneratedTheoremSurface.elm"
           '
