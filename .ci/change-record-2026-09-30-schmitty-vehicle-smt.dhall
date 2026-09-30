@@ -29,7 +29,7 @@
     "The Vehicle Agda formalisation boundary remains separate because its current Agda library targets a different standard-library line; no Vehicle theorem is promoted into the canonical proof graph.",
     "The Schmitty lane isolates external SMT execution under Agda --allow-exec and never changes the --safe proof-authority monoliths.",
     "A minimal --allow-exec probe showed the failure occurs while source-checking safe standard-library modules; the first bootstrap wrote interfaces under setup-agda's installed library tree but Agda still rechecked source files.",
-    "The production lane now copies the pinned Schmitty dependency set to a writable runner-temp library root, builds the needed standard-library interfaces there with --safe, asserts Data.Unit.Base.agdai exists, and runs the external witness against those prebuilt interfaces.",
+    "The production lane now copies the pinned Schmitty dependency set to a writable runner-temp library root, builds the needed standard-library interfaces there with --safe, asserts the Agda 2.6.2.2 _build interface path exists for Data.Unit.Base, and runs the external witness against those prebuilt interfaces.",
     "The next verification receipt on the current head is authoritative for the Schmitty witness and the unchanged graph lanes."
   ],
   caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",

@@ -50,7 +50,7 @@ AGDA
     "$AGDA_SCHMITTY_COMMAND" --safe \
       -i "$AGDA_TEMP_ROOT/standard-library/src" \
       -i "$RUNNER_TEMP" "$safe_seed"
-    test -f "$AGDA_TEMP_ROOT/standard-library/src/Data/Unit/Base.agdai"
+    test -f "$AGDA_TEMP_ROOT/standard-library/_build/2.6.2.2/agda/src/Data/Unit/Base.agdai"
 
     "$AGDA_SCHMITTY_COMMAND" --allow-exec \
       -i "$AGDA_TEMP_ROOT/standard-library/src" \
