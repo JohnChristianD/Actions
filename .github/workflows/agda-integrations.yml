@@ -1,0 +1,37 @@
+name: Agda integration import sync
+
+on:
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync-check:
+    name: Check scripted Schmitty + Vehicle imports
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
+      - uses: wenkokke/setup-agda@v2
+        id: setup-agda
+        with:
+          agda-version: '2.8.0.2'
+          agda-stdlib-version: '2.4'
+          agda-libraries: |
+            https://github.com/gallais/agdarsec.git#v0.5.0
+            https://github.com/wenkokke/schmitty.git#v1.0.1
+      - name: Check external Agda import sync
+        env:
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+        run: |
+          set -euo pipefail
+          nix develop .#default -c bash -euo pipefail -c '.ci/sync-agda-integrations.sh --check'
+          nix develop .#default -c bash -euo pipefail -c '
+            "$AGDA_COMMAND" --allow-exec -l standard-library -i .               -i "$VEHICLE_AGDA_SOURCE"               -i "$SCHMITTY_AGDA_SOURCE"               -i "$AGDARSEC_AGDA_SOURCE"               Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+          '
