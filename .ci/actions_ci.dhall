@@ -672,7 +672,14 @@ DHALL
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
     retired='evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
-    ! git ls-files '*.md' '*.markdown' | xargs -r grep -nE '\\]\\(|https?://' 2>/dev/null | grep -q . || true
+    md_link_found=0
+    while IFS= read -r md; do
+      if grep -Eq '\\]\\(|https?://' "$md"; then
+        echo "Markdown link found outside the Elm presentation: $md"
+        md_link_found=1
+      fi
+    done < <(git ls-files '*.md' '*.markdown')
+    [ "$md_link_found" -eq 0 ] || { echo "Markdown links are forbidden outside Elm sites"; exit 1; }
     ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired semantic term present"; exit 1; }
     '',
   Versions = ''
