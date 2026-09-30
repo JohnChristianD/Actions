@@ -27,11 +27,11 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - uses: wenkokke/setup-agda@v2
+      - uses: agda/agda-setup-action@v1
         id: setup-agda
         with:
-          agda-version: 'latest'
-          agda-stdlib-version: 'latest'
+          agda-version: '2.8.0'
+          agda-stdlib-version: '2.3'
           agda-libraries: |
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
@@ -46,7 +46,7 @@ jobs:
       - name: Check canonical learner monolith
         timeout-minutes: 15
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaLearner'
         run: |
           set -euo pipefail
@@ -55,7 +55,7 @@ jobs:
         if: always()
         timeout-minutes: 15
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaTheorem'
         run: |
           set -euo pipefail
@@ -63,7 +63,7 @@ jobs:
       - name: Check Agda/Mercury/Dhall tool versions
         if: always()
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Versions'
         run: |
           set -euo pipefail
@@ -86,11 +86,11 @@ jobs:
           test -x "$z3_path"
           echo "path=$z3_path" >> "$GITHUB_OUTPUT"
           echo "$(dirname "$z3_path")" >> "$GITHUB_PATH"
-      - uses: wenkokke/setup-agda@v2
+      - uses: agda/agda-setup-action@v1
         id: setup-agda
         with:
-          agda-version: 'latest'
-          agda-stdlib-version: 'latest'
+          agda-version: '2.8.0'
+          agda-stdlib-version: '2.3'
           agda-libraries: |
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
