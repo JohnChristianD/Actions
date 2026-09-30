@@ -17,7 +17,7 @@ The graph gate remains:
 
 ## Verification boundary
 
-Schmitty is installed on the same single latest Agda toolchain used by the canonical workflow, and the theorem monolith consumes its Int/Z3 import surface directly. Vehicle's current Agda reflection interface is likewise imported by the theorem monolith from the pinned Vehicle source tree; no third tracked Agda source is introduced. The theorem lane uses the current integration flags rather than a second Agda version:
+Schmitty is installed on the the same official Agda 2.8.0 toolchain used by the canonical workflow, and the theorem monolith consumes its Int/Z3 import surface directly. Vehicle's current Agda reflection interface is likewise imported by the theorem monolith from the pinned Vehicle source tree; no third tracked Agda source is introduced. The theorem lane uses the current integration flags rather than a second Agda version:
 
 ```sh
 $AGDA_COMMAND --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
