@@ -4,5 +4,5 @@ import std.prelude
 import std.world
 
 def main {
-    "module GeneratedTheoremSurface exposing (agdaModules)\n\nagdaModules : List String\nagdaModules =\n    [ \"Exotic.ERL.FullCoupled.CanonicalLearnerMonolith\"\n    , \"Exotic.ERL.FullCoupled.TheoremsMonolith\"\n    ]\n" print
+    "module GeneratedTheoremSurface exposing (agdaModules)\n\nagdaModules : List String\nagdaModules =\n    [ \"Exotic.FullCoupled.CanonicalLearnerMonolith\"\n    , \"Exotic.FullCoupled.TheoremsMonolith\"\n    ]\n" print
 }
