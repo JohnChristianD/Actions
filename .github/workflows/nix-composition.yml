@@ -89,6 +89,9 @@ jobs:
         with:
           agda-version: '2.6.2.2'
           agda-stdlib-version: '1.7.1'
+          agda-defaults: |
+            standard-library
+            schmitty
           agda-libraries: |
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
