@@ -42,6 +42,12 @@ jobs:
         run: |
           set -euo pipefail
           "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+          git clone --depth 1 --branch dev https://github.com/vehicle-lang/vehicle.git "$RUNNER_TEMP/vehicle"
+          git clone --depth 1 --branch v1.0.1 https://github.com/wenkokke/schmitty.git "$RUNNER_TEMP/schmitty"
+          git clone --depth 1 --branch v0.5.0 https://github.com/gallais/agdarsec.git "$RUNNER_TEMP/agdarsec"
+          export VEHICLE_AGDA_SOURCE="$RUNNER_TEMP/vehicle/vehicle-agda/src"
+          export SCHMITTY_AGDA_SOURCE="$RUNNER_TEMP/schmitty/src"
+          export AGDARSEC_AGDA_SOURCE="$RUNNER_TEMP/agdarsec/src"
           test -n "${VEHICLE_AGDA_SOURCE:-}"
           test -n "${SCHMITTY_AGDA_SOURCE:-}"
           test -n "${AGDARSEC_AGDA_SOURCE:-}"
