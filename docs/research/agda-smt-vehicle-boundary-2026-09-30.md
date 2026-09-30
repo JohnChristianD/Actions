@@ -23,11 +23,15 @@ Schmitty is installed on the same single latest Agda toolchain used by the canon
 $AGDA_COMMAND --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-The Pages surface is independent of the unsupported Mirth compiler path. Mirth remains a source-level fast-dirty synchronization/orchestration layer; its Mirth-to-C99 compilation is explicitly outside the repository's supported verification workflow.
+The Pages surface remains independent of the Mirth synchronizer, but the Mirth C99 path itself is supported for the fast-dirty integration lane. nixpkgs exposes the `mirthc` executable and documents that Mirth compiles to C99; the branch uses `mirthc` -> C99 -> the Nix C compiler -> native synchronizer execution.
 
 Stale when: Schmitty release, Z3 setup action, canonical Agda/std-lib versions, Vehicle Agda-library dependency, or theorem-graph authority changes.
 
 
 ## Tail-stability and convergence boundary
 
-The repository distinguishes arbitrary long-run convergence from the stronger case already established by an exact eventual-stability witness. The integer LayerNorm A* layer has an explicit infinite stable tail and a semantic convergence transport; once the representation is constant from some index onward, the corresponding discrete representation sequence is eventually equal to its target. This is the convergence seam used by the theorem graph, not a blanket convergence theorem for every learner quantity or every economic process.
+The exact infinite stable tail is stronger than a generic convergence hypothesis for the affected representation. Once a representation is stable from some finite index onward and the theorem monolith supplies the iterate/limit transport, the represented trajectory is eventually constant at the transported limit; the corresponding fixed-point or stationary conclusion then follows when the limiting law is preserved.
+
+Nash existence closes a different obligation: existence of an equilibrium in the specified finite strategic game, using mixed strategies. It does not identify that game's fixed-point correspondence with the GRU/MARL/physics/economic operator automatically. The intended composite theorem therefore needs all of the following links explicitly: Nash/fixed-point existence for the chosen operator; GRU statistical injectivity; exact learner↔Hodge-Maxwell state transport; exact step conjugacy; the eventual stable tail; and the limit-preservation/economic interpretation bridge.
+
+The current `NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem` packages the GRU injectivity, MARL semantics, Hodge-Maxwell representation, four-law witness, and exact iterate transport, but its semantic closure witness `B` is still an explicit premise. The current `StationaryLimitTheorem` likewise requires transition law, convergence, and preservation of the limiting point. Therefore the remaining gap is not GRU injectivity or tail stability; it is the explicit identification of the Nash/economic fixed-point operator with the transported learner/physics operator and the corresponding interpretation witness.
