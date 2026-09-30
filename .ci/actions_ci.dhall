@@ -26,14 +26,20 @@ let script = merge {
     '',
   MirthFastDirty = ''
     set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
     test -f .ci/mirth/agda_to_elm.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Exotic.ERL.FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
-    mirth_compiler='mirth''c'
-    ! grep -R -n --exclude='*.md' --exclude-dir='.git' "$mirth_compiler" .github/workflows flake.nix .ci/actions_ci.dhall >/dev/null 2>&1 || { echo "unsupported Mirth compiler workflow reintroduced"; exit 1; }
-    echo "mirth-fast-dirty-source=pass"
-    echo "mirth-compile-transpile-workflow=unsupported"
+    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
+    cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
+    "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
+    test -s "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'agdaModules : List String' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'Exotic.ERL.FullCoupled.TheoremsMonolith' "$tmp/GeneratedTheoremSurface.elm"
+    echo "mirth-c99-transpile-and-execute=pass"
     '',
   Schmitty = ''
     set -euo pipefail
