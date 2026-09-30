@@ -46,7 +46,7 @@ jobs:
       - name: Check canonical learner monolith
         timeout-minutes: 15
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaLearner'
         run: |
           set -euo pipefail
@@ -55,7 +55,7 @@ jobs:
         if: always()
         timeout-minutes: 15
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaTheorem'
         run: |
           set -euo pipefail
@@ -63,7 +63,7 @@ jobs:
       - name: Check Agda/Mercury/Dhall tool versions
         if: always()
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Versions'
         run: |
           set -euo pipefail
@@ -115,7 +115,7 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - name: Build and execute Vehicle from pinned upstream source
+      - name: Verify Vehicle Agda interface
         env:
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Vehicle'
         run: |
