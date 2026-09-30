@@ -5,6 +5,7 @@ let lane = env:CI_LANE
 let script = merge {
   AgdaLearner = ''
     set -euo pipefail
+    "$AGDA_COMMAND" --version | grep -Fq "2.8.0.2"
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
@@ -25,7 +26,7 @@ let script = merge {
     '',
   Schmitty = ''
     set -euo pipefail
-    "$AGDA_SCHMITTY_COMMAND" --version
+    "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0.2"
     "$(command -v z3)" -version
     schmitty_library=$(find "$HOME/.agda" -name 'schmitty.agda-lib' -print -quit 2>/dev/null || true)
     test -n "$schmitty_library" || { echo "Schmitty Agda library was not installed"; exit 1; }
