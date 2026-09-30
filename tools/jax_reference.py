@@ -25,7 +25,7 @@ from jax import lax
 
 jax.config.update("jax_enable_x64", True)
 
-Array: TypeAlias = jax.Array
+Array = jax.Array
 def vmap_affine(xs: Array, scale: int = 2, bias: int = 1) -> Array:
     """Vectorized element map, corresponding to repeated independent maps."""
     fn = jax.vmap(lambda x: scale * x + bias)
