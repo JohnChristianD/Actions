@@ -4593,7 +4593,9 @@ record BairdSevenStarDivergenceWitness
 
 open BairdSevenStarDivergenceWitness public
 
-record BairdSevenStarCounterexampleTheorem : Set₁ where
+record BairdSevenStarCounterexampleTheorem
+  (Weight : Set)
+  (update : Weight → Weight) : Set₁ where
   constructor bairdSevenStarCounterexampleTheorem
   field
     stateCount : Nat
@@ -4613,27 +4615,23 @@ record BairdSevenStarCounterexampleTheorem : Set₁ where
     gammaNumeratorIs99 : gammaNumerator ≡ 99
     gammaDenominator : Nat
     gammaDenominatorIs100 : gammaDenominator ≡ 100
-    upperStateValue :
-      ℤ → ℤ → ℤ
+    upperStateValue : ℤ → ℤ → ℤ
     upperStateValueEquation :
       ∀ w₈ wᵢ →
       upperStateValue w₈ wᵢ ≡
       2 * wᵢ + w₈
-    lowerStateValue :
-      ℤ → ℤ → ℤ
+    lowerStateValue : ℤ → ℤ → ℤ
     lowerStateValueEquation :
       ∀ w₇ w₈ →
       lowerStateValue w₇ w₈ ≡
       w₇ + 2 * w₈
     divergenceWitness :
-      ∀ {Weight : Set} {update : Weight → Weight} →
-      BairdSevenStarDivergenceWitness Weight update →
-      ⊤
+      BairdSevenStarDivergenceWitness Weight update
 
 bairdSevenStar :
   ∀ {Weight : Set} {update : Weight → Weight} →
   BairdSevenStarDivergenceWitness Weight update →
-  BairdSevenStarCounterexampleTheorem
+  BairdSevenStarCounterexampleTheorem Weight update
 bairdSevenStar W =
   bairdSevenStarCounterexampleTheorem
     7
@@ -4657,7 +4655,7 @@ bairdSevenStar W =
     (λ w₈ wᵢ → refl)
     (λ w₇ w₈ → w₇ + 2 * w₈)
     (λ w₇ w₈ → refl)
-    (λ _ → tt)
+    W
 
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
   constructor offPolicyFunctionApproximationStabilityBoundary
