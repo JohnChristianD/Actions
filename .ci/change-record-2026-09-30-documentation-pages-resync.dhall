@@ -19,16 +19,16 @@
   changes = [
     "Broadened the README documentation index to all tracked Markdown outside internal .ci paths.",
     "Updated README and the Agda proof-search research note with the current proof-search and Pages synchronization boundaries.",
-    "Changed the Mirth module declaration to package-qualified actions.agda_to_elm and extended its generated contract metadata.",
-    "Repaired site/Main.elm by defining the missing moduleItem helper and consuming the generated synchronization metadata.",
-    "Expanded the Dhall presentation contract and both Pages/Nix verification lanes to assert the generated fields.",
-    "Corrected the prior Pages verification record so it no longer claims the Mirth failure was already fixed."
+    "Changed the Mirth module declaration to package-qualified actions.agda_to_elm and reduced the generated surface to compiler-stable Agda module metadata.",
+    "Repaired site/Main.elm by defining the missing moduleItem helper and consuming the generated module metadata.",
+    "Narrowed the Dhall presentation contract and both Pages/Nix verification lanes to the stable generated field, while independently checking both canonical Agda module declarations.",
+    "Recorded the prior Mirth failures accurately; the latest Pages run is the authoritative verification receipt."
   ],
   verification = [
-    "GitHub Pages run 36666156547 is a recorded failure at Mirth compilation with the package-qualified-module error.",
-    "Nix connected-composition run 36666156516 for merge commit 07b1b1b9b5fbd2799c5c0998ead035ec023cedb4 succeeded.",
+    "GitHub Pages run 36669143030 failed during Mirth compilation because the previous source used unsupported find, Path, and Int conversion forms for the pinned compiler.",
+    "Nix connected-composition run 36669143067 for commit 8cc80d64d080f23ced42b2f728de1d58ca599a2e succeeded.",
     "No local Mirth or Elm compiler receipt is available in the current environment.",
-    "A fresh GitHub Pages run is required to verify the correction; no green result is claimed in this change record."
+    "This follow-up change intentionally does not claim a green Pages deployment until a new Pages run completes successfully."
   ],
   caveat = "Generated presentation metadata is synchronization/build data, not proof evidence. Agda --safe remains the only proof authority.",
   stale_when = "Update this record when the Mirth compiler module rules, generated Elm fields, Markdown indexing policy, or Pages deployment architecture changes."

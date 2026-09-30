@@ -54,8 +54,12 @@ let script = merge {
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm"
     "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "agdaSourceBytes : List Int" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "agdaModules : List String" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "Exotic.ERL.FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "module actions.agda_to_elm" .ci/mirth/agda_to_elm.mth
+    grep -Fq 'module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+    grep -Fq 'module Exotic.ERL.FullCoupled.TheoremsMonolith' Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     dhall type --file .ci/presentation-contract.dhall >/dev/null
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
