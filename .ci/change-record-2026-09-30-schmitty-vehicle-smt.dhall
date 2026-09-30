@@ -34,6 +34,7 @@
     "Vehicle remains outside theorem authority because current vehicle-agda depends on standard-library 2.3 and no current nixpkgs Haskell Vehicle package was found.",
     "The initial temporary Schmitty probe exposed an Agda 2.6.2.2 numeric-literal compatibility failure on literal 4; the probe now keeps integer associativity as the stable Z3 witness.",
     "Fresh CI receipt is required before this record is considered green.",
+    "The Nix verification workflow now uses cancel-in-progress semantics so only the latest main head remains in the verification queue."
     "The README totality workflow now serializes main synchronization and rebases its generated README commit before push, preventing the previously observed fetch-first race."
   ],  caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
   stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."
