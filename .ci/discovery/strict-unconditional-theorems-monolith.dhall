@@ -1,7 +1,7 @@
 {
   rule = "STRICT_UNCONDITIONAL",
   definition = "A promoted node has a closed proof term and no external record/data/certificate/condition witness as a required theorem input; universal variables and implication hypotheses internal to the proposition remain allowed.",
-  source = "Exotic/FullCoupled/TheoremsMonolith.agda",
+  source = "FullCoupled/TheoremsMonolith.agda",
   source_ref = "9005de84ecea5c8a35c3ea0151af734fdf7b0087",
   strict_count = 77,
   edge_count = 229,
