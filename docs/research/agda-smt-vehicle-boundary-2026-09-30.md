@@ -38,18 +38,13 @@ The graph gate remains:
 
 ## Verification boundary
 
-Schmitty lane:
-```sh
-# CI-generated temporary source only
-agda -v0 -l standard-library -l schmitty -i "$PROBE_DIR" "$PROBE_DIR/SchmittyCIProbe.agda"
-```
+Schmitty is installed as an Agda library on the same single latest Agda toolchain used by the canonical workflow. The Schmitty CI lane verifies the installed library registration and trusted Z3 executable without creating a temporary `.agda` probe. The canonical proof lanes remain:
 
-Canonical proof lanes:
 ```sh
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-Mirth remains source-to-presentation synchronization only. The nixpkgs `mirth` package installs executable `mirthc`; Mirth source compiles to C99, and the Pages lane compiles that C99 output with the pinned C compiler before executing it. No separate Mirth runtime is assumed. Dhall remains CI contract/orchestration. Nix remains reproducible tool provisioning. Markdown remains generated-index/documentation surface.
+The Pages surface is independent of SMT and Vehicle: it is a static Elm presentation over the two canonical monolith names. No Mirth compiler, Mirth source, generated Agda source, or unsupported Mirth runtime participates in CI.
 
 Stale when: Schmitty release, Z3 setup action, canonical Agda/std-lib versions, Vehicle Agda-library dependency, or theorem-graph authority changes.
