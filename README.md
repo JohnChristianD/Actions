@@ -199,7 +199,7 @@ The tracked Agda surface contains no standalone executable adapter. `CanonicalLe
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-The GitHub Pages presentation surface is a pure Elm source at `site/Main.elm`; GitHub Actions compiles it for Pages. Mirth is a direct source synchronizer: `.ci/mirth/agda_to_elm.mth` uses the package-qualified module name `actions.agda_to_elm`, reads the canonical Agda modules, and emits the Elm metadata consumed by the presentation. Dhall validates the presentation contract after Mirth; Mercury remains a sibling discovery/dependency-graph consumer and does not determine the Pages theorem/module surface.
+The GitHub Pages presentation surface is a pure Elm source at `site/Main.elm`; GitHub Actions compiles it for Pages. The page carries the fixed two-monolith module inventory directly, while Dhall validates the presentation contract. Mercury remains a sibling discovery/dependency-graph consumer and does not determine the Pages theorem/module surface.
 
 The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mercury supplies dependency discovery and semantic graph processing. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
@@ -281,9 +281,9 @@ Two LayerNorm helper declarations are kept as Agda proof ingredients but pruned 
 - `integerLayerNorm-egraph-astar-eventual-semantic-closure`
 - `integerLayerNorm-egraph-astar-infinite-stable-tail`
 
-### Mirth Pages synchronization boundary
+### Pages presentation boundary
 
-The GitHub Pages build installs Nix before entering the pinned flake environment, then invokes nixpkgs' executable `mirthc` on `.ci/mirth/agda_to_elm.mth`. Mirth itself compiles source into C99; the CI lane compiles that C99 output with the Nix C compiler and executes the resulting native synchronizer. No alternate or unsupported Mirth runtime is introduced. The Mirth program reads both Agda proof-authority files, rejects missing module markers, and emits source-derived byte counts alongside the module inventory. This keeps Mirth in the presentation/build layer: Agda remains semantic authority, while Mirth performs a typed, executable synchronization step. A Pages build that cannot execute Nix or Mirth is a failed synchronization, not a successful inert fallback.
+The GitHub Pages surface is now a direct Elm build with no source translator in the workflow. The presentation lists the two canonical Agda monoliths explicitly and treats them as display metadata only. Agda remains the semantic authority, and the Pages build does not generate, execute, or depend on auxiliary Agda source files.
 
 ## Scheduled commit-totality README refresh
 
