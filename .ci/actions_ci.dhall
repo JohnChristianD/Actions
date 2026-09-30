@@ -646,6 +646,10 @@ DHALL
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
     canonicalLearnerBairdSevenStar
+    CanonicalLearnerBairdSevenStarBoundary
+    canonicalGRUStatisticalEncodeLeftInverse
+    leftInverse-implies-injective
+    canonicalGRUStatisticalEncodeInjective
     majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
@@ -668,6 +672,7 @@ DHALL
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
     retired='evolutionary-search|evolutionary algorithm|sparsemax2pair|fixedtemperaturesparsemax|actionscore|policyleftweight|tsts|gresher'
+    ! git ls-files '*.md' '*.markdown' | xargs -r grep -nE '\\]\\(|https?://' 2>/dev/null | grep -q . || true
     ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired semantic term present"; exit 1; }
     '',
   Versions = ''
