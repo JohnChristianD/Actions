@@ -54,18 +54,13 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 4 files.
+Generated from the tracked Markdown surface: 3 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Research
 
 - [Agda proof search in this repository](docs/research/agda-auto-proof-search.md)
 - [Agda SMT automation and Vehicle boundary — 2026-09-30](docs/research/agda-smt-vehicle-boundary-2026-09-30.md)
-
-### Repository documentation
-
-- [Change record — 2026-09-29](forth-lab/CHANGE_RECORD.md)
-- [Isolated Min / Forth / gbForth / Factor / Pony Lab](forth-lab/README.md)
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
 
