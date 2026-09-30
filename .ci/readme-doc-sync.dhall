@@ -67,7 +67,7 @@ lines = [
     begin,
     "",
     f"Generated from the tracked Markdown surface: {len(docs)} files.",
-    "The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.",
+    "The root README is the GitHub-facing entry point; detailed evidence remains in the tracked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.",
     "",
 ]
 for group in sorted(groups):
@@ -80,7 +80,7 @@ for group in sorted(groups):
     lines.append(f"### {label}")
     lines.append("")
     for path, title in groups[group]:
-        lines.append(f"- [{title}]({path})")
+        lines.append(f"- `{path}` — {title}")
     lines.append("")
 lines.append(end)
 generated = "\n".join(lines)
