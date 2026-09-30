@@ -19,8 +19,6 @@ execution mirror, not a proof oracle or a replacement for an Agda theorem.
 
 from __future__ import annotations
 
-from typing import Callable, TypeAlias
-
 import jax
 import jax.numpy as jnp
 from jax import lax
@@ -28,9 +26,6 @@ from jax import lax
 jax.config.update("jax_enable_x64", True)
 
 Array: TypeAlias = jax.Array
-ScanStep: TypeAlias = Callable[[Array, Array], tuple[Array, Array]]
-
-
 def vmap_affine(xs: Array, scale: int = 2, bias: int = 1) -> Array:
     """Vectorized element map, corresponding to repeated independent maps."""
     fn = jax.vmap(lambda x: scale * x + bias)
@@ -42,7 +37,7 @@ def associative_prefix_sum(xs: Array) -> Array:
     return lax.associative_scan(jnp.add, xs)
 
 
-def recurrent_scan(step: ScanStep, init: Array, xs: Array) -> tuple[Array, Array]:
+def recurrent_scan(step, init: Array, xs: Array) -> tuple[Array, Array]:
     """State-carrying recurrence using JAX's compiled scan primitive."""
     return lax.scan(step, init, xs)
 
