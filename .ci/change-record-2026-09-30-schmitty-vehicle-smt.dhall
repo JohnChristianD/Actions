@@ -27,7 +27,8 @@
     "Schmitty source and test shape were checked against upstream v1.0.1 before integration.",
     "The pinned nixpkgs agda package set was checked and does not provide a schmitty package; the CI lane therefore installs Schmitty through the documented Agda library mechanism.",
     "The current Vehicle Agda library metadata was checked and declares standard-library-2.3, so no direct canonical import was added.",
-    "Final repository verification is pending the new GitHub Actions Schmitty and Agda/Mercury graph receipts."
+    "The first Schmitty job installed Z3, Agda 2.6.2.2, agdarsec 0.5.0, and Schmitty 1.0.1 successfully; its runner then failed because the job had not entered the repository Nix shell and therefore had no dhall executable.",
+    "The remediation routes the Schmitty lane through nix develop .#default before rendering the existing Dhall contract; final SMT and graph receipts remain pending."
   ],
   caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
   stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."

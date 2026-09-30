@@ -103,7 +103,7 @@ jobs:
           CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
         run: |
           set -euo pipefail
-          dhall text --file .ci/actions_ci.dhall | bash -e
+          nix develop .#default -c bash -euo pipefail -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
   mercury:
     name: Mercury theorem-only e-graph
