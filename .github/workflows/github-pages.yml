@@ -26,28 +26,7 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Synchronize Elm directly from Agda modules
-        run: |
-          set -euo pipefail
-          nix develop --command bash -euo pipefail -c '
-            tmp="${RUNNER_TEMP}/actions-agda-to-elm"
-            rm -rf "$tmp"
-            mkdir -p "$tmp"
-            mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
-            cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
-            "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
-            test -s "$tmp/GeneratedTheoremSurface.elm"
-            grep -Fq "agdaModules : List String" "$tmp/GeneratedTheoremSurface.elm"
-            grep -Fq "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
-            grep -Fq "Exotic.ERL.FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
-            grep -Fq "module actions.agda_to_elm" .ci/mirth/agda_to_elm.mth
-            grep -Fq "module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-            grep -Fq "module Exotic.ERL.FullCoupled.TheoremsMonolith" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
-            dhall type --file .ci/presentation-contract.dhall >/dev/null
-            cp "$tmp/GeneratedTheoremSurface.elm" "${RUNNER_TEMP}/GeneratedTheoremSurface.elm"
-          '
-
-      - name: Build Elm application
+      - name: Verify and compile static Elm presentation
         run: |
           set -euo pipefail
           nix develop --command bash -euo pipefail -c '
@@ -55,7 +34,6 @@ jobs:
             rm -rf "$tmp"
             mkdir -p "$tmp/src"
             cp site/Main.elm "$tmp/src/Main.elm"
-            cp "${RUNNER_TEMP}/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
             cat > "$tmp/elm.json" <<'JSON'
           {
             "type": "application",
@@ -84,6 +62,9 @@ jobs:
             cd "$tmp"
             elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
             test -s "${RUNNER_TEMP}/pages/elm.js"
+            dhall type --file "${GITHUB_WORKSPACE}/.ci/presentation-contract.dhall" >/dev/null
+            grep -Fq "module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" "${GITHUB_WORKSPACE}/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+            grep -Fq "module Exotic.ERL.FullCoupled.TheoremsMonolith" "${GITHUB_WORKSPACE}/Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
           '
 
       - name: Create Pages shell
