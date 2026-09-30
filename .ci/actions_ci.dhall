@@ -30,17 +30,25 @@ let script = merge {
     Z3_EXECUTABLE="$(command -v z3)"
     test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
     "$Z3_EXECUTABLE" -version
-    echo "schmitty-debug-agda=$(command -v agda)"
-    agda --version
-    env | grep -E '^AGDA|^Agda_' || true
-    if [ -d "$HOME/.agda" ]; then
-      find "$HOME/.agda" -maxdepth 2 -type f -print
-      for f in "$HOME"/.agda/*; do
-        [ -f "$f" ] || continue
-        echo "schmitty-debug-config=$f"
-        sed -n '1,120p' "$f"
-      done
-    fi
+    probe="$RUNNER_TEMP/schmitty-probe.agda"
+    cat > "$probe" <<'AGDA'
+{-# OPTIONS --allow-exec #-}
+module SchmittyAllowExecProbe where
+open import Data.Integer using (ℤ)
+proof : ℤ → ℤ
+proof x = x
+AGDA
+    agda --allow-exec -l standard-library -i "$RUNNER_TEMP" "$probe"
+    cat > "$RUNNER_TEMP/SchmittyImportProbe.agda" <<'AGDA'
+{-# OPTIONS --allow-exec #-}
+module SchmittyImportProbe where
+open import Data.Integer using (ℤ)
+open import SMT.Theories.Ints as Ints
+open import SMT.Backend.Z3 Ints.theory
+proof : (x y : ℤ) → x + y ≡ y + x
+proof = solveZ3
+AGDA
+    agda --allow-exec -l standard-library -l schmitty -i "$RUNNER_TEMP" "$RUNNER_TEMP/SchmittyImportProbe.agda"
     "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -l schmitty -i . ProofAutomation/SchmittyAssisted.agda
     test -f ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'SMT.Backend.Z3' ProofAutomation/SchmittyAssisted.agda
