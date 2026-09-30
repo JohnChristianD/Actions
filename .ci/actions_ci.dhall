@@ -34,7 +34,13 @@ let script = merge {
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Exotic.FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Exotic.FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
-    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
+    mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
+    cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
+    "$tmp/ascii-surface"
+    mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
+    cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
+    "$tmp/agda-import-sync" --check
+        mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
     "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
