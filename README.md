@@ -186,6 +186,12 @@ exact learner laws
 
 The production-side vocabulary is aligned with established formal-economics terminology, while the learner/economic interface records exactly where independent economic assumptions enter.\n\nThe exact policy topology now separates `canonicalBehaviorPolicy : Nat → SparseWeight` from the selected-action `canonicalPolicy`. The cross-domain representation layer remains `Set`-polymorphic, while genuinely finite theorem surfaces may retain `Fin n` where finiteness is part of the proposition.
 
+## SMT automation and Vehicle boundary
+
+Schmitty is integrated only as an external SMT-assistance lane. Its Z3 reflection requires Agda execution support, so its checked module lives under `ProofAutomation/SchmittyAssisted.agda` and is never imported by the `--safe` proof monoliths. The canonical safe mirror remains inside `TheoremsMonolith.agda` and is discharged by the existing Agda ring solver.
+
+Vehicle remains an interoperability candidate rather than a theorem dependency. Its current Agda library targets a different standard-library boundary than this repository's pinned Agda 2.8 / standard-library 2.4 environment, and no Vehicle-derived statement is promoted into the proof authority until a dedicated compatibility bridge exists. See [Agda SMT and Vehicle boundary](docs/research/agda-smt-vehicle-boundary-2026-09-30.md).
+
 ## Toolchain roles
 
 Agda is the proof authority. The proof monoliths are checked with:

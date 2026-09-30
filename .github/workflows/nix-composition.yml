@@ -75,6 +75,36 @@ jobs:
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
+  schmitty:
+    name: Schmitty SMT assistance (non-authoritative)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cda-tum/setup-z3@v1
+        id: setup-z3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: wenkokke/setup-agda@v2
+        id: setup-agda
+        with:
+          agda-version: '2.6.2.2'
+          agda-stdlib-version: '1.7.1'
+          agda-libraries: |
+            https://github.com/gallais/agdarsec.git#v0.5.0
+            https://github.com/wenkokke/schmitty.git#v1.0.1
+          agda-executables: |
+            ${{ steps.setup-z3.outputs.z3-root }}/bin/z3
+      - name: Run Schmitty-assisted SMT witness
+        timeout-minutes: 10
+        env:
+          AGDA_SCHMITTY_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+          Z3_EXECUTABLE: ${{ steps.setup-z3.outputs.z3-root }}/bin/z3
+          CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
+        run: |
+          set -euo pipefail
+          dhall text --file .ci/actions_ci.dhall | bash -e
+
   mercury:
     name: Mercury theorem-only e-graph
     runs-on: ubuntu-22.04
@@ -189,7 +219,7 @@ jobs:
   auto-merge:
     name: Enable auto-merge after full verification
     if: github.event_name == 'pull_request'
-    needs: [agda, mercury, pages]
+    needs: [agda, mercury, pages, schmitty]
     runs-on: ubuntu-22.04
     permissions:
       contents: write

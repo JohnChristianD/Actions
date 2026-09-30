@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -23,6 +23,17 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+    '',
+  Schmitty = ''
+    set -euo pipefail
+    test -n "${AGDA_SCHMITTY_COMMAND:-}" || { echo "AGDA_SCHMITTY_COMMAND is required"; exit 2; }
+    test -x "${Z3_EXECUTABLE:-}" || { echo "Z3_EXECUTABLE must name an executable"; exit 2; }
+    "$Z3_EXECUTABLE" -version
+    "$AGDA_SCHMITTY_COMMAND" --allow-exec -i . ProofAutomation/SchmittyAssisted.agda
+    test -f ProofAutomation/SchmittyAssisted.agda
+    grep -Fq 'SMT.Backend.Z3' ProofAutomation/SchmittyAssisted.agda
+    grep -Fq 'solveZ3' ProofAutomation/SchmittyAssisted.agda
+    echo "schmitty-smt-assistance=pass"
     '',
   MercuryPurity = ''
     set -euo pipefail
@@ -88,7 +99,7 @@ let script = merge {
         "indirect": {}
       }
     }
-JSONJSON
+JSON
     mkdir -p "$tmp/pages"
     cd "$tmp"
     elm make src/Main.elm --optimize --output "$tmp/pages/elm.js"

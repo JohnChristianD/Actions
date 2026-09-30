@@ -235,6 +235,28 @@ canonical-safe-tactic-normalization-theorem =
     integer-ring-solver-assoc
     list-monoid-solver-append-assoc
 
+------------------------------------------------------------------------
+-- Schmitty automation boundary.
+--
+-- Schmitty executes Z3 through Agda reflection and therefore cannot be
+-- imported into an --safe proof-authority module.  The CI SMT lane proves
+-- an isomorphic integer normalization fact in the dedicated
+-- ProofAutomation/SchmittyAssisted.agda module; this record packages only
+-- the safe mirror already discharged by IntegerRingSolver.
+------------------------------------------------------------------------
+
+record SchmittySafeSMTBoundaryTheorem : Set₁ where
+  constructor schmittySafeSMTBoundaryTheorem
+  field
+    integerAssociativity :
+      ∀ (i j k : ℤ) →
+      i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+
+schmitty-safe-smt-boundary-theorem :
+  SchmittySafeSMTBoundaryTheorem
+schmitty-safe-smt-boundary-theorem =
+  schmittySafeSMTBoundaryTheorem integer-ring-solver-assoc
+
 
 ------------------------------------------------------------------------
 -- Carrier-polymorphic statistical representation kernel.

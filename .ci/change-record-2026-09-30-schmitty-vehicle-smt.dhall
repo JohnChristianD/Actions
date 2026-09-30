@@ -1,0 +1,33 @@
+{
+  date = "2026-09-30",
+  scope = "External SMT assistance, safe Agda proof boundary, Vehicle interoperability boundary, and graph verification",
+  request = "Install Schmitty for automated SMT assistance and assess whether Vehicle or its emergent compositions belong in the theorem/graph stack.",
+  affected_code = [
+    ".ci/actions_ci.dhall",
+    ".github/workflows/nix-composition.yml",
+    "flake.nix",
+    "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+    "ProofAutomation/SchmittyAssisted.agda",
+    "README.md",
+    "docs/research/agda-smt-vehicle-boundary-2026-09-30.md"
+  ],
+  knowledge_delta = [
+    ".ci/change-record-2026-09-30-schmitty-vehicle-smt.dhall",
+    "docs/research/agda-smt-vehicle-boundary-2026-09-30.md"
+  ],
+  changes = [
+    "Added a dedicated Schmitty/Z3 CI lane using a Schmitty-compatible Agda toolchain with --allow-exec, without importing Schmitty into the --safe proof authority.",
+    "Added a safe Schmitty boundary record whose witness is the existing IntegerRingSolver theorem, preserving a single mathematical authority.",
+    "Added Z3 to the pinned Nix development shell for local SMT tooling.",
+    "Removed the stale JSONJSON heredoc terminator from the shared Pages Dhall lane.",
+    "Recorded Vehicle as an explicit future interoperability boundary because its current Agda library targets standard-library 2.3 while the repository proof environment uses standard-library 2.4.",
+    "Kept the Mercury graph theorem source unchanged as an Agda-safe monolith consumer; the new automation is not promoted as a new nonredundant domain theorem."
+  ],
+  verification = [
+    "Schmitty source and test shape were checked against upstream v1.0.1 before integration.",
+    "The pinned nixpkgs agda package set was checked and does not provide a schmitty package; the CI lane therefore installs Schmitty through the documented Agda library mechanism.",
+    "The current Vehicle Agda library metadata was checked and declares standard-library-2.3, so no direct canonical import was added.",
+    "Final repository verification is pending the new GitHub Actions Schmitty and Agda/Mercury graph receipts."
+  ],
+  caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
+  stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."

@@ -132,6 +132,7 @@
               pkgs.gh
               pkgs.python3
               pkgs.stdenv.cc
+              pkgs.z3
               pkgs.elmPackages.elm
             ];
             shellHook = ''
