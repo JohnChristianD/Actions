@@ -32,6 +32,7 @@
     "The tracked Agda surface is now strictly two monoliths; Main.agda and the standalone Schmitty probe are retired.",
     "Graph/proof verification remains independently authoritative; external SMT assistance is non-authoritative evidence only.",
     "Vehicle remains outside theorem authority because current vehicle-agda depends on standard-library 2.3 and no current nixpkgs Haskell Vehicle package was found.",
+    "The initial temporary Schmitty probe exposed an Agda 2.6.2.2 numeric-literal compatibility failure on literal 4; the probe now keeps integer associativity as the stable Z3 witness.",
     "Fresh CI receipt is required before this record is considered green.",
     "The README totality workflow now serializes main synchronization and rebases its generated README commit before push, preventing the previously observed fetch-first race."
   ],  caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",

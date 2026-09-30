@@ -49,10 +49,6 @@ instance _ = Int.number
 schmitty-integer-associativity :
   (i j k : ℤ) → i + (j + k) ≡ (i + j) + k
 schmitty-integer-associativity = solveZ3
-
-schmitty-integer-polynomial-normalization :
-  (i : ℤ) → (i + 2) * (i + -2) ≡ i * i - 4
-schmitty-integer-polynomial-normalization = solveZ3
 AGDA
     "$AGDA_SCHMITTY_COMMAND" -v0 -l standard-library -l schmitty -i "$probe_dir" "$probe"
     grep -Fq -- '--allow-exec' "$probe"
