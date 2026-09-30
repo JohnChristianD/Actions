@@ -216,7 +216,7 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
         io.write_string(Stream, "{
 ", !IO),
         io.write_string(Stream,
-            "  sourceTheoremMonolith = \"../../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda\",
+            "  sourceTheoremMonolith = \"../../../Exotic/FullCoupled/TheoremsMonolith.agda\",
 ",
             !IO),
         io.write_string(Stream,
