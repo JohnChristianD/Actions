@@ -6,17 +6,17 @@ let script = merge {
   AgdaLearner = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version | grep -Fq "2.7.0.1"
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version | grep -Fq "2.7.0.1"
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   Vehicle = ''
     set -euo pipefail
@@ -34,8 +34,8 @@ let script = merge {
     test -f .ci/mirth/ascii_surface.mth
     test -f .ci/mirth/agda_import_sync.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
-    grep -Fq 'Exotic.FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
-    grep -Fq 'Exotic.FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
+    grep -Fq 'FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
+    grep -Fq 'FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
 
     mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
     cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
@@ -50,8 +50,8 @@ let script = merge {
     "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'agdaModules : List String' "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'Exotic.FullCoupled.CanonicalLearnerMonolith' "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'Exotic.FullCoupled.TheoremsMonolith' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'FullCoupled.CanonicalLearnerMonolith' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedTheoremSurface.elm"
     echo "mirth-c99-transpile-and-execute=pass"
     '',
   Schmitty = ''
@@ -60,7 +60,7 @@ let script = merge {
     "$(command -v z3)" -version
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda"
     test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib"
-    "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       Exotic/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       FullCoupled/TheoremsMonolith.agda
     echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
@@ -95,16 +95,16 @@ module GeneratedTheoremSurface exposing (agdaModules)
 
 agdaModules : List String
 agdaModules =
-    [ "Exotic.FullCoupled.CanonicalLearnerMonolith"
-    , "Exotic.FullCoupled.TheoremsMonolith"
+    [ "FullCoupled.CanonicalLearnerMonolith"
+    , "FullCoupled.TheoremsMonolith"
     ]
 ELM
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "agdaModules : List String" "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "Exotic.FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "Exotic.FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'module Exotic.FullCoupled.CanonicalLearnerMonolith' Exotic/FullCoupled/CanonicalLearnerMonolith.agda
-    grep -Fq 'module Exotic.FullCoupled.TheoremsMonolith' Exotic/FullCoupled/TheoremsMonolith.agda
+    grep -Fq "FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
+    grep -Fq 'module FullCoupled.TheoremsMonolith' FullCoupled/TheoremsMonolith.agda
     dhall type --file .ci/presentation-contract.dhall >/dev/null
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
@@ -168,9 +168,9 @@ JSON
     grep -Fq 'eGraphEconomicComposition-injective' "$report" || { echo "economic injectivity projection pruning was not audited"; exit 1; }
     grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
     set -euo pipefail
-    theorem=Exotic/FullCoupled/TheoremsMonolith.agda
+    theorem=FullCoupled/TheoremsMonolith.agda
     sync=.ci/discovery/theorem-monolith-egraph-sync.dhall
-    learner=Exotic/FullCoupled/CanonicalLearnerMonolith.agda
+    learner=FullCoupled/CanonicalLearnerMonolith.agda
     readme=README.md
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
@@ -210,15 +210,15 @@ JSON
     grep -Fq 'import Vehicle' "$theorem" || { echo "Vehicle import block missing"; exit 1; }
     bash .ci/sync-agda-integrations.sh --check || { echo "scripted external Agda imports are stale"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
-    [ ! -f Exotic/FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
-    grep -Fq 'FactorTransitionWitness' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
-    grep -Fq 'canonicalPolicyFactorTransition' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "canonical factor transition adapter missing"; exit 1; }
-    grep -Fq 'StepConjugacyWitness' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "step conjugacy kernel missing"; exit 1; }
-    grep -Fq 'DistributionalStationaryAggregateTransport' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "stationary aggregate bridge missing"; exit 1; }
-    grep -Fq 'ProductionFeasibilityWitness' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "production witness surface missing"; exit 1; }
-    grep -Fq 'SupportingPriceWitness' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "supporting price witness surface missing"; exit 1; }
-    grep -Fq 'FiniteCandidateDecision' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "finite candidate decision kernel missing"; exit 1; }
-    grep -Fq 'finiteCandidatePriceSearch' Exotic/FullCoupled/TheoremsMonolith.agda || { echo "finite candidate price search kernel missing"; exit 1; }
+    [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
+    grep -Fq 'FactorTransitionWitness' FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
+    grep -Fq 'canonicalPolicyFactorTransition' FullCoupled/TheoremsMonolith.agda || { echo "canonical factor transition adapter missing"; exit 1; }
+    grep -Fq 'StepConjugacyWitness' FullCoupled/TheoremsMonolith.agda || { echo "step conjugacy kernel missing"; exit 1; }
+    grep -Fq 'DistributionalStationaryAggregateTransport' FullCoupled/TheoremsMonolith.agda || { echo "stationary aggregate bridge missing"; exit 1; }
+    grep -Fq 'ProductionFeasibilityWitness' FullCoupled/TheoremsMonolith.agda || { echo "production witness surface missing"; exit 1; }
+    grep -Fq 'SupportingPriceWitness' FullCoupled/TheoremsMonolith.agda || { echo "supporting price witness surface missing"; exit 1; }
+    grep -Fq 'FiniteCandidateDecision' FullCoupled/TheoremsMonolith.agda || { echo "finite candidate decision kernel missing"; exit 1; }
+    grep -Fq 'finiteCandidatePriceSearch' FullCoupled/TheoremsMonolith.agda || { echo "finite candidate price search kernel missing"; exit 1; }
     [ -f docs/research/unconditional-finite-price-kernel-2026-09-26.md ] || { echo "finite candidate price research note missing"; exit 1; }
     grep -Fq 'CertifiedEGraphEdge' "$theorem" || { echo "e-graph certificate surface missing"; exit 1; }
     grep -Fq "naive-limit-injectivity-impossible" "$theorem" || { echo "limit impossibility theorem missing"; exit 1; }
@@ -231,8 +231,8 @@ JSON
       grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
     done
     agda_files=$(git ls-files '*.agda')
-    expected_agda_files='Exotic/FullCoupled/CanonicalLearnerMonolith.agda
-Exotic/FullCoupled/TheoremsMonolith.agda'
+    expected_agda_files='FullCoupled/CanonicalLearnerMonolith.agda
+FullCoupled/TheoremsMonolith.agda'
     [ "$agda_files" = "$expected_agda_files" ] || {
       echo "strict two-monolith Agda surface mismatch"
       printf '%s\n' "expected:" "$expected_agda_files" "actual:" "$agda_files"
@@ -294,7 +294,7 @@ Exotic/FullCoupled/TheoremsMonolith.agda'
     upstream_economy="$tmp/Econlib/Econlib/Equilibrium/Economy.lean"
     upstream_existence="$tmp/Econlib/Econlib/Equilibrium/Existence.lean"
     upstream_markov="$tmp/Econlib/EconlibExamples/Equilibrium/MarkovStationary.lean"
-    local_theorem="Exotic/FullCoupled/TheoremsMonolith.agda"
+    local_theorem="FullCoupled/TheoremsMonolith.agda"
 
     grep -Fq 'structure WalrasianEquilibrium' "$upstream_economy"
     grep -Fq 'theorem exists_equilibrium' "$upstream_existence"
@@ -345,7 +345,7 @@ Exotic/FullCoupled/TheoremsMonolith.agda'
     econlib_rev=$(git -C "$tmp/Econlib" rev-parse HEAD)
 
     root="$tmp/Econlib"
-    local_theorem="Exotic/FullCoupled/TheoremsMonolith.agda"
+    local_theorem="FullCoupled/TheoremsMonolith.agda"
 
     files=(
       "$root/Econlib/Equilibrium/Economy.lean"
@@ -427,7 +427,7 @@ Exotic/FullCoupled/TheoremsMonolith.agda'
     trap 'rm -rf "$tmp"' EXIT
     git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
 
-    theorem=Exotic/FullCoupled/TheoremsMonolith.agda
+    theorem=FullCoupled/TheoremsMonolith.agda
     ergodic="$tmp/Econlib/Econlib/Probability/Markov/Ergodic.lean"
 
     grep -Fq 'canonicalNoNontrivialFiniteCycle-theorem' "$theorem"
@@ -493,7 +493,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
     dhall text --file "$report" >/dev/null
@@ -506,8 +506,8 @@ DHALL
 ,
   SemanticContract = ''
     set -euo pipefail
-    theorem=Exotic/FullCoupled/TheoremsMonolith.agda
-    learner=Exotic/FullCoupled/CanonicalLearnerMonolith.agda
+    theorem=FullCoupled/TheoremsMonolith.agda
+    learner=FullCoupled/CanonicalLearnerMonolith.agda
     import_sync=.ci/theorem-learner-import-sync.dhall
     generated_import_sync=$(mktemp)
     trap 'rm -f "$generated_import_sync"' EXIT
@@ -654,7 +654,7 @@ DHALL
     [ ! -f .ci/discovery/learner_semantic_manifest.m ] || { echo "generated semantic lookup table present"; exit 1; }
     [ ! -f .ci/discovery/learner-semantic-laws.tsv ] || { echo "generated semantic law artifact present"; exit 1; }
     grep -Eiq 'walsh|rope|target-network|target_network|target network|normalization|regularization' "$learner" && { echo "forbidden semantic term present"; exit 1; } || true
-    grep -Fq 'open import Exotic.FullCoupled.CanonicalLearnerMonolith as C' "$theorem" || { echo "non-canonical theorem source"; exit 1; }
+    grep -Fq 'open import FullCoupled.CanonicalLearnerMonolith as C' "$theorem" || { echo "non-canonical theorem source"; exit 1; }
     '',
   Surface = ''
     set -euo pipefail
@@ -662,8 +662,8 @@ DHALL
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
     [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
-    [ -f Exotic/FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
-    [ -f Exotic/FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
+    [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
+    [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
@@ -688,10 +688,10 @@ DHALL
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
