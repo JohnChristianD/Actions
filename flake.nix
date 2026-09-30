@@ -32,6 +32,8 @@
         import nixpkgs { inherit system; };
     in
     {
+      vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
+
       packages = forAllSystems (system:
         let
           pkgs = pkgsFor system;
@@ -81,6 +83,30 @@
             type = "app";
             program = "${script}/bin/mirth-c99-sync";
           };
+          mirth-ascii-sync = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-ascii-sync";
+              runtimeInputs = [
+                pkgs.mirth
+                pkgs.stdenv.cc
+                pkgs.coreutils
+                pkgs.git
+                pkgs.python3
+              ];
+              text = ''
+                set -euo pipefail
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+                mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
+                cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
+                "$tmp/ascii-surface"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-ascii-sync";
+          };
+
           readme-doc-sync = let
             script = pkgs.writeShellApplication {
               name = "readme-doc-sync";
