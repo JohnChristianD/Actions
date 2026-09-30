@@ -5,10 +5,7 @@ set -euo pipefail
 README=README.md
 BEGIN='<!-- BEGIN GENERATED DOCUMENTATION INDEX -->'
 END='<!-- END GENERATED DOCUMENTATION INDEX -->'
-MODE=write
-if [ "$#" -gt 0 ]; then
-  MODE="$1"
-fi
+MODE="\${1:---write}"
 
 case "$MODE" in
   --check|--write) ;;
@@ -19,7 +16,8 @@ case "$MODE" in
 esac
 
 tmp=$(mktemp)
-trap 'rm -f "$tmp" "$README.tmp"' EXIT
+generated="$tmp.generated"
+trap 'rm -f "$tmp" "$generated" "$README.tmp"' EXIT
 
 git ls-files '*.md' '*.markdown' |
   while IFS= read -r path; do
@@ -31,9 +29,9 @@ git ls-files '*.md' '*.markdown' |
     heading=$(sed -n 's/^# \(.*\)$/\1/p' "$path" | head -n 1)
     [ -n "$heading" ] || heading=$(basename "$path" | sed 's/\.[^.]*$//' | tr '-' ' ')
     printf '%s\t%s\n' "$path" "$heading"
-  done | sort > "$tmp.docs"
+  done | sort > "$tmp"
 
-count=$(wc -l < "$tmp.docs" | tr -d ' ')
+count=$(wc -l < "$tmp" | tr -d ' ')
 {
   printf '%s\n\n' "$BEGIN"
   printf 'Generated from the tracked Markdown surface: %s files.\n' "$count"
@@ -41,10 +39,10 @@ count=$(wc -l < "$tmp.docs" | tr -d ' ')
   printf '%s\n\n' '### Repository documentation'
   while IFS="$(printf '\t')" read -r path title; do
     [ -n "$path" ] || continue
-    printf '%s\n' "- \`$path\` — $title"
-  done < "$tmp.docs"
+    printf '%s\n' "- $path — $title"
+  done < "$tmp"
   printf '\n%s\n' "$END"
-} > "$tmp.generated"
+} > "$generated"
 
 start=$(grep -n -F -- "$BEGIN" "$README" | head -n 1 | cut -d: -f1)
 finish=$(grep -n -F -- "$END" "$README" | head -n 1 | cut -d: -f1)
@@ -53,28 +51,26 @@ finish=$(grep -n -F -- "$END" "$README" | head -n 1 | cut -d: -f1)
   exit 1
 }
 
-awk -v start="$start" -v finish="$finish" -v replacement="$tmp.generated" '
-  NR == start {
-    while ((getline line < replacement) > 0) print line
-    in_block = 1
-    next
-  }
-  in_block && NR == finish {
-    in_block = 0
-    next
-  }
-  !in_block { print }
-' "$README" > "$README.tmp"
-mv "$README.tmp" "$README"
-
 if [ "$MODE" = "--check" ]; then
-  git diff --exit-code -- "$README" >/dev/null || {
+  sed -n "\${start},\${finish}p" "$README" | cmp -s - "$generated" || {
     echo "README documentation index is stale; run readme-doc-sync -- --write" >&2
     exit 1
   }
   echo "README documentation index synchronized."
 else
+  awk -v start="$start" -v finish="$finish" -v replacement="$generated" '
+    NR == start {
+      while ((getline line < replacement) > 0) print line
+      in_block = 1
+      next
+    }
+    in_block && NR == finish {
+      in_block = 0
+      next
+    }
+    !in_block { print }
+  ' "$README" > "$README.tmp"
+  mv "$README.tmp" "$README"
   echo "README documentation index updated."
 fi
-PY
 ''
