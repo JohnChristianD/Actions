@@ -629,8 +629,8 @@ DHALL
   AutoMerge = ''
     set -euo pipefail
     : "''${GH_TOKEN:?GH_TOKEN is required}"
-    : "&#39;&#39;${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
-    : "&#39;&#39;${PR_NUMBER:?PR_NUMBER is required}"
+    : "''${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
+    : "''${PR_NUMBER:?PR_NUMBER is required}"
     gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --auto --rebase
     '',
   All = ''

@@ -27,8 +27,8 @@
     "Schmitty source and test shape were checked against upstream v1.0.1 before integration.",
     "The pinned nixpkgs agda package set was checked and does not provide a schmitty package; the CI lane therefore installs Schmitty through the documented Agda library mechanism.",
     "The current Vehicle Agda library metadata was checked and declares standard-library-2.3, so no direct canonical import was added.",
-    "The fifth Schmitty attempt reached the shared Dhall contract but the parser exposed three remaining unescaped shell interpolation forms in the existing AutoMerge script.",
-    "The remediation escapes those literal shell interpolations using Dhall multiline-text escapes without changing the AutoMerge behavior or theorem/graph checks. Final SMT and graph receipts remain pending."
+    "The sixth Schmitty attempt showed two AutoMerge literals were stored as HTML entities instead of Dhall escapes.",
+    "The remediation restores the exact Dhall multiline-text escapes for GITHUB_REPOSITORY and PR_NUMBER. Final SMT and graph receipts remain pending."
   ],
   caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
   stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."
