@@ -35,6 +35,8 @@
       apps = forAllSystems (system:
         let
           pkgs = pkgsFor system;
+          vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
+          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit vehicleSyntax; };
         in
         {
           ci = {
@@ -43,7 +45,7 @@
           };
           vehicle = {
             type = "app";
-            program = "${pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit (pkgs.haskellPackages) vehicle-syntax; }}/bin/vehicle";
+            program = "${vehiclePackage}/bin/vehicle";
           };
           mirth-pages-sync = let
             script = pkgs.writeShellApplication {
@@ -128,6 +130,8 @@
       devShells = forAllSystems (system:
         let
           pkgs = pkgsFor system;
+          vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
+          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit vehicleSyntax; };
         in
         {
           default = pkgs.mkShell {
@@ -140,10 +144,8 @@
               pkgs.python3
               pkgs.stdenv.cc
               pkgs.z3
-              (pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { })
-              (pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" {
-                vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
-              })
+              vehicleSyntax
+              vehiclePackage
               pkgs.elmPackages.elm
             ];
             shellHook = ''
