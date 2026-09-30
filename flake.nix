@@ -91,7 +91,6 @@
                 pkgs.stdenv.cc
                 pkgs.coreutils
                 pkgs.git
-                pkgs.python3
               ];
               text = ''
                 set -euo pipefail
@@ -115,7 +114,6 @@
                 pkgs.stdenv.cc
                 pkgs.coreutils
                 pkgs.git
-                pkgs.python3
               ];
               text = ''
                 set -euo pipefail
@@ -137,7 +135,6 @@
               runtimeInputs = [
                 pkgs.coreutils
                 pkgs.git
-                pkgs.python3
                 pkgs.haskellPackages.dhall
               ];
               text = ''
@@ -160,7 +157,6 @@
                 pkgs.gawk
                 pkgs.gnused
                 pkgs.git
-                pkgs.python3
                 pkgs.haskellPackages.dhall
               ];
               text = ''
@@ -209,7 +205,6 @@
               pkgs.haskellPackages.dhall-json
               pkgs.mirth
               pkgs.gh
-              pkgs.python3
               pkgs.stdenv.cc
               pkgs.z3
               pkgs.elmPackages.elm
