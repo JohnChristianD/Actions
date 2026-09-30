@@ -1,4 +1,5 @@
-{-# OPTIONS --safe #-}
+{-# OPTIONS --allow-exec #-}
+{-# OPTIONS --guardedness #-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
@@ -28,6 +29,20 @@
 ------------------------------------------------------------------------
 
 module Exotic.ERL.FullCoupled.TheoremsMonolith where
+
+------------------------------------------------------------------------
+-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
+-- Synced by .ci/sync-agda-integrations.sh; keep this block in the
+-- theorem monolith and do not materialize a third Agda source file.
+------------------------------------------------------------------------
+
+import SMT.Theories.Ints as Ints
+open import SMT.Backend.Z3 Ints.theory
+import Vehicle
+
+------------------------------------------------------------------------
+-- END SCRIPTED EXTERNAL AGDA IMPORTS
+------------------------------------------------------------------------
 
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
@@ -325,6 +340,23 @@ canonicalGRUStatisticalDistinguishability : ∀ {s t : C.GRUState} → s ≢ t �
 canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonicalGRUStatisticalEncodeInjective collision)
 canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
 canonicalGRUStatisticalStepConsequence s x = refl
+------------------------------------------------------------------------
+-- External integration witnesses.
+--
+-- Schmitty is used for a closed integer identity in this same theorem
+-- monolith. Vehicle is imported as the current external Agda reflection
+-- interface; its compiler remains an orchestration/verification boundary,
+-- not a source-transpilation proof authority.
+------------------------------------------------------------------------
+
+schmittyIntegerAssociativity :
+  ∀ (i j k : ℤ) →
+  i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+schmittyIntegerAssociativity = solveZ3
+
+vehicleCommandName : String
+vehicleCommandName = Vehicle.VEHICLE_COMMAND
+
 
 ------------------------------------------------------------------------
 -- Inlined from Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda; TheoremsMonolith is the sole theorem authority.
