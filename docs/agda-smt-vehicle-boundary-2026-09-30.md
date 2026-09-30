@@ -55,11 +55,11 @@ That concrete result is the learner-side tail fact used by the canonical Baird b
 
 ## Canonical-learner Baird boundary
 
-Generic Baird records have been pruned.
+All generic Baird records have been pruned from the active proof surface.
 
-The current Baird package is `CanonicalLearnerBairdSevenStarBoundary K s`. It fixes the seven-state/eight-feature construction and carries the actual canonical learner kernel/state plus the already-proved persistent-GRU tail theorem.
+The surviving boundary is `CanonicalLearnerBairdSevenStarBoundary K s`, indexed by the actual canonical learner kernel and state. It carries the exact seven-state/eight-feature data, behavior probabilities, solid target, zero reward, 99/100 discount, feature equations, and the already-proved persistent-GRU tail invariant for `iterateCanonical`.
 
-Its divergence field is an explicit witness. Tail stability, injectivity, or graph search is not allowed to synthesize that divergence claim.
+The divergence property is an explicit witness for that concrete learner. It is not manufactured from generic tail stability, graph search, or the convergence kernel.
 
 ## Physics and economics
 
@@ -94,3 +94,12 @@ The workflow pins JAX 0.11.2 and validates the mirror with `jax.jit` and `jax.ev
 Pages uses pure Elm. Mirth handles fast-dirty synchronization. Mercury performs declaration and graph analysis. Dhall expresses CI contracts. Nix supplies pinned toolchain composition.
 
 None of those layers can promote an unproved semantic edge into an Agda theorem.
+
+
+## Python boundary
+
+Python is isolated to the dedicated JAX workflow because JAX itself is a Python package. The Nix shell and non-JAX CI helpers do not contain Python invocations.
+
+## Markdown contract
+
+Tracked Markdown is link-free; navigation belongs in the Elm presentation.
