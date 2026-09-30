@@ -6,8 +6,8 @@ This note defines the interoperability boundary for external SMT assistance and 
 
 ## Schmitty
 
-Schmitty v1.0.1 supplies Agda SMT reflection and a Z3 backend. Its upstream examples use `{-# OPTIONS --allow-exec #-}` and `solveZ3`. This repository does not add those execution options to either canonical proof monolith; the Schmitty lane is non-authoritative installation/trust verification only.
-Mercury graph topology continues to derive from `TheoremsMonolith.agda`. Schmitty is evidence-only automation. Vehicle remains an external compatibility candidate. Neither creates graph edges or theorem nodes by conceptual similarity.
+Schmitty v1.0.1 supplies Agda SMT reflection and a Z3 backend. Its upstream examples use `{-# OPTIONS --allow-exec #-}` and `solveZ3`. The theorem monolith uses `--allow-exec` for the direct Schmitty/Vehicle integration boundary. Schmitty remains automation assistance rather than a replacement proof kernel: a `solveZ3` result is accepted only after Agda checks the resulting theorem term.
+Mercury graph topology continues to derive from `TheoremsMonolith.agda`. Schmitty can discharge suitable algebraic subgoals, and Vehicle can add/check a compatible specification interface, but neither creates graph edges or theorem nodes by conceptual similarity.
 
 The graph gate remains:
 - real Agda dependency edges only;
@@ -30,8 +30,8 @@ Stale when: Schmitty release, Z3 setup action, canonical Agda/std-lib versions, 
 
 ## Tail-stability and convergence boundary
 
-The exact infinite stable tail is stronger than a generic convergence hypothesis for the affected representation. Once a representation is stable from some finite index onward and the theorem monolith supplies the iterate/limit transport, the represented trajectory is eventually constant at the transported limit; the corresponding fixed-point or stationary conclusion then follows when the limiting law is preserved.
+The repository now exposes a reusable `GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem`. Its premises are exact feature-step conjugacy, feature-tail stability, and GRU/feature injectivity; its conclusion is eventual state stationarity together with identifiability through the same injective encoding. This is the generic convergence kernel that Mercury should discover and that Schmitty/Vehicle may help discharge at their respective automation/specification boundaries.
 
-Nash existence closes a different obligation: existence of an equilibrium in the specified finite strategic game, using mixed strategies. It does not identify that game's fixed-point correspondence with the GRU/MARL/physics/economic operator automatically. The intended composite theorem therefore needs all of the following links explicitly: Nash/fixed-point existence for the chosen operator; GRU statistical injectivity; exact learner↔Hodge-Maxwell state transport; exact step conjugacy; the eventual stable tail; and the limit-preservation/economic interpretation bridge.
+Nash existence closes a different obligation: existence of an equilibrium in the specified finite strategic game, using mixed strategies. It does not identify that game's fixed-point correspondence with the GRU/MARL/physics/economic operator automatically. The composite theorem can therefore be witness-light only after the graph-selected operator identity, exact state transport, exact step conjugacy, tail-stability fact, and economic interpretation have been independently established; graph search and automation cannot manufacture a missing semantic correspondence.
 
 The current `NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem` packages the GRU injectivity, MARL semantics, Hodge-Maxwell representation, four-law witness, and exact iterate transport, but its semantic closure witness `B` is still an explicit premise. The current `StationaryLimitTheorem` likewise requires transition law, convergence, and preservation of the limiting point. Therefore the remaining gap is not GRU injectivity or tail stability; it is the explicit identification of the Nash/economic fixed-point operator with the transported learner/physics operator and the corresponding interpretation witness.
