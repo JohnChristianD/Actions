@@ -12,18 +12,18 @@
 
 :- func candidate_paths = list(string).
 candidate_paths = [
-    "Exotic/FullCoupled/CanonicalSparsemaxLearnerV2.agda",
-    "Exotic/FullCoupled/CanonicalSparsemaxLearnerV2_test.agda",
-    "Exotic/FullCoupled/DyadicGRU.agda",
-    "Exotic/FullCoupled/FrozenOrthonormalWalshGRU.agda",
-    "Exotic/FullCoupled/Int8StabilityComposition.agda",
-    "Exotic/FullCoupled/FiniteSemidirectComposition.agda",
-    "Exotic/FullCoupled/CountMemoryCycleTheorem.agda",
-    "Exotic/FullCoupled/CountMemoryCycleTheorem_test.agda",
-    "Exotic/FullCoupled/AllSafeCombined.agda",
-    "Exotic/FullCoupled/AllSafeCombined_test.agda",
-    "Exotic/FullCoupled/DeterministicQSA.agda",
-    "Exotic/FullCoupled/DeterministicQSA_test.agda"
+    "FullCoupled/CanonicalSparsemaxLearnerV2.agda",
+    "FullCoupled/CanonicalSparsemaxLearnerV2_test.agda",
+    "FullCoupled/DyadicGRU.agda",
+    "FullCoupled/FrozenOrthonormalWalshGRU.agda",
+    "FullCoupled/Int8StabilityComposition.agda",
+    "FullCoupled/FiniteSemidirectComposition.agda",
+    "FullCoupled/CountMemoryCycleTheorem.agda",
+    "FullCoupled/CountMemoryCycleTheorem_test.agda",
+    "FullCoupled/AllSafeCombined.agda",
+    "FullCoupled/AllSafeCombined_test.agda",
+    "FullCoupled/DeterministicQSA.agda",
+    "FullCoupled/DeterministicQSA_test.agda"
 ].
 
 :- pred audit(string::in, io::di, io::uo) is det.
@@ -48,7 +48,7 @@ audit(Path, !IO) :-
 main(!IO) :-
     io.set_exit_status(0, !IO),
     io.write_string(
-        "canonical=Exotic/FullCoupled/CanonicalLearnerMonolith.agda\n",
+        "canonical=FullCoupled/CanonicalLearnerMonolith.agda\n",
         !IO),
     io.write_string("prune-mode=dry-run; shell=none\n", !IO),
     list.foldl(audit, candidate_paths, !IO),
