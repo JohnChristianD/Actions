@@ -219,7 +219,7 @@ The current `NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem` already composes 
 
 Schmitty is imported directly by the theorem monolith through the scripted SMT/Z3 import block. The repository does not generate a third Agda probe or temporary Agda source. The concrete `schmittyIntegerAssociativity` witness is checked in the same monolith under the current single Agda toolchain.
 
-Vehicle is not imported into canonical proof authority. Current upstream `vehicle-agda` declares `depend: standard-library-2.3`, while this repository uses standard-library 2.4. Current nixpkgs search also does not provide the Haskell Vehicle tool; the nixpkgs package named `vehicle` is unrelated. No Vehicle-derived composition theorem is therefore promoted into the theorem graph without a version-compatible bridge. See [Agda SMT and Vehicle boundary](docs/research/agda-smt-vehicle-boundary-2026-09-30.md).
+Vehicle is imported into the theorem monolith only as its current Agda reflection/interface surface. The repository does not treat Vehicle-generated output as a second proof authority, and its upstream library dependency remains a compatibility boundary. No Vehicle-derived domain theorem is promoted merely because the interface imports successfully. See [Agda SMT and Vehicle boundary](docs/research/agda-smt-vehicle-boundary-2026-09-30.md).
 
 ## Toolchain roles
 
@@ -311,7 +311,7 @@ The current Mercury review frontier is intentionally package-level and explicit:
 - `CanonicalTokenArbitraryLengthGenerationTheorem`
 - `NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem`
 
-Two LayerNorm helper declarations are kept as Agda proof ingredients but pruned as independent public graph endpoints because their propositions are carried as fields of the stronger package:
+Two LayerNorm helper declarations remain as Agda proof ingredients but are pruned as independent public graph endpoints because their propositions are carried as fields of the stronger package. Three pure economic projection wrappers are likewise pruned; the retained `eGraphEconomicComposition-closure` consumes the stronger generic representation-injectivity kernel directly:
 
 - `integerLayerNorm-egraph-astar-eventual-semantic-closure`
 - `integerLayerNorm-egraph-astar-infinite-stable-tail`
@@ -322,7 +322,7 @@ Mirth remains a tracked integration/orchestration/synchronization/scripting laye
 
 ### Pages presentation boundary
 
-The GitHub Pages surface is a direct Elm build over the two canonical Agda monolith names. Mirth is not required for Pages verification, so presentation success is not conflated with the unsupported Mirth compiler path.
+The GitHub Pages surface is a direct Elm build over the two canonical Agda monolith names. Mirth is not required for Pages verification, so presentation success is not conflated with the fast-dirty synchronization/compiler lane.
 
 ## Scheduled commit-totality README refresh
 
