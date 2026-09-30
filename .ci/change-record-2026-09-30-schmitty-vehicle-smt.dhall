@@ -7,7 +7,6 @@
     ".github/workflows/nix-composition.yml",
     "flake.nix",
     "Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
-    "ProofAutomation/SchmittyAssisted.agda",
     "README.md",
     "docs/research/agda-smt-vehicle-boundary-2026-09-30.md"
   ],
@@ -16,7 +15,7 @@
     "docs/research/agda-smt-vehicle-boundary-2026-09-30.md"
   ],
   changes = [
-    "Added a dedicated Schmitty/Z3 CI lane using a Schmitty-compatible Agda toolchain with --allow-exec, without importing Schmitty into the --safe proof authority.",
+    "Added a dedicated Schmitty/Z3 CI lane using a Schmitty-compatible Agda toolchain with a temporary --allow-exec probe, without adding a third tracked Agda file or changing canonical --safe proof authority.",
     "Added a safe Schmitty boundary record whose witness is the existing IntegerRingSolver theorem, preserving a single mathematical authority.",
     "Added Z3 to the pinned Nix development shell for local SMT tooling.",
     "Removed the stale JSONJSON heredoc terminator from the shared Pages Dhall lane.",
@@ -26,10 +25,12 @@
   verification = [
     "Schmitty source and test shape were checked against upstream v1.0.1 before integration.",
     "The pinned nixpkgs package set does not provide the Schmitty Agda library or a Vehicle Agda backend; Schmitty is installed through setup-agda and Vehicle remains a separate interoperability boundary.",
-    "The Schmitty lane isolates external Z3 execution and never changes the --safe proof-authority monoliths.",
+    "The Schmitty lane isolates external Z3 execution in a generated temporary module and never changes the --safe proof-authority monoliths.",
     "Upstream Schmitty v1.0.1 runs its --allow-exec witness through a file-local OPTIONS pragma rather than passing --allow-exec as a command-line flag; this is required because the command-line flag applies globally and conflicts with imported --safe standard-library modules in Agda 2.6.2.2.",
-    "The production lane now uses the upstream Schmitty invocation shape: file-local --allow-exec pragma, -v0, and registered -l standard-library -l schmitty library resolution without a command-line --allow-exec flag or manual source-tree copies.",
+    "The production lane uses the upstream Schmitty invocation shape with file-local --allow-exec, -v0, and registered -l standard-library -l schmitty resolution; the probe is generated at runtime.",
+    "The tracked Agda surface is now strictly two monoliths; Main.agda and the standalone Schmitty probe are retired.",
     "Graph/proof verification remains independently authoritative; external SMT assistance is non-authoritative evidence only.",
-    "The latest CI receipt on the current head is authoritative for the Schmitty witness and the unchanged graph lanes."
+    "Vehicle remains outside theorem authority because current vehicle-agda depends on standard-library 2.3 and no current nixpkgs Haskell Vehicle package was found.",
+    "Fresh CI receipt is required before this record is considered green."
   ],  caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
   stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."

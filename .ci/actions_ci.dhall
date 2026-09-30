@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -6,13 +6,6 @@ let script = merge {
   AgdaLearner = ''
     set -euo pipefail
     "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    '',
-  CanonicalExecutable = ''
-    set -euo pipefail
-    trap 'rm -f Main; rm -rf MAlonzo' EXIT
-    "$AGDA_COMMAND" --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --compile -l standard-library -i . Main.agda
-    ./Main
     '',
   AgdaTheorem = ''
     set -euo pipefail
@@ -31,10 +24,40 @@ let script = merge {
     test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
     "$Z3_EXECUTABLE" -version
 
-    "$AGDA_SCHMITTY_COMMAND" -v0 -l standard-library -l schmitty -i . ProofAutomation/SchmittyAssisted.agda
-    test -f ProofAutomation/SchmittyAssisted.agda
-    grep -Fq 'SMT.Backend.Z3' ProofAutomation/SchmittyAssisted.agda
-    grep -Fq 'solveZ3' ProofAutomation/SchmittyAssisted.agda
+    probe_dir=$(mktemp -d)
+    trap 'rm -rf "$probe_dir"' EXIT
+    probe="$probe_dir/SchmittyCIProbe.agda"
+    cat > "$probe" <<'AGDA'
+{-# OPTIONS --allow-exec #-}
+{-# OPTIONS --guardedness #-}
+
+module SchmittyCIProbe where
+
+open import Data.Integer using (ℤ; _+_; _-_; _*_)
+open import Relation.Binary.PropositionalEquality using (_≡_)
+open import SMT.Theories.Ints as Ints
+open import SMT.Backend.Z3 Ints.reflectable
+
+import Data.Integer.Literals as Int using (number; negative)
+
+open import Agda.Builtin.FromNat
+open import Agda.Builtin.FromNeg
+
+instance _ = Int.number
+         _ = Int.negative
+
+schmitty-integer-associativity :
+  (i j k : ℤ) → i + (j + k) ≡ (i + j) + k
+schmitty-integer-associativity = solveZ3
+
+schmitty-integer-polynomial-normalization :
+  (i : ℤ) → (i + 2) * (i + -2) ≡ i * i - 4
+schmitty-integer-polynomial-normalization = solveZ3
+AGDA
+    "$AGDA_SCHMITTY_COMMAND" -v0 -l standard-library -l schmitty -i "$probe_dir" "$probe"
+    grep -Fq -- '--allow-exec' "$probe"
+    grep -Fq 'SMT.Backend.Z3' "$probe"
+    grep -Fq 'solveZ3' "$probe"
     echo "schmitty-smt-assistance=pass"
     '',
   MercuryPurity = ''
@@ -187,10 +210,16 @@ JSON
     do
       grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
     done
-   for file in CanonicalLearnerMonolith.agda TheoremsMonolith.agda EGraphSemanticTransport.agda FourLawClosureWitnesses.agda FourLawClosureImpossibility.agda GRUStatisticalInjectivity.agda CommonsComposition.agda GRUFractalInjectiveComposition.agda GRUFractalInjectiveCompositionCanonical.agda ZPFStatisticalRepresentation.agda TsallisStatisticalRepresentation.agda RepositorySemanticEGraphClosure.agda
-    do
-      [ -f "Exotic/ERL/FullCoupled/$file" ] || { echo "surviving Agda file missing from repository surface: $file"; exit 1; }
-    done
+    agda_files=$(git ls-files '*.agda')
+    expected_agda_files='Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
+Exotic/ERL/FullCoupled/TheoremsMonolith.agda'
+    [ "$agda_files" = "$expected_agda_files" ] || {
+      echo "strict two-monolith Agda surface mismatch"
+      printf '%s\n' "expected:" "$expected_agda_files" "actual:" "$agda_files"
+      exit 1
+    }
+    [ ! -e Main.agda ] || { echo "legacy Main.agda must remain retired"; exit 1; }
+    [ ! -e ProofAutomation/SchmittyAssisted.agda ] || { echo "legacy Schmitty Agda module must remain retired"; exit 1; }
     grep -Fq 'Complete surviving-Agda closure index' "$readme" || { echo "README missing complete Agda closure index"; exit 1; }
     law_count=$(awk -F'= ' '/semanticLawCount =/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
@@ -615,7 +644,6 @@ DHALL
     [ "$agda_count" -eq 3 ] || { echo "expected exactly three tracked Agda sources, found $agda_count"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
-    [ -f Main.agda ] || { echo "missing canonical learner executable entrypoint"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }

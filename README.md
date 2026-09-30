@@ -8,7 +8,6 @@ The current thesis-facing claim is deliberately narrow: the formalization makes 
 
 - `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda` — canonical learner definitions and definitional laws.
 - `Exotic/ERL/FullCoupled/TheoremsMonolith.agda` — theorem consumer and semantic/economic boundary.
-- `Main.agda` — standalone executable entrypoint for one canonical learner step.
 - `.ci/actions_ci.dhall` — verification lanes and required checks.
 - `.ci/discovery/` — declaration extraction, dependency discovery, and graph consistency checks.
 - `docs/research/theorem-improvement-completion-2026-09-26.md` — completed theorem-improvement search and proof-boundary note.
@@ -25,14 +24,13 @@ This is the repository's **full unconditional semantic e-graphed closure**: unco
 The current Agda inventory is intentionally minimal:
 - `CanonicalLearnerMonolith.agda` — canonical learner definitions and definitional laws.
 - `TheoremsMonolith.agda` — the sole theorem/semantic monolith, including the inlined statistical, physics, economics, fractal, limit, e-graph, A*, and counterexample contracts.
-- `Main.agda` — executable entrypoint that constructs one concrete learner kernel/state and evaluates one `canonicalFullStep`.
 
 
-The two monoliths remain the proof authority. `Main.agda` is an execution adapter, not a third theorem authority.
+The two monoliths are the complete tracked Agda authority surface. No standalone executable Agda adapter is retained.
 
 ### Complete surviving-Agda closure index
 
-The repository has two Agda proof monoliths plus one executable entrypoint. The theorem monolith's `RepositoryAgdaModule` enumeration remains the live source of truth for the proof-only surface; `Main.agda` is excluded from theorem-source extraction.
+The repository has exactly two tracked Agda files. The theorem monolith's `RepositoryAgdaModule` enumeration remains the live source of truth for the proof surface; no third Agda adapter exists.
 
 The exact chain is:
 
@@ -189,9 +187,9 @@ The production-side vocabulary is aligned with established formal-economics term
 
 ## SMT automation and Vehicle boundary
 
-Schmitty is integrated only as an external SMT-assistance lane. Its Z3 reflection requires Agda execution support, so its checked module lives under `ProofAutomation/SchmittyAssisted.agda` and is never imported by the `--safe` proof monoliths. The canonical safe mirror remains inside `TheoremsMonolith.agda` and is discharged by the existing Agda ring solver.
+Schmitty runs as an external CI SMT-assistance probe. CI generates its `--allow-exec` probe in a temporary directory, so no third tracked Agda module is introduced. The canonical `--safe` theorem monolith retains the safe `SchmittySafeSMTBoundaryTheorem` mirror discharged by `IntegerRingSolver`.
 
-Vehicle remains an interoperability candidate rather than a theorem dependency. Its current Agda library targets a different standard-library boundary than this repository's pinned Agda 2.8 / standard-library 2.4 environment, and no Vehicle-derived statement is promoted into the proof authority until a dedicated compatibility bridge exists. See [Agda SMT and Vehicle boundary](docs/research/agda-smt-vehicle-boundary-2026-09-30.md).
+Vehicle is not imported into canonical proof authority. Current upstream `vehicle-agda` declares `depend: standard-library-2.3`, while this repository uses standard-library 2.4. Current nixpkgs search also does not provide the Haskell Vehicle tool; the nixpkgs package named `vehicle` is unrelated. No Vehicle-derived composition theorem is therefore promoted into the theorem graph without a version-compatible bridge. See [Agda SMT and Vehicle boundary](docs/research/agda-smt-vehicle-boundary-2026-09-30.md).
 
 ## Toolchain roles
 
@@ -202,14 +200,7 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLe
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-`Main.agda` is the executable adapter. Compile and run it with:
-
-```sh
-$AGDA_COMMAND --safe --compile -l standard-library -i . Main.agda
-./Main
-```
-
-The executable constructs one concrete learner kernel/state, evaluates one `canonicalFullStep`, and reports the resulting count transition. It does not introduce a second semantic definition.
+The tracked Agda surface contains no standalone executable adapter. `CanonicalLearnerMonolith.agda` and `TheoremsMonolith.agda` remain the complete proof modules.
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 

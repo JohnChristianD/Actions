@@ -49,14 +49,6 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
-      - name: Check executable canonical learner
-        timeout-minutes: 15
-        env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-          CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.CanonicalExecutable'
-        run: |
-          set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
@@ -106,7 +98,7 @@ jobs:
         timeout-minutes: 10
         env:
           AGDA_SCHMITTY_COMMAND: agda
-          CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
+          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
         run: |
           set -euo pipefail
           nix develop .#default -c dhall text --file .ci/actions_ci.dhall > "$RUNNER_TEMP/schmitty.sh"
@@ -124,7 +116,7 @@ jobs:
       - name: Mercury purity gate
         timeout-minutes: 5
         env:
-          CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.MercuryPurity'
+          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.MercuryPurity'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -218,7 +210,7 @@ jobs:
       - name: Verify Mirth to Elm presentation build
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Pages'
+          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Pages'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
