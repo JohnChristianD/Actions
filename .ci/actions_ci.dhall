@@ -45,12 +45,12 @@ let script = merge {
     '',
   Schmitty = ''
     set -euo pipefail
-    "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.7.0.1"
+    "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0"
     "$(command -v z3)" -version
     schmitty_library=$(find "$HOME/.agda" -name 'schmitty.agda-lib' -print -quit 2>/dev/null || true)
     test -n "$schmitty_library" || { echo "Schmitty Agda library was not installed"; exit 1; }
     test -f "$schmitty_library"
-    echo "schmitty-installed-on-single-agda-version=pass"
+    echo "schmitty-installed-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
     set -euo pipefail
