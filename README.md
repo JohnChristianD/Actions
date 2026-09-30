@@ -2,7 +2,7 @@
 
 This repository is a mechanically checked study of one coupled recurrent learner and the exact consequences that follow from its definitions. The authoritative mathematical surface is Agda; the discovery and CI layers are subordinate tooling.
 
-The current thesis-facing claim is deliberately narrow: the formalization makes the dependency boundary explicit. Exact learner dynamics yield exact representation, quotient, factorization, and stability facts. They do not, by themselves, yield convergence, a fixed point, market clearing, supporting prices, or Walrasian equilibrium existence.
+The current thesis-facing claim is deliberately narrow: the formalization makes the dependency boundary explicit. Exact learner dynamics yield exact representation, quotient, factorization, and stability facts. They do not, by themselves, yield arbitrary fixed points or economic equilibrium existence. Where the exact tail-stability theorem supplies eventual semantic stabilization together with the iterate/convergence transport, that tail closes the corresponding convergence result; the remaining economic conclusions stay witness-gated.
 
 ## Authoritative sources
 
@@ -102,8 +102,11 @@ F4 optimizer stability theorem
         |
         +--> representation/factor information
         |
-        +--> does NOT imply convergence
-        +--> does NOT imply a fixed point
+        +--> exact tail stability + iterate transport
+        |          |
+        |          +--> convergence of the stabilized representation
+        |
+        +--> does NOT imply an arbitrary fixed point
         +--> does NOT imply market clearing
         +--> does NOT imply supporting prices
         +--> does NOT imply Walrasian existence
@@ -166,7 +169,7 @@ The thesis does **not** claim novelty from:
 - restating classical Walrasian or welfare theorems;
 - calling a quotient/factor construction a new general abstraction theory.
 
-The intended contribution is the explicit, mechanically auditable dependency boundary for this coupled model:
+The intended contribution is the explicit, mechanically auditable dependency boundary for this coupled model.
 
 ```
 exact learner laws
@@ -281,9 +284,13 @@ Two LayerNorm helper declarations are kept as Agda proof ingredients but pruned 
 - `integerLayerNorm-egraph-astar-eventual-semantic-closure`
 - `integerLayerNorm-egraph-astar-infinite-stable-tail`
 
+### Mirth fast-dirty boundary
+
+Mirth remains a tracked integration/orchestration/synchronization/scripting layer for fast-dirty repository work. `.ci/mirth/agda_to_elm.mth` is retained as the source-level synchronization contract, and the flake exposes Mirth in the development environment. Its compiler/transpile-to-C99 path is explicitly unsupported by this repository and is not used as a CI verification dependency. C99 is the ISO C language revision standardized in 1999; this repository does not claim a supported Mirth-to-C99-to-native executable pipeline.
+
 ### Pages presentation boundary
 
-The GitHub Pages surface is now a direct Elm build with no source translator in the workflow. The presentation lists the two canonical Agda monoliths explicitly and treats them as display metadata only. Agda remains the semantic authority, and the Pages build does not generate, execute, or depend on auxiliary Agda source files.
+The GitHub Pages surface is a direct Elm build over the two canonical Agda monolith names. Mirth is not required for Pages verification, so presentation success is not conflated with the unsupported Mirth compiler path.
 
 ## Scheduled commit-totality README refresh
 
@@ -327,4 +334,4 @@ The repository does **not** infer a nontrivial price-adjustment law, an excess-d
 
 The finite candidate-price classifier is also now an explicit e-graph composition. `EGraphEconomicFiniteCandidatePriceComposition` carries the certified semantic path alongside `FiniteCandidatePriceResult`, and `eGraphEconomicFiniteCandidatePriceComposition-from-path` computes the classification from the supplied finite candidate list and decision procedure. This remains a constructive finite-search edge, not a price-existence theorem.
 
-The Agda proof authority remains exactly two files: `CanonicalLearnerMonolith.agda` and `TheoremsMonolith.agda`. Auxiliary documentation and discovery artifacts are subordinate to that authority.
+The Agda proof authority remains exactly two files: `CanonicalLearnerMonolith.agda` and `TheoremsMonolith.agda`. The theorem monolith now imports Schmitty's SMT/Z3 surface and Vehicle's current Agda reflection interface through a scripted sync block; those are external integration dependencies, not additional tracked Agda sources. Auxiliary documentation and discovery artifacts are subordinate to that authority.
