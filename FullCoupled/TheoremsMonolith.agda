@@ -5087,6 +5087,66 @@ jaxJittedScanSum-law :
   jaxIntegerSum xs
 jaxJittedScanSum-law xs = refl
 
+jaxL1Row : ∀ {n} → HSSVector C.Int8 n → Nat
+jaxL1Row = rowL1
+
+jaxL1Row-law :
+  ∀ {n} (xs : HSSVector C.Int8 n) →
+  jaxL1Row xs ≡ rowL1 xs
+jaxL1Row-law xs = refl
+
+jaxL1Matrix : ∀ {m n} → HSSMatrix C.Int8 m n → Nat
+jaxL1Matrix = weightL1
+
+jaxL1Matrix-law :
+  ∀ {m n} (xs : HSSMatrix C.Int8 m n) →
+  jaxL1Matrix xs ≡ weightL1 xs
+jaxL1Matrix-law xs = refl
+
+jaxOnePathVector :
+  ∀ {d L} →
+  HSSVector (HSSMatrix C.Int8 d d) L →
+  HSSVector Nat d
+jaxOnePathVector = onePathVector
+
+jaxOnePathVector-law :
+  ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
+  jaxOnePathVector xs ≡ onePathVector xs
+jaxOnePathVector-law xs = refl
+
+jaxOnePathNorm :
+  ∀ {d L} →
+  HSSVector (HSSMatrix C.Int8 d d) L →
+  Nat
+jaxOnePathNorm = onePathNorm
+
+jaxOnePathNorm-law :
+  ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
+  jaxOnePathNorm xs ≡ onePathNorm xs
+jaxOnePathNorm-law xs = refl
+
+jaxTsallis2NearSparsityFraction :
+  ActionWeights →
+  C.FiniteRational
+jaxTsallis2NearSparsityFraction = generalTsallis2NearSparsity
+
+jaxTsallis2NearSparsityFraction-law :
+  ∀ xs →
+  jaxTsallis2NearSparsityFraction xs ≡
+  generalTsallis2NearSparsity xs
+jaxTsallis2NearSparsityFraction-law xs = refl
+
+jaxSupportSparsityFraction :
+  ActionWeights →
+  C.FiniteRational
+jaxSupportSparsityFraction = generalSupportSparsity
+
+jaxSupportSparsityFraction-law :
+  ∀ xs →
+  jaxSupportSparsityFraction xs ≡
+  generalSupportSparsity xs
+jaxSupportSparsityFraction-law xs = refl
+
 record JAXExecutionMirrorReproof : Set₁ where
   constructor jaxExecutionMirrorReproof
   field
@@ -5154,6 +5214,26 @@ record JAXExecutionMirrorReproof : Set₁ where
       ∀ states xs →
       jaxBatchedGRUHiddenStep states xs ≡
       jaxBatchedGRUHiddenStep states xs
+    l1Row :
+      ∀ {n} (xs : HSSVector C.Int8 n) →
+      jaxL1Row xs ≡ rowL1 xs
+    l1Matrix :
+      ∀ {m n} (xs : HSSMatrix C.Int8 m n) →
+      jaxL1Matrix xs ≡ weightL1 xs
+    onePathVector :
+      ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
+      jaxOnePathVector xs ≡ onePathVector xs
+    onePathNorm :
+      ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
+      jaxOnePathNorm xs ≡ onePathNorm xs
+    tsallis2NearSparsity :
+      ∀ xs →
+      jaxTsallis2NearSparsityFraction xs ≡
+      generalTsallis2NearSparsity xs
+    supportSparsity :
+      ∀ xs →
+      jaxSupportSparsityFraction xs ≡
+      generalSupportSparsity xs
     jittedScanSum :
       ∀ xs →
       jaxJittedScanSum xs ≡ jaxIntegerSum xs
@@ -5175,6 +5255,12 @@ jax-execution-mirror-reproof =
     jaxSignedGate-law
     jaxGRUHiddenStep-law
     jaxBatchedGRUHiddenStep-law
+    jaxL1Row-law
+    jaxL1Matrix-law
+    jaxOnePathVector-law
+    jaxOnePathNorm-law
+    jaxTsallis2NearSparsityFraction-law
+    jaxSupportSparsityFraction-law
     jaxJittedScanSum-law
 
 ------------------------------------------------------------------------
