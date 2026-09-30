@@ -91,6 +91,7 @@ def sparse_support_top_k(
 def sparsemax_policy_index(
     scores: Array,
     action_ids: Array,
+    fallback_action: Array,
     temperature: int = 16,
 ) -> Array:
     """Compute the first positive sparsemax action after one sorted pass."""
@@ -110,7 +111,7 @@ def sparsemax_policy_index(
     first_positive = jnp.argmax(positive)
     has_positive = jnp.any(positive)
     chosen = order[first_positive]
-    return jnp.where(has_positive, action_ids[chosen], action_ids[0])
+    return jnp.where(has_positive, action_ids[chosen], fallback_action)
 
 
 def integer_layernorm_centered_numerators(xs: Array) -> Array:
@@ -221,6 +222,17 @@ def main() -> None:
         sorted_magnitudes,
         jnp.array([9, 8, 4, 1], dtype=jnp.int64),
         "support ordering",
+    )
+
+    _check_equal(
+        sparsemax_policy_index(
+            jnp.array([7, 2, 7, -1], dtype=jnp.int64),
+            jnp.array([0, 1, 2, 3], dtype=jnp.int64),
+            jnp.array(0, dtype=jnp.int64),
+            16,
+        ),
+        jnp.array(0, dtype=jnp.int64),
+        "sparsemax policy",
     )
 
     _check_equal(
