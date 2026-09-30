@@ -73,21 +73,17 @@ No PPAD-completeness theorem is claimed. A genuine result needs an explicit sear
 
 ## JAX execution mirror
 
-The executable JAX surface is deliberately finite: `tools/jax_reference.py` mirrors the concrete learner algorithms where array execution is a meaningful replacement for scalar/recursive execution.
+`tools/jax_reference.py` is the executable JAX mirror. Its current function set is:
 
-The mirror uses:
+`vmap_affine`, `associative_prefix_sum`, `recurrent_scan`, `lexicographic_score_order`, `sparse_support_size`, `sparse_support_top_k`, `sparsemax_policy_index`, `integer_layernorm_centered_numerators`, `integer_layernorm_radicand`, `batched_integer_layernorm_radicand`, `signed_gate`, `gru_hidden_step`, `batched_gru_hidden_step`, and `jitted_scan_sum`.
 
-- `jax.vmap` for independent maps;
-- `jax.lax.scan` for recurrent state-carrying execution;
-- `jax.lax.associative_scan` for associative prefix accumulation;
-- `jax.numpy.lexsort` for the score ordering used by the sparsemax surface;
-- a one-sort/one-prefix-pass sparse-support computation, with `jax.lax.top_k` reserved for fixed-`k` specialization;
-- exact `int64` integer LayerNorm arithmetic;
-- the concrete GRU hidden-state equation from the canonical learner.
+The theorem monolith provides typed Agda counterparts:
 
-The sparse-support mirror is the principal algorithmic improvement: it avoids repeatedly reconstructing `topCodes k xs` while testing every candidate `k`. The JAX implementation computes the descending magnitudes once, computes all prefix sums once, and evaluates the support inequalities in one vectorized pass.
+`jaxVmapAffine`, `jaxAssociativePrefixSum`, `jaxRecurrentScan`, `jaxLexicographicScoreOrder`, `jaxSparseSupportSize`, `jaxSparseSupportTopK`, `jaxSparsemaxPolicyIndex`, `jaxIntegerLayerNormCenteredNumerators`, `jaxIntegerLayerNormRadicand`, `jaxBatchedIntegerLayerNormRadicand`, `jaxSignedGate`, `jaxGRUHiddenStep`, `jaxBatchedGRUHiddenStep`, and `jaxJittedScanSum`, packaged by `JAXExecutionMirrorReproof`.
 
-The workflow pins JAX 0.11.2 and validates the mirror with `jax.jit` and `jax.eval_shape`. No extra ML framework or Python algorithm package is added. The Agda theorem surface remains the semantic authority, and proof terms are not replaced by JAX execution.
+The execution choices are intentional: `vmap` for independent maps; `lax.scan` for recurrent state; `lax.associative_scan` for associative prefixes; `jnp.lexsort` for deterministic score ordering; a single ordered magnitude/prefix pass for sparse support; `lax.top_k` only when `k` is fixed; and exact JAX `int64` arithmetic for the integer kernels.
+
+This is an execution/equivalence boundary. The Agda proofs establish the finite counterparts and their relation to the canonical definitions; they do not claim to model or prove the JAX compiler.
 
 ## Presentation and CI
 
