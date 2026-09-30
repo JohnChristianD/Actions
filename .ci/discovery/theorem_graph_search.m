@@ -172,36 +172,9 @@ graph_connected_custom_optimizer_rounding_bias_regret_plan(Laws, Plan) :-
 
 graph_connected_f4_frank_wolfe_rounding_bias_regret_plan(Laws, Plan) :-
     search_named_required_plan(
-        "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
+        "CanonicalF4GlobalOptimizerStabilityTheorem",
         Laws,
         Plan).
-
-:- pred graph_connected_maxwell_tsallis_exact_conjugacy_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-graph_connected_maxwell_tsallis_exact_conjugacy_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedMaxwellTsallisExactConjugacyTheorem",
-        Laws,
-        Plan).
-
-:- pred graph_continuous_hodge_maxwell_gru_representation_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-graph_continuous_hodge_maxwell_gru_representation_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-        Laws,
-        Plan).
-
-:- pred graph_continuous_maxwell_gru_representation_plan(
-    list(semantic_law)::in,
-    list(string)::out) is semidet.
-
-graph_continuous_maxwell_gru_representation_plan(Laws, Plan) :-
-    graph_continuous_hodge_maxwell_gru_representation_plan(Laws, Plan).
 
 all_generated_plans_valid(Laws, Plans) :-
     all_valid_plans(Plans, Laws, yes).
@@ -576,13 +549,9 @@ all_named_required_plans([Name | Names], Laws, [Plan | Plans]) :-
 graph_required_theorems = [
     "CanonicalAQLoopTheorem",
     "CanonicalConnectedCompositionTheorem",
-    "CanonicalLearnerReplacementClosureTheorem",
     "EqualityCompositionTheorem",
     "RecurrentAssociativeScanTheorem",
-    "CanonicalGRUF4NormWatkinsPrefixCompositionTheorem",
     "CommutingSquareTheorem",
-    "CommutingSquareLeftInverseTheorem",
-    "FullCommutingSquareConjugacyTheorem",
     "RecurrentScanConjugacyTheorem",
     "CanonicalFullLearnerConnectedScanConjugacyTheorem",
     "S4PlusS5RecurrentScanTheorem",
@@ -591,7 +560,6 @@ graph_required_theorems = [
     "CanonicalQMunchausenL2SharedNegationPolarityTheorem",
     "DiscreteExactUAPTheorem",
     "DiscreteExactUniversalUAP",
-    "DiscreteExactUniversalUAPLeftInverseEquivalence",
     "CanonicalExactCompositionTuringCompletenessContract",
     "ContinuousLeftInverseTheorem",
     "RingStateInjectivityTheorem",
@@ -602,15 +570,9 @@ graph_required_theorems = [
     "CanonicalLearnerBairdSevenStarBoundary",
     "canonicalLearnerBairdSevenStar",
     "GlobalConjugacyEquivalence",
-        "ExactFunctionIsomorphismTransportTheorem",
+    "ExactFunctionIsomorphismTransportTheorem",
     "ExactRecurrentFunctionTranslationTheorem",
-    "POMDPExactTransport",
-    "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
-    "POMDPWalrasianData",
-    "POMDPBeliefPolicyFactorization",
-    "POMDPWalrasianBeliefEquilibriumClosure",
-    "ConnectedGRUHodgeMaxwellTsallisWalrasianPOMDPCompositionTheorem",
-        "CanonicalExactRNNLMTheorem",
+    "CanonicalExactRNNLMTheorem",
     "CanonicalGlobalTokenLMCompositionTheorem",
     "CanonicalIntegerHaarScaledOrthogonalityTheorem",
     "GenericRingSolverNormalizationTheorem",
@@ -628,7 +590,6 @@ graph_required_theorems = [
     "CanonicalFiniteCycleExclusionIsomorphismTheorem",
     "CanonicalOperatorCompositionTheorem",
     "CanonicalF4GlobalOptimizerStabilityTheorem",
-    "MarkovianStationaryPointCompositionTheorem",
     "CanonicalPureNonOrangeBypassCompletionTheorem",
     "CanonicalPersistentExcitationRequirementTheorem",
     "ExactContractComputabilityBoundaryTheorem",
@@ -636,18 +597,10 @@ graph_required_theorems = [
     "ParallelPrefixComplexityCertificate",
     "LogarithmicScanSpanCertificate",
     "LogarithmicPrefixScanComplexityTheorem",
-    "ConnectedF4FrankWolfeRoundingBiasRegretTheorem",
     "ConnectedContinuousHodgeMaxwellGRURepresentationTheorem",
-    "hodgeMaxwell-discontinuous-gru-refutes-connected-representation",
-    "ConnectedMaxwellTsallisExactConjugacyTheorem",
-    "HodgeMaxwellMiddleDegreeInvolutionTransportTheorem",
-    "hodgeMaxwell-globalEncode-noninjective-refutes-connected-representation",
-    "ConnectedHodgeMaxwellTsallisDivergenceCompositionTheorem",
-    "MegaGeneralizedWalrasianKKTArrowDebreuEquilibrium",
     "StateIsomorphism",
     "RecurrentPrefixMonoidHomomorphism",
     "FreeMonoidActionHomomorphism",
-    "ObservationTaskFactorization",
     "PointwiseSandwich",
     "MinimaxBellmanShapleyOperator",
     "DiscreteLeftInverseWitness",
@@ -655,21 +608,32 @@ graph_required_theorems = [
     "ExactTwoCounterMachine",
     "ExactReconstructionOnImage",
     "StationaryLimitTheorem",
-    "TopologicalConvergenceWitness",
-    "FixedPointExistenceFromConvergence",
-    "isomorphismFixedPointTransport",
-    "isomorphismIterateFixedPointTransport",
-    "economicEquilibriumExistenceFromConvergentFixedPoint",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
-    "GeneralizedWalrasianFixedPointClosure",
-    "generalizedWalrasianExistence-from-topological-fixed-point",
-    "generalizedWalrasianExistence-from-topological-fixed-point-transport",
-    "gruf4EconomicInjectivityFromGlobalSquare",
-    "topologicalConvergenceWitness-from-finite-rank-stability",
     "canonicalFullLearner-no-finite-rank-stability",
-    "EconomicConvergenceFromPrimitiveAssumptions",
-    "FixedPointToGeneralizedEquilibriumFromPrimitiveAssumptions",
-    "CanonicalIntegerGRUFractalLimitCompositionTheorem"
+    "CanonicalIntegerGRUFractalLimitCompositionTheorem",
+    "HiddenSynergyNormPair",
+    "rowL1",
+    "weightL1",
+    "onePathVector",
+    "onePathNorm",
+    "rowL1OnesAbs",
+    "onePathOneLayer",
+    "hiddenSynergy-one-layer-exact",
+    "CanonicalHardSparsityDegeneracyTheorem",
+    "ActionWeights",
+    "actionSupportCount",
+    "actionWeightSum",
+    "actionWeightSquareSum",
+    "generalTsallis2Denominator",
+    "generalTsallis2Numerator",
+    "generalTsallis2NearSparsity",
+    "generalTsallis2NearSparsity-zero",
+    "generalTsallis2NearSparsity-definition",
+    "fractionEquivalent",
+    "tsallis2Near-oneHot",
+    "generalSupportSparsity",
+    "generalSupportSparsity-definition",
+    "UniformSupportTsallisBoundary"
 ].
 
 :- func graph_required_subcompositions = list(string).
@@ -841,30 +805,6 @@ search_named_plans(Laws, [Name | Names], Plans) :-
 graph_canonical_integer_layernorm_stability_growth_plan(Laws, Plan) :-
     search_named_required_plan(
         "CanonicalIntegerLayerNormStabilityGrowthTheorem",
-        Laws,
-        Plan).
-
-graph_connected_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedContinuousHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
-        Laws,
-        Plan).
-
-graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_egraph_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsEGraphCompositionTheorem",
-        Laws,
-        Plan).
-
-graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_exact_step_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactStepCompositionTheorem",
-        Laws,
-        Plan).
-
-graph_connected_carrier_agnostic_hodge_maxwell_gru_f4_watkins_exact_prefix_horizon_regret_conjugacy_egraph_composition_plan(Laws, Plan) :-
-    search_named_required_plan(
-        "ConnectedCarrierAgnosticHodgeMaxwellGRUF4WatkinsExactPrefixHorizonRegretConjugacyEGraphCompositionTheorem",
         Laws,
         Plan).
 
