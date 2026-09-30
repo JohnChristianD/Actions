@@ -4,5 +4,5 @@ import std.prelude
 import std.world
 
 def main {
-    "python3 -c \"from pathlib import Path; import subprocess; files=subprocess.check_output(['git','ls-files','*.md','*.markdown','*.elm'],text=True).splitlines(); bad=[(p,sorted({b for b in Path(p).read_bytes() if b>127})) for p in files if any(b>127 for b in Path(p).read_bytes())]; assert not bad, bad; print(f'ASCII surface synchronized: {len(files)} tracked Markdown/Elm files')\"" print
+    "set -euo pipefail; files=$(git ls-files '*.md' '*.markdown' '*.elm'); for file in $files; do if LC_ALL=C grep -n '[^[:print:][:space:]]' \"$file\" >/dev/null; then echo \"non-ASCII surface: $file\" >&2; exit 1; fi; done; echo \"ASCII surface synchronized: $(printf '%s\\\\n' \"$files\" | sed '/^$/d' | wc -l) tracked Markdown/Elm files\"" print
 }
