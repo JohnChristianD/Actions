@@ -27,8 +27,9 @@
   verification = [
     "GitHub Pages run 36669916012 compiled the simplified Mirth source successfully, then failed because the emitted binary lacked the executable bit.",
     "Nix connected-composition run 36669915957 reached the Pages presentation job on the same commit; its final receipt is pending at the time of this change.",
-    "The remediation adds an explicit chmod before invoking the Mirth-generated executable in both Pages lanes.",
-    "No green Pages deployment is claimed until the chmod fix completes successfully."
+    "GitHub Pages run 36670131582 confirmed that Mirth emits C99 source; treating the output as a shell-executable was incorrect.",
+    "The remediation now compiles the emitted C99 source with the pinned Nix C compiler before execution, and adds that compiler to the devShell.",
+    "No green Pages deployment is claimed until the C compilation path completes successfully."
   ],
   caveat = "Generated presentation metadata is synchronization/build data, not proof evidence. Agda --safe remains the only proof authority.",
   stale_when = "Update this record when the Mirth compiler module rules, generated Elm fields, Markdown indexing policy, or Pages deployment architecture changes."

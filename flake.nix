@@ -131,6 +131,7 @@
               pkgs.haskellPackages.dhall-json
               pkgs.gh
               pkgs.python3
+              pkgs.stdenv.cc
               pkgs.elmPackages.elm
             ];
             shellHook = ''
