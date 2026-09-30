@@ -3,8 +3,7 @@ set -euo pipefail
 
 theorem="FullCoupled/TheoremsMonolith.agda"
 
-expected='
-------------------------------------------------------------------------
+expected='------------------------------------------------------------------------
 -- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
 -- Synced by .ci/sync-agda-integrations.sh; keep this block in the
 -- theorem monolith and do not materialize a third Agda source file.
@@ -16,24 +15,28 @@ import Vehicle
 
 ------------------------------------------------------------------------
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
-------------------------------------------------------------------------
-'
+------------------------------------------------------------------------'
 
 extract() {
   awk '
-    /^------------------------------------------------------------------------$/ && getline line {
-      if (line == "-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS") {
+    $0 == "------------------------------------------------------------------------" && !seen {
+      if ((getline line) > 0 && line == "-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS") {
         print "------------------------------------------------------------------------"
         print line
-        while ((getline line) > 0) {
+        seen = 1
+        next
+      }
+      print
+      print line
+      next
+    }
+    seen {
+      print
+      if ($0 == "-- END SCRIPTED EXTERNAL AGDA IMPORTS") {
+        if ((getline line) > 0) {
           print line
-          if (line == "-- END SCRIPTED EXTERNAL AGDA IMPORTS") {
-            getline line
-            print line
-            exit
-          }
         }
-        exit 1
+        exit
       }
     }
   ' "$1"
@@ -48,8 +51,8 @@ case "${1:-}" in
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda" || { echo "Schmitty Z3 backend is missing"; exit 1; }
     test -n "${AGDARSEC_AGDA_SOURCE:-}" || { echo "AGDARSEC_AGDA_SOURCE is required"; exit 2; }
     test -d "$AGDARSEC_AGDA_SOURCE" || { echo "agdarsec source is missing"; exit 1; }
-    actual=$(extract "$theorem")
-    test "$actual" = "${expected#$'\\n'}" || {
+    actual="$(extract "$theorem")"
+    test "$actual" = "$expected" || {
       printf '%s\n' "$actual"
       echo "scripted external Agda import block is stale" >&2
       exit 1
@@ -58,25 +61,31 @@ case "${1:-}" in
     ;;
   --write)
     tmp=$(mktemp)
-    trap 'rm -f "$tmp" "$theorem.tmp"' EXIT
+    out=$(mktemp)
+    trap 'rm -f "$tmp" "$out"' EXIT
     printf '%s\n' "$expected" > "$tmp"
     awk -v replacement="$tmp" '
-      /^------------------------------------------------------------------------$/ && !inside && getline line {
-        if (line == "-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS") {
+      $0 == "------------------------------------------------------------------------" && !replaced {
+        if ((getline line) > 0 && line == "-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS") {
           while ((getline repl < replacement) > 0) print repl
-          while ((getline line) > 0) {
-            if (line == "-- END SCRIPTED EXTERNAL AGDA IMPORTS") {
-              getline line
-              break
-            }
-          }
-          while ((getline line) > 0) print line
+          in_block = 1
+          replaced = 1
           next
         }
+        print
+        print line
+        next
+      }
+      in_block {
+        if ($0 == "-- END SCRIPTED EXTERNAL AGDA IMPORTS") {
+          if ((getline line) > 0) print line
+          in_block = 0
+        }
+        next
       }
       { print }
-    ' "$theorem" > "$theorem.tmp"
-    mv "$theorem.tmp" "$theorem"
+    ' "$theorem" > "$out"
+    mv "$out" "$theorem"
     echo "scripted external Agda import block updated"
     ;;
   *)
