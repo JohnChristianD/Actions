@@ -174,8 +174,9 @@ The intended contribution is the explicit, mechanically auditable dependency bou
 ```
 exact learner laws
   -> representation / factor structure
-  -/-> convergence
-  -/-> fixed point
+  -> exact tail stability + iterate transport
+  -> convergence of the stabilized representation
+  -/-> arbitrary fixed point
   -/-> market clearing
   -/-> supporting price
   -/-> equilibrium existence
@@ -185,7 +186,7 @@ The production-side vocabulary is aligned with established formal-economics term
 
 ## SMT automation and Vehicle boundary
 
-Schmitty runs as an external CI SMT-assistance probe. CI generates its `--allow-exec` probe in a temporary directory, so no third tracked Agda module is introduced. The canonical `--safe` theorem monolith retains the safe `SchmittySafeSMTBoundaryTheorem` mirror discharged by `IntegerRingSolver`.
+Schmitty is imported directly by the theorem monolith through the scripted SMT/Z3 import block. The repository does not generate a third Agda probe or temporary Agda source. The concrete `schmittyIntegerAssociativity` witness is checked in the same monolith under the current single Agda toolchain.
 
 Vehicle is not imported into canonical proof authority. Current upstream `vehicle-agda` declares `depend: standard-library-2.3`, while this repository uses standard-library 2.4. Current nixpkgs search also does not provide the Haskell Vehicle tool; the nixpkgs package named `vehicle` is unrelated. No Vehicle-derived composition theorem is therefore promoted into the theorem graph without a version-compatible bridge. See [Agda SMT and Vehicle boundary](docs/research/agda-smt-vehicle-boundary-2026-09-30.md).
 
@@ -195,7 +196,7 @@ Agda is the proof authority. The proof monoliths are checked with:
 
 ```sh
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
-$AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
+$AGDA_COMMAND --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
 The tracked Agda surface contains no standalone executable adapter. `CanonicalLearnerMonolith.agda` and `TheoremsMonolith.agda` remain the complete proof modules.
