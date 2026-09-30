@@ -133,3 +133,15 @@ The Markdown surface intentionally contains no external hyperlinks. The Elm pres
 ## Maintenance rule
 
 When a theorem appears to connect GRU dynamics with physics, economics, games, complexity, or external numerical behavior, its exact semantic bridge must appear as an Agda premise or proof. Graph discovery can suggest an edge; it cannot create the edge.
+
+<!-- BEGIN GENERATED DOCUMENTATION INDEX -->
+
+Generated from the tracked Markdown surface: 2 files.
+The root README is the GitHub-facing entry point; detailed evidence remains in the tracked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
+
+### Repository documentation
+
+- `docs/agda-auto-proof-search.md` — Agda proof search in this repository
+- `docs/agda-smt-vehicle-boundary-2026-09-30.md` — Agda SMT automation and Vehicle boundary — 2026-09-30
+
+<!-- END GENERATED DOCUMENTATION INDEX -->
