@@ -4618,7 +4618,7 @@ canonicalLearnerBairdSevenStar divergence =
     (λ w₈ wᵢ → refl)
     (λ w₇ w₈ → w₇ + 2 * w₈)
     (λ w₇ w₈ → refl)
-    (λ n → C.canonicalPersistentGRU-afterFullStep-iterate _ n _)
+    (λ n → C.canonicalPersistentGRU-afterFullStep-iterate K n s)
     divergence
 
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
