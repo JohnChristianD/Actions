@@ -304,21 +304,30 @@ The GitHub Pages build installs Nix before entering the pinned flake environment
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 491501b30b96b5b26c4715773943482916b8036a
-unprocessed-commit-count: 9
+last-processed-commit: b330a0430ee8c12c0c3cb9e59add86931c970fb3
+unprocessed-commit-count: 18
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `491501b30b96` feat: add safe Agda SMT assistance boundary
-- `34b436f290fb` fix: align Elm manifest with pinned compiler
-- `342cb33d0148` fix: correct Pages Elm manifest heredoc terminator
-- `a36c0f436381` fix: write valid Elm 0.19.1 project manifests
-- `6c2d529dcb6e` fix: add Elm test dependency manifest fields
-- `4546c962a381` fix: complete generated Elm application manifest
-- `6740d395285a` fix: build Elm from its temporary project root
-- `ea5dbf31c47f` fix: correct Pages workflow shell quoting
-- `71bfa12e1bfe` docs: refresh README from commit totality
+- `b330a0430ee8` fix: bypass unsafe standard-library loader flags in Schmitty
+- `9aac6419b937` debug: fix Schmitty probe module filenames
+- `7ce77125ae17` debug: isolate Agda safe-mode infection boundary
+- `37be184c48e6` debug: inspect Schmitty Agda safety configuration
+- `941feb90a00d` fix: load Schmitty libraries explicitly without defaults
+- `c0ad8b9b55da` fix: mirror upstream Schmitty Agda setup
+- `ab9d63bf13dd` fix: invoke Schmitty through registered Agda defaults
+- `72f37aac4af1` fix: isolate Schmitty execution from safe Nix Agda
+- `bf9f0e475c3e` fix: register Schmitty Agda library defaults
+- `4cd997a6bc09` fix: use pinned nixpkgs Z3 for Schmitty
+- `cc95e0b7bf36` fix: complete Dhall lane dispatcher expression
+- `6fce08bacd9e` fix: restore AutoMerge Dhall interpolation escapes
+- `6b04379a5f9c` fix: escape remaining Dhall shell interpolations
+- `4976df066441` fix: repair shared Dhall lane terminator
+- `6ad9f0a7972c` fix: escape shell environment syntax from Dhall
+- `cec4b9c06d14` fix: use explicit Agda executable for Schmitty lane
+- `4b32e629d5d8` fix: run Schmitty lane inside Nix environment
+- `7fcff8862c34` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
