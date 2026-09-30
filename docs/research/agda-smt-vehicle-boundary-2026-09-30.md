@@ -6,28 +6,7 @@ This note defines the interoperability boundary for external SMT assistance and 
 
 ## Schmitty
 
-Schmitty v1.0.1 supplies Agda SMT reflection and a Z3 backend. Its integration examples use `{-# OPTIONS --allow-exec #-}` and `solveZ3`. The repository does not retain a third tracked Schmitty Agda module: CI generates `SchmittyCIProbe.agda` in a temporary directory, runs it with the Schmitty-compatible Agda 2.6.2.2 / standard-library 1.7.1 toolchain, then deletes it.
-
-The canonical proof environment remains Agda 2.8.0.2 with standard-library 2.4. `--safe` remains enabled for both canonical monoliths. `--allow-exec` is limited to the temporary Schmitty probe; it is never added to canonical proof authority.
-
-The CI Schmitty lane does not import or rewrite the theorem monolith. It proves independent integer normalization witnesses with `solveZ3`. `TheoremsMonolith.agda` retains only the safe mirror already discharged by `IntegerRingSolver`.
-
-## Vehicle
-
-Vehicle is now a direct Haskell tool dependency. The repository flake pins upstream `vehicle-lang/vehicle` source and builds its `vehicle-syntax` and `vehicle` Cabal packages with nixpkgs' Haskell toolchain. CI executes the resulting `vehicle` binary in a dedicated lane.
-
-The Vehicle Agda backend currently targets standard-library 2.3. That version boundary no longer blocks provisioning or direct Vehicle execution. Vehicle-generated Agda or solver artifacts remain external evidence: no Vehicle output is inserted into either canonical monolith, and no emergent composition theorem is promoted into the Mercury graph merely because Vehicle can generate or normalise it. Any such theorem still requires an explicit translated proposition and an Agda proof on the canonical two-file surface.
-
-The repository therefore has two distinct Vehicle claims: executable integration is direct and checked; semantic theorem integration remains proof-gated.
-
-A future Vehicle bridge requires:
-- a pinned upstream Vehicle revision;
-- a checked Vehicle/Agda stdlib compatibility layer;
-- an explicit translation theorem into this repository's carrier/semantic interfaces;
-- graph insertion only after the translated proposition is present and proved on one of the two canonical monoliths.
-
-## Graph boundary
-
+Schmitty v1.0.1 supplies Agda SMT reflection and a Z3 backend. Its upstream examples use `{-# OPTIONS --allow-exec #-}` and `solveZ3`. This repository does not add those execution options to either canonical proof monolith; the Schmitty lane is non-authoritative installation/trust verification only.
 Mercury graph topology continues to derive from `TheoremsMonolith.agda`. Schmitty is evidence-only automation. Vehicle remains an external compatibility candidate. Neither creates graph edges or theorem nodes by conceptual similarity.
 
 The graph gate remains:
