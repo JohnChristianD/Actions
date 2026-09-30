@@ -28,7 +28,7 @@
     "The pinned nixpkgs package set does not provide the Schmitty Agda library or a Vehicle Agda backend; Schmitty is installed through setup-agda and Vehicle remains a separate interoperability boundary.",
     "The Schmitty lane isolates external Z3 execution and never changes the --safe proof-authority monoliths.",
     "Upstream Schmitty v1.0.1 runs its --allow-exec witness through a file-local OPTIONS pragma rather than passing --allow-exec as a command-line flag; this is required because the command-line flag applies globally and conflicts with imported --safe standard-library modules in Agda 2.6.2.2.",
-    "The production lane now matches the upstream invocation shape and removes the temporary interface bootstrap.",
+    "The production lane now uses the upstream Schmitty invocation shape: file-local --allow-exec pragma, -v0, and registered -l standard-library -l schmitty library resolution without a command-line --allow-exec flag or manual source-tree copies.",
     "Graph/proof verification remains independently authoritative; external SMT assistance is non-authoritative evidence only.",
     "The latest CI receipt on the current head is authoritative for the Schmitty witness and the unchanged graph lanes."
   ],  caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",

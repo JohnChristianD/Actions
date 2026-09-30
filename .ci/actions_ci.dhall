@@ -31,12 +31,7 @@ let script = merge {
     test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
     "$Z3_EXECUTABLE" -version
 
-    AGDA_LIB_ROOT="$HOME/.agda/libraries.d"
-    "$AGDA_SCHMITTY_COMMAND" -v0 \
-      -i "$AGDA_LIB_ROOT/standard-library/v1.7.1/src" \
-      -i "$AGDA_LIB_ROOT/agdarsec/v0.5.0/src" \
-      -i "$AGDA_LIB_ROOT/schmitty/v1.0.1/src" \
-      -i . ProofAutomation/SchmittyAssisted.agda
+    "$AGDA_SCHMITTY_COMMAND" -v0 -l standard-library -l schmitty -i . ProofAutomation/SchmittyAssisted.agda
     test -f ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'SMT.Backend.Z3' ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'solveZ3' ProofAutomation/SchmittyAssisted.agda
