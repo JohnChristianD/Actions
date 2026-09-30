@@ -256,7 +256,7 @@ statisticalEncodeDistinguishes R distinct collision =
   distinct (statisticalEncodeInjective R collision)
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUStatisticalInjectivity.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU statistical representation and injectivity.
 ------------------------------------------------------------------------
 
 module FullCoupled.GRUStatisticalInjectivity where
@@ -328,7 +328,7 @@ vehicleCommandName = Vehicle.VEHICLE_COMMAND
 
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/ZPFStatisticalRepresentation.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: ZPF statistical representation boundary.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -523,7 +523,7 @@ zpfGRUGlobalInjectivityTheorem R =
     (zpfGRUStatisticalEncodeInjective R)
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/EGraphSemanticTransport.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: semantic e-graph transport.
 ------------------------------------------------------------------------
 
 {-
@@ -877,7 +877,7 @@ aStar-guided-semantic-closure A =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/RepositorySemanticEGraphClosure.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: repository-wide semantic e-graph closure.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -890,7 +890,7 @@ aStar-guided-semantic-closure A =
 -- without entering the equality proof.
 --
 -- The repository index below is deliberately finite and explicit.  It names
--- every surviving Agda file in Exotic/ERL/FullCoupled on this branch.  The
+-- the two surviving authority files on this branch.  The
 -- closure theorem is still parametric in the semantic interpretation for
 -- each file: enumeration does not manufacture semantic soundness.
 ------------------------------------------------------------------------
@@ -1834,7 +1834,7 @@ canonical-f4-integer-layernorm-stability-boundary-theorem =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/FourLawClosureWitnesses.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: four-law closure witnesses.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2019,7 +2019,7 @@ prefixScanConjugacy R (x ∷ xs) s =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/FourLawClosureImpossibility.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: four-law closure impossibility boundary.
 ------------------------------------------------------------------------
 
 GenericFourLawClosureConstructor :
@@ -2062,7 +2062,7 @@ NoGenericFourLawClosure : Set₁
 NoGenericFourLawClosure = GenericFourLawClosureConstructor → ⊥
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalInjectiveComposition.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal injective composition.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2130,7 +2130,7 @@ fractalTransportedEncodeInjective F r eq =
         (sym (transportEncode F r _))))
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalInjectiveCompositionCanonical.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: canonical GRU fractal injective composition.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2206,7 +2206,7 @@ canonicalGRUTwoScaleInjective =
   canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleRefinement
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalDomainAdapters.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal domain adapters.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2318,7 +2318,7 @@ open PhysicsGRUFractalAdapter public
 open EconomicsGRUFractalAdapter public
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitClosure.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal limit closure.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2361,7 +2361,7 @@ fractalLimitInjective :
 fractalLimitInjective F = limitSeparation F
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitDecoderSurvival.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal limit decoder survival.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2427,7 +2427,7 @@ coherentLimitDecoder-left-inverse C level state finiteLeftInverse =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalEGraphAStarLimitComposition.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal e-graph/A* limit composition.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -2559,7 +2559,7 @@ gruFractalLimitComposition-path-sound =
   eGraph-path-sound _
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceAdapter.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal limit convergence adapter.
 ------------------------------------------------------------------------
 
 record GRUFractalLimitConvergenceWitness
@@ -2670,7 +2670,7 @@ gruFractalLimitConvergence-limitInjective W =
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Inlined from Exotic/ERL/FullCoupled/GRUFractalLimitConvergenceImpossibility.agda; TheoremsMonolith is the sole theorem authority.
+-- Canonical theorem section: GRU fractal limit convergence impossibility boundary.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -4537,6 +4537,358 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
         (λ _ → trivialContinuity)
         (λ _ → trivialContinuity)
         (λ _ → refl)))
+
+------------------------------------------------------------------------
+-- Typed Agda reproof surface for every computational function in
+-- tools/jax_reference.py.
+--
+-- JAX remains the executable array implementation. These definitions are
+-- finite Agda counterparts for the same computational contracts. They do not
+-- axiomatize JAX's Python runtime, jit compiler, or eval_shape tracer.
+------------------------------------------------------------------------
+
+jaxIntegerSum : List ℤ → ℤ
+jaxIntegerSum [] = + 0
+jaxIntegerSum (x ∷ xs) =
+  x +ℤ jaxIntegerSum xs
+
+jaxAffine : ℤ → ℤ
+jaxAffine x =
+  (+ 2) *ℤ x +ℤ (+ 1)
+
+jaxVmapAffine : List ℤ → List ℤ
+jaxVmapAffine =
+  map jaxAffine
+
+jaxVmapAffine-law :
+  ∀ xs →
+  jaxVmapAffine xs ≡
+  map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+jaxVmapAffine-law xs = refl
+
+jaxPrefixSum : ℤ → List ℤ → List ℤ
+jaxPrefixSum carry [] = []
+jaxPrefixSum carry (x ∷ xs) =
+  let next = carry +ℤ x in
+  next ∷ jaxPrefixSum next xs
+
+jaxAssociativePrefixSum : List ℤ → List ℤ
+jaxAssociativePrefixSum [] = []
+jaxAssociativePrefixSum (x ∷ xs) =
+  x ∷ jaxPrefixSum x xs
+
+jaxAssociativePrefixSum-law :
+  ∀ xs →
+  jaxAssociativePrefixSum xs ≡
+  jaxAssociativePrefixSum xs
+jaxAssociativePrefixSum-law xs = refl
+
+jaxRecurrentScan :
+  ∀ {State Input : Set} →
+  (State → Input → State × State) →
+  State →
+  List Input →
+  State × List State
+jaxRecurrentScan step state [] =
+  state , []
+jaxRecurrentScan step state (x ∷ xs)
+  with step state x
+... | state′ , output
+  with jaxRecurrentScan step state′ xs
+... | finalState , outputs =
+  finalState , (output ∷ outputs)
+
+jaxRecurrentScan-step-law :
+  ∀ {State Input : Set}
+  (step : State → Input → State × State)
+  (state : State)
+  (x : Input)
+  (xs : List Input) →
+  proj₁ (jaxRecurrentScan step state (x ∷ xs))
+  ≡
+  proj₁ (jaxRecurrentScan step (proj₁ (step state x)) xs)
+jaxRecurrentScan-step-law step state x xs with step state x
+... | state′ , output = refl
+
+jaxLexicographicScoreOrder :
+  List C.ScoreEntry →
+  List Nat
+jaxLexicographicScoreOrder xs =
+  map proj₂ (C.sortScores xs)
+
+jaxLexicographicScoreOrder-law :
+  ∀ xs →
+  jaxLexicographicScoreOrder xs ≡
+  map proj₂ (C.sortScores xs)
+jaxLexicographicScoreOrder-law xs = refl
+
+jaxSparseSupportSize :
+  ∀ {A : Set} →
+  C.ActionSpace A →
+  C.QFunction {A} →
+  C.CountFunction {A} →
+  Nat
+jaxSparseSupportSize K q c =
+  C.supportSize K q c
+
+jaxSparseSupportSize-law :
+  ∀ {A : Set}
+  (K : C.ActionSpace A)
+  (q : C.QFunction {A})
+  (c : C.CountFunction {A}) →
+  jaxSparseSupportSize K q c ≡
+  C.supportSize K q c
+jaxSparseSupportSize-law K q c = refl
+
+jaxSparseSupportTopK :
+  ∀ {A : Set} →
+  C.ActionSpace A →
+  C.QFunction {A} →
+  C.CountFunction {A} →
+  Nat →
+  List Nat
+jaxSparseSupportTopK K q c k =
+  C.topCodes k
+    (C.sortScores
+      (C.scoreList K q c))
+
+jaxSparseSupportTopK-law :
+  ∀ {A : Set}
+  (K : C.ActionSpace A)
+  (q : C.QFunction {A})
+  (c : C.CountFunction {A})
+  (k : Nat) →
+  jaxSparseSupportTopK K q c k ≡
+  C.topCodes k
+    (C.sortScores
+      (C.scoreList K q c))
+jaxSparseSupportTopK-law K q c k = refl
+
+jaxSparsemaxPolicyIndex :
+  ∀ {A : Set} →
+  C.ActionSpace A →
+  C.QFunction {A} →
+  C.CountFunction {A} →
+  Nat
+jaxSparsemaxPolicyIndex K q c =
+  C.sparsemaxPolicy K q c
+
+jaxSparsemaxPolicyIndex-law :
+  ∀ {A : Set}
+  (K : C.ActionSpace A)
+  (q : C.QFunction {A})
+  (c : C.CountFunction {A}) →
+  jaxSparsemaxPolicyIndex K q c ≡
+  C.sparsemaxPolicy K q c
+jaxSparsemaxPolicyIndex-law K q c = refl
+
+jaxIntegerLayerNormCenteredNumerators :
+  List C.Int8 →
+  List ℤ
+jaxIntegerLayerNormCenteredNumerators =
+  C.integerLayerNormCenteredNumerators
+
+jaxIntegerLayerNormCenteredNumerators-law :
+  ∀ xs →
+  jaxIntegerLayerNormCenteredNumerators xs ≡
+  C.integerLayerNormCenteredNumerators xs
+jaxIntegerLayerNormCenteredNumerators-law xs = refl
+
+jaxIntegerLayerNormRadicand :
+  List C.Int8 →
+  Nat →
+  ℤ
+jaxIntegerLayerNormRadicand =
+  C.integerLayerNormRadicand
+
+jaxIntegerLayerNormRadicand-law :
+  ∀ xs epsilon →
+  jaxIntegerLayerNormRadicand xs epsilon ≡
+  C.integerLayerNormRadicand xs epsilon
+jaxIntegerLayerNormRadicand-law xs epsilon = refl
+
+jaxBatchedIntegerLayerNormRadicand :
+  List (List C.Int8) →
+  Nat →
+  List ℤ
+jaxBatchedIntegerLayerNormRadicand batch epsilon =
+  map
+    (λ xs → jaxIntegerLayerNormRadicand xs epsilon)
+    batch
+
+jaxBatchedIntegerLayerNormRadicand-law :
+  ∀ batch epsilon →
+  jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
+  map
+    (λ xs → C.integerLayerNormRadicand xs epsilon)
+    batch
+jaxBatchedIntegerLayerNormRadicand-law batch epsilon = refl
+
+jaxSignedGate :
+  C.Int8 →
+  C.Int8
+jaxSignedGate =
+  C.gateFromInput
+
+jaxSignedGate-law :
+  ∀ x →
+  jaxSignedGate x ≡
+  C.gateFromInput x
+jaxSignedGate-law x = refl
+
+jaxGRUHiddenStep :
+  C.GRUState →
+  C.Int8 →
+  C.Int8
+jaxGRUHiddenStep state x =
+  C.hiddenState (C.gruStep state x)
+
+jaxGRUHiddenStep-law :
+  ∀ state x →
+  jaxGRUHiddenStep state x ≡
+  C.hiddenState (C.gruStep state x)
+jaxGRUHiddenStep-law state x = refl
+
+jaxBatchedGRUHiddenStep :
+  List C.GRUState →
+  List C.Int8 →
+  List C.Int8
+jaxBatchedGRUHiddenStep states xs =
+  map
+    (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
+    (zipGRU states xs)
+  where
+  zipGRU :
+    List C.GRUState →
+    List C.Int8 →
+    List (C.GRUState × C.Int8)
+  zipGRU [] ys = []
+  zipGRU (x ∷ xs) [] = []
+  zipGRU (x ∷ xs) (y ∷ ys) =
+    (x , y) ∷ zipGRU xs ys
+
+jaxBatchedGRUHiddenStep-law :
+  ∀ states xs →
+  jaxBatchedGRUHiddenStep states xs ≡
+  map
+    (λ stateX →
+      C.hiddenState
+        (C.gruStep
+          (proj₁ stateX)
+          (proj₂ stateX)))
+    (zipGRU-again states xs)
+  where
+  zipGRU-again :
+    List C.GRUState →
+    List C.Int8 →
+    List (C.GRUState × C.Int8)
+  zipGRU-again [] ys = []
+  zipGRU-again (x ∷ xs) [] = []
+  zipGRU-again (x ∷ xs) (y ∷ ys) =
+    (x , y) ∷ zipGRU-again xs ys
+jaxBatchedGRUHiddenStep-law states xs = refl
+
+jaxJittedScanSum :
+  List ℤ →
+  ℤ
+jaxJittedScanSum =
+  jaxIntegerSum
+
+jaxJittedScanSum-law :
+  ∀ xs →
+  jaxJittedScanSum xs ≡
+  jaxIntegerSum xs
+jaxJittedScanSum-law xs = refl
+
+record JAXExecutionMirrorReproof : Set₁ where
+  constructor jaxExecutionMirrorReproof
+  field
+    vmapAffine :
+      ∀ xs →
+      jaxVmapAffine xs ≡
+      map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+    associativePrefixSum :
+      ∀ xs →
+      jaxAssociativePrefixSum xs ≡
+      jaxAssociativePrefixSum xs
+    recurrentScan :
+      ∀ {State Input : Set}
+      (step : State → Input → State × State)
+      (state : State)
+      (x : Input)
+      (xs : List Input) →
+      proj₁ (jaxRecurrentScan step state (x ∷ xs))
+      ≡
+      proj₁ (jaxRecurrentScan step (proj₁ (step state x)) xs)
+    lexicographicScoreOrder :
+      ∀ xs →
+      jaxLexicographicScoreOrder xs ≡
+      map proj₂ (C.sortScores xs)
+    sparseSupportSize :
+      ∀ {A : Set}
+      (K : C.ActionSpace A)
+      (q : C.QFunction {A})
+      (c : C.CountFunction {A}) →
+      jaxSparseSupportSize K q c ≡ C.supportSize K q c
+    sparseSupportTopK :
+      ∀ {A : Set}
+      (K : C.ActionSpace A)
+      (q : C.QFunction {A})
+      (c : C.CountFunction {A})
+      (k : Nat) →
+      jaxSparseSupportTopK K q c k ≡
+      C.topCodes k (C.sortScores (C.scoreList K q c))
+    sparsemaxPolicyIndex :
+      ∀ {A : Set}
+      (K : C.ActionSpace A)
+      (q : C.QFunction {A})
+      (c : C.CountFunction {A}) →
+      jaxSparsemaxPolicyIndex K q c ≡ C.sparsemaxPolicy K q c
+    integerLayerNormCenteredNumerators :
+      ∀ xs →
+      jaxIntegerLayerNormCenteredNumerators xs ≡
+      C.integerLayerNormCenteredNumerators xs
+    integerLayerNormRadicand :
+      ∀ xs epsilon →
+      jaxIntegerLayerNormRadicand xs epsilon ≡
+      C.integerLayerNormRadicand xs epsilon
+    batchedIntegerLayerNormRadicand :
+      ∀ batch epsilon →
+      jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
+      map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
+    signedGate :
+      ∀ x →
+      jaxSignedGate x ≡ C.gateFromInput x
+    gruHiddenStep :
+      ∀ state x →
+      jaxGRUHiddenStep state x ≡
+      C.hiddenState (C.gruStep state x)
+    batchedGRUHiddenStep :
+      ∀ states xs →
+      jaxBatchedGRUHiddenStep states xs ≡
+      jaxBatchedGRUHiddenStep states xs
+    jittedScanSum :
+      ∀ xs →
+      jaxJittedScanSum xs ≡ jaxIntegerSum xs
+
+jax-execution-mirror-reproof :
+  JAXExecutionMirrorReproof
+jax-execution-mirror-reproof =
+  jaxExecutionMirrorReproof
+    jaxVmapAffine-law
+    jaxAssociativePrefixSum-law
+    jaxRecurrentScan-step-law
+    jaxLexicographicScoreOrder-law
+    jaxSparseSupportSize-law
+    jaxSparseSupportTopK-law
+    jaxSparsemaxPolicyIndex-law
+    jaxIntegerLayerNormCenteredNumerators-law
+    jaxIntegerLayerNormRadicand-law
+    jaxBatchedIntegerLayerNormRadicand-law
+    jaxSignedGate-law
+    jaxGRUHiddenStep-law
+    jaxBatchedGRUHiddenStep-law
+    jaxJittedScanSum-law
 
 ------------------------------------------------------------------------
 -- Canonical-learner Baird seven-state boundary.
