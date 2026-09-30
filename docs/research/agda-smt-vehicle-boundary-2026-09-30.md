@@ -8,7 +8,7 @@ This note defines the interoperability boundary for external SMT assistance and 
 
 Schmitty v1.0.1 supplies Agda SMT reflection and a Z3 backend. Its own integration examples use `{-# OPTIONS --allow-exec #-}` and `solveZ3`. That execution capability is deliberately isolated under `ProofAutomation/SchmittyAssisted.agda`.
 
-The CI lane therefore uses the Schmitty-compatible Agda 2.6.2.2 / standard-library 1.7.1 environment rather than changing the repository's canonical Agda 2.8.0.2 / standard-library 2.4 proof environment. The lane checks the Z3 executable and the external SMT proof, then separately runs the normal safe proof lanes.
+The CI lane therefore uses the Schmitty-compatible Agda 2.6.2.2 / standard-library 1.7.1 environment rather than changing the repository's canonical Agda 2.8.0.2 / standard-library 2.4 proof environment. Because this environment rejected --allow-exec when standard-library was loaded with the -l library flag, the lane pins the installed source directories with -i and keeps the SMT execution external to the safe theorem authority.
 
 The safe theorem surface does not import Schmitty. `TheoremsMonolith.agda` carries a `SchmittySafeSMTBoundaryTheorem` record whose witness is the existing safe `IntegerRingSolver` proof. The SMT run is evidence of an independent automation path, not a proof-authority substitution.
 
@@ -31,7 +31,11 @@ The Mercury graph continues to derive topology from `TheoremsMonolith.agda`. The
 The new CI lane is named `Schmitty`. It runs:
 ```sh
 Z3 -version
-AGDA_SCHMITTY_COMMAND --allow-exec -i . ProofAutomation/SchmittyAssisted.agda
+AGDA_SCHMITTY_COMMAND --allow-exec \
+  -i "$HOME/.agda/libraries.d/standard-library/v1.7.1/src" \
+  -i "$HOME/.agda/libraries.d/agdarsec/v0.5.0/src" \
+  -i "$HOME/.agda/libraries.d/schmitty/v1.0.1/src" \
+  -i . ProofAutomation/SchmittyAssisted.agda
 ```
 The regular `AgdaSafe` lane still checks:
 ```sh
