@@ -24,13 +24,13 @@ Typical workflow:
 2. Use Search About (`C-c C-z`) to locate definitions by domain/type vocabulary or name fragments.
 3. Place the cursor on the target hole and use Auto (`C-c C-a`) with explicit hints when needed.
 4. Copy the accepted term into the theorem source.
-5. Run the normal repository `--safe` check.
+5. Run the normal repository canonical-learner `--safe` check; the theorem monolith uses its explicit external-integration flags rather than a second Agda version.
 
 Search About is an interactive discovery tool. This repository does not treat its output, or Auto's interactive output, as CI proof authority.
 
 ## Presentation synchronization
 
-The Pages presentation is a separate surface from proof discovery. It is compiled directly from `site/Main.elm`, which lists the two canonical Agda monoliths as display metadata. No translator or generated Agda source is part of the presentation workflow.
+The theorem proof surface remains exactly two monoliths. The theorem monolith contains the scripted Schmitty and Vehicle imports; Pages is a separate static presentation. Mirth remains a fast-dirty synchronization source rather than a proof or Pages compiler dependency.
 
 ## Pinned toolchain
 
