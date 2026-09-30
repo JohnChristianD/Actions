@@ -1,4 +1,4 @@
-# Agda SMT automation and Vehicle boundary — 2026-09-30
+# Agda SMT automation and Vehicle boundary - 2026-09-30
 
 ## Scope
 
