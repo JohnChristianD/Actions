@@ -148,6 +148,25 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
     write_plan_items(Stream, Plans, !IO).
 
 
+:- pred write_string_items(
+    io.text_output_stream::in,
+    list(string)::in,
+    io::di, io::uo) is det.
+write_string_items(_, [], !IO).
+write_string_items(Stream, [Item | Items], !IO) :-
+    io.write_string(Stream, "    \"", !IO),
+    io.write_string(Stream, Item, !IO),
+    io.write_string(Stream, "\"", !IO),
+    (
+        Items = []
+    ->
+        true
+    ;
+        io.write_string(Stream, ",", !IO)
+    ),
+    io.write_string(Stream, "\n", !IO),
+    write_string_items(Stream, Items, !IO).
+
 :- pred extract_all_laws(
     list(semantic_law)::in,
     symbolic_egraph.egraph::in,
@@ -155,13 +174,18 @@ write_plan_items(Stream, [Plan | Plans], !IO) :-
     int::out) is det.
 extract_all_laws([], _, _, 0).
 extract_all_laws([Law | Laws], E, Depth, Cost) :-
-    add_expr(law_expr(law_id(Law)), E, Class, E1),
     (
-        if extract_best(Class, E1, Depth, _, ThisCost) then
-            extract_all_laws(Laws, E1, Depth, TailCost),
-            Cost = ThisCost + TailCost
+        if is_record_field(Law) then
+            extract_all_laws(Laws, E, Depth, Cost)
         else
-            Cost = 0
+            add_expr(law_expr(law_id(Law)), E, Class, E1),
+            (
+                if extract_best(Class, E1, Depth, _, ThisCost) then
+                    extract_all_laws(Laws, E1, Depth, TailCost),
+                    Cost = ThisCost + TailCost
+                else
+                    Cost = 0
+            )
     ).
 
 :- pred write_report(
@@ -170,13 +194,17 @@ extract_all_laws([Law | Laws], E, Depth, Cost) :-
     saturation_report::in,
     int::in,
     list(list(string))::in,
+    list(list(string))::in,
+    list(string)::in,
+    list(string)::in,
     int::in,
     int::in,
     int::in,
     bool::in,
     io::di, io::uo) is det.
 write_report(All, QuotientCount, Saturation, ExtractionCost,
-    Plans, ClosureRounds, ClosureBeforeEnodes, ClosureAfterEnodes,
+    Plans, FrontierPlans, DominanceEdges, PrunedTheorems,
+    ClosureRounds, ClosureBeforeEnodes, ClosureAfterEnodes,
     ClosureStable, !IO) :-
     NonReflexive = list.length(
         list.filter(
@@ -251,6 +279,52 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
         write_plan_items(Stream, Plans, !IO),
         io.write_string(Stream, "  ],
 ", !IO),
+        io.write_string(Stream, "  newNonredundantTheoremCount = 0,
+", !IO),
+        io.write_string(Stream, "  dominanceDetection = ", !IO),
+        (
+            DominanceEdges = []
+        ->
+            io.write_string(Stream, "False", !IO)
+        ;
+            io.write_string(Stream, "True", !IO)
+        ),
+        io.write_string(Stream, ",
+", !IO),
+        io.write_string(Stream, "  dominanceEdgeCount = ", !IO),
+        io.write_string(
+            Stream,
+            string.int_to_string(list.length(DominanceEdges)),
+            !IO),
+        io.write_string(Stream, ",
+", !IO),
+        io.write_string(Stream, "  dominanceEdges = [
+", !IO),
+        write_string_items(Stream, DominanceEdges, !IO),
+        io.write_string(Stream, "  ],
+", !IO),
+        io.write_string(Stream, "  prunedPublicTheoremCount = ", !IO),
+        io.write_string(
+            Stream,
+            string.int_to_string(list.length(PrunedTheorems)),
+            !IO),
+        io.write_string(Stream, ",
+", !IO),
+        io.write_string(Stream, "  prunedPublicTheorems = [
+", !IO),
+        write_string_items(Stream, PrunedTheorems, !IO),
+        io.write_string(Stream, "  ],
+", !IO),
+        io.write_string(Stream, "  reviewFrontierCount = ", !IO),
+        io.write_string(
+            Stream, string.int_to_string(list.length(FrontierPlans)), !IO),
+        io.write_string(Stream, ",
+", !IO),
+        io.write_string(Stream, "  reviewFrontierPlans = [
+", !IO),
+        write_plan_items(Stream, FrontierPlans, !IO),
+        io.write_string(Stream, "  ],
+", !IO),
         io.write_string(Stream,
             "  graphSearch = \"A* cost-guided dependency paths\",
 ",
@@ -316,13 +390,26 @@ resolve_graph_requirements(
             EndogenousPOMDPObservationPlan = []
     ).
 
+:- pred all_names_present(
+    list(string)::in,
+    list(string)::in) is semidet.
+all_names_present([], _).
+all_names_present([Name | Names], Candidates) :-
+    list.member(Name, Candidates),
+    all_names_present(Names, Candidates).
+
 main(!IO) :-
     read_semantic_laws(All, !IO),
     search_emergent_compositions(All, Plans),
     search_all_composite_law_plans(All, AutomaticCompositePlans),
     search_endogenous_composite_plans(All, EndogenousCompositePlans),
+    graph_review_frontier_plans(All, FrontierPlans),
+    graph_dominance_edges(All, DominanceEdges),
+    graph_dominated_public_theorems(All, DominatedTheorems),
+    PrunedTheorems = graph_pruned_public_theorem_names,
     AllGeneratedPlans =
-        Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans,
+        Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans
+        ++ FrontierPlans,
     resolve_graph_requirements(
         All,
         AutomaticCompositePlans,
@@ -338,7 +425,8 @@ main(!IO) :-
         EndogenousPOMDPObservationPlan),
     discovery_egraph_from_laws(All, EGraph0, QuotientCount),
     add_graph_plans(
-        Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans,
+        Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans
+        ++ FrontierPlans,
         EGraph0,
         EGraphGraph0),
     astar_egraph_fixed_point(
@@ -367,6 +455,10 @@ main(!IO) :-
             ClosureAfterEnodes >= ClosureBeforeEnodes,
             list.length(AutomaticCompositePlans) > 0,
             list.length(EndogenousCompositePlans) > 0,
+            list.length(FrontierPlans) = list.length(graph_review_frontier_names),
+            DominanceEdges = [],
+            all_names_present(PrunedTheorems, DominatedTheorems),
+            list.length(PrunedTheorems) = 2,
             list.length(RequiredPlans) = list.length(graph_required_theorems),
             list.length(RequiredSubcompositionPlans) = list.length(graph_required_subcompositions),
             list.length(FiniteObservationStationaryLimitPlan) > 0,
@@ -389,6 +481,9 @@ main(!IO) :-
                 Saturation,
                 ExtractionCost,
                 ClosedPlans,
+                FrontierPlans,
+                DominanceEdges,
+                PrunedTheorems,
                 ClosureRounds,
                 ClosureBeforeEnodes,
                 ClosureAfterEnodes,

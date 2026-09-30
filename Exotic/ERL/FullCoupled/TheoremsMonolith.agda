@@ -83,6 +83,157 @@ open import Effect.Monad.State using
 import Data.List.Effectful as ListEffectful
 open import Exotic.ERL.FullCoupled.CanonicalLearnerMonolith as C
 open +-*-Solver using (solve; _:*_; _:+_; con)
+open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
+open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
+open import Tactic.RingSolver as RingSolver using (solve-∀)
+open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
+open import Tactic.MonoidSolver as MonoidSolver using (solve)
+
+
+------------------------------------------------------------------------
+-- Safe solver-backed normalization surfaces.
+--
+-- Solver modules are imported by algebraic structure, not mechanically by
+-- every imported module.  Nat gets semiring/ring normalization, integers get
+-- ring normalization, and lists get monoid normalization through ++-monoid.
+-- Effect.Monad has no corresponding monad-law tactic in this stdlib surface;
+-- monad laws remain explicit semantic inputs where required.
+------------------------------------------------------------------------
+
+nat-ring-solver-layernorm-step :
+  ∀ (epsilon scale : Nat) →
+  (epsilon + suc zero) * scale ≡
+  (epsilon * scale) + scale
+nat-ring-solver-layernorm-step = NatRingSolver.solve-∀
+
+integer-ring-solver-assoc :
+  ∀ (i j k : ℤ) →
+  i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+integer-ring-solver-assoc = IntegerRingSolver.solve-∀
+
+list-monoid-solver-append-assoc :
+  ∀ (xs ys zs : List C.Int8) →
+  xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
+list-monoid-solver-append-assoc _ _ _ = MonoidSolver.solve ++-monoid
+
+generic-ring-solver-associativity :
+  ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
+  let open RingCore.AlmostCommutativeRing R in
+  ∀ x y z → x + (y + z) ≈ (x + y) + z
+generic-ring-solver-associativity R =
+  let open RingCore.AlmostCommutativeRing R in
+  RingSolver.solve-∀ R
+
+generic-ring-solver-distributivity :
+  ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
+  let open RingCore.AlmostCommutativeRing R in
+  ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
+generic-ring-solver-distributivity R =
+  let open RingCore.AlmostCommutativeRing R in
+  RingSolver.solve-∀ R
+
+record GenericRingSolverNormalizationTheorem {c ℓ}
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
+  constructor genericRingSolverNormalizationTheorem
+  field
+    associativity :
+      let open RingCore.AlmostCommutativeRing R in
+      ∀ x y z → x + (y + z) ≈ (x + y) + z
+    distributivity :
+      let open RingCore.AlmostCommutativeRing R in
+      ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
+
+generic-ring-solver-normalization-theorem :
+  ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
+  GenericRingSolverNormalizationTheorem R
+generic-ring-solver-normalization-theorem R =
+  genericRingSolverNormalizationTheorem
+    (generic-ring-solver-associativity R)
+    (generic-ring-solver-distributivity R)
+
+record NatRingSolverNormalizationTheorem : Set₁ where
+  constructor natRingSolverNormalizationTheorem
+  field
+    normalization :
+      ∀ (epsilon scale : Nat) →
+      (epsilon + suc zero) * scale ≡
+      (epsilon * scale) + scale
+
+nat-ring-solver-normalization-theorem :
+  NatRingSolverNormalizationTheorem
+nat-ring-solver-normalization-theorem =
+  natRingSolverNormalizationTheorem nat-ring-solver-layernorm-step
+
+record IntegerRingSolverNormalizationTheorem : Set₁ where
+  constructor integerRingSolverNormalizationTheorem
+  field
+    normalization :
+      ∀ (i j k : ℤ) →
+      i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+
+integer-ring-solver-normalization-theorem :
+  IntegerRingSolverNormalizationTheorem
+integer-ring-solver-normalization-theorem =
+  integerRingSolverNormalizationTheorem integer-ring-solver-assoc
+
+record ListMonoidSolverNormalizationTheorem : Set₁ where
+  constructor listMonoidSolverNormalizationTheorem
+  field
+    normalization :
+      ∀ (xs ys zs : List C.Int8) →
+      xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
+
+list-monoid-solver-normalization-theorem :
+  ListMonoidSolverNormalizationTheorem
+list-monoid-solver-normalization-theorem =
+  listMonoidSolverNormalizationTheorem list-monoid-solver-append-assoc
+
+record CanonicalAlgebraicTacticBackendTheorem : Set₁ where
+  constructor canonicalAlgebraicTacticBackendTheorem
+  field
+    genericRingNormalization :
+      ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
+      GenericRingSolverNormalizationTheorem R
+    natSemiringNormalization :
+      NatRingSolverNormalizationTheorem
+    integerRingNormalization :
+      IntegerRingSolverNormalizationTheorem
+    listMonoidNormalization :
+      ListMonoidSolverNormalizationTheorem
+
+canonical-algebraic-tactic-backend-theorem :
+  CanonicalAlgebraicTacticBackendTheorem
+canonical-algebraic-tactic-backend-theorem =
+  canonicalAlgebraicTacticBackendTheorem
+    generic-ring-solver-normalization-theorem
+    nat-ring-solver-normalization-theorem
+    integer-ring-solver-normalization-theorem
+    list-monoid-solver-normalization-theorem
+
+record CanonicalSafeTacticNormalizationTheorem : Set₁ where
+  constructor canonicalSafeTacticNormalizationTheorem
+  field
+    algebraicBackend :
+      CanonicalAlgebraicTacticBackendTheorem
+    natSemiringNormalization :
+      ∀ (epsilon scale : Nat) →
+      (epsilon + suc zero) * scale ≡
+      (epsilon * scale) + scale
+    integerRingNormalization :
+      ∀ (i j k : ℤ) →
+      i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+    listMonoidNormalization :
+      ∀ (xs ys zs : List C.Int8) →
+      xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
+
+canonical-safe-tactic-normalization-theorem :
+  CanonicalSafeTacticNormalizationTheorem
+canonical-safe-tactic-normalization-theorem =
+  canonicalSafeTacticNormalizationTheorem
+    canonical-algebraic-tactic-backend-theorem
+    nat-ring-solver-layernorm-step
+    integer-ring-solver-assoc
+    list-monoid-solver-append-assoc
 
 
 ------------------------------------------------------------------------
@@ -1429,30 +1580,23 @@ canonical-integer-layernorm-egraph-astar-infinite-horizon-stability-theorem =
 -- replacement laws into the new LayerNorm surface.
 ------------------------------------------------------------------------
 
+nat-ring-solver-layernorm-contribution :
+  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  (suc epsilon * length xs * length xs)
+  ≡
+  (epsilon * length xs * length xs)
+  + (length xs * length xs)
+nat-ring-solver-layernorm-contribution =
+  NatRingSolver.solve-∀
+
 integerLayerNorm-epsilon-contribution-suc :
   ∀ (xs : List C.Int8) (epsilon : Nat) →
   (suc epsilon * length xs * length xs)
   ≡
   (epsilon * length xs * length xs)
   + (length xs * length xs)
-integerLayerNorm-epsilon-contribution-suc xs epsilon =
-  trans
-    (cong
-      (λ k → k * length xs * length xs)
-      (sym plus-one))
-    (solve
-      2
-      (λ e n →
-        (e :+ con 1) :* n :* n
-        := (e :* n :* n) :+ (n :* n))
-      refl)
-  where
-  plus-one :
-    epsilon + suc zero ≡ suc epsilon
-  plus-one =
-    trans
-      (+-suc epsilon zero)
-      (cong suc (+-identityʳ epsilon))
+integerLayerNorm-epsilon-contribution-suc =
+  nat-ring-solver-layernorm-contribution
 
 integerLayerNorm-radicand-epsilon-zero :
   ∀ (xs : List C.Int8) →
@@ -1477,7 +1621,7 @@ integerLayerNorm-radicand-epsilon-suc xs epsilon =
         (+ n))
       (integerLayerNorm-epsilon-contribution-suc xs epsilon))
     (sym
-      (IntegerProperties.+-assoc
+      (integer-ring-solver-assoc
         (C.integerLayerNormVarianceNumerator xs)
         (+ (epsilon * length xs * length xs))
         (+ (length xs * length xs))))

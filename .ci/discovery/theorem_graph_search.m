@@ -84,6 +84,24 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_canonical_integer_layernorm_egraph_astar_infinite_horizon_stability_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_review_frontier_plans(
+    list(semantic_law)::in,
+    list(list(string))::out) is det.
+
+:- pred graph_dominance_edges(
+    list(semantic_law)::in,
+    list(string)::out) is det.
+
+:- pred graph_dominated_public_theorems(
+    list(semantic_law)::in,
+    list(string)::out) is det.
+
+:- func graph_pruned_public_theorem_names = list(string).
+
 :- pred graph_canonical_integer_layernorm_stability_growth_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
@@ -198,6 +216,7 @@ law_for_id(Id, [Law | Laws], Result) :-
 :- pred seed_node(semantic_law::in, graph_node::out) is semidet.
 seed_node(Law, Node) :-
     not is_reflexive(Law),
+    not is_record_field(Law),
     Node = graph_node([law_id(Law)]).
 
 :- pred seed_nodes(
@@ -381,6 +400,106 @@ search_named_required_plan(Name, Laws, Plan) :-
     astar_collect(Laws, [Seed], [], Results),
     first_plan(Results, Plan).
 
+:- func normalized_signature(string) = string.
+normalized_signature(Signature) =
+    string.join_list(" ", string.words(Signature)).
+
+:- pred record_field_dominates(
+    semantic_law::in,
+    list(semantic_law)::in,
+    string::out,
+    string::out) is semidet.
+record_field_dominates(Theorem, Laws, Container, FieldName) :-
+    not is_record_field(Theorem),
+    not is_reflexive(Theorem),
+    TheoremSignature = normalized_signature(law_signature(Theorem)),
+    TheoremSignature = "",
+    list.member(Field, Laws),
+    is_record_field(Field),
+    normalized_signature(law_signature(Field)) = TheoremSignature,
+    Container = law_container(Field),
+    Container = "",
+    law_for_name(Container, Laws, _),
+    FieldName = law_name(Field).
+
+:- pred dominance_edges_for_law(
+    semantic_law::in,
+    list(semantic_law)::in,
+    list(string)::in,
+    list(string)::out) is det.
+dominance_edges_for_law(Theorem, Laws, Acc0, Acc) :-
+    dominance_edges_for_law_2(Theorem, Laws, Acc0, Acc).
+
+:- pred dominance_edges_for_law_2(
+    semantic_law::in,
+    list(semantic_law)::in,
+    list(string)::in,
+    list(string)::out) is det.
+dominance_edges_for_law_2(_, [], Acc, Acc).
+dominance_edges_for_law_2(Theorem, [Field | Fields], Acc0, Acc) :-
+    (
+        if record_field_dominates(
+            Theorem, [Field | Fields], Container, FieldName)
+        then
+            Edge = string.join_list(
+                "",
+                [Container, " -> ", law_name(Theorem),
+                 " [field ", FieldName, "]"]),
+            (
+                if list.member(Edge, Acc0) then
+                    Acc1 = Acc0
+                else
+                    Acc1 = [Edge | Acc0]
+            )
+        else
+            Acc1 = Acc0
+    ),
+    dominance_edges_for_law_2(Theorem, Fields, Acc1, Acc).
+
+graph_dominance_edges(Laws, Edges) :-
+    graph_dominance_edges_2(Laws, Laws, [], Reversed),
+    list.reverse(Reversed, Edges).
+
+:- pred graph_dominance_edges_2(
+    list(semantic_law)::in,
+    list(semantic_law)::in,
+    list(string)::in,
+    list(string)::out) is det.
+graph_dominance_edges_2([], _, Acc, Acc).
+graph_dominance_edges_2([Law | Laws], All, Acc0, Acc) :-
+    dominance_edges_for_law(Law, All, Acc0, Acc1),
+    graph_dominance_edges_2(Laws, All, Acc1, Acc).
+
+graph_dominated_public_theorems(Laws, Names) :-
+    graph_dominated_public_theorems_2(Laws, Laws, [], Reversed),
+    list.reverse(Reversed, Names).
+
+:- pred graph_dominated_public_theorems_2(
+    list(semantic_law)::in,
+    list(semantic_law)::in,
+    list(string)::in,
+    list(string)::out) is det.
+graph_dominated_public_theorems_2([], _, Acc, Acc).
+graph_dominated_public_theorems_2([Law | Laws], All, Acc0, Acc) :-
+    (
+        if record_field_dominates(Law, All, _, _) then
+            (
+                if list.member(law_name(Law), Acc0) then
+                    Acc1 = Acc0
+                else
+                    Acc1 = [law_name(Law) | Acc0]
+            )
+        else
+            Acc1 = Acc0
+    ),
+    graph_dominated_public_theorems_2(Laws, All, Acc1, Acc).
+
+:- func graph_pruned_public_theorem_names = list(string).
+graph_pruned_public_theorem_names = [
+    "integerLayerNorm-egraph-astar-eventual-semantic-closure",
+    "integerLayerNorm-egraph-astar-infinite-stable-tail"
+].
+
 :- pred search_composite_law_plans(
     list(semantic_law)::in,
     list(semantic_law)::out) is det.
@@ -388,7 +507,7 @@ search_composite_law_plans([], []).
 search_composite_law_plans([Law | Laws], Result) :-
     search_composite_law_plans(Laws, Tail),
     (
-        if is_composite(Law) then
+        if is_composite(Law), not is_record_field(Law) then
             Result = [Law | Tail]
         else
             Result = Tail
@@ -479,6 +598,16 @@ graph_required_theorems = [
         "CanonicalExactRNNLMTheorem",
     "CanonicalGlobalTokenLMCompositionTheorem",
     "CanonicalIntegerHaarScaledOrthogonalityTheorem",
+    "GenericRingSolverNormalizationTheorem",
+    "NatRingSolverNormalizationTheorem",
+    "IntegerRingSolverNormalizationTheorem",
+    "ListMonoidSolverNormalizationTheorem",
+    "CanonicalAlgebraicTacticBackendTheorem",
+    "CanonicalSafeTacticNormalizationTheorem",
+    "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
+    "AStarPlanMonoidTheorem",
+    "CanonicalTokenArbitraryLengthGenerationTheorem",
+    "NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem",
     "CanonicalAStarCostGuidanceTheorem",
     "CanonicalEndogenousEGraphAStarTransportClosureTheorem",
     "CanonicalFiniteCycleExclusionIsomorphismTheorem",
@@ -621,6 +750,76 @@ graph_integer_layernorm_epsilon_ray_growth_plan(Laws, Plan) :-
         "IntegerLayerNormEpsilonRayGrowthTheorem",
         Laws,
         Plan).
+
+graph_canonical_integer_layernorm_egraph_astar_infinite_horizon_stability_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
+        Laws,
+        Plan).
+
+graph_generic_ring_solver_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "GenericRingSolverNormalizationTheorem",
+        Laws,
+        Plan).
+
+graph_nat_ring_solver_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "NatRingSolverNormalizationTheorem",
+        Laws,
+        Plan).
+
+graph_integer_ring_solver_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "IntegerRingSolverNormalizationTheorem",
+        Laws,
+        Plan).
+
+graph_list_monoid_solver_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ListMonoidSolverNormalizationTheorem",
+        Laws,
+        Plan).
+
+graph_canonical_algebraic_tactic_backend_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalAlgebraicTacticBackendTheorem",
+        Laws,
+        Plan).
+
+graph_canonical_safe_tactic_normalization_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalSafeTacticNormalizationTheorem",
+        Laws,
+        Plan).
+
+:- func graph_review_frontier_names = list(string).
+graph_review_frontier_names = [
+    "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
+    "AStarPlanMonoidTheorem",
+    "CanonicalTokenArbitraryLengthGenerationTheorem",
+    "NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem"
+].
+
+graph_review_frontier_plans(Laws, Plans) :-
+    search_named_plans(
+        Laws,
+        graph_review_frontier_names,
+        Plans).
+
+:- pred search_named_plans(
+    list(semantic_law)::in,
+    list(string)::in,
+    list(list(string))::out) is det.
+search_named_plans(_, [], []).
+search_named_plans(Laws, [Name | Names], Plans) :-
+    search_named_plans(Laws, Names, Tail),
+    (
+        if search_named_required_plan(Name, Laws, Plan) then
+            Plans = [Plan | Tail]
+        else
+            Plans = Tail
+    ).
 
 graph_canonical_integer_layernorm_stability_growth_plan(Laws, Plan) :-
     search_named_required_plan(

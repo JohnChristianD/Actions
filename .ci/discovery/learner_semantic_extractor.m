@@ -6,6 +6,10 @@
 :- import_module io.
 :- import_module list.
 
+:- type semantic_kind
+    ---> semantic_top_level
+    ;   semantic_record_field.
+
 :- type semantic_law
     ---> semantic_law(
         source :: string,
@@ -13,7 +17,9 @@
         reflexive :: bool,
         composite :: bool,
         signature :: string,
-        dependencies :: list(string)
+        dependencies :: list(string),
+        kind :: semantic_kind,
+        container :: string
     ).
 
 :- pred extract_semantics(io::di, io::uo) is det.
@@ -23,8 +29,11 @@
 :- func law_name(semantic_law) = string.
 :- func law_signature(semantic_law) = string.
 :- func law_dependencies(semantic_law) = list(string).
+:- func law_kind(semantic_law) = semantic_kind.
+:- func law_container(semantic_law) = string.
 :- pred is_reflexive(semantic_law::in) is semidet.
 :- pred is_composite(semantic_law::in) is semidet.
+:- pred is_record_field(semantic_law::in) is semidet.
 
 :- implementation.
 
@@ -37,8 +46,20 @@
         source_file :: string,
         name :: string,
         signature :: string,
-        body :: string
+        body :: string,
+        kind :: semantic_kind,
+        container :: string
     ).
+
+:- type record_field_scan_state
+    ---> outside_record
+    ;   record_waiting_for_fields(string)
+    ;   record_fields(string)
+    ;   field_collecting(
+            string,
+            string,
+            list(string)
+        ).
 
 :- type scan_state
     ---> idle
@@ -231,12 +252,166 @@ scan_lines(Source, [Line | Rest], State0, Acc0, Out) :-
 finalize_state(_, idle, Acc, Acc).
 finalize_state(Source, signature_state(Name, SigRev), Acc, Out) :-
     Signature = string.join_list(" ", list.reverse(SigRev)),
-    Out = [semantic_decl(Source, Name, Signature, "") | Acc].
+    Out = [
+        semantic_decl(
+            Source, Name, Signature, "",
+            semantic_top_level, "") | Acc].
 finalize_state(Source, body_state(Name, SigRev, BodyRev), Acc, Out) :-
     Signature = string.join_list(" ", list.reverse(SigRev)),
     Body = string.join_list(" ", list.reverse(BodyRev)),
-    Out = [semantic_decl(Source, Name, Signature, Body) | Acc].
+    Out = [
+        semantic_decl(
+            Source, Name, Signature, Body,
+            semantic_top_level, "") | Acc].
 
+
+:- pred leading_space_count(string::in, int::out) is det.
+leading_space_count(Line, Count) :-
+    leading_space_count_2(string.to_char_list(Line), 0, Count).
+
+:- pred leading_space_count_2(list(char)::in, int::in, int::out) is det.
+leading_space_count_2([], Count, Count).
+leading_space_count_2([C | Cs], Count0, Count) :-
+    (
+        if char.is_whitespace(C) then
+            leading_space_count_2(Cs, Count0 + 1, Count)
+        else
+            Count = Count0
+    ).
+
+:- pred record_field_header(
+    string::in, string::out, string::out) is semidet.
+record_field_header(Line, Name, SignatureFragment) :-
+    leading_space_count(Line, Indent),
+    Indent >= 4,
+    first_word(Line, Candidate),
+    Candidate = "field",
+    not syntax_head(Candidate),
+    string.sub_string_search(Line, ":", _),
+    Parts = string.split_at_string(":", Line),
+    Parts = [_, After | _],
+    Name = Candidate,
+    SignatureFragment = string.strip(After).
+
+:- pred parse_record_field_lines(
+    string::in,
+    list(string)::in,
+    record_field_scan_state::in,
+    list(semantic_decl)::in,
+    list(semantic_decl)::out) is det.
+parse_record_field_lines(Source, [], State, Acc, Out) :-
+    finalize_record_field_state(Source, State, Acc, Out).
+parse_record_field_lines(Source, [Line | Rest], State0, Acc0, Out) :-
+    (
+        top_level_line(Line)
+    ->
+        finalize_record_field_state(Source, State0, Acc0, Acc1),
+        (
+            if top_level_record_header(Line, RecordName, _) then
+                parse_record_field_lines(
+                    Source, Rest,
+                    record_waiting_for_fields(RecordName),
+                    Acc1, Out)
+            else
+                parse_record_field_lines(
+                    Source, Rest, outside_record, Acc1, Out)
+        )
+    ;
+        (
+            State0 = outside_record,
+            parse_record_field_lines(
+                Source, Rest, outside_record, Acc0, Out)
+        ;
+            State0 = record_waiting_for_fields(RecordName),
+            (
+                if first_word(Line, "field") then
+                    parse_record_field_lines(
+                        Source, Rest, record_fields(RecordName), Acc0, Out)
+                else
+                    parse_record_field_lines(
+                        Source, Rest,
+                        record_waiting_for_fields(RecordName),
+                        Acc0, Out)
+            )
+        ;
+            State0 = record_fields(RecordName),
+            (
+                if record_field_header(Line, FieldName, Fragment) then
+                    parse_record_field_lines(
+                        Source, Rest,
+                        field_collecting(
+                            RecordName, FieldName, [Fragment]),
+                        Acc0, Out)
+                else
+                    parse_record_field_lines(
+                        Source, Rest,
+                        record_fields(RecordName),
+                        Acc0, Out)
+            )
+        ;
+            State0 = field_collecting(RecordName, FieldName, SigRev),
+            (
+                if record_field_header(Line, NextField, Fragment) then
+                    finalize_record_field_state(
+                        Source,
+                        field_collecting(
+                            RecordName, FieldName, SigRev),
+                        Acc0, Acc1),
+                    parse_record_field_lines(
+                        Source, Rest,
+                        field_collecting(
+                            RecordName, NextField, [Fragment]),
+                        Acc1, Out)
+                else
+                    parse_record_field_lines(
+                        Source, Rest,
+                        field_collecting(
+                            RecordName, FieldName,
+                            [string.strip(Line) | SigRev]),
+                        Acc0, Out)
+            )
+        )
+    ).
+
+:- pred finalize_record_field_state(
+    string::in,
+    record_field_scan_state::in,
+    list(semantic_decl)::in,
+    list(semantic_decl)::out) is det.
+finalize_record_field_state(_, outside_record, Acc, Acc).
+finalize_record_field_state(_, record_waiting_for_fields(_), Acc, Acc).
+finalize_record_field_state(_, record_fields(_), Acc, Acc).
+finalize_record_field_state(
+    Source,
+    field_collecting(RecordName, FieldName, SigRev),
+    Acc,
+    Out) :-
+    Signature = string.join_list(" ", list.reverse(SigRev)),
+    QualifiedName = string.append(
+        string.append(RecordName, "."), FieldName),
+    (
+        Signature = ""
+    ->
+        Out = [
+            semantic_decl(
+                Source,
+                QualifiedName,
+                Signature,
+                "",
+                semantic_record_field,
+                RecordName) | Acc]
+    ;
+        Out = Acc
+    ).
+
+:- pred parse_record_fields(
+    string::in,
+    list(string)::in,
+    list(semantic_decl)::out) is det.
+parse_record_fields(Source, Lines, Decls) :-
+    parse_record_field_lines(
+        Source, Lines, outside_record, [], Rev),
+    list.reverse(Rev, Decls).
 
 :- pred theorem_monolith_is_safe(io::di, io::uo) is det.
 theorem_monolith_is_safe(!IO) :-
@@ -274,7 +449,15 @@ read_all_sources([File | Files], Acc, Result, !IO) :-
             File,
             Lines,
             Decls),
-        read_all_sources(Files, Decls ++ Acc, Result, !IO)
+        parse_record_fields(
+            File,
+            Lines,
+            FieldDecls),
+        read_all_sources(
+            Files,
+            FieldDecls ++ Decls ++ Acc,
+            Result,
+            !IO)
     ;
         ReadResult = error(Error),
         Result = error(Error)
@@ -325,7 +508,8 @@ find_dependencies(Source, Name, Body, [D | Ds], Acc0, Acc) :-
     list(semantic_law)::out) is det.
 semantic_laws_from_declarations(_, [], []).
 semantic_laws_from_declarations(All, [D | Ds], [Law | Laws]) :-
-    D = semantic_decl(Source, Name, Signature, _),
+    D = semantic_decl(
+        Source, Name, Signature, _, Kind, Container),
     (
         semantic_reflexive(D)
         -> Reflexive = yes
@@ -339,7 +523,14 @@ semantic_laws_from_declarations(All, [D | Ds], [Law | Laws]) :-
         ; Composite = no
     ),
     Law = semantic_law(
-        Source, Name, Reflexive, Composite, Signature, Dependencies),
+        Source,
+        Name,
+        Reflexive,
+        Composite,
+        Signature,
+        Dependencies,
+        Kind,
+        Container),
     semantic_laws_from_declarations(All, Ds, Laws).
 
 is_reflexive(semantic_law(_, _, yes, _, _, _)).
@@ -350,6 +541,11 @@ law_id(Law) = string.append(string.append(law_source(Law), "#"), law_name(Law)).
 law_name(Law) = Law ^ name.
 law_signature(Law) = Law ^ signature.
 law_dependencies(Law) = Law ^ dependencies.
+law_kind(Law) = Law ^ kind.
+law_container(Law) = Law ^ container.
+
+is_record_field(Law) :-
+    law_kind(Law) = semantic_record_field.
 
 read_semantic_laws(Laws, !IO) :-
     theorem_monolith_is_safe(!IO),
