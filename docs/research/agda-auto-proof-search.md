@@ -17,7 +17,7 @@ Repository policy:
 
 Search About is Agda's scope-aware definition search. Invoke it with `C-c C-z`. It accepts space-separated identifiers and string literals, then returns in-scope definitions whose types contain the requested identifiers and whose names match the supplied string-literal substrings.
 
-Use Search About before Auto when the problem is primarily “which existing definition should I try?”; use Auto when the candidate definitions are known or discoverable and the remaining task is to assemble a term.
+Use Search About before Auto when the problem is primarily "which existing definition should I try?"; use Auto when the candidate definitions are known or discoverable and the remaining task is to assemble a term.
 
 Typical workflow:
 1. Start the pinned interactive session with `bash tools/agda-auto-session.sh Exotic/ERL/FullCoupled/TheoremsMonolith.agda`.
