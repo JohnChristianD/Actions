@@ -36,9 +36,9 @@ view _ =
                     , text " is the only semantic and proof authority."
                     ]
                 , link "Canonical learner"
-                    "https://github.com/JohnChristianD/Actions/blob/main/Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda"
+                    "https://github.com/JohnChristianD/Actions/blob/main/Exotic/FullCoupled/CanonicalLearnerMonolith.agda"
                 , link "Theorem monolith"
-                    "https://github.com/JohnChristianD/Actions/blob/main/Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+                    "https://github.com/JohnChristianD/Actions/blob/main/Exotic/FullCoupled/TheoremsMonolith.agda"
                 ]
             , panel "Discovery"
                 [ p []
@@ -91,6 +91,6 @@ link label url =
 
 agdaModules : List String
 agdaModules =
-    [ "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith"
-    , "Exotic.ERL.FullCoupled.TheoremsMonolith"
+    [ "Exotic.FullCoupled.CanonicalLearnerMonolith"
+    , "Exotic.FullCoupled.TheoremsMonolith"
     ]
