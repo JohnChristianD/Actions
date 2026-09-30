@@ -5,7 +5,7 @@ let lane = env:CI_LANE
 let script = merge {
   AgdaLearner = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --version | grep -Fq "2.7.0.1"
+    "$AGDA_COMMAND" --version | grep -Fq "2.8.0"
     "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
@@ -15,7 +15,7 @@ let script = merge {
     '',
   AgdaSafe = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --version | grep -Fq "2.7.0.1"
+    "$AGDA_COMMAND" --version | grep -Fq "2.8.0"
     "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   Vehicle = ''
