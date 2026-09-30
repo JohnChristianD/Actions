@@ -131,7 +131,7 @@ The current tracked proof surface is intentionally limited to the two Agda monol
 
 Generated from the current tracked Markdown surface.
 
-### Research
+### Repository documentation
 
 - [Agda proof search in this repository](docs/agda-auto-proof-search.md)
 - [Agda SMT automation and Vehicle boundary - 2026-09-30](docs/agda-smt-vehicle-boundary-2026-09-30.md)
