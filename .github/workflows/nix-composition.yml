@@ -84,6 +84,14 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
+      - name: Resolve pinned Nix Z3
+        id: nix-z3
+        run: |
+          set -euo pipefail
+          z3_path="$(nix develop .#default -c bash -euo pipefail -c 'command -v z3')"
+          test -x "$z3_path"
+          echo "path=$z3_path" >> "$GITHUB_OUTPUT"
+          echo "$(dirname "$z3_path")" >> "$GITHUB_PATH"
       - uses: wenkokke/setup-agda@v2
         id: setup-agda
         with:
@@ -93,12 +101,7 @@ jobs:
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
           agda-executables: |
-            z3
-      - name: Add pinned Nix Z3 to PATH
-        run: |
-          set -euo pipefail
-          nix develop .#default -c bash -euo pipefail -c 'dirname "$(command -v z3)"' >> "$RUNNER_TEMP/z3-dir"
-          echo "$(cat "$RUNNER_TEMP/z3-dir")" >> "$GITHUB_PATH"
+            ${{ steps.nix-z3.outputs.path }}
       - name: Run Schmitty-assisted SMT witness
         timeout-minutes: 10
         env:
