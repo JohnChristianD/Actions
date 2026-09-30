@@ -1,97 +1,165 @@
 # Actions
 
-Actions is a mechanically checked Agda system for one canonical recurrent learner and the theorem, search, execution, and presentation layers built around that learner. The repository deliberately separates proof authority from automation and execution: Agda proves the semantic statements; Mercury, Dhall, Mirth, Nix, Elm, SMT, Vehicle, and JAX support verification, discovery, orchestration, or presentation without silently becoming proof authority.
+Actions is a mechanically checked Agda system centered on one canonical recurrent learner. Agda proof terms are the semantic authority. Mercury, Dhall, Mirth, Nix, SMT, Vehicle, JAX, and Elm are supporting layers for dependency analysis, CI contracts, synchronization, execution, automation, or presentation.
 
-## Exact repository authority
+## Authority and active tree
 
-There are exactly two tracked Agda authority files:
+Exactly two Agda source files are tracked:
 
 - `FullCoupled/CanonicalLearnerMonolith.agda`
 - `FullCoupled/TheoremsMonolith.agda`
 
-The learner monolith defines the concrete state and transition functions. The theorem monolith is the only derived-semantic consumer of that learner and imports it in one direction only.
+The learner monolith is the executable/type-level source of the canonical learner. The theorem monolith is the only derived-semantic consumer and imports the learner in one direction only.
 
-The active Agda tree has no `Exotic` namespace. The only directory retained without an application child namespace is `.github`, which is a platform convention.
+The active Agda tree contains no `Exotic` namespace. The remaining namespace-only directory is `.github`, which is a platform convention.
 
-The authority order is Agda proof terms first, then Mercury theorem/dependency analysis, Dhall CI contracts, pinned toolchain composition, Mirth synchronization, and finally pure Elm presentation. Generated output, graph edges, solver suggestions, numerical execution, and UI text do not become theorems merely because they passed a supporting check.
+Agda proof terms are authoritative. A graph edge, e-graph equivalence, solver result, generated Elm file, JAX execution result, or UI statement does not become a theorem without an accepted Agda term.
 
-## Canonical learner surface
+## Canonical learner
 
-The learner monolith contains the concrete `FullLearnerState`, `GRUState`, optimizer state, count state, Q-log/control state, sparse policy readout, recurrent transition, and full learner transition `canonicalFullStep`.
+The learner monolith defines the concrete state and transition surface:
 
-Important executable definitions include `gruStep`, `persistentGRU`, `integerLayerNormCenteredNumerators`, `integerLayerNormRadicand`, `scoreList`, `sortScores`, `topCodes`, `searchSupport`, `supportSize`, `sparsemaxWeight`, `selectPositive`, `sparsemaxPolicy`, `canonicalFullStep`, and `iterateCanonical`.
+- GRU state and `gruStep`
+- persistent matrix/noise/control tail and `persistentGRU`
+- Watkins critic and trace state
+- LCB counts and bonuses
+- F4/L2 optimizer state
+- q-log/control state
+- sparsemax score ordering and support search
+- `sparsemaxWeight`, `selectPositive`, and `sparsemaxPolicy`
+- `canonicalFullStep` and `iterateCanonical`
+- integer LayerNorm numerators and radicand
+- recurrent/token and linear-Haar structures
 
-The persistent GRU tail is structural: `persistent-preservation` proves that the matrix/noise/control channels are unchanged by each GRU step, and the iterate-level theorem carries that persistence through the concrete full learner.
-
-The count component is explicit and advances with the learner. The canonical full step therefore has a real state transition rather than an implicit mathematical placeholder.
+The persistent GRU tail is structural rather than empirical: the learner proves one-step preservation and the theorem surface carries that fact through full-learner iteration.
 
 ## GRU left inverse, injectivity, convergence, and identifiability
 
-The canonical statistical observation explicitly contains the original `GRUState`. The decoder is the first projection.
+The canonical statistical observation stores the original `GRUState`. Decoding by first projection gives a definitional left inverse.
 
-The proof chain is concrete and accepted by Agda:
+The accepted proof chain is:
 
-`canonicalGRUStatisticalDecodeEncode` proves the left inverse definitionally;
+`canonicalGRUStatisticalDecodeEncode`
 
-`canonicalGRUStatisticalEncodeLeftInverse` exposes that fact as the named left-inverse theorem;
+then
 
-`leftInverse-implies-injective` proves the general implication from a left inverse to injectivity;
+`canonicalGRUStatisticalEncodeLeftInverse`
 
-`canonicalGRUStatisticalEncodeInjective` instantiates that implication for the canonical GRU statistical encoding;
+then the general implication
 
-`CanonicalGRUStatisticalInjectivityTheorem` packages the encoding, decoder, left inverse, and injectivity into one theorem record.
+`leftInverse-implies-injective`
 
-This is encoding injectivity. It is not a claim that the recurrent transition `gruStep` is injective.
+then the concrete theorem
 
-The reusable `GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem` is separate. It requires three explicit premises: injective encoding, exact state/feature step conjugacy, and an eventually fixed feature tail. From those premises it derives a tail-fixed source state, eventual stationarity, and identifiability. The theorem is a reusable kernel; it does not invent physical or economic interpretation.
+`canonicalGRUStatisticalEncodeInjective`.
+
+The packaged theorem is `CanonicalGRUStatisticalInjectivityTheorem`.
+
+This proves injectivity of the observation encoding. It does not prove that the recurrent transition `gruStep` is injective.
+
+The reusable `GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem` consumes three explicit premises: an injective encoding, exact state/feature step conjugacy, and an eventually fixed feature tail. It derives tail-fixed source state, eventual stationarity, and identifiability. It does not manufacture physics, economics, or Baird witnesses.
+
+## Hidden-Synergy L1, 1-path norm, and sparsity surface
+
+The repository now retains a dedicated finite formal surface for the hidden-synergy material instead of leaving the historical definitions only in Git history.
+
+The paper behind the hidden-synergy request is Aditya Biswas, “Hidden Synergy: L1 Weight Normalization and 1-Path-Norm Regularization.” Its near-sparsity discussion is Shannon-entropy based; Tsallis-2 is therefore kept here as a separate exact formal extension rather than being relabeled as the paper's original near-sparsity definition. The paper centers L1 weight normalization and 1-path-norm regularization as the regularization structure.
+
+The active theorem surface restores:
+
+- `rowL1`
+- `weightL1`
+- `onePathVector`
+- `onePathNorm`
+- `rowL1OnesAbs`
+- `onePathOneLayer`
+- `HiddenSynergyNormPair`
+- `layerNormPair`
+- `hiddenSynergy-one-layer-exact`
+
+The canonical hard/soft sparsity degeneration is retained and packaged as `CanonicalHardSparsityDegeneracyTheorem`. It is the exact zero-threshold equivalence between:
+
+`HardSparse K s`
+
+and
+
+`SoftSparseBounded K s zero`.
+
+The generalized finite Tsallis-2 extension is also explicit:
+
+- `ActionWeights`
+- `actionSupportCount`
+- `actionWeightSum`
+- `actionWeightSquareSum`
+- `generalTsallis2Denominator`
+- `generalTsallis2Numerator`
+- `generalTsallis2NearSparsity`
+- `generalTsallis2NearSparsity-zero`
+- `generalTsallis2NearSparsity-definition`
+- `generalSupportSparsity`
+- `UniformSupportTsallisBoundary`
+
+For a finite nonnegative weight family with total mass S, squared mass Q, and dimension d, the exact finite extension records the rational quantity `(d Q - S²) / (d Q)`, with an explicit zero-vector convention. The uniform-support record isolates the equality condition needed to connect weighted effective support to hard support cardinality.
+
+The finite Agda layer is exact. Continuous entropy, Lipschitz, differentiability, and convexity claims remain separate proof obligations rather than being inferred from those finite equalities. citeturn219666academia0
 
 ## Canonical-learner Baird boundary
 
-No generic arbitrary-state, arbitrary-weight, or arbitrary-update Baird theorem remains.
+No generic arbitrary-state, arbitrary-weight, or arbitrary-update Baird theorem remains in the active proof surface.
 
-The surviving declaration is `CanonicalLearnerBairdSevenStarBoundary K s`. It is indexed by the actual `CanonicalFullLearnerKernel` and actual `CanonicalFullLearnerState`. Its fields fix the seven-state/eight-feature construction, 6/7 versus 1/7 behavior split, solid target policy, zero reward, 99/100 discount factor, and the upper/lower feature equations. It also carries the already-proved persistent-GRU tail invariant for `iterateCanonical`.
+The surviving construction is:
 
-Its divergence conclusion is an explicit witness field:
+`CanonicalLearnerBairdSevenStarBoundary K s`
 
-`divergenceWitness` states that no globally eventually fixed canonical-full-learner state is supplied by that witness.
+with the concrete canonical learner kernel and state as parameters.
 
-This is therefore a Baird boundary for the already-defined learner, not a generic Baird package.
+Its record fixes the seven-state/eight-feature setup, behavior probabilities 6/7 and 1/7, solid target behavior, zero reward, 99/100 discount, the upper-state representation `2 * wᵢ + w₈`, the lower-state representation `w₇ + 2 * w₈`, the already-proved persistent-GRU iterate tail, and an explicit divergence witness.
 
-## Physics and economics remain explicit
+The divergence statement is supplied at this concrete learner boundary. Generic Baird records were pruned rather than being reused as a false universal theorem.
 
-Physics and economics were not removed.
+## Physics and economics
 
-The theorem monolith still contains the Hodge-Maxwell and four-law semantic interfaces, GRU/physics transport, production structures, demand and supply structures, aggregate excess-demand kernels, supporting-price and market-clearing witnesses, Walrasian interfaces, stationary/fixed-point closures, and economic composition results.
+Physics and economics remain present.
 
-Earlier redundant wrapper endpoints were pruned where the stronger closure already contained the same semantic payload. The retained economic closures now use the actual stationary, equilibrium, representation, and e-graph premises instead of duplicating thin wrapper theorems.
+The theorem monolith still includes Hodge-Maxwell and four-law semantic interfaces, GRU/physics transport, production structures, individual and aggregate demand/supply, excess-demand constructions, supporting-price and market-clearing witnesses, Walrasian interfaces, stationary and fixed-point closures, and economic composition.
 
-No physics or economic correspondence is inferred merely from the generic GRU convergence or injectivity kernel. The relevant semantic bridges remain explicit Agda premises and proofs.
+Redundant thin wrapper endpoints were pruned where stronger closures already carried the semantic payload. The underlying physics and economics definitions were not deleted.
 
-## PPAD-completeness boundary
+The GRU injectivity, convergence, or identifiability kernel does not create those domain correspondences. Exact transport and interpretation conditions remain explicit Agda premises.
 
-The repository does not claim a PPAD-completeness theorem.
+## PPAD boundary
 
-The current proof surface contains fixed-point and equilibrium machinery, but fixed-point vocabulary alone is not a PPAD result. A genuine PPAD-completeness proof would need a concrete polynomial-size search relation, totality, membership in PPAD, explicit polynomial encoding/size bounds, and a reduction establishing hardness. Those proof objects are not present, so no PPAD-completeness label is promoted.
+The repository does not claim PPAD-completeness.
 
-This is an explicit proof boundary, not an omitted implementation detail.
+Fixed-point and equilibrium constructions are present, but a PPAD-completeness theorem requires a concrete total polynomial-size search relation, an explicit polynomial encoding bound, membership in PPAD, and a hardness reduction. Those proof objects are not currently promoted as theorem authority.
 
-## List, Monoid, Monad, Set, and finite maps
+## Data-structure choices
 
-The concrete learner uses `List` where the object is actually a finite ordered sequence: score entries, token sequences, candidate traces, plans, and similar finite data.
+`List` is appropriate where the object is actually a finite ordered sequence: score entries, token sequences, candidate traces, plans, and similar data.
 
-`Monoid` is used for algebraic laws such as append associativity and identities. It describes structure on a carrier; it does not replace a concrete list carrier.
+`Monoid` expresses algebraic structure and laws over a carrier, such as append associativity and identities. It does not replace the concrete carrier.
 
-`Set` is Agda's proposition-level universe for predicates, relations, and theorem statements. It is foundational to the proof surface rather than a sequence container.
+`Set` is the proposition/predicate/relations layer used throughout the Agda theorem surface.
 
-`Monad` is used at effect/state boundaries, such as the operational A* search surface. It is not used as a substitute for the underlying list or theorem carrier.
+`Monad` is used at operational effect/state boundaries, such as stateful A* surfaces. It is not a substitute for the underlying list or theorem carrier.
 
-A finite-map/`Dict` layer is not currently justified by a theorem requirement. Adding one would introduce lookup and finite-key machinery without improving an existing proof boundary. A vector or `Fin`-indexed carrier becomes useful only when sequence length itself must be proof-relevant.
+A finite-map or `Dict` layer is not currently justified by a proof obligation. A vector or `Fin`-indexed carrier becomes useful when the sequence length itself must be proof-relevant.
 
-## JAX execution mirror and Agda reproof surface
+## JAX execution mirror
 
-`tools/jax_reference.py` is a JAX-only execution mirror. Its third-party runtime surface is JAX itself: `jax`, `jax.numpy`, and `jax.lax`. It does not import NumPy as a separate package, Flax, Optax, SciPy, or another ML framework.
+`tools/jax_reference.py` is the only Python execution boundary.
 
-The mirror covers every current JAX function:
+Its import surface is JAX itself:
+
+`jax`
+
+`jax.numpy`
+
+`jax.lax`
+
+No separate NumPy, SciPy, Flax, Optax, or other ML framework is imported.
+
+The current executable JAX kernels are:
 
 - `vmap_affine`
 - `associative_prefix_sum`
@@ -100,6 +168,11 @@ The mirror covers every current JAX function:
 - `sparse_support_size`
 - `sparse_support_top_k`
 - `sparsemax_policy_index`
+- `l1_row`
+- `l1_matrix`
+- `one_path_norm`
+- `tsallis2_near_sparsity_fraction`
+- `support_sparsity_fraction`
 - `integer_layernorm_centered_numerators`
 - `integer_layernorm_radicand`
 - `batched_integer_layernorm_radicand`
@@ -108,80 +181,97 @@ The mirror covers every current JAX function:
 - `batched_gru_hidden_step`
 - `jitted_scan_sum`
 
-The JAX algorithms prefer array-native execution where it is materially better: `vmap` for independent maps, `lax.scan` for recurrent state, `lax.associative_scan` for associative prefixes, `jnp.lexsort` for deterministic score ordering, one sorted prefix pass for sparse support, `lax.top_k` only for fixed-`k` specialization, and exact `int64` arithmetic for the integer kernels.
+The array algorithms use native JAX execution where that reduces redundant traversal: `vmap` for independent maps, `lax.associative_scan` for associative prefixes, `lax.scan` for recurrence and the 1-path matrix chain, `jnp.lexsort` for deterministic order, one ordered prefix pass for sparse support, `lax.top_k` only for fixed-k specialization, fused reduction for L1 quantities, and exact JAX `int64` arithmetic for the integer kernels.
 
-The JAX execution lane is separate from the Nix/Dhall/Mirth toolchain. Python is not included in the Nix development shell and is not used by the Mirth, Agda integration-sync, ASCII, or README shell helpers. The dedicated JAX workflow supplies the Python runtime required by JAX and installs the single pinned JAX package for that lane.
+The theorem monolith mirrors every one of these current JAX functions with named Agda counterparts in `JAXExecutionMirrorReproof`, including the newly restored L1, 1-path, Tsallis-2, and support-sparsity kernels.
 
-The theorem monolith contains a typed Agda counterpart/reproof surface for all of those computational functions, collected in `JAXExecutionMirrorReproof`. The Agda surface proves the corresponding finite computational laws and exact equivalences to the canonical learner definitions. It does not pretend to prove the behavior of the Python interpreter, JAX's compiler, `jit`, or shape tracer by reflection.
+The Agda layer proves the finite computational laws and exact relations to the canonical definitions. It does not claim to prove the Python interpreter, the JAX compiler, `jit`, or shape-tracing implementation itself.
 
-## Mirth, C99, Nix, and Elm
+The dedicated JAX workflow is the only place where a Python runtime is required. The Nix development shell, Dhall CI helpers, shell helpers, and Mirth programs contain no Python runtime or Python package dependency. CI explicitly guards this separation.
 
-Mirth sources are used for fast-dirty generation and synchronization:
+## Mercury graph and Mirth graph
 
-- `.ci/mirth/agda_to_elm.mth`
-- `.ci/mirth/ascii_surface.mth`
-- `.ci/mirth/agda_import_sync.mth`
+Mercury contains the semantic dependency/A* graph and e-graph analysis. Its required theorem registry is reconciled against the active Agda theorem monolith; stale historical Tsallis/Hodge/Walrasian requirement names are not kept as active theorem targets.
 
-The Agda import synchronizer uses the learner's common import block as the source of truth. It checks exact block equality, checks the single learner-to-theorem cross-monolith import, and checks the external SMT/Z3/Vehicle import counts.
+The Mercury review frontier remains a curated semantic frontier. It is not the same artifact as the exhaustive declaration relation graph.
 
-Mirth compiles its source to C99 for these checks. Nix supplies the pinned compiler/toolchain environment; it is not a replacement for C99 and is not described as one.
+The exhaustive declaration graph is generated by `.ci/mirth/agda_graph.mth`. That generator reads both active Agda monoliths, extracts top-level declarations, scans declaration bodies for references to known declarations, builds source-tagged directed edges, deduplicates and sorts the result, and emits a generated Elm module named `GeneratedAgdaGraph`.
 
-The Pages application is pure Elm. `site/Main.elm` contains presentation only: it does not define learner semantics, theorem proofs, or a runtime dependency on Mermaid.
+The graph is generated concurrently at the source-extraction and edge-extraction stages. It is deterministic after sorting and duplicate elimination. It is a declaration-reference graph, not an Agda elaborator; accepted Agda proof terms remain the authority.
 
-## CI and verification contracts
+## Mirth synchronization and concurrency
 
-The repository contracts cover:
+`.ci/mirth/agda_import_sync.mth` treats the learner common-import block as the source of truth.
 
-- exactly two tracked Agda monoliths;
-- canonical learner safety checking;
-- theorem checking with the external SMT and Vehicle interfaces;
+It checks:
+
+- exactly one begin marker and one end marker in each monolith;
+- byte-identical common import blocks;
+- no learner-to-theorem back-edge;
+- exactly one canonical learner import in the theorem monolith;
+- exact Schmitty, Z3 backend, and Vehicle import counts.
+
+Its independent predicates run concurrently under `wait`, with failure aggregation. Its write mode uses an atomic directory lock with bounded retry, so two writers cannot rewrite the theorem import block simultaneously.
+
+The ASCII and graph Mirth programs follow the same compile-then-execute pattern. Their C99 executables are never treated as proof authority.
+
+## Pure Elm GitHub Pages presentation
+
+The Pages application remains pure Elm.
+
+`site/Main.elm` is presentation-only. It does not execute Agda, JAX, Mirth, Mercury, or solver code at runtime.
+
+The Pages workflow first generates `GeneratedAgdaGraph.elm` from the two Agda monoliths through Mirth/C99, then compiles the Elm program against that generated graph data.
+
+The presentation supports:
+
+- declaration-name search;
+- learner/theorem source filtering;
+- selected-node inspection;
+- complete incoming and outgoing recorded relations for the selected declaration;
+- an SVG neighborhood graph;
+- counts of declarations and relations;
+- direct source navigation within the Elm application.
+
+No Mermaid runtime dependency is required.
+
+The graph therefore behaves like a Mermaid-style interactive relation view while keeping the executable page pure Elm and the graph data generated directly from the current Agda source.
+
+## Repository contracts
+
+The verification surface enforces:
+
+- exactly two tracked Agda files;
+- Agda 2.8.0 and standard library 2.3;
 - exact learner-to-theorem import direction;
-- GRU statistical left-inverse and injectivity theorem names;
-- the canonical-learner-specific Baird boundary;
-- physics/economics theorem surfaces and explicit semantic bridges;
-- Mercury purity and theorem-registry checks;
-- Mirth import synchronization and ASCII synchronization;
-- link-free Markdown outside the Elm presentation;
-- flattened Agda paths and the absence of stale `Exotic` source paths;
-- pure Elm compilation and Pages verification;
-- JAX execution-mirror compilation and shape checking;
+- Mirth import synchronization and concurrency checks;
+- generated Agda declaration graph generation;
+- Mercury purity and theorem-registry reconciliation;
+- physics/economics semantic surfaces;
+- canonical-learner-only Baird boundary;
+- GRU left-inverse and injectivity theorem surface;
+- JAX-only Python execution boundary;
+- JAX execution and shape checks;
+- link-free Markdown outside the Elm application;
+- absence of stale `Exotic` source paths;
+- pure Elm Pages compilation;
 - pinned Nix composition.
 
 ## Documentation
 
-The public Markdown surface is intentionally link-free. Navigation links are kept inside the Elm presentation where they belong.
+The Markdown surface is deliberately link-free. Navigation belongs in the Elm presentation.
 
 Tracked detailed documents:
 
 - `docs/agda-auto-proof-search.md`
 - `docs/agda-smt-vehicle-boundary-2026-09-30.md`
 
-The proof-search document records the concrete left-inverse/injectivity workflow, the canonical Baird boundary, and the JAX/Agda execution boundary.
+The proof-search document covers theorem authority, left-inverse/injectivity construction, Baird specialization, the L1/1-path/Tsallis formal boundary, and the JAX/Agda execution mirror.
 
-The SMT/Vehicle document records the external automation boundary, import synchronization, canonical tail stability, the canonical Baird proof boundary, PPAD non-claim, physics/economics status, and the JAX mirror/reproof architecture.
+The SMT/Vehicle document covers external automation boundaries, import synchronization, Mirth concurrency, graph generation, Python/JAX isolation, Baird specialization, physics/economics status, and the PPAD boundary.
 
 ## Research-status discipline
 
-The repository can establish repository-level theorems and exact implementation equivalences through accepted Agda proof terms. Graph interlinks may reveal useful composition paths. Neither graph discovery nor the existence of a new composition theorem by itself establishes scholarly novelty.
+A repository-level theorem is established by its accepted Agda proof term. Mercury graph discovery, e-graph saturation, JAX execution, or an Elm visualization can reveal relations and validate implementations, but they cannot independently promote a conjectured edge to theorem status.
 
-The GRU injectivity/conjugacy/tail-stability composition is therefore documented as a formal repository result and semantic interlink. A literature-backed novelty claim would require an independent comparison against prior work.
-
-<!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: b7e0e1d5b2abbd461d1d484513a6a86aeec218ef
-unprocessed-commit-count: 0
-
-The scheduled updater accounts for every commit since the previous processed commit.
-ascii-safe-commit-subjects: true
-<!-- END RECENT COMMIT TOTALITY -->
-
-<!-- BEGIN GENERATED DOCUMENTATION INDEX -->
-
-Generated from the tracked Markdown surface: 2 files.
-The root README is the GitHub-facing entry point; detailed evidence remains in the tracked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
-
-### Repository documentation
-
-- docs/agda-auto-proof-search.md — Agda proof search in this repository
-- docs/agda-smt-vehicle-boundary-2026-09-30.md — Agda SMT automation and Vehicle boundary — 2026-09-30
-
-<!-- END GENERATED DOCUMENTATION INDEX -->
+The new GRU injectivity/conjugacy/tail-stability composition is therefore recorded as a formal repository result. It is not described as scholarly novelty without an independent literature comparison.
