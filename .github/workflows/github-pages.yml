@@ -63,8 +63,8 @@ jobs:
             elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
             test -s "${RUNNER_TEMP}/pages/elm.js"
             dhall type --file "${GITHUB_WORKSPACE}/.ci/presentation-contract.dhall" >/dev/null
-            grep -Fq "module Exotic.FullCoupled.CanonicalLearnerMonolith" "${GITHUB_WORKSPACE}/Exotic/FullCoupled/CanonicalLearnerMonolith.agda"
-            grep -Fq "module Exotic.FullCoupled.TheoremsMonolith" "${GITHUB_WORKSPACE}/Exotic/FullCoupled/TheoremsMonolith.agda"
+            grep -Fq "module FullCoupled.CanonicalLearnerMonolith" "${GITHUB_WORKSPACE}/FullCoupled/CanonicalLearnerMonolith.agda"
+            grep -Fq "module FullCoupled.TheoremsMonolith" "${GITHUB_WORKSPACE}/FullCoupled/TheoremsMonolith.agda"
           '
 
       - name: Create Pages shell
