@@ -17,8 +17,8 @@ No graph edge, generated report, solver answer, model weight, or UI artifact is 
 
 Exactly two tracked Agda modules are authoritative:
 
-- `Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda`
-- `Exotic/ERL/FullCoupled/TheoremsMonolith.agda`
+- `Exotic/FullCoupled/CanonicalLearnerMonolith.agda`
+- `Exotic/FullCoupled/TheoremsMonolith.agda`
 
 The theorem monolith directly consumes the pinned Schmitty and Vehicle Agda interfaces. Schmitty supplies SMT/Z3 automation. Vehicle supplies its Agda reflection/interface boundary. Neither library becomes a second semantic authority.
 
