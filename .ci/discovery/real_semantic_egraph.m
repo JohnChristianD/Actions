@@ -20,6 +20,7 @@ frontier_targets = [
     "CanonicalIntegerGRUGlobalConjugateTheorem",
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "GRUFractalLimitConvergenceWitness",
+    "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
     "StationaryLimitTheorem",
     "ContinuousLeftInverseTheorem"
 ].
