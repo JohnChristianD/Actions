@@ -79,8 +79,7 @@
   foundational_zero_dependency_policy = {
     rule = "Do not fabricate edges for problem specifications or foundational records.",
     examples = [
-      "BairdSevenStarProblem",
-      "NonIIDMarkovWalrasianProblem",
+            "NonIIDMarkovWalrasianProblem",
       "Majority3ShapleyEquilibrium"
     ],
     handling = "They remain proof-surface/problem records until a real composed theorem consumes their semantics."
