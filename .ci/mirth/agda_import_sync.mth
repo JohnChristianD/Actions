@@ -1,0 +1,158 @@
+module actions.agda_import_sync
+
+import std.prelude
+import std.world
+
+def main {
+    "#!/usr/bin/env bash
+set -euo pipefail
+
+mode=${1:---check}
+case "$mode" in
+  --check|--write) ;;
+  *) echo "usage: agda-import-sync --check|--write" >&2; exit 2 ;;
+esac
+
+learner="Exotic/FullCoupled/CanonicalLearnerMonolith.agda"
+theorem="Exotic/FullCoupled/TheoremsMonolith.agda"
+
+python3 - "$mode" "$learner" "$theorem" <<'PY'
+from pathlib import Path
+import sys
+
+mode, learner_name, theorem_name = sys.argv[1:]
+learner = Path(learner_name)
+theorem = Path(theorem_name)
+
+COMMON = r'''-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Mirth-generated contract: this exact block is shared by both monoliths.
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
+open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-decTotalOrder)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+import Data.Integer.Properties as IntegerProperties
+open import Level using (0ℓ)
+open import Data.List.Base using (List; []; _∷_; map; length)
+open import Data.List.Sort as Sort
+open import Relation.Binary.Bundles using (DecTotalOrder)
+open import Relation.Binary.Construct.On as On
+import Relation.Binary.Construct.Flip.EqAndOrd as Flip
+open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m≡m)
+open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
+open import Relation.Nullary using (¬_)
+-- END MIRTH-SYNC COMMON IMPORTS'''
+
+THEOREM_EXTRA = r'''-- BEGIN THEOREM-SPECIFIC IMPORTS
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
+open import Data.Integer using (_≤_) renaming (_≤_ to _≤ℤ_)
+open import Data.List.Base using (_++_)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Agda.Builtin.Bool using (Bool; true; false)
+open import Agda.Builtin.String using (String)
+open import Algebra.Bundles using (Monoid)
+open import Data.List.Properties using (++-monoid)
+open import Data.Nat.Solver using (module +-*-Solver)
+open import Effect.Monad using (RawMonad)
+open import Effect.Monad.State using
+  (State; RawMonadState; StateMonad; StateMonadState)
+import Data.List.Effectful as ListEffectful
+open import Exotic.FullCoupled.CanonicalLearnerMonolith as C
+open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
+open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
+open import Tactic.RingSolver as RingSolver using (solve-∀)
+open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
+open import Tactic.MonoidSolver as MonoidSolver using (solve)
+-- END THEOREM-SPECIFIC IMPORTS'''
+
+EXTERNAL = r'''------------------------------------------------------------------------
+-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
+-- Synced by .ci/sync-agda-integrations.sh; keep this block in the
+-- theorem monolith and do not materialize a third Agda source file.
+------------------------------------------------------------------------
+
+import SMT.Theories.Ints as Ints
+open import SMT.Backend.Z3 Ints.theory
+import Vehicle
+
+------------------------------------------------------------------------
+-- END SCRIPTED EXTERNAL AGDA IMPORTS
+------------------------------------------------------------------------'''
+
+def replace_block(text: str, begin: str, end: str, replacement: str) -> str:
+    start = text.index(begin)
+    stop = text.index(end, start) + len(end)
+    return text[:start] + replacement + text[stop:]
+
+learner_text = learner.read_text(encoding="utf-8")
+theorem_text = theorem.read_text(encoding="utf-8")
+
+learner_text = replace_block(
+    learner_text,
+    "-- BEGIN MIRTH-SYNC COMMON IMPORTS",
+    "-- END MIRTH-SYNC COMMON IMPORTS",
+    COMMON,
+)
+theorem_text = replace_block(
+    theorem_text,
+    "-- BEGIN MIRTH-SYNC COMMON IMPORTS",
+    "-- END MIRTH-SYNC COMMON IMPORTS",
+    COMMON,
+)
+theorem_text = replace_block(
+    theorem_text,
+    "-- BEGIN THEOREM-SPECIFIC IMPORTS",
+    "-- END THEOREM-SPECIFIC IMPORTS",
+    THEOREM_EXTRA,
+)
+
+if mode == "--write":
+    learner.write_text(learner_text, encoding="utf-8")
+    theorem.write_text(theorem_text, encoding="utf-8")
+
+for path, text in ((learner, learner_text), (theorem, theorem_text)):
+    if text.count("-- BEGIN MIRTH-SYNC COMMON IMPORTS") != 1:
+        raise SystemExit(f"{path}: common import marker count is wrong")
+    common_slice = text.split("-- BEGIN MIRTH-SYNC COMMON IMPORTS", 1)[1].split("-- END MIRTH-SYNC COMMON IMPORTS", 1)[0]
+    expected_slice = COMMON.split("-- BEGIN MIRTH-SYNC COMMON IMPORTS", 1)[1].split("-- END MIRTH-SYNC COMMON IMPORTS", 1)[0]
+    if common_slice != expected_slice:
+        raise SystemExit(f"{path}: common import block is stale")
+
+learner_imports = [line.strip() for line in learner_text.splitlines() if line.strip().startswith(("open import ", "import "))]
+theorem_imports = [line.strip() for line in theorem_text.splitlines() if line.strip().startswith(("open import ", "import "))]
+
+if any(line.startswith("open import Exotic.FullCoupled.") or line.startswith("import Exotic.FullCoupled.") for line in learner_imports):
+    raise SystemExit("learner monolith must not depend on theorem monolith")
+cross = "open import Exotic.FullCoupled.CanonicalLearnerMonolith as C"
+if theorem_imports.count(cross) != 1:
+    raise SystemExit("theorem monolith must have exactly one directed canonical learner import")
+
+for line in theorem_imports:
+    if (line.startswith("open import Exotic.FullCoupled.") or line.startswith("import Exotic.FullCoupled.")) and line != cross:
+        raise SystemExit(f"unexpected cross-monolith import: {line}")
+
+if theorem_text.count("-- BEGIN THEOREM-SPECIFIC IMPORTS") != 1:
+    raise SystemExit("theorem-specific import marker count is wrong")
+extra_slice = theorem_text.split("-- BEGIN THEOREM-SPECIFIC IMPORTS", 1)[1].split("-- END THEOREM-SPECIFIC IMPORTS", 1)[0]
+expected_extra_slice = THEOREM_EXTRA.split("-- BEGIN THEOREM-SPECIFIC IMPORTS", 1)[1].split("-- END THEOREM-SPECIFIC IMPORTS", 1)[0]
+if extra_slice != expected_extra_slice:
+    raise SystemExit("theorem-specific import block is stale")
+
+if theorem_text.count("import SMT.Theories.Ints as Ints") != 1:
+    raise SystemExit("Schmitty Int theory must have exactly one import")
+if theorem_text.count("open import SMT.Backend.Z3 Ints.theory") != 1:
+    raise SystemExit("Schmitty Z3 backend must have exactly one import")
+if theorem_text.count("import Vehicle") != 1:
+    raise SystemExit("Vehicle import must have exactly one import")
+
+print("mirth-agda-import-sync=pass")
+print("shared-import-block=byte-identical")
+print("theorem-only-import-block=canonical")
+print("cross-monolith-dependency=learner-to-theorem-only")
+PY
+" print
+}
