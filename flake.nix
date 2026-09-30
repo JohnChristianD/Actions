@@ -120,7 +120,7 @@
                 tmp=$(mktemp -d)
                 trap 'rm -rf "$tmp"' EXIT
                 mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
-                cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface" | bash
+                cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
                 "$tmp/ascii-surface"
               '';
             };
