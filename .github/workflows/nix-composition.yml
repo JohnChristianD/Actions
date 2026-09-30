@@ -97,6 +97,11 @@ jobs:
             https://github.com/wenkokke/schmitty.git#v1.0.1
           agda-executables: |
             z3
+      - name: Add pinned Nix Z3 to PATH
+        run: |
+          set -euo pipefail
+          nix develop .#default -c bash -euo pipefail -c 'dirname "$(command -v z3)"' >> "$RUNNER_TEMP/z3-dir"
+          echo "$(cat "$RUNNER_TEMP/z3-dir")" >> "$GITHUB_PATH"
       - name: Run Schmitty-assisted SMT witness
         timeout-minutes: 10
         env:
@@ -104,7 +109,8 @@ jobs:
           CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -euo pipefail -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c dhall text --file .ci/actions_ci.dhall > "$RUNNER_TEMP/schmitty.sh"
+          bash "$RUNNER_TEMP/schmitty.sh"
 
   mercury:
     name: Mercury theorem-only e-graph
