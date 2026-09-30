@@ -297,14 +297,17 @@ The GitHub Pages build installs Nix before entering the pinned flake environment
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 7d4d6a727ff8741d426202e615e9205a19290df3
-unprocessed-commit-count: 2
+last-processed-commit: 74ff52bccb3cbcb7dc75a2d6ff00fdbaa709f380
+unprocessed-commit-count: 5
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `7d4d6a727ff8` fix: resync documentation and GitHub Pages presentation
-- `e9576fb6a628` docs: refresh README from commit totality
+- `74ff52bccb3c` fix: compile Mirth output before Pages execution
+- `d9e6e7084823` fix: execute compiled Mirth Pages generator
+- `5f6d34c46540` fix: simplify Mirth Pages synchronization surface
+- `8cc80d64d080` fix: narrow Mirth Pages contract to pinned compiler surface
+- `ef0a4f41aa63` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
