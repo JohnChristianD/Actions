@@ -2,7 +2,11 @@
   description = "Pinned Nix environment for the Agda kernel, Mercury e-graph, and typed Dhall CI scripting";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee1263483043c0e50321eb4ec7ae";
+    nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee126348304c0e50321eb4ec7ae";
+    vehicle = {
+      url = "github:vehicle-lang/vehicle/dev";
+      flake = false;
+    };
   };
 
   outputs = { self, nixpkgs, vehicle }:
