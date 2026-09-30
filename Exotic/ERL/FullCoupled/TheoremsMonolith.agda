@@ -4466,12 +4466,11 @@ gruInjectiveTailStability-tailFixedPoint W s with featureTailStable W s
       (trans
         (cong
           featureStep
-          (sym
-            (iterateConjugacy
-              encode
-              (stepConjugacy W)
-              n
-              s)))
+          (iterateConjugacy
+            encode
+            (stepConjugacy W)
+            n
+            s))
         (trans
           tail
           (sym
