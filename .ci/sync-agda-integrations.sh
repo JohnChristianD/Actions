@@ -19,6 +19,26 @@ import Vehicle
 ------------------------------------------------------------------------
 '
 
+extract() {
+  awk '
+    /^------------------------------------------------------------------------$/ && getline line {
+      if (line == "-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS") {
+        print "------------------------------------------------------------------------"
+        print line
+        while ((getline line) > 0) {
+          print line
+          if (line == "-- END SCRIPTED EXTERNAL AGDA IMPORTS") {
+            getline line
+            print line
+            exit
+          }
+        }
+        exit 1
+      }
+    }
+  ' "$1"
+}
+
 case "${1:-}" in
   --check)
     test -f "$theorem"
@@ -28,34 +48,36 @@ case "${1:-}" in
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda" || { echo "Schmitty Z3 backend is missing"; exit 1; }
     test -n "${AGDARSEC_AGDA_SOURCE:-}" || { echo "AGDARSEC_AGDA_SOURCE is required"; exit 2; }
     test -d "$AGDARSEC_AGDA_SOURCE" || { echo "agdarsec source is missing"; exit 1; }
-    python3 - "$theorem" "$expected" <<'PY'
-from pathlib import Path
-import sys
-
-path, expected = sys.argv[1], sys.argv[2]
-text = Path(path).read_text(encoding="utf-8")
-if expected.strip() not in text:
-    raise SystemExit("scripted external Agda import block is stale")
-print("agda-external-imports=pass")
-PY
+    actual=$(extract "$theorem")
+    test "$actual" = "${expected#$'\\n'}" || {
+      printf '%s\n' "$actual"
+      echo "scripted external Agda import block is stale" >&2
+      exit 1
+    }
+    echo "agda-external-imports=pass"
     ;;
   --write)
-    python3 - "$theorem" "$expected" <<'PY'
-from pathlib import Path
-import sys
-
-path, expected = sys.argv[1], sys.argv[2]
-text = Path(path).read_text(encoding="utf-8")
-begin = text.index("------------------------------------------------------------------------
--- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS")
-end_marker = "------------------------------------------------------------------------
--- END SCRIPTED EXTERNAL AGDA IMPORTS
-------------------------------------------------------------------------"
-end = text.index(end_marker, begin) + len(end_marker)
-updated = text[:begin] + expected.rstrip() + text[end:]
-Path(path).write_text(updated, encoding="utf-8")
-print("scripted external Agda import block updated")
-PY
+    tmp=$(mktemp)
+    trap 'rm -f "$tmp" "$theorem.tmp"' EXIT
+    printf '%s\n' "$expected" > "$tmp"
+    awk -v replacement="$tmp" '
+      /^------------------------------------------------------------------------$/ && !inside && getline line {
+        if (line == "-- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS") {
+          while ((getline repl < replacement) > 0) print repl
+          while ((getline line) > 0) {
+            if (line == "-- END SCRIPTED EXTERNAL AGDA IMPORTS") {
+              getline line
+              break
+            }
+          }
+          while ((getline line) > 0) print line
+          next
+        }
+      }
+      { print }
+    ' "$theorem" > "$theorem.tmp"
+    mv "$theorem.tmp" "$theorem"
+    echo "scripted external Agda import block updated"
     ;;
   *)
     echo "usage: $0 --check|--write" >&2
