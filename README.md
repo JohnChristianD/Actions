@@ -182,7 +182,38 @@ exact learner laws
   -/-> equilibrium existence
 ```
 
-The production-side vocabulary is aligned with established formal-economics terminology, while the learner/economic interface records exactly where independent economic assumptions enter.\n\nThe exact policy topology now separates `canonicalBehaviorPolicy : Nat → SparseWeight` from the selected-action `canonicalPolicy`. The cross-domain representation layer remains `Set`-polymorphic, while genuinely finite theorem surfaces may retain `Fin n` where finiteness is part of the proposition.
+The production-side vocabulary is aligned with established formal-economics terminology, while the learner/economic interface records exactly where independent economic assumptions enter.
+
+### Nash existence, tail stability, and convergence closure
+
+Nash's theorem gives existence of a mixed-strategy equilibrium for every finite strategic-form game. That is an equilibrium-existence theorem for the specified game object; it does not by itself identify the repository's GRU update, MARL law, Maxwell solution operator, or economic aggregate operator with the game's best-response/fixed-point correspondence.
+
+For this repository, the intended closure is:
+
+```
+finite-game Nash existence
+        |
+        v
+Nash/fixed-point witness for the selected economic or MARL operator
+        |
+        +--> exact GRU / Hodge-Maxwell state transport
+        |
+        +--> exact GRU step conjugacy
+        |
+        +--> eventual GRU tail stability
+        |
+        +--> limit/iterate transport
+        |
+        v
+convergent represented trajectory
+        |
+        +--> fixed point / stationary law when the limiting law is preserved
+        |
+        +--> economic equilibrium when the Nash witness is for that same
+             economic operator and the economic interpretation bridge is supplied
+```
+
+The current `NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem` already composes GRU statistical injectivity, the MARL learner semantics, the Hodge-Maxwell representation, the four-law witness, and exact iterate transport. Its semantic input `B` remains an explicit witness of the physical closure rather than a consequence of Nash existence. Likewise, `StationaryLimitTheorem` requires the transition law, convergence, and preservation of the limiting point. Those are the precise bridge fields for turning a Nash/fixed-point existence result plus the GRU tail into an economic convergence/equilibrium theorem.\n\nThe exact policy topology now separates `canonicalBehaviorPolicy : Nat → SparseWeight` from the selected-action `canonicalPolicy`. The cross-domain representation layer remains `Set`-polymorphic, while genuinely finite theorem surfaces may retain `Fin n` where finiteness is part of the proposition.
 
 ## SMT automation and Vehicle boundary
 
@@ -287,7 +318,7 @@ Two LayerNorm helper declarations are kept as Agda proof ingredients but pruned 
 
 ### Mirth fast-dirty boundary
 
-Mirth remains a tracked integration/orchestration/synchronization/scripting layer for fast-dirty repository work. `.ci/mirth/agda_to_elm.mth` is retained as the source-level synchronization contract, and the flake exposes Mirth in the development environment. Its compiler/transpile-to-C99 path is explicitly unsupported by this repository and is not used as a CI verification dependency. C99 is the ISO C language revision standardized in 1999; this repository does not claim a supported Mirth-to-C99-to-native executable pipeline.
+Mirth remains a tracked integration/orchestration/synchronization/scripting layer for fast-dirty repository work. `.ci/mirth/agda_to_elm.mth` is retained as the source-level synchronization contract, and the flake exposes Mirth in the development environment. Its documented compiler path is the supported fast-dirty execution route here: `mirthc` emits C99, and the Nix-provided C compiler turns that generated C99 into the native synchronizer executable. nixpkgs packages `mirthc` as Mirth's main program and describes Mirth as compiling to C99.
 
 ### Pages presentation boundary
 
