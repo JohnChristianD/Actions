@@ -68,6 +68,24 @@
             type = "app";
             program = "${script}/bin/mirth-fast-dirty-source";
           };
+          mirth-c99-sync = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-c99-sync";
+              runtimeInputs = [ pkgs.mirth pkgs.stdenv.cc pkgs.coreutils ];
+              text = ''
+                set -euo pipefail
+                test "$#" = 1
+                output="$1"
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+                mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
+                cc -std=c99 "$tmp/agda-to-elm.c" -o "$output"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-c99-sync";
+          };
           vehicle = {
             type = "app";
             program = "${vehiclePackage}/bin/vehicle";
