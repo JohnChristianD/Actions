@@ -56,12 +56,13 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 3 files.
+Generated from the tracked Markdown surface: 4 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Research
 
 - [Agda proof search in this repository](docs/research/agda-auto-proof-search.md)
+- [Agda SMT automation and Vehicle boundary — 2026-09-30](docs/research/agda-smt-vehicle-boundary-2026-09-30.md)
 
 ### Repository documentation
 
@@ -303,17 +304,21 @@ The GitHub Pages build installs Nix before entering the pinned flake environment
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 74ff52bccb3cbcb7dc75a2d6ff00fdbaa709f380
-unprocessed-commit-count: 5
+last-processed-commit: 491501b30b96b5b26c4715773943482916b8036a
+unprocessed-commit-count: 9
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `74ff52bccb3c` fix: compile Mirth output before Pages execution
-- `d9e6e7084823` fix: execute compiled Mirth Pages generator
-- `5f6d34c46540` fix: simplify Mirth Pages synchronization surface
-- `8cc80d64d080` fix: narrow Mirth Pages contract to pinned compiler surface
-- `ef0a4f41aa63` docs: refresh README from commit totality
+- `491501b30b96` feat: add safe Agda SMT assistance boundary
+- `34b436f290fb` fix: align Elm manifest with pinned compiler
+- `342cb33d0148` fix: correct Pages Elm manifest heredoc terminator
+- `a36c0f436381` fix: write valid Elm 0.19.1 project manifests
+- `6c2d529dcb6e` fix: add Elm test dependency manifest fields
+- `4546c962a381` fix: complete generated Elm application manifest
+- `6740d395285a` fix: build Elm from its temporary project root
+- `ea5dbf31c47f` fix: correct Pages workflow shell quoting
+- `71bfa12e1bfe` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
