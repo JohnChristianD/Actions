@@ -133,7 +133,7 @@ Generated from the current tracked Markdown surface.
 
 ### Research
 
-- [Agda proof search in this repository](docs/research/agda-auto-proof-search.md)
-- [Agda SMT automation and Vehicle boundary - 2026-09-30](docs/research/agda-smt-vehicle-boundary-2026-09-30.md)
+- [Agda proof search in this repository](docs/agda-auto-proof-search.md)
+- [Agda SMT automation and Vehicle boundary - 2026-09-30](docs/agda-smt-vehicle-boundary-2026-09-30.md)
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
