@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee1263483043c0e50321eb4ec7ae";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, vehicle }:
     let
       systems = [
         "x86_64-linux"
@@ -23,9 +23,12 @@
       packages = forAllSystems (system:
         let
           pkgs = pkgsFor system;
+          vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
+          vehiclePackage = pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit vehicleSyntax; };
         in
         {
           ci = pkgs.haskellPackages.dhall;
+          vehicle = vehiclePackage;
           default = pkgs.haskellPackages.dhall;
         });
 
@@ -37,6 +40,10 @@
           ci = {
             type = "app";
             program = "${pkgs.haskellPackages.dhall}/bin/dhall";
+          };
+          vehicle = {
+            type = "app";
+            program = "${pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" { inherit (pkgs.haskellPackages) vehicle-syntax; }}/bin/vehicle";
           };
           mirth-pages-sync = let
             script = pkgs.writeShellApplication {
@@ -133,6 +140,10 @@
               pkgs.python3
               pkgs.stdenv.cc
               pkgs.z3
+              (pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { })
+              (pkgs.haskellPackages.callCabal2nix "vehicle" "${vehicle}/vehicle" {
+                vehicleSyntax = pkgs.haskellPackages.callCabal2nix "vehicle-syntax" "${vehicle}/vehicle-syntax" { };
+              })
               pkgs.elmPackages.elm
             ];
             shellHook = ''
