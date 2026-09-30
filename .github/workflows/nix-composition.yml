@@ -81,10 +81,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: cda-tum/setup-z3@v1
-        id: setup-z3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
+        with:
+          installer-version: '2.35.1'
       - uses: wenkokke/setup-agda@v2
         id: setup-agda
         with:
@@ -94,15 +93,11 @@ jobs:
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
           agda-executables: |
-            ${{ steps.setup-z3.outputs.z3-root }}/bin/z3
-      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
-        with:
-          installer-version: '2.35.1'
+            z3
       - name: Run Schmitty-assisted SMT witness
         timeout-minutes: 10
         env:
           AGDA_SCHMITTY_COMMAND: ${{ steps.setup-agda.outputs.agda-exe }}
-          Z3_EXECUTABLE: ${{ steps.setup-z3.outputs.z3-root }}/bin/z3
           CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
         run: |
           set -euo pipefail

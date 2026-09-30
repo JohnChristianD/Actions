@@ -27,7 +27,8 @@ let script = merge {
   Schmitty = ''
     set -euo pipefail
     test -n "$AGDA_SCHMITTY_COMMAND" || { echo "AGDA_SCHMITTY_COMMAND is required"; exit 2; }
-    test -x "$Z3_EXECUTABLE" || { echo "Z3_EXECUTABLE must name an executable"; exit 2; }
+    Z3_EXECUTABLE="$(command -v z3)"
+    test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
     "$Z3_EXECUTABLE" -version
     "$AGDA_SCHMITTY_COMMAND" --allow-exec -i . ProofAutomation/SchmittyAssisted.agda
     test -f ProofAutomation/SchmittyAssisted.agda
