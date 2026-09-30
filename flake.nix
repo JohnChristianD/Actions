@@ -2,17 +2,17 @@
   description = "Pinned Nix environment for the Agda kernel, Mercury e-graph, and typed Dhall CI scripting";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/29c6bca3b9a3ee126348304c0e50321eb4ec7ae";
+    nixpkgs.url = "github:NixOS/nixpkgs/cac0437206a9c9aefa161dae30cee71170d60088";
     vehicle = {
-      url = "github:vehicle-lang/vehicle/dev";
+      url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
       flake = false;
     };
     schmitty = {
-      url = "github:wenkokke/schmitty/v1.0.1";
+      url = "github:wenkokke/schmitty/9a85ee0ecec1f477cc803b8af66567bd36487a2b";
       flake = false;
     };
     agdarsec = {
-      url = "github:gallais/agdarsec/v0.5.0";
+      url = "github:gallais/agdarsec/03b8c4ec57b8bc9517b5bc2fca8a540e1ec858f0";
       flake = false;
     };
   };
