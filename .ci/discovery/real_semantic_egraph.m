@@ -22,6 +22,10 @@ frontier_targets = [
     "GRUFractalLimitConvergenceWitness",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
     "JAXExecutionMirrorReproof",
+    "CanonicalHardSparsityDegeneracyTheorem",
+    "hiddenSynergy-one-layer-exact",
+    "generalTsallis2NearSparsity",
+    "generalSupportSparsity",
     "StationaryLimitTheorem",
     "ContinuousLeftInverseTheorem"
 ].
