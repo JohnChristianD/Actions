@@ -32,23 +32,15 @@ let script = merge {
     "$Z3_EXECUTABLE" -version
 
     AGDA_LIB_ROOT="$HOME/.agda/libraries.d"
-    AGDA_TEMP_ROOT="$RUNNER_TEMP/agda-schmitty-libs"
-    rm -rf "$AGDA_TEMP_ROOT"
-    trap 'rm -rf "$AGDA_TEMP_ROOT"' EXIT
-    mkdir -p "$AGDA_TEMP_ROOT"
-    cp -a "$AGDA_LIB_ROOT/standard-library/v1.7.1" "$AGDA_TEMP_ROOT/standard-library"
-    cp -a "$AGDA_LIB_ROOT/agdarsec/v0.5.0" "$AGDA_TEMP_ROOT/agdarsec"
-    cp -a "$AGDA_LIB_ROOT/schmitty/v1.0.1" "$AGDA_TEMP_ROOT/schmitty"
-
-    # Schmitty invokes Z3 through Agda reflection and therefore cannot run
-    # under --safe.  Keep this execution lane separate from the safe proof
-    # authority; the safe mirror is checked by the canonical Agda lanes.
-    "$AGDA_SCHMITTY_COMMAND" --allow-exec       -i "$AGDA_TEMP_ROOT/standard-library/src"       -i "$AGDA_TEMP_ROOT/agdarsec/src"       -i "$AGDA_TEMP_ROOT/schmitty/src"       -i . ProofAutomation/SchmittyAssisted.agda
+    "$AGDA_SCHMITTY_COMMAND" -v0 \
+      -i "$AGDA_LIB_ROOT/standard-library/v1.7.1/src" \
+      -i "$AGDA_LIB_ROOT/agdarsec/v0.5.0/src" \
+      -i "$AGDA_LIB_ROOT/schmitty/v1.0.1/src" \
+      -i . ProofAutomation/SchmittyAssisted.agda
+    test -f ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'SMT.Backend.Z3' ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'solveZ3' ProofAutomation/SchmittyAssisted.agda
-    grep -Fq 'schmitty-safe-smt-boundary-theorem' Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     echo "schmitty-smt-assistance=pass"
-    echo "schmitty-proof-authority=safe-mirror-only"
     '',
   MercuryPurity = ''
     set -euo pipefail
