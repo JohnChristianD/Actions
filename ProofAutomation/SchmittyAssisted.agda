@@ -4,6 +4,7 @@
 module ProofAutomation.SchmittyAssisted where
 
 open import Data.Integer using (ℤ; _+_; _-_; _*_)
+open import Data.Unit using ()
 open import Relation.Binary.PropositionalEquality using (_≡_)
 open import SMT.Theories.Ints as Ints
 open import SMT.Backend.Z3 Ints.reflectable
