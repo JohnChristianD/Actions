@@ -25,6 +25,8 @@
 
 module Exotic.FullCoupled.CanonicalLearnerMonolith where
 
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*_)
 open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
@@ -43,7 +45,7 @@ open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
-
+-- END MIRTH-SYNC COMMON IMPORTS
 record Topology (A : Set) : Set₁ where
   field
     isOpen : (A → Set) → Set
