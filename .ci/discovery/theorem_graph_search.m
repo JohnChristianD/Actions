@@ -599,6 +599,8 @@ graph_required_theorems = [
     "CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem",
     "CanonicalPolymorphicSparsemaxCompositionTheorem",
     "OffPolicyFunctionApproximationStabilityBoundary",
+    "BairdSevenStarCounterexampleTheorem",
+    "bairdSevenStar",
     "GlobalConjugacyEquivalence",
         "ExactFunctionIsomorphismTransportTheorem",
     "ExactRecurrentFunctionTranslationTheorem",
