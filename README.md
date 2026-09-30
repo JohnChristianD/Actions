@@ -283,7 +283,7 @@ Two LayerNorm helper declarations are kept as Agda proof ingredients but pruned 
 
 ### Mirth Pages synchronization boundary
 
-The GitHub Pages build installs Nix before entering the pinned flake environment, then compiles `.ci/mirth/agda_to_elm.mth`. The Mirth program reads both Agda proof-authority files, rejects missing module markers, and emits source-derived byte counts alongside the module inventory. This keeps Mirth in the presentation/build layer: Agda remains semantic authority, while Mirth performs a typed, executable synchronization step. A Pages build that cannot execute Nix or Mirth is a failed synchronization, not a successful inert fallback.
+The GitHub Pages build installs Nix before entering the pinned flake environment, then invokes nixpkgs' executable `mirthc` on `.ci/mirth/agda_to_elm.mth`. Mirth itself compiles source into C99; the CI lane compiles that C99 output with the Nix C compiler and executes the resulting native synchronizer. No alternate or unsupported Mirth runtime is introduced. The Mirth program reads both Agda proof-authority files, rejects missing module markers, and emits source-derived byte counts alongside the module inventory. This keeps Mirth in the presentation/build layer: Agda remains semantic authority, while Mirth performs a typed, executable synchronization step. A Pages build that cannot execute Nix or Mirth is a failed synchronization, not a successful inert fallback.
 
 ## Scheduled commit-totality README refresh
 
