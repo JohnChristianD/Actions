@@ -81,15 +81,14 @@ let script = merge {
           "elm/time": "1.0.0",
           "elm/url": "1.0.0",
           "elm/virtual-dom": "1.0.3"
+        }
       },
       "test-dependencies": {
         "direct": {},
         "indirect": {}
       }
-        }
-      }
     }
-JSON
+JSONJSON
     mkdir -p "$tmp/pages"
     cd "$tmp"
     elm make src/Main.elm --optimize --output "$tmp/pages/elm.js"

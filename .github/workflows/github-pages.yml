@@ -72,15 +72,14 @@ jobs:
                 "elm/time": "1.0.0",
                 "elm/url": "1.0.0",
                 "elm/virtual-dom": "1.0.3"
-              },
-              "test-dependencies": {
-                "direct": {},
-                "indirect": {}
               }
-              }
+            },
+            "test-dependencies": {
+              "direct": {},
+              "indirect": {}
             }
           }
-          JSON
+          JSON          JSON
             mkdir -p "${RUNNER_TEMP}/pages"
             cd "$tmp"
             elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
