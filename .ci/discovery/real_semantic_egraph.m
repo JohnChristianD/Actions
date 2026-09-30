@@ -21,6 +21,7 @@ frontier_targets = [
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "GRUFractalLimitConvergenceWitness",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+    "JAXExecutionMirrorReproof",
     "StationaryLimitTheorem",
     "ContinuousLeftInverseTheorem"
 ].
