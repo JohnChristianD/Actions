@@ -14,9 +14,11 @@ The CI Schmitty lane does not import or rewrite the theorem monolith. It proves 
 
 ## Vehicle
 
-Vehicle is an upstream Haskell tool with an Agda backend. Its current `vehicle-agda/vehicle.agda-lib` declares `depend: standard-library-2.3`, while this repository's canonical proof environment uses standard-library 2.4. The upstream repository is Cabal-based rather than a Haskell Vehicle package exposed by this repository's pinned nixpkgs.
+Vehicle is now a direct Haskell tool dependency. The repository flake pins upstream `vehicle-lang/vehicle` source and builds its `vehicle-syntax` and `vehicle` Cabal packages with nixpkgs' Haskell toolchain. CI executes the resulting `vehicle` binary in a dedicated lane.
 
-No current Vehicle output establishes a repository-specific emergent composition theorem. Vehicle's normalisation code is compositional internally, but that is implementation structure, not a theorem about this repository's learner/economic semantics. Therefore no Vehicle theorem is promoted into `TheoremsMonolith.agda` or the Mercury theorem graph in this batch.
+The Vehicle Agda backend currently targets standard-library 2.3. That version boundary no longer blocks provisioning or direct Vehicle execution. Vehicle-generated Agda or solver artifacts remain external evidence: no Vehicle output is inserted into either canonical monolith, and no emergent composition theorem is promoted into the Mercury graph merely because Vehicle can generate or normalise it. Any such theorem still requires an explicit translated proposition and an Agda proof on the canonical two-file surface.
+
+The repository therefore has two distinct Vehicle claims: executable integration is direct and checked; semantic theorem integration remains proof-gated.
 
 A future Vehicle bridge requires:
 - a pinned upstream Vehicle revision;
@@ -48,6 +50,6 @@ $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/CanonicalLe
 $AGDA_COMMAND --safe -l standard-library -i . Exotic/ERL/FullCoupled/TheoremsMonolith.agda
 ```
 
-Mirth remains source-to-presentation synchronization only. Dhall remains CI contract/orchestration. Nix remains reproducible tool provisioning. Markdown remains generated-index/documentation surface.
+Mirth remains source-to-presentation synchronization only. The nixpkgs `mirth` package installs executable `mirthc`; Mirth source compiles to C99, and the Pages lane compiles that C99 output with the pinned C compiler before executing it. No separate Mirth runtime is assumed. Dhall remains CI contract/orchestration. Nix remains reproducible tool provisioning. Markdown remains generated-index/documentation surface.
 
 Stale when: Schmitty release, Z3 setup action, canonical Agda/std-lib versions, Vehicle Agda-library dependency, or theorem-graph authority changes.
