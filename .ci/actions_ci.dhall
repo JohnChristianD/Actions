@@ -30,7 +30,7 @@ let script = merge {
     Z3_EXECUTABLE="$(command -v z3)"
     test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
     "$Z3_EXECUTABLE" -version
-    probe="$RUNNER_TEMP/schmitty-probe.agda"
+    probe="$RUNNER_TEMP/SchmittyAllowExecProbe.agda"
     cat > "$probe" <<'AGDA'
 {-# OPTIONS --allow-exec #-}
 module SchmittyAllowExecProbe where
