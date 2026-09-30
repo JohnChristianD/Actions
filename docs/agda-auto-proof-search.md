@@ -34,7 +34,7 @@ The theorem proof surface remains exactly two monoliths. The theorem monolith co
 
 ## Pinned toolchain
 
-- Agda 2.8.0.2
+- Agda 2.8.0
 - agda-stdlib 2.4
 
 The local launcher supplies the repository source path, standard library package, and interactive mode. It is intentionally small so the same session can be used for both Auto and Search About.
