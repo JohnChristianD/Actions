@@ -28,7 +28,7 @@ jobs:
             https://github.com/wenkokke/schmitty.git#v1.0.1
       - name: Check external Agda import sync
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
+          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}/agda
         run: |
           set -euo pipefail
           nix develop .#default -c bash -euo pipefail -c '.ci/sync-agda-integrations.sh --check'
