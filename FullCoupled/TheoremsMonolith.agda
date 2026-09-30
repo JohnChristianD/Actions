@@ -268,8 +268,34 @@ canonicalGRUStatisticalDecode : CanonicalGRUStatisticalObservation → C.GRUStat
 canonicalGRUStatisticalDecode observation = proj₁ observation
 canonicalGRUStatisticalDecodeEncode : ∀ s → canonicalGRUStatisticalDecode (canonicalGRUStatisticalEncode s) ≡ s
 canonicalGRUStatisticalDecodeEncode s = refl
-canonicalGRUStatisticalEncodeInjective : ∀ {s t : C.GRUState} → canonicalGRUStatisticalEncode s ≡ canonicalGRUStatisticalEncode t → s ≡ t
-canonicalGRUStatisticalEncodeInjective eq = cong canonicalGRUStatisticalDecode eq
+leftInverse-implies-injective :
+  ∀ {State Feature : Set}
+  (observe : State → Feature)
+  (inverse : Feature → State) →
+  (∀ s → inverse (observe s) ≡ s) →
+  ∀ {s t} → observe s ≡ observe t → s ≡ t
+leftInverse-implies-injective observe inverse leftInverse eq =
+  trans
+    (sym (leftInverse _))
+    (trans
+      (cong inverse eq)
+      (leftInverse _))
+
+canonicalGRUStatisticalEncodeLeftInverse :
+  ∀ s →
+  canonicalGRUStatisticalDecode (canonicalGRUStatisticalEncode s) ≡ s
+canonicalGRUStatisticalEncodeLeftInverse =
+  canonicalGRUStatisticalDecodeEncode
+
+canonicalGRUStatisticalEncodeInjective :
+  ∀ {s t : C.GRUState} →
+  canonicalGRUStatisticalEncode s ≡ canonicalGRUStatisticalEncode t →
+  s ≡ t
+canonicalGRUStatisticalEncodeInjective =
+  leftInverse-implies-injective
+    canonicalGRUStatisticalEncode
+    canonicalGRUStatisticalDecode
+    canonicalGRUStatisticalEncodeLeftInverse
 record CanonicalGRUStatisticalInjectivityTheorem : Set₁ where
   constructor canonicalGRUStatisticalInjectivityTheorem
   field
@@ -4513,31 +4539,18 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
         (λ _ → refl)))
 
 ------------------------------------------------------------------------
--- Baird seven-state off-policy divergence boundary.
+-- Canonical-learner Baird seven-state boundary.
 --
--- The concrete Baird setup is recorded explicitly here, while the actual
--- numerical divergence result remains an input witness. This prevents
--- literature claims or an informal experiment from becoming an Agda axiom.
--- The setup matches the standard seven-state, eight-feature construction:
--- six upper states, one lower state, dashed behavior probability 6/7,
--- solid behavior probability 1/7, target policy always solid, zero reward,
--- and discount factor 0.99.
+-- This is deliberately not a generic Baird theorem. It is indexed by
+-- the concrete canonical learner kernel and learner state. The learner-side
+-- tail fact is already proved by canonicalPersistentGRU-afterFullStep-iterate.
+-- The numerical divergence result remains an explicit witness at this boundary.
 ------------------------------------------------------------------------
 
-record BairdSevenStarDivergenceWitness
-  (Weight : Set)
-  (update : Weight → Weight) : Set₁ where
-  constructor bairdSevenStarDivergenceWitness
-  field
-    divergence :
-      ¬ (Σ Weight (λ fixed → GloballyEventuallyFixed update fixed))
-
-open BairdSevenStarDivergenceWitness public
-
-record BairdSevenStarCounterexampleTheorem
-  (Weight : Set)
-  (update : Weight → Weight) : Set₁ where
-  constructor bairdSevenStarCounterexampleTheorem
+record CanonicalLearnerBairdSevenStarBoundary
+  (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) : Set₁ where
+  constructor canonicalLearnerBairdSevenStarBoundary
   field
     stateCount : Nat
     stateCountIsSeven : stateCount ≡ 7
@@ -4566,37 +4579,47 @@ record BairdSevenStarCounterexampleTheorem
       ∀ w₇ w₈ →
       lowerStateValue w₇ w₈ ≡
       w₇ + 2 * w₈
+    learnerTailStable :
+      ∀ n →
+      C.persistentGRU
+        (C.gru (C.iterateCanonical K n s))
+      ≡
+      C.persistentGRU (C.gru s)
     divergenceWitness :
-      BairdSevenStarDivergenceWitness Weight update
+      ¬
+        (Σ C.CanonicalFullLearnerState
+          (λ fixed →
+            GloballyEventuallyFixed
+              (C.canonicalFullStep K)
+              fixed))
 
-bairdSevenStar :
-  ∀ {Weight : Set} {update : Weight → Weight} →
-  BairdSevenStarDivergenceWitness Weight update →
-  BairdSevenStarCounterexampleTheorem Weight update
-bairdSevenStar W =
-  bairdSevenStarCounterexampleTheorem
-    7
-    refl
-    8
-    refl
-    6
-    refl
-    1
-    refl
-    7
-    refl
-    1
-    refl
+canonicalLearnerBairdSevenStar :
+  ∀ {K : C.CanonicalFullLearnerKernel}
+  {s : C.CanonicalFullLearnerState} →
+  ¬
+    (Σ C.CanonicalFullLearnerState
+      (λ fixed →
+        GloballyEventuallyFixed
+          (C.canonicalFullStep K)
+          fixed)) →
+  CanonicalLearnerBairdSevenStarBoundary K s
+canonicalLearnerBairdSevenStar divergence =
+  canonicalLearnerBairdSevenStarBoundary
+    7 refl
+    8 refl
+    6 refl
+    1 refl
+    7 refl
+    1 refl
     tt
-    99
-    refl
-    100
-    refl
+    99 refl
+    100 refl
     (λ w₈ wᵢ → 2 * wᵢ + w₈)
     (λ w₈ wᵢ → refl)
     (λ w₇ w₈ → w₇ + 2 * w₈)
     (λ w₇ w₈ → refl)
-    W
+    (λ n → C.canonicalPersistentGRU-afterFullStep-iterate _ n _)
+    divergence
 
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
   constructor offPolicyFunctionApproximationStabilityBoundary
