@@ -30,7 +30,7 @@ Search About is an interactive discovery tool. This repository does not treat it
 
 ## Presentation synchronization
 
-The Pages presentation is a separate surface from proof discovery. Mirth compiles `.ci/mirth/agda_to_elm.mth` under the package-qualified module name `actions.agda_to_elm`, reads the two canonical Agda modules, and emits `GeneratedTheoremSurface.elm`. The Elm page consumes that generated metadata; it does not define proof evidence or theorem semantics.
+The Pages presentation is a separate surface from proof discovery. It is compiled directly from `site/Main.elm`, which lists the two canonical Agda monoliths as display metadata. No translator or generated Agda source is part of the presentation workflow.
 
 ## Pinned toolchain
 
@@ -41,4 +41,4 @@ The local launcher supplies the repository source path, standard library package
 
 ## Staleness
 
-Recheck this document when the pinned Agda version, the interaction commands, the theorem-monolith proof workflow, or the Mirth-to-Elm presentation contract changes.
+Recheck this document when the pinned Agda version, the interaction commands, the theorem-monolith proof workflow, or the static Elm presentation contract changes.
