@@ -78,7 +78,7 @@ concat_strings(Parts) = string.join_list("", Parts).
 
 :- func source_files = list(string).
 source_files = [
-    "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda"
+    "../../Exotic/FullCoupled/TheoremsMonolith.agda"
 ].
 
 :- func syntax_heads = list(string).
@@ -416,7 +416,7 @@ parse_record_fields(Source, Lines, Decls) :-
 :- pred theorem_monolith_is_safe(io::di, io::uo) is det.
 theorem_monolith_is_safe(!IO) :-
     io.read_named_file_as_lines(
-        "../../Exotic/ERL/FullCoupled/TheoremsMonolith.agda",
+        "../../Exotic/FullCoupled/TheoremsMonolith.agda",
         ReadResult, !IO),
     (
         ReadResult = ok(Lines),
