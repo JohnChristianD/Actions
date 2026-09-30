@@ -8,15 +8,15 @@ def main {
 set -euo pipefail
 
 mode=${1:---check}
-case "$mode" in
+case \\"$mode\\" in
   --check|--write) ;;
-  *) echo "usage: agda-import-sync --check|--write" >&2; exit 2 ;;
+  *) echo \\"usage: agda-import-sync --check|--write\\" >&2; exit 2 ;;
 esac
 
-learner="Exotic/FullCoupled/CanonicalLearnerMonolith.agda"
-theorem="Exotic/FullCoupled/TheoremsMonolith.agda"
+learner=\\"Exotic/FullCoupled/CanonicalLearnerMonolith.agda\\"
+theorem=\\"Exotic/FullCoupled/TheoremsMonolith.agda\\"
 
-python3 - "$mode" "$learner" "$theorem" <<'PY'
+python3 - \\"$mode\\" \\"$learner\\" \\"$theorem\\" <<'PY'
 from pathlib import Path
 import sys
 
@@ -69,90 +69,76 @@ open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
 -- END THEOREM-SPECIFIC IMPORTS'''
 
-EXTERNAL = r'''------------------------------------------------------------------------
--- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
--- Synced by .ci/sync-agda-integrations.sh; keep this block in the
--- theorem monolith and do not materialize a third Agda source file.
-------------------------------------------------------------------------
-
-import SMT.Theories.Ints as Ints
-open import SMT.Backend.Z3 Ints.theory
-import Vehicle
-
-------------------------------------------------------------------------
--- END SCRIPTED EXTERNAL AGDA IMPORTS
-------------------------------------------------------------------------'''
-
 def replace_block(text: str, begin: str, end: str, replacement: str) -> str:
     start = text.index(begin)
     stop = text.index(end, start) + len(end)
     return text[:start] + replacement + text[stop:]
 
-learner_text = learner.read_text(encoding="utf-8")
-theorem_text = theorem.read_text(encoding="utf-8")
+learner_text = learner.read_text(encoding=\\"utf-8\\")
+theorem_text = theorem.read_text(encoding=\\"utf-8\\")
 
 learner_text = replace_block(
     learner_text,
-    "-- BEGIN MIRTH-SYNC COMMON IMPORTS",
-    "-- END MIRTH-SYNC COMMON IMPORTS",
+    \\"-- BEGIN MIRTH-SYNC COMMON IMPORTS\\",
+    \\"-- END MIRTH-SYNC COMMON IMPORTS\\",
     COMMON,
 )
 theorem_text = replace_block(
     theorem_text,
-    "-- BEGIN MIRTH-SYNC COMMON IMPORTS",
-    "-- END MIRTH-SYNC COMMON IMPORTS",
+    \\"-- BEGIN MIRTH-SYNC COMMON IMPORTS\\",
+    \\"-- END MIRTH-SYNC COMMON IMPORTS\\",
     COMMON,
 )
 theorem_text = replace_block(
     theorem_text,
-    "-- BEGIN THEOREM-SPECIFIC IMPORTS",
-    "-- END THEOREM-SPECIFIC IMPORTS",
+    \\"-- BEGIN THEOREM-SPECIFIC IMPORTS\\",
+    \\"-- END THEOREM-SPECIFIC IMPORTS\\",
     THEOREM_EXTRA,
 )
 
-if mode == "--write":
-    learner.write_text(learner_text, encoding="utf-8")
-    theorem.write_text(theorem_text, encoding="utf-8")
+if mode == \\"--write\\":
+    learner.write_text(learner_text, encoding=\\"utf-8\\")
+    theorem.write_text(theorem_text, encoding=\\"utf-8\\")
 
 for path, text in ((learner, learner_text), (theorem, theorem_text)):
-    if text.count("-- BEGIN MIRTH-SYNC COMMON IMPORTS") != 1:
-        raise SystemExit(f"{path}: common import marker count is wrong")
-    common_slice = text.split("-- BEGIN MIRTH-SYNC COMMON IMPORTS", 1)[1].split("-- END MIRTH-SYNC COMMON IMPORTS", 1)[0]
-    expected_slice = COMMON.split("-- BEGIN MIRTH-SYNC COMMON IMPORTS", 1)[1].split("-- END MIRTH-SYNC COMMON IMPORTS", 1)[0]
+    if text.count(\\"-- BEGIN MIRTH-SYNC COMMON IMPORTS\\") != 1:
+        raise SystemExit(f\\"{path}: common import marker count is wrong\\")
+    common_slice = text.split(\\"-- BEGIN MIRTH-SYNC COMMON IMPORTS\\", 1)[1].split(\\"-- END MIRTH-SYNC COMMON IMPORTS\\", 1)[0]
+    expected_slice = COMMON.split(\\"-- BEGIN MIRTH-SYNC COMMON IMPORTS\\", 1)[1].split(\\"-- END MIRTH-SYNC COMMON IMPORTS\\", 1)[0]
     if common_slice != expected_slice:
-        raise SystemExit(f"{path}: common import block is stale")
+        raise SystemExit(f\\"{path}: common import block is stale\\")
 
-learner_imports = [line.strip() for line in learner_text.splitlines() if line.strip().startswith(("open import ", "import "))]
-theorem_imports = [line.strip() for line in theorem_text.splitlines() if line.strip().startswith(("open import ", "import "))]
+learner_imports = [line.strip() for line in learner_text.splitlines() if line.strip().startswith((\\"open import \\", \\"import \\"))]
+theorem_imports = [line.strip() for line in theorem_text.splitlines() if line.strip().startswith((\\"open import \\", \\"import \\"))]
 
-if any(line.startswith("open import Exotic.FullCoupled.") or line.startswith("import Exotic.FullCoupled.") for line in learner_imports):
-    raise SystemExit("learner monolith must not depend on theorem monolith")
-cross = "open import Exotic.FullCoupled.CanonicalLearnerMonolith as C"
+if any(line.startswith(\\"open import Exotic.FullCoupled.\\") or line.startswith(\\"import Exotic.FullCoupled.\\") for line in learner_imports):
+    raise SystemExit(\\"learner monolith must not depend on theorem monolith\\")
+cross = \\"open import Exotic.FullCoupled.CanonicalLearnerMonolith as C\\"
 if theorem_imports.count(cross) != 1:
-    raise SystemExit("theorem monolith must have exactly one directed canonical learner import")
+    raise SystemExit(\\"theorem monolith must have exactly one directed canonical learner import\\")
 
 for line in theorem_imports:
-    if (line.startswith("open import Exotic.FullCoupled.") or line.startswith("import Exotic.FullCoupled.")) and line != cross:
-        raise SystemExit(f"unexpected cross-monolith import: {line}")
+    if (line.startswith(\\"open import Exotic.FullCoupled.\\") or line.startswith(\\"import Exotic.FullCoupled.\\")) and line != cross:
+        raise SystemExit(f\\"unexpected cross-monolith import: {line}\\")
 
-if theorem_text.count("-- BEGIN THEOREM-SPECIFIC IMPORTS") != 1:
-    raise SystemExit("theorem-specific import marker count is wrong")
-extra_slice = theorem_text.split("-- BEGIN THEOREM-SPECIFIC IMPORTS", 1)[1].split("-- END THEOREM-SPECIFIC IMPORTS", 1)[0]
-expected_extra_slice = THEOREM_EXTRA.split("-- BEGIN THEOREM-SPECIFIC IMPORTS", 1)[1].split("-- END THEOREM-SPECIFIC IMPORTS", 1)[0]
+if theorem_text.count(\\"-- BEGIN THEOREM-SPECIFIC IMPORTS\\") != 1:
+    raise SystemExit(\\"theorem-specific import marker count is wrong\\")
+extra_slice = theorem_text.split(\\"-- BEGIN THEOREM-SPECIFIC IMPORTS\\", 1)[1].split(\\"-- END THEOREM-SPECIFIC IMPORTS\\", 1)[0]
+expected_extra_slice = THEOREM_EXTRA.split(\\"-- BEGIN THEOREM-SPECIFIC IMPORTS\\", 1)[1].split(\\"-- END THEOREM-SPECIFIC IMPORTS\\", 1)[0]
 if extra_slice != expected_extra_slice:
-    raise SystemExit("theorem-specific import block is stale")
+    raise SystemExit(\\"theorem-specific import block is stale\\")
 
-if theorem_text.count("import SMT.Theories.Ints as Ints") != 1:
-    raise SystemExit("Schmitty Int theory must have exactly one import")
-if theorem_text.count("open import SMT.Backend.Z3 Ints.theory") != 1:
-    raise SystemExit("Schmitty Z3 backend must have exactly one import")
-if theorem_text.count("import Vehicle") != 1:
-    raise SystemExit("Vehicle import must have exactly one import")
+if theorem_text.count(\\"import SMT.Theories.Ints as Ints\\") != 1:
+    raise SystemExit(\\"Schmitty Int theory must have exactly one import\\")
+if theorem_text.count(\\"open import SMT.Backend.Z3 Ints.theory\\") != 1:
+    raise SystemExit(\\"Schmitty Z3 backend must have exactly one import\\")
+if theorem_text.count(\\"import Vehicle\\") != 1:
+    raise SystemExit(\\"Vehicle import must have exactly one import\\")
 
-print("mirth-agda-import-sync=pass")
-print("shared-import-block=byte-identical")
-print("theorem-only-import-block=canonical")
-print("cross-monolith-dependency=learner-to-theorem-only")
+print(\\"mirth-agda-import-sync=pass\\")
+print(\\"shared-import-block=byte-identical\\")
+print(\\"theorem-only-import-block=canonical\\")
+print(\\"cross-monolith-dependency=learner-to-theorem-only\\")
 PY
 " print
 }
