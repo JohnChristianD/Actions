@@ -4539,6 +4539,293 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
         (λ _ → refl)))
 
 ------------------------------------------------------------------------
+-- Hidden-Synergy / Tsallis-2 finite sparsity surface.
+--
+-- The paper-faithful near-sparsity quantity is Shannon-entropy based; it is
+-- not silently identified with Tsallis-2 here. The exact executable layer
+-- below restores the L1 and 1-path-norm definitions and the exact rational
+-- Tsallis-2 extension that was previously present in the repository.
+--
+-- Continuous Lipschitz/analytic conclusions remain separate interfaces.
+-- The finite equalities below are fully constructive Agda terms.
+------------------------------------------------------------------------
+
+data HSSVector (A : Set) : Nat → Set where
+  hsNil : HSSVector A zero
+  hsCons : ∀ {n} → A → HSSVector A n → HSSVector A (suc n)
+
+HSSMatrix : (A : Set) → Nat → Nat → Set
+HSSMatrix A m n = HSSVector (HSSVector A n) m
+
+hsMap :
+  ∀ {A B : Set} {n} →
+  (A → B) →
+  HSSVector A n →
+  HSSVector B n
+hsMap f hsNil = hsNil
+hsMap f (x hsCons xs) = f x hsCons hsMap f xs
+
+hsOnes : ∀ n → HSSVector Nat n
+hsOnes zero = hsNil
+hsOnes (suc n) = suc zero hsCons hsOnes n
+
+hsDot : ∀ {n} → HSSVector Nat n → HSSVector Nat n → Nat
+hsDot hsNil hsNil = zero
+hsDot (x hsCons xs) (y hsCons ys) =
+  (x * y) + hsDot xs ys
+
+hsSum : ∀ {n} → HSSVector Nat n → Nat
+hsSum hsNil = zero
+hsSum (x hsCons xs) = x + hsSum xs
+
+hsAbsVec : ∀ {n} → HSSVector C.Int8 n → HSSVector Nat n
+hsAbsVec hsNil = hsNil
+hsAbsVec (x hsCons xs) =
+  C.int8Magnitude x hsCons hsAbsVec xs
+
+rowL1 : ∀ {n} → HSSVector C.Int8 n → Nat
+rowL1 hsNil = zero
+rowL1 (x hsCons xs) =
+  C.int8Magnitude x + rowL1 xs
+
+weightL1 :
+  ∀ {m n} →
+  HSSMatrix C.Int8 m n →
+  Nat
+weightL1 hsNil = zero
+weightL1 (row hsCons rows) =
+  rowL1 row + weightL1 rows
+
+hsMatVecAbs :
+  ∀ {m n} →
+  HSSMatrix C.Int8 m n →
+  HSSVector Nat n →
+  HSSVector Nat m
+hsMatVecAbs hsNil _ = hsNil
+hsMatVecAbs (row hsCons rows) xs =
+  hsDot (hsAbsVec row) xs hsCons hsMatVecAbs rows xs
+
+onePathVector :
+  ∀ {d L} →
+  HSSVector (HSSMatrix C.Int8 d d) L →
+  HSSVector Nat d
+onePathVector hsNil = hsOnes _
+onePathVector (W hsCons Ws) =
+  hsMatVecAbs W (onePathVector Ws)
+
+onePathNorm :
+  ∀ {d L} →
+  HSSVector (HSSMatrix C.Int8 d d) L →
+  Nat
+onePathNorm Ws = hsSum (onePathVector Ws)
+
+hsNatMulOne : ∀ n → n * suc zero ≡ n
+hsNatMulOne zero = refl
+hsNatMulOne (suc n) = cong suc (hsNatMulOne n)
+
+rowL1OnesAbs :
+  ∀ {n} (xs : HSSVector C.Int8 n) →
+  hsDot (hsAbsVec xs) (hsOnes n) ≡ rowL1 xs
+rowL1OnesAbs hsNil = refl
+rowL1OnesAbs (x hsCons xs) =
+  trans
+    (cong₂ _+_
+      (hsNatMulOne (C.int8Magnitude x))
+      (rowL1OnesAbs xs))
+    refl
+
+onePathOneLayer :
+  ∀ {d}
+  (W : HSSMatrix C.Int8 d d) →
+  onePathNorm (W hsCons hsNil) ≡ weightL1 W
+onePathOneLayer hsNil = refl
+onePathOneLayer (row hsCons rows) =
+  trans
+    (cong₂ _+_
+      (rowL1OnesAbs row)
+      (onePathOneLayer rows))
+    refl
+
+record HiddenSynergyNormPair : Set where
+  constructor hiddenSynergyNormPair
+  field
+    l1 path : Nat
+
+open HiddenSynergyNormPair public
+
+layerNormPair :
+  ∀ {d} →
+  HSSMatrix C.Int8 d d →
+  HSSMatrix C.Int8 d d →
+  HiddenSynergyNormPair
+layerNormPair W₁ W₂ =
+  hiddenSynergyNormPair
+    (weightL1 W₂ + weightL1 W₁)
+    (onePathNorm (W₂ hsCons W₁ hsCons hsNil))
+
+hiddenSynergy-one-layer-exact :
+  ∀ {d} (W : HSSMatrix C.Int8 d d) →
+  onePathNorm (W hsCons hsNil) ≡ weightL1 W
+hiddenSynergy-one-layer-exact = onePathOneLayer
+
+------------------------------------------------------------------------
+-- Canonical hard sparsity is still the zero-threshold degeneration.
+------------------------------------------------------------------------
+
+record CanonicalHardSparsityDegeneracyTheorem : Set₁ where
+  constructor canonicalHardSparsityDegeneracyTheorem
+  field
+    hardToSoftZero :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      (s : C.FullLearnerState A) →
+      C.HardSparse K s →
+      C.SoftSparseBounded K s zero
+    softToHardZero :
+      ∀ {A : Set}
+      (K : C.FullLearnerKernel A)
+      (s : C.FullLearnerState A) →
+      C.SoftSparseBounded K s zero →
+      C.HardSparse K s
+
+canonical-hard-sparsity-degeneracy-theorem :
+  CanonicalHardSparsityDegeneracyTheorem
+canonical-hard-sparsity-degeneracy-theorem =
+  canonicalHardSparsityDegeneracyTheorem
+    C.hardSparse-to-softSparse-zero
+    C.softSparse-zero-to-hardSparse
+
+------------------------------------------------------------------------
+-- Exact finite Tsallis-2 extension.
+--
+-- For a finite nonnegative weight family w, with
+--
+--   S = sum w
+--   Q = sum (w^2)
+--
+-- the executable extension is
+--
+--   1 - S^2 / (d Q) = (d Q - S^2) / (d Q),
+--
+-- with the zero-vector convention set to 1.
+------------------------------------------------------------------------
+
+ActionWeights : Set
+ActionWeights = List Nat
+
+nonzeroWeight : Nat → Nat
+nonzeroWeight zero = zero
+nonzeroWeight (suc _) = suc zero
+
+actionSupportCount : ActionWeights → Nat
+actionSupportCount [] = zero
+actionSupportCount (x ∷ xs) =
+  nonzeroWeight x + actionSupportCount xs
+
+actionWeightSum : ActionWeights → Nat
+actionWeightSum [] = zero
+actionWeightSum (x ∷ xs) =
+  x + actionWeightSum xs
+
+actionWeightSquareSum : ActionWeights → Nat
+actionWeightSquareSum [] = zero
+actionWeightSquareSum (x ∷ xs) =
+  (x * x) + actionWeightSquareSum xs
+
+generalTsallis2Denominator : ActionWeights → Nat
+generalTsallis2Denominator xs =
+  length xs * actionWeightSquareSum xs
+
+generalTsallis2Numerator : ActionWeights → Nat
+generalTsallis2Numerator xs =
+  generalTsallis2Denominator xs ∸
+  (actionWeightSum xs * actionWeightSum xs)
+
+generalTsallis2NearSparsity : ActionWeights → C.FiniteRational
+generalTsallis2NearSparsity xs with actionWeightSquareSum xs
+... | zero =
+  C.finiteRational 1 1 1
+... | suc q =
+  C.finiteRational
+    1
+    (generalTsallis2Numerator xs)
+    (generalTsallis2Denominator xs)
+
+natZeroNotSuc : ∀ {n} → suc n ≢ zero
+natZeroNotSuc ()
+
+generalTsallis2NearSparsity-zero :
+  ∀ (xs : ActionWeights) →
+  actionWeightSquareSum xs ≡ zero →
+  generalTsallis2NearSparsity xs ≡
+  C.finiteRational 1 1 1
+generalTsallis2NearSparsity-zero xs h
+  with actionWeightSquareSum xs
+... | zero = refl
+... | suc q = ⊥-elim (natZeroNotSuc (sym h))
+
+generalTsallis2NearSparsity-definition :
+  ∀ (xs : ActionWeights) →
+  actionWeightSquareSum xs ≢ zero →
+  generalTsallis2NearSparsity xs ≡
+    C.finiteRational
+      1
+      (generalTsallis2Numerator xs)
+      (generalTsallis2Denominator xs)
+generalTsallis2NearSparsity-definition xs h
+  with actionWeightSquareSum xs
+... | zero = ⊥-elim (h refl)
+... | suc q = refl
+
+fractionEquivalent :
+  C.FiniteRational →
+  C.FiniteRational →
+  Set
+fractionEquivalent x y =
+  (C.numerator x * C.denominator y) ≡
+  (C.numerator y * C.denominator x)
+
+tsallis2Near-oneHot :
+  fractionEquivalent
+    (generalTsallis2NearSparsity (suc zero ∷ zero ∷ []))
+    (C.finiteRational 1 1 2)
+tsallis2Near-oneHot = refl
+
+generalSupportSparsity : ActionWeights → C.FiniteRational
+generalSupportSparsity xs =
+  C.finiteRational
+    0
+    (length xs ∸ actionSupportCount xs)
+    (length xs)
+
+generalSupportSparsity-definition :
+  ∀ xs →
+  generalSupportSparsity xs ≡
+    C.finiteRational
+      0
+      (length xs ∸ actionSupportCount xs)
+      (length xs)
+generalSupportSparsity-definition xs = refl
+
+record UniformSupportTsallisBoundary
+  (weights : ActionWeights) : Set₁ where
+  constructor uniformSupportTsallisBoundary
+  field
+    support : Nat
+    supportLaw :
+      support ≡ actionSupportCount weights
+    uniformSquareLaw :
+      actionWeightSum weights * actionWeightSum weights
+      ≡ support * actionWeightSquareSum weights
+
+------------------------------------------------------------------------
+-- The continuous Shannon near-sparsity and Lipschitz conclusions from the
+-- Hidden-Synergy paper are not reclassified as exact Nat equalities here.
+-- The finite L1/path-norm definitions and the finite Tsallis-2 extension are
+-- exact; analytic regularity remains an explicit boundary.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- Typed Agda reproof surface for every computational function in
 -- tools/jax_reference.py.
 --
