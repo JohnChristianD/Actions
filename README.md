@@ -56,8 +56,12 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 0 files.
+Generated from the tracked Markdown surface: 1 files.
 The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
+
+### Research
+
+- [Agda proof search in this repository](docs/research/agda-auto-proof-search.md)
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
 
@@ -274,49 +278,59 @@ The GitHub Pages build installs Nix before entering the pinned flake environment
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 2dca86532b80135af3b03fb3484b752fd17c9cf3
-unprocessed-commit-count: 37
+last-processed-commit: 07b1b1b9b5fbd2799c5c0998ead035ec023cedb4
+unprocessed-commit-count: 47
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `2dca86532b80` fix: align Elm presentation with Agda module sync
-- `b438263d4a62` fix: keep Mirth in the development shell
-- `99bd2bc6c327` docs: record direct Agda Mirth Elm Pages topology
-- `41039f198c79` refactor: remove Mercury Pages synchronization path
-- `671e2c2b1edb` refactor: remove Mercury Pages synchronization path
-- `2b60550de7f8` refactor: make Elm surface consume Agda module sync
-- `6ec17c4e9448` refactor: sync Pages directly from Agda with Mirth
-- `de3ecb7244c8` feat: add Dhall contract for Agda presentation sync
-- `8954d12374a8` feat: add direct Agda source Mirth synchronizer
-- `b8e336129a0e` feat: add Mirth Pages sync app
-- `23c98a12eda6` feat: add Mirth to the reproducible sync environment
-- `e96c5b9f21ab` Synchronize Pages from current Agda theorem surface
-- `19f593e50c90` Render current Agda theorem surface in Elm Pages
-- `2fd9a153f92e` Probe Pages source update path
-- `b3a082df8756` Add Agda theorem surface sync pipeline
-- `05cf05b652aa` Add Agda theorem surface sync pipeline
-- `9224a13cddc0` refactor: keep Pages source pure Elm
-- `3c97accd1b96` docs: define Pages as pure Elm surface
-- `34e6a3ca8f39` fix: use valid Elm sandbox initializer
-- `48871017cca1` build: compile pure Elm Pages surface
-- `7c206aa3b757` feat: make Pages surface pure Elm
-- `08ed2a86d3fc` build: add Elm compiler for Pages source
-- `3ba10075d3d1` docs: remove retired Mirth workload reference
-- `e2c6e6c79c8a` refactor: prune redundant Elm Mirth presentation stack
-- `79658ecf1979` refactor: prune redundant Elm Mirth presentation stack
-- `334d50137117` refactor: prune redundant Elm Mirth presentation stack
-- `b94c04321112` refactor: prune redundant Elm Mirth presentation stack
-- `eca3548f9447` refactor: prune redundant Elm Mirth presentation stack
-- `ad0dbfefa8c2` refactor: prune redundant Elm Mirth presentation stack
-- `5b6eab787c56` refactor: prune redundant Elm Mirth presentation stack
-- `1649e9a58ba2` refactor: prune redundant Elm Mirth presentation stack
-- `5a0da40772db` docs: describe static Pages surface after workload prune
-- `8eecdae1f29a` refactor: remove redundant Elm workload lane
-- `8ca5aec1e312` refactor: remove redundant Elm and Mirth tooling
-- `deac0513f0f0` feat: deploy static GitHub Pages site
-- `d939c8c03176` feat: add static GitHub Pages presentation
-- `178ad11ebef5` docs: refresh README from commit totality
+- `07b1b1b9b5fb` feat: graph Agda search and theorem dominance surfaces
+- `66b35971509d` Delete workloads/hex directory
+- `ec9e9137930e` docs: record Pages pre-merge verification
+- `a9d1d0b21fa1` ci: require Pages build before auto-merge
+- `f5c38521b054` ci: verify Pages build before merge
+- `9b58c4be67ed` docs: record CI rebase and Mercury purity boundary
+- `170bb37b9a3d` ci: separate Pages deployment from PR checks
+- `cc126b53f973` ci: queue rebase checks and run Mercury purity gate
+- `d56c32b1b7cc` ci: gate Mercury sources for pure-only syntax
+- `85434805b247` docs: record post-merge CI and Pages verification
+- `37d7d61977ef` fix: close canonical executable Dhall lane
+- `7d3609e6742a` docs: record Pony toolchain addition
+- `c678c086a260` test: verify Pony example
+- `266560a120d2` docs: add Pony lab instructions
+- `9cfd8d0fc79d` feat: add Pony compiler to lab flake
+- `61c219d48037` feat: add Pony example
+- `fc3826c14662` fix: make Min example emit output
+- `767af72cdde4` docs: record Factor and executable verification changes
+- `e5b1da37b374` docs: document Factor and runnable lab checks
+- `ce3322031283` feat: add Factor to lab flake
+- `fe9071bb148a` fix: make gbForth example render output
+- `b6fcfc44572f` test: verify forth lab examples
+- `adc3603c6f31` feat: add Factor example
+- `5e24400ef661` chore: ignore local forth lab outputs
+- `ec3640e423a7` fix: escape shell parameter expansion in lab flake
+- `f73db6afd4de` feat: add isolated Min Forth gbForth lab
+- `cdee791c7e07` feat: add isolated Min Forth gbForth lab
+- `42232ff2311c` feat: add isolated Min Forth gbForth lab
+- `837aba0c9ad8` feat: add isolated Min Forth gbForth lab
+- `91d6d919c4ef` feat: add isolated Min Forth gbForth lab
+- `66e3602b2b1f` feat: add isolated Min Forth gbForth lab
+- `d892d299ca33` fix: restore scoped CI lanes
+- `70897faab594` fix: keep executable lane scoped to safe learner semantics
+- `2708ba33e6f0` fix: keep IO adapter outside safe proof boundary
+- `8f503617dd77` fix: close executable Dhall lane
+- `f2a57de144e8` docs: record canonical learner executable change
+- `ac7657083c11` docs: document canonical learner executable surface
+- `29e8f55a22b6` ci: execute canonical learner binary in Nix workflow
+- `967de6ca8b2b` ci: verify canonical learner executable
+- `7024438df30d` feat: add executable canonical learner entrypoint
+- `1ca414bc6893` fix: align Mirth module name with filename
+- `1f1960158545` refactor: prune unused Tsallis theorem wrappers
+- `b24447c53298` test: run Mirth Pages build on pull requests
+- `9e317879781e` docs: record live Mirth Pages boundary
+- `3d84e359ce51` fix: install Nix before Mirth Pages build
+- `e87ba830fd6d` fix: make Mirth theorem surface source-derived
+- `010c2e49758a` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
