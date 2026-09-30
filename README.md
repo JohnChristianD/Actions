@@ -167,7 +167,7 @@ The repository can establish repository-level theorems and exact implementation 
 The GRU injectivity/conjugacy/tail-stability composition is therefore documented as a formal repository result and semantic interlink. A literature-backed novelty claim would require an independent comparison against prior work.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: a8c95922dcde4c2e8d09e61e3215d24fc5ce1237
+last-processed-commit: b7e0e1d5b2abbd461d1d484513a6a86aeec218ef
 unprocessed-commit-count: 0
 
 The scheduled updater accounts for every commit since the previous processed commit.
@@ -181,7 +181,7 @@ The root README is the GitHub-facing entry point; detailed evidence remains in t
 
 ### Repository documentation
 
-- `docs/agda-auto-proof-search.md` — Agda proof search in this repository
-- `docs/agda-smt-vehicle-boundary-2026-09-30.md` — Agda SMT automation and Vehicle boundary — 2026-09-30
+- docs/agda-auto-proof-search.md — Agda proof search in this repository
+- docs/agda-smt-vehicle-boundary-2026-09-30.md — Agda SMT automation and Vehicle boundary — 2026-09-30
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
