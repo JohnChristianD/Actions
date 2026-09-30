@@ -30,7 +30,7 @@
     "The seventh Schmitty attempt reached the end of the shared Dhall source but failed because the top-level merge expression was never applied to lane and the bound script was never returned.",
     "The eighth Schmitty attempt executed the witness path and failed because cda-tum/setup-z3 supplied a binary requiring glibc 2.38+ while Ubuntu 22.04 provides an older glibc.",
     "The ninth Schmitty attempt proved the pinned nixpkgs Z3 path works (Z3 4.16.0) but Agda 2.6.2.2 could not resolve Data.Integer because the installed standard-library and Schmitty libraries were not registered in defaults.",
-    "The Schmitty CI setup now installs the upstream-compatible Agda 2.6.2.2/standard-library 1.7.1 environment without setting agda-defaults, invokes the PATH agda executable, and selects standard-library and schmitty explicitly with -l flags. This preserves --allow-exec without making either library default-safe. No theorem, Vehicle, or graph semantics are changed. Final SMT and graph receipts remain pending."
+    "Temporary diagnostic probe added to the Schmitty lane to identify the Agda executable, AGDA_* environment, and user Agda configuration responsible for the remaining safe-mode conflict; the probe is scheduled for removal after the receipt. No theorem, Vehicle, or graph semantics are changed."
   ],
   caveat = "Schmitty/Z3 is external execution evidence, not Agda --safe proof authority. Vehicle-derived statements are not admitted into the proof graph until a version-compatible translation layer exists.",
   stale_when = "Update this record when the Schmitty/Z3 setup, canonical Agda/std-lib versions, Vehicle Agda dependency, or theorem-graph authority changes."
