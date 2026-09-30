@@ -89,9 +89,6 @@ jobs:
         with:
           agda-version: '2.6.2.2'
           agda-stdlib-version: '1.7.1'
-          agda-defaults: |
-            standard-library
-            schmitty
           agda-libraries: |
             https://github.com/gallais/agdarsec.git#v0.5.0
             https://github.com/wenkokke/schmitty.git#v1.0.1
@@ -105,7 +102,7 @@ jobs:
       - name: Run Schmitty-assisted SMT witness
         timeout-minutes: 10
         env:
-          AGDA_SCHMITTY_COMMAND: ${{ steps.setup-agda.outputs.agda-exe }}
+          AGDA_SCHMITTY_COMMAND: agda
           CI_LANE: '< AgdaLearner | CanonicalExecutable | AgdaTheorem | AgdaSafe | Schmitty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
         run: |
           set -euo pipefail
