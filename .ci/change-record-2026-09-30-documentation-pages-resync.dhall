@@ -27,8 +27,8 @@
   verification = [
     "GitHub Pages run 36669916012 compiled the simplified Mirth source successfully, then failed because the emitted binary lacked the executable bit.",
     "Nix connected-composition run 36669915957 reached the Pages presentation job on the same commit; its final receipt is pending at the time of this change.",
-    "GitHub Pages run 36670862774 reached Elm after synchronization, but the first test-dependencies insertion produced malformed JSON by leaving stale closing braces in both generated manifests.",
-    "The remediation now replaces both generated elm.json blocks with complete, valid Elm 0.19.1 application manifests including empty direct and indirect test-dependencies.",
+    "GitHub Pages run 36671074152 is the verification attempt after replacing both generated elm.json blocks with complete Elm 0.19.1 manifests.",
+    "A final workflow-text audit found and removed a duplicated heredoc terminator in the standalone Pages workflow before relying on its result.",
     "No green Pages deployment is claimed until the corrected standalone Pages workflow completes successfully."
   ],
   caveat = "Generated presentation metadata is synchronization/build data, not proof evidence. Agda --safe remains the only proof authority.",

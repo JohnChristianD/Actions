@@ -79,7 +79,7 @@ jobs:
               "indirect": {}
             }
           }
-          JSON          JSON
+          JSON
             mkdir -p "${RUNNER_TEMP}/pages"
             cd "$tmp"
             elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
