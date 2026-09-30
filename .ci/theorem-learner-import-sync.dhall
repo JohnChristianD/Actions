@@ -1,11 +1,11 @@
 let learnerModule : Text =
-      "Exotic.FullCoupled.CanonicalLearnerMonolith"
+      "FullCoupled.CanonicalLearnerMonolith"
 let learnerPath : Text =
-      "Exotic/FullCoupled/CanonicalLearnerMonolith.agda"
+      "FullCoupled/CanonicalLearnerMonolith.agda"
 let theoremModule : Text =
-      "Exotic.FullCoupled.TheoremsMonolith"
+      "FullCoupled.TheoremsMonolith"
 let theoremPath : Text =
-      "Exotic/FullCoupled/TheoremsMonolith.agda"
+      "FullCoupled/TheoremsMonolith.agda"
 let expectedImport : Text =
       "open import " ++ learnerModule ++ " as C"
 in ''
