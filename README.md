@@ -56,17 +56,17 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface outside internal `.ci` paths: 3 public documents.
-The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents.
-
-### Forth lab
-
-- [Change record — 2026-09-29](forth-lab/CHANGE_RECORD.md)
-- [Isolated Min / Forth / gbForth / Factor / Pony Lab](forth-lab/README.md)
+Generated from the tracked Markdown surface: 3 files.
+The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
 
 ### Research
 
 - [Agda proof search in this repository](docs/research/agda-auto-proof-search.md)
+
+### Repository documentation
+
+- [Change record — 2026-09-29](forth-lab/CHANGE_RECORD.md)
+- [Isolated Min / Forth / gbForth / Factor / Pony Lab](forth-lab/README.md)
 
 <!-- END GENERATED DOCUMENTATION INDEX -->
 
@@ -297,59 +297,14 @@ The GitHub Pages build installs Nix before entering the pinned flake environment
 The repository has a deterministic README refresher. The Dhall surface renders the updater script; the Nix flake exposes it as `slow-readme-update`; and the scheduled GitHub workflow runs it against `main`. The updater records every commit since the previous processed commit rather than sampling an arbitrary recent window.
 
 <!-- BEGIN RECENT COMMIT TOTALITY -->
-last-processed-commit: 07b1b1b9b5fbd2799c5c0998ead035ec023cedb4
-unprocessed-commit-count: 47
+last-processed-commit: 7d4d6a727ff8741d426202e615e9205a19290df3
+unprocessed-commit-count: 2
 
 The scheduled updater accounts for every commit since the previous processed commit.
 ascii-safe-commit-subjects: true
 
-- `07b1b1b9b5fb` feat: graph Agda search and theorem dominance surfaces
-- `66b35971509d` Delete workloads/hex directory
-- `ec9e9137930e` docs: record Pages pre-merge verification
-- `a9d1d0b21fa1` ci: require Pages build before auto-merge
-- `f5c38521b054` ci: verify Pages build before merge
-- `9b58c4be67ed` docs: record CI rebase and Mercury purity boundary
-- `170bb37b9a3d` ci: separate Pages deployment from PR checks
-- `cc126b53f973` ci: queue rebase checks and run Mercury purity gate
-- `d56c32b1b7cc` ci: gate Mercury sources for pure-only syntax
-- `85434805b247` docs: record post-merge CI and Pages verification
-- `37d7d61977ef` fix: close canonical executable Dhall lane
-- `7d3609e6742a` docs: record Pony toolchain addition
-- `c678c086a260` test: verify Pony example
-- `266560a120d2` docs: add Pony lab instructions
-- `9cfd8d0fc79d` feat: add Pony compiler to lab flake
-- `61c219d48037` feat: add Pony example
-- `fc3826c14662` fix: make Min example emit output
-- `767af72cdde4` docs: record Factor and executable verification changes
-- `e5b1da37b374` docs: document Factor and runnable lab checks
-- `ce3322031283` feat: add Factor to lab flake
-- `fe9071bb148a` fix: make gbForth example render output
-- `b6fcfc44572f` test: verify forth lab examples
-- `adc3603c6f31` feat: add Factor example
-- `5e24400ef661` chore: ignore local forth lab outputs
-- `ec3640e423a7` fix: escape shell parameter expansion in lab flake
-- `f73db6afd4de` feat: add isolated Min Forth gbForth lab
-- `cdee791c7e07` feat: add isolated Min Forth gbForth lab
-- `42232ff2311c` feat: add isolated Min Forth gbForth lab
-- `837aba0c9ad8` feat: add isolated Min Forth gbForth lab
-- `91d6d919c4ef` feat: add isolated Min Forth gbForth lab
-- `66e3602b2b1f` feat: add isolated Min Forth gbForth lab
-- `d892d299ca33` fix: restore scoped CI lanes
-- `70897faab594` fix: keep executable lane scoped to safe learner semantics
-- `2708ba33e6f0` fix: keep IO adapter outside safe proof boundary
-- `8f503617dd77` fix: close executable Dhall lane
-- `f2a57de144e8` docs: record canonical learner executable change
-- `ac7657083c11` docs: document canonical learner executable surface
-- `29e8f55a22b6` ci: execute canonical learner binary in Nix workflow
-- `967de6ca8b2b` ci: verify canonical learner executable
-- `7024438df30d` feat: add executable canonical learner entrypoint
-- `1ca414bc6893` fix: align Mirth module name with filename
-- `1f1960158545` refactor: prune unused Tsallis theorem wrappers
-- `b24447c53298` test: run Mirth Pages build on pull requests
-- `9e317879781e` docs: record live Mirth Pages boundary
-- `3d84e359ce51` fix: install Nix before Mirth Pages build
-- `e87ba830fd6d` fix: make Mirth theorem surface source-derived
-- `010c2e49758a` docs: refresh README from commit totality
+- `7d4d6a727ff8` fix: resync documentation and GitHub Pages presentation
+- `e9576fb6a628` docs: refresh README from commit totality
 <!-- END RECENT COMMIT TOTALITY -->
 
 
