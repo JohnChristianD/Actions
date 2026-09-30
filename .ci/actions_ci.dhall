@@ -31,6 +31,14 @@ let script = merge {
     test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
     "$Z3_EXECUTABLE" -version
 
+    AGDA_LIB_ROOT="$HOME/.agda/libraries.d"
+    AGDA_TEMP_ROOT="$RUNNER_TEMP/agda-schmitty-libs"
+    rm -rf "$AGDA_TEMP_ROOT"
+    mkdir -p "$AGDA_TEMP_ROOT"
+    cp -a "$AGDA_LIB_ROOT/standard-library/v1.7.1" "$AGDA_TEMP_ROOT/standard-library"
+    cp -a "$AGDA_LIB_ROOT/agdarsec/v0.5.0" "$AGDA_TEMP_ROOT/agdarsec"
+    cp -a "$AGDA_LIB_ROOT/schmitty/v1.0.1" "$AGDA_TEMP_ROOT/schmitty"
+
     safe_seed="$RUNNER_TEMP/SchmittySafeDependencies.agda"
     cat > "$safe_seed" <<'AGDA'
 {-# OPTIONS --safe #-}
@@ -39,9 +47,16 @@ open import Data.Integer using (ℤ)
 open import Relation.Binary.PropositionalEquality using (_≡_)
 import Data.Integer.Literals
 AGDA
-    "$AGDA_SCHMITTY_COMMAND" --safe -l standard-library -i "$RUNNER_TEMP" "$safe_seed"
+    "$AGDA_SCHMITTY_COMMAND" --safe \
+      -i "$AGDA_TEMP_ROOT/standard-library/src" \
+      -i "$RUNNER_TEMP" "$safe_seed"
+    test -f "$AGDA_TEMP_ROOT/standard-library/src/Data/Unit/Base.agdai"
 
-    "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -l schmitty -i . ProofAutomation/SchmittyAssisted.agda
+    "$AGDA_SCHMITTY_COMMAND" --allow-exec \
+      -i "$AGDA_TEMP_ROOT/standard-library/src" \
+      -i "$AGDA_TEMP_ROOT/agdarsec/src" \
+      -i "$AGDA_TEMP_ROOT/schmitty/src" \
+      -i . ProofAutomation/SchmittyAssisted.agda
     test -f ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'SMT.Backend.Z3' ProofAutomation/SchmittyAssisted.agda
     grep -Fq 'solveZ3' ProofAutomation/SchmittyAssisted.agda
