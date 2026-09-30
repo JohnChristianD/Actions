@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Browser
-import GeneratedTheoremSurface
 import Html exposing (Html, a, code, div, h1, h2, li, main_, p, pre, text, ul)
 import Html.Attributes exposing (class, href, target, title)
 
@@ -55,19 +54,16 @@ view _ =
                 ]
             , panel "Boundary"
                 [ p []
-                    [ text "Elm is presentation-only. It consumes Mirth-synchronized Agda module metadata and defines no learner semantics or proof evidence." ]
+                    [ text "Elm is presentation-only. It displays the fixed two-monolith inventory and defines no learner semantics or proof evidence." ]
                 ]
             ]
         , h2 [] [ text "Agda modules" ]
-        , ul [] (List.map moduleItem GeneratedTheoremSurface.agdaModules)
+        , ul [] (List.map moduleItem agdaModules)
         , h2 [] [ text "Topology" ]
         , pre []
             [ text """Agda --safe
      |
      +----> Mercury discovery / dependency graph
-     |
-     v
-  Mirth source synchronization
      |
      v
   Dhall presentation contract
@@ -91,3 +87,10 @@ moduleItem value =
 link : String -> String -> Html Msg
 link label url =
     p [] [ a [ href url, target "_blank", title label ] [ text label ] ]
+
+
+agdaModules : List String
+agdaModules =
+    [ "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith"
+    , "Exotic.ERL.FullCoupled.TheoremsMonolith"
+    ]
