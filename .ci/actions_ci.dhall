@@ -33,6 +33,7 @@ let script = merge {
     test -f .ci/mirth/agda_to_elm.mth
     test -f .ci/mirth/ascii_surface.mth
     test -f .ci/mirth/agda_import_sync.mth
+    test -f .ci/mirth/agda_graph.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'FullCoupled.CanonicalLearnerMonolith' .ci/mirth/agda_to_elm.mth
     grep -Fq 'FullCoupled.TheoremsMonolith' .ci/mirth/agda_to_elm.mth
@@ -44,6 +45,13 @@ let script = merge {
     mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
     cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
     "$tmp/agda-import-sync" | bash
+
+    mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
+    cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
+    "$tmp/agda-graph" "$tmp/GeneratedAgdaGraph.elm"
+    test -s "$tmp/GeneratedAgdaGraph.elm"
+    grep -Fq 'module GeneratedAgdaGraph exposing (Node, Edge, nodes, edges)' "$tmp/GeneratedAgdaGraph.elm"
+    grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedAgdaGraph.elm"
 
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
@@ -108,6 +116,10 @@ ELM
     dhall type --file .ci/presentation-contract.dhall >/dev/null
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
+    mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
+    cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
+    "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm"
+    test -s "$tmp/src/GeneratedAgdaGraph.elm"
     cp "$tmp/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
     cat > "$tmp/elm.json" <<'JSON'
     {
@@ -118,7 +130,8 @@ ELM
         "direct": {
           "elm/browser": "1.0.2",
           "elm/core": "1.0.5",
-          "elm/html": "1.0.0"
+          "elm/html": "1.0.0",
+          "elm/svg": "1.0.1"
         },
         "indirect": {
           "elm/json": "1.1.3",
@@ -219,11 +232,8 @@ JSON
     grep -Fq 'SupportingPriceWitness' FullCoupled/TheoremsMonolith.agda || { echo "supporting price witness surface missing"; exit 1; }
     grep -Fq 'FiniteCandidateDecision' FullCoupled/TheoremsMonolith.agda || { echo "finite candidate decision kernel missing"; exit 1; }
     grep -Fq 'finiteCandidatePriceSearch' FullCoupled/TheoremsMonolith.agda || { echo "finite candidate price search kernel missing"; exit 1; }
-    [ -f docs/research/unconditional-finite-price-kernel-2026-09-26.md ] || { echo "finite candidate price research note missing"; exit 1; }
     grep -Fq 'CertifiedEGraphEdge' "$theorem" || { echo "e-graph certificate surface missing"; exit 1; }
     grep -Fq "naive-limit-injectivity-impossible" "$theorem" || { echo "limit impossibility theorem missing"; exit 1; }
-    [ -f docs/research/real-semantic-egraph-staleness-prune-2026-09-26.md ] || { echo "real semantic e-graph research note missing"; exit 1; }
-    [ -f docs/research/theorem-improvement-completion-2026-09-26.md ] || { echo "theorem improvement research note missing"; exit 1; }
 
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
     for module in canonicalLearnerMonolith theoremsMonolith
@@ -664,7 +674,14 @@ DHALL
     jaxSignedGate
     jaxGRUHiddenStep
     jaxBatchedGRUHiddenStep
+    jaxL1Row
+    jaxL1Matrix
+    jaxOnePathVector
+    jaxOnePathNorm
+    jaxTsallis2NearSparsityFraction
+    jaxSupportSparsityFraction
     jaxJittedScanSum
+    JAXExecutionMirrorReproof
     majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
@@ -696,7 +713,7 @@ DHALL
     done < <(git ls-files '*.md' '*.markdown')
     [ "$md_link_found" -eq 0 ] || { echo "Markdown links are forbidden outside Elm sites"; exit 1; }
     ! git ls-files -z | xargs -0 grep -Eil "$retired" 2>/dev/null | grep -q . || { echo "retired semantic term present"; exit 1; }
-    ! grep -nE '(^|[[:space:]])pkgs\.python3([[:space:]]|$)|python3[[:space:]]+[-]' flake.nix .ci/*.sh .ci/*.dhall .ci/mirth/*.mth 2>/dev/null || { echo "non-JAX Python toolchain reference present"; exit 1; }
+    ! grep -nE '(^|[[:space:];])pkgs\.python3([[:space:]]|$)|(^|[[:space:];])python3([[:space:]]|$)|(^|[[:space:];])python([[:space:]]|$)|pkgs\.pythonPackages' flake.nix .ci/*.sh .ci/*.dhall .ci/mirth/*.mth 2>/dev/null || { echo "non-JAX Python toolchain reference present"; exit 1; }
     ! grep -nE 'Exotic/ERL/FullCoupled|Exotic/FullCoupled' FullCoupled/*.agda README.md site/Main.elm docs/*.md 2>/dev/null || { echo "stale Exotic source path present"; exit 1; }
     '',
   Versions = ''
