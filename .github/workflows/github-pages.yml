@@ -77,7 +77,8 @@ jobs:
           }
           JSON
             mkdir -p "${RUNNER_TEMP}/pages"
-            elm make "$tmp/src/Main.elm" --optimize --output "${RUNNER_TEMP}/pages/elm.js"
+            cd "$tmp"
+            elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
             test -s "${RUNNER_TEMP}/pages/elm.js"
           '
 

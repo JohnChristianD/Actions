@@ -86,7 +86,8 @@ let script = merge {
     }
 JSON
     mkdir -p "$tmp/pages"
-    elm make "$tmp/src/Main.elm" --optimize --output "$tmp/pages/elm.js"
+    cd "$tmp"
+    elm make src/Main.elm --optimize --output "$tmp/pages/elm.js"
     test -s "$tmp/pages/elm.js"
     echo "pages-build=pass"
     '',
