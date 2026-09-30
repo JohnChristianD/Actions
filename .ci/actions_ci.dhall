@@ -645,7 +645,7 @@ DHALL
     CanonicalLearnerHodgeMaxwellCompositionTheorem
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
-    bairdSevenStar
+    canonicalLearnerBairdSevenStar
     majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
