@@ -4563,29 +4563,29 @@ hsMap :
   HSSVector A n →
   HSSVector B n
 hsMap f hsNil = hsNil
-hsMap f (x hsCons xs) = f x hsCons hsMap f xs
+hsMap f (hsCons x xs) = hsCons (f x) (hsMap f xs)
 
 hsOnes : ∀ n → HSSVector Nat n
 hsOnes zero = hsNil
-hsOnes (suc n) = suc zero hsCons hsOnes n
+hsOnes (suc n) = hsCons (suc zero) (hsOnes n)
 
 hsDot : ∀ {n} → HSSVector Nat n → HSSVector Nat n → Nat
 hsDot hsNil hsNil = zero
-hsDot (x hsCons xs) (y hsCons ys) =
+hsDot (hsCons x xs) (hsCons y ys) =
   (x * y) + hsDot xs ys
 
 hsSum : ∀ {n} → HSSVector Nat n → Nat
 hsSum hsNil = zero
-hsSum (x hsCons xs) = x + hsSum xs
+hsSum (hsCons x xs) = x + hsSum xs
 
 hsAbsVec : ∀ {n} → HSSVector C.Int8 n → HSSVector Nat n
 hsAbsVec hsNil = hsNil
-hsAbsVec (x hsCons xs) =
-  C.int8Magnitude x hsCons hsAbsVec xs
+hsAbsVec (hsCons x xs) =
+  hsCons (C.int8Magnitude x) (hsAbsVec xs)
 
 rowL1 : ∀ {n} → HSSVector C.Int8 n → Nat
 rowL1 hsNil = zero
-rowL1 (x hsCons xs) =
+rowL1 (hsCons x xs) =
   C.int8Magnitude x + rowL1 xs
 
 weightL1 :
@@ -4593,7 +4593,7 @@ weightL1 :
   HSSMatrix C.Int8 m n →
   Nat
 weightL1 hsNil = zero
-weightL1 (row hsCons rows) =
+weightL1 (hsCons row rows) =
   rowL1 row + weightL1 rows
 
 hsMatVecAbs :
@@ -4602,15 +4602,15 @@ hsMatVecAbs :
   HSSVector Nat n →
   HSSVector Nat m
 hsMatVecAbs hsNil _ = hsNil
-hsMatVecAbs (row hsCons rows) xs =
-  hsDot (hsAbsVec row) xs hsCons hsMatVecAbs rows xs
+hsMatVecAbs (hsCons row rows) xs =
+  hsCons (hsDot (hsAbsVec row) xs) (hsMatVecAbs rows xs)
 
 onePathVector :
   ∀ {d L} →
   HSSVector (HSSMatrix C.Int8 d d) L →
   HSSVector Nat d
 onePathVector hsNil = hsOnes _
-onePathVector (W hsCons Ws) =
+onePathVector (hsCons W Ws) =
   hsMatVecAbs W (onePathVector Ws)
 
 onePathNorm :
@@ -4627,7 +4627,7 @@ rowL1OnesAbs :
   ∀ {n} (xs : HSSVector C.Int8 n) →
   hsDot (hsAbsVec xs) (hsOnes n) ≡ rowL1 xs
 rowL1OnesAbs hsNil = refl
-rowL1OnesAbs (x hsCons xs) =
+rowL1OnesAbs (hsCons x xs) =
   trans
     (cong₂ _+_
       (hsNatMulOne (C.int8Magnitude x))
@@ -4637,9 +4637,9 @@ rowL1OnesAbs (x hsCons xs) =
 onePathOneLayer :
   ∀ {d}
   (W : HSSMatrix C.Int8 d d) →
-  onePathNorm (W hsCons hsNil) ≡ weightL1 W
+  onePathNorm (hsCons W hsNil) ≡ weightL1 W
 onePathOneLayer hsNil = refl
-onePathOneLayer (row hsCons rows) =
+onePathOneLayer (hsCons row rows) =
   trans
     (cong₂ _+_
       (rowL1OnesAbs row)
@@ -4661,7 +4661,7 @@ layerNormPair :
 layerNormPair W₁ W₂ =
   hiddenSynergyNormPair
     (weightL1 W₂ + weightL1 W₁)
-    (onePathNorm (W₂ hsCons W₁ hsCons hsNil))
+    (onePathNorm (hsCons W₂ (hsCons W₁ hsNil)))
 
 hiddenSynergy-one-layer-exact :
   ∀ {d} (W : HSSMatrix C.Int8 d d) →
@@ -4762,7 +4762,7 @@ generalTsallis2NearSparsity-zero :
 generalTsallis2NearSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
-... | suc q = ⊥-elim (natZeroNotSuc (sym h))
+... | suc q = ⊥-elim (natZeroNotSuc h)
 
 generalTsallis2NearSparsity-definition :
   ∀ (xs : ActionWeights) →
