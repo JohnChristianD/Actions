@@ -81,13 +81,23 @@ A real PPAD-completeness result would require an explicit polynomial-time search
 
 No blanket Turing-completeness or compression/prediction theorem is inferred from recursion or algebraic structure either.
 
-## JAX boundary
+## JAX execution mirror
 
-There is currently no JAX source tree or JAX dependency in this repository. The proof surface is Agda-native and does not depend on Python or JAX libraries.
+`tools/jax_reference.py` provides a JAX-only execution mirror for the computational kernels where JAX has a clear array-execution advantage. The current mirror covers:
 
-The repository therefore does not claim to have injected and reproved the entire JAX API. A statement about every JAX function would require a fixed finite API surface and exact specifications for each operation. The current formalisation instead proves the concrete arithmetic, list, recurrence, GRU, optimizer, and state-transition functions actually used by the tracked learner.
+- independent maps with `jax.vmap`;
+- fixed-length recurrent execution with `jax.lax.scan`;
+- associative prefix work with `jax.lax.associative_scan`;
+- score ordering with `jax.numpy.lexsort`;
+- dynamic sparse-support discovery with one sorted prefix pass, plus a specialized fixed-`k` `jax.lax.top_k` path;
+- exact integer LayerNorm radicands;
+- the concrete GRU hidden-state update used by the learner.
 
-No extra Python package is introduced merely to create a JAX-equivalence claim.
+The mirror uses JAX `int64` arithmetic so these kernels preserve the Agda `Int8` wrapper's unbounded-integer semantics rather than introducing floating-point approximation. The check runs `jax.jit` and `jax.eval_shape`; it adds no Flax, Optax, NumPy-side algorithm package, or other ML library.
+
+JAX is an executable optimization/reference boundary, not a proof authority. Theorem records, injectivity, left-inverse proofs, convergence proofs, physics/economics bridges, and the canonical-learner Baird boundary remain Agda proofs. The theorem monolith has no computational algorithm that can be safely replaced by a JAX runtime without changing the proof architecture.
+
+JAX is pinned to 0.11.2 in its dedicated verification workflow. Update the workflow and this section together when the pinned JAX release changes.
 
 ## Mirth and Elm
 
@@ -119,6 +129,7 @@ The CI contract checks:
 - Mirth import and ASCII synchronization;
 - flattened Agda source paths;
 - pure Elm compilation and Pages verification;
+- JAX execution-mirror compilation/shape verification with the JAX package only;
 - pinned Nix composition.
 
 ## Documentation index

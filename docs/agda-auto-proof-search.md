@@ -71,6 +71,19 @@ The current interactive theorem path is:
 
 The repository-wide batch check remains authoritative after any interactive search session.
 
+## JAX execution mirror
+
+The JAX boundary is executable and finite rather than a claim about the entire JAX API. `tools/jax_reference.py` is aligned with the concrete algorithms in the learner/theorem surface:
+
+- independent maps use `vmap`;
+- recurrence uses `lax.scan`;
+- associative prefix work uses `associative_scan`;
+- ordered score selection uses `lexsort`;
+- sparse-support discovery uses one sorted magnitude vector plus cumulative sums, with `top_k` as a fixed-`k` specialization;
+- integer LayerNorm and the scalar GRU update use exact JAX `int64`.
+
+The validation workflow compiles these kernels with `jax.jit` and traces their shapes with `jax.eval_shape`. This is an execution check, not an Agda proof. The tracked theorem monolith remains the proof authority.
+
 ## Presentation synchronization
 
 The Elm Pages surface is independent of proof search. Mirth synchronizes the current monolith inventory and shared Agda import block.

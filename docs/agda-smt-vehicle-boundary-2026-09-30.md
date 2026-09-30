@@ -71,9 +71,23 @@ The injectivity/convergence machinery does not automatically identify those doma
 
 No PPAD-completeness theorem is claimed. A genuine result needs an explicit search relation, polynomial-size encoding, totality, membership, and a concrete PPAD-hardness reduction. Those proof objects are not present.
 
-## JAX boundary
+## JAX execution mirror
 
-No JAX source or dependency is tracked. The repository therefore makes no whole-JAX equivalence claim and adds no Python/JAX package merely to create one.
+The executable JAX surface is deliberately finite: `tools/jax_reference.py` mirrors the concrete learner algorithms where array execution is a meaningful replacement for scalar/recursive execution.
+
+The mirror uses:
+
+- `jax.vmap` for independent maps;
+- `jax.lax.scan` for recurrent state-carrying execution;
+- `jax.lax.associative_scan` for associative prefix accumulation;
+- `jax.numpy.lexsort` for the score ordering used by the sparsemax surface;
+- a one-sort/one-prefix-pass sparse-support computation, with `jax.lax.top_k` reserved for fixed-`k` specialization;
+- exact `int64` integer LayerNorm arithmetic;
+- the concrete GRU hidden-state equation from the canonical learner.
+
+The sparse-support mirror is the principal algorithmic improvement: it avoids repeatedly reconstructing `topCodes k xs` while testing every candidate `k`. The JAX implementation computes the descending magnitudes once, computes all prefix sums once, and evaluates the support inequalities in one vectorized pass.
+
+The workflow pins JAX 0.11.2 and validates the mirror with `jax.jit` and `jax.eval_shape`. No extra ML framework or Python algorithm package is added. The Agda theorem surface remains the semantic authority, and proof terms are not replaced by JAX execution.
 
 ## Presentation and CI
 

@@ -83,7 +83,19 @@ view _ =
             , p []
                 [ text "No PPAD-completeness theorem is claimed. A valid result needs a search relation, polynomial encoding and size bounds, membership, totality, and an explicit hardness reduction." ]
             , p []
-                [ text "No JAX source or dependency is tracked. The repository therefore does not claim to reprove all JAX functions. Agda proves the concrete arithmetic, recurrence, GRU, optimizer, and learner functions that are actually present." ]
+                [ text "The executable JAX mirror is deliberately finite and concrete rather than a claim about the whole JAX API." ]
+            , ul [] (List.map codeItem
+                [ "tools/jax_reference.py"
+                , "jax.vmap"
+                , "jax.lax.scan"
+                , "jax.lax.associative_scan"
+                , "jax.numpy.lexsort"
+                , "jax.lax.top_k"
+                , "integer LayerNorm / int64"
+                , "concrete GRU hidden-state step"
+                ])
+            , p []
+                [ text "The JAX workflow pins only the JAX package and validates the mirror through jax.jit and jax.eval_shape. Agda remains the proof authority." ]
             ]
         , section [] [ h2 [] [ text "Mirth, Elm, and CI" ]
             , p []
@@ -95,6 +107,8 @@ view _ =
             , ul []
                 [ linkItem "Canonical learner" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/CanonicalLearnerMonolith.agda"
                 , linkItem "Theorem monolith" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/TheoremsMonolith.agda"
+                , linkItem "JAX reference" "https://github.com/JohnChristianD/Actions/blob/main/tools/jax_reference.py"
+                , linkItem "JAX workflow" "https://github.com/JohnChristianD/Actions/blob/main/.github/workflows/jax-reference.yml"
                 , linkItem "CI contracts" "https://github.com/JohnChristianD/Actions/tree/main/.ci"
                 , linkItem "Repository root" "https://github.com/JohnChristianD/Actions"
                 ]
