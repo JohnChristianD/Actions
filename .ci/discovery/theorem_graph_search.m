@@ -118,6 +118,10 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_gru_injective_tail_stability_convergence_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- implementation.
 
 
@@ -131,6 +135,12 @@ graph_gru_fractal_limit_convergence_adapter_plan(Laws, Plan) :-
 graph_canonical_integer_gru_fractal_limit_composition_plan(Laws, Plan) :-
     search_named_required_plan(
         "CanonicalIntegerGRUFractalLimitCompositionTheorem",
+        Laws,
+        Plan).
+
+graph_gru_injective_tail_stability_convergence_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
         Laws,
         Plan).
 
@@ -497,7 +507,10 @@ graph_dominated_public_theorems_2([Law | Laws], All, Acc0, Acc) :-
 :- func graph_pruned_public_theorem_names = list(string).
 graph_pruned_public_theorem_names = [
     "integerLayerNorm-egraph-astar-eventual-semantic-closure",
-    "integerLayerNorm-egraph-astar-infinite-stable-tail"
+    "integerLayerNorm-egraph-astar-infinite-stable-tail",
+    "eGraphEconomicFixedPoint",
+    "eGraphEconomicWalrasianEquilibrium",
+    "eGraphEconomicComposition-injective"
 ].
 
 :- pred search_composite_law_plans(
@@ -645,6 +658,7 @@ graph_required_theorems = [
     "isomorphismFixedPointTransport",
     "isomorphismIterateFixedPointTransport",
     "economicEquilibriumExistenceFromConvergentFixedPoint",
+    "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
     "GeneralizedWalrasianFixedPointClosure",
     "generalizedWalrasianExistence-from-topological-fixed-point",
     "generalizedWalrasianExistence-from-topological-fixed-point-transport",
@@ -798,7 +812,8 @@ graph_review_frontier_names = [
     "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
     "AStarPlanMonoidTheorem",
     "CanonicalTokenArbitraryLengthGenerationTheorem",
-    "NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem"
+    "NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem",
+    "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem"
 ].
 
 graph_review_frontier_plans(Laws, Plans) :-
