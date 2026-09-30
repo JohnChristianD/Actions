@@ -4571,6 +4571,94 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
         (λ _ → trivialContinuity)
         (λ _ → refl)))
 
+------------------------------------------------------------------------
+-- Baird seven-state off-policy divergence boundary.
+--
+-- The concrete Baird setup is recorded explicitly here, while the actual
+-- numerical divergence result remains an input witness. This prevents
+-- literature claims or an informal experiment from becoming an Agda axiom.
+-- The setup matches the standard seven-state, eight-feature construction:
+-- six upper states, one lower state, dashed behavior probability 6/7,
+-- solid behavior probability 1/7, target policy always solid, zero reward,
+-- and discount factor 0.99.
+------------------------------------------------------------------------
+
+record BairdSevenStarDivergenceWitness
+  (Weight : Set)
+  (update : Weight → Weight) : Set₁ where
+  constructor bairdSevenStarDivergenceWitness
+  field
+    divergence :
+      ¬ (Σ Weight (λ fixed → GloballyEventuallyFixed update fixed))
+
+open BairdSevenStarDivergenceWitness public
+
+record BairdSevenStarCounterexampleTheorem : Set₁ where
+  constructor bairdSevenStarCounterexampleTheorem
+  field
+    stateCount : Nat
+    stateCountIsSeven : stateCount ≡ 7
+    featureDimension : Nat
+    featureDimensionIsEight : featureDimension ≡ 8
+    behaviorDashedNumerator : Nat
+    behaviorDashedNumeratorIsSix : behaviorDashedNumerator ≡ 6
+    behaviorSolidNumerator : Nat
+    behaviorSolidNumeratorIsOne : behaviorSolidNumerator ≡ 1
+    behaviorDenominator : Nat
+    behaviorDenominatorIsSeven : behaviorDenominator ≡ 7
+    targetIsSolid : Nat
+    targetIsSolidIsOne : targetIsSolid ≡ 1
+    rewardIsZero : ⊤
+    gammaNumerator : Nat
+    gammaNumeratorIs99 : gammaNumerator ≡ 99
+    gammaDenominator : Nat
+    gammaDenominatorIs100 : gammaDenominator ≡ 100
+    upperStateValue :
+      ℤ → ℤ → ℤ
+    upperStateValueEquation :
+      ∀ w₈ wᵢ →
+      upperStateValue w₈ wᵢ ≡
+      2 * wᵢ + w₈
+    lowerStateValue :
+      ℤ → ℤ → ℤ
+    lowerStateValueEquation :
+      ∀ w₇ w₈ →
+      lowerStateValue w₇ w₈ ≡
+      w₇ + 2 * w₈
+    divergenceWitness :
+      ∀ {Weight : Set} {update : Weight → Weight} →
+      BairdSevenStarDivergenceWitness Weight update →
+      ⊤
+
+bairdSevenStar :
+  ∀ {Weight : Set} {update : Weight → Weight} →
+  BairdSevenStarDivergenceWitness Weight update →
+  BairdSevenStarCounterexampleTheorem
+bairdSevenStar W =
+  bairdSevenStarCounterexampleTheorem
+    7
+    refl
+    8
+    refl
+    6
+    refl
+    1
+    refl
+    7
+    refl
+    1
+    refl
+    tt
+    99
+    refl
+    100
+    refl
+    (λ w₈ wᵢ → 2 * wᵢ + w₈)
+    (λ w₈ wᵢ → refl)
+    (λ w₇ w₈ → w₇ + 2 * w₈)
+    (λ w₇ w₈ → refl)
+    (λ _ → tt)
+
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
   constructor offPolicyFunctionApproximationStabilityBoundary
   field
