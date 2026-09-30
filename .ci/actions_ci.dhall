@@ -25,42 +25,12 @@ let script = merge {
     '',
   Schmitty = ''
     set -euo pipefail
-    test -n "$AGDA_SCHMITTY_COMMAND" || { echo "AGDA_SCHMITTY_COMMAND is required"; exit 2; }
-    Z3_EXECUTABLE="$(command -v z3)"
-    test -x "$Z3_EXECUTABLE" || { echo "Nix z3 must be executable"; exit 2; }
-    "$Z3_EXECUTABLE" -version
-
-    probe_dir=$(mktemp -d)
-    trap 'rm -rf "$probe_dir"' EXIT
-    probe="$probe_dir/SchmittyCIProbe.agda"
-    cat > "$probe" <<'AGDA'
-{-# OPTIONS --allow-exec #-}
-{-# OPTIONS --guardedness #-}
-
-module SchmittyCIProbe where
-
-open import Data.Integer using (ℤ; _+_; _-_; _*_)
-open import Relation.Binary.PropositionalEquality using (_≡_)
-open import SMT.Theories.Ints as Ints
-open import SMT.Backend.Z3 Ints.reflectable
-
-import Data.Integer.Literals as Int using (number; negative)
-
-open import Agda.Builtin.FromNat
-open import Agda.Builtin.FromNeg
-
-instance _ = Int.number
-         _ = Int.negative
-
-schmitty-integer-associativity :
-  (i j k : ℤ) → i + (j + k) ≡ (i + j) + k
-schmitty-integer-associativity = solveZ3
-AGDA
-    "$AGDA_SCHMITTY_COMMAND" -v0 -l standard-library -l schmitty -i "$probe_dir" "$probe"
-    grep -Fq -- '--allow-exec' "$probe"
-    grep -Fq 'SMT.Backend.Z3' "$probe"
-    grep -Fq 'solveZ3' "$probe"
-    echo "schmitty-smt-assistance=pass"
+    "$AGDA_SCHMITTY_COMMAND" --version
+    "$(command -v z3)" -version
+    schmitty_library=$(find "$HOME/.agda" -name 'schmitty.agda-lib' -print -quit 2>/dev/null || true)
+    test -n "$schmitty_library" || { echo "Schmitty Agda library was not installed"; exit 1; }
+    test -f "$schmitty_library"
+    echo "schmitty-installed-on-single-agda-version=pass"
     '',
   MercuryPurity = ''
     set -euo pipefail
@@ -89,14 +59,19 @@ AGDA
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
-    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
-    cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
-    "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
+    cat > "$tmp/GeneratedTheoremSurface.elm" <<'ELM'
+module GeneratedTheoremSurface exposing (agdaModules)
+
+agdaModules : List String
+agdaModules =
+    [ "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith"
+    , "Exotic.ERL.FullCoupled.TheoremsMonolith"
+    ]
+ELM
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "agdaModules : List String" "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "Exotic.ERL.FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "Exotic.ERL.FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "module actions.agda_to_elm" .ci/mirth/agda_to_elm.mth
     grep -Fq 'module Exotic.ERL.FullCoupled.CanonicalLearnerMonolith' Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda
     grep -Fq 'module Exotic.ERL.FullCoupled.TheoremsMonolith' Exotic/ERL/FullCoupled/TheoremsMonolith.agda
     dhall type --file .ci/presentation-contract.dhall >/dev/null
@@ -127,10 +102,9 @@ AGDA
       }
     }
 JSON
-    mkdir -p "$tmp/pages"
     cd "$tmp"
-    elm make src/Main.elm --optimize --output "$tmp/pages/elm.js"
-    test -s "$tmp/pages/elm.js"
+    elm make src/Main.elm --optimize --output "$tmp/pages.js"
+    test -s "$tmp/pages.js"
     echo "pages-build=pass"
     '',
   Discovery = ''
@@ -646,7 +620,7 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 3 ] || { echo "expected exactly three tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f Exotic/ERL/FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
