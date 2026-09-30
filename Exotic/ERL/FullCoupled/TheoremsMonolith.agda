@@ -4368,6 +4368,169 @@ GloballyEventuallyFixed :
 GloballyEventuallyFixed update fixed =
   ∀ state → Σ Nat (λ n → iterateUpdate update n state ≡ fixed)
 
+------------------------------------------------------------------------
+-- Generic GRU tail-stability convergence and identifiability kernel.
+--
+-- The only dynamic input is an eventually fixed feature tail. Exact
+-- conjugacy moves that tail back to the source state, and injectivity
+-- recovers the state equality. No equilibrium or physical/economic
+-- witness is fabricated here; those remain separate semantic bridges.
+------------------------------------------------------------------------
+
+record GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+  (State Feature : Set)
+  (stateStep : State → State)
+  (featureStep : Feature → Feature)
+  (encode : State → Feature) : Set₁ where
+  constructor gruInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+  field
+    encodeInjective :
+      ∀ {s t : State} →
+      encode s ≡ encode t →
+      s ≡ t
+    stepConjugacy :
+      ∀ s →
+      encode (stateStep s) ≡
+      featureStep (encode s)
+    featureTailStable :
+      ∀ s →
+      Σ Nat
+        (λ n →
+          featureStep
+            (iterateStep
+              featureStep
+              n
+              (encode s))
+          ≡
+          iterateStep
+            featureStep
+            n
+            (encode s))
+
+open GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem public
+
+iterateStep-add :
+  ∀ {State : Set}
+  (step : State → State)
+  (m n : Nat)
+  (s : State) →
+  iterateStep step (m + n) s
+  ≡
+  iterateStep step n
+    (iterateStep step m s)
+iterateStep-add step zero n s = refl
+iterateStep-add step (suc m) n s =
+  iterateStep-add step m n (step s)
+
+iterateStep-fixed :
+  ∀ {State : Set}
+  (step : State → State)
+  {s : State} →
+  step s ≡ s →
+  ∀ n →
+  iterateStep step n s ≡ s
+iterateStep-fixed step fixed zero = refl
+iterateStep-fixed step fixed (suc n) =
+  trans
+    (cong
+      (iterateStep step n)
+      fixed)
+    (iterateStep-fixed step fixed n)
+
+gruInjectiveTailStability-tailFixedPoint :
+  ∀ {State Feature : Set}
+  {stateStep : State → State}
+  {featureStep : Feature → Feature}
+  {encode : State → Feature}
+  (W :
+    GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+      State
+      Feature
+      stateStep
+      featureStep
+      encode) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      stateStep
+        (iterateStep stateStep n s)
+      ≡
+      iterateStep stateStep n s)
+gruInjectiveTailStability-tailFixedPoint W s with featureTailStable W s
+... | n , tail =
+  n ,
+  encodeInjective W
+    (trans
+      (stepConjugacy W
+        (iterateStep stateStep n s))
+      (trans
+        (cong
+          featureStep
+          (sym
+            (iterateConjugacy
+              encode
+              (stepConjugacy W)
+              n
+              s)))
+        (trans
+          tail
+          (sym
+            (iterateConjugacy
+              encode
+              (stepConjugacy W)
+              n
+              s)))))
+
+gruInjectiveTailStability-eventualStationarity :
+  ∀ {State Feature : Set}
+  {stateStep : State → State}
+  {featureStep : Feature → Feature}
+  {encode : State → Feature}
+  (W :
+    GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+      State
+      Feature
+      stateStep
+      featureStep
+      encode) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      ∀ k →
+      iterateStep stateStep (n + k) s
+      ≡
+      iterateStep stateStep n s)
+gruInjectiveTailStability-eventualStationarity W s
+  with gruInjectiveTailStability-tailFixedPoint W s
+... | n , fixed =
+  n ,
+  λ k →
+    trans
+      (iterateStep-add stateStep n k s)
+      (iterateStep-fixed
+        stateStep
+        fixed
+        k)
+
+gruInjectiveTailStability-identifiability :
+  ∀ {State Feature : Set}
+  {stateStep : State → State}
+  {featureStep : Feature → Feature}
+  {encode : State → Feature}
+  (W :
+    GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+      State
+      Feature
+      stateStep
+      featureStep
+      encode) →
+  ∀ {s t : State} →
+  encode s ≡ encode t →
+  s ≡ t
+gruInjectiveTailStability-identifiability W =
+  encodeInjective W
+
+
 successor-never-globally-eventually-fixed-at-zero :
   ¬ GloballyEventuallyFixed suc 0
 successor-never-globally-eventually-fixed-at-zero h =
@@ -8770,135 +8933,6 @@ eGraphEconomicSemanticEquality :
 eGraphEconomicSemanticEquality W =
   eGraph-path-sound R (semanticPath W)
 
-eGraphEconomicFixedPoint :
-  ∀ {Expression State Feature Price Allocation : Set}
-  {R :
-    EGraphSemanticInterpretation
-      Expression
-      State}
-  {e f : Expression}
-  {update : State → State}
-  {fixed : State}
-  {D :
-    MegaGeneralizedWalrasianEquilibrium
-      State
-      Price
-      Allocation}
-  {priceOf : State → Price}
-  {allocationOf : State → Allocation}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (W :
-    EGraphEconomicComposition
-      Expression
-      State
-      Feature
-      Price
-      Allocation
-      R
-      e
-      f
-      update
-      fixed
-      D
-      priceOf
-      allocationOf
-      observe
-      inverse
-      Continuous) →
-  update fixed ≡ fixed
-eGraphEconomicFixedPoint W =
-  stationary (convergenceFixedPoint W)
-
-eGraphEconomicWalrasianEquilibrium :
-  ∀ {Expression State Feature Price Allocation : Set}
-  {R :
-    EGraphSemanticInterpretation
-      Expression
-      State}
-  {e f : Expression}
-  {update : State → State}
-  {fixed : State}
-  {D :
-    MegaGeneralizedWalrasianEquilibrium
-      State
-      Price
-      Allocation}
-  {priceOf : State → Price}
-  {allocationOf : State → Allocation}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (W :
-    EGraphEconomicComposition
-      Expression
-      State
-      Feature
-      Price
-      Allocation
-      R
-      e
-      f
-      update
-      fixed
-      D
-      priceOf
-      allocationOf
-      observe
-      inverse
-      Continuous) →
-  equilibrium
-    D
-    (priceOf fixed)
-    (allocationOf fixed)
-eGraphEconomicWalrasianEquilibrium W =
-  equilibriumAtFixed (walrasian W)
-
-eGraphEconomicComposition-injective :
-  ∀ {Expression State Feature Price Allocation : Set}
-  {R :
-    EGraphSemanticInterpretation
-      Expression
-      State}
-  {e f : Expression}
-  {update : State → State}
-  {fixed : State}
-  {D :
-    MegaGeneralizedWalrasianEquilibrium
-      State
-      Price
-      Allocation}
-  {priceOf : State → Price}
-  {allocationOf : State → Allocation}
-  {observe : State → Feature}
-  {inverse : Feature → State}
-  {Continuous : {A B : Set} → (A → B) → Set}
-  (W :
-    EGraphEconomicComposition
-      Expression
-      State
-      Feature
-      Price
-      Allocation
-      R
-      e
-      f
-      update
-      fixed
-      D
-      priceOf
-      allocationOf
-      observe
-      inverse
-      Continuous) →
-  ∀ {s t : State} →
-  observe s ≡ observe t →
-  s ≡ t
-eGraphEconomicComposition-injective W =
-  eGraphEconomicRepresentationInjective
-    (representation W)
-
 ------------------------------------------------------------------------
 -- Combined closure theorem. The products stay typed and independent:
 -- semantic equality, eventual convergence, stationarity, generalized
@@ -8963,11 +8997,12 @@ eGraphEconomicComposition-closure W =
   ,
   (eventual (convergenceFixedPoint W)
   ,
-   (eGraphEconomicFixedPoint W
+   (stationary (convergenceFixedPoint W)
    ,
-    (eGraphEconomicWalrasianEquilibrium W
+    (equilibriumAtFixed (walrasian W)
     ,
-     eGraphEconomicComposition-injective W)))
+     eGraphEconomicRepresentationInjective
+       (representation W))))
 ------------------------------------------------------------------------
 -- Unconditional canonical stationary price-law e-graph seam.
 --
