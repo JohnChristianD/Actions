@@ -55,6 +55,9 @@ let script = merge {
     "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq "agdaSourceBytes : List Int" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "syncAuthority : String" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "proofAuthority : String" "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq "module actions.agda_to_elm" .ci/mirth/agda_to_elm.mth
     dhall type --file .ci/presentation-contract.dhall >/dev/null
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"

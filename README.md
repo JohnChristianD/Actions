@@ -56,8 +56,13 @@ The maintained primary-source audit is docs/research/four-law-primary-source-clo
 
 <!-- BEGIN GENERATED DOCUMENTATION INDEX -->
 
-Generated from the tracked Markdown surface: 1 files.
-The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents. Internal CI/discovery notes and historical agent plans are intentionally excluded from this public documentation index.
+Generated from the tracked Markdown surface outside internal `.ci` paths: 3 public documents.
+The root README is the GitHub-facing entry point; detailed evidence remains in the linked source documents.
+
+### Forth lab
+
+- [Change record — 2026-09-29](forth-lab/CHANGE_RECORD.md)
+- [Isolated Min / Forth / gbForth / Factor / Pony Lab](forth-lab/README.md)
 
 ### Research
 
@@ -201,7 +206,7 @@ The executable constructs one concrete learner kernel/state, evaluates one `cano
 
 Mercury extracts declarations and searches dependency candidates. Dhall declares the verification contract and is rendered/executed inside the Nix development environment where that existing unattended path needs it. Nix supplies the reproducible environment. GitHub Actions executes the declared lanes.
 
-The GitHub Pages presentation surface is a pure Elm source at `site/Main.elm`; GitHub Actions compiles it for Pages. Mirth is a direct source synchronizer: it reads the canonical Agda modules themselves and emits the small Elm metadata module consumed by the presentation. Dhall validates the presentation contract after Mirth; Mercury remains a sibling discovery/dependency-graph consumer and does not determine the Pages theorem/module surface.
+The GitHub Pages presentation surface is a pure Elm source at `site/Main.elm`; GitHub Actions compiles it for Pages. Mirth is a direct source synchronizer: `.ci/mirth/agda_to_elm.mth` uses the package-qualified module name `actions.agda_to_elm`, reads the canonical Agda modules, and emits the Elm metadata consumed by the presentation. Dhall validates the presentation contract after Mirth; Mercury remains a sibling discovery/dependency-graph consumer and does not determine the Pages theorem/module surface.
 
 The graph evidence stack is intentionally minimal: Dhall is the machine-readable evidence/interchange layer; Mercury supplies dependency discovery and semantic graph processing. TSV and CSV are not canonical topology formats. The concrete integer LayerNorm rewrite surface is attached to the existing sound E-Graph-A* closure; A* costs guide traversal and never become equality evidence. SQLite or NoSQL is not warranted for the current deterministic, repository-local dependency workload; add a database only if a demonstrated query/history workload exceeds what the JSON evidence and normal shell tooling can do. Tracked and generated CI reports are Dhall; JSON is not a canonical CI artifact format.
 
@@ -268,6 +273,20 @@ The CI contract must check the current theorem names and current graphs only. Hi
 When documentation and source disagree, the Agda source and the current Dhall verification contract are authoritative; the documentation must then be corrected to match them.
 
 The repository no longer treats `docs/wiki.md` as a canonical source; the README, theorem monolith, CI contract, and focused research notes are the maintained knowledge surface.
+
+## Current theorem review frontier
+
+The current Mercury review frontier is intentionally package-level and explicit:
+
+- `CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem`
+- `AStarPlanMonoidTheorem`
+- `CanonicalTokenArbitraryLengthGenerationTheorem`
+- `NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem`
+
+Two LayerNorm helper declarations are kept as Agda proof ingredients but pruned as independent public graph endpoints because their propositions are carried as fields of the stronger package:
+
+- `integerLayerNorm-egraph-astar-eventual-semantic-closure`
+- `integerLayerNorm-egraph-astar-infinite-stable-tail`
 
 ### Mirth Pages synchronization boundary
 

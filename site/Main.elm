@@ -55,7 +55,7 @@ view _ =
                 ]
             , panel "Boundary"
                 [ p []
-                    [ text "Elm is presentation-only. It consumes Mirth-synchronized Agda module metadata and defines no learner semantics or proof evidence." ]
+                    [ text "Elm is presentation-only. ", text GeneratedTheoremSurface.syncAuthority, text ". Proof authority: ", code [] [ text GeneratedTheoremSurface.proofAuthority ] ]
                 ]
             ]
         , h2 [] [ text "Agda modules" ]
@@ -81,6 +81,11 @@ panel : String -> List (Html Msg) -> Html Msg
 panel heading children =
     div [ class "panel" ]
         (h2 [] [ text heading ] :: children)
+
+
+moduleItem : String -> Html Msg
+moduleItem value =
+    li [] [ code [] [ text value ] ]
 
 
 link : String -> String -> Html Msg

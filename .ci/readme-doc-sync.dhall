@@ -25,7 +25,7 @@ import sys
 
 readme, begin, end, mode = sys.argv[1:]
 tracked = subprocess.check_output(
-    ["git", "ls-files", "docs"],
+    ["git", "ls-files", "*.md", "*.markdown"],
     text=True,
 ).splitlines()
 
@@ -37,12 +37,14 @@ for raw in tracked:
         continue
     if not path.is_file() or path.suffix not in {".md", ".markdown"}:
         continue
-    if len(parts) == 2 and parts[0] == "docs":
-        group = "root"
-    elif len(parts) >= 3 and parts[0] == "docs" and parts[1] in {"economics", "research"}:
-        group = parts[1]
-    else:
+    if parts and parts[0] == ".ci":
         continue
+    if len(parts) == 1:
+        group = "root"
+    elif parts[0] == "docs":
+        group = parts[1] if len(parts) > 1 else "docs"
+    else:
+        group = parts[0]
 
     lines = path.read_text(encoding="utf-8").splitlines()
     heading = next((line[2:].strip() for line in lines if line.startswith("# ") and line[2:].strip()), None)
@@ -69,7 +71,12 @@ lines = [
     "",
 ]
 for group in sorted(groups):
-    label = {"root": "Repository documentation", "economics": "Economics", "research": "Research"}.get(group, group)
+    label = {
+        "root": "Repository documentation",
+        "economics": "Economics",
+        "research": "Research",
+        "forth-lab": "Forth lab",
+    }.get(group, group)
     lines.append(f"### {label}")
     lines.append("")
     for path, title in groups[group]:

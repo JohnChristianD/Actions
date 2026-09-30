@@ -28,6 +28,10 @@ Typical workflow:
 
 Search About is an interactive discovery tool. This repository does not treat its output, or Auto's interactive output, as CI proof authority.
 
+## Presentation synchronization
+
+The Pages presentation is a separate surface from proof discovery. Mirth compiles `.ci/mirth/agda_to_elm.mth` under the package-qualified module name `actions.agda_to_elm`, reads the two canonical Agda modules, and emits `GeneratedTheoremSurface.elm`. The Elm page consumes that generated metadata; it does not define proof evidence or theorem semantics.
+
 ## Pinned toolchain
 
 - Agda 2.8.0.2
@@ -37,4 +41,4 @@ The local launcher supplies the repository source path, standard library package
 
 ## Staleness
 
-Recheck this document when the pinned Agda version, the interaction commands, or the theorem-monolith proof workflow changes.
+Recheck this document when the pinned Agda version, the interaction commands, the theorem-monolith proof workflow, or the Mirth-to-Elm presentation contract changes.

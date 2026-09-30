@@ -1,4 +1,4 @@
-module agda_to_elm
+module actions.agda_to_elm
 
 import std.prelude
 import std.world
@@ -45,6 +45,8 @@ def main [ +World -- +World ] {
         "    ]\n\n" ;
         "agdaSourceBytes : List Int\n" ;
         "agdaSourceBytes =\n    [ " ; @canonical-bytes repr; "\n    , " ;
-        @theorem-bytes repr; "\n    ]\n"
+        @theorem-bytes repr; "\n    ]\n\n" ;
+        "syncAuthority : String\nsyncAuthority = \"Mirth reads canonical Agda sources\"\n\n" ;
+        "proofAuthority : String\nproofAuthority = \"Agda --safe\"\n"
     }
 }
