@@ -42,32 +42,11 @@ jobs:
       - name: Verify and compile static Elm presentation
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c '
-            tmp=$(mktemp -d)
-            trap "rm -rf \"$tmp\"" EXIT
-            mkdir -p "$tmp/src"
-            cp site/Main.elm "$tmp/src/Main.elm"
-            mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
-            cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-            "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
-            mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
-            cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
-            "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
-            test -s "$tmp/src/GeneratedTheoremSurface.elm"
-            if LC_ALL=C grep -n '[^[:print:][:space:]]' "$tmp/src/GeneratedTheoremSurface.elm"; then exit 1; fi
-            grep -Fq 'siteTitle : String' "$tmp/src/GeneratedTheoremSurface.elm"
-            grep -Fq 'finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof' "$tmp/src/GeneratedAgdaGraph.elm"
-            dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
-            test -s "$tmp/elm.json"
-            mkdir -p "${RUNNER_TEMP}/pages"
-            cd "$tmp"
-            elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
-            test -s "${RUNNER_TEMP}/pages/elm.js"
-            test -s "$tmp/src/GeneratedAgdaGraph.elm"
-            dhall type --file "${GITHUB_WORKSPACE}/.ci/presentation-contract.dhall" >/dev/null
-            grep -Fq "module FullCoupled.CanonicalLearnerMonolith" "${GITHUB_WORKSPACE}/FullCoupled/CanonicalLearnerMonolith.agda"
-            grep -Fq "module FullCoupled.TheoremsMonolith" "${GITHUB_WORKSPACE}/FullCoupled/TheoremsMonolith.agda"
-          '
+          mkdir -p "${RUNNER_TEMP}/pages"
+          CI_LANE=Pages PAGES_OUTPUT_DIR="${RUNNER_TEMP}/pages" \
+            nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          test -s "${RUNNER_TEMP}/pages/elm.js"
+
 
       - name: Create Pages shell
         run: |
