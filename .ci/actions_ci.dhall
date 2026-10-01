@@ -76,6 +76,7 @@ let script = merge {
     mkdir -p "$tmp/schmitty/src" "$tmp/agdarsec/src"
     echo "schmitty-stage=copy-schmitty"
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
+    chmod -R u+rwX "$tmp/schmitty"
     mkdir -p "$tmp/schmitty/src/Reflection"
     cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
 module Reflection.Term where
