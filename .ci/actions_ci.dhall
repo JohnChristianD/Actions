@@ -114,6 +114,10 @@ ELM
     grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
     grep -Fq 'module FullCoupled.TheoremsMonolith' FullCoupled/TheoremsMonolith.agda
     dhall type --file .ci/presentation-contract.dhall >/dev/null
+    dhall-to-json --file .ci/presentation-contract.dhall > "$tmp/presentation-contract.json"
+    grep -Fq '"graphGenerator": ".ci/mirth/agda_graph.mth"' "$tmp/presentation-contract.json"
+    grep -Fq '"surfaceGenerator": ".ci/mirth/agda_to_elm.mth"' "$tmp/presentation-contract.json"
+    grep -Fq '"elmManifest": ".ci/elm-application.dhall"' "$tmp/presentation-contract.json"
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
@@ -121,6 +125,8 @@ ELM
     "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm"
     test -s "$tmp/src/GeneratedAgdaGraph.elm"
     cp "$tmp/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
+    grep -Fq 'finiteMixedNash-brouwer-egraph-astar-proof' "$tmp/src/GeneratedTheoremSurface.elm"
+    grep -Fq 'GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem' "$tmp/src/GeneratedTheoremSurface.elm"
     dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
     test -s "$tmp/elm.json"
     cd "$tmp"
