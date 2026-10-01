@@ -89,8 +89,7 @@ open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀
 open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
-open import Reflection using (Term; TC; ⊤; unify; lit; string)
-open import Reflection.External using (CmdSpec; cmdSpec; unsafeRunCmdTC; Result)
+-- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
 -- Meta-Z3 dependency minimization boundary.
