@@ -11,31 +11,6 @@ import Svg.Attributes as SA
 import Svg.Events as SE
 
 
--- Canonical display palette.
--- The perceptual derivation is defined by the repository's CAT02-LMS
--- transform; Elm receives only the resulting display tokens, so the Pages
--- runtime remains pure Elm and does not execute ImageMagick.
-type alias CanonicalPalette =
-    { background : String
-    , surface : String
-    , ink : String
-    , mutedInk : String
-    , accent : String
-    , accentInk : String
-    }
-
-canonicalPalette : CanonicalPalette
-canonicalPalette =
-    { background = "#F7F7F4"
-    , surface = "#FFFFFF"
-    , ink = "#171717"
-    , mutedInk = "#5A5A55"
-    , accent = "#2F5D62"
-    , accentInk = "#FFFFFF"
-    }
-
-
-
 type FileFilter
     = AllFiles
     | LearnerOnly
@@ -223,7 +198,7 @@ view model =
         filteredEdges =
             visibleEdges model
     in
-    main_ [ HA.class "repository", HA.style "background-color" canonicalPalette.background, HA.style "color" canonicalPalette.ink ]
+    main_ [ HA.class "repository" ]
         [ h1 [] [ text "Actions" ]
         , p []
             [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
@@ -264,15 +239,12 @@ view model =
             ]
         , section [] [ h2 [] [ text "Hidden-Synergy finite surface" ]
             , p []
-                [ text "The finite L1, 1-path norm, zero-threshold hard/soft sparsity, and Tsallis-2 definitions and theorem chain remain active." ]
+                [ text "The L1 and 1-path-norm surface has been pruned. The zero-threshold hard/soft sparsity theorem and the finite Tsallis-2/support-sparsity surface remain active." ]
             , ul [] (List.map codeItem
-                [ "rowL1"
-                , "weightL1"
-                , "onePathVector"
-                , "onePathNorm"
-                , "hiddenSynergy-one-layer-exact"
-                , "CanonicalHardSparsityDegeneracyTheorem"
+                [ "CanonicalHardSparsityDegeneracyTheorem"
                 , "generalTsallis2NearSparsity"
+                , "generalTsallis2NearSparsity-zero"
+                , "generalTsallis2NearSparsity-definition"
                 , "generalSupportSparsity"
                 , "UniformSupportTsallisBoundary"
                 ])
@@ -334,7 +306,7 @@ view model =
             ]
         , section [] [ h2 [] [ text "JAX execution mirror" ]
             , p []
-                [ text "The JAX boundary uses only JAX imports and native array algorithms. Every current executable kernel has a named Agda counterpart in JAXExecutionMirrorReproof." ]
+                [ text "The executable Python/JAX wrapper has been removed. The retained JAX-facing algorithms are represented by typed Agda contracts in JAXExecutionMirrorReproof. The contracts cover the retained vector, scan, sparse-support, LayerNorm, gate, GRU, Tsallis-2, support-sparsity, and scan-sum algorithms." ]
             , ul [] (List.map codeItem
                 [ "vmap_affine -> jaxVmapAffine"
                 , "associative_prefix_sum -> jaxAssociativePrefixSum"
@@ -343,9 +315,6 @@ view model =
                 , "sparse_support_size -> jaxSparseSupportSize"
                 , "sparse_support_top_k -> jaxSparseSupportTopK"
                 , "sparsemax_policy_index -> jaxSparsemaxPolicyIndex"
-                , "l1_row -> jaxL1Row"
-                , "l1_matrix -> jaxL1Matrix"
-                , "one_path_norm -> jaxOnePathNorm"
                 , "tsallis2_near_sparsity_fraction -> jaxTsallis2NearSparsityFraction"
                 , "support_sparsity_fraction -> jaxSupportSparsityFraction"
                 , "integer_layernorm_centered_numerators -> jaxIntegerLayerNormCenteredNumerators"
@@ -365,7 +334,6 @@ view model =
             , ul []
                 [ linkItem "Canonical learner" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/CanonicalLearnerMonolith.agda"
                 , linkItem "Theorem monolith" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/TheoremsMonolith.agda"
-                , linkItem "JAX reference" "https://github.com/JohnChristianD/Actions/blob/main/tools/jax_reference.py"
                 , linkItem "CI contracts" "https://github.com/JohnChristianD/Actions/tree/main/.ci"
                 , linkItem "Repository" "https://github.com/JohnChristianD/Actions"
                 ]
@@ -510,17 +478,17 @@ svgNode position selected =
 
         fill =
             if selected then
-                canonicalPalette.accent
+                "#111827"
 
             else
-                canonicalPalette.surface
+                "#f4f4f4"
 
         textFill =
             if selected then
-                canonicalPalette.accentInk
+                "#ffffff"
 
             else
-                canonicalPalette.ink
+                "#111827"
     in
     S.g [ SE.onClick (SelectNode position.id) ]
         [ S.rect
