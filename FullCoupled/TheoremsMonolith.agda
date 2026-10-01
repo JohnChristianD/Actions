@@ -4904,6 +4904,15 @@ jaxGRUHiddenStep-law :
   C.hiddenState (C.gruStep state x)
 jaxGRUHiddenStep-law state x = refl
 
+zipGRUStatesInts :
+  List C.GRUState →
+  List C.Int8 →
+  List (C.GRUState × C.Int8)
+zipGRUStatesInts [] ys = []
+zipGRUStatesInts (x ∷ xs) [] = []
+zipGRUStatesInts (x ∷ xs) (y ∷ ys) =
+  (x , y) ∷ zipGRUStatesInts xs ys
+
 jaxBatchedGRUHiddenStep :
   List C.GRUState →
   List C.Int8 →
@@ -4911,16 +4920,7 @@ jaxBatchedGRUHiddenStep :
 jaxBatchedGRUHiddenStep states xs =
   map
     (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
-    (zipGRU states xs)
-  where
-  zipGRU :
-    List C.GRUState →
-    List C.Int8 →
-    List (C.GRUState × C.Int8)
-  zipGRU [] ys = []
-  zipGRU (x ∷ xs) [] = []
-  zipGRU (x ∷ xs) (y ∷ ys) =
-    (x , y) ∷ zipGRU xs ys
+    (zipGRUStatesInts states xs)
 
 jaxBatchedGRUHiddenStep-law :
   ∀ states xs →
@@ -4931,18 +4931,8 @@ jaxBatchedGRUHiddenStep-law :
         (C.gruStep
           (proj₁ stateX)
           (proj₂ stateX)))
-    (zipGRUAgain states xs)
-  where
-  zipGRUAgain :
-    List C.GRUState →
-    List C.Int8 →
-    List (C.GRUState × C.Int8)
-  zipGRUAgain [] ys = []
-  zipGRUAgain (x ∷ xs) [] = []
-  zipGRUAgain (x ∷ xs) (y ∷ ys) =
-    (x , y) ∷ zipGRUAgain xs ys
+    (zipGRUStatesInts states xs)
 jaxBatchedGRUHiddenStep-law states xs = refl
-
 jaxJittedScanSum :
   List ℤ →
   ℤ
