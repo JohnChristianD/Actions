@@ -6,6 +6,7 @@
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS --cubical-compatible #-}
+{-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
