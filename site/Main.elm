@@ -11,11 +11,30 @@ import Svg.Attributes as SA
 import Svg.Events as SE
 
 
--- Canonical display palette.
--- The perceptual derivation is defined by the repository's CAT02-LMS
--- transform; Elm receives only the resulting display tokens, so the Pages
--- runtime remains pure Elm and does not execute ImageMagick.
-type alias CanonicalPalette =
+-- Dynamic perceptual palette.
+-- Palette candidates are derived from the generated Mirth graph cardinalities.
+-- Display encoding happens only after the maximin selection in the custom
+-- CAT02-LMS-derived perceptual coordinate space.
+type alias DisplayColor =
+    { r : Float
+    , g : Float
+    , b : Float
+    }
+
+
+type alias PerceptualColor =
+    { display : DisplayColor
+    , id : Int
+    , lmsL : Float
+    , lmsM : Float
+    , lmsS : Float
+    , opponentL : Float
+    , opponentA : Float
+    , opponentB : Float
+    }
+
+
+type alias DisplayPalette =
     { background : String
     , surface : String
     , ink : String
@@ -24,16 +43,331 @@ type alias CanonicalPalette =
     , accentInk : String
     }
 
-canonicalPalette : CanonicalPalette
-canonicalPalette =
-    { background = "#F7F7F4"
-    , surface = "#FFFFFF"
-    , ink = "#171717"
-    , mutedInk = "#5A5A55"
-    , accent = "#2F5D62"
-    , accentInk = "#FFFFFF"
+
+paletteSeed : Int
+paletteSeed =
+    List.length Graph.nodes * 31 + List.length Graph.edges * 17
+
+
+clamp01 : Float -> Float
+clamp01 value =
+    max 0 (min 1 value)
+
+
+displayLuminosity : DisplayColor -> Float
+displayLuminosity color =
+    0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
+
+
+dynamicDisplayCandidate : Int -> DisplayColor
+dynamicDisplayCandidate index =
+    let
+        seed =
+            toFloat (paletteSeed + index * 37)
+
+        r =
+            0.04 + 0.92 * abs (sin (seed * 0.071))
+
+        g =
+            0.04 + 0.92 * abs (sin (seed * 0.113 + 1.7))
+
+        b =
+            0.04 + 0.92 * abs (sin (seed * 0.173 + 3.1))
+    in
+    { r = clamp01 r
+    , g = clamp01 g
+    , b = clamp01 b
     }
 
+
+cat02Lms : DisplayColor -> ( Float, Float, Float )
+cat02Lms color =
+    ( 0.7328 * color.r + 0.4296 * color.g - 0.1624 * color.b
+    , -0.7036 * color.r + 1.6975 * color.g + 0.0061 * color.b
+    , 0.0030 * color.r + 0.0136 * color.g + 0.9834 * color.b
+    )
+
+
+scaledCat02Lms : DisplayColor -> ( Float, Float, Float )
+scaledCat02Lms color =
+    let
+        ( l, m, s ) =
+            cat02Lms color
+    in
+    ( 0.608191 * l
+    , 0.557623 * m
+    , 0.531035 * s
+    )
+
+
+newtonRootStep : Float -> Float -> Float
+newtonRootStep magnitude current =
+    let
+        a =
+            0.01
+
+        b =
+            0.01
+
+        y2 =
+            current * current
+
+        y3 =
+            y2 * current
+
+        y4 =
+            y2 * y2
+
+        polynomial =
+            y4 * current + a * y3 + b * current - magnitude
+
+        derivative =
+            5 * y4 + 3 * a * y2 + b
+    in
+    current - polynomial / derivative
+
+
+newtonRoot : Float -> Float
+newtonRoot value =
+    let
+        magnitude =
+            abs value
+
+        initial =
+            if magnitude == 0 then
+                0
+
+            else
+                exp (0.2 * log magnitude)
+
+        step current remaining =
+            if remaining == 0 then
+                current
+
+            else
+                step
+                    (newtonRootStep magnitude current)
+                    (remaining - 1)
+    in
+    if magnitude == 0 then
+        0
+
+    else
+        step initial 4
+
+
+customPerceptualChannel : Float -> Float
+customPerceptualChannel value =
+    let
+        magnitude =
+            newtonRoot value
+    in
+    if value < 0 then
+        -magnitude
+
+    else
+        magnitude
+
+
+customPerceptualColor : Int -> DisplayColor -> PerceptualColor
+customPerceptualColor id display =
+    let
+        ( l0, m0, s0 ) =
+            scaledCat02Lms display
+
+        l =
+            customPerceptualChannel l0
+
+        m =
+            customPerceptualChannel m0
+
+        s =
+            customPerceptualChannel s0
+    in
+    { display = display
+    , id = id
+    , lmsL = l
+    , lmsM = m
+    , lmsS = s
+    , opponentL = 0.577350 * l + 0.577350 * m + 0.577350 * s
+    , opponentA = 0.707107 * l - 0.707107 * m
+    , opponentB = 0.408248 * l + 0.408248 * m - 0.816497 * s
+    }
+
+
+perceptualDistanceSquared : PerceptualColor -> PerceptualColor -> Float
+perceptualDistanceSquared left right =
+    let
+        dl =
+            left.opponentL - right.opponentL
+
+        da =
+            left.opponentA - right.opponentA
+
+        db =
+            left.opponentB - right.opponentB
+    in
+    dl * dl + da * da + db * db
+
+
+bestContrastPartner : PerceptualColor -> List PerceptualColor -> ( PerceptualColor, Float )
+bestContrastPartner anchor candidates =
+    case candidates of
+        [] ->
+            ( anchor, 0 )
+
+        first :: rest ->
+            List.foldl
+                (\candidate ( best, bestScore ) ->
+                    let
+                        score =
+                            perceptualDistanceSquared anchor candidate
+                    in
+                    if score > bestScore then
+                        ( candidate, score )
+
+                    else
+                        ( best, bestScore )
+                )
+                ( first, perceptualDistanceSquared anchor first )
+                rest
+
+
+bestByMaximin :
+    (PerceptualColor -> Float)
+    -> PerceptualColor
+    -> List PerceptualColor
+    -> PerceptualColor
+bestByMaximin score fallback candidates =
+    List.maximumBy score candidates
+        |> Maybe.withDefault fallback
+
+
+candidateColors : List PerceptualColor
+candidateColors =
+    List.map
+        (\index ->
+            customPerceptualColor index (dynamicDisplayCandidate index)
+        )
+        (List.range 0 15)
+
+
+fallbackPerceptualColor : PerceptualColor
+fallbackPerceptualColor =
+    customPerceptualColor 0 (dynamicDisplayCandidate 0)
+
+
+backgroundPerceptualColor : PerceptualColor
+backgroundPerceptualColor =
+    bestByMaximin
+        (\candidate -> displayLuminosity candidate.display)
+        fallbackPerceptualColor
+        candidateColors
+
+
+inkPerceptualColor : PerceptualColor
+inkPerceptualColor =
+    bestByMaximin
+        (\candidate ->
+            min
+                (perceptualDistanceSquared candidate backgroundPerceptualColor)
+                (1 - displayLuminosity candidate.display)
+        )
+        fallbackPerceptualColor
+        candidateColors
+
+
+accentSelection : ( PerceptualColor, PerceptualColor )
+accentSelection =
+    let
+        choices =
+            List.map
+                (\candidate ->
+                    let
+                        ( font, fontDistance ) =
+                            bestContrastPartner candidate candidateColors
+
+                        score =
+                            min
+                                (perceptualDistanceSquared candidate backgroundPerceptualColor)
+                                (min
+                                    (perceptualDistanceSquared candidate inkPerceptualColor)
+                                    fontDistance
+                                )
+                    in
+                    ( candidate, font, score )
+                )
+                candidateColors
+    in
+    case List.maximumBy (\( _, _, score ) -> score) choices of
+        Just ( accent, font, _ ) ->
+            ( accent, font )
+
+        Nothing ->
+            ( fallbackPerceptualColor, fallbackPerceptualColor )
+
+
+accentPerceptualColor : PerceptualColor
+accentPerceptualColor =
+    Tuple.first accentSelection
+
+
+accentInkPerceptualColor : PerceptualColor
+accentInkPerceptualColor =
+    Tuple.second accentSelection
+
+
+surfacePerceptualColor : PerceptualColor
+surfacePerceptualColor =
+    let
+        forbidden =
+            [ backgroundPerceptualColor.id
+            , inkPerceptualColor.id
+            , accentPerceptualColor.id
+            ]
+    in
+    bestByMaximin
+        (\candidate ->
+            min
+                (perceptualDistanceSquared candidate backgroundPerceptualColor)
+                (perceptualDistanceSquared candidate accentPerceptualColor)
+        )
+        fallbackPerceptualColor
+        (List.filter (\candidate -> not (List.member candidate.id forbidden)) candidateColors)
+
+
+mutedInkPerceptualColor : PerceptualColor
+mutedInkPerceptualColor =
+    bestByMaximin
+        (\candidate ->
+            min
+                (perceptualDistanceSquared candidate surfacePerceptualColor)
+                (0.5 + abs (displayLuminosity inkPerceptualColor.display - displayLuminosity candidate.display))
+        )
+        inkPerceptualColor
+        candidateColors
+
+
+cssDisplayColor : DisplayColor -> String
+cssDisplayColor color =
+    "color(srgb "
+        ++ String.fromFloat (clamp01 color.r)
+        ++ " "
+        ++ String.fromFloat (clamp01 color.g)
+        ++ " "
+        ++ String.fromFloat (clamp01 color.b)
+        ++ ")"
+
+
+dynamicPalette : DisplayPalette
+dynamicPalette =
+    { background = cssDisplayColor backgroundPerceptualColor.display
+    , surface = cssDisplayColor surfacePerceptualColor.display
+    , ink = cssDisplayColor inkPerceptualColor.display
+    , mutedInk = cssDisplayColor mutedInkPerceptualColor.display
+    , accent = cssDisplayColor accentPerceptualColor.display
+    , accentInk = cssDisplayColor accentInkPerceptualColor.display
+    }
 
 
 type FileFilter
@@ -223,7 +557,7 @@ view model =
         filteredEdges =
             visibleEdges model
     in
-    main_ [ HA.class "repository", HA.style "background-color" canonicalPalette.background, HA.style "color" canonicalPalette.ink ]
+    main_ [ HA.class "repository", HA.style "background-color" dynamicPalette.background, HA.style "color" dynamicPalette.ink ]
         [ h1 [] [ text "Actions" ]
         , p []
             [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
@@ -503,17 +837,17 @@ svgNode position selected =
 
         fill =
             if selected then
-                canonicalPalette.accent
+                dynamicPalette.accent
 
             else
-                canonicalPalette.surface
+                dynamicPalette.surface
 
         textFill =
             if selected then
-                canonicalPalette.accentInk
+                dynamicPalette.accentInk
 
             else
-                canonicalPalette.ink
+                dynamicPalette.ink
     in
     S.g [ SE.onClick (SelectNode position.id) ]
         [ S.rect
