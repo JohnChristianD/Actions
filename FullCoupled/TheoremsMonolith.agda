@@ -2144,13 +2144,6 @@ fractalTransportedEncodeInjective F r eq =
 -- injective.
 ------------------------------------------------------------------------
 
-  using
-  ( CanonicalGRUStatisticalObservation
-  ; canonicalGRUStatisticalEncode
-  ; canonicalGRUStatisticalDecode
-  ; canonicalGRUStatisticalDecodeEncode
-  )
-
 GRUFractalLevel : Set
 GRUFractalLevel = Nat
 
