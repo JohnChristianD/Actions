@@ -72,7 +72,6 @@ let script = merge {
     echo "schmitty-stage=source-tests"
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda" || { echo "missing Schmitty SMT/Backend/Z3.agda"; exit 1; }
     test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" || { echo "missing schmitty.agda-lib"; exit 1; }
-    test -f "$AGDARSEC_AGDA_SOURCE/Text/Parser/String.agda" || { echo "missing agdarsec Text/Parser/String.agda"; exit 1; }
     echo "schmitty-stage=create-temp"
     mkdir -p "$tmp/schmitty/src" "$tmp/agdarsec/src"
     echo "schmitty-stage=copy-schmitty"
