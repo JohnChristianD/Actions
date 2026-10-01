@@ -36,8 +36,6 @@ let script = merge {
     test -f .ci/mirth/agda_graph.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
-    grep -Fq 'repo=' .ci/mirth/agda_to_elm.mth
-    grep -Fq 'git rev-parse HEAD' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Graph.nodes' .ci/mirth/agda_to_elm.mth
 
     mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
@@ -57,13 +55,12 @@ let script = merge {
 
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
-    "$tmp/agda-to-elm" > "$tmp/agda-to-elm.sh"
-    bash -x "$tmp/agda-to-elm.sh" > "$tmp/GeneratedTheoremSurface.elm"
+    "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'siteTitle : String' "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'buildCommit : String' "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'nodeLines : List String' "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'edgeLines : List String' "$tmp/GeneratedTheoremSurface.elm"
+    if LC_ALL=C grep -n '[^[:print:][:space:]]' "$tmp/GeneratedTheoremSurface.elm"; then exit 1; fi
     echo "mirth-c99-transpile-and-execute=pass"
     '',
   Schmitty = ''
@@ -120,7 +117,7 @@ let script = merge {
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
     "$tmp/agda-to-elm" > "$tmp/agda-to-elm.sh"
-    bash -x "$tmp/agda-to-elm.sh" > "$tmp/src/GeneratedTheoremSurface.elm"
+    "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
     test -s "$tmp/src/GeneratedAgdaGraph.elm"
     test -s "$tmp/src/GeneratedTheoremSurface.elm"
     grep -Fq 'siteTitle : String' "$tmp/src/GeneratedTheoremSurface.elm"
