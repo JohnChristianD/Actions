@@ -5594,6 +5594,318 @@ record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
 
 open CanonicalFiniteCycleExclusionIsomorphismTheorem public
 
+
+------------------------------------------------------------------------
+-- Finite mixed-Nash graph convergence composition.
+--
+-- This is a constructive certificate theorem:
+--   * finite-rank A* graph descent supplies eventual stability;
+--   * a supplied stable->fixed law turns that stable node into a fixed
+--     point of the finite game update;
+--   * a supplied fixed->mixed-Nash law identifies that fixed point as
+--     a mixed Nash profile;
+--   * e-graph soundness separately supplies semantic endpoint equality;
+--   * the existing finite-cycle isomorphism kernel transports convergence
+--     across exact state conjugacies;
+--   * the existing GRU tail kernel transports feature-tail stability to
+--     eventual source-state stationarity.
+--
+-- This does not claim the classical unconditional Nash existence theorem.
+-- That theorem requires a formal finite mixed-strategy simplex plus a
+-- fixed-point existence theorem such as Brouwer/Kakutani, neither of which
+-- is supplied by the current monolith imports.
+------------------------------------------------------------------------
+
+record MixedNashFixedPointBridge
+  (Profile : Set)
+  (update : Profile → Profile) : Set₁ where
+  constructor mixedNashFixedPointBridge
+  field
+    mixedNash : Profile → Set
+    fixedImpliesMixedNash :
+      ∀ p →
+      update p ≡ p →
+      mixedNash p
+
+open MixedNashFixedPointBridge public
+
+finiteMixedNash-egraph-astar-convergence :
+  ∀ {Expression Profile : Set}
+  (W :
+    EGraphAStarFiniteRankConvergenceWitness
+      Expression
+      Profile)
+  (B :
+    MixedNashFixedPointBridge
+      Profile
+      (step W))
+  (stableImpliesFixed :
+    ∀ s →
+    stable W s →
+    step W s ≡ s) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      mixedNash B
+        (eGraphAStarIterate
+          (step W)
+          n
+          s))
+finiteMixedNash-egraph-astar-convergence W B stableImpliesFixed s
+  with eventualStable W s
+... | n , stableAtN =
+  n ,
+  fixedImpliesMixedNash B
+    (eGraphAStarIterate
+      (step W)
+      n
+      s)
+    (stableImpliesFixed
+      (eGraphAStarIterate
+        (step W)
+        n
+        s)
+      stableAtN)
+
+finiteMixedNash-egraph-astar-eventualStationarity :
+  ∀ {Expression Profile : Set}
+  (W :
+    EGraphAStarFiniteRankConvergenceWitness
+      Expression
+      Profile)
+  (B :
+    MixedNashFixedPointBridge
+      Profile
+      (step W))
+  (stableImpliesFixed :
+    ∀ s →
+    stable W s →
+    step W s ≡ s) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      ∀ k →
+      eGraphAStarIterate
+        (step W)
+        (n + k)
+        s
+      ≡
+      eGraphAStarIterate
+        (step W)
+        n
+        s)
+finiteMixedNash-egraph-astar-eventualStationarity
+  W B stableImpliesFixed s
+  with eventualStable W s
+... | n , stableAtN =
+  n ,
+  λ k →
+    trans
+      (iterateStep-add
+        (step W)
+        n
+        k
+        s)
+      (iterateStep-fixed
+        (step W)
+        (stableImpliesFixed
+          (eGraphAStarIterate
+            (step W)
+            n
+            s)
+          stableAtN)
+        k)
+
+finiteMixedNash-egraph-astar-proof :
+  ∀ {Expression Profile : Set}
+  (W :
+    EGraphAStarFiniteRankConvergenceWitness
+      Expression
+      Profile)
+  (B :
+    MixedNashFixedPointBridge
+      Profile
+      (step W))
+  (stableImpliesFixed :
+    ∀ s →
+    stable W s →
+    step W s ≡ s) →
+  ∀ s →
+  (Σ Nat
+    (λ n →
+      mixedNash B
+        (eGraphAStarIterate
+          (step W)
+          n
+          s)))
+  ×
+  (Σ Nat
+    (λ n →
+      interpret
+        (semantics (closure W))
+        (candidate W
+          (eGraphAStarIterate
+            (step W)
+            n
+            s))
+      ≡
+      interpret
+        (semantics (closure W))
+        (target W)))
+finiteMixedNash-egraph-astar-proof W B stableImpliesFixed s =
+  finiteMixedNash-egraph-astar-convergence
+    W B stableImpliesFixed s
+  ,
+  eGraphAStarConvergenceSemanticClosure W s
+
+finiteMixedNash-cycle-transport :
+  ∀ {Expression ProfileA ProfileB : Set}
+  (W :
+    EGraphAStarFiniteRankConvergenceWitness
+      Expression
+      ProfileA)
+  (B :
+    MixedNashFixedPointBridge
+      ProfileA
+      (step W))
+  (stableImpliesFixed :
+    ∀ s →
+    stable W s →
+    step W s ≡ s)
+  (cycleTransport :
+    CanonicalFiniteCycleExclusionIsomorphismTheorem)
+  (iso :
+    StateIsomorphism
+      ProfileA
+      ProfileB)
+  (stepA : ProfileA → ProfileA)
+  (stepB : ProfileB → ProfileB)
+  (stepAgreement :
+    ∀ p →
+    stepA p ≡ step W p)
+  (conjugacy :
+    ∀ p →
+    to iso (stepA p) ≡
+    stepB (to iso p))
+  (mixedNashA :
+    ProfileA → Set)
+  (mixedNashB :
+    ProfileB → Set)
+  (transportNash :
+    ∀ p →
+    mixedNashA p →
+    mixedNashB (to iso p)) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      mixedNashB
+        (eGraphAStarIterate
+          stepB
+          n
+          (to iso s)))
+finiteMixedNash-cycle-transport
+  W
+  B
+  stableImpliesFixed
+  cycleTransport
+  iso
+  stepA
+  stepB
+  stepAgreement
+  conjugacy
+  mixedNashA
+  mixedNashB
+  transportNash
+  s
+  with finiteMixedNash-egraph-astar-convergence
+    W B stableImpliesFixed s
+... | n , nashAtN =
+  n ,
+  transportNash
+    (eGraphAStarIterate
+      (step W)
+      n
+      s)
+    nashAtN
+    where
+    transportedIterate :
+      ∀ k →
+      to iso
+        (eGraphAStarIterate
+          stepA
+          k
+          s)
+      ≡
+      eGraphAStarIterate
+        stepB
+        k
+        (to iso s)
+    transportedIterate zero = refl
+    transportedIterate (suc k) =
+      trans
+        (cycleTransport . iterateConjugacy
+          iso
+          stepA
+          stepB
+          conjugacy
+          k
+          s)
+        (cong
+          stepB
+          (transportedIterate k))
+
+finiteMixedNash-from-GRU-tail :
+  ∀ {State Feature : Set}
+  {stateStep : State → State}
+  {featureStep : Feature → Feature}
+  {encode : State → Feature}
+  (W :
+    GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+      State
+      Feature
+      stateStep
+      featureStep
+      encode)
+  (mixedNash : Feature → Set)
+  (featureFixedImpliesMixedNash :
+    ∀ f →
+    featureStep f ≡ f →
+    mixedNash f) →
+  ∀ s →
+  Σ Nat
+    (λ n →
+      mixedNash
+        (encode
+          (iterateStep
+            stateStep
+            n
+            s)))
+finiteMixedNash-from-GRU-tail
+  W
+  mixedNash
+  featureFixedImpliesMixedNash
+  s
+  with gruInjectiveTailStability-tailFixedPoint W s
+... | n , fixed =
+  n ,
+  featureFixedImpliesMixedNash
+    (encode
+      (iterateStep
+        stateStep
+        n
+        s))
+    (trans
+      (sym
+        (stepConjugacy W
+          (iterateStep
+            stateStep
+            n
+            s)))
+      (cong
+        encode
+        fixed))
+
+
 record CanonicalOperatorCompositionTheorem : Set₁ where
   constructor canonicalOperatorCompositionTheorem
   field
