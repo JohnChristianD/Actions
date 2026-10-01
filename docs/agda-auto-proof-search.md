@@ -34,6 +34,8 @@ The A* score orders dependency search. It is not semantic proof evidence. E-grap
 
 The Agda code proves the reduction and all equality/convergence compositions. The Brouwer fixed-point theorem itself remains an explicit analytical witness in `BrouwerMixedNashExistence`; the repository does not silently postulate an implementation of Brouwer.
 
+The final composed certificate is `finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof`. Its fields retain the Brouwer witness, finite-rank e-graph/A* witness, GRU injective tail witness, and a `StationaryLimitTheorem`. The projection `finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed` exposes the stationary distribution fixed point, while `finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash` exposes the mixed-Nash existence witness. Mercury's review frontier now requires this composed path.
+
 ## Canonical Baird boundary
 
 The active Baird construction is specialized to the already-tail-stable canonical learner. There is no generic Baird record.
