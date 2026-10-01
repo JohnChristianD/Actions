@@ -77,7 +77,7 @@ let script = merge {
     echo "schmitty-stage=copy-schmitty"
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
     chmod -R u+rwX "$tmp/schmitty"
-    mkdir -p "$tmp/schmitty/src/Reflection" "$tmp/schmitty/src/Category"
+    mkdir -p "$tmp/schmitty/src/Reflection" "$tmp/schmitty/src/Category/Monad"
     cat > "$tmp/schmitty/src/Category/Monad.agda" <<'AGDA'
 module Category.Monad where
 
