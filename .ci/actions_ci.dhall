@@ -50,7 +50,7 @@ let script = merge {
 
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-    "$tmp/agda-graph" "$tmp/GeneratedAgdaGraph.elm" | bash
+    "$tmp/agda-graph" "$tmp/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/GeneratedAgdaGraph.elm"
     test -s "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'module GeneratedAgdaGraph exposing (Node, Edge, nodes, edges)' "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedAgdaGraph.elm"
@@ -115,7 +115,7 @@ let script = merge {
     cp site/Main.elm "$tmp/src/Main.elm"
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-    "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash
+    "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
     "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
