@@ -5662,11 +5662,12 @@ open BrouwerMixedNashExistence public
 -- The result is existential: at least one mixed Nash profile exists.
 nashEveryFiniteGameViaBrouwer :
   ∀ {Profile : Set}
+  (mixedNash : Profile → Set)
   (N : BrouwerMixedNashExistence
     Profile
-    (mixedNash N)) →
-  Σ Profile (lambda p → mixedNash N p)
-nashEveryFiniteGameViaBrouwer N
+    mixedNash) →
+  Σ Profile (lambda p → mixedNash p)
+nashEveryFiniteGameViaBrouwer mixedNash N
   with fixedPoint N
 ... | p , fixed =
   p , fixedImpliesNash N p fixed
