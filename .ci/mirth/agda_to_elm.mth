@@ -5,8 +5,8 @@ import std.world
 
 def main {
     "set -euo pipefail
-repo=\$(basename \"\$(git rev-parse --show-toplevel)\")
-commit=\$(git rev-parse HEAD)
+repo=$(basename \"$(git rev-parse --show-toplevel)\")
+commit=$(git rev-parse HEAD)
 cat <<EOF
 module GeneratedTheoremSurface exposing (siteTitle, buildCommit, sourceFiles, nodeLines, edgeLines, asciiSanitize)
 
@@ -16,11 +16,11 @@ import String
 
 
 siteTitle : String
-siteTitle = \"\$repo\"
+siteTitle = \"$repo\"
 
 
 buildCommit : String
-buildCommit = \"\$commit\"
+buildCommit = \"$commit\"
 
 
 sourceFiles : List String
