@@ -5778,14 +5778,10 @@ finiteMixedNash-cycle-transport :
     StateIsomorphism
       ProfileA
       ProfileB)
-  (stepA : ProfileA → ProfileA)
   (stepB : ProfileB → ProfileB)
-  (stepAgreement :
-    ∀ p →
-    stepA p ≡ step W p)
   (conjugacy :
     ∀ p →
-    to iso (stepA p) ≡
+    to iso (step W p) ≡
     stepB (to iso p))
   (mixedNashA :
     ProfileA → Set)
@@ -5809,9 +5805,7 @@ finiteMixedNash-cycle-transport
   stableImpliesFixed
   cycleTransport
   iso
-  stepA
   stepB
-  stepAgreement
   conjugacy
   mixedNashA
   mixedNashB
@@ -5845,7 +5839,7 @@ finiteMixedNash-cycle-transport
       trans
         (cycleTransport . iterateConjugacy
           iso
-          stepA
+          step W
           stepB
           conjugacy
           k
