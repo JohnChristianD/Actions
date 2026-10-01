@@ -437,12 +437,12 @@ record_field_dominates(Theorem, Laws, Container, FieldName) :-
     not is_record_field(Theorem),
     not is_reflexive(Theorem),
     TheoremSignature = normalized_signature(law_signature(Theorem)),
-    TheoremSignature = "",
     list.member(Field, Laws),
     is_record_field(Field),
-    normalized_signature(law_signature(Field)) = TheoremSignature,
+    FieldSignature = normalized_signature(law_signature(Field)),
+    FieldSignature = TheoremSignature,
     Container = law_container(Field),
-    Container = "",
+    Container \= "",
     law_for_name(Container, Laws, _),
     FieldName = law_name(Field).
 
@@ -526,6 +526,29 @@ graph_pruned_public_theorem_names = [
     "eGraphEconomicWalrasianEquilibrium",
     "eGraphEconomicComposition-injective"
 ].
+
+:- pred every_pruned_name_is_dominated(
+    list(string)::in,
+    list(string)::in) is semidet.
+every_pruned_name_is_dominated([], _).
+every_pruned_name_is_dominated([Name | Names], Dominated) :-
+    list.member(Name, Dominated),
+    every_pruned_name_is_dominated(Names, Dominated).
+
+:- pred graph_pruned_public_theorem_names_checked(
+    list(semantic_law)::in,
+    list(string)::out) is det.
+graph_pruned_public_theorem_names_checked(Laws, Names) :-
+    graph_dominated_public_theorems(Laws, Dominated),
+    (
+        if every_pruned_name_is_dominated(
+            graph_pruned_public_theorem_names,
+            Dominated)
+        then
+            Names = graph_pruned_public_theorem_names
+        else
+            Names = []
+    ).
 
 :- pred search_composite_law_plans(
     list(semantic_law)::in,
