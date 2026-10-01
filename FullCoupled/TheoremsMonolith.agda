@@ -4539,136 +4539,6 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
         (λ _ → refl)))
 
 ------------------------------------------------------------------------
--- Hidden-Synergy / Tsallis-2 finite sparsity surface.
---
--- The paper-faithful near-sparsity quantity is Shannon-entropy based; it is
--- not silently identified with Tsallis-2 here. The exact executable layer
--- below restores the L1 and 1-path-norm definitions and the exact rational
--- Tsallis-2 extension that was previously present in the repository.
---
--- Continuous Lipschitz/analytic conclusions remain separate interfaces.
--- The finite equalities below are fully constructive Agda terms.
-------------------------------------------------------------------------
-
-data HSSVector (A : Set) : Nat → Set where
-  hsNil : HSSVector A zero
-  hsCons : ∀ {n} → A → HSSVector A n → HSSVector A (suc n)
-
-HSSMatrix : (A : Set) → Nat → Nat → Set
-HSSMatrix A m n = HSSVector (HSSVector A n) m
-
-hsMap :
-  ∀ {A B : Set} {n} →
-  (A → B) →
-  HSSVector A n →
-  HSSVector B n
-hsMap f hsNil = hsNil
-hsMap f (hsCons x xs) = hsCons (f x) (hsMap f xs)
-
-hsOnes : ∀ n → HSSVector Nat n
-hsOnes zero = hsNil
-hsOnes (suc n) = hsCons (suc zero) (hsOnes n)
-
-hsDot : ∀ {n} → HSSVector Nat n → HSSVector Nat n → Nat
-hsDot hsNil hsNil = zero
-hsDot (hsCons x xs) (hsCons y ys) =
-  (x * y) + hsDot xs ys
-
-hsSum : ∀ {n} → HSSVector Nat n → Nat
-hsSum hsNil = zero
-hsSum (hsCons x xs) = x + hsSum xs
-
-hsAbsVec : ∀ {n} → HSSVector C.Int8 n → HSSVector Nat n
-hsAbsVec hsNil = hsNil
-hsAbsVec (hsCons x xs) =
-  hsCons (C.int8Magnitude x) (hsAbsVec xs)
-
-rowL1 : ∀ {n} → HSSVector C.Int8 n → Nat
-rowL1 hsNil = zero
-rowL1 (hsCons x xs) =
-  C.int8Magnitude x + rowL1 xs
-
-weightL1 :
-  ∀ {m n} →
-  HSSMatrix C.Int8 m n →
-  Nat
-weightL1 hsNil = zero
-weightL1 (hsCons row rows) =
-  rowL1 row + weightL1 rows
-
-hsMatVecAbs :
-  ∀ {m n} →
-  HSSMatrix C.Int8 m n →
-  HSSVector Nat n →
-  HSSVector Nat m
-hsMatVecAbs hsNil _ = hsNil
-hsMatVecAbs (hsCons row rows) xs =
-  hsCons (hsDot (hsAbsVec row) xs) (hsMatVecAbs rows xs)
-
-onePathVector :
-  ∀ {d L} →
-  HSSVector (HSSMatrix C.Int8 d d) L →
-  HSSVector Nat d
-onePathVector hsNil = hsOnes _
-onePathVector (hsCons W Ws) =
-  hsMatVecAbs W (onePathVector Ws)
-
-onePathNorm :
-  ∀ {d L} →
-  HSSVector (HSSMatrix C.Int8 d d) L →
-  Nat
-onePathNorm Ws = hsSum (onePathVector Ws)
-
-hsNatMulOne : ∀ n → n * suc zero ≡ n
-hsNatMulOne zero = refl
-hsNatMulOne (suc n) = cong suc (hsNatMulOne n)
-
-rowL1OnesAbs :
-  ∀ {n} (xs : HSSVector C.Int8 n) →
-  hsDot (hsAbsVec xs) (hsOnes n) ≡ rowL1 xs
-rowL1OnesAbs hsNil = refl
-rowL1OnesAbs (hsCons x xs) =
-  trans
-    (cong₂ _+_
-      (hsNatMulOne (C.int8Magnitude x))
-      (rowL1OnesAbs xs))
-    refl
-
-onePathOneLayer :
-  ∀ {d}
-  (W : HSSMatrix C.Int8 d d) →
-  onePathNorm (hsCons W hsNil) ≡ weightL1 W
-onePathOneLayer hsNil = refl
-onePathOneLayer (hsCons row rows) =
-  trans
-    (cong₂ _+_
-      (rowL1OnesAbs row)
-      (onePathOneLayer rows))
-    refl
-
-record HiddenSynergyNormPair : Set where
-  constructor hiddenSynergyNormPair
-  field
-    l1 path : Nat
-
-open HiddenSynergyNormPair public
-
-layerNormPair :
-  ∀ {d} →
-  HSSMatrix C.Int8 d d →
-  HSSMatrix C.Int8 d d →
-  HiddenSynergyNormPair
-layerNormPair W₁ W₂ =
-  hiddenSynergyNormPair
-    (weightL1 W₂ + weightL1 W₁)
-    (onePathNorm (hsCons W₂ (hsCons W₁ hsNil)))
-
-hiddenSynergy-one-layer-exact :
-  ∀ {d} (W : HSSMatrix C.Int8 d d) →
-  onePathNorm (hsCons W hsNil) ≡ weightL1 W
-hiddenSynergy-one-layer-exact = onePathOneLayer
-
-------------------------------------------------------------------------
 -- Canonical hard sparsity is still the zero-threshold degeneration.
 ------------------------------------------------------------------------
 
@@ -4826,12 +4696,12 @@ record UniformSupportTsallisBoundary
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Typed Agda reproof surface for every computational function in
--- tools/jax_reference.py.
+-- Typed Agda reproof surface for the retained JAX algorithm contracts.
 --
--- JAX remains the executable array implementation. These definitions are
--- finite Agda counterparts for the same computational contracts. They do not
--- axiomatize JAX's Python runtime, jit compiler, or eval_shape tracer.
+-- The executable Python/JAX wrapper is intentionally not part of this
+-- repository surface. These definitions are the accepted finite Agda
+-- counterparts for the retained algorithm contracts; they do not axiomatize
+-- a Python runtime, JIT compiler, or tracer.
 ------------------------------------------------------------------------
 
 jaxIntegerSum : List ℤ → ℤ
@@ -5099,44 +4969,6 @@ jaxJittedScanSum-law :
   jaxIntegerSum xs
 jaxJittedScanSum-law xs = refl
 
-jaxL1Row : ∀ {n} → HSSVector C.Int8 n → Nat
-jaxL1Row = rowL1
-
-jaxL1Row-law :
-  ∀ {n} (xs : HSSVector C.Int8 n) →
-  jaxL1Row xs ≡ rowL1 xs
-jaxL1Row-law xs = refl
-
-jaxL1Matrix : ∀ {m n} → HSSMatrix C.Int8 m n → Nat
-jaxL1Matrix = weightL1
-
-jaxL1Matrix-law :
-  ∀ {m n} (xs : HSSMatrix C.Int8 m n) →
-  jaxL1Matrix xs ≡ weightL1 xs
-jaxL1Matrix-law xs = refl
-
-jaxOnePathVector :
-  ∀ {d L} →
-  HSSVector (HSSMatrix C.Int8 d d) L →
-  HSSVector Nat d
-jaxOnePathVector = onePathVector
-
-jaxOnePathVector-law :
-  ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
-  jaxOnePathVector xs ≡ onePathVector xs
-jaxOnePathVector-law xs = refl
-
-jaxOnePathNorm :
-  ∀ {d L} →
-  HSSVector (HSSMatrix C.Int8 d d) L →
-  Nat
-jaxOnePathNorm = onePathNorm
-
-jaxOnePathNorm-law :
-  ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
-  jaxOnePathNorm xs ≡ onePathNorm xs
-jaxOnePathNorm-law xs = refl
-
 jaxTsallis2NearSparsityFraction :
   ActionWeights →
   C.FiniteRational
@@ -5169,7 +5001,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     associativePrefixSum :
       ∀ xs →
       jaxAssociativePrefixSum xs ≡
-      jaxAssociativePrefixSum xs
+      jaxSequentialPrefixSumFromZero xs
     recurrentScan :
       ∀ {State Input : Set}
       (step : State → Input → State × State)
@@ -5225,7 +5057,22 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedGRUHiddenStep :
       ∀ states xs →
       jaxBatchedGRUHiddenStep states xs ≡
-      jaxBatchedGRUHiddenStep states xs
+      map
+        (λ stateX →
+          C.hiddenState
+            (C.gruStep
+              (proj₁ stateX)
+              (proj₂ stateX)))
+        (zipGRU-again states xs)
+      where
+      zipGRU-again :
+        List C.GRUState →
+        List C.Int8 →
+        List (C.GRUState × C.Int8)
+      zipGRU-again [] ys = []
+      zipGRU-again (x ∷ xs) [] = []
+      zipGRU-again (x ∷ xs) (y ∷ ys) =
+        (x , y) ∷ zipGRU-again xs ys
     l1Row :
       ∀ {n} (xs : HSSVector C.Int8 n) →
       jaxL1Row xs ≡ rowL1 xs
@@ -5267,10 +5114,6 @@ jax-execution-mirror-reproof =
     jaxSignedGate-law
     jaxGRUHiddenStep-law
     jaxBatchedGRUHiddenStep-law
-    jaxL1Row-law
-    jaxL1Matrix-law
-    jaxOnePathVector-law
-    jaxOnePathNorm-law
     jaxTsallis2NearSparsityFraction-law
     jaxSupportSparsityFraction-law
     jaxJittedScanSum-law
