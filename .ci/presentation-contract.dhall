@@ -5,4 +5,7 @@
 , graphGenerator = ".ci/mirth/agda_graph.mth"
 , surfaceGenerator = ".ci/mirth/agda_to_elm.mth"
 , elmManifest = ".ci/elm-application.dhall"
+, siteEntry = "index.html"
+, compiledElm = "elm.js"
+, asciiGenerator = ".ci/mirth/ascii_surface.mth"
 }
