@@ -21,6 +21,7 @@ frontier_targets = [
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "GRUFractalLimitConvergenceWitness",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof",
     "CanonicalLearnerBairdSevenStarWitness",
     "JAXExecutionMirrorReproof",
     "CanonicalHardSparsityDegeneracyTheorem",
