@@ -40,6 +40,12 @@ jobs:
             sudo mkswap /swapfile || true
             sudo swapon /swapfile || true
           fi
+      - name: Export pinned Agda dependency paths
+        run: |
+          set -euo pipefail
+          echo "VEHICLE_AGDA_SOURCE=$(nix eval --raw .#vehicleAgdaSource)" >> "$GITHUB_ENV"
+          echo "SCHMITTY_AGDA_SOURCE=$(nix eval --raw .#schmittyAgdaSource)" >> "$GITHUB_ENV"
+          echo "AGDARSEC_AGDA_SOURCE=$(nix eval --raw .#agdarsecAgdaSource)" >> "$GITHUB_ENV"
       - name: Check canonical learner monolith
         timeout-minutes: 15
         env:
@@ -88,6 +94,12 @@ jobs:
         with:
           agda-version: '2.8.0'
           agda-stdlib-version: '2.3'
+      - name: Export pinned Agda dependency paths
+        run: |
+          set -euo pipefail
+          echo "VEHICLE_AGDA_SOURCE=$(nix eval --raw .#vehicleAgdaSource)" >> "$GITHUB_ENV"
+          echo "SCHMITTY_AGDA_SOURCE=$(nix eval --raw .#schmittyAgdaSource)" >> "$GITHUB_ENV"
+          echo "AGDARSEC_AGDA_SOURCE=$(nix eval --raw .#agdarsecAgdaSource)" >> "$GITHUB_ENV"
       - name: Verify Schmitty installation
         timeout-minutes: 10
         env:
