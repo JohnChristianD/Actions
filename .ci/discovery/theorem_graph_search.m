@@ -122,6 +122,19 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_finite_mixed_nash_egraph_astar_convergence_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_finite_mixed_nash_cycle_transport_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+:- pred graph_finite_mixed_nash_gru_tail_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
+
 :- implementation.
 
 
@@ -141,6 +154,24 @@ graph_canonical_integer_gru_fractal_limit_composition_plan(Laws, Plan) :-
 graph_gru_injective_tail_stability_convergence_plan(Laws, Plan) :-
     search_named_required_plan(
         "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+        Laws,
+        Plan).
+
+graph_finite_mixed_nash_egraph_astar_convergence_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "finiteMixedNash-egraph-astar-convergence",
+        Laws,
+        Plan).
+
+graph_finite_mixed_nash_cycle_transport_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "finiteMixedNash-cycle-transport",
+        Laws,
+        Plan).
+
+graph_finite_mixed_nash_gru_tail_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "finiteMixedNash-from-GRU-tail",
         Laws,
         Plan).
 
@@ -609,6 +640,11 @@ graph_required_theorems = [
     "ExactReconstructionOnImage",
     "StationaryLimitTheorem",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+    "finiteMixedNash-egraph-astar-convergence",
+    "finiteMixedNash-egraph-astar-eventualStationarity",
+    "finiteMixedNash-egraph-astar-proof",
+    "finiteMixedNash-cycle-transport",
+    "finiteMixedNash-from-GRU-tail",
     "canonicalFullLearner-no-finite-rank-stability",
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "HiddenSynergyNormPair",
