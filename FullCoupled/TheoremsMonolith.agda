@@ -2211,13 +2211,6 @@ canonicalGRUTwoScaleInjective =
 -- the economic carrier, not merely a level index.
 ------------------------------------------------------------------------
 
-  using
-  ( FourLawOneStepWitnessContract
-  )
-  using
-  ( FractalInjectiveComposition
-  )
-
 record PhysicsGRUFractalAdapter
   (Level LearnerState PhysicalState Observation Current Variation Action : Set)
   (Refines : Level → Level → Set)
@@ -9871,22 +9864,6 @@ canonical-integer-gru-fractal-limit-composition K =
 ------------------------------------------------------------------------
 
 
-  using
-  ( CommonsNonDerivabilityCounterexample
-  ; twoAgentCommonsCounterexample
-  ; twoNotLeOne
-  ; commonsWorld
-  ; sharedResource
-  ; resourceCapacity
-  ; action
-  ; extraction
-  ; aggregateExtraction
-  ; localOptimal
-  ; allLocallyOptimal
-  ; aggregateExtractionIsTwo
-  ; extractionIsOne
-  ; capacityIsOne
-  )
 
 ------------------------------------------------------------------------
 -- A single commons law repeated across an arbitrary collection of levels.
