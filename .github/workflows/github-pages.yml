@@ -41,7 +41,7 @@ jobs:
             cp site/Main.elm "$tmp/src/Main.elm"
             mirthc "$GITHUB_WORKSPACE/.ci/mirth/agda_graph.mth" -o "$tmp/agda-graph.c"
             cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-            "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm"
+            "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash
             mirthc "$GITHUB_WORKSPACE/.ci/mirth/agda_to_elm.mth" -o "$tmp/agda-to-elm.c"
             cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
             "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
