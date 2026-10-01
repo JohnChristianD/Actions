@@ -52,6 +52,9 @@ open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
+open import Effect.Monad using (RawMonad)
+open import Effect.Monad.State using
+  (State; RawMonadState; StateMonad; StateMonadState)
 -- END MIRTH-SYNC COMMON IMPORTS
 record Topology (A : Set) : Set₁ where
   field
