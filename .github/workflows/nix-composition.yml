@@ -103,7 +103,7 @@ jobs:
       - name: Verify Schmitty installation
         timeout-minutes: 10
         env:
-          AGDA_SCHMITTY_COMMAND: agda
+          AGDA_SCHMITTY_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
         run: |
           set -euo pipefail
