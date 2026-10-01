@@ -33,6 +33,8 @@
     in
     {
       vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
+      schmittyAgdaSource = "${schmitty}/src";
+      agdarsecAgdaSource = "${agdarsec}/src";
 
       packages = forAllSystems (system:
         let
