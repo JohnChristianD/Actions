@@ -121,31 +121,8 @@ ELM
     "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm"
     test -s "$tmp/src/GeneratedAgdaGraph.elm"
     cp "$tmp/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
-    cat > "$tmp/elm.json" <<'JSON'
-    {
-      "type": "application",
-      "source-directories": ["src"],
-      "elm-version": "0.19.2",
-      "dependencies": {
-        "direct": {
-          "elm/browser": "1.0.2",
-          "elm/core": "1.0.5",
-          "elm/html": "1.0.0",
-          "elm/svg": "1.0.1"
-        },
-        "indirect": {
-          "elm/json": "1.1.3",
-          "elm/time": "1.0.0",
-          "elm/url": "1.0.0",
-          "elm/virtual-dom": "1.0.3"
-        }
-      },
-      "test-dependencies": {
-        "direct": {},
-        "indirect": {}
-      }
-    }
-JSON
+    dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
+    test -s "$tmp/elm.json"
     cd "$tmp"
     elm make src/Main.elm --optimize --output "$tmp/pages.js"
     test -s "$tmp/pages.js"
