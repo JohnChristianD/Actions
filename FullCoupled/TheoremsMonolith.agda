@@ -89,6 +89,33 @@ open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀
 open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
+open import Reflection using (Term; TC; ⊤; unify; lit; string)
+open import Reflection.External using (CmdSpec; cmdSpec; unsafeRunCmdTC; Result)
+
+------------------------------------------------------------------------
+-- Meta-Z3 dependency minimization boundary.
+--
+-- Z3 receives labeled assumptions and returns a minimized unsat core.
+-- The receipt is meta-level evidence only: it never inhabits a theorem
+-- proposition and never replaces Agda's accepted proof term.
+------------------------------------------------------------------------
+
+macro
+  z3DependencyCore : String → Term → TC ⊤
+  z3DependencyCore script hole = do
+    result ←
+      unsafeRunCmdTC
+        (cmdSpec
+          "z3"
+          ("-smt2" ∷ "-in" ∷ "-v:0" ∷ [])
+          script)
+    unify hole (lit (string (Result.output result)))
+
+z3DependencyCoreDemo : String
+z3DependencyCoreDemo =
+  z3DependencyCore
+    "(set-option :produce-unsat-cores true)\\n    (set-option :smt.core.minimize true)\\n    (declare-const a Bool)\\n    (declare-const b Bool)\\n    (declare-const c Bool)\\n    (declare-const bridge Bool)\\n    (declare-const target Bool)\\n    (assert (! (=> a bridge) :named edge-a))\\n    (assert (! (=> b bridge) :named edge-b))\\n    (assert (! (=> bridge target) :named edge-bridge))\\n    (assert (! (=> c target) :named edge-c))\\n    (assert (! (not target) :named target-negation))\\n    (check-sat-assuming (a b c))\\n    (get-unsat-core)\\n"
+
 -- END THEOREM-SPECIFIC IMPORTS
 record GenericRingSolverNormalizationTheorem {c ℓ}
   (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
