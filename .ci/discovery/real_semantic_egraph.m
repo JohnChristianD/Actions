@@ -21,6 +21,7 @@ frontier_targets = [
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "GRUFractalLimitConvergenceWitness",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+    "CanonicalLearnerBairdSevenStarWitness",
     "JAXExecutionMirrorReproof",
     "CanonicalHardSparsityDegeneracyTheorem",
     "hiddenSynergy-one-layer-exact",
