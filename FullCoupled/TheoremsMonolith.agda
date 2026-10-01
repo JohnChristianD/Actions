@@ -8259,7 +8259,7 @@ record RecursiveRadnerExistence
         priceProcess
         allocationProcess
         portfolioProcess
-        data
+        radnerData
 
 RecursiveRadnerPrice :
   ∀ {State Price : Set} →
