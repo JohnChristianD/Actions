@@ -286,9 +286,9 @@ paletteRoleDistance choice =
         )
 
 
-paletteGlobalScore : PaletteChoice -> Float
+paletteGlobalScore : PaletteChoice -> ( Float, Float )
 paletteGlobalScore choice =
-    minimumPairDistance
+    ( minimumPairDistance
         [ choice.background
         , choice.surface
         , choice.ink
@@ -296,8 +296,8 @@ paletteGlobalScore choice =
         , choice.accent
         , choice.accentInk
         ]
-        * 1000000
-        + paletteRoleDistance choice
+    , paletteRoleDistance choice
+    )
 
 
 candidateColors : List PerceptualColor
