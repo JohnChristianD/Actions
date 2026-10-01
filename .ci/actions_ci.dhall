@@ -57,9 +57,10 @@ let script = merge {
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
     "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'agdaModules : List String' "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'FullCoupled.CanonicalLearnerMonolith' "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'siteTitle : String' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'buildCommit : String' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'nodeLines : List String' "$tmp/GeneratedTheoremSurface.elm"
+    grep -Fq 'edgeLines : List String' "$tmp/GeneratedTheoremSurface.elm"
     echo "mirth-c99-transpile-and-execute=pass"
     '',
   Schmitty = ''
