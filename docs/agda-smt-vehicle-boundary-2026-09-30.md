@@ -11,9 +11,9 @@ SMT and Vehicle remain integration boundaries. Their results do not replace acce
 The canonical statistical representation stores the original GRU state and decodes by first projection. The accepted left-inverse and injectivity chain is:
 
 `canonicalGRUStatisticalDecodeEncode`
-→ `canonicalGRUStatisticalEncodeLeftInverse`
-→ `leftInverse-implies-injective`
-→ `canonicalGRUStatisticalEncodeInjective`.
+-> `canonicalGRUStatisticalEncodeLeftInverse`
+-> `leftInverse-implies-injective`
+-> `canonicalGRUStatisticalEncodeInjective`.
 
 The convergence-identifiability kernel then requires explicit injectivity, exact step conjugacy, and an eventually fixed feature tail. It does not manufacture physics, economics, or Baird witnesses.
 
