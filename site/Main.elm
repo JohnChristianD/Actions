@@ -971,15 +971,13 @@ view model =
         sourceText =
             String.join "," (List.map sanitize Surface.sourceFiles)
 
-        commitText =
-            sanitize Surface.buildCommit
     in
     main_
         [ HA.class "repository" ]
         [ dynamicStyleSheet
         , h1 [ HA.class "dynamic-accent" ] [ text titleText ]
         , p [ HA.class "dynamic-muted" ]
-            [ text (sourceText ++ " " ++ commitText) ]
+            [ text sourceText ]
         , section []
             [ h2 [ HA.class "dynamic-ink" ]
                 [ text (String.fromInt (List.length visible) ++ " declarations") ]
