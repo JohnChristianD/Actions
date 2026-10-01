@@ -109,6 +109,8 @@ let script = merge {
     grep -Fq '"siteEntry": "index.html"' "$tmp/presentation-contract.json"
     grep -Fq '"compiledElm": "elm.js"' "$tmp/presentation-contract.json"
     grep -Fq '"asciiGenerator": ".ci/mirth/ascii_surface.mth"' "$tmp/presentation-contract.json"
+    output_dir=${PAGES_OUTPUT_DIR:-"$tmp"}
+    mkdir -p "$output_dir"
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
@@ -128,8 +130,8 @@ let script = merge {
     dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
     test -s "$tmp/elm.json"
     cd "$tmp"
-    elm make src/Main.elm --optimize --output "$tmp/pages.js"
-    test -s "$tmp/pages.js"
+    elm make src/Main.elm --optimize --output "$output_dir/elm.js"
+    test -s "$output_dir/elm.js"
     echo "pages-build=pass"
     '',
   Discovery = ''
