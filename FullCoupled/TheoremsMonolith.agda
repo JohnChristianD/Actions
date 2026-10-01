@@ -5623,10 +5623,9 @@ eGraphAStarIterate-isomorphism step (suc n) s =
 --   * the existing GRU tail kernel transports feature-tail stability to
 --     eventual source-state stationarity.
 --
--- This does not claim the classical unconditional Nash existence theorem.
--- That theorem requires a formal finite mixed-strategy simplex plus a
--- fixed-point existence theorem such as Brouwer/Kakutani, neither of which
--- is supplied by the current monolith imports.
+-- The Brouwer reduction below gives the classical Nash existential
+-- conclusion relative to an explicit analytical Brouwer witness. The
+-- monolith does not hide or postulate a proof of Brouwer itself.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
