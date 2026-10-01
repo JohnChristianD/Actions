@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import GeneratedAgdaGraph as Graph
+import GeneratedTheoremSurface as Surface
 import Html exposing (Html, a, button, code, div, h1, h2, input, li, main_, option, p, section, select, span, text, ul)
 import Html.Attributes as HA
 import Html.Events as HE
@@ -507,6 +508,39 @@ sourceAllowed fileFilter source =
             source == "theorem"
 
 
+rootNodes : List Graph.Node
+rootNodes =
+    List.filter
+        (\\node -> List.member node.label Surface.roots || List.member node.id Surface.roots)
+        Graph.nodes
+
+
+rootEdges : List Graph.Edge
+rootEdges =
+    List.filter
+        (\\edge ->
+            List.member edge.source Surface.roots
+                || List.member edge.target Surface.roots
+        )
+        Graph.edges
+
+
+incomingRootIds : String -> List String
+incomingRootIds nodeId =
+    Graph.edges
+        |> List.filter (\\edge -> edge.target == nodeId)
+        |> List.map .source
+        |> unique
+
+
+outgoingRootIds : String -> List String
+outgoingRootIds nodeId =
+    Graph.edges
+        |> List.filter (\\edge -> edge.source == nodeId)
+        |> List.map .target
+        |> unique
+
+
 nodeForId : String -> Maybe Graph.Node
 nodeForId nodeId =
     Graph.nodes
@@ -701,18 +735,58 @@ view model =
                 , ul [] (List.map relationRecord filteredEdges)
                 ]
             ]
+        , section []
+            [ h2 [] [ text "Mirth-synced directional theorem graph" ]
+            , p []
+                [ text "Mirth reads both canonical Agda monoliths and emits this graph during Pages build. Edge direction is declaration-to-dependency: source declaration uses target declaration." ]
+            , p []
+                [ text
+                    ("Generated graph roots: "
+                        ++ String.fromInt (List.length rootNodes)
+                        ++ " | root-touching directed edges: "
+                        ++ String.fromInt (List.length rootEdges)
+                    )
+                ]
+            , ul []
+                (List.map
+                    (\\root ->
+                        li []
+                            [ code [] [ text root ]
+                            , p []
+                                [ text ("outgoing dependencies: " ++ String.join ", " (outgoingRootIds root))
+                                ]
+                            , p []
+                                [ text ("incoming consumers: " ++ String.join ", " (incomingRootIds root))
+                                ]
+                            ]
+                    )
+                    (List.map identity Surface.roots)
+                )
+            , ul []
+                (List.map
+                    (\\(label, meaning) ->
+                        li [] [ code [] [ text (label ++ ": ") ], text meaning ]
+                    )
+                    Surface.directionalLabels
+                )
+            ]
         , section [] [ h2 [] [ text "Finite mixed-Nash graph convergence" ]
             , p []
-                [ text "The theorem monolith now packages a finite-rank A* / e-graph convergence certificate: stable graph state -> fixed update -> supplied mixed-Nash bridge. E-graph endpoint equality remains sound through the existing semantic-path kernel." ]
+                [ text "Finite-rank A* provides convergence to a stable graph state. Brouwer's fixed-point construction supplies the mixed-Nash existence bridge. E-graph semantic paths certify endpoint equality. GRU injectivity and tail stability provide an independent feature-to-state stationarity path." ]
             , ul [] (List.map codeItem
-                [ "finiteMixedNash-egraph-astar-convergence"
+                [ "BrouwerMixedNashExistence"
+                , "nashEveryFiniteGameViaBrouwer"
+                , "brouwerMixedNashFixedPointBridge"
+                , "finiteMixedNash-brouwer-egraph-astar-proof"
+                , "finiteMixedNash-egraph-astar-convergence"
                 , "finiteMixedNash-egraph-astar-eventualStationarity"
-                , "finiteMixedNash-egraph-astar-proof"
                 , "finiteMixedNash-cycle-transport"
                 , "finiteMixedNash-from-GRU-tail"
                 ])
             , p []
-                [ text "This is not presented as the unconditional theorem that every finite normal-form game has a mixed Nash equilibrium. That stronger result still needs a formal mixed-strategy simplex and a fixed-point existence theorem." ]
+                [ text "Agda now proves the Brouwer-to-Nash reduction and composes it with the finite-rank A* / e-graph certificate. The analytic Brouwer theorem itself remains an explicit mathematical witness rather than a hidden axiom." ]
+            , p []
+                [ text "GRU tail-stability is a separate proof path: injective encoding recovers source-state fixation from feature-tail fixation. It does not replace Brouwer's existence argument." ]
             ]
         , section [] [ h2 [] [ text "JAX execution mirror" ]
             , p []
