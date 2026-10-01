@@ -154,7 +154,7 @@ let script = merge {
     grep -Fq 'finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof' "$tmp/src/GeneratedAgdaGraph.elm"
     grep -Fq 'GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem' "$tmp/src/GeneratedAgdaGraph.elm"
     dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
-    sed -i -e 's/"source_directories"/"source-directories"/g' -e 's/"elm_version"/"elm-version"/g' -e 's/"test_dependencies"/"test-dependencies"/g' "$tmp/elm.json"
+    sed -i -e 's/"source_directories"/"source-directories"/g' -e 's/"elm_version"/"elm-version"/g' -e 's/"elm_dependencies"/"dependencies"/g' -e 's/"test_dependencies"/"test-dependencies"/g' "$tmp/elm.json"
     test -s "$tmp/elm.json"
     cd "$tmp"
     elm make src/Main.elm --optimize --output "$output_dir/elm.js"
