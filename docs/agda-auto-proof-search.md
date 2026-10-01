@@ -18,15 +18,21 @@ The accepted chain is `canonicalGRUStatisticalDecodeEncode` → `canonicalGRUSta
 
 ## Finite mixed-Nash graph convergence
 
-The theorem monolith now contains a finite-rank A* / e-graph convergence certificate for a supplied mixed-Nash fixed-point bridge. The core path is:
+The theorem monolith now contains a finite-rank A* / e-graph convergence certificate plus an explicit Brouwer-to-Nash reduction.
 
-`finiteMixedNash-egraph-astar-convergence` → `finiteMixedNash-egraph-astar-eventualStationarity` → `finiteMixedNash-egraph-astar-proof`.
+The analytical existence seam is:
 
-The graph proof is conditional by construction: a stable node must be supplied with a stable-to-fixed law, and that fixed update must be supplied with a mixed-Nash bridge. E-graph semantic equality remains derived from EGraphSemanticPath soundness; A* cost is guidance, not proof evidence.
+`BrouwerMixedNashExistence` → `nashEveryFiniteGameViaBrouwer` → `brouwerMixedNashFixedPointBridge`.
 
-`finiteMixedNash-cycle-transport` transports the convergence certificate across an exact state isomorphism while reusing the existing finite-cycle exclusion theorem. `finiteMixedNash-from-GRU-tail` connects mixed-Nash identification with the reusable GRU tail-stability kernel.
+The graph composition seam is:
 
-No unconditional classical Nash-existence theorem is claimed. A genuine theorem that every finite normal-form game has a mixed Nash equilibrium still requires a formal mixed-strategy simplex and a fixed-point existence result such as Brouwer/Kakutani. Those ingredients are outside the current safe monolith surface.
+`finiteMixedNash-brouwer-egraph-astar-proof` → `finiteMixedNash-egraph-astar-convergence` → `finiteMixedNash-egraph-astar-eventualStationarity`.
+
+The A* score orders dependency search. It is not semantic proof evidence. E-graph paths carry interpretation equality through `eGraph-path-sound` and `eGraphAStarConvergenceSemanticClosure`.
+
+`finiteMixedNash-cycle-transport` transports the convergence certificate across an exact state isomorphism while reusing finite-cycle exclusion. `finiteMixedNash-from-GRU-tail` composes the same mixed-Nash predicate with the GRU injective tail-stability kernel.
+
+The Agda code proves the reduction and all equality/convergence compositions. The Brouwer fixed-point theorem itself remains an explicit analytical witness in `BrouwerMixedNashExistence`; the repository does not silently postulate an implementation of Brouwer.
 
 ## Canonical Baird boundary
 
