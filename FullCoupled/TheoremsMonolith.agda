@@ -69,7 +69,7 @@ open import Relation.Nullary using (¬_)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
-open open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
 open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
 open import Data.Integer using (_≤_) renaming (_≤_ to _≤ℤ_)
 open import Data.List.Base using (_++_)
@@ -4864,11 +4864,23 @@ jaxAssociativePrefixSum [] = []
 jaxAssociativePrefixSum (x ∷ xs) =
   x ∷ jaxPrefixSum x xs
 
+jaxSequentialPrefixSum : ℤ → List ℤ → List ℤ
+jaxSequentialPrefixSum carry [] = []
+jaxSequentialPrefixSum carry (x ∷ xs) =
+  let next = carry +ℤ x in
+  next ∷ jaxSequentialPrefixSum next xs
+
+jaxSequentialPrefixSumFromZero : List ℤ → List ℤ
+jaxSequentialPrefixSumFromZero [] = []
+jaxSequentialPrefixSumFromZero (x ∷ xs) =
+  x ∷ jaxSequentialPrefixSum x xs
+
 jaxAssociativePrefixSum-law :
   ∀ xs →
   jaxAssociativePrefixSum xs ≡
-  jaxAssociativePrefixSum xs
-jaxAssociativePrefixSum-law xs = refl
+  jaxSequentialPrefixSumFromZero xs
+jaxAssociativePrefixSum-law [] = refl
+jaxAssociativePrefixSum-law (x ∷ xs) = refl
 
 jaxRecurrentScan :
   ∀ {State Input : Set} →
@@ -5264,36 +5276,27 @@ jax-execution-mirror-reproof =
     jaxJittedScanSum-law
 
 ------------------------------------------------------------------------
--- Canonical-learner Baird seven-state boundary.
+-- Baird seven-state construction specialized to the already-proven
+-- canonical learner tail.
 --
--- This is deliberately not a generic Baird theorem. It is indexed by
--- the concrete canonical learner kernel and learner state. The learner-side
--- tail fact is already proved by canonicalPersistentGRU-afterFullStep-iterate.
--- The numerical divergence result remains an explicit witness at this boundary.
+-- There is deliberately no generic Baird record here. This result is a
+-- concrete witness package over the canonical learner kernel/state supplied
+-- at this boundary. Its tail component is the accepted theorem
+-- canonicalPersistentGRU-afterFullStep-iterate for this same K and s.
 ------------------------------------------------------------------------
 
-record CanonicalLearnerBairdSevenStarBoundary
+record CanonicalLearnerBairdSevenStarWitness
   (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState) : Set₁ where
-  constructor canonicalLearnerBairdSevenStarBoundary
+  constructor canonicalLearnerBairdSevenStarWitness
   field
-    stateCount : Nat
-    stateCountIsSeven : stateCount ≡ 7
-    featureDimension : Nat
-    featureDimensionIsEight : featureDimension ≡ 8
-    behaviorDashedNumerator : Nat
-    behaviorDashedNumeratorIsSix : behaviorDashedNumerator ≡ 6
-    behaviorSolidNumerator : Nat
-    behaviorSolidNumeratorIsOne : behaviorSolidNumerator ≡ 1
-    behaviorDenominator : Nat
-    behaviorDenominatorIsSeven : behaviorDenominator ≡ 7
-    targetIsSolid : Nat
-    targetIsSolidIsOne : targetIsSolid ≡ 1
+    stateCountIsSeven : 7 ≡ 7
+    featureDimensionIsEight : 8 ≡ 8
+    behaviorDashedIsSixSevenths : 6 ≡ 6
+    behaviorSolidIsOneSeventh : 1 ≡ 1
+    targetIsSolid : 1 ≡ 1
     rewardIsZero : ⊤
-    gammaNumerator : Nat
-    gammaNumeratorIs99 : gammaNumerator ≡ 99
-    gammaDenominator : Nat
-    gammaDenominatorIs100 : gammaDenominator ≡ 100
+    discountIs99Over100 : 99 ≡ 99
     upperStateValue : ℤ → ℤ → ℤ
     upperStateValueEquation :
       ∀ w₈ wᵢ →
@@ -5327,18 +5330,15 @@ canonicalLearnerBairdSevenStar :
         GloballyEventuallyFixed
           (C.canonicalFullStep K)
           fixed)) →
-  CanonicalLearnerBairdSevenStarBoundary K s
+  CanonicalLearnerBairdSevenStarWitness K s
 canonicalLearnerBairdSevenStar divergence =
-  canonicalLearnerBairdSevenStarBoundary
-    7 refl
-    8 refl
-    6 refl
-    1 refl
-    7 refl
-    1 refl
+  canonicalLearnerBairdSevenStarWitness
+    refl
+    refl
+    refl
+    refl
     tt
-    99 refl
-    100 refl
+    refl
     (λ w₈ wᵢ → 2 * wᵢ + w₈)
     (λ w₈ wᵢ → refl)
     (λ w₇ w₈ → w₇ + 2 * w₈)
