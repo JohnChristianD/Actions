@@ -1,3 +1,4 @@
+# CI receipt probe: trigger a fresh PR run without changing step semantics.
 name: GitHub Pages
 
 on:
