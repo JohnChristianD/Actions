@@ -234,46 +234,106 @@ bestContrastPartner anchor candidates =
                 rest
 
 
-bestByMaximin :
-    (PerceptualColor -> Float)
-    -> PerceptualColor
-    -> List PerceptualColor
-    -> PerceptualColor
-bestByMaximin score fallback candidates =
-    List.maximumBy score candidates
-        |> Maybe.withDefault fallback
+removeColor : Int -> List PerceptualColor -> List PerceptualColor
+removeColor id =
+    List.filter (\\candidate -> candidate.id /= id)
 
 
-maximinAgainst : PerceptualColor -> List PerceptualColor -> Float
-maximinAgainst candidate anchors =
-    case anchors of
+permutationsOfLength : Int -> List PerceptualColor -> List (List PerceptualColor)
+permutationsOfLength count candidates =
+    if count <= 0 then
+        [ [] ]
+
+    else
+        List.concatMap
+            (\\candidate ->
+                List.map
+                    (\\tail -> candidate :: tail)
+                    (permutationsOfLength
+                        (count - 1)
+                        (removeColor candidate.id candidates))
+            )
+            candidates
+
+
+minimumPairDistance : List PerceptualColor -> Float
+minimumPairDistance colors =
+    case colors of
         [] ->
             0
 
         first :: rest ->
-            List.foldl
-                (\\anchor best ->
-                    min best (perceptualDistanceSquared candidate anchor)
-                )
-                (perceptualDistanceSquared candidate first)
-                rest
+            case rest of
+                [] ->
+                    0
+
+                _ ->
+                    min
+                        (List.foldl
+                            (\\other best ->
+                                min best (perceptualDistanceSquared first other)
+                            )
+                            (perceptualDistanceSquared first (List.head rest |> Maybe.withDefault first))
+                            rest
+                        )
+                        (minimumPairDistance rest)
 
 
-withoutChosen : List PerceptualColor -> List PerceptualColor -> List PerceptualColor
-withoutChosen chosen candidates =
-    List.filter
-        (\\candidate ->
-            not (List.any (\\anchor -> anchor.id == candidate.id) chosen)
+type alias PaletteChoice =
+    { background : PerceptualColor
+    , surface : PerceptualColor
+    , ink : PerceptualColor
+    , mutedInk : PerceptualColor
+    , accent : PerceptualColor
+    , accentInk : PerceptualColor
+    }
+
+
+paletteChoiceColors : PaletteChoice -> List PerceptualColor
+paletteChoiceColors choice =
+    [ choice.background
+    , choice.surface
+    , choice.ink
+    , choice.mutedInk
+    , choice.accent
+    , choice.accentInk
+    ]
+
+
+paletteRoleDistance : PaletteChoice -> Float
+paletteRoleDistance choice =
+    min
+        (perceptualDistanceSquared choice.background choice.ink)
+        (min
+            (perceptualDistanceSquared choice.accent choice.accentInk)
+            (min
+                (perceptualDistanceSquared choice.background choice.surface)
+                (perceptualDistanceSquared choice.surface choice.ink)
+            )
         )
-        candidates
 
 
-selectAgainst : List PerceptualColor -> List PerceptualColor -> PerceptualColor -> PerceptualColor
-selectAgainst anchors candidates fallback =
-    bestByMaximin
-        (\\candidate -> maximinAgainst candidate anchors)
-        fallback
-        (withoutChosen anchors candidates)
+paletteGlobalScore : PaletteChoice -> Float
+paletteGlobalScore choice =
+    minimumPairDistance (paletteChoiceColors choice) * 1000000
+        + paletteRoleDistance choice
+
+
+paletteChoiceFromList : List PerceptualColor -> Maybe PaletteChoice
+paletteChoiceFromList colors =
+    case colors of
+        background :: surface :: ink :: mutedInk :: accent :: accentInk :: [] ->
+            Just
+                { background = background
+                , surface = surface
+                , ink = ink
+                , mutedInk = mutedInk
+                , accent = accent
+                , accentInk = accentInk
+                }
+
+        _ ->
+            Nothing
 
 
 candidateColors : List PerceptualColor
@@ -282,7 +342,7 @@ candidateColors =
         (\\index ->
             customPerceptualColor index (dynamicDisplayCandidate index)
         )
-        (List.range 0 15)
+        (List.range 0 8)
 
 
 fallbackPerceptualColor : PerceptualColor
@@ -290,62 +350,54 @@ fallbackPerceptualColor =
     customPerceptualColor 0 (dynamicDisplayCandidate 0)
 
 
+globalPaletteChoice : PaletteChoice
+globalPaletteChoice =
+    let
+        fallback =
+            { background = fallbackPerceptualColor
+            , surface = customPerceptualColor 1 (dynamicDisplayCandidate 1)
+            , ink = customPerceptualColor 2 (dynamicDisplayCandidate 2)
+            , mutedInk = customPerceptualColor 3 (dynamicDisplayCandidate 3)
+            , accent = customPerceptualColor 4 (dynamicDisplayCandidate 4)
+            , accentInk = customPerceptualColor 5 (dynamicDisplayCandidate 5)
+            }
+
+        choices =
+            permutationsOfLength 6 candidateColors
+                |> List.filterMap paletteChoiceFromList
+    in
+    List.maximumBy paletteGlobalScore choices
+        |> Maybe.withDefault fallback
+
+
 backgroundPerceptualColor : PerceptualColor
 backgroundPerceptualColor =
-    bestByMaximin
-        (\\candidate ->
-            maximinAgainst
-                candidate
-                (List.filter (\\other -> other.id /= candidate.id) candidateColors)
-        )
-        fallbackPerceptualColor
-        candidateColors
-
-
-inkPerceptualColor : PerceptualColor
-inkPerceptualColor =
-    selectAgainst [ backgroundPerceptualColor ] candidateColors fallbackPerceptualColor
+    globalPaletteChoice.background
 
 
 surfacePerceptualColor : PerceptualColor
 surfacePerceptualColor =
-    selectAgainst
-        [ backgroundPerceptualColor, inkPerceptualColor ]
-        candidateColors
-        fallbackPerceptualColor
+    globalPaletteChoice.surface
 
 
-accentPerceptualColor : PerceptualColor
-accentPerceptualColor =
-    selectAgainst
-        [ backgroundPerceptualColor, inkPerceptualColor, surfacePerceptualColor ]
-        candidateColors
-        fallbackPerceptualColor
-
-
-accentInkPerceptualColor : PerceptualColor
-accentInkPerceptualColor =
-    selectAgainst
-        [ backgroundPerceptualColor
-        , inkPerceptualColor
-        , surfacePerceptualColor
-        , accentPerceptualColor
-        ]
-        candidateColors
-        fallbackPerceptualColor
+inkPerceptualColor : PerceptualColor
+inkPerceptualColor =
+    globalPaletteChoice.ink
 
 
 mutedInkPerceptualColor : PerceptualColor
 mutedInkPerceptualColor =
-    selectAgainst
-        [ backgroundPerceptualColor
-        , inkPerceptualColor
-        , surfacePerceptualColor
-        , accentPerceptualColor
-        , accentInkPerceptualColor
-        ]
-        candidateColors
-        fallbackPerceptualColor
+    globalPaletteChoice.mutedInk
+
+
+accentPerceptualColor : PerceptualColor
+accentPerceptualColor =
+    globalPaletteChoice.accent
+
+
+accentInkPerceptualColor : PerceptualColor
+accentInkPerceptualColor =
+    globalPaletteChoice.accentInk
 
 
 cssDisplayColor : DisplayColor -> String
@@ -357,18 +409,6 @@ cssDisplayColor color =
         ++ " "
         ++ String.fromFloat (clamp01 color.b)
         ++ ")"
-
-
-dynamicPalette : DisplayPalette
-dynamicPalette =
-    { background = cssDisplayColor backgroundPerceptualColor.display
-    , surface = cssDisplayColor surfacePerceptualColor.display
-    , ink = cssDisplayColor inkPerceptualColor.display
-    , mutedInk = cssDisplayColor mutedInkPerceptualColor.display
-    , accent = cssDisplayColor accentPerceptualColor.display
-    , accentInk = cssDisplayColor accentInkPerceptualColor.display
-    }
-
 
 dynamicCss : String
 dynamicCss =
