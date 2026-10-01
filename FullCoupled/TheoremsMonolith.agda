@@ -8246,7 +8246,7 @@ record RecursiveRadnerExistence
     allocationProcess : State → Agent → Allocation
     portfolioProcess : State → Agent → Portfolio
 
-    data :
+    radnerData :
       RecursiveRadnerData
         State Agent Commodity Asset Price Allocation Portfolio
         priceProcess
