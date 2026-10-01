@@ -4,5 +4,73 @@ import std.prelude
 import std.world
 
 def main {
-    "set -euo pipefail; repo=$(basename \"$(git rev-parse --show-toplevel)\"); commit=$(git rev-parse HEAD); printf '%s\\n' 'module GeneratedTheoremSurface exposing (siteTitle, buildCommit, sourceFiles, nodeLines, edgeLines, asciiSanitize)' 'import Char' 'import GeneratedAgdaGraph as Graph' 'import String' '' 'siteTitle : String' 'siteTitle = \"%s\"' '' 'buildCommit : String' 'buildCommit = \"%s\"' '' 'sourceFiles : List String' 'sourceFiles =' '    Graph.nodes' '        |> List.map .source' '        |> unique' '' 'unique : List String -> List String' 'unique values =' '    List.foldl' '        (\\value seen ->' '            if List.member value seen then' '                seen' '            else' '                seen ++ [ value ]' '        )' '        []' '        values' '' 'asciiSanitize : String -> String' 'asciiSanitize value =' '    value' '        |> String.map (\\char ->' '            if Char.toCode char < 128 then' '                char' '            else' '                Char.fromCode 63' '        )' '' 'nodeLines : List String' 'nodeLines =' '    Graph.nodes' '        |> List.map (\\node -> asciiSanitize (node.source ++ \":\" ++ node.label))' '' 'edgeLines : List String' 'edgeLines =' '    Graph.edges' '        |> List.map (\\edge ->' '            asciiSanitize (' '                edge.source ++ \" --\" ++ edge.relation ++ \"--> \" ++ edge.target' '            )' '        )' ' ]' \"\\" print
-    }
+    "set -euo pipefail
+repo=\$(basename \"\$(git rev-parse --show-toplevel)\")
+commit=\$(git rev-parse HEAD)
+cat <<EOF
+module GeneratedTheoremSurface exposing (siteTitle, buildCommit, sourceFiles, nodeLines, edgeLines, asciiSanitize)
+
+import Char
+import GeneratedAgdaGraph as Graph
+import String
+
+
+siteTitle : String
+siteTitle = \"\$repo\"
+
+
+buildCommit : String
+buildCommit = \"\$commit\"
+
+
+sourceFiles : List String
+sourceFiles =
+    Graph.nodes
+        |> List.map .source
+        |> unique
+
+
+unique : List String -> List String
+unique values =
+    List.foldl
+        (\\value seen ->
+            if List.member value seen then
+                seen
+
+            else
+                seen ++ [ value ]
+        )
+        []
+        values
+
+
+asciiSanitize : String -> String
+asciiSanitize value =
+    value
+        |> String.map (\\char ->
+            if Char.toCode char < 128 then
+                char
+
+            else
+                Char.fromCode 63
+        )
+
+
+nodeLines : List String
+nodeLines =
+    Graph.nodes
+        |> List.map (\\node ->
+            asciiSanitize (node.source ++ \":\" ++ node.label)
+        )
+
+
+edgeLines : List String
+edgeLines =
+    Graph.edges
+        |> List.map (\\edge ->
+            asciiSanitize
+                (edge.source ++ \" --\" ++ edge.relation ++ \"--> \" ++ edge.target)
+        )
+EOF
+" print
+}
