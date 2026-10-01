@@ -5,7 +5,7 @@
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --guardedness #-}
-{-# OPTIONS --safe #-}
+{-# OPTIONS --cubical-compatible #-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
