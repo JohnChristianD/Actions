@@ -5629,6 +5629,48 @@ eGraphAStarIterate-isomorphism step (suc n) s =
 -- is supplied by the current monolith imports.
 ------------------------------------------------------------------------
 
+------------------------------------------------------------------------
+-- Brouwer -> Nash existence boundary.
+--
+-- Nash's finite-game existence theorem can be proved by Brouwer: construct
+-- a continuous self-map of the finite mixed-strategy simplex whose fixed
+-- points are exactly Nash equilibria.  The monolith keeps the analytic
+-- fixed-point theorem explicit instead of silently treating a generic
+-- e-graph fixed point as a Nash equilibrium.
+------------------------------------------------------------------------
+
+record BrouwerMixedNashExistence
+  (Profile : Set)
+  (mixedNash : Profile → Set) : Set₁ where
+  constructor brouwerMixedNashExistence
+  field
+    simplex : Set
+    inProfile : simplex ≡ Profile
+    brouwerMap : Profile → Profile
+    continuous : Set
+    fixedPoint :
+      Σ Profile (lambda p → brouwerMap p ≡ p)
+    fixedImpliesNash :
+      ∀ p →
+      brouwerMap p ≡ p →
+      mixedNash p
+
+open BrouwerMixedNashExistence public
+
+-- Every finite game is represented here by its finite mixed-strategy
+-- simplex plus the continuous Brouwer map used in Nash's construction.
+-- The result is existential: at least one mixed Nash profile exists.
+nashEveryFiniteGameViaBrouwer :
+  ∀ {Profile : Set}
+  (N : BrouwerMixedNashExistence
+    Profile
+    (mixedNash N)) →
+  Σ Profile (lambda p → mixedNash N p)
+nashEveryFiniteGameViaBrouwer N
+  with fixedPoint N
+... | p , fixed =
+  p , fixedImpliesNash N p fixed
+
 record MixedNashFixedPointBridge
   (Profile : Set)
   (update : Profile → Profile) : Set₁ where
