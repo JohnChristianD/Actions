@@ -4931,16 +4931,16 @@ jaxBatchedGRUHiddenStep-law :
         (C.gruStep
           (proj₁ stateX)
           (proj₂ stateX)))
-    (zipGRU-again states xs)
+    (zipGRUAgain states xs)
   where
-  zipGRU-again :
+  zipGRUAgain :
     List C.GRUState →
     List C.Int8 →
     List (C.GRUState × C.Int8)
-  zipGRU-again [] ys = []
-  zipGRU-again (x ∷ xs) [] = []
-  zipGRU-again (x ∷ xs) (y ∷ ys) =
-    (x , y) ∷ zipGRU-again xs ys
+  zipGRUAgain [] ys = []
+  zipGRUAgain (x ∷ xs) [] = []
+  zipGRUAgain (x ∷ xs) (y ∷ ys) =
+    (x , y) ∷ zipGRUAgain xs ys
 jaxBatchedGRUHiddenStep-law states xs = refl
 
 jaxJittedScanSum :
@@ -5049,16 +5049,16 @@ record JAXExecutionMirrorReproof : Set₁ where
             (C.gruStep
               (proj₁ stateX)
               (proj₂ stateX)))
-        (zipGRU-again states xs)
+        (zipGRUAgain states xs)
       where
-      zipGRU-again :
+      zipGRUAgain :
         List C.GRUState →
         List C.Int8 →
         List (C.GRUState × C.Int8)
-      zipGRU-again [] ys = []
-      zipGRU-again (x ∷ xs) [] = []
-      zipGRU-again (x ∷ xs) (y ∷ ys) =
-        (x , y) ∷ zipGRU-again xs ys
+      zipGRUAgain [] ys = []
+      zipGRUAgain (x ∷ xs) [] = []
+      zipGRUAgain (x ∷ xs) (y ∷ ys) =
+        (x , y) ∷ zipGRUAgain xs ys
     tsallis2NearSparsity :
       ∀ xs →
       jaxTsallis2NearSparsityFraction xs ≡
