@@ -56,13 +56,14 @@ jobs:
       - name: Create Pages shell
         run: |
           set -euo pipefail
-          cat > "${RUNNER_TEMP}/pages/index.html" <<'HTML'
+          repo_name="${GITHUB_REPOSITORY##*/}"
+          cat > "${RUNNER_TEMP}/pages/index.html" <<HTML
           <!doctype html>
           <html lang="en">
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width,initial-scale=1">
-            <title>Actions — proof and dependency topology</title>
+            <title>${repo_name}</title>
             <style>
               :root { color-scheme: light dark; }
               body { max-width: 960px; margin: 0 auto; padding: 2rem; font: 16px/1.6 system-ui, sans-serif; }
