@@ -2,167 +2,123 @@
 
 ## Scope
 
-The tracked Agda surface is exactly:
+The active Agda surface is exactly:
 
 - `FullCoupled/CanonicalLearnerMonolith.agda`
 - `FullCoupled/TheoremsMonolith.agda`
 
-The learner is checked independently. The theorem monolith is the sole derived-semantic consumer of the canonical learner.
+The learner is checked independently. The theorem monolith is the sole derived-semantic consumer.
 
-## Schmitty
+## Schmitty and Z3
 
-The theorem monolith exposes a closed integer normalization fact through Schmitty and the Z3 backend. The external solver is an automation boundary, not a second proof authority: Agda checks the resulting theorem term.
+The theorem monolith exposes a closed integer normalization fact through Schmitty and the Z3 backend. The external solver is an automation boundary. Agda checks the resulting theorem term.
 
-The CI contract checks the pinned Schmitty Agda source, its library metadata, its compatible Agda version, and the Z3 executable before the theorem check.
+The CI contract verifies the pinned Schmitty Agda source, its library metadata, the compatible Agda version, and the Z3 executable before the theorem check.
 
 ## Vehicle
 
-Vehicle is consumed at its pinned Agda reflection/interface boundary. The repository does not treat a standalone Vehicle compiler build as theorem authority and does not introduce a third tracked Agda source module.
+Vehicle is consumed at its pinned Agda reflection/interface boundary. It is not treated as a standalone theorem authority, and no third tracked Agda source is introduced for it.
 
 ## Mirth import synchronization
 
-The two monoliths share one exact common import block. Mirth treats the learner block as the source of truth.
+The two monoliths share one byte-identical common import block. The learner block is the source of truth.
 
 The theorem monolith may add theorem-specific imports for Schmitty, Vehicle, induction, arithmetic, algebraic tactics, effect/state, and list-effect support. The only cross-monolith import is:
 
 `open import FullCoupled.CanonicalLearnerMonolith as C`
 
-The learner does not import the theorem monolith.
+The learner never imports the theorem monolith.
 
-The synchronizer is concurrency-safe: independent logical predicates run in parallel and their exit statuses are aggregated. The write path uses an atomic directory lock with bounded retry, so two writers cannot concurrently rewrite the theorem common-import block.
+The synchronizer verifies marker counts, byte identity, directionality, and external import counts. Independent predicates execute concurrently and their exit statuses are aggregated. Write mode uses an atomic directory lock with bounded retry and an atomic candidate replacement.
 
-## Mirth graph generation
+## Agda declaration graph
 
-`.ci/mirth/agda_graph.mth` reads both active Agda monoliths and generates `GeneratedAgdaGraph.elm`.
+The Mirth graph generator reads both active monoliths. It records every top-level declaration in its source model and scans each declaration body for references to the complete declaration set.
 
-The source pass extracts top-level declarations from both files. The reference pass scans declaration bodies for known declaration names and emits directed source-tagged edges. Node and edge output is sorted and duplicate edges are removed.
+The generated graph contains source-tagged nodes and directed reference edges. Edges are deduplicated and sorted. The Pages application receives the complete generated dataset and exposes all recorded incoming and outgoing relations for the selected declaration.
 
-This graph is intentionally a declaration-reference artifact. It does not claim to implement Agda elaboration, type inference, or proof checking.
-
-The graph is generated in the Pages workflow before Elm compilation, and the same generator is exercised by the Mirth fast-dirty CI lane.
+This is a source-derived declaration graph, not a substitute for Agda elaboration or type checking.
 
 ## GRU left inverse and injectivity
 
-The canonical statistical encoding explicitly contains the original `GRUState`, and its decoder returns that state by first projection.
+The canonical statistical observation contains the original `GRUState`. Its decoder returns that state by first projection.
 
-The theorem surface proves the left inverse and derives injectivity:
+The accepted chain is:
 
 `canonicalGRUStatisticalDecodeEncode`
 
-then
+→ `canonicalGRUStatisticalEncodeLeftInverse`
 
-`canonicalGRUStatisticalEncodeLeftInverse`
+→ `leftInverse-implies-injective`
 
-then
-
-`leftInverse-implies-injective`
-
-then
-
-`canonicalGRUStatisticalEncodeInjective`.
+→ `canonicalGRUStatisticalEncodeInjective`.
 
 This is an encoding theorem. It does not imply that `gruStep` is injective.
 
-## Canonical tail stability and convergence kernel
+## Canonical tail stability and convergence
 
-The learner proves persistence of the GRU matrix/noise/control tail under one step. The theorem surface lifts this fact to every full-learner iterate.
+The learner proves persistent-GRU tail preservation under the full learner step and lifts that equality to arbitrary learner iterates.
 
-`GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem` is a reusable composition theorem with explicit premises for injective observation, exact state/feature conjugacy, and eventual feature-tail fixation. It derives tail-fixed source state, eventual stationarity, and identifiability only from those premises.
+`GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem` composes injective observation, exact step conjugacy, and eventual feature-tail fixation. It derives source tail fixation, eventual stationarity, and identifiability.
 
 ## Canonical-learner Baird boundary
 
-Generic Baird records are not active theorem surfaces.
+There is no generic Baird record.
 
-The surviving declaration is `CanonicalLearnerBairdSevenStarBoundary K s`, indexed by the actual canonical learner kernel and state. It contains the concrete seven-state/eight-feature data, 6/7 and 1/7 behavior probabilities, solid target, zero reward, 99/100 discount factor, upper/lower feature equations, the already-proved persistent-GRU iterate tail, and an explicit divergence witness.
+`CanonicalLearnerBairdSevenStarWitness K s` is attached to the canonical learner kernel/state at the boundary. Its learner-tail field is the already-proved `canonicalPersistentGRU-afterFullStep-iterate K n s` theorem.
 
-The witness is specific to that learner boundary. It is not derived from a generic Baird theorem.
+The construction records seven states, eight features, 6/7 versus 1/7 behavior, a solid target, zero reward, 99/100 discount, the upper/lower feature equations, and the explicit divergence witness.
 
-## Hidden-Synergy L1, 1-path norm, and sparse degeneration
+## Hidden-Synergy, hard sparsity, and Tsallis-2
 
-The theorem monolith retains exact finite forms of the hidden-synergy regularization structure:
+The finite L1/1-path surface remains active through:
 
 `rowL1`, `weightL1`, `onePathVector`, `onePathNorm`, `rowL1OnesAbs`, `onePathOneLayer`, `HiddenSynergyNormPair`, `layerNormPair`, and `hiddenSynergy-one-layer-exact`.
 
-The canonical hard-sparse/soft-sparse zero-threshold equivalence is packaged as `CanonicalHardSparsityDegeneracyTheorem`.
+The zero-threshold hard/soft sparse equivalence remains packaged as `CanonicalHardSparsityDegeneracyTheorem`.
 
-The paper-faithful near-sparsity concept is kept distinct from the repository's Tsallis-2 extension. The original paper discusses near-sparsity through Shannon entropy while also centering L1 weight normalization and 1-path-norm regularization. citeturn219666academia0
-
-The exact finite Tsallis-2 extension contains:
-
-`ActionWeights`, `actionSupportCount`, `actionWeightSum`, `actionWeightSquareSum`, `generalTsallis2Denominator`, `generalTsallis2Numerator`, `generalTsallis2NearSparsity`, `generalTsallis2NearSparsity-zero`, `generalTsallis2NearSparsity-definition`, `generalSupportSparsity`, and `UniformSupportTsallisBoundary`.
-
-Continuous entropy/Lipschitz/analytic conclusions are kept outside this finite equality layer.
+The finite Tsallis-2 definitions and theorems remain present through `generalTsallis2NearSparsity`, its zero and nonzero-definition lemmas, `generalSupportSparsity`, and `UniformSupportTsallisBoundary`.
 
 ## Physics and economics
 
-Physics and economics remain in the active theorem monolith.
+Physics and economics were not removed.
 
-The current surface includes Hodge-Maxwell/four-law semantic interfaces, GRU/physics transport, production, demand and supply, aggregate excess-demand structures, supporting-price and market-clearing witnesses, Walrasian interfaces, stationary/fixed-point closures, and economic composition.
+The theorem surface still carries Hodge-Maxwell/four-law semantic structures, GRU/physics transport, production, demand/supply, aggregate excess-demand, supporting-price and market-clearing witnesses, Walrasian interfaces, stationary/fixed-point closures, and economic composition.
 
-Historical thin wrapper endpoints were pruned; the underlying domain surfaces remain. The generic GRU injectivity/convergence kernel does not create these semantic correspondences.
+Redundant wrappers were pruned where existing closures already carried the same semantic content. Domain definitions and their surviving proofs remain.
 
 ## PPAD boundary
 
-No PPAD-completeness theorem is claimed.
+No PPAD-completeness theorem is claimed. Fixed-point and equilibrium definitions are not treated as a substitute for PPAD membership and hardness proofs.
 
-A valid proof would need an explicit total polynomial-size search relation, encoding-size bounds, PPAD membership, and a concrete hardness reduction. Fixed-point or equilibrium constructs alone do not establish completeness.
+The missing proof obligations are explicit: a total polynomial-size search relation, encoding-size bounds, membership in PPAD, and a concrete hardness reduction.
 
 ## JAX execution and Agda reproof
 
-`tools/jax_reference.py` is the isolated Python boundary. Its imports are only:
+`tools/jax_reference.py` is the only Python execution boundary. Its third-party imports are limited to JAX itself.
 
-`jax`, `jax.numpy`, and `jax.lax`.
+Every current JAX function has a named Agda mirror collected under `JAXExecutionMirrorReproof`.
 
-The current executable kernels are:
+The execution mirror uses JAX-native vectorization and scan primitives where appropriate and exact int64 arithmetic for the integer kernels. The Agda side checks finite computational laws and equivalence to canonical definitions; it does not claim to model the JAX compiler.
 
-`vmap_affine`, `associative_prefix_sum`, `recurrent_scan`, `lexicographic_score_order`, `sparse_support_size`, `sparse_support_top_k`, `sparsemax_policy_index`, `l1_row`, `l1_matrix`, `one_path_norm`, `tsallis2_near_sparsity_fraction`, `support_sparsity_fraction`, `integer_layernorm_centered_numerators`, `integer_layernorm_radicand`, `batched_integer_layernorm_radicand`, `signed_gate`, `gru_hidden_step`, `batched_gru_hidden_step`, and `jitted_scan_sum`.
+The non-JAX Nix shell, Mirth programs, Dhall orchestration, and shell helpers do not install Python packages.
 
-The theorem monolith provides named finite Agda mirrors for all current functions, packaged by `JAXExecutionMirrorReproof`.
+## Mercury
 
-The efficient kernels use native array operations where useful:
+Mercury's theorem graph and e-graph are semantic discovery and closure machinery. The active theorem registry is reconciled against the current Agda monolith so stale historical targets are not promoted.
 
-- `vmap` for independent transforms;
-- `lax.associative_scan` for associative prefixes;
-- `lax.scan` for stateful recurrences and the 1-path matrix chain;
-- `jnp.lexsort` for deterministic score order;
-- one ordered prefix pass for sparse support;
-- `lax.top_k` only for fixed-k specialization;
-- fused absolute-value reductions for L1 quantities;
-- exact JAX int64 arithmetic.
+The semantic frontier is separate from the exhaustive Mirth declaration-reference graph.
 
-The JAX workflow is the only workflow that needs Python. The Nix shell and non-JAX CI/Mirth helpers contain no Python runtime or Python package dependency. A CI surface check rejects Python toolchain references outside that dedicated boundary.
+## Pure Elm presentation
 
-The Agda reproof proves finite function laws and equivalences to canonical definitions. It does not claim to model JAX's Python interpreter or compiler internals.
+The Pages application is pure Elm. It consumes generated graph data and does not execute proof, solver, or JAX code at runtime.
 
-## Mercury graph status
+The page exposes declaration search, source filtering, complete selected-node incoming/outgoing relations, relation counts, and a dynamic SVG neighborhood.
 
-Mercury performs semantic dependency/A* and e-graph analysis. Its theorem requirement registry is reconciled against the active Agda theorem monolith, so stale historical Tsallis/Hodge/Walrasian names are not promoted as current theorem targets.
-
-The semantic review frontier remains curated. The exhaustive declaration/reference graph is a separate Mirth-generated source graph consumed by Elm.
-
-## Elm Pages
-
-The Pages program is pure Elm and has no Mermaid runtime dependency.
-
-The Pages workflow generates the current Agda declaration graph before compiling `site/Main.elm`. Elm then presents:
-
-- declaration search;
-- learner/theorem filtering;
-- selected-node detail;
-- complete recorded incoming and outgoing relations for the selected declaration;
-- an SVG neighborhood graph;
-- declaration and relation counts.
-
-Elm is therefore a presentation layer over generated source facts, not another proof system.
-
-## Python and toolchain boundary
-
-No Python is provided by the Nix development shell. No Python is invoked by Mirth, import synchronization, ASCII synchronization, graph generation, or the general Dhall CI orchestration.
-
-The only Python execution is the dedicated JAX workflow, which installs the pinned JAX package and runs `tools/jax_reference.py`.
+No Mermaid runtime is required.
 
 ## Markdown contract
 
-Tracked Markdown is link-free. Navigation and external source navigation are kept inside the Elm presentation.
+Tracked Markdown is link-free. Source navigation and interactive graph exploration belong in the Elm presentation.
 
-The three public Markdown files are the root README plus the two detailed documents in `docs/`.
+No Markdown URL or Markdown link is used in this document.
