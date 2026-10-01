@@ -65,11 +65,19 @@ let script = merge {
     '',
   Schmitty = ''
     set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
     "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0"
     "$(command -v z3)" -version
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda"
     test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib"
-    "$AGDA_SCHMITTY_COMMAND" -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       FullCoupled/TheoremsMonolith.agda
+    test -f "$AGDARSEC_AGDA_SOURCE/Text/Parser/String.agda"
+    mkdir -p "$tmp/schmitty/src" "$tmp/agdarsec/src"
+    cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
+    cp -a "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" "$tmp/schmitty/"
+    cp -a "$AGDARSEC_AGDA_SOURCE/." "$tmp/agdarsec/src/"
+    cp -a "$(dirname "$AGDARSEC_AGDA_SOURCE")/agdarsec.agda-lib" "$tmp/agdarsec/"
+    "$AGDA_SCHMITTY_COMMAND" -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$tmp/schmitty/src"       -i "$tmp/agdarsec/src"       FullCoupled/TheoremsMonolith.agda
     echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
