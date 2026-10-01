@@ -113,9 +113,8 @@ macro
 z3DependencyCoreDemo : String
 z3DependencyCoreDemo =
   z3DependencyCore
-    "(set-option :produce-unsat-cores true)\n     (set-option :smt.core.minimize true)\n     (declare-const a Bool)\n     (declare-const b Bool)\n     (declare-const c Bool)\n     (declare-const bridge Bool)\n     (declare-const target Bool)\n     (assert (! a :named premise-a))\n     (assert (! b :named premise-b))\n     (assert (! c :named premise-c))\n     (assert (! (=> a bridge) :named edge-a))\n     (assert (! (=> b bridge) :named edge-b))\n     (assert (! (=> bridge target) :named edge-bridge))\n     (assert (! (=> c target) :named edge-c))\n     (assert (! (not target) :named target-negation))\n     (check-sat)\n     (get-unsat-core)\n"
+    "(set-option :produce-unsat-cores true)\\n(set-option :smt.core.minimize true)\\n(declare-const a Bool)\\n(declare-const b Bool)\\n(declare-const c Bool)\\n(declare-const bridge Bool)\\n(declare-const target Bool)\\n(assert (! a :named premise-a))\\n(assert (! b :named premise-b))\\n(assert (! c :named premise-c))\\n(assert (! (=> a bridge) :named edge-a))\\n(assert (! (=> b bridge) :named edge-b))\\n(assert (! (=> bridge target) :named edge-bridge))\\n(assert (! (=> c target) :named edge-c))\\n(assert (! (not target) :named target-negation))\\n(check-sat)\\n(get-unsat-core)\\n"
 
--- END THEOREM-SPECIFIC IMPORTS
 record GenericRingSolverNormalizationTheorem {c ℓ}
   (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
   constructor genericRingSolverNormalizationTheorem
