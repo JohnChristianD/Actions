@@ -287,7 +287,7 @@ record_field_header(Line, Name, SignatureFragment) :-
     first_word(Line, Candidate),
     Candidate \= "field",
     not syntax_head(Candidate),
-    string.sub_string_search(Line, ":"),
+    string.sub_string_search(Line, ":", _),
     Parts = string.split_at_string(":", Line),
     Parts = [Before, After | _],
     Name = string.strip(Before),
