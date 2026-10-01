@@ -42,7 +42,7 @@ jobs:
             "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
             test -s "$tmp/src/GeneratedTheoremSurface.elm"
             dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
-          test -s "$tmp/elm.json"
+            test -s "$tmp/elm.json"
             mkdir -p "${RUNNER_TEMP}/pages"
             cd "$tmp"
             elm make src/Main.elm --optimize --output "${RUNNER_TEMP}/pages/elm.js"
