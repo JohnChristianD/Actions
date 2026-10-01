@@ -102,6 +102,11 @@
 
 :- func graph_pruned_public_theorem_names = list(string).
 
+:- pred graph_pruned_public_theorem_names_checked(
+    list(semantic_law)::in,
+    list(string)::out) is det.
+
+
 :- pred graph_canonical_integer_layernorm_stability_growth_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
