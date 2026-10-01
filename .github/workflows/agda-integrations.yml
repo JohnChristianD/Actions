@@ -28,7 +28,7 @@ jobs:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -euo pipefail -c '.ci/sync-agda-integrations.sh --check'
+          nix develop .#default -c nix run .#mirth-agda-import-sync -- --check
           nix develop .#default -c bash -euo pipefail -c '
             "$AGDA_COMMAND" --allow-exec -l standard-library -i .               -i "$VEHICLE_AGDA_SOURCE"               -i "$SCHMITTY_AGDA_SOURCE"               -i "$AGDARSEC_AGDA_SOURCE"               FullCoupled/TheoremsMonolith.agda
           '
