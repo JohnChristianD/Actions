@@ -16,6 +16,18 @@ The accepted chain is `canonicalGRUStatisticalDecodeEncode` → `canonicalGRUSta
 
 `GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem` composes that injectivity with exact step conjugacy and an eventually fixed feature tail. It yields tail-fixed source state, eventual stationarity, and identifiability.
 
+## Finite mixed-Nash graph convergence
+
+The theorem monolith now contains a finite-rank A* / e-graph convergence certificate for a supplied mixed-Nash fixed-point bridge. The core path is:
+
+`finiteMixedNash-egraph-astar-convergence` → `finiteMixedNash-egraph-astar-eventualStationarity` → `finiteMixedNash-egraph-astar-proof`.
+
+The graph proof is conditional by construction: a stable node must be supplied with a stable-to-fixed law, and that fixed update must be supplied with a mixed-Nash bridge. E-graph semantic equality remains derived from EGraphSemanticPath soundness; A* cost is guidance, not proof evidence.
+
+`finiteMixedNash-cycle-transport` transports the convergence certificate across an exact state isomorphism while reusing the existing finite-cycle exclusion theorem. `finiteMixedNash-from-GRU-tail` connects mixed-Nash identification with the reusable GRU tail-stability kernel.
+
+No unconditional classical Nash-existence theorem is claimed. A genuine theorem that every finite normal-form game has a mixed Nash equilibrium still requires a formal mixed-strategy simplex and a fixed-point existence result such as Brouwer/Kakutani. Those ingredients are outside the current safe monolith surface.
+
 ## Canonical Baird boundary
 
 The active Baird construction is specialized to the already-tail-stable canonical learner. There is no generic Baird record.
