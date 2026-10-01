@@ -5812,12 +5812,15 @@ finiteMixedNash-cycle-transport
     W B stableImpliesFixed s
 ... | n , nashAtN =
   n ,
-  transportNash
-    (eGraphAStarIterate
-      (step W)
-      n
-      s)
-    nashAtN
+  subst
+    (λ p → mixedNashB p)
+    (transportedIterate n)
+    (transportNash
+      (eGraphAStarIterate
+        (step W)
+        n
+        s)
+      nashAtN)
     where
     transportedIterate :
       ∀ k →
