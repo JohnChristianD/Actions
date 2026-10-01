@@ -5671,6 +5671,189 @@ nashEveryFiniteGameViaBrouwer mixedNash N
 ... | p , fixed =
   p , fixedImpliesNash N p fixed
 
+record FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
+  (Expression Profile State Distribution : Set)
+  (mixedNash : Profile → Set)
+  (stateStep : State → State)
+  (featureStep : Profile → Profile)
+  (encode : State → Profile)
+  (P : Distribution → Distribution)
+  (μ : Nat → Distribution)
+  (μ∞ : Distribution)
+  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  constructor finiteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
+  field
+    brouwerNash :
+      BrouwerMixedNashExistence
+        Profile
+        mixedNash
+    eGraphWitness :
+      EGraphAStarFiniteRankConvergenceWitness
+        Expression
+        Profile
+    gruWitness :
+      GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+        State
+        Profile
+        stateStep
+        featureStep
+        encode
+    brouwerMapAgrees :
+      ∀ p →
+      brouwerMap brouwerNash p ≡
+      step eGraphWitness p
+    stableImpliesFixed :
+      ∀ s →
+      stable eGraphWitness s →
+      step eGraphWitness s ≡ s
+    featureFixedImpliesMixedNash :
+      ∀ f →
+      featureStep f ≡ f →
+      mixedNash f
+    distributionWitness :
+      StationaryLimitTheorem
+        Distribution
+        P
+        μ
+        μ∞
+        Converges
+
+open FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem public
+
+finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof :
+  ∀ {Expression Profile State Distribution : Set}
+  {mixedNash : Profile → Set}
+  {stateStep : State → State}
+  {featureStep : Profile → Profile}
+  {encode : State → Profile}
+  {P : Distribution → Distribution}
+  {μ : Nat → Distribution}
+  {μ∞ : Distribution}
+  {Converges : (Nat → Distribution) → Distribution → Set}
+  (N :
+    BrouwerMixedNashExistence
+      Profile
+      mixedNash)
+  (W :
+    EGraphAStarFiniteRankConvergenceWitness
+      Expression
+      Profile)
+  (G :
+    GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
+      State
+      Profile
+      stateStep
+      featureStep
+      encode)
+  (brouwerMapAgrees :
+    ∀ p →
+    brouwerMap N p ≡
+    step W p)
+  (stableImpliesFixed :
+    ∀ s →
+    stable W s →
+    step W s ≡ s)
+  (featureFixedImpliesMixedNash :
+    ∀ f →
+    featureStep f ≡ f →
+    mixedNash f)
+  (D :
+    StationaryLimitTheorem
+      Distribution
+      P
+      μ
+      μ∞
+      Converges) →
+  FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
+    Expression
+    Profile
+    State
+    Distribution
+    mixedNash
+    stateStep
+    featureStep
+    encode
+    P
+    μ
+    μ∞
+    Converges
+finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof
+  N W G
+  brouwerMapAgrees
+  stableImpliesFixed
+  featureFixedImpliesMixedNash
+  D =
+  finiteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
+    N
+    W
+    G
+    brouwerMapAgrees
+    stableImpliesFixed
+    featureFixedImpliesMixedNash
+    D
+
+finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash :
+  ∀ {Expression Profile State Distribution : Set}
+  {mixedNash : Profile → Set}
+  {stateStep : State → State}
+  {featureStep : Profile → Profile}
+  {encode : State → Profile}
+  {P : Distribution → Distribution}
+  {μ : Nat → Distribution}
+  {μ∞ : Distribution}
+  {Converges : (Nat → Distribution) → Distribution → Set}
+  (W :
+    FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
+      Expression
+      Profile
+      State
+      Distribution
+      mixedNash
+      stateStep
+      featureStep
+      encode
+      P
+      μ
+      μ∞
+      Converges) →
+  Σ Profile
+    (λ p →
+      mixedNash p)
+finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash W =
+  nashEveryFiniteGameViaBrouwer
+    (mixedNash W)
+    (brouwerNash W)
+
+finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed :
+  ∀ {Expression Profile State Distribution : Set}
+  {mixedNash : Profile → Set}
+  {stateStep : State → State}
+  {featureStep : Profile → Profile}
+  {encode : State → Profile}
+  {P : Distribution → Distribution}
+  {μ : Nat → Distribution}
+  {μ∞ : Distribution}
+  {Converges : (Nat → Distribution) → Distribution → Set}
+  (W :
+    FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
+      Expression
+      Profile
+      State
+      Distribution
+      mixedNash
+      stateStep
+      featureStep
+      encode
+      P
+      μ
+      μ∞
+      Converges) →
+  P μ∞ ≡ μ∞
+finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed W =
+  limitPreserved
+    (distributionWitness W)
+    (converges (distributionWitness W))
+
 record MixedNashFixedPointBridge
   (Profile : Set)
   (update : Profile → Profile) : Set₁ where
