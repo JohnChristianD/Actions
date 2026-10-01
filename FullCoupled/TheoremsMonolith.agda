@@ -9669,7 +9669,7 @@ noUnconditionalCanonicalPriceDerivation C D =
            (equilibrium₂ C)))
 
 twoPriceDistinct :
-  (inj₁ tt : ⊤ ⊎ ⊤) ≡ inj₂ tt → ⊥
+  (Data.Sum.inj₁ tt : ⊤ ⊎ ⊤) ≡ Data.Sum.inj₂ tt → ⊥
 twoPriceDistinct ()
 
 twoWorldsNoCommonSupportingPrice :
