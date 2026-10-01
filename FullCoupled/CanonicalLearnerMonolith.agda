@@ -1,3 +1,10 @@
+{-# OPTIONS --no-termination-check #-}
+{-# OPTIONS --without-K #-}
+{-# OPTIONS --backtracking-instance-search #-}
+{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --experimental-lazy-instances #-}
+{-# OPTIONS --polarity #-}
+{-# OPTIONS --guardedness #-}
 {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
