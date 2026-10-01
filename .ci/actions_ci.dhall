@@ -98,19 +98,6 @@ let script = merge {
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
-    cat > "$tmp/GeneratedTheoremSurface.elm" <<'ELM'
-module GeneratedTheoremSurface exposing (agdaModules)
-
-agdaModules : List String
-agdaModules =
-    [ "FullCoupled.CanonicalLearnerMonolith"
-    , "FullCoupled.TheoremsMonolith"
-    ]
-ELM
-    test -s "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "agdaModules : List String" "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "FullCoupled.CanonicalLearnerMonolith" "$tmp/GeneratedTheoremSurface.elm"
-    grep -Fq "FullCoupled.TheoremsMonolith" "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
     grep -Fq 'module FullCoupled.TheoremsMonolith' FullCoupled/TheoremsMonolith.agda
     dhall type --file .ci/presentation-contract.dhall >/dev/null
@@ -123,10 +110,16 @@ ELM
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
     "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm"
+    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
+    cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
+    "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
     test -s "$tmp/src/GeneratedAgdaGraph.elm"
-    cp "$tmp/GeneratedTheoremSurface.elm" "$tmp/src/GeneratedTheoremSurface.elm"
-    grep -Fq 'finiteMixedNash-brouwer-egraph-astar-proof' "$tmp/src/GeneratedTheoremSurface.elm"
-    grep -Fq 'GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem' "$tmp/src/GeneratedTheoremSurface.elm"
+    test -s "$tmp/src/GeneratedTheoremSurface.elm"
+    grep -Fq 'siteTitle : String' "$tmp/src/GeneratedTheoremSurface.elm"
+    grep -Fq 'nodeLines : List String' "$tmp/src/GeneratedTheoremSurface.elm"
+    grep -Fq 'finiteMixedNash-brouwer-egraph-astar-proof' "$tmp/src/GeneratedAgdaGraph.elm"
+    grep -Fq 'finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof' "$tmp/src/GeneratedAgdaGraph.elm"
+    grep -Fq 'GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem' "$tmp/src/GeneratedAgdaGraph.elm"
     dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
     test -s "$tmp/elm.json"
     cd "$tmp"
