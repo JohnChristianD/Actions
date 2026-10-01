@@ -659,6 +659,9 @@ graph_required_theorems = [
     "finiteMixedNash-egraph-astar-proof",
     "finiteMixedNash-cycle-transport",
     "finiteMixedNash-from-GRU-tail",
+    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof",
+    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash",
+    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed",
     "canonicalFullLearner-no-finite-rank-stability",
     "CanonicalIntegerGRUFractalLimitCompositionTheorem",
     "HiddenSynergyNormPair",
@@ -824,7 +827,8 @@ graph_review_frontier_names = [
     "AStarPlanMonoidTheorem",
     "CanonicalTokenArbitraryLengthGenerationTheorem",
     "NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem",
-    "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem"
+    "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof"
 ].
 
 graph_review_frontier_plans(Laws, Plans) :-
