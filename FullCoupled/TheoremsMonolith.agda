@@ -72,6 +72,9 @@ open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
+open import Effect.Monad using (RawMonad)
+open import Effect.Monad.State using
+  (State; RawMonadState; StateMonad; StateMonadState)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
@@ -85,9 +88,6 @@ open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 open import Data.Nat.Solver using (module +-*-Solver)
-open import Effect.Monad using (RawMonad)
-open import Effect.Monad.State using
-  (State; RawMonadState; StateMonad; StateMonadState)
 import Data.List.Effectful as ListEffectful
 open import FullCoupled.CanonicalLearnerMonolith as C
 open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
