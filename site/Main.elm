@@ -80,12 +80,20 @@ clamp01 value =
 dynamicDisplayCandidate : Int -> DisplayColor
 dynamicDisplayCandidate index =
     let
-        seed =
-            toFloat (paletteSeed + index * 37)
+        tau =
+            6.283185307179586
+
+        thirdTurn =
+            2.0943951023931953
+
+        phase =
+            tau
+                * (toFloat (modBy 360 (paletteSeed + index * 37)))
+                / 360
     in
-    { r = clamp01 (0.04 + 0.92 * abs (sin (seed * 0.071)))
-    , g = clamp01 (0.04 + 0.92 * abs (sin (seed * 0.113 + 1.7)))
-    , b = clamp01 (0.04 + 0.92 * abs (sin (seed * 0.173 + 3.1)))
+    { r = clamp01 (0.5 + 0.4 * cos phase)
+    , g = clamp01 (0.5 + 0.4 * cos (phase - thirdTurn))
+    , b = clamp01 (0.5 + 0.4 * cos (phase + thirdTurn))
     }
 
 
