@@ -5594,6 +5594,19 @@ record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
 
 open CanonicalFiniteCycleExclusionIsomorphismTheorem public
 
+eGraphAStarIterate-isomorphism :
+  ∀ {State : Set}
+  (step : State → State) (n : Nat) (s : State) →
+  eGraphAStarIterate step n s ≡
+  iterateIsomorphism step n s
+eGraphAStarIterate-isomorphism step zero s = refl
+eGraphAStarIterate-isomorphism step (suc n) s =
+  eGraphAStarIterate-isomorphism
+    step
+    n
+    (step s)
+
+
 
 ------------------------------------------------------------------------
 -- Finite mixed-Nash graph convergence composition.
@@ -5783,6 +5796,14 @@ finiteMixedNash-cycle-transport :
     ∀ p →
     to iso (step W p) ≡
     stepB (to iso p))
+  (sourceNoFiniteCycle :
+    ∀ n p →
+    iterateIsomorphism
+      (step W)
+      (suc n)
+      p
+      ≢
+      p)
   (mixedNashB :
     ProfileB → Set)
   (transportNash :
@@ -5790,13 +5811,21 @@ finiteMixedNash-cycle-transport :
     mixedNash B p →
     mixedNashB (to iso p)) →
   ∀ s →
-  Σ Nat
+  (Σ Nat
     (λ n →
       mixedNashB
         (eGraphAStarIterate
           stepB
           n
-          (to iso s)))
+          (to iso s))))
+  ×
+  (∀ n p →
+    iterateIsomorphism
+      stepB
+      (suc n)
+      (to iso p)
+      ≢
+      to iso p)
 finiteMixedNash-cycle-transport
   W
   B
@@ -5805,48 +5834,79 @@ finiteMixedNash-cycle-transport
   iso
   stepB
   conjugacy
+  sourceNoFiniteCycle
   mixedNashB
   transportNash
   s
   with finiteMixedNash-egraph-astar-convergence
     W B stableImpliesFixed s
 ... | n , nashAtN =
-  n ,
-  subst
-    (λ p → mixedNashB p)
-    (transportedIterate n)
-    (transportNash
+  ( n
+    ,
+    subst
+      (λ p → mixedNashB p)
+      targetIterateEquality
+      (transportNash
+        (eGraphAStarIterate
+          (step W)
+          n
+          s)
+        nashAtN)
+  )
+  ,
+  cycleTransport . cycleTransport
+    iso
+    (step W)
+    stepB
+    conjugacy
+    sourceNoFiniteCycle
+  where
+  sourceTargetIterateEquality :
+    ∀ k →
+    to iso
+      (iterateIsomorphism
+        (step W)
+        k
+        s)
+    ≡
+    iterateIsomorphism
+      stepB
+      k
+      (to iso s)
+  sourceTargetIterateEquality k =
+    stepConjugacy-iterate
+      (stepConjugacyWitness
+        iso
+        conjugacy)
+      k
+      s
+
+  targetIterateEquality :
+    to iso
       (eGraphAStarIterate
         (step W)
         n
         s)
-      nashAtN)
-    where
-    transportedIterate :
-      ∀ k →
-      to iso
-        (eGraphAStarIterate
+    ≡
+    eGraphAStarIterate
+      stepB
+      n
+      (to iso s)
+  targetIterateEquality =
+    trans
+      (cong
+        (to iso)
+        (eGraphAStarIterate-isomorphism
           (step W)
-          k
-          s)
-      ≡
-      eGraphAStarIterate
-        stepB
-        k
-        (to iso s)
-    transportedIterate zero = refl
-    transportedIterate (suc k) =
-      trans
-        (cycleTransport . iterateConjugacy
-          iso
-          step W
-          stepB
-          conjugacy
-          k
-          s)
-        (cong
-          stepB
-          (transportedIterate k))
+          n
+          s))
+      (trans
+        (sourceTargetIterateEquality n)
+        (sym
+          (eGraphAStarIterate-isomorphism
+            stepB
+            n
+            (to iso s))))
 
 finiteMixedNash-from-GRU-tail :
   ∀ {State Feature : Set}
