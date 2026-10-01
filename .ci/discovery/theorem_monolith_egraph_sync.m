@@ -406,7 +406,7 @@ main(!IO) :-
     graph_review_frontier_plans(All, FrontierPlans),
     graph_dominance_edges(All, DominanceEdges),
     graph_dominated_public_theorems(All, DominatedTheorems),
-    PrunedTheorems = graph_pruned_public_theorem_names,
+    graph_pruned_public_theorem_names_checked(All, PrunedTheorems),
     AllGeneratedPlans =
         Plans ++ AutomaticCompositePlans ++ EndogenousCompositePlans
         ++ FrontierPlans,
