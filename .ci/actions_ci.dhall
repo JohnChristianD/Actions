@@ -88,6 +88,11 @@ module Reflection.Term where
 
 open import Reflection.AST.Term public
 AGDA
+    cat > "$tmp/schmitty/src/Category/Monad/State.agda" <<'AGDA'
+module Category.Monad.State where
+
+open import Effect.Monad.State.Indexed public
+AGDA
     echo "schmitty-stage=install-reflection-term-compat"
     echo "schmitty-stage=copy-schmitty-lib"
     cp -a "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" "$tmp/schmitty/"
