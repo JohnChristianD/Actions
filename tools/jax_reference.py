@@ -319,9 +319,62 @@ def main() -> None:
             jnp.array([1, 2, 3, 4], dtype=jnp.int64),
             1,
         ),
-        jnp.array(44, dtype=jnp.int64),
+        jnp.array(96, dtype=jnp.int64),
         "integer LayerNorm radicand",
     )
+
+    _check_equal(
+        sparse_support_top_k(
+            jnp.array([9, 8, 4, 1], dtype=jnp.int64),
+            2,
+        )[0],
+        jnp.array([9, 8], dtype=jnp.int64),
+        "top-k values",
+    )
+    _check_equal(
+        sparse_support_top_k(
+            jnp.array([9, 8, 4, 1], dtype=jnp.int64),
+            2,
+        )[1],
+        jnp.array([0, 1], dtype=jnp.int32),
+        "top-k indices",
+    )
+
+    _check_equal(
+        sparse_support_size(
+            jnp.array([9, 8, 4, 1], dtype=jnp.int64),
+            16,
+        )[0],
+        jnp.array(3, dtype=jnp.int64),
+        "support size direct",
+    )
+
+    _check_equal(
+        integer_layernorm_centered_numerators(
+            jnp.array([1, 2, 3, 4], dtype=jnp.int64)
+        ),
+        jnp.array([-6, -2, 2, 6], dtype=jnp.int64),
+        "integer LayerNorm centered numerators",
+    )
+
+    _check_equal(
+        batched_integer_layernorm_radicand(
+            jnp.array([[1, 2, 3, 4], [4, 3, 2, 1]], dtype=jnp.int64),
+            1,
+        ),
+        jnp.array([96, 96], dtype=jnp.int64),
+        "batched integer LayerNorm radicand",
+    )
+
+    _check_equal(
+        batched_gru_hidden_step(
+            jnp.array([3, 4], dtype=jnp.int64),
+            jnp.array([2, -1], dtype=jnp.int64),
+        ),
+        jnp.array([896, 512], dtype=jnp.int64),
+        "batched GRU hidden step",
+    )
+
 
     _check_equal(
         gru_hidden_step(
