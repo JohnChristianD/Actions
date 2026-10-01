@@ -35,7 +35,7 @@ let script = merge {
     test -f .ci/mirth/agda_import_sync.mth
     test -f .ci/mirth/agda_graph.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
-    grep -Fq 'siteTitle : String' <(printf '%s\n' "$(sed -n '1,6p' .ci/mirth/agda_to_elm.mth)") || true
+    grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Graph.nodes' .ci/mirth/agda_to_elm.mth
 
     mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
