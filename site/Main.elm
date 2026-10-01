@@ -231,12 +231,12 @@ permutationsOfLength count candidates =
 
     else
         List.concatMap
-            (\\candidate ->
+            (\candidate ->
                 List.map
-                    (\\tail -> candidate :: tail)
+                    (\tail -> candidate :: tail)
                     (permutationsOfLength
                         (count - 1)
-                        (List.filter (\\other -> other.id /= candidate.id) candidates))
+                        (List.filter (\other -> other.id /= candidate.id) candidates))
             )
             candidates
 
@@ -255,7 +255,7 @@ minimumPairDistance colors =
                 _ ->
                     min
                         (List.foldl
-                            (\\other best ->
+                            (\other best ->
                                 min best (perceptualDistanceSquared first other)
                             )
                             (perceptualDistanceSquared first (List.head rest |> Maybe.withDefault first))
@@ -311,7 +311,7 @@ paletteGlobalScore choice =
 candidateColors : List PerceptualColor
 candidateColors =
     List.map
-        (\\index ->
+        (\index ->
             customPerceptualColor index (dynamicDisplayCandidate index)
         )
         (List.range 0 8)
@@ -606,7 +606,7 @@ dynamicStyleSheet =
 sanitize : String -> String
 sanitize value =
     String.map
-        (\\char ->
+        (\char ->
             if Char.toCode char < 128 then
                 char
 
@@ -623,7 +623,7 @@ visibleNodes model =
             String.toLower (sanitize model.query)
     in
     List.filter
-        (\\nodeItem ->
+        (\nodeItem ->
             let
                 label =
                     sanitize nodeItem.label
@@ -669,21 +669,21 @@ filterString fileFilter =
 nodeForId : String -> Maybe Graph.Node
 nodeForId nodeId =
     Graph.nodes
-        |> List.filter (\\nodeItem -> nodeItem.id == nodeId)
+        |> List.filter (\nodeItem -> nodeItem.id == nodeId)
         |> List.head
 
 
 incomingIds : String -> List String
 incomingIds nodeId =
     Graph.edges
-        |> List.filter (\\edge -> edge.target == nodeId)
+        |> List.filter (\edge -> edge.target == nodeId)
         |> List.map .source
 
 
 outgoingIds : String -> List String
 outgoingIds nodeId =
     Graph.edges
-        |> List.filter (\\edge -> edge.source == nodeId)
+        |> List.filter (\edge -> edge.source == nodeId)
         |> List.map .target
 
 
@@ -872,7 +872,7 @@ graphView model =
                     , SA.height (String.fromFloat height)
                     ]
                     (List.concatMap
-                        (\\neighborIndex ->
+                        (\neighborIndex ->
                             let
                                 position =
                                     positionFor neighborIndex (max 1 (List.length allNeighbors))
@@ -1023,8 +1023,8 @@ view model =
             , ul []
                 [ li [] [ code [] [ text ("nodes=" ++ String.fromInt (List.length Surface.nodeLines)) ] ]
                 , li [] [ code [] [ text ("edges=" ++ String.fromInt (List.length Surface.edgeLines)) ] ]
-                , li [] [ code [] [ text ("ascii-nodes=" ++ String.fromInt (List.length (List.filter (\\line -> String.all (\\char -> Char.toCode char < 128) line) Surface.nodeLines))) ] ]
-                , li [] [ code [] [ text ("ascii-edges=" ++ String.fromInt (List.length (List.filter (\\line -> String.all (\\char -> Char.toCode char < 128) line) Surface.edgeLines))) ] ]
+                , li [] [ code [] [ text ("ascii-nodes=" ++ String.fromInt (List.length (List.filter (\line -> String.all (\char -> Char.toCode char < 128) line) Surface.nodeLines))) ] ]
+                , li [] [ code [] [ text ("ascii-edges=" ++ String.fromInt (List.length (List.filter (\line -> String.all (\char -> Char.toCode char < 128) line) Surface.edgeLines))) ] ]
                 ]
             ]
         ]
