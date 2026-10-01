@@ -5854,7 +5854,7 @@ brouwerMixedNashFixedPointBridge
   brouwerMapAgrees =
   mixedNashFixedPointBridge
     (mixedNash N)
-    (\ p fixed →
+    (λ p fixed →
       fixedImpliesNash
         N
         p
@@ -5889,7 +5889,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
     step W s ≡ s) →
   ∀ s →
   ((Σ Nat
-    (\ n →
+    (λ n →
       mixedNash
         (eGraphAStarIterate
           (step W)
@@ -5897,7 +5897,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
           s)))
    ×
    (Σ Nat
-    (\ n →
+    (λ n →
       interpret
         (semantics (closure W))
         (candidate W
@@ -5910,7 +5910,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
         (semantics (closure W))
         (target W)))
    ×
-   (Σ Profile (\ p → mixedNash p))
+   (Σ Profile (λ p → mixedNash p))
 finiteMixedNash-brouwer-egraph-astar-proof
   N
   W
