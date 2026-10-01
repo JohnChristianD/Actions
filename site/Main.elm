@@ -368,6 +368,26 @@ dynamicPalette =
     , accentInk = cssDisplayColor accentInkPerceptualColor.display
     }
 
+
+dynamicCss : String
+dynamicCss =
+    ".repository input::placeholder, .repository select::placeholder { color: "
+        ++ dynamicPalette.mutedInk
+        ++ "; }"
+        ++ ".repository input:focus, .repository select:focus, .repository button:focus { outline-color: "
+        ++ dynamicPalette.accent
+        ++ "; }"
+        ++ ".repository { caret-color: "
+        ++ dynamicPalette.accent
+        ++ "; accent-color: "
+        ++ dynamicPalette.accent
+        ++ "; }"
+
+
+dynamicStyleSheet : Html msg
+dynamicStyleSheet =
+    Html.node "style" [] [ text dynamicCss ]
+
 type FileFilter
     = AllFiles
     | LearnerOnly
@@ -563,7 +583,8 @@ view model =
         , HA.style "width" "100%"
         , HA.style "box-sizing" "border-box"
         ]
-        [ h1 [] [ text "Actions" ]
+        [ dynamicStyleSheet
+        , h1 [] [ text "Actions" ]
         , p []
             [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
         , section [] [ h2 [] [ text "Authority and active tree" ]
