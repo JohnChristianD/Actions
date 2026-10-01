@@ -109,7 +109,10 @@ let script = merge {
     grep -Fq '"siteEntry": "index.html"' "$tmp/presentation-contract.json"
     grep -Fq '"compiledElm": "elm.js"' "$tmp/presentation-contract.json"
     grep -Fq '"asciiGenerator": ".ci/mirth/ascii_surface.mth"' "$tmp/presentation-contract.json"
-    output_dir=${PAGES_OUTPUT_DIR:-"$tmp"}
+    output_dir="$tmp"
+    if [ -n "$(printenv PAGES_OUTPUT_DIR 2>/dev/null || true)" ]; then
+      output_dir="$(printenv PAGES_OUTPUT_DIR)"
+    fi
     mkdir -p "$output_dir"
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
