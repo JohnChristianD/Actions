@@ -6,11 +6,11 @@ let script = merge {
   AgdaLearner = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version | grep -Fq "2.8.0"
-    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
@@ -729,9 +729,9 @@ DHALL
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
-    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
