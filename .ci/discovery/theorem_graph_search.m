@@ -122,6 +122,10 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_finite_mixed_nash_brouwer_egraph_astar_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred graph_finite_mixed_nash_egraph_astar_convergence_plan(
     list(semantic_law)::in,
     list(string)::out) is semidet.
