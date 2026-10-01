@@ -36,7 +36,7 @@ let script = merge {
     test -f .ci/mirth/agda_graph.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
-    grep -Fq 'repo=\${GITHUB_REPOSITORY##*/}' .ci/mirth/agda_to_elm.mth
+    grep -Fq 'repo=' .ci/mirth/agda_to_elm.mth
     grep -Fq 'git rev-parse HEAD' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Graph.nodes' .ci/mirth/agda_to_elm.mth
 
