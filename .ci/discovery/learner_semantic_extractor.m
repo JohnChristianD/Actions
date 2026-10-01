@@ -392,6 +392,8 @@ finalize_record_field_state(
     (
         Signature = ""
     ->
+        Out = Acc
+    ;
         Out = [
             semantic_decl(
                 Source,
@@ -400,8 +402,6 @@ finalize_record_field_state(
                 "",
                 semantic_record_field,
                 RecordName) | Acc]
-    ;
-        Out = Acc
     ).
 
 :- pred parse_record_fields(
