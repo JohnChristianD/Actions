@@ -5039,16 +5039,7 @@ record JAXExecutionMirrorReproof : Set₁ where
             (C.gruStep
               (proj₁ stateX)
               (proj₂ stateX)))
-        (zipGRUAgain states xs)
-      where
-      zipGRUAgain :
-        List C.GRUState →
-        List C.Int8 →
-        List (C.GRUState × C.Int8)
-      zipGRUAgain [] ys = []
-      zipGRUAgain (x ∷ xs) [] = []
-      zipGRUAgain (x ∷ xs) (y ∷ ys) =
-        (x , y) ∷ zipGRUAgain xs ys
+        (zipGRUStatesInts states xs)
     tsallis2NearSparsity :
       ∀ xs →
       jaxTsallis2NearSparsityFraction xs ≡
