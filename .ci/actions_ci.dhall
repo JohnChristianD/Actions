@@ -84,7 +84,7 @@ let script = merge {
     cp -a "$(dirname "$AGDARSEC_AGDA_SOURCE")/agdarsec.agda-lib" "$tmp/agdarsec/"
     chmod -R u+rwX "$tmp/schmitty" "$tmp/agdarsec"
     echo "schmitty-stage=agda-compile"
-    "$AGDA_SCHMITTY_COMMAND" -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$tmp/schmitty/src"       -i "$tmp/agdarsec/src"       FullCoupled/TheoremsMonolith.agda
+    "$AGDA_SCHMITTY_COMMAND" --guardedness -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$tmp/schmitty/src"       -i "$tmp/agdarsec/src"       FullCoupled/TheoremsMonolith.agda
     echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
