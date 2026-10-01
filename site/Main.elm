@@ -663,6 +663,19 @@ view model =
                 , ul [] (List.map relationRecord filteredEdges)
                 ]
             ]
+        , section [] [ h2 [] [ text "Finite mixed-Nash graph convergence" ]
+            , p []
+                [ text "The theorem monolith now packages a finite-rank A* / e-graph convergence certificate: stable graph state -> fixed update -> supplied mixed-Nash bridge. E-graph endpoint equality remains sound through the existing semantic-path kernel." ]
+            , ul [] (List.map codeItem
+                [ "finiteMixedNash-egraph-astar-convergence"
+                , "finiteMixedNash-egraph-astar-eventualStationarity"
+                , "finiteMixedNash-egraph-astar-proof"
+                , "finiteMixedNash-cycle-transport"
+                , "finiteMixedNash-from-GRU-tail"
+                ])
+            , p []
+                [ text "This is not presented as the unconditional theorem that every finite normal-form game has a mixed Nash equilibrium. That stronger result still needs a formal mixed-strategy simplex and a fixed-point existence theorem." ]
+            ]
         , section [] [ h2 [] [ text "JAX execution mirror" ]
             , p []
                 [ text "The executable Python/JAX wrapper has been removed. The retained JAX-facing algorithms are represented by typed Agda contracts in JAXExecutionMirrorReproof. The contracts cover the retained vector, scan, sparse-support, LayerNorm, gate, GRU, Tsallis-2, support-sparsity, and scan-sum algorithms." ]
