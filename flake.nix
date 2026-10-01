@@ -12,7 +12,7 @@
       flake = false;
     };
     agdarsec = {
-      url = "github:gallais/agdarsec/03b8c4ec57b8bc9517b5bc2fca8a540e1ec858f0";
+      url = "github:gallais/agdarsec/28c5233e905474f3b02cb97fe410beb60364ba80";
       flake = false;
     };
   };
