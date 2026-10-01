@@ -1,9 +1,10 @@
 module Main exposing (main)
 
 import Browser
+import Char
 import GeneratedAgdaGraph as Graph
 import GeneratedTheoremSurface as Surface
-import Html exposing (Html, a, button, code, div, h1, h2, input, li, main_, option, p, section, select, span, text, ul)
+import Html exposing (Html, a, button, code, div, h1, h2, input, li, main_, node, option, p, section, select, span, text, ul)
 import Html.Attributes as HA
 import Html.Events as HE
 import String
@@ -12,10 +13,6 @@ import Svg.Attributes as SA
 import Svg.Events as SE
 
 
--- Dynamic perceptual palette.
--- Palette candidates are derived from the generated Mirth graph cardinalities.
--- Display encoding happens only after the maximin selection in the custom
--- CAT02-LMS-derived perceptual coordinate space.
 type alias DisplayColor =
     { r : Float
     , g : Float
@@ -26,23 +23,48 @@ type alias DisplayColor =
 type alias PerceptualColor =
     { display : DisplayColor
     , id : Int
-    , lmsL : Float
-    , lmsM : Float
-    , lmsS : Float
     , opponentL : Float
     , opponentA : Float
     , opponentB : Float
     }
 
 
-type alias DisplayPalette =
-    { background : String
-    , surface : String
-    , ink : String
-    , mutedInk : String
-    , accent : String
-    , accentInk : String
+type alias EncodedColor =
+    { srgb : DisplayColor
+    , p3 : DisplayColor
+    , rec2020 : DisplayColor
     }
+
+
+type alias PaletteChoice =
+    { background : PerceptualColor
+    , surface : PerceptualColor
+    , ink : PerceptualColor
+    , mutedInk : PerceptualColor
+    , accent : PerceptualColor
+    , accentInk : PerceptualColor
+    }
+
+
+type FileFilter
+    = AllFiles
+    | LearnerOnly
+    | TheoremOnly
+
+
+type alias Model =
+    { query : String
+    , relationQuery : String
+    , fileFilter : FileFilter
+    , selected : Maybe String
+    }
+
+
+type Msg
+    = SetQuery String
+    | SetRelationQuery String
+    | SetFileFilter String
+    | SelectNode String
 
 
 paletteSeed : Int
@@ -55,29 +77,15 @@ clamp01 value =
     max 0 (min 1 value)
 
 
-displayLuminosity : DisplayColor -> Float
-displayLuminosity color =
-    0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
-
-
 dynamicDisplayCandidate : Int -> DisplayColor
 dynamicDisplayCandidate index =
     let
         seed =
             toFloat (paletteSeed + index * 37)
-
-        r =
-            0.04 + 0.92 * abs (sin (seed * 0.071))
-
-        g =
-            0.04 + 0.92 * abs (sin (seed * 0.113 + 1.7))
-
-        b =
-            0.04 + 0.92 * abs (sin (seed * 0.173 + 3.1))
     in
-    { r = clamp01 r
-    , g = clamp01 g
-    , b = clamp01 b
+    { r = clamp01 (0.04 + 0.92 * abs (sin (seed * 0.071)))
+    , g = clamp01 (0.04 + 0.92 * abs (sin (seed * 0.113 + 1.7)))
+    , b = clamp01 (0.04 + 0.92 * abs (sin (seed * 0.173 + 3.1)))
     }
 
 
@@ -187,9 +195,6 @@ customPerceptualColor id display =
     in
     { display = display
     , id = id
-    , lmsL = l
-    , lmsM = m
-    , lmsS = s
     , opponentL = 0.577350 * l + 0.577350 * m + 0.577350 * s
     , opponentA = 0.707107 * l - 0.707107 * m
     , opponentB = 0.408248 * l + 0.408248 * m - 0.816497 * s
@@ -211,34 +216,6 @@ perceptualDistanceSquared left right =
     dl * dl + da * da + db * db
 
 
-bestContrastPartner : PerceptualColor -> List PerceptualColor -> ( PerceptualColor, Float )
-bestContrastPartner anchor candidates =
-    case candidates of
-        [] ->
-            ( anchor, 0 )
-
-        first :: rest ->
-            List.foldl
-                (\candidate ( best, bestScore ) ->
-                    let
-                        score =
-                            perceptualDistanceSquared anchor candidate
-                    in
-                    if score > bestScore then
-                        ( candidate, score )
-
-                    else
-                        ( best, bestScore )
-                )
-                ( first, perceptualDistanceSquared anchor first )
-                rest
-
-
-removeColor : Int -> List PerceptualColor -> List PerceptualColor
-removeColor id =
-    List.filter (\\candidate -> candidate.id /= id)
-
-
 permutationsOfLength : Int -> List PerceptualColor -> List (List PerceptualColor)
 permutationsOfLength count candidates =
     if count <= 0 then
@@ -251,7 +228,7 @@ permutationsOfLength count candidates =
                     (\\tail -> candidate :: tail)
                     (permutationsOfLength
                         (count - 1)
-                        (removeColor candidate.id candidates))
+                        (List.filter (\\other -> other.id /= candidate.id) candidates))
             )
             candidates
 
@@ -279,25 +256,21 @@ minimumPairDistance colors =
                         (minimumPairDistance rest)
 
 
-type alias PaletteChoice =
-    { background : PerceptualColor
-    , surface : PerceptualColor
-    , ink : PerceptualColor
-    , mutedInk : PerceptualColor
-    , accent : PerceptualColor
-    , accentInk : PerceptualColor
-    }
+paletteChoiceFromList : List PerceptualColor -> Maybe PaletteChoice
+paletteChoiceFromList colors =
+    case colors of
+        background :: surface :: ink :: mutedInk :: accent :: accentInk :: [] ->
+            Just
+                { background = background
+                , surface = surface
+                , ink = ink
+                , mutedInk = mutedInk
+                , accent = accent
+                , accentInk = accentInk
+                }
 
-
-paletteChoiceColors : PaletteChoice -> List PerceptualColor
-paletteChoiceColors choice =
-    [ choice.background
-    , choice.surface
-    , choice.ink
-    , choice.mutedInk
-    , choice.accent
-    , choice.accentInk
-    ]
+        _ ->
+            Nothing
 
 
 paletteRoleDistance : PaletteChoice -> Float
@@ -315,25 +288,16 @@ paletteRoleDistance choice =
 
 paletteGlobalScore : PaletteChoice -> Float
 paletteGlobalScore choice =
-    minimumPairDistance (paletteChoiceColors choice) * 1000000
+    minimumPairDistance
+        [ choice.background
+        , choice.surface
+        , choice.ink
+        , choice.mutedInk
+        , choice.accent
+        , choice.accentInk
+        ]
+        * 1000000
         + paletteRoleDistance choice
-
-
-paletteChoiceFromList : List PerceptualColor -> Maybe PaletteChoice
-paletteChoiceFromList colors =
-    case colors of
-        background :: surface :: ink :: mutedInk :: accent :: accentInk :: [] ->
-            Just
-                { background = background
-                , surface = surface
-                , ink = ink
-                , mutedInk = mutedInk
-                , accent = accent
-                , accentInk = accentInk
-                }
-
-        _ ->
-            Nothing
 
 
 candidateColors : List PerceptualColor
@@ -370,102 +334,384 @@ globalPaletteChoice =
         |> Maybe.withDefault fallback
 
 
-backgroundPerceptualColor : PerceptualColor
-backgroundPerceptualColor =
-    globalPaletteChoice.background
+srgbToLinear : Float -> Float
+srgbToLinear value =
+    let
+        sign =
+            if value < 0 then
+                -1
+
+            else
+                1
+
+        magnitude =
+            abs value
+    in
+    if magnitude <= 0.04045 then
+        value / 12.92
+
+    else
+        sign * ((magnitude + 0.055) / 1.055) ^ 2.4
 
 
-surfacePerceptualColor : PerceptualColor
-surfacePerceptualColor =
-    globalPaletteChoice.surface
+linearToSrgb : Float -> Float
+linearToSrgb value =
+    let
+        sign =
+            if value < 0 then
+                -1
+
+            else
+                1
+
+        magnitude =
+            abs value
+    in
+    if magnitude <= 0.0031308 then
+        12.92 * value
+
+    else
+        sign * (1.055 * magnitude ^ (1 / 2.4) - 0.055)
 
 
-inkPerceptualColor : PerceptualColor
-inkPerceptualColor =
-    globalPaletteChoice.ink
+linearToRec2020 : Float -> Float
+linearToRec2020 value =
+    if value == 0 then
+        0
+
+    else
+        (if value < 0 then -1 else 1) * abs value ^ (1 / 2.4)
 
 
-mutedInkPerceptualColor : PerceptualColor
-mutedInkPerceptualColor =
-    globalPaletteChoice.mutedInk
+xyzFromSrgb : DisplayColor -> ( Float, Float, Float )
+xyzFromSrgb color =
+    let
+        r =
+            srgbToLinear color.r
+
+        g =
+            srgbToLinear color.g
+
+        b =
+            srgbToLinear color.b
+    in
+    ( 0.41239079926595934 * r + 0.357584339383878 * g + 0.1804807884018343 * b
+    , 0.21263900587151027 * r + 0.715168678767756 * g + 0.07219231536073371 * b
+    , 0.01933081871559182 * r + 0.11919477979462598 * g + 0.9505321522496607 * b
+    )
 
 
-accentPerceptualColor : PerceptualColor
-accentPerceptualColor =
-    globalPaletteChoice.accent
+xyzToP3 : ( Float, Float, Float ) -> DisplayColor
+xyzToP3 xyz =
+    let
+        ( x, y, z ) =
+            xyz
+    in
+    { r = linearToSrgb (1.716651187971268 * x - 0.355670783776392 * y - 0.25336628137365974 * z)
+    , g = linearToSrgb (-0.666684351832489 * x + 1.6164812366349395 * y + 0.01576854581391113 * z)
+    , b = linearToSrgb (0.017639857445310783 * x - 0.042770613257808524 * y + 0.9421031212354738 * z)
+    }
 
 
-accentInkPerceptualColor : PerceptualColor
-accentInkPerceptualColor =
-    globalPaletteChoice.accentInk
+xyzToRec2020 : ( Float, Float, Float ) -> DisplayColor
+xyzToRec2020 xyz =
+    let
+        ( x, y, z ) =
+            xyz
+
+        r =
+            1.660491002108434 * x - 0.5876411788327624 * y - 0.07284931861019282 * z
+
+        g =
+            -0.12455047452145676 * x + 1.1328998971259597 * y - 0.00834915146271733 * z
+
+        b =
+            -0.018150763487746622 * x - 0.100578898008244 * y + 1.118312588204183 * z
+    in
+    { r = linearToRec2020 r
+    , g = linearToRec2020 g
+    , b = linearToRec2020 b
+    }
 
 
-cssDisplayColor : DisplayColor -> String
-cssDisplayColor color =
-    "color(srgb "
-        ++ String.fromFloat (clamp01 color.r)
+encodeFinal : DisplayColor -> EncodedColor
+encodeFinal source =
+    { srgb =
+        { r = clamp01 source.r
+        , g = clamp01 source.g
+        , b = clamp01 source.b
+        }
+    , p3 =
+        let
+            ( x, y, z ) =
+                xyzFromSrgb source
+
+            converted =
+                xyzToP3 ( x, y, z )
+        in
+        { r = clamp01 converted.r
+        , g = clamp01 converted.g
+        , b = clamp01 converted.b
+        }
+    , rec2020 =
+        let
+            ( x, y, z ) =
+                xyzFromSrgb source
+
+            converted =
+                xyzToRec2020 ( x, y, z )
+        in
+        { r = clamp01 converted.r
+        , g = clamp01 converted.g
+        , b = clamp01 converted.b
+        }
+    }
+
+
+backgroundColor : EncodedColor
+backgroundColor =
+    encodeFinal globalPaletteChoice.background.display
+
+
+surfaceColor : EncodedColor
+surfaceColor =
+    encodeFinal globalPaletteChoice.surface.display
+
+
+inkColor : EncodedColor
+inkColor =
+    encodeFinal globalPaletteChoice.ink.display
+
+
+mutedInkColor : EncodedColor
+mutedInkColor =
+    encodeFinal globalPaletteChoice.mutedInk.display
+
+
+accentColor : EncodedColor
+accentColor =
+    encodeFinal globalPaletteChoice.accent.display
+
+
+accentInkColor : EncodedColor
+accentInkColor =
+    encodeFinal globalPaletteChoice.accentInk.display
+
+
+cssNumber : Float -> String
+cssNumber value =
+    String.fromFloat (clamp01 value)
+
+
+cssColor : String -> DisplayColor -> String
+cssColor space color =
+    "color("
+        ++ space
         ++ " "
-        ++ String.fromFloat (clamp01 color.g)
+        ++ cssNumber color.r
         ++ " "
-        ++ String.fromFloat (clamp01 color.b)
+        ++ cssNumber color.g
+        ++ " "
+        ++ cssNumber color.b
         ++ ")"
+
+
+cssFallbacks : String -> EncodedColor -> String
+cssFallbacks property color =
+    property
+        ++ ":"
+        ++ cssColor "srgb" color.srgb
+        ++ ";"
+        ++ property
+        ++ ":"
+        ++ cssColor "display-p3" color.p3
+        ++ ";"
+        ++ property
+        ++ ":"
+        ++ cssColor "rec2020" color.rec2020
+        ++ ";"
+
+
+svgColorStyle : String -> EncodedColor -> String
+svgColorStyle property color =
+    cssFallbacks property color
+
 
 dynamicCss : String
 dynamicCss =
-    ".repository input::placeholder, .repository select::placeholder { color: "
-        ++ dynamicPalette.mutedInk
-        ++ "; }"
-        ++ ".repository input:focus, .repository select:focus, .repository button:focus { outline-color: "
-        ++ dynamicPalette.accent
-        ++ "; }"
-        ++ ".repository { caret-color: "
-        ++ dynamicPalette.accent
-        ++ "; accent-color: "
-        ++ dynamicPalette.accent
-        ++ "; }"
+    ".repository{"
+        ++ cssFallbacks "background-color" backgroundColor
+        ++ cssFallbacks "color" inkColor
+        ++ "min-height:100vh;box-sizing:border-box;padding:2rem;"
+        ++ "font-family:system-ui,sans-serif;"
+        ++ "}"
+        ++ ".dynamic-surface{"
+        ++ cssFallbacks "background-color" surfaceColor
+        ++ cssFallbacks "color" inkColor
+        ++ cssFallbacks "border-color" mutedInkColor
+        ++ "}"
+        ++ ".dynamic-accent{"
+        ++ cssFallbacks "background-color" accentColor
+        ++ cssFallbacks "color" accentInkColor
+        ++ cssFallbacks "border-color" accentColor
+        ++ "}"
+        ++ ".dynamic-ink{"
+        ++ cssFallbacks "color" inkColor
+        ++ "}"
+        ++ ".dynamic-muted{"
+        ++ cssFallbacks "color" mutedInkColor
+        ++ "}"
+        ++ ".dynamic-link{"
+        ++ cssFallbacks "color" accentColor
+        ++ "}"
+        ++ ".repository input::placeholder{"
+        ++ cssFallbacks "color" mutedInkColor
+        ++ "}"
+        ++ ".repository button,.repository input,.repository select{"
+        ++ "font:inherit;box-sizing:border-box;"
+        ++ "}"
+        ++ ".repository button,.repository input,.repository select{"
+        ++ cssFallbacks "background-color" surfaceColor
+        ++ cssFallbacks "color" inkColor
+        ++ cssFallbacks "border-color" mutedInkColor
+        ++ "}"
+        ++ ".repository button:focus,.repository input:focus,.repository select:focus{"
+        ++ cssFallbacks "outline-color" accentColor
+        ++ "}"
+        ++ ".repository{"
+        ++ cssFallbacks "caret-color" accentColor
+        ++ cssFallbacks "accent-color" accentColor
+        ++ "}"
+        ++ ".graph-controls{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:1rem 0;}"
+        ++ ".graph-node-list{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}"
+        ++ ".graph-node-button{text-align:left;padding:.5rem;border:1px solid;}"
+        ++ ".graph-canvas{overflow:auto;border:1px solid;padding:.5rem;}"
+        ++ "a{text-decoration-thickness:.08em;text-underline-offset:.15em;}"
+        ++ "ul{padding-left:1.5rem;}"
 
 
 dynamicStyleSheet : Html msg
 dynamicStyleSheet =
-    Html.node "style" [] [ text dynamicCss ]
-
-type FileFilter
-    = AllFiles
-    | LearnerOnly
-    | TheoremOnly
+    node "style" [] [ text dynamicCss ]
 
 
-type alias Model =
-    { query : String
-    , relationQuery : String
-    , fileFilter : FileFilter
-    , selected : Maybe String
-    }
+sanitize : String -> String
+sanitize value =
+    String.map
+        (\\char ->
+            if Char.toCode char < 128 then
+                char
+
+            else
+                Char.fromCode 63
+        )
+        value
 
 
-type Msg
-    = SetQuery String
-    | SetRelationQuery String
-    | SetFileFilter String
-    | SelectNode String
+visibleNodes : Model -> List Graph.Node
+visibleNodes model =
+    let
+        query =
+            String.toLower (sanitize model.query)
+    in
+    List.filter
+        (\\nodeItem ->
+            let
+                label =
+                    sanitize nodeItem.label
+
+                nodeId =
+                    sanitize nodeItem.id
+            in
+            sourceAllowed model.fileFilter nodeItem.source
+                && (String.isEmpty query
+                    || String.contains query (String.toLower label)
+                    || String.contains query (String.toLower nodeId)
+                   )
+        )
+        Graph.nodes
 
 
-main : Program () Model Msg
-main =
-    Browser.sandbox
-        { init = init
-        , update = update
-        , view = view
-        }
+sourceAllowed : FileFilter -> String -> Bool
+sourceAllowed fileFilter source =
+    case fileFilter of
+        AllFiles ->
+            True
+
+        LearnerOnly ->
+            source == "learner"
+
+        TheoremOnly ->
+            source == "theorem"
 
 
-init : Model
-init =
-    { query = ""
-    , relationQuery = ""
-    , fileFilter = AllFiles
-    , selected = Graph.nodes |> List.head |> Maybe.map .id
-    }
+filterString : FileFilter -> String
+filterString fileFilter =
+    case fileFilter of
+        AllFiles ->
+            "all"
+
+        LearnerOnly ->
+            "learner"
+
+        TheoremOnly ->
+            "theorem"
+
+
+nodeForId : String -> Maybe Graph.Node
+nodeForId nodeId =
+    Graph.nodes
+        |> List.filter (\\nodeItem -> nodeItem.id == nodeId)
+        |> List.head
+
+
+incomingIds : String -> List String
+incomingIds nodeId =
+    Graph.edges
+        |> List.filter (\\edge -> edge.target == nodeId)
+        |> List.map .source
+
+
+outgoingIds : String -> List String
+outgoingIds nodeId =
+    Graph.edges
+        |> List.filter (\\edge -> edge.source == nodeId)
+        |> List.map .target
+
+
+relationMatches : String -> Graph.Edge -> Bool
+relationMatches query edge =
+    let
+        needle =
+            String.toLower (sanitize query)
+    in
+    String.isEmpty needle
+        || String.contains needle (String.toLower (sanitize edge.source))
+        || String.contains needle (String.toLower (sanitize edge.target))
+        || String.contains needle (String.toLower (sanitize edge.relation))
+
+
+visibleEdges : Model -> List Graph.Edge
+visibleEdges model =
+    List.filter (relationMatches model.relationQuery) Graph.edges
+
+
+keepVisibleSelection : Model -> Model
+keepVisibleSelection model =
+    let
+        ids =
+            List.map .id (visibleNodes model)
+    in
+    case model.selected of
+        Just selected ->
+            if List.member selected ids then
+                model
+
+            else
+                { model | selected = List.head ids }
+
+        Nothing ->
+            { model | selected = List.head ids }
 
 
 update : Msg -> Model -> Model
@@ -497,423 +743,72 @@ fileFilterFromString raw =
             AllFiles
 
 
-keepVisibleSelection : Model -> Model
-keepVisibleSelection model =
-    let
-        visible =
-            visibleNodes model
-
-        ids =
-            List.map .id visible
-    in
-    case model.selected of
-        Just selected ->
-            if List.member selected ids then
-                model
-
-            else
-                { model | selected = List.head ids |> Maybe.map .id }
-
-        Nothing ->
-            { model | selected = List.head ids |> Maybe.map .id }
-
-
-visibleNodes : Model -> List Graph.Node
-visibleNodes model =
-    let
-        query =
-            String.toLower model.query
-    in
-    List.filter
-        (\node ->
-            sourceAllowed model.fileFilter node.source
-                && (String.isEmpty query
-                    || String.contains query (String.toLower node.label)
-                    || String.contains query (String.toLower node.id)
-                   )
-        )
-        Graph.nodes
-
-
-sourceAllowed : FileFilter -> String -> Bool
-sourceAllowed fileFilter source =
-    case fileFilter of
-        AllFiles ->
-            True
-
-        LearnerOnly ->
-            source == "learner"
-
-        TheoremOnly ->
-            source == "theorem"
-
-
-rootNodes : List Graph.Node
-rootNodes =
-    List.filter
-        (\\node -> List.member node.label Surface.roots || List.member node.id Surface.roots)
-        Graph.nodes
-
-
-rootEdges : List Graph.Edge
-rootEdges =
-    List.filter
-        (\\edge ->
-            List.member edge.source Surface.roots
-                || List.member edge.target Surface.roots
-        )
-        Graph.edges
-
-
-incomingRootIds : String -> List String
-incomingRootIds nodeId =
-    Graph.edges
-        |> List.filter (\\edge -> edge.target == nodeId)
-        |> List.map .source
-        |> unique
-
-
-outgoingRootIds : String -> List String
-outgoingRootIds nodeId =
-    Graph.edges
-        |> List.filter (\\edge -> edge.source == nodeId)
-        |> List.map .target
-        |> unique
-
-
-nodeForId : String -> Maybe Graph.Node
-nodeForId nodeId =
-    Graph.nodes
-        |> List.filter (\node -> node.id == nodeId)
-        |> List.head
-
-
-unique : List String -> List String
-unique values =
-    List.foldl
-        (\value seen ->
-            if List.member value seen then
-                seen
-
-            else
-                seen ++ [ value ]
-        )
-        []
-        values
-
-
-incomingIds : String -> List String
-incomingIds nodeId =
-    Graph.edges
-        |> List.filter (\edge -> edge.target == nodeId)
-        |> List.map .source
-        |> unique
-
-
-outgoingIds : String -> List String
-outgoingIds nodeId =
-    Graph.edges
-        |> List.filter (\edge -> edge.source == nodeId)
-        |> List.map .target
-        |> unique
-
-
-relationCount : String -> Int
-relationCount nodeId =
-    List.length (incomingIds nodeId) + List.length (outgoingIds nodeId)
-
-
-relationMatches : String -> Graph.Edge -> Bool
-relationMatches query edge =
-    let
-        needle =
-            String.toLower query
-    in
-    String.isEmpty needle
-        || String.contains needle (String.toLower edge.source)
-        || String.contains needle (String.toLower edge.target)
-        || String.contains needle (String.toLower edge.relation)
-
-
-visibleEdges : Model -> List Graph.Edge
-visibleEdges model =
-    List.filter (relationMatches model.relationQuery) Graph.edges
-
-
-view : Model -> Html Msg
-view model =
-    let
-        visible =
-            visibleNodes model
-
-        filteredEdges =
-            visibleEdges model
-    in
-    main_
-        [ HA.class "repository"
-        , HA.style "background-color" dynamicPalette.background
-        , HA.style "color" dynamicPalette.ink
-        , HA.style "min-height" "100vh"
-        , HA.style "width" "100%"
-        , HA.style "box-sizing" "border-box"
-        ]
-        [ dynamicStyleSheet
-        , h1 [] [ text "Actions" ]
-        , p []
-            [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
-        , section [] [ h2 [] [ text "Authority and active tree" ]
-            , p []
-                [ text "Exactly two tracked Agda authority files remain. The active tree has no Exotic namespace." ]
-            , ul [] (List.map codeItem
-                [ "FullCoupled/CanonicalLearnerMonolith.agda"
-                , "FullCoupled/TheoremsMonolith.agda"
-                ])
-            , p []
-                [ text "The learner is the source definition. The theorem monolith is its one-way derived-semantic consumer." ]
-            ]
-        , section [] [ h2 [] [ text "GRU left inverse, injectivity, and tail stability" ]
-            , p []
-                [ text "The statistical encoding stores the original GRU state, its decoder is first projection, and the accepted proof chain derives injectivity from the left inverse. Tail stability is separately lifted through full-learner iteration." ]
-            , ul [] (List.map codeItem
-                [ "canonicalGRUStatisticalDecodeEncode"
-                , "canonicalGRUStatisticalEncodeLeftInverse"
-                , "leftInverse-implies-injective"
-                , "canonicalGRUStatisticalEncodeInjective"
-                , "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem"
-                ])
-            ]
-        , section [] [ h2 [] [ text "Canonical-learner Baird witness" ]
-            , p []
-                [ text "The active Baird construction is tied to the canonical learner kernel/state and its already-proved persistent-GRU iterate tail. There is no generic Baird record." ]
-            , ul [] (List.map codeItem
-                [ "CanonicalLearnerBairdSevenStarWitness K s"
-                , "canonicalLearnerBairdSevenStar"
-                , "seven states / eight features"
-                , "behavior 6/7 versus 1/7"
-                , "solid target"
-                , "zero reward / 99-100 discount"
-                , "persistent-GRU iterate tail"
-                , "explicit divergence witness"
-                ])
-            ]
-        , section [] [ h2 [] [ text "Hidden-Synergy finite surface" ]
-            , p []
-                [ text "The L1 and 1-path-norm surface has been pruned. The zero-threshold hard/soft sparsity theorem and the finite Tsallis-2/support-sparsity surface remain active." ]
-            , ul [] (List.map codeItem
-                [ "CanonicalHardSparsityDegeneracyTheorem"
-                , "generalTsallis2NearSparsity"
-                , "generalTsallis2NearSparsity-zero"
-                , "generalTsallis2NearSparsity-definition"
-                , "generalSupportSparsity"
-                , "UniformSupportTsallisBoundary"
-                ])
-            ]
-        , section [] [ h2 [] [ text "Physics, economics, and PPAD boundary" ]
-            , p []
-                [ text "Physics and economics remain in the theorem monolith, including Hodge-Maxwell, GRU/physics transport, production, demand/supply, excess demand, market clearing, Walrasian interfaces, stationary/fixed-point closures, and economic composition." ]
-            , p []
-                [ text "No PPAD-completeness theorem is claimed. A real completeness proof still requires a total polynomial-size search relation, encoding bounds, membership, and a hardness reduction." ]
-            ]
-        , section [] [ h2 [] [ text "Complete Agda relation dataset" ]
-            , p []
-                [ text ("Generated declarations: "
-                    ++ String.fromInt (List.length Graph.nodes)
-                    ++ " | generated relations: "
-                    ++ String.fromInt (List.length Graph.edges)
-                    ++ " | visible declarations: "
-                    ++ String.fromInt (List.length visible)
-                    ++ " | selected-node relations: "
-                    ++ (case model.selected of
-                            Just nodeId ->
-                                String.fromInt (relationCount nodeId)
-
-                            Nothing ->
-                                "0"
-                       )
-                ]
-            , div [ HA.class "graph-controls" ]
-                [ input
-                    [ HA.placeholder "Filter declaration names or ids"
-                    , HA.value model.query
-                    , HE.onInput SetQuery
-                    , HA.style "background-color" dynamicPalette.surface
-                    , HA.style "color" dynamicPalette.ink
-                    , HA.style "border-color" dynamicPalette.mutedInk
-                    ]
-                    []
-                , select
-                    [ HA.value (filterString model.fileFilter)
-                    , HE.onInput SetFileFilter
-                    , HA.style "background-color" dynamicPalette.surface
-                    , HA.style "color" dynamicPalette.ink
-                    , HA.style "border-color" dynamicPalette.mutedInk
-                    ]
-                    [ option [ HA.value "all" ] [ text "All Agda" ]
-                    , option [ HA.value "learner" ] [ text "Learner monolith" ]
-                    , option [ HA.value "theorem" ] [ text "Theorem monolith" ]
-                    ]
-                ]
-            , div [ HA.class "graph-node-list" ]
-                (List.map nodeButton visible)
-            , graphView model
-            , relationLists model
-            , section []
-                [ h2 [] [ text "All generated relations" ]
-                , p []
-                    [ text "This list is the complete generated edge set, filtered only by the optional relation search. Selecting an edge endpoint changes the focused graph." ]
-                , input
-                    [ HA.placeholder "Filter source, target, or relation"
-                    , HA.value model.relationQuery
-                    , HE.onInput SetRelationQuery
-                    , HA.style "background-color" dynamicPalette.surface
-                    , HA.style "color" dynamicPalette.ink
-                    , HA.style "border-color" dynamicPalette.mutedInk
-                    ]
-                    []
-                , p []
-                    [ text ("Matching relations: " ++ String.fromInt (List.length filteredEdges)) ]
-                , ul [] (List.map relationRecord filteredEdges)
-                ]
-            ]
-        , section []
-            [ h2 [] [ text "Mirth-synced directional theorem graph" ]
-            , p []
-                [ text "Mirth reads both canonical Agda monoliths and emits this graph during Pages build. Edge direction is declaration-to-dependency: source declaration uses target declaration." ]
-            , p []
-                [ text
-                    ("Generated graph roots: "
-                        ++ String.fromInt (List.length rootNodes)
-                        ++ " | root-touching directed edges: "
-                        ++ String.fromInt (List.length rootEdges)
-                    )
-                ]
-            , ul []
-                (List.map
-                    (\\root ->
-                        li []
-                            [ code [] [ text root ]
-                            , p []
-                                [ text ("outgoing dependencies: " ++ String.join ", " (outgoingRootIds root))
-                                ]
-                            , p []
-                                [ text ("incoming consumers: " ++ String.join ", " (incomingRootIds root))
-                                ]
-                            ]
-                    )
-                    (List.map identity Surface.roots)
-                )
-            , ul []
-                (List.map
-                    (\\(label, meaning) ->
-                        li [] [ code [] [ text (label ++ ": ") ], text meaning ]
-                    )
-                    Surface.directionalLabels
-                )
-            ]
-        , section [] [ h2 [] [ text "Finite mixed-Nash graph convergence" ]
-            , p []
-                [ text "Finite-rank A* provides convergence to a stable graph state. Brouwer's fixed-point construction supplies the mixed-Nash existence bridge. E-graph semantic paths certify endpoint equality. GRU injectivity and tail stability provide an independent feature-to-state stationarity path." ]
-            , ul [] (List.map codeItem
-                [ "BrouwerMixedNashExistence"
-                , "nashEveryFiniteGameViaBrouwer"
-                , "brouwerMixedNashFixedPointBridge"
-                , "finiteMixedNash-brouwer-egraph-astar-proof"
-                , "finiteMixedNash-egraph-astar-convergence"
-                , "finiteMixedNash-egraph-astar-eventualStationarity"
-                , "finiteMixedNash-cycle-transport"
-                , "finiteMixedNash-from-GRU-tail"
-                ])
-            , p []
-                [ text "Agda now proves the Brouwer-to-Nash reduction and composes it with the finite-rank A* / e-graph certificate. The analytic Brouwer theorem itself remains an explicit mathematical witness rather than a hidden axiom." ]
-            , p []
-                [ text "GRU tail-stability is a separate proof path: injective encoding recovers source-state fixation from feature-tail fixation. It does not replace Brouwer's existence argument." ]
-            ]
-        , section []
-            [ h2 [] [ text "Mercury A* + e-graph + Nash fixed-point proof" ]
-            , p []
-                [ text "The linked lecture explains finite-game mixed Nash existence through a continuous self-map of the product of mixed-strategy simplexes. A Brouwer fixed point then gives a profile with no profitable unilateral deviation." ]
-            , p []
-                [ text "Nash's 1950 PNAS paper states the finite mixed-strategy model and credits Kakutani's theorem for simplifying its existence proof. Nash's 1951 Annals paper develops the non-cooperative framework and proves finite-game equilibrium existence." ]
-            , ul []
-                [ linkItem "Lecture: Why Does Every Game Have a Nash Equilibrium?" "https://www.youtube.com/watch?v=cpwHkY_ApnI"
-                , linkItem "Nash 1950: Equilibrium Points in N-Person Games" "https://doi.org/10.1073/pnas.36.1.48"
-                , linkItem "Nash 1951: Non-Cooperative Games" "https://www.jstor.org/stable/1969529"
-                ]
-            , p []
-                [ text "Mercury supplies pure graph discovery and A* cost-guided dependency ordering. E-graph paths carry semantic equality proofs. The A* score orders search; it is not itself semantic evidence." ]
-            , p []
-                [ text "Agda's BrouwerMixedNashExistence records the analytical fixed-point witness. nashEveryFiniteGameViaBrouwer extracts a mixed Nash profile. brouwerMixedNashFixedPointBridge connects that fixed-point map to the A* update. finiteMixedNash-brouwer-egraph-astar-proof combines Nash existence, finite-rank convergence, and e-graph semantic closure." ]
-            , p []
-                [ text "GRU composition stays separate and exact: injective encoding plus tail stability yields source-state fixation, then finiteMixedNash-from-GRU-tail identifies mixed Nash on the encoded stationary tail." ]
-            ]
-        , section [] [ h2 [] [ text "JAX execution mirror" ]
-            , p []
-                [ text "The executable Python/JAX wrapper has been removed. The retained JAX-facing algorithms are represented by typed Agda contracts in JAXExecutionMirrorReproof. The contracts cover the retained vector, scan, sparse-support, LayerNorm, gate, GRU, Tsallis-2, support-sparsity, and scan-sum algorithms." ]
-            , ul [] (List.map codeItem
-                [ "vmap_affine -> jaxVmapAffine"
-                , "associative_prefix_sum -> jaxAssociativePrefixSum"
-                , "recurrent_scan -> jaxRecurrentScan"
-                , "lexicographic_score_order -> jaxLexicographicScoreOrder"
-                , "sparse_support_size -> jaxSparseSupportSize"
-                , "sparse_support_top_k -> jaxSparseSupportTopK"
-                , "sparsemax_policy_index -> jaxSparsemaxPolicyIndex"
-                , "tsallis2_near_sparsity_fraction -> jaxTsallis2NearSparsityFraction"
-                , "support_sparsity_fraction -> jaxSupportSparsityFraction"
-                , "integer_layernorm_centered_numerators -> jaxIntegerLayerNormCenteredNumerators"
-                , "integer_layernorm_radicand -> jaxIntegerLayerNormRadicand"
-                , "batched_integer_layernorm_radicand -> jaxBatchedIntegerLayerNormRadicand"
-                , "signed_gate -> jaxSignedGate"
-                , "gru_hidden_step -> jaxGRUHiddenStep"
-                , "batched_gru_hidden_step -> jaxBatchedGRUHiddenStep"
-                , "jitted_scan_sum -> jaxJittedScanSum"
-                ])
-            ]
-        , section [] [ h2 [] [ text "Mirth and pure Elm" ]
-            , p []
-                [ text "Mirth generates synchronization and graph scripts before compilation. The Pages application itself remains pure Elm and does not execute Agda, Mirth, Mercury, JAX, SMT, or Vehicle at runtime." ]
-            ]
-        , section [] [ h2 [] [ text "Source navigation" ]
-            , ul []
-                [ linkItem "Canonical learner" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/CanonicalLearnerMonolith.agda"
-                , linkItem "Theorem monolith" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/TheoremsMonolith.agda"
-                , linkItem "CI contracts" "https://github.com/JohnChristianD/Actions/tree/main/.ci"
-                , linkItem "Repository" "https://github.com/JohnChristianD/Actions"
-                ]
-            ]
-        ]
-
-
-filterString : FileFilter -> String
-filterString fileFilter =
-    case fileFilter of
-        AllFiles ->
-            "all"
-
-        LearnerOnly ->
-            "learner"
-
-        TheoremOnly ->
-            "theorem"
+init : Model
+init =
+    { query = ""
+    , relationQuery = ""
+    , fileFilter = AllFiles
+    , selected = Graph.nodes |> List.head |> Maybe.map .id
+    }
 
 
 nodeButton : Graph.Node -> Html Msg
-nodeButton node =
+nodeButton nodeItem =
     button
         [ HA.type_ "button"
-        , HE.onClick (SelectNode node.id)
-        , HA.class "graph-node-button"
-        , HA.style "background-color" dynamicPalette.surface
-        , HA.style "color" dynamicPalette.ink
-        , HA.style "border-color" dynamicPalette.mutedInk
+        , HE.onClick (SelectNode nodeItem.id)
+        , HA.class "graph-node-button dynamic-surface"
         ]
-        [ code [] [ text (node.source ++ ": " ++ node.label) ] ]
+        [ code [] [ text (sanitize (nodeItem.source ++ ":" ++ nodeItem.label)) ] ]
+
+
+relationButton : String -> Html Msg
+relationButton nodeId =
+    button
+        [ HA.type_ "button"
+        , HE.onClick (SelectNode nodeId)
+        , HA.class "dynamic-surface"
+        ]
+        [ code [] [ text (sanitize nodeId) ] ]
+
+
+relationRecord : Graph.Edge -> Html Msg
+relationRecord edge =
+    li []
+        [ button
+            [ HA.type_ "button"
+            , HE.onClick (SelectNode edge.source)
+            , HA.class "dynamic-surface"
+            ]
+            [ code [] [ text (sanitize edge.source) ] ]
+        , span [ HA.class "dynamic-muted" ]
+            [ text (sanitize (" --" ++ edge.relation ++ "--> ")) ]
+        , button
+            [ HA.type_ "button"
+            , HE.onClick (SelectNode edge.target)
+            , HA.class "dynamic-surface"
+            ]
+            [ code [] [ text (sanitize edge.target) ] ]
+        ]
+
+
+positionFor : Int -> Int -> { x : Float, y : Float }
+positionFor index sideCount =
+    { x =
+        if sideCount == 0 then
+            500
+
+        else
+            150 + toFloat index * (700 / toFloat (max 1 (sideCount - 1)))
+    , y = 120
+    }
 
 
 graphView : Model -> Html Msg
 graphView model =
     case model.selected |> Maybe.andThen nodeForId of
         Nothing ->
-            p [] [ text "No selected declaration." ]
+            p [ HA.class "dynamic-muted" ] [ text (sanitize Surface.siteTitle) ]
 
         Just selected ->
             let
@@ -923,208 +818,216 @@ graphView model =
                 outgoing =
                     outgoingIds selected.id
 
-                incomingPositions =
-                    List.indexedMap
-                        (\index nodeId ->
-                            { id = nodeId
-                            , x = 160
-                            , y = 120 + toFloat index * 52
-                            }
-                        )
-                        incoming
-
-                outgoingPositions =
-                    List.indexedMap
-                        (\index nodeId ->
-                            { id = nodeId
-                            , x = 840
-                            , y = 120 + toFloat index * 52
-                            }
-                        )
-                        outgoing
-
-                selectedPosition =
-                    { id = selected.id, x = 500, y = 62 }
-
-                maxRows =
-                    max (List.length incoming) (List.length outgoing)
+                allNeighbors =
+                    incoming ++ outgoing
 
                 height =
-                    toFloat (max 1 maxRows) * 52 + 160
+                    180 + toFloat (max 1 (List.length allNeighbors)) * 60
 
-                selectedSvg =
-                    svgNode selectedPosition True
+                selectedText =
+                    sanitize selected.label
 
-                incomingSvg =
-                    List.map (edgeAndNode selectedPosition) incomingPositions
+                centerStyle =
+                    "fill:"
+                        ++ cssColor "srgb" accentColor.srgb
+                        ++ ";fill:"
+                        ++ cssColor "display-p3" accentColor.p3
+                        ++ ";fill:"
+                        ++ cssColor "rec2020" accentColor.rec2020
+                        ++ ";stroke:"
+                        ++ cssColor "srgb" mutedInkColor.srgb
+                        ++ ";stroke:"
+                        ++ cssColor "display-p3" mutedInkColor.p3
+                        ++ ";stroke:"
+                        ++ cssColor "rec2020" mutedInkColor.rec2020
+                        ++ ";"
 
-                outgoingSvg =
-                    List.map (edgeAndNode selectedPosition) outgoingPositions
+                neighborStyle =
+                    "fill:"
+                        ++ cssColor "srgb" surfaceColor.srgb
+                        ++ ";fill:"
+                        ++ cssColor "display-p3" surfaceColor.p3
+                        ++ ";fill:"
+                        ++ cssColor "rec2020" surfaceColor.rec2020
+                        ++ ";stroke:"
+                        ++ cssColor "srgb" mutedInkColor.srgb
+                        ++ ";stroke:"
+                        ++ cssColor "display-p3" mutedInkColor.p3
+                        ++ ";stroke:"
+                        ++ cssColor "rec2020" mutedInkColor.rec2020
+                        ++ ";"
             in
-            div [ HA.class "graph-canvas" ]
+            div [ HA.class "graph-canvas dynamic-surface" ]
                 [ S.svg
                     [ SA.viewBox ("0 0 1000 " ++ String.fromFloat height)
                     , SA.width "100%"
                     , SA.height (String.fromFloat height)
                     ]
-                    (selectedSvg :: incomingSvg ++ outgoingSvg)
+                    (List.concatMap
+                        (\\neighborIndex ->
+                            let
+                                position =
+                                    positionFor neighborIndex (max 1 (List.length allNeighbors))
+
+                                nodeId =
+                                    List.drop neighborIndex allNeighbors
+                                        |> List.head
+                                        |> Maybe.withDefault selected.id
+                            in
+                            [ S.line
+                                [ SA.x1 "500"
+                                , SA.y1 "60"
+                                , SA.x2 (String.fromFloat position.x)
+                                , SA.y2 (String.fromFloat position.y)
+                                , SA.style
+                                    ( "stroke:"
+                                        ++ cssColor "srgb" mutedInkColor.srgb
+                                        ++ ";stroke:"
+                                        ++ cssColor "display-p3" mutedInkColor.p3
+                                        ++ ";stroke:"
+                                        ++ cssColor "rec2020" mutedInkColor.rec2020
+                                        ++ ";"
+                                    )
+                                ]
+                                []
+                            , S.rect
+                                [ SA.x (String.fromFloat (position.x - 120))
+                                , SA.y (String.fromFloat (position.y - 18))
+                                , SA.width "240"
+                                , SA.height "36"
+                                , SA.rx "6"
+                                , SA.style neighborStyle
+                                ]
+                                [ S.title [] [ S.text (sanitize nodeId) ] ]
+                            , S.text_
+                                [ SA.x (String.fromFloat position.x)
+                                , SA.y (String.fromFloat (position.y + 5))
+                                , SA.textAnchor "middle"
+                                , SA.fontSize "11"
+                                , SA.style
+                                    ( "fill:"
+                                        ++ cssColor "srgb" inkColor.srgb
+                                        ++ ";fill:"
+                                        ++ cssColor "display-p3" inkColor.p3
+                                        ++ ";fill:"
+                                        ++ cssColor "rec2020" inkColor.rec2020
+                                        ++ ";"
+                                    )
+                                ]
+                                [ S.text
+                                    (String.left 36
+                                        (nodeForId nodeId
+                                            |> Maybe.map .label
+                                            |> Maybe.withDefault nodeId
+                                            |> sanitize
+                                        )
+                                    )
+                                ]
+                            ]
+                        )
+                        (List.range 0 (max 0 (List.length allNeighbors - 1)))
+                        ++ [ S.rect
+                            [ SA.x "350"
+                            , SA.y "35"
+                            , SA.width "300"
+                            , SA.height "50"
+                            , SA.rx "8"
+                            , SA.style centerStyle
+                            ]
+                            []
+                           , S.text_
+                                [ SA.x "500"
+                                , SA.y "65"
+                                , SA.textAnchor "middle"
+                                , SA.fontSize "13"
+                                , SA.style
+                                    ( "fill:"
+                                        ++ cssColor "srgb" accentInkColor.srgb
+                                        ++ ";fill:"
+                                        ++ cssColor "display-p3" accentInkColor.p3
+                                        ++ ";fill:"
+                                        ++ cssColor "rec2020" accentInkColor.rec2020
+                                        ++ ";"
+                                    )
+                                ]
+                                [ S.text (String.left 46 selectedText) ]
+                           ]
+                    )
                 ]
 
 
-type alias Position =
-    { id : String
-    , x : Float
-    , y : Float
-    }
-
-
-edgeAndNode : Position -> Position -> S.Svg Msg
-edgeAndNode center position =
+view : Model -> Html Msg
+view model =
     let
-        label =
-            nodeForId position.id
-                |> Maybe.map (\node -> node.label)
-                |> Maybe.withDefault position.id
+        visible =
+            visibleNodes model
+
+        edges =
+            visibleEdges model
+
+        titleText =
+            sanitize Surface.siteTitle
+
+        sourceText =
+            String.join "," (List.map sanitize Surface.sourceFiles)
+
+        commitText =
+            sanitize Surface.buildCommit
     in
-    S.g []
-        [ S.line
-            [ SA.stroke dynamicPalette.mutedInk
-            , SA.x1 (String.fromFloat center.x)
-            , SA.y1 (String.fromFloat center.y)
-            , SA.x2 (String.fromFloat position.x)
-            , SA.y2 (String.fromFloat position.y)
-            ]
-            []
-        , S.rect
-            [ SA.x (String.fromFloat (position.x - 115))
-            , SA.y (String.fromFloat (position.y - 16))
-            , SA.width "230"
-            , SA.height "32"
-            , SA.rx "5"
-            , SA.fill dynamicPalette.surface
-            , SA.stroke dynamicPalette.mutedInk
-            ]
-            [ S.title [] [ S.text position.id ] ]
-        , S.text_
-            [ SA.x (String.fromFloat position.x)
-            , SA.y (String.fromFloat (position.y + 5))
-            , SA.textAnchor "middle"
-            , SA.fontSize "11"
-            , SA.fill dynamicPalette.ink
-            ]
-            [ S.text (String.left 36 label) ]
-        ]
-
-
-svgNode : Position -> Bool -> S.Svg Msg
-svgNode position selected =
-    let
-        node =
-            nodeForId position.id
-
-        label =
-            node |> Maybe.map .label |> Maybe.withDefault position.id
-
-        fill =
-            if selected then
-                dynamicPalette.accent
-
-            else
-                dynamicPalette.surface
-
-        textFill =
-            if selected then
-                dynamicPalette.accentInk
-
-            else
-                dynamicPalette.ink
-    in
-    S.g [ SE.onClick (SelectNode position.id) ]
-        [ S.rect
-            [ SA.x (String.fromFloat (position.x - 145))
-            , SA.y (String.fromFloat (position.y - 20))
-            , SA.width "290"
-            , SA.height "40"
-            , SA.rx "6"
-            , SA.fill fill
-            , SA.stroke dynamicPalette.mutedInk
-            ]
-            []
-        , S.text_
-            [ SA.x (String.fromFloat position.x)
-            , SA.y (String.fromFloat (position.y + 6))
-            , SA.textAnchor "middle"
-            , SA.fontSize "13"
-            , SA.fill textFill
-            ]
-            [ S.text (String.left 44 label) ]
-        ]
-
-
-relationLists : Model -> Html Msg
-relationLists model =
-    case model.selected of
-        Nothing ->
-            p [] [ text "Select a declaration to inspect its complete incoming and outgoing relations." ]
-
-        Just selected ->
-            section []
-                [ h2 [] [ text "Selected declaration relations" ]
-                , p [] [ text "Incoming references" ]
-                , ul [] (List.map relationButton (incomingIds selected))
-                , p [] [ text "Outgoing references" ]
-                , ul [] (List.map relationButton (outgoingIds selected))
+    main_
+        [ HA.class "repository" ]
+        [ dynamicStyleSheet
+        , h1 [ HA.class "dynamic-accent" ] [ text titleText ]
+        , p [ HA.class "dynamic-muted" ]
+            [ text (sourceText ++ " " ++ commitText) ]
+        , section []
+            [ h2 [ HA.class "dynamic-ink" ]
+                [ text (String.fromInt (List.length visible) ++ " declarations") ]
+            , div [ HA.class "graph-controls" ]
+                [ input
+                    [ HA.placeholder "query"
+                    , HA.value model.query
+                    , HE.onInput SetQuery
+                    ]
+                    []
+                , select [ HA.value (filterString model.fileFilter), HE.onInput SetFileFilter ]
+                    [ option [ HA.value "all" ] [ text "all" ]
+                    , option [ HA.value "learner" ] [ text "learner" ]
+                    , option [ HA.value "theorem" ] [ text "theorem" ]
+                    ]
                 ]
-
-
-relationRecord : Graph.Edge -> Html Msg
-relationRecord edge =
-    li []
-        [ button
-            [ HA.type_ "button"
-            , HE.onClick (SelectNode edge.source)
-            , HA.style "background-color" dynamicPalette.surface
-            , HA.style "color" dynamicPalette.ink
-            , HA.style "border-color" dynamicPalette.mutedInk
+            , div [ HA.class "graph-node-list" ]
+                (List.map nodeButton visible)
+            , graphView model
             ]
-            [ code [] [ text edge.source ] ]
-        , span [] [ text ("  --" ++ edge.relation ++ "-->  ") ]
-        , button
-            [ HA.type_ "button"
-            , HE.onClick (SelectNode edge.target)
-            , HA.style "background-color" dynamicPalette.surface
-            , HA.style "color" dynamicPalette.ink
-            , HA.style "border-color" dynamicPalette.mutedInk
+        , section []
+            [ h2 [ HA.class "dynamic-ink" ]
+                [ text (String.fromInt (List.length edges) ++ " directed relations") ]
+            , input
+                [ HA.placeholder "relation"
+                , HA.value model.relationQuery
+                , HE.onInput SetRelationQuery
+                , HA.class "dynamic-surface"
+                ]
+                []
+            , ul [] (List.map relationRecord edges)
             ]
-            [ code [] [ text edge.target ] ]
+        , section []
+            [ h2 [ HA.class "dynamic-ink" ] [ text "Mirth surface" ]
+            , ul []
+                [ li [] [ code [] [ text ("nodes=" ++ String.fromInt (List.length Surface.nodeLines)) ] ]
+                , li [] [ code [] [ text ("edges=" ++ String.fromInt (List.length Surface.edgeLines)) ] ]
+                , li [] [ code [] [ text ("ascii-nodes=" ++ String.fromInt (List.length (List.filter (\\line -> String.all (\\char -> Char.toCode char < 128) line) Surface.nodeLines))) ] ]
+                , li [] [ code [] [ text ("ascii-edges=" ++ String.fromInt (List.length (List.filter (\\line -> String.all (\\char -> Char.toCode char < 128) line) Surface.edgeLines))) ] ]
+                ]
+            ]
         ]
 
 
-relationButton : String -> Html Msg
-relationButton nodeId =
-    button
-        [ HA.type_ "button"
-        , HE.onClick (SelectNode nodeId)
-        , HA.style "background-color" dynamicPalette.surface
-        , HA.style "color" dynamicPalette.ink
-        , HA.style "border-color" dynamicPalette.mutedInk
-        ]
-        [ code [] [ text nodeId ] ]
-
-
-codeItem : String -> Html Msg
-codeItem value =
-    li [] [ code [] [ text value ] ]
-
-
-linkItem : String -> String -> Html Msg
-linkItem label url =
-    li []
-        [ a
-            [ HA.href url
-            , HA.target "_blank"
-            , HA.title label
-            , HA.style "color" dynamicPalette.accent
-            ]
-            [ text label ]
-        ]
+main : Program () Model Msg
+main =
+    Browser.sandbox
+        { init = init
+        , update = update
+        , view = view
+        }
