@@ -5640,7 +5640,7 @@ record BrouwerMixedNashExistence
     brouwerMap : Profile → Profile
     continuous : Set
     fixedPoint :
-      Σ Profile (lambda p → brouwerMap p ≡ p)
+      Σ Profile (\\p → brouwerMap p ≡ p)
     fixedImpliesNash :
       ∀ p →
       brouwerMap p ≡ p →
@@ -5657,7 +5657,7 @@ nashEveryFiniteGameViaBrouwer :
   (N : BrouwerMixedNashExistence
     Profile
     mixedNash) →
-  Σ Profile (lambda p → mixedNash p)
+  Σ Profile (\\p → mixedNash p)
 nashEveryFiniteGameViaBrouwer mixedNash N
   with fixedPoint N
 ... | p , fixed =
@@ -5914,7 +5914,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
     step W s ≡ s) →
   ∀ s →
   ((Σ Nat
-    (lambda n →
+    (\\n →
       mixedNash
         (eGraphAStarIterate
           (step W)
@@ -5922,7 +5922,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
           s)))
    ×
    (Σ Nat
-    (lambda n →
+    (\\n →
       interpret
         (semantics (closure W))
         (candidate W
@@ -5935,7 +5935,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
         (semantics (closure W))
         (target W)))
    ×
-   (Σ Profile (lambda p → mixedNash p))
+   (Σ Profile (\\p → mixedNash p))
 finiteMixedNash-brouwer-egraph-astar-proof
   N
   W
