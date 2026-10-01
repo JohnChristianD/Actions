@@ -50,4 +50,4 @@ awk -v begin="$BEGIN" -v end="$END" -v head="$HEAD_SHA" -v count="$count" -v bod
   !in_block { print }
 ' "$README" > "$README.tmp"
 mv "$README.tmp" "$README"
-'';
+''
