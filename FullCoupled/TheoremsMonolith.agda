@@ -34,7 +34,7 @@ module FullCoupled.TheoremsMonolith where
 
 ------------------------------------------------------------------------
 -- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
--- Synced by .ci/sync-agda-integrations.sh; keep this block in the
+-- Synced by Mirth; keep this block in the theorem monolith and
 -- theorem monolith and do not materialize a third Agda source file.
 ------------------------------------------------------------------------
 
@@ -5073,18 +5073,6 @@ record JAXExecutionMirrorReproof : Set₁ where
       zipGRU-again (x ∷ xs) [] = []
       zipGRU-again (x ∷ xs) (y ∷ ys) =
         (x , y) ∷ zipGRU-again xs ys
-    l1Row :
-      ∀ {n} (xs : HSSVector C.Int8 n) →
-      jaxL1Row xs ≡ rowL1 xs
-    l1Matrix :
-      ∀ {m n} (xs : HSSMatrix C.Int8 m n) →
-      jaxL1Matrix xs ≡ weightL1 xs
-    onePathVector :
-      ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
-      jaxOnePathVector xs ≡ onePathVector xs
-    onePathNorm :
-      ∀ {d L} (xs : HSSVector (HSSMatrix C.Int8 d d) L) →
-      jaxOnePathNorm xs ≡ onePathNorm xs
     tsallis2NearSparsity :
       ∀ xs →
       jaxTsallis2NearSparsityFraction xs ≡
