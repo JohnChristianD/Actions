@@ -10,7 +10,7 @@ An accepted Agda term is authoritative. Mercury, Dhall, Mirth, Nix, SMT, Vehicle
 
 The canonical statistical observation contains the original `GRUState`; its decoder is first projection.
 
-The accepted chain is `canonicalGRUStatisticalDecodeEncode` → `canonicalGRUStatisticalEncodeLeftInverse` → `leftInverse-implies-injective` → `canonicalGRUStatisticalEncodeInjective`.
+The accepted chain is `canonicalGRUStatisticalDecodeEncode` -> `canonicalGRUStatisticalEncodeLeftInverse` -> `leftInverse-implies-injective` -> `canonicalGRUStatisticalEncodeInjective`.
 
 `CanonicalGRUStatisticalInjectivityTheorem` packages the result. It proves injectivity of the observation encoding, not injectivity of `gruStep`.
 
@@ -22,11 +22,11 @@ The theorem monolith now contains a finite-rank A* / e-graph convergence certifi
 
 The analytical existence seam is:
 
-`BrouwerMixedNashExistence` → `nashEveryFiniteGameViaBrouwer` → `brouwerMixedNashFixedPointBridge`.
+`BrouwerMixedNashExistence` -> `nashEveryFiniteGameViaBrouwer` -> `brouwerMixedNashFixedPointBridge`.
 
 The graph composition seam is:
 
-`finiteMixedNash-brouwer-egraph-astar-proof` → `finiteMixedNash-egraph-astar-convergence` → `finiteMixedNash-egraph-astar-eventualStationarity`.
+`finiteMixedNash-brouwer-egraph-astar-proof` -> `finiteMixedNash-egraph-astar-convergence` -> `finiteMixedNash-egraph-astar-eventualStationarity`.
 
 The A* score orders dependency search. It is not semantic proof evidence. E-graph paths carry interpretation equality through `eGraph-path-sound` and `eGraphAStarConvergenceSemanticClosure`.
 
