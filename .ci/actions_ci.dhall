@@ -65,11 +65,19 @@ let script = merge {
     '',
   Schmitty = ''
     set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
     "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0"
     "$(command -v z3)" -version
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda"
     test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib"
-    "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       FullCoupled/TheoremsMonolith.agda
+    test -f "$AGDARSEC_AGDA_SOURCE/Text/Parser/String.agda"
+    mkdir -p "$tmp/schmitty/src" "$tmp/agdarsec/src"
+    cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
+    cp -a "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" "$tmp/schmitty/"
+    cp -a "$AGDARSEC_AGDA_SOURCE/." "$tmp/agdarsec/src/"
+    cp -a "$(dirname "$AGDARSEC_AGDA_SOURCE")/agdarsec.agda-lib" "$tmp/agdarsec/"
+    "$AGDA_SCHMITTY_COMMAND" -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$tmp/schmitty/src"       -i "$tmp/agdarsec/src"       FullCoupled/TheoremsMonolith.agda
     echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
@@ -109,6 +117,11 @@ let script = merge {
     grep -Fq '"siteEntry": "index.html"' "$tmp/presentation-contract.json"
     grep -Fq '"compiledElm": "elm.js"' "$tmp/presentation-contract.json"
     grep -Fq '"asciiGenerator": ".ci/mirth/ascii_surface.mth"' "$tmp/presentation-contract.json"
+    output_dir="$tmp"
+    if [ -n "$(printenv PAGES_OUTPUT_DIR 2>/dev/null || true)" ]; then
+      output_dir="$(printenv PAGES_OUTPUT_DIR)"
+    fi
+    mkdir -p "$output_dir"
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
@@ -128,8 +141,8 @@ let script = merge {
     dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
     test -s "$tmp/elm.json"
     cd "$tmp"
-    elm make src/Main.elm --optimize --output "$tmp/pages.js"
-    test -s "$tmp/pages.js"
+    elm make src/Main.elm --optimize --output "$output_dir/elm.js"
+    test -s "$output_dir/elm.js"
     echo "pages-build=pass"
     '',
   Discovery = ''

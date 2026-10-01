@@ -8246,7 +8246,7 @@ record RecursiveRadnerExistence
     allocationProcess : State → Agent → Allocation
     portfolioProcess : State → Agent → Portfolio
 
-    data :
+    radnerData :
       RecursiveRadnerData
         State Agent Commodity Asset Price Allocation Portfolio
         priceProcess
@@ -8259,7 +8259,7 @@ record RecursiveRadnerExistence
         priceProcess
         allocationProcess
         portfolioProcess
-        data
+        radnerData
 
 RecursiveRadnerPrice :
   ∀ {State Price : Set} →
@@ -9668,10 +9668,6 @@ noUnconditionalCanonicalPriceDerivation C D =
            (allocation₂ C)
            (equilibrium₂ C)))
 
-twoPriceDistinct :
-  (inj₁ tt : ⊤ ⊎ ⊤) ≢ inj₂ tt
-twoPriceDistinct ()
-
 twoWorldsNoCommonSupportingPrice :
   ¬ Σ (⊤ ⊎ ⊤)
     (λ p →
@@ -9679,7 +9675,7 @@ twoWorldsNoCommonSupportingPrice :
       (inj₂ tt ≡ p))
 twoWorldsNoCommonSupportingPrice
   (p , (support₁ , support₂)) =
-  twoPriceDistinct
+  (λ ())
     (trans support₁ (sym support₂))
 
 twoWorldCanonicalPriceNonIdentifiabilityCounterexample :
