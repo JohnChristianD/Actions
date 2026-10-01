@@ -1,7 +1,7 @@
 { type = "application"
 , `source-directories` = [ "src" ]
 , `elm-version` = "0.19.2"
-, dependencies =
+, `dependencies` =
     { direct =
         { "elm/browser" = "1.0.2"
         , "elm/core" = "1.0.5"
