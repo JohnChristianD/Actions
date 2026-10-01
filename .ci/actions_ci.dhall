@@ -57,7 +57,7 @@ let script = merge {
 
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
-    "$tmp/agda-to-elm" > "$tmp/GeneratedTheoremSurface.elm"
+    "$tmp/agda-to-elm" | bash -s -- > "$tmp/GeneratedTheoremSurface.elm"
     test -s "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'siteTitle : String' "$tmp/GeneratedTheoremSurface.elm"
     grep -Fq 'buildCommit : String' "$tmp/GeneratedTheoremSurface.elm"
@@ -118,7 +118,7 @@ let script = merge {
     "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
-    "$tmp/agda-to-elm" > "$tmp/src/GeneratedTheoremSurface.elm"
+    "$tmp/agda-to-elm" | bash -s -- > "$tmp/src/GeneratedTheoremSurface.elm"
     test -s "$tmp/src/GeneratedAgdaGraph.elm"
     test -s "$tmp/src/GeneratedTheoremSurface.elm"
     grep -Fq 'siteTitle : String' "$tmp/src/GeneratedTheoremSurface.elm"
