@@ -656,7 +656,7 @@ DHALL
     CanonicalExactRNNLMTheorem
     canonical-exact-turing-boundary-mixture-theorem
     canonicalLearnerBairdSevenStar
-    CanonicalLearnerBairdSevenStarBoundary
+    CanonicalLearnerBairdSevenStarWitness
     canonicalGRUStatisticalEncodeLeftInverse
     leftInverse-implies-injective
     canonicalGRUStatisticalEncodeInjective
