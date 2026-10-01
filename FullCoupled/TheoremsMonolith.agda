@@ -5231,7 +5231,7 @@ globalConjugacyEquivalence-iterate :
 globalConjugacyEquivalence-iterate G zero s = refl
 globalConjugacyEquivalence-iterate G (suc n) s =
   trans
-    (field G .forward (iterateState step n s))
+    (GlobalConjugacyEquivalence.forward G (iterateState step n s))
     (cong
       featureStep
       (globalConjugacyEquivalence-iterate G n s))
