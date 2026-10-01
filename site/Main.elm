@@ -19,6 +19,7 @@ type FileFilter
 
 type alias Model =
     { query : String
+    , relationQuery : String
     , fileFilter : FileFilter
     , selected : Maybe String
     }
@@ -26,6 +27,7 @@ type alias Model =
 
 type Msg
     = SetQuery String
+    | SetRelationQuery String
     | SetFileFilter String
     | SelectNode String
 
@@ -42,6 +44,7 @@ main =
 init : Model
 init =
     { query = ""
+    , relationQuery = ""
     , fileFilter = AllFiles
     , selected = Graph.nodes |> List.head |> Maybe.map .id
     }
@@ -51,18 +54,13 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         SetQuery query ->
-            let
-                next =
-                    { model | query = query }
-            in
-            keepVisibleSelection next
+            keepVisibleSelection { model | query = query }
+
+        SetRelationQuery query ->
+            { model | relationQuery = query }
 
         SetFileFilter raw ->
-            let
-                next =
-                    { model | fileFilter = fileFilterFromString raw }
-            in
-            keepVisibleSelection next
+            keepVisibleSelection { model | fileFilter = fileFilterFromString raw }
 
         SelectNode nodeId ->
             { model | selected = Just nodeId }
@@ -109,8 +107,7 @@ visibleNodes model =
             String.toLower model.query
     in
     List.filter
-        (
-ode ->
+        (\node ->
             sourceAllowed model.fileFilter node.source
                 && (String.isEmpty query
                     || String.contains query (String.toLower node.label)
@@ -136,15 +133,14 @@ sourceAllowed fileFilter source =
 nodeForId : String -> Maybe Graph.Node
 nodeForId nodeId =
     Graph.nodes
-        |> List.filter (
-ode -> node.id == nodeId)
+        |> List.filter (\node -> node.id == nodeId)
         |> List.head
 
 
 unique : List String -> List String
 unique values =
     List.foldl
-        (alue seen ->
+        (\value seen ->
             if List.member value seen then
                 seen
 
@@ -158,7 +154,7 @@ unique values =
 incomingIds : String -> List String
 incomingIds nodeId =
     Graph.edges
-        |> List.filter (edge -> edge.target == nodeId)
+        |> List.filter (\edge -> edge.target == nodeId)
         |> List.map .source
         |> unique
 
@@ -166,7 +162,7 @@ incomingIds nodeId =
 outgoingIds : String -> List String
 outgoingIds nodeId =
     Graph.edges
-        |> List.filter (edge -> edge.source == nodeId)
+        |> List.filter (\edge -> edge.source == nodeId)
         |> List.map .target
         |> unique
 
@@ -176,46 +172,49 @@ relationCount nodeId =
     List.length (incomingIds nodeId) + List.length (outgoingIds nodeId)
 
 
+relationMatches : String -> Graph.Edge -> Bool
+relationMatches query edge =
+    let
+        needle =
+            String.toLower query
+    in
+    String.isEmpty needle
+        || String.contains needle (String.toLower edge.source)
+        || String.contains needle (String.toLower edge.target)
+        || String.contains needle (String.toLower edge.relation)
+
+
+visibleEdges : Model -> List Graph.Edge
+visibleEdges model =
+    List.filter (relationMatches model.relationQuery) Graph.edges
+
+
 view : Model -> Html Msg
 view model =
     let
         visible =
             visibleNodes model
+
+        filteredEdges =
+            visibleEdges model
     in
     main_ [ HA.class "repository" ]
         [ h1 [] [ text "Actions" ]
         , p []
-            [ text "Mechanically checked canonical recurrent-learner proof system with explicit Agda authority, theorem graph, execution mirrors, domain boundaries, and a pure-Elm presentation." ]
-        , section [] [ h2 [] [ text "Authority and tree" ]
+            [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
+        , section [] [ h2 [] [ text "Authority and active tree" ]
             , p []
-                [ text "Exactly two tracked Agda authority files remain. The active tree has no Exotic namespace; .github is the only retained platform-convention directory without an application child." ]
+                [ text "Exactly two tracked Agda authority files remain. The active tree has no Exotic namespace." ]
             , ul [] (List.map codeItem
                 [ "FullCoupled/CanonicalLearnerMonolith.agda"
                 , "FullCoupled/TheoremsMonolith.agda"
                 ])
             , p []
-                [ text "Agda proof terms are authoritative. Mercury, Dhall, Mirth, Nix, SMT, Vehicle, JAX, and Elm support verification, orchestration, execution, discovery, or presentation." ]
-            ]
-        , section [] [ h2 [] [ text "L1 / 1-path norm / Tsallis-2 surface" ]
-            , p []
-                [ text "The formal surface restores the finite L1 row/weight definitions, the exact 1-path norm recurrence, the one-layer L1/path identity, the canonical zero-threshold hard/soft sparse derivation, and the exact rational Tsallis-2 extension. The Hidden Synergy paper's original near-sparsity definition is Shannon-entropy based; this repository keeps that analytic distinction explicit rather than relabeling Tsallis-2 as the paper definition." ]
-            , ul [] (List.map codeItem
-                [ "rowL1"
-                , "weightL1"
-                , "onePathVector"
-                , "onePathNorm"
-                , "rowL1OnesAbs"
-                , "onePathOneLayer"
-                , "CanonicalHardSparsityDegeneracyTheorem"
-                , "generalTsallis2NearSparsity"
-                , "generalTsallis2NearSparsity-zero"
-                , "generalSupportSparsity"
-                , "UniformSupportTsallisBoundary"
-                ])
+                [ text "The learner is the source definition. The theorem monolith is its one-way derived-semantic consumer." ]
             ]
         , section [] [ h2 [] [ text "GRU left inverse, injectivity, and tail stability" ]
             , p []
-                [ text "The canonical statistical encoding stores the original GRUState and decodes by first projection. The left inverse is proved first, then injectivity is derived. The separate convergence/identifiability theorem consumes exact conjugacy plus an eventually fixed feature tail." ]
+                [ text "The statistical encoding stores the original GRU state, its decoder is first projection, and the accepted proof chain derives injectivity from the left inverse. Tail stability is separately lifted through full-learner iteration." ]
             , ul [] (List.map codeItem
                 [ "canonicalGRUStatisticalDecodeEncode"
                 , "canonicalGRUStatisticalEncodeLeftInverse"
@@ -224,11 +223,11 @@ view model =
                 , "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem"
                 ])
             ]
-        , section [] [ h2 [] [ text "Canonical-learner Baird boundary" ]
+        , section [] [ h2 [] [ text "Canonical-learner Baird witness" ]
             , p []
-                [ text "There is no generic arbitrary-weight/arbitrary-update Baird theorem in the active surface. The surviving boundary is indexed by the concrete canonical learner K and s and carries its already-proven persistent-GRU iterate tail together with the explicit seven-state/eight-feature divergence witness." ]
+                [ text "The active Baird construction is tied to the canonical learner kernel/state and its already-proved persistent-GRU iterate tail. There is no generic Baird record." ]
             , ul [] (List.map codeItem
-                [ "CanonicalLearnerBairdSevenStarBoundary K s"
+                [ "CanonicalLearnerBairdSevenStarWitness K s"
                 , "canonicalLearnerBairdSevenStar"
                 , "seven states / eight features"
                 , "behavior 6/7 versus 1/7"
@@ -238,23 +237,36 @@ view model =
                 , "explicit divergence witness"
                 ])
             ]
-        , section [] [ h2 [] [ text "Physics, economics, and PPAD boundaries" ]
+        , section [] [ h2 [] [ text "Hidden-Synergy finite surface" ]
             , p []
-                [ text "Physics and economics remain in the theorem monolith: Hodge-Maxwell/four-law semantic interfaces, GRU/physics transport, production, demand/supply, aggregate excess-demand structures, supporting-price and market-clearing witnesses, Walrasian interfaces, stationary/fixed-point closures, and economic composition." ]
-            , p []
-                [ text "The repository makes no PPAD-completeness claim. A real PPAD theorem would require a concrete total polynomial-size search relation, membership, size bounds, and a hardness reduction." ]
+                [ text "The finite L1, 1-path norm, zero-threshold hard/soft sparsity, and Tsallis-2 definitions and theorem chain remain active." ]
+            , ul [] (List.map codeItem
+                [ "rowL1"
+                , "weightL1"
+                , "onePathVector"
+                , "onePathNorm"
+                , "hiddenSynergy-one-layer-exact"
+                , "CanonicalHardSparsityDegeneracyTheorem"
+                , "generalTsallis2NearSparsity"
+                , "generalSupportSparsity"
+                , "UniformSupportTsallisBoundary"
+                ])
             ]
-        , section [] [ h2 [] [ text "Dynamic Agda declaration graph" ]
+        , section [] [ h2 [] [ text "Physics, economics, and PPAD boundary" ]
             , p []
-                [ text "Mirth generates the graph data directly from the two tracked Agda monoliths. Every discovered top-level declaration becomes a node; source-derived identifier references become directed edges. The complete relation dataset is retained in Elm, while this view shows the full incoming and outgoing neighborhood of the selected declaration." ]
+                [ text "Physics and economics remain in the theorem monolith, including Hodge-Maxwell, GRU/physics transport, production, demand/supply, excess demand, market clearing, Walrasian interfaces, stationary/fixed-point closures, and economic composition." ]
             , p []
-                [ text ("Declarations: "
+                [ text "No PPAD-completeness theorem is claimed. A real completeness proof still requires a total polynomial-size search relation, encoding bounds, membership, and a hardness reduction." ]
+            ]
+        , section [] [ h2 [] [ text "Complete Agda relation dataset" ]
+            , p []
+                [ text ("Generated declarations: "
                     ++ String.fromInt (List.length Graph.nodes)
-                    ++ "  Relations: "
+                    ++ " | generated relations: "
                     ++ String.fromInt (List.length Graph.edges)
-                    ++ "  Visible declarations: "
+                    ++ " | visible declarations: "
                     ++ String.fromInt (List.length visible)
-                    ++ "  Selected relations: "
+                    ++ " | selected-node relations: "
                     ++ (case model.selected of
                             Just nodeId ->
                                 String.fromInt (relationCount nodeId)
@@ -277,18 +289,27 @@ view model =
                     ]
                 ]
             , div [ HA.class "graph-node-list" ]
-                (List.map nodeButton (visibleNodes model))
+                (List.map nodeButton visible)
             , graphView model
-            , case model.selected of
-                Just selected ->
-                    relationLists selected
-
-                Nothing ->
-                    p [] [ text "Select a declaration to inspect all recorded relations." ]
+            , relationLists model
+            , section []
+                [ h2 [] [ text "All generated relations" ]
+                , p []
+                    [ text "This list is the complete generated edge set, filtered only by the optional relation search. Selecting an edge endpoint changes the focused graph." ]
+                , input
+                    [ HA.placeholder "Filter source, target, or relation"
+                    , HA.value model.relationQuery
+                    , HE.onInput SetRelationQuery
+                    ]
+                    []
+                , p []
+                    [ text ("Matching relations: " ++ String.fromInt (List.length filteredEdges)) ]
+                , ul [] (List.map relationRecord filteredEdges)
+                ]
             ]
         , section [] [ h2 [] [ text "JAX execution mirror" ]
             , p []
-                [ text "tools/jax_reference.py is JAX-only at the third-party import boundary. The current mirror uses vmap, lax.scan, lax.associative_scan, lexsort, one-pass sparse-support prefix work, fixed-k top_k, exact int64 arithmetic, and the concrete GRU hidden-state update." ]
+                [ text "The JAX boundary uses only JAX imports and native array algorithms. Every current executable kernel has a named Agda counterpart in JAXExecutionMirrorReproof." ]
             , ul [] (List.map codeItem
                 [ "vmap_affine -> jaxVmapAffine"
                 , "associative_prefix_sum -> jaxAssociativePrefixSum"
@@ -309,36 +330,17 @@ view model =
                 , "gru_hidden_step -> jaxGRUHiddenStep"
                 , "batched_gru_hidden_step -> jaxBatchedGRUHiddenStep"
                 , "jitted_scan_sum -> jaxJittedScanSum"
-                , "JAXExecutionMirrorReproof"
                 ])
-            , p []
-                [ text "Agda proves finite typed counterpart laws. It does not claim to prove the Python interpreter or JAX compiler." ]
             ]
-        , section [] [ h2 [] [ text "Mirth, C99, and the presentation" ]
+        , section [] [ h2 [] [ text "Mirth and pure Elm" ]
             , p []
-                [ text "Mirth sources compile to C99 for fast-dirty synchronization and graph generation. The Pages application remains pure Elm; it does not execute Agda, JAX, Mirth, or Mercury at runtime." ]
-            ]
-        , section [] [ h2 [] [ text "CI contracts" ]
-            , ul [] (List.map codeItem
-                [ "exactly two tracked Agda monoliths"
-                , "Agda 2.8.0 / stdlib 2.3"
-                , "learner-to-theorem import direction"
-                , "lock-safe concurrent Mirth predicates"
-                , "source-derived Agda graph"
-                , "canonical-learner Baird boundary"
-                , "physics/economics semantic surfaces"
-                , "Mercury theorem registry and purity"
-                , "link-free Markdown outside Elm"
-                , "pure Elm Pages compilation"
-                , "pinned JAX execution and shape checks"
-                ])
+                [ text "Mirth generates synchronization and graph scripts before compilation. The Pages application itself remains pure Elm and does not execute Agda, Mirth, Mercury, JAX, SMT, or Vehicle at runtime." ]
             ]
         , section [] [ h2 [] [ text "Source navigation" ]
             , ul []
                 [ linkItem "Canonical learner" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/CanonicalLearnerMonolith.agda"
                 , linkItem "Theorem monolith" "https://github.com/JohnChristianD/Actions/blob/main/FullCoupled/TheoremsMonolith.agda"
                 , linkItem "JAX reference" "https://github.com/JohnChristianD/Actions/blob/main/tools/jax_reference.py"
-                , linkItem "JAX workflow" "https://github.com/JohnChristianD/Actions/blob/main/.github/workflows/jax-reference.yml"
                 , linkItem "CI contracts" "https://github.com/JohnChristianD/Actions/tree/main/.ci"
                 , linkItem "Repository" "https://github.com/JohnChristianD/Actions"
                 ]
@@ -385,7 +387,7 @@ graphView model =
 
                 incomingPositions =
                     List.indexedMap
-                        (index nodeId ->
+                        (\index nodeId ->
                             { id = nodeId
                             , x = 160
                             , y = 120 + toFloat index * 52
@@ -395,7 +397,7 @@ graphView model =
 
                 outgoingPositions =
                     List.indexedMap
-                        (index nodeId ->
+                        (\index nodeId ->
                             { id = nodeId
                             , x = 840
                             , y = 120 + toFloat index * 52
@@ -416,10 +418,10 @@ graphView model =
                     svgNode selectedPosition True
 
                 incomingSvg =
-                    List.map (position -> edgeAndNode selectedPosition position) incomingPositions
+                    List.map (edgeAndNode selectedPosition) incomingPositions
 
                 outgoingSvg =
-                    List.map (position -> edgeAndNode selectedPosition position) outgoingPositions
+                    List.map (edgeAndNode selectedPosition) outgoingPositions
             in
             div [ HA.class "graph-canvas" ]
                 [ S.svg
@@ -443,8 +445,7 @@ edgeAndNode center position =
     let
         label =
             nodeForId position.id
-                |> Maybe.map (
-ode -> node.label)
+                |> Maybe.map (\node -> node.label)
                 |> Maybe.withDefault position.id
     in
     S.g []
@@ -453,8 +454,6 @@ ode -> node.label)
             , SA.y1 (String.fromFloat center.y)
             , SA.x2 (String.fromFloat position.x)
             , SA.y2 (String.fromFloat position.y)
-            , SA.stroke "#6b7280"
-            , SA.strokeWidth "1.2"
             ]
             []
         , S.rect
@@ -463,10 +462,8 @@ ode -> node.label)
             , SA.width "230"
             , SA.height "32"
             , SA.rx "5"
-            , SA.fill "#f4f4f4"
-            , SA.stroke "#6b7280"
             ]
-            [ S.title [] [ S.text (position.id) ] ]
+            [ S.title [] [ S.text position.id ] ]
         , S.text_
             [ SA.x (String.fromFloat position.x)
             , SA.y (String.fromFloat (position.y + 5))
@@ -507,8 +504,6 @@ svgNode position selected =
             , SA.width "290"
             , SA.height "40"
             , SA.rx "6"
-            , SA.fill fill
-            , SA.stroke "#111827"
             ]
             []
         , S.text_
@@ -522,21 +517,36 @@ svgNode position selected =
         ]
 
 
-relationLists : String -> Html Msg
-relationLists selected =
-    let
-        incoming =
-            incomingIds selected
+relationLists : Model -> Html Msg
+relationLists model =
+    case model.selected of
+        Nothing ->
+            p [] [ text "Select a declaration to inspect its complete incoming and outgoing relations." ]
 
-        outgoing =
-            outgoingIds selected
-    in
-    section []
-        [ h2 [] [ text "Complete selected-node relations" ]
-        , p [] [ text "Incoming references" ]
-        , ul [] (List.map relationButton incoming)
-        , p [] [ text "Outgoing references" ]
-        , ul [] (List.map relationButton outgoing)
+        Just selected ->
+            section []
+                [ h2 [] [ text "Selected declaration relations" ]
+                , p [] [ text "Incoming references" ]
+                , ul [] (List.map relationButton (incomingIds selected))
+                , p [] [ text "Outgoing references" ]
+                , ul [] (List.map relationButton (outgoingIds selected))
+                ]
+
+
+relationRecord : Graph.Edge -> Html Msg
+relationRecord edge =
+    li []
+        [ button
+            [ HA.type_ "button"
+            , HE.onClick (SelectNode edge.source)
+            ]
+            [ code [] [ text edge.source ] ]
+        , span [] [ text ("  --" ++ edge.relation ++ "-->  ") ]
+        , button
+            [ HA.type_ "button"
+            , HE.onClick (SelectNode edge.target)
+            ]
+            [ code [] [ text edge.target ] ]
         ]
 
 
@@ -545,7 +555,6 @@ relationButton nodeId =
     button
         [ HA.type_ "button"
         , HE.onClick (SelectNode nodeId)
-        , HA.class "graph-relation-button"
         ]
         [ code [] [ text nodeId ] ]
 
