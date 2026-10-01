@@ -5685,6 +5685,102 @@ record MixedNashFixedPointBridge
 
 open MixedNashFixedPointBridge public
 
+brouwerMixedNashFixedPointBridge :
+  ∀ {Profile : Set}
+  {update : Profile → Profile}
+  {mixedNash : Profile → Set}
+  (N :
+    BrouwerMixedNashExistence
+      Profile
+      mixedNash)
+  (brouwerMapAgrees :
+    ∀ p →
+    brouwerMap N p ≡
+    update p) →
+  MixedNashFixedPointBridge
+    Profile
+    update
+brouwerMixedNashFixedPointBridge
+  N
+  brouwerMapAgrees =
+  mixedNashFixedPointBridge
+    (mixedNash N)
+    (\ p fixed →
+      fixedImpliesNash
+        N
+        p
+        (trans
+          (brouwerMapAgrees p)
+          fixed))
+
+
+-- The Brouwer bridge above is the analytical Nash-existence seam:
+-- Brouwer supplies a fixed point of Nash's continuous self-map, while the
+-- A* / e-graph theorem supplies finite-rank convergence to a stable update.
+-- When the maps agree, the two certificates compose without treating A*
+-- cost as proof evidence.
+finiteMixedNash-brouwer-egraph-astar-proof :
+  ∀ {Expression Profile : Set}
+  {mixedNash : Profile → Set}
+  (N :
+    BrouwerMixedNashExistence
+      Profile
+      mixedNash)
+  (W :
+    EGraphAStarFiniteRankConvergenceWitness
+      Expression
+      Profile)
+  (brouwerMapAgrees :
+    ∀ p →
+    brouwerMap N p ≡
+    step W p)
+  (stableImpliesFixed :
+    ∀ s →
+    stable W s →
+    step W s ≡ s) →
+  ∀ s →
+  ((Σ Nat
+    (\ n →
+      mixedNash
+        (eGraphAStarIterate
+          (step W)
+          n
+          s)))
+   ×
+   (Σ Nat
+    (\ n →
+      interpret
+        (semantics (closure W))
+        (candidate W
+          (eGraphAStarIterate
+            (step W)
+            n
+            s))
+      ≡
+      interpret
+        (semantics (closure W))
+        (target W)))
+   ×
+   (Σ Profile (\ p → mixedNash p))
+finiteMixedNash-brouwer-egraph-astar-proof
+  N
+  W
+  brouwerMapAgrees
+  stableImpliesFixed
+  s =
+  finiteMixedNash-egraph-astar-proof
+    W
+    (brouwerMixedNashFixedPointBridge
+      N
+      brouwerMapAgrees)
+    stableImpliesFixed
+    s
+  ,
+  nashEveryFiniteGameViaBrouwer
+    (mixedNash N)
+    N
+
+
 finiteMixedNash-egraph-astar-convergence :
   ∀ {Expression Profile : Set}
   (W :
