@@ -69,7 +69,7 @@ let script = merge {
     "$(command -v z3)" -version
     test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda"
     test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib"
-    "$AGDA_SCHMITTY_COMMAND" --allow-exec -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       FullCoupled/TheoremsMonolith.agda
+    "$AGDA_SCHMITTY_COMMAND" -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$SCHMITTY_AGDA_SOURCE"       -i "$AGDARSEC_AGDA_SOURCE"       FullCoupled/TheoremsMonolith.agda
     echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
