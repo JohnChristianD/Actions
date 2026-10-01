@@ -157,6 +157,12 @@ graph_gru_injective_tail_stability_convergence_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+graph_finite_mixed_nash_brouwer_egraph_astar_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "finiteMixedNash-brouwer-egraph-astar-proof",
+        Laws,
+        Plan).
+
 graph_finite_mixed_nash_egraph_astar_convergence_plan(Laws, Plan) :-
     search_named_required_plan(
         "finiteMixedNash-egraph-astar-convergence",
@@ -640,6 +646,10 @@ graph_required_theorems = [
     "ExactReconstructionOnImage",
     "StationaryLimitTheorem",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
+    "BrouwerMixedNashExistence",
+    "nashEveryFiniteGameViaBrouwer",
+    "brouwerMixedNashFixedPointBridge",
+    "finiteMixedNash-brouwer-egraph-astar-proof",
     "finiteMixedNash-egraph-astar-convergence",
     "finiteMixedNash-egraph-astar-eventualStationarity",
     "finiteMixedNash-egraph-astar-proof",
