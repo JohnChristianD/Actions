@@ -5783,13 +5783,11 @@ finiteMixedNash-cycle-transport :
     ∀ p →
     to iso (step W p) ≡
     stepB (to iso p))
-  (mixedNashA :
-    ProfileA → Set)
   (mixedNashB :
     ProfileB → Set)
   (transportNash :
     ∀ p →
-    mixedNashA p →
+    mixedNash B p →
     mixedNashB (to iso p)) →
   ∀ s →
   Σ Nat
@@ -5807,7 +5805,6 @@ finiteMixedNash-cycle-transport
   iso
   stepB
   conjugacy
-  mixedNashA
   mixedNashB
   transportNash
   s
@@ -5826,7 +5823,7 @@ finiteMixedNash-cycle-transport
       ∀ k →
       to iso
         (eGraphAStarIterate
-          stepA
+          (step W)
           k
           s)
       ≡
