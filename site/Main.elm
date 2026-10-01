@@ -243,10 +243,42 @@ bestByMaximin score fallback candidates =
         |> Maybe.withDefault fallback
 
 
+maximinAgainst : PerceptualColor -> List PerceptualColor -> Float
+maximinAgainst candidate anchors =
+    case anchors of
+        [] ->
+            0
+
+        first :: rest ->
+            List.foldl
+                (\\anchor best ->
+                    min best (perceptualDistanceSquared candidate anchor)
+                )
+                (perceptualDistanceSquared candidate first)
+                rest
+
+
+withoutChosen : List PerceptualColor -> List PerceptualColor -> List PerceptualColor
+withoutChosen chosen candidates =
+    List.filter
+        (\\candidate ->
+            not (List.any (\\anchor -> anchor.id == candidate.id) chosen)
+        )
+        candidates
+
+
+selectAgainst : List PerceptualColor -> List PerceptualColor -> PerceptualColor -> PerceptualColor
+selectAgainst anchors candidates fallback =
+    bestByMaximin
+        (\\candidate -> maximinAgainst candidate anchors)
+        fallback
+        (withoutChosen anchors candidates)
+
+
 candidateColors : List PerceptualColor
 candidateColors =
     List.map
-        (\index ->
+        (\\index ->
             customPerceptualColor index (dynamicDisplayCandidate index)
         )
         (List.range 0 15)
@@ -260,92 +292,59 @@ fallbackPerceptualColor =
 backgroundPerceptualColor : PerceptualColor
 backgroundPerceptualColor =
     bestByMaximin
-        (\candidate -> displayLuminosity candidate.display)
+        (\\candidate ->
+            maximinAgainst
+                candidate
+                (List.filter (\\other -> other.id /= candidate.id) candidateColors)
+        )
         fallbackPerceptualColor
         candidateColors
 
 
 inkPerceptualColor : PerceptualColor
 inkPerceptualColor =
-    bestByMaximin
-        (\candidate ->
-            min
-                (perceptualDistanceSquared candidate backgroundPerceptualColor)
-                (1 - displayLuminosity candidate.display)
-        )
-        fallbackPerceptualColor
-        candidateColors
-
-
-accentSelection : ( PerceptualColor, PerceptualColor )
-accentSelection =
-    let
-        choices =
-            List.map
-                (\candidate ->
-                    let
-                        ( font, fontDistance ) =
-                            bestContrastPartner candidate candidateColors
-
-                        score =
-                            min
-                                (perceptualDistanceSquared candidate backgroundPerceptualColor)
-                                (min
-                                    (perceptualDistanceSquared candidate inkPerceptualColor)
-                                    fontDistance
-                                )
-                    in
-                    ( candidate, font, score )
-                )
-                candidateColors
-    in
-    case List.maximumBy (\( _, _, score ) -> score) choices of
-        Just ( accent, font, _ ) ->
-            ( accent, font )
-
-        Nothing ->
-            ( fallbackPerceptualColor, fallbackPerceptualColor )
-
-
-accentPerceptualColor : PerceptualColor
-accentPerceptualColor =
-    Tuple.first accentSelection
-
-
-accentInkPerceptualColor : PerceptualColor
-accentInkPerceptualColor =
-    Tuple.second accentSelection
+    selectAgainst [ backgroundPerceptualColor ] candidateColors fallbackPerceptualColor
 
 
 surfacePerceptualColor : PerceptualColor
 surfacePerceptualColor =
-    let
-        forbidden =
-            [ backgroundPerceptualColor.id
-            , inkPerceptualColor.id
-            , accentPerceptualColor.id
-            ]
-    in
-    bestByMaximin
-        (\candidate ->
-            min
-                (perceptualDistanceSquared candidate backgroundPerceptualColor)
-                (perceptualDistanceSquared candidate accentPerceptualColor)
-        )
+    selectAgainst
+        [ backgroundPerceptualColor, inkPerceptualColor ]
+        candidateColors
         fallbackPerceptualColor
-        (List.filter (\candidate -> not (List.member candidate.id forbidden)) candidateColors)
+
+
+accentPerceptualColor : PerceptualColor
+accentPerceptualColor =
+    selectAgainst
+        [ backgroundPerceptualColor, inkPerceptualColor, surfacePerceptualColor ]
+        candidateColors
+        fallbackPerceptualColor
+
+
+accentInkPerceptualColor : PerceptualColor
+accentInkPerceptualColor =
+    selectAgainst
+        [ backgroundPerceptualColor
+        , inkPerceptualColor
+        , surfacePerceptualColor
+        , accentPerceptualColor
+        ]
+        candidateColors
+        fallbackPerceptualColor
 
 
 mutedInkPerceptualColor : PerceptualColor
 mutedInkPerceptualColor =
-    bestByMaximin
-        (\candidate ->
-            min
-                (perceptualDistanceSquared candidate surfacePerceptualColor)
-                (0.5 + abs (displayLuminosity inkPerceptualColor.display - displayLuminosity candidate.display))
-        )
-        inkPerceptualColor
+    selectAgainst
+        [ backgroundPerceptualColor
+        , inkPerceptualColor
+        , surfacePerceptualColor
+        , accentPerceptualColor
+        , accentInkPerceptualColor
+        ]
         candidateColors
+        fallbackPerceptualColor
 
 
 cssDisplayColor : DisplayColor -> String
@@ -368,7 +367,6 @@ dynamicPalette =
     , accent = cssDisplayColor accentPerceptualColor.display
     , accentInk = cssDisplayColor accentInkPerceptualColor.display
     }
-
 
 type FileFilter
     = AllFiles
@@ -557,7 +555,14 @@ view model =
         filteredEdges =
             visibleEdges model
     in
-    main_ [ HA.class "repository", HA.style "background-color" dynamicPalette.background, HA.style "color" dynamicPalette.ink ]
+    main_
+        [ HA.class "repository"
+        , HA.style "background-color" dynamicPalette.background
+        , HA.style "color" dynamicPalette.ink
+        , HA.style "min-height" "100vh"
+        , HA.style "width" "100%"
+        , HA.style "box-sizing" "border-box"
+        ]
         [ h1 [] [ text "Actions" ]
         , p []
             [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
@@ -636,9 +641,18 @@ view model =
                     [ HA.placeholder "Filter declaration names or ids"
                     , HA.value model.query
                     , HE.onInput SetQuery
+                    , HA.style "background-color" dynamicPalette.surface
+                    , HA.style "color" dynamicPalette.ink
+                    , HA.style "border-color" dynamicPalette.mutedInk
                     ]
                     []
-                , select [ HA.value (filterString model.fileFilter), HE.onInput SetFileFilter ]
+                , select
+                    [ HA.value (filterString model.fileFilter)
+                    , HE.onInput SetFileFilter
+                    , HA.style "background-color" dynamicPalette.surface
+                    , HA.style "color" dynamicPalette.ink
+                    , HA.style "border-color" dynamicPalette.mutedInk
+                    ]
                     [ option [ HA.value "all" ] [ text "All Agda" ]
                     , option [ HA.value "learner" ] [ text "Learner monolith" ]
                     , option [ HA.value "theorem" ] [ text "Theorem monolith" ]
@@ -656,6 +670,9 @@ view model =
                     [ HA.placeholder "Filter source, target, or relation"
                     , HA.value model.relationQuery
                     , HE.onInput SetRelationQuery
+                    , HA.style "background-color" dynamicPalette.surface
+                    , HA.style "color" dynamicPalette.ink
+                    , HA.style "border-color" dynamicPalette.mutedInk
                     ]
                     []
                 , p []
@@ -732,6 +749,9 @@ nodeButton node =
         [ HA.type_ "button"
         , HE.onClick (SelectNode node.id)
         , HA.class "graph-node-button"
+        , HA.style "background-color" dynamicPalette.surface
+        , HA.style "color" dynamicPalette.ink
+        , HA.style "border-color" dynamicPalette.mutedInk
         ]
         [ code [] [ text (node.source ++ ": " ++ node.label) ] ]
 
@@ -815,7 +835,8 @@ edgeAndNode center position =
     in
     S.g []
         [ S.line
-            [ SA.x1 (String.fromFloat center.x)
+            [ SA.stroke dynamicPalette.mutedInk
+            , SA.x1 (String.fromFloat center.x)
             , SA.y1 (String.fromFloat center.y)
             , SA.x2 (String.fromFloat position.x)
             , SA.y2 (String.fromFloat position.y)
@@ -827,6 +848,8 @@ edgeAndNode center position =
             , SA.width "230"
             , SA.height "32"
             , SA.rx "5"
+            , SA.fill dynamicPalette.surface
+            , SA.stroke dynamicPalette.mutedInk
             ]
             [ S.title [] [ S.text position.id ] ]
         , S.text_
@@ -834,6 +857,7 @@ edgeAndNode center position =
             , SA.y (String.fromFloat (position.y + 5))
             , SA.textAnchor "middle"
             , SA.fontSize "11"
+            , SA.fill dynamicPalette.ink
             ]
             [ S.text (String.left 36 label) ]
         ]
@@ -869,6 +893,8 @@ svgNode position selected =
             , SA.width "290"
             , SA.height "40"
             , SA.rx "6"
+            , SA.fill fill
+            , SA.stroke dynamicPalette.mutedInk
             ]
             []
         , S.text_
@@ -904,12 +930,18 @@ relationRecord edge =
         [ button
             [ HA.type_ "button"
             , HE.onClick (SelectNode edge.source)
+            , HA.style "background-color" dynamicPalette.surface
+            , HA.style "color" dynamicPalette.ink
+            , HA.style "border-color" dynamicPalette.mutedInk
             ]
             [ code [] [ text edge.source ] ]
         , span [] [ text ("  --" ++ edge.relation ++ "-->  ") ]
         , button
             [ HA.type_ "button"
             , HE.onClick (SelectNode edge.target)
+            , HA.style "background-color" dynamicPalette.surface
+            , HA.style "color" dynamicPalette.ink
+            , HA.style "border-color" dynamicPalette.mutedInk
             ]
             [ code [] [ text edge.target ] ]
         ]
@@ -920,6 +952,9 @@ relationButton nodeId =
     button
         [ HA.type_ "button"
         , HE.onClick (SelectNode nodeId)
+        , HA.style "background-color" dynamicPalette.surface
+        , HA.style "color" dynamicPalette.ink
+        , HA.style "border-color" dynamicPalette.mutedInk
         ]
         [ code [] [ text nodeId ] ]
 
@@ -931,4 +966,12 @@ codeItem value =
 
 linkItem : String -> String -> Html Msg
 linkItem label url =
-    li [] [ a [ HA.href url, HA.target "_blank", HA.title label ] [ text label ] ]
+    li []
+        [ a
+            [ HA.href url
+            , HA.target "_blank"
+            , HA.title label
+            , HA.style "color" dynamicPalette.accent
+            ]
+            [ text label ]
+        ]
