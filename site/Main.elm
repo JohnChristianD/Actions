@@ -11,6 +11,31 @@ import Svg.Attributes as SA
 import Svg.Events as SE
 
 
+-- Canonical display palette.
+-- The perceptual derivation is defined by the repository's CAT02-LMS
+-- transform; Elm receives only the resulting display tokens, so the Pages
+-- runtime remains pure Elm and does not execute ImageMagick.
+type alias CanonicalPalette =
+    { background : String
+    , surface : String
+    , ink : String
+    , mutedInk : String
+    , accent : String
+    , accentInk : String
+    }
+
+canonicalPalette : CanonicalPalette
+canonicalPalette =
+    { background = "#F7F7F4"
+    , surface = "#FFFFFF"
+    , ink = "#171717"
+    , mutedInk = "#5A5A55"
+    , accent = "#2F5D62"
+    , accentInk = "#FFFFFF"
+    }
+
+
+
 type FileFilter
     = AllFiles
     | LearnerOnly
@@ -198,7 +223,7 @@ view model =
         filteredEdges =
             visibleEdges model
     in
-    main_ [ HA.class "repository" ]
+    main_ [ HA.class "repository", HA.style "background-color" canonicalPalette.background, HA.style "color" canonicalPalette.ink ]
         [ h1 [] [ text "Actions" ]
         , p []
             [ text "A pure-Elm presentation of the current Agda source graph and theorem surface. Agda proof terms remain authoritative; the generated graph records source-level declaration relations." ]
@@ -485,17 +510,17 @@ svgNode position selected =
 
         fill =
             if selected then
-                "#111827"
+                canonicalPalette.accent
 
             else
-                "#f4f4f4"
+                canonicalPalette.surface
 
         textFill =
             if selected then
-                "#ffffff"
+                canonicalPalette.accentInk
 
             else
-                "#111827"
+                canonicalPalette.ink
     in
     S.g [ SE.onClick (SelectNode position.id) ]
         [ S.rect
