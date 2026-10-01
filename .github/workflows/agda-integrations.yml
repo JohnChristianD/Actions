@@ -23,6 +23,12 @@ jobs:
         with:
           agda-version: '2.8.0'
           agda-stdlib-version: '2.3'
+      - name: Export pinned Agda dependency paths
+        run: |
+          set -euo pipefail
+          echo "VEHICLE_AGDA_SOURCE=$(nix eval --raw .#vehicleAgdaSource)" >> "$GITHUB_ENV"
+          echo "SCHMITTY_AGDA_SOURCE=$(nix eval --raw .#schmittyAgdaSource)" >> "$GITHUB_ENV"
+          echo "AGDARSEC_AGDA_SOURCE=$(nix eval --raw .#agdarsecAgdaSource)" >> "$GITHUB_ENV"
       - name: Check external Agda import sync
         env:
           AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
