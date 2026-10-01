@@ -153,47 +153,6 @@
             program = "${script}/bin/mirth-agda-graph";
           };
 
-          readme-doc-sync = let
-            script = pkgs.writeShellApplication {
-              name = "readme-doc-sync";
-              runtimeInputs = [
-                pkgs.coreutils
-                pkgs.git
-                pkgs.haskellPackages.dhall
-              ];
-              text = ''
-                set -euo pipefail
-                generated=$(mktemp)
-                trap 'rm -f "$generated"' EXIT
-                dhall text --file .ci/readme-doc-sync.dhall > "$generated"
-                bash "$generated" "$@"
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/readme-doc-sync";
-          };
-          slow-readme-update = let
-            script = pkgs.writeShellApplication {
-              name = "slow-readme-update";
-              runtimeInputs = [
-                pkgs.coreutils
-                pkgs.gawk
-                pkgs.gnused
-                pkgs.git
-                pkgs.haskellPackages.dhall
-              ];
-              text = ''
-                generated=$(mktemp)
-                trap 'rm -f "$generated"' EXIT
-                dhall text --file .ci/slow-readme-update.dhall > "$generated"
-                bash "$generated"
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/slow-readme-update";
-          };
           prune-theorem-registries = let
             script = pkgs.writeShellApplication {
               name = "prune-theorem-registries";
