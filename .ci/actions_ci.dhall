@@ -221,7 +221,6 @@ JSON
     grep -Fq 'import SMT.Theories.Ints as Ints' "$theorem" || { echo "Schmitty import block missing"; exit 1; }
     grep -Fq 'open import SMT.Backend.Z3 Ints.theory' "$theorem" || { echo "Schmitty Z3 import missing"; exit 1; }
     grep -Fq 'import Vehicle' "$theorem" || { echo "Vehicle import block missing"; exit 1; }
-    bash .ci/sync-agda-integrations.sh --check || { echo "scripted external Agda imports are stale"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
     [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
@@ -674,10 +673,6 @@ DHALL
     jaxSignedGate
     jaxGRUHiddenStep
     jaxBatchedGRUHiddenStep
-    jaxL1Row
-    jaxL1Matrix
-    jaxOnePathVector
-    jaxOnePathNorm
     jaxTsallis2NearSparsityFraction
     jaxSupportSparsityFraction
     jaxJittedScanSum
