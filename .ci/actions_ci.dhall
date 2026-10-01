@@ -116,6 +116,10 @@ let script = merge {
     trap 'rm -rf "$tmp"' EXIT
     grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
     grep -Fq 'module FullCoupled.TheoremsMonolith' FullCoupled/TheoremsMonolith.agda
+    printf '%s\n' '{ foo = 1, bar = 2 }' | dhall-to-json >/dev/null
+    printf '%s\n' '{ dependencies = 1 }' | dhall-to-json >/dev/null
+    printf '%s\n' '{ elm_dependencies = 1 }' | dhall-to-json >/dev/null
+    echo "pages-stage=dhall-parser-probes-pass"
     dhall type --file .ci/presentation-contract.dhall >/dev/null
     dhall-to-json --file .ci/presentation-contract.dhall > "$tmp/presentation-contract.json"
     grep -Fq '"graphGenerator": ".ci/mirth/agda_graph.mth"' "$tmp/presentation-contract.json"
