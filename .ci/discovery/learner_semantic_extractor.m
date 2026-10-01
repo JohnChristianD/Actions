@@ -285,12 +285,12 @@ record_field_header(Line, Name, SignatureFragment) :-
     leading_space_count(Line, Indent),
     Indent >= 4,
     first_word(Line, Candidate),
-    Candidate = "field",
+    Candidate \= "field",
     not syntax_head(Candidate),
-    string.sub_string_search(Line, ":", _),
+    string.sub_string_search(Line, ":"),
     Parts = string.split_at_string(":", Line),
-    Parts = [_, After | _],
-    Name = Candidate,
+    Parts = [Before, After | _],
+    Name = string.strip(Before),
     SignatureFragment = string.strip(After).
 
 :- pred parse_record_field_lines(
