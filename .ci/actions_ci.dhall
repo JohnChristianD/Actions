@@ -76,6 +76,13 @@ let script = merge {
     mkdir -p "$tmp/schmitty/src" "$tmp/agdarsec/src"
     echo "schmitty-stage=copy-schmitty"
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
+    mkdir -p "$tmp/schmitty/src/Reflection"
+    cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
+module Reflection.Term where
+
+open import Reflection.AST.Term public
+AGDA
+    echo "schmitty-stage=install-reflection-term-compat"
     echo "schmitty-stage=copy-schmitty-lib"
     cp -a "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" "$tmp/schmitty/"
     echo "schmitty-stage=copy-agdarsec"
