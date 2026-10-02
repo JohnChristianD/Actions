@@ -93,7 +93,7 @@ write_file(Path, Lines, !IO) :-
 
 :- pred parse_quoted_symbol(string::in, string::out) is semidet.
 parse_quoted_symbol(Line, Name) :-
-    Parts = string.split_at_string("\\"", string.strip(Line)),
+    Parts = string.split_at_string("""", string.strip(Line)),
     Parts = [_, Candidate | _],
     Candidate \= "",
     Name = Candidate.
