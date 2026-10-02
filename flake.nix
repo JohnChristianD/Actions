@@ -65,7 +65,6 @@
         in
         {
           agda = agdaWithStdlib system;
-          liquid-haskell = liquidHaskellEnv system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
@@ -282,6 +281,25 @@
           pkgs = pkgsFor system;
         in
         {
+          liquid-haskell = liquidHaskellEnv system;
+
+          simple-haskell = pkgs.mkShell {
+            packages = [
+              (haskellLiquidGhc system)
+              pkgs.haskellPackages.cabal-install
+              pkgs.z3
+              pkgs.haskellPackages.text
+              pkgs.haskellPackages.containers
+              pkgs.haskellPackages.bytestring
+              pkgs.haskellPackages.aeson
+              pkgs.haskellPackages.time
+              pkgs.haskellPackages.mtl
+            ];
+            shellHook = ''
+              export LIQUID_SOLVER=z3
+            '';
+          };
+
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
