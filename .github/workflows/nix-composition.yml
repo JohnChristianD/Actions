@@ -108,6 +108,14 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+      - name: MAlonzo + LiquidHaskell bridge
+        timeout-minutes: 20
+        env:
+          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MAlonzoLiquid'
+        run: |
+          set -euo pipefail
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+
       - name: Discovery
         timeout-minutes: 15
         env:
