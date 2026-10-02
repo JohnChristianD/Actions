@@ -64,6 +64,7 @@ open import Data.Nat.Solver using (module +-*-Solver)
 import Data.Integer.Solver as IntegerSolver
 import Data.Rational.Solver as RationalSolver
 import Data.Rational.Unnormalised.Solver as RationalUnnormalisedSolver
+open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase
 import Data.List.Relation.Binary.Sublist.Heterogeneous.Solver as HeterogeneousSublistSolver
 import Data.List.Relation.Binary.Sublist.DecSetoid.Solver as DecSetoidSublistSolver
 import Data.List.Relation.Binary.Sublist.DecPropositional.Solver as DecPropositionalSublistSolver
