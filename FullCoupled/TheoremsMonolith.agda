@@ -31,8 +31,8 @@
 --
 -- A discovered graph edge is not itself a proof. A theorem is authoritative
 -- only when its proposition is present here and its proof is accepted by
--- the configured Agda check. The theorem monolith deliberately uses
--- --allow-exec for its external SMT/reflection integrations. Likewise, a
+-- the configured Agda check. The theorem monolith uses
+-- --allow-exec for its retained Vehicle/reflection integration. Likewise, a
 -- semantic contract is not an existence theorem:
 -- the generalized Walrasian and production-side interfaces record the
 -- conditions of an equilibrium, while existence, convergence, market
