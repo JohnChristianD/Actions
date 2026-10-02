@@ -132,6 +132,7 @@ let script = merge {
     grep -Fq 'finiteMixedNash-brouwer-egraph-astar-proof' "$tmp/src/GeneratedAgdaGraph.elm"
     grep -Fq 'finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof' "$tmp/src/GeneratedAgdaGraph.elm"
     grep -Fq 'GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem' "$tmp/src/GeneratedAgdaGraph.elm"
+    grep -Fq 'Category.Monad.State' "$tmp/src/GeneratedAgdaGraph.elm"
     dhall-to-json --file "$GITHUB_WORKSPACE/.ci/elm-application.dhall" > "$tmp/elm.json"
     sed -i -e 's/"source_directories"/"source-directories"/g' -e 's/"elm_version"/"elm-version"/g' -e 's/"elm_dependencies"/"dependencies"/g' -e 's/"test_dependencies"/"test-dependencies"/g' "$tmp/elm.json"
     test -s "$tmp/elm.json"
@@ -214,11 +215,14 @@ let script = merge {
     for module in canonicalLearnerMonolith theoremsMonolith
     do      grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
     done
+    monolith_count=$(git ls-files '*Monolith.agda' | wc -l)
+    [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
     agda_files=$(git ls-files '*.agda')
-    expected_agda_files='FullCoupled/CanonicalLearnerMonolith.agda
+    expected_agda_files='Category/Monad/State.agda
+FullCoupled/CanonicalLearnerMonolith.agda
 FullCoupled/TheoremsMonolith.agda'
     [ "$agda_files" = "$expected_agda_files" ] || {
-      echo "strict two-monolith Agda surface mismatch"
+      echo "tracked Agda source surface mismatch"
       printf '%s\n' "expected:" "$expected_agda_files" "actual:" "$agda_files"
       exit 1
     }
