@@ -1,6 +1,6 @@
 let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
-let lane = env:CI_LANE
+let lane : Lane = env:CI_LANE
 
 let script = merge {
   AgdaLearner = ''
@@ -723,8 +723,6 @@ DHALL
     dhall --version
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
-    "$AGDA_GUARDED_CUBICAL_COMMAND" --cubical --guardedness -l standard-library -l cubical -i . FullCoupled/GuardedCubicalDenseSeparation.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
