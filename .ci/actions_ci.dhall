@@ -1,29 +1,6 @@
 let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
-let laneName = env:CI_LANE as Text
-
-let lane =
-  if laneName === "AgdaLearner" then Lane.AgdaLearner
-  else if laneName === "AgdaTheorem" then Lane.AgdaTheorem
-  else if laneName === "AgdaSafe" then Lane.AgdaSafe
-  else if laneName === "MAlonzoLiquid" then Lane.MAlonzoLiquid
-  else if laneName === "Vehicle" then Lane.Vehicle
-  else if laneName === "MirthFastDirty" then Lane.MirthFastDirty
-  else if laneName === "MercuryPurity" then Lane.MercuryPurity
-  else if laneName === "Mercury" then Lane.Mercury
-  else if laneName === "Pages" then Lane.Pages
-  else if laneName === "Discovery" then Lane.Discovery
-  else if laneName === "EconlibCrossrepo" then Lane.EconlibCrossrepo
-  else if laneName === "EconlibEquilibriumSearch" then Lane.EconlibEquilibriumSearch
-  else if laneName === "StrictExistenceImpossibility" then Lane.StrictExistenceImpossibility
-  else if laneName === "StationaryCycleImpossibility" then Lane.StationaryCycleImpossibility
-  else if laneName === "IsomorphismTransport" then Lane.IsomorphismTransport
-  else if laneName === "SemanticContract" then Lane.SemanticContract
-  else if laneName === "Surface" then Lane.Surface
-  else if laneName === "Versions" then Lane.Versions
-  else if laneName === "AutoMerge" then Lane.AutoMerge
-  else if laneName === "All" then Lane.All
-  else if assert : False then Lane.All else Lane.All
+let lane : Lane = env:CI_LANE
 
 let script = merge {
   AgdaLearner = ''
