@@ -1,6 +1,6 @@
 module Category.Monad.State where
 
-open import Data.Product.Base using (_×_; _,_)
+open import Data.Product.Base using (_×_; _,_; uncurry)
 open import Data.Unit.Polymorphic.Base using (⊤)
 open import Effect.Applicative.Indexed using (IFun)
 open import Effect.Monad using (RawMonad)
