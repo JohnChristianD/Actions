@@ -157,7 +157,7 @@ let script = merge {
     grep -Fq 'astarScoreOrdered = True' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'newNonredundantTheoremCount = 0' "$report" || { echo "unexpected new nonredundant theorem claim"; exit 1; }
-    grep -Fq 'reviewFrontierCount = 6' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
+    grep -Fq 'reviewFrontierCount = 12' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
     grep -Fq 'CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem' "$report" || { echo "existing LayerNorm infinite-horizon review frontier missing"; exit 1; }
     grep -Fq 'AStarPlanMonoidTheorem' "$report" || { echo "A* plan-monoid review frontier missing"; exit 1; }
     grep -Fq 'CanonicalTokenArbitraryLengthGenerationTheorem' "$report" || { echo "token-generation review frontier missing"; exit 1; }
@@ -527,6 +527,7 @@ DHALL
     CanonicalIntegerGRUTokenEncodingLeftInverse
     canonical-integer-gru-token-encoding-left-inverse
     canonicalIntegerGRUTokenEncodingInjective
+    GuardedCubicalDenseSeparationEmergentCompositionTheorem
     canonicalIntegerGRUTokenEncoding-continuous-discrete
     CanonicalIntegerGRUGlobalConjugateTheorem
     canonical-integer-gru-global-conjugate-theorem
