@@ -70,7 +70,7 @@ The prefix and batched-GRU record fields are exact laws against their finite Agd
 
 ## Mirth synchronization and concurrency
 
-The learner common-import block is the synchronization source of truth. The Mirth synchronizer checks marker cardinality, exact byte equality, dependency direction, canonical learner import count, and external SMT/Z3/Vehicle counts.
+The learner common-import block is the synchronization source of truth. The Mirth synchronizer checks marker cardinality, exact byte equality, dependency direction, canonical learner import count, and the retained Vehicle integration boundary.
 
 Independent predicates run concurrently, every child status is collected, and the aggregate fails if any predicate fails. Write mode uses a bounded directory lock and replaces the theorem block only after a complete candidate has been constructed.
 
@@ -84,7 +84,7 @@ This is Mermaid-like interaction implemented in pure Elm. No Mermaid runtime is 
 
 ## Toolchain
 
-Agda is pinned to 2.8.0 with standard library 2.3. No Python source file or shell-script file is required by the active repository surface.
+The Nix flake pins the current nixpkgs revision and exposes one Agda wrapper containing `agdaPackages.agda` plus `agdaPackages.standard-library`. CI no longer installs a separate Agda action or external solver source tree.
 
 Tracked Markdown is link-free.
 
@@ -123,15 +123,12 @@ goal
   -> normalize / specialize
   -> dependent proof search
   -> native Agda term
-  -> optional Schmitty SMT leaf
+  -> native reflected solver / search leaf
   -> Agda checker
 ```
 
 Use Agda's built-in Auto and Search About as existing interactive search. Add custom `TC` code only when a proof-state transformation is specific enough that a reusable tactic earns its maintenance cost.
 
-## Schmitty boundary
-
-Schmitty remains an SMT leaf, not a replacement for Agda's dependent unifier. Its external Z3 execution path requires `--allow-exec`, so keep it outside the repository's `--safe` proof-authority lane.
 
 ## YAMLScript
 
