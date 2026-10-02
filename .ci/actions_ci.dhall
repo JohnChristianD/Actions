@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -20,6 +20,21 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --version
     "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    '',
+  MAlonzoLiquid = ''
+    set -euo pipefail
+    out="build/agda-haskell"
+    rm -rf "$out"
+    mkdir -p "$out"
+    "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+    liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
+    printf '%s\n'       'FullCoupled/CanonicalLearnerMonolith.agda	MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith	SimpleHaskell/CanonicalLearnerBridge.hs	liquid:z3:pass'       'FullCoupled/TheoremsMonolith.agda	MAlonzo.Code.FullCoupled.TheoremsMonolith	SimpleHaskell/TheoremsBridge.hs	liquid:z3:pass'       > "$out/liquid-agda-manifest.tsv"
+    test -s "$out/liquid-agda-manifest.tsv"
+    find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort > "$out/malonzo-files.txt"
+    test -s "$out/malonzo-files.txt"
+    echo "malonzo-extraction=pass"
+    echo "liquidhaskell-z3=pass"
     '',
   Vehicle = ''
     set -euo pipefail
@@ -148,6 +163,7 @@ let script = merge {
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
+    (cd .ci/discovery && mmc --make liquid_haskell_graph && ./liquid_haskell_graph ../../build/agda-haskell/liquid-agda-manifest.tsv)
     report=.ci/discovery/theorem-monolith-egraph-sync.dhall
     dhall text --file "$report" >/dev/null
     grep -Fq 'forcedSymbolicTarget = True' "$report" && { echo "forced symbolic target"; exit 1; } || true
