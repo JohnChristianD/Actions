@@ -190,7 +190,7 @@
               ];
               text = ''
                 set -euo pipefail
-                out="\${1:-build/malonzo}";
+                out="build/malonzo";
                 rm -rf "$out"
                 mkdir -p "$out"
                 export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
@@ -235,7 +235,7 @@
               ];
               text = ''
                 set -euo pipefail
-                out="\${1:-build/agda-haskell}";
+                out="build/agda-haskell";
                 rm -rf "$out"
                 mkdir -p "$out"
                 export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
