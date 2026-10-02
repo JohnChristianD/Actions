@@ -29,6 +29,32 @@
         in
         pkgs.agdaPackages.agda.withPackages [ pkgs.agdaPackages.standard-library ];
 
+      haskellLiquidGhc = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.haskellPackages.ghcWithPackages (p: [
+          p.liquidhaskell
+        ]);
+
+      liquidHaskellEnv = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.mkShell {
+          packages = [
+            (haskellLiquidGhc system)
+            pkgs.haskellPackages.cabal-install
+            pkgs.z3
+            pkgs.coreutils
+            pkgs.findutils
+            pkgs.git
+          ];
+          shellHook = ''
+            export LIQUID_SOLVER=z3
+          '';
+        };
+
     in
     {
       vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
@@ -39,6 +65,7 @@
         in
         {
           agda = agdaWithStdlib system;
+          liquid-haskell = liquidHaskellEnv system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
@@ -153,6 +180,80 @@
             program = "${script}/bin/mirth-agda-graph";
           };
 
+          malonzo-extract = let
+            script = pkgs.writeShellApplication {
+              name = "malonzo-extract";
+              runtimeInputs = [
+                (agdaWithStdlib system)
+                pkgs.coreutils
+                pkgs.findutils
+              ];
+              text = ''
+                set -euo pipefail
+                out="\${1:-build/malonzo}";
+                rm -rf "$out"
+                mkdir -p "$out"
+                export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/malonzo-extract";
+          };
+
+          liquid-haskell-check = let
+            script = pkgs.writeShellApplication {
+              name = "liquid-haskell-check";
+              runtimeInputs = [
+                (haskellLiquidGhc system)
+                pkgs.z3
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                export LIQUID_SOLVER=z3
+                liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/liquid-haskell-check";
+          };
+
+          agda-haskell-pipeline = let
+            script = pkgs.writeShellApplication {
+              name = "agda-haskell-pipeline";
+              runtimeInputs = [
+                (agdaWithStdlib system)
+                (haskellLiquidGhc system)
+                pkgs.z3
+                pkgs.coreutils
+                pkgs.findutils
+              ];
+              text = ''
+                set -euo pipefail
+                out="\${1:-build/agda-haskell}";
+                rm -rf "$out"
+                mkdir -p "$out"
+                export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
+                printf '%s\n' \
+                  'FullCoupled/CanonicalLearnerMonolith.agda	MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith	SimpleHaskell/CanonicalLearnerBridge.hs	liquid:z3:pass' \
+                  'FullCoupled/TheoremsMonolith.agda	MAlonzo.Code.FullCoupled.TheoremsMonolith	SimpleHaskell/TheoremsBridge.hs	liquid:z3:pass' \
+                  > "$out/liquid-agda-manifest.tsv"
+                cat "$out/liquid-agda-manifest.tsv"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/agda-haskell-pipeline";
+          };
+
           prune-theorem-registries = let
             script = pkgs.writeShellApplication {
               name = "prune-theorem-registries";
@@ -185,6 +286,9 @@
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
+              (haskellLiquidGhc system)
+              pkgs.haskellPackages.cabal-install
+              pkgs.z3
               pkgs.haskellPackages.dhall-json
               pkgs.mirth
               pkgs.gh
@@ -196,6 +300,7 @@
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
               export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+              export LIQUID_SOLVER=z3
               export VEHICLE_AGDA_SOURCE="${vehicle}/vehicle-agda/src"
             '';
           };
