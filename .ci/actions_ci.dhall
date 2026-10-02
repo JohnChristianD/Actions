@@ -80,8 +80,7 @@ let script = merge {
     for f in \
       "$tmp/schmitty/src/SMT/Script/Names.agda" \
       "$tmp/schmitty/src/SMT/Script/Show.agda"; do
-      perl -0pi -e 's/open import Category[.]Monad[.]State as StateCat using \\(RawIMonadState;\\s*IStateT\\)/open import SchmittyCompat.State as StateCat using (RawIMonadState; IStateT)/g' "$f"
-      sed -i -e '/Category[.]Monad/d' "$f"
+      sed -i -e '/^open import Category[.]Monad$/d' "$f"
     done
     mkdir -p "$tmp/schmitty/src/Reflection"
     cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
@@ -90,56 +89,7 @@ module Reflection.Term where
 open import Reflection.AST.Term public
 AGDA
     echo "schmitty-stage=install-reflection-term-compat"
-    mkdir -p "$tmp/schmitty/src/SchmittyCompat"
-    cat > "$tmp/schmitty/src/SchmittyCompat/State.agda" <<'AGDA'
-module SchmittyCompat.State where
-
-open import Data.Product.Base using (_×_; _,_; uncurry)
-open import Data.Unit.Polymorphic.Base using (⊤)
-open import Effect.Applicative.Indexed using (IFun)
-open import Effect.Monad using (RawMonad)
-open import Effect.Monad.Indexed using (RawIMonad)
-open import Function.Base using (_∘_)
-open import Level using (Level; suc; _⊔_)
-private
-  variable
-    i f : Level
-    I : Set i
-
-IStateT : (I → Set f) → (Set f → Set f) → IFun I f
-IStateT S M i j A = S i → M (A × S j)
-
-StateTIMonad : ∀ (S : I → Set f) {M} → RawMonad M → RawIMonad (IStateT S M)
-StateTIMonad S Mon = record
-  { return = λ x s → return (x , s)
-  ; _>>=_  = λ m f s → m s >>= uncurry f
-  }
-  where open RawMonad Mon
-
-record RawIMonadState {I : Set i} (S : I → Set f)
-                      (M : IFun I f) : Set (i ⊔ suc f) where
-  field
-    monad : RawIMonad M
-    get   : ∀ {i} → M i i (S i)
-    put   : ∀ {i j} → S j → M i j ⊤
-
-  open RawIMonad monad public
-
-  modify : ∀ {i j} → (S i → S j) → M i j ⊤
-  modify f = get >>= put ∘ f
-
-StateTIMonadState : ∀ {i f} {I : Set i} (S : I → Set f) {M} →
-                    RawMonad M → RawIMonadState S (IStateT S M)
-StateTIMonadState S Mon = record
-  { monad = StateTIMonad S Mon
-  ; get   = λ s   → return (s , s)
-  ; put   = λ s _ → return (_ , s)
-  }
-  where open RawMonad Mon
-AGDA
-    find "$tmp/schmitty/src" -type f -name '*.agda' -print0 | xargs -0 -r sed -i \
-      -e 's/^open import Category\.Monad\.State as StateCat using (RawIMonadState; IStateT)$/open import SchmittyCompat.State as StateCat using (RawIMonadState; IStateT)/'
-    echo "schmitty-stage=copy-schmitty-lib"
+        echo "schmitty-stage=copy-schmitty-lib"
     cp -a "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" "$tmp/schmitty/"
     echo "schmitty-stage=copy-agdarsec"
     cp -a "$AGDARSEC_AGDA_SOURCE/." "$tmp/agdarsec/src/"
