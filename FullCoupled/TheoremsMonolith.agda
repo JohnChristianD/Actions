@@ -48,11 +48,9 @@ module FullCoupled.TheoremsMonolith where
 ------------------------------------------------------------------------
 -- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
 -- Synced by Mirth; keep this block in the theorem monolith and
--- theorem monolith and do not materialize a third Agda source file.
+-- do not materialize a third Agda source file.
 ------------------------------------------------------------------------
 
-import SMT.Theories.Ints as Ints
-open import SMT.Backend.Z3 Ints.theory
 import Vehicle
 
 ------------------------------------------------------------------------
@@ -106,29 +104,6 @@ open import FullCoupled.CanonicalLearnerMonolith as C
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
--- Meta-Z3 dependency minimization boundary.
---
--- Z3 receives labeled assumptions and returns a minimized unsat core.
--- The receipt is meta-level evidence only: it never inhabits a theorem
--- proposition and never replaces Agda's accepted proof term.
-------------------------------------------------------------------------
-
-macro
-  z3DependencyCore : String → Term → TC ⊤
-  z3DependencyCore script hole = do
-    result ←
-      unsafeRunCmdTC
-        (cmdSpec
-          "z3"
-          ("-smt2" ∷ "-in" ∷ "-v:0" ∷ [])
-          script)
-    unify hole (lit (string (Result.output result)))
-
-z3DependencyCoreDemo : String
-z3DependencyCoreDemo =
-  z3DependencyCore
-    "(set-option :produce-unsat-cores true)\\n(set-option :smt.core.minimize true)\\n(declare-const a Bool)\\n(declare-const b Bool)\\n(declare-const c Bool)\\n(declare-const bridge Bool)\\n(declare-const target Bool)\\n(assert (! a :named premise-a))\\n(assert (! b :named premise-b))\\n(assert (! c :named premise-c))\\n(assert (! (=> a bridge) :named edge-a))\\n(assert (! (=> b bridge) :named edge-b))\\n(assert (! (=> bridge target) :named edge-bridge))\\n(assert (! (=> c target) :named edge-c))\\n(assert (! (not target) :named target-negation))\\n(check-sat)\\n(get-unsat-core)\\n"
-
 record GenericRingSolverNormalizationTheorem {c ℓ}
   (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
   constructor genericRingSolverNormalizationTheorem
@@ -233,28 +208,6 @@ canonical-safe-tactic-normalization-theorem =
     list-monoid-solver-append-assoc
 
 ------------------------------------------------------------------------
--- Schmitty automation boundary.
---
--- Schmitty executes Z3 through Agda reflection and therefore cannot be
--- kept inside the theorem monolith.  The CI SMT lane proves
--- an isomorphic integer normalization fact in the dedicated
--- ProofAutomation/SchmittyAssisted.agda module; this record packages only
--- the safe mirror already discharged by IntegerRingSolver.
-------------------------------------------------------------------------
-
-record SchmittySafeSMTBoundaryTheorem : Set₁ where
-  constructor schmittySafeSMTBoundaryTheorem
-  field
-    integerAssociativity :
-      ∀ (i j k : ℤ) →
-      i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
-
-schmitty-safe-smt-boundary-theorem :
-  SchmittySafeSMTBoundaryTheorem
-schmitty-safe-smt-boundary-theorem =
-  schmittySafeSMTBoundaryTheorem integer-ring-solver-assoc
-
-
 ------------------------------------------------------------------------
 -- Carrier-polymorphic statistical representation kernel.
 --
@@ -349,18 +302,12 @@ canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonic
 canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
 canonicalGRUStatisticalStepConsequence s x = refl
 ------------------------------------------------------------------------
--- External integration witnesses.
---
--- Schmitty is used for a closed integer identity in this same theorem
--- monolith. Vehicle is imported as the current external Agda reflection
--- interface; its compiler remains an orchestration/verification boundary,
--- not a source-transpilation proof authority.
 ------------------------------------------------------------------------
-
-schmittyIntegerAssociativity :
-  ∀ (i j k : ℤ) →
-  i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
-schmittyIntegerAssociativity = solveZ3
+-- External integration witness.
+--
+-- Vehicle remains an orchestration/interface boundary; accepted Agda
+-- theorem terms remain the proof authority.
+------------------------------------------------------------------------
 
 vehicleCommandName : String
 vehicleCommandName = Vehicle.VEHICLE_COMMAND
