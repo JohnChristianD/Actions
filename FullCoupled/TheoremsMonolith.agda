@@ -51,7 +51,6 @@ module FullCoupled.TheoremsMonolith where
 
 import SMT.Theories.Ints as Ints
 open import SMT.Backend.Z3 Ints.theory
-import Vehicle
 
 ------------------------------------------------------------------------
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
