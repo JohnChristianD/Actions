@@ -26,35 +26,19 @@ jobs:
         with:
           installer-version: '2.35.1'
 
-      - name: Install Agda
-        uses: agda/agda-setup-action@c931d59d76a036d1bed9f322cc12cc105bda7881
-        id: setup-agda
-        with:
-          agda-version: '2.8.0'
-          agda-stdlib-version: '2.3'
-
       - name: Prune stale theorem registries
         run: nix run .#prune-theorem-registries
 
       - name: Kernel-check canonical Agda proof surfaces
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
         run: |
           set -euo pipefail
           "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
           git clone --depth 1 --branch dev https://github.com/vehicle-lang/vehicle.git "$RUNNER_TEMP/vehicle"
-          git clone --depth 1 --branch v1.0.1 https://github.com/wenkokke/schmitty.git "$RUNNER_TEMP/schmitty"
-          git clone --depth 1 --branch v0.5.0 https://github.com/gallais/agdarsec.git "$RUNNER_TEMP/agdarsec"
           export VEHICLE_AGDA_SOURCE="$RUNNER_TEMP/vehicle/vehicle-agda/src"
-          export SCHMITTY_AGDA_SOURCE="$RUNNER_TEMP/schmitty/src"
-          export AGDARSEC_AGDA_SOURCE="$RUNNER_TEMP/agdarsec/src"
           test -n "${VEHICLE_AGDA_SOURCE:-}"
-          test -n "${SCHMITTY_AGDA_SOURCE:-}"
-          test -n "${AGDARSEC_AGDA_SOURCE:-}"
           "$AGDA_COMMAND" --allow-exec -l standard-library -i . \
             -i "$VEHICLE_AGDA_SOURCE" \
-            -i "$SCHMITTY_AGDA_SOURCE" \
-            -i "$AGDARSEC_AGDA_SOURCE" \
             FullCoupled/TheoremsMonolith.agda
 
       - name: Re-check registry freshness and graph extraction
