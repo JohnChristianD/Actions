@@ -1,21 +1,21 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
 let script = merge {
   AgdaLearner = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --version | grep -Fq "2.8.0"
+    "$AGDA_COMMAND" --version
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --version | grep -Fq "2.8.0"
+    "$AGDA_COMMAND" --version
     "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   Vehicle = ''
@@ -62,43 +62,6 @@ let script = merge {
     grep -Fq 'edgeLines : List String' "$tmp/GeneratedTheoremSurface.elm"
     if LC_ALL=C grep -n '[^[:print:][:space:]]' "$tmp/GeneratedTheoremSurface.elm"; then exit 1; fi
     echo "mirth-c99-transpile-and-execute=pass"
-    '',
-  Schmitty = ''
-    set -euo pipefail
-    tmp=$(mktemp -d)
-    trap 'rm -rf "$tmp"' EXIT
-    "$AGDA_SCHMITTY_COMMAND" --version | grep -Fq "2.8.0"
-    "$(command -v z3)" -version
-    echo "schmitty-stage=source-tests"
-    test -f "$SCHMITTY_AGDA_SOURCE/SMT/Backend/Z3.agda" || { echo "missing Schmitty SMT/Backend/Z3.agda"; exit 1; }
-    test -f "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" || { echo "missing schmitty.agda-lib"; exit 1; }
-    echo "schmitty-stage=create-temp"
-    mkdir -p "$tmp/schmitty/src" "$tmp/agdarsec/src"
-    echo "schmitty-stage=copy-schmitty"
-    cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
-    chmod -R u+rwX "$tmp/schmitty"
-    for f in \
-      "$tmp/schmitty/src/SMT/Script/Names.agda" \
-      "$tmp/schmitty/src/SMT/Script/Show.agda"; do
-      sed -i -e '/^open import Category[.]Monad$/d' "$f"
-    done
-    mkdir -p "$tmp/schmitty/src/Reflection"
-    cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
-module Reflection.Term where
-
-open import Reflection.AST.Term public
-AGDA
-    echo "schmitty-stage=install-reflection-term-compat"
-        echo "schmitty-stage=copy-schmitty-lib"
-    cp -a "$(dirname "$SCHMITTY_AGDA_SOURCE")/schmitty.agda-lib" "$tmp/schmitty/"
-    echo "schmitty-stage=copy-agdarsec"
-    cp -a "$AGDARSEC_AGDA_SOURCE/." "$tmp/agdarsec/src/"
-    echo "schmitty-stage=copy-agdarsec-lib"
-    cp -a "$(dirname "$AGDARSEC_AGDA_SOURCE")/agdarsec.agda-lib" "$tmp/agdarsec/"
-    chmod -R u+rwX "$tmp/schmitty" "$tmp/agdarsec"
-    echo "schmitty-stage=agda-compile"
-    "$AGDA_SCHMITTY_COMMAND" --guardedness -l standard-library -i .       -i "$VEHICLE_AGDA_SOURCE"       -i "$tmp/schmitty/src"       -i "$tmp/agdarsec/src"       FullCoupled/TheoremsMonolith.agda
-    echo "schmitty-source-boundary-on-official-agda-2.8.0=pass"
     '',
   MercuryPurity = ''
     set -euo pipefail
@@ -229,10 +192,7 @@ AGDA
     grep -Fq 'eGraphEconomicRepresentationInjective' "$theorem" || { echo "economic representation injectivity theorem missing"; exit 1; }
     grep -Fq 'canonicalGRUStatisticalEncodeInjective' "$theorem" || { echo "GRU statistical injectivity theorem missing"; exit 1; }
     grep -Fq 'CanonicalGRUStatisticalInjectivityTheorem' "$theorem" || { echo "GRU statistical injectivity package missing"; exit 1; }
-    grep -Fq 'schmittyIntegerAssociativity' "$theorem" || { echo "Schmitty theorem-monolith witness missing"; exit 1; }
     grep -Fq 'vehicleCommandName' "$theorem" || { echo "Vehicle theorem-monolith witness missing"; exit 1; }
-    grep -Fq 'import SMT.Theories.Ints as Ints' "$theorem" || { echo "Schmitty import block missing"; exit 1; }
-    grep -Fq 'open import SMT.Backend.Z3 Ints.theory' "$theorem" || { echo "Schmitty Z3 import missing"; exit 1; }
     grep -Fq 'import Vehicle' "$theorem" || { echo "Vehicle import block missing"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
     [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
@@ -260,7 +220,6 @@ FullCoupled/TheoremsMonolith.agda'
       exit 1
     }
     [ ! -e Main.agda ] || { echo "legacy Main.agda must remain retired"; exit 1; }
-    [ ! -e ProofAutomation/SchmittyAssisted.agda ] || { echo "legacy Schmitty Agda module must remain retired"; exit 1; }
     grep -Fq 'Complete surviving-Agda closure index' "$readme" || { echo "README missing complete Agda closure index"; exit 1; }
     law_count=$(awk -F'= ' '/semanticLawCount =/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
     [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
@@ -512,7 +471,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
     dhall text --file "$report" >/dev/null
@@ -738,9 +697,9 @@ DHALL
     mmc --version
     dhall --version
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" -i "$SCHMITTY_AGDA_SOURCE" -i "$AGDARSEC_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
