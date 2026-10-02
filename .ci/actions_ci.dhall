@@ -77,6 +77,8 @@ let script = merge {
     echo "schmitty-stage=copy-schmitty"
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
     chmod -R u+rwX "$tmp/schmitty"
+    find "$tmp/schmitty/src" -type f -name '*.agda' -print0 | xargs -0 -r perl -0pi -e \
+      's/open import Category\\.Monad\\.State as StateCat using \\(RawIMonadState;\\s*IStateT\\)/open import SchmittyCompat.State as StateCat using (RawIMonadState; IStateT)/g' \
     find "$tmp/schmitty/src" -type f -name '*.agda' -print0 | xargs -0 -r sed -i \
       -e '/Category\\.Monad/d'
     grep -RlZ 'StateCat' "$tmp/schmitty/src" --include='*.agda' | xargs -0 -r sed -i \
