@@ -4405,6 +4405,16 @@ record GuardedCubicalConjugacy
 
 open GuardedCubicalConjugacy public
 
+iterateGuardedFeature :
+  ∀ {Feature : Set} →
+  (GuardedCubicalTrace Feature → GuardedCubicalTrace Feature) →
+  Nat →
+  GuardedCubicalTrace Feature →
+  GuardedCubicalTrace Feature
+iterateGuardedFeature step zero s = s
+iterateGuardedFeature step (suc n) s =
+  step (iterateGuardedFeature step n s)
+
 guardedCubicalIterateConjugacy :
   ∀ {State Feature : Set}
   {stateStep : State → State}
@@ -4429,16 +4439,6 @@ guardedCubicalIterateConjugacy C (suc n) s =
     (cong
       featureStep
       (guardedCubicalIterateConjugacy C n s))
-
-iterateGuardedFeature :
-  ∀ {Feature : Set} →
-  (GuardedCubicalTrace Feature → GuardedCubicalTrace Feature) →
-  Nat →
-  GuardedCubicalTrace Feature →
-  GuardedCubicalTrace Feature
-iterateGuardedFeature step zero s = s
-iterateGuardedFeature step (suc n) s =
-  step (iterateGuardedFeature step n s)
 
 record GuardedCubicalDenseSeparationEmergentCompositionTheorem
   (State Feature Emergent : Set)
