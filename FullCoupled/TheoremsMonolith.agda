@@ -4,7 +4,10 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --cubical=compatible #-}
+{-# OPTIONS --cubical=no-glue #-}
+{-# OPTIONS --verbose #-}
+{-# OPTIONS --auto-inline #-}
+
 {-# OPTIONS --no-termination-check #-}
 {-# OPTIONS --allow-exec #-}
 {-# OPTIONS --guardedness #-}
