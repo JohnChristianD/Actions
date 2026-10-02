@@ -29,7 +29,12 @@ frontier_targets = [
     "generalTsallis2NearSparsity",
     "generalSupportSparsity",
     "StationaryLimitTheorem",
-    "ContinuousLeftInverseTheorem"
+    "ContinuousLeftInverseTheorem",
+    "identityActivation8-injective",
+    "informationPreserving-all-tasks-injective",
+    "canonicalGRUStatisticalEncodeInjective",
+    "ZPFGRUGlobalInjectivityTheorem",
+    "canonicalIntegerGRUTokenEncodingInjective"
 ].
 
 :- pred partition_targets(
