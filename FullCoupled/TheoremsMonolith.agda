@@ -94,9 +94,9 @@ open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
 -- END MIRTH-SYNC COMMON IMPORTS
-open import FullCoupled.CanonicalLearnerMonolith as C
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
+open import FullCoupled.CanonicalLearnerMonolith as C
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
