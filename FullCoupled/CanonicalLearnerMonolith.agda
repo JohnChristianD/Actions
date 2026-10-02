@@ -7,6 +7,8 @@
 {-# OPTIONS --cubical=no-glue #-}
 {-# OPTIONS --verbose #-}
 {-# OPTIONS --auto-inline #-}
+{-# OPTIONS --guarded #-}
+{-# OPTIONS --confluence-check #-}
 
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS --safe #-}
