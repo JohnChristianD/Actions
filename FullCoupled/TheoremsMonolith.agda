@@ -4315,6 +4315,99 @@ GloballyEventuallyFixed update fixed =
   ∀ state → Σ Nat (λ n → iterateUpdate update n state ≡ fixed)
 
 ------------------------------------------------------------------------
+-- Semantic bridge for the guarded-Cubical representation kernel.
+--
+-- The path-level implementation lives in
+-- FullCoupled.GuardedCubicalDenseSeparation.agda because Cubical options
+-- are incompatible with this theorem monolith's --cubical=no-glue core.
+-- Density, global injectivity, exact conjugacy, and the emergent witness
+-- remain explicit proof inputs.
+------------------------------------------------------------------------
+
+record GuardedCubicalDenseSeparationEmergentCompositionTheorem
+  (State Feature Emergent : Set)
+  (observe : State → Feature)
+  (inverse : Feature → State)
+  (stateStep : State → State)
+  (featureStep : Feature → Feature) : Set₁ where
+  constructor guardedCubicalDenseSeparationEmergentCompositionTheorem
+  field
+    globalInjective :
+      ∀ {s t : State} →
+      observe s ≡ observe t →
+      s ≡ t
+
+    denseSeparation :
+      ∀ {s t : State} →
+      s ≢ t →
+      observe s ≢ observe t
+
+    stepConjugacy :
+      ∀ s →
+      observe (stateStep s) ≡
+      featureStep (observe s)
+
+    iteratedStepConjugacy :
+      ∀ n s →
+      observe (iterateUpdate stateStep n s) ≡
+      iterateUpdate featureStep n (observe s)
+
+    emergentWitness :
+      Emergent
+
+open GuardedCubicalDenseSeparationEmergentCompositionTheorem public
+
+guardedCubicalDenseSeparationEmergentComposition :
+  ∀ {State Feature Emergent : Set}
+  {observe : State → Feature}
+  {inverse : Feature → State}
+  {stateStep : State → State}
+  {featureStep : Feature → Feature} →
+  (leftInverse :
+    ∀ s →
+    inverse (observe s) ≡ s) →
+  (dense :
+    ∀ {s t : State} →
+    s ≢ t →
+    observe s ≢ observe t) →
+  (conjugacy :
+    ∀ s →
+    observe (stateStep s) ≡
+    featureStep (observe s)) →
+  Emergent →
+  GuardedCubicalDenseSeparationEmergentCompositionTheorem
+    State
+    Feature
+    Emergent
+    observe
+    inverse
+    stateStep
+    featureStep
+guardedCubicalDenseSeparationEmergentComposition
+  leftInverse
+  dense
+  conjugacy
+  emergent =
+  guardedCubicalDenseSeparationEmergentCompositionTheorem
+    (leftInverse-implies-injective observe inverse leftInverse)
+    dense
+    conjugacy
+    iterated
+    emergent
+  where
+  iterated :
+    ∀ n s →
+    observe (iterateUpdate stateStep n s) ≡
+    iterateUpdate featureStep n (observe s)
+  iterated zero s = refl
+  iterated (suc n) s =
+    trans
+      (conjugacy (iterateUpdate stateStep n s))
+      (cong
+        featureStep
+        (iterated n s))
+
+------------------------------------------------------------------------
 -- Generic GRU tail-stability convergence and identifiability kernel.
 --
 -- The only dynamic input is an eventually fixed feature tail. Exact
