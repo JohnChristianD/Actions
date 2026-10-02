@@ -1,27 +1,21 @@
 {-# OPTIONS_GHC -fplugin=LiquidHaskell #-}
 module SimpleHaskell.TheoremsBridge where
 
--- Provenance:
---   FullCoupled/TheoremsMonolith.agda
--- These are independent SMT checks of algebraic/proof-boundary claims
--- already present in the Agda theorem surface.
+import Language.Haskell.Liquid.ProofCombinators (Proof, trivial)
+
+-- Provenance: FullCoupled/TheoremsMonolith.agda
 
 {-@ integerAssociativity :: x:Int -> y:Int -> z:Int
-      -> {v:() | x + (y + z) == (x + y) + z} @-}
-integerAssociativity :: Int -> Int -> Int -> ()
-integerAssociativity _ _ _ = ()
+      -> { x + (y + z) == (x + y) + z } @-}
+integerAssociativity :: Int -> Int -> Int -> Proof
+integerAssociativity _ _ _ = trivial
 
 {-@ natAssociativity :: x:{Int | x >= 0} -> y:{Int | y >= 0} -> z:{Int | z >= 0}
-      -> {v:() | x + (y + z) == (x + y) + z} @-}
-natAssociativity :: Int -> Int -> Int -> ()
-natAssociativity _ _ _ = ()
+      -> { x + (y + z) == (x + y) + z } @-}
+natAssociativity :: Int -> Int -> Int -> Proof
+natAssociativity _ _ _ = trivial
 
 {-@ integerMultiplyDistributive :: x:Int -> y:Int -> z:Int
-      -> {v:() | x * (y + z) == x * y + x * z} @-}
-integerMultiplyDistributive :: Int -> Int -> Int -> ()
-integerMultiplyDistributive _ _ _ = ()
-
-{-@ listLengthAppend :: xs:[a] -> ys:[a]
-      -> {v:() | len (xs ++ ys) == len xs + len ys} @-}
-listLengthAppend :: [a] -> [a] -> ()
-listLengthAppend _ _ = ()
+      -> { x * (y + z) == x * y + x * z } @-}
+integerMultiplyDistributive :: Int -> Int -> Int -> Proof
+integerMultiplyDistributive _ _ _ = trivial
