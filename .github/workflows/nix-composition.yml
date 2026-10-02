@@ -38,7 +38,7 @@ jobs:
       - name: Check canonical learner monolith
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AgdaLearner'
+          CI_LANE: 'AgdaLearner'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -46,14 +46,14 @@ jobs:
         if: always()
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AgdaTheorem'
+          CI_LANE: 'AgdaTheorem'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Check Agda/Mercury/Dhall tool versions
         if: always()
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Versions'
+          CI_LANE: 'Versions'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -88,7 +88,7 @@ jobs:
       - name: Mercury purity gate
         timeout-minutes: 5
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MercuryPurity'
+          CI_LANE: 'MercuryPurity'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -96,14 +96,14 @@ jobs:
       - name: Run theorem-only Mercury discovery and canonical semantic contract
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Mercury'
+          CI_LANE: 'Mercury'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: MAlonzo + LiquidHaskell bridge
         timeout-minutes: 20
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MAlonzoLiquid'
+          CI_LANE: 'MAlonzoLiquid'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -111,7 +111,7 @@ jobs:
       - name: Discovery
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Discovery'
+          CI_LANE: 'Discovery'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -130,21 +130,21 @@ jobs:
       - name: Cross-repo Econlib graph
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.EconlibCrossrepo'
+          CI_LANE: 'EconlibCrossrepo'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Econlib equilibrium graph search
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.EconlibEquilibriumSearch'
+          CI_LANE: 'EconlibEquilibriumSearch'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Strict existence or impossibility graph
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.StrictExistenceImpossibility'
+          CI_LANE: 'StrictExistenceImpossibility'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -152,7 +152,7 @@ jobs:
       - name: Stationary distribution finite-cycle impossibility graph
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.StationaryCycleImpossibility'
+          CI_LANE: 'StationaryCycleImpossibility'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -161,21 +161,21 @@ jobs:
       - name: Isomorphism transport closure
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.IsomorphismTransport'
+          CI_LANE: 'IsomorphismTransport'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Semantic contract
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.SemanticContract'
+          CI_LANE: 'SemanticContract'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Surface contract
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Surface'
+          CI_LANE: 'Surface'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -192,7 +192,7 @@ jobs:
       - name: Verify Mirth C99 fast-dirty synchronization
         timeout-minutes: 5
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MirthFastDirty'
+          CI_LANE: 'MirthFastDirty'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -200,7 +200,7 @@ jobs:
       - name: Verify static Elm presentation build
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Pages'
+          CI_LANE: 'Pages'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -224,7 +224,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AutoMerge'
+          CI_LANE: 'AutoMerge'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'

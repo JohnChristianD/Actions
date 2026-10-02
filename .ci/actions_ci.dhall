@@ -1,6 +1,29 @@
 let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
-let lane = env:CI_LANE
+let laneName = env:CI_LANE as Text
+
+let lane =
+  if laneName == "AgdaLearner" then Lane.AgdaLearner
+  else if laneName == "AgdaTheorem" then Lane.AgdaTheorem
+  else if laneName == "AgdaSafe" then Lane.AgdaSafe
+  else if laneName == "MAlonzoLiquid" then Lane.MAlonzoLiquid
+  else if laneName == "Vehicle" then Lane.Vehicle
+  else if laneName == "MirthFastDirty" then Lane.MirthFastDirty
+  else if laneName == "MercuryPurity" then Lane.MercuryPurity
+  else if laneName == "Mercury" then Lane.Mercury
+  else if laneName == "Pages" then Lane.Pages
+  else if laneName == "Discovery" then Lane.Discovery
+  else if laneName == "EconlibCrossrepo" then Lane.EconlibCrossrepo
+  else if laneName == "EconlibEquilibriumSearch" then Lane.EconlibEquilibriumSearch
+  else if laneName == "StrictExistenceImpossibility" then Lane.StrictExistenceImpossibility
+  else if laneName == "StationaryCycleImpossibility" then Lane.StationaryCycleImpossibility
+  else if laneName == "IsomorphismTransport" then Lane.IsomorphismTransport
+  else if laneName == "SemanticContract" then Lane.SemanticContract
+  else if laneName == "Surface" then Lane.Surface
+  else if laneName == "Versions" then Lane.Versions
+  else if laneName == "AutoMerge" then Lane.AutoMerge
+  else if laneName == "All" then Lane.All
+  else if assert : False then Lane.All else Lane.All
 
 let script = merge {
   AgdaLearner = ''
@@ -11,7 +34,7 @@ let script = merge {
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    grep -Fq -- '{-# OPTIONS --cubical=no-glue #-}' FullCoupled/TheoremsMonolith.agda
+    grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
@@ -683,10 +706,9 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 3 ] || { echo "expected two monoliths plus one tracked support Agda source, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
-    [ -f FullCoupled/GuardedCubicalDenseSeparation.agda ] || { echo "missing guarded Cubical kernel"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
