@@ -4328,6 +4328,7 @@ GloballyEventuallyFixed update fixed =
 
 record GuardedCubicalTrace (Feature : Set) : Set where
   coinductive
+  no-eta-equality
   field
     head : Feature
     tail : GuardedCubicalTrace Feature
