@@ -88,13 +88,13 @@ open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 open import Data.Nat.Solver using (module +-*-Solver)
 import Data.List.Effectful as ListEffectful
-open import FullCoupled.CanonicalLearnerMonolith as C
 open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
 open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
 open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
 -- END MIRTH-SYNC COMMON IMPORTS
+open import FullCoupled.CanonicalLearnerMonolith as C
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
 -- END THEOREM-SPECIFIC IMPORTS
