@@ -95,13 +95,13 @@ Both active monoliths use `--without-K`; the canonical learner also uses `--cubi
 Trace it directly:
 
 ```text
-agda --safe --cubical=compatible -v tc.lhs.unify:40 FullCoupled/CanonicalLearnerMonolith.agda
+nix develop .#default -c agda --safe --cubical=compatible -v tc.lhs.unify:40 FullCoupled/CanonicalLearnerMonolith.agda
 ```
 
 The cubical-compatible branch can attempt the internal `LeftInverse` construction after a successful unification. Useful diagnostics:
 
 ```text
-agda --safe --cubical=compatible \
+nix develop .#default -c agda --safe --cubical=compatible \
   -v tc.lhs.unify:40 \
   -v tc.lhs.unify.inv:40 \
   -v tc.lhs.unify.inv.badstep:20 \
