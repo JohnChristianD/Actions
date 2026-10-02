@@ -849,6 +849,12 @@ graph_canonical_safe_tactic_normalization_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+graph_guarded_cubical_dense_separation_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "GuardedCubicalDenseSeparationEmergentCompositionTheorem",
+        Laws,
+        Plan).
+
 graph_identity_activation8_injective_plan(Laws, Plan) :-
     search_named_required_plan(
         "identityActivation8-injective",
@@ -888,6 +894,7 @@ graph_review_frontier_names = [
     "identityActivation8-injective",
     "informationPreserving-all-tasks-injective",
     "canonicalGRUStatisticalEncodeInjective",
+    "GuardedCubicalDenseSeparationEmergentCompositionTheorem",
     "ZPFGRUGlobalInjectivityTheorem",
     "canonicalIntegerGRUTokenEncodingInjective",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
