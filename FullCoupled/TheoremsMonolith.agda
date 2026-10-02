@@ -75,9 +75,7 @@ open import Relation.Nullary using (¬_)
 open import Effect.Monad using (RawMonad)
 open import Effect.Monad.State using
   (State; RawMonadState; StateMonad; StateMonadState)
--- END MIRTH-SYNC COMMON IMPORTS
 
--- BEGIN THEOREM-SPECIFIC IMPORTS
 open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
 open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
 open import Data.Integer using (_≤_) renaming (_≤_ to _≤ℤ_)
@@ -95,6 +93,9 @@ open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀
 open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.MonoidSolver as MonoidSolver using (solve)
+-- END MIRTH-SYNC COMMON IMPORTS
+
+-- BEGIN THEOREM-SPECIFIC IMPORTS
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
