@@ -135,11 +135,20 @@ Schmitty remains an SMT leaf, not a replacement for Agda's dependent unifier. It
 
 ## YAMLScript
 
-The pinned nixpkgs revision already contains `pkgs.yamlscript` 0.3.0. The dev shell now exposes it as `ys`:
+The pinned nixpkgs revision already contains `pkgs.yamlscript` 0.3.0. It is exposed both in the dev shell and as a flake package named `yamlscript`.
+
+Dev shell:
 
 ```text
 nix develop .#default
 ys --version
 ```
 
-Use `.ys` for new executable/data-rich YAML-compatible configuration. Existing GitHub Actions workflow files remain YAML because GitHub's workflow loader consumes YAML; adding a YAMLScript generation layer there would be needless machinery.
+Global per-user Nix profile:
+
+```text
+nix profile install .#yamlscript
+ys --version
+```
+
+This uses the repository's pinned nixpkgs package rather than a vendored YAMLScript build. Existing GitHub Actions workflow files remain YAML because GitHub's workflow loader consumes YAML; adding a YAMLScript generation layer there would be needless machinery.
