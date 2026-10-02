@@ -2,22 +2,14 @@
   description = "Pinned Nix environment for the Agda kernel, Mercury e-graph, and typed Dhall CI scripting";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/cac0437206a9c9aefa161dae30cee71170d60088";
+    nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
     vehicle = {
       url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
       flake = false;
     };
-    schmitty = {
-      url = "github:wenkokke/schmitty/9a85ee0ecec1f477cc803b8af66567bd36487a2b";
-      flake = false;
-    };
-    agdarsec = {
-      url = "github:gallais/agdarsec/28c5233e905474f3b02cb97fe410beb60364ba80";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, vehicle, schmitty, agdarsec }:
+  outputs = { self, nixpkgs, vehicle }:
     let
       systems = [
         "x86_64-linux"
@@ -30,17 +22,22 @@
 
       pkgsFor = system:
         import nixpkgs { inherit system; };
+
+      agdaWithStdlib = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.agdaPackages.agda.withPackages [ pkgs.agdaPackages.standard-library ];
     in
     {
       vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
-      schmittyAgdaSource = "${schmitty}/src";
-      agdarsecAgdaSource = "${agdarsec}/src";
 
       packages = forAllSystems (system:
         let
           pkgs = pkgsFor system;
         in
         {
+          agda = agdaWithStdlib system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
@@ -189,16 +186,15 @@
               pkgs.haskellPackages.dhall-json
               pkgs.mirth
               pkgs.gh
+              (agdaWithStdlib system)
               pkgs.stdenv.cc
-              pkgs.z3
               pkgs.yamlscript
               pkgs.elmPackages.elm
             ];
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
+              export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
               export VEHICLE_AGDA_SOURCE="${vehicle}/vehicle-agda/src"
-              export SCHMITTY_AGDA_SOURCE="${schmitty}/src"
-              export AGDARSEC_AGDA_SOURCE="${agdarsec}/src"
             '';
           };
         });
