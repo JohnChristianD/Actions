@@ -5800,7 +5800,7 @@ eGraphAStarIterate-isomorphism step (suc n) s =
 --
 -- The Brouwer reduction below gives the classical Nash existential
 -- conclusion relative to an explicit analytical Brouwer witness. The
--- monolith does not hide or postulate a proof of Brouwer itself.
+-- monolith does not hide or assume a proof of Brouwer itself.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
