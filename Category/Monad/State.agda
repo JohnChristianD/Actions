@@ -5,6 +5,7 @@ open import Data.Unit.Polymorphic.Base using (⊤)
 open import Effect.Applicative.Indexed using (IFun)
 open import Effect.Monad using (RawMonad)
 open import Effect.Monad.Indexed using (RawIMonad)
+open import Function.Base using (_∘_)
 open import Level using (Level; suc; _⊔_)
 
 private
