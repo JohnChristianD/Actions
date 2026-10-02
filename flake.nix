@@ -42,6 +42,7 @@
         in
         {
           ci = pkgs.haskellPackages.dhall;
+          yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
         });
 
