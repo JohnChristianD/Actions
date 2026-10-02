@@ -636,12 +636,6 @@ identityActivation8 x = x
 identityActivation8-law : ∀ x → identityActivation8 x ≡ x
 identityActivation8-law x = refl
 
-identityActivation8-injective :
-  ∀ {x y : Int8} →
-  identityActivation8 x ≡ identityActivation8 y →
-  x ≡ y
-identityActivation8-injective eq = eq
-
 identityActivation8-zero : identityActivation8 zero8 ≡ zero8
 identityActivation8-zero = refl
 
