@@ -4,8 +4,8 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --guardedness #-}
 {-# OPTIONS --cubical-compatible #-}
+{-# OPTIONS --guardedness #-}
 {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
