@@ -4461,6 +4461,16 @@ record GuardedCubicalDenseSeparationEmergentCompositionTheorem
       s ≢ t →
       GuardedCubicalDenseRepresentation.observe R s ≢ GuardedCubicalDenseRepresentation.observe R t
 
+    denseStageSeparation :
+      ∀ {s t} →
+      s ≢ t →
+      Σ Nat
+        (λ n →
+          guardedCubicalTraceStage n
+            (GuardedCubicalDenseRepresentation.observe R s) ≢
+          guardedCubicalTraceStage n
+            (GuardedCubicalDenseRepresentation.observe R t))
+
     exactIterateConjugacy :
       ∀ n s →
       GuardedCubicalDenseRepresentation.observe R (iterateUpdate stateStep n s) ≡
@@ -4494,6 +4504,7 @@ guardedCubicalDenseSeparationEmergentComposition emergent =
     emergent
     (guardedCubicalGlobalInjective R)
     (guardedCubicalPointSeparation R)
+    (GuardedCubicalDenseRepresentation.denseSeparation R)
     (guardedCubicalIterateConjugacy C)
 
 ------------------------------------------------------------------------
