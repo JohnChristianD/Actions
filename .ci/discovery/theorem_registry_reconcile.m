@@ -13,7 +13,7 @@
 :- import_module learner_semantic_extractor.
 :- import_module string.
 
-:- type mode
+:- type registry_mode
     ---> check
     ;    prune.
 
@@ -255,7 +255,7 @@ filter_graph_lines([Line | Lines], Live, State0, Acc0,
 
 :- pred reconcile_actions(
     list(semantic_law)::in,
-    mode::in,
+    registry_mode::in,
     io::di, io::uo,
     registry_result::out) is det.
 
@@ -297,7 +297,7 @@ reconcile_actions(Live, Mode, !IO, Result) :-
 
 :- pred reconcile_graph(
     list(semantic_law)::in,
-    mode::in,
+    registry_mode::in,
     io::di, io::uo,
     registry_result::out) is det.
 
@@ -345,7 +345,7 @@ print_stale(Source, [Name | Names], !IO) :-
         !IO),
     print_stale(Source, Names, !IO).
 
-:- pred resolve_mode(list(string)::in, mode::out, io::di, io::uo) is det.
+:- pred resolve_mode(list(string)::in, registry_mode::out, io::di, io::uo) is det.
 resolve_mode(Args, Mode, !IO) :-
     (
         Args = ["--check"]
