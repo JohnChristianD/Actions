@@ -2,7 +2,7 @@ name: Nix connected composition verification
 
 on:
   push:
-    branches: [main, nix-prune-mercury-ci, schmitty-vehicle-mirth-gru-injectivity]
+    branches: [main, nix-prune-mercury-ci, -vehicle-mirth-gru-injectivity]
   pull_request:
     branches: [main]
   schedule:
@@ -27,11 +27,6 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - uses: agda/agda-setup-action@v1
-        id: setup-agda
-        with:
-          agda-version: '2.8.0'
-          agda-stdlib-version: '2.3'
       - name: Provision swap
         run: |
           if ! swapon --show=NAME | grep -qx '/swapfile'; then
@@ -40,16 +35,9 @@ jobs:
             sudo mkswap /swapfile || true
             sudo swapon /swapfile || true
           fi
-      - name: Export pinned Agda dependency paths
-        run: |
-          set -euo pipefail
-          echo "VEHICLE_AGDA_SOURCE=$(nix eval --raw .#vehicleAgdaSource)" >> "$GITHUB_ENV"
-          echo "SCHMITTY_AGDA_SOURCE=$(nix eval --raw .#schmittyAgdaSource)" >> "$GITHUB_ENV"
-          echo "AGDARSEC_AGDA_SOURCE=$(nix eval --raw .#agdarsecAgdaSource)" >> "$GITHUB_ENV"
       - name: Check canonical learner monolith
         timeout-minutes: 15
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaLearner'
         run: |
           set -euo pipefail
@@ -58,7 +46,6 @@ jobs:
         if: always()
         timeout-minutes: 15
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaTheorem'
         run: |
           set -euo pipefail
@@ -66,49 +53,10 @@ jobs:
       - name: Check Agda/Mercury/Dhall tool versions
         if: always()
         env:
-          AGDA_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
           CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.Versions'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
-
-  schmitty:
-    name: Schmitty SMT library on the single latest Agda
-    runs-on: ubuntu-22.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
-        with:
-          installer-version: '2.35.1'
-      - name: Resolve pinned Nix Z3
-        id: nix-z3
-        run: |
-          set -euo pipefail
-          z3_path="$(nix develop .#default -c bash -euo pipefail -c 'command -v z3')"
-          test -x "$z3_path"
-          echo "path=$z3_path" >> "$GITHUB_OUTPUT"
-          echo "$(dirname "$z3_path")" >> "$GITHUB_PATH"
-      - uses: agda/agda-setup-action@v1
-        id: setup-agda
-        with:
-          agda-version: '2.8.0'
-          agda-stdlib-version: '2.3'
-      - name: Export pinned Agda dependency paths
-        run: |
-          set -euo pipefail
-          echo "VEHICLE_AGDA_SOURCE=$(nix eval --raw .#vehicleAgdaSource)" >> "$GITHUB_ENV"
-          echo "SCHMITTY_AGDA_SOURCE=$(nix eval --raw .#schmittyAgdaSource)" >> "$GITHUB_ENV"
-          echo "AGDARSEC_AGDA_SOURCE=$(nix eval --raw .#agdarsecAgdaSource)" >> "$GITHUB_ENV"
-      - name: Verify Schmitty installation
-        timeout-minutes: 10
-        env:
-          AGDA_SCHMITTY_COMMAND: ${{ steps.setup-agda.outputs.agda-path }}
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Schmitty'
-        run: |
-          set -euo pipefail
-          nix develop .#default -c dhall text --file .ci/actions_ci.dhall > "$RUNNER_TEMP/schmitty.sh"
-          bash "$RUNNER_TEMP/schmitty.sh"
 
   vehicle:
     name: Vehicle direct executable
@@ -234,7 +182,7 @@ jobs:
       - name: Verify Mirth C99 fast-dirty synchronization
         timeout-minutes: 5
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Schmitty | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MirthFastDirty'
+          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MirthFastDirty'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
@@ -250,7 +198,7 @@ jobs:
   auto-merge:
     name: Enable auto-merge after full verification
     if: github.event_name == 'pull_request'
-    needs: [agda, mercury, pages, schmitty, vehicle]
+    needs: [agda, mercury, pages, vehicle]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
