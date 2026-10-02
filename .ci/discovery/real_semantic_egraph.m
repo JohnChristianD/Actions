@@ -33,6 +33,7 @@ frontier_targets = [
     "identityActivation8-injective",
     "informationPreserving-all-tasks-injective",
     "canonicalGRUStatisticalEncodeInjective",
+    "GuardedCubicalDenseSeparationEmergentCompositionTheorem",
     "ZPFGRUGlobalInjectivityTheorem",
     "canonicalIntegerGRUTokenEncodingInjective"
 ].
