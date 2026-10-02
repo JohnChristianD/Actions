@@ -77,6 +77,7 @@ let script = merge {
     echo "schmitty-stage=copy-schmitty"
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
     chmod -R u+rwX "$tmp/schmitty"
+    sed -i '/^open import Category\.Monad$/d;/^open import Category\.Monad\.State as StateCat using (RawIMonadState; IStateT)$/d' "$tmp/schmitty/src/SMT/Script/Names.agda"
     mkdir -p "$tmp/schmitty/src/Reflection"
     cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
 module Reflection.Term where
