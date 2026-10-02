@@ -5,7 +5,6 @@
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --erased-cubical #-}
-{-# OPTIONS --verbose #-}
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --confluence-check #-}
