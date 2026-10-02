@@ -11,7 +11,6 @@
 {-# OPTIONS --confluence-check #-}
 
 {-# OPTIONS --no-termination-check #-}
-{-# OPTIONS --allow-exec #-}
 {-# OPTIONS --guardedness #-}
 
 ------------------------------------------------------------------------
@@ -51,9 +50,6 @@ module FullCoupled.TheoremsMonolith where
 -- theorem monolith and do not materialize a third Agda source file.
 ------------------------------------------------------------------------
 
-import SMT.Theories.Ints as Ints
-open import SMT.Backend.Z3 Ints.theory
-import Vehicle
 
 ------------------------------------------------------------------------
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
