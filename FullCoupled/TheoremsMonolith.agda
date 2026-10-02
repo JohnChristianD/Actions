@@ -1,10 +1,11 @@
-{-# OPTIONS --no-termination-check #-}
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --eta-equality #-}
+{-# OPTIONS --exact-split #-}
 {-# OPTIONS --backtracking-instance-search #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --cubical=compatible #-}
+{-# OPTIONS --no-termination-check #-}
 {-# OPTIONS --allow-exec #-}
 {-# OPTIONS --guardedness #-}
 
