@@ -68,21 +68,15 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*)
 open import Data.Bool.Base
 open import Data.Nat.Base
 open import Data.Integer.Base
-open import Data.Rational.Base
-open import Data.Rational.Unnormalised.Base
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product.Base
 open import Data.Sum.Base
 open import Data.Maybe.Base
-open import Data.Fin.Base
-open import Data.Vec.Base
 
 -- Solver front ends.
 import Data.Bool.Solver as BoolSolver
 open import Data.Nat.Solver using (module +-*-Solver)
 import Data.Integer.Solver as IntegerSolver
-import Data.Rational.Solver as RationalSolver
-import Data.Rational.Unnormalised.Solver as RationalUnnormalisedSolver
 open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase
 import Data.List.Relation.Binary.Sublist.Heterogeneous.Solver as HeterogeneousSublistSolver
 import Data.List.Relation.Binary.Sublist.DecSetoid.Solver as DecSetoidSublistSolver
@@ -90,8 +84,6 @@ import Data.List.Relation.Binary.Sublist.DecPropositional.Solver as DecPropositi
 import Function.Related.TypeIsomorphisms.Solver as TypeIsomorphismsSolver
 open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
 open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
-open import Data.Rational.Tactic.RingSolver as RationalRingSolver using (solve-∀)
-open import Data.Rational.Unnormalised.Tactic.RingSolver as RationalUnnormalisedRingSolver using (solve-∀)
 open import Tactic.RingSolver as RingSolver using (solve-∀)
 open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
 open import Tactic.RingSolver.Core.Expression as RingExpression
