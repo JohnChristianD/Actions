@@ -1,5 +1,5 @@
-{-# OPTIONS --no-termination-check #-}
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --eta-equality #-}
+{-# OPTIONS --exact-split #-}
 {-# OPTIONS --backtracking-instance-search #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
