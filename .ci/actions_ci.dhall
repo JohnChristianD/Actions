@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | GuardedCubical | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane = env:CI_LANE
 
@@ -17,6 +17,11 @@ let script = merge {
     set -euo pipefail
     "$AGDA_COMMAND" --version
     "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    '',
+  GuardedCubical = ''
+    set -euo pipefail
+    "$AGDA_GUARDED_CUBICAL_COMMAND" --version
+    "$AGDA_GUARDED_CUBICAL_COMMAND" --cubical --guardedness -l standard-library -l cubical -i . FullCoupled/GuardedCubicalDenseSeparation.agda
     '',
   Vehicle = ''
     set -euo pipefail
@@ -659,9 +664,10 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 3 ] || { echo "expected two monoliths plus one guarded Cubical kernel, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
+    [ -f FullCoupled/GuardedCubicalDenseSeparation.agda ] || { echo "missing guarded Cubical kernel"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
@@ -698,6 +704,7 @@ DHALL
     dhall --version
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_GUARDED_CUBICAL_COMMAND" --cubical --guardedness -l standard-library -l cubical -i . FullCoupled/GuardedCubicalDenseSeparation.agda
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
