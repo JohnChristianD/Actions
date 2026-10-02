@@ -9,8 +9,10 @@
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --confluence-check #-}
-
+{-# OPTIONS --erasure #-}
+{-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
+
 {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
