@@ -44,6 +44,7 @@
         pkgs.mkShell {
           packages = [
             (haskellLiquidGhc system)
+            pkgs.haskellPackages.liquidhaskell
             pkgs.haskellPackages.cabal-install
             pkgs.z3
             pkgs.coreutils
@@ -305,6 +306,7 @@
               pkgs.mercury
               pkgs.haskellPackages.dhall
               (haskellLiquidGhc system)
+              pkgs.haskellPackages.liquidhaskell
               pkgs.haskellPackages.cabal-install
               pkgs.z3
               pkgs.haskellPackages.dhall-json
