@@ -56,6 +56,24 @@ open import Relation.Nullary using (¬_)
 open import Effect.Monad using (RawMonad)
 open import Effect.Monad.State using
   (State; RawMonadState; StateMonad; StateMonadState)
+
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
+open import Data.Integer using (_≤_) renaming (_≤_ to _≤ℤ_)
+open import Data.List.Base using (_++_)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Agda.Builtin.Bool using (Bool; true; false)
+open import Agda.Builtin.String using (String)
+open import Algebra.Bundles using (Monoid)
+open import Data.List.Properties using (++-monoid)
+open import Data.Nat.Solver using (module +-*-Solver)
+import Data.List.Effectful as ListEffectful
+open import FullCoupled.CanonicalLearnerMonolith as C
+open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
+open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
+open import Tactic.RingSolver as RingSolver using (solve-∀)
+open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
+open import Tactic.MonoidSolver as MonoidSolver using (solve)
 -- END MIRTH-SYNC COMMON IMPORTS
 record Topology (A : Set) : Set₁ where
   field
