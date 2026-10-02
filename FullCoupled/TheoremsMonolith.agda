@@ -301,6 +301,13 @@ canonicalGRUStatisticalDistinguishability : ∀ {s t : C.GRUState} → s ≢ t �
 canonicalGRUStatisticalDistinguishability distinct collision = distinct (canonicalGRUStatisticalEncodeInjective collision)
 canonicalGRUStatisticalStepConsequence : ∀ (s : C.GRUState) (x : C.Int8) → canonicalGRUStatisticalEncode (C.gruStep s x) ≡ (C.gruStep s x , (λ _ → C.hiddenState (C.gruStep s x)))
 canonicalGRUStatisticalStepConsequence s x = refl
+
+identityActivation8-injective :
+  ∀ {x y : C.Int8} →
+  C.identityActivation8 x ≡ C.identityActivation8 y →
+  x ≡ y
+identityActivation8-injective eq = eq
+
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
 -- External integration witness.
