@@ -87,3 +87,59 @@ This is Mermaid-like interaction implemented in pure Elm. No Mermaid runtime is 
 Agda is pinned to 2.8.0 with standard library 2.3. No Python source file or shell-script file is required by the active repository surface.
 
 Tracked Markdown is link-free.
+
+## Agda proof-relevant unification
+
+Both active monoliths use `--without-K`; the canonical learner also uses `--cubical=compatible`. Agda's production LHS unifier already uses its right-to-left strategy for indexed equations. There is no user CLI flag that separately selects that strategy.
+
+Trace it directly:
+
+```text
+agda --safe --cubical=compatible -v tc.lhs.unify:40 FullCoupled/CanonicalLearnerMonolith.agda
+```
+
+The cubical-compatible branch can attempt the internal `LeftInverse` construction after a successful unification. Useful diagnostics:
+
+```text
+agda --safe --cubical=compatible \
+  -v tc.lhs.unify:40 \
+  -v tc.lhs.unify.inv:40 \
+  -v tc.lhs.unify.inv.badstep:20 \
+  FullCoupled/TheoremsMonolith.agda
+```
+
+`Agda.TypeChecking.Rules.LHS.Unify` and `Agda.TypeChecking.Rules.LHS.Unify.LeftInverse` are typechecker Haskell, not Agda modules to import.
+
+## Meta-F*-style automation boundary
+
+Keep exactly two Agda source files. Put repository-specific tactic code inside `TheoremsMonolith.agda` rather than adding a third module.
+
+The minimal architecture is:
+
+```text
+goal
+  -> Agda Reflection / TC
+  -> inspect context and target
+  -> normalize / specialize
+  -> dependent proof search
+  -> native Agda term
+  -> optional Schmitty SMT leaf
+  -> Agda checker
+```
+
+Use Agda's built-in Auto and Search About as existing interactive search. Add custom `TC` code only when a proof-state transformation is specific enough that a reusable tactic earns its maintenance cost.
+
+## Schmitty boundary
+
+Schmitty remains an SMT leaf, not a replacement for Agda's dependent unifier. Its external Z3 execution path requires `--allow-exec`, so keep it outside the repository's `--safe` proof-authority lane.
+
+## YAMLScript
+
+The pinned nixpkgs revision already contains `pkgs.yamlscript` 0.3.0. The dev shell now exposes it as `ys`:
+
+```text
+nix develop .#default
+ys --version
+```
+
+Use `.ys` for new executable/data-rich YAML-compatible configuration. Existing GitHub Actions workflow files remain YAML because GitHub's workflow loader consumes YAML; adding a YAMLScript generation layer there would be needless machinery.
