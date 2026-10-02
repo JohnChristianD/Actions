@@ -30,16 +30,14 @@ jobs:
         run: nix run .#prune-theorem-registries
 
       - name: Kernel-check canonical Agda proof surfaces
-        env:
         run: |
           set -euo pipefail
-          "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-          git clone --depth 1 --branch dev https://github.com/vehicle-lang/vehicle.git "$RUNNER_TEMP/vehicle"
-          export VEHICLE_AGDA_SOURCE="$RUNNER_TEMP/vehicle/vehicle-agda/src"
-          test -n "${VEHICLE_AGDA_SOURCE:-}"
-          "$AGDA_COMMAND" --allow-exec -l standard-library -i . \
-            -i "$VEHICLE_AGDA_SOURCE" \
-            FullCoupled/TheoremsMonolith.agda
+          nix develop .#default -c bash -euo pipefail -c '
+            "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+            "$AGDA_COMMAND" --allow-exec -l standard-library -i . \
+              -i "$VEHICLE_AGDA_SOURCE" \
+              FullCoupled/TheoremsMonolith.agda
+          '
 
       - name: Re-check registry freshness and graph extraction
         run: |
