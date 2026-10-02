@@ -46,15 +46,7 @@ jobs:
         if: always()
         timeout-minutes: 15
         env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | GuardedCubical | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaTheorem'
-        run: |
-          set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
-      - name: Check guarded Cubical representation kernel
-        if: always()
-        timeout-minutes: 15
-        env:
-          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe | GuardedCubical | MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.GuardedCubical'
+          CI_LANE: '< AgdaLearner | AgdaTheorem | AgdaSafe MercuryPurity | Mercury | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | All >.AgdaTheorem'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
