@@ -155,7 +155,7 @@ newtonRoot value =
                 0
 
             else
-                exp (0.2 * log magnitude)
+                e ^ (0.2 * logBase e magnitude)
 
         step current remaining =
             if remaining == 0 then
@@ -322,6 +322,28 @@ fallbackPerceptualColor =
     customPerceptualColor 0 (dynamicDisplayCandidate 0)
 
 
+
+maximumBy : (a -> comparable) -> List a -> Maybe a
+maximumBy score values =
+    case values of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            Just
+                (List.foldl
+                    (\candidate current ->
+                        if score candidate > score current then
+                            candidate
+
+                        else
+                            current
+                    )
+                    first
+                    rest
+                )
+
+
 globalPaletteChoice : PaletteChoice
 globalPaletteChoice =
     let
@@ -338,7 +360,7 @@ globalPaletteChoice =
             permutationsOfLength 6 candidateColors
                 |> List.filterMap paletteChoiceFromList
     in
-    List.maximumBy paletteGlobalScore choices
+    maximumBy paletteGlobalScore choices
         |> Maybe.withDefault fallback
 
 
