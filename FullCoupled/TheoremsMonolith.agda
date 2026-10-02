@@ -4332,16 +4332,14 @@ record GuardedCubicalTrace (Feature : Set) : Set where
     head : Feature
     tail : GuardedCubicalTrace Feature
 
-open GuardedCubicalTrace public
-
 guardedCubicalTraceStage :
   ∀ {Feature : Set} →
   Nat →
   GuardedCubicalTrace Feature →
   Feature
-guardedCubicalTraceStage zero trace = head trace
+guardedCubicalTraceStage zero trace = GuardedCubicalTrace.head trace
 guardedCubicalTraceStage (suc n) trace =
-  guardedCubicalTraceStage n (tail trace)
+  guardedCubicalTraceStage n (GuardedCubicalTrace.tail trace)
 
 record GuardedCubicalDenseRepresentation
   (State Feature : Set) : Set₁ where
@@ -4367,27 +4365,25 @@ record GuardedCubicalDenseRepresentation
           guardedCubicalTraceStage n (observe s) ≢
           guardedCubicalTraceStage n (observe t))
 
-open GuardedCubicalDenseRepresentation public
-
 guardedCubicalGlobalInjective :
   ∀ {State Feature : Set} →
   (R : GuardedCubicalDenseRepresentation State Feature) →
   ∀ {s t} →
-  observe R s ≡ observe R t →
+  GuardedCubicalDenseRepresentation.observe R s ≡ GuardedCubicalDenseRepresentation.observe R t →
   s ≡ t
 guardedCubicalGlobalInjective R {s} {t} eq =
   trans
-    (sym (leftInverse R s))
+    (sym (GuardedCubicalDenseRepresentation.leftInverse R s))
     (trans
-      (cong (decode R) eq)
-      (leftInverse R t))
+      (cong (GuardedCubicalDenseRepresentation.decode R) eq)
+      (GuardedCubicalDenseRepresentation.leftInverse R t))
 
 guardedCubicalPointSeparation :
   ∀ {State Feature : Set} →
   (R : GuardedCubicalDenseRepresentation State Feature) →
   ∀ {s t} →
   s ≢ t →
-  observe R s ≢ observe R t
+  GuardedCubicalDenseRepresentation.observe R s ≢ GuardedCubicalDenseRepresentation.observe R t
 guardedCubicalPointSeparation R neq collision =
   neq (guardedCubicalGlobalInjective R collision)
 
@@ -4400,10 +4396,8 @@ record GuardedCubicalConjugacy
   field
     stepConjugacy :
       ∀ s →
-      observe R (stateStep s) ≡
-      featureStep (observe R s)
-
-open GuardedCubicalConjugacy public
+      GuardedCubicalDenseRepresentation.observe R (stateStep s) ≡
+      featureStep (GuardedCubicalDenseRepresentation.observe R s)
 
 iterateGuardedFeature :
   ∀ {Feature : Set} →
@@ -4430,12 +4424,12 @@ guardedCubicalIterateConjugacy :
       featureStep
       R) →
   ∀ n s →
-  observe R (iterateUpdate stateStep n s) ≡
-  iterateGuardedFeature featureStep n (observe R s)
+  GuardedCubicalDenseRepresentation.observe R (iterateUpdate stateStep n s) ≡
+  iterateGuardedFeature featureStep n (GuardedCubicalDenseRepresentation.observe R s)
 guardedCubicalIterateConjugacy C zero s = refl
 guardedCubicalIterateConjugacy C (suc n) s =
   trans
-    (stepConjugacy C (iterateUpdate stateStep n s))
+    (GuardedCubicalConjugacy.stepConjugacy C (iterateUpdate stateStep n s))
     (cong
       featureStep
       (guardedCubicalIterateConjugacy C n s))
@@ -4459,20 +4453,18 @@ record GuardedCubicalDenseSeparationEmergentCompositionTheorem
 
     globallyInjective :
       ∀ {s t} →
-      observe R s ≡ observe R t →
+      GuardedCubicalDenseRepresentation.observe R s ≡ GuardedCubicalDenseRepresentation.observe R t →
       s ≡ t
 
     densePointSeparation :
       ∀ {s t} →
       s ≢ t →
-      observe R s ≢ observe R t
+      GuardedCubicalDenseRepresentation.observe R s ≢ GuardedCubicalDenseRepresentation.observe R t
 
     exactIterateConjugacy :
       ∀ n s →
-      observe R (iterateUpdate stateStep n s) ≡
-      iterateGuardedFeature featureStep n (observe R s)
-
-open GuardedCubicalDenseSeparationEmergentCompositionTheorem public
+      GuardedCubicalDenseRepresentation.observe R (iterateUpdate stateStep n s) ≡
+      iterateGuardedFeature featureStep n (GuardedCubicalDenseRepresentation.observe R s)
 
 guardedCubicalDenseSeparationEmergentComposition :
   ∀ {State Feature Emergent : Set}
