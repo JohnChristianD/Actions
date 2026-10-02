@@ -51,7 +51,7 @@ open import Data.Nat.Base
 open import Data.Integer.Base
 open import Data.Rational.Base
 open import Data.Rational.Unnormalised.Base
-open import Data.List.Base using (List; []; _∷_; _++; map; length)
+open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product.Base
 open import Data.Sum.Base
 open import Data.Maybe.Base
