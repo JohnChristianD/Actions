@@ -7,13 +7,9 @@
       url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
       flake = false;
     };
-    cubical = {
-      url = "github:agda/cubical/87af036ebd1c87956cf08fea44e62c7cf76392ca";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, vehicle, cubical }:
+  outputs = { self, nixpkgs, vehicle }:
     let
       systems = [
         "x86_64-linux"
@@ -33,15 +29,6 @@
         in
         pkgs.agdaPackages.agda.withPackages [ pkgs.agdaPackages.standard-library ];
 
-      agdaWithGuardedCubical = system:
-        let
-          pkgs = pkgsFor system;
-          cubicalPackage = cubical.packages.${system}.cubical;
-        in
-        pkgs.agdaPackages.agda.withPackages [
-          pkgs.agdaPackages.standard-library
-          cubicalPackage
-        ];
     in
     {
       vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
@@ -52,7 +39,6 @@
         in
         {
           agda = agdaWithStdlib system;
-          agdaGuardedCubical = agdaWithGuardedCubical system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
@@ -144,10 +130,6 @@
             program = "${script}/bin/mirth-ascii-sync";
           };
 
-          agda-guarded-cubical = {
-            type = "app";
-            program = "${agdaWithGuardedCubical system}/bin/agda";
-          };
 
           mirth-agda-graph = let
             script = pkgs.writeShellApplication {
@@ -214,7 +196,6 @@
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
               export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
-              export AGDA_GUARDED_CUBICAL_COMMAND="${agdaWithGuardedCubical system}/bin/agda"
               export VEHICLE_AGDA_SOURCE="${vehicle}/vehicle-agda/src"
             '';
           };
