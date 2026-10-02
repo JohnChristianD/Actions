@@ -78,8 +78,9 @@ let script = merge {
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
     chmod -R u+rwX "$tmp/schmitty"
     find "$tmp/schmitty/src" -type f -name '*.agda' -print0 | xargs -0 -r sed -i \
-      -e '/^open import Category\.Monad$/d' \
-      -e '/^open import Category\.Monad\.State as StateCat using (RawIMonadState; IStateT)$/d'
+      -e '/Category\\.Monad/d'
+    grep -RlZ 'StateCat' "$tmp/schmitty/src" --include='*.agda' | xargs -0 -r sed -i \
+      -e '/^module .* where$/a\\open import SchmittyCompat.State as StateCat using (RawIMonadState; IStateT)'
     mkdir -p "$tmp/schmitty/src/Reflection"
     cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
 module Reflection.Term where
@@ -98,7 +99,6 @@ open import Effect.Monad using (RawMonad)
 open import Effect.Monad.Indexed using (RawIMonad)
 open import Function.Base using (_∘_)
 open import Level using (Level; suc; _⊔_)
-
 private
   variable
     i f : Level
@@ -197,8 +197,7 @@ AGDA
     echo "pages-stage=mirth-graph-compile-done"
     cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
     "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
-    echo "pages-stage=mirth-surface-compile"
-    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
+    echo "pages-stage=mirth-surface-compile"    mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     echo "pages-stage=mirth-surface-compile-done"
     cc -std=c99 "$tmp/agda-to-elm.c" -o "$tmp/agda-to-elm"
     echo "pages-stage=surface-run-1"
@@ -297,8 +296,7 @@ AGDA
 
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
     for module in canonicalLearnerMonolith theoremsMonolith
-    do
-      grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
+    do      grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
     done
     agda_files=$(git ls-files '*.agda')
     expected_agda_files='FullCoupled/CanonicalLearnerMonolith.agda
@@ -397,8 +395,7 @@ FullCoupled/TheoremsMonolith.agda'
       printf '  adapter_present = %s,\n' "$adapter_present"
       printf '  composition_path = ["Econlib::Economy.exists_equilibrium", "Actions::MegaGeneralizedWalrasianEquilibrium", "Actions::CanonicalLearnerHodgeMaxwellCompositionTheorem"],\n'
       printf '  graph_status = "composition-ready; explicit cross-language adapter still required"\n'
-      printf '%s\n' '}'
-    } > .ci/discovery/econlib-crossrepo-sync.dhall
+      printf '%s\n' '}'    } > .ci/discovery/econlib-crossrepo-sync.dhall
 
     dhall text --file .ci/discovery/econlib-crossrepo-sync.dhall >/dev/null
     grep -Fq 'upstream_static_existence = "Economy.exists_equilibrium"' .ci/discovery/econlib-crossrepo-sync.dhall
@@ -497,8 +494,7 @@ FullCoupled/TheoremsMonolith.agda'
     trap 'rm -rf "$tmp"' EXIT
     git clone --quiet --depth 1 https://github.com/danlyng/Econlib.git "$tmp/Econlib"
 
-    theorem=FullCoupled/TheoremsMonolith.agda
-    ergodic="$tmp/Econlib/Econlib/Probability/Markov/Ergodic.lean"
+    theorem=FullCoupled/TheoremsMonolith.agda    ergodic="$tmp/Econlib/Econlib/Probability/Markov/Ergodic.lean"
 
     grep -Fq 'canonicalNoNontrivialFiniteCycle-theorem' "$theorem"
     grep -Fq 'canonicalNoFiniteStepConvergenceToFixedPoint' "$theorem"
@@ -597,8 +593,7 @@ DHALL
     FreeMonoidActionHomomorphism
     freeMonoidActionHomomorphism-from-square
     canonicalCount-freeMonoidActionHomomorphism
-    ExactNatObservationSimulation
-    ContinuousLeftInverseTheorem
+    ExactNatObservationSimulation    ContinuousLeftInverseTheorem
     canonicalRingStateInjective
     canonicalDenseNeighborhoodSeparation
     canonicalNoNontrivialFiniteCycle-theorem
@@ -697,8 +692,7 @@ DHALL
     POMDPWalrasianEquilibrium
     POMDPWalrasianTransport
     POMDPBeliefPolicyFactorization
-    POMDPWalrasianBeliefEquilibriumClosure
-    CanonicalLearnerHodgeMaxwellCompositionTheorem
+    POMDPWalrasianBeliefEquilibriumClosure    CanonicalLearnerHodgeMaxwellCompositionTheorem
     NLabMaxwellSemanticClosure
     NLabMaxwellFourLawSemanticallyClosed
     nLabMaxwellEulerLagrangeShell-equivalence
@@ -797,8 +791,7 @@ DHALL
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
-    (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
-    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
+    (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     ''} lane
 
 in script
