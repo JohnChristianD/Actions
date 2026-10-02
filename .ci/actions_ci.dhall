@@ -77,21 +77,11 @@ let script = merge {
     echo "schmitty-stage=copy-schmitty"
     cp -a "$SCHMITTY_AGDA_SOURCE/." "$tmp/schmitty/src/"
     chmod -R u+rwX "$tmp/schmitty"
-    mkdir -p "$tmp/schmitty/src/Reflection" "$tmp/schmitty/src/Category/Monad"
-    cat > "$tmp/schmitty/src/Category/Monad.agda" <<'AGDA'
-module Category.Monad where
-
-open import Effect.Monad public
-AGDA
+    mkdir -p "$tmp/schmitty/src/Reflection"
     cat > "$tmp/schmitty/src/Reflection/Term.agda" <<'AGDA'
 module Reflection.Term where
 
 open import Reflection.AST.Term public
-AGDA
-    cat > "$tmp/schmitty/src/Category/Monad/State.agda" <<'AGDA'
-module Category.Monad.State where
-
-open import Effect.Monad.State.Indexed public
 AGDA
     echo "schmitty-stage=install-reflection-term-compat"
     echo "schmitty-stage=copy-schmitty-lib"
