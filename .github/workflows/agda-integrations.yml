@@ -19,7 +19,6 @@ jobs:
         with:
           installer-version: '2.35.1'
       - name: Check external Agda import sync
-        env:
         run: |
           set -euo pipefail
           nix develop .#default -c nix run .#mirth-agda-import-sync -- --check
