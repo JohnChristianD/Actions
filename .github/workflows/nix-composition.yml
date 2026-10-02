@@ -124,6 +124,8 @@ jobs:
           path: |
             .ci/discovery/theorem-monolith-egraph-sync.dhall
             .ci/discovery/economic-closure-graph.dhall
+            build/agda-haskell/liquid-agda-manifest.tsv
+            build/agda-haskell/malonzo-files.txt
 
       - name: Cross-repo Econlib graph
         timeout-minutes: 15
