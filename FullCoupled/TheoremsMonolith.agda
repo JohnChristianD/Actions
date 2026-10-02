@@ -4,7 +4,7 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --cubical-compatible #-}
+{-# OPTIONS --cubical=compatible #-}
 {-# OPTIONS --allow-exec #-}
 {-# OPTIONS --guardedness #-}
 
