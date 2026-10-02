@@ -849,12 +849,47 @@ graph_canonical_safe_tactic_normalization_plan(Laws, Plan) :-
         Laws,
         Plan).
 
+graph_identity_activation8_injective_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "identityActivation8-injective",
+        Laws,
+        Plan).
+
+graph_information_preserving_all_tasks_injective_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "informationPreserving-all-tasks-injective",
+        Laws,
+        Plan).
+
+graph_canonical_gru_statistical_encode_injective_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "canonicalGRUStatisticalEncodeInjective",
+        Laws,
+        Plan).
+
+graph_zpf_gru_global_injectivity_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "ZPFGRUGlobalInjectivityTheorem",
+        Laws,
+        Plan).
+
+graph_canonical_integer_gru_token_encoding_injective_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "canonicalIntegerGRUTokenEncodingInjective",
+        Laws,
+        Plan).
+
 :- func graph_review_frontier_names = list(string).
 graph_review_frontier_names = [
     "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
     "AStarPlanMonoidTheorem",
     "CanonicalTokenArbitraryLengthGenerationTheorem",
     "NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem",
+    "identityActivation8-injective",
+    "informationPreserving-all-tasks-injective",
+    "canonicalGRUStatisticalEncodeInjective",
+    "ZPFGRUGlobalInjectivityTheorem",
+    "canonicalIntegerGRUTokenEncodingInjective",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
     "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof"
 ].
