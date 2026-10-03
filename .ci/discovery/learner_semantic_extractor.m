@@ -533,8 +533,8 @@ semantic_laws_from_declarations(All, [D | Ds], [Law | Laws]) :-
         Container),
     semantic_laws_from_declarations(All, Ds, Laws).
 
-is_reflexive(semantic_law(_, _, yes, _, _, _)).
-is_composite(semantic_law(_, _, _, yes, _, _)).
+is_reflexive(semantic_law(_, _, yes, _, _, _, _, _)).
+is_composite(semantic_law(_, _, _, yes, _, _, _, _)).
 
 law_source(Law) = Law ^ source.
 law_id(Law) = string.append(string.append(law_source(Law), "#"), law_name(Law)).
