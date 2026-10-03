@@ -421,12 +421,12 @@ theorem_monolith_has_declared_execution_mode(!IO) :-
     (
         ReadResult = ok(Lines),
         (
-            list.member("{-# OPTIONS --allow-exec #-}", Lines)
+            list.member("{-# OPTIONS --erased-cubical #-}", Lines)
         ->
             true
         ;
             io.write_string(
-                "ERROR: canonical theorem monolith is not declared --allow-exec\n",
+                "ERROR: canonical theorem monolith is not declared --erased-cubical\n",
                 !IO),
             io.set_exit_status(1, !IO)
         )
