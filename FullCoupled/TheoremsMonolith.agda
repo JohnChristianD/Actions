@@ -145,7 +145,7 @@ list-monoid-solver-append-assoc xs ys zs =
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (Level.suc (c ⊔ ℓ)) where
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (Level.suc (Level._⊔_ c ℓ)) where
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
