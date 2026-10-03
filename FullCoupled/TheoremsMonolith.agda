@@ -880,14 +880,14 @@ open AStarHaskellMonadSurface public
 aStar-frontier-monad :
   ∀ {Expression : Set} →
   RawMonad (State (List (List Expression)))
-aStar-frontier-monad = StateMonad _
+aStar-frontier-monad = stateMonad
 
 aStar-frontier-state :
   ∀ {Expression : Set} →
   RawMonadState
     (List (List Expression))
     (State (List (List Expression)))
-aStar-frontier-state = StateMonadState _
+aStar-frontier-state = stateMonadState
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
