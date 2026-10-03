@@ -1,5 +1,4 @@
 {-# OPTIONS --eta-equality #-}
-{-# OPTIONS --exact-split #-}
 {-# OPTIONS --backtracking-instance-search #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
@@ -8,7 +7,8 @@
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --confluence-check #-}
-{-# OPTIONS --erasure #-}
+{-# OPTIONS --erased-matches #-}
+{-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
 
