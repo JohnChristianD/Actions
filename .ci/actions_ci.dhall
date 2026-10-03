@@ -16,7 +16,7 @@ let script = merge {
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
     vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
     test -f "$vehicle_source/Vehicle.agda"
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
