@@ -367,7 +367,7 @@ identityActivation8-injective eq = eq
 ------------------------------------------------------------------------
 
 vehicleCommandName : String
-vehicleCommandName = Vehicle.VEHICLE_COMMAND
+vehicleCommandName = "vehicle"
 
 
 ------------------------------------------------------------------------
