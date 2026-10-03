@@ -6,6 +6,7 @@
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-cubical #-}
+{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --lossy-unification #-}

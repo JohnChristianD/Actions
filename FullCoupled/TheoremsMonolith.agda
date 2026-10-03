@@ -6,6 +6,7 @@
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-cubical #-}
+{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --lossy-unification #-}
@@ -116,6 +117,7 @@ open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
+
 
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
