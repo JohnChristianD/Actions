@@ -1,14 +1,13 @@
-{-# OPTIONS --eta-equality #-}
 {-# OPTIONS --backtracking-instance-search #-}
-{-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --erased-cubical #-}
 {-# OPTIONS --auto-inline #-}
-{-# OPTIONS --guarded #-}
 {-# OPTIONS --confluence-check #-}
+{-# OPTIONS --erased-cubical #-}
+{-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
+{-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
 
