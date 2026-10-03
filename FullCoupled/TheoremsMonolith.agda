@@ -145,15 +145,24 @@ list-monoid-solver-append-assoc xs ys zs =
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (Level.suc (Level._⊔_ c ℓ)) where
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (Level._⊔_ c ℓ)) where
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
-      let open RingCore.AlmostCommutativeRing R in
-      ∀ x y z → x + (y + z) ≈ (x + y) + z
+      ∀ x y z →
+      RingCore.AlmostCommutativeRing._≈_ R
+        (RingCore.AlmostCommutativeRing._+_ R x
+          (RingCore.AlmostCommutativeRing._+_ R y z))
+        (RingCore.AlmostCommutativeRing._+_ R
+          (RingCore.AlmostCommutativeRing._+_ R x y) z)
     distributivity :
-      let open RingCore.AlmostCommutativeRing R in
-      ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
+      ∀ x y z →
+      RingCore.AlmostCommutativeRing._≈_ R
+        (RingCore.AlmostCommutativeRing._*_ R x
+          (RingCore.AlmostCommutativeRing._+_ R y z))
+        (RingCore.AlmostCommutativeRing._+_ R
+          (RingCore.AlmostCommutativeRing._*_ R x y)
+          (RingCore.AlmostCommutativeRing._*_ R x z))
 
 generic-ring-solver-normalization-theorem :
   ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
@@ -5819,7 +5828,7 @@ eGraphAStarIterate-isomorphism step (suc n) s =
 --
 -- The Brouwer reduction below gives the classical Nash existential
 -- conclusion relative to an explicit analytical Brouwer witness. The
--- monolith does not hide or postulate a proof of Brouwer itself.
+-- monolith does not hide or assume a proof of Brouwer itself.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
