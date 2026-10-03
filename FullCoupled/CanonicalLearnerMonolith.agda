@@ -3,7 +3,6 @@
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --confluence-check #-}
-{-# OPTIONS --eta-equality #-}
 {-# OPTIONS --erased-cubical #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-matches #-}
@@ -12,7 +11,7 @@
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
 
-{-# OPTIONS --safe #-}
+-- {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
@@ -47,6 +46,7 @@ open import Agda.Primitive
 open import Agda.Primitive.Cubical renaming (itIsOne to 1=1)
 open import Agda.Builtin.Cubical.Path
 open import Agda.Builtin.Cubical.Sub renaming (Sub to _[_↦_]; primSubOut to outS)
+open import Haskell.Prelude
 
 -- Solver-associated Base modules.
 open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
