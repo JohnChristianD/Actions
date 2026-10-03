@@ -208,14 +208,14 @@ OrbitNonFixed : ∀ {S : Set} {step : S → S} → S → Set
 OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≢ step (iterate step n s)
 
 data Signed : Set where
-  neg : Nat → Signed
+  signedNeg : Nat → Signed
   zer : Signed
   pos : Nat → Signed
 
 signedCode : Int8 → Signed
 signedCode (int8 (+ 0)) = zer
 signedCode (int8 (+ (suc n))) = pos (suc n)
-signedCode (int8 (-[1+ n ])) = neg (suc n)
+signedCode (int8 (-[1+ n ])) = signedNeg (suc n)
 
 record FiniteRational : Set where
   constructor finiteRational
@@ -672,7 +672,7 @@ mix8 g old new = int8Add
   (int8Mul g new)
 
 gateCode : Signed → Int8
-gateCode (neg n) = int8OfNat 0
+gateCode (signedNeg n) = int8OfNat 0
 gateCode zer = int8OfNat 64
 gateCode (pos n) = int8OfNat 128
 
