@@ -635,7 +635,7 @@ gruCandidate8 : Int8 → Int8 → Int8
 gruCandidate8 h x = int8Add h x
 
 complement128 : Int8 → Int8
-complement128 g = int8 (+ 128 - code g)
+complement128 g = int8Sub one8 g
 
 mix8 : Int8 → Int8 → Int8 → Int8
 mix8 g old new = int8Add
@@ -643,9 +643,9 @@ mix8 g old new = int8Add
   (int8Mul g new)
 
 gateCode : Signed → Int8
-gateCode (signedNeg n) = int8OfNat 0
-gateCode signedZer = int8OfNat 64
-gateCode (signedPos n) = int8OfNat 128
+gateCode (signedNeg n) = zero8
+gateCode signedZer     = zero8
+gateCode (signedPos n) = one8
 
 gateFromInput : Int8 → Int8
 gateFromInput x = gateCode (signedCode x)
