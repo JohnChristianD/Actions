@@ -16,7 +16,7 @@ let script = merge {
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
     vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
     test -f "$vehicle_source/Vehicle.agda"
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$vehicle_source" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
@@ -224,7 +224,6 @@ let script = merge {
     grep -Fq 'canonicalGRUStatisticalEncodeInjective' "$theorem" || { echo "GRU statistical injectivity theorem missing"; exit 1; }
     grep -Fq 'CanonicalGRUStatisticalInjectivityTheorem' "$theorem" || { echo "GRU statistical injectivity package missing"; exit 1; }
     grep -Fq 'vehicleCommandName' "$theorem" || { echo "Vehicle theorem-monolith witness missing"; exit 1; }
-    grep -Fq 'import Vehicle' "$theorem" || { echo "Vehicle import block missing"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
     [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
@@ -505,7 +504,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
     dhall text --file "$report" >/dev/null
@@ -660,7 +659,7 @@ DHALL
     mmc --version
     dhall --version
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
