@@ -1,4 +1,4 @@
-{-# OPTIONS --backtracking-instance-search #-}
+
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --auto-inline #-}
