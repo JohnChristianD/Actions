@@ -1205,10 +1205,9 @@ canonicalTotalCountAfter K (suc n) s =
 
 canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≢ s
 canonicalAperiodic K s n cyc = plus-suc-not-self (totalCount (lcbCounts s)) n
-  (trans (plus-suc (totalCount (lcbCounts s)) n)
-    (trans (cong suc (canonicalTotalCountAfter K n s))
-      (trans (sym (canonicalTotalCountAfter K (suc n) s))
-        (cong (λ t → totalCount (lcbCounts t)) cyc))))
+  (trans
+    (sym (canonicalTotalCountAfter K (suc n) s))
+    (cong (λ t → totalCount (lcbCounts t)) cyc))
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
