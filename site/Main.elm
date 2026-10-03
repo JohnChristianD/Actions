@@ -1065,20 +1065,6 @@ graphView model =
                         ++ cssColor "rec2020" mutedInkColor.rec2020
                         ++ ";"
 
-                neighborStyle =
-                    "fill:"
-                        ++ cssColor "srgb" surfaceColor.srgb
-                        ++ ";fill:"
-                        ++ cssColor "display-p3" surfaceColor.p3
-                        ++ ";fill:"
-                        ++ cssColor "rec2020" surfaceColor.rec2020
-                        ++ ";stroke:"
-                        ++ cssColor "srgb" mutedInkColor.srgb
-                        ++ ";stroke:"
-                        ++ cssColor "display-p3" mutedInkColor.p3
-                        ++ ";stroke:"
-                        ++ cssColor "rec2020" mutedInkColor.rec2020
-                        ++ ";"
             in
             div [ HA.class "graph-canvas dynamic-surface" ]
                 [ S.svg
