@@ -389,7 +389,7 @@ maximumBy score values =
 candidateColors : List PerceptualColor
 candidateColors =
     List.map
-        (\index ->
+        (\\index ->
             customPerceptualColor index (dynamicDisplayCandidate index)
         )
         (List.range 0 23)
@@ -407,27 +407,98 @@ maximinColorSet candidates =
         |> Maybe.withDefault (List.take 6 candidates)
 
 
+maximinPalette : List PerceptualColor
+maximinPalette =
+    maximinColorSet candidateColors
+
+
+bestCandidate : (PerceptualColor -> Float) -> List Int -> List PerceptualColor -> Maybe PerceptualColor
+bestCandidate score excluded candidates =
+    candidates
+        |> List.filter (\\candidate -> not (List.member candidate.id excluded))
+        |> maximumBy score
+
+
+bestContrastCandidate :
+    (PerceptualColor -> Float)
+    -> Float
+    -> DisplayColor
+    -> List Int
+    -> List PerceptualColor
+    -> Maybe PerceptualColor
+bestContrastCandidate score threshold other excluded candidates =
+    candidates
+        |> List.filter
+            (\\candidate ->
+                not (List.member candidate.id excluded)
+                    && contrastRatio candidate.display other >= threshold
+            )
+        |> maximumBy score
+
+
 globalPaletteChoice : PaletteChoice
 globalPaletteChoice =
     let
-        fallback =
-            { background = fallbackPerceptualColor
-            , surface = customPerceptualColor 1 (dynamicDisplayCandidate 1)
-            , ink = customPerceptualColor 2 (dynamicDisplayCandidate 2)
-            , mutedInk = customPerceptualColor 3 (dynamicDisplayCandidate 3)
-            , accent = customPerceptualColor 4 (dynamicDisplayCandidate 4)
-            , accentInk = customPerceptualColor 5 (dynamicDisplayCandidate 5)
-            }
+        contrastThreshold =
+            4.5
 
-        maximinSet =
-            maximinColorSet candidateColors
+        background =
+            bestCandidate
+                (\\candidate -> relativeLuminance candidate.display)
+                []
+                candidateColors
+                |> Maybe.withDefault fallbackPerceptualColor
 
-        choices =
-            permutationsOfLength 6 maximinSet
-                |> List.filterMap paletteChoiceFromList
+        surface =
+            bestCandidate
+                (\\candidate -> relativeLuminance candidate.display)
+                [ background.id ]
+                candidateColors
+                |> Maybe.withDefault background
+
+        ink =
+            bestCandidate
+                (\\candidate -> -relativeLuminance candidate.display)
+                [ background.id, surface.id ]
+                candidateColors
+                |> Maybe.withDefault fallbackPerceptualColor
+
+        mutedInk =
+            bestCandidate
+                (\\candidate ->
+                    min
+                        (contrastRatio background.display candidate.display)
+                        (contrastRatio surface.display candidate.display)
+                )
+                [ background.id, surface.id, ink.id ]
+                candidateColors
+                |> Maybe.withDefault ink
+
+        accent =
+            bestContrastCandidate
+                (\\candidate -> perceptualDistanceSquared background candidate)
+                contrastThreshold
+                background.display
+                [ background.id, surface.id, ink.id, mutedInk.id ]
+                candidateColors
+                |> Maybe.withDefault mutedInk
+
+        accentInk =
+            bestContrastCandidate
+                (\\candidate -> perceptualDistanceSquared accent candidate)
+                contrastThreshold
+                accent.display
+                [ background.id, surface.id, ink.id, mutedInk.id, accent.id ]
+                candidateColors
+                |> Maybe.withDefault ink
     in
-    maximumBy paletteGlobalScore choices
-        |> Maybe.withDefault fallback
+    { background = background
+    , surface = surface
+    , ink = ink
+    , mutedInk = mutedInk
+    , accent = accent
+    , accentInk = accentInk
+    }
 
 
 srgbToLinear : Float -> Float
