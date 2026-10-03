@@ -14,7 +14,9 @@ let script = merge {
     grep -Fq -- '{-# OPTIONS --cubical=erased #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
+    test -f "$vehicle_source/Vehicle.agda"
+    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$vehicle_source" FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
