@@ -148,7 +148,7 @@ body_clause(Name, Line, Body) :-
         string.join_list("=", [Rhs | Rest])).
 
 :- pred semantic_reflexive(semantic_decl::in) is semidet.
-semantic_reflexive(semantic_decl(_, _, _, Body)) :-
+semantic_reflexive(semantic_decl(_, _, _, Body, _, _)) :-
     string.strip(Body) = "refl".
 
 :- pred identifier_char(char::in) is semidet.
@@ -186,7 +186,7 @@ contains_identifier(Text, Name) :-
     occurrence_boundary(Text, Name, Position).
 
 :- pred semantic_signature(semantic_decl::in) is semidet.
-semantic_signature(semantic_decl(_, Name, Signature, _)) :-
+semantic_signature(semantic_decl(_, Name, Signature, _, _, _)) :-
     Name \= "",
     Signature \= "".
 
@@ -471,7 +471,7 @@ semantic_declarations(Result, !IO) :-
 :- pred dependency_names(semantic_decl::in, list(semantic_decl)::in,
     list(string)::out) is det.
 dependency_names(
-    semantic_decl(Source, Name, Signature, Body), All, Dependencies) :-
+    semantic_decl(Source, Name, Signature, Body, _, _), All, Dependencies) :-
     DependencyText = concat_strings([Signature, " ", Body]),
     find_dependencies(Source, Name, DependencyText, All, [], Rev),
     list.reverse(Rev, Dependencies).
@@ -480,7 +480,7 @@ dependency_names(
     list(semantic_decl)::in, list(string)::in, list(string)::out) is det.
 find_dependencies(_, _, _, [], Acc, Acc).
 find_dependencies(Source, Name, Body, [D | Ds], Acc0, Acc) :-
-    D = semantic_decl(TargetSource, TargetName, _, _),
+    D = semantic_decl(TargetSource, TargetName, _, _, _, _),
     (
         TargetName = Name
     ->

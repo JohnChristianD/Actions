@@ -4,7 +4,7 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --erased-cubical #-}
+{-# OPTIONS --cubical=erased #-}
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --confluence-check #-}
@@ -66,7 +66,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*)
 -- Solver-associated Base modules.
 open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
-open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_)
+open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; _+_; _*_)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product.Base
 open import Data.Sum.Base
@@ -110,7 +110,7 @@ open import Effect.Monad using (RawMonad)
 open import Effect.Monad.State using (State; RawMonadState; StateMonad; StateMonadState)
 open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
 open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
-open import Data.Integer using (_≤_) renaming (_≤_ to _≤ℤ_)
+open import Data.Integer using () renaming (_≤_ to _≤ℤ_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.String using (String)

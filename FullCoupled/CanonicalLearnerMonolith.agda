@@ -4,7 +4,7 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --erased-cubical #-}
+{-# OPTIONS --cubical=erased #-}
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --confluence-check #-}
@@ -47,7 +47,7 @@ open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*)
 -- Solver-associated Base modules.
 open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
-open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_)
+open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; _+_; _*_)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product.Base
 open import Data.Sum.Base
