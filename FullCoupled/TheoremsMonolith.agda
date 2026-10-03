@@ -130,11 +130,13 @@ record GenericRingSolverNormalizationTheorem {c ℓ}
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
-      let open RingCore.AlmostCommutativeRing R in
-      ∀ x y z → x + (y + z) ≈ (x + y) + z
+      let open RingCore.AlmostCommutativeRing R
+        renaming (_+_ to _+R_; _≈_ to _≈R_) in
+      ∀ x y z → x +R (y +R z) ≈R (x +R y) +R z
     distributivity :
-      let open RingCore.AlmostCommutativeRing R in
-      ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
+      let open RingCore.AlmostCommutativeRing R
+        renaming (_+_ to _+R_; _*_ to _*R_; _≈_ to _≈R_) in
+      ∀ x y z → x *R (y +R z) ≈R (x *R y) +R (x *R z)
 
 generic-ring-solver-normalization-theorem :
   ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
