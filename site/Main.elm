@@ -459,7 +459,7 @@ globalPaletteChoice =
 
         ink =
             bestCandidate
-                (\candidate -> -relativeLuminance candidate.display)
+                (\candidate -> 0 - relativeLuminance candidate.display)
                 [ background.id, surface.id ]
                 candidateColors
                 |> Maybe.withDefault fallbackPerceptualColor
