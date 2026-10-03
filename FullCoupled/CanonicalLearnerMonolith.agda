@@ -346,7 +346,7 @@ scoreEntryOrder : DecTotalOrder 0ℓ 0ℓ 0ℓ
 scoreEntryOrder = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order ≤-decTotalOrder)
 
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
-scoreList K q c = ListBase.map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
+scoreList {A} K q c = ListBase.map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
 
 sortScores : List ScoreEntry → List ScoreEntry
 sortScores = Sort.sort scoreEntryOrder
@@ -484,7 +484,7 @@ record SparseWeight : Set where
 open SparseWeight public
 
 sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat → SparseWeight
-sparsemaxWeight K q c a = sparseWeight ((k * int8Magnitude (scoreA {A = A} q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
+sparsemaxWeight {A} K q c a = sparseWeight ((k * int8Magnitude (scoreA {A = A} q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
   where
     xs = sortScores (scoreList K q c)
     k = supportSize K q c
@@ -511,7 +511,7 @@ sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 ------------------------------------------------------------------------
 
 updateLCBCount : ∀ {A : Set} → Nat → LCBCountState A → LCBCountState A
-updateLCBCount a (lcbCountState counts total) =
+updateLCBCount {A} a (lcbCountState counts total) =
   lcbCountState (incAt {A = A} counts a) (suc total)
 
 finiteQLog8 : Int8 → FiniteRational
