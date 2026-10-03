@@ -5,12 +5,12 @@
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --eta-equality #-}
 {-# OPTIONS --guarded #-}
+{-# OPTIONS --erased-cubical #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
-{-# OPTIONS --erased-cubical #-}
 
 {-# OPTIONS --safe #-}
 
