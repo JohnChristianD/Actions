@@ -7,7 +7,6 @@
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-cubical #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
-{-# OPTIONS -v #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --lossy-unification #-}
