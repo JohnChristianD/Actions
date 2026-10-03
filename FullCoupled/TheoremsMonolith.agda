@@ -63,6 +63,8 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 
 -- Solver-associated Base modules.
+open import Data.Bool.Base hiding (_≤_; _<_)
+open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; suc; neg; sign; _+_; _*_)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
 open import Data.Product.Base
@@ -128,11 +130,20 @@ record GenericRingSolverNormalizationTheorem {c ℓ}
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
-      let open RingCore.AlmostCommutativeRing R in
-      ∀ x y z → x + (y + z) ≈ (x + y) + z
+      ∀ x y z →
+      RingCore.AlmostCommutativeRing._≈_ R
+        (RingCore.AlmostCommutativeRing._+_ R x
+          (RingCore.AlmostCommutativeRing._+_ R y z))
+        (RingCore.AlmostCommutativeRing._+_ R
+          (RingCore.AlmostCommutativeRing._+_ R x y) z)
     distributivity :
-      let open RingCore.AlmostCommutativeRing R in
-      ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
+      ∀ x y z →
+      RingCore.AlmostCommutativeRing._≈_ R
+        (RingCore.AlmostCommutativeRing._*_ R x
+          (RingCore.AlmostCommutativeRing._+_ R y z))
+        (RingCore.AlmostCommutativeRing._+_ R
+          (RingCore.AlmostCommutativeRing._*_ R x y)
+          (RingCore.AlmostCommutativeRing._*_ R x z))
 
 generic-ring-solver-normalization-theorem :
   ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
