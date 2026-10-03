@@ -2472,7 +2472,7 @@ coherentLimitDecoder-left-inverse :
   ∀ level state →
   decode C level (encode level state) ≡ state →
   limitDecode C (limitEncode state) ≡ state
-coherentLimitDecoder-left-inverse C level state finiteLeftInverse =
+coherentLimitDecoder-left-inverse {limitEncode = limitEncode} C level state finiteLeftInverse =
   trans
     (sym (decoderCoherence C level (limitEncode state)))
     (trans
