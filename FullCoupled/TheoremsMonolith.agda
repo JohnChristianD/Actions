@@ -118,7 +118,7 @@ open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
-open import Effect.Monad.State using (StateMonad; StateMonadState)
+open import Category.Monad.State using (StateMonad; StateMonadState)
 
 
 
