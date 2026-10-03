@@ -15,7 +15,6 @@
 
 {-# OPTIONS --no-termination-check #-}
 
-{-# OPTIONS --allow-exec #-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
