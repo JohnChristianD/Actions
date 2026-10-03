@@ -32,7 +32,7 @@
 -- A discovered graph edge is not itself a proof. A theorem is authoritative
 -- only when its proposition is present here and its proof is accepted by
 -- the configured Agda check. The theorem monolith uses
--- --allow-exec for its retained Vehicle/reflection integration. Likewise, a
+-- --allow-exec remains enabled for the theorem checker boundary. Likewise, a
 -- semantic contract is not an existence theorem:
 -- the generalized Walrasian and production-side interfaces record the
 -- conditions of an equilibrium, while existence, convergence, market
@@ -50,8 +50,6 @@ module FullCoupled.TheoremsMonolith where
 -- Synced by Mirth; keep this block in the theorem monolith and
 -- do not materialize a third Agda source file.
 ------------------------------------------------------------------------
-
-import Vehicle
 
 ------------------------------------------------------------------------
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
@@ -337,7 +335,7 @@ identityActivation8-injective eq = eq
 ------------------------------------------------------------------------
 
 vehicleCommandName : String
-vehicleCommandName = Vehicle.VEHICLE_COMMAND
+vehicleCommandName = "vehicle"
 
 
 ------------------------------------------------------------------------
