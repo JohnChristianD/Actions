@@ -1028,8 +1028,8 @@ softSparse-zero-to-hardSparse K s h {a} distinct =
   ≤-antisym (h distinct) z≤n
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
-replaceOptimizer s o = fullLearnerState (watkins s) (gru s) (optimizer s)
-  o (lcbCounts s) (qLogControl s) (qLogValue s)
+replaceOptimizer s o = fullLearnerState (watkins s) (gru s) o
+  (lcbCounts s) (qLogControl s) (qLogValue s)
 
 canonicalPolicy-optimizer-invariant :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (o : F4IntUState) →
