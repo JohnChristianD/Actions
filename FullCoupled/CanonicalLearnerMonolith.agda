@@ -1092,7 +1092,7 @@ canonicalWatkinsTarget-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerS
   int8Add
     (int8Add
       (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
-      (int8Mul canonicalDiscount8 (maxCriticValue8 (critic (watkins s)))))
+      (int8Mul canonicalDiscount8 (maxCriticValue8 (actionSpaceK K) (critic (watkins s)))))
     (canonicalEndogenousFeedback K s)
 canonicalWatkinsTarget-law K s = refl
 
