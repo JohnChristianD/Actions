@@ -13,7 +13,7 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
 
--- {-# OPTIONS --safe #-}
+{-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
