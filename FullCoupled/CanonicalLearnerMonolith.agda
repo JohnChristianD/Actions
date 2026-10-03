@@ -10,6 +10,7 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
+{-# OPTIONS --erased-cubical #-}
 
 {-# OPTIONS --safe #-}
 
