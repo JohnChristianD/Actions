@@ -2201,7 +2201,7 @@ fractalTransportedEncodeInjective :
   transport F r (encode F lower s) ≡
   transport F r (encode F lower t) →
   s ≡ t
-fractalTransportedEncodeInjective F r eq =
+fractalTransportedEncodeInjective F {upper = upper} r eq =
   fractalLevelInjective F upper
     (trans
       (transportEncode F r _)
