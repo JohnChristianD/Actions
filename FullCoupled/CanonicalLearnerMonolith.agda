@@ -1213,7 +1213,7 @@ canonicalAperiodic K s n cyc = plus-suc-not-self (totalCount (lcbCounts s)) n
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
-  canonicalStep-not-fixed K (iterateCanonical K n s) (sym eq)
+  canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
 
 canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
