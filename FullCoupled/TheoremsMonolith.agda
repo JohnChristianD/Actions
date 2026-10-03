@@ -2032,7 +2032,7 @@ iterateConjugacy :
   ≡
   iterateStep physicalStep n (encode s)
 iterateConjugacy encode stepConjugacy zero s = refl
-iterateConjugacy encode stepConjugacy (suc n) s =
+iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (suc n) s =
   trans
     (iterateConjugacy
       encode
