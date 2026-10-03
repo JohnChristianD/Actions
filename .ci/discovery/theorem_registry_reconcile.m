@@ -408,9 +408,11 @@ main(!IO) :-
     io::di, io::uo) is det.
 
 require_clean(Actions, Graph, !IO) :-
+    registry_result(_, _, ActionsStale) = Actions,
+    registry_result(_, _, GraphStale) = Graph,
     (
-        list.length(registry_result.stale(Actions)) = 0,
-        list.length(registry_result.stale(Graph)) = 0
+        list.length(ActionsStale) = 0,
+        list.length(GraphStale) = 0
     ->
         true
     ;
