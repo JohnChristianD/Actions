@@ -386,13 +386,14 @@ maximumBy score values =
                 )
 
 
+candidatePerceptualColor : Int -> PerceptualColor
+candidatePerceptualColor index =
+    customPerceptualColor index (dynamicDisplayCandidate index)
+
+
 candidateColors : List PerceptualColor
 candidateColors =
-    List.map
-        (\index ->
-            customPerceptualColor index (dynamicDisplayCandidate index)
-        )
-        (List.range 0 23)
+    List.map candidatePerceptualColor (List.range 0 23)
 
 
 fallbackPerceptualColor : PerceptualColor
