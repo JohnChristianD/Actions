@@ -389,7 +389,7 @@ maximumBy score values =
 candidateColors : List PerceptualColor
 candidateColors =
     List.map
-        (\\index ->
+        (\index ->
             customPerceptualColor index (dynamicDisplayCandidate index)
         )
         (List.range 0 23)
@@ -415,7 +415,7 @@ maximinPalette =
 bestCandidate : (PerceptualColor -> Float) -> List Int -> List PerceptualColor -> Maybe PerceptualColor
 bestCandidate score excluded candidates =
     candidates
-        |> List.filter (\\candidate -> not (List.member candidate.id excluded))
+        |> List.filter (\candidate -> not (List.member candidate.id excluded))
         |> maximumBy score
 
 
@@ -429,7 +429,7 @@ bestContrastCandidate :
 bestContrastCandidate score threshold other excluded candidates =
     candidates
         |> List.filter
-            (\\candidate ->
+            (\candidate ->
                 not (List.member candidate.id excluded)
                     && contrastRatio candidate.display other >= threshold
             )
@@ -444,28 +444,28 @@ globalPaletteChoice =
 
         background =
             bestCandidate
-                (\\candidate -> relativeLuminance candidate.display)
+                (\candidate -> relativeLuminance candidate.display)
                 []
                 candidateColors
                 |> Maybe.withDefault fallbackPerceptualColor
 
         surface =
             bestCandidate
-                (\\candidate -> relativeLuminance candidate.display)
+                (\candidate -> relativeLuminance candidate.display)
                 [ background.id ]
                 candidateColors
                 |> Maybe.withDefault background
 
         ink =
             bestCandidate
-                (\\candidate -> -relativeLuminance candidate.display)
+                (\candidate -> -relativeLuminance candidate.display)
                 [ background.id, surface.id ]
                 candidateColors
                 |> Maybe.withDefault fallbackPerceptualColor
 
         mutedInk =
             bestCandidate
-                (\\candidate ->
+                (\candidate ->
                     min
                         (contrastRatio background.display candidate.display)
                         (contrastRatio surface.display candidate.display)
@@ -476,7 +476,7 @@ globalPaletteChoice =
 
         accent =
             bestContrastCandidate
-                (\\candidate -> perceptualDistanceSquared background candidate)
+                (\candidate -> perceptualDistanceSquared background candidate)
                 contrastThreshold
                 background.display
                 [ background.id, surface.id, ink.id, mutedInk.id ]
@@ -485,7 +485,7 @@ globalPaletteChoice =
 
         accentInk =
             bestContrastCandidate
-                (\\candidate -> perceptualDistanceSquared accent candidate)
+                (\candidate -> perceptualDistanceSquared accent candidate)
                 contrastThreshold
                 accent.display
                 [ background.id, surface.id, ink.id, mutedInk.id, accent.id ]
