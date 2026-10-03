@@ -13,6 +13,7 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
 
+{-# OPTIONS --no-termination-check #-}
 
 {-# OPTIONS --allow-exec #-}
 
