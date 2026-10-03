@@ -949,7 +949,7 @@ record AgdaSemanticModuleFamily : Set₁ where
   constructor agdaSemanticModuleFamily
   field
     Expression : RepositoryAgdaModule → Set
-    State : RepositoryAgdaModule → Set
+    moduleState : RepositoryAgdaModule → Set
     closure :
       (m : RepositoryAgdaModule) →
       AStarSemanticClosure
