@@ -1233,7 +1233,7 @@ pessimisticInit = int8OfNat 128
 pessimisticCritic : ∀ {A} → CriticState A
 pessimisticCritic {A} = criticState (λ _ → pessimisticInit)
 
-pessimisticCritic-law : ∀ {A} (i : Nat) → values pessimisticCritic i ≡ pessimisticInit
+pessimisticCritic-law : ∀ {A} (i : Nat) → values (pessimisticCritic {A = A}) i ≡ pessimisticInit
 pessimisticCritic-law {A = A} i = refl
 
 canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
