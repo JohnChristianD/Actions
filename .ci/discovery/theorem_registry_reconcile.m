@@ -63,16 +63,19 @@ write_lines(Stream, [Line | Lines], !IO) :-
     io.write_string(Stream, "\n", !IO),
     write_lines(Stream, Lines, !IO).
 
-:- pred read_lines(string::in, list(string)::out,
-    io::di, io::uo) is semidet.
+:- pred read_lines(string::in, list(string)::out, bool::out,
+    io::di, io::uo) is det.
 
-read_lines(Path, Lines, !IO) :-
+read_lines(Path, Lines, Ok, !IO) :-
     io.read_named_file_as_lines(Path, Result, !IO),
     (
         Result = ok(Lines)
+    ->
+        Ok = yes
     ;
         Result = error(_),
-        fail
+        Lines = [],
+        Ok = no
     ).
 
 :- pred write_file(string::in, list(string)::in,
@@ -116,7 +119,8 @@ parse_quoted_symbol(Line, Name) :-
 filter_actions_lines([], _, InRequired, Acc, Stale0, Stale, StaleNames0,
     StaleNames, Out, Found0, Found, !IO) :-
     (
-        InRequired = yes,
+        InRequired = yes
+    ->
         io.write_string(
             "ERROR: unterminated required registry in actions_ci.dhall\n",
             !IO),
@@ -263,8 +267,9 @@ filter_graph_lines([Line | Lines], Live, State0, Acc0,
     registry_result::out) is det.
 
 reconcile_actions(Live, Mode, !IO, Result) :-
+    read_lines(actions_ci_path, Lines0, ReadOk, !IO),
     (
-        read_lines(actions_ci_path, Lines0, !IO)
+        ReadOk = yes
     ->
         filter_actions_lines(
             Lines0, Live, no, [], 0, StaleCount,
@@ -305,8 +310,9 @@ reconcile_actions(Live, Mode, !IO, Result) :-
     registry_result::out) is det.
 
 reconcile_graph(Live, Mode, !IO, Result) :-
+    read_lines(graph_search_path, Lines0, ReadOk, !IO),
     (
-        read_lines(graph_search_path, Lines0, !IO)
+        ReadOk = yes
     ->
         filter_graph_lines(
             Lines0, Live, "outside", [], 0, StaleCount,
