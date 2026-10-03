@@ -4,15 +4,15 @@ import std.prelude
 import std.world
 
 def main {
-    "set -euo pipefail; learner=\"$1\"; theorem=\"$2\"; bridge=\"$3\"; test -s \"$learner\"; test -s \"$theorem\"; mkdir -p \"$(dirname \"$bridge\")\"; cat > \"$bridge\" <<'HASKELL'
+    "set -euo pipefail; learner=\"$1\"; theorem=\"$2\"; bridge=\"$3\"; test -s \"$learner\"; test -s \"$theorem\"; mkdir -p \"$(dirname \"$bridge\")\"; learner_sha=\$(sha256sum \"$learner\" | cut -d' ' -f1); theorem_sha=\$(sha256sum \"$theorem\" | cut -d' ' -f1); cat > \"$bridge\" <<HASKELL
 module LiquidGeneratedBridge where
 
 import qualified MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith
 import qualified MAlonzo.Code.FullCoupled.TheoremsMonolith
 
-generatedAgdaBackend :: ()
-generatedAgdaBackend = ()
+generatedAgdaBackendFingerprint :: String
+generatedAgdaBackendFingerprint = \"$learner_sha:$theorem_sha\"
 HASKELL
-test -s \"$bridge\"; grep -Fq 'MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith' \"$bridge\"; grep -Fq 'MAlonzo.Code.FullCoupled.TheoremsMonolith' \"$bridge\"; echo 'mirth-liquid-generated-bridge=pass'
+test -s \"$bridge\"; grep -Fq 'MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith' \"$bridge\"; grep -Fq 'MAlonzo.Code.FullCoupled.TheoremsMonolith' \"$bridge\"; grep -Fq \"$learner_sha\" \"$bridge\"; grep -Fq \"$theorem_sha\" \"$bridge\"; echo 'mirth-liquid-generated-bridge=pass'; echo \"mirth-liquid-generated-fingerprint=$learner_sha:$theorem_sha\"
 " print
 }
