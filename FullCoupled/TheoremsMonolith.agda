@@ -9,7 +9,6 @@
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
-{-# OPTIONS --no-universe-polymorphism #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
@@ -115,7 +114,7 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
-open import Data.List.Properties using (++-assoc; ++-monoid)
+open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
 
@@ -123,6 +122,7 @@ import Data.List.Effectful as ListEffectful
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
 open import FullCoupled.CanonicalLearnerMonolith as C
+open import Data.List.Properties using (++-assoc)
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
