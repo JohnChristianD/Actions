@@ -42,10 +42,7 @@ module FullCoupled.CanonicalLearnerMonolith where
 -- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Primitive
-open import Agda.Primitive.Cubical renaming (itIsOne to 1=1)
-open import Agda.Builtin.Cubical.Path
-open import Agda.Builtin.Cubical.Sub renaming (Sub to _[_↦_]; primSubOut to outS)
+open import Agda.Builtin.Cubical.Path using (Path; PathP)
 
 -- Solver-associated Base modules.
 open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
@@ -91,7 +88,7 @@ open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary using (¬_)
 open import Effect.Monad using (RawMonad)
-open import Effect.Monad.State using (State; RawMonadState; StateMonad; StateMonadState)
+open import Effect.Monad.State using (State; RawMonadState)
 open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
 open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
 open import Data.Integer using () renaming (_≤_ to _≤ℤ_)
