@@ -169,8 +169,8 @@ generic-ring-solver-normalization-theorem :
   GenericRingSolverNormalizationTheorem R
 generic-ring-solver-normalization-theorem R =
   genericRingSolverNormalizationTheorem
-    (generic-ring-solver-associativity R)
-    (generic-ring-solver-distributivity R)
+    (RingCore.AlmostCommutativeRing.+-assoc R)
+    (RingCore.AlmostCommutativeRing.distribˡ R)
 
 record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
