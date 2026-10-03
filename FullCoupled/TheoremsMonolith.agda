@@ -1,6 +1,6 @@
 
-{-# OPTIONS --experimental-lazy-instances #-}
-{-# OPTIONS --polarity #-}
+
+
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --syntactic-equality #-}
@@ -10,7 +10,7 @@
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --no-projection-like #-}
-{-# OPTIONS --lossy-unification #-}
+
 {-# OPTIONS --guardedness #-}
 
 {-# OPTIONS --safe #-}
@@ -115,15 +115,15 @@ open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
+open import Data.List.Properties using (++-assoc)
+open import Effect.Monad.State renaming (monad to stateMonad; monadState to stateMonadState)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
-open import Effect.Monad.State renaming (monad to stateMonad; monadState to stateMonadState)
 
 
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
 open import FullCoupled.CanonicalLearnerMonolith as C
-open import Data.List.Properties using (++-assoc)
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
