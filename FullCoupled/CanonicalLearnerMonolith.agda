@@ -546,7 +546,7 @@ finiteSignedRationalBias8 : FiniteRational → Int8
 finiteSignedRationalBias8 (finiteRational zero n d) = zero8
 finiteSignedRationalBias8 (finiteRational (suc s) n zero) = zero8
 finiteSignedRationalBias8 (finiteRational (suc s) n (suc d)) =
-  int8Neg (int8OfNat ((munchausenScale8 * n) / suc d))
+  int8Neg (int8OfNat (Data.Nat._/_ (munchausenScale8 * n) (suc d)))
 
 qLog2Bias8 : Int8 → Int8
 qLog2Bias8 x =
