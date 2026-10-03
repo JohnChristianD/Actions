@@ -9,6 +9,7 @@
 :- implementation.
 
 :- import_module bool.
+:- import_module int.
 :- import_module list.
 :- import_module learner_semantic_extractor.
 :- import_module string.
@@ -109,10 +110,11 @@ parse_quoted_symbol(Line, Name) :-
     list(string)::out,
     list(string)::out,
     bool::in,
-    bool::out) is det.
+    bool::out,
+    io::di, io::uo) is det.
 
 filter_actions_lines([], _, InRequired, Acc, Stale0, Stale, StaleNames0,
-    StaleNames, Out, Found0, Found) :-
+    StaleNames, Out, Found0, Found, !IO) :-
     (
         InRequired = yes,
         io.write_string(
@@ -128,7 +130,7 @@ filter_actions_lines([], _, InRequired, Acc, Stale0, Stale, StaleNames0,
     Found = Found0.
 
 filter_actions_lines([Line | Lines], Live, InRequired0, Acc0,
-    Stale0, Stale, StaleNames0, StaleNames, Out, Found0, Found) :-
+    Stale0, Stale, StaleNames0, StaleNames, Out, Found0, Found, !IO) :-
     Trimmed = string.strip(Line),
     (
         InRequired0 = no,
@@ -137,7 +139,7 @@ filter_actions_lines([Line | Lines], Live, InRequired0, Acc0,
         filter_actions_lines(
             Lines, Live, yes, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, yes, Found)
+            Out, yes, Found, !IO)
     ;
         InRequired0 = yes,
         Trimmed = "'"
@@ -145,7 +147,7 @@ filter_actions_lines([Line | Lines], Live, InRequired0, Acc0,
         filter_actions_lines(
             Lines, Live, no, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ;
         InRequired0 = yes,
         Trimmed \= "",
@@ -154,7 +156,7 @@ filter_actions_lines([Line | Lines], Live, InRequired0, Acc0,
         filter_actions_lines(
             Lines, Live, yes, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ;
         InRequired0 = yes,
         Trimmed \= ""
@@ -163,12 +165,12 @@ filter_actions_lines([Line | Lines], Live, InRequired0, Acc0,
         filter_actions_lines(
             Lines, Live, yes, Acc0,
             Stale0 + 1, Stale, StaleNames1, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ;
         filter_actions_lines(
             Lines, Live, InRequired0, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ).
 
 :- pred graph_state_transition(
@@ -190,10 +192,11 @@ graph_state_transition(
     list(string)::out,
     list(string)::out,
     bool::in,
-    bool::out) is det.
+    bool::out,
+    io::di, io::uo) is det.
 
 filter_graph_lines([], _, State, Acc, Stale0, Stale, StaleNames0,
-    StaleNames, Out, Found0, Found) :-
+    StaleNames, Out, Found0, Found, !IO) :-
     (
         State \= "outside"
     ->
@@ -210,7 +213,7 @@ filter_graph_lines([], _, State, Acc, Stale0, Stale, StaleNames0,
     Found = Found0.
 
 filter_graph_lines([Line | Lines], Live, State0, Acc0,
-    Stale0, Stale, StaleNames0, StaleNames, Out, Found0, Found) :-
+    Stale0, Stale, StaleNames0, StaleNames, Out, Found0, Found, !IO) :-
     Trimmed = string.strip(Line),
     (
         State0 = "outside",
@@ -219,7 +222,7 @@ filter_graph_lines([Line | Lines], Live, State0, Acc0,
         filter_graph_lines(
             Lines, Live, NewState, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, yes, Found)
+            Out, yes, Found, !IO)
     ;
         State0 \= "outside",
         Trimmed = "]."
@@ -227,7 +230,7 @@ filter_graph_lines([Line | Lines], Live, State0, Acc0,
         filter_graph_lines(
             Lines, Live, "outside", [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ;
         State0 \= "outside",
         parse_quoted_symbol(Trimmed, Name),
@@ -236,7 +239,7 @@ filter_graph_lines([Line | Lines], Live, State0, Acc0,
         filter_graph_lines(
             Lines, Live, State0, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ;
         State0 \= "outside",
         parse_quoted_symbol(Trimmed, Name)
@@ -245,12 +248,12 @@ filter_graph_lines([Line | Lines], Live, State0, Acc0,
         filter_graph_lines(
             Lines, Live, State0, Acc0,
             Stale0 + 1, Stale, StaleNames1, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ;
         filter_graph_lines(
             Lines, Live, State0, [Line | Acc0],
             Stale0, Stale, StaleNames0, StaleNames,
-            Out, Found0, Found)
+            Out, Found0, Found, !IO)
     ).
 
 :- pred reconcile_actions(
@@ -265,7 +268,7 @@ reconcile_actions(Live, Mode, !IO, Result) :-
     ->
         filter_actions_lines(
             Lines0, Live, no, [], 0, StaleCount,
-            [], StaleRev, Lines1, no, Found),
+            [], StaleRev, Lines1, no, Found, !IO),
         list.reverse(StaleRev, Stale),
         (
             StaleCount > 0,
@@ -307,7 +310,7 @@ reconcile_graph(Live, Mode, !IO, Result) :-
     ->
         filter_graph_lines(
             Lines0, Live, "outside", [], 0, StaleCount,
-            [], StaleRev, Lines1, no, Found),
+            [], StaleRev, Lines1, no, Found, !IO),
         list.reverse(StaleRev, Stale),
         (
             StaleCount > 0,
