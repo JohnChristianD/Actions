@@ -146,32 +146,23 @@ list-monoid-solver-append-assoc xs ys zs =
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (Level._⊔_ c ℓ)) where
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
-      ∀ x y z →
-      RingCore.AlmostCommutativeRing._≈_ R
-        (RingCore.AlmostCommutativeRing._+_ R x
-          (RingCore.AlmostCommutativeRing._+_ R y z))
-        (RingCore.AlmostCommutativeRing._+_ R
-          (RingCore.AlmostCommutativeRing._+_ R x y) z)
+      let open RingCore.AlmostCommutativeRing R in
+      ∀ x y z → x + (y + z) ≈ (x + y) + z
     distributivity :
-      ∀ x y z →
-      RingCore.AlmostCommutativeRing._≈_ R
-        (RingCore.AlmostCommutativeRing._*_ R x
-          (RingCore.AlmostCommutativeRing._+_ R y z))
-        (RingCore.AlmostCommutativeRing._+_ R
-          (RingCore.AlmostCommutativeRing._*_ R x y)
-          (RingCore.AlmostCommutativeRing._*_ R x z))
+      let open RingCore.AlmostCommutativeRing R in
+      ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
 
 generic-ring-solver-normalization-theorem :
   ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
   GenericRingSolverNormalizationTheorem R
 generic-ring-solver-normalization-theorem R =
   genericRingSolverNormalizationTheorem
-    (RingCore.AlmostCommutativeRing.+-assoc R)
-    (RingCore.AlmostCommutativeRing.distribˡ R)
+    (generic-ring-solver-associativity R)
+    (generic-ring-solver-distributivity R)
 
 record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
@@ -301,7 +292,7 @@ statisticalEncodeDistinguishes R distinct collision =
 -- Canonical theorem section: GRU statistical representation and injectivity.
 ------------------------------------------------------------------------
 
-module GRUStatisticalInjectivity where
+module FullCoupled.GRUStatisticalInjectivity where
 CanonicalGRUStatisticalObservation : Set
 CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
@@ -367,7 +358,7 @@ identityActivation8-injective eq = eq
 ------------------------------------------------------------------------
 
 vehicleCommandName : String
-vehicleCommandName = "vehicle"
+vehicleCommandName = Vehicle.VEHICLE_COMMAND
 
 
 ------------------------------------------------------------------------
@@ -461,7 +452,7 @@ record ZPFGRUStatisticalRepresentation
     statisticalRepresentation :
       CarrierPolymorphicStatisticalRepresentation
         ZPFState
-        CanonicalGRUStatisticalObservation
+        G.CanonicalGRUStatisticalObservation
 
 open ZPFGRUStatisticalRepresentation public
 
@@ -880,14 +871,14 @@ open AStarHaskellMonadSurface public
 aStar-frontier-monad :
   ∀ {Expression : Set} →
   RawMonad (State (List (List Expression)))
-aStar-frontier-monad = stateMonad
+aStar-frontier-monad = StateMonad _
 
 aStar-frontier-state :
   ∀ {Expression : Set} →
   RawMonadState
     (List (List Expression))
     (State (List (List Expression)))
-aStar-frontier-state = stateMonadState
+aStar-frontier-state = StateMonadState _
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
@@ -949,7 +940,7 @@ record AgdaSemanticModuleFamily : Set₁ where
   constructor agdaSemanticModuleFamily
   field
     Expression : RepositoryAgdaModule → Set
-    moduleState : RepositoryAgdaModule → Set
+    State : RepositoryAgdaModule → Set
     closure :
       (m : RepositoryAgdaModule) →
       AStarSemanticClosure
@@ -1141,7 +1132,7 @@ eGraphAStarStablePathPersists :
       n
       s)
 eGraphAStarStablePathPersists W stableS zero = stableS
-eGraphAStarStablePathPersists W {s = s} stableS (suc n) =
+eGraphAStarStablePathPersists W stableS (suc n) =
   eGraphAStarStablePathPersists
     W
     (stableNext W s stableS)
@@ -1839,43 +1830,6 @@ canonical-integer-layernorm-stability-growth-theorem =
     integer-layernorm-configuration-stability-theorem
     integer-layernorm-epsilon-ray-growth-theorem
 
-record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
-  constructor canonicalF4GlobalOptimizerStabilityTheorem
-  field
-    thetaTranslation :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
-      C.thetaQ (C.canonicalOptimizerStep K s) ≡
-      C.int8Add
-        (C.int8Add (C.thetaQ (C.optimizer s)) (C.canonicalSignal K s))
-        (C.l2Correction (C.globalL2 (C.optimizerKernel K)))
-    stableNonThetaCoordinates :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
-      C.rTheta (C.canonicalOptimizerStep K s) ≡ C.zero8 ×
-      C.eQ (C.canonicalOptimizerStep K s) ≡ C.eQ (C.optimizer s) ×
-      C.rE (C.canonicalOptimizerStep K s) ≡ C.rE (C.optimizer s) ×
-      C.rL (C.canonicalOptimizerStep K s) ≡ C.rL (C.optimizer s)
-    equalInputStability :
-      ∀ {A} (K : C.FullLearnerKernel A)
-        (s t : C.FullLearnerState A) →
-      C.optimizer s ≡ C.optimizer t →
-      C.canonicalSignal K s ≡ C.canonicalSignal K t →
-      C.canonicalOptimizerStep K s ≡ C.canonicalOptimizerStep K t
-
-open CanonicalF4GlobalOptimizerStabilityTheorem public
-
-canonical-f4-global-optimizer-stability-theorem :
-  CanonicalF4GlobalOptimizerStabilityTheorem
-canonical-f4-global-optimizer-stability-theorem =
-  canonicalF4GlobalOptimizerStabilityTheorem
-    (λ K s → C.f4ParameterInvariant
-      (C.optimizerKernel K) (C.optimizer s) (C.canonicalSignal K s))
-    (λ K s → refl , (refl , (refl , refl)))
-    (λ K s t optimizerEq signalEq →
-      cong₂
-        (λ optimizer signal →
-          C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
-        optimizerEq signalEq)
-
 record CanonicalF4IntegerLayerNormStabilityBoundaryTheorem : Set₁ where
   constructor canonicalF4IntegerLayerNormStabilityBoundaryTheorem
   field
@@ -2032,7 +1986,7 @@ iterateConjugacy :
   ≡
   iterateStep physicalStep n (encode s)
 iterateConjugacy encode stepConjugacy zero s = refl
-iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (suc n) s =
+iterateConjugacy encode stepConjugacy (suc n) s =
   trans
     (iterateConjugacy
       encode
@@ -2201,7 +2155,7 @@ fractalTransportedEncodeInjective :
   transport F r (encode F lower s) ≡
   transport F r (encode F lower t) →
   s ≡ t
-fractalTransportedEncodeInjective F {upper = upper} r eq =
+fractalTransportedEncodeInjective F r eq =
   fractalLevelInjective F upper
     (trans
       (transportEncode F r _)
@@ -2472,7 +2426,7 @@ coherentLimitDecoder-left-inverse :
   ∀ level state →
   decode C level (encode level state) ≡ state →
   limitDecode C (limitEncode state) ≡ state
-coherentLimitDecoder-left-inverse {limitEncode = limitEncode} C level state finiteLeftInverse =
+coherentLimitDecoder-left-inverse C level state finiteLeftInverse =
   trans
     (sym (decoderCoherence C level (limitEncode state)))
     (trans
@@ -6558,6 +6512,43 @@ canonical-operator-composition-theorem =
     (λ s → refl)
     (λ f g s → refl)
     C.endomorphismAssociative
+
+record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
+  constructor canonicalF4GlobalOptimizerStabilityTheorem
+  field
+    thetaTranslation :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.thetaQ (C.canonicalOptimizerStep K s) ≡
+      C.int8Add
+        (C.int8Add (C.thetaQ (C.optimizer s)) (C.canonicalSignal K s))
+        (C.l2Correction (C.globalL2 (C.optimizerKernel K)))
+    stableNonThetaCoordinates :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.rTheta (C.canonicalOptimizerStep K s) ≡ C.zero8 ×
+      C.eQ (C.canonicalOptimizerStep K s) ≡ C.eQ (C.optimizer s) ×
+      C.rE (C.canonicalOptimizerStep K s) ≡ C.rE (C.optimizer s) ×
+      C.rL (C.canonicalOptimizerStep K s) ≡ C.rL (C.optimizer s)
+    equalInputStability :
+      ∀ {A} (K : C.FullLearnerKernel A)
+        (s t : C.FullLearnerState A) →
+      C.optimizer s ≡ C.optimizer t →
+      C.canonicalSignal K s ≡ C.canonicalSignal K t →
+      C.canonicalOptimizerStep K s ≡ C.canonicalOptimizerStep K t
+
+open CanonicalF4GlobalOptimizerStabilityTheorem public
+
+canonical-f4-global-optimizer-stability-theorem :
+  CanonicalF4GlobalOptimizerStabilityTheorem
+canonical-f4-global-optimizer-stability-theorem =
+  canonicalF4GlobalOptimizerStabilityTheorem
+    (λ K s → C.f4ParameterInvariant
+      (C.optimizerKernel K) (C.optimizer s) (C.canonicalSignal K s))
+    (λ K s → refl , (refl , (refl , refl)))
+    (λ K s t optimizerEq signalEq →
+      cong₂
+        (λ optimizer signal →
+          C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
+        optimizerEq signalEq)
 
 f4Orbit :
   C.F4IntUKernel → C.Int8 → Nat → C.F4IntUState → C.F4IntUState
