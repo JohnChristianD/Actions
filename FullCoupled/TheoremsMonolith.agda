@@ -146,32 +146,23 @@ list-monoid-solver-append-assoc xs ys zs =
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (Level._⊔_ c ℓ)) where
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
-      ∀ x y z →
-      RingCore.AlmostCommutativeRing._≈_ R
-        (RingCore.AlmostCommutativeRing._+_ R x
-          (RingCore.AlmostCommutativeRing._+_ R y z))
-        (RingCore.AlmostCommutativeRing._+_ R
-          (RingCore.AlmostCommutativeRing._+_ R x y) z)
+      let open RingCore.AlmostCommutativeRing R in
+      ∀ x y z → x + (y + z) ≈ (x + y) + z
     distributivity :
-      ∀ x y z →
-      RingCore.AlmostCommutativeRing._≈_ R
-        (RingCore.AlmostCommutativeRing._*_ R x
-          (RingCore.AlmostCommutativeRing._+_ R y z))
-        (RingCore.AlmostCommutativeRing._+_ R
-          (RingCore.AlmostCommutativeRing._*_ R x y)
-          (RingCore.AlmostCommutativeRing._*_ R x z))
+      let open RingCore.AlmostCommutativeRing R in
+      ∀ x y z → x * (y + z) ≈ (x * y) + (x * z)
 
 generic-ring-solver-normalization-theorem :
   ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
   GenericRingSolverNormalizationTheorem R
 generic-ring-solver-normalization-theorem R =
   genericRingSolverNormalizationTheorem
-    (RingCore.AlmostCommutativeRing.+-assoc R)
-    (RingCore.AlmostCommutativeRing.distribˡ R)
+    (generic-ring-solver-associativity R)
+    (generic-ring-solver-distributivity R)
 
 record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
@@ -301,7 +292,7 @@ statisticalEncodeDistinguishes R distinct collision =
 -- Canonical theorem section: GRU statistical representation and injectivity.
 ------------------------------------------------------------------------
 
-module GRUStatisticalInjectivity where
+module FullCoupled.GRUStatisticalInjectivity where
 CanonicalGRUStatisticalObservation : Set
 CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
@@ -367,7 +358,7 @@ identityActivation8-injective eq = eq
 ------------------------------------------------------------------------
 
 vehicleCommandName : String
-vehicleCommandName = "vehicle"
+vehicleCommandName = Vehicle.VEHICLE_COMMAND
 
 
 ------------------------------------------------------------------------
@@ -461,7 +452,7 @@ record ZPFGRUStatisticalRepresentation
     statisticalRepresentation :
       CarrierPolymorphicStatisticalRepresentation
         ZPFState
-        CanonicalGRUStatisticalObservation
+        G.CanonicalGRUStatisticalObservation
 
 open ZPFGRUStatisticalRepresentation public
 
@@ -880,14 +871,14 @@ open AStarHaskellMonadSurface public
 aStar-frontier-monad :
   ∀ {Expression : Set} →
   RawMonad (State (List (List Expression)))
-aStar-frontier-monad = stateMonad
+aStar-frontier-monad = StateMonad _
 
 aStar-frontier-state :
   ∀ {Expression : Set} →
   RawMonadState
     (List (List Expression))
     (State (List (List Expression)))
-aStar-frontier-state = stateMonadState
+aStar-frontier-state = StateMonadState _
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
@@ -5829,7 +5820,7 @@ eGraphAStarIterate-isomorphism step (suc n) s =
 --
 -- The Brouwer reduction below gives the classical Nash existential
 -- conclusion relative to an explicit analytical Brouwer witness. The
--- monolith does not hide or assume a proof of Brouwer itself.
+-- monolith does not hide or postulate a proof of Brouwer itself.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
