@@ -460,7 +460,7 @@ record ZPFGRUStatisticalRepresentation
     statisticalRepresentation :
       CarrierPolymorphicStatisticalRepresentation
         ZPFState
-        G.CanonicalGRUStatisticalObservation
+        CanonicalGRUStatisticalObservation
 
 open ZPFGRUStatisticalRepresentation public
 
