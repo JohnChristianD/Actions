@@ -114,7 +114,7 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Agda.Builtin.Bool using (Bool; true; false)
 open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
-open import Data.List.Properties using (++-monoid)
+open import Data.List.Properties using (++-assoc; ++-monoid)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
 
@@ -123,6 +123,24 @@ import Data.List.Effectful as ListEffectful
 -- BEGIN THEOREM-SPECIFIC IMPORTS
 open import FullCoupled.CanonicalLearnerMonolith as C
 -- END THEOREM-SPECIFIC IMPORTS
+
+------------------------------------------------------------------------
+nat-ring-solver-layernorm-step :
+  ∀ (epsilon scale : Nat) →
+  (epsilon + suc zero) * scale ≡
+  (epsilon * scale) + scale
+nat-ring-solver-layernorm-step = NatRingSolver.solve-∀
+
+integer-ring-solver-assoc :
+  ∀ (i j k : ℤ) →
+  i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+integer-ring-solver-assoc = IntegerRingSolver.solve-∀
+
+list-monoid-solver-append-assoc :
+  ∀ (xs ys zs : List C.Int8) →
+  xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
+list-monoid-solver-append-assoc xs ys zs =
+  sym (++-assoc xs ys zs)
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
