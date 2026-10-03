@@ -49,15 +49,15 @@ open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; suc; neg; sign; _+_; _*_)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
-open import Data.Product.Base
-open import Data.Sum.Base
-open import Data.Maybe.Base
+open import Data.Product.Base hiding (map)
+open import Data.Sum.Base hiding (map)
+open import Data.Maybe.Base hiding (map)
 
 -- Solver front ends.
 import Data.Bool.Solver as BoolSolver
 open import Data.Nat.Solver using (module +-*-Solver)
 import Data.Integer.Solver as IntegerSolver
-open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase
+open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase hiding (map)
 import Data.List.Relation.Binary.Sublist.Heterogeneous.Solver as HeterogeneousSublistSolver
 import Data.List.Relation.Binary.Sublist.DecSetoid.Solver as DecSetoidSublistSolver
 import Data.List.Relation.Binary.Sublist.DecPropositional.Solver as DecPropositionalSublistSolver

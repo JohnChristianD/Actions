@@ -413,20 +413,20 @@ parse_record_fields(Source, Lines, Decls) :-
         Source, Lines, outside_record, [], Rev),
     list.reverse(Rev, Decls).
 
-:- pred theorem_monolith_is_safe(io::di, io::uo) is det.
-theorem_monolith_is_safe(!IO) :-
+:- pred theorem_monolith_has_declared_execution_mode(io::di, io::uo) is det.
+theorem_monolith_has_declared_execution_mode(!IO) :-
     io.read_named_file_as_lines(
         "../../FullCoupled/TheoremsMonolith.agda",
         ReadResult, !IO),
     (
         ReadResult = ok(Lines),
         (
-            list.member("{-# OPTIONS --safe #-}", Lines)
+            list.member("{-# OPTIONS --allow-exec #-}", Lines)
         ->
             true
         ;
             io.write_string(
-                "ERROR: canonical theorem monolith is not declared --safe\n",
+                "ERROR: canonical theorem monolith is not declared --allow-exec\n",
                 !IO),
             io.set_exit_status(1, !IO)
         )
@@ -548,7 +548,7 @@ is_record_field(Law) :-
     law_kind(Law) = semantic_record_field.
 
 read_semantic_laws(Laws, !IO) :-
-    theorem_monolith_is_safe(!IO),
+    theorem_monolith_has_declared_execution_mode(!IO),
     semantic_declarations(Result, !IO),
     (
         Result = ok(All),

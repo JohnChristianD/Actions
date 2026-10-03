@@ -80,20 +80,24 @@ clamp01 value =
 dynamicDisplayCandidate : Int -> DisplayColor
 dynamicDisplayCandidate index =
     let
-        tau =
-            6.283185307179586
-
-        thirdTurn =
-            2.0943951023931953
-
-        phase =
-            tau
-                * (toFloat (modBy 360 (paletteSeed + index * 37)))
-                / 360
+        tau = 6.283185307179586
+        hues = 8
+        hueIndex = modBy hues index
+        toneIndex = modBy 3 index
+        phase = tau * toFloat hueIndex / toFloat hues
+        tone =
+            case toneIndex of
+                0 -> 0.18
+                1 -> 0.5
+                _ -> 0.82
+        amplitude =
+            case toneIndex of
+                1 -> 0.32
+                _ -> 0.18
     in
-    { r = clamp01 (0.5 + 0.4 * cos phase)
-    , g = clamp01 (0.5 + 0.4 * cos (phase - thirdTurn))
-    , b = clamp01 (0.5 + 0.4 * cos (phase + thirdTurn))
+    { r = clamp01 (tone + amplitude * cos phase)
+    , g = clamp01 (tone + amplitude * cos (phase - 2.0943951023931953))
+    , b = clamp01 (tone + amplitude * cos (phase + 2.0943951023931953))
     }
 
 
@@ -308,19 +312,86 @@ paletteGlobalScore choice =
     )
 
 
-candidateColors : List PerceptualColor
-candidateColors =
-    List.map
-        (\index ->
-            customPerceptualColor index (dynamicDisplayCandidate index)
+combinationsOfLength : Int -> List a -> List (List a)
+combinationsOfLength count values =
+    if count <= 0 then
+        [ [] ]
+    else
+        case values of
+            [] ->
+                []
+            first :: rest ->
+                List.map
+                    ((::) first)
+                    (combinationsOfLength (count - 1) rest)
+                    ++ combinationsOfLength count rest
+
+
+relativeLuminanceComponent : Float -> Float
+relativeLuminanceComponent value =
+    if value <= 0.04045 then
+        value / 12.92
+    else
+        ((value + 0.055) / 1.055) ^ 2.4
+
+
+relativeLuminance : DisplayColor -> Float
+relativeLuminance color =
+    0.2126 * relativeLuminanceComponent color.r
+        + 0.7152 * relativeLuminanceComponent color.g
+        + 0.0722 * relativeLuminanceComponent color.b
+
+
+contrastRatio : DisplayColor -> DisplayColor -> Float
+contrastRatio left right =
+    let
+        leftL = relativeLuminance left
+        rightL = relativeLuminance right
+        lighter = max leftL rightL
+        darker = min leftL rightL
+    in
+    (lighter + 0.05) / (darker + 0.05)
+
+
+paletteAccessibilityScore : PaletteChoice -> Float
+paletteAccessibilityScore choice =
+    min
+        (contrastRatio choice.background.display choice.ink.display)
+        (min
+            (contrastRatio choice.accent.display choice.accentInk.display)
+            (min
+                (contrastRatio choice.background.display choice.surface.display)
+                (contrastRatio choice.surface.display choice.ink.display)
+            )
         )
-        (List.range 0 8)
 
 
-fallbackPerceptualColor : PerceptualColor
-fallbackPerceptualColor =
-    customPerceptualColor 0 (dynamicDisplayCandidate 0)
+paletteRoleDistance : PaletteChoice -> Float
+paletteRoleDistance choice =
+    min
+        (perceptualDistanceSquared choice.background choice.ink)
+        (min
+            (perceptualDistanceSquared choice.accent choice.accentInk)
+            (min
+                (perceptualDistanceSquared choice.background choice.surface)
+                (perceptualDistanceSquared choice.surface choice.ink)
+            )
+        )
 
+
+paletteGlobalScore : PaletteChoice -> ( Float, Float, Float )
+paletteGlobalScore choice =
+    ( minimumPairDistance
+        [ choice.background
+        , choice.surface
+        , choice.ink
+        , choice.mutedInk
+        , choice.accent
+        , choice.accentInk
+        ]
+    , paletteAccessibilityScore choice
+    , paletteRoleDistance choice
+    )
 
 
 maximumBy : (a -> comparable) -> List a -> Maybe a
@@ -328,20 +399,39 @@ maximumBy score values =
     case values of
         [] ->
             Nothing
-
         first :: rest ->
             Just
                 (List.foldl
                     (\candidate current ->
                         if score candidate > score current then
                             candidate
-
                         else
                             current
                     )
                     first
                     rest
                 )
+
+
+candidateColors : List PerceptualColor
+candidateColors =
+    List.map
+        (\index ->
+            customPerceptualColor index (dynamicDisplayCandidate index)
+        )
+        (List.range 0 23)
+
+
+fallbackPerceptualColor : PerceptualColor
+fallbackPerceptualColor =
+    customPerceptualColor 0 (dynamicDisplayCandidate 0)
+
+
+maximinColorSet : List PerceptualColor -> List PerceptualColor
+maximinColorSet candidates =
+    combinationsOfLength 6 candidates
+        |> maximumBy minimumPairDistance
+        |> Maybe.withDefault (List.take 6 candidates)
 
 
 globalPaletteChoice : PaletteChoice
@@ -356,8 +446,11 @@ globalPaletteChoice =
             , accentInk = customPerceptualColor 5 (dynamicDisplayCandidate 5)
             }
 
+        maximinSet =
+            maximinColorSet candidateColors
+
         choices =
-            permutationsOfLength 6 candidateColors
+            permutationsOfLength 6 maximinSet
                 |> List.filterMap paletteChoiceFromList
     in
     maximumBy paletteGlobalScore choices
@@ -546,9 +639,24 @@ cssColor space color =
         ++ ")"
 
 
+cssRgb : DisplayColor -> String
+cssRgb color =
+    "rgb("
+        ++ String.fromInt (round (clamp01 color.r * 255))
+        ++ " "
+        ++ String.fromInt (round (clamp01 color.g * 255))
+        ++ " "
+        ++ String.fromInt (round (clamp01 color.b * 255))
+        ++ ")"
+
+
 cssFallbacks : String -> EncodedColor -> String
 cssFallbacks property color =
     property
+        ++ ":"
+        ++ cssRgb color.srgb
+        ++ ";"
+        ++ property
         ++ ":"
         ++ cssColor "srgb" color.srgb
         ++ ";"

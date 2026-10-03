@@ -15,12 +15,20 @@ require(Content, Needle) :-
 :- pred check_manifest(string::in, string::in, io::di, io::uo) is det.
 check_manifest(File, Content0, !IO) :-
     ( if
-        require(Content0, "FullCoupled/CanonicalLearnerMonolith.agda\\tMAlonzo.Code.FullCoupled.CanonicalLearnerMonolith"),
-        require(Content0, "FullCoupled/TheoremsMonolith.agda\\tMAlonzo.Code.FullCoupled.TheoremsMonolith"),
-        require(Content0, "SimpleHaskell/CanonicalLearnerBridge.hs\\tliquid:z3:pass"),
-        require(Content0, "SimpleHaskell/TheoremsBridge.hs\\tliquid:z3:pass")
+        require(Content0, "commit="),
+        require(Content0, "source=FullCoupled/CanonicalLearnerMonolith.agda"),
+        require(Content0, "source-sha256="),
+        require(Content0, "generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"),
+        require(Content0, "generated-sha256="),
+        require(Content0, "bridge=SimpleHaskell/CanonicalLearnerBridge.hs"),
+        require(Content0, "bridge-sha256="),
+        require(Content0, "liquid:z3:pass"),
+        require(Content0, "source=FullCoupled/TheoremsMonolith.agda"),
+        require(Content0, "generated=MAlonzo/Code/FullCoupled/TheoremsMonolith.hs"),
+        require(Content0, "bridge=SimpleHaskell/TheoremsBridge.hs")
     then
         io.write_string("liquid-haskell-graph=pass\\n", !IO),
+        io.write_string("liquid-freshness=commit+source+malonzo+bridge-sha256\\n", !IO),
         io.write_string("graph-node=CanonicalLearnerAgda->MAlonzo->LiquidHaskellZ3\\n", !IO),
         io.write_string("graph-node=TheoremsAgda->MAlonzo->LiquidHaskellZ3\\n", !IO),
         io.write_string("graph-edge=CanonicalLearnerAgda->MAlonzoCanonicalLearner\\n", !IO),

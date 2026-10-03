@@ -29,8 +29,18 @@ let script = merge {
     "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
     "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
     liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
-    printf '%s\n'       'FullCoupled/CanonicalLearnerMonolith.agda	MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith	SimpleHaskell/CanonicalLearnerBridge.hs	liquid:z3:pass'       'FullCoupled/TheoremsMonolith.agda	MAlonzo.Code.FullCoupled.TheoremsMonolith	SimpleHaskell/TheoremsBridge.hs	liquid:z3:pass'       > "$out/liquid-agda-manifest.tsv"
-    test -s "$out/liquid-agda-manifest.tsv"
+    generated_learner="$out/MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"
+    generated_theorem="$out/MAlonzo/Code/FullCoupled/TheoremsMonolith.hs"
+    test -s "$generated_learner"
+    test -s "$generated_theorem"
+    commit_sha="$(git rev-parse HEAD)"
+    learner_sha="$(sha256sum FullCoupled/CanonicalLearnerMonolith.agda | cut -d' ' -f1)"
+    theorem_sha="$(sha256sum FullCoupled/TheoremsMonolith.agda | cut -d' ' -f1)"
+    learner_generated_sha="$(sha256sum "$generated_learner" | cut -d' ' -f1)"
+    theorem_generated_sha="$(sha256sum "$generated_theorem" | cut -d' ' -f1)"
+    learner_bridge_sha="$(sha256sum SimpleHaskell/CanonicalLearnerBridge.hs | cut -d' ' -f1)"
+    theorem_bridge_sha="$(sha256sum SimpleHaskell/TheoremsBridge.hs | cut -d' ' -f1)"
+    printf '%s\n'       "commit=$commit_sha source=FullCoupled/CanonicalLearnerMonolith.agda source-sha256=$learner_sha generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs generated-sha256=$learner_generated_sha bridge=SimpleHaskell/CanonicalLearnerBridge.hs bridge-sha256=$learner_bridge_sha liquid:z3:pass"       "commit=$commit_sha source=FullCoupled/TheoremsMonolith.agda source-sha256=$theorem_sha generated=MAlonzo/Code/FullCoupled/TheoremsMonolith.hs generated-sha256=$theorem_generated_sha bridge=SimpleHaskell/TheoremsBridge.hs bridge-sha256=$theorem_bridge_sha liquid:z3:pass"       > "$out/liquid-agda-manifest.tsv"
     find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort > "$out/malonzo-files.txt"
     test -s "$out/malonzo-files.txt"
     echo "malonzo-extraction=pass"
