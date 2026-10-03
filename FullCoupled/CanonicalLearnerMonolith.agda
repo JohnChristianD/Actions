@@ -4,7 +4,6 @@
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --syntactic-equality #-}
-{-# OPTIONS --eta-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-cubical #-}
 {-# OPTIONS --no-pattern-matching #-}
@@ -14,7 +13,7 @@
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
 
-{-# OPTIONS --safe #-}
+-- {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
