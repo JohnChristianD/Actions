@@ -1141,7 +1141,7 @@ eGraphAStarStablePathPersists :
       n
       s)
 eGraphAStarStablePathPersists W stableS zero = stableS
-eGraphAStarStablePathPersists W stableS (suc n) =
+eGraphAStarStablePathPersists W {s = s} stableS (suc n) =
   eGraphAStarStablePathPersists
     W
     (stableNext W s stableS)
