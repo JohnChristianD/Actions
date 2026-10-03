@@ -3,6 +3,7 @@
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --confluence-check #-}
+{-# OPTIONS --eta-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
@@ -10,7 +11,7 @@
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --guardedness #-}
 
--- {-# OPTIONS --safe #-}
+{-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
