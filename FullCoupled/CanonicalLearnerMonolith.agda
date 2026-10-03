@@ -568,16 +568,16 @@ qLogSignal : SignedQLogControl → Int8 → Int8
 qLogSignal c x = int8Add x (coefficient c)
 
 data HardSign : Set where
-  negativeSign zeroSign positive : HardSign
+  negativeSign zeroSign positiveSign : HardSign
 
 hardSignNonnegative : Int8 → HardSign
 hardSignNonnegative (int8 (+ 0)) = zeroSign
-hardSignNonnegative (int8 (+ (suc n))) = positive
+hardSignNonnegative (int8 (+ (suc n))) = positiveSign
 hardSignNonnegative (int8 (-[1+ n ])) = negativeSign
 
 hardSign : Int8 → HardSign
 hardSign (int8 (+ 0)) = zeroSign
-hardSign (int8 (+ (suc n))) = positive
+hardSign (int8 (+ (suc n))) = positiveSign
 hardSign (int8 (-[1+ n ])) = negativeSign
 
 hardSignGate : Int8 → Int8
