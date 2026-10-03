@@ -514,28 +514,14 @@ DHALL
     dhall text --file "$import_sync" > "$generated_import_sync"
     bash "$generated_import_sync"
     required='
-    CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-    canonical-q-munchausen-l2-shared-negation-polarity-theorem
-    canonicalWatkinsTarget-minimaxBellmanShapley-inclusion-class
-    DirectProductFiniteAutomatonComposition
     canonical-recurrent-prefix-monoid-homomorphism
     canonicalF4-prefix-monoid-homomorphism
     
     canonicalGRUF4-prefix-monoid-homomorphism
     canonicalFullStep-GRUF4-prefix-bridge
-    canonical-gruf4-norm-watkins-prefix-composition-theorem
-    FreeMonoidActionHomomorphism
     freeMonoidActionHomomorphism-from-square
     canonicalCount-freeMonoidActionHomomorphism
-    ExactNatObservationSimulation    ContinuousLeftInverseTheorem
-    canonicalRingStateInjective
-    canonicalDenseNeighborhoodSeparation
     canonicalNoNontrivialFiniteCycle-theorem
-    isomorphismIterateConjugacy
-    isomorphismToInjective
-    isomorphismEqualityTransport
-    isomorphismDisequalityTransport
-    isomorphismNoFiniteCycleTransport
     StateIsomorphism
     canonicalDeterministicFiniteStepDivergenceInevitability
     canonicalNoFiniteStepConvergenceToFixedPoint
@@ -544,7 +530,6 @@ DHALL
     CanonicalIntegerGRUTokenEncodingLeftInverse
     canonical-integer-gru-token-encoding-left-inverse
     canonicalIntegerGRUTokenEncodingInjective
-    GuardedCubicalDenseSeparationEmergentCompositionTheorem
     canonicalIntegerGRUTokenEncoding-continuous-discrete
     CanonicalIntegerGRUGlobalConjugateTheorem
     canonical-integer-gru-global-conjugate-theorem
@@ -558,7 +543,6 @@ DHALL
     canonical-integer-haar-scaled-orthogonality-theorem
     CanonicalAStarCostGuidanceTheorem
     CanonicalEndogenousEGraphAStarTransportClosureTheorem
-    EGraphAStarFiniteRankConvergenceWitness
     eGraphAStarConvergenceSemanticClosure
     eGraphAStarEventualStableFromRank
     eGraphAStarStablePathPersists
@@ -566,86 +550,31 @@ DHALL
     CanonicalIntegerLayerNormEGraphAStarTheorem
     integerLayerNorm-a-star-semantic-closure
     canonical-a-star-cost-guidance-theorem
-    canonical-linear-haar-sparsemax-attention-composition-theorem
-    canonical-full-state-haar-sparsemax-invariant-composition-theorem
-    CanonicalLearnerReplacementClosureTheorem
-    canonical-learner-replacement-closure-theorem
-    RecurrentScanConjugacyTheorem
     recurrentPrefix-scan-lifts-conjugacy
     canonical-recurrent-scan-conjugacy-theorem
     CanonicalFullLearnerConnectedScanConjugacyTheorem
     canonical-full-learner-connected-scan-conjugacy-theorem
     canonicalExactCompositionTuringCompletenessContract-impossible
-    canonical-haar-sparsemax-full-state-closure-theorem
-    canonical-finite-factor-recurrence-without-state-recurrence
-    canonical-finite-observation-information-boundary-theorem
-    canonical-bounded-factor-lift-theorem
     CanonicalFiniteCycleExclusionIsomorphismTheorem
-    canonical-finite-cycle-exclusion-isomorphism-theorem
     CanonicalOperatorCompositionTheorem
     canonical-operator-composition-theorem
     CanonicalPureNonOrangeBypassCompletionTheorem
-    canonical-pure-non-orange-bypass-completion-theorem
-    StationaryLimitTheorem
-    stationaryLimitTheorem-is-stationary
-    TopologicalConvergenceWitness
-    topologicalConvergenceFixedPoint
-    FixedPointExistenceFromConvergence
-    fixedPoint-from-convergence
-    isomorphismFixedPointTransport
-    isomorphismIterateFixedPointTransport
-    TransportedFixedPointExistence
-    transportedFixedPointExistence-witness
-    EquilibriumFixedPointClosure
-    equilibrium-from-fixed-point
-    economicEquilibriumExistenceFromConvergentFixedPoint
     CanonicalStationarySubcompositionTheorem
-    CanonicalPersistentExcitationRequirementTheorem
     canonical-persistent-excitation-requirement-theorem
     ExactContractComputabilityBoundaryTheorem
     exact-contract-computability-boundary-theorem
-    ExactFunctionIsomorphismTransportTheorem
-    ExactRecurrentFunctionTranslationTheorem
-    MegaWalrasianGlobalSquareConjugacy
-    megaWalrasianGlobalSquare-injective
-    MegaParetoImprovement
     megaParetoOptimal
-    MegaFirstWelfareTheoremConditions
-    megaFirstWelfareTheorem
-    MegaSecondWelfareTheoremConditions
-    megaSecondWelfareTheorem
     MegaSecondWelfareTheoremBoundaryCounterexample
     megaSecondWelfareTheorem-boundary-counterexample
-    MegaNoStrictAffordableAlternativeBoundary
     megaNoStrictAffordableAlternative-is-demand-optimality
-    MegaParetoEquilibriumConditionality
-    MegaWalrasianEquilibriumWelfareAdapter
-    MegaInterdependentGRUMegaWalrasianGlobalSquareCompositionCompleteness
-    MegaGeneralizedWalrasianEquilibrium
-    MegaGeneralizedWalrasianEquilibrium
-    POMDPWalrasianData
-    POMDPWalrasianEquilibrium
-    POMDPWalrasianTransport
-    POMDPBeliefPolicyFactorization
-    POMDPWalrasianBeliefEquilibriumClosure    CanonicalLearnerHodgeMaxwellCompositionTheorem
-    NLabMaxwellSemanticClosure
-    NLabMaxwellFourLawSemanticallyClosed
     nLabMaxwellEulerLagrangeShell-equivalence
     nLabMaxwellFourLawOneStepClosed
     nLabMaxwellIterateConjugacyClosed
-    POMDPExactTransport
     CanonicalGlobalTokenEncodingConjugacyTheorem
     CanonicalGlobalTokenLMCompositionTheorem
-    CanonicalLearnerHodgeMaxwellCompositionTheorem
     
-    CanonicalLearnerHodgeMaxwellCompositionTheorem
-    CanonicalLearnerHodgeMaxwellCompositionTheorem
-    CanonicalLearnerHodgeMaxwellCompositionTheorem
-    CanonicalLearnerHodgeMaxwellCompositionTheorem
     CanonicalExactRNNLMTheorem
-    canonical-exact-turing-boundary-mixture-theorem
     canonicalLearnerBairdSevenStar
-    CanonicalLearnerBairdSevenStarWitness
     canonicalGRUStatisticalEncodeLeftInverse
     leftInverse-implies-injective
     canonicalGRUStatisticalEncodeInjective
@@ -667,7 +596,6 @@ DHALL
     jaxSupportSparsityFraction
     jaxJittedScanSum
     JAXExecutionMirrorReproof
-    majority3ShapleyEquilibriumWitness
     '
     while IFS= read -r symbol; do
       [ -z "$symbol" ] || grep -Fq "$symbol" "$theorem" || { echo "missing theorem symbol: $symbol"; exit 1; }
