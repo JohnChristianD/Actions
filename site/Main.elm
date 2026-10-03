@@ -285,33 +285,6 @@ paletteChoiceFromList colors =
             Nothing
 
 
-paletteRoleDistance : PaletteChoice -> Float
-paletteRoleDistance choice =
-    min
-        (perceptualDistanceSquared choice.background choice.ink)
-        (min
-            (perceptualDistanceSquared choice.accent choice.accentInk)
-            (min
-                (perceptualDistanceSquared choice.background choice.surface)
-                (perceptualDistanceSquared choice.surface choice.ink)
-            )
-        )
-
-
-paletteGlobalScore : PaletteChoice -> ( Float, Float )
-paletteGlobalScore choice =
-    ( minimumPairDistance
-        [ choice.background
-        , choice.surface
-        , choice.ink
-        , choice.mutedInk
-        , choice.accent
-        , choice.accentInk
-        ]
-    , paletteRoleDistance choice
-    )
-
-
 combinationsOfLength : Int -> List a -> List (List a)
 combinationsOfLength count values =
     if count <= 0 then

@@ -194,8 +194,8 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
-                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
-                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
                 find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort
               '';
             };
@@ -239,8 +239,8 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
-                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
-                "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
                 liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
                 printf '%s\n' \
                   'FullCoupled/CanonicalLearnerMonolith.agda	MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith	SimpleHaskell/CanonicalLearnerBridge.hs	liquid:z3:pass' \

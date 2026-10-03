@@ -454,13 +454,13 @@ integerLayerNormValue {xs} config certificate x =
     (rootNonZero certificate)
 
 
-topCodes : Nat → List ScoreEntry → List Nat
-topCodes zero xs = []
-topCodes (suc k) [] = []
 int8Magnitude : Int8 → Nat
 int8Magnitude (int8 (+ n)) = n
 int8Magnitude (int8 (-[1+ n ])) = suc n
 
+topCodes : Nat → List ScoreEntry → List Nat
+topCodes zero xs = []
+topCodes (suc k) [] = []
 topCodes (suc k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
 supportValid : List ScoreEntry → Nat → Nat → BoolLike

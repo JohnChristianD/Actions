@@ -26,8 +26,8 @@ let script = merge {
     out="build/agda-haskell"
     rm -rf "$out"
     mkdir -p "$out"
-    "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
     liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
     generated_learner="$out/MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"
     generated_theorem="$out/MAlonzo/Code/FullCoupled/TheoremsMonolith.hs"
