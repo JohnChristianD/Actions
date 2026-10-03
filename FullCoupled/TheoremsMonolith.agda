@@ -300,7 +300,7 @@ statisticalEncodeDistinguishes R distinct collision =
 -- Canonical theorem section: GRU statistical representation and injectivity.
 ------------------------------------------------------------------------
 
-module FullCoupled.GRUStatisticalInjectivity where
+module GRUStatisticalInjectivity where
 CanonicalGRUStatisticalObservation : Set
 CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
