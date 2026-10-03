@@ -2793,22 +2793,6 @@ canonical-aq-loop-theorem =
     (λ K s → refl)
     (λ K s → refl)
 
-canonicalTotalCountAfter :
-  ∀ K n s →
-  C.totalCount (C.lcbCounts (C.iterateCanonical K n s)) ≡
-  C.totalCount (C.lcbCounts s) + n
-canonicalTotalCountAfter = C.canonicalTotalCountAfter
-
-canonicalAperiodic-theorem :
-  ∀ K s n →
-  C.iterateCanonical K (suc n) s ≢ s
-canonicalAperiodic-theorem = C.canonicalAperiodic
-
-canonicalNoNontrivialFiniteCycle-theorem :
-  ∀ K s n →
-  C.iterateCanonical K (suc n) s ≡ s → ⊥
-canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
-
 record StateIsomorphism (A B : Set) : Set where
   constructor stateIsomorphism
   field
@@ -2901,8 +2885,8 @@ canonical-connected-composition-theorem :
 canonical-connected-composition-theorem =
   canonicalConnectedCompositionTheorem
     canonical-aq-loop-theorem
-    canonicalTotalCountAfter
-    canonicalNoNontrivialFiniteCycle-theorem
+    C.canonicalTotalCountAfter
+    C.canonicalNoNontrivialFiniteCycle
 
 data LearnerReplacement : Set where
   optimizerReplacement : F4IntUState → LearnerReplacement
@@ -5820,7 +5804,7 @@ eGraphAStarIterate-isomorphism step (suc n) s =
 --
 -- The Brouwer reduction below gives the classical Nash existential
 -- conclusion relative to an explicit analytical Brouwer witness. The
--- monolith does not hide or postulate a proof of Brouwer itself.
+-- monolith does not hide or assume a proof of Brouwer itself.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
