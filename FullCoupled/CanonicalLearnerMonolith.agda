@@ -49,15 +49,15 @@ open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; suc; neg; sign; _+_; _*_)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
-open import Data.Product.Base hiding (map)
-open import Data.Sum.Base hiding (map)
-open import Data.Maybe.Base hiding (map)
+open import Data.Product.Base
+open import Data.Sum.Base
+open import Data.Maybe.Base
 
 -- Solver front ends.
 import Data.Bool.Solver as BoolSolver
 open import Data.Nat.Solver using (module +-*-Solver)
 import Data.Integer.Solver as IntegerSolver
-open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase hiding (map)
+open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase
 import Data.List.Relation.Binary.Sublist.Heterogeneous.Solver as HeterogeneousSublistSolver
 import Data.List.Relation.Binary.Sublist.DecSetoid.Solver as DecSetoidSublistSolver
 import Data.List.Relation.Binary.Sublist.DecPropositional.Solver as DecPropositionalSublistSolver
@@ -345,7 +345,7 @@ scoreEntryOrder : DecTotalOrder 0ℓ 0ℓ 0ℓ
 scoreEntryOrder = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order ≤-decTotalOrder)
 
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
-scoreList K q c = map (λ a → (scoreA q c a , a)) (candidates K)
+scoreList K q c = List.map (λ a → (scoreA q c a , a)) (candidates K)
 
 sortScores : List ScoreEntry → List ScoreEntry
 sortScores = Sort.sort scoreEntryOrder
@@ -385,7 +385,7 @@ integerLayerNormCenteredNumerator xs x =
 integerLayerNormCenteredNumerators :
   List Int8 → List ℤ
 integerLayerNormCenteredNumerators xs =
-  map
+  List.map
     (λ x → integerLayerNormCenteredNumerator xs x)
     xs
 
@@ -396,7 +396,7 @@ integerLayerNormVarianceNumerator :
   List Int8 → ℤ
 integerLayerNormVarianceNumerator xs =
   integerCodeSumList
-    (map
+    (List.map
       integerLayerNormSquare
       (integerLayerNormCenteredNumerators xs))
 
@@ -508,38 +508,6 @@ sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 -- The weight map is kept separate from the selected-action policy.
 -- No probability normalization is claimed by this definition.
 ------------------------------------------------------------------------
-
-BehaviorPolicy : Set
-BehaviorPolicy = Nat → SparseWeight
-
-canonicalBehaviorPolicy :
-  ∀ {A : Set} →
-  FullLearnerKernel A →
-  FullLearnerState A →
-  BehaviorPolicy
-canonicalBehaviorPolicy K s a =
-  sparsemaxWeight
-    (actionSpaceK K)
-    (lcbScore
-      (lcbKernel K)
-      (lcbCounts s)
-      (critic (watkins s)))
-    (valuesCount (lcbCounts s))
-    a
-
-canonicalBehaviorAction :
-  ∀ {A : Set} →
-  FullLearnerKernel A →
-  FullLearnerState A →
-  Nat
-canonicalBehaviorAction K s = canonicalPolicy K s
-
-canonicalBehaviorAction-law :
-  ∀ {A : Set}
-  (K : FullLearnerKernel A)
-  (s : FullLearnerState A) →
-  canonicalBehaviorAction K s ≡ canonicalPolicy K s
-canonicalBehaviorAction-law K s = refl
 
 updateLCBCount : ∀ {A : Set} → Nat → LCBCountState A → LCBCountState A
 updateLCBCount a (lcbCountState counts total) =
@@ -980,6 +948,39 @@ canonicalPolicyWeight : ∀ {A : Set} → FullLearnerKernel A → FullLearnerSta
 canonicalPolicyWeight K s = sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) (canonicalPolicy K s)
 
 canonicalPolicyWeightCode : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Int8
+
+BehaviorPolicy : Set
+BehaviorPolicy = Nat → SparseWeight
+
+canonicalBehaviorPolicy :
+  ∀ {A : Set} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  BehaviorPolicy
+canonicalBehaviorPolicy K s a =
+  sparsemaxWeight
+    (actionSpaceK K)
+    (lcbScore
+      (lcbKernel K)
+      (lcbCounts s)
+      (critic (watkins s)))
+    (valuesCount (lcbCounts s))
+    a
+
+canonicalBehaviorAction :
+  ∀ {A : Set} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  Nat
+canonicalBehaviorAction K s = canonicalPolicy K s
+
+canonicalBehaviorAction-law :
+  ∀ {A : Set}
+  (K : FullLearnerKernel A)
+  (s : FullLearnerState A) →
+  canonicalBehaviorAction K s ≡ canonicalPolicy K s
+canonicalBehaviorAction-law K s = refl
+
 canonicalPolicyWeightCode K s = int8OfNat (numerator (canonicalPolicyWeight K s))
 
 HardSparse : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Set
@@ -1041,7 +1042,7 @@ maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
 ... | no _ = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
-maxCriticValue8 K q = maxCriticValueList (map (λ a → values q a) (candidates K))
+maxCriticValue8 K q = maxCriticValueList (List.map (λ a → values q a) (candidates K))
 
 canonicalQLogBias : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalQLogBias K s = qLog2Bias8 (canonicalPolicyWeightCode K s)
@@ -1248,7 +1249,7 @@ canonicalTokenEncode : CanonicalToken → Int8
 canonicalTokenEncode = int8
 
 canonicalTokenEncodeList : CanonicalTokenSequence → List Int8
-canonicalTokenEncodeList = map canonicalTokenEncode
+canonicalTokenEncodeList = List.map canonicalTokenEncode
 
 canonicalTokenStep : GRUState → CanonicalToken → GRUState
 canonicalTokenStep s t = gruStep s (canonicalTokenEncode t)
