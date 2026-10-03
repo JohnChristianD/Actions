@@ -126,7 +126,7 @@ open import FullCoupled.CanonicalLearnerMonolith as C
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (Level._⊔_ c ℓ)) where
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
