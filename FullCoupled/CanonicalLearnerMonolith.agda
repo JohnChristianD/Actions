@@ -446,7 +446,7 @@ integerLayerNormValue :
   Int8 →
   IntegerLayerNormValue
 integerLayerNormValue {xs} config certificate x =
-  integerLayerNormValue
+  mkIntegerLayerNormValue
     (code (gamma config) *ℤ
       (code (fixedScale config) *ℤ
         integerLayerNormCenteredNumerator xs x)
