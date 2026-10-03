@@ -3,7 +3,6 @@
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --auto-inline #-}
 {-# OPTIONS --confluence-check #-}
-{-# OPTIONS --eta-equality #-}
 {-# OPTIONS --erased-cubical #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --erased-matches #-}
