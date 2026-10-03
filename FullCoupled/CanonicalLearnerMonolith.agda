@@ -521,7 +521,7 @@ finiteQLog8 x with int8Magnitude x
 ... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
 
 finiteQLog8-denominator-nonZero :
-  ∀ {x} → NonZero (denominator (finiteQLog8 x))
+  ∀ {x} → Data.Nat.NonZero (denominator (finiteQLog8 x))
 finiteQLog8-denominator-nonZero {x} with int8Magnitude x
 ... | zero = Data.Nat.nonZero
 ... | suc n = Data.Nat.nonZero
