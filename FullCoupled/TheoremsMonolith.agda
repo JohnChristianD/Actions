@@ -61,10 +61,9 @@ import Vehicle
 -- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
-open import Agda.Builtin.Cubical.Path using (Path; PathP)
 
 -- Solver-associated Base modules.
-open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
+open import Data.Bool.Base hiding (_≤_; _<_)
 open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
 open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; suc; neg; sign; _+_; _*_)
 open import Data.List.Base using (List; []; _∷_; _++_; map; length)
