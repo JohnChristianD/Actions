@@ -14,7 +14,6 @@
 {-# OPTIONS --guardedness #-}
 
 {-# OPTIONS --no-termination-check #-}
-{-# OPTIONS --allow-exec #-}
 
 
 ------------------------------------------------------------------------
@@ -118,8 +117,7 @@ open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
-open import Effect.Monad.State.Transformer using (StateTMonad; StateTMonadState)
-import Function.Identity.Effectful as Id
+open import Effect.Monad.State using (monad as stateMonad; monadState as stateMonadState)
 
 
 
@@ -882,14 +880,14 @@ open AStarHaskellMonadSurface public
 aStar-frontier-monad :
   ∀ {Expression : Set} →
   RawMonad (State (List (List Expression)))
-aStar-frontier-monad = StateTMonad _ Id.monad
+aStar-frontier-monad = stateMonad
 
 aStar-frontier-state :
   ∀ {Expression : Set} →
   RawMonadState
     (List (List Expression))
     (State (List (List Expression)))
-aStar-frontier-state = StateTMonadState _ Id.monad
+aStar-frontier-state = stateMonadState
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
