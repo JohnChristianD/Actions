@@ -11,7 +11,7 @@ let script = merge {
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    grep -Fq -- '{-# OPTIONS --cubical=erased #-}' FullCoupled/TheoremsMonolith.agda
+    grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
     vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
