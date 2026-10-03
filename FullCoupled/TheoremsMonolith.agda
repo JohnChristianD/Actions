@@ -9,8 +9,9 @@
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --no-universe-polymorphism #-}
 {-# OPTIONS --no-projection-like #-}
+{-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
 
 
