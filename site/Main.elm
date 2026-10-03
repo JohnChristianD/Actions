@@ -635,6 +635,46 @@ encodeFinal source =
     }
 
 
+
+maximinColorAt : Int -> PerceptualColor
+maximinColorAt index =
+    maximinPalette
+        |> List.drop (modBy (List.length maximinPalette) index)
+        |> List.head
+        |> Maybe.withDefault fallbackPerceptualColor
+
+
+bestNodeTextDisplayColor : DisplayColor -> DisplayColor
+bestNodeTextDisplayColor nodeColor =
+    [ globalPaletteChoice.ink.display
+    , globalPaletteChoice.background.display
+    , globalPaletteChoice.accentInk.display
+    , globalPaletteChoice.surface.display
+    ]
+        |> maximumBy (\\candidate -> contrastRatio nodeColor candidate)
+        |> Maybe.withDefault globalPaletteChoice.ink.display
+
+
+paletteSwatch : Int -> PerceptualColor -> Html msg
+paletteSwatch index color =
+    let
+        encoded =
+            encodeFinal color.display
+
+        textColor =
+            bestNodeTextDisplayColor color.display
+    in
+    div
+        [ HA.attribute
+            "style"
+            (cssFallbacks "background-color" encoded
+                ++ cssFallbacks "color" (encodeFinal textColor)
+                ++ "display:inline-block;min-width:7rem;margin:.25rem;padding:.5rem;border:1px solid;"
+            )
+        ]
+        [ text ("maximin-" ++ String.fromInt (index + 1)) ]
+
+
 backgroundColor : EncodedColor
 backgroundColor =
     encodeFinal globalPaletteChoice.background.display
