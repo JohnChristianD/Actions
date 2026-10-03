@@ -1839,6 +1839,43 @@ canonical-integer-layernorm-stability-growth-theorem =
     integer-layernorm-configuration-stability-theorem
     integer-layernorm-epsilon-ray-growth-theorem
 
+record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
+  constructor canonicalF4GlobalOptimizerStabilityTheorem
+  field
+    thetaTranslation :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.thetaQ (C.canonicalOptimizerStep K s) ≡
+      C.int8Add
+        (C.int8Add (C.thetaQ (C.optimizer s)) (C.canonicalSignal K s))
+        (C.l2Correction (C.globalL2 (C.optimizerKernel K)))
+    stableNonThetaCoordinates :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.rTheta (C.canonicalOptimizerStep K s) ≡ C.zero8 ×
+      C.eQ (C.canonicalOptimizerStep K s) ≡ C.eQ (C.optimizer s) ×
+      C.rE (C.canonicalOptimizerStep K s) ≡ C.rE (C.optimizer s) ×
+      C.rL (C.canonicalOptimizerStep K s) ≡ C.rL (C.optimizer s)
+    equalInputStability :
+      ∀ {A} (K : C.FullLearnerKernel A)
+        (s t : C.FullLearnerState A) →
+      C.optimizer s ≡ C.optimizer t →
+      C.canonicalSignal K s ≡ C.canonicalSignal K t →
+      C.canonicalOptimizerStep K s ≡ C.canonicalOptimizerStep K t
+
+open CanonicalF4GlobalOptimizerStabilityTheorem public
+
+canonical-f4-global-optimizer-stability-theorem :
+  CanonicalF4GlobalOptimizerStabilityTheorem
+canonical-f4-global-optimizer-stability-theorem =
+  canonicalF4GlobalOptimizerStabilityTheorem
+    (λ K s → C.f4ParameterInvariant
+      (C.optimizerKernel K) (C.optimizer s) (C.canonicalSignal K s))
+    (λ K s → refl , (refl , (refl , refl)))
+    (λ K s t optimizerEq signalEq →
+      cong₂
+        (λ optimizer signal →
+          C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
+        optimizerEq signalEq)
+
 record CanonicalF4IntegerLayerNormStabilityBoundaryTheorem : Set₁ where
   constructor canonicalF4IntegerLayerNormStabilityBoundaryTheorem
   field
@@ -6521,43 +6558,6 @@ canonical-operator-composition-theorem =
     (λ s → refl)
     (λ f g s → refl)
     C.endomorphismAssociative
-
-record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
-  constructor canonicalF4GlobalOptimizerStabilityTheorem
-  field
-    thetaTranslation :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
-      C.thetaQ (C.canonicalOptimizerStep K s) ≡
-      C.int8Add
-        (C.int8Add (C.thetaQ (C.optimizer s)) (C.canonicalSignal K s))
-        (C.l2Correction (C.globalL2 (C.optimizerKernel K)))
-    stableNonThetaCoordinates :
-      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
-      C.rTheta (C.canonicalOptimizerStep K s) ≡ C.zero8 ×
-      C.eQ (C.canonicalOptimizerStep K s) ≡ C.eQ (C.optimizer s) ×
-      C.rE (C.canonicalOptimizerStep K s) ≡ C.rE (C.optimizer s) ×
-      C.rL (C.canonicalOptimizerStep K s) ≡ C.rL (C.optimizer s)
-    equalInputStability :
-      ∀ {A} (K : C.FullLearnerKernel A)
-        (s t : C.FullLearnerState A) →
-      C.optimizer s ≡ C.optimizer t →
-      C.canonicalSignal K s ≡ C.canonicalSignal K t →
-      C.canonicalOptimizerStep K s ≡ C.canonicalOptimizerStep K t
-
-open CanonicalF4GlobalOptimizerStabilityTheorem public
-
-canonical-f4-global-optimizer-stability-theorem :
-  CanonicalF4GlobalOptimizerStabilityTheorem
-canonical-f4-global-optimizer-stability-theorem =
-  canonicalF4GlobalOptimizerStabilityTheorem
-    (λ K s → C.f4ParameterInvariant
-      (C.optimizerKernel K) (C.optimizer s) (C.canonicalSignal K s))
-    (λ K s → refl , (refl , (refl , refl)))
-    (λ K s t optimizerEq signalEq →
-      cong₂
-        (λ optimizer signal →
-          C.f4ThetaStep (C.optimizerKernel K) optimizer signal)
-        optimizerEq signalEq)
 
 f4Orbit :
   C.F4IntUKernel → C.Int8 → Nat → C.F4IntUState → C.F4IntUState
