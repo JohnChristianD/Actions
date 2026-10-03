@@ -1239,6 +1239,11 @@ view model =
             , ul [] (List.map relationRecord edges)
             ]
         , section []
+            [ h2 [ HA.class "dynamic-ink" ] [ text "Custom maximin palette" ]
+            , div []
+                (List.indexedMap paletteSwatch maximinPalette)
+            ]
+        , section []
             [ h2 [ HA.class "dynamic-ink" ] [ text "Mirth surface" ]
             , ul []
                 [ li [] [ code [] [ text ("nodes=" ++ String.fromInt (List.length Surface.nodeLines)) ] ]
