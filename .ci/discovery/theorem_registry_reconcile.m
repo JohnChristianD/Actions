@@ -69,8 +69,8 @@ write_lines(Stream, [Line | Lines], !IO) :-
 read_lines(Path, Lines, Ok, !IO) :-
     io.read_named_file_as_lines(Path, Result, !IO),
     (
-        Result = ok(Lines)
-    ->
+        Result = ok(ReadLines),
+        Lines = ReadLines,
         Ok = yes
     ;
         Result = error(_),
