@@ -40,15 +40,17 @@ let script = merge {
     liquid_target="$out/LiquidGeneratedBridge.hs"
     mirthc .ci/mirth/liquid_haskell_sync.mth -o "$liquid_sync_c"
     cc -std=c99 "$liquid_sync_c" -o "$liquid_sync"
+    learner_generated_sha="$(sha256sum "$generated_learner" | cut -d' ' -f1)"
+    theorem_generated_sha="$(sha256sum "$generated_theorem" | cut -d' ' -f1)"
     "$liquid_sync" "$generated_learner" "$generated_theorem" "$liquid_target"
     test -s "$liquid_target"
+    grep -Fq "$learner_generated_sha" "$liquid_target"
+    grep -Fq "$theorem_generated_sha" "$liquid_target"
     liquid --smtsolver=z3 -i "$out" "$liquid_target"
 
     commit_sha="$(git rev-parse HEAD)"
     learner_sha="$(sha256sum FullCoupled/CanonicalLearnerMonolith.agda | cut -d' ' -f1)"
     theorem_sha="$(sha256sum FullCoupled/TheoremsMonolith.agda | cut -d' ' -f1)"
-    learner_generated_sha="$(sha256sum "$generated_learner" | cut -d' ' -f1)"
-    theorem_generated_sha="$(sha256sum "$generated_theorem" | cut -d' ' -f1)"
     liquid_target_sha="$(sha256sum "$liquid_target" | cut -d' ' -f1)"
     printf '%s\n' \
       "commit=$commit_sha source=FullCoupled/CanonicalLearnerMonolith.agda source-sha256=$learner_sha generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs generated-sha256=$learner_generated_sha target=build/agda-haskell/LiquidGeneratedBridge.hs target-sha256=$liquid_target_sha liquid:z3:pass" \
