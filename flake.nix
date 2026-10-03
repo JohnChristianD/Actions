@@ -194,33 +194,14 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
-                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
-                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
                 find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort
               '';
             };
           in {
             type = "app";
             program = "${script}/bin/malonzo-extract";
-          };
-
-          liquid-haskell-check = let
-            script = pkgs.writeShellApplication {
-              name = "liquid-haskell-check";
-              runtimeInputs = [
-                (haskellLiquidGhc system)
-                pkgs.z3
-                pkgs.coreutils
-              ];
-              text = ''
-                set -euo pipefail
-                export LIQUID_SOLVER=z3
-                liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/liquid-haskell-check";
           };
 
           agda-haskell-pipeline = let
@@ -232,19 +213,29 @@
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
+                pkgs.mirth
+                pkgs.stdenv.cc
               ];
               text = ''
                 set -euo pipefail
-                out="build/agda-haskell";
+                out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
                 export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
-                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
-                "$AGDA_COMMAND" -l standard-library -i . --compile --ghc-dont-call-ghc --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
-                liquid --smtsolver=z3 SimpleHaskell/CanonicalLearnerBridge.hs SimpleHaskell/TheoremsBridge.hs
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                generated_learner="$out/MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"
+                generated_theorem="$out/MAlonzo/Code/FullCoupled/TheoremsMonolith.hs"
+                liquid_sync_c="$out/liquid-haskell-sync.c"
+                liquid_sync="$out/liquid-haskell-sync"
+                liquid_target="$out/LiquidGeneratedBridge.hs"
+                mirthc .ci/mirth/liquid_haskell_sync.mth -o "$liquid_sync_c"
+                cc -std=c99 "$liquid_sync_c" -o "$liquid_sync"
+                "$liquid_sync" "$generated_learner" "$generated_theorem" "$liquid_target"
+                liquid --smtsolver=z3 -i "$out" "$liquid_target"
                 printf '%s\n' \
-                  'FullCoupled/CanonicalLearnerMonolith.agda	MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith	SimpleHaskell/CanonicalLearnerBridge.hs	liquid:z3:pass' \
-                  'FullCoupled/TheoremsMonolith.agda	MAlonzo.Code.FullCoupled.TheoremsMonolith	SimpleHaskell/TheoremsBridge.hs	liquid:z3:pass' \
+                  "source=FullCoupled/CanonicalLearnerMonolith.agda generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs target=build/agda-haskell/LiquidGeneratedBridge.hs liquid:z3:pass" \
+                  "source=FullCoupled/TheoremsMonolith.agda generated=MAlonzo/Code/FullCoupled/TheoremsMonolith.hs target=build/agda-haskell/LiquidGeneratedBridge.hs liquid:z3:pass" \
                   > "$out/liquid-agda-manifest.tsv"
                 cat "$out/liquid-agda-manifest.tsv"
               '';
