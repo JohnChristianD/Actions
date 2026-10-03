@@ -60,7 +60,7 @@ import Vehicle
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
-open import Agda.Builtin.Nat using (Nat; zero; suc; _+_; _*)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
 
 -- Solver-associated Base modules.
 open import Data.Bool.Base hiding (_≤_; _<_; _>_; _≥_)
