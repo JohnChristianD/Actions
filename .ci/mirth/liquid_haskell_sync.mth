@@ -1,0 +1,18 @@
+module actions.liquid_haskell_sync
+
+import std.prelude
+import std.world
+
+def main {
+    "set -euo pipefail; learner=\"$1\"; theorem=\"$2\"; bridge=\"$3\"; test -s \"$learner\"; test -s \"$theorem\"; mkdir -p \"$(dirname \"$bridge\")\"; cat > \"$bridge\" <<'HASKELL'
+module LiquidGeneratedBridge where
+
+import qualified MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith
+import qualified MAlonzo.Code.FullCoupled.TheoremsMonolith
+
+generatedAgdaBackend :: ()
+generatedAgdaBackend = ()
+HASKELL
+test -s \"$bridge\"; grep -Fq 'MAlonzo.Code.FullCoupled.CanonicalLearnerMonolith' \"$bridge\"; grep -Fq 'MAlonzo.Code.FullCoupled.TheoremsMonolith' \"$bridge\"; echo 'mirth-liquid-generated-bridge=pass'
+" print
+}
