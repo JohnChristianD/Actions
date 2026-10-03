@@ -652,7 +652,7 @@ bestNodeTextDisplayColor nodeColor =
     , globalPaletteChoice.accentInk.display
     , globalPaletteChoice.surface.display
     ]
-        |> maximumBy (\\candidate -> contrastRatio nodeColor candidate)
+        |> maximumBy (\candidate -> contrastRatio nodeColor candidate)
         |> Maybe.withDefault globalPaletteChoice.ink.display
 
 
