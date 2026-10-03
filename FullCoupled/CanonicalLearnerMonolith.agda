@@ -100,6 +100,8 @@ open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
 -- END MIRTH-SYNC COMMON IMPORTS
 
+import Data.List.Base as ListBase
+
 record Topology (A : Set) : Set₁ where
   field
     isOpen : (A → Set) → Set
@@ -345,7 +347,7 @@ scoreEntryOrder : DecTotalOrder 0ℓ 0ℓ 0ℓ
 scoreEntryOrder = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order ≤-decTotalOrder)
 
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
-scoreList K q c = List.map (λ a → (scoreA q c a , a)) (candidates K)
+scoreList K q c = ListBase.map (λ a → (scoreA q c a , a)) (candidates K)
 
 sortScores : List ScoreEntry → List ScoreEntry
 sortScores = Sort.sort scoreEntryOrder
@@ -385,7 +387,7 @@ integerLayerNormCenteredNumerator xs x =
 integerLayerNormCenteredNumerators :
   List Int8 → List ℤ
 integerLayerNormCenteredNumerators xs =
-  List.map
+  ListBase.map
     (λ x → integerLayerNormCenteredNumerator xs x)
     xs
 
@@ -396,7 +398,7 @@ integerLayerNormVarianceNumerator :
   List Int8 → ℤ
 integerLayerNormVarianceNumerator xs =
   integerCodeSumList
-    (List.map
+    (ListBase.map
       integerLayerNormSquare
       (integerLayerNormCenteredNumerators xs))
 
@@ -1042,7 +1044,7 @@ maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
 ... | no _ = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
-maxCriticValue8 K q = maxCriticValueList (List.map (λ a → values q a) (candidates K))
+maxCriticValue8 K q = maxCriticValueList (ListBase.map (λ a → values q a) (candidates K))
 
 canonicalQLogBias : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalQLogBias K s = qLog2Bias8 (canonicalPolicyWeightCode K s)
@@ -1249,7 +1251,7 @@ canonicalTokenEncode : CanonicalToken → Int8
 canonicalTokenEncode = int8
 
 canonicalTokenEncodeList : CanonicalTokenSequence → List Int8
-canonicalTokenEncodeList = List.map canonicalTokenEncode
+canonicalTokenEncodeList = ListBase.map canonicalTokenEncode
 
 canonicalTokenStep : GRUState → CanonicalToken → GRUState
 canonicalTokenStep s t = gruStep s (canonicalTokenEncode t)
