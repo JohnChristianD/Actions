@@ -1095,6 +1095,19 @@ graphView model =
                                     List.drop neighborIndex allNeighbors
                                         |> List.head
                                         |> Maybe.withDefault selected.id
+
+                                nodeColor =
+                                    maximinColorAt neighborIndex
+
+                                nodeEncoded =
+                                    encodeFinal nodeColor.display
+
+                                nodeTextColor =
+                                    encodeFinal (bestNodeTextDisplayColor nodeColor.display)
+
+                                neighborStyle =
+                                    cssFallbacks "fill" nodeEncoded
+                                        ++ cssFallbacks "stroke" (encodeFinal mutedInkColor.srgb)
                             in
                             [ S.line
                                 [ SA.x1 "500"
@@ -1127,14 +1140,7 @@ graphView model =
                                 , SA.textAnchor "middle"
                                 , SA.fontSize "11"
                                 , SA.style
-                                    ( "fill:"
-                                        ++ cssColor "srgb" inkColor.srgb
-                                        ++ ";fill:"
-                                        ++ cssColor "display-p3" inkColor.p3
-                                        ++ ";fill:"
-                                        ++ cssColor "rec2020" inkColor.rec2020
-                                        ++ ";"
-                                    )
+                                    (cssFallbacks "fill" nodeTextColor)
                                 ]
                                 [ S.text
                                     (String.left 36
