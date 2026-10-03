@@ -146,7 +146,7 @@ list-monoid-solver-append-assoc xs ys zs =
 
 ------------------------------------------------------------------------
 record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (c ⊔ ℓ)) where
+  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (Level._⊔_ c ℓ)) where
   constructor genericRingSolverNormalizationTheorem
   field
     associativity :
@@ -2792,6 +2792,16 @@ canonical-aq-loop-theorem =
     (λ K s → refl)
     (λ K s → refl)
     (λ K s → refl)
+
+canonicalAperiodic-theorem :
+  ∀ K s n →
+  C.iterateCanonical K (suc n) s ≢ s
+canonicalAperiodic-theorem = C.canonicalAperiodic
+
+canonicalNoNontrivialFiniteCycle-theorem :
+  ∀ K s n →
+  C.iterateCanonical K (suc n) s ≡ s → ⊥
+canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
 
 record StateIsomorphism (A B : Set) : Set where
   constructor stateIsomorphism
