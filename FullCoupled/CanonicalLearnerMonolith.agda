@@ -1040,8 +1040,8 @@ canonicalPolicy-optimizer-invariant K s o = refl
 maxCriticValueList : List Int8 → Int8
 maxCriticValueList [] = zero8
 maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
-... | yes _ = maxCriticValueList xs
-... | no _ = x
+... | Relation.Nullary.yes _ = maxCriticValueList xs
+... | Relation.Nullary.no _ = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
 maxCriticValue8 K q = maxCriticValueList (ListBase.map (λ a → values q a) (candidates K))
