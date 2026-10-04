@@ -2,6 +2,7 @@
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --cubical #-}
+{-# OPTIONS --erased-cubical #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 
