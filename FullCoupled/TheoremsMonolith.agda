@@ -5437,7 +5437,7 @@ record JAXExecutionMirrorReproof : Set₁ where
       (q : C.QFunction {A})
       (c : C.CountFunction {A}) →
       jaxSparsemaxPolicyIndex K q c ≡ C.sparsemaxPolicy K q c
-    integerLayerNormRadicand :
+    integerLayerNormRadicandLaw :
       ∀ xs epsilon →
       jaxIntegerLayerNormRadicand xs epsilon ≡
       C.integerLayerNormRadicand xs epsilon
