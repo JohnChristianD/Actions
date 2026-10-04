@@ -3399,6 +3399,46 @@ recurrentPrefix-scan-lifts-conjugacy replace step h xs (suc n) s =
           q)
       (h s (xs n)))
 
+record RecurrentScanConjugacyTheorem
+  (State Input : Set) : Set₁ where
+  constructor recurrentScanConjugacyTheorem
+  field
+    replacement :
+      ∀ (replace : State → State)
+        (step : State → Input → State) →
+        (h :
+          ∀ (s : State) (x : Input) →
+          replace (step s x) ≡ step (replace s) x) →
+        State → State
+    scanConjugacy :
+      ∀ (replace : State → State)
+        (step : State → Input → State) →
+        (h :
+          ∀ (s : State) (x : Input) →
+          replace (step s x) ≡ step (replace s) x) →
+        List Input →
+        Nat →
+        State →
+        replace
+          (C.recurrentPrefixState
+            (C.recurrentNetwork step)
+            _ _
+            _) ≡
+        C.recurrentPrefixState
+          (C.recurrentNetwork step)
+          _ _
+          (replace _)
+
+open RecurrentScanConjugacyTheorem public
+
+canonical-recurrent-scan-conjugacy-theorem :
+  RecurrentScanConjugacyTheorem C.GRUState C.Int8
+canonical-recurrent-scan-conjugacy-theorem =
+  recurrentScanConjugacyTheorem
+    (λ replace step h → replace)
+    (λ replace step h xs n s →
+      recurrentPrefix-scan-lifts-conjugacy replace step h xs n s)
+
 canonicalRecurrentInput-watkinsTarget-law :
   ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
   C.canonicalGRUStep K s ≡
