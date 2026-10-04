@@ -6,6 +6,69 @@
 
 module FullCoupled.FormalMethods.VerificationConditions where
 
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Mirth-generated contract: this exact block is shared by every tracked .agda source.
+open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
+open import Agda.Builtin.Nat using (Nat; zero; suc)
+
+-- Solver-associated Base modules.
+open import Data.Bool.Base hiding (_≤_; _<_)
+open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
+open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; suc; neg; sign; _+_; _*_)
+open import Data.List.Base using (List; []; _∷_; _++_; map; length)
+open import Data.Product.Base
+open import Data.Sum.Base
+open import Data.Maybe.Base
+
+-- Solver front ends.
+import Data.Bool.Solver as BoolSolver
+open import Data.Nat.Solver using (module +-*-Solver)
+import Data.Integer.Solver as IntegerSolver
+open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase
+import Data.List.Relation.Binary.Sublist.Heterogeneous.Solver as HeterogeneousSublistSolver
+import Data.List.Relation.Binary.Sublist.DecSetoid.Solver as DecSetoidSublistSolver
+import Data.List.Relation.Binary.Sublist.DecPropositional.Solver as DecPropositionalSublistSolver
+import Function.Related.TypeIsomorphisms.Solver as TypeIsomorphismsSolver
+open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
+open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
+open import Tactic.RingSolver as RingSolver using (solve-∀)
+open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
+open import Tactic.RingSolver.Core.Expression as RingExpression
+open import Tactic.RingSolver.Core.NatSet as RingNatSet
+open import Tactic.RingSolver.Core.Polynomial.Base as RingPolynomialBase
+open import Tactic.MonoidSolver as MonoidSolver using (solve)
+
+-- Existing shared semantics and container imports.
+open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
+open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-decTotalOrder)
+open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
+import Data.Integer.Properties as IntegerProperties
+open import Level using (0ℓ)
+open import Data.List.Sort as Sort
+open import Relation.Binary.Bundles using (DecTotalOrder)
+open import Relation.Binary.Construct.On as On
+import Relation.Binary.Construct.Flip.EqAndOrd as Flip
+open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
+open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
+open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
+open import Relation.Nullary using (¬_)
+open import Effect.Monad using (RawMonad)
+open import Effect.Monad.State using (State; RawMonadState)
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
+open import Data.Integer using () renaming (_≤_ to _≤ℤ_)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Agda.Builtin.Bool using (Bool; true; false)
+open import Agda.Builtin.String using (String)
+open import Algebra.Bundles using (Monoid)
+open import Data.List.Properties using (++-monoid)
+import Data.List.Effectful as ListEffectful
+import Data.List.Base as ListBase
+-- END MIRTH-SYNC COMMON IMPORTS
+
+
 open import Data.Nat    using (ℕ; _+_) renaming (_≤?_ to _≤?ₙ_)
 open import Data.Bool   using (Bool; true; false; not; _∧_)
 open import Data.String using (String; _≟_)
