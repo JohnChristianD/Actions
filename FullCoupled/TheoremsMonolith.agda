@@ -3416,18 +3416,17 @@ record RecurrentScanConjugacyTheorem
         (h :
           ∀ (s : State) (x : Input) →
           replace (step s x) ≡ step (replace s) x) →
-        List Input →
-        Nat →
-        State →
+        (xs : List Input) →
+        (n : Nat) →
+        (s : State) →
         replace
           (C.recurrentPrefixState
             (C.recurrentNetwork step)
-            _ _
-            _) ≡
+            xs n s) ≡
         C.recurrentPrefixState
           (C.recurrentNetwork step)
-          _ _
-          (replace _)
+          xs n
+          (replace s)
 
 open RecurrentScanConjugacyTheorem public
 
