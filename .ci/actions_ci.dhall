@@ -11,6 +11,13 @@ let script = merge {
   AgdaTheorem = ''
     set -euo pipefail
     "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/IMP.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/OperationalSemantics.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/Security.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/Types.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/HoareLogic.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/SeparationLogic.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/VerificationConditions.agda
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
@@ -261,6 +268,13 @@ let script = merge {
     agda_files=$(git ls-files '*.agda')
     expected_agda_files='Category/Monad/State.agda
 FullCoupled/CanonicalLearnerMonolith.agda
+FullCoupled/FormalMethods/HoareLogic.agda
+FullCoupled/FormalMethods/IMP.agda
+FullCoupled/FormalMethods/OperationalSemantics.agda
+FullCoupled/FormalMethods/Security.agda
+FullCoupled/FormalMethods/SeparationLogic.agda
+FullCoupled/FormalMethods/Types.agda
+FullCoupled/FormalMethods/VerificationConditions.agda
 FullCoupled/TheoremsMonolith.agda'
     [ "$agda_files" = "$expected_agda_files" ] || {
       echo "tracked Agda source surface mismatch"
