@@ -3702,15 +3702,6 @@ record OrbitStateInjectivityTheorem (State : Set) : Set₁ where
 
 open OrbitStateInjectivityTheorem public
 
-canonicalOrbitStateInjective :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState) →
-  OrbitStateInjectivityTheorem C.CanonicalFullLearnerState
-canonicalOrbitStateInjective K s =
-  orbitStateInjectivityTheorem
-    (λ n → C.iterateCanonical K n s)
-    (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
-
 canonicalBiasedWatkinsNegativeQMunchausenL2Target :
   C.CanonicalFullLearnerKernel → C.CanonicalFullLearnerState → C.Int8
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
@@ -3849,6 +3840,15 @@ canonicalOrbit-state-injective K s {m} {n} eq =
       (trans
         (cong (λ t → C.totalCount (C.lcbCounts t)) eq)
         (C.canonicalTotalCountAfter K n s)))
+
+canonicalOrbitStateInjective :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
+  OrbitStateInjectivityTheorem C.CanonicalFullLearnerState
+canonicalOrbitStateInjective K s =
+  orbitStateInjectivityTheorem
+    (λ n → C.iterateCanonical K n s)
+    (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
 
 canonicalInfiniteStateOrbitEmbedding :
   ∀ (K : C.CanonicalFullLearnerKernel)
