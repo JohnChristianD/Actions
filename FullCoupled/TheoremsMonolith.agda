@@ -2810,12 +2810,6 @@ canonical-aq-loop-theorem =
     (λ K s → refl)
     (λ K s → refl)
 
-canonicalTotalCountAfter :
-  ∀ K n s →
-  C.totalCount (C.lcbCounts (C.iterateCanonical K n s)) ≡
-  C.totalCount (C.lcbCounts s) + n
-canonicalTotalCountAfter = C.canonicalTotalCountAfter
-
 canonicalAperiodic-theorem :
   ∀ K s n →
   C.iterateCanonical K (suc n) s ≢ s
