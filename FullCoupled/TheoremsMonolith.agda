@@ -3693,74 +3693,10 @@ open PointwiseSandwich public
 open MinimaxBellmanShapleyOperator public
 open MinimaxBellmanShapleyInclusionTheorem public
 
-record OrbitStateInjectivityTheorem (State : Set) : Set₁ where
-  constructor orbitStateInjectivityTheorem
-  field
-    orbitState : Nat → State
-    orbitStateInjective :
-      ∀ {m n} → orbitState m ≡ orbitState n → m ≡ n
-
-open OrbitStateInjectivityTheorem public
-
 canonicalBiasedWatkinsNegativeQMunchausenL2Target :
   C.CanonicalFullLearnerKernel → C.CanonicalFullLearnerState → C.Int8
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
   C.canonicalWatkinsTarget
-
-canonical-qLog2Bias8-law :
-  ∀ x →
-  C.qLog2Bias8 x ≡
-  C.int8Neg
-    (C.int8OfNat
-      (Data.Nat._/_
-        (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
-        (C.denominator (C.finiteQLog8 x))))
-canonical-qLog2Bias8-law x with C.int8Magnitude x
-... | zero = refl
-... | suc n = refl
-
-record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
-  constructor canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-  field
-    negativeQMunchausenBias :
-      ∀ x →
-      C.qLog2Bias8 x ≡
-      C.int8Neg
-        (C.int8OfNat
-          (Data.Nat._/_
-            (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
-            (C.denominator (C.finiteQLog8 x))))
-
-    targetDecomposition :
-      ∀ K s →
-      canonicalBiasedWatkinsNegativeQMunchausenL2Target K s ≡
-      C.int8Add
-        (C.int8Add
-          (C.int8Add
-            (C.canonicalReward8 K s)
-            (C.canonicalQLogBias K s))
-          (C.int8Mul
-            C.canonicalDiscount8
-            (C.maxCriticValue8 (C.critic (C.watkins s)))))
-        (C.canonicalEndogenousFeedback K s)
-
-    l2ConsumesTarget :
-      ∀ K s →
-      C.canonicalOptimizerStep K s ≡
-      C.f4ThetaStep
-        (C.optimizerKernel K)
-        (C.optimizer s)
-        (canonicalBiasedWatkinsNegativeQMunchausenL2Target K s)
-
-open CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem public
-
-canonical-biased-watkins-negative-q-munchausen-l2-target-theorem :
-  CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-canonical-biased-watkins-negative-q-munchausen-l2-target-theorem =
-  canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
-    canonical-qLog2Bias8-law
-    (λ K s → C.canonicalWatkinsTarget-law K s)
-    (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
 
 record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
   constructor canonicalQMunchausenL2SharedNegationPolarityTheorem
@@ -3826,38 +3762,6 @@ natPlus-left-cancel zero m n eq = eq
 natPlus-left-cancel (suc k) m n eq =
   natPlus-left-cancel k m n (suc-injective eq)
 
-canonicalOrbit-state-injective :
-  ∀ K s {m n : Nat} →
-  C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
-  m ≡ n
-canonicalOrbit-state-injective K s {m} {n} eq =
-  natPlus-left-cancel
-    (C.totalCount (C.lcbCounts s))
-    m
-    n
-    (trans
-      (sym (C.canonicalTotalCountAfter K m s))
-      (trans
-        (cong (λ t → C.totalCount (C.lcbCounts t)) eq)
-        (C.canonicalTotalCountAfter K n s)))
-
-canonicalOrbitStateInjective :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState) →
-  OrbitStateInjectivityTheorem C.CanonicalFullLearnerState
-canonicalOrbitStateInjective K s =
-  orbitStateInjectivityTheorem
-    (λ n → C.iterateCanonical K n s)
-    (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
-
-canonicalInfiniteStateOrbitEmbedding :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState) →
-  ∀ {m n : Nat} →
-  C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
-  m ≡ n
-canonicalInfiniteStateOrbitEmbedding K s =
-  canonicalOrbit-state-injective K s
 
 record DiscreteExactUAPTheorem
   (State Feature Output : Set)
@@ -4054,41 +3958,6 @@ record ContinuousLeftInverseTheorem
 
 open ContinuousLeftInverseTheorem public
 
-record DenseNeighborhoodSeparationTheorem
-  (State Feature : Set)
-  (embed : Nat → State)
-  (observe : State → Feature) : Set₁ where
-  constructor denseNeighborhoodSeparationTheorem
-  field
-    denseNeighborhoodSeparation :
-      ∀ {m n} →
-      observe (embed m) ≡ observe (embed n) →
-      m ≡ n
-
-open DenseNeighborhoodSeparationTheorem public
-
-canonicalDenseNeighborhoodSeparation :
-  ∀ (K : C.CanonicalFullLearnerKernel)
-  (s : C.CanonicalFullLearnerState)
-  (observe : C.CanonicalFullLearnerState → C.Int8)
-  (inverse : C.Int8 → C.CanonicalFullLearnerState) →
-  (∀ t → inverse (observe t) ≡ t) →
-  DenseNeighborhoodSeparationTheorem
-    C.CanonicalFullLearnerState
-    C.Int8
-    (λ n → C.iterateCanonical K n s)
-    observe
-canonicalDenseNeighborhoodSeparation
-  K s observe inverse leftInverse =
-  denseNeighborhoodSeparationTheorem
-    (λ {m} {n} eq →
-      canonicalOrbit-state-injective K s
-        (trans
-          (sym (leftInverse (C.iterateCanonical K m s)))
-          (trans
-            (cong inverse eq)
-            (leftInverse (C.iterateCanonical K n s)))))
-
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
   field
@@ -4181,10 +4050,10 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       ∀ s →
       target s ≡ target (inverse (observe s))
 
-    orbitStateInjection :
+    ringStateInjection :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      OrbitStateInjectivityTheorem C.CanonicalFullLearnerState
+      RingStateInjectivityTheorem C.CanonicalFullLearnerState
 
     infiniteStateOrbit :
       ∀ (K : C.CanonicalFullLearnerKernel)
@@ -4274,9 +4143,9 @@ canonicalNatIndexedExactUniversalReadout
 hardSignGate-idempotent :
   ∀ x → C.hardSignGate (C.hardSignGate x) ≡ C.hardSignGate x
 hardSignGate-idempotent x with C.hardSign x
-... | C.negativeSign = refl
+... | C.negative = refl
 ... | C.zeroSign = refl
-... | C.positiveSign = refl
+... | C.positive = refl
 
 hardSignGate-continuous-discrete :
   Continuous
@@ -4287,10 +4156,6 @@ hardSignGate-continuous-discrete :
     C.hardSignGate
 hardSignGate-continuous-discrete =
   continuous-under-discrete-topology C.hardSignGate
-
-iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
-iterateState step zero s = s
-iterateState step (suc n) s = step (iterateState step n s)
 
 record FiniteRankStabilityCertificate
   (State : Set)
@@ -4337,7 +4202,7 @@ bundleCost :
   (Good → Nat) →
   Nat
 bundleCost goods price bundle =
-  sumNat (Data.List.Base.map (λ g → price g * bundle g) goods)
+  sumNat (map (λ g → price g * bundle g) goods)
 
 BudgetFeasible :
   ∀ {Good : Set} →
@@ -4371,8 +4236,8 @@ record FiniteNonIIDWalrasianEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents)
 
 open FiniteNonIIDWalrasianEquilibrium public
 
@@ -4390,7 +4255,7 @@ record FiniteTUShapleyAllocationEquilibrium
       scaledValue * payoff p ≡
       scaledShapley p
     scaledEfficiency :
-      sumNat (Data.List.Base.map payoff players) ≡
+      sumNat (map payoff players) ≡
       scaledValue * coalitionWorth players
 
 open FiniteTUShapleyAllocationEquilibrium public
@@ -4645,18 +4510,8 @@ guardedCubicalIterateConjugacy :
   ∀ n s →
   GuardedCubicalDenseRepresentation.observe R (iterateUpdate stateStep n s) ≡
   iterateGuardedFeature featureStep n (GuardedCubicalDenseRepresentation.observe R s)
-guardedCubicalIterateConjugacy
-  {stateStep = stateStep}
-  {featureStep = featureStep}
-  C
-  zero
-  s = refl
-guardedCubicalIterateConjugacy
-  {stateStep = stateStep}
-  {featureStep = featureStep}
-  C
-  (suc n)
-  s =
+guardedCubicalIterateConjugacy C zero s = refl
+guardedCubicalIterateConjugacy C (suc n) s =
   trans
     (GuardedCubicalConjugacy.stepConjugacy C (iterateUpdate stateStep n s))
     (cong
@@ -4728,12 +4583,7 @@ guardedCubicalDenseSeparationEmergentComposition :
     featureStep
     R
     C
-guardedCubicalDenseSeparationEmergentComposition
-  {stateStep = stateStep}
-  {featureStep = featureStep}
-  {R = R}
-  {C = C}
-  emergent =
+guardedCubicalDenseSeparationEmergentComposition emergent =
   guardedCubicalDenseSeparationEmergentCompositionTheorem
     emergent
     (guardedCubicalGlobalInjective R)
@@ -4829,13 +4679,7 @@ gruInjectiveTailStability-tailFixedPoint :
         (iterateStep stateStep n s)
       ≡
       iterateStep stateStep n s)
-gruInjectiveTailStability-tailFixedPoint
-  {stateStep = stateStep}
-  {featureStep = featureStep}
-  {encode = encode}
-  W
-  s
-  with featureTailStable W s
+gruInjectiveTailStability-tailFixedPoint W s with featureTailStable W s
 ... | n , tail =
   n ,
   encodeInjective W
@@ -4878,7 +4722,7 @@ gruInjectiveTailStability-eventualStationarity :
       iterateStep stateStep (n + k) s
       ≡
       iterateStep stateStep n s)
-gruInjectiveTailStability-eventualStationarity {stateStep = stateStep} W s
+gruInjectiveTailStability-eventualStationarity W s
   with gruInjectiveTailStability-tailFixedPoint W s
 ... | n , fixed =
   n ,
@@ -5044,7 +4888,7 @@ generalTsallis2NearSparsity-zero :
 generalTsallis2NearSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
-... | suc q = Data.Empty.⊥-elim (natZeroNotSuc h)
+... | suc q = ⊥-elim (natZeroNotSuc h)
 
 generalTsallis2NearSparsity-definition :
   ∀ (xs : ActionWeights) →
@@ -5056,7 +4900,7 @@ generalTsallis2NearSparsity-definition :
       (generalTsallis2Denominator xs)
 generalTsallis2NearSparsity-definition xs h
   with actionWeightSquareSum xs
-... | zero = Data.Empty.⊥-elim (h refl)
+... | zero = ⊥-elim (h refl)
 ... | suc q = refl
 
 fractionEquivalent :
@@ -5127,12 +4971,12 @@ jaxAffine x =
 
 jaxVmapAffine : List ℤ → List ℤ
 jaxVmapAffine =
-  Data.List.Base.map jaxAffine
+  map jaxAffine
 
 jaxVmapAffine-law :
   ∀ xs →
   jaxVmapAffine xs ≡
-  Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+  map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
 jaxVmapAffine-law xs = refl
 
 jaxPrefixSum : ℤ → List ℤ → List ℤ
@@ -5195,12 +5039,12 @@ jaxLexicographicScoreOrder :
   List C.ScoreEntry →
   List Nat
 jaxLexicographicScoreOrder xs =
-  Data.List.Base.map proj₂ (C.sortScores xs)
+  map proj₂ (C.sortScores xs)
 
 jaxLexicographicScoreOrder-law :
   ∀ xs →
   jaxLexicographicScoreOrder xs ≡
-  Data.List.Base.map proj₂ (C.sortScores xs)
+  map proj₂ (C.sortScores xs)
 jaxLexicographicScoreOrder-law xs = refl
 
 jaxSparseSupportSize :
@@ -5293,14 +5137,14 @@ jaxBatchedIntegerLayerNormRadicand :
   Nat →
   List ℤ
 jaxBatchedIntegerLayerNormRadicand batch epsilon =
-  Data.List.Base.map
+  map
     (λ xs → jaxIntegerLayerNormRadicand xs epsilon)
     batch
 
 jaxBatchedIntegerLayerNormRadicand-law :
   ∀ batch epsilon →
   jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-  Data.List.Base.map
+  map
     (λ xs → C.integerLayerNormRadicand xs epsilon)
     batch
 jaxBatchedIntegerLayerNormRadicand-law batch epsilon = refl
@@ -5344,14 +5188,14 @@ jaxBatchedGRUHiddenStep :
   List C.Int8 →
   List C.Int8
 jaxBatchedGRUHiddenStep states xs =
-  Data.List.Base.map
+  map
     (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
     (zipGRUStatesInts states xs)
 
 jaxBatchedGRUHiddenStep-law :
   ∀ states xs →
   jaxBatchedGRUHiddenStep states xs ≡
-  Data.List.Base.map
+  map
     (λ stateX →
       C.hiddenState
         (C.gruStep
@@ -5399,7 +5243,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     vmapAffine :
       ∀ xs →
       jaxVmapAffine xs ≡
-      Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+      map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
     associativePrefixSum :
       ∀ xs →
       jaxAssociativePrefixSum xs ≡
@@ -5416,7 +5260,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     lexicographicScoreOrder :
       ∀ xs →
       jaxLexicographicScoreOrder xs ≡
-      Data.List.Base.map proj₂ (C.sortScores xs)
+      map proj₂ (C.sortScores xs)
     sparseSupportSize :
       ∀ {A : Set}
       (K : C.ActionSpace A)
@@ -5437,14 +5281,18 @@ record JAXExecutionMirrorReproof : Set₁ where
       (q : C.QFunction {A})
       (c : C.CountFunction {A}) →
       jaxSparsemaxPolicyIndex K q c ≡ C.sparsemaxPolicy K q c
-    integerLayerNormRadicandLaw :
+    integerLayerNormCenteredNumerators :
+      ∀ xs →
+      jaxIntegerLayerNormCenteredNumerators xs ≡
+      C.integerLayerNormCenteredNumerators xs
+    integerLayerNormRadicand :
       ∀ xs epsilon →
       jaxIntegerLayerNormRadicand xs epsilon ≡
       C.integerLayerNormRadicand xs epsilon
     batchedIntegerLayerNormRadicand :
       ∀ batch epsilon →
       jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-      Data.List.Base.map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
+      map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
     signedGate :
       ∀ x →
       jaxSignedGate x ≡ C.gateFromInput x
@@ -5455,7 +5303,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedGRUHiddenStep :
       ∀ states xs →
       jaxBatchedGRUHiddenStep states xs ≡
-      Data.List.Base.map
+      map
         (λ stateX →
           C.hiddenState
             (C.gruStep
@@ -5551,7 +5399,7 @@ canonicalLearnerBairdSevenStar :
           (C.canonicalFullStep K)
           fixed)) →
   CanonicalLearnerBairdSevenStarWitness K s
-canonicalLearnerBairdSevenStar {K = K} {s = s} divergence =
+canonicalLearnerBairdSevenStar divergence =
   canonicalLearnerBairdSevenStarWitness
     refl
     refl
@@ -5563,7 +5411,7 @@ canonicalLearnerBairdSevenStar {K = K} {s = s} divergence =
     (λ w₈ wᵢ → refl)
     (λ w₇ w₈ → w₇ + 2 * w₈)
     (λ w₇ w₈ → refl)
-    (λ n → canonicalPersistentGRU-afterFullStep-iterate K n s)
+    (λ n → C.canonicalPersistentGRU-afterFullStep-iterate K n s)
     divergence
 
 record OffPolicyFunctionApproximationStabilityBoundary : Set₁ where
@@ -5650,8 +5498,8 @@ globalConjugacyEquivalence-iterate :
   observe (iterateState step n s)
   ≡
   iterateState featureStep n (observe s)
-globalConjugacyEquivalence-iterate {step = step} {featureStep = featureStep} G zero s = refl
-globalConjugacyEquivalence-iterate {step = step} {featureStep = featureStep} G (suc n) s =
+globalConjugacyEquivalence-iterate G zero s = refl
+globalConjugacyEquivalence-iterate G (suc n) s =
   trans
     (GlobalConjugacyEquivalence.forward G (iterateState step n s))
     (cong
@@ -5767,6 +5615,22 @@ record ExactFunctionIsomorphismTransportTheorem
       ∀ x →
       StateIsomorphism.to isoB (f x) ≡
       translatedFunction (StateIsomorphism.to isoA x)
+
+exactRecurrentFunctionTranslation :
+  ∀ {S A : Set}
+    {isoA : StateIsomorphism S A}
+    (step : S → S)
+    (stepA : A → A)
+    (conjugacy :
+      ∀ x →
+      StateIsomorphism.to isoA (step x) ≡
+      stepA (StateIsomorphism.to isoA x)) →
+  ExactRecurrentFunctionTranslationTheorem S A isoA step stepA
+exactRecurrentFunctionTranslation step stepA conjugacy =
+  exactRecurrentFunctionTranslationTheorem
+    conjugacy
+    (λ {T} {B} {isoB} f →
+      exactFunctionIsomorphismTransport f)
 
 record CanonicalExactRNNLMTheorem : Set₁ where
   constructor canonicalExactRNNLMTheorem
@@ -5920,6 +5784,8 @@ record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
   field
     aStarGuidance :
       CanonicalAStarCostGuidanceTheorem
+    representationTransport :
+      GeneralizedRepresentationTransportCompositionTheorem
     endogenousTraceTransport :
       ∀ {S T A B : Set}
         {isoA : StateIsomorphism S A}
@@ -5933,6 +5799,12 @@ record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
       EGraphSemanticPath (semantics A) e f →
       interpret (semantics A) e ≡ interpret (semantics A) f
 
+CanonicalEndogenousAStarTransportClosureTheorem :
+  Set₁
+CanonicalEndogenousAStarTransportClosureTheorem =
+  CanonicalEndogenousEGraphAStarTransportClosureTheorem
+
+open CanonicalEndogenousAStarTransportClosureTheorem public
 
 record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
   constructor canonicalFiniteCycleExclusionIsomorphismTheorem
@@ -8020,8 +7892,8 @@ record FiniteNonIIDGeneralizedEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents)
 
 megaParetoOptimal :
   ∀ {Agent Allocation : Set}
@@ -8221,8 +8093,8 @@ finiteNonIIDDemandCostKernel :
     (FiniteNonIIDStrictPreference utility)
     (λ a →
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → a i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents))
+      sumNat (map (λ i → a i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents))
     (λ p i bundle → BudgetFeasible goods p (endowment i) bundle)
     (λ p a →
       FiniteNonIIDGeneralizedEquilibrium
@@ -8831,6 +8703,65 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
       eq
       (strictProgressAfterIterate W n s))
 
+
+record NatSuccessorProgressWitness
+  (State : Set)
+  (step : State → State)
+  (measure : State → Nat) : Set₁ where
+  constructor natSuccessorProgressWitness
+  field
+    successor :
+      ∀ s →
+      measure (step s) ≡ suc (measure s)
+
+open NatSuccessorProgressWitness public
+
+sucInjective :
+  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+sucInjective refl = refl
+
+natPlusLeftCancel :
+  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+natPlusLeftCancel zero m n eq = eq
+natPlusLeftCancel (suc k) m n eq =
+  natPlusLeftCancel k m n (sucInjective eq)
+
+successorMeasureAfterIterate :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (n : Nat)
+  (s : State) →
+  measure (iterateStep step n s) ≡ measure s + n
+successorMeasureAfterIterate W zero s =
+  sym (+-identityʳ (measure W s))
+successorMeasureAfterIterate W (suc n) s =
+  trans
+    (successor W (iterateStep (step W) n s))
+    (trans
+      (cong suc (successorMeasureAfterIterate W n s))
+      (sym (+-suc (measure W s) n)))
+
+successorMeasureOrbitInjective :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (s : State)
+  {m n : Nat} →
+  iterateStep step m s ≡ iterateStep step n s →
+  m ≡ n
+successorMeasureOrbitInjective W s {m} {n} eq =
+  natPlusLeftCancel
+    (measure W s)
+    m
+    n
+    (trans
+      (sym (successorMeasureAfterIterate W m s))
+      (trans
+        (cong (measure W) eq)
+        (successorMeasureAfterIterate W n s)))
 
 natSucProgress : ∀ n → n < suc n
 natSucProgress zero = s≤s z≤n
