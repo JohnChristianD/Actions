@@ -26,15 +26,15 @@
 
 module FullCoupled.FormalMethods.HoareLogic where
 
-open import Data.Nat using ()
-open import Data.Bool using (true; false)
-open import Data.Product using (_×_; _,_)
-open import Data.String using (String; _≟_)
-open import Data.Empty using ()
-open import Level using (suc; _⊔_)
-open import Relation.Nullary           using (yes; no)
-open import Relation.Nullary.Decidable using (⌊_⌋)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym)
+open import Prelude.Nat
+open import Prelude.Bool using (true; false)
+open import Prelude.Product using (_×_; _,_; proj₁; proj₂)
+open import Prelude.String using (String)
+open import Prelude.Empty
+open import Agda.Primitive using (Level; lzero; lsuc; _⊔_; Set)
+open import Prelude.Decidable using (yes; no)
+open import Prelude.Decidable using (Dec)
+open import Prelude.Equality using (_≡_; refl; sym)
 
 open import FullCoupled.FormalMethods.IMP
 open import FullCoupled.FormalMethods.OperationalSemantics
