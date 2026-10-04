@@ -18,23 +18,23 @@ check_manifest(File, Content0, !IO) :-
         require(Content0, "commit="),
         require(Content0, "source=FullCoupled/CanonicalLearnerMonolith.agda"),
         require(Content0, "source-sha256="),
-        require(Content0, "generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"),
+        require(Content0, "generated=build/agda-haskell/Agda2HsSurface.hs"),
         require(Content0, "generated-sha256="),
-        require(Content0, "target=build/agda-haskell/LiquidGeneratedBridge.hs"),
+        require(Content0, "target=build/agda-haskell/Agda2HsSurface.hs"),
         require(Content0, "target-sha256="),
         require(Content0, "liquid:z3:pass"),
         require(Content0, "source=FullCoupled/TheoremsMonolith.agda"),
-        require(Content0, "generated=MAlonzo/Code/FullCoupled/TheoremsMonolith.hs")
+        require(Content0, "generated=build/agda-haskell/Agda2HsSurface.hs")
     then
         io.write_string("liquid-haskell-graph=pass\\n", !IO),
-        io.write_string("liquid-freshness=commit+Agda+MAlonzo+Mirth-target-sha256\\n", !IO),
-        io.write_string("graph-node=CanonicalLearnerAgda->MAlonzo->MirthGeneratedLiquidTarget->LiquidHaskellZ3\\n", !IO),
-        io.write_string("graph-node=TheoremsAgda->MAlonzo->MirthGeneratedLiquidTarget->LiquidHaskellZ3\\n", !IO),
-        io.write_string("graph-edge=CanonicalLearnerAgda->MAlonzoCanonicalLearner\\n", !IO),
-        io.write_string("graph-edge=TheoremsAgda->MAlonzoTheorems\\n", !IO),
-        io.write_string("graph-edge=MAlonzoGeneratedCode->MirthLiquidGenerator\\n", !IO),
-        io.write_string("graph-edge=MirthLiquidGenerator->LiquidHaskellTarget\\n", !IO),
-        io.write_string("graph-proof-authority=Agda-kernel-plus-current-MAlonzo-build-plus-LiquidHaskell-integration-gate\\n", !IO)
+        io.write_string("liquid-freshness=commit+Agda2Hs+LiquidHaskell\\n", !IO),
+        io.write_string("graph-node=Agda2HsSurfaceAgda->Agda2HsGeneratedHaskell->LiquidHaskellZ3\\n", !IO),
+        io.write_string("graph-node=Agda2HsSurfaceAgda->Agda2HsGeneratedHaskell->LiquidHaskellZ3\\n", !IO),
+        io.write_string("graph-edge=Agda2HsSource->Agda2HsGeneratedHaskell\\n", !IO),
+        io.write_string("graph-edge=Agda2HsGeneratedHaskell->GHC\\n", !IO),
+        io.write_string("graph-edge=GHC->LiquidHaskell\\n", !IO),
+        io.write_string("graph-edge=LiquidHaskell->Z3\\n", !IO),
+        io.write_string("graph-proof-authority=Agda2Hs-extraction-plus-GHC-plus-LiquidHaskell-Z3-integration-gate\\n", !IO)
     else
         io.write_string("liquid-haskell-graph=fail\\n", !IO),
         io.write_string("manifest=" ++ File ++ "\\n", !IO),
