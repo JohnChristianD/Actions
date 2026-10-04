@@ -76,6 +76,18 @@
           '';
         };
 
+      twoLevelTtLib = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.agdaPackages.mkDerivation {
+          pname = "two-level-tt";
+          version = "0-unstable-2025-08-06";
+          libraryName = "two-level-tt";
+          libraryFile = "two-level-tt.agda-lib";
+          src = two-level-tt;
+        };
+
       extensionPreludeLib = system:
         let
           pkgs = pkgsFor system;
@@ -86,7 +98,7 @@
           libraryName = "extension-types";
           libraryFile = "extension-types.agda-lib";
           src = extensiontypes-agda;
-          buildInputs = [ two-level-tt ];
+          buildInputs = [ twoLevelTtLib system ];
         };
 
       agdaWithPrelude = system:
