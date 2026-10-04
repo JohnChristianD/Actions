@@ -6,13 +6,13 @@
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --cubical #-}
+{-# OPTIONS --exact-split #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
-{-# OPTIONS --interaction-exit-on-error #-}
 
 {-# OPTIONS --safe #-}
 
