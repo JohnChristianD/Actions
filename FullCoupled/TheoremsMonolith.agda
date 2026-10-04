@@ -3292,31 +3292,6 @@ record CommutingSquareTheorem
 
 open CommutingSquareTheorem public
 
-freeMonoidActionHomomorphism-from-square :
-  ∀ {State Feature : Set}
-  {step : State → State}
-  {observe : State → Feature}
-  {featureStep : Feature → Feature} →
-  CommutingSquareTheorem State Feature step observe featureStep →
-  FreeMonoidActionHomomorphism State Feature step observe featureStep
-freeMonoidActionHomomorphism-from-square squareWitness =
-  freeMonoidActionHomomorphism
-    (CommutingSquareTheorem.iterateSquare squareWitness)
-
-canonicalCount-freeMonoidActionHomomorphism :
-  ∀ (K : C.CanonicalFullLearnerKernel) →
-  FreeMonoidActionHomomorphism
-    C.CanonicalFullLearnerState
-    Nat
-    (C.canonicalFullStep K)
-    suc
-    (λ s → C.totalCount (C.lcbCounts s))
-canonicalCount-freeMonoidActionHomomorphism K =
-  freeMonoidActionHomomorphism-from-square
-    (commutingSquareTheorem-from-square
-      (λ s →
-        C.canonicalTotalCountStep K s))
-
 recurrentWordState :
   ∀ {State Input : Set} →
   C.RecurrentNetwork State Input →
