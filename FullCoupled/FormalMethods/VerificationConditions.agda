@@ -26,16 +26,16 @@
 
 module FullCoupled.FormalMethods.VerificationConditions where
 
-open import Data.Nat    using (ℕ; _+_) renaming (_≤?_ to _≤?ₙ_)
-open import Data.Bool   using (Bool; true; false; not; _∧_)
-open import Data.String using (String; _≟_)
-open import Data.Sum    using (_⊎_; [_,_]′; inj₁; inj₂)
-open import Data.Product               using (_×_; _,_)
-open import Relation.Nullary           using (yes; no)
-open import Relation.Nullary.Decidable using (⌊_⌋)
-open import Data.Product using (_×_; _,_; -,_; _-,-_; ∃; ∃-syntax)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym)
-open import Level using (Level; suc; _⊔_)
+open import Prelude.Nat
+open import Prelude.Bool
+open import Prelude.String
+open import Prelude.Sum
+open import Prelude.Product
+open import Prelude.Decidable
+open import Prelude.Decidable
+open import Prelude.Product
+open import Prelude.Equality
+open import Agda.Primitive
 
 open import FullCoupled.FormalMethods.IMP
 open import FullCoupled.FormalMethods.HoareLogic
