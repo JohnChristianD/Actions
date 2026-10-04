@@ -33,6 +33,9 @@ open import Prelude.Decidable using (Dec; yes; no)
 
 open import Prelude.Equality using (_≡_; refl; sym)
 
+contradiction : ∀ {a} {A : Set a} → A → (A → ⊥) → ⊥
+contradiction p np = np p
+
 
 open import FullCoupled.FormalMethods.IMP
 
