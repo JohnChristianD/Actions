@@ -50,9 +50,7 @@ import Prelude.Int.Properties as IntegerProperties
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN THEOREM-LOCAL IMPORTS
-open import Effect.Monad.State renaming (monad to stateMonad; monadState to stateMonadState)
-import Function.Identity.Effectful as Id
-open import Data.List.Properties using (++-assoc)
+open import Control.Monad.State using (State)
 -- END THEOREM-LOCAL IMPORTS
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
@@ -801,33 +799,21 @@ record AStarHaskellMonadSurface (Expression : Set) : Set₁ where
   constructor aStarHaskellMonadSurface
   field
     frontierMonad :
-      RawMonad
-        (State (List (List Expression)))
-    frontierState :
-      RawMonadState
-        (List (List Expression))
-        (State (List (List Expression)))
+      Monad (State (List (List Expression)))
     candidatePlanMonad :
-      RawMonad List
+      Monad List
 
 open AStarHaskellMonadSurface public
 
 aStar-frontier-monad :
   ∀ {Expression : Set} →
-  RawMonad (State (List (List Expression)))
-aStar-frontier-monad = stateMonad
-
-aStar-frontier-state :
-  ∀ {Expression : Set} →
-  RawMonadState
-    (List (List Expression))
-    (State (List (List Expression)))
-aStar-frontier-state = stateMonadState
+  Monad (State (List (List Expression)))
+aStar-frontier-monad = it
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
-  RawMonad List
-aStar-candidate-plan-monad = ListEffectful.monad
+  Monad List
+aStar-candidate-plan-monad = it
 
 aStar-haskell-monad-surface :
   ∀ (Expression : Set) →
@@ -835,17 +821,7 @@ aStar-haskell-monad-surface :
 aStar-haskell-monad-surface Expression =
   aStarHaskellMonadSurface
     aStar-frontier-monad
-    aStar-frontier-state
     aStar-candidate-plan-monad
-
-aStar-guided-semantic-closure :
-  ∀ {Expression State : Set}
-  (A : AStarSemanticClosure Expression State) →
-  ∀ {e f : Expression} →
-  EGraphSemanticPath (semantics A) e f →
-  interpret (semantics A) e ≡ interpret (semantics A) f
-aStar-guided-semantic-closure A =
-  eGraph-path-sound (semantics A)
 
 ------------------------------------------------------------------------
 -- The cost/heuristic fields are intentionally not used in the equality
