@@ -2898,7 +2898,7 @@ stepConjugacy-property-transport :
   ∀ n a →
   P a →
   Q (iterateIsomorphism targetStep n (to (isomorphism W) a))
-stepConjugacy-property-transport W P Q bridge preserved n a proof =
+stepConjugacy-property-transport {targetStep = targetStep} W P Q bridge preserved n a proof =
   iteratePredicateTransport
     targetStep
     Q
