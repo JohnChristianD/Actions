@@ -5344,14 +5344,14 @@ jaxBatchedGRUHiddenStep :
   List C.Int8 →
   List C.Int8
 jaxBatchedGRUHiddenStep states xs =
-  map
+  Data.List.Base.map
     (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
     (zipGRUStatesInts states xs)
 
 jaxBatchedGRUHiddenStep-law :
   ∀ states xs →
   jaxBatchedGRUHiddenStep states xs ≡
-  map
+  Data.List.Base.map
     (λ stateX →
       C.hiddenState
         (C.gruStep
