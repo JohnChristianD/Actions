@@ -3465,12 +3465,11 @@ record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
       C.runNetwork (canonicalGRUF4PrefixNetwork K)
-        (C.gru s , (C.optimizer s , C.norm s))
+        (C.gru s , C.optimizer s)
         (C.canonicalSignal K s)
       ≡
       ( C.gru (C.canonicalFullStep K s)
-      , ( C.optimizer (C.canonicalFullStep K s)
-        , C.norm (C.canonicalFullStep K s)))
+      , C.optimizer (C.canonicalFullStep K s))
     watkinsConnected :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
