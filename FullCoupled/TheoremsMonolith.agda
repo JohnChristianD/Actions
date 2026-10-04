@@ -5,13 +5,14 @@
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
-{-# OPTIONS --erased-cubical #-}
+{-# OPTIONS --cubical #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
+{-# OPTIONS --interaction-json #-}
 
 {-# OPTIONS --no-pattern-matching #-}
 {-# OPTIONS --no-keep-pattern-variables #-}
