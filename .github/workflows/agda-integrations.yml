@@ -23,5 +23,7 @@ jobs:
           set -euo pipefail
           nix develop .#default -c nix run .#mirth-agda-import-sync -- --check
           nix develop .#default -c bash -euo pipefail -c '
-            "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+            while IFS= read -r file; do
+              "$AGDA_COMMAND" -l standard-library -i . "$file"
+            done < <(git ls-files "*.agda")
           '

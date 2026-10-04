@@ -10,20 +10,15 @@ let script = merge {
     '',
   AgdaTheorem = ''
     set -euo pipefail
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/IMP.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/OperationalSemantics.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/Security.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/Types.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/HoareLogic.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/SeparationLogic.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/VerificationConditions.agda
+    nix run .#mirth-agda-import-sync -- --check
+    while IFS= read -r file; do
+      "$AGDA_COMMAND" -l standard-library -i . "$file"
+    done < <(git ls-files '*.agda')
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
     vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
     test -f "$vehicle_source/Vehicle.agda"
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail

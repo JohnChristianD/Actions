@@ -6,13 +6,13 @@
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --cubical #-}
-{-# OPTIONS --exact-split #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
+{-# OPTIONS --interaction-json #-}
 
 {-# OPTIONS --safe #-}
 
@@ -42,7 +42,7 @@
 module FullCoupled.CanonicalLearnerMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
--- Mirth-generated contract: this exact block is shared by both monoliths.
+-- Mirth-generated contract: this exact block is shared by every tracked .agda source.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 
@@ -102,7 +102,6 @@ open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
 import Data.List.Base as ListBase
 -- END MIRTH-SYNC COMMON IMPORTS
-
 
 record Topology (A : Set) : Set₁ where
   field
