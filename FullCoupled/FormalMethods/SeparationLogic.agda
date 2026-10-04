@@ -38,7 +38,9 @@ open import Prelude.Equality
 open import Agda.Primitive
 open import Agda.Builtin.Sigma hiding (_,_) -- renaming (_,_ to _,,_)
 open import Prelude.Maybe
-import Prelude.Equality.Inspect as Eq
+module Eq where
+  open import Prelude.Equality.Inspect public
+  pattern [_] eq = _ , ingraph eq
 
 open import FullCoupled.FormalMethods.IMP hiding (com; state) ---using (aexp; aval; bexp; bval)
 
@@ -49,7 +51,7 @@ _⊎_ = Either
 inj₁ = left
 inj₂ = right
 
-addr = ℕ
+addr = Nat
 
 heap = addr → Maybe val
 
