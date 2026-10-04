@@ -5044,7 +5044,7 @@ generalTsallis2NearSparsity-zero :
 generalTsallis2NearSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
-... | suc q = ⊥-elim (natZeroNotSuc h)
+... | suc q = Data.Empty.⊥-elim (natZeroNotSuc h)
 
 generalTsallis2NearSparsity-definition :
   ∀ (xs : ActionWeights) →
@@ -5056,7 +5056,7 @@ generalTsallis2NearSparsity-definition :
       (generalTsallis2Denominator xs)
 generalTsallis2NearSparsity-definition xs h
   with actionWeightSquareSum xs
-... | zero = ⊥-elim (h refl)
+... | zero = Data.Empty.⊥-elim (h refl)
 ... | suc q = refl
 
 fractionEquivalent :
