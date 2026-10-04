@@ -12,7 +12,7 @@
       flake = false;
     };
     typetopology = {
-      url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c7e";
+      url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
     };
     extensiontypes-agda = {
