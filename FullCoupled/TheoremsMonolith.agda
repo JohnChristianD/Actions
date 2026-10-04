@@ -1,6 +1,7 @@
 
 {-# OPTIONS --polarity #-}
 {-# OPTIONS --guarded #-}
+{-# OPTIONS --guardedness #-}
 {-# OPTIONS --cubical #-}
 {-# OPTIONS --erased-cubical #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
