@@ -30,23 +30,24 @@ open import Prelude.Nat
 open import Prelude.Bool
 open import Prelude.String
 open import Prelude.Sum
-open import Relation.Binary using (Decidable)
 open import Prelude.Decidable
-
 open import Prelude.List
-open import Prelude.Decidable
 open import Prelude.Empty
 open import Prelude.Product
 open import Prelude.Equality
 open import Agda.Primitive
 open import Agda.Builtin.Sigma hiding (_,_) -- renaming (_,_ to _,,_)
 open import Prelude.Maybe
-import Prelude.Equality as Eq
+import Prelude.Equality.Inspect as Eq
 
 open import FullCoupled.FormalMethods.IMP hiding (com; state) ---using (aexp; aval; bexp; bval)
 
 postulate
-  _≟_ : Decidable {A = Nat} _≡_
+  _≟_ : Dec ( _≡_ {A = Nat})
+
+_⊎_ = Either
+inj₁ = left
+inj₂ = right
 
 addr = ℕ
 
