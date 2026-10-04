@@ -4371,8 +4371,8 @@ record FiniteNonIIDWalrasianEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (map (λ i → allocation i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents)
+      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
+      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
 
 open FiniteNonIIDWalrasianEquilibrium public
 
