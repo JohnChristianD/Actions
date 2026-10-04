@@ -22,17 +22,17 @@ module tangled where
 
 import Level as Level
 open import Reflection hiding (_≟_ ; name)
-open import Relation.Binary.PropositionalEquality hiding ([_])
+open import Prelude.Equality
 open import Relation.Unary using (Decidable)
-open import Relation.Nullary
+open import Prelude.Decidable
 
 open import Data.Unit
-open import Data.Nat  as Nat hiding (_⊓_)
-open import Data.Bool
-open import Data.Product
-open import Data.List as List
+open import Prelude.Nat
+open import Prelude.Bool
+open import Prelude.Product
+open import Prelude.List
 open import Data.Char as Char
-open import Data.String as String
+open import Prelude.String
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Introduction][Introduction:1]] -}
 data RGB : Set where
@@ -41,7 +41,7 @@ data RGB : Set where
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*~NAME~%20%E2%94%80Type%20of%20known%20identifiers][~NAME~ ─Type of known identifiers:1]] -}
 a-name : Name
-a-name = quote ℕ
+a-name = quote Nat
 
 isNat : Name → Bool
 isNat (quote ℕ) = true
@@ -744,7 +744,7 @@ _ = λ p → apply₄ p
 {- Heuristic for Writing a Macro:3 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*What%20about%20somewhere%20deep%20within%20a%20subexpression?][What about somewhere deep within a subexpression?:1]] -}
-open import Data.Nat.Properties
+open import Prelude.Nat
 {- +-suc : ∀ m n → m + suc n ≡ suc (m + n) -}
 
 test₀ : ∀ {m n k : ℕ} → k + (m + suc n) ≡ k + suc (m + n)
