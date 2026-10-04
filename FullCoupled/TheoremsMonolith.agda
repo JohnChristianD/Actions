@@ -2858,11 +2858,11 @@ stepConjugacy-iterate :
   (a : A) →
   to (isomorphism W) (iterateIsomorphism sourceStep n a) ≡
   iterateIsomorphism targetStep n (to (isomorphism W) a)
-stepConjugacy-iterate {sourceStep = sourceStep} W zero a =
+stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W zero a =
   refl
-stepConjugacy-iterate {sourceStep = sourceStep} W (suc n) a =
+stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W (suc n) a =
   trans
-    (stepConjugacy-iterate {sourceStep = sourceStep} W n (sourceStep a))
+    (stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W n (sourceStep a))
     (cong
       (iterateIsomorphism targetStep n)
       (stepCommutes W a))
