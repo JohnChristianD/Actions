@@ -5920,8 +5920,6 @@ record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
   field
     aStarGuidance :
       CanonicalAStarCostGuidanceTheorem
-    representationTransport :
-      GeneralizedRepresentationTransportCompositionTheorem
     endogenousTraceTransport :
       ∀ {S T A B : Set}
         {isoA : StateIsomorphism S A}
