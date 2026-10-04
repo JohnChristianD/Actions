@@ -1,17 +1,11 @@
-{-# OPTIONS --backtracking-instance-search #-}
-{-# OPTIONS --experimental-lazy-instances #-}
+
 {-# OPTIONS --polarity #-}
-{-# OPTIONS --auto-inline #-}
-{-# OPTIONS --confluence-check #-}
-{-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
+{-# OPTIONS --guardedness #-}
+{-# OPTIONS --cubical #-}
 {-# OPTIONS --erased-cubical #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
-{-# OPTIONS --erase-record-parameters #-}
-{-# OPTIONS --no-projection-like #-}
-{-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --guardedness #-}
 
 {-# OPTIONS --safe #-}
 
