@@ -4645,8 +4645,18 @@ guardedCubicalIterateConjugacy :
   ∀ n s →
   GuardedCubicalDenseRepresentation.observe R (iterateUpdate stateStep n s) ≡
   iterateGuardedFeature featureStep n (GuardedCubicalDenseRepresentation.observe R s)
-guardedCubicalIterateConjugacy C zero s = refl
-guardedCubicalIterateConjugacy C (suc n) s =
+guardedCubicalIterateConjugacy
+  {stateStep = stateStep}
+  {featureStep = featureStep}
+  C
+  zero
+  s = refl
+guardedCubicalIterateConjugacy
+  {stateStep = stateStep}
+  {featureStep = featureStep}
+  C
+  (suc n)
+  s =
   trans
     (GuardedCubicalConjugacy.stepConjugacy C (iterateUpdate stateStep n s))
     (cong
