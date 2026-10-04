@@ -12,6 +12,7 @@
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
+{-# OPTIONS --interaction-json #-}
 
 {-# OPTIONS --safe #-}
 
