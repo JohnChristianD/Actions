@@ -4829,7 +4829,13 @@ gruInjectiveTailStability-tailFixedPoint :
         (iterateStep stateStep n s)
       ≡
       iterateStep stateStep n s)
-gruInjectiveTailStability-tailFixedPoint W s with featureTailStable W s
+gruInjectiveTailStability-tailFixedPoint
+  {stateStep = stateStep}
+  {featureStep = featureStep}
+  {encode = encode}
+  W
+  s
+  with featureTailStable W s
 ... | n , tail =
   n ,
   encodeInjective W
