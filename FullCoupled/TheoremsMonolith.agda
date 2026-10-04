@@ -5195,12 +5195,12 @@ jaxLexicographicScoreOrder :
   List C.ScoreEntry →
   List Nat
 jaxLexicographicScoreOrder xs =
-  map proj₂ (C.sortScores xs)
+  Data.List.Base.map proj₂ (C.sortScores xs)
 
 jaxLexicographicScoreOrder-law :
   ∀ xs →
   jaxLexicographicScoreOrder xs ≡
-  map proj₂ (C.sortScores xs)
+  Data.List.Base.map proj₂ (C.sortScores xs)
 jaxLexicographicScoreOrder-law xs = refl
 
 jaxSparseSupportSize :
