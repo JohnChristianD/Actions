@@ -26,15 +26,15 @@
 
 module FullCoupled.FormalMethods.IMP where
 
-open import Data.Nat     using (ℕ; _+_) renaming (_≤?_ to _≤?ₙ_)
-open import Data.Bool    using (Bool; not; _∧_)
-open import Data.String  using (String; _≟_)
-open import Relation.Nullary           using (yes; no)
-open import Relation.Nullary.Decidable using (⌊_⌋)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym)
+open import Prelude.Nat using (Nat; _+_)
+open import Prelude.Bool using (Bool; not; _∧_; true; false)
+open import Prelude.String using (String)
+open import Prelude.Decidable using (yes; no)
+open import Prelude.Decidable using (Dec)
+open import Prelude.Equality using (_≡_; refl; sym)
 
 vname = String
-val = ℕ
+val = Nat
 bool = Bool
 state = vname → val
 
