@@ -5416,7 +5416,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     lexicographicScoreOrder :
       ∀ xs →
       jaxLexicographicScoreOrder xs ≡
-      map proj₂ (C.sortScores xs)
+      Data.List.Base.map proj₂ (C.sortScores xs)
     sparseSupportSize :
       ∀ {A : Set}
       (K : C.ActionSpace A)
@@ -5448,7 +5448,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedIntegerLayerNormRadicand :
       ∀ batch epsilon →
       jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-      map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
+      Data.List.Base.map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
     signedGate :
       ∀ x →
       jaxSignedGate x ≡ C.gateFromInput x
@@ -5459,7 +5459,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedGRUHiddenStep :
       ∀ states xs →
       jaxBatchedGRUHiddenStep states xs ≡
-      map
+      Data.List.Base.map
         (λ stateX →
           C.hiddenState
             (C.gruStep
@@ -8048,8 +8048,8 @@ record FiniteNonIIDGeneralizedEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (map (λ i → allocation i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents)
+      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
+      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
 
 megaParetoOptimal :
   ∀ {Agent Allocation : Set}
@@ -8249,8 +8249,8 @@ finiteNonIIDDemandCostKernel :
     (FiniteNonIIDStrictPreference utility)
     (λ a →
       ∀ g →
-      sumNat (map (λ i → a i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents))
+      sumNat (Data.List.Base.map (λ i → a i g) agents) ≡
+      sumNat (Data.List.Base.map (λ i → endowment i g) agents))
     (λ p i bundle → BudgetFeasible goods p (endowment i) bundle)
     (λ p a →
       FiniteNonIIDGeneralizedEquilibrium
