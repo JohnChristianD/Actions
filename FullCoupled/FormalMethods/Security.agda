@@ -26,20 +26,20 @@
 
 module FullCoupled.FormalMethods.Security where
 
-open import Data.Nat      using (ℕ; suc; zero; _<_; _≤_; z≤n; s≤s; _+_; _⊔_)
-open import Data.Bool     using (Bool; true; false; not; _∧_)
-open import Data.Sum      using (inj₁; inj₂; _⊎_; [_,_])
-open import Data.Product  using (_×_; _,_; -,_; _-,-_; ∃; ∃-syntax; proj₂)
-open import Data.String   using (String; _≟_; length)
-open import Relation.Nullary           using (¬_; yes; no)
-open import Relation.Nullary.Decidable using (⌊_⌋)
-open import Relation.Nullary.Negation using (contradiction)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; trans; cong₂)
-open import Data.Nat.Properties hiding (_≤?_; _≟_)
+open import Prelude.Nat using (Nat; suc; zero; _<_ ; _≤_; _+_)
+open import Prelude.Bool using (Bool; true; false; not; _∧_)
+open import Prelude.Sum using (Either; left; right)
+open import Prelude.Product using (_×_; _,_; ∃)
+open import Prelude.String using (String)
+open import Prelude.Decidable using (yes; no)
+open import Prelude.Decidable using (Dec)
+
+open import Prelude.Equality using (_≡_; refl; sym; cong; trans; cong₂)
+open import Prelude.Nat.Properties
 
 open import FullCoupled.FormalMethods.IMP
 
-level = ℕ
+level = Nat
 
 sec : vname → level
 -- We can also temporarily use "sec x" to avoid the
