@@ -31,6 +31,7 @@ open import Prelude.Bool using (Bool; true; false; not; _∧_)
 open import Prelude.String using (String)
 open import Prelude.Decidable using (Dec; yes; no)
 
+open import Prelude.Empty using (⊥)
 open import Prelude.Equality using (_≡_; refl; sym)
 
 contradiction : ∀ {a} {A : Set a} → A → (A → ⊥) → ⊥
