@@ -2862,7 +2862,7 @@ stepConjugacy-iterate W zero a =
   refl
 stepConjugacy-iterate W (suc n) a =
   trans
-    (stepConjugacy-iterate W n (sourceStep a))
+    (stepConjugacy-iterate W n (StepConjugacyWitness.sourceStep W a))
     (cong
       (iterateIsomorphism targetStep n)
       (stepCommutes W a))
