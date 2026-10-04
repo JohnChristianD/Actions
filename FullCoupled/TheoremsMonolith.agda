@@ -3706,7 +3706,7 @@ record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
       C.qLog2Bias8 x ≡
       C.int8Neg
         (C.int8OfNat
-          ((C.munchausenScale8 * C.numerator (C.finiteQLog8 x)) /
+          ((Data.Nat._/_ (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
            C.denominator (C.finiteQLog8 x)))
 
     l2CorrectionNegation :
