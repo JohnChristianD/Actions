@@ -26,27 +26,27 @@
 
 module FullCoupled.FormalMethods.SeparationLogic where
 
-open import Data.Nat    using (ℕ; _+_) renaming (_≤?_ to _≤?ₙ_)
-open import Data.Bool   using (Bool; true; false; not; _∧_)
-open import Data.String using (String)
-open import Data.Sum    using (_⊎_; [_,_]; inj₁; inj₂)
+open import Prelude.Nat
+open import Prelude.Bool
+open import Prelude.String
+open import Prelude.Sum
 open import Relation.Binary using (Decidable)
-open import Relation.Nullary           using (yes; no; ¬_)
-open import Relation.Nullary.Negation  using (contradiction)
-open import Data.List                  using (List; []; _∷_)
-open import Relation.Nullary.Decidable using (⌊_⌋)
-open import Data.Empty                 using (⊥-elim)
-open import Data.Product               using (_×_; -,_; _-,-_; ∃; ∃-syntax) renaming (_,_ to _,,_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym)
-open import Level using (Level; suc; _⊔_)
+open import Prelude.Decidable
+
+open import Prelude.List
+open import Prelude.Decidable
+open import Prelude.Empty
+open import Prelude.Product
+open import Prelude.Equality
+open import Agda.Primitive
 open import Agda.Builtin.Sigma hiding (_,_) -- renaming (_,_ to _,,_)
-open import Data.Maybe using (Maybe; just; nothing; Is-just)
-import Relation.Binary.PropositionalEquality as Eq
+open import Prelude.Maybe
+import Prelude.Equality as Eq
 
 open import FullCoupled.FormalMethods.IMP hiding (com; state) ---using (aexp; aval; bexp; bval)
 
 postulate
-  _≟_ : Decidable {A = ℕ} _≡_
+  _≟_ : Decidable {A = Nat} _≡_
 
 addr = ℕ
 
