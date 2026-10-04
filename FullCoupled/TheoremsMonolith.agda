@@ -13,7 +13,6 @@
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
 
-{-# OPTIONS -v=1 #-}
 {-# OPTIONS --no-pattern-matching #-}
 {-# OPTIONS --no-keep-pattern-variables #-}
 {-# OPTIONS --no-forcing #-}
