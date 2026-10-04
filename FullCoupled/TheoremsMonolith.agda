@@ -2907,14 +2907,6 @@ stepConjugacy-property-transport {targetStep = targetStep} W P Q bridge preserve
     (to (isomorphism W) a)
     (bridge a proof)
 
-canonical-connected-composition-theorem :
-  CanonicalConnectedCompositionTheorem
-canonical-connected-composition-theorem =
-  canonicalConnectedCompositionTheorem
-    canonical-aq-loop-theorem
-    canonicalTotalCountAfter
-    canonicalNoNontrivialFiniteCycle-theorem
-
 data LearnerReplacement : Set where
   optimizerReplacement : F4IntUState → LearnerReplacement
 
