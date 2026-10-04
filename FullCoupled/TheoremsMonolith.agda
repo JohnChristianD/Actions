@@ -6,23 +6,24 @@
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
-{-# OPTIONS --cubical #-}
+{-# OPTIONS --without-K #-}
 {-# OPTIONS --exact-split #-}
-{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
-{-# OPTIONS --erased-matches #-}
-{-# OPTIONS --erase-record-parameters #-}
+{-# OPTIONS --no-print-pattern-synonyms #-}
+{-# OPTIONS --no-infer-absurd-clauses #-}
+{-# OPTIONS --level-universe #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --guardedness #-}
+{-# OPTIONS --no-save-metas #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
+{-# OPTIONS --guardedness #-}
+{-# OPTIONS --rewriting #-}
+{-# OPTIONS --no-termination-check #-}
+{-# OPTIONS --no-pattern-matching #-}
+{-# OPTIONS --no-forcing #-}
 {-# OPTIONS --interaction #-}
 {-# OPTIONS --interaction-exit-on-error #-}
 {-# OPTIONS --interaction-json #-}
-
-{-# OPTIONS --no-pattern-matching #-}
-{-# OPTIONS --no-keep-pattern-variables #-}
-{-# OPTIONS --no-forcing #-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
