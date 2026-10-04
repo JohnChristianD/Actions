@@ -4015,6 +4015,15 @@ record ContinuousLeftInverseTheorem
 
 open ContinuousLeftInverseTheorem public
 
+record RingStateInjectivityTheorem (State : Set) : Set₁ where
+  constructor ringStateInjectivityTheorem
+  field
+    ringState : Nat → State
+    ringStateInjective :
+      ∀ {m n} → ringState m ≡ ringState n → m ≡ n
+
+open RingStateInjectivityTheorem public
+
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
   field
