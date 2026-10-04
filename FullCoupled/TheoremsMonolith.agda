@@ -4390,7 +4390,7 @@ record FiniteTUShapleyAllocationEquilibrium
       scaledValue * payoff p ≡
       scaledShapley p
     scaledEfficiency :
-      sumNat (map payoff players) ≡
+      sumNat (Data.List.Base.map payoff players) ≡
       scaledValue * coalitionWorth players
 
 open FiniteTUShapleyAllocationEquilibrium public
