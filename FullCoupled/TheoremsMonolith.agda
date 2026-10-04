@@ -5132,7 +5132,7 @@ jaxVmapAffine =
 jaxVmapAffine-law :
   ∀ xs →
   jaxVmapAffine xs ≡
-  map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+  Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
 jaxVmapAffine-law xs = refl
 
 jaxPrefixSum : ℤ → List ℤ → List ℤ
