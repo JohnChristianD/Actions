@@ -2,7 +2,7 @@
   date = "2026-09-19",
   scope = "Nix-backed proof environment and exact bounded UAP theorem surface",
   current_state = {
-    agda = "Agda 2.8.0.2 with standard-library 2.4 installed by the official Agda setup action",
+    agda = "Agda 2.8.0.2 with Nix-pinned agda-prelude, TypeTopology, Extension Prelude, and agda2hs",
     nix = "pinned nixpkgs supplies Mercury 22.01.9; the NixOS-maintained installer action installs Nix 2.35.1",
     retired_non_nix_layer = "removed from the repository CI path; its channel/manifest/driver files are deleted",
     package_configuration = "no repository-controlled legacy package-management configuration remains",
