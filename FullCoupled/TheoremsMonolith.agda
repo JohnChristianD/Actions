@@ -3299,7 +3299,7 @@ commutingSquareTheorem-from-square :
   {featureStep : Feature → Feature} →
   (∀ s → observe (step s) ≡ featureStep (observe s)) →
   CommutingSquareTheorem State Feature step observe featureStep
-commutingSquareTheorem-from-square square =
+commutingSquareTheorem-from-square {step = step} {observe = observe} {featureStep = featureStep} square =
   commutingSquareTheorem
     square
     iterateSquare
