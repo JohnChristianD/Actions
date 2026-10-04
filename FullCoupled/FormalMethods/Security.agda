@@ -29,6 +29,10 @@ module FullCoupled.FormalMethods.Security where
 open import Prelude.Nat using (Nat; suc; zero; _<_ ; _≤_; _+_)
 open import Prelude.Bool using (Bool; true; false; not; _∧_)
 open import Prelude.Sum using (Either; left; right)
+
+_⊎_ = Either
+inj₁ = left
+inj₂ = right
 open import Prelude.Product using (_×_; _,_; ∃)
 open import Prelude.String using (String)
 open import Prelude.Decidable using (yes; no)
