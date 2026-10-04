@@ -4274,9 +4274,9 @@ canonicalNatIndexedExactUniversalReadout
 hardSignGate-idempotent :
   ∀ x → C.hardSignGate (C.hardSignGate x) ≡ C.hardSignGate x
 hardSignGate-idempotent x with C.hardSign x
-... | C.negative = refl
+... | C.negativeSign = refl
 ... | C.zeroSign = refl
-... | C.positive = refl
+... | C.positiveSign = refl
 
 hardSignGate-continuous-discrete :
   Continuous
