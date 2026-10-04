@@ -4332,7 +4332,7 @@ bundleCost :
   (Good → Nat) →
   Nat
 bundleCost goods price bundle =
-  sumNat (Data.List.Base.Data.List.Base.map (λ g → price g * bundle g) goods)
+  sumNat (Data.List.Base.map (λ g → price g * bundle g) goods)
 
 BudgetFeasible :
   ∀ {Good : Set} →
@@ -4366,8 +4366,8 @@ record FiniteNonIIDWalrasianEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (Data.List.Base.Data.List.Base.map (λ i → allocation i g) agents) ≡
-      sumNat (Data.List.Base.Data.List.Base.map (λ i → endowment i g) agents)
+      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
+      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
 
 open FiniteNonIIDWalrasianEquilibrium public
 
