@@ -5650,8 +5650,8 @@ globalConjugacyEquivalence-iterate :
   observe (iterateState step n s)
   ≡
   iterateState featureStep n (observe s)
-globalConjugacyEquivalence-iterate G zero s = refl
-globalConjugacyEquivalence-iterate G (suc n) s =
+globalConjugacyEquivalence-iterate {step = step} {featureStep = featureStep} G zero s = refl
+globalConjugacyEquivalence-iterate {step = step} {featureStep = featureStep} G (suc n) s =
   trans
     (GlobalConjugacyEquivalence.forward G (iterateState step n s))
     (cong
