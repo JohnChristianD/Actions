@@ -3752,6 +3752,111 @@ canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
           (C.canonicalEndogenousFeedback K t))
       (leftInverse s))
 
+record NatSuccessorProgressWitness
+  (State : Set)
+  (step : State → State)
+  (measure : State → Nat) : Set₁ where
+  constructor natSuccessorProgressWitness
+  field
+    successor :
+      ∀ s →
+      measure (step s) ≡ suc (measure s)
+
+open NatSuccessorProgressWitness public
+
+sucInjective :
+  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+sucInjective refl = refl
+
+natPlusLeftCancel :
+  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+natPlusLeftCancel zero m n eq = eq
+natPlusLeftCancel (suc k) m n eq =
+  natPlusLeftCancel k m n (sucInjective eq)
+
+successorMeasureAfterIterate :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (n : Nat)
+  (s : State) →
+  measure (iterateStep step n s) ≡ measure s + n
+successorMeasureAfterIterate W zero s =
+  sym (+-identityʳ (measure W s))
+successorMeasureAfterIterate W (suc n) s =
+  trans
+    (successor W (iterateStep (step W) n s))
+    (trans
+      (cong suc (successorMeasureAfterIterate W n s))
+      (sym (+-suc (measure W s) n)))
+
+successorMeasureOrbitInjective :
+  ∀ {State : Set}
+  {step : State → State}
+  {measure : State → Nat}
+  (W : NatSuccessorProgressWitness State step measure)
+  (s : State)
+  {m n : Nat} →
+  iterateStep step m s ≡ iterateStep step n s →
+  m ≡ n
+successorMeasureOrbitInjective W s {m} {n} eq =
+  natPlusLeftCancel
+    (measure W s)
+    m
+    n
+    (trans
+      (sym (successorMeasureAfterIterate W m s))
+      (trans
+        (cong (measure W) eq)
+        (successorMeasureAfterIterate W n s)))
+
+natSucProgress : ∀ n → n < suc n
+natSucProgress zero = s≤s z≤n
+natSucProgress (suc n) = s≤s (natSucProgress n)
+
+canonicalTotalCountStepProgress :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (s : C.FullLearnerState A) →
+  C.totalCount (C.lcbCounts s) <
+  C.totalCount (C.lcbCounts (C.canonicalFullStep K s))
+canonicalTotalCountStepProgress K s =
+  subst
+    (λ t → C.totalCount (C.lcbCounts s) < t)
+    (C.canonicalTotalCountStep K s)
+    (natSucProgress (C.totalCount (C.lcbCounts s)))
+
+canonicalTotalCountStrictProgress :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A) →
+  StrictProgressWitness
+    (C.FullLearnerState A)
+    Nat
+    (C.canonicalFullStep K)
+    _<_
+canonicalTotalCountStrictProgress K =
+  strictProgressWitness
+    (λ s → C.totalCount (C.lcbCounts s))
+    (λ s → canonicalTotalCountStepProgress K s)
+    <-trans
+    <-irrefl
+
+canonicalNoPositiveCycleFromTotalCount :
+  ∀ {A : Set}
+  (K : C.FullLearnerKernel A)
+  (n : Nat)
+  (s : C.FullLearnerState A) →
+  iterateStep (C.canonicalFullStep K) (suc n) s ≡ s →
+  ⊥
+canonicalNoPositiveCycleFromTotalCount K n s =
+  noPositiveFiniteCycleFromStrictProgress
+    (canonicalTotalCountStrictProgress K)
+    n
+    s
+
+
+
 suc-injective :
   ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
 suc-injective refl = refl
@@ -8731,110 +8836,6 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
       (λ t → measure W s < measure W t)
       eq
       (strictProgressAfterIterate W n s))
-
-
-record NatSuccessorProgressWitness
-  (State : Set)
-  (step : State → State)
-  (measure : State → Nat) : Set₁ where
-  constructor natSuccessorProgressWitness
-  field
-    successor :
-      ∀ s →
-      measure (step s) ≡ suc (measure s)
-
-open NatSuccessorProgressWitness public
-
-sucInjective :
-  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
-sucInjective refl = refl
-
-natPlusLeftCancel :
-  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
-natPlusLeftCancel zero m n eq = eq
-natPlusLeftCancel (suc k) m n eq =
-  natPlusLeftCancel k m n (sucInjective eq)
-
-successorMeasureAfterIterate :
-  ∀ {State : Set}
-  {step : State → State}
-  {measure : State → Nat}
-  (W : NatSuccessorProgressWitness State step measure)
-  (n : Nat)
-  (s : State) →
-  measure (iterateStep step n s) ≡ measure s + n
-successorMeasureAfterIterate W zero s =
-  sym (+-identityʳ (measure W s))
-successorMeasureAfterIterate W (suc n) s =
-  trans
-    (successor W (iterateStep (step W) n s))
-    (trans
-      (cong suc (successorMeasureAfterIterate W n s))
-      (sym (+-suc (measure W s) n)))
-
-successorMeasureOrbitInjective :
-  ∀ {State : Set}
-  {step : State → State}
-  {measure : State → Nat}
-  (W : NatSuccessorProgressWitness State step measure)
-  (s : State)
-  {m n : Nat} →
-  iterateStep step m s ≡ iterateStep step n s →
-  m ≡ n
-successorMeasureOrbitInjective W s {m} {n} eq =
-  natPlusLeftCancel
-    (measure W s)
-    m
-    n
-    (trans
-      (sym (successorMeasureAfterIterate W m s))
-      (trans
-        (cong (measure W) eq)
-        (successorMeasureAfterIterate W n s)))
-
-natSucProgress : ∀ n → n < suc n
-natSucProgress zero = s≤s z≤n
-natSucProgress (suc n) = s≤s (natSucProgress n)
-
-canonicalTotalCountStepProgress :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (s : C.FullLearnerState A) →
-  C.totalCount (C.lcbCounts s) <
-  C.totalCount (C.lcbCounts (C.canonicalFullStep K s))
-canonicalTotalCountStepProgress K s =
-  subst
-    (λ t → C.totalCount (C.lcbCounts s) < t)
-    (C.canonicalTotalCountStep K s)
-    (natSucProgress (C.totalCount (C.lcbCounts s)))
-
-canonicalTotalCountStrictProgress :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A) →
-  StrictProgressWitness
-    (C.FullLearnerState A)
-    Nat
-    (C.canonicalFullStep K)
-    _<_
-canonicalTotalCountStrictProgress K =
-  strictProgressWitness
-    (λ s → C.totalCount (C.lcbCounts s))
-    (λ s → canonicalTotalCountStepProgress K s)
-    <-trans
-    <-irrefl
-
-canonicalNoPositiveCycleFromTotalCount :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A)
-  (n : Nat)
-  (s : C.FullLearnerState A) →
-  iterateStep (C.canonicalFullStep K) (suc n) s ≡ s →
-  ⊥
-canonicalNoPositiveCycleFromTotalCount K n s =
-  noPositiveFiniteCycleFromStrictProgress
-    (canonicalTotalCountStrictProgress K)
-    n
-    s
 
 
 ------------------------------------------------------------------------
