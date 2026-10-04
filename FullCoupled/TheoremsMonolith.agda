@@ -4332,7 +4332,7 @@ bundleCost :
   (Good → Nat) →
   Nat
 bundleCost goods price bundle =
-  sumNat (Data.List.Base.map (λ g → price g * bundle g) goods)
+  sumNat (Data.List.Base.Data.List.Base.map (λ g → price g * bundle g) goods)
 
 BudgetFeasible :
   ∀ {Good : Set} →
@@ -4366,8 +4366,8 @@ record FiniteNonIIDWalrasianEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
+      sumNat (Data.List.Base.Data.List.Base.map (λ i → allocation i g) agents) ≡
+      sumNat (Data.List.Base.Data.List.Base.map (λ i → endowment i g) agents)
 
 open FiniteNonIIDWalrasianEquilibrium public
 
@@ -4385,7 +4385,7 @@ record FiniteTUShapleyAllocationEquilibrium
       scaledValue * payoff p ≡
       scaledShapley p
     scaledEfficiency :
-      sumNat (map payoff players) ≡
+      sumNat (Data.List.Base.map payoff players) ≡
       scaledValue * coalitionWorth players
 
 open FiniteTUShapleyAllocationEquilibrium public
@@ -5101,12 +5101,12 @@ jaxAffine x =
 
 jaxVmapAffine : List ℤ → List ℤ
 jaxVmapAffine =
-  map jaxAffine
+  Data.List.Base.map jaxAffine
 
 jaxVmapAffine-law :
   ∀ xs →
   jaxVmapAffine xs ≡
-  map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+  Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
 jaxVmapAffine-law xs = refl
 
 jaxPrefixSum : ℤ → List ℤ → List ℤ
@@ -5169,12 +5169,12 @@ jaxLexicographicScoreOrder :
   List C.ScoreEntry →
   List Nat
 jaxLexicographicScoreOrder xs =
-  map proj₂ (C.sortScores xs)
+  Data.List.Base.map proj₂ (C.sortScores xs)
 
 jaxLexicographicScoreOrder-law :
   ∀ xs →
   jaxLexicographicScoreOrder xs ≡
-  map proj₂ (C.sortScores xs)
+  Data.List.Base.map proj₂ (C.sortScores xs)
 jaxLexicographicScoreOrder-law xs = refl
 
 jaxSparseSupportSize :
@@ -5267,14 +5267,14 @@ jaxBatchedIntegerLayerNormRadicand :
   Nat →
   List ℤ
 jaxBatchedIntegerLayerNormRadicand batch epsilon =
-  map
+  Data.List.Base.map
     (λ xs → jaxIntegerLayerNormRadicand xs epsilon)
     batch
 
 jaxBatchedIntegerLayerNormRadicand-law :
   ∀ batch epsilon →
   jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-  map
+  Data.List.Base.map
     (λ xs → C.integerLayerNormRadicand xs epsilon)
     batch
 jaxBatchedIntegerLayerNormRadicand-law batch epsilon = refl
@@ -5318,14 +5318,14 @@ jaxBatchedGRUHiddenStep :
   List C.Int8 →
   List C.Int8
 jaxBatchedGRUHiddenStep states xs =
-  map
+  Data.List.Base.map
     (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
     (zipGRUStatesInts states xs)
 
 jaxBatchedGRUHiddenStep-law :
   ∀ states xs →
   jaxBatchedGRUHiddenStep states xs ≡
-  map
+  Data.List.Base.map
     (λ stateX →
       C.hiddenState
         (C.gruStep
@@ -5373,7 +5373,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     vmapAffine :
       ∀ xs →
       jaxVmapAffine xs ≡
-      map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+      Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
     associativePrefixSum :
       ∀ xs →
       jaxAssociativePrefixSum xs ≡
@@ -5390,7 +5390,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     lexicographicScoreOrder :
       ∀ xs →
       jaxLexicographicScoreOrder xs ≡
-      map proj₂ (C.sortScores xs)
+      Data.List.Base.map proj₂ (C.sortScores xs)
     sparseSupportSize :
       ∀ {A : Set}
       (K : C.ActionSpace A)
@@ -5422,7 +5422,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedIntegerLayerNormRadicand :
       ∀ batch epsilon →
       jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-      map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
+      Data.List.Base.map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
     signedGate :
       ∀ x →
       jaxSignedGate x ≡ C.gateFromInput x
@@ -5433,7 +5433,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedGRUHiddenStep :
       ∀ states xs →
       jaxBatchedGRUHiddenStep states xs ≡
-      map
+      Data.List.Base.map
         (λ stateX →
           C.hiddenState
             (C.gruStep
@@ -8022,8 +8022,8 @@ record FiniteNonIIDGeneralizedEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (map (λ i → allocation i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents)
+      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
+      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
 
 megaParetoOptimal :
   ∀ {Agent Allocation : Set}
@@ -8223,8 +8223,8 @@ finiteNonIIDDemandCostKernel :
     (FiniteNonIIDStrictPreference utility)
     (λ a →
       ∀ g →
-      sumNat (map (λ i → a i g) agents) ≡
-      sumNat (map (λ i → endowment i g) agents))
+      sumNat (Data.List.Base.map (λ i → a i g) agents) ≡
+      sumNat (Data.List.Base.map (λ i → endowment i g) agents))
     (λ p i bundle → BudgetFeasible goods p (endowment i) bundle)
     (λ p a →
       FiniteNonIIDGeneralizedEquilibrium
