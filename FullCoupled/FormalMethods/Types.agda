@@ -26,7 +26,7 @@
 
 module FullCoupled.FormalMethods.Types where
 
-open import Prelude.Nat
+open import Prelude.Nat using (Nat) renaming (_+_ to _+ᵢ_; _≤?_ to _≤?ᵢ_)
 open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
 open import Prelude.Bool
 open import Prelude.Sum
@@ -35,6 +35,9 @@ open import Prelude.String
 open import Prelude.Decidable
 
 open import Prelude.Equality
+
+contradiction : ∀ {a} {A : Set a} → A → (A → ⊥) → ⊥
+contradiction p np = np p
 
 _⊎_ = Either
 inj₁ = left
