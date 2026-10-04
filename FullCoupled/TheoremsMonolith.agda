@@ -3698,6 +3698,50 @@ canonicalBiasedWatkinsNegativeQMunchausenL2Target :
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
   C.canonicalWatkinsTarget
 
+record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
+  constructor canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+  field
+    negativeQMunchausenBias :
+      ∀ x →
+      C.qLog2Bias8 x ≡
+      C.int8Neg
+        (C.int8OfNat
+          (Data.Nat._/_
+            (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
+            (C.denominator (C.finiteQLog8 x))))
+
+    targetDecomposition :
+      ∀ K s →
+      canonicalBiasedWatkinsNegativeQMunchausenL2Target K s ≡
+      C.int8Add
+        (C.int8Add
+          (C.int8Add
+            (C.canonicalReward8 K s)
+            (C.canonicalQLogBias K s))
+          (C.int8Mul
+            C.canonicalDiscount8
+            (C.maxCriticValue8 (C.critic (C.watkins s)))))
+        (C.canonicalEndogenousFeedback K s)
+
+    l2ConsumesTarget :
+      ∀ K s →
+      C.canonicalOptimizerStep K s ≡
+      C.f4ThetaStep
+        (C.optimizerKernel K)
+        (C.optimizer s)
+        (canonicalBiasedWatkinsNegativeQMunchausenL2Target K s)
+
+open CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem public
+
+canonical-biased-watkins-negative-q-munchausen-l2-target-theorem :
+  CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+canonical-biased-watkins-negative-q-munchausen-l2-target-theorem =
+  canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
+    canonical-qLog2Bias8-law
+    (λ K s → C.canonicalWatkinsTarget-law K s)
+    (λ K s → C.canonicalOptimizerStep-qMunchausen-L2 K s)
+
+
 record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
   constructor canonicalQMunchausenL2SharedNegationPolarityTheorem
   field
