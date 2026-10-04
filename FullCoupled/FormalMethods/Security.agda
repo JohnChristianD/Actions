@@ -38,6 +38,7 @@ open import Prelude.String using (String)
 open import Prelude.Decidable using (yes; no)
 open import Prelude.Decidable using (Dec)
 
+open import Prelude.Empty using (⊥)
 open import Prelude.Equality using (_≡_; refl; sym; cong; trans; cong₂)
 
 contradiction : ∀ {a} {A : Set a} → A → (A → ⊥) → ⊥
