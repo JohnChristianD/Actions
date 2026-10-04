@@ -4865,8 +4865,16 @@ gruInjectiveTailStability-eventualStationarity :
       iterateStep stateStep (n + k) s
       ≡
       iterateStep stateStep n s)
-gruInjectiveTailStability-eventualStationarity W s
-  with gruInjectiveTailStability-tailFixedPoint W s
+gruInjectiveTailStability-eventualStationarity
+  {stateStep = stateStep}
+  {featureStep = featureStep}
+  {encode = encode}
+  W s
+  with gruInjectiveTailStability-tailFixedPoint
+    {stateStep = stateStep}
+    {featureStep = featureStep}
+    {encode = encode}
+    W s
 ... | n , fixed =
   n ,
   λ k →
