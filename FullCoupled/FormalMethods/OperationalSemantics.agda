@@ -26,13 +26,13 @@
 
 module FullCoupled.FormalMethods.OperationalSemantics where
 
-open import Data.Nat    using (ℕ; _+_; _≤?_)
-open import Data.Bool   using (Bool; true; false; not; _∧_)
-open import Data.String using (String; _≟_)
-open import Relation.Nullary using (¬_; yes; no)
-open import Relation.Nullary.Negation using (contradiction)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym)
-open import Function.Equivalence using (_⇔_; equivalence)
+open import Prelude.Nat using (Nat; _+_; _<_ ; _≤_)
+open import Prelude.Bool using (Bool; true; false; not; _∧_)
+open import Prelude.String using (String)
+open import Prelude.Decidable using (Dec; yes; no)
+
+open import Prelude.Equality using (_≡_; refl; sym)
+
 
 open import FullCoupled.FormalMethods.IMP
 
