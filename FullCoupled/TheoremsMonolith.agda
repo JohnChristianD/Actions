@@ -4054,6 +4054,41 @@ record ContinuousLeftInverseTheorem
 
 open ContinuousLeftInverseTheorem public
 
+record DenseNeighborhoodSeparationTheorem
+  (State Feature : Set)
+  (embed : Nat → State)
+  (observe : State → Feature) : Set₁ where
+  constructor denseNeighborhoodSeparationTheorem
+  field
+    denseNeighborhoodSeparation :
+      ∀ {m n} →
+      observe (embed m) ≡ observe (embed n) →
+      m ≡ n
+
+open DenseNeighborhoodSeparationTheorem public
+
+canonicalDenseNeighborhoodSeparation :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState)
+  (observe : C.CanonicalFullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+  (∀ t → inverse (observe t) ≡ t) →
+  DenseNeighborhoodSeparationTheorem
+    C.CanonicalFullLearnerState
+    C.Int8
+    (λ n → C.iterateCanonical K n s)
+    observe
+canonicalDenseNeighborhoodSeparation
+  K s observe inverse leftInverse =
+  denseNeighborhoodSeparationTheorem
+    (λ {m} {n} eq →
+      canonicalOrbit-state-injective K s
+        (trans
+          (sym (leftInverse (C.iterateCanonical K m s)))
+          (trans
+            (cong inverse eq)
+            (leftInverse (C.iterateCanonical K n s)))))
+
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
   field
