@@ -33,8 +33,8 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -euo pipefail -c '
-            "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-            "$AGDA_COMMAND" --allow-exec -l standard-library -i . \
+            "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
+            "$AGDA_COMMAND" --allow-exec -i . \
               -i "$VEHICLE_AGDA_SOURCE" \
               FullCoupled/TheoremsMonolith.agda
           '
