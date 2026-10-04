@@ -3819,6 +3819,22 @@ natPlus-left-cancel zero m n eq = eq
 natPlus-left-cancel (suc k) m n eq =
   natPlus-left-cancel k m n (suc-injective eq)
 
+canonicalOrbit-state-injective :
+  ∀ K s {m n : Nat} →
+  C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
+  m ≡ n
+canonicalOrbit-state-injective K s {m} {n} eq =
+  natPlus-left-cancel
+    (C.totalCount (C.lcbCounts s))
+    m
+    n
+    (trans
+      (sym (C.canonicalTotalCountAfter K m s))
+      (trans
+        (cong (λ t → C.totalCount (C.lcbCounts t)) eq)
+        (C.canonicalTotalCountAfter K n s)))
+
+
 
 record DiscreteExactUAPTheorem
   (State Feature Output : Set)
@@ -4023,6 +4039,41 @@ record RingStateInjectivityTheorem (State : Set) : Set₁ where
       ∀ {m n} → ringState m ≡ ringState n → m ≡ n
 
 open RingStateInjectivityTheorem public
+
+record DenseNeighborhoodSeparationTheorem
+  (State Feature : Set)
+  (embed : Nat → State)
+  (observe : State → Feature) : Set₁ where
+  constructor denseNeighborhoodSeparationTheorem
+  field
+    denseNeighborhoodSeparation :
+      ∀ {m n} →
+      observe (embed m) ≡ observe (embed n) →
+      m ≡ n
+
+open DenseNeighborhoodSeparationTheorem public
+
+canonicalDenseNeighborhoodSeparation :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState)
+  (observe : C.CanonicalFullLearnerState → C.Int8)
+  (inverse : C.Int8 → C.CanonicalFullLearnerState) →
+  (∀ t → inverse (observe t) ≡ t) →
+  DenseNeighborhoodSeparationTheorem
+    C.CanonicalFullLearnerState
+    C.Int8
+    (λ n → C.iterateCanonical K n s)
+    observe
+canonicalDenseNeighborhoodSeparation
+  K s observe inverse leftInverse =
+  denseNeighborhoodSeparationTheorem
+    (λ {m} {n} eq →
+      canonicalOrbit-state-injective K s
+        (trans
+          (sym (leftInverse (C.iterateCanonical K m s)))
+          (trans
+            (cong inverse eq)
+            (leftInverse (C.iterateCanonical K n s)))))
 
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
   constructor canonicalEndogenousMinimaxBellmanShapleyUAPTheorem
