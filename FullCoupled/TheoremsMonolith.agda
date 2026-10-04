@@ -94,15 +94,15 @@ open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
--- END MIRTH-SYNC COMMON IMPORTS
 open import Effect.Monad.State renaming (monad to stateMonad; monadState to stateMonadState)
 import Function.Identity.Effectful as Id
+open import Data.List.Properties using (++-assoc)
+-- END MIRTH-SYNC COMMON IMPORTS
 
 
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
 open import FullCoupled.CanonicalLearnerMonolith as C
-open import Data.List.Properties using (++-assoc)
 -- END THEOREM-SPECIFIC IMPORTS
 
 
