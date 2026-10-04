@@ -161,7 +161,7 @@ data tbval : bexp → state → bool → Set where
   tbvalLI : ∀{s a₁ a₂ i₁ i₂}
          → taval a₁ s (Iv i₁)
          → taval a₂ s (Iv i₂)
-         → tbval (Less a₁ a₂) s (⌊ i₁ ≤?ᵢ i₂ ⌋)
+         → tbval (Less a₁ a₂) s (i₁ ≤?ᵢ i₂)
   tbvalLR : ∀{s a₁ a₂ r₁ r₂}
          → taval a₁ s (Rv r₁)
          → taval a₂ s (Rv r₂)
