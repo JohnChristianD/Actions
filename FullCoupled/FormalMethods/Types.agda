@@ -34,6 +34,7 @@ open import Prelude.Product
 open import Prelude.String
 open import Prelude.Decidable
 
+open import Prelude.Empty using (⊥)
 open import Prelude.Equality
 
 contradiction : ∀ {a} {A : Set a} → A → (A → ⊥) → ⊥
