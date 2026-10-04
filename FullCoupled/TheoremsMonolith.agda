@@ -5768,22 +5768,6 @@ record ExactFunctionIsomorphismTransportTheorem
       StateIsomorphism.to isoB (f x) ≡
       translatedFunction (StateIsomorphism.to isoA x)
 
-exactRecurrentFunctionTranslation :
-  ∀ {S A : Set}
-    {isoA : StateIsomorphism S A}
-    (step : S → S)
-    (stepA : A → A)
-    (conjugacy :
-      ∀ x →
-      StateIsomorphism.to isoA (step x) ≡
-      stepA (StateIsomorphism.to isoA x)) →
-  ExactRecurrentFunctionTranslationTheorem S A isoA step stepA
-exactRecurrentFunctionTranslation step stepA conjugacy =
-  exactRecurrentFunctionTranslationTheorem
-    conjugacy
-    (λ {T} {B} {isoB} f →
-      exactFunctionIsomorphismTransport f)
-
 record CanonicalExactRNNLMTheorem : Set₁ where
   constructor canonicalExactRNNLMTheorem
   field
