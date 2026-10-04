@@ -33,9 +33,12 @@ open import Prelude.Sum
 open import Prelude.Product
 open import Prelude.String
 open import Prelude.Decidable
-open import Prelude.Decidable
 
 open import Prelude.Equality
+
+_⊎_ = Either
+inj₁ = left
+inj₂ = right
 
 vname = String
 int = Nat
