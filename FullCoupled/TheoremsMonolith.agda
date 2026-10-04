@@ -5933,12 +5933,6 @@ record CanonicalEndogenousEGraphAStarTransportClosureTheorem : Set₁ where
       EGraphSemanticPath (semantics A) e f →
       interpret (semantics A) e ≡ interpret (semantics A) f
 
-CanonicalEndogenousAStarTransportClosureTheorem :
-  Set₁
-CanonicalEndogenousAStarTransportClosureTheorem =
-  CanonicalEndogenousEGraphAStarTransportClosureTheorem
-
-open CanonicalEndogenousAStarTransportClosureTheorem public
 
 record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
   constructor canonicalFiniteCycleExclusionIsomorphismTheorem
