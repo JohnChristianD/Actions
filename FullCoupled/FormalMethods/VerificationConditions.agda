@@ -32,9 +32,11 @@ open import Prelude.String
 open import Prelude.Sum
 open import Prelude.Product
 open import Prelude.Decidable
-open import Prelude.Decidable
-open import Prelude.Product
 open import Prelude.Equality
+
+_⊎_ = Either
+inj₁ = left
+inj₂ = right
 open import Agda.Primitive
 
 open import FullCoupled.FormalMethods.IMP
