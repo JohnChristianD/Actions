@@ -4274,6 +4274,11 @@ hardSignGate-continuous-discrete :
 hardSignGate-continuous-discrete =
   continuous-under-discrete-topology C.hardSignGate
 
+iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
+iterateState step zero s = s
+iterateState step (suc n) s = step (iterateState step n s)
+
+
 record FiniteRankStabilityCertificate
   (State : Set)
   (step : State → State)
