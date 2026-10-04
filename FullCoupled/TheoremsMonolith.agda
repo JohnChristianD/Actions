@@ -3292,6 +3292,28 @@ record CommutingSquareTheorem
 
 open CommutingSquareTheorem public
 
+commutingSquareTheorem-from-square :
+  ∀ {State Feature : Set}
+  {step : State → State}
+  {observe : State → Feature}
+  {featureStep : Feature → Feature} →
+  (∀ s → observe (step s) ≡ featureStep (observe s)) →
+  CommutingSquareTheorem State Feature step observe featureStep
+commutingSquareTheorem-from-square square =
+  commutingSquareTheorem
+    square
+    iterateSquare
+  where
+    iterateSquare :
+      ∀ n s →
+      observe (commutingIterate step n s) ≡
+      commutingIterate featureStep n (observe s)
+    iterateSquare zero s = refl
+    iterateSquare (suc n) s =
+      trans
+        (square (commutingIterate step n s))
+        (cong featureStep (iterateSquare n s))
+
 record FreeMonoidActionHomomorphism
   (State Feature : Set)
   (step : State → State)
