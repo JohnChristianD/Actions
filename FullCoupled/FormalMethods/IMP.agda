@@ -26,7 +26,7 @@
 
 module FullCoupled.FormalMethods.IMP where
 
-open import Prelude.Nat using (Nat; _+_; _≤?)
+open import Prelude.Nat using (Nat; _+_; _≤?_) renaming (_≤?_ to _≤?ₙ_)
 open import Prelude.Bool using (Bool; not; _∧_; true; false)
 open import Prelude.String using (String)
 open import Prelude.Decidable using (yes; no)
@@ -85,7 +85,7 @@ data bexp : Set where
   Less : aexp → aexp → bexp
 
 _≤?_ : Nat → Nat → Bool
-a ≤? b = a Prelude.Nat.≤? b
+a ≤? b = a ≤?ₙ b
 
 bval : bexp → state → bool
 bval (Bc x) s = x
