@@ -24,6 +24,6 @@ jobs:
           nix develop .#default -c nix run .#mirth-agda-import-sync -- --check
           nix develop .#default -c bash -euo pipefail -c '
             while IFS= read -r file; do
-              "$AGDA_COMMAND" -l standard-library -i . "$file"
+              "$AGDA_COMMAND" -i . "$file"
             done < <(git ls-files "*.agda")
           '
