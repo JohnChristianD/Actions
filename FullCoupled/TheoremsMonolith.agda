@@ -1,3 +1,4 @@
+-- BEGIN MIRTH-SYNC GLOBAL OPTIONS
 {-# OPTIONS --backtracking-instance-search #-}
 {-# OPTIONS --experimental-lazy-instances #-}
 {-# OPTIONS --polarity #-}
@@ -6,12 +7,17 @@
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
 {-# OPTIONS --cubical #-}
+{-# OPTIONS --exact-split #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --guardedness #-}
+-- END MIRTH-SYNC GLOBAL OPTIONS
+
+{-# OPTIONS --interaction #-}
+{-# OPTIONS --interaction-exit-on-error #-}
 {-# OPTIONS --interaction-json #-}
 
 {-# OPTIONS --no-pattern-matching #-}
@@ -36,7 +42,7 @@ module FullCoupled.TheoremsMonolith where
 ------------------------------------------------------------------------
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
--- Mirth-generated contract: this exact block is shared by every tracked .agda source.
+-- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
 open import Agda.Builtin.Nat using (Nat; zero; suc)
 
@@ -94,7 +100,9 @@ open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
-import Data.List.Base as ListBase
+open import Effect.Monad.State renaming (monad to stateMonad; monadState to stateMonadState)
+import Function.Identity.Effectful as Id
+open import Data.List.Properties using (++-assoc)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 
