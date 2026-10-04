@@ -4719,7 +4719,10 @@ guardedCubicalDenseSeparationEmergentComposition :
     featureStep
     R
     C
-guardedCubicalDenseSeparationEmergentComposition emergent =
+guardedCubicalDenseSeparationEmergentComposition
+  {R = R}
+  {C = C}
+  emergent =
   guardedCubicalDenseSeparationEmergentCompositionTheorem
     emergent
     (guardedCubicalGlobalInjective R)
