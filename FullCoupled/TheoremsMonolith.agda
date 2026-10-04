@@ -4324,7 +4324,7 @@ bundleCost :
   (Good → Nat) →
   Nat
 bundleCost goods price bundle =
-  sumNat (map (λ g → price g * bundle g) goods)
+  sumNat (Data.List.Base.map (λ g → price g * bundle g) goods)
 
 BudgetFeasible :
   ∀ {Good : Set} →
