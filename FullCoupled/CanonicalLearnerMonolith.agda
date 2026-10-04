@@ -5,7 +5,7 @@
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
-{-# OPTIONS --erased-cubical #-}
+{-# OPTIONS --cubical #-}
 {-# OPTIONS -WnoUnsupportedIndexedMatch #-}
 {-# OPTIONS --erased-matches #-}
 {-# OPTIONS --erase-record-parameters #-}
@@ -99,9 +99,9 @@ open import Agda.Builtin.String using (String)
 open import Algebra.Bundles using (Monoid)
 open import Data.List.Properties using (++-monoid)
 import Data.List.Effectful as ListEffectful
+import Data.List.Base as ListBase
 -- END MIRTH-SYNC COMMON IMPORTS
 
-import Data.List.Base as ListBase
 
 record Topology (A : Set) : Set₁ where
   field
