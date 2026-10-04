@@ -39,6 +39,9 @@ open import Prelude.Decidable using (yes; no)
 open import Prelude.Decidable using (Dec)
 
 open import Prelude.Equality using (_≡_; refl; sym; cong; trans; cong₂)
+
+contradiction : ∀ {a} {A : Set a} → A → (A → ⊥) → ⊥
+contradiction p np = np p
 open import Prelude.Nat.Properties
 
 open import FullCoupled.FormalMethods.IMP
