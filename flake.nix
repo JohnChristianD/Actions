@@ -16,7 +16,11 @@
       flake = false;
     };
     extensiontypes-agda = {
-      url = "github:nicolaikraus/extensiontypes-agda";
+      url = "github:nicolaikraus/extensiontypes-agda/0444e27c878842eb7bbabbaaf3c104934a199c3f";
+      flake = false;
+    };
+    two-level-tt = {
+      url = "github:ElifUskuplu/2LTT-Agda/b0640910fae9263fe9031636923460dc124920f3";
       flake = false;
     };
     agda2hs = {
@@ -24,7 +28,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, extensiontypes-agda, agda2hs }:
+  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, extensiontypes-agda, two-level-tt, agda2hs }:
     let
       systems = [
         "x86_64-linux"
@@ -61,6 +65,8 @@
         pkgs.agdaPackages.mkDerivation {
           pname = "TypeTopology";
           version = "0-unstable-2026-10-05";
+          libraryName = "TypeTopology";
+          libraryFile = "typetopology.agda-lib";
           src = typetopology;
           dontBuild = true;
           installPhase = ''
@@ -75,14 +81,12 @@
           pkgs = pkgsFor system;
         in
         pkgs.agdaPackages.mkDerivation {
-          pname = "extensiontypes-agda";
-          version = "0-unstable-2026-10-05";
+          pname = "extension-types";
+          version = "0-unstable-2026-07-27";
+          libraryName = "extension-types";
+          libraryFile = "extension-types.agda-lib";
           src = extensiontypes-agda;
-          dontBuild = true;
-          installPhase = ''
-            mkdir -p "$out"
-            cp -R . "$out/"
-          '';
+          buildInputs = [ two-level-tt ];
         };
 
       agdaWithPrelude = system:
@@ -123,7 +127,6 @@
           packages = [
             (haskellLiquidGhc system)
             pkgs.haskellPackages.liquidhaskell
-            pkgs.haskellPackages.cabal-install
             pkgs.z3
             pkgs.coreutils
             pkgs.findutils
