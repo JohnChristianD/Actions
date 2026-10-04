@@ -3698,6 +3698,19 @@ canonicalBiasedWatkinsNegativeQMunchausenL2Target :
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
   C.canonicalWatkinsTarget
 
+canonical-qLog2Bias8-law :
+  ∀ x →
+  C.qLog2Bias8 x ≡
+  C.int8Neg
+    (C.int8OfNat
+      (Data.Nat._/_
+        (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
+        (C.denominator (C.finiteQLog8 x))))
+canonical-qLog2Bias8-law x with C.int8Magnitude x
+... | zero = refl
+... | suc n = refl
+
+
 record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
   constructor canonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem
   field
