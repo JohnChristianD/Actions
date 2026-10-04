@@ -48,6 +48,11 @@
             cp -R src/. "$out/src/"
             cp agda-prelude.agda-lib "$out/agda-prelude.agda-lib"
           '';
+          meta = {
+            description = "Minimal Agda programming prelude";
+            homepage = "https://github.com/UlfNorell/agda-prelude";
+            license = pkgs.lib.licenses.mit;
+          };
         };
 
       typeTopologyLib = system:
@@ -66,6 +71,11 @@
             cp -R source/. "$out/source/"
             cp typetopology.agda-lib "$out/typetopology.agda-lib"
           '';
+          meta = {
+            description = "Logical manifestations of topological concepts via univalent mathematics";
+            homepage = "https://github.com/martinescardo/TypeTopology";
+            license = pkgs.lib.licenses.gpl3Only;
+          };
         };
 
       agdaWithPrelude = system:
