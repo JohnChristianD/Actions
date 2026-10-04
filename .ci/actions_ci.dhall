@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane : Lane = env:CI_LANE
 
@@ -6,13 +6,13 @@ let script = merge {
   AgdaLearner = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
     set -euo pipefail
     nix run .#mirth-agda-import-sync -- --check
     while IFS= read -r file; do
-      "$AGDA_COMMAND" -l standard-library -i . "$file"
+      "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
@@ -23,48 +23,16 @@ let script = merge {
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version
-    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
-  MAlonzoLiquid = ''
+  Agda2HsLiquid = ''
     set -euo pipefail
-    out="build/agda-haskell"
-    rm -rf "$out"
-    mkdir -p "$out"
-    "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
-    generated_learner="$out/MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"
-    generated_theorem="$out/MAlonzo/Code/FullCoupled/TheoremsMonolith.hs"
-    test -s "$generated_learner"
-    test -s "$generated_theorem"
-
-    liquid_sync_c="$out/liquid-haskell-sync.c"
-    liquid_sync="$out/liquid-haskell-sync"
-    liquid_target="$out/LiquidGeneratedBridge.hs"
-    mirthc .ci/mirth/liquid_haskell_sync.mth -o "$liquid_sync_c"
-    cc -std=c99 "$liquid_sync_c" -o "$liquid_sync"
-    learner_generated_sha="$(sha256sum "$generated_learner" | cut -d' ' -f1)"
-    theorem_generated_sha="$(sha256sum "$generated_theorem" | cut -d' ' -f1)"
-    "$liquid_sync" "$generated_learner" "$generated_theorem" "$liquid_target"
-    test -s "$liquid_target"
-    grep -Fq "$learner_generated_sha" "$liquid_target"
-    grep -Fq "$theorem_generated_sha" "$liquid_target"
-    liquid --smtsolver=z3 -i "$out" "$liquid_target"
-
-    commit_sha="$(git rev-parse HEAD)"
-    learner_sha="$(sha256sum FullCoupled/CanonicalLearnerMonolith.agda | cut -d' ' -f1)"
-    theorem_sha="$(sha256sum FullCoupled/TheoremsMonolith.agda | cut -d' ' -f1)"
-    liquid_target_sha="$(sha256sum "$liquid_target" | cut -d' ' -f1)"
-    printf '%s\n' \
-      "commit=$commit_sha source=FullCoupled/CanonicalLearnerMonolith.agda source-sha256=$learner_sha generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs generated-sha256=$learner_generated_sha target=build/agda-haskell/LiquidGeneratedBridge.hs target-sha256=$liquid_target_sha liquid:z3:pass" \
-      "commit=$commit_sha source=FullCoupled/TheoremsMonolith.agda source-sha256=$theorem_sha generated=MAlonzo/Code/FullCoupled/TheoremsMonolith.hs generated-sha256=$theorem_generated_sha target=build/agda-haskell/LiquidGeneratedBridge.hs target-sha256=$liquid_target_sha liquid:z3:pass" \
-      > "$out/liquid-agda-manifest.tsv"
-    find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort > "$out/malonzo-files.txt"
-    test -s "$out/malonzo-files.txt"
-    echo "agda-malonzo-ghc=pass"
-    echo "mirth-liquid-bridge=pass"
+    nix run .#agda-haskell-pipeline
+    test -s build/agda-haskell/Agda2HsSurface.hs
+    test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
+    echo "agda2hs-ghc=pass"
     echo "liquidhaskell-z3=pass"
-    '',
-  Vehicle = ''
+    ''  Vehicle = ''
     set -euo pipefail
     test -n "$VEHICLE_AGDA_SOURCE"
     test -f "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
@@ -191,7 +159,7 @@ let script = merge {
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
-    (cd .ci/discovery && mmc --make liquid_haskell_graph && ./liquid_haskell_graph ../../build/agda-haskell/liquid-agda-manifest.tsv)
+    (cd .ci/discovery && mmc --make liquid_haskell_graph && ./liquid_haskell_graph ../../build/agda-haskell/agda2hs-liquid-manifest.tsv)
     report=.ci/discovery/theorem-monolith-egraph-sync.dhall
     dhall text --file "$report" >/dev/null
     grep -Fq 'forcedSymbolicTarget = True' "$report" && { echo "forced symbolic target"; exit 1; } || true
@@ -528,7 +496,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
     (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
     report=.ci/discovery/isomorphism-transport-graph.dhall
     dhall text --file "$report" >/dev/null
@@ -682,9 +650,9 @@ DHALL
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
