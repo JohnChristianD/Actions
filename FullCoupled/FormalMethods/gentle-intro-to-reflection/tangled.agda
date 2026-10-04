@@ -20,18 +20,18 @@
 
 module tangled where
 
-import Level as Level
-open import Reflection hiding (_≟_ ; name)
+open import Agda.Primitive as Level
+open import Agda.Builtin.Reflection
 open import Prelude.Equality
-open import Relation.Unary using (Decidable)
+open import Prelude.Decidable using (Dec)
 open import Prelude.Decidable
 
-open import Data.Unit
+open import Prelude.Unit
 open import Prelude.Nat
 open import Prelude.Bool
 open import Prelude.Product
 open import Prelude.List
-open import Data.Char as Char
+open import Prelude.Char as Char
 open import Prelude.String
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Introduction][Introduction:1]] -}
@@ -62,7 +62,7 @@ _⟨𝒮⟩_ : (List Char → List Char) → String → String
 f ⟨𝒮⟩ s = fromList (f (toList s))
 
 {- This should be in the standard library; I could not locate it. -}
-toDec : ∀ {ℓ} {A : Set ℓ} → (p : A → Bool) → Decidable {ℓ} {A} (λ a → p a ≡ true)
+toDec : ∀ {ℓ} {A : Set ℓ} → (p : A → Bool) → Dec (λ a → p a ≡ true)
 toDec p x with p x
 toDec p x | false = no λ ()
 toDec p x | true = yes refl
@@ -103,8 +103,8 @@ _ = refl
 {- ~Arg~ ─Type of arguments:2 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Example:%20Simple%20Types][Example: Simple Types:1]] -}
-import Data.Vec as V
-import Data.Fin as F
+import Prelude.Vec as V
+import Prelude.Fin as F
 
 _ : quoteTerm ℕ ≡ def (quote ℕ) []
 _ = refl
