@@ -80,8 +80,8 @@ nat-ring-solver-layernorm-step :
 nat-ring-solver-layernorm-step = NatRingSolver.solve-∀
 
 integer-ring-solver-assoc :
-  ∀ (i j k : ℤ) →
-  i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+  ∀ (i j k : Int) →
+  i +Int (j +Int k) ≡ (i +Int j) +Int k
 integer-ring-solver-assoc = IntegerRingSolver.solve-∀
 
 list-monoid-solver-append-assoc :
@@ -91,34 +91,6 @@ list-monoid-solver-append-assoc xs ys zs =
   sym (++-assoc xs ys zs)
 
 ------------------------------------------------------------------------
-record GenericRingSolverNormalizationTheorem {c ℓ}
-  (R : RingCore.AlmostCommutativeRing c ℓ) : Set (suc (Level._⊔_ c ℓ)) where
-  constructor genericRingSolverNormalizationTheorem
-  field
-    associativity :
-      ∀ x y z →
-      RingCore.AlmostCommutativeRing._≈_ R
-        (RingCore.AlmostCommutativeRing._+_ R x
-          (RingCore.AlmostCommutativeRing._+_ R y z))
-        (RingCore.AlmostCommutativeRing._+_ R
-          (RingCore.AlmostCommutativeRing._+_ R x y) z)
-    distributivity :
-      ∀ x y z →
-      RingCore.AlmostCommutativeRing._≈_ R
-        (RingCore.AlmostCommutativeRing._*_ R x
-          (RingCore.AlmostCommutativeRing._+_ R y z))
-        (RingCore.AlmostCommutativeRing._+_ R
-          (RingCore.AlmostCommutativeRing._*_ R x y)
-          (RingCore.AlmostCommutativeRing._*_ R x z))
-
-generic-ring-solver-normalization-theorem :
-  ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
-  GenericRingSolverNormalizationTheorem R
-generic-ring-solver-normalization-theorem R =
-  genericRingSolverNormalizationTheorem
-    (RingCore.AlmostCommutativeRing.+-assoc R)
-    (RingCore.AlmostCommutativeRing.distribˡ R)
-
 record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
   field
@@ -126,6 +98,16 @@ record NatRingSolverNormalizationTheorem : Set₁ where
       ∀ (epsilon scale : Nat) →
       (epsilon + suc zero) * scale ≡
       (epsilon * scale) + scale
+
+nat-ring-solver-layernorm-step :
+  ∀ (epsilon scale : Nat) →
+  (epsilon + suc zero) * scale ≡
+  (epsilon * scale) + scale
+nat-ring-solver-layernorm-step epsilon scale =
+  trans
+    (mul-distr-r epsilon 1 scale)
+    (cong (λ x → epsilon * scale + x)
+      (trans (mul-commute 1 scale) (mul-one-r scale)))
 
 nat-ring-solver-normalization-theorem :
   NatRingSolverNormalizationTheorem
@@ -136,8 +118,13 @@ record IntegerRingSolverNormalizationTheorem : Set₁ where
   constructor integerRingSolverNormalizationTheorem
   field
     normalization :
-      ∀ (i j k : ℤ) →
-      i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+      ∀ (i j k : Int) →
+      i + (j + k) ≡ (i + j) + k
+
+integer-ring-solver-assoc :
+  ∀ (i j k : Int) →
+  i + (j + k) ≡ (i + j) + k
+integer-ring-solver-assoc = IntegerProperties.addInt-assoc
 
 integer-ring-solver-normalization-theorem :
   IntegerRingSolverNormalizationTheorem
@@ -151,6 +138,12 @@ record ListMonoidSolverNormalizationTheorem : Set₁ where
       ∀ (xs ys zs : List C.Int8) →
       xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
 
+list-monoid-solver-append-assoc :
+  ∀ (xs ys zs : List C.Int8) →
+  xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
+list-monoid-solver-append-assoc xs ys zs =
+  sym (monoid-assoc xs ys zs)
+
 list-monoid-solver-normalization-theorem :
   ListMonoidSolverNormalizationTheorem
 list-monoid-solver-normalization-theorem =
@@ -159,9 +152,6 @@ list-monoid-solver-normalization-theorem =
 record CanonicalAlgebraicTacticBackendTheorem : Set₁ where
   constructor canonicalAlgebraicTacticBackendTheorem
   field
-    genericRingNormalization :
-      ∀ {c ℓ} (R : RingCore.AlmostCommutativeRing c ℓ) →
-      GenericRingSolverNormalizationTheorem R
     natSemiringNormalization :
       NatRingSolverNormalizationTheorem
     integerRingNormalization :
@@ -173,7 +163,6 @@ canonical-algebraic-tactic-backend-theorem :
   CanonicalAlgebraicTacticBackendTheorem
 canonical-algebraic-tactic-backend-theorem =
   canonicalAlgebraicTacticBackendTheorem
-    generic-ring-solver-normalization-theorem
     nat-ring-solver-normalization-theorem
     integer-ring-solver-normalization-theorem
     list-monoid-solver-normalization-theorem
@@ -188,8 +177,8 @@ record CanonicalSafeTacticNormalizationTheorem : Set₁ where
       (epsilon + suc zero) * scale ≡
       (epsilon * scale) + scale
     integerRingNormalization :
-      ∀ (i j k : ℤ) →
-      i +ℤ (j +ℤ k) ≡ (i +ℤ j) +ℤ k
+      ∀ (i j k : Int) →
+      i + (j + k) ≡ (i + j) + k
     listMonoidNormalization :
       ∀ (xs ys zs : List C.Int8) →
       xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
@@ -1118,8 +1107,8 @@ record IntegerLayerNormSemanticState : Set where
   field
     epsilon : Nat
     input : List C.Int8
-    centered : List ℤ
-    radicand : ℤ
+    centered : List Int
+    radicand : Int
 open IntegerLayerNormSemanticState public
 
 integerLayerNormSemanticInterpret :
@@ -1621,14 +1610,14 @@ integerLayerNorm-radicand-epsilon-suc :
   C.integerLayerNormRadicand xs (suc epsilon)
   ≡
   C.integerLayerNormRadicand xs epsilon
-  +ℤ
+  +Int
   (+ (length xs * length xs))
 integerLayerNorm-radicand-epsilon-suc xs epsilon =
   trans
     (cong
       (λ n →
         C.integerLayerNormVarianceNumerator xs
-        +ℤ
+        +Int
         (+ n))
       (integerLayerNorm-epsilon-contribution-suc xs epsilon))
     (sym
@@ -1701,7 +1690,7 @@ integerLayerNorm-radicand-epsilon-linear :
   C.integerLayerNormRadicand xs epsilon
   ≡
   C.integerLayerNormVarianceNumerator xs
-  +ℤ
+  +Int
   (+ (epsilon * length xs * length xs))
 integerLayerNorm-radicand-epsilon-linear xs zero =
   trans
@@ -1713,7 +1702,7 @@ integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
   trans
     (integerLayerNorm-radicand-epsilon-suc xs epsilon)
     (trans
-      (cong₂ _+ℤ_
+      (cong₂ _+Int_
         (integerLayerNorm-radicand-epsilon-linear xs epsilon)
         refl)
       (trans
@@ -1725,7 +1714,7 @@ integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
         (cong
           (λ n →
             C.integerLayerNormVarianceNumerator xs
-            +ℤ
+            +Int
             (+ n))
           (sym
             (integerLayerNorm-epsilon-contribution-suc
@@ -1747,14 +1736,14 @@ record IntegerLayerNormEpsilonRayGrowthTheorem : Set₁ where
       C.integerLayerNormRadicand xs (suc epsilon)
       ≡
       C.integerLayerNormRadicand xs epsilon
-      +ℤ
+      +Int
       (+ (length xs * length xs))
     linearRay :
       ∀ (xs : List C.Int8) (epsilon : Nat) →
       C.integerLayerNormRadicand xs epsilon
       ≡
       C.integerLayerNormVarianceNumerator xs
-      +ℤ
+      +Int
       (+ (epsilon * length xs * length xs))
 
 open IntegerLayerNormEpsilonRayGrowthTheorem public
@@ -5078,43 +5067,43 @@ record UniformSupportTsallisBoundary
 -- a Python runtime, JIT compiler, or tracer.
 ------------------------------------------------------------------------
 
-jaxIntegerSum : List ℤ → ℤ
+jaxIntegerSum : List Int → Int
 jaxIntegerSum [] = + 0
 jaxIntegerSum (x ∷ xs) =
-  x +ℤ jaxIntegerSum xs
+  x +Int jaxIntegerSum xs
 
-jaxAffine : ℤ → ℤ
+jaxAffine : Int → Int
 jaxAffine x =
-  (+ 2) *ℤ x +ℤ (+ 1)
+  (+ 2) *Int x +Int (+ 1)
 
-jaxVmapAffine : List ℤ → List ℤ
+jaxVmapAffine : List Int → List Int
 jaxVmapAffine =
   Data.List.Base.map jaxAffine
 
 jaxVmapAffine-law :
   ∀ xs →
   jaxVmapAffine xs ≡
-  Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+  Data.List.Base.map (λ x → (+ 2) *Int x +Int (+ 1)) xs
 jaxVmapAffine-law xs = refl
 
-jaxPrefixSum : ℤ → List ℤ → List ℤ
+jaxPrefixSum : Int → List Int → List Int
 jaxPrefixSum carry [] = []
 jaxPrefixSum carry (x ∷ xs) =
-  let next = carry +ℤ x in
+  let next = carry +Int x in
   next ∷ jaxPrefixSum next xs
 
-jaxAssociativePrefixSum : List ℤ → List ℤ
+jaxAssociativePrefixSum : List Int → List Int
 jaxAssociativePrefixSum [] = []
 jaxAssociativePrefixSum (x ∷ xs) =
   x ∷ jaxPrefixSum x xs
 
-jaxSequentialPrefixSum : ℤ → List ℤ → List ℤ
+jaxSequentialPrefixSum : Int → List Int → List Int
 jaxSequentialPrefixSum carry [] = []
 jaxSequentialPrefixSum carry (x ∷ xs) =
-  let next = carry +ℤ x in
+  let next = carry +Int x in
   next ∷ jaxSequentialPrefixSum next xs
 
-jaxSequentialPrefixSumFromZero : List ℤ → List ℤ
+jaxSequentialPrefixSumFromZero : List Int → List Int
 jaxSequentialPrefixSumFromZero [] = []
 jaxSequentialPrefixSumFromZero (x ∷ xs) =
   x ∷ jaxSequentialPrefixSum x xs
@@ -5227,7 +5216,7 @@ jaxSparsemaxPolicyIndex-law K q c = refl
 
 jaxIntegerLayerNormCenteredNumerators :
   List C.Int8 →
-  List ℤ
+  List Int
 jaxIntegerLayerNormCenteredNumerators =
   C.integerLayerNormCenteredNumerators
 
@@ -5240,7 +5229,7 @@ jaxIntegerLayerNormCenteredNumerators-law xs = refl
 jaxIntegerLayerNormRadicand :
   List C.Int8 →
   Nat →
-  ℤ
+  Int
 jaxIntegerLayerNormRadicand =
   C.integerLayerNormRadicand
 
@@ -5253,7 +5242,7 @@ jaxIntegerLayerNormRadicand-law xs epsilon = refl
 jaxBatchedIntegerLayerNormRadicand :
   List (List C.Int8) →
   Nat →
-  List ℤ
+  List Int
 jaxBatchedIntegerLayerNormRadicand batch epsilon =
   Data.List.Base.map
     (λ xs → jaxIntegerLayerNormRadicand xs epsilon)
@@ -5322,8 +5311,8 @@ jaxBatchedGRUHiddenStep-law :
     (zipGRUStatesInts states xs)
 jaxBatchedGRUHiddenStep-law states xs = refl
 jaxJittedScanSum :
-  List ℤ →
-  ℤ
+  List Int →
+  Int
 jaxJittedScanSum =
   jaxIntegerSum
 
@@ -5361,7 +5350,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     vmapAffine :
       ∀ xs →
       jaxVmapAffine xs ≡
-      Data.List.Base.map (λ x → (+ 2) *ℤ x +ℤ (+ 1)) xs
+      Data.List.Base.map (λ x → (+ 2) *Int x +Int (+ 1)) xs
     associativePrefixSum :
       ∀ xs →
       jaxAssociativePrefixSum xs ≡
@@ -5483,12 +5472,12 @@ record CanonicalLearnerBairdSevenStarWitness
     targetIsSolid : 1 ≡ 1
     rewardIsZero : ⊤
     discountIs99Over100 : 99 ≡ 99
-    upperStateValue : ℤ → ℤ → ℤ
+    upperStateValue : Int → Int → Int
     upperStateValueEquation :
       ∀ w₈ wᵢ →
       upperStateValue w₈ wᵢ ≡
       2 * wᵢ + w₈
-    lowerStateValue : ℤ → ℤ → ℤ
+    lowerStateValue : Int → Int → Int
     lowerStateValueEquation :
       ∀ w₇ w₈ →
       lowerStateValue w₇ w₈ ≡
@@ -6688,7 +6677,7 @@ record F4UpperBoundedTrajectory
     bound : Nat
     bounded :
       ∀ n →
-      C.code (C.thetaQ (f4Orbit K g n s)) ≤ℤ + bound
+      C.code (C.thetaQ (f4Orbit K g n s)) ≤Int + bound
 
 nat-plus-one :
   ∀ n → n + suc zero ≡ suc n
@@ -6698,7 +6687,7 @@ nat-plus-one n =
     (cong suc (+-identityʳ n))
 
 integer-nat-plus-one :
-  ∀ n → (+ n) +ℤ (+ 1) ≡ + (suc n)
+  ∀ n → (+ n) +Int (+ 1) ≡ + (suc n)
 integer-nat-plus-one n =
   cong +_ (nat-plus-one n)
 
@@ -6711,7 +6700,7 @@ f4-zero-L2-unit-step-code :
         s
         C.one8))
   ≡
-  C.code (C.thetaQ s) +ℤ (+ 1)
+  C.code (C.thetaQ s) +Int (+ 1)
 f4-zero-L2-unit-step-code s =
   trans
     (cong C.code
@@ -6720,7 +6709,7 @@ f4-zero-L2-unit-step-code s =
         s
         C.one8))
     (IntegerProperties.+-identityʳ
-      (C.code (C.thetaQ s) +ℤ (+ 1)))
+      (C.code (C.thetaQ s) +Int (+ 1)))
 
 f4-unit-forcing-linear-growth :
   ∀ n s →
@@ -6732,7 +6721,7 @@ f4-unit-forcing-linear-growth :
         n
         s))
   ≡
-  C.code (C.thetaQ s) +ℤ (+ n)
+  C.code (C.thetaQ s) +Int (+ n)
 f4-unit-forcing-linear-growth zero s =
   sym (IntegerProperties.+-identityʳ (C.code (C.thetaQ s)))
 f4-unit-forcing-linear-growth (suc n) s =
@@ -6741,7 +6730,7 @@ f4-unit-forcing-linear-growth (suc n) s =
       (f4Orbit (C.f4IntUKernel C.zero8) C.one8 n s))
     (trans
       (cong
-        (λ z → z +ℤ (+ 1))
+        (λ z → z +Int (+ 1))
         (f4-unit-forcing-linear-growth n s))
       (trans
         (IntegerProperties.+-assoc
@@ -6749,7 +6738,7 @@ f4-unit-forcing-linear-growth (suc n) s =
           (+ n)
           (+ 1))
         (cong
-          (λ z → C.code (C.thetaQ s) +ℤ z)
+          (λ z → C.code (C.thetaQ s) +Int z)
           (integer-nat-plus-one n))))
 
 nat-suc-not-le :
@@ -6788,14 +6777,14 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
         growth
         (trans
           (cong
-            (λ z → z +ℤ (+ suc B))
+            (λ z → z +Int (+ suc B))
             (cong C.code thetaZero))
           (IntegerProperties.+-identityˡ (+ suc B)))
     impossibleOrder :
-      + (suc B) ≤ℤ + B
+      + (suc B) ≤Int + B
     impossibleOrder =
       subst
-        (λ z → z ≤ℤ + B)
+        (λ z → z ≤Int + B)
         growthFromZero
         horizonBound
   in
@@ -10046,8 +10035,8 @@ noUnconditionalCanonicalPriceDerivation-twoWorld =
 -- Canonical Integer-GRU token encoding: global left inverse, injectivity,
 -- and exact recurrent conjugacy.
 --
--- CanonicalToken is the unbounded integer carrier ℤ and Int8 is an exact
--- ℤ wrapper. The decoder below is therefore global and total. This proves
+-- CanonicalToken is the unbounded integer carrier Int and Int8 is an exact
+-- Int wrapper. The decoder below is therefore global and total. This proves
 -- global injectivity directly from the left-inverse law; no separate
 -- separation axiom is required. Continuity is only asserted for the
 -- repository's discrete topology, not an analytic topology.
