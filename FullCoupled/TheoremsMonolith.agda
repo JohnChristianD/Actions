@@ -3762,26 +3762,20 @@ natPlus-left-cancel zero m n eq = eq
 natPlus-left-cancel (suc k) m n eq =
   natPlus-left-cancel k m n (suc-injective eq)
 
-canonicalTotalCountSuccessorWitness :
-  ∀ {A : Set}
-  (K : C.FullLearnerKernel A) →
-  NatSuccessorProgressWitness
-    (C.FullLearnerState A)
-    (C.canonicalFullStep K)
-    (λ s → C.totalCount (C.lcbCounts s))
-canonicalTotalCountSuccessorWitness K =
-  natSuccessorProgressWitness
-    (C.canonicalTotalCountStep K)
-
 canonicalOrbit-state-injective :
   ∀ K s {m n : Nat} →
   C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
   m ≡ n
 canonicalOrbit-state-injective K s {m} {n} eq =
-  successorMeasureOrbitInjective
-    (canonicalTotalCountSuccessorWitness K)
-    s
-    eq
+  natPlus-left-cancel
+    (C.totalCount (C.lcbCounts s))
+    m
+    n
+    (trans
+      (sym (C.canonicalTotalCountAfter K m s))
+      (trans
+        (cong (λ t → C.totalCount (C.lcbCounts t)) eq)
+        (C.canonicalTotalCountAfter K n s)))
 
 canonicalInfiniteStateOrbitEmbedding :
   ∀ (K : C.CanonicalFullLearnerKernel)
