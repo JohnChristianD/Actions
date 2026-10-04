@@ -26,19 +26,19 @@
 
 module FullCoupled.FormalMethods.Types where
 
-open import Data.Nat     using (ℕ) renaming (_+_ to _+ᵢ_; _≤?_ to _≤?ᵢ_)
+open import Prelude.Nat
 open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
-open import Data.Bool    using (Bool; true; false; not; _∧_)
-open import Data.Sum     using (inj₁; inj₂; _⊎_)
-open import Data.Product using (_×_; _,_; -,_; _-,-_; ∃; ∃-syntax; proj₂)
-open import Data.String  using (String; _≟_)
-open import Relation.Nullary           using (¬_; yes; no)
-open import Relation.Nullary.Decidable using (⌊_⌋)
-open import Relation.Nullary.Negation  using (contradiction)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym)
+open import Prelude.Bool
+open import Prelude.Sum
+open import Prelude.Product
+open import Prelude.String
+open import Prelude.Decidable
+open import Prelude.Decidable
+
+open import Prelude.Equality
 
 vname = String
-int = ℕ
+int = Nat
 real = Float
 bool = Bool
 
