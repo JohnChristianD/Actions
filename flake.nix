@@ -7,9 +7,24 @@
       url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
       flake = false;
     };
+    agda-prelude = {
+      url = "github:UlfNorell/agda-prelude/4230566d3ae229b6a00258587651ac7bfd38d088";
+      flake = false;
+    };
+    typetopology = {
+      url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c7e";
+      flake = false;
+    };
+    extensiontypes-agda = {
+      url = "github:nicolaikraus/extensiontypes-agda";
+      flake = false;
+    };
+    agda2hs = {
+      url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
+    };
   };
 
-  outputs = { self, nixpkgs, vehicle }:
+  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, extensiontypes-agda, agda2hs }:
     let
       systems = [
         "x86_64-linux"
@@ -23,19 +38,82 @@
       pkgsFor = system:
         import nixpkgs { inherit system; };
 
-      agdaWithStdlib = system:
+      agdaPreludeLib = system:
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agdaPackages.agda.withPackages [ pkgs.agdaPackages.standard-library ];
+        pkgs.agdaPackages.mkDerivation {
+          pname = "agda-prelude";
+          version = "0-unstable-2026-10-05";
+          src = agda-prelude;
+          dontBuild = true;
+          installPhase = ''
+            mkdir -p "$out/src"
+            cp -R src/. "$out/src/"
+            cp agda-prelude.agda-lib "$out/agda-prelude.agda-lib"
+          '';
+        };
+
+      typeTopologyLib = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.agdaPackages.mkDerivation {
+          pname = "TypeTopology";
+          version = "0-unstable-2026-10-05";
+          src = typetopology;
+          dontBuild = true;
+          installPhase = ''
+            mkdir -p "$out/source"
+            cp -R source/. "$out/source/"
+            cp typetopology.agda-lib "$out/typetopology.agda-lib"
+          '';
+        };
+
+      extensionPreludeLib = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.agdaPackages.mkDerivation {
+          pname = "extensiontypes-agda";
+          version = "0-unstable-2026-10-05";
+          src = extensiontypes-agda;
+          dontBuild = true;
+          installPhase = ''
+            mkdir -p "$out"
+            cp -R . "$out/"
+          '';
+        };
+
+      agdaWithPrelude = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.agdaPackages.agda.withPackages [
+          (agdaPreludeLib system)
+          (typeTopologyLib system)
+          (extensionPreludeLib system)
+        ];
 
       haskellLiquidGhc = system:
         let
           pkgs = pkgsFor system;
         in
         pkgs.haskellPackages.ghcWithPackages (p: [
+          p.rio
           p.liquidhaskell
         ]);
+
+      agda2hsWithHaskell = system:
+        let
+          ghc = haskellLiquidGhc system;
+        in
+        agda2hs.packages.${system}.agda2hs.withPackages {
+          pkgs = [
+            agda2hs.packages.${system}.base-lib
+          ];
+          inherit ghc;
+        };
 
       liquidHaskellEnv = system:
         let
@@ -65,7 +143,11 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaWithStdlib system;
+          agda = agdaWithPrelude system;
+          agda2hs = agda2hsWithHaskell system;
+          agda-prelude = agdaPreludeLib system;
+          typetopology = typeTopologyLib system;
+          extension-prelude = extensionPreludeLib system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
@@ -184,7 +266,7 @@
             script = pkgs.writeShellApplication {
               name = "malonzo-extract";
               runtimeInputs = [
-                (agdaWithStdlib system)
+                (agdaWithPrelude system)
                 pkgs.coreutils
                 pkgs.findutils
               ];
@@ -193,8 +275,8 @@
                 out="build/malonzo";
                 rm -rf "$out"
                 mkdir -p "$out"
-                export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
-                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda"
+                "$AGDA_COMMAND" -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
                 "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
                 find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort
               '';
@@ -221,7 +303,8 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+                export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda"
+              export AGDA2HS_COMMAND="${agda2hsWithHaskell system}/bin/agda2hs"
                 "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
                 "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
                 generated_learner="$out/MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"
@@ -278,14 +361,8 @@
           simple-haskell = pkgs.mkShell {
             packages = [
               (haskellLiquidGhc system)
-              pkgs.haskellPackages.cabal-install
               pkgs.z3
-              pkgs.haskellPackages.text
-              pkgs.haskellPackages.containers
-              pkgs.haskellPackages.bytestring
-              pkgs.haskellPackages.aeson
-              pkgs.haskellPackages.time
-              pkgs.haskellPackages.mtl
+              pkgs.haskellPackages.rio
             ];
             shellHook = ''
               export LIQUID_SOLVER=z3
