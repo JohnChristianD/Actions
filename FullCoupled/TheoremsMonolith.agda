@@ -3693,6 +3693,24 @@ open PointwiseSandwich public
 open MinimaxBellmanShapleyOperator public
 open MinimaxBellmanShapleyInclusionTheorem public
 
+record OrbitStateInjectivityTheorem (State : Set) : Set₁ where
+  constructor orbitStateInjectivityTheorem
+  field
+    orbitState : Nat → State
+    orbitStateInjective :
+      ∀ {m n} → orbitState m ≡ orbitState n → m ≡ n
+
+open OrbitStateInjectivityTheorem public
+
+canonicalOrbitStateInjective :
+  ∀ (K : C.CanonicalFullLearnerKernel)
+  (s : C.CanonicalFullLearnerState) →
+  OrbitStateInjectivityTheorem C.CanonicalFullLearnerState
+canonicalOrbitStateInjective K s =
+  orbitStateInjectivityTheorem
+    (λ n → C.iterateCanonical K n s)
+    (λ {m} {n} eq → canonicalOrbit-state-injective K s eq)
+
 canonicalBiasedWatkinsNegativeQMunchausenL2Target :
   C.CanonicalFullLearnerKernel → C.CanonicalFullLearnerState → C.Int8
 canonicalBiasedWatkinsNegativeQMunchausenL2Target =
@@ -4128,10 +4146,10 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
       ∀ s →
       target s ≡ target (inverse (observe s))
 
-    ringStateInjection :
+    orbitStateInjection :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      RingStateInjectivityTheorem C.CanonicalFullLearnerState
+      OrbitStateInjectivityTheorem C.CanonicalFullLearnerState
 
     infiniteStateOrbit :
       ∀ (K : C.CanonicalFullLearnerKernel)
