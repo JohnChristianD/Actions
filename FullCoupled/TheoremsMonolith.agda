@@ -3302,17 +3302,17 @@ commutingSquareTheorem-from-square :
 commutingSquareTheorem-from-square {step = step} {observe = observe} {featureStep = featureStep} square =
   commutingSquareTheorem
     square
-    iterateSquare
+    deriveIterateSquare
   where
-    iterateSquare :
+    deriveIterateSquare :
       ∀ n s →
       observe (commutingIterate step n s) ≡
       commutingIterate featureStep n (observe s)
-    iterateSquare zero s = refl
-    iterateSquare (suc n) s =
+    deriveIterateSquare zero s = refl
+    deriveIterateSquare (suc n) s =
       trans
         (square (commutingIterate step n s))
-        (cong featureStep (iterateSquare n s))
+        (cong featureStep (deriveIterateSquare n s))
 
 record FreeMonoidActionHomomorphism
   (State Feature : Set)
