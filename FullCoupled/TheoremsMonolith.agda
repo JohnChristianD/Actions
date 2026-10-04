@@ -5127,7 +5127,7 @@ jaxAffine x =
 
 jaxVmapAffine : List ℤ → List ℤ
 jaxVmapAffine =
-  map jaxAffine
+  Data.List.Base.map jaxAffine
 
 jaxVmapAffine-law :
   ∀ xs →
