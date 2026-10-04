@@ -5293,14 +5293,14 @@ jaxBatchedIntegerLayerNormRadicand :
   Nat →
   List ℤ
 jaxBatchedIntegerLayerNormRadicand batch epsilon =
-  map
+  Data.List.Base.map
     (λ xs → jaxIntegerLayerNormRadicand xs epsilon)
     batch
 
 jaxBatchedIntegerLayerNormRadicand-law :
   ∀ batch epsilon →
   jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-  map
+  Data.List.Base.map
     (λ xs → C.integerLayerNormRadicand xs epsilon)
     batch
 jaxBatchedIntegerLayerNormRadicand-law batch epsilon = refl
