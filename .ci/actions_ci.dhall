@@ -107,6 +107,7 @@ let script = merge {
     '',
   Pages = ''
     set -euo pipefail
+    nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
