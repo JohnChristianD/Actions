@@ -111,7 +111,7 @@ let script = merge {
     grep -Fq 'symbolicEGraphRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'eGraphAssociativityRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'requiredPlanComplete' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'Agda2HsSemanticExtractor' FullCoupled/Agda2HsSemanticExtractor.agda
+    grep -Fq 'open import FullCoupled.Agda2HsSemanticExtractor as Extractor' FullCoupled/Agda2HsSemanticSearch.agda
     nix run .#agda2hs-semantic-search
     nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
@@ -1098,7 +1098,3 @@ FullCoupled/TheoremsMonolith.agda'
     grep -Fq 'exists_stationary' "$ergodic"
     grep -Fq 'theorem geometric_convergence_to' "$ergodic"
     grep -Fq '0 < P.transition' "$ergodic"
-
-    mkdir -p .ci/discovery
-    cat > .ci/discovery/stationary-cycle-impossibility-graph.dhall <<'DHALL'
-{
