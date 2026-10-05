@@ -134,18 +134,9 @@
         pkgs.haskellPackages.ghcWithPackages (p: [
           p.rio
           p.liquidhaskell
-        ]);
-
-      haskellInversionGhc = system:
-        let
-          pkgs = pkgsFor system;
-          ghc92 = pkgs.haskell.packages.ghc924;
-        in
-        ghc92.ghcWithPackages (p: [
-          p.rio
-          p.liquidhaskell
           (inversionPlugin system)
         ]);
+
 
       agda2hsWithHaskell = system:
         let
@@ -158,25 +149,21 @@
           inherit ghc;
         };
 
-      agda2hsWithInversion = system:
-        let
-          ghc = haskellInversionGhc system;
-        in
-        agda2hs.packages.${system}.agda2hs.withPackages {
-          pkgs = [
-            agda2hs.packages.${system}.base-lib
-          ];
-          inherit ghc;
-        };
+      ghcPluginFlags = [
+        "-fplugin=Plugin.InversionPlugin"
+        "-fplugin=LiquidHaskell"
+      ];
+
+      ghcPluginFlagsText =
+        builtins.concatStringsSep " " ghcPluginFlags;
 
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
-          ghc92 = pkgs.haskell.packages.ghc924;
         in
         pkgs.haskell.lib.overrideCabal
           (pkgs.haskell.lib.doJailbreak
-            (ghc92.callCabal2nix
+            (pkgs.haskellPackages.callCabal2nix
               "inversion-plugin"
               inversion-plugin-src
               {}))
@@ -339,8 +326,8 @@
               name = "agda2hs-semantic-search";
               runtimeInputs = [
                 (agdaWithLibraries system)
-                (agda2hsWithInversion system)
-                (haskellInversionGhc system)
+                (agda2hsWithHaskell system)
+                (haskellLiquidGhc system)
                 pkgs.z3
                 pkgs.coreutils
               ];
@@ -361,8 +348,7 @@
                   -XLocalMonoBinds \
                   -O0 \
                   -dcore-lint \
-                  -fplugin=Plugin.InversionPlugin \
-                  -fplugin=LiquidHaskell \
+                  ${ghcPluginFlagsText} \
                   -i "$out" \
                   -odir "$out/ghc" \
                   -hidir "$out/ghc" \
@@ -418,8 +404,8 @@
               name = "agda-haskell-pipeline";
               runtimeInputs = [
                 (agdaWithLibraries system)
-                (agda2hsWithInversion system)
-                (haskellInversionGhc system)
+                (agda2hsWithHaskell system)
+                (haskellLiquidGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
