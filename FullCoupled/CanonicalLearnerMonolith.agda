@@ -112,41 +112,6 @@ open import W.Type
 -- END MIRTH-SYNC CANONICAL COMMAND
 
 
-record Topology (A : Set) : Set₁ where
-  field
-    isOpen : (A → Set) → Set
-    emptyOpen : isOpen (λ _ → ⊥)
-    wholeOpen : isOpen (λ _ → ⊤)
-    intersectionOpen : ∀ {U V} → isOpen U → isOpen V →
-      isOpen (λ x → U x × V x)
-    unionOpen : ∀ {I : Set} (U : I → A → Set) →
-      (∀ i → isOpen (U i)) →
-      isOpen (λ x → Σ I (λ i → U i x))
-
-open Topology public
-
-Continuous : (A B : Set) →
-  Topology A → Topology B → (A → B) → Set₁
-Continuous A B τA τB f =
-  ∀ {V : B → Set} →
-  isOpen τB V →
-  isOpen τA (λ x → V (f x))
-
-discreteTopology : ∀ (A : Set) → Topology A
-discreteTopology A =
-  record
-    { isOpen = λ _ → ⊤
-    ; emptyOpen = tt
-    ; wholeOpen = tt
-    ; intersectionOpen = λ _ _ → tt
-    ; unionOpen = λ _ _ → tt
-    }
-
-continuous-under-discrete-topology :
-  ∀ {A B : Set} (f : A → B) →
-  Continuous A B (discreteTopology A) (discreteTopology B) f
-continuous-under-discrete-topology {A} {B} f {V} _ = tt
-
 record Int8 : Set where
   constructor int8
   field code : Int
@@ -228,11 +193,6 @@ signedCode : Int8 → Signed
 signedCode (int8 (+ 0)) = signedZer
 signedCode (int8 (+ (suc n))) = signedPos (suc n)
 signedCode (int8 (-[1+ n ])) = signedNeg (suc n)
-
-record FiniteRational : Set where
-  constructor finiteRational
-  field sign numerator denominator : Nat
-open FiniteRational public
 
 data BoolLike : Set where
   enabled disabled : BoolLike
@@ -543,38 +503,45 @@ updateLCBCount : ∀ {A : Set} → Nat → LCBCountState A → LCBCountState A
 updateLCBCount {A} a (lcbCountState counts total) =
   lcbCountState (incAt {A = A} counts a) (suc total)
 
-finiteQLog8 : Int8 → FiniteRational
+------------------------------------------------------------------------
+-- TypeTopology supplies the actual rational carrier.  The learner keeps
+-- its finite Nat-facing boundary total: a zero denominator request is
+-- interpreted as 0ℚ rather than manufacturing a non-rational value.
+------------------------------------------------------------------------
+
+natFractionToℚ : Nat → Nat → ℚ
+natFractionToℚ n zero = 0ℚ
+natFractionToℚ n (suc d) = toℚ ((+ n) , d)
+
+qNumerator : ℚ → Nat
+qNumerator q with to𝔽 q
+... | (+ n) , d = n
+... | (-[1+ n ]) , d = zero
+
+qDenominator : ℚ → Nat
+qDenominator q with to𝔽 q
+... | (+ n) , d = suc d
+... | (-[1+ n ]) , d = suc d
+
+finiteQLog8 : Int8 → ℚ
 finiteQLog8 x with int8Magnitude x
-... | zero = finiteRational 1 0 1
-... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
+... | zero = natFractionToℚ 1 1
+... | suc n = natFractionToℚ (128 ∸ suc n) (suc n)
 
-finiteQLog8-denominator-nonZero :
-  ∀ {x} → NonZero (denominator (finiteQLog8 x))
-finiteQLog8-denominator-nonZero {x} with int8Magnitude x
-... | zero = Data.Nat.nonZero
-... | suc n = Data.Nat.nonZero
-
-negativeFiniteQLog8 : Int8 → FiniteRational
+negativeFiniteQLog8 : Int8 → ℚ
 negativeFiniteQLog8 x = finiteQLog8 x
-
-negativeFiniteQLogLaw :
-  ∀ x →
-  negativeFiniteQLog8 x ≡
-  finiteRational 1
-    (numerator (finiteQLog8 x))
-    (denominator (finiteQLog8 x))
-negativeFiniteQLogLaw x with int8Magnitude x
-... | zero = refl
-... | suc n = refl
 
 munchausenScale8 : Nat
 munchausenScale8 = 16
 
-finiteSignedRationalBias8 : FiniteRational → Int8
-finiteSignedRationalBias8 (finiteRational zero n d) = zero8
-finiteSignedRationalBias8 (finiteRational (suc s) n zero) = zero8
-finiteSignedRationalBias8 (finiteRational (suc s) n (suc d)) =
-  int8Neg (int8OfNat (Data.Nat._/_ (munchausenScale8 * n) (suc d)))
+finiteSignedRationalBias8 : ℚ → Int8
+finiteSignedRationalBias8 q with qNumerator q
+... | zero = zero8
+... | suc n = int8Neg
+  (int8OfNat
+    (Data.Nat._/_
+      (munchausenScale8 * suc n)
+      (qDenominator q)))
 
 qLog2Bias8 : Int8 → Int8
 qLog2Bias8 x =
@@ -861,8 +828,8 @@ zeroGRUNoise = zeroMonoidLSTMNoise
 zeroGlobalControl : GlobalControl
 zeroGlobalControl = zeroMonoidLSTMControl
 
-rationalCode : FiniteRational → Int8
-rationalCode (finiteRational s n d) = int8OfNat n
+rationalCode : ℚ → Int8
+rationalCode q = int8OfNat (qNumerator q)
 
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
@@ -1243,7 +1210,7 @@ record FullLearnerState (A : Set) : Set₁ where
     optimizer : F4IntUState
     lcbCounts : LCBCountState A
     qLogControl : SignedQLogControl
-    qLogValue : FiniteRational
+    qLogValue : ℚ
 open FullLearnerState public
 
 record FullLearnerKernel (A : Set) : Set₁ where
@@ -1463,7 +1430,7 @@ canonicalOptimizerStep-qMunchausen-L2 K s = refl
 canonicalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → LCBCountState A
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
 
-canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FiniteRational
+canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → ℚ
 canonicalQLogStep K s = negativeFiniteQLog8 (canonicalPolicyWeightCode K s)
 
 canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FullLearnerState A
