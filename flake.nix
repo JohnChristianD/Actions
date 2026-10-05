@@ -34,6 +34,7 @@
           pkgs = pkgsFor system;
         in
         pkgs.haskellPackages.ghcWithPackages (p: [
+          p.rio
           p.liquidhaskell
         ]);
 
@@ -44,8 +45,6 @@
         pkgs.mkShell {
           packages = [
             (haskellLiquidGhc system)
-            pkgs.haskellPackages.liquidhaskell
-            pkgs.haskellPackages.cabal-install
             pkgs.z3
             pkgs.coreutils
             pkgs.findutils
@@ -185,6 +184,7 @@
               name = "malonzo-extract";
               runtimeInputs = [
                 (agdaWithStdlib system)
+                (haskellLiquidGhc system)
                 pkgs.coreutils
                 pkgs.findutils
               ];
@@ -275,30 +275,11 @@
         {
           liquid-haskell = liquidHaskellEnv system;
 
-          simple-haskell = pkgs.mkShell {
-            packages = [
-              (haskellLiquidGhc system)
-              pkgs.haskellPackages.cabal-install
-              pkgs.z3
-              pkgs.haskellPackages.text
-              pkgs.haskellPackages.containers
-              pkgs.haskellPackages.bytestring
-              pkgs.haskellPackages.aeson
-              pkgs.haskellPackages.time
-              pkgs.haskellPackages.mtl
-            ];
-            shellHook = ''
-              export LIQUID_SOLVER=z3
-            '';
-          };
-
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
               (haskellLiquidGhc system)
-              pkgs.haskellPackages.liquidhaskell
-              pkgs.haskellPackages.cabal-install
               pkgs.z3
               pkgs.haskellPackages.dhall-json
               pkgs.mirth

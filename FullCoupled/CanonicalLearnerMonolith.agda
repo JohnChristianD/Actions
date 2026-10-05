@@ -41,6 +41,10 @@
 
 module FullCoupled.CanonicalLearnerMonolith where
 
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- canonical-check-command = "$AGDA_COMMAND" -l standard-library -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
+
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)

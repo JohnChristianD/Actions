@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | AgdaSync | MAlonzoLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane : Lane = env:CI_LANE
 
@@ -10,25 +10,26 @@ let script = merge {
     '',
   AgdaTheorem = ''
     set -euo pipefail
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/IMP.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/OperationalSemantics.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/Security.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/Types.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/HoareLogic.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/SeparationLogic.agda
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/FormalMethods/VerificationConditions.agda
+    nix run .#mirth-agda-import-sync -- --write
+    nix run .#mirth-agda-import-sync -- --check
+    while IFS= read -r file; do
+      "$AGDA_COMMAND" -l standard-library -i . "$file"
+    done < <(git ls-files '*.agda' | sort)
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
     vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
     test -f "$vehicle_source/Vehicle.agda"
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/TheoremsMonolith.agda
     '',
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version
-    "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
+    '',
+  AgdaSync = ''
+    set -euo pipefail
+    nix run .#mirth-agda-import-sync -- --write
+    nix run .#mirth-agda-import-sync -- --check
     '',
   MAlonzoLiquid = ''
     set -euo pipefail
@@ -84,9 +85,11 @@ let script = merge {
     test -f .ci/mirth/agda_to_elm.mth
     test -f .ci/mirth/ascii_surface.mth
     test -f .ci/mirth/agda_import_sync.mth
+    test -f .ci/mirth/agda_import_sync.sh
     test -f .ci/mirth/agda_graph.mth
     test -f .ci/mirth/liquid_haskell_sync.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
+    grep -Fq 'bash .ci/mirth/agda_import_sync.sh' .ci/mirth/agda_import_sync.mth
     grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Graph.nodes' .ci/mirth/agda_to_elm.mth
 
@@ -96,7 +99,8 @@ let script = merge {
 
     mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
     cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-    "$tmp/agda-import-sync" | bash
+    "$tmp/agda-import-sync" --write | bash -s -- --write
+    "$tmp/agda-import-sync" --check | bash -s -- --check
 
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
@@ -265,9 +269,8 @@ let script = merge {
     done
     monolith_count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
-    agda_files=$(git ls-files '*.agda')
-    expected_agda_files='Category/Monad/State.agda
-FullCoupled/CanonicalLearnerMonolith.agda
+    agda_files=$(git ls-files '*.agda' | sort)
+    expected_agda_files='FullCoupled/CanonicalLearnerMonolith.agda
 FullCoupled/FormalMethods/HoareLogic.agda
 FullCoupled/FormalMethods/IMP.agda
 FullCoupled/FormalMethods/OperationalSemantics.agda
@@ -275,6 +278,7 @@ FullCoupled/FormalMethods/Security.agda
 FullCoupled/FormalMethods/SeparationLogic.agda
 FullCoupled/FormalMethods/Types.agda
 FullCoupled/FormalMethods/VerificationConditions.agda
+FullCoupled/FormalMethods/gentle-intro-to-reflection/tangled.agda
 FullCoupled/TheoremsMonolith.agda'
     [ "$agda_files" = "$expected_agda_files" ] || {
       echo "tracked Agda source surface mismatch"
@@ -650,7 +654,7 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 10 ] || { echo "expected exactly ten tracked Agda sources, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
@@ -687,8 +691,11 @@ DHALL
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
-    "$AGDA_COMMAND" -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -l standard-library -i . FullCoupled/TheoremsMonolith.agda
+    nix run .#mirth-agda-import-sync -- --write
+    nix run .#mirth-agda-import-sync -- --check
+    while IFS= read -r file; do
+      "$AGDA_COMMAND" -l standard-library -i . "$file"
+    done < <(git ls-files '*.agda' | sort)
     "$AGDA_COMMAND" --allow-exec -l standard-library -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)

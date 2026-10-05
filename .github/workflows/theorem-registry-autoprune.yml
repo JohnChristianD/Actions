@@ -32,11 +32,12 @@ jobs:
       - name: Kernel-check canonical Agda proof surfaces
         run: |
           set -euo pipefail
+          nix run .#mirth-agda-import-sync -- --write
+          nix run .#mirth-agda-import-sync -- --check
           nix develop .#default -c bash -euo pipefail -c '
-            "$AGDA_COMMAND" --safe -l standard-library -i . FullCoupled/CanonicalLearnerMonolith.agda
-            "$AGDA_COMMAND" --allow-exec -l standard-library -i . \
-              -i "$VEHICLE_AGDA_SOURCE" \
-              FullCoupled/TheoremsMonolith.agda
+            while IFS= read -r file; do
+              "$AGDA_COMMAND" -l standard-library -i . "$file"
+            done < <(git ls-files "*.agda" | sort)
           '
 
       - name: Re-check registry freshness and graph extraction
