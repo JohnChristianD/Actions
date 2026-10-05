@@ -50,7 +50,8 @@ rewrite_theorem_graph_command() {
     ' "$theorem_graph" > "$tmp"
   fi
   mv "$tmp" "$theorem_graph"
-}rewrite_one() {
+}
+rewrite_one() {
   file="$1"
   if grep -Fq -- '-- BEGIN MIRTH-SYNC CANONICAL COMMAND' "$file"; then
     awk -v block="$block" '
