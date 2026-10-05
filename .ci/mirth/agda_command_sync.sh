@@ -6,7 +6,8 @@ mode="${1:---check}"
 block=$(mktemp)
 tmp=$(mktemp)
 theorem_graph_block=$(mktemp)
-trap 'rm -f "$block" "$tmp" "$theorem_graph_block"' EXIT
+theorem_graph_plain_block=$(mktemp)
+trap 'rm -f "$block" "$tmp" "$theorem_graph_block" "$theorem_graph_plain_block"' EXIT
 sources() { git ls-files '*.agda' | LC_ALL=C sort; }
 extract_block() { sed -n '/^-- BEGIN MIRTH-SYNC CANONICAL COMMAND$/,/^-- END MIRTH-SYNC CANONICAL COMMAND$/p' "$1"; }
 extract_block "$canonical" > "$block"
