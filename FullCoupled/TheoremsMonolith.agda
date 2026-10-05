@@ -95,6 +95,10 @@ open import W.Type
 -- "$AGDA_COMMAND" -i .
 -- END MIRTH-SYNC CANONICAL COMMAND
 
+-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND
+-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda
+-- END MIRTH-SYNC THEOREM GRAPH COMMAND
+
 ------------------------------------------------------------------------
 -- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
 -- Synced by Mirth; keep this block in the theorem monolith and
