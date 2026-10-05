@@ -14,9 +14,25 @@
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
+    nixpkgs-inversion-plugin = {
+      url = "github:NixOS/nixpkgs/205fd4226592cc83fd4c0885a3e4c9c400efabb5";
+      flake = false;
+    };
+    inversion-plugin-src = {
+      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, agda-prelude, typetopology, agda2hs }:
+  outputs = {
+    self,
+    nixpkgs,
+    agda-prelude,
+    typetopology,
+    agda2hs,
+    nixpkgs-inversion-plugin,
+    inversion-plugin-src
+  }:
     let
       systems = [
         "x86_64-linux"
@@ -149,6 +165,24 @@
           inherit ghc;
         };
 
+      inversionPlugin = system:
+        let
+          pkgs = pkgsFor system;
+          inversionPkgs = import nixpkgs-inversion-plugin { inherit system; };
+        in
+        (inversionPkgs.haskell.packages.ghc924.callCabal2nix
+          "inversion-plugin"
+          inversion-plugin-src
+          {}).overrideAttrs (_: {
+            doCheck = false;
+            meta = {
+              description = "GHC plugin for automatic function inversion and functional patterns";
+              homepage = "https://github.com/cau-placc/inversion-plugin";
+              license = pkgs.lib.licenses.bsd3;
+              platforms = pkgs.lib.platforms.linux;
+            };
+          });
+
       liquidHaskellEnv = system:
         let
           pkgs = pkgsFor system;
@@ -181,6 +215,8 @@
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
+        } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+          inversion-plugin = inversionPlugin system;
         });
 
       apps = forAllSystems (system:
