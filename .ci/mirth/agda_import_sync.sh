@@ -42,7 +42,18 @@ normalized_block() {
 }
 check_one() {
   file="$1"
-  extract_block "$file" > "$block"
+  {
+    echo '-- BEGIN MIRTH-SYNC COMMON IMPORTS'
+    echo '-- Merged external import surface; internal FullCoupled imports remain module-local.'
+    extract_block "$file" |
+      sed '1d' |
+      sed '$d' |
+      sed '/^-- Merged external import surface/d' |
+      sed 's/[[:space:]]*$//' |
+      sed '/^$/d' |
+      LC_ALL=C sort -u
+    echo '-- END MIRTH-SYNC COMMON IMPORTS'
+  } > "$block"
   cmp -s "$merged" "$block"
 }
 external_drift() {
