@@ -7,9 +7,6 @@
 {-# OPTIONS --rewriting #-}
 {-# OPTIONS --no-termination-check #-}
 {-# OPTIONS --no-pattern-matching #-}
-{-# OPTIONS --interaction #-}
-{-# OPTIONS --interaction-exit-on-error #-}
-{-# OPTIONS --interaction-json #-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
