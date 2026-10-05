@@ -3763,8 +3763,8 @@ canonical-qLog2Bias8-law :
   C.int8Neg
     (C.int8OfNat
       (Data.Nat._/_
-        (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
-        (C.denominator (C.finiteQLog8 x))))
+        (C.munchausenScale8 * C.qNumerator (C.finiteQLog8 x))
+        (C.qDenominator (C.finiteQLog8 x))))
 canonical-qLog2Bias8-law x with C.int8Magnitude x
 ... | zero = refl
 ... | suc n = refl
@@ -3779,8 +3779,8 @@ record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
       C.int8Neg
         (C.int8OfNat
           (Data.Nat._/_
-            (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
-            (C.denominator (C.finiteQLog8 x))))
+            (C.munchausenScale8 * C.qNumerator (C.finiteQLog8 x))
+            (C.qDenominator (C.finiteQLog8 x))))
 
     targetDecomposition :
       ∀ K s →
@@ -3823,8 +3823,8 @@ record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
       C.int8Neg
         (C.int8OfNat
           (Data.Nat._/_
-            (C.munchausenScale8 * C.numerator (C.finiteQLog8 x))
-            (C.denominator (C.finiteQLog8 x))))
+            (C.munchausenScale8 * C.qNumerator (C.finiteQLog8 x))
+            (C.qDenominator (C.finiteQLog8 x))))
 
     l2CorrectionNegation :
       ∀ x →
@@ -4321,16 +4321,6 @@ hardSignGate-idempotent x with C.hardSign x
 ... | C.negativeSign = refl
 ... | C.zeroSign = refl
 ... | C.positiveSign = refl
-
-hardSignGate-continuous-discrete :
-  Continuous
-    C.Int8
-    C.Int8
-    (discreteTopology C.Int8)
-    (discreteTopology C.Int8)
-    C.hardSignGate
-hardSignGate-continuous-discrete =
-  continuous-under-discrete-topology C.hardSignGate
 
 iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
 iterateState step zero s = s
@@ -5068,10 +5058,10 @@ generalTsallis2Numerator xs =
   generalTsallis2Denominator xs ∸
   (actionWeightSum xs * actionWeightSum xs)
 
-generalTsallis2NearSparsity : ActionWeights → C.FiniteRational
+generalTsallis2NearSparsity : ActionWeights → C.ℚ
 generalTsallis2NearSparsity xs with actionWeightSquareSum xs
 ... | zero =
-  C.finiteRational 1 1 1
+  C.natFractionToℚ 1 1
 ... | suc q =
   C.finiteRational
     1
@@ -5085,7 +5075,7 @@ generalTsallis2NearSparsity-zero :
   ∀ (xs : ActionWeights) →
   actionWeightSquareSum xs ≡ zero →
   generalTsallis2NearSparsity xs ≡
-  C.finiteRational 1 1 1
+  C.natFractionToℚ 1 1
 generalTsallis2NearSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
@@ -5105,31 +5095,27 @@ generalTsallis2NearSparsity-definition xs h
 ... | suc q = refl
 
 fractionEquivalent :
-  C.FiniteRational →
-  C.FiniteRational →
+  C.ℚ →
+  C.ℚ →
   Set
-fractionEquivalent x y =
-  (C.numerator x * C.denominator y) ≡
-  (C.numerator y * C.denominator x)
+fractionEquivalent x y = x ≡ y
 
 tsallis2Near-oneHot :
   fractionEquivalent
     (generalTsallis2NearSparsity (suc zero ∷ zero ∷ []))
-    (C.finiteRational 1 1 2)
+    (C.natFractionToℚ 1 2)
 tsallis2Near-oneHot = refl
 
-generalSupportSparsity : ActionWeights → C.FiniteRational
+generalSupportSparsity : ActionWeights → C.ℚ
 generalSupportSparsity xs =
-  C.finiteRational
-    0
+  C.natFractionToℚ
     (length xs ∸ actionSupportCount xs)
     (length xs)
 
 generalSupportSparsity-definition :
   ∀ xs →
   generalSupportSparsity xs ≡
-    C.finiteRational
-      0
+    C.natFractionToℚ
       (length xs ∸ actionSupportCount xs)
       (length xs)
 generalSupportSparsity-definition xs = refl
@@ -5418,7 +5404,7 @@ jaxJittedScanSum-law xs = refl
 
 jaxTsallis2NearSparsityFraction :
   ActionWeights →
-  C.FiniteRational
+  C.ℚ
 jaxTsallis2NearSparsityFraction = generalTsallis2NearSparsity
 
 jaxTsallis2NearSparsityFraction-law :
@@ -5429,7 +5415,7 @@ jaxTsallis2NearSparsityFraction-law xs = refl
 
 jaxSupportSparsityFraction :
   ActionWeights →
-  C.FiniteRational
+  C.ℚ
 jaxSupportSparsityFraction = generalSupportSparsity
 
 jaxSupportSparsityFraction-law :
@@ -10168,16 +10154,6 @@ canonicalIntegerGRUTokenEncodingInjective {s} {t} eq =
       (cong canonicalTokenDecode eq)
       (decodeEncode canonical-integer-gru-token-encoding-left-inverse t))
 
-canonicalIntegerGRUTokenEncoding-continuous-discrete :
-  Continuous
-    C.CanonicalToken
-    C.Int8
-    (discreteTopology C.CanonicalToken)
-    (discreteTopology C.Int8)
-    C.canonicalTokenEncode
-canonicalIntegerGRUTokenEncoding-continuous-discrete =
-  continuous-under-discrete-topology C.canonicalTokenEncode
-
 record CanonicalIntegerGRUGlobalConjugateTheorem : Set₁ where
   constructor canonicalIntegerGRUGlobalConjugateTheorem
   field
@@ -10187,13 +10163,6 @@ record CanonicalIntegerGRUGlobalConjugateTheorem : Set₁ where
       ∀ {s t : C.CanonicalToken} →
       C.canonicalTokenEncode s ≡ C.canonicalTokenEncode t →
       s ≡ t
-    encodingContinuousDiscrete :
-      Continuous
-        C.CanonicalToken
-        C.Int8
-        (discreteTopology C.CanonicalToken)
-        (discreteTopology C.Int8)
-        C.canonicalTokenEncode
     recurrentConjugacy :
       CanonicalGlobalTokenEncodingConjugacyTheorem
 
@@ -10205,7 +10174,6 @@ canonical-integer-gru-global-conjugate-theorem =
   canonicalIntegerGRUGlobalConjugateTheorem
     canonical-integer-gru-token-encoding-left-inverse
     canonicalIntegerGRUTokenEncodingInjective
-    canonicalIntegerGRUTokenEncoding-continuous-discrete
     canonical-global-token-encoding-conjugacy
 
 
