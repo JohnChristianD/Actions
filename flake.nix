@@ -285,14 +285,7 @@
           simple-haskell = pkgs.mkShell {
             packages = [
               (haskellLiquidGhc system)
-              pkgs.haskellPackages.cabal-install
               pkgs.z3
-              pkgs.haskellPackages.text
-              pkgs.haskellPackages.containers
-              pkgs.haskellPackages.bytestring
-              pkgs.haskellPackages.aeson
-              pkgs.haskellPackages.time
-              pkgs.haskellPackages.mtl
             ];
             shellHook = ''
               export LIQUID_SOLVER=z3
@@ -305,19 +298,18 @@
               pkgs.haskellPackages.dhall
               (haskellLiquidGhc system)
               pkgs.haskellPackages.liquidhaskell
-              pkgs.haskellPackages.cabal-install
               pkgs.z3
               pkgs.haskellPackages.dhall-json
               pkgs.mirth
               pkgs.gh
-              (agdaWithStdlib system)
+              (agdaWithPrelude system)
               pkgs.stdenv.cc
               pkgs.yamlscript
               pkgs.elmPackages.elm
             ];
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
-              export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+              export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda"
               export LIQUID_SOLVER=z3
               export VEHICLE_AGDA_SOURCE="${vehicle}/vehicle-agda/src"
             '';
