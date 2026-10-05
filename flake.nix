@@ -357,6 +357,7 @@
                 mkdir -p "$out/ghc"
                 "${haskellLiquidGhc system}/bin/ghc" -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
+                printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
                   > "$out/agda2hs-liquid-manifest.tsv"
                 cat "$out/agda2hs-liquid-manifest.tsv"
