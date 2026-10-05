@@ -461,13 +461,13 @@ graphValidPlan [] _ = False
 graphValidPlan plan laws =
   graphAllUnique plan && graphValidChain plan laws
 
-factorial : Nat -> Nat
-factorial zero = suc zero
-factorial (suc n) = suc n * factorial n
+double : Nat -> Nat
+double zero = zero
+double (suc n) = suc (suc (double n))
 
 graphAStarFuel : List GraphLaw -> Nat
 graphAStarFuel laws =
-  suc (factorial (length laws))
+  suc (double (length laws))
 
 graphAStar :
   Nat ->
