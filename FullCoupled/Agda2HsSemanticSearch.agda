@@ -122,16 +122,19 @@ expandForCapability capability (law ∷ laws) node =
   let rest = expandForCapability capability laws node
   in
   if coversLaw capability law then
-    if planContains (lawName law) (plan node) then
-      rest
+    if dependenciesSatisfied (dependencies law) (plan node) then
+      if planContains (lawName law) (plan node) then
+        rest
+      else
+        searchNode
+          (lawName law ∷ plan node)
+          (addCapability capability (covered node))
+          (qScore node + qPrior law)
+        ∷ rest
     else
-      searchNode
-        (lawName law ∷ plan node)
-        (addCapability capability (covered node))
-      ∷ rest
+      rest
   else
     rest
-
 nodeCost : SearchNode → Nat
 nodeCost node =
   length (plan node)
