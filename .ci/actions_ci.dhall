@@ -33,7 +33,8 @@ let script = merge {
     test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
     echo "agda2hs-ghc=pass"
     echo "liquidhaskell-z3=pass"
-    ''  Vehicle = ''
+    '',
+  Vehicle = ''
     set -euo pipefail
     test -n "$VEHICLE_AGDA_SOURCE"
     test -f "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
