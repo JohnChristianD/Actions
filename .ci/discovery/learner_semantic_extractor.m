@@ -89,7 +89,12 @@ source_files(Files, !IO) :-
             Files)
     ;
         Result = error(_),
-        Files = ["../../FullCoupled/TheoremsMonolith.agda"]
+        io.write_string(
+            "ERROR: Agda semantic source closure manifest is missing
+",
+            !IO),
+        io.set_exit_status(1, !IO),
+        Files = []
     ).
 
 :- func syntax_heads = list(string).
