@@ -160,21 +160,26 @@
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
+          plugin =
+            pkgs.haskell.lib.doJailbreak
+              (pkgs.haskellPackages.callCabal2nix
+                "inversion-plugin"
+                inversion-plugin-src
+                {});
+          pluginWithCaballessChecks =
+            pkgs.haskell.lib.overrideCabal
+              plugin
+              (_: {
+                doCheck = false;
+              });
         in
-        pkgs.haskell.lib.overrideCabal
-          (pkgs.haskell.lib.doJailbreak
-            (pkgs.haskellPackages.callCabal2nix
-              "inversion-plugin"
-              inversion-plugin-src
-              {}))
-          (drv: {
-            doCheck = false;
-            meta = drv.meta // {
-              description = "GHC plugin for automatic function inversion and functional patterns";
-              homepage = "https://github.com/cau-placc/inversion-plugin";
-              license = pkgs.lib.licenses.bsd3;
-            };
-          });
+        pluginWithCaballessChecks.overrideAttrs (drv: {
+          meta = drv.meta // {
+            description = "GHC plugin for automatic function inversion and functional patterns";
+            homepage = "https://github.com/cau-placc/inversion-plugin";
+            license = pkgs.lib.licenses.bsd3;
+          };
+        });
 
       liquidHaskellEnv = system:
         let
