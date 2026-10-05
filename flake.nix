@@ -3,10 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    vehicle = {
-      url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
-      flake = false;
-    };
     agda-prelude = {
       url = "github:UlfNorell/agda-prelude/4230566d3ae229b6a00258587651ac7bfd38d088";
       flake = false;
@@ -20,7 +16,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, agda2hs }:
+  outputs = { self, nixpkgs, agda-prelude, typetopology, agda2hs }:
     let
       systems = [
         "x86_64-linux"
@@ -139,8 +135,6 @@
 
     in
     {
-      vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
-
       packages = forAllSystems (system:
         let
           pkgs = pkgsFor system;
@@ -491,7 +485,6 @@
               export PATH="${pkgs.mercury}/bin:$PATH"
               export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda"
               export LIQUID_SOLVER=z3
-              export VEHICLE_AGDA_SOURCE="${vehicle}/vehicle-agda/src"
             '';
           };
         });
