@@ -358,6 +358,26 @@
             program = "${script}/bin/agda-haskell-pipeline";
           };
 
+          mercury-novel-theorem-interpolation = let
+            script = pkgs.writeShellApplication {
+              name = "mercury-novel-theorem-interpolation";
+              runtimeInputs = [
+                pkgs.mercury
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                cd .ci/discovery
+                mmc --make novel_theorem_interpolator
+                ./novel_theorem_interpolator
+                test -s novel-theorem-interpolation.dhall
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mercury-novel-theorem-interpolation";
+          };
+
           prune-theorem-registries = let
             script = pkgs.writeShellApplication {
               name = "prune-theorem-registries";
