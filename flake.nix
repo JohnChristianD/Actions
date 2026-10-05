@@ -173,9 +173,12 @@
                 "0.3.2"
                 {})
               (drv: {
-                configureFlags =
-                  (drv.configureFlags or [])
-                  ++ [ "--allow-newer=base" ];
+                postPatch =
+                  (drv.postPatch or "")
+                  + ''
+                    substituteInPlace tree-monad.cabal \
+                      --replace "base >=4.13 && <4.16.3" "base >=4.13"
+                  '';
               });
           plugin =
             pkgs.haskell.lib.doJailbreak
