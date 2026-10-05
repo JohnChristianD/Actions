@@ -583,6 +583,81 @@ autonomousGraphSearchReport edges =
   ++ show (autonomousGraphSearchCount edges)
   ++ " dependency chains"
 
+stripDotPrefix : String -> String
+stripDotPrefix ('"' ∷ rest) = stripDotPrefix rest
+stripDotPrefix text = text
+
+stripDotSuffix : String -> String
+stripDotSuffix text =
+  case reverse text of λ where
+    (';' ∷ rest) -> stripDotSuffix (reverse rest)
+    ('"' ∷ rest) -> stripDotSuffix (reverse rest)
+    (']' ∷ rest) -> stripDotSuffix (reverse rest)
+    _ -> text
+
+stripDotToken : String -> String
+stripDotToken text =
+  stripDotSuffix (stripDotPrefix text)
+
+parseDotLine : String -> List (String × String)
+parseDotLine line =
+  case words line of λ where
+    (source ∷ "->" ∷ target ∷ rest) ->
+      (stripDotToken source , stripDotToken target) ∷ []
+    _ -> []
+
+parseDotEdges : String -> List (String × String)
+parseDotEdges source =
+  concatMap parseDotLine (lines source)
+
+canonicalGraphRoot : String
+canonicalGraphRoot = "FullCoupled.TheoremsMonolith"
+
+autonomousGraphSearchFromRoot :
+  String ->
+  List (String × String) ->
+  List (List String)
+autonomousGraphSearchFromRoot root edges =
+  let laws = ensureGraphLaw root (graphLawsFromEdges edges)
+  in
+  graphSortPlans
+    (graphSearchDepth
+      (length laws)
+      laws
+      (graphNode (root ∷ [])))
+
+autonomousCanonicalGraphSearch :
+  String ->
+  List (List String)
+autonomousCanonicalGraphSearch source =
+  autonomousGraphSearchFromRoot canonicalGraphRoot (parseDotEdges source)
+
+autonomousCanonicalGraphSearchCount :
+  String ->
+  Nat
+autonomousCanonicalGraphSearchCount source =
+  length (autonomousCanonicalGraphSearch source)
+
+autonomousCanonicalGraphReport : String -> String
+autonomousCanonicalGraphReport source =
+  let edges = parseDotEdges source
+      plans = autonomousCanonicalGraphSearch source
+  in
+  "theorem-graph-edges="
+    ++ show (length edges)
+    ++ " autonomous-a-star-chains="
+    ++ show (length plans)
+
+main : IO ⊤
+main = do
+  source <- readFile "build/agda2hs-semantic-search/theorems-monolith.dot"
+  putStrLn semanticSearchReport
+  putStrLn (autonomousCanonicalGraphReport source)
+  putStrLn ("autonomous-regression=" ++ show autonomousGraphSearchRegression)
+  putStrLn ("canonical-plan=" ++ show canonicalPlan)
+
+{-# COMPILE AGDA2HS main #-}
+
 {-# COMPILE AGDA2HS Capability #-}
 {-# COMPILE AGDA2HS SemanticLaw #-}
 {-# COMPILE AGDA2HS GraphLaw #-}
@@ -602,3 +677,9 @@ autonomousGraphSearchReport edges =
 {-# COMPILE AGDA2HS pathAppend #-}
 {-# COMPILE AGDA2HS splitTarget #-}
 {-# COMPILE AGDA2HS semanticSearchReport #-}
+{-# COMPILE AGDA2HS canonicalGraphRoot #-}
+{-# COMPILE AGDA2HS parseDotEdges #-}
+{-# COMPILE AGDA2HS autonomousGraphSearchFromRoot #-}
+{-# COMPILE AGDA2HS autonomousCanonicalGraphSearch #-}
+{-# COMPILE AGDA2HS autonomousCanonicalGraphSearchCount #-}
+{-# COMPILE AGDA2HS autonomousCanonicalGraphReport #-}
