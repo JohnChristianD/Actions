@@ -496,31 +496,32 @@ graphConcatMap _ [] = []
 graphConcatMap f (x ∷ xs) =
   graphAppend (f x) (graphConcatMap f xs)
 
-graphSearchChildren :
-  Nat ->
-  List GraphLaw ->
-  List GraphNode ->
-  List (List String)
-graphSearchChildren depth laws [] = []
-graphSearchChildren depth laws (node ∷ nodes) =
-  graphAppend
-    (graphSearchDepth depth laws node)
-    (graphSearchChildren depth laws nodes)
+mutual
+  graphSearchChildren :
+    Nat ->
+    List GraphLaw ->
+    List GraphNode ->
+    List (List String)
+  graphSearchChildren depth laws [] = []
+  graphSearchChildren depth laws (node ∷ nodes) =
+    graphAppend
+      (graphSearchDepth depth laws node)
+      (graphSearchChildren depth laws nodes)
 
-graphSearchDepth :
-  Nat ->
-  List GraphLaw ->
-  GraphNode ->
-  List (List String)
-graphSearchDepth zero _ _ = []
-graphSearchDepth (suc depth) laws node =
-  if graphMaximalDependencyChain (graphNodePlan node) laws then
-    (graphNodePlan node) ∷ []
-  else
-    graphSearchChildren
-      depth
-      laws
-      (graphExpandNode node laws)
+  graphSearchDepth :
+    Nat ->
+    List GraphLaw ->
+    GraphNode ->
+    List (List String)
+  graphSearchDepth zero _ _ = []
+  graphSearchDepth (suc depth) laws node =
+    if graphMaximalDependencyChain (graphNodePlan node) laws then
+      (graphNodePlan node) ∷ []
+    else
+      graphSearchChildren
+        depth
+        laws
+        (graphExpandNode node laws)
 
 graphSearchSeeds :
   Nat ->
