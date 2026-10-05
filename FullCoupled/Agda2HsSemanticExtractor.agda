@@ -616,18 +616,18 @@ findDependencies :
   List String
 findDependencies _ _ _ [] accumulator =
   reverse accumulator
-findDependencies sourceFile name text allDeclarations accumulator =
+findDependencies originSource name text allDeclarations accumulator =
   case allDeclarations of λ where
     [] -> reverse accumulator
     (candidate ∷ rest) ->
-      let targetSource = sourceFile candidate
+      let targetSource = SemanticDecl.sourceFile candidate
           targetName = declName candidate
           targetId = targetSource ++ "#" ++ targetName
           alreadySeen = planContains targetId accumulator
           found =
             if targetName == name || alreadySeen then
               False
-            else if targetSource == sourceFile then
+            else if targetSource == originSource then
               containsIdentifier text targetName
             else
               containsIdentifier text ("." ++ targetName)
@@ -638,7 +638,7 @@ findDependencies sourceFile name text allDeclarations accumulator =
               accumulator
       in
       findDependencies
-        sourceFile
+        originSource
         name
         text
         rest
