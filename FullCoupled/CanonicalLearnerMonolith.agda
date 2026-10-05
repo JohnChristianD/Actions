@@ -296,18 +296,18 @@ instance
   OrdInt8 : Ord Int8
   OrdInt8 = OrdBy int8-code-injective
 
-scoreEntryCompare : ScoreEntry → ScoreEntry → Comparison _<_ 
-  where
-  _<_ : ScoreEntry → ScoreEntry → Set
-  _<_ (s₁ , a₁) (s₂ , a₂) = s₁ > s₂ ⊎ (s₁ ≡ s₂ × a₁ > a₂)
+ScoreEntryLess : ScoreEntry → ScoreEntry → Set
+ScoreEntryLess (s₁ , a₁) (s₂ , a₂) =
+  Either (s₁ > s₂) (s₁ ≡ s₂ × a₁ > a₂)
 
-  scoreEntryCompare (s₁ , a₁) (s₂ , a₂) with compare s₁ s₂
-  ... | less p = greater p
-  ... | greater p = less p
-  ... | equal refl with compare a₁ a₂
-  ... | less p = greater p
-  ... | greater p = less p
-  ... | equal refl = equal refl
+scoreEntryCompare : ∀ x y → Comparison ScoreEntryLess x y
+scoreEntryCompare (s₁ , a₁) (s₂ , a₂) with compare s₁ s₂
+... | less p = greater p
+... | greater p = less p
+... | equal refl with compare a₁ a₂
+... | less p = greater p
+... | greater p = less p
+... | equal refl = equal refl
 
 instance
   OrdScoreEntry : Ord ScoreEntry
