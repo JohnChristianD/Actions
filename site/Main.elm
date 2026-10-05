@@ -4,45 +4,28 @@ import Browser
 import Char
 import GeneratedAgdaGraph as Graph
 import GeneratedTheoremSurface as Surface
-import Html exposing (Html, a, button, code, div, h1, h2, input, li, main_, node, option, p, section, select, span, text, ul)
+import Html exposing (Html, button, div, h1, h2, header, input, li, main_, nav, p, section, span, text, ul)
+import Html
 import Html.Attributes as HA
 import Html.Events as HE
+import List
 import String
 import Svg as S
 import Svg.Attributes as SA
-import Svg.Events as SE
 
 
-type alias DisplayColor =
+type alias Rgb =
     { r : Float
     , g : Float
     , b : Float
     }
 
 
-type alias PerceptualColor =
-    { display : DisplayColor
-    , id : Int
-    , opponentL : Float
-    , opponentA : Float
-    , opponentB : Float
-    }
-
-
-type alias EncodedColor =
-    { srgb : DisplayColor
-    , p3 : DisplayColor
-    , rec2020 : DisplayColor
-    }
-
-
-type alias PaletteChoice =
-    { background : PerceptualColor
-    , surface : PerceptualColor
-    , ink : PerceptualColor
-    , mutedInk : PerceptualColor
-    , accent : PerceptualColor
-    , accentInk : PerceptualColor
+type alias Perceptual =
+    { rgb : Rgb
+    , l : Float
+    , a : Float
+    , b : Float
     }
 
 
@@ -67,41 +50,12 @@ type Msg
     | SelectNode String
 
 
-paletteSeed : Int
-paletteSeed =
-    List.length Graph.nodes * 31 + List.length Graph.edges * 17
-
-
 clamp01 : Float -> Float
 clamp01 value =
     max 0 (min 1 value)
 
 
-dynamicDisplayCandidate : Int -> DisplayColor
-dynamicDisplayCandidate index =
-    let
-        tau = 6.283185307179586
-        hues = 8
-        hueIndex = modBy hues index
-        toneIndex = modBy 3 index
-        phase = tau * toFloat hueIndex / toFloat hues
-        tone =
-            case toneIndex of
-                0 -> 0.18
-                1 -> 0.5
-                _ -> 0.82
-        amplitude =
-            case toneIndex of
-                1 -> 0.32
-                _ -> 0.18
-    in
-    { r = clamp01 (tone + amplitude * cos phase)
-    , g = clamp01 (tone + amplitude * cos (phase - 2.0943951023931953))
-    , b = clamp01 (tone + amplitude * cos (phase + 2.0943951023931953))
-    }
-
-
-cat02Lms : DisplayColor -> ( Float, Float, Float )
+cat02Lms : Rgb -> ( Float, Float, Float )
 cat02Lms color =
     ( 0.7328 * color.r + 0.4296 * color.g - 0.1624 * color.b
     , -0.7036 * color.r + 1.6975 * color.g + 0.0061 * color.b
@@ -109,768 +63,289 @@ cat02Lms color =
     )
 
 
-scaledCat02Lms : DisplayColor -> ( Float, Float, Float )
-scaledCat02Lms color =
+cat02LmsToOpponent : Rgb -> Perceptual
+cat02LmsToOpponent rgb =
     let
         ( l, m, s ) =
-            cat02Lms color
+            cat02Lms rgb
     in
-    ( 0.608191 * l
-    , 0.557623 * m
-    , 0.531035 * s
-    )
-
-
-newtonRootStep : Float -> Float -> Float
-newtonRootStep magnitude current =
-    let
-        a =
-            0.01
-
-        b =
-            0.01
-
-        y2 =
-            current * current
-
-        y3 =
-            y2 * current
-
-        y4 =
-            y2 * y2
-
-        polynomial =
-            y4 * current + a * y3 + b * current - magnitude
-
-        derivative =
-            5 * y4 + 3 * a * y2 + b
-    in
-    current - polynomial / derivative
-
-
-newtonRoot : Float -> Float
-newtonRoot value =
-    let
-        magnitude =
-            abs value
-
-        initial =
-            if magnitude == 0 then
-                0
-
-            else
-                e ^ (0.2 * logBase e magnitude)
-
-        step current remaining =
-            if remaining == 0 then
-                current
-
-            else
-                step
-                    (newtonRootStep magnitude current)
-                    (remaining - 1)
-    in
-    if magnitude == 0 then
-        0
-
-    else
-        step initial 4
-
-
-customPerceptualChannel : Float -> Float
-customPerceptualChannel value =
-    let
-        magnitude =
-            newtonRoot value
-    in
-    if value < 0 then
-        -magnitude
-
-    else
-        magnitude
-
-
-customPerceptualColor : Int -> DisplayColor -> PerceptualColor
-customPerceptualColor id display =
-    let
-        ( l0, m0, s0 ) =
-            scaledCat02Lms display
-
-        l =
-            customPerceptualChannel l0
-
-        m =
-            customPerceptualChannel m0
-
-        s =
-            customPerceptualChannel s0
-    in
-    { display = display
-    , id = id
-    , opponentL = 0.577350 * l + 0.577350 * m + 0.577350 * s
-    , opponentA = 0.707107 * l - 0.707107 * m
-    , opponentB = 0.408248 * l + 0.408248 * m - 0.816497 * s
+    { rgb = rgb
+    , l = (l + m + s) / 1.7320508075688772
+    , a = (l - m) / 1.4142135623730951
+    , b = (l + m - 2 * s) / 2.449489742783178
     }
 
 
-perceptualDistanceSquared : PerceptualColor -> PerceptualColor -> Float
-perceptualDistanceSquared left right =
+distanceSquared : Perceptual -> Perceptual -> Float
+distanceSquared left right =
     let
         dl =
-            left.opponentL - right.opponentL
+            left.l - right.l
 
         da =
-            left.opponentA - right.opponentA
+            left.a - right.a
 
         db =
-            left.opponentB - right.opponentB
+            left.b - right.b
     in
     dl * dl + da * da + db * db
 
 
-permutationsOfLength : Int -> List PerceptualColor -> List (List PerceptualColor)
-permutationsOfLength count candidates =
-    if count <= 0 then
-        [ [] ]
+candidateRgb : Int -> Rgb
+candidateRgb index =
+    let
+        tau =
+            6.283185307179586
 
-    else
-        List.concatMap
-            (\candidate ->
-                List.map
-                    (\tail -> candidate :: tail)
-                    (permutationsOfLength
-                        (count - 1)
-                        (List.filter (\other -> other.id /= candidate.id) candidates))
-            )
-            candidates
+        hue =
+            tau * toFloat (modBy 18 index) / 18
+
+        light =
+            0.28 + 0.045 * toFloat (modBy 5 index)
+
+        chroma =
+            0.34
+    in
+    { r = clamp01 (light + chroma * cos hue)
+    , g = clamp01 (light + chroma * cos (hue - 2.0943951023931953))
+    , b = clamp01 (light + chroma * cos (hue + 2.0943951023931953))
+    }
 
 
-minimumPairDistance : List PerceptualColor -> Float
-minimumPairDistance colors =
-    case colors of
+candidateColors : List Perceptual
+candidateColors =
+    List.map (candidateRgb >> cat02LmsToOpponent) (List.range 0 35)
+
+
+farthestFrom : List Perceptual -> Perceptual -> Perceptual
+farthestFrom chosen candidate =
+    case chosen of
         [] ->
-            0
-
-        first :: rest ->
-            case rest of
-                [] ->
-                    0
-
-                _ ->
-                    min
-                        (List.foldl
-                            (\other best ->
-                                min best (perceptualDistanceSquared first other)
-                            )
-                            (perceptualDistanceSquared first (List.head rest |> Maybe.withDefault first))
-                            rest
-                        )
-                        (minimumPairDistance rest)
-
-
-paletteChoiceFromList : List PerceptualColor -> Maybe PaletteChoice
-paletteChoiceFromList colors =
-    case colors of
-        background :: surface :: ink :: mutedInk :: accent :: accentInk :: [] ->
-            Just
-                { background = background
-                , surface = surface
-                , ink = ink
-                , mutedInk = mutedInk
-                , accent = accent
-                , accentInk = accentInk
-                }
+            candidate
 
         _ ->
-            Nothing
+            List.foldl
+                (\item best ->
+                    if minimumDistance chosen item > minimumDistance chosen best then
+                        item
+                    else
+                        best
+                )
+                candidate
+                candidateColors
 
 
-combinationsOfLength : Int -> List a -> List (List a)
-combinationsOfLength count values =
-    if count <= 0 then
-        [ [] ]
-    else
-        case values of
-            [] ->
-                []
-            first :: rest ->
-                List.map
-                    ((::) first)
-                    (combinationsOfLength (count - 1) rest)
-                    ++ combinationsOfLength count rest
-
-
-relativeLuminanceComponent : Float -> Float
-relativeLuminanceComponent value =
-    if value <= 0.04045 then
-        value / 12.92
-    else
-        ((value + 0.055) / 1.055) ^ 2.4
-
-
-relativeLuminance : DisplayColor -> Float
-relativeLuminance color =
-    0.2126 * relativeLuminanceComponent color.r
-        + 0.7152 * relativeLuminanceComponent color.g
-        + 0.0722 * relativeLuminanceComponent color.b
-
-
-contrastRatio : DisplayColor -> DisplayColor -> Float
-contrastRatio left right =
-    let
-        leftL = relativeLuminance left
-        rightL = relativeLuminance right
-        lighter = max leftL rightL
-        darker = min leftL rightL
-    in
-    (lighter + 0.05) / (darker + 0.05)
-
-
-paletteAccessibilityScore : PaletteChoice -> Float
-paletteAccessibilityScore choice =
-    min
-        (contrastRatio choice.background.display choice.ink.display)
-        (min
-            (contrastRatio choice.accent.display choice.accentInk.display)
-            (min
-                (contrastRatio choice.background.display choice.surface.display)
-                (contrastRatio choice.surface.display choice.ink.display)
-            )
-        )
-
-
-paletteRoleDistance : PaletteChoice -> Float
-paletteRoleDistance choice =
-    min
-        (perceptualDistanceSquared choice.background choice.ink)
-        (min
-            (perceptualDistanceSquared choice.accent choice.accentInk)
-            (min
-                (perceptualDistanceSquared choice.background choice.surface)
-                (perceptualDistanceSquared choice.surface choice.ink)
-            )
-        )
-
-
-paletteGlobalScore : PaletteChoice -> ( Float, Float, Float )
-paletteGlobalScore choice =
-    ( minimumPairDistance
-        [ choice.background
-        , choice.surface
-        , choice.ink
-        , choice.mutedInk
-        , choice.accent
-        , choice.accentInk
-        ]
-    , paletteAccessibilityScore choice
-    , paletteRoleDistance choice
-    )
-
-
-maximumBy : (a -> comparable) -> List a -> Maybe a
-maximumBy score values =
-    case values of
+minimumDistance : List Perceptual -> Perceptual -> Float
+minimumDistance chosen candidate =
+    case chosen of
         [] ->
-            Nothing
+            1 / 0
+
         first :: rest ->
-            Just
-                (List.foldl
-                    (\candidate current ->
-                        if score candidate > score current then
-                            candidate
+            List.foldl
+                (\item best -> min best (distanceSquared item candidate))
+                (distanceSquared first candidate)
+                rest
+
+
+maximinStep : Int -> List Perceptual -> List Perceptual -> List Perceptual
+maximinStep remaining candidates chosen =
+    if remaining <= 0 then
+        chosen
+
+    else
+        case candidates of
+            [] ->
+                chosen
+
+            first :: _ ->
+                let
+                    next =
+                        if List.isEmpty chosen then
+                            first
                         else
-                            current
-                    )
-                    first
-                    rest
-                )
+                            farthestFrom chosen first
+                in
+                maximinStep
+                    (remaining - 1)
+                    (List.filter (\item -> distanceSquared item next > 0) candidates)
+                    (chosen ++ [ next ])
 
 
-candidatePerceptualColor : Int -> PerceptualColor
-candidatePerceptualColor index =
-    customPerceptualColor index (dynamicDisplayCandidate index)
-
-
-candidateColors : List PerceptualColor
-candidateColors =
-    List.map candidatePerceptualColor (List.range 0 23)
-
-
-fallbackPerceptualColor : PerceptualColor
-fallbackPerceptualColor =
-    customPerceptualColor 0 (dynamicDisplayCandidate 0)
-
-
-maximinColorSet : List PerceptualColor -> List PerceptualColor
-maximinColorSet candidates =
-    combinationsOfLength 6 candidates
-        |> maximumBy minimumPairDistance
-        |> Maybe.withDefault (List.take 6 candidates)
-
-
-maximinPalette : List PerceptualColor
+maximinPalette : List Perceptual
 maximinPalette =
-    maximinColorSet candidateColors
+    maximinStep 6 candidateColors []
 
 
-bestCandidate : (PerceptualColor -> Float) -> List Int -> List PerceptualColor -> Maybe PerceptualColor
-bestCandidate score excluded candidates =
-    candidates
-        |> List.filter (\candidate -> not (List.member candidate.id excluded))
-        |> maximumBy score
+rgbCss : Rgb -> String
+rgbCss color =
+    "rgb("
+        ++ String.fromInt (round (255 * clamp01 color.r))
+        ++ " "
+        ++ String.fromInt (round (255 * clamp01 color.g))
+        ++ " "
+        ++ String.fromInt (round (255 * clamp01 color.b))
+        ++ ")"
 
 
-bestContrastCandidate :
-    (PerceptualColor -> Float)
-    -> Float
-    -> DisplayColor
-    -> List Int
-    -> List PerceptualColor
-    -> Maybe PerceptualColor
-bestContrastCandidate score threshold other excluded candidates =
-    candidates
-        |> List.filter
-            (\candidate ->
-                not (List.member candidate.id excluded)
-                    && contrastRatio candidate.display other >= threshold
-            )
-        |> maximumBy score
+perceptualCss : Perceptual -> String
+perceptualCss color =
+    rgbCss color.rgb
 
 
-globalPaletteChoice : PaletteChoice
-globalPaletteChoice =
-    let
-        contrastThreshold =
-            4.5
-
-        background =
-            bestCandidate
-                (\candidate -> relativeLuminance candidate.display)
-                []
-                candidateColors
-                |> Maybe.withDefault fallbackPerceptualColor
-
-        surface =
-            bestCandidate
-                (\candidate -> relativeLuminance candidate.display)
-                [ background.id ]
-                candidateColors
-                |> Maybe.withDefault background
-
-        ink =
-            bestCandidate
-                (\candidate -> 0 - relativeLuminance candidate.display)
-                [ background.id, surface.id ]
-                candidateColors
-                |> Maybe.withDefault fallbackPerceptualColor
-
-        mutedInk =
-            bestCandidate
-                (\candidate ->
-                    min
-                        (contrastRatio background.display candidate.display)
-                        (contrastRatio surface.display candidate.display)
-                )
-                [ background.id, surface.id, ink.id ]
-                candidateColors
-                |> Maybe.withDefault ink
-
-        accent =
-            bestContrastCandidate
-                (\candidate -> perceptualDistanceSquared background candidate)
-                contrastThreshold
-                background.display
-                [ background.id, surface.id, ink.id, mutedInk.id ]
-                candidateColors
-                |> Maybe.withDefault mutedInk
-
-        accentInk =
-            bestContrastCandidate
-                (\candidate -> perceptualDistanceSquared accent candidate)
-                contrastThreshold
-                accent.display
-                [ background.id, surface.id, ink.id, mutedInk.id, accent.id ]
-                candidateColors
-                |> Maybe.withDefault ink
-    in
-    { background = background
-    , surface = surface
-    , ink = ink
-    , mutedInk = mutedInk
-    , accent = accent
-    , accentInk = accentInk
-    }
-
-
-srgbToLinear : Float -> Float
-srgbToLinear value =
-    let
-        sign =
-            if value < 0 then
-                -1
-
-            else
-                1
-
-        magnitude =
-            abs value
-    in
-    if magnitude <= 0.04045 then
-        value / 12.92
-
-    else
-        sign * ((magnitude + 0.055) / 1.055) ^ 2.4
-
-
-linearToSrgb : Float -> Float
-linearToSrgb value =
-    let
-        sign =
-            if value < 0 then
-                -1
-
-            else
-                1
-
-        magnitude =
-            abs value
-    in
-    if magnitude <= 0.0031308 then
-        12.92 * value
-
-    else
-        sign * (1.055 * magnitude ^ (1 / 2.4) - 0.055)
-
-
-linearToRec2020 : Float -> Float
-linearToRec2020 value =
-    if value == 0 then
-        0
-
-    else
-        (if value < 0 then -1 else 1) * abs value ^ (1 / 2.4)
-
-
-xyzFromSrgb : DisplayColor -> ( Float, Float, Float )
-xyzFromSrgb color =
-    let
-        r =
-            srgbToLinear color.r
-
-        g =
-            srgbToLinear color.g
-
-        b =
-            srgbToLinear color.b
-    in
-    ( 0.41239079926595934 * r + 0.357584339383878 * g + 0.1804807884018343 * b
-    , 0.21263900587151027 * r + 0.715168678767756 * g + 0.07219231536073371 * b
-    , 0.01933081871559182 * r + 0.11919477979462598 * g + 0.9505321522496607 * b
-    )
-
-
-xyzToP3 : ( Float, Float, Float ) -> DisplayColor
-xyzToP3 xyz =
-    let
-        ( x, y, z ) =
-            xyz
-    in
-    { r = linearToSrgb (1.716651187971268 * x - 0.355670783776392 * y - 0.25336628137365974 * z)
-    , g = linearToSrgb (-0.666684351832489 * x + 1.6164812366349395 * y + 0.01576854581391113 * z)
-    , b = linearToSrgb (0.017639857445310783 * x - 0.042770613257808524 * y + 0.9421031212354738 * z)
-    }
-
-
-xyzToRec2020 : ( Float, Float, Float ) -> DisplayColor
-xyzToRec2020 xyz =
-    let
-        ( x, y, z ) =
-            xyz
-
-        r =
-            1.660491002108434 * x - 0.5876411788327624 * y - 0.07284931861019282 * z
-
-        g =
-            -0.12455047452145676 * x + 1.1328998971259597 * y - 0.00834915146271733 * z
-
-        b =
-            -0.018150763487746622 * x - 0.100578898008244 * y + 1.118312588204183 * z
-    in
-    { r = linearToRec2020 r
-    , g = linearToRec2020 g
-    , b = linearToRec2020 b
-    }
-
-
-encodeFinal : DisplayColor -> EncodedColor
-encodeFinal source =
-    { srgb =
-        { r = clamp01 source.r
-        , g = clamp01 source.g
-        , b = clamp01 source.b
-        }
-    , p3 =
-        let
-            ( x, y, z ) =
-                xyzFromSrgb source
-
-            converted =
-                xyzToP3 ( x, y, z )
-        in
-        { r = clamp01 converted.r
-        , g = clamp01 converted.g
-        , b = clamp01 converted.b
-        }
-    , rec2020 =
-        let
-            ( x, y, z ) =
-                xyzFromSrgb source
-
-            converted =
-                xyzToRec2020 ( x, y, z )
-        in
-        { r = clamp01 converted.r
-        , g = clamp01 converted.g
-        , b = clamp01 converted.b
-        }
-    }
-
-
-
-maximinColorAt : Int -> PerceptualColor
-maximinColorAt index =
+paletteAt : Int -> Perceptual
+paletteAt index =
     maximinPalette
         |> List.drop (modBy (List.length maximinPalette) index)
         |> List.head
-        |> Maybe.withDefault fallbackPerceptualColor
+        |> Maybe.withDefault (cat02LmsToOpponent (candidateRgb 0))
 
 
-bestNodeTextDisplayColor : DisplayColor -> DisplayColor
-bestNodeTextDisplayColor nodeColor =
-    [ globalPaletteChoice.ink.display
-    , globalPaletteChoice.background.display
-    , globalPaletteChoice.accentInk.display
-    , globalPaletteChoice.surface.display
-    ]
-        |> maximumBy (\candidate -> contrastRatio nodeColor candidate)
-        |> Maybe.withDefault globalPaletteChoice.ink.display
+ink : Perceptual
+ink =
+    paletteAt 0
 
 
-paletteSwatch : Int -> PerceptualColor -> Html msg
-paletteSwatch index color =
-    let
-        encoded =
-            encodeFinal color.display
+paper : Perceptual
+paper =
+    paletteAt 1
 
-        textColor =
-            bestNodeTextDisplayColor color.display
-    in
-    div
-        [ HA.attribute
-            "style"
-            (cssFallbacks "background-color" encoded
-                ++ cssFallbacks "color" (encodeFinal textColor)
-                ++ "display:inline-block;min-width:7rem;margin:.25rem;padding:.5rem;border:1px solid;"
+
+accent : Perceptual
+accent =
+    paletteAt 2
+
+
+accentTwo : Perceptual
+accentTwo =
+    paletteAt 3
+
+
+quiet : Perceptual
+quiet =
+    paletteAt 4
+
+
+inkOnAccent : Perceptual
+inkOnAccent =
+    paletteAt 5
+
+
+styleSheet : Html msg
+styleSheet =
+    Html.node "style" []
+        [ text
+            (String.join ""
+                [ "@font-face{font-family:'Julia Mono';src:url('https://cdn.jsdelivr.net/gh/cormullion/juliamono@0.63.2/webfonts/JuliaMono-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}"
+                , "@font-face{font-family:'Julia Mono';src:url('https://cdn.jsdelivr.net/gh/cormullion/juliamono@0.63.2/webfonts/JuliaMono-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}"
+                , "@font-face{font-family:'Writer';src:url('https://raw.githubusercontent.com/tonsky/font-writer/master/ttf/Writer-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap;}"
+                , ":root{font-family:'Writer','Julia Mono','Noto Emoji';background:"
+                , perceptualCss paper
+                , ";color:"
+                , perceptualCss ink
+                , ";}"
+                , "*{box-sizing:border-box;}"
+                , "body{margin:0;background:"
+                , perceptualCss paper
+                , ";color:"
+                , perceptualCss ink
+                , ";font-family:'Writer','Julia Mono','Noto Emoji';}"
+                , "button,input{font:inherit;}"
+                , "button,input,select{border:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 42%,transparent);background:transparent;color:inherit;}"
+                , "button:focus-visible,input:focus-visible{outline:2px solid "
+                , perceptualCss accent
+                , ";outline-offset:3px;}"
+                , ".shell{min-height:100vh;display:grid;grid-template-columns:minmax(15rem,21rem) 1fr;}"
+                , ".rail{position:sticky;top:0;height:100vh;overflow:auto;padding:1.25rem;border-right:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 18%,transparent);}"
+                , ".brand{font-family:'Julia Mono';font-weight:700;letter-spacing:-.04em;font-size:1.05rem;margin-bottom:1.5rem;}"
+                , ".eyebrow{font-family:'Julia Mono';font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:"
+                , perceptualCss quiet
+                , ";}"
+                , ".module-list{list-style:none;padding:0;margin:1rem 0;display:grid;gap:.25rem;}"
+                , ".module-list button{width:100%;text-align:left;padding:.55rem .65rem;border-radius:.2rem;cursor:pointer;}"
+                , ".module-list button:hover,.module-list button[data-selected='true']{background:"
+                , perceptualCss accent
+                , ";color:"
+                , perceptualCss inkOnAccent
+                , ";}"
+                , ".main{min-width:0;padding:clamp(1.25rem,3vw,3.5rem);}"
+                , ".mast{display:grid;grid-template-columns:minmax(0,1fr) minmax(15rem,24rem);gap:2rem;align-items:end;border-bottom:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 22%,transparent);padding-bottom:2rem;margin-bottom:2rem;}"
+                , "h1{font-family:'Julia Mono';font-size:clamp(2rem,6vw,5.2rem);line-height:.92;letter-spacing:-.08em;margin:.35rem 0 1rem;max-width:12ch;}"
+                , "h2{font-family:'Julia Mono';font-size:1rem;letter-spacing:-.03em;margin:0 0 1rem;}"
+                , ".lede{font-size:1.08rem;line-height:1.55;max-width:60ch;}"
+                , ".stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;}"
+                , ".stat{padding:.8rem;border-top:2px solid "
+                , perceptualCss accent
+                , ";background:color-mix(in srgb,"
+                , perceptualCss accent
+                , " 8%,transparent);}"
+                , ".stat strong{display:block;font-family:'Julia Mono';font-size:1.4rem;}"
+                , ".tools{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1.5rem;}"
+                , ".tools input,.tools button{padding:.65rem .75rem;border-radius:.2rem;}"
+                , ".tools input{min-width:min(30rem,100%);flex:1;}"
+                , ".section{margin:2.5rem 0;}"
+                , ".records{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:.7rem;}"
+                , ".record{border:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 18%,transparent);padding:1rem;background:color-mix(in srgb,"
+                , perceptualCss accent
+                , " 4%,transparent);}"
+                , ".record:hover{border-color:"
+                , perceptualCss accent
+                , ";}"
+                , ".record .kind{font-family:'Julia Mono';font-size:.67rem;letter-spacing:.14em;text-transform:uppercase;color:"
+                , perceptualCss quiet
+                , ";}"
+                , ".record h3{font-family:'Julia Mono';font-size:.95rem;overflow-wrap:anywhere;margin:.45rem 0;}"
+                , ".record p{margin:.35rem 0;line-height:1.45;}"
+                , ".source{font-family:'Julia Mono';font-size:.73rem;color:"
+                , perceptualCss quiet
+                , ";overflow-wrap:anywhere;}"
+                , ".map{border:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 18%,transparent);background:color-mix(in srgb,"
+                , perceptualCss accent
+                , " 3%,transparent);padding:1rem;overflow:auto;}"
+                , ".map svg{display:block;width:100%;min-width:38rem;height:22rem;}"
+                , ".relation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.5rem;align-items:center;padding:.65rem 0;border-bottom:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 12%,transparent);font-family:'Julia Mono';font-size:.75rem;}"
+                , ".arrow{color:"
+                , perceptualCss accentTwo
+                , ";}"
+                , ".palette{display:flex;gap:.35rem;flex-wrap:wrap;}"
+                , ".swatch{width:4rem;height:2rem;border:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 20%,transparent);}"
+                , ".footer{font-family:'Julia Mono';font-size:.68rem;color:"
+                , perceptualCss quiet
+                , ";margin-top:4rem;}"
+                , "@media(max-width:800px){.shell{display:block}.rail{position:relative;height:auto;border-right:0;border-bottom:1px solid color-mix(in srgb,"
+                , perceptualCss ink
+                , " 18%,transparent);}.module-list{grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));}.mast{grid-template-columns:1fr}.main{padding:1rem}.map svg{min-width:30rem}}"
+                ]
             )
         ]
-        [ text ("maximin-" ++ String.fromInt (index + 1)) ]
 
 
-backgroundColor : EncodedColor
-backgroundColor =
-    encodeFinal globalPaletteChoice.background.display
-
-
-surfaceColor : EncodedColor
-surfaceColor =
-    encodeFinal globalPaletteChoice.surface.display
-
-
-inkColor : EncodedColor
-inkColor =
-    encodeFinal globalPaletteChoice.ink.display
-
-
-mutedInkColor : EncodedColor
-mutedInkColor =
-    encodeFinal globalPaletteChoice.mutedInk.display
-
-
-accentColor : EncodedColor
-accentColor =
-    encodeFinal globalPaletteChoice.accent.display
-
-
-accentInkColor : EncodedColor
-accentInkColor =
-    encodeFinal globalPaletteChoice.accentInk.display
-
-
-cssNumber : Float -> String
-cssNumber value =
-    String.fromFloat (clamp01 value)
-
-
-cssColor : String -> DisplayColor -> String
-cssColor space color =
-    "color("
-        ++ space
-        ++ " "
-        ++ cssNumber color.r
-        ++ " "
-        ++ cssNumber color.g
-        ++ " "
-        ++ cssNumber color.b
-        ++ ")"
-
-
-cssRgb : DisplayColor -> String
-cssRgb color =
-    "rgb("
-        ++ String.fromInt (round (clamp01 color.r * 255))
-        ++ " "
-        ++ String.fromInt (round (clamp01 color.g * 255))
-        ++ " "
-        ++ String.fromInt (round (clamp01 color.b * 255))
-        ++ ")"
-
-
-cssFallbacks : String -> EncodedColor -> String
-cssFallbacks property color =
-    property
-        ++ ":"
-        ++ cssRgb color.srgb
-        ++ ";"
-        ++ property
-        ++ ":"
-        ++ cssColor "srgb" color.srgb
-        ++ ";"
-        ++ property
-        ++ ":"
-        ++ cssColor "display-p3" color.p3
-        ++ ";"
-        ++ property
-        ++ ":"
-        ++ cssColor "rec2020" color.rec2020
-        ++ ";"
-
-
-svgColorStyle : String -> EncodedColor -> String
-svgColorStyle property color =
-    cssFallbacks property color
-
-
-dynamicCss : String
-dynamicCss =
-    ".repository{"
-        ++ cssFallbacks "background-color" backgroundColor
-        ++ cssFallbacks "color" inkColor
-        ++ "min-height:100vh;box-sizing:border-box;padding:2rem;"
-        ++ "font-family:system-ui,sans-serif;"
-        ++ "}"
-        ++ ".dynamic-surface{"
-        ++ cssFallbacks "background-color" surfaceColor
-        ++ cssFallbacks "color" inkColor
-        ++ cssFallbacks "border-color" mutedInkColor
-        ++ "}"
-        ++ ".dynamic-accent{"
-        ++ cssFallbacks "background-color" accentColor
-        ++ cssFallbacks "color" accentInkColor
-        ++ cssFallbacks "border-color" accentColor
-        ++ "}"
-        ++ ".dynamic-ink{"
-        ++ cssFallbacks "color" inkColor
-        ++ "}"
-        ++ ".dynamic-muted{"
-        ++ cssFallbacks "color" mutedInkColor
-        ++ "}"
-        ++ ".dynamic-link{"
-        ++ cssFallbacks "color" accentColor
-        ++ "}"
-        ++ ".repository input::placeholder{"
-        ++ cssFallbacks "color" mutedInkColor
-        ++ "}"
-        ++ ".repository button,.repository input,.repository select{"
-        ++ "font:inherit;box-sizing:border-box;"
-        ++ "}"
-        ++ ".repository button,.repository input,.repository select{"
-        ++ cssFallbacks "background-color" surfaceColor
-        ++ cssFallbacks "color" inkColor
-        ++ cssFallbacks "border-color" mutedInkColor
-        ++ "}"
-        ++ ".repository button:focus,.repository input:focus,.repository select:focus{"
-        ++ cssFallbacks "outline-color" accentColor
-        ++ "}"
-        ++ ".repository{"
-        ++ cssFallbacks "caret-color" accentColor
-        ++ cssFallbacks "accent-color" accentColor
-        ++ "}"
-        ++ ".graph-controls{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:1rem 0;}"
-        ++ ".graph-node-list{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}"
-        ++ ".graph-node-button{text-align:left;padding:.5rem;border:1px solid;}"
-        ++ ".graph-canvas{overflow:auto;border:1px solid;padding:.5rem;}"
-        ++ "a{text-decoration-thickness:.08em;text-underline-offset:.15em;}"
-        ++ "ul{padding-left:1.5rem;}"
-
-
-dynamicStyleSheet : Html msg
-dynamicStyleSheet =
-    node "style" [] [ text dynamicCss ]
-
-
-sanitize : String -> String
-sanitize value =
-    String.map
-        (\char ->
-            if Char.toCode char < 128 then
-                char
-
-            else
-                Char.fromCode 63
-        )
-        value
-
-
-visibleNodes : Model -> List Graph.Node
-visibleNodes model =
-    let
-        query =
-            String.toLower (sanitize model.query)
-    in
-    List.filter
-        (\nodeItem ->
-            let
-                label =
-                    sanitize nodeItem.label
-
-                nodeId =
-                    sanitize nodeItem.id
-            in
-            sourceAllowed model.fileFilter nodeItem.source
-                && (String.isEmpty query
-                    || String.contains query (String.toLower label)
-                    || String.contains query (String.toLower nodeId)
-                   )
-        )
-        Graph.nodes
-
-
-sourceAllowed : FileFilter -> String -> Bool
-sourceAllowed fileFilter source =
-    case fileFilter of
-        AllFiles ->
-            True
-
-        LearnerOnly ->
-            source == "learner"
-
-        TheoremOnly ->
-            source == "theorem"
+init : Model
+init =
+    { query = ""
+    , relationQuery = ""
+    , fileFilter = AllFiles
+    , selected = Nothing
+    }
 
 
 filterString : FileFilter -> String
-filterString fileFilter =
-    case fileFilter of
+filterString filter =
+    case filter of
         AllFiles ->
             "all"
 
@@ -881,81 +356,9 @@ filterString fileFilter =
             "theorem"
 
 
-nodeForId : String -> Maybe Graph.Node
-nodeForId nodeId =
-    Graph.nodes
-        |> List.filter (\nodeItem -> nodeItem.id == nodeId)
-        |> List.head
-
-
-incomingIds : String -> List String
-incomingIds nodeId =
-    Graph.edges
-        |> List.filter (\edge -> edge.target == nodeId)
-        |> List.map .source
-
-
-outgoingIds : String -> List String
-outgoingIds nodeId =
-    Graph.edges
-        |> List.filter (\edge -> edge.source == nodeId)
-        |> List.map .target
-
-
-relationMatches : String -> Graph.Edge -> Bool
-relationMatches query edge =
-    let
-        needle =
-            String.toLower (sanitize query)
-    in
-    String.isEmpty needle
-        || String.contains needle (String.toLower (sanitize edge.source))
-        || String.contains needle (String.toLower (sanitize edge.target))
-        || String.contains needle (String.toLower (sanitize edge.relation))
-
-
-visibleEdges : Model -> List Graph.Edge
-visibleEdges model =
-    List.filter (relationMatches model.relationQuery) Graph.edges
-
-
-keepVisibleSelection : Model -> Model
-keepVisibleSelection model =
-    let
-        ids =
-            List.map .id (visibleNodes model)
-    in
-    case model.selected of
-        Just selected ->
-            if List.member selected ids then
-                model
-
-            else
-                { model | selected = List.head ids }
-
-        Nothing ->
-            { model | selected = List.head ids }
-
-
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        SetQuery query ->
-            keepVisibleSelection { model | query = query }
-
-        SetRelationQuery query ->
-            { model | relationQuery = query }
-
-        SetFileFilter raw ->
-            keepVisibleSelection { model | fileFilter = fileFilterFromString raw }
-
-        SelectNode nodeId ->
-            { model | selected = Just nodeId }
-
-
-fileFilterFromString : String -> FileFilter
-fileFilterFromString raw =
-    case raw of
+setFilter : String -> FileFilter
+setFilter value =
+    case value of
         "learner" ->
             LearnerOnly
 
@@ -966,280 +369,314 @@ fileFilterFromString raw =
             AllFiles
 
 
-init : Model
-init =
-    { query = ""
-    , relationQuery = ""
-    , fileFilter = AllFiles
-    , selected = Graph.nodes |> List.head |> Maybe.map .id
-    }
+matches : String -> String -> Bool
+matches query value =
+    String.isEmpty query || String.contains (String.toLower query) (String.toLower value)
 
 
-nodeButton : Graph.Node -> Html Msg
-nodeButton nodeItem =
+visibleNodes : Model -> List Graph.Node
+visibleNodes model =
+    List.filter
+        (\node ->
+            let
+                filterMatch =
+                    case model.fileFilter of
+                        AllFiles ->
+                            True
+
+                        LearnerOnly ->
+                            String.contains "CanonicalLearner" node.source
+
+                        TheoremOnly ->
+                            String.contains "TheoremsMonolith" node.source
+            in
+            filterMatch
+                && (matches model.query node.id || matches model.query node.source)
+        )
+        Graph.nodes
+
+
+visibleEdges : Model -> List Graph.Edge
+visibleEdges model =
+    List.filter
+        (\edge ->
+            matches model.relationQuery edge.source
+                || matches model.relationQuery edge.target
+                || matches model.relationQuery edge.relation
+        )
+        Graph.edges
+
+
+nodeColor : Int -> Perceptual
+nodeColor index =
+    paletteAt index
+
+
+nodeCard : Model -> Int -> Graph.Node -> Html Msg
+nodeCard model index node =
+    let
+        selected =
+            model.selected == Just node.id
+
+        color =
+            nodeColor index
+    in
     button
-        [ HA.type_ "button"
-        , HE.onClick (SelectNode nodeItem.id)
-        , HA.class "graph-node-button dynamic-surface"
+        [ HA.attribute "data-module" node.id
+        , HA.attribute "data-selected" (if selected then "true" else "false")
+        , HA.class "record"
+        , HE.onClick (SelectNode node.id)
         ]
-        [ code [] [ text (sanitize (nodeItem.source ++ ":" ++ nodeItem.label)) ] ]
-
-
-relationButton : String -> Html Msg
-relationButton nodeId =
-    button
-        [ HA.type_ "button"
-        , HE.onClick (SelectNode nodeId)
-        , HA.class "dynamic-surface"
-        ]
-        [ code [] [ text (sanitize nodeId) ] ]
-
-
-relationRecord : Graph.Edge -> Html Msg
-relationRecord edge =
-    li []
-        [ button
-            [ HA.type_ "button"
-            , HE.onClick (SelectNode edge.source)
-            , HA.class "dynamic-surface"
-            ]
-            [ code [] [ text (sanitize edge.source) ] ]
-        , span [ HA.class "dynamic-muted" ]
-            [ text (sanitize (" --" ++ edge.relation ++ "--> ")) ]
-        , button
-            [ HA.type_ "button"
-            , HE.onClick (SelectNode edge.target)
-            , HA.class "dynamic-surface"
-            ]
-            [ code [] [ text (sanitize edge.target) ] ]
+        [ span [ HA.class "kind" ] [ text "module" ]
+        , h2 [] [ text node.label ]
+        , p [ HA.class "source" ] [ text node.source ]
         ]
 
 
-positionFor : Int -> Int -> { x : Float, y : Float }
-positionFor index sideCount =
-    { x =
-        if sideCount == 0 then
-            500
-
-        else
-            150 + toFloat index * (700 / toFloat (max 1 (sideCount - 1)))
-    , y = 120
-    }
+nodeOptions : Model -> Html Msg
+nodeOptions model =
+    nav [ HA.class "rail" ]
+        [ div [ HA.class "brand" ] [ text "Agda / Mirth" ]
+        , div [ HA.class "eyebrow" ] [ text "generated surface" ]
+        , p [] [ text "A navigable proof surface, synchronized from the Agda dependency graph." ]
+        , ul [ HA.class "module-list" ]
+            (List.indexedMap
+                (\index node ->
+                    li []
+                        [ button
+                            [ HA.attribute "data-module" node.id
+                            , HA.attribute "data-selected"
+                                (if model.selected == Just node.id then "true" else "false")
+                            , HE.onClick (SelectNode node.id)
+                            ]
+                            [ text (String.fromInt (index + 1) ++ "  " ++ node.label) ]
+                        ]
+                )
+                (List.take 40 (visibleNodes model))
+            )
+        ]
 
 
 graphView : Model -> Html Msg
 graphView model =
-    case model.selected |> Maybe.andThen nodeForId of
-        Nothing ->
-            p [ HA.class "dynamic-muted" ] [ text (sanitize Surface.siteTitle) ]
+    let
+        nodes =
+            List.take 18 (visibleNodes model)
 
-        Just selected ->
+        positions =
+            List.indexedMap
+                (\index node ->
+                    let
+                        x =
+                            40 + toFloat (modBy 6 index) * 145
+
+                        y =
+                            35 + toFloat (index // 6) * 95
+                    in
+                    ( node, x, y )
+                )
+                nodes
+
+        nodeCircle ( node, x, y ) =
             let
-                incoming =
-                    incomingIds selected.id
-
-                outgoing =
-                    outgoingIds selected.id
-
-                allNeighbors =
-                    incoming ++ outgoing
-
-                height =
-                    180 + toFloat (max 1 (List.length allNeighbors)) * 60
-
-                selectedText =
-                    sanitize selected.label
-
-                centerStyle =
-                    "fill:"
-                        ++ cssColor "srgb" accentColor.srgb
-                        ++ ";fill:"
-                        ++ cssColor "display-p3" accentColor.p3
-                        ++ ";fill:"
-                        ++ cssColor "rec2020" accentColor.rec2020
-                        ++ ";stroke:"
-                        ++ cssColor "srgb" mutedInkColor.srgb
-                        ++ ";stroke:"
-                        ++ cssColor "display-p3" mutedInkColor.p3
-                        ++ ";stroke:"
-                        ++ cssColor "rec2020" mutedInkColor.rec2020
-                        ++ ";"
-
+                color =
+                    nodeColor (List.length node.id)
             in
-            div [ HA.class "graph-canvas dynamic-surface" ]
-                [ S.svg
-                    [ SA.viewBox ("0 0 1000 " ++ String.fromFloat height)
-                    , SA.width "100%"
-                    , SA.height (String.fromFloat height)
+            S.g []
+                [ S.circle
+                    [ SA.cx (String.fromFloat x)
+                    , SA.cy (String.fromFloat y)
+                    , SA.r "19"
+                    , SA.fill (perceptualCss color)
+                    , SA.stroke (perceptualCss ink)
+                    , SA.strokeWidth "1"
                     ]
-                    (List.concatMap
-                        (\neighborIndex ->
-                            let
-                                position =
-                                    positionFor neighborIndex (max 1 (List.length allNeighbors))
-
-                                nodeId =
-                                    List.drop neighborIndex allNeighbors
-                                        |> List.head
-                                        |> Maybe.withDefault selected.id
-
-                                nodeColor =
-                                    maximinColorAt neighborIndex
-
-                                nodeEncoded =
-                                    encodeFinal nodeColor.display
-
-                                nodeTextColor =
-                                    encodeFinal (bestNodeTextDisplayColor nodeColor.display)
-
-                                neighborStyle =
-                                    cssFallbacks "fill" nodeEncoded
-                                        ++ cssFallbacks "stroke" (encodeFinal mutedInkColor.srgb)
-                            in
-                            [ S.line
-                                [ SA.x1 "500"
-                                , SA.y1 "60"
-                                , SA.x2 (String.fromFloat position.x)
-                                , SA.y2 (String.fromFloat position.y)
-                                , SA.style
-                                    ( "stroke:"
-                                        ++ cssColor "srgb" mutedInkColor.srgb
-                                        ++ ";stroke:"
-                                        ++ cssColor "display-p3" mutedInkColor.p3
-                                        ++ ";stroke:"
-                                        ++ cssColor "rec2020" mutedInkColor.rec2020
-                                        ++ ";"
-                                    )
-                                ]
-                                []
-                            , S.rect
-                                [ SA.x (String.fromFloat (position.x - 120))
-                                , SA.y (String.fromFloat (position.y - 18))
-                                , SA.width "240"
-                                , SA.height "36"
-                                , SA.rx "6"
-                                , SA.style neighborStyle
-                                ]
-                                [ S.title [] [ S.text (sanitize nodeId) ] ]
-                            , S.text_
-                                [ SA.x (String.fromFloat position.x)
-                                , SA.y (String.fromFloat (position.y + 5))
-                                , SA.textAnchor "middle"
-                                , SA.fontSize "11"
-                                , SA.style
-                                    (cssFallbacks "fill" nodeTextColor)
-                                ]
-                                [ S.text
-                                    (String.left 36
-                                        (nodeForId nodeId
-                                            |> Maybe.map .label
-                                            |> Maybe.withDefault nodeId
-                                            |> sanitize
-                                        )
-                                    )
-                                ]
-                            ]
-                        )
-                        (List.range 0 (max 0 (List.length allNeighbors - 1)))
-                        ++ [ S.rect
-                            [ SA.x "350"
-                            , SA.y "35"
-                            , SA.width "300"
-                            , SA.height "50"
-                            , SA.rx "8"
-                            , SA.style centerStyle
-                            ]
-                            []
-                           , S.text_
-                                [ SA.x "500"
-                                , SA.y "65"
-                                , SA.textAnchor "middle"
-                                , SA.fontSize "13"
-                                , SA.style
-                                    ( "fill:"
-                                        ++ cssColor "srgb" accentInkColor.srgb
-                                        ++ ";fill:"
-                                        ++ cssColor "display-p3" accentInkColor.p3
-                                        ++ ";fill:"
-                                        ++ cssColor "rec2020" accentInkColor.rec2020
-                                        ++ ";"
-                                    )
-                                ]
-                                [ S.text (String.left 46 selectedText) ]
-                           ]
-                    )
+                    []
+                , S.text_
+                    [ SA.x (String.fromFloat x)
+                    , SA.y (String.fromFloat (y + 3))
+                    , SA.textAnchor "middle"
+                    , SA.fontFamily "Julia Mono"
+                    , SA.fontSize "7"
+                    , SA.fill (perceptualCss paper)
+                    ]
+                    [ S.text (String.fromInt (modBy 100 indexForNode node.id)) ]
                 ]
+
+        edgeLines =
+            List.take 28 (visibleEdges model)
+                |> List.indexedMap
+                    (\index edge ->
+                        let
+                            from =
+                                positionFor edge.source positions
+
+                            to =
+                                positionFor edge.target positions
+                        in
+                        case ( from, to ) of
+                            ( Just ( x1, y1 ), Just ( x2, y2 ) ) ->
+                                S.line
+                                    [ SA.x1 (String.fromFloat x1)
+                                    , SA.y1 (String.fromFloat y1)
+                                    , SA.x2 (String.fromFloat x2)
+                                    , SA.y2 (String.fromFloat y2)
+                                    , SA.stroke (perceptualCss accentTwo)
+                                    , SA.strokeOpacity "0.45"
+                                    ]
+                                    []
+
+                            _ ->
+                                S.g [] []
+                    )
+    in
+    div [ HA.class "map" ]
+        [ S.svg
+            [ SA.viewBox "0 0 820 330"
+            , SA.role "img"
+            , SA.attribute "aria-label" "Agda module dependency map"
+            ]
+            (edgeLines ++ List.map nodeCircle positions)
+        ]
+
+
+indexForNode : String -> Int
+indexForNode value =
+    String.foldl (\char total -> total + Char.toCode char) 0 value
+
+
+positionFor : String -> List ( Graph.Node, Float, Float ) -> Maybe ( Float, Float )
+positionFor id positions =
+    positions
+        |> List.filter (\( node, _, _ ) -> node.id == id)
+        |> List.head
+        |> Maybe.map (\( _, x, y ) -> ( x, y ))
+
+
+relationRecord : Graph.Edge -> Html Msg
+relationRecord edge =
+    div [ HA.class "relation" ]
+        [ span [] [ text edge.source ]
+        , span [ HA.class "arrow" ] [ text ("--" ++ edge.relation ++ "-->") ]
+        , span [] [ text edge.target ]
+        ]
 
 
 view : Model -> Html Msg
 view model =
     let
-        visible =
+        nodes =
             visibleNodes model
 
         edges =
             visibleEdges model
 
         titleText =
-            sanitize Surface.siteTitle
+            Surface.siteTitle
 
-        sourceText =
-            String.join "," (List.map sanitize Surface.sourceFiles)
+        selectedSource =
+            case model.selected of
+                Nothing ->
+                    "Select a module to inspect its generated dependency neighborhood."
 
+                Just value ->
+                    value
     in
-    main_
-        [ HA.class "repository" ]
-        [ dynamicStyleSheet
-        , h1 [ HA.class "dynamic-accent" ] [ text titleText ]
-        , p [ HA.class "dynamic-muted" ]
-            [ text sourceText ]
-        , section []
-            [ h2 [ HA.class "dynamic-ink" ]
-                [ text (String.fromInt (List.length visible) ++ " declarations") ]
-            , div [ HA.class "graph-controls" ]
+    main_ [ HA.class "shell" ]
+        [ styleSheet
+        , nodeOptions model
+        , div [ HA.class "main" ]
+            [ header [ HA.class "mast" ]
+                [ div []
+                    [ div [ HA.class "eyebrow" ] [ text "Type-theoretic dependency atlas" ]
+                    , h1 [] [ text titleText ]
+                    , p [ HA.class "lede" ]
+                        [ text "A pure Elm reading surface for the synchronized Agda core: modules, imports, theorem edges, and the Mirth-generated projection." ]
+                    ]
+                , div [ HA.class "stats" ]
+                    [ div [ HA.class "stat" ] [ span [ HA.class "eyebrow" ] [ text "modules" ], Html.strong [] [ text (String.fromInt (List.length Graph.nodes)) ] ]
+                    , div [ HA.class "stat" ] [ span [ HA.class "eyebrow" ] [ text "relations" ], Html.strong [] [ text (String.fromInt (List.length Graph.edges)) ] ]
+                    , div [ HA.class "stat" ] [ span [ HA.class "eyebrow" ] [ text "surface" ], Html.strong [] [ text "Mirth" ] ]
+                    , div [ HA.class "stat" ] [ span [ HA.class "eyebrow" ] [ text "palette" ], Html.strong [] [ text "CAT02LMS" ] ]
+                    ]
+                ]
+            , div [ HA.class "tools" ]
                 [ input
-                    [ HA.placeholder "query"
+                    [ HA.attribute "aria-label" "Search modules"
+                    , HA.placeholder "search module or source"
                     , HA.value model.query
                     , HE.onInput SetQuery
                     ]
                     []
-                , select [ HA.value (filterString model.fileFilter), HE.onInput SetFileFilter ]
-                    [ option [ HA.value "all" ] [ text "all" ]
-                    , option [ HA.value "learner" ] [ text "learner" ]
-                    , option [ HA.value "theorem" ] [ text "theorem" ]
+                , input
+                    [ HA.attribute "aria-label" "Filter relations"
+                    , HA.placeholder "filter relations"
+                    , HA.value model.relationQuery
+                    , HE.onInput SetRelationQuery
                     ]
+                    []
+                , button [ HE.onClick (SetFileFilter "all") ] [ text "all" ]
+                , button [ HE.onClick (SetFileFilter "learner") ] [ text "learner" ]
+                , button [ HE.onClick (SetFileFilter "theorem") ] [ text "theorem" ]
                 ]
-            , div [ HA.class "graph-node-list" ]
-                (List.map nodeButton visible)
-            , graphView model
-            ]
-        , section []
-            [ h2 [ HA.class "dynamic-ink" ]
-                [ text (String.fromInt (List.length edges) ++ " directed relations") ]
-            , input
-                [ HA.placeholder "relation"
-                , HA.value model.relationQuery
-                , HE.onInput SetRelationQuery
-                , HA.class "dynamic-surface"
+            , section [ HA.class "section" ]
+                [ h2 [] [ text ("Modules / " ++ String.fromInt (List.length nodes)) ]
+                , div [ HA.class "records" ] (List.indexedMap (nodeCard model) (List.take 48 nodes))
                 ]
-                []
-            , ul [] (List.map relationRecord edges)
-            ]
-        , section []
-            [ h2 [ HA.class "dynamic-ink" ] [ text "Custom maximin palette" ]
-            , div []
-                (List.indexedMap paletteSwatch maximinPalette)
-            ]
-        , section []
-            [ h2 [ HA.class "dynamic-ink" ] [ text "Mirth surface" ]
-            , ul []
-                [ li [] [ code [] [ text ("nodes=" ++ String.fromInt (List.length Surface.nodeLines)) ] ]
-                , li [] [ code [] [ text ("edges=" ++ String.fromInt (List.length Surface.edgeLines)) ] ]
-                , li [] [ code [] [ text ("ascii-nodes=" ++ String.fromInt (List.length (List.filter (\line -> String.all (\char -> Char.toCode char < 128) line) Surface.nodeLines))) ] ]
-                , li [] [ code [] [ text ("ascii-edges=" ++ String.fromInt (List.length (List.filter (\line -> String.all (\char -> Char.toCode char < 128) line) Surface.edgeLines))) ] ]
+            , section [ HA.class "section" ]
+                [ h2 [] [ text "Dependency map" ]
+                , p [] [ text selectedSource ]
+                , graphView model
+                ]
+            , section [ HA.class "section" ]
+                [ h2 [] [ text ("Relations / " ++ String.fromInt (List.length edges)) ]
+                , div [] (List.map relationRecord (List.take 120 edges))
+                ]
+            , section [ HA.class "section" ]
+                [ h2 [] [ text "Maximin perceptual palette" ]
+                , p [] [ text "Candidate colors are scored in a CAT02LMS-derived opponent space and selected by farthest-point maximin spacing." ]
+                , div [ HA.class "palette" ]
+                    (List.indexedMap
+                        (\index color ->
+                            div
+                                [ HA.class "swatch"
+                                , HA.attribute "title" ("maximin-" ++ String.fromInt (index + 1))
+                                , HA.attribute "style" ("background:" ++ perceptualCss color)
+                                ]
+                                []
+                        )
+                        maximinPalette
+                    )
+                ]
+            , p [ HA.class "footer" ]
+                [ text
+                    ("sources: "
+                        ++ String.join ", " Surface.sourceFiles
+                        ++ " · "
+                        ++ String.fromInt (List.length Surface.nodeLines)
+                        ++ " generated node lines · "
+                        ++ String.fromInt (List.length Surface.edgeLines)
+                        ++ " generated edge lines"
+                    )
                 ]
             ]
         ]
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        SetQuery value ->
+            { model | query = value }
+
+        SetRelationQuery value ->
+            { model | relationQuery = value }
+
+        SetFileFilter value ->
+            { model | fileFilter = setFilter value }
+
+        SelectNode value ->
+            { model | selected = Just value }
 
 
 main : Program () Model Msg
