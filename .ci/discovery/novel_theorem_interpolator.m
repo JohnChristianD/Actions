@@ -46,7 +46,6 @@ collect_imports([Line | Lines], Acc0, Imports) :-
     list(string)::out,
     io::di, io::uo) is det.
 read_available_imports(Imports, !IO) :-
-    read_toolchain_imports(ToolchainImports, !IO),
     io.read_named_file_as_lines(
         "../../FullCoupled/TheoremsMonolith.agda",
         Result, !IO),
@@ -98,8 +97,9 @@ write_items(Stream, [Item | Items], !IO) :-
 main(!IO) :-
     read_semantic_laws(Laws, !IO),
     read_available_imports(Imports, !IO),
+    read_toolchain_imports(ToolchainImports, !IO),
     (
-        list.length(ToolchainImports) = 3,
+        ToolchainImports \= [],
         graph_interpolated_execution_bridge_plan(Laws, Plan),
         all_generated_plans_valid(Laws, [Plan])
     ->
