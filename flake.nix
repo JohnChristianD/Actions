@@ -36,6 +36,12 @@
       pkgsFor = system:
         import nixpkgs { inherit system; };
 
+      pluginPkgsFor = system:
+        import nixpkgs {
+          inherit system;
+          config.allowBroken = true;
+        };
+
       typeTopologyLib = system:
         let
           pkgs = pkgsFor system;
@@ -159,7 +165,7 @@
 
       inversionPlugin = system:
         let
-          pkgs = pkgsFor system;
+          pkgs = pluginPkgsFor system;
           treeMonad =
             pkgs.haskell.lib.doJailbreak
               (pkgs.haskellPackages.callHackage
