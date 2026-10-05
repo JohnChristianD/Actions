@@ -44,7 +44,11 @@
           installPhase = ''
             mkdir -p "$out/src"
             cp -R src/. "$out/src/"
-            cp agda-prelude.agda-lib "$out/agda-prelude.agda-lib"
+            printf "%s\n" \
+              "name: agda-prelude" \
+              "include: src" \
+              "flags: --safe --without-K --level-universe" \
+              > "$out/agda-prelude.agda-lib"
           '';
           meta = {
             description = "Minimal Agda programming prelude";
