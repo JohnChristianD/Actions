@@ -6,6 +6,10 @@ module FullCoupled.Agda2HsSemanticSearch where
 open import Haskell.Prelude
 -- END MIRTH-SYNC COMMON IMPORTS
 
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- "$AGDA_COMMAND" -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
+
 data Capability : Type where
   inversion : Capability
   exact-search : Capability
