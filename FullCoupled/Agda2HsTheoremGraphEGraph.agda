@@ -501,6 +501,58 @@ associativityRule =
         (pvar "A" ∷ pvar "B" ∷ []) ∷
        pvar "C" ∷ []))
 
+emptyRightRule : RewriteRule
+emptyRightRule =
+  rewriteRule
+    "proof-compose-empty-right"
+    (papp "proof-compose"
+      (pvar "A" ∷
+       papp "empty-proof-compose" [] ∷
+       []))
+    (pvar "A" ∷ [])
+
+emptyLeftRule : RewriteRule
+emptyLeftRule =
+  rewriteRule
+    "proof-compose-empty-left"
+    (papp "proof-compose"
+      (papp "empty-proof-compose" [] ∷
+       pvar "A" ∷
+       []))
+    (pvar "A" ∷ [])
+
+semanticRewriteRules : List RewriteRule
+semanticRewriteRules =
+  associativityRule ∷
+  emptyRightRule ∷
+  emptyLeftRule ∷
+  []
+
+lawExpr : String -> Expr
+lawExpr id = app "semantic-law" (atom id ∷ [])
+
+leftAssocExpr : List String -> Expr
+leftAssocExpr [] = atom "empty-proof-compose"
+leftAssocExpr (id ∷ []) = lawExpr id
+leftAssocExpr (a ∷ b ∷ rest) =
+  leftAssocExprAcc
+    (app "proof-compose" (lawExpr a ∷ lawExpr b ∷ []))
+    rest
+
+leftAssocExprAcc : Expr -> List String -> Expr
+leftAssocExprAcc acc [] = acc
+leftAssocExprAcc acc (id ∷ rest) =
+  leftAssocExprAcc
+    (app "proof-compose" (acc ∷ lawExpr id ∷ []))
+    rest
+
+rightAssocExpr : List String -> Expr
+rightAssocExpr [] = atom "empty-proof-compose"
+rightAssocExpr (id ∷ []) = lawExpr id
+rightAssocExpr (a ∷ b ∷ rest) =
+  app "proof-compose"
+    (lawExpr a ∷ rightAssocExpr (b ∷ rest) ∷ [])
+
 emptyGraph : EGraph
 emptyGraph = egraph zero [] []
 
@@ -524,11 +576,33 @@ regressionGraph =
              atom "c" ∷ []))
           g6
       (stable , report) =
-        saturateUntilStable (associativityRule ∷ []) g7
+        saturateUntilStable semanticRewriteRules g7
       congruenceOk =
         equivalent fa fb g5
       associativityOk =
         equivalent nested left stable
+      rightIdentityExpr =
+        app "proof-compose"
+          (atom "a" ∷ atom "empty-proof-compose" ∷ [])
+      (rightIdentity , g8) =
+        addExpr rightIdentityExpr stable
+      (aAgain , g9) =
+        addExpr (atom "a") g8
+      (rightStable , rightReport) =
+        saturateUntilStable semanticRewriteRules g9
+      rightIdentityOk =
+        equivalent rightIdentity aAgain rightStable
+      leftIdentityExpr =
+        app "proof-compose"
+          (atom "empty-proof-compose" ∷ atom "a" ∷ [])
+      (leftIdentity , g10) =
+        addExpr leftIdentityExpr rightStable
+      (aAgainLeft , g11) =
+        addExpr (atom "a") g10
+      (leftStable , leftReport) =
+        saturateUntilStable semanticRewriteRules g11
+      leftIdentityOk =
+        equivalent leftIdentity aAgainLeft leftStable
       matchingOk =
         case eMatch
           (papp "proof-compose"
@@ -546,10 +620,15 @@ regressionGraph =
           Just result -> extractedCost result > zero
       quotientOk = classCount g5 < enodeCount g5
       iterationOk = saturationIterations report > zero
-      saturationOk = saturationComplete report
+      saturationOk =
+        saturationComplete report &&
+        saturationComplete rightReport &&
+        saturationComplete leftReport
   in stable ,
      (congruenceOk &&
       associativityOk &&
+      rightIdentityOk &&
+      leftIdentityOk &&
       matchingOk &&
       analysisOk &&
       extractOk &&
