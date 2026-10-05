@@ -250,6 +250,7 @@ let script = merge {
     [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
     agda_files=$(git ls-files '*.agda')
     expected_agda_files='FullCoupled/Agda2HsSemanticSearch.agda
+FullCoupled/Agda2HsTheoremGraphEGraph.agda
 FullCoupled/Agda2HsSurface.agda
 FullCoupled/CanonicalLearnerMonolith.agda
 FullCoupled/FormalMethods/HoareLogic.agda
@@ -635,7 +636,7 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 12 ] || { echo "expected exactly twelve tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 13 ] || { echo "expected exactly twelve tracked Agda sources, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
@@ -881,6 +882,7 @@ in script
     [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
     agda_files=$(git ls-files '*.agda')
     expected_agda_files='FullCoupled/Agda2HsSemanticSearch.agda
+FullCoupled/Agda2HsTheoremGraphEGraph.agda
 FullCoupled/Agda2HsSurface.agda
 FullCoupled/CanonicalLearnerMonolith.agda
 FullCoupled/FormalMethods/HoareLogic.agda
@@ -1266,7 +1268,7 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 12 ] || { echo "expected exactly twelve tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 13 ] || { echo "expected exactly twelve tracked Agda sources, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
