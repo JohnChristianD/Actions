@@ -15,17 +15,24 @@ trap 'rm -f \"\$block\" \"\$merged\" \"\$tmp\"' EXIT
 sources() { git ls-files '*.agda' | LC_ALL=C sort; }
 common_sources() { sources | grep -Fvx \"\$special\" || true; }
 extract_block() { sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' \"\$1\"; }
+canonical_imports() {
+  extract_block "$canonical" |
+    sed '1d' |
+    sed '$d' |
+    sed '/^-- Merged external import surface/d'
+}
 collect_imports() {
+  canonical_imports
   while IFS= read -r file; do
     awk '
-      \$0 == \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" { inside=1; next }
-      \$0 == \"-- END MIRTH-SYNC COMMON IMPORTS\" { inside=0; next }
+      \$0 == "-- BEGIN MIRTH-SYNC COMMON IMPORTS" { inside=1; next }
+      \$0 == "-- END MIRTH-SYNC COMMON IMPORTS" { inside=0; next }
       !inside && \$0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
         line=\$0
-        if (line ~ /FullCoupled\\./ || line ~ /Haskell\\.Prelude/) next
+        if (line ~ /FullCoupled\\./ || line ~ /Haskell\.Prelude/) next
         print line
       }
-    ' \"\$file\"
+    ' "\$file"
   done < <(common_sources)
 }
 normalized_block() {
