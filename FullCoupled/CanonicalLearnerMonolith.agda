@@ -528,9 +528,6 @@ qLog8 x with int8Magnitude x
 ... | zero = fromNatFraction 1 1
 ... | suc n = fromNatFraction (128 ∸ suc n) (suc n)
 
-negativeQLog8 : Int8 → ℚ
-negativeQLog8 x = qLog8 x
-
 munchausenScale8 : Nat
 munchausenScale8 = 16
 
@@ -1431,7 +1428,7 @@ canonicalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) 
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
 
 canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → ℚ
-canonicalQLogStep K s = negativeQLog8 (canonicalPolicyWeightCode K s)
+canonicalQLogStep K s = qLog8 (canonicalPolicyWeightCode K s)
 
 canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FullLearnerState A
 canonicalFullStep K s =
