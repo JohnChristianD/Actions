@@ -380,25 +380,6 @@
             program = "${script}/bin/agda-haskell-pipeline";
           };
 
-          mercury-autonomous-discovery = let
-            script = pkgs.writeShellApplication {
-              name = "mercury-autonomous-discovery";
-              runtimeInputs = [
-                pkgs.mercury
-                pkgs.coreutils
-              ];
-              text = ''
-                set -euo pipefail
-                cd .ci/discovery
-                mmc --make autonomous_inversion_search
-                ./autonomous_inversion_search
-                test -s autonomous-inversion-search.dhall
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/mercury-autonomous-discovery";
-          };
           mercury-theorem-e2e = let
             script = pkgs.writeShellApplication {
               name = "mercury-theorem-e2e";
