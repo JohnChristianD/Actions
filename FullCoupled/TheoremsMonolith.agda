@@ -1542,6 +1542,82 @@ canonical-integer-layernorm-egraph-astar-infinite-horizon-stability-theorem =
 
 
 ------------------------------------------------------------------------
+-- Interpolated execution bridge.
+--
+-- Mercury supplies the dependency graph; Agda supplies the proof term.
+-- The semantic result is stronger than mere eventual convergence: every
+-- element of the infinite stable tail is semantically equal to the exact
+-- radicand target. The monadic/Haskell surface and plan monoid remain typed
+-- execution carriers, never semantic evidence.
+------------------------------------------------------------------------
+
+record CanonicalIntegerLayerNormAStarExecutionBridgeTheorem : Set₁ where
+  constructor canonicalIntegerLayerNormAStarExecutionBridgeTheorem
+  field
+    stableSemanticTail :
+      ∀ (epsilon : Nat) (xs : List C.Int8)
+      (phase : IntegerLayerNormAStarPhase) →
+      Σ Nat
+        (λ n →
+          ∀ k →
+          interpret
+            (semantics integerLayerNormAStarClosure)
+            (integerLayerNormAStarCandidate epsilon xs
+              (eGraphAStarIterate
+                integerLayerNormAStarStep
+                k
+                (eGraphAStarIterate
+                  integerLayerNormAStarStep
+                  n
+                  phase)))
+          ≡
+          interpret
+            (semantics integerLayerNormAStarClosure)
+            (radicandIntegerLayerNorm epsilon xs))
+    planMonoid :
+      AStarPlanMonoidTheorem IntegerLayerNormExpression
+    executionMonad :
+      AStarHaskellMonadSurface IntegerLayerNormExpression
+
+canonical-integer-layernorm-astar-execution-bridge-theorem :
+  CanonicalIntegerLayerNormAStarExecutionBridgeTheorem
+canonical-integer-layernorm-astar-execution-bridge-theorem =
+  canonicalIntegerLayerNormAStarExecutionBridgeTheorem
+    stableSemanticTail
+    (aStar-plan-monoid-theorem IntegerLayerNormExpression)
+    (aStar-haskell-monad-surface IntegerLayerNormExpression)
+  where
+  stableSemanticTail :
+    ∀ (epsilon : Nat) (xs : List C.Int8)
+    (phase : IntegerLayerNormAStarPhase) →
+    Σ Nat
+      (λ n →
+        ∀ k →
+        interpret
+          (semantics integerLayerNormAStarClosure)
+          (integerLayerNormAStarCandidate epsilon xs
+            (eGraphAStarIterate
+              integerLayerNormAStarStep
+              k
+              (eGraphAStarIterate
+                integerLayerNormAStarStep
+                n
+                phase)))
+        ≡
+        interpret
+          (semantics integerLayerNormAStarClosure)
+          (radicandIntegerLayerNorm epsilon xs))
+  stableSemanticTail epsilon xs phase
+    with integerLayerNorm-egraph-astar-infinite-stable-tail
+      epsilon xs phase
+  ... | n , stableTail =
+    n ,
+    λ k →
+      eGraph-path-sound
+        integerLayerNormEGraphSemantics
+        (integerLayerNormAStarStablePath (stableTail k))
+
+------------------------------------------------------------------------
 -- LayerNorm-specific stability and growth, deliberately separate from the
 -- retired NormPair replacement theory and from the F4 optimizer growth ray.
 --
