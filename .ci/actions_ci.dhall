@@ -89,6 +89,7 @@ let script = merge {
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
     nix run .#mirth-agda-command-sync -- --check
+    nix run .#agda2hs-semantic-search
     nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -151,6 +152,7 @@ let script = merge {
     nix run .#mirth-agda-graph -- "$tmp_graph/GeneratedAgdaGraph.elm" | bash -s -- "$tmp_graph/GeneratedAgdaGraph.elm"
     test -s "$tmp_graph/GeneratedAgdaGraph.elm"
     grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp_graph/GeneratedAgdaGraph.elm"
+    nix run .#agda2hs-semantic-search
     nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
@@ -196,6 +198,7 @@ let script = merge {
     [ -f docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md ] || { echo "commons research note missing"; exit 1; }
     grep -Fq 'suc (suc zero) ≤ suc zero' "$theorem" || { echo "commons capacity violation missing"; exit 1; }
     grep -Fq 'AStarSemanticClosure' "$theorem" || { echo "A* semantic closure kernel missing"; exit 1; }
+    test -f FullCoupled/Agda2HsSemanticSearch.agda || { echo "Agda2Hs semantic search kernel missing"; exit 1; }
     grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
     grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
     grep -Fq 'StrictProgressRelation' "$theorem" || { echo "strict progress relation kernel missing"; exit 1; }
@@ -224,7 +227,8 @@ let script = merge {
     monolith_count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
     agda_files=$(git ls-files '*.agda')
-    expected_agda_files='FullCoupled/Agda2HsSurface.agda
+    expected_agda_files='FullCoupled/Agda2HsSemanticSearch.agda
+FullCoupled/Agda2HsSurface.agda
 FullCoupled/CanonicalLearnerMonolith.agda
 FullCoupled/FormalMethods/HoareLogic.agda
 FullCoupled/FormalMethods/IMP.agda
