@@ -330,7 +330,7 @@ write_report(All, QuotientCount, Saturation, ExtractionCost,
 ",
             !IO),
         io.write_string(Stream,
-            "  proofAuthority = \"Agda --safe\"
+            "  proofAuthority = \"Agda type checker (semantic theorem terms)\"
 ", !IO),
         io.write_string(Stream, "}
 ", !IO),
@@ -501,7 +501,7 @@ main(!IO) :-
             io.write_string(
                 "single-agda-source=TheoremsMonolith.agda\n", !IO),
             io.write_string(
-                "proof-authority=Agda --safe\n", !IO),
+                "proof-authority=Agda type checker (semantic theorem terms)\n", !IO),
             io.write_string(
                 "all-agda-laws-extracted=true\n", !IO)
         else
