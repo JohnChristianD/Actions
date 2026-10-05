@@ -23,18 +23,22 @@ collect_imports([], Acc, Imports) :-
 collect_imports([Line | Lines], Acc0, Imports) :-
     Words = string.words(string.strip(Line)),
     (
-        Words = ["import", Module | _]
-    ;
-        Words = ["open", "import", Module | _]
-    ->
-        (
-            if list.member(Module, Acc0) then
-                Acc1 = Acc0
-            else
-                Acc1 = [Module | Acc0]
-        )
-    ;
-        Acc1 = Acc0
+        if Words = ["import", Module | _] then
+            (
+                if list.member(Module, Acc0) then
+                    Acc1 = Acc0
+                else
+                    Acc1 = [Module | Acc0]
+            )
+        else if Words = ["open", "import", Module | _] then
+            (
+                if list.member(Module, Acc0) then
+                    Acc1 = Acc0
+                else
+                    Acc1 = [Module | Acc0]
+            )
+        else
+            Acc1 = Acc0
     ),
     collect_imports(Lines, Acc1, Imports).
 
