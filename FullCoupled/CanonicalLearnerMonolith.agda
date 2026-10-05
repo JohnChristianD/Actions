@@ -44,65 +44,10 @@
 module FullCoupled.CanonicalLearnerMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
--- Mirth-generated contract: this exact block is shared by both monoliths.
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl; sym; cong; cong₂; subst; trans)
-open import Agda.Builtin.Nat using (Nat; zero; suc)
-
--- Solver-associated Base modules.
-open import Data.Bool.Base hiding (_≤_; _<_)
-open import Data.Nat.Base hiding (_≤_; _<_; _>_; _≥_)
-open import Data.Integer.Base hiding (_≤_; _<_; _>_; _≥_; suc; neg; sign; _+_; _*_)
-open import Data.List.Base using (List; []; _∷_; _++_; map; length)
-open import Data.Product.Base
-open import Data.Sum.Base
-open import Data.Maybe.Base
-
--- Solver front ends.
-import Data.Bool.Solver as BoolSolver
-open import Data.Nat.Solver using (module +-*-Solver)
-import Data.Integer.Solver as IntegerSolver
-open import Data.List.Relation.Binary.Sublist.Heterogeneous as HeterogeneousSublistBase
-import Data.List.Relation.Binary.Sublist.Heterogeneous.Solver as HeterogeneousSublistSolver
-import Data.List.Relation.Binary.Sublist.DecSetoid.Solver as DecSetoidSublistSolver
-import Data.List.Relation.Binary.Sublist.DecPropositional.Solver as DecPropositionalSublistSolver
-import Function.Related.TypeIsomorphisms.Solver as TypeIsomorphismsSolver
-open import Data.Nat.Tactic.RingSolver as NatRingSolver using (solve-∀)
-open import Data.Integer.Tactic.RingSolver as IntegerRingSolver using (solve-∀)
-open import Tactic.RingSolver as RingSolver using (solve-∀)
-open import Tactic.RingSolver.Core.AlmostCommutativeRing as RingCore
-open import Tactic.RingSolver.Core.Expression as RingExpression
-open import Tactic.RingSolver.Core.NatSet as RingNatSet
-open import Tactic.RingSolver.Core.Polynomial.Base as RingPolynomialBase
-open import Tactic.MonoidSolver as MonoidSolver using (solve)
-
--- Existing shared semantics and container imports.
-open import Data.Nat using (NonZero; _∸_; _<_; _≤_; _<ᵇ_; _/_; z≤n; s≤s)
-open import Data.Nat.Properties using (+-identityʳ; +-suc; ≤-antisym; ≤-decTotalOrder)
-open import Data.Integer using (ℤ; +_; -_; -[1+_]; _≤?_) renaming (_+_ to _+ℤ_; _*_ to _*ℤ_)
-import Data.Integer.Properties as IntegerProperties
-open import Level using (0ℓ)
-open import Data.List.Sort as Sort
-open import Relation.Binary.Bundles using (DecTotalOrder)
-open import Relation.Binary.Construct.On as On
-import Relation.Binary.Construct.Flip.EqAndOrd as Flip
-open import Data.Product.Relation.Binary.Lex.NonStrict as Lex
-open import Data.Nat.DivMod using (m%n<n; m<n⇒m%n≡m)
-open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂)
-open import Data.Empty using (⊥)
-open import Data.Unit using (⊤; tt)
-open import Relation.Nullary using (¬_)
-open import Effect.Monad using (RawMonad)
-open import Effect.Monad.State using (State; RawMonadState)
-open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
-open import Data.Nat.Properties using (≤-refl; ≤-trans; n<1+n)
-open import Data.Integer using () renaming (_≤_ to _≤ℤ_)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Agda.Builtin.Bool using (Bool; true; false)
-open import Agda.Builtin.String using (String)
-open import Algebra.Bundles using (Monoid)
-open import Data.List.Properties using (++-monoid)
-import Data.List.Effectful as ListEffectful
-import Data.List.Base as ListBase
+-- Canonical learner uses the minimal agda-prelude surface; solver-specific
+-- stdlib imports are not part of the semantics.
+open import Prelude
+open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 
@@ -143,11 +88,11 @@ continuous-under-discrete-topology {A} {B} f {V} _ = tt
 
 record Int8 : Set where
   constructor int8
-  field code : ℤ
+  field code : Int
 open Int8 public
 
 int8StateSpace : Set
-int8StateSpace = ℤ
+int8StateSpace = Int
 
 zero8 : Int8
 zero8 = int8 (+ 0)
@@ -159,16 +104,16 @@ int8OfNat : Nat → Int8
 int8OfNat n = int8 (+ n)
 
 int8Add : Int8 → Int8 → Int8
-int8Add x y = int8 (code x +ℤ code y)
+int8Add x y = int8 (code x +Int code y)
 
 int8Mul : Int8 → Int8 → Int8
-int8Mul x y = int8 (code x *ℤ code y)
+int8Mul x y = int8 (code x *Int code y)
 
 int8Neg : Int8 → Int8
 int8Neg x = int8 (- code x)
 
 int8Sub : Int8 → Int8 → Int8
-int8Sub x y = int8 (code x +ℤ (- code y))
+int8Sub x y = int8 (code x +Int (- code y))
 
 int8Roundtrip : ∀ n → code (int8OfNat n) ≡ + n
 int8Roundtrip n = refl
@@ -344,17 +289,27 @@ sparsemaxTemperature = 16
 ScoreEntry : Set
 ScoreEntry = Int8 × Nat
 
-int8Order : DecTotalOrder 0ℓ 0ℓ 0ℓ
-int8Order = On.decTotalOrder IntegerProperties.≤-decTotalOrder code
+scoreEntryBefore : ScoreEntry → ScoreEntry → Bool
+scoreEntryBefore (s₁ , a₁) (s₂ , a₂) with compare (code s₁) (code s₂)
+... | less _ = false
+... | equal _ with compare a₁ a₂
+...   | less _ = false
+...   | equal _ = false
+...   | greater _ = true
+... | greater _ = true
 
-scoreEntryOrder : DecTotalOrder 0ℓ 0ℓ 0ℓ
-scoreEntryOrder = Flip.decTotalOrder (Lex.×-decTotalOrder int8Order ≤-decTotalOrder)
+insertScoreEntry : ScoreEntry → List ScoreEntry → List ScoreEntry
+insertScoreEntry x [] = x ∷ []
+insertScoreEntry x (y ∷ ys) with scoreEntryBefore x y
+... | true = x ∷ y ∷ ys
+... | false = y ∷ insertScoreEntry x ys
 
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
-scoreList {A} K q c = ListBase.map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
+scoreList {A} K q c = map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
 
 sortScores : List ScoreEntry → List ScoreEntry
-sortScores = Sort.sort scoreEntryOrder
+sortScores [] = []
+sortScores (x ∷ xs) = insertScoreEntry x (sortScores xs)
 
 natAt : Nat → List Nat → Nat
 natAt k [] = zero
@@ -368,54 +323,54 @@ sumList (x ∷ xs) = x + sumList xs
 ------------------------------------------------------------------------
 -- Integer LayerNorm kernel.
 --
--- Int8 is an exact ℤ wrapper.  The normalization arithmetic therefore
+-- Int8 is an exact Int wrapper.  The normalization arithmetic therefore
 -- remains integral and the normalized output is represented as an exact
 -- integer ratio.  A certificate supplies the non-zero square root of
 -- the integer radicand; no floating-point approximation enters the
 -- proof surface.
 ------------------------------------------------------------------------
 
-integerCodeSum : List Int8 → ℤ
+integerCodeSum : List Int8 → Int
 integerCodeSum [] = + 0
-integerCodeSum (x ∷ xs) = code x +ℤ integerCodeSum xs
+integerCodeSum (x ∷ xs) = code x +Int integerCodeSum xs
 
-integerCodeSumList : List ℤ → ℤ
+integerCodeSumList : List Int → Int
 integerCodeSumList [] = + 0
-integerCodeSumList (x ∷ xs) = x +ℤ integerCodeSumList xs
+integerCodeSumList (x ∷ xs) = x +Int integerCodeSumList xs
 
 integerLayerNormCenteredNumerator :
-  List Int8 → Int8 → ℤ
+  List Int8 → Int8 → Int
 integerLayerNormCenteredNumerator xs x =
-  (+ (length xs)) *ℤ code x +ℤ (- integerCodeSum xs)
+  (+ (length xs)) *Int code x +Int (- integerCodeSum xs)
 
 integerLayerNormCenteredNumerators :
-  List Int8 → List ℤ
+  List Int8 → List Int
 integerLayerNormCenteredNumerators xs =
-  ListBase.map
+  map
     (λ x → integerLayerNormCenteredNumerator xs x)
     xs
 
-integerLayerNormSquare : ℤ → ℤ
-integerLayerNormSquare z = z *ℤ z
+integerLayerNormSquare : Int → Int
+integerLayerNormSquare z = z *Int z
 
 integerLayerNormVarianceNumerator :
-  List Int8 → ℤ
+  List Int8 → Int
 integerLayerNormVarianceNumerator xs =
   integerCodeSumList
-    (ListBase.map
+    (map
       integerLayerNormSquare
       (integerLayerNormCenteredNumerators xs))
 
 integerLayerNormEpsilonContribution :
-  List Int8 → Nat → ℤ
+  List Int8 → Nat → Int
 integerLayerNormEpsilonContribution xs epsilon =
   (+ (epsilon * (length xs) * (length xs)))
 
 integerLayerNormRadicand :
-  List Int8 → Nat → ℤ
+  List Int8 → Nat → Int
 integerLayerNormRadicand xs epsilon =
   integerLayerNormVarianceNumerator xs
-  +ℤ
+  +Int
   integerLayerNormEpsilonContribution xs epsilon
 
 record IntegerLayerNormConfig : Set where
@@ -438,7 +393,7 @@ open IntegerLayerNormCertificate public
 record IntegerLayerNormValue : Set where
   constructor mkIntegerLayerNormValue
   field
-    numerator : ℤ
+    numerator : Int
     denominator : Nat
     denominatorNonZero : denominator ≢ zero
 open IntegerLayerNormValue public
@@ -451,11 +406,11 @@ integerLayerNormValue :
   IntegerLayerNormValue
 integerLayerNormValue {xs} config certificate x =
   mkIntegerLayerNormValue
-    (code (gamma config) *ℤ
-      (code (fixedScale config) *ℤ
+    (code (gamma config) *Int
+      (code (fixedScale config) *Int
         integerLayerNormCenteredNumerator xs x)
-     +ℤ
-     (code (beta config) *ℤ (+ (root certificate))))
+     +Int
+     (code (beta config) *Int (+ (root certificate))))
     (root certificate)
     (rootNonZero certificate)
 
@@ -525,7 +480,7 @@ finiteQLog8 x with int8Magnitude x
 ... | suc n = finiteRational 1 (128 ∸ suc n) (suc n)
 
 finiteQLog8-denominator-nonZero :
-  ∀ {x} → Data.Nat.NonZero (denominator (finiteQLog8 x))
+  ∀ {x} → NonZero (denominator (finiteQLog8 x))
 finiteQLog8-denominator-nonZero {x} with int8Magnitude x
 ... | zero = Data.Nat.nonZero
 ... | suc n = Data.Nat.nonZero
@@ -1048,7 +1003,7 @@ maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
 ... | Relation.Nullary.no _ = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
-maxCriticValue8 K q = maxCriticValueList (ListBase.map (λ a → values q a) (candidates K))
+maxCriticValue8 K q = maxCriticValueList (map (λ a → values q a) (candidates K))
 
 canonicalQLogBias : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalQLogBias K s = qLog2Bias8 (canonicalPolicyWeightCode K s)
@@ -1245,7 +1200,7 @@ canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A)
 canonicalPersistent = canonicalPersistentGRUPreservation
 
 CanonicalToken : Set
-CanonicalToken = ℤ
+CanonicalToken = Int
 
 CanonicalTokenSequence : Set
 CanonicalTokenSequence = List CanonicalToken
@@ -1254,7 +1209,7 @@ canonicalTokenEncode : CanonicalToken → Int8
 canonicalTokenEncode = int8
 
 canonicalTokenEncodeList : CanonicalTokenSequence → List Int8
-canonicalTokenEncodeList = ListBase.map canonicalTokenEncode
+canonicalTokenEncodeList = map canonicalTokenEncode
 
 canonicalTokenStep : GRUState → CanonicalToken → GRUState
 canonicalTokenStep s t = gruStep s (canonicalTokenEncode t)
