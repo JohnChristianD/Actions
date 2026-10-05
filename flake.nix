@@ -352,6 +352,10 @@
                 "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticSearch.agda
                 "${agda2hsWithInversion system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                grep -Fq "inverse-correct" FullCoupled/TheoremsMonolith.agda
+                grep -Fq "inverse-csearchable" FullCoupled/TheoremsMonolith.agda
+                grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
+                grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
                 ghc \
                   -XNoMonomorphismRestriction \
                   -XLocalMonoBinds \
