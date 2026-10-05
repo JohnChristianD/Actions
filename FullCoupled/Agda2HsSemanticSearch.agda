@@ -23,6 +23,8 @@ record SemanticLaw : Type where
   field
     lawName : String
     capabilities : List Capability
+    dependencies : List String
+    qPrior : Nat
 
 open SemanticLaw public
 
@@ -31,6 +33,7 @@ record SearchNode : Type where
   field
     plan : List String
     covered : List Capability
+    qScore : Nat
 
 open SearchNode public
 
@@ -74,6 +77,14 @@ planContains name (x ∷ xs) =
     True
   else
     planContains name xs
+
+dependenciesSatisfied : List String → List String → Bool
+dependenciesSatisfied [] plan = True
+dependenciesSatisfied (dependency ∷ dependencies) plan =
+  if planContains dependency plan then
+    dependenciesSatisfied dependencies plan
+  else
+    False
 
 coversLaw : Capability → SemanticLaw → Bool
 coversLaw capability law =
@@ -139,6 +150,13 @@ nodeScore :
 nodeScore required node =
   nodeCost node + nodeHeuristic required node
 
+higherQ :
+  SearchNode →
+  SearchNode →
+  Bool
+higherQ left right =
+  qScore left >= qScore right
+
 insertByScore :
   List Capability →
   SearchNode →
@@ -147,10 +165,16 @@ insertByScore :
 insertByScore required node [] =
   node ∷ []
 insertByScore required node (head ∷ tail) =
-  if nodeScore required node <= nodeScore required head then
+  if nodeScore required node < nodeScore required head then
     node ∷ head ∷ tail
   else
-    head ∷ insertByScore required node tail
+    if nodeScore required node == nodeScore required head then
+      if higherQ node head then
+        node ∷ head ∷ tail
+      else
+        head ∷ insertByScore required node tail
+    else
+      head ∷ insertByScore required node tail
 
 insertAll :
   List Capability →
@@ -186,10 +210,21 @@ astar required laws (node ∷ frontier) =
 
 canonicalLaws : List SemanticLaw
 canonicalLaws =
-  semanticLaw "inverse-correct" (inversion ∷ [])
-  ∷ semanticLaw "inverse-csearchable" (exact-search ∷ [])
-  ∷ semanticLaw "inverse-preserves-csearchability"
-       (uniform-continuity ∷ [])
+  semanticLaw
+    "inverse-correct"
+    (inversion ∷ [])
+    []
+    (suc (suc (suc zero)))
+  ∷ semanticLaw
+      "inverse-csearchable"
+      (exact-search ∷ [])
+      ("inverse-correct" ∷ [])
+      (suc (suc zero))
+  ∷ semanticLaw
+      "inverse-preserves-csearchability"
+      (uniform-continuity ∷ [])
+      ("inverse-csearchable" ∷ [])
+      (suc zero)
   ∷ []
 
 canonicalSearch : Maybe SearchNode
@@ -197,7 +232,7 @@ canonicalSearch =
   astar
     requiredCapabilities
     canonicalLaws
-    (searchNode [] [] ∷ [])
+    (searchNode [] [] zero ∷ [])
 
 canonicalPlan : List String
 canonicalPlan =
