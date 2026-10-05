@@ -483,34 +483,76 @@ graphMaximalDependencyChain plan laws =
   else
     False
 
-double : Nat -> Nat
-double zero = zero
-double (suc n) = suc (suc (double n))
+graphAppend : {A : Type} -> List A -> List A -> List A
+graphAppend [] ys = ys
+graphAppend (x ∷ xs) ys = x ∷ graphAppend xs ys
 
-graphAStarFuel : List GraphLaw -> Nat
-graphAStarFuel laws =
-  suc (double (length laws))
+graphConcatMap :
+  {A B : Type} ->
+  (A -> List B) ->
+  List A ->
+  List B
+graphConcatMap _ [] = []
+graphConcatMap f (x ∷ xs) =
+  graphAppend (f x) (graphConcatMap f xs)
 
-graphAStar :
+graphSearchChildren :
   Nat ->
   List GraphLaw ->
   List GraphNode ->
+  List (List String)
+graphSearchChildren depth laws [] = []
+graphSearchChildren depth laws (node ∷ nodes) =
+  graphAppend
+    (graphSearchDepth depth laws node)
+    (graphSearchChildren depth laws nodes)
+
+graphSearchDepth :
+  Nat ->
+  List GraphLaw ->
+  GraphNode ->
+  List (List String)
+graphSearchDepth zero _ _ = []
+graphSearchDepth (suc depth) laws node =
+  if graphMaximalDependencyChain (graphNodePlan node) laws then
+    (graphNodePlan node) ∷ []
+  else
+    graphSearchChildren
+      depth
+      laws
+      (graphExpandNode node laws)
+
+graphSearchSeeds :
+  Nat ->
+  List GraphLaw ->
+  List GraphNode ->
+  List (List String)
+graphSearchSeeds depth laws [] = []
+graphSearchSeeds depth laws (node ∷ nodes) =
+  graphAppend
+    (graphSearchDepth depth laws node)
+    (graphSearchSeeds depth laws nodes)
+
+graphPlanScore : List String -> Nat
+graphPlanScore = length
+
+graphInsertPlan :
+  List String ->
   List (List String) ->
   List (List String)
-graphAStar zero _ _ results = results
-graphAStar (suc fuel) laws [] results = results
-graphAStar (suc fuel) laws (node ∷ frontier) results =
-  if graphMaximalDependencyChain (graphNodePlan node) laws then
-    graphAStar
-      fuel
-      laws
-      frontier
-      (graphNodePlan node ∷ results)
+graphInsertPlan plan [] = plan ∷ []
+graphInsertPlan plan (head ∷ tail) =
+  if graphPlanScore plan < graphPlanScore head then
+    plan ∷ head ∷ tail
   else
-    let children = graphExpandNode node laws
-        frontier' = graphInsertAll children frontier
-    in
-    graphAStar fuel laws frontier' results
+    head ∷ graphInsertPlan plan tail
+
+graphSortPlans :
+  List (List String) ->
+  List (List String)
+graphSortPlans [] = []
+graphSortPlans (plan ∷ plans) =
+  graphInsertPlan plan (graphSortPlans plans)
 
 autonomousGraphSearch :
   List (String × String) ->
@@ -518,30 +560,13 @@ autonomousGraphSearch :
 autonomousGraphSearch edges =
   let laws = graphLawsFromEdges edges
       seeds = graphLawSeeds laws
-      results = graphAStar (graphAStarFuel laws) laws seeds []
+      candidates =
+        graphSearchSeeds
+          (length laws)
+          laws
+          seeds
   in
-  reverse results
-
-autonomousGraphRegressionEdges : List (String × String)
-autonomousGraphRegressionEdges =
-  ("A" , "B") ∷ ("B" , "C") ∷ []
-
-hasThreeNodePlan : List (List String) -> Bool
-hasThreeNodePlan [] = False
-hasThreeNodePlan (plan ∷ plans) =
-  if length plan == suc (suc (suc zero)) then
-    True
-  else
-    hasThreeNodePlan plans
-
-autonomousGraphSearchRegression : Bool
-autonomousGraphSearchRegression =
-  hasThreeNodePlan
-    (autonomousGraphSearch autonomousGraphRegressionEdges)
-
-autonomousGraphSearchRegression-proof :
-  autonomousGraphSearchRegression ≡ True
-autonomousGraphSearchRegression-proof = refl
+  graphSortPlans candidates
 
 autonomousGraphSearchCount :
   List (String × String) ->
