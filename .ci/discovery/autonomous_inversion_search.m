@@ -287,7 +287,7 @@ write_plan_items(_, [], !IO).
 write_plan_items(Stream, [discovery_node(Plan, _) | Nodes], !IO) :-
     io.write_string(
         Stream,
-        "    "" ++ string.join_list(" -> ", Plan) ++ """,
+        "    " ++ string.join_list(" -> ", Plan) ++ "",
         !IO),
     (
         Nodes = []
