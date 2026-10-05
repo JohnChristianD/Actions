@@ -160,20 +160,25 @@
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
+          treeMonad =
+            pkgs.haskell.lib.markUnbroken
+              pkgs.haskellPackages.tree-monad;
           plugin =
             pkgs.haskell.lib.doJailbreak
               (pkgs.haskellPackages.callCabal2nix
                 "inversion-plugin"
                 inversion-plugin-src
-                {});
-          pluginWithCaballessChecks =
+                {
+                  "tree-monad" = treeMonad;
+                });
+          pluginWithoutChecks =
             pkgs.haskell.lib.overrideCabal
               plugin
               (_: {
                 doCheck = false;
               });
         in
-        pluginWithCaballessChecks.overrideAttrs (drv: {
+        pluginWithoutChecks.overrideAttrs (drv: {
           meta = drv.meta // {
             description = "GHC plugin for automatic function inversion and functional patterns";
             homepage = "https://github.com/cau-placc/inversion-plugin";
