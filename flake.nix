@@ -363,6 +363,7 @@
               name = "mercury-theorem-e2e";
               runtimeInputs = [
                 (agdaWithPrelude system)
+                (agda2hsWithHaskell system)
                 pkgs.mercury
                 pkgs.haskellPackages.dhall
                 pkgs.coreutils
@@ -371,8 +372,19 @@
               text = ''
                 set -euo pipefail
                 test -f FullCoupled/TheoremsMonolith.agda
-                agda="${agdaWithPrelude system}/bin/agda";
+                agda="${agdaWithPrelude system}/bin/agda"
+                agda2hs="${agda2hsWithHaskell system}/bin/agda2hs"
+                interpolation_manifest=.ci/discovery/.interpolation-imports
+                agda2hs_out=$(mktemp -d)
+                trap 'rm -rf "$agda2hs_out" "$interpolation_manifest"' EXIT
+                printf '%s\n' \
+                  "agda-prelude=${agdaPreludeLib system}" \
+                  "TypeTopology=${typeTopologyLib system}" \
+                  "agda2hs=$agda2hs" \
+                  > "$interpolation_manifest"
                 "$agda" --safe -i . FullCoupled/TheoremsMonolith.agda
+                "$agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$agda2hs_out"
+                test -s "$agda2hs_out/FullCoupled/Agda2HsSurface.hs"
                 cd .ci
                 mmc --make check_forbidden_theorems
                 ./check_forbidden_theorems
@@ -394,6 +406,10 @@
                 grep -Fq 'newNonredundantTheoremCount = 0' "$report"
                 grep -Fq 'reviewFrontierCount = 13' "$report"
                 grep -Fq 'CanonicalIntegerLayerNormAStarExecutionBridgeTheorem' "$report"
+                grep -Fq 'endToEndToolchainImportCount = 3' novel-theorem-interpolation.dhall
+                grep -Fq 'agda-prelude=' novel-theorem-interpolation.dhall
+                grep -Fq 'TypeTopology=' novel-theorem-interpolation.dhall
+                grep -Fq 'agda2hs=' novel-theorem-interpolation.dhall
                 grep -Fq 'status = "INTERPOLATED_AND_AGDA_TYPED"' novel-theorem-interpolation.dhall
                 echo "mercury-theorem-e2e=pass"
               '';
