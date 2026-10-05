@@ -3763,8 +3763,8 @@ canonical-qLog2Bias8-law :
   C.int8Neg
     (C.int8OfNat
       (Data.Nat._/_
-        (C.munchausenScale8 * C.qNumerator (C.finiteQLog8 x))
-        (C.qDenominator (C.finiteQLog8 x))))
+        (C.munchausenScale8 * C.natNumerator (C.qLog8 x))
+        (C.natDenominator (C.qLog8 x))))
 canonical-qLog2Bias8-law x with C.int8Magnitude x
 ... | zero = refl
 ... | suc n = refl
@@ -3779,8 +3779,8 @@ record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
       C.int8Neg
         (C.int8OfNat
           (Data.Nat._/_
-            (C.munchausenScale8 * C.qNumerator (C.finiteQLog8 x))
-            (C.qDenominator (C.finiteQLog8 x))))
+            (C.munchausenScale8 * C.natNumerator (C.qLog8 x))
+            (C.natDenominator (C.qLog8 x))))
 
     targetDecomposition :
       ∀ K s →
@@ -3823,8 +3823,8 @@ record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
       C.int8Neg
         (C.int8OfNat
           (Data.Nat._/_
-            (C.munchausenScale8 * C.qNumerator (C.finiteQLog8 x))
-            (C.qDenominator (C.finiteQLog8 x))))
+            (C.munchausenScale8 * C.natNumerator (C.qLog8 x))
+            (C.natDenominator (C.qLog8 x))))
 
     l2CorrectionNegation :
       ∀ x →
@@ -5061,9 +5061,9 @@ generalTsallis2Numerator xs =
 generalTsallis2NearSparsity : ActionWeights → C.ℚ
 generalTsallis2NearSparsity xs with actionWeightSquareSum xs
 ... | zero =
-  C.natFractionToℚ 1 1
+  C.fromNatFraction 1 1
 ... | suc q =
-  C.natFractionToℚ
+  C.fromNatFraction
     (generalTsallis2Numerator xs)
     (generalTsallis2Denominator xs)
 
@@ -5074,7 +5074,7 @@ generalTsallis2NearSparsity-zero :
   ∀ (xs : ActionWeights) →
   actionWeightSquareSum xs ≡ zero →
   generalTsallis2NearSparsity xs ≡
-  C.natFractionToℚ 1 1
+  C.fromNatFraction 1 1
 generalTsallis2NearSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
@@ -5084,7 +5084,7 @@ generalTsallis2NearSparsity-definition :
   ∀ (xs : ActionWeights) →
   actionWeightSquareSum xs ≢ zero →
   generalTsallis2NearSparsity xs ≡
-    C.natFractionToℚ
+    C.fromNatFraction
       (generalTsallis2Numerator xs)
       (generalTsallis2Denominator xs)
 generalTsallis2NearSparsity-definition xs h
@@ -5101,19 +5101,19 @@ fractionEquivalent x y = x ≡ y
 tsallis2Near-oneHot :
   fractionEquivalent
     (generalTsallis2NearSparsity (suc zero ∷ zero ∷ []))
-    (C.natFractionToℚ 1 2)
+    (C.fromNatFraction 1 2)
 tsallis2Near-oneHot = refl
 
 generalSupportSparsity : ActionWeights → C.ℚ
 generalSupportSparsity xs =
-  C.natFractionToℚ
+  C.fromNatFraction
     (length xs ∸ actionSupportCount xs)
     (length xs)
 
 generalSupportSparsity-definition :
   ∀ xs →
   generalSupportSparsity xs ≡
-    C.natFractionToℚ
+    C.fromNatFraction
       (length xs ∸ actionSupportCount xs)
       (length xs)
 generalSupportSparsity-definition xs = refl
