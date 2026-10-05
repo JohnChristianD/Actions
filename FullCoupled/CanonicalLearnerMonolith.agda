@@ -31,7 +31,7 @@ module FullCoupled.CanonicalLearnerMonolith where
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
 import Prelude.Int.Properties as IntegerProperties
-open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
+open import Agda.Builtin.Nat renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
