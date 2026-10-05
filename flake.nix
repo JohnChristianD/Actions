@@ -94,6 +94,7 @@
             cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
             cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
             cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
+            chmod -R u+rwX "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
             exec ${pkgs.agdaPackages.agda}/bin/agda \
               -i "$tmp/agda-prelude" \
               -i "$tmp/TypeTopology" \
@@ -117,6 +118,7 @@
             cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
             cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
             cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
+            chmod -R u+rwX "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
             exec ${pkgs.agdaPackages.agda}/bin/agda \
               -i "$tmp/agda-prelude" \
               -i "$tmp/TypeTopology" \
