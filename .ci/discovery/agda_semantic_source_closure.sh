@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dot_file="${1:?Agda dependency graph DOT file}"
+output_manifest="${2:?output source manifest}"
+root_source="${3:?root Agda source file}"
+shift 3
+roots=("$@")
+
+test -s "$dot_file"
+test -s "$root_source"
+test "${#roots[@]}" -gt 0
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+declare -A module_files=()
+
+add_source() {
+  local file="$1"
+  local module
+  module=$(awk '/^[[:space:]]*module[[:space:]]+/ { print $2; exit }' "$file")
+  if [ -n "$module" ]; then
+    module_files["$module"]="$file"
+  fi
+}
+
+add_source "$root_source"
+
+for root in "${roots[@]}"; do
+  test -d "$root"
+  while IFS= read -r -d '' file; do
+    add_source "$file"
+  done < <(find "$root" -type f -name '*.agda' -print0)
+done
+
+: > "$tmp/modules"
+sed -n 's/.*"\([^"]*\)".*/\1/p' "$dot_file" | sort -u > "$tmp/modules"
+
+: > "$output_manifest"
+printf '%s\n' "${module_files[FullCoupled.TheoremsMonolith]}" >> "$output_manifest"
+
+resolved=1
+unresolved=0
+while IFS= read -r module; do
+  [ -n "$module" ] || continue
+  if [ -n "${module_files[$module]+x}" ]; then
+    printf '%s\n' "${module_files[$module]}" >> "$output_manifest"
+    resolved=$((resolved + 1))
+  else
+    unresolved=$((unresolved + 1))
+  fi
+done < "$tmp/modules"
+
+sort -u -o "$output_manifest" "$output_manifest"
+test -s "$output_manifest"
+
+printf 'agda-semantic-source-closure=pass\n'
+printf 'resolved-source-count=%s\n' "$(wc -l < "$output_manifest")"
+printf 'unresolved-dot-symbol-count=%s\n' "$unresolved"
