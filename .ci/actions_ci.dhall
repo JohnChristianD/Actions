@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane : Lane = env:CI_LANE
 
@@ -18,8 +18,6 @@ let script = merge {
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
-    vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
-    test -f "$vehicle_source/Vehicle.agda"
     '',
   AgdaSafe = ''
     set -euo pipefail
@@ -33,14 +31,6 @@ let script = merge {
     test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
     echo "agda2hs-ghc=pass"
     echo "liquidhaskell-z3=pass"
-    '',
-  Vehicle = ''
-    set -euo pipefail
-    test -n "$VEHICLE_AGDA_SOURCE"
-    test -f "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
-    grep -Fq 'VEHICLE_COMMAND' "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
-    grep -Fq -- '--allow-exec' "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
-    echo "vehicle-agda-interface=pass"
     '',
   MirthFastDirty = ''
     set -euo pipefail
@@ -219,7 +209,6 @@ let script = merge {
     grep -Fq 'eGraphEconomicRepresentationInjective' "$theorem" || { echo "economic representation injectivity theorem missing"; exit 1; }
     grep -Fq 'canonicalGRUStatisticalEncodeInjective' "$theorem" || { echo "GRU statistical injectivity theorem missing"; exit 1; }
     grep -Fq 'CanonicalGRUStatisticalInjectivityTheorem' "$theorem" || { echo "GRU statistical injectivity package missing"; exit 1; }
-    grep -Fq 'vehicleCommandName' "$theorem" || { echo "Vehicle theorem-monolith witness missing"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
     [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
@@ -666,7 +655,7 @@ DHALL
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
-    "$AGDA_COMMAND" --allow-exec -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
