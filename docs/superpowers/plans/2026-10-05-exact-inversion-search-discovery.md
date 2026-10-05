@@ -49,9 +49,8 @@
 ### Task 2: Extend Mercury autonomous discovery
 
 **Files:**
-- Modify: `.ci/discovery/theorem_graph_search.m`
-- Modify: `.ci/discovery/theorem_monolith_egraph_sync.m`
-- Modify: `.ci/discovery/real_semantic_egraph.m`
+- Create: `.ci/discovery/autonomous_inversion_search.m`
+- Modify: `flake.nix`
 
 **Interfaces:**
 - New semantic target: the inversion/exact-search bridge theorem.
