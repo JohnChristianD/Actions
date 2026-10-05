@@ -21,6 +21,7 @@ module FullCoupled.TheoremsMonolith where
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
 open import Prelude
+open import Vehicle.Data.Tensor as VehicleTensor
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 import Prelude.Int.Properties as IntegerProperties
 open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
