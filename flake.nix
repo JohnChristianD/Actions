@@ -81,39 +81,13 @@
       agda2hsBaseLib = system:
         agda2hs.packages.${system}.base-lib;
 
-      agda2hsContainersLib = system:
-        agda2hs.packages.${system}.containers-lib;
-
-      vehicleAgdaLib = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "vehicle-agda";
-          version = "0-unstable-2026-10-05";
-          libraryName = "vehicle-0.1.0";
-          libraryFile = "vehicle.agda-lib";
-          src = vehicle;
-          buildInputs = [ pkgs.agdaPackages.standard-library ];
-          dontBuild = true;
-          installPhase = ''
-            mkdir -p "$out/src"
-            cp -R vehicle-agda/src/. "$out/src/"
-            cp vehicle-agda/vehicle.agda-lib "$out/vehicle.agda-lib"
-          '';
-        };
-
       agdaWithTheoremGraphLibraries = system:
         let
           pkgs = pkgsFor system;
         in
         pkgs.agdaPackages.agda.withPackages [
-          (pkgs.agdaPackages.standard-library)
           (agdaPreludeLib system)
           (typeTopologyLib system)
-          (agda2hsBaseLib system)
-          (agda2hsContainersLib system)
-          (vehicleAgdaLib system)
         ];
 
       agdaWithPrelude = system:
@@ -420,8 +394,6 @@
                 printf '%s\n' \
                   "agda-prelude=${agdaPreludeLib system}" \
                   "TypeTopology=${typeTopologyLib system}" \
-                  "agda2hs-base=${agda2hsBaseLib system}" \
-                  "agda2hs-containers=${agda2hsContainersLib system}" \
                   > "$interpolation_manifest"
                 "$agda" --safe --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
                 bash .ci/discovery/agda_semantic_source_closure.sh \
@@ -429,11 +401,7 @@
                   "$semantic_manifest" \
                   "$PWD" \
                   "${agdaPreludeLib system}/src" \
-                  "${typeTopologyLib system}/source" \
-                  "${agda2hsBaseLib system}" \
-                  "${agda2hsContainersLib system}" \
-                  "${pkgs.agdaPackages.standard-library}" \
-                  "${vehicleAgdaLib system}"
+                  "${typeTopologyLib system}/source"
                 test -s "$semantic_manifest"
                 "$agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$agda2hs_out"
                 test -s "$agda2hs_out/FullCoupled/Agda2HsSurface.hs"
