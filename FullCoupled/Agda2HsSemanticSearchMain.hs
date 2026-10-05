@@ -107,4 +107,4 @@ main = do
   print nontrivial
   print egraphComplete
   print egraphAssociative
-  print autonomousRegression
+  putStrLn ("autonomous-regression=" ++ show autonomousRegression)
