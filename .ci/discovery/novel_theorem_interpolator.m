@@ -46,12 +46,31 @@ collect_imports([Line | Lines], Acc0, Imports) :-
     list(string)::out,
     io::di, io::uo) is det.
 read_available_imports(Imports, !IO) :-
+    read_toolchain_imports(ToolchainImports, !IO),
     io.read_named_file_as_lines(
         "../../FullCoupled/TheoremsMonolith.agda",
         Result, !IO),
     (
         Result = ok(Lines),
         collect_imports(Lines, [], Imports)
+    ;
+        Result = error(_),
+        Imports = []
+    ).
+
+:- pred read_toolchain_imports(
+    list(string)::out,
+    io::di, io::uo) is det.
+read_toolchain_imports(Imports, !IO) :-
+    io.read_named_file_as_lines(
+        ".interpolation-imports",
+        Result, !IO),
+    (
+        Result = ok(Lines),
+        list.filter(
+            (pred(Line::in) is semidet :- string.strip(Line) \= ""),
+            Lines,
+            Imports)
     ;
         Result = error(_),
         Imports = []
@@ -80,6 +99,7 @@ main(!IO) :-
     read_semantic_laws(Laws, !IO),
     read_available_imports(Imports, !IO),
     (
+        list.length(ToolchainImports) = 3,
         graph_interpolated_execution_bridge_plan(Laws, Plan),
         all_generated_plans_valid(Laws, [Plan])
     ->
@@ -97,6 +117,12 @@ main(!IO) :-
             io.write_string(Stream, ",\n", !IO),
             io.write_string(Stream, "  availableImports = [\n", !IO),
             write_items(Stream, Imports, !IO),
+            io.write_string(Stream, "  ],\n", !IO),
+            io.write_string(Stream, "  endToEndToolchainImportCount = ", !IO),
+            io.write_string(Stream, string.int_to_string(list.length(ToolchainImports)), !IO),
+            io.write_string(Stream, ",\n", !IO),
+            io.write_string(Stream, "  endToEndToolchainImports = [\n", !IO),
+            write_items(Stream, ToolchainImports, !IO),
             io.write_string(Stream, "  ],\n", !IO),
             io.write_string(Stream, "  graphSearch = \"A* cost-guided dependency paths\",\n", !IO),
             io.write_string(Stream, "  semanticAuthority = \"Agda proof term\",\n", !IO),
