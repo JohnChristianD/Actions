@@ -103,14 +103,7 @@ let script = merge {
     '',
   Mercury = ''
     set -euo pipefail
-    nix run .#mercury-novel-theorem-interpolation
-    test -s .ci/discovery/novel-theorem-interpolation.dhall
-    dhall text --file .ci/discovery/novel-theorem-interpolation.dhall >/dev/null
-    grep -Fq 'status = "INTERPOLATED_AND_AGDA_TYPED"' .ci/discovery/novel-theorem-interpolation.dhall
-    grep -Fq 'graphSearch = "A* cost-guided dependency paths"' .ci/discovery/novel-theorem-interpolation.dhall
-    grep -Fq 'CanonicalIntegerLayerNormAStarExecutionBridgeTheorem' .ci/discovery/novel-theorem-interpolation.dhall
-    (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
-    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
+    nix run .#mercury-theorem-e2e
     '',
   Pages = ''
     set -euo pipefail
