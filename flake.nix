@@ -189,65 +189,75 @@
             type = "app";
             program = "${script}/bin/mirth-c99-sync";
           };
-          mirth-agda-import-sync = {
-            type = "app";
-            program = "${pkgs.writeShellApplication {
+          mirth-agda-import-sync = let
+            script = pkgs.writeShellApplication {
               name = "mirth-agda-import-sync";
               runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
                 bash .ci/mirth/agda_import_sync.sh "$@"
-              ''';
-            }}/bin/mirth-agda-import-sync";
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-import-sync";
           };
 
-          mirth-agda-command-sync = {
-            type = "app";
-            program = "${pkgs.writeShellApplication {
+          mirth-agda-command-sync = let
+            script = pkgs.writeShellApplication {
               name = "mirth-agda-command-sync";
               runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
                 bash .ci/mirth/agda_command_sync.sh "$@"
-              ''';
-            }}/bin/mirth-agda-command-sync";
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-command-sync";
           };
 
-          mirth-agda-sync = {
-            type = "app";
-            program = "${pkgs.writeShellApplication {
+          mirth-agda-sync = let
+            script = pkgs.writeShellApplication {
               name = "mirth-agda-sync";
               runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
                 bash .ci/mirth/agda_import_sync.sh "$@"
                 bash .ci/mirth/agda_command_sync.sh "$@"
-              ''';
-            }}/bin/mirth-agda-sync";
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-sync";
           };
 
-          mirth-ascii-sync = {
-            type = "app";
-            program = "${pkgs.writeShellApplication {
+          mirth-ascii-sync = let
+            script = pkgs.writeShellApplication {
               name = "mirth-ascii-sync";
               runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
                 bash .ci/mirth/ascii_surface.sh
-              ''';
-            }}/bin/mirth-ascii-sync";
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-ascii-sync";
           };
 
-          mirth-agda-graph = {
-            type = "app";
-            program = "${pkgs.writeShellApplication {
+          mirth-agda-graph = let
+            script = pkgs.writeShellApplication {
               name = "mirth-agda-graph";
               runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
                 bash .ci/mirth/agda_graph.sh "$@"
-              ''';
-            }}/bin/mirth-agda-graph";
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-graph";
           };
           agda2hs-extract = let
             script = pkgs.writeShellApplication {
