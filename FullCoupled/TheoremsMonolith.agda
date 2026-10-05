@@ -291,17 +291,6 @@ identityActivation8-injective eq = eq
 
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
--- External integration witness.
---
--- Vehicle remains an orchestration/interface boundary; accepted Agda
--- theorem terms remain the proof authority.
-------------------------------------------------------------------------
-
-vehicleCommandName : String
-vehicleCommandName = "vehicle"
-
-
-------------------------------------------------------------------------
 -- Canonical theorem section: ZPF statistical representation boundary.
 ------------------------------------------------------------------------
 
