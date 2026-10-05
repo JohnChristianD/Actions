@@ -93,6 +93,28 @@
       agda2hsBaseLib = system:
         agda2hs.packages.${system}.base-lib;
 
+      agdaEmacs = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.emacsWithPackages (epkgs: [
+          epkgs.agda2-mode
+        ]);
+
+      agdaForShell = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.writeShellApplication {
+          name = "agda";
+          runtimeInputs = [ (agdaWithPrelude system) ];
+          text = ''
+            set -euo pipefail
+            exec agda-with-prelude "$@"
+          '';
+        };
+
+
       agdaWithTheoremGraphLibraries = system:
         let
           pkgs = pkgsFor system;
@@ -509,6 +531,8 @@
               pkgs.mirth
               pkgs.gh
               (agdaWithPrelude system)
+              (agdaForShell system)
+              (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.yamlscript
               pkgs.elmPackages.elm
