@@ -117,20 +117,6 @@ listEqualNat (_ ∷ _) [] = False
 listEqualNat (x ∷ xs) (y ∷ ys) =
   if x == y then listEqualNat xs ys else False
 
-mutual
-  exprEqual : Expr -> Expr -> Bool
-  exprEqual (atom x) (atom y) = x == y
-  exprEqual (app sx xs) (app sy ys) =
-    if sx == sy then exprListEqual xs ys else False
-  exprEqual _ _ = False
-
-  exprListEqual : List Expr -> List Expr -> Bool
-  exprListEqual [] [] = True
-  exprListEqual [] (_ ∷ _) = False
-  exprListEqual (_ ∷ _) [] = False
-  exprListEqual (x ∷ xs) (y ∷ ys) =
-    if exprEqual x y then exprListEqual xs ys else False
-
 parentsLookup : Nat -> List (Nat × Nat) -> Nat
 parentsLookup key parents =
   case lookupPair key parents of λ where
