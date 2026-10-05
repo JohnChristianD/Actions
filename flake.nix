@@ -3,10 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    agda-prelude = {
-      url = "github:UlfNorell/agda-prelude/4230566d3ae229b6a00258587651ac7bfd38d088";
-      flake = false;
-    };
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -23,7 +19,6 @@
   outputs = {
     self,
     nixpkgs,
-    agda-prelude,
     typetopology,
     agda2hs,
     inversion-plugin-src
@@ -40,32 +35,6 @@
 
       pkgsFor = system:
         import nixpkgs { inherit system; };
-
-      agdaPreludeLib = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "agda-prelude";
-          version = "0-unstable-2026-10-05";
-          src = agda-prelude;
-          libraryName = "agda-prelude";
-          libraryFile = "agda-prelude.agda-lib";
-          dontBuild = true;
-          installPhase = ''
-            mkdir -p "$out/src"
-            cp -R src/. "$out/src/"
-            printf "%s\n" \
-              "name: agda-prelude" \
-              "include: src" \
-              > "$out/agda-prelude.agda-lib"
-          '';
-          meta = {
-            description = "Minimal Agda programming prelude";
-            homepage = "https://github.com/UlfNorell/agda-prelude";
-            license = pkgs.lib.licenses.mit;
-          };
-        };
 
       typeTopologyLib = system:
         let
@@ -107,10 +76,10 @@
         in
         pkgs.writeShellApplication {
           name = "agda";
-          runtimeInputs = [ (agdaWithPrelude system) ];
+          runtimeInputs = [ (agdaWithLibraries system) ];
           text = ''
             set -euo pipefail
-            exec agda-with-prelude "$@"
+            exec agda-with-libraries "$@"
           '';
         };
 
@@ -126,37 +95,33 @@
             set -euo pipefail
             tmp=$(mktemp -d)
             trap 'rm -rf "$tmp"' EXIT
-            mkdir -p "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
-            cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
+            mkdir -p "$tmp/TypeTopology" "$tmp/agda2hs-base"
             cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
             cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
-            chmod -R u+rwX "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            chmod -R u+rwX "$tmp/TypeTopology" "$tmp/agda2hs-base"
             exec ${pkgs.agdaPackages.agda}/bin/agda \
-              -i "$tmp/agda-prelude" \
               -i "$tmp/TypeTopology" \
               -i "$tmp/agda2hs-base" \
               "$@"
           '';
         };
 
-      agdaWithPrelude = system:
+      agdaWithLibraries = system:
         let
           pkgs = pkgsFor system;
         in
         pkgs.writeShellApplication {
-          name = "agda-with-prelude";
+          name = "agda-with-libraries";
           runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
           text = ''
             set -euo pipefail
             tmp=$(mktemp -d)
             trap 'rm -rf "$tmp"' EXIT
-            mkdir -p "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
-            cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
+            mkdir -p "$tmp/TypeTopology" "$tmp/agda2hs-base"
             cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
             cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
-            chmod -R u+rwX "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            chmod -R u+rwX "$tmp/TypeTopology" "$tmp/agda2hs-base"
             exec ${pkgs.agdaPackages.agda}/bin/agda \
-              -i "$tmp/agda-prelude" \
               -i "$tmp/TypeTopology" \
               -i "$tmp/agda2hs-base" \
               "$@"
@@ -236,7 +201,7 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaWithPrelude system;
+          agda = agdaWithLibraries system;
           agda2hs = agda2hsWithHaskell system;
           agda-prelude = agdaPreludeLib system;
           typetopology = typeTopologyLib system;
@@ -383,7 +348,7 @@
             script = pkgs.writeShellApplication {
               name = "agda-haskell-pipeline";
               runtimeInputs = [
-                (agdaWithPrelude system)
+                (agdaWithLibraries system)
                 (agda2hsWithHaskell system)
                 (haskellInversionGhc system)
                 pkgs.z3
@@ -530,7 +495,7 @@
               pkgs.haskellPackages.dhall-json
               pkgs.mirth
               pkgs.gh
-              (agdaWithPrelude system)
+              (agdaWithLibraries system)
               (agdaForShell system)
               (agdaEmacs system)
               pkgs.stdenv.cc
@@ -539,7 +504,7 @@
             ];
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
-              export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda-with-prelude"
+              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
               export LIQUID_SOLVER=z3
             '';
           };
