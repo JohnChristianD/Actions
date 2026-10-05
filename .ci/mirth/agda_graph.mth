@@ -1,5 +1,8 @@
 module actions.agda_graph
 
+import std.prelude
+import std.world
+
 
 def main {
     "bash .ci/mirth/agda_graph.sh \"$1\"\n" print
