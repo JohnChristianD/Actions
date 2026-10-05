@@ -5063,8 +5063,7 @@ generalTsallis2NearSparsity xs with actionWeightSquareSum xs
 ... | zero =
   C.natFractionToℚ 1 1
 ... | suc q =
-  C.finiteRational
-    1
+  C.natFractionToℚ
     (generalTsallis2Numerator xs)
     (generalTsallis2Denominator xs)
 
@@ -5085,8 +5084,7 @@ generalTsallis2NearSparsity-definition :
   ∀ (xs : ActionWeights) →
   actionWeightSquareSum xs ≢ zero →
   generalTsallis2NearSparsity xs ≡
-    C.finiteRational
-      1
+    C.natFractionToℚ
       (generalTsallis2Numerator xs)
       (generalTsallis2Denominator xs)
 generalTsallis2NearSparsity-definition xs h
