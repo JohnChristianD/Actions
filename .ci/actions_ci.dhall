@@ -658,9 +658,10 @@ DHALL
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
+    ''} lane
+
 in script
 
-    '',
   Agda2HsLiquid = ''
     set -euo pipefail
     nix run .#agda-haskell-pipeline
