@@ -103,6 +103,12 @@ let script = merge {
     '',
   Mercury = ''
     set -euo pipefail
+    nix run .#mercury-novel-theorem-interpolation
+    test -s .ci/discovery/novel-theorem-interpolation.dhall
+    dhall text --file .ci/discovery/novel-theorem-interpolation.dhall >/dev/null
+    grep -Fq 'status = "INTERPOLATED_AND_AGDA_TYPED"' .ci/discovery/novel-theorem-interpolation.dhall
+    grep -Fq 'graphSearch = "A* cost-guided dependency paths"' .ci/discovery/novel-theorem-interpolation.dhall
+    grep -Fq 'CanonicalIntegerLayerNormAStarExecutionBridgeTheorem' .ci/discovery/novel-theorem-interpolation.dhall
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     '',
@@ -179,7 +185,7 @@ let script = merge {
     grep -Fq 'astarScoreOrdered = True' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'newNonredundantTheoremCount = 0' "$report" || { echo "unexpected new nonredundant theorem claim"; exit 1; }
-    grep -Fq 'reviewFrontierCount = 12' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
+    grep -Fq 'reviewFrontierCount = 13' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
     grep -Fq 'CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem' "$report" || { echo "existing LayerNorm infinite-horizon review frontier missing"; exit 1; }
     grep -Fq 'AStarPlanMonoidTheorem' "$report" || { echo "A* plan-monoid review frontier missing"; exit 1; }
     grep -Fq 'CanonicalTokenArbitraryLengthGenerationTheorem' "$report" || { echo "token-generation review frontier missing"; exit 1; }
