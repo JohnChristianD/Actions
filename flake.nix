@@ -410,7 +410,7 @@
                 grep -E '^theorem-graph-edges=[1-9][0-9]* autonomous-a-star-chains=[1-9][0-9]*$' "$out/report.txt"
                 grep -E '^agda2hs autonomous theorem-graph A\\*: [1-9][0-9]* dependency chains$' "$out/report.txt"
                 grep -Fq "autonomous-regression=True" "$out/report.txt"
-                printf '%s\\n' \
+                printf '%s\n' \
                   "compiler=canonical-pkgs.haskellPackages.ghc" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "proofKernel=Agda" \
