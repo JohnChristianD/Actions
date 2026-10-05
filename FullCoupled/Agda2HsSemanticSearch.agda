@@ -4,7 +4,7 @@ module FullCoupled.Agda2HsSemanticSearch where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
-open import Unsafe.Haskell
+import Unsafe.Haskell as Unsafe
 open import Equality
 open import Naturals
 open import Naturals.Properties
@@ -26,6 +26,9 @@ module ExactRealSearchSurface (fe : FunExt) where
     csearchable 𝓤₀ X
   exactSearchPreservesSearchability {X} =
     searchable→csearchable X
+
+  unsafeHaskellNatString : Nat → String
+  unsafeHaskellNatString = Unsafe.showℕ
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
