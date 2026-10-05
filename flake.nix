@@ -127,7 +127,7 @@
               "$@"
           '';
         };
-      haskellLiquidGhc = system:
+      canonicalGhc = system:
         let
           pkgs = pkgsFor system;
         in
@@ -140,7 +140,7 @@
 
       agda2hsWithHaskell = system:
         let
-          ghc = haskellLiquidGhc system;
+          ghc = canonicalGhc system;
         in
         agda2hs.packages.${system}.agda2hs.withPackages {
           pkgs = [
@@ -182,7 +182,7 @@
         in
         pkgs.mkShell {
           packages = [
-            (haskellLiquidGhc system)
+            (canonicalGhc system)
             pkgs.haskellPackages.liquidhaskell
             pkgs.z3
             pkgs.coreutils
@@ -327,7 +327,7 @@
               runtimeInputs = [
                 (agdaWithLibraries system)
                 (agda2hsWithHaskell system)
-                (haskellLiquidGhc system)
+                (canonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.git
@@ -409,7 +409,7 @@
               runtimeInputs = [
                 (agdaWithLibraries system)
                 (agda2hsWithHaskell system)
-                (haskellLiquidGhc system)
+                (canonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
@@ -427,7 +427,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${haskellLiquidGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -O0 -dcore-lint ${ghcPluginFlagsText} -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -O0 -dcore-lint ${ghcPluginFlagsText} -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
@@ -532,7 +532,7 @@
 
           simple-haskell = pkgs.mkShell {
             packages = [
-              (haskellLiquidGhc system)
+              (canonicalGhc system)
               pkgs.z3
               pkgs.haskellPackages.rio
             ];
@@ -545,7 +545,7 @@
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
-              (haskellLiquidGhc system)
+              (canonicalGhc system)
               pkgs.haskellPackages.liquidhaskell
               pkgs.haskellPackages.cabal-install
               pkgs.z3
