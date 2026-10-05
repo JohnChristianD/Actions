@@ -4,8 +4,11 @@ module FullCoupled.Agda2HsSemanticSearch where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
+import Unsafe.Haskell as Unsafe
 open import Equality
 open import Naturals
+open import Naturals.Properties
+open import MLTT.Two-Properties
 open import UF.FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
