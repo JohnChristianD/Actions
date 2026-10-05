@@ -442,7 +442,7 @@ chooseCheaper (Just left) (Just right) =
   if extractedCost left < extractedCost right then Just left else Just right
 
 mutual
-    extractChildren :
+  extractChildren :
       List Nat -> EGraph -> Nat -> List Nat -> Maybe ChildExtraction
   extractChildren [] _ _ _ = Just (childExtraction [] zero)
   extractChildren (child ∷ children) graph depth seen =
@@ -457,7 +457,7 @@ mutual
                 (extractedExpr first ∷ extractedChildren rest)
                 (extractedCost first + extractedCostSum rest))
 
-    bestBindingForRoot :
+  bestBindingForRoot :
     Nat -> List Binding -> EGraph -> Nat -> List Nat -> Maybe Extraction
   bestBindingForRoot _ [] _ _ _ = Nothing
   bestBindingForRoot target
@@ -477,7 +477,7 @@ mutual
     in chooseCheaper candidate
          (bestBindingForRoot target rest graph depth seen)
 
-    extractBestSeen :
+  extractBestSeen :
     Nat -> EGraph -> Nat -> List Nat -> Maybe Extraction
   extractBestSeen class graph depth seen =
     if depth == zero then Nothing else
@@ -485,7 +485,7 @@ mutual
       if memberNat target seen then Nothing
       else bestBindingForRoot target (bindings graph) graph depth (target ∷ seen)
 
-    extractBest : Nat -> EGraph -> Nat -> Maybe Extraction
+  extractBest : Nat -> EGraph -> Nat -> Maybe Extraction
     extractBest class graph depth = extractBestSeen class graph depth []
 
 classCount : EGraph -> Nat
