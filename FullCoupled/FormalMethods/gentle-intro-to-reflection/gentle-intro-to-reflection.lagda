@@ -403,13 +403,12 @@ data Clause where
 Here are three examples of “def”ined names, the first two do not take an argument.
 The last takes a visible and relevant argument, 𝓋𝓇𝒶, that is a literal natural.
 \begin{code}
-import Prelude
 
 unquoteDecl
   = do "AST representation of ℕ"  ⇨  quoteTerm ℕ ≡ def (quote ℕ) []
-       "Empty List" ⇨ quoteTerm List ≡ def (quote List) []
+       "Empty List" ⇨ quoteTerm List.List ≡ def (quote List.List) []
        "Parameterised datatype"
-         ⇨ quoteTerm (List ℕ) ≡ def (quote List) (𝓋𝓇𝒶 (quoteTerm ℕ) ∷ [])
+         ⇨ quoteTerm (List.List ℕ) ≡ def (quote List.List) (𝓋𝓇𝒶 (quoteTerm ℕ) ∷ [])
 \end{code}
 If we did not use the testing framework, even without comments, we would
 need more lines for these trivial tests:
