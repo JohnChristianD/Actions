@@ -144,7 +144,7 @@ module ExactSearchInversion (fe : FunExt) where
 
   record SearchableEquivalence
     (X Y : ClosenessSpace 𝓤₀) : Set₁ where
-    constructor exactSearchEquivalence
+    constructor searchableEquivalence
     field
       forward : ⟨ X ⟩ → ⟨ Y ⟩
       inverse : ⟨ Y ⟩ → ⟨ X ⟩
@@ -229,46 +229,22 @@ module ExactSearchInversion (fe : FunExt) where
               py
           )
 
-------------------------------------------------------------------------
--- Public theorem-shaped aliases consumed by the autonomous graph.
-------------------------------------------------------------------------
+  inverse-correct :
+    ∀ {X Y : ClosenessSpace 𝓤₀}
+    (E : SearchableEquivalence X Y)
+    (y : ⟨ Y ⟩)
+    (x : ⟨ X ⟩) →
+    forward E x ≡ y →
+    inverse E y ≡ x
+  inverse-correct =
+    inverse-selects-preimage
 
-inverse-correct :
-  ∀ {X Y : ClosenessSpace 𝓤₀}
-  (E : SearchableEquivalence X Y)
-  (y : ⟨ Y ⟩)
-  (x : ⟨ X ⟩) →
-  forward E x ≡ y →
-  inverse E y ≡ x
-inverse-correct =
-  inverse-selects-preimage
-
-inverse-csearchable :
-  ∀ {X Y : ClosenessSpace 𝓤₀}
-  (E : SearchableEquivalence X Y) →
-  csearchable 𝓤₀ Y
-inverse-csearchable =
-  inverse-preserves-csearchability
-
-
-
-------------------------------------------------------------------------
-nat-ring-solver-layernorm-step :
-  ∀ (epsilon scale : Nat) →
-  (epsilon + suc zero) * scale ≡
-  (epsilon * scale) + scale
-nat-ring-solver-layernorm-step = NatRingSolver.solve-∀
-
-integer-ring-solver-assoc :
-  ∀ (i j k : Int) →
-  i +Int (j +Int k) ≡ (i +Int j) +Int k
-integer-ring-solver-assoc = IntegerRingSolver.solve-∀
-
-list-monoid-solver-append-assoc :
-  ∀ (xs ys zs : List C.Int8) →
-  xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
-list-monoid-solver-append-assoc xs ys zs =
-  sym (++-assoc xs ys zs)
+  inverse-csearchable :
+    ∀ {X Y : ClosenessSpace 𝓤₀}
+    (E : SearchableEquivalence X Y) →
+    csearchable 𝓤₀ Y
+  inverse-csearchable =
+    inverse-preserves-csearchability
 
 ------------------------------------------------------------------------
 record NatRingSolverNormalizationTheorem : Set₁ where
@@ -2165,15 +2141,6 @@ record FourLawOneStepWitnessContract
 -- physics witness.
 ------------------------------------------------------------------------
 
-iterateStep :
-  ∀ {State : Set} →
-  (State → State) →
-  Nat →
-  State →
-  State
-iterateStep step zero s = s
-iterateStep step (suc n) s = iterateStep step n (step s)
-
 iterateConjugacy :
   ∀ {LearnerState PhysicalState : Set}
   {learnerStep : LearnerState → LearnerState}
@@ -2190,14 +2157,10 @@ iterateConjugacy :
 iterateConjugacy encode stepConjugacy zero s = refl
 iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (suc n) s =
   trans
-    (iterateConjugacy
-      encode
-      stepConjugacy
-      n
-      (learnerStep s))
+    (stepConjugacy (iterateStep learnerStep n s))
     (cong
-      (iterateStep physicalStep n)
-      (stepConjugacy s))
+      physicalStep
+      (iterateConjugacy encode stepConjugacy n s))
 
 ------------------------------------------------------------------------
 -- Input-indexed square contract for prefix scans. This is deliberately
