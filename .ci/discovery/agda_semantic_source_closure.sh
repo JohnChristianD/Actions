@@ -20,7 +20,7 @@ add_source() {
   local file="$1"
   local module
   module=$(awk '/^[[:space:]]*module[[:space:]]+/ { print $2; exit }' "$file")
-  if [ -n "$module" ]; then
+  if [ -n "$module" ] && [ -z "${module_files[$module]+x}" ]; then
     module_files["$module"]="$file"
   fi
 }
@@ -46,13 +46,11 @@ sed -n 's/.*"\([^"]*\)".*/\1/p' "$dot_file" | sort -u > "$tmp/modules"
 : > "$output_manifest"
 printf '%s\n' "${module_files[FullCoupled.TheoremsMonolith]}" >> "$output_manifest"
 
-resolved=1
 unresolved=0
 while IFS= read -r module; do
   [ -n "$module" ] || continue
   if [ -n "${module_files[$module]+x}" ]; then
     printf '%s\n' "${module_files[$module]}" >> "$output_manifest"
-    resolved=$((resolved + 1))
   else
     unresolved=$((unresolved + 1))
   fi
