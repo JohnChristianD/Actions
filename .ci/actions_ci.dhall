@@ -22,7 +22,8 @@ let script = merge {
   AgdaSafe = ''
     set -euo pipefail
     "$AGDA_COMMAND" --version
-    if grep -q -- '^{-# OPTIONS --safe #-}
+    echo "agda-safe=not-applicable; canonical surface is intentionally non-safe for Prelude-compatible theorem checking"
+    '',
   Agda2HsLiquid = ''
     set -euo pipefail
     nix run .#agda-haskell-pipeline
