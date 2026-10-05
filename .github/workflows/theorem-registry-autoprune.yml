@@ -45,7 +45,6 @@ jobs:
           nix develop .#default -c bash -euo pipefail -c '
             "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
             "$AGDA_COMMAND" --allow-exec -i . \
-              -i "$VEHICLE_AGDA_SOURCE" \
               FullCoupled/TheoremsMonolith.agda
           '
 
