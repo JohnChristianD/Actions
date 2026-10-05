@@ -7,7 +7,7 @@
 -- Canonical learner semantics.
 --
 -- This module is the executable/type-level source of the coupled learner:
--- recurrent GRU state, Watkins state, F4/L2 optimizer state, LCB counts,
+-- recurrent monoid-LSTM state, Watkins state, F4/L2 optimizer state, LCB counts,
 -- sparse policy readout, q-log state, the persistent learner channels, and the
 -- endogenous feedback signal. The definitions below determine what the
 -- learner actually does; theorem modules consume these definitions.
@@ -15,8 +15,8 @@
 -- The main emergent facts are structural: LCB totalCount advances exactly
 -- by one per canonical step, the optimizer state is explicit, the policy is
 -- invariant under optimizer replacement, and the recurrent
--- components are exposed as composable state transitions. The integer
--- token layer and linear Haar layer are exact formal substrates, not
+-- components are exposed as composable monoid-LSTM state transitions. The integer
+-- token layer and Haar-featured linear transformer are exact formal substrates, not
 -- empirical language-model or physical-realism claims.
 --
 -- This file intentionally contains definitions and local definitional laws,
@@ -614,40 +614,237 @@ hardSignGate x with hardSign x
 ... | zeroSign = zero8
 ... | positive = one8
 
-record GRUMatrices : Set where
-  constructor gruMatrices
+------------------------------------------------------------------------
+-- Monoid LSTM recurrent core.
+--
+-- One input acts as an affine endomorphism of cell state.  Affine
+-- composition is the carrier monoid; recurrent prefixes therefore admit
+-- exact scan composition.  Hidden state is derived from the new cell
+-- state plus the signed input feature.  Persistent matrix/noise/control
+-- channels remain explicit learner state, preserving the old theorem
+-- surface needed by downstream modules without retaining GRU dynamics.
+------------------------------------------------------------------------
+
+record MonoidLSTMMatrices : Set where
+  constructor monoidLSTMMatrices
   field matrixZ matrixR matrixH : Int8
-open GRUMatrices public
+open MonoidLSTMMatrices public
 
-record GRUNoise : Set where
-  constructor gruNoise
+record MonoidLSTMNoise : Set where
+  constructor monoidLSTMNoise
   field noiseZ noiseR noiseH : Int8
-open GRUNoise public
+open MonoidLSTMNoise public
 
-record GlobalControl : Set where
-  constructor mkGlobalControl
+record MonoidLSTMControl : Set where
+  constructor monoidLSTMControl
   field optimizerToken l2Token : Int8
-open GlobalControl public
+open MonoidLSTMControl public
 
-record GRUState : Set where
-  constructor gruState
-  field hiddenState : Int8
-        matrixState : GRUMatrices
-        noiseState : GRUNoise
-        controlState : GlobalControl
-open GRUState public
+record MonoidAffine : Set where
+  constructor monoidAffine
+  field slope offset : Int8
+open MonoidAffine public
+
+_∘ₘ_ : MonoidAffine → MonoidAffine → MonoidAffine
+(a₁ , b₁) ∘ₘ (a₂ , b₂) =
+  int8Mul a₁ a₂ ,
+  int8Add (int8Mul a₁ b₂) b₁
+
+monoidAffine-id : MonoidAffine
+monoidAffine-id = one8 , zero8
+
+monoidAffine-assoc : ∀ a b c → (a ∘ₘ b) ∘ₘ c ≡ a ∘ₘ (b ∘ₘ c)
+monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
+  cong₂ _,_
+    (int8*-assoc a₁ a₂ a₃)
+    (trans
+      (cong₂ int8Add
+        (int8*-assoc a₁ a₂ b₃)
+        refl)
+      (trans
+        (sym (int8+-assoc
+          (int8Mul a₁ (int8Mul a₂ b₃))
+          (int8Mul a₁ b₂)
+          b₁))
+        (cong
+          (λ z → int8Add z b₁)
+          (sym (int8*-distribˡ
+            a₁
+            (int8Mul a₂ b₃)
+            b₂)))))
+
+monoidAffine-idˡ : ∀ a → monoidAffine-id ∘ₘ a ≡ a
+monoidAffine-idˡ (a , b) =
+  cong₂ _,_
+    (int8*-idˡ a)
+    (trans
+      (cong (λ z → int8Add z zero8) (int8*-idˡ b))
+      (int8+-idʳ b))
+
+monoidAffine-idʳ : ∀ a → a ∘ₘ monoidAffine-id ≡ a
+monoidAffine-idʳ (a , b) =
+  cong₂ _,_
+    (int8*-idʳ a)
+    (trans
+      (cong (λ z → int8Add z b) (int8*-zeroʳ a))
+      (int8+-idˡ b))
+
+applyMonoidAffine : MonoidAffine → Int8 → Int8
+applyMonoidAffine (a , b) c =
+  int8Add (int8Mul a c) b
+
+data MonoidLSTMGate : Set where
+  monoidHold monoidWrite monoidReset monoidAccum : MonoidLSTMGate
+
+monoidLSTMGateOf : Int8 → MonoidLSTMGate
+monoidLSTMGateOf (int8 (+ 0)) = monoidHold
+monoidLSTMGateOf (int8 (+ (suc n))) = monoidAccum
+monoidLSTMGateOf (int8 (-[1+ n ])) = monoidReset
+
+monoidLSTMCellStep : MonoidLSTMGate → Int8 → Int8 → Int8
+monoidLSTMCellStep monoidHold c x = c
+monoidLSTMCellStep monoidWrite c x = leaky2 x
+monoidLSTMCellStep monoidReset c x = zero8
+monoidLSTMCellStep monoidAccum c x = int8Add c (leaky2 x)
+
+monoidLSTMAffineOf : MonoidLSTMGate → Int8 → MonoidAffine
+monoidLSTMAffineOf monoidHold x = one8 , zero8
+monoidLSTMAffineOf monoidWrite x = zero8 , leaky2 x
+monoidLSTMAffineOf monoidReset x = zero8 , zero8
+monoidLSTMAffineOf monoidAccum x = one8 , leaky2 x
+
+monoidLSTMCellStep-is-affine :
+  ∀ g c x →
+  monoidLSTMCellStep g c x ≡
+  applyMonoidAffine (monoidLSTMAffineOf g x) c
+monoidLSTMCellStep-is-affine monoidHold c x = refl
+monoidLSTMCellStep-is-affine monoidWrite c x = refl
+monoidLSTMCellStep-is-affine monoidReset c x = refl
+monoidLSTMCellStep-is-affine monoidAccum c x = refl
+
+scanMonoidAffine : List Int8 → MonoidAffine
+scanMonoidAffine [] = monoidAffine-id
+scanMonoidAffine (x ∷ xs) =
+  scanMonoidAffine xs ∘ₘ monoidLSTMAffineOf (monoidLSTMGateOf x) x
+
+scanMonoidAffine-cons :
+  ∀ x xs →
+  scanMonoidAffine (x ∷ xs) ≡
+  scanMonoidAffine xs ∘ₘ monoidLSTMAffineOf (monoidLSTMGateOf x) x
+scanMonoidAffine-cons x xs = refl
+
+runMonoidLSTMCell : List Int8 → Int8 → Int8
+runMonoidLSTMCell xs c₀ =
+  applyMonoidAffine (scanMonoidAffine xs) c₀
+
+record MonoidLSTMState : Set where
+  constructor monoidLSTMState
+  field
+    hiddenState : Int8
+    cellState : Int8
+    matrixState : MonoidLSTMMatrices
+    noiseState : MonoidLSTMNoise
+    controlState : MonoidLSTMControl
+open MonoidLSTMState public
+
+identityMonoidLSTMMatrices : MonoidLSTMMatrices
+identityMonoidLSTMMatrices = monoidLSTMMatrices one8 one8 one8
+
+zeroMonoidLSTMNoise : MonoidLSTMNoise
+zeroMonoidLSTMNoise = monoidLSTMNoise zero8 zero8 zero8
+
+zeroMonoidLSTMControl : MonoidLSTMControl
+zeroMonoidLSTMControl = monoidLSTMControl zero8 zero8
+
+monoidLSTMHiddenStep : Int8 → Int8 → Int8 → Int8
+monoidLSTMHiddenStep h c x =
+  int8Add c (leaky2 (int8Add h x))
+
+monoidLSTMStep : MonoidLSTMState → Int8 → MonoidLSTMState
+monoidLSTMStep
+  (monoidLSTMState h c m n g)
+  x =
+  let c₁ = monoidLSTMCellStep (monoidLSTMGateOf x) c x
+      h₁ = monoidLSTMHiddenStep h c₁ x
+  in monoidLSTMState h₁ c₁ m n g
+
+persistentMonoidLSTM :
+  MonoidLSTMState →
+  MonoidLSTMMatrices × (MonoidLSTMNoise × MonoidLSTMControl)
+persistentMonoidLSTM (monoidLSTMState h c m n g) = m , (n , g)
+
+persistentMonoidLSTM-preservation :
+  ∀ (s : MonoidLSTMState) (x : Int8) →
+  persistentMonoidLSTM (monoidLSTMStep s x) ≡
+  persistentMonoidLSTM s
+persistentMonoidLSTM-preservation
+  (monoidLSTMState h c m n g) x = refl
+
+monoidLSTMParameterPersistence :
+  ∀ (s : MonoidLSTMState) (x : Int8) →
+  matrixState (monoidLSTMStep s x) ≡ matrixState s ×
+  noiseState (monoidLSTMStep s x) ≡ noiseState s ×
+  controlState (monoidLSTMStep s x) ≡ controlState s
+monoidLSTMParameterPersistence
+  (monoidLSTMState h c m n g) x =
+  refl , (refl , refl)
+
+MonoidLSTMEquivalent : MonoidLSTMState → MonoidLSTMState → Set
+MonoidLSTMEquivalent s t =
+  persistentMonoidLSTM s ≡ persistentMonoidLSTM t
+
+monoidLSTMStep-respects-equivalence :
+  ∀ (s t : MonoidLSTMState) (x : Int8) →
+  MonoidLSTMEquivalent s t →
+  MonoidLSTMEquivalent (monoidLSTMStep s x) (monoidLSTMStep t x)
+monoidLSTMStep-respects-equivalence s t x eq =
+  trans
+    (persistentMonoidLSTM-preservation s x)
+    (trans eq (sym (persistentMonoidLSTM-preservation t x)))
+
+------------------------------------------------------------------------
+-- Compatibility surface for downstream theorem modules.
+-- Names remain stable; semantics now come from MonoidLSTM.
+------------------------------------------------------------------------
+
+GRUMatrices : Set
+GRUMatrices = MonoidLSTMMatrices
+
+GRUNoise : Set
+GRUNoise = MonoidLSTMNoise
+
+GlobalControl : Set
+GlobalControl = MonoidLSTMControl
+
+GRUState : Set
+GRUState = MonoidLSTMState
+
+gruMatrices : MonoidLSTMMatrices → MonoidLSTMMatrices
+gruMatrices = λ x → x
+
+gruNoise : MonoidLSTMNoise → MonoidLSTMNoise
+gruNoise = λ x → x
+
+mkGlobalControl : MonoidLSTMControl → MonoidLSTMControl
+mkGlobalControl = λ x → x
+
+gruState :
+  Int8 →
+  Int8 →
+  MonoidLSTMMatrices →
+  MonoidLSTMNoise →
+  MonoidLSTMControl →
+  MonoidLSTMState
+gruState = monoidLSTMState
 
 identityGRUMatrices : GRUMatrices
-identityGRUMatrices = gruMatrices one8 one8 one8
+identityGRUMatrices = identityMonoidLSTMMatrices
 
 zeroGRUNoise : GRUNoise
-zeroGRUNoise = gruNoise zero8 zero8 zero8
+zeroGRUNoise = zeroMonoidLSTMNoise
 
 zeroGlobalControl : GlobalControl
-zeroGlobalControl = mkGlobalControl zero8 zero8
-
-rationalCode : FiniteRational → Int8
-rationalCode (finiteRational s n d) = int8OfNat n
+zeroGlobalControl = zeroMonoidLSTMControl
 
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
@@ -658,56 +855,30 @@ identityActivation8-law x = refl
 identityActivation8-zero : identityActivation8 zero8 ≡ zero8
 identityActivation8-zero = refl
 
-gruCandidate8 : Int8 → Int8 → Int8
-gruCandidate8 h x = int8Add h x
-
-complement128 : Int8 → Int8
-complement128 g = int8Sub one8 g
-
-mix8 : Int8 → Int8 → Int8 → Int8
-mix8 g old new = int8Add
-  (int8Mul (complement128 g) old)
-  (int8Mul g new)
-
-gateCode : Signed → Int8
-gateCode (signedNeg n) = zero8
-gateCode signedZer     = zero8
-gateCode (signedPos n) = one8
-
-gateFromInput : Int8 → Int8
-gateFromInput x = gateCode (signedCode x)
+monoidLSTMRecurrentStep : MonoidLSTMState → Int8 → MonoidLSTMState
+monoidLSTMRecurrentStep = monoidLSTMStep
 
 gruStep : GRUState → Int8 → GRUState
-gruStep (gruState h m n g) x =
-  gruState
-    (mix8 (gateFromInput x) h
-      (int8Add (identityActivation8 x) (gruCandidate8 h x)))
-    m n g
+gruStep = monoidLSTMStep
 
-persistentGRU : GRUState → GRUMatrices × (GRUNoise × GlobalControl)
-persistentGRU (gruState h m n g) = m , (n , g)
+persistentGRU :
+  GRUState →
+  GRUMatrices × (GRUNoise × GlobalControl)
+persistentGRU = persistentMonoidLSTM
 
-persistent-preservation : ∀ (s : GRUState) (x : Int8) →
+persistent-preservation :
+  ∀ (s : GRUState) (x : Int8) →
   persistentGRU (gruStep s x) ≡ persistentGRU s
-persistent-preservation (gruState h m n g) x = refl
+persistent-preservation s x =
+  persistentMonoidLSTM-preservation s x
 
-gruParameterPersistence : ∀ (s : GRUState) (x : Int8) →
+gruParameterPersistence :
+  ∀ (s : GRUState) (x : Int8) →
   matrixState (gruStep s x) ≡ matrixState s ×
   noiseState (gruStep s x) ≡ noiseState s ×
   controlState (gruStep s x) ≡ controlState s
-gruParameterPersistence (gruState h m n g) x = refl , (refl , refl)
-
-GRUEquivalent : GRUState → GRUState → Set
-GRUEquivalent s t = persistentGRU s ≡ persistentGRU t
-
-gruEquivalent-refl : ∀ s → GRUEquivalent s s
-gruEquivalent-refl s = refl
-
-gruStep-respects-equivalence : ∀ (s t : GRUState) (x : Int8) →
-  GRUEquivalent s t → GRUEquivalent (gruStep s x) (gruStep t x)
-gruStep-respects-equivalence s t x eq =
-  trans (persistent-preservation s x)
-    (trans eq (sym (persistent-preservation t x)))
+gruParameterPersistence s x =
+  monoidLSTMParameterPersistence s x
 
 record GRUAction : Set₁ where
   constructor gruAction
@@ -718,15 +889,18 @@ identityGRUAction : GRUAction
 identityGRUAction = gruAction (λ s → s)
 
 composeGRUAction : GRUAction → GRUAction → GRUAction
-composeGRUAction f g = gruAction (λ s → runGRU f (runGRU g s))
+composeGRUAction f g =
+  gruAction (λ s → runGRU f (runGRU g s))
 
 gruActionAssociativity : ∀ f g h s →
-  runGRU (composeGRUAction (composeGRUAction f g) h) s ≡
-  runGRU (composeGRUAction f (composeGRUAction g h)) s
+  runGRU
+    (composeGRUAction (composeGRUAction f g) h) s ≡
+  runGRU
+    (composeGRUAction f (composeGRUAction g h)) s
 gruActionAssociativity f g h s = refl
 
 inputGRUAction : Int8 → GRUAction
-inputGRUAction x = gruAction (λ s → gruStep s x)
+inputGRUAction x = gruAction (λ s → monoidLSTMStep s x)
 
 record RecurrentNetwork (State Input : Set) : Set₁ where
   constructor recurrentNetwork
@@ -734,15 +908,25 @@ record RecurrentNetwork (State Input : Set) : Set₁ where
     runNetwork : State → Input → State
 open RecurrentNetwork public
 
+canonicalMonoidLSTMRecurrentNetwork :
+  RecurrentNetwork MonoidLSTMState Int8
+canonicalMonoidLSTMRecurrentNetwork =
+  recurrentNetwork monoidLSTMStep
+
+canonicalMonoidLSTMNetwork-law :
+  ∀ (s : MonoidLSTMState) (x : Int8) →
+  runNetwork canonicalMonoidLSTMRecurrentNetwork s x ≡
+  monoidLSTMStep s x
+canonicalMonoidLSTMNetwork-law s x = refl
+
 canonicalGRURecurrentNetwork : RecurrentNetwork GRUState Int8
 canonicalGRURecurrentNetwork =
   recurrentNetwork gruStep
 
 canonicalGRUNetwork-law :
   ∀ (s : GRUState) (x : Int8) →
-  runNetwork canonicalGRURecurrentNetwork s x
-  ≡
-  gruStep s x
+  runNetwork canonicalGRURecurrentNetwork s x ≡
+  monoidLSTMStep s x
 canonicalGRUNetwork-law s x = refl
 
 record Endomorphism (State : Set) : Set₁ where
@@ -858,50 +1042,65 @@ recurrentPrefix-split R xs m (suc n) s rewrite +-suc m n =
     (λ z → runNetwork R z (xs (m + n)))
     (recurrentPrefix-split R xs m n s)
 
-canonicalGRU-recurrent-prefix-correct :
-  ∀ (xs : Nat → Int8) (n : Nat) (s : GRUState) →
+canonicalMonoidLSTM-recurrent-prefix-correct :
+  ∀ (xs : Nat → Int8) (n : Nat) (s : MonoidLSTMState) →
   applyEndomorphism
     (recurrentPrefixEndomorphism
-      canonicalGRURecurrentNetwork
+      canonicalMonoidLSTMRecurrentNetwork
       xs
       n)
     s
   ≡
   recurrentPrefixState
-    canonicalGRURecurrentNetwork
+    canonicalMonoidLSTMRecurrentNetwork
     xs
     n
     s
-canonicalGRU-recurrent-prefix-correct =
-  recurrentPrefix-correct canonicalGRURecurrentNetwork
+canonicalMonoidLSTM-recurrent-prefix-correct =
+  recurrentPrefix-correct canonicalMonoidLSTMRecurrentNetwork
 
-canonicalGRU-recurrent-prefix-split :
-  ∀ (xs : Nat → Int8) (m n : Nat) (s : GRUState) →
+canonicalMonoidLSTM-recurrent-prefix-split :
+  ∀ (xs : Nat → Int8) (m n : Nat) (s : MonoidLSTMState) →
   recurrentPrefixState
-    canonicalGRURecurrentNetwork
+    canonicalMonoidLSTMRecurrentNetwork
     xs
     (m + n)
     s
   ≡
   recurrentPrefixState
-    canonicalGRURecurrentNetwork
+    canonicalMonoidLSTMRecurrentNetwork
     (shiftInput xs m)
     n
     (recurrentPrefixState
-      canonicalGRURecurrentNetwork
+      canonicalMonoidLSTMRecurrentNetwork
       xs
       m
       s)
-canonicalGRU-recurrent-prefix-split =
-  recurrentPrefix-split canonicalGRURecurrentNetwork
+canonicalMonoidLSTM-recurrent-prefix-split =
+  recurrentPrefix-split canonicalMonoidLSTMRecurrentNetwork
 
-gruInputActionAssociativity : ∀ x y z s →
-  runGRU (composeGRUAction (composeGRUAction (inputGRUAction x) (inputGRUAction y)) (inputGRUAction z)) s ≡
-  runGRU (composeGRUAction (inputGRUAction x) (composeGRUAction (inputGRUAction y) (inputGRUAction z))) s
+gruInputActionAssociativity :
+  ∀ x y z s →
+  runGRU
+    (composeGRUAction
+      (composeGRUAction
+        (inputGRUAction x)
+        (inputGRUAction y))
+      (inputGRUAction z))
+    s
+  ≡
+  runGRU
+    (composeGRUAction
+      (inputGRUAction x)
+      (composeGRUAction
+        (inputGRUAction y)
+        (inputGRUAction z)))
+    s
 gruInputActionAssociativity x y z s = refl
 
+
 gruStateInt8CoordinateCount : Nat
-gruStateInt8CoordinateCount = 9
+gruStateInt8CoordinateCount = 10
 
 criticInt8CoordinateCount : Nat
 criticInt8CoordinateCount = 2
@@ -910,9 +1109,9 @@ gruPersistentQuotientCoordinateCount : Nat
 gruPersistentQuotientCoordinateCount = 8
 
 fullLearnerInt8CoordinateCount : Nat
-fullLearnerInt8CoordinateCount = 23
+fullLearnerInt8CoordinateCount = 24
 
-fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 23
+fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 24
 fullLearnerInt8CoordinateCount-law = refl
 
 record F4IntUState : Set where
@@ -1325,6 +1524,15 @@ canonicalTokenLogitTrace K (t ∷ ts) s =
   logits K s ∷
   canonicalTokenLogitTrace K ts (canonicalTokenStep s t)
 
+------------------------------------------------------------------------
+-- Haar-featured linear transformer.
+--
+-- Haar mixing remains exact integer arithmetic, now used as a feature map
+-- inside a parameterized linear-attention accumulator.  The accumulator
+-- is additive and therefore itself forms a monoid; sequence processing is
+-- a pure left-to-right scan over rank-one feature updates.
+------------------------------------------------------------------------
+
 CanonicalHaarPair : Set
 CanonicalHaarPair = Int8 × Int8
 
@@ -1346,9 +1554,193 @@ canonicalHaarMix-linear-form :
   (int8Add x y , int8Sub x y)
 canonicalHaarMix-linear-form x y = refl
 
+canonicalReLU8 : Int8 → Int8
+canonicalReLU8 x with hardSign x
+... | negativeSign = zero8
+... | zeroSign = zero8
+... | positiveSign = x
+
+canonicalCReLU8 : Int8 → CanonicalHaarPair
+canonicalCReLU8 x =
+  canonicalReLU8 x , canonicalReLU8 (int8Neg x)
+
+canonicalHaarFeature : Int8 → CanonicalHaarPair
+canonicalHaarFeature x =
+  canonicalHaarMix
+    (proj₁ (canonicalCReLU8 x))
+    (proj₂ (canonicalCReLU8 x))
+
+canonicalHaarFeature-left : ∀ x →
+  proj₁ (canonicalHaarFeature x) ≡
+  int8Add
+    (proj₁ (canonicalCReLU8 x))
+    (proj₂ (canonicalCReLU8 x))
+canonicalHaarFeature-left x = refl
+
+canonicalHaarFeature-right : ∀ x →
+  proj₂ (canonicalHaarFeature x) ≡
+  int8Sub
+    (proj₁ (canonicalCReLU8 x))
+    (proj₂ (canonicalCReLU8 x))
+canonicalHaarFeature-right x = refl
+
 canonicalHaarOrthogonalCross :
   int8Add
     (int8Mul one8 one8)
     (int8Mul one8 (int8Neg one8))
   ≡ zero8
 canonicalHaarOrthogonalCross = refl
+
+canonicalHaarFeatureReconstruct :
+  ∀ x →
+  let p = proj₁ (canonicalCReLU8 x)
+      n = proj₂ (canonicalCReLU8 x)
+  in int8Sub p n ≡ x
+canonicalHaarFeatureReconstruct
+  (int8 (+ 0)) = refl
+canonicalHaarFeatureReconstruct
+  (int8 (+ (suc n))) = refl
+canonicalHaarFeatureReconstruct
+  (int8 (-[1+ n ])) = refl
+
+canonicalHaarFeatureInjective :
+  ∀ {x y} →
+  canonicalCReLU8 x ≡ canonicalCReLU8 y →
+  x ≡ y
+canonicalHaarFeatureInjective {x} {y} eq =
+  trans
+    (sym (canonicalHaarFeatureReconstruct x))
+    (trans
+      (cong₂
+        (λ a b → int8Sub a b)
+        (cong proj₁ eq)
+        (cong proj₂ eq))
+      (canonicalHaarFeatureReconstruct y))
+
+record HaarFeaturedLinearTransformer : Set where
+  constructor haarFeaturedLinearTransformer
+  field
+    qProjection kProjection vProjection : Int8 → Int8
+open HaarFeaturedLinearTransformer public
+
+HaarAccumulator : Set
+HaarAccumulator = Int8 × Int8
+
+haarAccumulator-id : HaarAccumulator
+haarAccumulator-id = zero8 , zero8
+
+haarAccumulator-op :
+  HaarAccumulator → HaarAccumulator → HaarAccumulator
+haarAccumulator-op (a₁ , b₁) (a₂ , b₂) =
+  int8Add a₁ a₂ , int8Add b₁ b₂
+
+haarAccumulator-op-assoc :
+  ∀ x y z →
+  haarAccumulator-op
+    (haarAccumulator-op x y)
+    z
+  ≡
+  haarAccumulator-op
+    x
+    (haarAccumulator-op y z)
+haarAccumulator-op-assoc
+  (a₁ , b₁)
+  (a₂ , b₂)
+  (a₃ , b₃) =
+  cong₂ _,_
+    (int8+-assoc a₁ a₂ a₃)
+    (int8+-assoc b₁ b₂ b₃)
+
+haarAccumulator-op-idˡ :
+  ∀ x →
+  haarAccumulator-op haarAccumulator-id x ≡ x
+haarAccumulator-op-idˡ (a , b) =
+  cong₂ _,_
+    (int8+-idˡ a)
+    (int8+-idˡ b)
+
+haarAccumulator-op-idʳ :
+  ∀ x →
+  haarAccumulator-op x haarAccumulator-id ≡ x
+haarAccumulator-op-idʳ (a , b) =
+  cong₂ _,_
+    (int8+-idʳ a)
+    (int8+-idʳ b)
+
+haarKeyValueContribution :
+  HaarFeaturedLinearTransformer →
+  Int8 →
+  HaarAccumulator
+haarKeyValueContribution T x =
+  let (kp , kn) =
+        canonicalHaarFeature
+          (kProjection T x)
+      v = vProjection T x
+  in int8Mul kp v , int8Mul kn v
+
+haarAccumulatorStep :
+  HaarFeaturedLinearTransformer →
+  HaarAccumulator →
+  Int8 →
+  HaarAccumulator
+haarAccumulatorStep T s x =
+  haarAccumulator-op s
+    (haarKeyValueContribution T x)
+
+haarQueryRead :
+  HaarFeaturedLinearTransformer →
+  HaarAccumulator →
+  Int8 →
+  Int8
+haarQueryRead T (sp , sn) x =
+  let (qp , qn) =
+        canonicalHaarFeature
+          (qProjection T x)
+  in int8Add
+       (int8Mul qp sp)
+       (int8Mul qn sn)
+
+haarLinearTransform :
+  HaarFeaturedLinearTransformer →
+  HaarAccumulator →
+  List Int8 →
+  List Int8
+haarLinearTransform T s₀ [] = []
+haarLinearTransform T s₀ (x ∷ xs) =
+  let s₁ = haarAccumulatorStep T s₀ x
+  in haarQueryRead T s₁ x ∷
+     haarLinearTransform T s₁ xs
+
+haarLinearTransform-step-law :
+  ∀ T s x →
+  haarAccumulatorStep T s x ≡
+  haarAccumulator-op s
+    (haarKeyValueContribution T x)
+haarLinearTransform-step-law T s x = refl
+
+haarLinearTransform-associative-prefix :
+  ∀ T s x y →
+  haarAccumulatorStep T
+    (haarAccumulatorStep T s x)
+    y
+  ≡
+  haarAccumulator-op
+    (haarAccumulatorStep T s x)
+    (haarKeyValueContribution T y)
+haarLinearTransform-associative-prefix T s x y = refl
+
+canonicalHaarFeaturedTransformer :
+  HaarFeaturedLinearTransformer
+canonicalHaarFeaturedTransformer =
+  haarFeaturedLinearTransformer
+    identityActivation8
+    identityActivation8
+    identityActivation8
+
+canonicalHaarFeaturedLinearScan :
+  HaarAccumulator →
+  List Int8 →
+  List Int8
+canonicalHaarFeaturedLinearScan =
+  haarLinearTransform canonicalHaarFeaturedTransformer
+
