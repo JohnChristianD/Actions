@@ -251,32 +251,31 @@ missing_capability(_, discovery_node(_, Covered), C) :-
     list(discovery_node)::in,
     list(discovery_node)::out) is det.
 dedupe_results(Results, Deduped) :-
-    dedupe_results_2(Results, [], Reversed),
-    list.reverse(Reversed, Deduped).
+    dedupe_results_2(Results, [], [], Deduped).
 
 :- pred dedupe_results_2(
     list(discovery_node)::in,
     list(string)::in,
-    list(discovery_node)::out,
+    list(discovery_node)::in,
     list(discovery_node)::out) is det.
-dedupe_results_2([], _, [], []).
+dedupe_results_2([], _, Acc, Out) :-
+    list.reverse(Acc, Out).
 dedupe_results_2(
     [Node @ discovery_node(Plan, _) | Nodes],
     Seen,
-    Deduped,
-    Acc) :-
+    Acc0,
+    Out) :-
     Key = string.join_list("|", Plan),
     (
         if list.member(Key, Seen)
         then
-            dedupe_results_2(Nodes, Seen, Deduped, Acc)
+            dedupe_results_2(Nodes, Seen, Acc0, Out)
         else
             dedupe_results_2(
                 Nodes,
                 [Key | Seen],
-                Tail,
-                [Node | Acc]),
-            Deduped = Tail
+                [Node | Acc0],
+                Out)
     ).
 
 :- pred write_plan_items(
