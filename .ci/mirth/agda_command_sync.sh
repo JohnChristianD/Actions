@@ -12,35 +12,22 @@ extract_block() { sed -n '/^-- BEGIN MIRTH-SYNC CANONICAL COMMAND$/,/^-- END MIR
 extract_block "$canonical" > "$block"
 [ -s "$block" ] || { echo 'canonical command block missing' >&2; exit 1; }
 check_one() { file="$1"; extract_block "$file" | cmp -s "$block"; }
-check_theorem_graph_command() {
-  {
-    printf '%s\n' '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'
-    printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
-    printf '%s\n' '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
-  } > "$theorem_graph_block"
-  extract_graph_block() {
-    sed -n '/^-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND$/,/^-- END MIRTH-SYNC THEOREM GRAPH COMMAND$/p' "$1"
-  }
-  extract_graph_block "$theorem_graph" | cmp -s "$theorem_graph_block"
-}
-rewrite_theorem_graph_command() {
-  {
-    printf '%s\n' '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'
-    printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
-    printf '%s\n' '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
-  } > "$theorem_graph_block"
-  if grep -Fq -- '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND' "$theorem_graph"; then
-    awk -v block="$theorem_graph_block" '
-      $0 == "-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND" {
+write_graph_block() {
+  local start="$1"
+  local end="$2"
+  local block_file="$3"
+  if grep -Fq -- "$start" "$theorem_graph"; then
+    awk -v block="$block_file" -v start="$start" -v end="$end" '
+      $0 == start {
         while ((getline line < block) > 0) print line
         close(block); inside=1; next
       }
-      $0 == "-- END MIRTH-SYNC THEOREM GRAPH COMMAND" { inside=0; next }
+      $0 == end { inside=0; next }
       !inside { print }
     ' "$theorem_graph" > "$tmp"
   else
-    awk -v block="$theorem_graph_block" '
-      $0 == "-- END MIRTH-SYNC CANONICAL COMMAND" {
+    awk -v block="$block_file" -v marker="$4" '
+      $0 == marker {
         print
         while ((getline line < block) > 0) print line
         close(block)
@@ -50,6 +37,34 @@ rewrite_theorem_graph_command() {
     ' "$theorem_graph" > "$tmp"
   fi
   mv "$tmp" "$theorem_graph"
+}
+check_theorem_graph_command() {
+  {
+    printf '%s\n' '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'
+    printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
+    printf '%s\n' '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
+  } > "$theorem_graph_block"
+  {
+    printf '%s\n' '-- BEGIN THEOREM GRAPH COMMAND'
+    printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
+    printf '%s\n' '-- END THEOREM GRAPH COMMAND'
+  } > "$tmp"
+  sed -n '/^-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND$/,/^-- END MIRTH-SYNC THEOREM GRAPH COMMAND$/p' "$theorem_graph" | cmp -s "$theorem_graph_block"
+  sed -n '/^-- BEGIN THEOREM GRAPH COMMAND$/,/^-- END THEOREM GRAPH COMMAND$/p' "$theorem_graph" | cmp -s "$tmp"
+}
+rewrite_theorem_graph_command() {
+  {
+    printf '%s\n' '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'
+    printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
+    printf '%s\n' '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
+  } > "$theorem_graph_block"
+  {
+    printf '%s\n' '-- BEGIN THEOREM GRAPH COMMAND'
+    printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
+    printf '%s\n' '-- END THEOREM GRAPH COMMAND'
+  } > "$tmp"
+  write_graph_block     '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'     "$theorem_graph_block"     '-- END MIRTH-SYNC CANONICAL COMMAND'
+  write_graph_block     '-- BEGIN THEOREM GRAPH COMMAND'     '-- END THEOREM GRAPH COMMAND'     "$tmp"     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
 }
 rewrite_one() {
   file="$1"
