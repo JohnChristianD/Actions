@@ -212,7 +212,7 @@ factorial (suc n) = suc n * factorial n
 
 searchFuel : List SemanticLaw → Nat
 searchFuel laws =
-  suc (suc (suc (factorial (length laws))))
+  suc (suc (suc (suc zero))) * factorial (length laws)
 
 astarWithFuel :
   Nat →
