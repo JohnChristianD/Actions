@@ -13,16 +13,81 @@ module FullCoupled.FormalMethods.Types where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
+import Games.FiniteHistoryDependent
+import Games.Main                -- uses Haskell features as postulates
 import Prelude.Int.Properties as IntegerProperties
+import SyntheticHomotopyTheory.Circle.FundamentalGroup -- depends on the above
+import SyntheticHomotopyTheory.Circle.WithRewriting    -- uses --rewriting
+import TWA.Thesis.Chapter6.Main  -- uses Haskell features as postulates
+import Unsafe.CantorCompact      -- uses CountableTychonoff
+import Unsafe.CoNat-Equiv        -- uses Coinductive records
+import Unsafe.CountableTychonoff -- uses TERMINATING
+import Unsafe.Haskell            -- uses Haskell features as postulates
+import Unsafe.Type-in-Type-False -- uses --type-in-type
+open import Addition
 open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
+open import Agda.Builtin.Nat renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
+open import Cantor
 open import Control.Monad.State using (State)
+open import Equality
+open import Games.TypeTrees
+open import Haskell.Prelude
 open import Haskell.Prelude hiding (String; ⊥)
+open import Haskell.Prelude.Char as Char
+open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+open import InfinitePigeon.Addition
+open import InfinitePigeon.Cantor
+open import InfinitePigeon.Equality
+open import InfinitePigeon.Finite
+open import InfinitePigeon.InfinitePigeon
+open import InfinitePigeon.JK-LogicalFacts
+open import InfinitePigeon.JK-Monads
+open import InfinitePigeon.Logic
+open import InfinitePigeon.LogicalFacts
+open import InfinitePigeon.Naturals
+open import InfinitePigeon.Order
+open import InfinitePigeon.Two
+open import Iterative.Multisets 𝓤
+open import Iterative.Multisets-Addendum ua 𝓤
+open import Iterative.Sets ua 𝓤
+open import JK-LogicalFacts
+open import JK-Monads
+open import K-AC-N
+open import Logic
+open import LogicalFacts
+open import MLTT.Athenian
+open import MLTT.Fin
+open import MLTT.Spartan hiding (J)
+open import MonadOnTypes.Definition
+open import MonadOnTypes.J
+open import MonadOnTypes.JK R
+open import MonadOnTypes.K
+open import Naturals
+open import Naturals.Properties
+open import Notation.CanonicalMap
+open import Notation.Order
+open import Order
 open import Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+open import Rationals.Addition
+open import Rationals.Negation
+open import Rationals.Order
+open import Rationals.Type
+open import Two
+open import UF.Base
+open import UF.ClassicalLogic
+open import UF.FunExt
+open import UF.Powerset
+open import UF.PropTrunc
+open import UF.Size
+open import UF.Subsingletons
+open import UF.Subsingletons-FunExt
+open import UF.UA-FunExt
+open import W.Type
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
