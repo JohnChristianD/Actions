@@ -12,6 +12,12 @@ open import MLTT.Two-Properties
 open import UF.FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
+open import FullCoupled.Agda2HsSemanticExtractor as Extractor
+open import FullCoupled.Agda2HsTheoremGraphEGraph using
+  ( symbolicEGraphRegression
+  ; eGraphAssociativityRegression
+  )
+
 module ExactRealSearchSurface (fe : FunExt) where
 
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe
@@ -651,13 +657,293 @@ autonomousCanonicalGraphReport source =
     ++ " autonomous-a-star-chains="
     ++ show (length plans)
 
+
+autonomousGraphSearchRegression : Bool
+autonomousGraphSearchRegression =
+  let
+    edges =
+      ("A" , "B") ∷
+      ("B" , "C") ∷
+      []
+    laws = graphLawsFromEdges edges
+    plans = autonomousGraphSearchFromRoot "A" edges
+  in
+  case plans of λ where
+    [] -> False
+    (plan ∷ _) -> graphValidPlan plan laws
+
+semanticGraphLaw :
+  Extractor.SemanticLaw ->
+  GraphLaw
+semanticGraphLaw law =
+  graphLaw
+    (Extractor.semanticLawId law)
+    (Extractor.semanticLawDependencies law)
+
+semanticGraphLaws :
+  List Extractor.SemanticLaw ->
+  List GraphLaw
+semanticGraphLaws [] = []
+semanticGraphLaws (law ∷ laws) =
+  semanticGraphLaw law ∷ semanticGraphLaws laws
+
+semanticLawForName :
+  String ->
+  List Extractor.SemanticLaw ->
+  Maybe Extractor.SemanticLaw
+semanticLawForName _ [] = Nothing
+semanticLawForName requested (law ∷ laws) =
+  if Extractor.semanticLawName law == requested then
+    Just law
+  else
+    semanticLawForName requested laws
+
+graphAStarHeuristic :
+  List GraphLaw ->
+  GraphNode ->
+  Nat
+graphAStarHeuristic laws node =
+  case graphLast (graphNodePlan node) of λ where
+    Nothing -> zero
+    Just terminal ->
+      case graphLawForName terminal laws of λ where
+        Nothing -> zero
+        Just law ->
+          if graphLawDependencies law == [] then
+            zero
+          else
+            suc zero
+
+graphAStarScore :
+  List GraphLaw ->
+  GraphNode ->
+  Nat
+graphAStarScore laws node =
+  length (graphNodePlan node) + graphAStarHeuristic laws node
+
+graphAStarInsert :
+  List GraphLaw ->
+  GraphNode ->
+  List GraphNode ->
+  List GraphNode
+graphAStarInsert laws node [] =
+  node ∷ []
+graphAStarInsert laws node (head ∷ tail) =
+  if graphAStarScore laws node < graphAStarScore laws head then
+    node ∷ head ∷ tail
+  else
+    head ∷ graphAStarInsert laws node tail
+
+graphAStarInsertAll :
+  List GraphLaw ->
+  List GraphNode ->
+  List GraphNode ->
+  List GraphNode
+graphAStarInsertAll laws [] frontier = frontier
+graphAStarInsertAll laws (node ∷ nodes) frontier =
+  graphAStarInsertAll
+    laws
+    nodes
+    (graphAStarInsert laws node frontier)
+
+graphAStarFirstWithFuel :
+  Nat ->
+  List GraphLaw ->
+  List GraphNode ->
+  Maybe (List String)
+graphAStarFirstWithFuel zero laws frontier =
+  Nothing
+graphAStarFirstWithFuel (suc fuel) laws [] =
+  Nothing
+graphAStarFirstWithFuel (suc fuel) laws (node ∷ frontier) =
+  if graphMaximalDependencyChain
+       (graphNodePlan node)
+       laws then
+    Just (graphNodePlan node)
+  else
+    graphAStarFirstWithFuel
+      fuel
+      laws
+      (graphAStarInsertAll
+        laws
+        (graphExpandNode node laws)
+        frontier)
+
+graphAStarFirst :
+  List GraphLaw ->
+  GraphNode ->
+  Maybe (List String)
+graphAStarFirst laws seed =
+  graphAStarFirstWithFuel
+    (suc (factorial (length laws)))
+    laws
+    (seed ∷ [])
+
+requiredTheoremNames : List String
+requiredTheoremNames =
+  "CanonicalAQLoopTheorem" ∷
+  "CanonicalFullLearnerConnectedScanConjugacyTheorem" ∷
+  "S4PlusS5RecurrentScanTheorem" ∷
+  "CanonicalQMunchausenL2SharedNegationPolarityTheorem" ∷
+  "CanonicalExactCompositionTuringCompletenessContract" ∷
+  "CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem" ∷
+  "CanonicalPolymorphicSparsemaxCompositionTheorem" ∷
+  "OffPolicyFunctionApproximationStabilityBoundary" ∷
+  "canonicalLearnerBairdSevenStar" ∷
+  "CanonicalExactRNNLMTheorem" ∷
+  "CanonicalGlobalTokenLMCompositionTheorem" ∷
+  "CanonicalIntegerHaarScaledOrthogonalityTheorem" ∷
+  "NatRingSolverNormalizationTheorem" ∷
+  "IntegerRingSolverNormalizationTheorem" ∷
+  "ListMonoidSolverNormalizationTheorem" ∷
+  "CanonicalAlgebraicTacticBackendTheorem" ∷
+  "CanonicalSafeTacticNormalizationTheorem" ∷
+  "inverse-csearchable" ∷
+  "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem" ∷
+  "AStarPlanMonoidTheorem" ∷
+  "CanonicalTokenArbitraryLengthGenerationTheorem" ∷
+  "CanonicalAStarCostGuidanceTheorem" ∷
+  "CanonicalEndogenousEGraphAStarTransportClosureTheorem" ∷
+  "CanonicalFiniteCycleExclusionIsomorphismTheorem" ∷
+  "CanonicalOperatorCompositionTheorem" ∷
+  "CanonicalF4GlobalOptimizerStabilityTheorem" ∷
+  "CanonicalPureNonOrangeBypassCompletionTheorem" ∷
+  "ExactContractComputabilityBoundaryTheorem" ∷
+  "StateIsomorphism" ∷
+  "ExactTwoCounterConfiguration" ∷
+  "ExactTwoCounterMachine" ∷
+  "nashEveryFiniteGameViaBrouwer" ∷
+  "brouwerMixedNashFixedPointBridge" ∷
+  "finiteMixedNash-brouwer-egraph-astar-proof" ∷
+  "finiteMixedNash-egraph-astar-convergence" ∷
+  "finiteMixedNash-egraph-astar-eventualStationarity" ∷
+  "finiteMixedNash-egraph-astar-proof" ∷
+  "finiteMixedNash-cycle-transport" ∷
+  "finiteMixedNash-from-GRU-tail" ∷
+  "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof" ∷
+  "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash" ∷
+  "finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed" ∷
+  "canonicalFullLearner-no-finite-rank-stability" ∷
+  "CanonicalHardSparsityDegeneracyTheorem" ∷
+  "ActionWeights" ∷
+  "actionSupportCount" ∷
+  "actionWeightSum" ∷
+  "actionWeightSquareSum" ∷
+  "generalTsallis2Denominator" ∷
+  "generalTsallis2Numerator" ∷
+  "generalTsallis2NearSparsity" ∷
+  "generalTsallis2NearSparsity-zero" ∷
+  "generalTsallis2NearSparsity-definition" ∷
+  "fractionEquivalent" ∷
+  "tsallis2Near-oneHot" ∷
+  "generalSupportSparsity" ∷
+  "generalSupportSparsity-definition" ∷
+  []
+
+requiredSubcompositionNames : List String
+requiredSubcompositionNames =
+  "CanonicalStationarySubcompositionTheorem" ∷ []
+
+requiredNames : List String
+requiredNames =
+  requiredTheoremNames ++ requiredSubcompositionNames
+
+requiredPlanForName :
+  String ->
+  List Extractor.SemanticLaw ->
+  Maybe (List String)
+requiredPlanForName requested semanticLaws =
+  case semanticLawForName requested semanticLaws of λ where
+    Nothing -> Nothing
+    Just law ->
+      let graphLaws = semanticGraphLaws semanticLaws
+      in
+      graphAStarFirst
+        graphLaws
+        (graphNode (Extractor.semanticLawId law ∷ []))
+
+requiredPlanIsValid :
+  List Extractor.SemanticLaw ->
+  List String ->
+  Bool
+requiredPlanIsValid semanticLaws plan =
+  graphValidPlan plan (semanticGraphLaws semanticLaws)
+
+requiredPlans :
+  List String ->
+  List Extractor.SemanticLaw ->
+  List (String × List String)
+requiredPlans [] _ = []
+requiredPlans (name ∷ names) semanticLaws =
+  case requiredPlanForName name semanticLaws of λ where
+    Nothing ->
+      requiredPlans names semanticLaws
+    Just plan ->
+      if requiredPlanIsValid semanticLaws plan then
+        (name , plan) ∷ requiredPlans names semanticLaws
+      else
+        requiredPlans names semanticLaws
+
+requiredPlanCount :
+  List String ->
+  List Extractor.SemanticLaw ->
+  Nat
+requiredPlanCount names semanticLaws =
+  length (requiredPlans names semanticLaws)
+
+requiredPlanComplete :
+  List String ->
+  List Extractor.SemanticLaw ->
+  Bool
+requiredPlanComplete names semanticLaws =
+  requiredPlanCount names semanticLaws == length names
+
+requiredPlanReport :
+  List String ->
+  List Extractor.SemanticLaw ->
+  String
+requiredPlanReport names semanticLaws =
+  "required-plan-count="
+    ++ show (requiredPlanCount names semanticLaws)
+    ++ " required-plan-total="
+    ++ show (length names)
+    ++ " required-plan-regression="
+    ++ show (requiredPlanComplete names semanticLaws)
+
+semanticLawExtractionReport :
+  List Extractor.SemanticLaw ->
+  String
+semanticLawExtractionReport laws =
+  "semantic-laws="
+    ++ show (length laws)
+    ++ " nonreflexive="
+    ++ show (Extractor.countNonreflexive laws)
+    ++ " composite="
+    ++ show (Extractor.countComposite laws)
+
+semanticSearchExecutableReport :
+  List Extractor.SemanticLaw ->
+  String
+semanticSearchExecutableReport laws =
+  requiredPlanReport requiredNames laws
+    ++ " egraph-regression="
+    ++ show symbolicEGraphRegression
+    ++ " egraph-associativity-regression="
+    ++ show eGraphAssociativityRegression
+
 main : IO ⊤
 main = do
   source <- readFile "build/agda2hs-semantic-search/theorems-monolith.dot"
+  semanticLaws <-
+    Extractor.readSemanticLaws
+      "build/agda2hs-semantic-search/.semantic-source-files"
   putStrLn semanticSearchReport
   putStrLn (autonomousCanonicalGraphReport source)
   putStrLn ("autonomous-regression=" ++ show autonomousGraphSearchRegression)
   putStrLn ("canonical-plan=" ++ show canonicalPlan)
+  putStrLn (semanticLawExtractionReport semanticLaws)
+  putStrLn (requiredPlanReport requiredNames semanticLaws)
+  putStrLn (semanticSearchExecutableReport semanticLaws)
 
 {-# COMPILE AGDA2HS main #-}
 
@@ -686,3 +972,16 @@ main = do
 {-# COMPILE AGDA2HS autonomousCanonicalGraphSearch #-}
 {-# COMPILE AGDA2HS autonomousCanonicalGraphSearchCount #-}
 {-# COMPILE AGDA2HS autonomousCanonicalGraphReport #-}
+{-# COMPILE AGDA2HS autonomousGraphSearchRegression #-}
+{-# COMPILE AGDA2HS semanticGraphLaw #-}
+{-# COMPILE AGDA2HS semanticGraphLaws #-}
+{-# COMPILE AGDA2HS requiredTheoremNames #-}
+{-# COMPILE AGDA2HS requiredSubcompositionNames #-}
+{-# COMPILE AGDA2HS requiredNames #-}
+{-# COMPILE AGDA2HS requiredPlanForName #-}
+{-# COMPILE AGDA2HS requiredPlans #-}
+{-# COMPILE AGDA2HS requiredPlanCount #-}
+{-# COMPILE AGDA2HS requiredPlanComplete #-}
+{-# COMPILE AGDA2HS requiredPlanReport #-}
+{-# COMPILE AGDA2HS semanticLawExtractionReport #-}
+{-# COMPILE AGDA2HS semanticSearchExecutableReport #-}
