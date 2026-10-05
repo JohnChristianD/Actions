@@ -389,7 +389,7 @@
                   "agda-prelude=${agdaPreludeLib system}" \
                   "TypeTopology=${typeTopologyLib system}" \
                   > "$interpolation_manifest"
-                "$agda" --safe --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
+                "$agda" --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$dependency_graph" \
                   "$semantic_manifest" \
