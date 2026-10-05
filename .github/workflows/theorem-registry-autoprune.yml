@@ -1,6 +1,9 @@
 name: Auto-prune theorem registry metadata
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: '47 3 * * 1'
       timezone: "Asia/Manila"
@@ -8,6 +11,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: agda-sync-main
+  cancel-in-progress: false
 
 jobs:
   prune-and-verify:
@@ -26,6 +33,9 @@ jobs:
         with:
           installer-version: '2.35.1'
 
+      - name: Resynchronize canonical Agda command and imports
+        run: nix run .#mirth-agda-sync -- --write
+
       - name: Prune stale theorem registries
         run: nix run .#prune-theorem-registries
 
@@ -43,6 +53,10 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c '
+            tmp_graph=$(mktemp -d)
+            trap 'rm -rf "$tmp_graph"' EXIT
+            nix run .#mirth-agda-graph -- "$tmp_graph/GeneratedAgdaGraph.elm" | bash -s -- "$tmp_graph/GeneratedAgdaGraph.elm"
+            grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp_graph/GeneratedAgdaGraph.elm"
             cd .ci/discovery
             mmc --make theorem_registry_reconcile
             ./theorem_registry_reconcile --check
@@ -53,12 +67,12 @@ jobs:
       - name: Commit registry reconciliation
         run: |
           set -euo pipefail
-          if git diff --quiet -- .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m; then
+          if git diff --quiet -- .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m FullCoupled/CanonicalLearnerMonolith.agda FullCoupled/TheoremsMonolith.agda FullCoupled/FormalMethods; then
             echo "Theorem registries are already synchronized with the Agda proof surface."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m
-          git commit -m "ci: prune stale theorem registry metadata"
+          git add .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m FullCoupled/CanonicalLearnerMonolith.agda FullCoupled/TheoremsMonolith.agda FullCoupled/FormalMethods
+          git commit -m "ci: resync Agda contracts and theorem registries"
           git push origin HEAD:main

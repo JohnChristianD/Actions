@@ -5,12 +5,13 @@ let lane : Lane = env:CI_LANE
 let script = merge {
   AgdaLearner = ''
     set -euo pipefail
+    nix run .#mirth-agda-sync -- --check
     "$AGDA_COMMAND" --version
     "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
     set -euo pipefail
-    nix run .#mirth-agda-import-sync -- --check
+    nix run .#mirth-agda-sync -- --check
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
@@ -28,7 +29,7 @@ let script = merge {
   Agda2HsLiquid = ''
     set -euo pipefail
     nix run .#agda-haskell-pipeline
-    test -s build/agda-haskell/Agda2HsSurface.hs
+    test -s build/agda-haskell/FullCoupled/Agda2HsSurface.hs
     test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
     echo "agda2hs-ghc=pass"
     echo "liquidhaskell-z3=pass"
@@ -47,6 +48,7 @@ let script = merge {
     test -f .ci/mirth/agda_to_elm.mth
     test -f .ci/mirth/ascii_surface.mth
     test -f .ci/mirth/agda_import_sync.mth
+    test -f .ci/mirth/agda_command_sync.mth
     test -f .ci/mirth/agda_graph.mth
     grep -Fq 'module actions.agda_to_elm' .ci/mirth/agda_to_elm.mth
     grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
@@ -58,7 +60,11 @@ let script = merge {
 
     mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
     cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-    "$tmp/agda-import-sync" | bash
+    "$tmp/agda-import-sync" | bash -s -- --check
+
+    mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
+    cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
+    "$tmp/agda-command-sync" | bash -s -- --check
 
     mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
@@ -153,6 +159,12 @@ let script = merge {
     '',
   Discovery = ''
     set -euo pipefail
+    nix run .#mirth-agda-sync -- --check
+    tmp_graph=$(mktemp -d)
+    trap 'rm -rf "$tmp_graph"' EXIT
+    nix run .#mirth-agda-graph -- "$tmp_graph/GeneratedAgdaGraph.elm" | bash -s -- "$tmp_graph/GeneratedAgdaGraph.elm"
+    test -s "$tmp_graph/GeneratedAgdaGraph.elm"
+    grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp_graph/GeneratedAgdaGraph.elm"
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
     (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
@@ -228,7 +240,7 @@ let script = merge {
     monolith_count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
     agda_files=$(git ls-files '*.agda')
-    expected_agda_files='Category/Monad/State.agda
+    expected_agda_files='FullCoupled/Agda2HsSurface.agda
 FullCoupled/CanonicalLearnerMonolith.agda
 FullCoupled/FormalMethods/HoareLogic.agda
 FullCoupled/FormalMethods/IMP.agda
@@ -237,6 +249,7 @@ FullCoupled/FormalMethods/Security.agda
 FullCoupled/FormalMethods/SeparationLogic.agda
 FullCoupled/FormalMethods/Types.agda
 FullCoupled/FormalMethods/VerificationConditions.agda
+FullCoupled/FormalMethods/gentle-intro-to-reflection/tangled.agda
 FullCoupled/TheoremsMonolith.agda'
     [ "$agda_files" = "$expected_agda_files" ] || {
       echo "tracked Agda source surface mismatch"
@@ -612,7 +625,7 @@ DHALL
     count=$(git ls-files '*Monolith.agda' | wc -l)
     [ "$count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $count"; exit 1; }
     agda_count=$(git ls-files '*.agda' | wc -l)
-    [ "$agda_count" -eq 2 ] || { echo "expected exactly two tracked Agda sources, found $agda_count"; exit 1; }
+    [ "$agda_count" -eq 11 ] || { echo "expected exactly eleven tracked Agda sources, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
@@ -646,11 +659,13 @@ DHALL
     '',
   All = ''
     set -euo pipefail
+    nix run .#mirth-agda-sync -- --check
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
-    "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
-    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+    while IFS= read -r file; do
+      "$AGDA_COMMAND" -i . "$file"
+    done < <(git ls-files '*.agda')
     "$AGDA_COMMAND" --allow-exec -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)

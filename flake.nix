@@ -206,6 +206,54 @@
             program = "${script}/bin/mirth-agda-import-sync";
           };
 
+          mirth-agda-command-sync = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-agda-command-sync";
+              runtimeInputs = [
+                pkgs.mirth
+                pkgs.stdenv.cc
+                pkgs.coreutils
+                pkgs.git
+              ];
+              text = ''
+                set -euo pipefail
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+                mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
+                cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
+                "$tmp/agda-command-sync" | bash -s -- "$@"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-command-sync";
+          };
+
+          mirth-agda-sync = let
+            script = pkgs.writeShellApplication {
+              name = "mirth-agda-sync";
+              runtimeInputs = [
+                pkgs.mirth
+                pkgs.stdenv.cc
+                pkgs.coreutils
+                pkgs.git
+              ];
+              text = ''
+                set -euo pipefail
+                tmp=$(mktemp -d)
+                trap 'rm -rf "$tmp"' EXIT
+                mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
+                cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
+                "$tmp/agda-import-sync" | bash -s -- "$@"
+                mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
+                cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
+                "$tmp/agda-command-sync" "$@"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mirth-agda-sync";
+          };
           mirth-ascii-sync = let
             script = pkgs.writeShellApplication {
               name = "mirth-ascii-sync";
@@ -237,6 +285,7 @@
                 pkgs.mirth
                 pkgs.stdenv.cc
                 pkgs.coreutils
+                pkgs.git
               ];
               text = ''
                 set -euo pipefail
@@ -264,8 +313,8 @@
                 out="build/agda2hs"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out/Agda2HsSurface.hs"
-                test -s "$out/Agda2HsSurface.hs"
+                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 echo "agda2hs-extract=pass"
               '';
             };
@@ -284,6 +333,7 @@
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
+                pkgs.git
                 pkgs.mirth
                 pkgs.stdenv.cc
               ];
@@ -292,13 +342,13 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out/Agda2HsSurface.hs"
-                test -s "$out/Agda2HsSurface.hs"
+                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                "${haskellLiquidGhc system}/bin/ghc" -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/Agda2HsSurface.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/Agda2HsSurface.hs"
+                "${haskellLiquidGhc system}/bin/ghc" -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
-                  "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
+                  "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
                   > "$out/agda2hs-liquid-manifest.tsv"
                 cat "$out/agda2hs-liquid-manifest.tsv"
               '';

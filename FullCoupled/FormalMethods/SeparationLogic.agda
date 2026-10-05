@@ -1,20 +1,7 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
-{-# OPTIONS --backtracking-instance-search #-}
-{-# OPTIONS --experimental-lazy-instances #-}
-{-# OPTIONS --polarity #-}
-{-# OPTIONS --auto-inline #-}
-{-# OPTIONS --confluence-check #-}
-{-# OPTIONS --syntactic-equality #-}
-{-# OPTIONS --guarded #-}
-{-# OPTIONS --cubical #-}
-{-# OPTIONS --exact-split #-}
-{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
-{-# OPTIONS --erased-matches #-}
-{-# OPTIONS --erase-record-parameters #-}
-{-# OPTIONS --no-projection-like #-}
-{-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --guardedness #-}
+{-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
+
 
 {-# OPTIONS --safe #-}
 
@@ -26,20 +13,26 @@
 
 module FullCoupled.FormalMethods.SeparationLogic where
 
-open import Prelude.Nat
-open import Prelude.Bool
-open import Prelude.String
-open import Prelude.Sum
-open import Prelude.Decidable
-open import Prelude.List
-open import Prelude.Empty
-open import Prelude.Product
-open import Prelude.Equality
-open import Agda.Primitive
-open import Agda.Builtin.Sigma hiding (_,_) -- renaming (_,_ to _,,_)
-open import Prelude.Maybe
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Merged external import surface; internal FullCoupled imports remain module-local.
+import Prelude.Fin as F
+import Prelude.Int.Properties as IntegerProperties
+import Prelude.Vec as V
+open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
+open import Agda.Builtin.Reflection as Builtin
+open import Agda.Builtin.Sigma hiding (_,_)
+open import Agda.Primitive as Level
+open import Control.Monad.State using (State)
+open import Prelude
+open import Prelude.Char as Char
+open import Prelude.Nat.Properties
+-- END MIRTH-SYNC COMMON IMPORTS
+
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- "$AGDA_COMMAND" -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
+
 module Eq where
-  open import Prelude.Equality.Inspect public
   pattern [_] eq = _ , ingraph eq
 
 open import FullCoupled.FormalMethods.IMP hiding (com; state) ---using (aexp; aval; bexp; bval)
