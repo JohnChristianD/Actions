@@ -12,8 +12,8 @@ main :: IO ()
 main = do
   let plan = canonicalPlan
       inverted = splits splitTarget
-      complete = canonicalSearchIsComplete
-      nontrivial = canonicalPlanIsNontrivial
+      complete = canonicalSearchComplete
+      nontrivial = canonicalPlanNontrivial
   putStrLn semanticSearchReport
   print plan
   print inverted
