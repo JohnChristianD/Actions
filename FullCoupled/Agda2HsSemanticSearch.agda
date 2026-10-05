@@ -587,13 +587,16 @@ stripDotPrefix : String -> String
 stripDotPrefix ('"' ∷ rest) = stripDotPrefix rest
 stripDotPrefix text = text
 
+stripDotSuffixRev : String -> String
+stripDotSuffixRev [] = []
+stripDotSuffixRev (';' ∷ rest) = stripDotSuffixRev rest
+stripDotSuffixRev ('"' ∷ rest) = stripDotSuffixRev rest
+stripDotSuffixRev (']' ∷ rest) = stripDotSuffixRev rest
+stripDotSuffixRev rest = rest
+
 stripDotSuffix : String -> String
 stripDotSuffix text =
-  case reverse text of λ where
-    (';' ∷ rest) -> stripDotSuffix (reverse rest)
-    ('"' ∷ rest) -> stripDotSuffix (reverse rest)
-    (']' ∷ rest) -> stripDotSuffix (reverse rest)
-    _ -> text
+  reverse (stripDotSuffixRev (reverse text))
 
 stripDotToken : String -> String
 stripDotToken text =
