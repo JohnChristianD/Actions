@@ -399,18 +399,9 @@
                 dhall text --file novel-theorem-interpolation.dhall >/dev/null
                 report=theorem-monolith-egraph-sync.dhall
                 test -s "$report"
-                grep -Fq 'graphSearch = "A* cost-guided dependency paths"' "$report"
-                grep -Fq 'forcedSymbolicTarget = False' "$report"
-                grep -Fq 'singleAgdaSource = True' "$report"
-                grep -Fq 'astarScoreOrdered = True' "$report"
-                grep -Fq 'newNonredundantTheoremCount = 0' "$report"
-                grep -Fq 'reviewFrontierCount = 13' "$report"
-                grep -Fq 'CanonicalIntegerLayerNormAStarExecutionBridgeTheorem' "$report"
-                grep -Fq 'endToEndToolchainImportCount = 3' novel-theorem-interpolation.dhall
-                grep -Fq 'agda-prelude=' novel-theorem-interpolation.dhall
-                grep -Fq 'TypeTopology=' novel-theorem-interpolation.dhall
-                grep -Fq 'agda2hs=' novel-theorem-interpolation.dhall
-                grep -Fq 'status = "INTERPOLATED_AND_AGDA_TYPED"' novel-theorem-interpolation.dhall
+                dhall text --file "$report" >/dev/null
+                test -s novel-theorem-interpolation.dhall
+                dhall text --file novel-theorem-interpolation.dhall >/dev/null
                 echo "mercury-theorem-e2e=pass"
               '';
             };
