@@ -4,6 +4,7 @@ module FullCoupled.Agda2HsTheoremGraphEGraph where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
+import Unsafe.Haskell as Unsafe
 open import Equality
 open import Naturals
 open import Naturals.Properties
@@ -230,11 +231,10 @@ rebuildBindings (binding node id ∷ rest) graph changed =
   case findOtherNode canonical id (bindings graph) of λ where
     Nothing -> rebuildBindings rest graph changed
     Just other ->
-      let graph' = mergeRoots id other graph in
-      if equivalent id other graph' then
-        rebuildBindings rest graph' changed
+      if equivalent id other graph then
+        rebuildBindings rest graph changed
       else
-        rebuildBindings rest graph' True
+        rebuildBindings rest (mergeRoots id other graph) True
 
 rebuildWithFuel : Nat -> EGraph -> EGraph
 rebuildWithFuel zero graph = graph
@@ -394,8 +394,13 @@ saturateUntilStable rules graph =
   in graph' ,
      saturationReport iterations rewrites changed
 
+stringLength : String -> Nat
+stringLength text =
+  length (Unsafe.primStringToList text)
+
 localCost : ENode -> Nat
-localCost (enode symbol children) = suc (length symbol + length children)
+localCost (enode symbol children) =
+  suc (stringLength symbol + length children)
 
 classAnalysisFor :
   Nat -> List Binding -> EGraph -> Maybe ClassAnalysis
@@ -436,8 +441,9 @@ chooseCheaper other Nothing = other
 chooseCheaper (Just left) (Just right) =
   if extractedCost left < extractedCost right then Just left else Just right
 
-extractChildren :
-  List Nat -> EGraph -> Nat -> List Nat -> Maybe ChildExtraction
+mutual
+  extractChildren :
+    List Nat -> EGraph -> Nat -> List Nat -> Maybe ChildExtraction
 extractChildren [] _ _ _ = Just (childExtraction [] zero)
 extractChildren (child ∷ children) graph depth seen =
   case extractBestSeen child graph depth seen of λ where
@@ -451,7 +457,7 @@ extractChildren (child ∷ children) graph depth seen =
               (extractedExpr first ∷ extractedChildren rest)
               (extractedCost first + extractedCostSum rest))
 
-bestBindingForRoot :
+  bestBindingForRoot :
   Nat -> List Binding -> EGraph -> Nat -> List Nat -> Maybe Extraction
 bestBindingForRoot _ [] _ _ _ = Nothing
 bestBindingForRoot target
@@ -471,7 +477,7 @@ bestBindingForRoot target
   in chooseCheaper candidate
        (bestBindingForRoot target rest graph depth seen)
 
-extractBestSeen :
+  extractBestSeen :
   Nat -> EGraph -> Nat -> List Nat -> Maybe Extraction
 extractBestSeen class graph depth seen =
   if depth == zero then Nothing else
@@ -479,8 +485,8 @@ extractBestSeen class graph depth seen =
     if memberNat target seen then Nothing
     else bestBindingForRoot target (bindings graph) graph depth (target ∷ seen)
 
-extractBest : Nat -> EGraph -> Nat -> Maybe Extraction
-extractBest class graph depth = extractBestSeen class graph depth []
+  extractBest : Nat -> EGraph -> Nat -> Maybe Extraction
+  extractBest class graph depth = extractBestSeen class graph depth []
 
 classCount : EGraph -> Nat
 classCount graph = length (rootClasses graph)
