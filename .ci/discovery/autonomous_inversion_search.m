@@ -138,7 +138,7 @@ law_is_candidate(C, Law) :-
     % Do not let the bridge prove itself as its own discovery candidate.
     not string.sub_string_search(
         string.to_lower(Name),
-        "exact-search-inverse",
+        "inverse-csearchable",
         _).
 
 :- pred expand_capability(
