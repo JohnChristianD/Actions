@@ -139,8 +139,9 @@
       haskellInversionGhc = system:
         let
           pkgs = pkgsFor system;
+          ghc92 = pkgs.haskell.packages.ghc924;
         in
-        pkgs.haskellPackages.ghcWithPackages (p: [
+        ghc92.ghcWithPackages (p: [
           p.rio
           p.liquidhaskell
           (inversionPlugin system)
@@ -157,13 +158,25 @@
           inherit ghc;
         };
 
+      agda2hsWithInversion = system:
+        let
+          ghc = haskellInversionGhc system;
+        in
+        agda2hs.packages.${system}.agda2hs.withPackages {
+          pkgs = [
+            agda2hs.packages.${system}.base-lib
+          ];
+          inherit ghc;
+        };
+
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
+          ghc92 = pkgs.haskell.packages.ghc924;
         in
         pkgs.haskell.lib.overrideCabal
           (pkgs.haskell.lib.doJailbreak
-            (pkgs.haskellPackages.callCabal2nix
+            (ghc92.callCabal2nix
               "inversion-plugin"
               inversion-plugin-src
               {}))
@@ -321,6 +334,59 @@
             type = "app";
             program = "${script}/bin/mirth-agda-graph";
           };
+          agda2hs-semantic-search = let
+            script = pkgs.writeShellApplication {
+              name = "agda2hs-semantic-search";
+              runtimeInputs = [
+                (agdaWithLibraries system)
+                (agda2hsWithInversion system)
+                (haskellInversionGhc system)
+                pkgs.z3
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                out="build/agda2hs-semantic-search"
+                rm -rf "$out"
+                mkdir -p "$out"
+                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticSearch.agda
+                "${agda2hsWithInversion system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                ghc \
+                  -XNoMonomorphismRestriction \
+                  -XLocalMonoBinds \
+                  -O0 \
+                  -dcore-lint \
+                  -fplugin=Plugin.InversionPlugin \
+                  -fplugin=LiquidHaskell \
+                  -i "$out" \
+                  -odir "$out/ghc" \
+                  -hidir "$out/ghc" \
+                  -o "$out/agda2hs-semantic-search" \
+                  FullCoupled/Agda2HsSemanticSearchMain.hs
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                "$out/agda2hs-semantic-search" > "$out/report.txt"
+                grep -Fq "True" "$out/report.txt"
+                grep -Fq "inverse-correct" "$out/report.txt"
+                grep -Fq "inverse-csearchable" "$out/report.txt"
+                grep -Fq "inverse-preserves-csearchability" "$out/report.txt"
+                printf '%s\n' \
+                  "compiler=GHC 9.2.4" \
+                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
+                  "proofKernel=Agda" \
+                  "searchKernel=Agda2Hs" \
+                  "inversionCheck=pass" \
+                  "semanticCompletenessCheck=pass" \
+                  "nontrivialCheck=pass" \
+                  > "$out/agda2hs-semantic-search-manifest.tsv"
+                cat "$out/agda2hs-semantic-search-manifest.tsv"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/agda2hs-semantic-search";
+          };
+
           agda2hs-extract = let
             script = pkgs.writeShellApplication {
               name = "agda2hs-extract";
@@ -348,7 +414,7 @@
               name = "agda-haskell-pipeline";
               runtimeInputs = [
                 (agdaWithLibraries system)
-                (agda2hsWithHaskell system)
+                (agda2hsWithInversion system)
                 (haskellInversionGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -367,7 +433,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${haskellInversionGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -fplugin=Plugin.InversionPlugin -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${haskellInversionGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -O0 -dcore-lint -fplugin=Plugin.InversionPlugin -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
