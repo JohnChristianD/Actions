@@ -161,8 +161,11 @@
         let
           pkgs = pkgsFor system;
           treeMonad =
-            pkgs.haskell.lib.markUnbroken
-              pkgs.haskellPackages.tree-monad;
+            pkgs.haskell.lib.doJailbreak
+              (pkgs.haskellPackages.callHackage
+                "tree-monad"
+                "0.3.2"
+                {});
           plugin =
             pkgs.haskell.lib.doJailbreak
               (pkgs.haskellPackages.callCabal2nix
