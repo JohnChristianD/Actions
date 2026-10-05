@@ -461,6 +461,28 @@ graphValidPlan [] _ = False
 graphValidPlan plan laws =
   graphAllUnique plan && graphValidChain plan laws
 
+graphLast :
+  List String ->
+  Maybe String
+graphLast [] = Nothing
+graphLast (name ∷ []) = Just name
+graphLast (_ ∷ names) = graphLast names
+
+graphMaximalDependencyChain :
+  List String ->
+  List GraphLaw ->
+  Bool
+graphMaximalDependencyChain plan laws =
+  if graphValidPlan plan laws then
+    case graphLast plan of λ where
+      Nothing -> False
+      Just terminal ->
+        case graphLawForName terminal laws of λ where
+          Nothing -> False
+          Just law -> graphLawDependencies law == []
+  else
+    False
+
 double : Nat -> Nat
 double zero = zero
 double (suc n) = suc (suc (double n))
@@ -478,7 +500,7 @@ graphAStar :
 graphAStar zero _ _ results = results
 graphAStar (suc fuel) laws [] results = results
 graphAStar (suc fuel) laws (node ∷ frontier) results =
-  if graphValidChain (graphNodePlan node) laws then
+  if graphMaximalDependencyChain (graphNodePlan node) laws then
     graphAStar
       fuel
       laws
@@ -500,6 +522,27 @@ autonomousGraphSearch edges =
   in
   reverse results
 
+autonomousGraphRegressionEdges : List (String × String)
+autonomousGraphRegressionEdges =
+  ("A" , "B") ∷ ("B" , "C") ∷ []
+
+hasThreeNodePlan : List (List String) -> Bool
+hasThreeNodePlan [] = False
+hasThreeNodePlan (plan ∷ plans) =
+  if length plan == suc (suc (suc zero)) then
+    True
+  else
+    hasThreeNodePlan plans
+
+autonomousGraphSearchRegression : Bool
+autonomousGraphSearchRegression =
+  hasThreeNodePlan
+    (autonomousGraphSearch autonomousGraphRegressionEdges)
+
+autonomousGraphSearchRegression-proof :
+  autonomousGraphSearchRegression ≡ True
+autonomousGraphSearchRegression-proof = refl
+
 autonomousGraphSearchCount :
   List (String × String) ->
   Nat
@@ -519,6 +562,7 @@ autonomousGraphSearchReport edges =
 {-# COMPILE AGDA2HS GraphLaw #-}
 {-# COMPILE AGDA2HS GraphNode #-}
 {-# COMPILE AGDA2HS autonomousGraphSearch #-}
+{-# COMPILE AGDA2HS autonomousGraphSearchRegression #-}
 {-# COMPILE AGDA2HS autonomousGraphSearchCount #-}
 {-# COMPILE AGDA2HS autonomousGraphSearchReport #-}
 {-# COMPILE AGDA2HS SearchNode #-}
