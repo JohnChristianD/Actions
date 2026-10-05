@@ -11,7 +11,7 @@ trap 'rm -f "$block" "$merged" "$tmp"' EXIT
 sources() { git ls-files '*.agda' | LC_ALL=C sort; }
 is_extraction_surface() {
   case "$1" in
-    FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda)
+    FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticExtractor.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda)
       return 0
       ;;
     *)
@@ -127,4 +127,4 @@ fi
 echo 'mirth-agda-import-sync=pass'
 echo "canonical=$canonical"
 echo "merged-external-imports=$(grep -Ec '^(open |import )' "$merged" || true)"
-echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda"
+echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda"
