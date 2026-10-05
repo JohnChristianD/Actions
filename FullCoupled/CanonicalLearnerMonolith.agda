@@ -100,6 +100,19 @@ import TWA.Thesis.Chapter6.Main  -- uses Haskell features as postulates
 import SyntheticHomotopyTheory.Circle.WithRewriting    -- uses --rewriting
                                                        -- and postulates
 import SyntheticHomotopyTheory.Circle.FundamentalGroup -- depends on the above
+
+open import InfinitePigeon.Addition
+open import InfinitePigeon.Cantor
+open import InfinitePigeon.Equality
+open import InfinitePigeon.Finite
+open import InfinitePigeon.InfinitePigeon
+open import InfinitePigeon.JK-LogicalFacts
+open import InfinitePigeon.JK-Monads
+open import InfinitePigeon.Logic
+open import InfinitePigeon.LogicalFacts
+open import InfinitePigeon.Naturals
+open import InfinitePigeon.Order
+open import InfinitePigeon.Two
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
