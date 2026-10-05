@@ -95,6 +95,7 @@ main = do
       nontrivial = canonicalPlanNontrivial
       egraphComplete = symbolicEGraphRegression
       egraphAssociative = eGraphAssociativityRegression
+      autonomousRegression = autonomousGraphSearchRegression
       autonomousReport = autonomousGraphSearchReport edges
 
   putStrLn semanticSearchReport
@@ -106,3 +107,4 @@ main = do
   print nontrivial
   print egraphComplete
   print egraphAssociative
+  print autonomousRegression
