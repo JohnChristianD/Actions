@@ -87,6 +87,8 @@ let script = merge {
     '',
   Pages = ''
     set -euo pipefail
+    nix run .#mirth-agda-sync -- --check
+    nix run .#mirth-agda-command-sync -- --check
     nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -100,6 +102,12 @@ let script = merge {
     grep -Fq '"siteEntry": "index.html"' "$tmp/presentation-contract.json"
     grep -Fq '"compiledElm": "elm.js"' "$tmp/presentation-contract.json"
     grep -Fq '"asciiGenerator": ".ci/mirth/ascii_surface.mth"' "$tmp/presentation-contract.json"
+    grep -Fq 'JuliaMono' site/Main.elm
+    grep -Fq 'Noto Emoji' site/Main.elm
+    grep -Fq 'Writer' site/Main.elm
+    grep -Fq 'CAT02LMS' site/Main.elm
+    grep -Fq 'maximin' site/Main.elm
+    grep -Fq 'data-module' site/Main.elm
     output_dir="$tmp"
     if [ -n "$(printenv PAGES_OUTPUT_DIR 2>/dev/null || true)" ]; then
       output_dir="$(printenv PAGES_OUTPUT_DIR)"
