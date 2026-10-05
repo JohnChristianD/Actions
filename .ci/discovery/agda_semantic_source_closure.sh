@@ -32,11 +32,11 @@ for root in "${roots[@]}"; do
   if git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1; then
     while IFS= read -r -d '' file; do
       add_source "$root/$file"
-    done < <(git -C "$root" ls-files -z '*.agda')
+    done < <(git -C "$root" ls-files -z '*.agda' '*.lagda')
   else
     while IFS= read -r -d '' file; do
       add_source "$file"
-    done < <(find "$root" -type f -name '*.agda' -print0)
+    done < <(find "$root" -type f \( -name '*.agda' -o -name '*.lagda' \) -print0)
   fi
 done
 
