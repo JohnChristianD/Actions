@@ -16,7 +16,7 @@ The Agda theorem layer now contains a generic `ExactSearchInversion.ExactSearchE
 
 The theorem `inverse-preserves-csearchability` transports TWA c-searchability from the source space to the target by pulling back each decidable uniformly-continuous predicate along the forward map and using the inverse as the preimage witness.
 
-The theorem `exact-search-inverse-selects-preimage` gives the proof-theoretic counterpart of automatic inverse computation: whenever the forward map sends `x` to `y`, the certified inverse returns that same `x`.
+The theorem `inverse-selects-preimage` gives the proof-theoretic counterpart of automatic inverse computation: whenever the forward map sends `x` to `y`, the certified inverse returns that same `x`.
 
 This does not claim that an arbitrary non-injective function has a canonical inverse. The inversion contract is deliberately stronger: it records an equivalence/single-solution regime, matching the deterministic boundary described in the Haskell inversion work.
 
