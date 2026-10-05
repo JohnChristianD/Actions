@@ -314,8 +314,198 @@ semanticSearchReport =
   ++ show (length canonicalPlan)
   ++ " laws; target capabilities covered; A* cost is proof-independent guidance"
 
+record GraphLaw : Type where
+  constructor graphLaw
+  field
+    graphLawName : String
+    graphLawDependencies : List String
+
+open GraphLaw public
+
+record GraphNode : Type where
+  constructor graphNode
+  field
+    graphNodePlan : List String
+
+open GraphNode public
+
+graphLawForName :
+  String -> List GraphLaw -> Maybe GraphLaw
+graphLawForName _ [] = Nothing
+graphLawForName name (law ∷ laws) =
+  if name == graphLawName law then
+    Just law
+  else
+    graphLawForName name laws
+
+removeDuplicateStrings : List String -> List String -> List String
+removeDuplicateStrings [] seen = seen
+removeDuplicateStrings (x ∷ xs) seen =
+  if planContains x seen then
+    removeDuplicateStrings xs seen
+  else
+    removeDuplicateStrings xs (x ∷ seen)
+
+graphLawAddDependency :
+  String -> String -> List GraphLaw -> List GraphLaw
+graphLawAddDependency name dependency [] =
+  graphLaw name (dependency ∷ []) ∷ []
+graphLawAddDependency name dependency
+  (law ∷ laws) =
+  if name == graphLawName law then
+    let deps =
+          if planContains dependency (graphLawDependencies law) then
+            graphLawDependencies law
+          else
+            dependency ∷ graphLawDependencies law
+    in graphLaw name deps ∷ laws
+  else
+    law ∷ graphLawAddDependency name dependency laws
+
+graphLawsFromEdges :
+  List (String × String) -> List GraphLaw
+graphLawsFromEdges [] = []
+graphLawsFromEdges ((source , target) ∷ edges) =
+  graphLawAddDependency
+    source
+    target
+    (graphLawsFromEdges edges)
+
+graphLawSeeds : List GraphLaw -> List GraphNode
+graphLawSeeds [] = []
+graphLawSeeds (law ∷ laws) =
+  graphNode (graphLawName law ∷ [])
+  ∷ graphLawSeeds laws
+
+graphContains : String -> List String -> Bool
+graphContains = planContains
+
+graphExpandNode :
+  GraphNode -> List GraphLaw -> List GraphNode
+graphExpandNode (graphNode []) _ = []
+graphExpandNode (graphNode (terminal ∷ rest)) laws =
+  case graphLawForName terminal laws of λ where
+    Nothing -> []
+    Just law ->
+      graphExpandDependencies
+        (graphLawDependencies law)
+        (terminal ∷ rest)
+        []
+
+graphExpandDependencies :
+  List String ->
+  List String ->
+  List GraphNode ->
+  List GraphNode
+graphExpandDependencies [] _ acc = acc
+graphExpandDependencies (dependency ∷ dependencies) plan acc =
+  if graphContains dependency plan then
+    graphExpandDependencies dependencies plan acc
+  else
+    graphExpandDependencies
+      dependencies
+      (dependency ∷ plan)
+      (graphNode (dependency ∷ plan) ∷ acc)
+
+graphNodeScore : GraphNode -> Nat
+graphNodeScore node = length (graphNodePlan node)
+
+graphInsert :
+  GraphNode -> List GraphNode -> List GraphNode
+graphInsert node [] = node ∷ []
+graphInsert node (head ∷ tail) =
+  if graphNodeScore node < graphNodeScore head then
+    node ∷ head ∷ tail
+  else
+    head ∷ graphInsert node tail
+
+graphInsertAll :
+  List GraphNode -> List GraphNode -> List GraphNode
+graphInsertAll [] frontier = frontier
+graphInsertAll (node ∷ nodes) frontier =
+  graphInsertAll nodes (graphInsert node frontier)
+
+graphValidChain :
+  List String -> List GraphLaw -> Bool
+graphValidChain [] _ = False
+graphValidChain (_ ∷ []) _ = True
+graphValidChain (child ∷ parent ∷ rest) laws =
+  case graphLawForName parent laws of λ where
+    Nothing -> False
+    Just law →
+      if planContains child (graphLawDependencies law) then
+        graphValidChain (parent ∷ rest) laws
+      else
+        False
+
+graphAllUnique :
+  List String -> Bool
+graphAllUnique [] = True
+graphAllUnique (x ∷ xs) =
+  if planContains x xs then
+    False
+  else
+    graphAllUnique xs
+
+graphValidPlan :
+  List String -> List GraphLaw -> Bool
+graphValidPlan [] _ = False
+graphValidPlan plan laws =
+  graphAllUnique plan && graphValidChain plan laws
+
+graphAStarFuel : List GraphLaw -> Nat
+graphAStarFuel laws =
+  suc (length laws + length laws)
+
+graphAStar :
+  Nat ->
+  List GraphLaw ->
+  List GraphNode ->
+  List (List String) ->
+  List (List String)
+graphAStar zero _ _ results = results
+graphAStar (suc fuel) laws [] results = results
+graphAStar (suc fuel) laws (node ∷ frontier) results =
+  if graphValidChain (graphNodePlan node) laws then
+    graphAStar
+      fuel
+      laws
+      frontier
+      (graphNodePlan node ∷ results)
+  else
+    let children = graphExpandNode node laws
+        frontier' = graphInsertAll children frontier
+    in
+    graphAStar fuel laws frontier' results
+
+autonomousGraphSearch :
+  List (String × String) ->
+  List (List String)
+autonomousGraphSearch edges =
+  let laws = graphLawsFromEdges edges
+      seeds = graphLawSeeds laws
+      results = graphAStar (graphAStarFuel laws) laws seeds []
+  in
+  reverse results
+
+autonomousGraphSearchCount :
+  List (String × String) ->
+  Nat
+autonomousGraphSearchCount edges =
+  length (autonomousGraphSearch edges)
+
+autonomousGraphSearchReport :
+  List (String × String) ->
+  String
+autonomousGraphSearchReport edges =
+  "agda2hs autonomous theorem-graph A*: "
+  ++ show (autonomousGraphSearchCount edges)
+  ++ " dependency chains"
+
 {-# COMPILE AGDA2HS Capability #-}
 {-# COMPILE AGDA2HS SemanticLaw #-}
+{-# COMPILE AGDA2HS GraphLaw #-}
+{-# COMPILE AGDA2HS GraphNode #-}
 {-# COMPILE AGDA2HS SearchNode #-}
 {-# COMPILE AGDA2HS requiredCapabilities #-}
 {-# COMPILE AGDA2HS canonicalLaws #-}
