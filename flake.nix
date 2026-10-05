@@ -85,12 +85,19 @@
         in
         pkgs.writeShellApplication {
           name = "agda-with-theorem-graph";
-          runtimeInputs = [ pkgs.agdaPackages.agda ];
+          runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
           text = ''
+            set -euo pipefail
+            tmp=$(mktemp -d)
+            trap 'rm -rf "$tmp"' EXIT
+            mkdir -p "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
+            cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
+            cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
             exec ${pkgs.agdaPackages.agda}/bin/agda \
-              -i "${agdaPreludeLib system}/src" \
-              -i "${typeTopologyLib system}/source" \
-              -i "${agda2hsBaseLib system}" \
+              -i "$tmp/agda-prelude" \
+              -i "$tmp/TypeTopology" \
+              -i "$tmp/agda2hs-base" \
               "$@"
           '';
         };
@@ -101,12 +108,19 @@
         in
         pkgs.writeShellApplication {
           name = "agda-with-prelude";
-          runtimeInputs = [ pkgs.agdaPackages.agda ];
+          runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
           text = ''
+            set -euo pipefail
+            tmp=$(mktemp -d)
+            trap 'rm -rf "$tmp"' EXIT
+            mkdir -p "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
+            cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
+            cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
             exec ${pkgs.agdaPackages.agda}/bin/agda \
-              -i "${agdaPreludeLib system}/src" \
-              -i "${typeTopologyLib system}/source" \
-              -i "${agda2hsBaseLib system}" \
+              -i "$tmp/agda-prelude" \
+              -i "$tmp/TypeTopology" \
+              -i "$tmp/agda2hs-base" \
               "$@"
           '';
         };
