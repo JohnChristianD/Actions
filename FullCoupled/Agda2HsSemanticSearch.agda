@@ -205,18 +205,24 @@ canonicalPlan =
     Nothing → []
     Just node → plan node
 
-canonicalSearchIsComplete :
+canonicalSearchComplete : Bool
+canonicalSearchComplete =
   allRequiredCovered
     requiredCapabilities
     (case canonicalSearch of λ where
       Nothing → []
       Just node → covered node)
-  ≡
-  True
+
+canonicalSearchIsComplete :
+  canonicalSearchComplete ≡ True
 canonicalSearchIsComplete = refl
 
+canonicalPlanNontrivial : Bool
+canonicalPlanNontrivial =
+  length canonicalPlan == suc (suc (suc zero))
+
 canonicalPlanIsNontrivial :
-  length canonicalPlan ≡ suc (suc (suc zero))
+  canonicalPlanNontrivial ≡ True
 canonicalPlanIsNontrivial = refl
 
 pathAppend : List String → List String → List String
@@ -241,8 +247,8 @@ semanticSearchReport =
 {-# COMPILE AGDA2HS astar #-}
 {-# COMPILE AGDA2HS canonicalSearch #-}
 {-# COMPILE AGDA2HS canonicalPlan #-}
-{-# COMPILE AGDA2HS canonicalSearchIsComplete #-}
-{-# COMPILE AGDA2HS canonicalPlanIsNontrivial #-}
+{-# COMPILE AGDA2HS canonicalSearchComplete #-}
+{-# COMPILE AGDA2HS canonicalPlanNontrivial #-}
 {-# COMPILE AGDA2HS pathAppend #-}
 {-# COMPILE AGDA2HS splitTarget #-}
 {-# COMPILE AGDA2HS semanticSearchReport #-}
