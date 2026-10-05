@@ -380,6 +380,25 @@
             program = "${script}/bin/agda-haskell-pipeline";
           };
 
+          mercury-autonomous-discovery = let
+            script = pkgs.writeShellApplication {
+              name = "mercury-autonomous-discovery";
+              runtimeInputs = [
+                pkgs.mercury
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                cd .ci/discovery
+                mmc --make autonomous_inversion_search
+                ./autonomous_inversion_search
+                test -s autonomous-inversion-search.dhall
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mercury-autonomous-discovery";
+          };
           mercury-theorem-e2e = let
             script = pkgs.writeShellApplication {
               name = "mercury-theorem-e2e";
@@ -423,6 +442,8 @@
                 ./theorem_registry_reconcile --check
                 mmc --make theorem_monolith_egraph_sync
                 ./theorem_monolith_egraph_sync
+                mmc --make autonomous_inversion_search
+                ./autonomous_inversion_search
                 mmc --make novel_theorem_interpolator
                 ./novel_theorem_interpolator
                 test -s novel-theorem-interpolation.dhall
@@ -430,6 +451,8 @@
                 report=theorem-monolith-egraph-sync.dhall
                 test -s "$report"
                 dhall text --file "$report" >/dev/null
+                test -s autonomous-inversion-search.dhall
+                dhall text --file autonomous-inversion-search.dhall >/dev/null
                 test -s novel-theorem-interpolation.dhall
                 dhall text --file novel-theorem-interpolation.dhall >/dev/null
                 echo "mercury-theorem-e2e=pass"
